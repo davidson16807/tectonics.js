@@ -58,6 +58,8 @@ function World(grid, optional){
 			this.crust.create(nearest.get(i), this.OCEAN, this.LAND_CRUST_DENSITY);
 		}
 	}
+	this.updateNeighbors();
+	this.updateBorders();
 	
 	var geometry	= this.grid.initializer(this.SEALEVEL);
 	var material	= new THREE.MeshBasicMaterial({color:0x0a0a32, transparent:true, opacity:0.5});
@@ -82,6 +84,35 @@ World.prototype.simulate = function(timestep){
 	var i = 0;
 	for(i = 0; i<length; i++){
 		plates[i].move(timestep);
+	}
+	this.updateMatrices();
+	for(i = 0; i<length; i++){
+		plates[i].deform();
+		plates[i]._geometry.verticesNeedUpdate = true;
+	}
+	this.updateBorders();
+}
+
+World.prototype.updateNeighbors = function(){
+	for(var j = 0, length = this.plates.length; j<length; j++){
+		this.plates[j].updateNeighbors();
+	}
+}
+
+World.prototype.updateBorders = function(){
+	var length = this.plates.length;
+	var plates = this.plates;
+	for(var i = 0; i<length; i++){
+		plates[i].updateBorders();
+	}
+}
+
+World.prototype.updateMatrices = function(){
+	var length = this.plates.length;
+	var plates = this.plates;
+	for(var i = 0; i<length; i++){
+		plates[i].mesh.updateMatrix();
+		plates[i].mesh.updateMatrixWorld();
 	}
 }
 
