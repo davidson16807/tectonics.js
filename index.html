@@ -71,12 +71,6 @@
 			document.getElementById('container').appendChild(renderer.domElement);
 
 			clock = new THREE.Clock();
-			
-			// add Stats.js - https://github.com/mrdoob/stats.js
-			stats = new Stats();
-			stats.domElement.style.position	= 'absolute';
-			stats.domElement.style.bottom	= '0px';
-			document.body.appendChild( stats.domElement );
 
 			// create a scene
 			scene = new THREE.Scene();
@@ -124,9 +118,6 @@
 			world.simulate(MegaYearPerSecond*timestep);
 			// do the render
 			render();
-
-			// update stats
-			stats.update();
 		}
 
 		// render the scene
