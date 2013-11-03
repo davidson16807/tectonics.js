@@ -112,3 +112,85 @@ Plate.prototype.deform = function(){
 		}
 	}
 }
+
+_getRiftIntersection = function(id, plate) {
+	var intersected = plate._vertices[id];
+	if (intersected.length() > plate.world.THRESHOLD || plate._riftable[id]) {
+		return intersected;
+	}
+}
+Plate.prototype.rift = function(){
+	var mesh = this.mesh;
+	var plates = this._neighbors;
+	var geometry = this._geometry;
+	var grid = this.world.grid;
+	var vertex, intersected;
+	var riftable = this._riftable;
+	var OCEAN = this.world.OCEAN;
+	var OCEAN_CRUST_DENSITY = this.world.OCEAN_CRUST_DENSITY;
+	for(i=0, li = this._riftable.length; i<li; i++){
+		vertex = riftable[i];
+		if(_.isUndefined(vertex)){
+			continue;
+		}
+		var absolute = mesh.localToWorld(vertex.clone().normalize());
+		intersected = this._getIntersections(absolute, plates, grid, _getRiftIntersection);
+		if(!intersected){
+			this._crust.create(vertex, OCEAN, OCEAN_CRUST_DENSITY);
+			geometry.verticesNeedUpdate  = true;
+		}
+	}
+}
+
+Plate.prototype._getNeighbors = function(vertex){
+	var vertices = this._vertices;
+	var ids = this._grid.getNeighborIds(vertex.id);
+	var ids2 = []
+	for(var i=0, li=ids.length; i<li; i++){
+		ids2[i] = vertices[ids[i]];
+	}
+	return ids2;
+}
+Plate.prototype.getContinent = function(vertex){
+	var crust = this._crust;
+
+	var group = new buckets.Set(_hashVector);
+	var stack = [vertex];
+	while(stack.length > 0){
+		var next = stack.pop();
+		if (!group.contains(next) && crust.isContinental(next)){
+			group.add(next);
+			stack = stack.concat(next.plate._getNeighbors(next));
+		}
+	}
+	return group;
+}
+Plate.prototype.dock = function(intersection, plate, continent){
+	var crust = this._crust;
+	var grid = this._grid;
+	var mesh = this.mesh;
+	var otherMesh = plate.mesh;
+	var otherVertices = plate._vertices;
+
+	var processed = new buckets.Set(_hashVector);
+	var destroyed = [];
+	var stack = [intersection];
+	while(stack.length > 0){
+		var next = stack.pop();
+		if(!processed.contains(next)){
+			processed.add(next);
+			var absolute = mesh.localToWorld(next.clone().normalize());
+			var relative = otherMesh.worldToLocal(absolute);
+			var id = grid.getNearestId(relative);
+			var hit = otherVertices[id];
+			if(continent.contains(hit)){
+				crust.replace(next, hit);
+				destroyed.push(hit);
+				stack = stack.concat(this._getNeighbors(next));
+			}
+		}
+	}
+	for(var i=0; i<destroyed.length; i++){
+		crust.destroy(destroyed[i]);
+	}
+}
