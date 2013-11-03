@@ -9,7 +9,7 @@ function Plate(world, center, eulerPole, angularSpeed)
 	//efficiency attributes, AKA attributes of attributes:
 	this._geometry = world.grid.initializer(world.NA);
 	this._vertices = this._geometry.vertices;
-	this._material	= new THREE.MeshBasicMaterial({color: Math.random() * 0x506e1e, transparent:false, opacity:1});
+	this._material	= new THREE.MeshBasicMaterial({color: 0x506e1e, transparent:false, opacity:1});
 	this.mesh	= new THREE.Mesh( this._geometry, this._material ); 
 	
 	for(var i = 0, length = this._vertices.length, vertices = this._vertices; i<length; i++){

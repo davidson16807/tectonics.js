@@ -61,7 +61,7 @@ function World(grid, optional){
 	
 	var geometry	= this.grid.initializer(this.SEALEVEL);
 	var material	= new THREE.MeshBasicMaterial({color:0x0a0a32, transparent:false, opacity:0.5});
-	this.ocean	= new THREE.Mesh( geometry, new THREE.MeshBasicMaterial({color:0x0a0a32, transparent:true, opacity:0.5}) ); 
+	this.ocean	= new THREE.Mesh( geometry, new THREE.MeshBasicMaterial({color:0x0a0a32, transparent:false, opacity:1}) ); 
 	geometry	= this.grid.initializer(this.THRESHOLD);
 	material	= new THREE.MeshBasicMaterial({color:0x000000, transparent:false});
 	this.asthenosphere	= new THREE.Mesh( geometry, new THREE.MeshBasicMaterial({color:0x000000, transparent:false}) ); 
