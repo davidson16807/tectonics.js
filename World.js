@@ -31,6 +31,7 @@ function World(grid, optional){
 		
 	this.grid = grid;
 	this.crust = new Crust(this);
+	this.age = 0;
 	var _this = this;
 	
 	var vertices = grid.initializer(1).vertices
@@ -93,7 +94,6 @@ World.prototype.simulate = function(timestep){
 	}
 	this.updateBorders();
 }
-
 
 World.prototype.updateNeighbors = function(){
 	for(var j = 0, length = this.plates.length; j<length; j++){

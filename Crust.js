@@ -38,11 +38,45 @@ Crust.prototype.collide = function(vertex1, vertex2){
 	// NOTE: bottom.subductedBy is not always equivalent to top
 	var subducted = bottom.clone().normalize();
 	if (true){//subducted.distanceTo(subducting) > this.world.mountainWidth / this.world.radius){
+		if(this.isContinental(bottom) && this.isContinental(top)){
+			this.dock(top, bottom);
+		} else {
 			this.destroy(bottom);
 			top.setLength(this.world.LAND);
+		}
 	} else {
 		bottom.setLength(this.world.SUBDUCTED);
 	}
+}
+
+Crust.prototype._canDock = function(dockingContinent, dockedToContinent){
+	if(dockedToContinent.size() > dockingContinent.size()){
+		return true;
+	} else {
+		return false;
+	}
+}
+
+Crust.prototype.dock = function(top, bottom){
+	var topContinent = top.plate.getContinent(top);
+	var bottomContinent = top.plate.getContinent(bottom);
+	var smallContinent, smallPlate, large, small;
+	if(this._canDock(bottomContinent, topContinent)){
+		large = top;
+		small = bottom;
+		smallContinent = bottomContinent;
+	} else {
+		large = bottom;
+		small = top;
+		smallContinent = topContinent;
+	}
+	large.plate.dock(large, small.plate, smallContinent);
+}
+
+Crust.prototype.replace = function(replaced, replacement){
+	replaced.setLength(replacement.length());
+	replaced.density = replacement.density;
+	replaced.subductedBy = void 0;
 }
 
 Crust.prototype.destroy = function(vertex){

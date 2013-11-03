@@ -142,3 +142,56 @@ Plate.prototype.rift = function(){
 		}
 	}
 }
+
+Plate.prototype._getNeighbors = function(vertex){
+	var vertices = this._vertices;
+	var ids = this._grid.getNeighborIds(vertex.id);
+	var ids2 = []
+	for(var i=0, li=ids.length; i<li; i++){
+		ids2[i] = vertices[ids[i]];
+	}
+	return ids2;
+}
+Plate.prototype.getContinent = function(vertex){
+	var crust = this._crust;
+
+	var group = new buckets.Set(_hashVector);
+	var stack = [vertex];
+	while(stack.length > 0){
+		var next = stack.pop();
+		if (!group.contains(next) && crust.isContinental(next)){
+			group.add(next);
+			stack = stack.concat(next.plate._getNeighbors(next));
+		}
+	}
+	return group;
+}
+Plate.prototype.dock = function(intersection, plate, continent){
+	var crust = this._crust;
+	var grid = this._grid;
+	var mesh = this.mesh;
+	var otherMesh = plate.mesh;
+	var otherVertices = plate._vertices;
+
+	var processed = new buckets.Set(_hashVector);
+	var destroyed = [];
+	var stack = [intersection];
+	while(stack.length > 0){
+		var next = stack.pop();
+		if(!processed.contains(next)){
+			processed.add(next);
+			var absolute = mesh.localToWorld(next.clone().normalize());
+			var relative = otherMesh.worldToLocal(absolute);
+			var id = grid.getNearestId(relative);
+			var hit = otherVertices[id];
+			if(continent.contains(hit)){
+				crust.replace(next, hit);
+				destroyed.push(hit);
+				stack = stack.concat(this._getNeighbors(next));
+			}
+		}
+	}
+	for(var i=0; i<destroyed.length; i++){
+		crust.destroy(destroyed[i]);
+	}
+}
