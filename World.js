@@ -87,11 +87,13 @@ World.prototype.simulate = function(timestep){
 	}
 	this.updateMatrices();
 	for(i = 0; i<length; i++){
+		plates[i].rift();
 		plates[i].deform();
 		plates[i]._geometry.verticesNeedUpdate = true;
 	}
 	this.updateBorders();
 }
+
 
 World.prototype.updateNeighbors = function(){
 	for(var j = 0, length = this.plates.length; j<length; j++){

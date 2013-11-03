@@ -113,3 +113,32 @@ Plate.prototype.deform = function(){
 		}
 	}
 }
+
+_getRiftIntersection = function(id, plate) {
+	var intersected = plate._vertices[id];
+	if (intersected.length() > plate.world.THRESHOLD || plate._riftable[id]) {
+		return intersected;
+	}
+}
+Plate.prototype.rift = function(){
+	var mesh = this.mesh;
+	var plates = this._neighbors;
+	var geometry = this._geometry;
+	var grid = this.world.grid;
+	var vertex, intersected;
+	var riftable = this._riftable;
+	var OCEAN = this.world.OCEAN;
+	var OCEAN_CRUST_DENSITY = this.world.OCEAN_CRUST_DENSITY;
+	for(i=0, li = this._riftable.length; i<li; i++){
+		vertex = riftable[i];
+		if(_.isUndefined(vertex)){
+			continue;
+		}
+		var absolute = mesh.localToWorld(vertex.clone().normalize());
+		intersected = this._getIntersections(absolute, plates, grid, _getRiftIntersection);
+		if(!intersected){
+			this._crust.create(vertex, OCEAN, OCEAN_CRUST_DENSITY);
+			geometry.verticesNeedUpdate  = true;
+		}
+	}
+}
