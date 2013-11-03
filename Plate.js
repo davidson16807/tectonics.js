@@ -195,3 +195,40 @@ Plate.prototype.dock = function(intersection, plate, continent){
 		crust.destroy(destroyed[i]);
 	}
 }
+
+Plate.prototype.split = function(){
+	var grid = this._grid;
+	var gridvertices = grid.template.vertices;
+	var world = this.world;
+	var crust = this._crust;
+	var vertices = this._vertices;
+	
+	var eulerPole = grid.getRandomPoint();
+	smallerPlate = new Plate(world, this.getRandomPoint(), eulerPole, -world.getRandomPlateSpeed());
+	largerPlate  = new Plate(world, this.getRandomPoint(), eulerPole,  world.getRandomPlateSpeed());
+	failedPlate  = new Plate(world, this.getRandomPoint(), eulerPole,  world.getRandomPlateSpeed());
+	//simulate an aulacogen using a "failed" plate 
+	//vertices in this failed plate are subjugated by the larger plate
+	junction = [smallerPlate, largerPlate, failedPlate];
+	
+	this.mesh.updateMatrix();
+	this.mesh.updateMatrixWorld();
+	for(var i=0, li = junction.length; i<li; i++){
+		var plate = junction[i];
+		plate.mesh.matrix = this.mesh.matrix;
+		plate.mesh.rotation.setFromRotationMatrix( this.mesh.matrix );
+	}
+	
+	for(var i=0, li = vertices.length; i<li; i++){
+		var vertex = gridvertices[i];
+		var nearest = junction.sort(function(a, b) { return a.center.distanceTo(vertex) - b.center.distanceTo(vertex); })[0];
+		if(nearest == failedPlate){
+			nearest = largerPlate;
+		}
+		crust.replace(nearest._vertices[i], vertices[i]);
+	}
+	
+	world.plates.splice(world.plates.indexOf(this),1);
+	world.plates.push(smallerPlate);
+	world.plates.push(largerPlate);
+}

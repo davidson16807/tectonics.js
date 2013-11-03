@@ -93,6 +93,23 @@ World.prototype.simulate = function(timestep){
 		plates[i]._geometry.verticesNeedUpdate = true;
 	}
 	this.updateBorders();
+	for(i = 0; i<length; i++){
+		if(plates[i].getSize() <= 100)
+		{
+			plates.splice(i,1);
+			this.split();
+		}
+	}
+	this.age += timestep
+}
+
+World.prototype.split = function(){
+	var largest = this.plates.sort(function(a, b) { return b.getSize() - a.getSize(); })[0];
+	largest.split();
+	this.updateNeighbors();
+	this.updateBorders();
+	scene.clear();
+	this.draw();
 }
 
 World.prototype.updateNeighbors = function(){
