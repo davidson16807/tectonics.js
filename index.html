@@ -5,16 +5,20 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 		
-			
 		<script src="vendor/three.js/Three.js"></script>
 		<script src="vendor/three.js/Detector.js"></script>
 		<!-- https://github.com/mrdoob/stats.js -->
 		<script src="vendor/three.js/Stats.js"></script>
 		<script src="vendor/three.js/OrbitControls.js"></script>
-		<script src="vendor/underscore-min.js"></script>
 		<script src="vendor/threex/THREEx.screenshot.js"></script>
 		<script src="vendor/threex/THREEx.FullScreen.js"></script>
 		<script src="vendor/threex/THREEx.WindowResize.js"></script>
+		<script src="vendor/underscore-min.js"></script>
+		<script src="vendor/random-0.26.js"></script>
+		<script src="Grid.js"></script>
+		<script src="Crust.js"></script>
+		<script src="Plate.js"></script>
+		<script src="World.js"></script>
 
 		<link  href="css/main.css" rel="stylesheet"/>
 	</head>
@@ -34,28 +38,23 @@
 	</div> 
 
 	<script type="text/javascript">
-		var stats, scene, renderer, composer;
+		//standards:
+		// all points are vectors
+		// all angles are in radians
+		// all distance is in km
+		// all thickness is in meters
+		// all time in Million years (My)
+		// all speeds are in km/My (goes along with distance)
+		// all densities are in kg/m^3 (goes along with thickness)
+		// planets are rendered as unit spheres
+		
+		var stats, scene, renderer, composer, clock;
 		var camera, cameraControl;
+		random = new Random();
 
-		if( !init() )	animate();
-		
-		function World(){
-			this.NA = 0.1;
-		    this.FOO = 1.1;
-		}
-		var NA = 0.1;
-		var HIGH = 1.1;
-		
-		function Plate(center)
-		{
-			this.coverage = new THREE.IcosahedronGeometry(NA, 5);
-			this.center = center;//new Vertex3(center.x, center.y, center.z);
-			var _this = this;
-			this.set = function(i, value){
-				_this.coverage.vertices[i].setLength(value);
-			}
-		}
-		
+		var world = new World(new Grid(function(radius) { return new THREE.IcosahedronGeometry(radius, 5); }), 
+			{});
+		if( !init() ) animate();
 
 		// init the scene
 		function init(){
@@ -64,13 +63,15 @@
 					antialias		: true,	// to get smoother output
 					preserveDrawingBuffer	: true	// to allow screenshot
 				});
-				renderer.setClearColorHex( 0xBBBBBB, 1 );
+				renderer.setClearColorHex( 0x000000, 1 );
 			}else{
 				renderer	= new THREE.CanvasRenderer();
 			}
 			renderer.setSize( window.innerWidth, window.innerHeight );
 			document.getElementById('container').appendChild(renderer.domElement);
 
+			clock = new THREE.Clock();
+			
 			// add Stats.js - https://github.com/mrdoob/stats.js
 			stats = new Stats();
 			stats.domElement.style.position	= 'absolute';
@@ -86,7 +87,7 @@
 			scene.add(camera);
 
 			// create a camera contol
-			cameraControls	= new THREE.OrbitControls( camera )
+			cameraControls	= new THREE.OrbitControls( camera );
 
 			// transparently support window resize
 			THREEx.WindowResize.bind(renderer, camera);
@@ -94,7 +95,7 @@
 			THREEx.Screenshot.bindKey(renderer);
 			// allow 'f' to go fullscreen where this feature is supported
 			if( THREEx.FullScreen.available() ){
-				THREEx.FullScreen.bindKey();		
+				THREEx.FullScreen.bindKey();
 				document.getElementById('inlineDoc').innerHTML	+= "- <i>f</i> for fullscreen";
 			} 
 
@@ -102,37 +103,7 @@
 			// - you will most likely replace this part by your own
 			var light	= new THREE.AmbientLight( Math.random() * 0xffffff );
 			scene.add( light );
-
-			var geometry	= new THREE.IcosahedronGeometry(1, 5);
-			var shields = _.range(3).map(function(i){
-				var j = Math.floor(Math.random()*geometry.vertices.length); 
-				return geometry.vertices[j];
-			});
-			var plates = _.range(7).map(function(i) { 
-				var j = Math.floor(Math.random()*geometry.vertices.length); 
-				return new Plate(geometry.vertices[j]);
-			});
-			for(var i=0; i<geometry.vertices.length; i++)
-			{
-				var vertex = geometry.vertices[i];
-				
-				var elevation = 1.01;
-				if(_.any(shields.map(function(shield) { return shield.distanceTo(vertex) < 0.4 }))) { elevation = 1.03; }
-				
-				var vertex = geometry.vertices[i];
-				var nearest = plates.sort(function(a, b) { return a.center.distanceTo(vertex) - b.center.distanceTo(vertex); })[0];
-				nearest.set(i, elevation);
-			}
-			plates.forEach(function(plate){
-				var material	= new THREE.MeshBasicMaterial({color: Math.random() * 0xffffff});
-				var mesh	= new THREE.Mesh( plate.coverage, material ); 
-				scene.add( mesh );
-			});
-			
-			var geometry	= new THREE.IcosahedronGeometry(1.02, 5);
-			var material	= new THREE.MeshBasicMaterial({color:'black', transparent:true, opacity:0.3});
-			var mesh	= new THREE.Mesh( geometry, material ); 
-			scene.add( mesh );
+			world.draw();
 		}
 
 		// animation loop
@@ -141,8 +112,16 @@
 			// loop on request animation loop
 			// - it has to be at the begining of the function
 			// - see details at http://my.opera.com/emoller/blog/2011/12/20/requestanimationframe-for-smart-er-animating
+			var MegaYearPerSecond = 10 //My/second
+			
+			var timestep = clock.getDelta();
+			if (timestep > 1){
+				timestep = 1;
+			}
+			
 			requestAnimationFrame( animate );
-
+			
+			world.simulate(MegaYearPerSecond*timestep);
 			// do the render
 			render();
 
@@ -152,8 +131,6 @@
 
 		// render the scene
 		function render() {
-			// variable which is increase by Math.PI every seconds - usefull for animation
-			var PIseconds	= Date.now() * Math.PI;
 
 			// update camera controls
 			cameraControls.update();
