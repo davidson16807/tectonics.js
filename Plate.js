@@ -206,17 +206,21 @@ Plate.prototype.dock = function(intersection, plate, continent){
 	var stack = [intersection];
 	while(stack.length > 0){
 		var next = stack.pop();
-		if(!processed.contains(next)){
-			processed.add(next);
-			var absolute = mesh.localToWorld(next.clone().normalize());
-			var relative = otherMesh.worldToLocal(absolute);
-			var id = grid.getNearestId(relative);
-			var hit = otherVertices[id];
-			if(continent.contains(hit)){
-				crust.replace(next, hit);
-				destroyed.push(hit);
-				stack = stack.concat(this._getNeighbors(next));
-			}
+		if(processed.contains(next)){
+			continue;
+		}
+		if(intersection.distanceTo(next.clone().normalize()) > 0.4){
+			continue;
+		}
+		processed.add(next);
+		var absolute = mesh.localToWorld(next.clone().normalize());
+		var relative = otherMesh.worldToLocal(absolute);
+		var id = grid.getNearestId(relative);
+		var hit = otherVertices[id];
+		if(continent.contains(hit)){
+			crust.replace(next, hit);
+			destroyed.push(hit);
+			stack = stack.concat(this._getNeighbors(next));
 		}
 	}
 	for(var i=0; i<destroyed.length; i++){
