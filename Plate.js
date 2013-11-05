@@ -31,10 +31,12 @@ Plate.prototype.get = function(i){
 	return this._vertices[i];
 }
 Plate.prototype.getSize = function(){
-	return this._vertices.filter(function(vertex){return vertex.length() > this.world.THRESHOLD}).length;
+	var THRESHOLD = this.world.THRESHOLD;
+	return this._vertices.filter(function(vertex){return vertex.length() > THRESHOLD}).length;
 }
 Plate.prototype.getContinentalSize = function(){
-	return this._vertices.filter(function(vertex){return vertex.length() > this.world.LAND}).length;
+	var SEALEVEL = this.world.SEALEVEL;
+	return this._vertices.filter(function(vertex){return vertex.length() > SEALEVEL}).length;
 }
 Plate.prototype.getRandomPoint = function(){
 	var points = this._collideable.filter(function(vertex){return vertex.length() > this.world.THRESHOLD});
