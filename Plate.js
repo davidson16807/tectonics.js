@@ -43,6 +43,21 @@ Plate.prototype.getRandomPoint = function(){
 	var i = Math.floor(Math.random()*points.length);
 	return points[i];
 }
+Plate.prototype.getRandomJunction = function() {
+	var SEALEVEL = this.world.SEALEVEL;
+	var vertices = this._vertices;
+	var candidates = this._geometry.faces.filter(function(face) { 
+		return  vertices[face.a] > SEALEVEL && 
+				vertices[face.b] > SEALEVEL && 
+				vertices[face.c] > SEALEVEL
+	});
+	if(candidates.length > 0){
+		var i = Math.floor(Math.random()*candidates.length);
+		var selection = candidates[i];
+		return [vertices[selection.a], vertices[selection.b], vertices[selection.c]];
+	}
+	return [this.getRandomPoint(), this.getRandomPoint(), this.getRandomPoint()];
+}
 Plate.prototype.updateNeighbors = function(){
 	var _this = this;
 	this._neighbors = this.world.plates.
@@ -209,9 +224,10 @@ Plate.prototype.split = function(){
 	var vertices = this._vertices;
 	
 	var eulerPole = grid.getRandomPoint();
-	smallerPlate = new Plate(world, this.getRandomPoint(), eulerPole, -world.getRandomPlateSpeed());
-	largerPlate  = new Plate(world, this.getRandomPoint(), eulerPole,  world.getRandomPlateSpeed());
-	failedPlate  = new Plate(world, this.getRandomPoint(), eulerPole,  world.getRandomPlateSpeed());
+	var triplepoint = this.getRandomJunction();
+	smallerPlate = new Plate(world, triplepoint[0], eulerPole, -world.getRandomPlateSpeed());
+	largerPlate  = new Plate(world, triplepoint[1], eulerPole,  world.getRandomPlateSpeed());
+	failedPlate  = new Plate(world, triplepoint[2], eulerPole,  world.getRandomPlateSpeed());
 	//simulate an aulacogen using a "failed" plate 
 	//vertices in this failed plate are subjugated by the larger plate
 	junction = [smallerPlate, largerPlate, failedPlate];
