@@ -33,6 +33,9 @@ Plate.prototype.get = function(i){
 Plate.prototype.getSize = function(){
 	return this._vertices.filter(function(vertex){return vertex.length() > this.world.THRESHOLD}).length;
 }
+Plate.prototype.getContinentalSize = function(){
+	return this._vertices.filter(function(vertex){return vertex.length() > this.world.LAND}).length;
+}
 Plate.prototype.getRandomPoint = function(){
 	var points = this._collideable.filter(function(vertex){return vertex.length() > this.world.THRESHOLD});
 	var i = Math.floor(Math.random()*points.length);

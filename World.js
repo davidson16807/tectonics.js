@@ -104,7 +104,7 @@ World.prototype.simulate = function(timestep){
 }
 
 World.prototype.split = function(){
-	var largest = this.plates.sort(function(a, b) { return b.getSize() - a.getSize(); })[0];
+	var largest = this.plates.sort(function(a, b) { return b.getContinentalSize() - a.getContinentalSize(); })[0];
 	largest.split();
 	this.updateNeighbors();
 	this.updateBorders();
