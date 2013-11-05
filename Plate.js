@@ -39,6 +39,11 @@ Plate.prototype.getContinentalSize = function(){
 	return this._vertices.filter(function(vertex){return vertex.length() > SEALEVEL}).length;
 }
 Plate.prototype.getRandomPoint = function(){
+	var points = this._vertices.filter(function(vertex){return vertex.length() > this.world.THRESHOLD});
+	var i = Math.floor(Math.random()*points.length);
+	return points[i];
+}
+Plate.prototype.getRandomBorder = function(){
 	var points = this._collideable.filter(function(vertex){return vertex.length() > this.world.THRESHOLD});
 	var i = Math.floor(Math.random()*points.length);
 	return points[i];
@@ -47,14 +52,17 @@ Plate.prototype.getRandomJunction = function() {
 	var SEALEVEL = this.world.SEALEVEL;
 	var vertices = this._vertices;
 	var candidates = this._geometry.faces.filter(function(face) { 
-		return  vertices[face.a] > SEALEVEL && 
-				vertices[face.b] > SEALEVEL && 
-				vertices[face.c] > SEALEVEL
+		return  vertices[face.a].length() > SEALEVEL && 
+				vertices[face.b].length() > SEALEVEL && 
+				vertices[face.c].length() > SEALEVEL
 	});
 	if(candidates.length > 0){
 		var i = Math.floor(Math.random()*candidates.length);
 		var selection = candidates[i];
 		return [vertices[selection.a], vertices[selection.b], vertices[selection.c]];
+	}
+	if(this._collideable.length > 0){
+		return [this.getRandomBorder(), this.getRandomBorder(), this.getRandomBorder()];
 	}
 	return [this.getRandomPoint(), this.getRandomPoint(), this.getRandomPoint()];
 }
