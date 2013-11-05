@@ -16,10 +16,10 @@ function World(grid, optional){
 	
 	var continentsNum = optional['continentsNum'] || 3;
 	var continentRadius = optional['continentRadius'] || 1250;
-	var platesNum = optional['platesNum'] || 7;
 	var radius = optional['radius'] || 6367;
 	
 	this.radius = radius;
+	this.platesNum = optional['platesNum'] || 7;
 	this.mountainWidth = optional['mountainWidth'] || 300;
 	this.getRandomPlateSpeed = optional['getRandomPlateSpeed'] ||
 		function() { return Math.exp(random.normal(3.492, 0.771)) / radius; }
@@ -32,31 +32,25 @@ function World(grid, optional){
 	this.grid = grid;
 	this.crust = new Crust(this);
 	this.age = 0;
-	var _this = this;
 	
-	var vertices = grid.initializer(1).vertices
-	console.log(vertices.length);
+	var vertices = grid.initializer(1).vertices;
 	var shields = _.range(continentsNum).map(function(i) {
-		var j = Math.floor(Math.random()*vertices.length); 
 		return grid.getRandomPoint();
 	});
 	var getRandomPlateSpeed 		= this.getRandomPlateSpeed;
 	var getRandomPlateDensityEffect = this.getRandomPlateDensityEffect;
-	this.plates = _.range(platesNum).map(function(i) { 
-		return new Plate(_this, 
-			grid.getRandomPoint(), 
-			grid.getRandomPoint(), 
-			getRandomPlateSpeed());
-	});
+	plate = new Plate(this, 
+		grid.getRandomPoint(), 
+		grid.getRandomPoint(), 
+		getRandomPlateSpeed());
+	this.plates = [plate];
 	var continentRadius = (continentRadius/this.radius);
 	for(var i=0, length = vertices.length; i<length; i++) {
 		var vertex = vertices[i];
-		
-		var nearest = this.plates.sort(function(a, b) { return a.center.distanceTo(vertex) - b.center.distanceTo(vertex); })[0];
 		if(_.any(shields.map(function(shield) { return shield.distanceTo(vertex) < continentRadius }))) { 
-			this.crust.create(nearest.get(i), this.LAND, this.LAND_CRUST_DENSITY);
+			this.crust.create(plate.get(i), this.LAND, this.LAND_CRUST_DENSITY);
 		} else {
-			this.crust.create(nearest.get(i), this.OCEAN, this.LAND_CRUST_DENSITY);
+			this.crust.create(plate.get(i), this.OCEAN, this.LAND_CRUST_DENSITY);
 		}
 	}
 	this.updateNeighbors();
@@ -93,12 +87,15 @@ World.prototype.simulate = function(timestep){
 		plates[i]._geometry.verticesNeedUpdate = true;
 	}
 	this.updateBorders();
+	platestemp = plates.slice(0); // copy the array
 	for(i = 0; i<length; i++){
-		if(plates[i].getSize() <= 100)
+		if(platestemp[i].getSize() <= 100)
 		{
-			plates.splice(i,1);
-			this.split();
+			plates.splice(plates.indexOf(platestemp[i]),1);
 		}
+	}
+	while(plates.length < this.platesNum){
+		this.split();
 	}
 	this.age += timestep
 }
