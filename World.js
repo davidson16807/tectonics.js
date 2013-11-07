@@ -14,13 +14,13 @@ THREE.Object3D.prototype.clear = function(){
 function World(grid, optional){
 	optional = optional || {};
 	
-	var continentsNum = optional['continentsNum'] || 3;
-	var continentRadius = optional['continentRadius'] || 1250;
 	var radius = optional['radius'] || 6367;
+	var continentsNum = optional['continentsNum'] || 3;
+	var continentRadius = (optional['continentRadius'] || 1250) / radius;
 	
 	this.radius = radius;
 	this.platesNum = optional['platesNum'] || 7;
-	this.mountainWidth = optional['mountainWidth'] || 300;
+	this.mountainWidth = (optional['mountainWidth'] || 300) / radius;
 	this.getRandomPlateSpeed = optional['getRandomPlateSpeed'] ||
 		function() { return Math.exp(random.normal(3.492, 0.771)) / radius; }
 		// alternative: random.normal(42.8, 27.7),
@@ -44,7 +44,6 @@ function World(grid, optional){
 		grid.getRandomPoint(), 
 		getRandomPlateSpeed());
 	this.plates = [plate];
-	var continentRadius = (continentRadius/this.radius);
 	for(var i=0, length = vertices.length; i<length; i++) {
 		var vertex = vertices[i];
 		if(_.any(shields.map(function(shield) { return shield.distanceTo(vertex) < continentRadius }))) { 
