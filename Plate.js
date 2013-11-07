@@ -158,9 +158,12 @@ Plate.prototype.getContinent = function(vertex){
 	var stack = [vertex];
 	while(stack.length > 0){
 		var next = stack.pop();
-		if (!group.contains(next) && crust.isContinental(next)){
-			group.add(next);
-			stack = stack.concat(next.plate._getNeighbors(next));
+		if (!group.contains(next)){
+			var neighbors = next.plate._getNeighbors(next).filter(function(neighbor){return crust.isContinental(neighbor)})
+			if (neighbors.length > 3){
+				group.add(next);
+				stack = stack.concat(neighbors);
+			}
 		}
 	}
 	return group;
@@ -178,9 +181,6 @@ Plate.prototype.dock = function(intersection, plate, continent){
 	while(stack.length > 0){
 		var next = stack.pop();
 		if(processed.contains(next)){
-			continue;
-		}
-		if(intersection.distanceTo(next.clone().normalize()) > 0.4){
 			continue;
 		}
 		processed.add(next);
