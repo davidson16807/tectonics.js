@@ -59,7 +59,7 @@ Crust.prototype._canDock = function(dockingContinent, dockedToContinent){
 
 Crust.prototype.dock = function(top, bottom){
 	var topContinent = top.plate.getContinent(top);
-	var bottomContinent = top.plate.getContinent(bottom);
+	var bottomContinent = bottom.plate.getContinent(bottom);
 	var smallContinent, smallPlate, large, small;
 	if(this._canDock(bottomContinent, topContinent)){
 		large = top;
