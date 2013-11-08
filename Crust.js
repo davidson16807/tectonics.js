@@ -4,16 +4,17 @@ function Crust(world){
 
 Crust.prototype.create = function(vertex, elevation, densityOffset){
 	vertex.setLength(elevation);
+	vertex.elevation = elevation;
 	vertex.density = densityOffset + vertex.plate.densityOffset;
 }
 
 Crust.prototype.isContinental = function(vertex){
-	return vertex.length() > this.world.SEALEVEL;
+	return vertex.elevation > this.world.SEALEVEL;
 	//return vertex.density > 2800;
 }
 
 Crust.prototype._canSubduct = function(top, bottom){
-	if(top.length() < bottom.length()){
+	if(top.elevation < bottom.elevation){
 		return false;
 	} else if(top.plate.densityOffset > bottom.plate.densityOffset){
 		return false;
@@ -43,9 +44,11 @@ Crust.prototype.collide = function(vertex1, vertex2){
 		} else {
 			this.destroy(bottom);
 			top.setLength(this.world.LAND);
+			top.elevation = this.world.LAND;
 		}
 	} else {
 		bottom.setLength(this.world.SUBDUCTED);
+		bottom.elevation = this.world.SUBDUCTED;
 	}
 }
 
@@ -74,13 +77,15 @@ Crust.prototype.dock = function(top, bottom){
 }
 
 Crust.prototype.replace = function(replaced, replacement){
-	replaced.setLength(replacement.length());
+	replaced.setLength(replacement.elevation);
+	replaced.elevation = replacement.elevation
 	replaced.density = replacement.density;
 	replaced.subductedBy = void 0;
 }
 
 Crust.prototype.destroy = function(vertex){
-	vertex.setLength(world.NA);
+	vertex.setLength(this.world.NA);
+	vertex.elevation = this.world.NA;
 	vertex.density = void 0;
 	vertex.subductedBy = void 0;
 }
