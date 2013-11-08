@@ -43,11 +43,9 @@ Crust.prototype.collide = function(vertex1, vertex2){
 			this.dock(top, bottom);
 		} else {
 			this.destroy(bottom);
-			top.setLength(this.world.LAND);
 			top.elevation = this.world.LAND;
 		}
 	} else {
-		bottom.setLength(this.world.SUBDUCTED);
 		bottom.elevation = this.world.SUBDUCTED;
 	}
 }
@@ -77,14 +75,12 @@ Crust.prototype.dock = function(top, bottom){
 }
 
 Crust.prototype.replace = function(replaced, replacement){
-	replaced.setLength(replacement.elevation);
 	replaced.elevation = replacement.elevation
 	replaced.density = replacement.density;
 	replaced.subductedBy = void 0;
 }
 
 Crust.prototype.destroy = function(vertex){
-	vertex.setLength(this.world.NA);
 	vertex.elevation = this.world.NA;
 	vertex.density = void 0;
 	vertex.subductedBy = void 0;
