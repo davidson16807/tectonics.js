@@ -1,49 +1,48 @@
-
-
-function Crust(plate, id, elevation, densityEffect){
-	this.plate = plate;
-	this.world = plate.world;
-	
-	this.id = id;
-	this.elevation = elevation;
-	this.density = densityEffect + plate.densityEffect;
+function Crust(world){
+	this.world = world;
 }
 
-Crust.prototype.isContinental = function(){
-	return this.elevation > this.world.SEALEVEL;
+Crust.prototype.create = function(vertex, elevation, densityOffset){
+	vertex.setLength(elevation);
+	vertex.elevation = elevation;
+	vertex.density = densityOffset + vertex.plate.densityOffset;
+}
+
+Crust.prototype.isContinental = function(vertex){
+	return vertex.elevation > this.world.SEALEVEL;
 	//return vertex.density > 2800;
 }
 
-_canSubduct = function(top, bottom){
+Crust.prototype._canSubduct = function(top, bottom){
 	if(top.elevation < bottom.elevation){
 		return false;
-	} else if(top.plate.densityEffect > bottom.plate.densityEffect){
+	} else if(top.plate.densityOffset > bottom.plate.densityOffset){
 		return false;
 	} else {
 		return true;
 	}
 }
 
-Crust.prototype.collide = function(other){
+Crust.prototype.collide = function(vertex1, vertex2){
 	var top, bottom;
-	if(_canSubduct(this, other)){
-		top = this;
-		bottom = other;
+	if(this._canSubduct(vertex1, vertex2)){
+		top = vertex1;
+		bottom = vertex2;
 	} else {
-		bottom = this;
-		top = other;
+		bottom = vertex1;
+		top = vertex2;
 	}
 	if (_.isUndefined(bottom.subductedBy)){
 		bottom.subductedBy = top;
 	}
-	//var subducting = bottom.subductedBy.clone().normalize(); 
+	var subducting = bottom.subductedBy.clone().normalize(); 
 	// NOTE: bottom.subductedBy is not always equivalent to top
-	//var subducted = bottom.clone().normalize();
+	var subducted = bottom.clone().normalize();
 	if (true){//subducted.distanceTo(subducting) > this.world.mountainWidth / this.world.radius){
-		if(bottom.isContinental() && top.isContinental()){
-			top.dock(bottom);
+		if(this.isContinental(bottom) && this.isContinental(top)){
+			this.dock(top, bottom);
 		} else {
-			bottom.destroy();
+			this.destroy(bottom);
 			top.elevation = this.world.LAND;
 		}
 	} else {
@@ -51,7 +50,7 @@ Crust.prototype.collide = function(other){
 	}
 }
 
-_canDock = function(dockingContinent, dockedToContinent){
+Crust.prototype._canDock = function(dockingContinent, dockedToContinent){
 	if(dockedToContinent.size() > dockingContinent.size()){
 		return true;
 	} else {
@@ -59,22 +58,30 @@ _canDock = function(dockingContinent, dockedToContinent){
 	}
 }
 
-Crust.prototype.dock = function(other){
-	var topContinent = this.plate.getContinent(this);
-	var bottomContinent = other.plate.getContinent(other);
+Crust.prototype.dock = function(top, bottom){
+	var topContinent = top.plate.getContinent(top);
+	var bottomContinent = top.plate.getContinent(bottom);
 	var smallContinent, smallPlate, large, small;
-	if(_canDock(bottomContinent, topContinent)){
-		large = this;
-		small = other;
+	if(this._canDock(bottomContinent, topContinent)){
+		large = top;
+		small = bottom;
 		smallContinent = bottomContinent;
 	} else {
-		large = other;
-		small = this;
+		large = bottom;
+		small = top;
 		smallContinent = topContinent;
 	}
 	large.plate.dock(large, small.plate, smallContinent);
 }
 
-Crust.prototype.destroy = function(){
-	this.plate.crust[this.id] = void 0;
+Crust.prototype.replace = function(replaced, replacement){
+	replaced.elevation = replacement.elevation
+	replaced.density = replacement.density;
+	replaced.subductedBy = void 0;
+}
+
+Crust.prototype.destroy = function(vertex){
+	vertex.elevation = this.world.NA;
+	vertex.density = void 0;
+	vertex.subductedBy = void 0;
 }
