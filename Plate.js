@@ -103,7 +103,7 @@ Plate.prototype.deform = function(){
 	var vertex, intersected;
 	for(i=0, li = collideable.length; i<li; i++){
 		var vertex = collideable[i];
-		if(_.isUndefined(vertex)){
+		if(_.isUndefined(vertex) || _.isUndefined(vertex.content)){
 			continue;
 		}
 		var absolute = mesh.localToWorld(vertex.clone().normalize());
@@ -132,14 +132,14 @@ Plate.prototype.rift = function(){
 	var OCEAN_CRUST_DENSITY = this.world.OCEAN_CRUST_DENSITY;
 	for(i=0, li = this._riftable.length; i<li; i++){
 		vertex = riftable[i];
-		if(_.isUndefined(vertex)){
+		if(_.isUndefined(vertex) || !_.isUndefined(vertex.content)){
 			continue;
 		}
 		var absolute = mesh.localToWorld(vertex.clone().normalize());
 		intersected = this._getIntersections(absolute, plates, grid, _getRiftIntersection);
 		if(!intersected){
 			this._crust.create(vertex, OCEAN, OCEAN_CRUST_DENSITY);
-			geometry.verticesNeedUpdate  = true;
+			geometry.verticesNeedUpdate = true;
 		}
 	}
 }
