@@ -11,11 +11,11 @@ function Plate(world, center, eulerPole, angularSpeed)
 	this.center = center; // TODO: remove
 	this.eulerPole = eulerPole;
 	this.angularSpeed = angularSpeed;
-	this.densityOffset = world.getRandomPlateDensityEffect();
+	this.densityEffect = world.getRandomPlateDensityEffect();
+	this.crust = [];
 	
 	//efficiency attributes, AKA attributes of attributes:
 	this._grid = world.grid;
-	this._crust = world.crust;
 	this._geometry = world.grid.initializer(world.NA);
 	this._vertices = this._geometry.vertices;
 	this._material	= new THREE.MeshBasicMaterial({color: Math.random() * 0xffffff, transparent:true, opacity:1});
@@ -23,7 +23,6 @@ function Plate(world, center, eulerPole, angularSpeed)
 	this.mesh	= new THREE.Mesh( this._geometry, this._material ); 
 	
 	for(var i = 0, length = this._vertices.length, vertices = this._vertices; i<length; i++){
-		vertices[i].plate = this;
 		vertices[i].id = i;
 	}
 }
@@ -48,18 +47,18 @@ Plate.prototype.updateBorders = function(){
 	var riftable = [];
 	var THRESHOLD = this.world.THRESHOLD;
 	var a,b,c;
-	for(var i=0, vertices = this._vertices, length = this._geometry.faces.length; i<length; i++){
+	for(var i=0, vertices = this.crust, length = this._geometry.faces.length; i<length; i++){
 		var face = this._geometry.faces[i];
-		a = vertices[face.a].elevation> THRESHOLD;
-		b = vertices[face.b].elevation> THRESHOLD;
-		c = vertices[face.c].elevation> THRESHOLD;
+		a = _isDefined(vertices[face.a]);
+		b = _isDefined(vertices[face.b]);
+		c = _isDefined(vertices[face.c]);
 		if((a != b || b != c)){
-			if(a){ collideable[face.a] = vertices[face.a]; }
-			else { riftable[face.a] = vertices[face.a]; }
+			if(a){ collideable[face.a] = vertices[face.a]; } 
+			else { riftable[face.a] = true; }
 			if(b){ collideable[face.b] = vertices[face.b]; }
-			else { riftable[face.b] = vertices[face.b]; }
+			else { riftable[face.b] = true; }
 			if(c){ collideable[face.c] = vertices[face.c]; }
-			else { riftable[face.c] = vertices[face.c]; }
+			else { riftable[face.c] = true; }
 		}
 	}
 	this._collideable = collideable;
@@ -88,8 +87,8 @@ Plate.prototype._getIntersections = function(absolute, plates, grid, getIntersec
 }
 
 _getCollisionIntersection = function(id, plate) {
-	var intersected = plate._vertices[id];
-	if (intersected.elevation > plate.world.THRESHOLD && !plate._collideable[id]) {
+	var intersected = plate.crust[id];
+	if (_isDefined(intersected) && !plate._collideable[id]) {
 		return intersected;
 	}
 }
@@ -99,25 +98,26 @@ Plate.prototype.deform = function(){
 	var geometry = this._geometry;
 	var grid = this._grid;
 	var collideable = this._collideable;
+	var vertices = this._vertices;
 	var vertex, intersected;
 	for(i=0, li = collideable.length; i<li; i++){
 		var vertex = collideable[i];
 		if(_.isUndefined(vertex)){
 			continue;
 		}
-		var absolute = mesh.localToWorld(vertex.clone().normalize());
+		var absolute = mesh.localToWorld(vertices[i].clone().normalize());
 		var intersected = this._getIntersections(absolute, plates, grid, _getCollisionIntersection);
 		if(intersected){
-			this._crust.collide(vertex, intersected);
+			vertex.collide(intersected);
 			this._geometry.verticesNeedUpdate  = true;
 		}
 	}
 }
 
 _getRiftIntersection = function(id, plate) {
-	var intersected = plate._vertices[id];
-	if (intersected.elevation > plate.world.THRESHOLD || plate._riftable[id]) {
-		return intersected;
+	var intersected = plate.crust[id];
+	if (intersected || plate._riftable[id]) {
+		return true;
 	}
 }
 Plate.prototype.rift = function(){
@@ -127,24 +127,24 @@ Plate.prototype.rift = function(){
 	var grid = this.world.grid;
 	var vertex, intersected;
 	var riftable = this._riftable;
+	var vertices = this._vertices;
+	var crust = this.crust;
 	var OCEAN = this.world.OCEAN;
 	var OCEAN_CRUST_DENSITY = this.world.OCEAN_CRUST_DENSITY;
 	for(i=0, li = this._riftable.length; i<li; i++){
-		vertex = riftable[i];
-		if(_.isUndefined(vertex)){
+		if(_.isUndefined(riftable[i])){
 			continue;
 		}
-		var absolute = mesh.localToWorld(vertex.clone().normalize());
+		var absolute = mesh.localToWorld(grid.template.vertices[i].clone());
 		intersected = this._getIntersections(absolute, plates, grid, _getRiftIntersection);
 		if(!intersected){
-			this._crust.create(vertex, OCEAN, OCEAN_CRUST_DENSITY);
-			geometry.verticesNeedUpdate  = true;
+			crust[i] = new Crust(this, intersected, OCEAN, OCEAN_CRUST_DENSITY);
 		}
 	}
 }
 
 Plate.prototype._getNeighbors = function(vertex){
-	var vertices = this._vertices;
+	var vertices = this.crust;
 	var ids = this._grid.getNeighborIds(vertex.id);
 	var ids2 = []
 	for(var i=0, li=ids.length; i<li; i++){
@@ -153,14 +153,12 @@ Plate.prototype._getNeighbors = function(vertex){
 	return ids2;
 }
 Plate.prototype.getContinent = function(vertex){
-	var crust = this._crust;
-
 	var group = new buckets.Set(_hashVector);
 	var stack = [vertex];
 	while(stack.length > 0){
 		var next = stack.pop();
 		if (!group.contains(next)){
-			var neighbors = next.plate._getNeighbors(next).filter(function(neighbor){return crust.isContinental(neighbor)})
+			var neighbors = next.plate._getNeighbors(next).filter(function(neighbor){return _isDefined(neighbor) && neighbor.isContinental()})
 			if (neighbors.length > 3){
 				group.add(next);
 				stack = stack.concat(neighbors);
@@ -170,11 +168,13 @@ Plate.prototype.getContinent = function(vertex){
 	return group;
 }
 Plate.prototype.dock = function(intersection, plate, continent){
-	var crust = this._crust;
 	var grid = this._grid;
 	var mesh = this.mesh;
+	var crust = this.crust;
+	var vertices = grid.template.vertices;
 	var otherMesh = plate.mesh;
 	var otherVertices = plate._vertices;
+	var otherCrust = plate.crust;
 
 	var processed = new buckets.Set(_hashVector);
 	var destroyed = [];
@@ -185,17 +185,17 @@ Plate.prototype.dock = function(intersection, plate, continent){
 			continue;
 		}
 		processed.add(next);
-		var absolute = mesh.localToWorld(next.clone().normalize());
+		var absolute = mesh.localToWorld(vertices[next.id].clone());
 		var relative = otherMesh.worldToLocal(absolute);
 		var id = grid.getNearestId(relative);
 		var hit = otherVertices[id];
 		if(continent.contains(hit)){
-			crust.replace(next, hit);
-			destroyed.push(hit);
+			crust[next.id] = hit;
+			destroyed.push(id);
 			stack = stack.concat(this._getNeighbors(next));
 		}
 	}
 	for(var i=0; i<destroyed.length; i++){
-		crust.destroy(destroyed[i]);
+		otherCrust[i].destroy();
 	}
 }

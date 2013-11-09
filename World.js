@@ -30,7 +30,6 @@ function World(grid, optional){
 		// from Carlson & Raskin 1984
 		
 	this.grid = grid;
-	this.crust = new Crust(this);
 	this.age = 0;
 	var _this = this;
 	
@@ -54,9 +53,9 @@ function World(grid, optional){
 		
 		var nearest = this.plates.sort(function(a, b) { return a.center.distanceTo(vertex) - b.center.distanceTo(vertex); })[0];
 		if(_.any(shields.map(function(shield) { return shield.distanceTo(vertex) < continentRadius }))) { 
-			this.crust.create(nearest.get(i), this.LAND, this.LAND_CRUST_DENSITY);
+			nearest.crust[i] = new Crust(nearest, i, this.LAND, this.LAND_CRUST_DENSITY);
 		} else {
-			this.crust.create(nearest.get(i), this.OCEAN, this.LAND_CRUST_DENSITY);
+			nearest.crust[i] = new Crust(nearest, i, this.OCEAN, this.OCEAN_CRUST_DENSITY);
 		}
 	}
 	this.updateNeighbors();
@@ -89,7 +88,7 @@ World.prototype.simulate = function(timestep){
 	this.updateMatrices();
 	for(i = 0; i<length; i++){
 		plates[i].rift();
-		plates[i].deform();
+		//plates[i].deform();
 		plates[i]._geometry.verticesNeedUpdate = true;
 	}
 	this.updateBorders();
