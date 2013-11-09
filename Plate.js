@@ -25,16 +25,17 @@ function Plate(world, center, eulerPole, angularSpeed)
 	for(var i = 0, length = this._vertices.length, vertices = this._vertices; i<length; i++){
 		vertices[i].plate = this;
 		vertices[i].id = i;
+		vertices[i].content = void 0;
 	}
 }
 Plate.prototype.get = function(i){
 	return this._vertices[i];
 }
 Plate.prototype.getSize = function(){
-	return this._vertices.filter(function(vertex){return vertex.elevation > this.world.THRESHOLD}).length;
+	return this._vertices.filter(function(vertex){return _isDefined(vertex.content)}).length;
 }
 Plate.prototype.getRandomPoint = function(){
-	var points = this._collideable.filter(function(vertex){return vertex.elevation > this.world.THRESHOLD});
+	var points = this._collideable.filter(function(vertex){return _isDefined(vertex.content)});
 	var i = Math.floor(Math.random()*points.length);
 	return points[i];
 }
@@ -50,9 +51,9 @@ Plate.prototype.updateBorders = function(){
 	var a,b,c;
 	for(var i=0, vertices = this._vertices, length = this._geometry.faces.length; i<length; i++){
 		var face = this._geometry.faces[i];
-		a = vertices[face.a].elevation> THRESHOLD;
-		b = vertices[face.b].elevation> THRESHOLD;
-		c = vertices[face.c].elevation> THRESHOLD;
+		a = _isDefined(vertices[face.a].content);
+		b = _isDefined(vertices[face.b].content);
+		c = _isDefined(vertices[face.c].content);
 		if((a != b || b != c)){
 			if(a){ collideable[face.a] = vertices[face.a]; }
 			else { riftable[face.a] = vertices[face.a]; }
@@ -89,7 +90,7 @@ Plate.prototype._getIntersections = function(absolute, plates, grid, getIntersec
 
 _getCollisionIntersection = function(id, plate) {
 	var intersected = plate._vertices[id];
-	if (intersected.elevation > plate.world.THRESHOLD && !plate._collideable[id]) {
+	if (intersected.content && !plate._collideable[id]) {
 		return intersected;
 	}
 }
@@ -116,7 +117,7 @@ Plate.prototype.deform = function(){
 
 _getRiftIntersection = function(id, plate) {
 	var intersected = plate._vertices[id];
-	if (intersected.elevation > plate.world.THRESHOLD || plate._riftable[id]) {
+	if (intersected.content || plate._riftable[id]) {
 		return intersected;
 	}
 }
