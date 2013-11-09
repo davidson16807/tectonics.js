@@ -17,7 +17,7 @@ Crust.prototype.create = function(vertex, elevation, densityOffset){
 }
 
 Crust.prototype.isContinental = function(vertex){
-	return vertex.content.elevation > this.world.SEALEVEL;
+	return vertex.content && vertex.content.elevation > this.world.SEALEVEL;
 	//return vertex.density > 2800;
 }
 
@@ -47,7 +47,7 @@ Crust.prototype.collide = function(vertex1, vertex2){
 	// NOTE: bottom.subductedBy is not always equivalent to top
 	var subducted = bottom.clone().normalize();
 	if (true){//subducted.distanceTo(subducting) > this.world.mountainWidth / this.world.radius){
-		if(false){//this.isContinental(bottom) && this.isContinental(top)){
+		if(this.isContinental(bottom) && this.isContinental(top)){
 			this.dock(top, bottom);
 		} else {
 			this.destroy(bottom);
