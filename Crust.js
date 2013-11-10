@@ -12,13 +12,14 @@ Crust.prototype.isContinental = function(vertex){
 	//return vertex.density > 2800;
 }
 
+
 Crust.prototype._canSubduct = function(top, bottom){
-	if(top.length() < bottom.length()){
-		return false;
-	} else if(top.plate.densityOffset > bottom.plate.densityOffset){
-		return false;
-	} else {
+	if(top.elevation > bottom.elevation){
 		return true;
+	} else if(top.density < bottom.density){
+		return true;
+	} else {
+		return false;
 	}
 }
 
