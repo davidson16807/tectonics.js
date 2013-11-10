@@ -38,13 +38,13 @@ Crust.prototype.collide = function(vertex1, vertex2){
 	var subducting = bottom.subductedBy.clone().normalize(); 
 	// NOTE: bottom.subductedBy is not always equivalent to top
 	var subducted = bottom.clone().normalize();
-	if (true){//subducted.distanceTo(subducting) > this.world.mountainWidth / this.world.radius){
+	if (subducted.distanceTo(subducting) > this.world.mountainWidth / this.world.radius){
 		if(this.isContinental(bottom) && this.isContinental(top)){
 			this.dock(top, bottom);
-		} 
-		this.destroy(bottom);
-		top.setLength(this.world.LAND);
-		
+		} else {
+			this.destroy(bottom);
+			top.setLength(this.world.LAND);
+		}
 	} else {
 		bottom.setLength(this.world.SUBDUCTED);
 	}
