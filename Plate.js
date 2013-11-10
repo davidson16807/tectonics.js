@@ -16,7 +16,7 @@ function Plate(world, center, eulerPole, angularSpeed)
 	//efficiency attributes, AKA attributes of attributes:
 	this._grid = world.grid;
 	this._crust = world.crust;
-	this._geometry = world.grid.initializer(world.NA);
+	this._geometry = world.grid.initializer(1.01);
 	this._vertices = this._geometry.vertices;
 	this._material	= new THREE.MeshBasicMaterial();
 	this._neighbors = [];
@@ -106,7 +106,7 @@ Plate.prototype.deform = function(){
 		if(_.isUndefined(vertex) || _.isUndefined(vertex.content)){
 			continue;
 		}
-		var absolute = mesh.localToWorld(vertex.clone().normalize());
+		var absolute = mesh.localToWorld(vertex.clone());
 		var intersected = this._getIntersections(absolute, plates, grid, _getCollisionIntersection);
 		if(intersected){
 			this._crust.collide(vertex, intersected);
@@ -135,7 +135,7 @@ Plate.prototype.rift = function(){
 		if(_.isUndefined(vertex) || !_.isUndefined(vertex.content)){
 			continue;
 		}
-		var absolute = mesh.localToWorld(vertex.clone().normalize());
+		var absolute = mesh.localToWorld(vertex.clone());
 		intersected = this._getIntersections(absolute, plates, grid, _getRiftIntersection);
 		if(!intersected){
 			this._crust.create(vertex, OCEAN, OCEAN_CRUST_DENSITY);
@@ -186,7 +186,7 @@ Plate.prototype.dock = function(intersection, plate, continent){
 			continue;
 		}
 		processed.add(next);
-		var absolute = mesh.localToWorld(next.clone().normalize());
+		var absolute = mesh.localToWorld(next.clone());
 		var relative = otherMesh.worldToLocal(absolute);
 		var id = grid.getNearestId(relative);
 		var hit = otherVertices[id];

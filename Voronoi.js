@@ -1,5 +1,5 @@
 _toSpherical = function(cartesian){
-	return {lat: Math.asin(cartesian.y), lon: Math.atan2(-cartesian.z, cartesian.x)};
+	return {lat: Math.asin(cartesian.y/cartesian.length()), lon: Math.atan2(-cartesian.z, cartesian.x)};
 }
 _toCartesian = function(spherical){
 	return new THREE.Vector3(
