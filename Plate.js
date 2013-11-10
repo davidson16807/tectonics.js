@@ -163,7 +163,7 @@ Plate.prototype.getContinent = function(vertex){
 			var neighbors = next.plate._getNeighbors(next).filter(function(neighbor){return crust.isContinental(neighbor)})
 			if (neighbors.length > 3){
 				group.add(next);
-				stack = stack.concat(neighbors);
+				while(neighbors.length){ stack.push(neighbors.pop()); }
 			}
 		}
 	}
@@ -192,10 +192,9 @@ Plate.prototype.dock = function(intersection, plate, continent){
 		if(continent.contains(hit)){
 			crust.replace(next, hit);
 			destroyed.push(hit);
-			stack = stack.concat(this._getNeighbors(next));
+			neighbors = this._getNeighbors(next);
+			while(neighbors.length){ stack.push(neighbors.pop()); }
 		}
 	}
-	for(var i=0; i<destroyed.length; i++){
-		crust.destroy(destroyed[i]);
-	}
+	while(destroyed.length){ crust.destroy(destroyed.pop()); }
 }
