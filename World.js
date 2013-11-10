@@ -1,13 +1,3 @@
-THREE.Object3D.prototype.clear = function(){
-    var children = this.children;
-    for(var i = children.length-1;i>=0;i--){
-        var child = children[i];
-        child.clear();
-        this.remove(child);
-    };
-	//NOTE: the following fixes an issues with redrawing scenes where transparent objects are involved.
-	renderer.render( scene, camera );
-};
 
 // grid: 	 an object of type Grid
 // optional: A list of optional parameters. Optional parameters default to values seen on early earth
@@ -62,12 +52,6 @@ function World(grid, optional){
 	this.updateNeighbors();
 	this.updateBorders();
 	
-	var geometry	= this.grid.initializer(this.SEALEVEL);
-	var material	= new THREE.MeshBasicMaterial({color:0x0a0a32, transparent:true, opacity:0.5});
-	this.ocean	= new THREE.Mesh( geometry, new THREE.MeshBasicMaterial({color:0x0a0a32, transparent:true, opacity:0.5}) ); 
-	geometry	= this.grid.initializer(this.THRESHOLD);
-	material	= new THREE.MeshBasicMaterial({color:0x000000, transparent:false});
-	this.asthenosphere	= new THREE.Mesh( geometry, new THREE.MeshBasicMaterial({color:0x000000, transparent:false}) ); 
 }
 
 World.prototype.NA = 0.1;
@@ -90,7 +74,6 @@ World.prototype.simulate = function(timestep){
 	for(i = 0; i<length; i++){
 		plates[i].rift();
 		plates[i].deform();
-		plates[i]._geometry.verticesNeedUpdate = true;
 	}
 	this.updateBorders();
 }
@@ -116,14 +99,4 @@ World.prototype.updateMatrices = function(){
 		plates[i].mesh.updateMatrix();
 		plates[i].mesh.updateMatrixWorld();
 	}
-}
-
-World.prototype.draw = function(){
-	var length = this.plates.length;
-	var plates = this.plates;
-	for(var j = 0; j<length; j++){
-		scene.add(plates[j].mesh);
-	}
-	scene.add(this.asthenosphere);
-	scene.add(this.ocean);
 }

@@ -18,7 +18,7 @@ function Plate(world, center, eulerPole, angularSpeed)
 	this._crust = world.crust;
 	this._geometry = world.grid.initializer(world.NA);
 	this._vertices = this._geometry.vertices;
-	this._material	= new THREE.MeshBasicMaterial({color: Math.random() * 0xffffff, transparent:true, opacity:1});
+	this._material	= new THREE.MeshBasicMaterial();
 	this._neighbors = [];
 	this.mesh	= new THREE.Mesh( this._geometry, this._material ); 
 	
