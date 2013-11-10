@@ -40,10 +40,10 @@ Crust.prototype.collide = function(vertex1, vertex2){
 	if (true){//subducted.distanceTo(subducting) > this.world.mountainWidth / this.world.radius){
 		if(this.isContinental(bottom) && this.isContinental(top)){
 			this.dock(top, bottom);
-		} else {
-			this.destroy(bottom);
-			top.setLength(this.world.LAND);
-		}
+		} 
+		this.destroy(bottom);
+		top.setLength(this.world.LAND);
+		
 	} else {
 		bottom.setLength(this.world.SUBDUCTED);
 	}
