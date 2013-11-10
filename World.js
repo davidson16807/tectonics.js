@@ -54,9 +54,9 @@ function World(grid, optional){
 		
 		var nearest = this.plates.sort(function(a, b) { return a.center.distanceTo(vertex) - b.center.distanceTo(vertex); })[0];
 		if(_.any(shields.map(function(shield) { return shield.distanceTo(vertex) < continentRadius }))) { 
-			this.crust.create(nearest.get(i), this.LAND, this.LAND_CRUST_DENSITY);
+			nearest.get(i).content = new RockColumn(nearest, this.LAND, this.LAND_CRUST_DENSITY);
 		} else {
-			this.crust.create(nearest.get(i), this.OCEAN, this.LAND_CRUST_DENSITY);
+			nearest.get(i).content = new RockColumn(nearest, this.OCEAN, this.OCEAN_CRUST_DENSITY);
 		}
 	}
 	this.updateNeighbors();

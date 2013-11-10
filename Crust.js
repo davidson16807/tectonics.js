@@ -3,11 +3,6 @@ function Crust(world){
 	this.world = world;
 }
 
-Crust.prototype.create = function(vertex, elevation, densityOffset){
-	vertex.setLength(elevation);
-	vertex.content = new RockColumn(vertex.plate, elevation, densityOffset);
-}
-
 Crust.prototype.isContinental = function(vertex){
 	return vertex.content && vertex.content.elevation > this.world.SEALEVEL;
 	//return vertex.density > 2800;

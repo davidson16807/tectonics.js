@@ -110,7 +110,6 @@ Plate.prototype.deform = function(){
 		var intersected = this._getIntersections(absolute, plates, grid, _getCollisionIntersection);
 		if(intersected){
 			this._crust.collide(vertex, intersected);
-			this._geometry.verticesNeedUpdate  = true;
 		}
 	}
 }
@@ -138,8 +137,7 @@ Plate.prototype.rift = function(){
 		var absolute = mesh.localToWorld(vertex.clone().normalize());
 		intersected = this._getIntersections(absolute, plates, grid, _getRiftIntersection);
 		if(!intersected){
-			this._crust.create(vertex, OCEAN, OCEAN_CRUST_DENSITY);
-			geometry.verticesNeedUpdate = true;
+			vertex.content = new RockColumn(this, OCEAN, OCEAN_CRUST_DENSITY);
 		}
 	}
 }
