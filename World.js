@@ -56,7 +56,7 @@ function World(grid, optional){
 		if(_.any(shields.map(function(shield) { return shield.distanceTo(vertex) < continentRadius }))) { 
 			this.crust.create(nearest.get(i), this.LAND, this.LAND_CRUST_DENSITY);
 		} else {
-			this.crust.create(nearest.get(i), this.OCEAN, this.LAND_CRUST_DENSITY);
+			this.crust.create(nearest.get(i), this.OCEAN, this.OCEAN_CRUST_DENSITY);
 		}
 	}
 	this.updateNeighbors();
