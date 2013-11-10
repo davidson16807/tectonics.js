@@ -22,6 +22,7 @@
 		<script src="Plate.js"></script>
 		<script src="Voronoi.js"></script>
 		<script src="Grid.js"></script>
+		<script src="View.js"></script>
 		<script src="World.js"></script>
 
 		<link  href="css/main.css" rel="stylesheet"/>
@@ -55,6 +56,7 @@
 
 		var world = new World(new Grid(function(radius) { return new THREE.IcosahedronGeometry(radius, 5); }), 
 			{});
+		var view = new View(world);
 		if( !init() ) animate();
 
 		// init the scene
@@ -125,25 +127,12 @@
 			
 			world.simulate(MegaYearPerSecond*timestep);
 			
-			viewupdate(world);
+			view.update();
 			// do the render
 			render();
 
 			// update stats
 			stats.update();
-		}
-		
-		function viewupdate(){
-			for(var i=0, li = world.plates.length, plates = world.plates; i<li; i++){
-				for(var j=0, lj = plates[i]._vertices.length, vertices = plates[i]._vertices; j<lj; j++){
-					var vertex = vertices[j];
-					if(vertex.content){
-						vertices[j].setLength(vertices[j].content.elevation);
-					} else {
-						vertices[j].setLength(world.NA);
-					}
-				}
-			}
 		}
 
 		// render the scene
