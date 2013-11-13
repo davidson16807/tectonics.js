@@ -89,7 +89,7 @@ Plate.prototype._getIntersections = function(absolute, plates, grid, getIntersec
 
 _getCollisionIntersection = function(id, plate) {
 	var intersected = plate._vertices[id];
-	if (intersected.length() > plate.world.THRESHOLD && !plate._collideable[id]) {
+	if (intersected.length() > plate.world.THRESHOLD ) {
 		return intersected;
 	}
 }
@@ -161,10 +161,10 @@ Plate.prototype.getContinent = function(vertex){
 		var next = stack.pop();
 		if (!group.contains(next)){
 			var neighbors = next.plate._getNeighbors(next).filter(function(neighbor){return crust.isContinental(neighbor)})
-			if (neighbors.length > 3){
+			//if (neighbors.length > 3){
 				group.add(next);
 				while(neighbors.length){ stack.push(neighbors.pop()); }
-			}
+			//}
 		}
 	}
 	return group;
