@@ -45,8 +45,6 @@ Crust.prototype.collide = function(vertex1, vertex2){
 			this.destroy(bottom);
 			top.setLength(this.world.LAND);
 		}
-	} else {
-		bottom.setLength(this.world.SUBDUCTED);
 	}
 }
 

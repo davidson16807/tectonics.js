@@ -167,6 +167,7 @@ Plate.prototype.getContinent = function(vertex){
 			//}
 		}
 	}
+	group.add(vertex);
 	return group;
 }
 Plate.prototype.dock = function(intersection, plate, continent){
