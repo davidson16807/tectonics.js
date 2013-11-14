@@ -44,20 +44,24 @@ function World(grid, optional){
 		
 		var nearest = this.plates.sort(function(a, b) { return a.center.distanceTo(vertex) - b.center.distanceTo(vertex); })[0];
 		if(_.any(shields.map(function(shield) { return shield.distanceTo(vertex) < continentRadius }))) { 
-			this.crust.create(nearest.get(i), this.LAND, this.LAND_CRUST_DENSITY);
+			this.crust.create(nearest.get(i), this.land);
 		} else {
-			this.crust.create(nearest.get(i), this.OCEAN, this.OCEAN_CRUST_DENSITY);
+			this.crust.create(nearest.get(i), this.ocean);
 		}
 	}
 	this.updateNeighbors();
 	this.updateBorders();
 }
 
-World.prototype.OCEAN = -3682 //Charette & Smith 2010
 World.prototype.SEALEVEL = 0.0;
-World.prototype.LAND = 840; //Sverdrup & Fleming 1942
-World.prototype.LAND_CRUST_DENSITY = 2700;
-World.prototype.OCEAN_CRUST_DENSITY = 2890; // Carlson & Raskin 1984
+World.prototype.ocean =
+ new RockColumn(-3682, // Charette & Smith 2010
+                7100,  // +/- 800, White McKenzie and O'nions 1992
+				2890) // Carlson & Raskin 1984
+World.prototype.land =
+ new RockColumn(840, //Sverdrup & Fleming 1942
+                36900, // +/- 2900, estimate for shields, Zandt & Ammon 1995
+				2700) 
 
 World.prototype.simulate = function(timestep){
 	var length = this.plates.length;

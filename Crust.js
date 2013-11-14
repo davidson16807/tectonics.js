@@ -3,15 +3,14 @@ function Crust(world){
 	this.world = world;
 }
 
-Crust.prototype.create = function(vertex, elevation, densityOffset){
-	vertex.content = new RockColumn(vertex.plate, elevation, densityOffset);
+Crust.prototype.create = function(vertex, template){
+	vertex.content = new RockColumn(template.elevation, template.thickness, template.density + vertex.plate.densityOffset);
 }
 
 Crust.prototype.isContinental = function(vertex){
 	return vertex.content && vertex.content.elevation > this.world.SEALEVEL;
 	//return vertex.density > 2800;
 }
-
 
 Crust.prototype._canSubduct = function(top, bottom){
 	if(top.content.elevation < bottom.content.elevation){
@@ -43,7 +42,7 @@ Crust.prototype.collide = function(vertex1, vertex2){
 			this.dock(top, bottom);
 		} else {
 			this.destroy(bottom);
-			top.content.elevation = this.world.LAND;
+			top.content.elevation = this.world.land.elevation;
 		}
 	}
 }

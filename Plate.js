@@ -127,8 +127,7 @@ Plate.prototype.rift = function(){
 	var grid = this.world.grid;
 	var vertex, intersected;
 	var riftable = this._riftable;
-	var OCEAN = this.world.OCEAN;
-	var OCEAN_CRUST_DENSITY = this.world.OCEAN_CRUST_DENSITY;
+	var ocean = this.world.ocean;
 	for(i=0, li = this._riftable.length; i<li; i++){
 		vertex = riftable[i];
 		if(_.isUndefined(vertex) || !_.isUndefined(vertex.content)){
@@ -137,7 +136,7 @@ Plate.prototype.rift = function(){
 		var absolute = mesh.localToWorld(vertex.clone());
 		intersected = this._getIntersections(absolute, plates, grid, _getRiftIntersection);
 		if(!intersected){
-			this._crust.create(vertex, OCEAN, OCEAN_CRUST_DENSITY);
+			this._crust.create(vertex, ocean);
 			geometry.verticesNeedUpdate = true;
 		}
 	}

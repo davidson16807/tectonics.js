@@ -1,6 +1,8 @@
-function RockColumn(plate, elevation, densityOffset){
+function RockColumn(elevation, thickness, density){
 	this.elevation = elevation;
-	this.density = densityOffset + plate.densityOffset;
+	this.displacement = void 0;
+	this.thickness = thickness;
+	this.density = density;
 }
 
 RockColumn.prototype.isContinental = function(){
