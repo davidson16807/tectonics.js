@@ -197,7 +197,5 @@ Plate.prototype.dock = function(intersection, plate, continent){
 			while(neighbors.length){ stack.push(neighbors.pop()); }
 		}
 	}
-	for(var i=0; i<destroyed.length; i++){
-		crust.destroy(destroyed[i]);
-	}
+	while(destroyed.length){ crust.destroy(destroyed.pop()); }
 }
