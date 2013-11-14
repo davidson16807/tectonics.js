@@ -47,7 +47,6 @@ Plate.prototype.updateNeighbors = function(){
 Plate.prototype.updateBorders = function(){
 	var collideable = [];
 	var riftable = [];
-	var THRESHOLD = this.world.THRESHOLD;
 	var a,b,c;
 	for(var i=0, vertices = this._vertices, length = this._geometry.faces.length; i<length; i++){
 		var face = this._geometry.faces[i];

@@ -4,7 +4,6 @@ function Crust(world){
 }
 
 Crust.prototype.create = function(vertex, elevation, densityOffset){
-	vertex.setLength(elevation);
 	vertex.content = new RockColumn(vertex.plate, elevation, densityOffset);
 }
 
@@ -46,8 +45,6 @@ Crust.prototype.collide = function(vertex1, vertex2){
 			this.destroy(bottom);
 			top.content.elevation = this.world.LAND;
 		}
-	} else {
-		//bottom.content.elevation = this.world.SUBDUCTED;
 	}
 }
 

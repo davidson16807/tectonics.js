@@ -10,19 +10,25 @@ THREE.Object3D.prototype.clear = function(){
 };
 
 function View(world){
+	this.NA = 0.1;
+	this.THRESHOLD = 1.0;
+	this.SUBDUCTED = 1.01;
+	this.OCEAN = 1.02;
+	this.SEALEVEL = 1.03;
+	this.LAND = 1.04;
 	this.world = world;
 	this.meshes = {};
 	for(var i=0, li = this.world.plates.length, plates = this.world.plates; i<li; i++){
-		var geometry = world.grid.initializer(world.NA);
+		var geometry = world.grid.initializer(this.SEALEVEL);
 		var material = new THREE.MeshBasicMaterial({color: Math.random() * 0xffffff, transparent:true, opacity:1});
 		this.meshes[plates[i].mesh.uuid] = new THREE.Mesh( geometry, material ); ;
 	}
 
-	var geometry	= world.grid.initializer(world.SEALEVEL);
+	var geometry	= world.grid.initializer(this.SEALEVEL);
 	var material	= new THREE.MeshBasicMaterial({color:0x0a0a32, transparent:true, opacity:0.5});
 	this.ocean	= new THREE.Mesh( geometry, new THREE.MeshBasicMaterial({color:0x0a0a32, transparent:true, opacity:0.5}) ); 
 	
-	geometry	= world.grid.initializer(world.THRESHOLD);
+	geometry	= world.grid.initializer(this.THRESHOLD);
 	material	= new THREE.MeshBasicMaterial({color:0x000000, transparent:false});
 	this.asthenosphere	= new THREE.Mesh( geometry, new THREE.MeshBasicMaterial({color:0x000000, transparent:false}) );
 	
@@ -39,9 +45,13 @@ View.prototype.update = function(){
 		for(var j=0, lj = plates[i]._vertices.length, cells = plates[i]._vertices; j<lj; j++){
 			var content = cells[j].content;
 			if(content){
-				vertices[j].setLength(content.elevation);
+				if(content.elevation > this.world.SEALEVEL){
+					vertices[j].setLength(this.LAND);
+				} else if (!content.subductedBy){
+					vertices[j].setLength(this.OCEAN);
+				}
 			} else {
-				vertices[j].setLength(world.NA);
+				vertices[j].setLength(this.NA);
 			}
 		}
 	}

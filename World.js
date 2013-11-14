@@ -51,15 +51,11 @@ function World(grid, optional){
 	}
 	this.updateNeighbors();
 	this.updateBorders();
-	
 }
 
-World.prototype.NA = 0.1;
-World.prototype.THRESHOLD = 1.0;
-World.prototype.SUBDUCTED = 1.01;
-World.prototype.OCEAN = 1.02
-World.prototype.SEALEVEL = 1.03;
-World.prototype.LAND = 1.04;
+World.prototype.OCEAN = -3682 //Charette & Smith 2010
+World.prototype.SEALEVEL = 0.0;
+World.prototype.LAND = 840; //Sverdrup & Fleming 1942
 World.prototype.LAND_CRUST_DENSITY = 2700;
 World.prototype.OCEAN_CRUST_DENSITY = 2890; // Carlson & Raskin 1984
 

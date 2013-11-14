@@ -4,5 +4,5 @@ function RockColumn(plate, elevation, densityOffset){
 }
 
 RockColumn.prototype.isContinental = function(){
-	return vertex.elevation > this.world.SEALEVEL;
+	return this.elevation > this.world.SEALEVEL;
 }
