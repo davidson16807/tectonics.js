@@ -89,8 +89,10 @@ World.prototype.simulate = function(timestep){
 	this.updateMatrices();
 	for(i = 0; i<length; i++){
 		plates[i].rift();
-		plates[i].deform();
 		plates[i]._geometry.verticesNeedUpdate = true;
+	}
+	for(i = 0; i<length; i++){
+		plates[i].deform();
 	}
 	this.updateBorders();
 }
