@@ -9,14 +9,11 @@ Crust.prototype.create = function(vertex, template){
 }
 
 Crust.prototype.isContinental = function(vertex){
-	return vertex.content && vertex.content.displacement > this.world.SEALEVEL;
-	//return vertex.density > 2800;
+	return vertex.content && vertex.content.thickness > 17000
 }
 
 Crust.prototype._canSubduct = function(top, bottom){
-	if(top.content.elevation < bottom.content.elevation){
-		return false;
-	} else if(top.plate.densityOffset > bottom.plate.densityOffset){
+	if(top.content.density > bottom.content.density){
 		return false;
 	} else {
 		return true;
@@ -43,9 +40,7 @@ Crust.prototype.collide = function(vertex1, vertex2){
 			this.dock(top, bottom);
 		} else {
 			this.destroy(bottom);
-			top.content.thickness = this.world.land.thickness;
-			top.content.density = this.world.land.density;
-			top.content.isostacy();
+			top.content.erupt();
 		}
 	}
 }
