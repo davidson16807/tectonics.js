@@ -46,7 +46,7 @@ Crust.prototype.collide = function(vertex1, vertex2){
 }
 
 Crust.prototype._canDock = function(dockingContinent, dockedToContinent){
-	if(dockedToContinent.size() > dockingContinent.size()){
+	if(dockedToContinent.plate.densityOffset < dockingContinent.plate.densityOffset){
 		return true;
 	} else {
 		return false;
@@ -54,19 +54,17 @@ Crust.prototype._canDock = function(dockingContinent, dockedToContinent){
 }
 
 Crust.prototype.dock = function(top, bottom){
-	var topContinent = top.plate.getContinent(top);
-	var bottomContinent = bottom.plate.getContinent(bottom);
-	var smallContinent, smallPlate, large, small;
-	if(this._canDock(bottomContinent, topContinent)){
-		large = top;
-		small = bottom;
-		smallContinent = bottomContinent;
+	var smallContinent, dockedTo, docking;
+	if(this._canDock(bottom, top)){
+		dockedTo = top;
+		docking = bottom;
+		dockingContinent = bottom.plate.getContinent(bottom);;
 	} else {
-		large = bottom;
-		small = top;
-		smallContinent = topContinent;
+		dockedTo = bottom;
+		docking = top;
+		dockingContinent = top.plate.getContinent(top);;
 	}
-	large.plate.dock(large, small.plate, smallContinent);
+	dockedTo.plate.dock(dockedTo, docking.plate, dockingContinent);
 }
 
 Crust.prototype.replace = function(replaced, replacement){
