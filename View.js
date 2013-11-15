@@ -45,10 +45,12 @@ View.prototype.update = function(){
 		for(var j=0, lj = plates[i]._vertices.length, cells = plates[i]._vertices; j<lj; j++){
 			var content = cells[j].content;
 			if(content){
-				if(content.elevation > this.world.SEALEVEL){
+				if(content.displacement > this.world.SEALEVEL){
 					vertices[j].setLength(this.LAND);
 				} else if (!content.subductedBy){
 					vertices[j].setLength(this.OCEAN);
+				} else {
+					vertices[j].setLength(this.NA);
 				}
 			} else {
 				vertices[j].setLength(this.NA);

@@ -4,11 +4,12 @@ function Crust(world){
 }
 
 Crust.prototype.create = function(vertex, template){
-	vertex.content = new RockColumn(template.elevation, template.thickness, template.density + vertex.plate.densityOffset);
+	vertex.content = new RockColumn(this.world,
+		template.elevation, template.thickness, template.density + vertex.plate.densityOffset);
 }
 
 Crust.prototype.isContinental = function(vertex){
-	return vertex.content && vertex.content.elevation > this.world.SEALEVEL;
+	return vertex.content && vertex.content.displacement > this.world.SEALEVEL;
 	//return vertex.density > 2800;
 }
 
@@ -42,7 +43,9 @@ Crust.prototype.collide = function(vertex1, vertex2){
 			this.dock(top, bottom);
 		} else {
 			this.destroy(bottom);
-			top.content.elevation = this.world.land.elevation;
+			top.content.thickness = this.world.land.thickness;
+			top.content.density = this.world.land.density;
+			top.content.isostacy();
 		}
 	}
 }

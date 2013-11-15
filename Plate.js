@@ -137,6 +137,7 @@ Plate.prototype.rift = function(){
 		intersected = this._getIntersections(absolute, plates, grid, _getRiftIntersection);
 		if(!intersected){
 			this._crust.create(vertex, ocean);
+			vertex.content.isostacy();
 			geometry.verticesNeedUpdate = true;
 		}
 	}

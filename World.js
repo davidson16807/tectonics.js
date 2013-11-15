@@ -48,18 +48,23 @@ function World(grid, optional){
 		} else {
 			this.crust.create(nearest.get(i), this.ocean);
 		}
+		nearest.get(i).content.isostacy();
 	}
 	this.updateNeighbors();
 	this.updateBorders();
 }
 
-World.prototype.SEALEVEL = 0.0;
+World.prototype.SEALEVEL = 3682;
+World.prototype.mantleDensity=3300
+World.prototype.waterDensity=1026  
 World.prototype.ocean =
- new RockColumn(-3682, // Charette & Smith 2010
+ new RockColumn(void 0,
+				-3682, // Charette & Smith 2010
                 7100,  // +/- 800, White McKenzie and O'nions 1992
 				2890) // Carlson & Raskin 1984
 World.prototype.land =
- new RockColumn(840, //Sverdrup & Fleming 1942
+ new RockColumn(void 0,
+				840, //Sverdrup & Fleming 1942
                 36900, // +/- 2900, estimate for shields, Zandt & Ammon 1995
 				2700) 
 
