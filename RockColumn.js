@@ -7,7 +7,7 @@ function RockColumn(world, elevation, thickness, density){
 }
 
 RockColumn.prototype.isContinental = function(){
-	return this.elevation > this.world.SEALEVEL;
+	return this.thickness > 17000;
 }
 
 RockColumn.prototype.accrete = function(subducted){

@@ -9,7 +9,7 @@ Crust.prototype.create = function(vertex, template){
 }
 
 Crust.prototype.isContinental = function(vertex){
-	return vertex.content && vertex.content.thickness > 17000
+	return vertex.content && vertex.content.isContinental()
 }
 
 Crust.prototype._canSubduct = function(top, bottom){
