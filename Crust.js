@@ -39,8 +39,8 @@ Crust.prototype.collide = function(vertex1, vertex2){
 		if(this.isContinental(bottom) && this.isContinental(top)){
 			this.dock(top, bottom);
 		} else {
+			top.content.accrete(bottom.content);
 			this.destroy(bottom);
-			top.content.erupt();
 		}
 	}
 }
