@@ -65,11 +65,7 @@ Plate.prototype.updateBorders = function(){
 	this._riftable = riftable;
 }
 Plate.prototype.move = function(timestep){
-	var rotationMatrix = new THREE.Matrix4();
-	rotationMatrix.makeRotationAxis( this.eulerPole, this.angularSpeed * timestep );
-	rotationMatrix.multiply( this.mesh.matrix ); 
-	this.mesh.matrix = rotationMatrix;
-	this.mesh.rotation.setFromRotationMatrix( this.mesh.matrix );
+	this.mesh.rotateOnAxis(this.eulerPole, this.angularSpeed * timestep)
 }
 
 Plate.prototype._getIntersections = function(absolute, plates, grid, getIntersection){
