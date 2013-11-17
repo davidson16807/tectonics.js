@@ -205,33 +205,28 @@ Plate.prototype.split = function(){
 	var crust = this._crust;
 	var vertices = this._vertices;
 	
-	var eulerPole = grid.getRandomPoint();
-	var triplepoint = this.getRandomJunction();
-	smallerPlate = new Plate(world, triplepoint[0], eulerPole, -world.getRandomPlateSpeed());
-	largerPlate  = new Plate(world, triplepoint[1], eulerPole,  world.getRandomPlateSpeed());
-	failedPlate  = new Plate(world, triplepoint[2], eulerPole,  world.getRandomPlateSpeed());
-	//simulate an aulacogen using a "failed" plate 
-	//vertices in this failed plate are subjugated by the larger plate
-	junction = [smallerPlate, largerPlate, failedPlate];
+	
+	plates = _.range(world.platesNum - world.plates.length).map(function(i) { 
+		return new Plate(world, 
+			grid.getRandomPoint(), 
+			grid.getRandomPoint(), 
+			world.getRandomPlateSpeed());
+	});
 	
 	this.mesh.updateMatrix();
 	this.mesh.updateMatrixWorld();
-	for(var i=0, li = junction.length; i<li; i++){
-		var plate = junction[i];
+	for(var i=0, li = plates.length; i<li; i++){
+		var plate = plates[i];
 		plate.mesh.matrix = this.mesh.matrix;
 		plate.mesh.rotation.setFromRotationMatrix( this.mesh.matrix );
 	}
 	
 	for(var i=0, li = vertices.length; i<li; i++){
 		var vertex = gridvertices[i];
-		var nearest = junction.sort(function(a, b) { return a.center.distanceTo(vertex) - b.center.distanceTo(vertex); })[0];
-		if(nearest == failedPlate){
-			nearest = largerPlate;
-		}
+		var nearest = plates.sort(function(a, b) { return a.center.distanceTo(vertex) - b.center.distanceTo(vertex); })[0];
 		crust.replace(nearest._vertices[i], vertices[i]);
 	}
 	
 	world.plates.splice(world.plates.indexOf(this),1);
-	world.plates.push(smallerPlate);
-	world.plates.push(largerPlate);
+	while(plates.length) { world.plates.push(plates.pop()); }
 }
