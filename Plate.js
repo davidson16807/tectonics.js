@@ -36,7 +36,7 @@ Plate.prototype.getSize = function(){
 }
 Plate.prototype.getRandomPoint = function(){
 	var points = this._collideable.filter(function(vertex){return _isDefined(vertex.content)});
-	var i = Math.floor(Math.random()*points.length);
+	var i = Math.floor(random.random()*points.length);
 	return points[i];
 }
 Plate.prototype.updateNeighbors = function(){

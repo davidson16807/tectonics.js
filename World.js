@@ -27,7 +27,7 @@ function World(grid, optional){
 	var vertices = grid.initializer(1).vertices
 	console.log(vertices.length);
 	var shields = _.range(continentsNum).map(function(i) {
-		var j = Math.floor(Math.random()*vertices.length); 
+		var j = Math.floor(random.random()*vertices.length); 
 		return grid.getRandomPoint();
 	});
 	var getRandomPlateSpeed 		= this.getRandomPlateSpeed;
