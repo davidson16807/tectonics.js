@@ -12,13 +12,14 @@ Crust.prototype.isContinental = function(vertex){
 	//return vertex.density > 2800;
 }
 
+
 Crust.prototype._canSubduct = function(top, bottom){
-	if(top.length() < bottom.length()){
-		return false;
-	} else if(top.plate.densityOffset > bottom.plate.densityOffset){
-		return false;
-	} else {
+	if(top.elevation > bottom.elevation){
 		return true;
+	} else if(top.density < bottom.density){
+		return true;
+	} else {
+		return false;
 	}
 }
 
@@ -44,13 +45,11 @@ Crust.prototype.collide = function(vertex1, vertex2){
 			this.destroy(bottom);
 			top.setLength(this.world.LAND);
 		}
-	} else {
-		bottom.setLength(this.world.SUBDUCTED);
 	}
 }
 
 Crust.prototype._canDock = function(dockingContinent, dockedToContinent){
-	if(dockedToContinent.size() > dockingContinent.size()){
+	if(dockedToContinent.plate.densityOffset < dockingContinent.plate.densityOffset){
 		return true;
 	} else {
 		return false;
@@ -58,19 +57,15 @@ Crust.prototype._canDock = function(dockingContinent, dockedToContinent){
 }
 
 Crust.prototype.dock = function(top, bottom){
-	var topContinent = top.plate.getContinent(top);
-	var bottomContinent = top.plate.getContinent(bottom);
-	var smallContinent, smallPlate, large, small;
-	if(this._canDock(bottomContinent, topContinent)){
-		large = top;
-		small = bottom;
-		smallContinent = bottomContinent;
+	var subjugating, subjugated;
+	if(this._canDock(bottom, top)){
+		subjugating = top;
+		subjugated = bottom;
 	} else {
-		large = bottom;
-		small = top;
-		smallContinent = topContinent;
+		subjugating = bottom;
+		subjugated = top;
 	}
-	large.plate.dock(large, small.plate, smallContinent);
+	subjugating.plate.dock(subjugated);
 }
 
 Crust.prototype.replace = function(replaced, replacement){

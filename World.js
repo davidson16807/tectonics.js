@@ -49,7 +49,7 @@ function World(grid, optional){
 		if(_.any(shields.map(function(shield) { return shield.distanceTo(vertex) < continentRadius }))) { 
 			this.crust.create(plate.get(i), this.LAND, this.LAND_CRUST_DENSITY);
 		} else {
-			this.crust.create(plate.get(i), this.OCEAN, this.LAND_CRUST_DENSITY);
+			this.crust.create(plate.get(i), this.OCEAN, this.OCEAN_CRUST_DENSITY);
 		}
 	}
 	this.updateNeighbors();
@@ -82,8 +82,10 @@ World.prototype.simulate = function(timestep){
 	this.updateMatrices();
 	for(i = 0; i<length; i++){
 		plates[i].rift();
-		plates[i].deform();
 		plates[i]._geometry.verticesNeedUpdate = true;
+	}
+	for(i = 0; i<length; i++){
+		plates[i].deform();
 	}
 	this.updateBorders();
 	platestemp = plates.slice(0); // copy the array

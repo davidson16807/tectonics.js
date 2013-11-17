@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
 	<head>
-		<title>learningthree.js boiler plate for three.js</title>
+		<title>tectonics.js - 3d plate tectonics in your web browser</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 		
@@ -31,9 +31,6 @@
 	<!-- info on screen display -->
 	<div id="info">
 		<div class="top">
-			<a href="http://learningthreejs.com/blog/2011/12/20/boilerplate-for-three-js/" target="_blank">LearningThree.js</a>
-			boiler plate for
-			<a href="https://github.com/mrdoob/three.js/" target="_blank">three.js</a>
 		</div>
 		<div class="bottom" id="inlineDoc" >
 			- <i>p</i> for screenshot
@@ -67,7 +64,7 @@
 					antialias		: true,	// to get smoother output
 					preserveDrawingBuffer	: true	// to allow screenshot
 				});
-				renderer.setClearColorHex( 0x000000, 1 );
+				renderer.setClearColor( 0x000000, 1 );
 			}else{
 				renderer	= new THREE.CanvasRenderer();
 			}
@@ -102,11 +99,6 @@
 				THREEx.FullScreen.bindKey();
 				document.getElementById('inlineDoc').innerHTML	+= "- <i>f</i> for fullscreen";
 			} 
-
-			// here you add your objects
-			// - you will most likely replace this part by your own
-			var light	= new THREE.AmbientLight( Math.random() * 0xffffff );
-			scene.add( light );
 			world.draw();
 		}
 
