@@ -35,7 +35,7 @@ Crust.prototype.collide = function(vertex1, vertex2){
 	var subducting = bottom.subductedBy.clone().normalize(); 
 	// NOTE: bottom.subductedBy is not always equivalent to top
 	var subducted = bottom.clone().normalize();
-	if (subducted.distanceTo(subducting) > this.world.mountainWidth / this.world.radius){
+	if (true){//subducted.distanceTo(subducting) > this.world.mountainWidth / this.world.radius){
 		if(this.isContinental(bottom) && this.isContinental(top)){
 			this.dock(top, bottom);
 		} else {
@@ -54,17 +54,15 @@ Crust.prototype._canDock = function(dockingContinent, dockedToContinent){
 }
 
 Crust.prototype.dock = function(top, bottom){
-	var smallContinent, dockedTo, docking;
+	var subjugating, subjugated;
 	if(this._canDock(bottom, top)){
-		dockedTo = top;
-		docking = bottom;
-		dockingContinent = bottom.plate.getContinent(bottom);;
+		subjugating = top;
+		subjugated = bottom;
 	} else {
-		dockedTo = bottom;
-		docking = top;
-		dockingContinent = top.plate.getContinent(top);;
+		subjugating = bottom;
+		subjugated = top;
 	}
-	dockedTo.plate.dock(dockedTo, docking.plate, dockingContinent);
+	subjugating.plate.dock(subjugated);
 }
 
 Crust.prototype.replace = function(replaced, replacement){

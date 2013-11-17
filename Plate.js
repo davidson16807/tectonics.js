@@ -66,11 +66,8 @@ Plate.prototype.updateBorders = function(){
 	this._riftable = riftable;
 }
 Plate.prototype.move = function(timestep){
-	var rotationMatrix = new THREE.Matrix4();
-	rotationMatrix.makeRotationAxis( this.eulerPole, this.angularSpeed * timestep );
-	rotationMatrix.multiply( this.mesh.matrix ); 
-	this.mesh.matrix = rotationMatrix;
-	this.mesh.rotation.setFromRotationMatrix( this.mesh.matrix );
+	this.increment = this.angularSpeed * timestep;
+	this.mesh.rotateOnAxis(this.eulerPole, this.increment);
 }
 
 Plate.prototype._getIntersections = function(absolute, plates, grid, getIntersection){
@@ -143,58 +140,32 @@ Plate.prototype.rift = function(){
 	}
 }
 
-Plate.prototype._getNeighbors = function(vertex){
-	var vertices = this._vertices;
-	var ids = this._grid.getNeighborIds(vertex.id);
-	var ids2 = []
-	for(var i=0, li=ids.length; i<li; i++){
-		ids2[i] = vertices[ids[i]];
-	}
-	return ids2;
-}
-Plate.prototype.getContinent = function(vertex){
-	var crust = this._crust;
-
-	var group = new buckets.Set(_hashVector);
-	var stack = [vertex];
-	while(stack.length > 0){
-		var next = stack.pop();
-		if (!group.contains(next)){
-			var neighbors = next.plate._getNeighbors(next).filter(function(neighbor){return crust.isContinental(neighbor)})
-			if (neighbors.length > 3){
-				group.add(next);
-				while(neighbors.length){ stack.push(neighbors.pop()); }
-			}
-		}
-	}
-	return group;
-}
-Plate.prototype.dock = function(intersection, plate, continent){
+Plate.prototype.dock = function(subjugated){
 	var crust = this._crust;
 	var grid = this._grid;
-	var mesh = this.mesh;
-	var otherMesh = plate.mesh;
-	var otherVertices = plate._vertices;
-
-	var processed = new buckets.Set(_hashVector);
-	var destroyed = [];
-	var stack = [intersection];
-	while(stack.length > 0){
-		var next = stack.pop();
-		if(processed.contains(next)){
-			continue;
-		}
-		processed.add(next);
-		var absolute = mesh.localToWorld(next.clone());
-		var relative = otherMesh.worldToLocal(absolute);
+	var vertices = this._vertices;
+	var subjugatedPlate = subjugated.plate
+	var otherMesh = subjugatedPlate.mesh
+	var mesh = this.mesh.clone();
+	
+	var increment =    new THREE.Matrix4().makeRotationAxis( this.eulerPole, 		    -this.increment );
+	increment.multiply(new THREE.Matrix4().makeRotationAxis( subjugatedPlate.eulerPole, -subjugatedPlate.increment ));
+	var temp = subjugated.clone();
+	
+	for(var i = 0; true; i++){
+		//move subjugated back by increment
+		temp.applyMatrix4(increment);
+		
+		//check for continental collision
+		var absolute = otherMesh.localToWorld(temp.clone().normalize());
+		var relative = mesh.worldToLocal(absolute);
 		var id = grid.getNearestId(relative);
-		var hit = otherVertices[id];
-		if(continent.contains(hit)){
-			crust.replace(next, hit);
-			destroyed.push(hit);
-			var neighbors = this._getNeighbors(next);
-			while(neighbors.length){ stack.push(neighbors.pop()); }
+		var hit = vertices[id];
+		
+		if(!crust.isContinental(hit) || i > 200){
+			crust.replace(hit, subjugated);
+			crust.destroy(subjugated);
+			break;
 		}
 	}
-	while(destroyed.length){ crust.destroy(destroyed.pop()); }
 }
