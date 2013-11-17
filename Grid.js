@@ -33,7 +33,7 @@ function Grid(initializer){
 }
 
 Grid.prototype.getRandomPoint = function() {
-	var i = Math.floor(Math.random()*this.template.vertices.length);
+	var i = Math.floor(random.random()*this.template.vertices.length);
 	return this.template.vertices[i];
 }
 
