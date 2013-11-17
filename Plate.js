@@ -18,7 +18,7 @@ function Plate(world, center, eulerPole, angularSpeed)
 	this._crust = world.crust;
 	this._geometry = world.grid.initializer(world.NA);
 	this._vertices = this._geometry.vertices;
-	this._material	= new THREE.MeshBasicMaterial({color: Math.random() * 0xffffff, transparent:true, opacity:1});
+	this._material	= new THREE.MeshBasicMaterial({color: random.random() * 0xffffff, transparent:true, opacity:1});
 	this._neighbors = [];
 	this.mesh	= new THREE.Mesh( this._geometry, this._material ); 
 	
@@ -35,7 +35,7 @@ Plate.prototype.getSize = function(){
 }
 Plate.prototype.getRandomPoint = function(){
 	var points = this._collideable.filter(function(vertex){return vertex.length() > this.world.THRESHOLD});
-	var i = Math.floor(Math.random()*points.length);
+	var i = Math.floor(random.random()*points.length);
 	return points[i];
 }
 Plate.prototype.updateNeighbors = function(){
