@@ -174,7 +174,7 @@ Plate.prototype.dock = function(subjugated){
 	var vertices = this._vertices;
 	var subjugatedPlate = subjugated.plate
 	var otherMesh = subjugatedPlate.mesh
-	var mesh = this.mesh.clone();
+	var mesh = this.mesh;
 	
 	var increment =    new THREE.Matrix4().makeRotationAxis( this.eulerPole, 		    -this.increment );
 	increment.multiply(new THREE.Matrix4().makeRotationAxis( subjugatedPlate.eulerPole, -subjugatedPlate.increment ));
@@ -190,7 +190,7 @@ Plate.prototype.dock = function(subjugated){
 		var id = grid.getNearestId(relative);
 		var hit = vertices[id];
 		
-		if(!crust.isContinental(hit) || i > 200){
+		if(!crust.isContinental(hit) || i > 100){
 			crust.replace(hit, subjugated);
 			crust.destroy(subjugated);
 			break;
@@ -212,13 +212,10 @@ Plate.prototype.split = function(){
 			grid.getRandomPoint(), 
 			world.getRandomPlateSpeed());
 	});
-	var distance = function(a,b) { return Math.pow(a.x - b.x, 2) +  Math.pow(a.y - b.y, 2) + Math.pow(a.z - b.z, 2); };
 	var kdtree = new kdTree(_.range(platesNum).map(function(i) {
 		return {x:plates[i].center.x, y:plates[i].center.y, z:plates[i].center.z, i:i}
-	}), distance, ["x","y","z"]);
+	}), grid.getDistance, ["x","y","z"]);
 	
-	this.mesh.updateMatrix();
-	this.mesh.updateMatrixWorld();
 	for(var i=0, li = plates.length; i<li; i++){
 		var plate = plates[i];
 		plate.mesh.matrix = this.mesh.matrix;
@@ -227,7 +224,7 @@ Plate.prototype.split = function(){
 	
 	for(var i=0, li = vertices.length; i<li; i++){
 		var vertex = gridvertices[i];
-		var id = kdtree.nearest({x:vertex.x, y:vertex.y, z:vertex.z},1)[0][0].i;
+		var id = kdtree.nearest(vertex,1)[0][0].i;
 		var nearest = plates[id];
 		crust.replace(nearest._vertices[i], vertices[i]);
 	}

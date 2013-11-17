@@ -22,8 +22,8 @@ function Grid(initializer){
 		var vertex = vertices[i];
 		points.push({x:vertex.x, y:vertex.y, z:vertex.z, i:i});
 	}
-	var distance = function(a,b) { return Math.pow(a.x - b.x, 2) +  Math.pow(a.y - b.y, 2) + Math.pow(a.z - b.z, 2); };
-	this._kdtree = new kdTree(points, distance, ["x","y","z"]);
+	this.getDistance = function(a,b) { return Math.pow(a.x - b.x, 2) +  Math.pow(a.y - b.y, 2) + Math.pow(a.z - b.z, 2); };
+	this._kdtree = new kdTree(points, this.getDistance, ["x","y","z"]);
 	
 	//Now feed that kdtree into a Voronoi diagram for O(1) lookups
 	//If this seems like overkill, trust me - it's not
