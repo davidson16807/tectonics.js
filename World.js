@@ -96,7 +96,7 @@ World.prototype.simulate = function(timestep){
 		}
 	}
 	if(plates.length <= 2){
-			this.split();
+		this.split();
 	}
 	this.age += timestep
 }

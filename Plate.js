@@ -205,13 +205,17 @@ Plate.prototype.split = function(){
 	var crust = this._crust;
 	var vertices = this._vertices;
 	
-	
-	plates = _.range(world.platesNum - world.plates.length).map(function(i) { 
+	platesNum = world.platesNum - world.plates.length
+	plates = _.range(platesNum).map(function(i) { 
 		return new Plate(world, 
 			grid.getRandomPoint(), 
 			grid.getRandomPoint(), 
 			world.getRandomPlateSpeed());
 	});
+	var distance = function(a,b) { return Math.pow(a.x - b.x, 2) +  Math.pow(a.y - b.y, 2) + Math.pow(a.z - b.z, 2); };
+	var kdtree = new kdTree(_.range(platesNum).map(function(i) {
+		return {x:plates[i].center.x, y:plates[i].center.y, z:plates[i].center.z, i:i}
+	}), distance, ["x","y","z"]);
 	
 	this.mesh.updateMatrix();
 	this.mesh.updateMatrixWorld();
@@ -223,7 +227,8 @@ Plate.prototype.split = function(){
 	
 	for(var i=0, li = vertices.length; i<li; i++){
 		var vertex = gridvertices[i];
-		var nearest = plates.sort(function(a, b) { return a.center.distanceTo(vertex) - b.center.distanceTo(vertex); })[0];
+		var id = kdtree.nearest({x:vertex.x, y:vertex.y, z:vertex.z},1)[0][0].i;
+		var nearest = plates[id];
 		crust.replace(nearest._vertices[i], vertices[i]);
 	}
 	
