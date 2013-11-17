@@ -95,8 +95,10 @@ World.prototype.simulate = function(timestep){
 			plates.splice(plates.indexOf(platestemp[i]),1);
 		}
 	}
-	while(plates.length < this.platesNum){
-		this.split();
+	if(plates.length <= 2){
+		while(plates.length < this.platesNum){
+			this.split();
+		}
 	}
 	this.age += timestep
 }
