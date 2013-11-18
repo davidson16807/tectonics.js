@@ -31,6 +31,7 @@
 	<!-- info on screen display -->
 	<div id="info">
 		<div class="top">
+			<div id="age">10.00</div>
 		</div>
 		<div class="bottom" id="inlineDoc" >
 			- <i>p</i> for screenshot
@@ -94,6 +95,16 @@
 			} 
 			world.draw();
 		}
+		
+		function formatAge(){
+			var age = Math.round(world.age);
+			var units = "My";
+			if (age >= 1000) {
+				age = (age/1000).toFixed(2);
+				units = "By"
+			}
+			return age.toString() + " " + units;
+		}
 
 		// animation loop
 		function animate() {
@@ -111,6 +122,8 @@
 			requestAnimationFrame( animate );
 			
 			world.simulate(MegaYearPerSecond*timestep);
+			
+			document.getElementById("age").innerHTML=formatAge();
 			// do the render
 			render();
 		}
