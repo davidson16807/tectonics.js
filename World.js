@@ -22,8 +22,9 @@ function World(grid, optional){
 	this.platesNum = optional['platesNum'] || 7;
 	this.mountainWidth = (optional['mountainWidth'] || 300) / radius;
 	this.getRandomPlateSpeed = optional['getRandomPlateSpeed'] ||
-		function() { return Math.exp(random.normal(3.492, 0.771)) / radius; }
-		// alternative: random.normal(42.8, 27.7),
+		//function() { return Math.exp(random.normal(3.492, 0.771)) / radius; }
+		// alternative:
+		function() { return random.normal(42.8, 27.7) / radius; }
 		// log normal and normal distributions fit from http://hypertextbook.com/facts/ZhenHuang.shtml
 	this.getRandomPlateDensityEffect = optional['getRandomPlateDensityEffect'] ||
 		function() { return random.normal(0,40); }
@@ -108,6 +109,7 @@ World.prototype.split = function(){
 	this.updateBorders();
 	scene.clear();
 	this.draw();
+	console.log(this.age);
 }
 
 World.prototype.updateNeighbors = function(){
