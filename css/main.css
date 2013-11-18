@@ -8,12 +8,12 @@ body {
 	font-family	: arial;
 	font-size	: 100%;
 }
+
 #info .top {
+	color       : white;
 	position	: absolute;
-	top		: 0px;
-	width		: 100%;
-	padding		: 5px;
-	text-align	: center;
+	top		    : 5px;
+	right		: 5px;
 }
 #info a {
 	color		: #66F;
@@ -23,6 +23,7 @@ body {
 	text-decoration	: underline;
 }
 #info .bottom {
+	color       : grey;
 	position	: absolute;
 	bottom		: 0px;
 	right		: 5px;

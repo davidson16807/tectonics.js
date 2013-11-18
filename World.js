@@ -95,6 +95,7 @@ World.prototype.simulate = function(timestep){
 		plates[i].deform();
 	}
 	this.updateBorders();
+	this.age += timestep;
 }
 
 World.prototype.updateNeighbors = function(){
