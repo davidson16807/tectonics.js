@@ -13,10 +13,11 @@
 		<script src="vendor/threex/THREEx.screenshot.js"></script>
 		<script src="vendor/threex/THREEx.FullScreen.js"></script>
 		<script src="vendor/threex/THREEx.WindowResize.js"></script>
+		<script src="vendor/jquery-1.10.2.min.js"></script>
 		<script src="vendor/underscore-min.js"></script>
-		<script src="vendor/kdTree-min.js"></script>
-		<script src="vendor/random-0.26.js"></script>
 		<script src="vendor/buckets-minified.js"></script>
+		<script src="vendor/random-0.26.js"></script>
+		<script src="vendor/kdTree-min.js"></script>
 		<script src="Voronoi.js"></script>
 		<script src="Grid.js"></script>
 		<script src="Crust.js"></script>
@@ -27,11 +28,24 @@
 	</head>
 <body>
 	<!-- three.js container -->
-    	<div id="container"></div>
+	<div id="container"></div>
 	<!-- info on screen display -->
 	<div id="info">
 		<div class="top">
-			<div id="age">10.00</div>
+			<table>
+				<tr>
+					<td>Age:</td>
+					<td><span id="age">initializing...</span></td>
+				</tr>
+				<tr>
+					<td>Speed:</td>
+					<td>
+						<div id="speed"></div>
+						<input id="speedControl" type="range" min="0" max="10000000" step="999999"/>
+					</td>
+				</tr>
+			</table>
+			<div></div>
 		</div>
 		<div class="bottom" id="inlineDoc" >
 			- <i>p</i> for screenshot
@@ -51,7 +65,9 @@
 		
 		var stats, scene, renderer, composer, clock;
 		var camera, cameraControl;
-		random = new Random();
+		var random = new Random();
+		var MegaYearPerSecond = 5 //My/second
+		$('#speed').html("1 second : "+format(MegaYearPerSecond,100,2));
 
 		var world = new World(new Grid(function(radius) { return new THREE.IcosahedronGeometry(radius, 5); }), 
 			{});
@@ -70,7 +86,7 @@
 				renderer	= new THREE.CanvasRenderer();
 			}
 			renderer.setSize( window.innerWidth, window.innerHeight );
-			document.getElementById('container').appendChild(renderer.domElement);
+			$('#container').append(renderer.domElement);
 
 			clock = new THREE.Clock();
 			
@@ -89,7 +105,7 @@
 			scene.add(camera);
 
 			// create a camera contol
-			cameraControls	= new THREE.OrbitControls( camera );
+			cameraControls	= new THREE.OrbitControls( camera, $("#container").get(0) );
 
 			// transparently support window resize
 			THREEx.WindowResize.bind(renderer, camera);
@@ -98,19 +114,20 @@
 			// allow 'f' to go fullscreen where this feature is supported
 			if( THREEx.FullScreen.available() ){
 				THREEx.FullScreen.bindKey();
-				document.getElementById('inlineDoc').innerHTML	+= "- <i>f</i> for fullscreen";
+				$('#inlineDoc').append("- <i>f</i> for fullscreen");
 			} 
 			world.draw();
 		}
 		
-		function formatAge(){
-			var age = Math.round(world.age);
-			var units = "My";
-			if (age >= 1000) {
-				age = (age/1000).toFixed(2);
-				units = "By"
+		function format(My, rollover, precision){
+			var quantity = My * 1000000;
+			var units = ['ky', 'My', 'By']
+			var unit = 'yr';
+			while(quantity > rollover) {
+				unit = units.shift();
+				quantity /= 1000;
 			}
-			return age.toString() + " " + units;
+			return quantity.toPrecision(precision).toString() + " " + unit;
 		}
 
 		// animation loop
@@ -119,7 +136,6 @@
 			// loop on request animation loop
 			// - it has to be at the begining of the function
 			// - see details at http://my.opera.com/emoller/blog/2011/12/20/requestanimationframe-for-smart-er-animating
-			var MegaYearPerSecond = 10 //My/second
 			
 			var timestep = clock.getDelta();
 			if (timestep > 1){
@@ -130,7 +146,7 @@
 			
 			world.simulate(MegaYearPerSecond*timestep);
 			
-			document.getElementById("age").innerHTML=formatAge();
+			$("#age").html(format(world.age, 1000, 3));
 			// do the render
 			render();
 
@@ -148,6 +164,12 @@
 			// actually render the scene
 			renderer.render( scene, camera );
 		}
+		
+		$('#speedControl').change(function(e){
+			var yearsPerSecond = $('#speedControl').val();
+			MegaYearPerSecond = yearsPerSecond/1000000;
+			$('#speed').html("1 second : "+format(MegaYearPerSecond, 100, 2));
+		});
 	</script>
 </body>
 </html>
