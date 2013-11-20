@@ -40,8 +40,7 @@
 				<tr>
 					<td>Speed:</td>
 					<td>
-						<div id="speed"></div>
-						<input id="speedControl" type="range" min="0" max="10000000" step="999999"/>
+						<input id="speedControl" type="number" value="5" min="0" max="10" step="1" style="width:30px" /> My/s
 					</td>
 				</tr>
 			</table>
@@ -156,9 +155,7 @@
 		}
 		
 		$('#speedControl').change(function(e){
-			var yearsPerSecond = $('#speedControl').val();
-			MegaYearPerSecond = yearsPerSecond/1000000;
-			$('#speed').html("1 second : "+format(MegaYearPerSecond, 100, 2));
+			MegaYearPerSecond = $('#speedControl').val();
 		});
 	</script>
 </body>
