@@ -233,6 +233,17 @@ Plate.prototype.split = function(){
 	while(plates.length) { world.plates.push(plates.pop()); }
 }
 Plate.prototype.destroy = function(){
+	mesh = this.mesh;
+	this.mesh = void 0;
+	this._material = void 0;
+	this._geometry = void 0;
+	
+	scene.remove(mesh);
+	mesh.material.dispose();
+	mesh.geometry.dispose();
+	
+	delete mesh;
+	
 	for(var i = 0, length = this._vertices.length, vertices = this._vertices; i<length; i++){
 		vertices[i].plate = void 0;
 	}
