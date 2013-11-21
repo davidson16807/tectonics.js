@@ -232,3 +232,8 @@ Plate.prototype.split = function(){
 	world.plates.splice(world.plates.indexOf(this),1);
 	while(plates.length) { world.plates.push(plates.pop()); }
 }
+Plate.prototype.destroy = function(){
+	for(var i = 0, length = this._vertices.length, vertices = this._vertices; i<length; i++){
+		vertices[i].plate = void 0;
+	}
+}

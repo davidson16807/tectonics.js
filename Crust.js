@@ -32,12 +32,6 @@ Crust.prototype.collide = function(vertex1, vertex2){
 		bottom = vertex1;
 		top = vertex2;
 	}
-	if (_.isUndefined(bottom.subductedBy)){
-		bottom.subductedBy = top;
-	}
-	var subducting = bottom.subductedBy.clone().normalize(); 
-	// NOTE: bottom.subductedBy is not always equivalent to top
-	var subducted = bottom.clone().normalize();
 	if (true){//subducted.distanceTo(subducting) > this.world.mountainWidth / this.world.radius){
 		if(this.isContinental(bottom) && this.isContinental(top)){
 			this.dock(top, bottom);
@@ -71,11 +65,9 @@ Crust.prototype.dock = function(top, bottom){
 Crust.prototype.replace = function(replaced, replacement){
 	replaced.setLength(replacement.length());
 	replaced.density = replacement.density;
-	replaced.subductedBy = void 0;
 }
 
 Crust.prototype.destroy = function(vertex){
 	vertex.setLength(world.NA);
 	vertex.density = void 0;
-	vertex.subductedBy = void 0;
 }

@@ -94,6 +94,11 @@ World.prototype.simulate = function(timestep){
 		if(platestemp[i].getSize() <= 100)
 		{
 			plates.splice(plates.indexOf(platestemp[i]),1);
+			scene.remove(platestemp[i].mesh);
+			platestemp[i]._material.dispose();
+			platestemp[i]._geometry.dispose();
+			platestemp[i].destroy();
+			this.updateNeighbors();
 		}
 	}
 	if(plates.length <= 2){
@@ -107,6 +112,13 @@ World.prototype.split = function(){
 	largest.split();
 	this.updateNeighbors();
 	this.updateBorders();
+	
+	scene.remove(largest.mesh);
+	largest._material.dispose();
+	largest._geometry.dispose();
+	largest.destroy();
+	delete largest;
+	
 	scene.clear();
 	this.draw();
 	console.log(this.age);
