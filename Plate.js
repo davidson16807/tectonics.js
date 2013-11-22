@@ -235,6 +235,7 @@ Plate.prototype.split = function(){
 Plate.prototype.destroy = function(){
 	mesh = this.mesh;
 	this.mesh = void 0;
+	this._vertices = void 0;
 	this._material = void 0;
 	this._geometry = void 0;
 	
@@ -243,8 +244,4 @@ Plate.prototype.destroy = function(){
 	mesh.geometry.dispose();
 	
 	delete mesh;
-	
-	for(var i = 0, length = this._vertices.length, vertices = this._vertices; i<length; i++){
-		vertices[i].plate = void 0;
-	}
 }
