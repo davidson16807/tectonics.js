@@ -30,12 +30,40 @@ Plate.prototype.get = function(i){
 	return this._vertices[i];
 }
 Plate.prototype.getSize = function(){
-	return this._vertices.filter(function(vertex){return vertex.length() > this.world.THRESHOLD}).length;
+	var THRESHOLD = this.world.THRESHOLD;
+	return this._vertices.filter(function(vertex){return vertex.length() > THRESHOLD}).length;
+}
+Plate.prototype.getContinentalSize = function(){
+	var SEALEVEL = this.world.SEALEVEL;
+	return this._vertices.filter(function(vertex){return vertex.length() > SEALEVEL}).length;
 }
 Plate.prototype.getRandomPoint = function(){
+	var points = this._vertices.filter(function(vertex){return vertex.length() > this.world.THRESHOLD});
+	var i = Math.floor(Math.random()*points.length);
+	return points[i];
+}
+Plate.prototype.getRandomBorder = function(){
 	var points = this._collideable.filter(function(vertex){return vertex.length() > this.world.THRESHOLD});
 	var i = Math.floor(random.random()*points.length);
 	return points[i];
+}
+Plate.prototype.getRandomJunction = function() {
+	var SEALEVEL = this.world.SEALEVEL;
+	var vertices = this._vertices;
+	var candidates = this._geometry.faces.filter(function(face) { 
+		return  vertices[face.a].length() > SEALEVEL && 
+				vertices[face.b].length() > SEALEVEL && 
+				vertices[face.c].length() > SEALEVEL
+	});
+	if(candidates.length > 0){
+		var i = Math.floor(Math.random()*candidates.length);
+		var selection = candidates[i];
+		return [vertices[selection.a], vertices[selection.b], vertices[selection.c]];
+	}
+	if(this._collideable.length > 0){
+		return [this.getRandomBorder(), this.getRandomBorder(), this.getRandomBorder()];
+	}
+	return [this.getRandomPoint(), this.getRandomPoint(), this.getRandomPoint()];
 }
 Plate.prototype.updateNeighbors = function(){
 	var _this = this;
@@ -145,7 +173,7 @@ Plate.prototype.dock = function(subjugated){
 	var vertices = this._vertices;
 	var subjugatedPlate = subjugated.plate
 	var otherMesh = subjugatedPlate.mesh
-	var mesh = this.mesh.clone();
+	var mesh = this.mesh;
 	
 	var increment =    new THREE.Matrix4().makeRotationAxis( this.eulerPole, 		    -this.increment );
 	increment.multiply(new THREE.Matrix4().makeRotationAxis( subjugatedPlate.eulerPole, -subjugatedPlate.increment ));
@@ -161,10 +189,58 @@ Plate.prototype.dock = function(subjugated){
 		var id = grid.getNearestId(relative);
 		var hit = vertices[id];
 		
-		if(!crust.isContinental(hit) || i > 200){
+		if(!crust.isContinental(hit) || i > 100){
 			crust.replace(hit, subjugated);
 			crust.destroy(subjugated);
 			break;
 		}
 	}
+}
+
+Plate.prototype.split = function(){
+	var grid = this._grid;
+	var gridvertices = grid.template.vertices;
+	var world = this.world;
+	var crust = this._crust;
+	var vertices = this._vertices;
+	
+	platesNum = world.platesNum - world.plates.length
+	plates = _.range(platesNum).map(function(i) { 
+		return new Plate(world, 
+			grid.getRandomPoint(), 
+			grid.getRandomPoint(), 
+			world.getRandomPlateSpeed());
+	});
+	var kdtree = new kdTree(_.range(platesNum).map(function(i) {
+		return {x:plates[i].center.x, y:plates[i].center.y, z:plates[i].center.z, i:i}
+	}), grid.getDistance, ["x","y","z"]);
+	
+	for(var i=0, li = plates.length; i<li; i++){
+		var plate = plates[i];
+		plate.mesh.matrix = this.mesh.matrix;
+		plate.mesh.rotation.setFromRotationMatrix( this.mesh.matrix );
+	}
+	
+	for(var i=0, li = vertices.length; i<li; i++){
+		var vertex = gridvertices[i];
+		var id = kdtree.nearest(vertex,1)[0][0].i;
+		var nearest = plates[id];
+		crust.replace(nearest._vertices[i], vertices[i]);
+	}
+	
+	world.plates.splice(world.plates.indexOf(this),1);
+	while(plates.length) { world.plates.push(plates.pop()); }
+}
+Plate.prototype.destroy = function(){
+	mesh = this.mesh;
+	this.mesh = void 0;
+	this._vertices = void 0;
+	this._material = void 0;
+	this._geometry = void 0;
+	
+	scene.remove(mesh);
+	mesh.material.dispose();
+	mesh.geometry.dispose();
+	
+	delete mesh;
 }

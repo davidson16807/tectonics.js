@@ -14,16 +14,17 @@ THREE.Object3D.prototype.clear = function(){
 function World(grid, optional){
 	optional = optional || {};
 	
-	var continentsNum = optional['continentsNum'] || 3;
-	var continentRadius = optional['continentRadius'] || 1250;
-	var platesNum = optional['platesNum'] || 7;
 	var radius = optional['radius'] || 6367;
+	var continentsNum = optional['continentsNum'] || 3;
+	var continentRadius = (optional['continentRadius'] || 1250) / radius;
 	
 	this.radius = radius;
-	this.mountainWidth = optional['mountainWidth'] || 300;
+	this.platesNum = optional['platesNum'] || 7;
+	this.mountainWidth = (optional['mountainWidth'] || 300) / radius;
 	this.getRandomPlateSpeed = optional['getRandomPlateSpeed'] ||
-		function() { return Math.exp(random.normal(3.492, 0.771)) / radius; }
-		// alternative: random.normal(42.8, 27.7),
+		//function() { return Math.exp(random.normal(3.492, 0.771)) / radius; }
+		// alternative:
+		function() { return random.normal(42.8, 27.7) / radius; }
 		// log normal and normal distributions fit from http://hypertextbook.com/facts/ZhenHuang.shtml
 	this.getRandomPlateDensityEffect = optional['getRandomPlateDensityEffect'] ||
 		function() { return random.normal(0,40); }
@@ -32,31 +33,24 @@ function World(grid, optional){
 	this.grid = grid;
 	this.crust = new Crust(this);
 	this.age = 0;
-	var _this = this;
 	
-	var vertices = grid.initializer(1).vertices
-	console.log(vertices.length);
+	var vertices = grid.initializer(1).vertices;
 	var shields = _.range(continentsNum).map(function(i) {
-		var j = Math.floor(random.random()*vertices.length); 
 		return grid.getRandomPoint();
 	});
 	var getRandomPlateSpeed 		= this.getRandomPlateSpeed;
 	var getRandomPlateDensityEffect = this.getRandomPlateDensityEffect;
-	this.plates = _.range(platesNum).map(function(i) { 
-		return new Plate(_this, 
-			grid.getRandomPoint(), 
-			grid.getRandomPoint(), 
-			getRandomPlateSpeed());
-	});
-	var continentRadius = (continentRadius/this.radius);
+	plate = new Plate(this, 
+		grid.getRandomPoint(), 
+		grid.getRandomPoint(), 
+		getRandomPlateSpeed());
+	this.plates = [plate];
 	for(var i=0, length = vertices.length; i<length; i++) {
 		var vertex = vertices[i];
-		
-		var nearest = this.plates.sort(function(a, b) { return a.center.distanceTo(vertex) - b.center.distanceTo(vertex); })[0];
 		if(_.any(shields.map(function(shield) { return shield.distanceTo(vertex) < continentRadius }))) { 
-			this.crust.create(nearest.get(i), this.LAND, this.LAND_CRUST_DENSITY);
+			this.crust.create(plate.get(i), this.LAND, this.LAND_CRUST_DENSITY);
 		} else {
-			this.crust.create(nearest.get(i), this.OCEAN, this.OCEAN_CRUST_DENSITY);
+			this.crust.create(plate.get(i), this.OCEAN, this.OCEAN_CRUST_DENSITY);
 		}
 	}
 	this.updateNeighbors();
@@ -95,7 +89,32 @@ World.prototype.simulate = function(timestep){
 		plates[i].deform();
 	}
 	this.updateBorders();
-	this.age += timestep;
+	platestemp = plates.slice(0); // copy the array
+	for(i = 0; i<length; i++){
+		if(platestemp[i].getSize() <= 100)
+		{
+			plates.splice(plates.indexOf(platestemp[i]),1);
+			platestemp[i].destroy();
+			this.updateNeighbors();
+		}
+	}
+	if(plates.length <= 2){
+		this.split();
+	}
+	this.age += timestep
+}
+
+World.prototype.split = function(){
+	var largest = this.plates.sort(function(a, b) { return b.getContinentalSize() - a.getContinentalSize(); })[0];
+	largest.split();
+	this.updateNeighbors();
+	this.updateBorders();
+	
+	largest.destroy();
+	
+	scene.clear();
+	this.draw();
+	console.log(this.age);
 }
 
 World.prototype.updateNeighbors = function(){
