@@ -13,11 +13,14 @@
 		<script src="vendor/threex/THREEx.screenshot.js"></script>
 		<script src="vendor/threex/THREEx.FullScreen.js"></script>
 		<script src="vendor/threex/THREEx.WindowResize.js"></script>
+		<script src="vendor/jquery-1.10.2.min.js"></script>
 		<script src="vendor/underscore-min.js"></script>
-		<script src="vendor/kdTree-min.js"></script>
-		<script src="vendor/random-0.26.js"></script>
 		<script src="vendor/buckets-minified.js"></script>
 		<script src="RockColumn.js"></script>
+		<script src="vendor/random-0.26.js"></script>
+		<script src="vendor/kdTree-min.js"></script>
+		<script src="Voronoi.js"></script>
+		<script src="Grid.js"></script>
 		<script src="Crust.js"></script>
 		<script src="Plate.js"></script>
 		<script src="Voronoi.js"></script>
@@ -29,10 +32,23 @@
 	</head>
 <body>
 	<!-- three.js container -->
-    	<div id="container"></div>
+	<div id="container"></div>
 	<!-- info on screen display -->
 	<div id="info">
 		<div class="top">
+			<table>
+				<tr>
+					<td>Age:</td>
+					<td><span id="age">initializing...</span></td>
+				</tr>
+				<tr>
+					<td>Speed:</td>
+					<td>
+						<input id="speedControl" type="number" value="5" min="0" max="10" step="1" style="width:30px" /> My/s
+					</td>
+				</tr>
+			</table>
+			<div></div>
 		</div>
 		<div class="bottom" id="inlineDoc" >
 			- <i>p</i> for screenshot
@@ -52,7 +68,9 @@
 		
 		var stats, scene, renderer, composer, clock;
 		var camera, cameraControl;
-		random = new Random();
+		var random = new Random();
+		var MegaYearPerSecond = 5 //My/second
+		$('#speed').html("1 second : "+format(MegaYearPerSecond,100,2));
 
 		var world = new World(new Grid(function(radius) { return new THREE.IcosahedronGeometry(radius, 5); }), 
 			{});
@@ -72,7 +90,7 @@
 				renderer	= new THREE.CanvasRenderer();
 			}
 			renderer.setSize( window.innerWidth, window.innerHeight );
-			document.getElementById('container').appendChild(renderer.domElement);
+			$('#container').append(renderer.domElement);
 
 			clock = new THREE.Clock();
 			
@@ -82,27 +100,30 @@
 			stats.domElement.style.bottom	= '0px';
 			document.body.appendChild( stats.domElement );
 
-			// create a scene
-			scene = new THREE.Scene();
-
-			// put a camera in the scene
-			camera	= new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 1, 10000 );
-			camera.position.set(0, 0, 5);
-			scene.add(camera);
 
 			// create a camera contol
-			cameraControls	= new THREE.OrbitControls( camera );
+			cameraControls	= new THREE.OrbitControls( view.camera, $("#container").get(0) );
 
 			// transparently support window resize
-			THREEx.WindowResize.bind(renderer, camera);
+			THREEx.WindowResize.bind(renderer, view.camera);
 			// allow 'p' to make screenshot
 			THREEx.Screenshot.bindKey(renderer);
 			// allow 'f' to go fullscreen where this feature is supported
 			if( THREEx.FullScreen.available() ){
 				THREEx.FullScreen.bindKey();
-				document.getElementById('inlineDoc').innerHTML	+= "- <i>f</i> for fullscreen";
+				$('#inlineDoc').append("- <i>f</i> for fullscreen");
 			} 
-			view.draw();
+		}
+		
+		function format(My, rollover, precision){
+			var quantity = My * 1000000;
+			var units = ['ky', 'My', 'By']
+			var unit = 'yr';
+			while(quantity > rollover) {
+				unit = units.shift();
+				quantity /= 1000;
+			}
+			return quantity.toPrecision(precision).toString() + " " + unit;
 		}
 
 		// animation loop
@@ -111,7 +132,6 @@
 			// loop on request animation loop
 			// - it has to be at the begining of the function
 			// - see details at http://my.opera.com/emoller/blog/2011/12/20/requestanimationframe-for-smart-er-animating
-			var MegaYearPerSecond = 10 //My/second
 			
 			var timestep = clock.getDelta();
 			if (timestep > 1){
@@ -123,6 +143,7 @@
 			world.simulate(MegaYearPerSecond*timestep);
 			
 			view.update();
+			$("#age").html(format(world.age, 1000, 3));
 			// do the render
 			render();
 
@@ -138,8 +159,12 @@
 
 
 			// actually render the scene
-			renderer.render( scene, camera );
+			renderer.render( view.scene, view.camera );
 		}
+		
+		$('#speedControl').change(function(e){
+			MegaYearPerSecond = $('#speedControl').val();
+		});
 	</script>
 </body>
 </html>

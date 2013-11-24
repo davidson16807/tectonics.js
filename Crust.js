@@ -5,7 +5,7 @@ function Crust(world){
 
 Crust.prototype.create = function(vertex, template){
 	vertex.content = new RockColumn(this.world,
-		template.elevation, template.thickness, template.density + vertex.plate.densityOffset);
+		template.elevation, template.thickness, template.density);
 }
 
 Crust.prototype.isContinental = function(vertex){
@@ -13,7 +13,7 @@ Crust.prototype.isContinental = function(vertex){
 }
 
 Crust.prototype._canSubduct = function(top, bottom){
-	if(top.content.density > bottom.content.density){
+	if(top.plate.densityOffset > bottom.plate.densityOffset){
 		return false;
 	} else {
 		return true;
@@ -29,12 +29,6 @@ Crust.prototype.collide = function(vertex1, vertex2){
 		bottom = vertex1;
 		top = vertex2;
 	}
-	if (_.isUndefined(bottom.subductedBy)){
-		bottom.subductedBy = top;
-	}
-	var subducting = bottom.subductedBy.clone().normalize(); 
-	// NOTE: bottom.subductedBy is not always equivalent to top
-	var subducted = bottom.clone().normalize();
 	if (true){//subducted.distanceTo(subducting) > this.world.mountainWidth / this.world.radius){
 		if(this.isContinental(bottom) && this.isContinental(top)){
 			this.dock(top, bottom);

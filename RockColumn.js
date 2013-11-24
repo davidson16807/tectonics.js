@@ -21,7 +21,6 @@ RockColumn.prototype.accrete = function(subducted){
 	pressure = (thickness*this.density) +
 			   (heightChange*sialDensity)
 	density  = pressure / (thickness + heightChange)
-	if(density > this.density) { console.log(this.density - density); }
 	this.thickness += heightChange
 	this.density = density
 	this.isostacy();

@@ -17,10 +17,10 @@ function VoronoiSphere(kdtree, pointsNum){
 	size = Math.sqrt(pointsNum);
 	this.lonRange = 2*Math.PI;
 	this.lonMin = -Math.PI;
-	this.lonNum = 2*size;
+	this.lonNum = 4*size;
 	this.latRange = Math.PI;
 	this.latMin = -Math.PI / 2;
-	this.latNum = size;
+	this.latNum = 2*size;
 	var raster = []
 	for(var i = 0, j=0, li = this.latNum, lj = this.lonNum; i<li; i++){
 		var latLine = []
@@ -28,7 +28,7 @@ function VoronoiSphere(kdtree, pointsNum){
 			var lat = i*this.latRange/li + this.latMin;
 			var lon = j*this.lonRange/lj + this.lonMin;
 			var vertex = _toCartesian({lat:lat, lon:lon});
-			var id = kdtree.nearest({x:vertex.x, y:vertex.y, z:vertex.z},1)[0][0].i;
+			var id = kdtree.nearest(vertex,1)[0][0].i;
 			latLine[j] = id;
 		}
 		raster[i] = latLine;
