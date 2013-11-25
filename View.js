@@ -1,3 +1,6 @@
+var _hashPlate = function(plate){
+	return plate.mesh.uuid
+}
 
 function View(world){
 	this.NA = 0.1;
@@ -7,7 +10,7 @@ function View(world){
 	this.SEALEVEL = 1.03;
 	this.LAND = 1.04;
 	this.world = world;
-	this.meshes = new buckets.Dictionary();
+	this.meshes = new buckets.Dictionary(_hashPlate);
 
 	// create a scene
 	this.scene = new THREE.Scene();
@@ -17,7 +20,7 @@ function View(world){
 	this.camera.position.set(0, 0, 5);
 	this.scene.add(this.camera);
 	
-	geometry	= world.grid.initializer(this.THRESHOLD);
+	var geometry	= world.grid.initializer(this.THRESHOLD);
 	this.asthenosphere	= new THREE.Mesh( geometry, new THREE.MeshBasicMaterial({color:0x000000, transparent:true, opacity:0.2}) );
 	this.asthenosphere.renderDepth = -1;
 	this.scene.add(this.asthenosphere);
@@ -30,7 +33,7 @@ function View(world){
 
 View.prototype.update = function(){
 	for(var i=0, li = this.world.plates.length, plates = world.plates; i<li; i++){
-		mesh = this.meshes.get(plates[i].mesh.uuid);
+		mesh = this.meshes.get(plates[i]);
 		mesh.matrix = plates[i].mesh.matrix;
 		mesh.rotation.setFromRotationMatrix(mesh.matrix);
 		mesh.geometry.verticesNeedUpdate = true;
@@ -56,14 +59,15 @@ View.prototype.add = function(plate){
 	var geometry = world.grid.initializer(this.SEALEVEL);
 	var material = new THREE.MeshBasicMaterial({color: Math.random() * 0xffffff, transparent:true, opacity:1});
 	var mesh = new THREE.Mesh( geometry, material );
+	
 	this.scene.add(mesh);
-	this.meshes.set(plate.mesh.uuid, mesh);
+	this.meshes.set(plate, mesh);
 }
 
 View.prototype.remove = function(plate){
-	var mesh = this.meshes.get(plate.mesh.uuid);
+	var mesh = this.meshes.get(plate);
 	if(!mesh){return;}
-	this.meshes.remove(plate.mesh.uuid);
+	this.meshes.remove(plate);
 	
 	this.scene.remove(mesh);
 	mesh.material.dispose();
