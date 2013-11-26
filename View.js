@@ -21,7 +21,7 @@ function View(world){
 	this.scene.add(this.camera);
 	
 	var geometry	= world.grid.initializer(this.THRESHOLD);
-	this.asthenosphere	= new THREE.Mesh( geometry, new THREE.MeshBasicMaterial({color:0x000000, transparent:true, opacity:0.2}) );
+	this.asthenosphere	= new THREE.Mesh( geometry, new THREE.MeshBasicMaterial({color:0x000000}) );
 	this.asthenosphere.renderDepth = -1;
 	this.scene.add(this.asthenosphere);
 	
@@ -33,44 +33,61 @@ function View(world){
 
 View.prototype.update = function(){
 	for(var i=0, li = this.world.plates.length, plates = world.plates; i<li; i++){
-		mesh = this.meshes.get(plates[i]);
-		mesh.matrix = plates[i].mesh.matrix;
-		mesh.rotation.setFromRotationMatrix(mesh.matrix);
-		mesh.geometry.verticesNeedUpdate = true;
-		var vertices = mesh.geometry.vertices
+		meshes = this.meshes.get(plates[i]);
+		for(var key in meshes){
+			var mesh = meshes[key]
+			mesh.matrix = plates[i].mesh.matrix;
+			mesh.rotation.setFromRotationMatrix(mesh.matrix);
+			mesh.geometry.verticesNeedUpdate = true;
+		}
+		plateMesh = plates[i].mesh;
 		for(var j=0, lj = plates[i]._vertices.length, cells = plates[i]._vertices; j<lj; j++){
 			var content = cells[j].content;
 			if(content){
 				if(content.displacement > this.world.SEALEVEL){
-					vertices[j].setLength(this.LAND);
+					meshes.land.geometry.vertices[j].setLength(this.LAND);
 				} else if (!content.subductedBy){
-					vertices[j].setLength(this.OCEAN);
+					meshes.land.geometry.vertices[j].setLength(this.OCEAN);
 				} else {
-					vertices[j].setLength(this.NA);
+					meshes.land.geometry.vertices[j].setLength(this.NA);
+				}
+				if(content.displacement > this.world.SEALEVEL && Math.abs(plateMesh.localToWorld(cells[j].clone()).y) > 0.7){
+					meshes.ice.geometry.vertices[j].setLength(1.05);
+				} else {
+					meshes.ice.geometry.vertices[j].setLength(this.OCEAN);
 				}
 			} else {
-				vertices[j].setLength(this.NA);
+				meshes.land.geometry.vertices[j].setLength(this.NA);
+				meshes.ice.geometry.vertices[j].setLength(this.NA);
 			}
 		}
 	}
 }
 
 View.prototype.add = function(plate){
-	var geometry = world.grid.initializer(this.SEALEVEL);
-	var material = new THREE.MeshBasicMaterial({color: Math.random() * 0xffffff, transparent:true, opacity:1});
-	var mesh = new THREE.Mesh( geometry, material );
+	var geometry = world.grid.initializer(this.NA);
+	var material = new THREE.MeshBasicMaterial({color: Math.random() * 0xffffff});
+	var land = new THREE.Mesh( geometry, material );
+	this.scene.add(land);
 	
-	this.scene.add(mesh);
-	this.meshes.set(plate, mesh);
+	var geometry = world.grid.initializer(this.NA);
+	var material = new THREE.MeshBasicMaterial({color: 0xffffff});
+	var ice = new THREE.Mesh( geometry, material );
+	this.scene.add(ice);
+	
+	this.meshes.set(plate, {land: land, ice: ice});
 }
 
 View.prototype.remove = function(plate){
-	var mesh = this.meshes.get(plate);
-	if(!mesh){return;}
+	var meshes = this.meshes.get(plate);
+	if(!meshes){return;}
 	this.meshes.remove(plate);
-	
-	this.scene.remove(mesh);
-	mesh.material.dispose();
-	mesh.geometry.dispose();
-	delete mesh;
+	for(var key in meshes){
+		var mesh = meshes[key]
+		meshes[key] = void 0;
+		this.scene.remove(mesh);
+		mesh.material.dispose();
+		mesh.geometry.dispose();
+		delete mesh;
+	}
 }
