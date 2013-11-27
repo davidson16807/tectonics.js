@@ -1,13 +1,3 @@
-THREE.Object3D.prototype.clear = function(){
-    var children = this.children;
-    for(var i = children.length-1;i>=0;i--){
-        var child = children[i];
-        child.clear();
-        this.remove(child);
-    };
-	//NOTE: the following fixes an issues with redrawing scenes where transparent objects are involved.
-	renderer.render( scene, camera );
-};
 
 // grid: 	 an object of type Grid
 // optional: A list of optional parameters. Optional parameters default to values seen on early earth
@@ -46,32 +36,31 @@ function World(grid, optional){
 		getRandomPlateSpeed());
 	this.plates = [plate];
 	for(var i=0, length = vertices.length; i<length; i++) {
-		var vertex = vertices[i];
-		if(_.any(shields.map(function(shield) { return shield.distanceTo(vertex) < continentRadius }))) { 
-			this.crust.create(plate.get(i), this.LAND, this.LAND_CRUST_DENSITY);
+		var vertex = plate._vertices[i];
+		if(_.any(shields.map(function(shield) { return shield.distanceTo(vertices[i]) < continentRadius }))) { 
+			this.crust.create(vertex, this.land);
 		} else {
-			this.crust.create(plate.get(i), this.OCEAN, this.OCEAN_CRUST_DENSITY);
+			this.crust.create(vertex, this.ocean);
 		}
+		vertex.content.isostacy();
 	}
 	this.updateNeighbors();
 	this.updateBorders();
-	
-	var geometry	= this.grid.initializer(this.SEALEVEL);
-	var material	= new THREE.MeshBasicMaterial({color:0x0a0a32, transparent:false, opacity:0.5});
-	this.ocean	= new THREE.Mesh( geometry, new THREE.MeshBasicMaterial({color:0x0a0a32, transparent:false, opacity:1}) ); 
-	geometry	= this.grid.initializer(this.THRESHOLD);
-	material	= new THREE.MeshBasicMaterial({color:0x000000, transparent:false});
-	this.asthenosphere	= new THREE.Mesh( geometry, new THREE.MeshBasicMaterial({color:0x000000, transparent:false}) ); 
 }
 
-World.prototype.NA = 0.1;
-World.prototype.THRESHOLD = 1.0;
-World.prototype.SUBDUCTED = 1.01;
-World.prototype.OCEAN = 1.02
-World.prototype.SEALEVEL = 1.03;
-World.prototype.LAND = 1.04;
-World.prototype.LAND_CRUST_DENSITY = 2700;
-World.prototype.OCEAN_CRUST_DENSITY = 2890; // Carlson & Raskin 1984
+World.prototype.SEALEVEL = 3682;
+World.prototype.mantleDensity=3300
+World.prototype.waterDensity=1026  
+World.prototype.ocean =
+ new RockColumn(void 0,
+				-3682, // Charette & Smith 2010
+                7100,  // +/- 800, White McKenzie and O'nions 1992
+				2890) // Carlson & Raskin 1984
+World.prototype.land =
+ new RockColumn(void 0,
+				840, //Sverdrup & Fleming 1942
+                36900, // +/- 2900, estimate for shields, Zandt & Ammon 1995
+				2700) 
 
 World.prototype.simulate = function(timestep){
 	var length = this.plates.length;
@@ -81,14 +70,13 @@ World.prototype.simulate = function(timestep){
 		plates[i].move(timestep);
 	}
 	this.updateMatrices();
+	this.updateBorders();
 	for(i = 0; i<length; i++){
 		plates[i].rift();
-		plates[i]._geometry.verticesNeedUpdate = true;
 	}
 	for(i = 0; i<length; i++){
 		plates[i].deform();
 	}
-	this.updateBorders();
 	platestemp = plates.slice(0); // copy the array
 	for(i = 0; i<length; i++){
 		if(platestemp[i].getSize() <= 100)
@@ -112,8 +100,6 @@ World.prototype.split = function(){
 	
 	largest.destroy();
 	
-	scene.clear();
-	this.draw();
 	console.log(this.age);
 }
 
@@ -138,14 +124,4 @@ World.prototype.updateMatrices = function(){
 		plates[i].mesh.updateMatrix();
 		plates[i].mesh.updateMatrixWorld();
 	}
-}
-
-World.prototype.draw = function(){
-	var length = this.plates.length;
-	var plates = this.plates;
-	for(var j = 0; j<length; j++){
-		scene.add(plates[j].mesh);
-	}
-	scene.add(this.asthenosphere);
-	scene.add(this.ocean);
 }

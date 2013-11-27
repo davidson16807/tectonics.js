@@ -16,12 +16,18 @@
 		<script src="vendor/jquery-1.10.2.min.js"></script>
 		<script src="vendor/underscore-min.js"></script>
 		<script src="vendor/buckets-minified.js"></script>
+		<script src="RockColumn.js"></script>
 		<script src="vendor/random-0.26.js"></script>
 		<script src="vendor/kdTree-min.js"></script>
 		<script src="Voronoi.js"></script>
 		<script src="Grid.js"></script>
 		<script src="Crust.js"></script>
 		<script src="Plate.js"></script>
+		<script src="Voronoi.js"></script>
+		<script src="Grid.js"></script>
+		<script src="Layer.js"></script>
+		<script src="Style.js"></script>
+		<script src="View.js"></script>
 		<script src="World.js"></script>
 
 		<link  href="css/main.css" rel="stylesheet"/>
@@ -70,6 +76,7 @@
 
 		var world = new World(new Grid(function(radius) { return new THREE.IcosahedronGeometry(radius, 5); }), 
 			{});
+		var view = new View(world, satelliteStyle);
 		if( !init() ) animate();
 
 		// init the scene
@@ -88,19 +95,12 @@
 
 			clock = new THREE.Clock();
 
-			// create a scene
-			scene = new THREE.Scene();
-
-			// put a camera in the scene
-			camera	= new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 1, 10000 );
-			camera.position.set(0, 0, 5);
-			scene.add(camera);
 
 			// create a camera contol
-			cameraControls	= new THREE.OrbitControls( camera, $("#container").get(0) );
+			cameraControls	= new THREE.OrbitControls( view.camera, $("#container").get(0) );
 
 			// transparently support window resize
-			THREEx.WindowResize.bind(renderer, camera);
+			THREEx.WindowResize.bind(renderer, view.camera);
 			// allow 'p' to make screenshot
 			THREEx.Screenshot.bindKey(renderer);
 			// allow 'f' to go fullscreen where this feature is supported
@@ -108,7 +108,6 @@
 				THREEx.FullScreen.bindKey();
 				$('#inlineDoc').append("- <i>f</i> for fullscreen");
 			} 
-			world.draw();
 		}
 		
 		function format(My, rollover, precision){
@@ -138,6 +137,7 @@
 			
 			world.simulate(MegaYearPerSecond*timestep);
 			
+			view.update();
 			$("#age").html(format(world.age, 1000, 3));
 			// do the render
 			render();
@@ -151,7 +151,7 @@
 
 
 			// actually render the scene
-			renderer.render( scene, camera );
+			renderer.render( view.scene, view.camera );
 		}
 		
 		$('#speedControl').change(function(e){

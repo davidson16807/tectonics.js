@@ -1,5 +1,5 @@
-_isDefined = function(value){
-	return value != void 0;
+_isFilled = function(vertex){
+	return vertex.content != void 0;
 }
 _hashVector = function(vector){
 	return vector.id.toString()
@@ -16,44 +16,45 @@ function Plate(world, center, eulerPole, angularSpeed)
 	//efficiency attributes, AKA attributes of attributes:
 	this._grid = world.grid;
 	this._crust = world.crust;
-	this._geometry = world.grid.initializer(world.NA);
+	this._geometry = world.grid.initializer(1.01);
 	this._vertices = this._geometry.vertices;
-	this._material	= new THREE.MeshBasicMaterial({color: 0x506e1e, transparent:false, opacity:1});
+	this._material	= new THREE.MeshBasicMaterial();
+	this._neighbors = [];
 	this.mesh	= new THREE.Mesh( this._geometry, this._material ); 
 	
 	for(var i = 0, length = this._vertices.length, vertices = this._vertices; i<length; i++){
 		vertices[i].plate = this;
 		vertices[i].id = i;
+		vertices[i].content = void 0;
 	}
 }
 Plate.prototype.get = function(i){
 	return this._vertices[i];
 }
 Plate.prototype.getSize = function(){
-	var THRESHOLD = this.world.THRESHOLD;
-	return this._vertices.filter(function(vertex){return vertex.length() > THRESHOLD}).length;
+	return this._vertices.filter(function(vertex){return _isFilled(vertex)}).length;
 }
+
 Plate.prototype.getContinentalSize = function(){
-	var SEALEVEL = this.world.SEALEVEL;
-	return this._vertices.filter(function(vertex){return vertex.length() > SEALEVEL}).length;
+	var crust = this.world.crust;
+	return this._vertices.filter(function(vertex){ return crust.isContinental(vertex) }).length;
 }
 Plate.prototype.getRandomPoint = function(){
-	var points = this._vertices.filter(function(vertex){return vertex.length() > this.world.THRESHOLD});
+	var points = this._vertices.filter(function(vertex){return _isFilled(vertex)});
 	var i = Math.floor(Math.random()*points.length);
 	return points[i];
 }
 Plate.prototype.getRandomBorder = function(){
-	var points = this._collideable.filter(function(vertex){return vertex.length() > this.world.THRESHOLD});
+	var points = this._collideable.filter(function(vertex){return _isFilled(vertex)});
 	var i = Math.floor(random.random()*points.length);
 	return points[i];
 }
 Plate.prototype.getRandomJunction = function() {
-	var SEALEVEL = this.world.SEALEVEL;
 	var vertices = this._vertices;
 	var candidates = this._geometry.faces.filter(function(face) { 
-		return  vertices[face.a].length() > SEALEVEL && 
-				vertices[face.b].length() > SEALEVEL && 
-				vertices[face.c].length() > SEALEVEL
+		return  crust.isContinental(vertices[face.a]) && 
+				crust.isContinental(vertices[face.b]) && 
+				crust.isContinental(vertices[face.c])
 	});
 	if(candidates.length > 0){
 		var i = Math.floor(Math.random()*candidates.length);
@@ -73,13 +74,12 @@ Plate.prototype.updateNeighbors = function(){
 Plate.prototype.updateBorders = function(){
 	var collideable = [];
 	var riftable = [];
-	var THRESHOLD = this.world.THRESHOLD;
 	var a,b,c;
 	for(var i=0, vertices = this._vertices, length = this._geometry.faces.length; i<length; i++){
 		var face = this._geometry.faces[i];
-		a = vertices[face.a].length()> THRESHOLD;
-		b = vertices[face.b].length()> THRESHOLD;
-		c = vertices[face.c].length()> THRESHOLD;
+		a = _isFilled(vertices[face.a]);
+		b = _isFilled(vertices[face.b]);
+		c = _isFilled(vertices[face.c]);
 		if((a != b || b != c)){
 			if(a){ collideable[face.a] = vertices[face.a]; }
 			else { riftable[face.a] = vertices[face.a]; }
@@ -94,7 +94,11 @@ Plate.prototype.updateBorders = function(){
 }
 Plate.prototype.move = function(timestep){
 	this.increment = this.angularSpeed * timestep;
-	this.mesh.rotateOnAxis(this.eulerPole, this.increment);
+	var rotationMatrix = new THREE.Matrix4();
+	rotationMatrix.makeRotationAxis( this.eulerPole, this.angularSpeed * timestep );
+	rotationMatrix.multiply( this.mesh.matrix ); 
+	this.mesh.matrix = rotationMatrix;
+	this.mesh.rotation.setFromRotationMatrix( this.mesh.matrix );
 }
 
 Plate.prototype._getIntersections = function(absolute, plates, grid, getIntersection){
@@ -113,7 +117,7 @@ Plate.prototype._getIntersections = function(absolute, plates, grid, getIntersec
 
 _getCollisionIntersection = function(id, plate) {
 	var intersected = plate._vertices[id];
-	if (intersected.length() > plate.world.THRESHOLD && !plate._collideable[id]) {
+	if (intersected.content && !plate._collideable[id]) {
 		return intersected;
 	}
 }
@@ -126,10 +130,10 @@ Plate.prototype.deform = function(){
 	var vertex, intersected;
 	for(i=0, li = collideable.length; i<li; i++){
 		var vertex = collideable[i];
-		if(_.isUndefined(vertex)){
+		if(_.isUndefined(vertex) || _.isUndefined(vertex.content)){
 			continue;
 		}
-		var absolute = mesh.localToWorld(vertex.clone().normalize());
+		var absolute = mesh.localToWorld(vertex.clone());
 		var intersected = this._getIntersections(absolute, plates, grid, _getCollisionIntersection);
 		if(intersected){
 			this._crust.collide(vertex, intersected);
@@ -140,7 +144,7 @@ Plate.prototype.deform = function(){
 
 _getRiftIntersection = function(id, plate) {
 	var intersected = plate._vertices[id];
-	if (intersected.length() > plate.world.THRESHOLD || plate._riftable[id]) {
+	if (intersected.content || plate._riftable[id]) {
 		return intersected;
 	}
 }
@@ -151,18 +155,18 @@ Plate.prototype.rift = function(){
 	var grid = this.world.grid;
 	var vertex, intersected;
 	var riftable = this._riftable;
-	var OCEAN = this.world.OCEAN;
-	var OCEAN_CRUST_DENSITY = this.world.OCEAN_CRUST_DENSITY;
-	for(i=0, li = this._riftable.length; i<li; i++){
+	var ocean = this.world.ocean;
+	for(i=0, li = riftable.length; i<li; i++){
 		vertex = riftable[i];
-		if(_.isUndefined(vertex)){
+		if(_.isUndefined(vertex) || !_.isUndefined(vertex.content)){
 			continue;
 		}
-		var absolute = mesh.localToWorld(vertex.clone().normalize());
+		var absolute = mesh.localToWorld(vertex.clone());
 		intersected = this._getIntersections(absolute, plates, grid, _getRiftIntersection);
 		if(!intersected){
-			this._crust.create(vertex, OCEAN, OCEAN_CRUST_DENSITY);
-			geometry.verticesNeedUpdate  = true;
+			this._crust.create(vertex, ocean);
+			vertex.content.isostacy();
+			geometry.verticesNeedUpdate = true;
 		}
 	}
 }
@@ -217,6 +221,8 @@ Plate.prototype.split = function(){
 	
 	for(var i=0, li = plates.length; i<li; i++){
 		var plate = plates[i];
+		world.plates.push(plate);
+		view.add(plate);
 		plate.mesh.matrix = this.mesh.matrix;
 		plate.mesh.rotation.setFromRotationMatrix( this.mesh.matrix );
 	}
@@ -229,18 +235,19 @@ Plate.prototype.split = function(){
 	}
 	
 	world.plates.splice(world.plates.indexOf(this),1);
-	while(plates.length) { world.plates.push(plates.pop()); }
 }
 Plate.prototype.destroy = function(){
+	view.remove(this);
+	
 	mesh = this.mesh;
 	this.mesh = void 0;
 	this._vertices = void 0;
 	this._material = void 0;
 	this._geometry = void 0;
 	
-	scene.remove(mesh);
 	mesh.material.dispose();
 	mesh.geometry.dispose();
 	
 	delete mesh;
+	
 }
