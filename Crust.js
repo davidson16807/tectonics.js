@@ -1,25 +1,22 @@
+
 function Crust(world){
 	this.world = world;
 }
 
-Crust.prototype.create = function(vertex, elevation, densityOffset){
-	vertex.setLength(elevation);
-	vertex.density = densityOffset + vertex.plate.densityOffset;
+Crust.prototype.create = function(vertex, template){
+	vertex.content = new RockColumn(this.world,
+		template.elevation, template.thickness, template.density);
 }
 
 Crust.prototype.isContinental = function(vertex){
-	return vertex.length() > this.world.SEALEVEL;
-	//return vertex.density > 2800;
+	return vertex.content && vertex.content.isContinental()
 }
 
-
 Crust.prototype._canSubduct = function(top, bottom){
-	if(top.elevation > bottom.elevation){
-		return true;
-	} else if(top.density < bottom.density){
-		return true;
-	} else {
+	if(top.plate.densityOffset > bottom.plate.densityOffset){
 		return false;
+	} else {
+		return true;
 	}
 }
 
@@ -36,8 +33,8 @@ Crust.prototype.collide = function(vertex1, vertex2){
 		if(this.isContinental(bottom) && this.isContinental(top)){
 			this.dock(top, bottom);
 		} else {
+			top.content.accrete(bottom.content);
 			this.destroy(bottom);
-			top.setLength(this.world.LAND);
 		}
 	}
 }
@@ -63,11 +60,11 @@ Crust.prototype.dock = function(top, bottom){
 }
 
 Crust.prototype.replace = function(replaced, replacement){
-	replaced.setLength(replacement.length());
-	replaced.density = replacement.density;
+	replaced.content = replacement.content;
+	replaced.subductedBy = void 0;
 }
 
 Crust.prototype.destroy = function(vertex){
-	vertex.setLength(world.NA);
-	vertex.density = void 0;
+	vertex.content = void 0;
+	vertex.subductedBy = void 0;
 }
