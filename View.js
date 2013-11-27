@@ -2,6 +2,42 @@ var _hashPlate = function(plate){
 	return plate.mesh.uuid
 }
 
+function Layer(view, height, material, condition) { 
+	this.height = height;
+	this.condition = condition;
+	
+	geometry = world.grid.initializer(0.1);
+	this.mesh = new THREE.Mesh( geometry, material );
+	this.vertices = geometry.vertices;
+	view.scene.add(this.mesh);
+}
+Layer.prototype.update = function(plate){
+	var mesh = this.mesh;
+	var vertices = this.vertices;
+	mesh.matrix = plate.mesh.matrix;
+	mesh.rotation.setFromRotationMatrix(mesh.matrix);
+	mesh.geometry.verticesNeedUpdate = true;
+	
+	for(var j=0, lj = plate._vertices.length, cells = plate._vertices; j<lj; j++){
+		if(cells[j].content && this.condition(cells[j])){
+			vertices[j].setLength(this.height);
+		} else if (cells[j].content){
+			vertices[j].setLength(1.02);
+		} else {
+			vertices[j].setLength(0.1);
+		}
+	}
+}
+Layer.prototype.destroy = function(){
+	mesh = this.mesh;
+	this.mesh = void 0;
+	this.vertices = void 0;
+	this.view.scene.remove(mesh);
+	mesh.material.dispose();
+	mesh.geometry.dispose();
+	delete mesh;
+}
+
 function View(world){
 	this.NA = 0.1;
 	this.THRESHOLD = 1.0;
@@ -33,58 +69,33 @@ function View(world){
 
 View.prototype.update = function(){
 	for(var i=0, li = this.world.plates.length, plates = world.plates; i<li; i++){
-		meshes = this.meshes.get(plates[i]);
-		for(var key in meshes){
-			var mesh = meshes[key]
-			mesh.matrix = plates[i].mesh.matrix;
-			mesh.rotation.setFromRotationMatrix(mesh.matrix);
-			mesh.geometry.verticesNeedUpdate = true;
-		}
-		plateMesh = plates[i].mesh;
-		for(var j=0, lj = plates[i]._vertices.length, cells = plates[i]._vertices; j<lj; j++){
-			var content = cells[j].content;
-			if(content){
-				if(content.displacement > this.world.SEALEVEL){
-					meshes.land.geometry.vertices[j].setLength(this.LAND);
-				} else if (!content.subductedBy){
-					meshes.land.geometry.vertices[j].setLength(this.OCEAN);
-				} else {
-					meshes.land.geometry.vertices[j].setLength(this.NA);
-				}
-				if(content.displacement > this.world.SEALEVEL && Math.abs(plateMesh.localToWorld(cells[j].clone()).y) > 0.7){
-					meshes.ice.geometry.vertices[j].setLength(1.05);
-				} else {
-					meshes.ice.geometry.vertices[j].setLength(this.OCEAN);
-				}
-			} else {
-				meshes.land.geometry.vertices[j].setLength(this.NA);
-				meshes.ice.geometry.vertices[j].setLength(this.NA);
-			}
+		layers = this.meshes.get(plates[i]);
+		for(var j=0; j<layers.length; j++){
+			layers[j].update(plates[i]);
 		}
 	}
 }
 
 View.prototype.add = function(plate){
-	var geometry = world.grid.initializer(this.NA);
-	var material = new THREE.MeshBasicMaterial({color: Math.random() * 0xffffff});
-	var land = new THREE.Mesh( geometry, material );
-	this.scene.add(land);
+	var sealevel = this.world.SEALEVEL
+	var land = new Layer(this, 1.04, 
+		new THREE.MeshBasicMaterial({color: Math.random() * 0xffffff}), 
+		function(cell){return cell.content.displacement > sealevel});
+	var ice = new Layer(this, 1.05, 
+		new THREE.MeshBasicMaterial({color: 0xffffff}), 
+		function(cell){return cell.content.displacement > sealevel && Math.abs(plate.mesh.localToWorld(cell.clone()).y) > 0.7});
 	
-	var geometry = world.grid.initializer(this.NA);
-	var material = new THREE.MeshBasicMaterial({color: 0xffffff});
-	var ice = new THREE.Mesh( geometry, material );
-	this.scene.add(ice);
-	
-	this.meshes.set(plate, {land: land, ice: ice});
+	this.meshes.set(plate, [land, ice]);
 }
 
 View.prototype.remove = function(plate){
-	var meshes = this.meshes.get(plate);
-	if(!meshes){return;}
+	var layers = this.meshes.get(plate);
+	if(!layers){return;}
 	this.meshes.remove(plate);
-	for(var key in meshes){
-		var mesh = meshes[key]
-		meshes[key] = void 0;
+	for(var i=0; i<layers.length; i++){
+		mesh = layers[i].mesh;
+		layers[i].mesh = void 0;
+		layers[i].vertices = void 0;
 		this.scene.remove(mesh);
 		mesh.material.dispose();
 		mesh.geometry.dispose();
