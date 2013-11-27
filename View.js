@@ -62,7 +62,7 @@ function View(world){
 	this.scene.add(this.asthenosphere);
 	
 	var geometry	= world.grid.initializer(this.SEALEVEL);
-	this.ocean	= new THREE.Mesh( geometry, new THREE.MeshBasicMaterial({color:0x0a0a32, transparent:true, opacity:0.5}) ); 
+	this.ocean	= new THREE.Mesh( geometry, new THREE.MeshBasicMaterial({color:0x0a0a32}) ); 
 	this.ocean.renderDepth = -2;
 	this.scene.add(this.ocean);
 }
@@ -78,14 +78,19 @@ View.prototype.update = function(){
 
 View.prototype.add = function(plate){
 	var sealevel = this.world.SEALEVEL
-	var land = new Layer(this, 1.04, 
-		new THREE.MeshBasicMaterial({color: Math.random() * 0xffffff}), 
+	var epipelagic = sealevel - 200;
+	var mountain = sealevel + 5000;
+	var land = new Layer(this, 1.05, 
+		new THREE.MeshBasicMaterial({color: 0x506e1e}), 
 		function(cell){return cell.content.displacement > sealevel});
-	var ice = new Layer(this, 1.05, 
+	var ice = new Layer(this, 1.06, 
 		new THREE.MeshBasicMaterial({color: 0xffffff}), 
-		function(cell){return cell.content.displacement > sealevel && Math.abs(plate.mesh.localToWorld(cell.clone()).y) > 0.7});
+		function(cell){return cell.content.displacement > epipelagic && Math.abs(plate.mesh.localToWorld(cell.clone()).y) > 0.8});
+	var shallow = new Layer(this, 1.04, 
+		new THREE.MeshBasicMaterial({color: 0x0a968c}), 
+		function(cell){return cell.content.displacement > epipelagic});
 	
-	this.meshes.set(plate, [land, ice]);
+	this.meshes.set(plate, [land, ice, shallow]);
 }
 
 View.prototype.remove = function(plate){
