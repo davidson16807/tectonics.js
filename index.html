@@ -56,19 +56,23 @@
 	</div> 
 
 	<script type="x-shader/x-fragment" id="fragmentshader">
+		varying vec4 modelpos;
+		
 		void main() {
-		  gl_FragColor = vec4(0.0,  // R
-							  1.0,  // G
-							  0.0,  // B
-							  1.0); // A
+		  if (modelpos.y > 0.9 || modelpos.y < -0.9) { 
+			  gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0); //rgba
+		  } else {
+			  gl_FragColor = vec4(0.31,0.43,0.12,1.0); //rgba
+		  }
 		}
+
 	</script>
 	
 	<script type="x-shader/x-vertex" id="vertexshader">
-		varying vec2 vUv;
+		varying vec4 modelpos;
 
 		void main() {
-			vUv = uv;
+			modelpos = modelMatrix * vec4( position, 1.0 );
 			gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
 		}
 	</script>

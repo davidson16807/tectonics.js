@@ -26,7 +26,7 @@ function View(world){
 	this.scene.add(this.asthenosphere);
 	
 	var geometry	= world.grid.initializer(this.SEALEVEL);
-	this.ocean	= new THREE.Mesh( geometry, new THREE.MeshBasicMaterial({color:0x0a0a32, transparent:true, opacity:0.5}) ); 
+	this.ocean	= new THREE.Mesh( geometry, new THREE.MeshBasicMaterial({color:0x0a0a32}) ); 
 	this.ocean.renderDepth = -2;
 	this.scene.add(this.ocean);
 }
