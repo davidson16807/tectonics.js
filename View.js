@@ -21,14 +21,9 @@ function View(world){
 	this.scene.add(this.camera);
 	
 	var geometry	= world.grid.initializer(this.THRESHOLD);
-	this.asthenosphere	= new THREE.Mesh( geometry, new THREE.MeshBasicMaterial({color:0x000000, transparent:true, opacity:0.2}) );
+	this.asthenosphere	= new THREE.Mesh( geometry, new THREE.MeshBasicMaterial({color:0x0a0a32}) );
 	this.asthenosphere.renderDepth = -1;
 	this.scene.add(this.asthenosphere);
-	
-	var geometry	= world.grid.initializer(this.SEALEVEL);
-	this.ocean	= new THREE.Mesh( geometry, new THREE.MeshBasicMaterial({color:0x0a0a32}) ); 
-	this.ocean.renderDepth = -2;
-	this.scene.add(this.ocean);
 }
 
 View.prototype.update = function(){
@@ -38,26 +33,34 @@ View.prototype.update = function(){
 		mesh.rotation.setFromRotationMatrix(mesh.matrix);
 		mesh.geometry.verticesNeedUpdate = true;
 		var vertices = mesh.geometry.vertices
+		var displacement = mesh.material.attributes.displacement.value;
 		for(var j=0, lj = plates[i]._vertices.length, cells = plates[i]._vertices; j<lj; j++){
 			var content = cells[j].content;
 			if(content){
 				if(content.displacement > this.world.SEALEVEL){
 					vertices[j].setLength(this.LAND);
-				} else if (!content.subductedBy){
-					vertices[j].setLength(this.OCEAN);
 				} else {
-					vertices[j].setLength(this.NA);
+					vertices[j].setLength(this.OCEAN);
 				}
+				displacement[j] = content.displacement;
 			} else {
 				vertices[j].setLength(this.NA);
+				displacement[j] = 0.0;
 			}
 		}
+		mesh.material.attributes.displacement.needsUpdate = true;
 	}
 }
 
 View.prototype.add = function(plate){
 	var geometry = world.grid.initializer(this.SEALEVEL);
 	var material = new THREE.ShaderMaterial({
+		attributes: {
+		  displacement: { type: 'f', value: [] }
+		},
+		uniforms: {
+		  sealevel: 	{ type: 'f', value: this.world.SEALEVEL }
+		},
 		vertexShader: $('#vertexshader').text(),
 		fragmentShader: $('#fragmentshader').text()
 	  })
