@@ -3,12 +3,8 @@ var _hashPlate = function(plate){
 }
 
 function View(world){
-	this.NA = 0.1;
 	this.THRESHOLD = 1.0;
-	this.SUBDUCTED = 1.01;
-	this.OCEAN = 1.02;
 	this.SEALEVEL = 1.03;
-	this.LAND = 1.04;
 	this.world = world;
 	this.meshes = new buckets.Dictionary(_hashPlate);
 
@@ -37,14 +33,8 @@ View.prototype.update = function(){
 		for(var j=0, lj = plates[i]._vertices.length, cells = plates[i]._vertices; j<lj; j++){
 			var content = cells[j].content;
 			if(content){
-				if(content.displacement > this.world.SEALEVEL){
-					vertices[j].setLength(this.LAND);
-				} else {
-					vertices[j].setLength(this.OCEAN);
-				}
 				displacement[j] = content.displacement;
 			} else {
-				vertices[j].setLength(this.NA);
 				displacement[j] = 0.0;
 			}
 		}
