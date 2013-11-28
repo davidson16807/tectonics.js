@@ -57,7 +57,10 @@ View.prototype.update = function(){
 
 View.prototype.add = function(plate){
 	var geometry = world.grid.initializer(this.SEALEVEL);
-	var material = new THREE.MeshBasicMaterial({color: Math.random() * 0xffffff, transparent:true, opacity:1});
+	var material = new THREE.ShaderMaterial({
+		vertexShader: $('#vertexshader').text(),
+		fragmentShader: $('#fragmentshader').text()
+	  })
 	var mesh = new THREE.Mesh( geometry, material );
 	
 	this.scene.add(mesh);

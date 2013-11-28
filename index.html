@@ -55,6 +55,24 @@
 		</div> 
 	</div> 
 
+	<script type="x-shader/x-fragment" id="fragmentshader">
+		void main() {
+		  gl_FragColor = vec4(0.0,  // R
+							  1.0,  // G
+							  0.0,  // B
+							  1.0); // A
+		}
+	</script>
+	
+	<script type="x-shader/x-vertex" id="vertexshader">
+		varying vec2 vUv;
+
+		void main() {
+			vUv = uv;
+			gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+		}
+	</script>
+	
 	<script type="text/javascript">
 		//standards:
 		// all points are vectors
