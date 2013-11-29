@@ -51,8 +51,8 @@ View.prototype.add = function(plate){
 		uniforms: {
 		  sealevel: 	{ type: 'f', value: this.world.SEALEVEL }
 		},
-		vertexShader: $('#vertexshader').text(),
-		fragmentShader: $('#fragmentshader').text()
+		vertexShader: orthographicShader,
+		fragmentShader: satelliteShader
 	  })
 	var mesh = new THREE.Mesh( geometry, material );
 	
