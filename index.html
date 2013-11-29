@@ -76,7 +76,7 @@
 
 		var world = new World(new Grid(function(radius) { return new THREE.IcosahedronGeometry(radius, 5); }), 
 			{});
-		var view = new View(world);
+		var view = new View(world, debugStyle);
 		if( !init() ) animate();
 
 		// init the scene
