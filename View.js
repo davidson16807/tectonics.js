@@ -3,8 +3,8 @@ var _hashPlate = function(plate){
 }
 
 function View(world, style){
-	this.THRESHOLD = 1.0;
-	this.SEALEVEL = 1.03;
+	this.THRESHOLD = 0.99;
+	this.SEALEVEL = 1.0;
 	this.world = world;
 	this.style = style;
 	this.meshes = new buckets.Dictionary(_hashPlate);
