@@ -11,7 +11,9 @@ var satelliteShader = _multiline(function() {/**
 
 	varying float vDisplacement;
 	varying vec4 vPosition;
+	
 	uniform  float sealevel;
+	
 	const vec4 NONE = vec4(0.0,0.0,0.0,0.0); //rgba
 	const vec4 OCEAN = vec4(0.04,0.04,0.2,1.0);
 	const vec4 SHALLOW = vec4(0.04,0.58,0.54,1.0);
@@ -24,9 +26,7 @@ var satelliteShader = _multiline(function() {/**
 		float epipelagic = sealevel - 1000.0;
 		float maxheight = sealevel + 15000.0; 
 		
-		if (vDisplacement < 1.0) {
-			gl_FragColor = NONE;
-		} else if (vDisplacement < epipelagic) {
+		if (vDisplacement < epipelagic) {
 			gl_FragColor = OCEAN;
 		} else if (vDisplacement < sealevel) {
 			float x = smoothstep(epipelagic, sealevel, vDisplacement);
@@ -49,7 +49,8 @@ satelliteStyle = new Style(
 			  displacement: { type: 'f', value: [] }
 			},
 			uniforms: {
-			  sealevel: 	{ type: 'f', value: world.SEALEVEL }
+			  sealevel: 	{ type: 'f', value: world.SEALEVEL },
+			  dropoff: 	    { type: 'f', value: 0.99 }
 			},
 			vertexShader: orthographicShader,
 			fragmentShader: satelliteShader
@@ -65,8 +66,10 @@ var debugShader = _multiline(function() {/**
 
 	varying float vDisplacement;
 	varying vec4 vPosition;
+	
 	uniform  float sealevel;
 	uniform  vec3 color;
+	
 	const vec4 BOTTOM = vec4(0.0,0.0,0.0,1.0);//rgba
 	const vec4 TOP = vec4(1.0,1.0,1.0,1.0);
 
@@ -93,6 +96,7 @@ debugStyle = new Style(
 			uniforms: {
 			  sealevel: 	{ type: 'f', value: world.SEALEVEL },
 			  color: 	    { type: 'c', value: new THREE.Color(Math.random() * 0xffffff) },
+			  dropoff: 	    { type: 'f', value: 0.1 }
 			},
 			vertexShader: orthographicShader,
 			fragmentShader: debugShader

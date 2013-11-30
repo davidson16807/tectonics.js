@@ -4,14 +4,14 @@ var _multiline = function(f) {
 
 var orthographicShader = _multiline(function() {/**   
 
-	const float NA = 0.99;
 	const float OCEAN = 1.00;
 	const float LAND = 1.01;
 	
 	attribute float displacement;
 	varying float vDisplacement;
-	uniform  float sealevel;
 	varying vec4 vPosition;
+	uniform float sealevel;
+	uniform float dropoff;
 
 	void main() {
 		vDisplacement = displacement;
@@ -19,7 +19,7 @@ var orthographicShader = _multiline(function() {/**
 		
 		vec4 displaced;
 		if(displacement < 1.0){
-			displaced = vec4( position * NA, 1.0 );
+			displaced = vec4( position * dropoff, 1.0 );
 		} else if (displacement < sealevel){
 			displaced = vec4( position * OCEAN, 1.0 );
 		} else {
