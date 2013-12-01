@@ -9,3 +9,8 @@ layout: default
 <p>The model is open source and licensed under version 2.0 of the Creative Commons <a href="http://creativecommons.org/licenses/by-nc/2.0/">Non Commercial Attribution</a> License.</p>
 
 <h2>NEWS</h2>
+{% for post in site.posts limit:10 %}
+	<h3><a href="{{ post.url }}">{{ post.title }}</a></h3>
+	<p>{{ post.date | date: "%B, %-d %Y" }}</p>
+	<div>{{ post.content }}</div>
+{% endfor %}
