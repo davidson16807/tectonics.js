@@ -125,6 +125,12 @@ img
     clear:left;
 	margin: 2.129% 23.6% 2.129% 12.4%;
 }
+.article .date
+{
+	margin-left: -61%
+	font-size: 81.3%; 
+	color: lightgrey;
+}
 .footer
 {
 	background-color:Black;
