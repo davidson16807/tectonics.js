@@ -25,4 +25,4 @@ Certain workarounds I mentioned before, such as caching plate borders, have stil
 
 There is only one caveat: tectonics.js will have to be run in a *modern* browser. Internet explorer 6 doesn't count. Later versions of internet explorer will only work by virtue of complying with W3C standards. If there are any issues with even the most recent version of IE I won't hesitate to drop support for it. 
 
-To see the simulator for yourself, just click [here](http://davidson16807.github.io/tectonics.js)
+To see the simulator for yourself, just click [here](http://davidson16807.github.io/tectonics.js) &#9632;
