@@ -67,8 +67,34 @@
 		</div>
 		<div class="bottomright">
 			<ul id="inlineDoc">
-				<li><i>p</i> for screenshot</li>
+				<li id="screenshotLabel" style="display:none"><i>p</i> for screenshot</li>
+				<li id="fullscreenLabel" style="display:none"><i>f</i> for fullscreen</li>
 			</ul>
+		</div> 
+		<div class="vcenter">
+			<div id="noWebGl" class="failover hcenter">
+				<h2>Well, darn</h2>
+				<p>It looks like your using a web browser without WebGL.</p>
+				<p>
+					WebGL is a technology that allow users to run high-end 3d graphics from their web-browser. 
+					Other technologies exist that can display simple 3d graphics to the user (canvas, svg, flash, etc.),
+					but at present WebGL is the only web technology that can offer the ability to run code on a GPU.
+				</p>
+				<p>
+					Writing a tectonics simulator in a browser is hard stuff and its only recently become possible in 3d. 
+					We're going to need all the tools we can get.
+				</p>
+			</div>
+			<div id="noJs" class="failover hcenter">
+				<h2>Might want to check your settings, there</h2>
+				<p>It looks like your using a surfing the web without javascript.</p>
+				<p></p>
+			</div>
+			<div id="ie6" class="failover hcenter">
+				<h2>Aw, come on!</h2>
+				<p>Are you really still using IE6?</p>
+				<p>Do you know I had to write a work around just to even display this message?</p>
+			</div>
 		</div> 
 	</div> 
 	
@@ -92,19 +118,20 @@
 		var world = new World(new Grid(function(radius) { return new THREE.IcosahedronGeometry(radius, 5); }), 
 			{});
 		var view = new View(world, satelliteStyle);
-		if( !init() ) animate();
+		if( Detector.webgl ){
+			if( !init() ) animate();
+			$('#screenshotLabel').toggle();
+		} else {
+			$('#noWebGl').toggle();
+		}
 
 		// init the scene
 		function init(){
-			if( Detector.webgl ){
-				renderer = new THREE.WebGLRenderer({
-					antialias		: true,	// to get smoother output
-					preserveDrawingBuffer	: true	// to allow screenshot
-				});
-				renderer.setClearColor( 0x000000, 1 );
-			}else{
-				renderer	= new THREE.CanvasRenderer();
-			}
+			renderer = new THREE.WebGLRenderer({
+				antialias		: true,	// to get smoother output
+				preserveDrawingBuffer	: true	// to allow screenshot
+			});
+			renderer.setClearColor( 0x000000, 1 );
 			renderer.setSize( window.innerWidth, window.innerHeight );
 			$('#container').append(renderer.domElement);
 
@@ -121,7 +148,7 @@
 			// allow 'f' to go fullscreen where this feature is supported
 			if( THREEx.FullScreen.available() ){
 				THREEx.FullScreen.bindKey();
-				$('#inlineDoc').append("<li><i>f</i> for fullscreen</li>");
+				$('#fullscreenLabel').toggle();
 			} 
 		}
 		
