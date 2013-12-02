@@ -40,7 +40,7 @@ details p
 	right		: 1em;
 }
 .info a {
-	color: #666;
+	color: grey;
 	text-decoration	: none;
 }
 .info a:hover {
@@ -58,7 +58,6 @@ details p
 	text-decoration	: none;
 }
 .header a:hover {
-	color : white;
 	text-decoration	: none;
 }
 .header h1
@@ -73,4 +72,8 @@ details p
 	font-size: 76.3%;
 	margin-right: 3.44%;
 	text-align: right;
+}
+.navigation a:hover {
+	color: grey;
+	text-decoration	: none;
 }
