@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
 	<head>
-		<title>tectonics.js - 3d plate tectonics in your web browser</title>
+		<title>Tectonics.js - 3d plate tectonics in your web browser</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 		
@@ -38,8 +38,19 @@
 	<!-- three.js container -->
 	<div id="container"></div>
 	<!-- info on screen display -->
-	<div id="info">
-		<div class="top">
+	<div class="info">
+		<div class="topleft">
+			<div class="header">
+				<h1><a href="blog/">Tectonics.js</a></h1>
+				<div class="navigation">
+					<a href="blog/faq.html">FAQ</a>&nbsp;
+					<a href="blog/index.html">BLOG</a>&nbsp;
+					<a href="blog/contact.html">CONTACT</a>&nbsp;
+					<a href="http://github.com/davidson16807/tectonics.js">CODE</a>&nbsp;
+				</div>
+			</div>
+		</div>
+		<div class="topright">
 			<table>
 				<tr>
 					<td>Age:</td>
@@ -54,8 +65,10 @@
 			</table>
 			<div></div>
 		</div>
-		<div class="bottom" id="inlineDoc" >
-			- <i>p</i> for screenshot
+		<div class="bottomright">
+			<ul id="inlineDoc">
+				<li><i>p</i> for screenshot</li>
+			</ul>
 		</div> 
 	</div> 
 	
@@ -108,7 +121,7 @@
 			// allow 'f' to go fullscreen where this feature is supported
 			if( THREEx.FullScreen.available() ){
 				THREEx.FullScreen.bindKey();
-				$('#inlineDoc').append("- <i>f</i> for fullscreen");
+				$('#inlineDoc').append("<li><i>f</i> for fullscreen</li>");
 			} 
 		}
 		

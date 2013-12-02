@@ -3,29 +3,74 @@ body {
 	padding		: 0;
 	margin		: 0;
 
-	color		: #222;
-	background-color: #BBB;
-	font-family	: arial;
+	color       : white;
+	font-family : Helvetica, Arial, sans-serif;
 	font-size	: 100%;
 }
 
-#info .top {
-	color       : white;
+summary
+{ 
+	font-size: 138%; 
+    font-weight:bold;
+}
+details
+{
+	margin-top: 1.315%	
+}
+details p 
+{ 
+	margin-left: 1.315%; 
+}
+
+.info .topleft {
 	position	: absolute;
-	top		    : 5px;
-	right		: 5px;
+	top		    : 1em;
+	left		: 1em;
 }
-#info a {
-	color		: #66F;
-	text-decoration	: none;
+.info .topright {
+	position	: absolute;
+	top		    : 1em;
+	right		: 1em;
+    font-weight:bold;
 }
-#info a:hover {
-	text-decoration	: underline;
-}
-#info .bottom {
+.info .bottomright {
 	color       : grey;
 	position	: absolute;
-	bottom		: 0px;
-	right		: 5px;
-	padding		: 5px;
+	bottom		: 0em;
+	right		: 1em;
+}
+.info a {
+	color: #666;
+	text-decoration	: none;
+}
+.info a:hover {
+	text-decoration	: underline;
+}
+.info td {
+	padding: 0 0.5em 0 0.5em;
+}
+
+.header {
+    font-weight:bold;
+}
+.header a {
+	color : white;
+	text-decoration	: none;
+}
+.header a:hover {
+	color : white;
+	text-decoration	: none;
+}
+.header h1
+{
+	font-family: Garamond, Hoefler Text, Free Serif, serif;
+	font-size: 261%;
+	margin-bottom: 0.502%; 
+	margin-top: 0.502%;
+}
+.navigation
+{
+	font-size: 76.3%;
+	margin-right: 3.44%;
+	text-align: right;
 }
