@@ -1,0 +1,11 @@
+---
+layout: default
+---
+<h2>Developer's Web Log</h2>
+{% for post in site.posts limit:10 %}
+	<h3><a href="{{ post.url }}">{{ post.title }}</a></h3>
+	<p class="date">{{ post.date | date: "%B, %-d %Y" }}</p>
+	<div>
+		{{ post.content }}
+	</div>
+{% endfor %}

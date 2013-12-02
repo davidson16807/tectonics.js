@@ -8,11 +8,36 @@ layout: default
 <p>The model is open source and licensed under version 2.0 of the Creative Commons <a href="http://creativecommons.org/licenses/by-nc/2.0/">Non Commercial Attribution</a> License.</p>
 <h3 style="text-align:center">To see the model for yourself, <a href="http://davidson16807.github.io/tectonics.js">click here</a></h3>
 
-<h2>NEWS</h2>
-{% for post in site.posts limit:10 %}
-	<h3><a href="{{ post.url }}">{{ post.title }}</a></h3>
-	<p class="date">{{ post.date | date: "%B, %-d %Y" }}</p>
-	<div>
-		{{ post.content }}
-	</div>
-{% endfor %}
+<h2>FREQUENTLY ASKED QUESTIONS</h2>
+<details>
+<summary>Why not use fractals?</summary>
+<p>Fractals generate superficially realistic terrain using processes that radically differ from reality. This enables them to operate many orders of magnitude faster than tectonic simulators, but this comes at a cost. A fractal world has no history - users cannot look at a landscape and say why or how that landscape formed the way it did, at least not in reference to real life processes. An author, for instance, would have a harder time breathing life into a fractal world because such details would have to be tacked on after the fact in a way that loosely conforms to what's already been generated. </p>
+</details>
+<details>
+<summary>Why 3D?</summary>
+<p>I like to fall back on a favorite quote of mine:</p>
+<span class="quotation">We need to make sure that... simulations and reality agree, because generally when they don't reality wins.</span><span class="attribution">-Elon Musk</span>
+<p>2D models go a long ways towards reducing the code needed to express themselves. In a 2D model, grid cells can be represented in 2D arrays, and contents can be moved between them through a series of integer vectors. In a 3D model, decisions such as these are nowhere near as straightforward. Developers must answer basic questions concerning how grid cells are arranged and how cell contents move. The bright side of this scheme, however, is that reality fights on your side. Some planet features for instance form naturally since they're simple products of geometry. Island arcs are perhaps the best example - 2d models based upon similar principles appear to have difficulty forming island chains along anything other than straight lines, but properly shaped arcs form here as emergent behavior.</p>
+		</details>
+<details>
+<summary>Why a Web Browser?</summary>
+<p>Tectonics.js seeks to be accessible to a wide audience of world building enthusiasts. Many aspring storytellers and world building enthusiasts in general like the idea of using models that can form realistic landmasses for their worlds but lack the skill to develop their own. A web application allows just about anyone to type in a site and create their own imaginary worlds.</p>
+<p>Javascript is classically an odd choice for a simulator of any sort. It's a problem most have addressed in the past with faster languages like C or even FORTRAN. However, processing power continues to increase at an exponentiating rate. The speed problem is still tangeable, even today, but steps can be taken against it: parallel processing and graphics shaders already cut down processing time by many orders of magnitude, and as techniques such as transform buffers and general purpose graphics processing enter into the realm of web development, runtimes can be cut down even further. With some judicious optimization, planets with tens of thousands of grid cells are easily simulated, today. Instantaneous generation is currently out of the question, but you can still generate worlds in the time you'd be willing to sit in front of a computer. On occassion, I've fallen asleep and woke up to find a planet that's ten times older than the universe :)</p> 
+<p>If you're, say, writing a novel and want to emphasize the quality of worlds over quantity, then this project is meant for you.</p>
+</details>
+<details>
+<summary>How does it work?</summary>
+<p>It's largely a geometry problem. You start out with any number of roughly equidistant points on a sphere representing samples of the crust. Points can be arranged in any way so long as they're equidistant. The points are divided up by plates. Plates are randomly assigned a speed and what's known as an euler pole. Every plate in real life has these. From there on, plate motion is simulated in timesteps of given length.</p>
+<p>Points that overlap represent subduction - the denser of the two sinks below the other, just like in real life. There, it continues to move for a predefined distance until its said to detach from the lithosphere. In other words, it's destroyed from memory. The predefined distance a point travels before destruction effectively describes the width of mountains on a planet. I've wanted to incorporate models to describe this distance mechanistically, but all research I've read so far suggest this would require adding way more parameters that could not go on to be used elsewhere, and I do want to keep this thing parsimonious.</p>
+<p>As opposed to overlaps, gaps forming between points represent rifting. Here, a new point is formed that represents ocean crust. Each plate stores its points in a grid matching the planet's original configuration, and points are added to this grid - this way, points don't start looking messy as time progresses.</p>
+<p>There's other submodels, but this is the gist of it. For more information, you can check the <a href="http://sourceforge.net/p/pytectonics/wiki/Home/">wiki</a> of an earlier project which tectonics.js has been based on. As time goes on, the project is expected to develop its own wiki on github </p>
+</details>
+<details>
+<summary>Can I build off your model?</summary>
+<p>Yes. Tectonics.js is licensed under version 2.0 of the <a href="http://creativecommons.org/licenses/by-nc/2.0/">Creative Commons Non-Commercial Attribution license</a>. This means you are free to share and modify the model in most any way you please. There are however two restrictions: </p>
+<ol>
+	<li>You must give credit. Don't worry, I'm not militant as to where.</li>
+	<li>You must not charge people for it (ads and donations, however, are notwithstanding when used external to the program).</li>
+</ol>
+<p>If you do wind up building off the model I'd like to hear it, if only to know someone finds the work useful. Along the same lines, if you feel there's something you'd like to contribute without making your own distribution, give me a pull request - I'll work changes in and make sure your name appears on the credits list.</p>
+</details>

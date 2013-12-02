@@ -70,8 +70,8 @@ details p
 .navigation
 {
 	font-size: 76.3%;
-	margin-right: 3.44%;
-	text-align: right;
+	margin-left: 23.6%;
+	width: 161%;
 }
 .navigation a:hover {
 	color: grey;
