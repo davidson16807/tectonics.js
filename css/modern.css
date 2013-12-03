@@ -21,7 +21,6 @@ details p {
     font-weight:bold;
 }
 .bottomright {
-	color       : grey;
 	position	: absolute;
 	bottom		: 0em;
 	right		: 1em;
