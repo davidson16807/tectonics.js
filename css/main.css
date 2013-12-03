@@ -1,5 +1,4 @@
 body {
-	overflow	: hidden;
 	padding		: 0;
 	margin		: 0;
 
@@ -7,14 +6,6 @@ body {
 	background-color: black;
 	font-family : Helvetica, Arial, sans-serif;
 	font-size	: 100%;
-}
-
-a {
-	color: grey;
-	text-decoration	: none;
-}
-a:hover {
-	text-decoration	: underline;
 }
 
 h1,h2,h3 {
@@ -39,47 +30,6 @@ details p {
 
 sup { font-size: 61%; }
 
-.info {
-	color: white;
-}
-.info .topleft {
-	position	: absolute;
-	top		    : 1em;
-	left		: 1em;
-}
-.info .topright {
-	position	: absolute;
-	top		    : 1em;
-	right		: 1em;
-    font-weight:bold;
-}
-.info .bottomright {
-	color       : grey;
-	position	: absolute;
-	bottom		: 0em;
-	right		: 1em;
-}
-.info .bottomleft {
-	color       : grey;
-	position	: absolute;
-	bottom		: 0em;
-	left		: 1em;
-}
-.info .hcenter {
-	width: 61.8%;
-	margin-left: auto;
-	margin-right: auto;
-}
-.info .hcenter h2{
-	text-align:center;
-}
-.info .vcenter {
-	position: absolute;
-	top: 23.6%;
-}
-.info td {
-	padding: 0 0.5em 0 0.5em;
-}
 .hidden {
 	display:none;
 }
