@@ -35,65 +35,62 @@
 		<script src="Style.js"></script>
 		<script src="Projection.js"></script>
 
-		<link  href="css/app.css" rel="stylesheet"/>
 		<link  href="css/main.css" rel="stylesheet"/>
+		<link  href="css/modern.css" rel="stylesheet"/>
+		<link  href="css/app.css" rel="stylesheet"/>
 	</head>
 <body>
 	<!-- three.js container -->
 	<div id="container"></div>
 	<!-- info on screen display -->
-	<div class="info">
-		<div class="topleft">
-			<div class="header">
-				<h1><a href="blog/">Tectonics.js</a></h1>
-				<div class="navigation">
-					<a href="blog/index.html">ABOUT</a>&nbsp;
-					<a href="blog/news.html">BLOG</a>&nbsp;
-					<a href="blog/contact.html">CONTACT</a>&nbsp;
-					<a href="http://github.com/davidson16807/tectonics.js">CODE</a>&nbsp;
-				</div>
-			</div>
+	<div class="topleft header">
+		<h1><a href="blog/">Tectonics.js</a></h1>
+		<div class="navigation">
+			<a href="blog/index.html">ABOUT</a>&nbsp;
+			<a href="blog/news.html">BLOG</a>&nbsp;
+			<a href="blog/contact.html">CONTACT</a>&nbsp;
+			<a href="http://github.com/davidson16807/tectonics.js">CODE</a>&nbsp;
 		</div>
-		<div class="topright">
-			<table>
-				<tr>
-					<td>Age:</td>
-					<td><span id="age">initializing...</span></td>
-				</tr>
-				<tr>
-					<td>Speed:</td>
-					<td>
-						<input id="speedControl" type="number" value="5" min="0" max="10" step="1" style="width:30px" /> My/s
-					</td>
-				</tr>
-			</table>
-			<div></div>
+	</div>
+	<div class="topright parameters">
+		<table>
+			<tr>
+				<td>Age:</td>
+				<td><span id="age">initializing...</span></td>
+			</tr>
+			<tr>
+				<td>Speed:</td>
+				<td>
+					<input id="speedControl" type="number" value="5" min="0" max="10" step="1" style="width:30px" /> My/s
+				</td>
+			</tr>
+		</table>
+		<div></div>
+	</div>
+	<div class="bottomright">
+		<ul>
+			<li id="screenshotLabel" class="hidden"><i>p</i> for screenshot</li>
+			<li id="fullscreenLabel" class="hidden"><i>f</i> for fullscreen</li>
+		</ul>
+	</div> 
+	<div class="vcenter">
+		<div id="noWebGl" class="hidden hcenter dialog">
+			<h2>Well, darn</h2>
+			<p>It looks like your using a web browser without WebGL.</p>
+			<p>WebGL is a technology that allow users to run high-end 3d graphics from their web-browser. Other technologies exist that can display simple 3d graphics to the user (canvas, svg, flash, etc.), but at present WebGL is the only web technology that allows developers to send their own code to a GPU.
+			</p>
+			<p>Writing a tectonics simulator in a browser is hard stuff. We're going to need all the tools we can get.
+			</p>
+			<p>It looks like you're using Chrome/Firefox/Safari. There is support for WebGL, but you'll have to modify some settings. <a>Here</a> is a link with some instructions on getting setup.
+			</p>
+			<p>Until then, here's a video of what you're missing out on:
+			</p>
 		</div>
-		<div class="bottomright">
-			<ul>
-				<li id="screenshotLabel" class="hidden"><i>p</i> for screenshot</li>
-				<li id="fullscreenLabel" class="hidden"><i>f</i> for fullscreen</li>
-			</ul>
-		</div> 
-		<div class="vcenter">
-			<div id="noWebGl" class="hidden hcenter">
-				<h2>Well, darn</h2>
-				<p>It looks like your using a web browser without WebGL.</p>
-				<p>WebGL is a technology that allow users to run high-end 3d graphics from their web-browser. Other technologies exist that can display simple 3d graphics to the user (canvas, svg, flash, etc.), but at present WebGL is the only web technology that allows developers to send their own code to a GPU.
-				</p>
-				<p>Writing a tectonics simulator in a browser is hard stuff. We're going to need all the tools we can get.
-				</p>
-				<p>It looks like you're using Chrome/Firefox/Safari. There is support for WebGL, but you'll have to modify some settings. <a>Here</a> is a link with some instructions on getting setup.
-				</p>
-				<p>Until then, here's a video of what you're missing out on:
-				</p>
-			</div>
-			<div id="noJs" class="hidden hcenter">
-				<h2>Might want to check your settings, there</h2>
-				<p>It looks like your using a surfing the web without javascript.</p>
-				<p>Javascript is a fundamental component of the modern internet</p>
-			</div>
-		</div> 
+		<div id="noJs" class="hidden hcenter dialog">
+			<h2>Might want to check your settings, there</h2>
+			<p>It looks like your using a surfing the web without javascript.</p>
+			<p>Javascript is a fundamental component of the modern internet</p>
+		</div>
 	</div> 
 	
 	<script type="text/javascript">

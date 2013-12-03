@@ -2,46 +2,17 @@ body {
 	overflow	: hidden;
 }
 
-.info {
-	color: white;
+.dialog {
+	color: black;
+	background-color: white;
+	padding: 3.44%;
+	border-radius: 1em;
 }
-.info .topleft {
-	position	: absolute;
-	top		    : 1em;
-	left		: 1em;
-}
-.info .topright {
-	position	: absolute;
-	top		    : 1em;
-	right		: 1em;
-    font-weight:bold;
-}
-.info .bottomright {
-	color       : grey;
-	position	: absolute;
-	bottom		: 0em;
-	right		: 1em;
-}
-.info .bottomleft {
-	color       : grey;
-	position	: absolute;
-	bottom		: 0em;
-	left		: 1em;
-}
-.info .hcenter {
-	width: 61.8%;
-	margin-left: auto;
-	margin-right: auto;
-}
-.info .hcenter h2{
-	text-align:center;
-}
-.info .vcenter {
-	position: absolute;
-	top: 23.6%;
-}
-.info td {
+.parameters td {
 	padding: 0 0.5em 0 0.5em;
+}
+.instructions {
+	color: grey;
 }
 .info a {
 	color: grey;
