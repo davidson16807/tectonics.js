@@ -8,24 +8,22 @@
     <meta name="keywords" content="Tectonics, Simulation, 3D, World Building, Terrain Generation, Procedural Generation, Plate Tectonics, Continental Drift, Modeling, Earth Science, Open Source, Software, Development, Developers, Projects, Downloads, Github, Carl Davidson" />
     <title>Tectonics.js: 3D Plate Tectonics in your web browser</title>
     <link href="blog.css" rel="stylesheet" type="text/css"/>
+    <link href="{{ site.url }}/css/main.css" rel="stylesheet" type="text/css"/>
+    <link href="{{ site.url }}/css/modern.css" rel="stylesheet" type="text/css"/>
 </head>
 	<body>
-		<div style="position: relative;">
-			<a href="index.html" class="icon"><img src="icon2.png" width="170em" height="170em"/></a>  
-			<div class="linkless header land">
-				<a href="index.html"><h1> Tectonics.js</h1></a>
-				<p> 3D Plate Tectonics in your web browser</p>
-			</div>  
-			<div class="linkless nav tundra"><b><ul>
-				<li><a href="http://davidson16807.github.io/tectonics.js/">RUN</a></li>
-				<li><a href="index.html">ABOUT</a></li>
-				<li><a href="news.html">BLOG</a></li>
-				<li><a href="contact.html">CONTACT</a></li>
-			</ul></b></div>
-		</div>	
+		<div class="topleft header">
+			<h1><a href="index.html">Tectonics.js</a></h1>
+			<div class="navigation">
+				<a href="index.html">ABOUT</a>&nbsp;
+				<a href="news.html">BLOG</a>&nbsp;
+				<a href="contact.html">CONTACT</a>&nbsp;
+				<a href="http://github.com/davidson16807/tectonics.js">CODE</a>&nbsp;
+			</div>
+			<!--a href="index.html" class="icon"><img src="icon2.png" width="170em" height="170em"/></a--> 
+		</div>
 		{% include ads.html %}
-		
-		<div class="article bright">
+		<div class="article">
 			{{ content }}
 		</div>
 	</body>
