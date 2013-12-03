@@ -30,6 +30,54 @@ details p {
 
 sup { font-size: 61%; }
 
+.info {
+	color: white;
+}
+.info .topleft {
+	position	: absolute;
+	top		    : 1em;
+	left		: 1em;
+}
+.info .topright {
+	position	: absolute;
+	top		    : 1em;
+	right		: 1em;
+    font-weight:bold;
+}
+.info .bottomright {
+	color       : grey;
+	position	: absolute;
+	bottom		: 0em;
+	right		: 1em;
+}
+.info .bottomleft {
+	color       : grey;
+	position	: absolute;
+	bottom		: 0em;
+	left		: 1em;
+}
+.info .hcenter {
+	width: 61.8%;
+	margin-left: auto;
+	margin-right: auto;
+}
+.info .hcenter h2{
+	text-align:center;
+}
+.info .vcenter {
+	position: absolute;
+	top: 23.6%;
+}
+.info td {
+	padding: 0 0.5em 0 0.5em;
+}
+.info a {
+	color: grey;
+	text-decoration	: none;
+}
+.info a:hover {
+	text-decoration	: underline;
+}
 .hidden {
 	display:none;
 }
@@ -54,9 +102,11 @@ sup { font-size: 61%; }
 	color: grey;
 	text-decoration	: none;
 }
-.article{
+.white {
 	color: black;
 	background-color: white;
+}
+.article{
 	padding: 3.44%;
 	width: 61.8%;
 	position: absolute;
