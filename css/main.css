@@ -37,6 +37,11 @@ details p {
 	margin-left: 1.315%; 
 }
 
+sup { font-size: 61%; }
+
+.info {
+	color: white;
+}
 .info .topleft {
 	position	: absolute;
 	top		    : 1em;
@@ -75,9 +80,7 @@ details p {
 .info td {
 	padding: 0 0.5em 0 0.5em;
 }
-
-.failover {
-	color: white;
+.hidden {
 	display:none;
 }
 
@@ -100,4 +103,13 @@ details p {
 .navigation a:hover {
 	color: grey;
 	text-decoration	: none;
+}
+.article{
+	color: black;
+	background-color: white;
+	padding: 3.44%;
+	width: 61.8%;
+	position: absolute;
+	top:   23%;
+	right: 3.44%;
 }
