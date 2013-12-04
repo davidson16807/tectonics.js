@@ -10,7 +10,7 @@ details p {
 }
 
 .topleft {
-	position	: absolute;
+	position	: fixed;
 	top		    : 1em;
 	left		: 1em;
 }
