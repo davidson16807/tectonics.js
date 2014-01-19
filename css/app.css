@@ -10,6 +10,7 @@ body {
 }
 .parameters td {
 	padding: 0 0.5em 0 0.5em;
+    font-weight:bold;
 }
 .instructions {
 	color: grey;
