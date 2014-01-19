@@ -59,8 +59,11 @@ img
 }
 .icon
 {
-	float:left; 
-    margin: 0.813% 1.315% 0 0.813%;
+	position	: absolute;
+	width       : 40%;
+	bottom		: -1em;
+	left		: -15%;
+	z-index		: -1;
 }
 .ads
 {
