@@ -59,7 +59,7 @@ img
 }
 .icon
 {
-	position	: absolute;
+	position	: fixed;
 	width       : 40%;
 	bottom		: -1em;
 	left		: -15%;
