@@ -2,12 +2,9 @@ var _multiline = function(f) {
   return f.toString().split('\n').slice(1, -1).join('\n');
 }
 
-Style = function(getForeground, getBackground){
-	this.getForeground = getForeground
-	this.getBackground = getBackground
-}
+fragmentShaders = {}
 
-var satelliteShader = _multiline(function() {/**   
+fragmentShaders.satellite = _multiline(function() {/**   
 
 	varying float vDisplacement;
 	varying vec4 vPosition;
@@ -74,27 +71,9 @@ var satelliteShader = _multiline(function() {/**
 	}
 
 **/});
-satelliteStyle = new Style(
-	function(world){
-		return new THREE.ShaderMaterial({
-			attributes: {
-			  displacement: { type: 'f', value: [] }
-			},
-			uniforms: {
-			  sealevel: 	{ type: 'f', value: world.SEALEVEL },
-			  dropoff: 	    { type: 'f', value: 0.99 }
-			},
-			vertexShader: orthographicShader,
-			fragmentShader: satelliteShader
-		});
-	},
-	function(world){
-		return new THREE.MeshBasicMaterial({color:0x0a0a32});
-	}
-);
 
 
-var debugShader = _multiline(function() {/**   
+fragmentShaders.debug = _multiline(function() {/**   
 
 	varying float vDisplacement;
 	varying vec4 vPosition;
@@ -119,22 +98,3 @@ var debugShader = _multiline(function() {/**
 	}
 
 **/});
-debugStyle = new Style(
-	function(world){
-		return new THREE.ShaderMaterial({
-			attributes: {
-			  displacement: { type: 'f', value: [] }
-			},
-			uniforms: {
-			  sealevel: 	{ type: 'f', value: world.SEALEVEL },
-			  color: 	    { type: 'c', value: new THREE.Color(Math.random() * 0xffffff) },
-			  dropoff: 	    { type: 'f', value: 0.1 }
-			},
-			vertexShader: orthographicShader,
-			fragmentShader: debugShader
-		})
-	},
-	function(world){
-		return new THREE.MeshBasicMaterial({color:0x000000});
-	}
-);

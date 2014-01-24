@@ -51,6 +51,15 @@
 						<input id="speedControl" type="number" value="5" min="0" max="10" step="1" style="width:30px" /> My/s
 					</td>
 				</tr>
+				<tr>
+					<td>View:</td>
+					<td>
+						<select id="fragmentShader">
+							<option value="satellite" selected>Satellite Image</option>
+							<option value="debug">Plates</option>
+						</select>
+					</td>
+				</tr>
 			</table>
 			<div></div>
 		</div>
@@ -78,7 +87,7 @@
 
 		var world = new World(new Grid(function(radius) { return new THREE.IcosahedronGeometry(radius, 5); }), 
 			{});
-		var view = new View(world, debugStyle);
+		var view = new View(world, fragmentShaders[$('#fragmentShader').val()]);
 		if( !init() ) animate();
 
 		// init the scene
@@ -168,6 +177,9 @@
 		
 		$('#speedControl').change(function(e){
 			MegaYearPerSecond = $('#speedControl').val();
+		});
+		$('#fragmentShader').change(function(e){
+			view.fragmentShader(fragmentShaders[$('#fragmentShader').val()]);
 		});
 	</script>
 </body>

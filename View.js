@@ -2,11 +2,11 @@ var _hashPlate = function(plate){
 	return plate.mesh.uuid
 }
 
-function View(world, style){
+function View(world, fragmentShader){
 	this.THRESHOLD = 0.99;
 	this.SEALEVEL = 1.0;
 	this.world = world;
-	this.style = style;
+	this._fragmentShader = fragmentShader;
 	this.meshes = new buckets.Dictionary(_hashPlate);
 
 	// create a scene
@@ -19,9 +19,20 @@ function View(world, style){
 	
 	this.asthenosphere	= new THREE.Mesh( 
 		world.grid.initializer(this.THRESHOLD), 
-		this.style.getBackground(this.world));
+		new THREE.MeshBasicMaterial({color:0x0a0a32}));
 	this.asthenosphere.renderDepth = -1;
 	this.scene.add(this.asthenosphere);
+}
+
+View.prototype.fragmentShader = function(fragmentShader){
+	if(this._fragmentShader != fragmentShader){
+		this._fragmentShader = fragmentShader;
+		for(var i=0, li = this.world.plates.length, plates = world.plates; i<li; i++){
+			mesh = this.meshes.get(plates[i]);
+			mesh.material.fragmentShader = fragmentShader;
+			mesh.material.needsUpdate = true;
+		}
+	}
 }
 
 View.prototype.update = function(){
@@ -45,9 +56,21 @@ View.prototype.update = function(){
 }
 
 View.prototype.add = function(plate){
+	var material = new THREE.ShaderMaterial({
+		attributes: {
+		  displacement: { type: 'f', value: [] }
+		},
+		uniforms: {
+		  sealevel: 	{ type: 'f', value: this.world.SEALEVEL },
+		  color: 	    { type: 'c', value: new THREE.Color(Math.random() * 0xffffff) },
+		  dropoff: 	    { type: 'f', value: 0.99 }
+		},
+		vertexShader: orthographicShader,
+		fragmentShader: this._fragmentShader
+	});
 	var mesh = new THREE.Mesh( 
 		world.grid.initializer(this.SEALEVEL), 
-		this.style.getForeground(this.world) );
+		material);
 	
 	this.scene.add(mesh);
 	this.meshes.set(plate, mesh);
