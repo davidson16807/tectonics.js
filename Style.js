@@ -2,12 +2,9 @@ var _multiline = function(f) {
   return f.toString().split('\n').slice(1, -1).join('\n');
 }
 
-Style = function(getForeground, getBackground){
-	this.getForeground = getForeground
-	this.getBackground = getBackground
-}
+fragmentShaders = {}
 
-var satelliteShader = _multiline(function() {/**   
+fragmentShaders.satellite = _multiline(function() {/**   
 
 	varying float vDisplacement;
 	varying vec4 vPosition;
@@ -74,27 +71,9 @@ var satelliteShader = _multiline(function() {/**
 	}
 
 **/});
-satelliteStyle = new Style(
-	function(world){
-		return new THREE.ShaderMaterial({
-			attributes: {
-			  displacement: { type: 'f', value: [] }
-			},
-			uniforms: {
-			  sealevel: 	{ type: 'f', value: world.SEALEVEL },
-			  dropoff: 	    { type: 'f', value: 0.99 }
-			},
-			vertexShader: orthographicShader,
-			fragmentShader: satelliteShader
-		});
-	},
-	function(world){
-		return new THREE.MeshBasicMaterial({color:0x0a0a32});
-	}
-);
 
 
-var debugShader = _multiline(function() {/**   
+fragmentShaders.debug = _multiline(function() {/**   
 
 	varying float vDisplacement;
 	varying vec4 vPosition;
@@ -108,33 +87,17 @@ var debugShader = _multiline(function() {/**
 	void main() {
 		float mountainMinHeight = sealevel + 5000.0;
 		float mountainMaxHeight = sealevel + 15000.0;
+		float nonexistantHeight = -999999.;
 		if(vDisplacement > mountainMinHeight){
 			float x = smoothstep(mountainMinHeight, mountainMaxHeight, vDisplacement);
 			gl_FragColor =  mix(vec4(color, 1.0), TOP, x);
 		} else if (vDisplacement > sealevel){
 			gl_FragColor =  vec4(color, 1.0);
-		} else {
+		} else if (vDisplacement > 1.){
 			gl_FragColor =  mix(BOTTOM, vec4(color, 1.0), 0.5);
+		} else {
+			gl_FragColor =  vec4(0,0,0,1);
 		}
 	}
 
 **/});
-debugStyle = new Style(
-	function(world){
-		return new THREE.ShaderMaterial({
-			attributes: {
-			  displacement: { type: 'f', value: [] }
-			},
-			uniforms: {
-			  sealevel: 	{ type: 'f', value: world.SEALEVEL },
-			  color: 	    { type: 'c', value: new THREE.Color(Math.random() * 0xffffff) },
-			  dropoff: 	    { type: 'f', value: 0.1 }
-			},
-			vertexShader: orthographicShader,
-			fragmentShader: debugShader
-		})
-	},
-	function(world){
-		return new THREE.MeshBasicMaterial({color:0x000000});
-	}
-);
