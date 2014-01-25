@@ -29,7 +29,7 @@ vertexShaders.equirectangular = _multiline(function() {/**
 		vec4 modelPos = modelMatrix * vec4( position, 1.0 );
 		float height = displacement > sealevel? LAND : displacement > 1.0? OCEAN : NONE;
 		vec4 displaced = vec4(
-			mod(lat(modelPos.xyz) + lat(cameraPosition), 2.*PI) - PI,
+			mod(lat(modelPos.xyz) - lat(cameraPosition), 2.*PI) - PI,
 			lon(modelPos.xyz), 
 			height, 
 			1);
