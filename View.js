@@ -75,7 +75,6 @@ View.prototype.add = function(plate){
 		uniforms: {
 		  sealevel: 	{ type: 'f', value: this.world.SEALEVEL },
 		  color: 	    { type: 'c', value: new THREE.Color(Math.random() * 0xffffff) },
-		  dropoff: 	    { type: 'f', value: 0.99 }
 		},
 		blending: THREE.NoBlending,
 		vertexShader: this._vertexShader,
