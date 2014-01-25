@@ -60,6 +60,15 @@
 						</select>
 					</td>
 				</tr>
+				<tr>
+					<td>Projection:</td>
+					<td>
+						<select id="vertexShader">
+							<option value="orthographic" selected>Orthographic</option>
+							<option value="equirectangular">Equirectangular</option>
+						</select>
+					</td>
+				</tr>
 			</table>
 			<div></div>
 		</div>
@@ -87,7 +96,7 @@
 
 		var world = new World(new Grid(function(radius) { return new THREE.IcosahedronGeometry(radius, 5); }), 
 			{});
-		var view = new View(world, fragmentShaders[$('#fragmentShader').val()]);
+		var view = new View(world, fragmentShaders[$('#fragmentShader').val()], vertexShaders[$('#vertexShader').val()]);
 		if( !init() ) animate();
 
 		// init the scene
@@ -180,6 +189,9 @@
 		});
 		$('#fragmentShader').change(function(e){
 			view.fragmentShader(fragmentShaders[$('#fragmentShader').val()]);
+		});
+		$('#vertexShader').change(function(e){
+			view.vertexShader(vertexShaders[$('#vertexShader').val()]);
 		});
 	</script>
 </body>

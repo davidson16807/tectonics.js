@@ -87,13 +87,16 @@ fragmentShaders.debug = _multiline(function() {/**
 	void main() {
 		float mountainMinHeight = sealevel + 5000.0;
 		float mountainMaxHeight = sealevel + 15000.0;
+		float nonexistantHeight = -999999.;
 		if(vDisplacement > mountainMinHeight){
 			float x = smoothstep(mountainMinHeight, mountainMaxHeight, vDisplacement);
 			gl_FragColor =  mix(vec4(color, 1.0), TOP, x);
 		} else if (vDisplacement > sealevel){
 			gl_FragColor =  vec4(color, 1.0);
-		} else {
+		} else if (vDisplacement > 1.){
 			gl_FragColor =  mix(BOTTOM, vec4(color, 1.0), 0.5);
+		} else {
+			gl_FragColor =  vec4(0,0,0,1);
 		}
 	}
 
