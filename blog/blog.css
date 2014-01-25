@@ -9,6 +9,11 @@ h1, h2, h3, summary
 {
 	font-family: Garamond, Hoefler Text, Free Serif, serif;
 }
+h1 a, h2 a, h3 a
+{
+	color: black;
+	text-decoration: initial;
+}
 h1, h2
 { 
 	margin-left: -2.128%; 
