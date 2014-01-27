@@ -24,20 +24,23 @@ fragmentShaders.satellite = _multiline(function() {/**
 	const vec4 DESERT = vec4(0.6,0.5,0.35,1.0);
 	const vec4 JUNGLE = vec4(0.1,0.2,0.05,1.0);
 
-	float SNOWLINE_MAX = sin(radians(77.));
-	float SNOWLINE_MIN = sin(radians(73.));
-	float TREELINE_MAX = sin(radians(70.));
-	float TREELINE_MIN = sin(radians(60.));
-	float TAIGALINE_MAX = sin(radians(60.));
-	float TAIGALINE_MIN = sin(radians(50.));
-	float GRASSLINE_MAX = sin(radians(40.));
-	float GRASSLINE_MIN = sin(radians(30.));
-	float DESERTLINE_MAX = sin(radians(30.));
-	float DESERTLINE_MIN = sin(radians(15.));
+	const float latToAlt = 12. / 4000.;
+
+	float SNOWLINE_MAX = 77.;
+	float SNOWLINE_MIN = 73.;
+	float TREELINE_MAX = 70.;
+	float TREELINE_MIN = 60.;
+	float TAIGALINE_MAX = 60.;
+	float TAIGALINE_MIN = 50.;
+	float GRASSLINE_MAX = 40.;
+	float GRASSLINE_MIN = 30.;
+	float DESERTLINE_MAX = 30.;
+	float DESERTLINE_MIN = 15.;
 
 	void main() {
 		float epipelagic = sealevel - 1000.0;
 		float maxheight = sealevel + 15000.0; 
+
 		
 		if (vDisplacement < epipelagic) {
 			gl_FragColor = OCEAN;
@@ -45,28 +48,29 @@ fragmentShaders.satellite = _multiline(function() {/**
 			float x = smoothstep(epipelagic, sealevel, vDisplacement);
 			gl_FragColor =  mix(OCEAN, SHALLOW, x);
 		} else {
+			float latEquivalent = degrees(abs(asin(vPosition.y))) + latToAlt * (vDisplacement - sealevel);
 			//float x = smoothstep(sealevel, maxheight, vDisplacement);
 			gl_FragColor =  JUNGLE; //mix(LAND, MOUNTAIN, x);
-		}
-		if (vDisplacement > sealevel && abs(vPosition.y) > DESERTLINE_MIN){
-			float x = smoothstep(DESERTLINE_MIN, DESERTLINE_MAX, abs(vPosition.y));
-			gl_FragColor = mix(gl_FragColor, DESERT, x);
-		}
-		if (vDisplacement > sealevel && abs(vPosition.y) > GRASSLINE_MIN){
-			float x = smoothstep(GRASSLINE_MIN, GRASSLINE_MAX, abs(vPosition.y));
-			gl_FragColor = mix(gl_FragColor, LAND, x);
-		}
-		if (vDisplacement > sealevel && abs(vPosition.y) > TAIGALINE_MIN){
-			float x = smoothstep(TAIGALINE_MIN, TAIGALINE_MAX, abs(vPosition.y));
-			gl_FragColor = mix(gl_FragColor, TAIGA, x);
-		}
-		if (vDisplacement > sealevel && abs(vPosition.y) > TREELINE_MIN){
-			float x = smoothstep(TREELINE_MIN, TREELINE_MAX, abs(vPosition.y));
-			gl_FragColor = mix(gl_FragColor, TUNDRA, x);
-		}
-		if (vDisplacement > epipelagic && abs(vPosition.y) > SNOWLINE_MIN){ 
-			float x = smoothstep(SNOWLINE_MIN, SNOWLINE_MAX, abs(vPosition.y));
-			gl_FragColor = mix(gl_FragColor, SNOW, x);
+			if (latEquivalent > DESERTLINE_MIN){
+				float x = smoothstep(DESERTLINE_MIN, DESERTLINE_MAX, latEquivalent);
+				gl_FragColor = mix(gl_FragColor, DESERT, x);
+			}
+			if (latEquivalent > GRASSLINE_MIN){
+				float x = smoothstep(GRASSLINE_MIN, GRASSLINE_MAX, latEquivalent);
+				gl_FragColor = mix(gl_FragColor, LAND, x);
+			}
+			if (latEquivalent > TAIGALINE_MIN){
+				float x = smoothstep(TAIGALINE_MIN, TAIGALINE_MAX, latEquivalent);
+				gl_FragColor = mix(gl_FragColor, TAIGA, x);
+			}
+			if (latEquivalent > TREELINE_MIN){
+				float x = smoothstep(TREELINE_MIN, TREELINE_MAX, latEquivalent);
+				gl_FragColor = mix(gl_FragColor, TUNDRA, x);
+			}
+			if (latEquivalent > SNOWLINE_MIN){ 
+				float x = smoothstep(SNOWLINE_MIN, SNOWLINE_MAX, latEquivalent);
+				gl_FragColor = mix(gl_FragColor, SNOW, x);
+			}
 		}
 	}
 
