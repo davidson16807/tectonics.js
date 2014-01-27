@@ -85,7 +85,7 @@ fragmentShaders.debug = _multiline(function() {/**
 	const vec4 TOP = vec4(1.0,1.0,1.0,1.0);
 
 	void main() {
-		float mountainMinHeight = sealevel + 5000.0;
+		float mountainMinHeight = sealevel ;
 		float mountainMaxHeight = sealevel + 15000.0;
 		float nonexistantHeight = -999999.;
 		if(vDisplacement > mountainMinHeight){

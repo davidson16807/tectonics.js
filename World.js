@@ -42,7 +42,7 @@ function World(grid, optional){
 		} else {
 			this.crust.create(vertex, this.ocean);
 		}
-		vertex.content.isostacy();
+		vertex.content.isostasy();
 	}
 	this.updateNeighbors();
 	this.updateBorders();
@@ -68,6 +68,9 @@ World.prototype.simulate = function(timestep){
 	var i = 0;
 	for(i = 0; i<length; i++){
 		plates[i].move(timestep);
+	}
+	for(i = 0; i<length; i++){
+		plates[i].erode(timestep);
 	}
 	this.updateMatrices();
 	this.updateBorders();
