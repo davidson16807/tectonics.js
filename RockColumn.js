@@ -23,10 +23,10 @@ RockColumn.prototype.accrete = function(subducted){
 	density  = pressure / (thickness + heightChange)
 	this.thickness += heightChange
 	this.density = density
-	this.isostacy();
+	this.isostasy();
 }
 
-RockColumn.prototype.isostacy = function(){
+RockColumn.prototype.isostasy = function(){
 	//Calculates elevation as a function of crust density.
 	//This was chosen as it only requires knowledge of crust density and thickness, 
 	//which are relatively well known.

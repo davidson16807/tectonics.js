@@ -165,9 +165,48 @@ Plate.prototype.rift = function(){
 		intersected = this._getIntersections(absolute, plates, grid, _getRiftIntersection);
 		if(!intersected){
 			this._crust.create(vertex, ocean);
-			vertex.content.isostacy();
+			vertex.content.isostasy();
 			geometry.verticesNeedUpdate = true;
 		}
+	}
+}
+
+Plate.prototype.erode = function(timestep){
+	// Model taken from Simoes et al. 2010
+	// This erosion model is characteristic in that its geared towards large spatiotemporal scales
+	// A sediment erosion model is also described there, but here we only implement bedrock erosion, for now
+	var world = this.world;
+	var mesh = this.mesh;
+	var geometry = this._geometry;
+	var grid = this.world.grid;
+	var vertex, intersected;
+	var vertices = this._vertices;
+	var precipitation = 3.8e5;
+	// ^^^ measured in meters of rain per million years
+	var erosiveFactor = 1.8e-7; 
+	// ^^^ the rate of erosion per the rate of rainfall in that place
+	// measured in fraction of height gradient per meters of rain
+	for(var i=0, li = vertices.length; i<li; i++){
+		content = vertices[i].content;
+		if(_.isUndefined(content)){
+			continue;
+		}
+		var dheightSum = 0;
+		var neighborIds = grid.getNeighborIds(i);
+		for(var j = 0, lj = neighborIds.length; j<lj; j++){
+			var neighbor = vertices[neighborIds[j]].content;
+			if(_.isUndefined(neighbor)){
+				continue;
+			}
+			if(neighbor.displacement < world.sealevel && content.displacement < world.sealevel){
+				continue;
+			}
+			var dheight = content.displacement - neighbor.displacement;
+			dheightSum += dheight / lj;
+		}
+		var erosion = dheightSum * precipitation * timestep * erosiveFactor;
+		content.thickness -= erosion;
+		content.isostasy();
 	}
 }
 
