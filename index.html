@@ -88,9 +88,19 @@
 		// all densities are in kg/m^3 (goes along with thickness)
 		// planets are rendered as unit spheres
 		
+	    var querystring = [];
+	    for(var i = 0, 
+	    	hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&'); 
+	    	i < hashes.length; i++)
+	    {
+	        var hash = hashes[i].split('=');
+	        querystring.push(hash[0]);
+	        querystring[hash[0]] = hash[1];
+	    }
+
 		var stats, scene, renderer, composer, clock;
 		var camera, cameraControl;
-		var random = new Random();
+		var random = querystring['seed']? new Random(querystring['seed']) : new Random();
 		var MegaYearPerSecond = 5 //My/second
 		$('#speed').html("1 second : "+format(MegaYearPerSecond,100,2));
 
