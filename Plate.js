@@ -5,6 +5,23 @@ _hashVector = function(vector){
 	return vector.id.toString()
 }
 
+mix = function(x,y,a){
+	return x * (1-a) + y * a;
+}
+
+clamp = function(x, minVal, maxVal) {
+	return Math.min(Math.max(x, minVal), maxVal);
+}
+
+smoothstep = function(edge0, edge1, x) {
+	var t = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
+    return t * t * (3.0 - 2.0 * t);
+}
+
+degrees = function(x) {
+	return 180*x/Math.PI;
+}
+
 function Plate(world, center, eulerPole, angularSpeed)
 {
 	this.world = world;
@@ -181,12 +198,11 @@ Plate.prototype.erode = function(timestep){
 	var grid = this.world.grid;
 	var vertex, intersected;
 	var vertices = this._vertices;
-	var precipitation = 3.8e5;
-	// ^^^ measured in meters of rain per million years
 	var erosiveFactor = 1.8e-7; 
 	// ^^^ the rate of erosion per the rate of rainfall in that place
 	// measured in fraction of height gradient per meters of rain
 	for(var i=0, li = vertices.length; i<li; i++){
+		vertex = vertices[i];
 		content = vertices[i].content;
 		if(_.isUndefined(content)){
 			continue;
@@ -204,6 +220,17 @@ Plate.prototype.erode = function(timestep){
 			var dheight = content.displacement - neighbor.displacement;
 			dheightSum += dheight / lj;
 		}
+		var y = mesh.localToWorld(vertex.clone()).y || 0;
+		y = Math.asin(1 - Math.abs(y))/1.57;
+		if(!y){
+			console.log('something bad');
+		}
+		var precipitation =  4.5e6; 
+		// ^^^ measured in meters of rain per million years
+		precipitation = mix(precipitation, 	0., 	smoothstep(0.,  .3, 	y)); 	//hadley cell
+		precipitation = mix(precipitation, 	4.5e6/2,		smoothstep(.3, .6, 	y)); 	//ferrel cell
+		precipitation = mix(precipitation, 	0., 	smoothstep(.6, 1, 	y)); 	//polar cell
+
 		var erosion = dheightSum * precipitation * timestep * erosiveFactor;
 		content.thickness -= erosion;
 		content.isostasy();
