@@ -12,10 +12,9 @@ function World(grid, optional){
 	this.platesNum = optional['platesNum'] || 7;
 	this.mountainWidth = (optional['mountainWidth'] || 300) / radius;
 	this.getRandomPlateSpeed = optional['getRandomPlateSpeed'] ||
-		//function() { return Math.exp(random.normal(3.492, 0.771)) / radius; }
-		// alternative:
-		function() { return random.normal(42.8, 27.7) / radius; }
-		// log normal and normal distributions fit from http://hypertextbook.com/facts/ZhenHuang.shtml
+		//function() { return Math.exp(random.normal(-5.13, 0.548)); }
+		function() { return random.normal(0.00687, 0.00380); }
+		//^^^ log normal and normal distribution fit to angular velocities from Larson et al. 1997
 	this.getRandomPlateDensityEffect = optional['getRandomPlateDensityEffect'] ||
 		function() { return random.normal(0,40); }
 		// from Carlson & Raskin 1984
