@@ -2,9 +2,8 @@ var _multiline = function(f) {
   return f.toString().split('\n').slice(1, -1).join('\n');
 }
 
-fragmentShaders = {}
 
-fragmentShaders.satellite = _multiline(function() {/**   
+template = _multiline(function() {/**   
 
 	varying float vDisplacement;
 	varying vec4 vPosition;
@@ -63,15 +62,24 @@ fragmentShaders.satellite = _multiline(function() {/**
 			
 			float organic_fraction 	= lat/90.; // smoothstep(30., -30., temp); // 
 
-			vec4 ground				= mix(bedrock, mix(SAND, PEAT, organic_fraction), mineral_fraction);
-			vec4 canopy 			= mix(ground, JUNGLE, npp);
+			vec4 soil				= mix(bedrock, mix(SAND, PEAT, organic_fraction), mineral_fraction);
+			vec4 canopy 			= mix(soil, JUNGLE, npp);
 			vec4 snow 				= mix(canopy, SNOW, smoothstep(80., 85., lat));
 			
-			gl_FragColor = snow;
+			gl_FragColor = @OUTPUT;
 		}
 	}
 
 **/});
+
+fragmentShaders = {}
+
+fragmentShaders.satellite = template.replace('@OUTPUT', 'snow');
+fragmentShaders.soil 	= template.replace('@OUTPUT', 'soil');
+fragmentShaders.bedrock	= template.replace('@OUTPUT', 'bedrock');
+fragmentShaders.npp 	= template.replace('@OUTPUT', 'mix(vec4(1), vec4(0,1,0,1), npp)');
+fragmentShaders.temp 	= template.replace('@OUTPUT', 'mix(vec4(1,0,0,1), vec4(0,0,1,1), smoothstep(30., -25., temp))');
+fragmentShaders.precip 	= template.replace('@OUTPUT', 'mix(vec4(1), vec4(0,0,1,1), smoothstep(0., 4500., precip))');
 
 fragmentShaders.debug = _multiline(function() {/**   
 
