@@ -55,7 +55,7 @@ View.prototype.update = function(){
 		mesh.geometry.verticesNeedUpdate = true;
 		var vertices = mesh.geometry.vertices
 		var displacement = mesh.material.attributes.displacement.value;
-		for(var j=0, lj = plates[i]._vertices.length, cells = plates[i]._vertices; j<lj; j++){
+		for(var j=0, lj = plates[i]._cells.length, cells = plates[i]._cells; j<lj; j++){
 			var content = cells[j].content;
 			if(content){
 				displacement[j] = content.displacement;

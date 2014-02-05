@@ -22,7 +22,6 @@ function World(grid, optional){
 	this.crust = new Crust(this);
 	this.age = 0;
 	
-	var vertices = grid.initializer(1).vertices;
 	var shield = grid.getRandomPoint();
 	var getRandomPlateSpeed 		= this.getRandomPlateSpeed;
 	var getRandomPlateDensityEffect = this.getRandomPlateDensityEffect;
@@ -31,14 +30,14 @@ function World(grid, optional){
 		grid.getRandomPoint(), 
 		getRandomPlateSpeed());
 	this.plates = [plate];
-	for(var i=0, length = vertices.length; i<length; i++) {
-		var vertex = plate._vertices[i];
-		if(shield.distanceTo(vertices[i]) < continentRadius ) { 
-			this.crust.create(vertex, this.land);
+	for(var i=0, length = plate._cells.length; i<length; i++) {
+		var cell = plate._cells[i];
+		if(shield.distanceTo(cell.pos) < continentRadius ) { 
+			this.crust.create(cell, this.land);
 		} else {
-			this.crust.create(vertex, this.ocean);
+			this.crust.create(cell, this.ocean);
 		}
-		vertex.content.isostasy();
+		cell.content.isostasy();
 	}
 	this.updateNeighbors();
 	this.updateBorders();
