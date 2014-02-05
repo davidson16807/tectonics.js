@@ -2,9 +2,8 @@ var _multiline = function(f) {
   return f.toString().split('\n').slice(1, -1).join('\n');
 }
 
-fragmentShaders = {}
 
-fragmentShaders.satellite = _multiline(function() {/**   
+template = _multiline(function() {/**   
 
 	varying float vDisplacement;
 	varying vec4 vPosition;
@@ -14,22 +13,25 @@ fragmentShaders.satellite = _multiline(function() {/**
 	const vec4 NONE = vec4(0.0,0.0,0.0,0.0);
 	const vec4 OCEAN = vec4(0.04,0.04,0.2,1.0);
 	const vec4 SHALLOW = vec4(0.04,0.58,0.54,1.0);
-	const vec4 MOUNTAIN = vec4(100,85,60,255)/255.;
 
+	const vec4 MAFIC  = vec4(50,45,50,255)/255.			// observed on lunar maria 
+	                  * vec4(1,1,1,1);					// aesthetic correction 
+	const vec4 FELSIC = vec4(190,180,185,255)/255.		// observed on lunar highlands
+					  * vec4(0.6 * vec3(1,1,.66), 1);	// aesthetic correction;
+	//const vec4 SAND = vec4(255,230,155,255)/255.;
+	const vec4 SAND = vec4(245,215,145,255)/255.;
+	const vec4 PEAT = vec4(100,85,60,255)/255.;
 	const vec4 SNOW  = vec4(0.9, 0.9, 0.9, 0.9); 
-	const vec4 TUNDRA = vec4(100,85,60,255)/255.;
-	//const vec4 TUNDRA = vec4(0.35,0.30,0.20,1.0);
-	//const vec4 TUNDRA = vec4(0.25,0.25,0.125,1.0);
-	const vec4 TAIGA = vec4(0.15,0.20,0.05,1.0);
-	const vec4 LAND = vec4(0.31,0.43,0.12,1.0);
-	const vec4 DESERT = vec4(255,230,155,255)/255.;
-	//const vec4 DESERT = vec4(245,215,145,255)/255.;
 	const vec4 JUNGLE = vec4(30,50,10,255)/255.;
 	//const vec4 JUNGLE = vec4(20,45,5,255)/255.;
 
 	void main() {
 		float epipelagic = sealevel - 200.0;
+		float abyssopelagic = sealevel - 4000.0;
 		float maxheight = sealevel + 15000.0; 
+
+		float felsic_fraction = smoothstep(abyssopelagic, maxheight, vDisplacement);
+		vec4 bedrock			= mix(MAFIC, FELSIC, felsic_fraction);
 
 		if (vDisplacement < epipelagic) {
 			gl_FragColor = OCEAN;
@@ -37,7 +39,8 @@ fragmentShaders.satellite = _multiline(function() {/**
 			float x = smoothstep(epipelagic, sealevel, vDisplacement);
 			gl_FragColor =  mix(OCEAN, SHALLOW, x);
 		} else {
-			float mineral_horizon = smoothstep(maxheight, sealevel, vDisplacement);
+
+			float mineral_fraction = smoothstep(maxheight, sealevel, vDisplacement);
 
 			float lat = degrees(asin(abs(vPosition.y)));
 			float lapse_rate = 6.4 / 1000.; // oC per m
@@ -47,7 +50,7 @@ fragmentShaders.satellite = _multiline(function() {/**
 			
 			//Mean annual precipitation, mm yr-1
 			float precip = 4500.;
-			precip = mix(precip, 	0., 	smoothstep(0.,  30., 	lat)); 		//hadley cell
+			precip = mix(precip, 	0., 	smoothstep(0.,  30., 	lat)); 	//hadley cell
 			precip = mix(precip, 	2250.,	smoothstep(30., 60., 	lat)); 	//ferrel cell
 			precip = mix(precip, 	0., 	smoothstep(60., 90., 	lat)); 	//polar cell
 
@@ -57,17 +60,26 @@ fragmentShaders.satellite = _multiline(function() {/**
 			float npp_precip 	= (1. - exp(-0.000664 * precip)); 	//drought limited npp
 			float npp = min(npp_temp, npp_precip); 					//realized npp, the most conservative of the two estimates
 			
-			float organic_horizon 	= lat/90.; // smoothstep(30., -30., temp); // 
+			float organic_fraction 	= lat/90.; // smoothstep(30., -30., temp); // 
 
-			vec4 ground				= mix(MOUNTAIN, mix(DESERT, TUNDRA, organic_horizon), mineral_horizon);
-			vec4 canopy 			= mix(ground, JUNGLE, npp);
+			vec4 soil				= mix(bedrock, mix(SAND, PEAT, organic_fraction), mineral_fraction);
+			vec4 canopy 			= mix(soil, JUNGLE, npp);
 			vec4 snow 				= mix(canopy, SNOW, smoothstep(80., 85., lat));
 			
-			gl_FragColor = snow;
+			gl_FragColor = @OUTPUT;
 		}
 	}
 
 **/});
+
+fragmentShaders = {}
+
+fragmentShaders.satellite = template.replace('@OUTPUT', 'snow');
+fragmentShaders.soil 	= template.replace('@OUTPUT', 'soil');
+fragmentShaders.bedrock	= template.replace('@OUTPUT', 'bedrock');
+fragmentShaders.npp 	= template.replace('@OUTPUT', 'mix(vec4(1), vec4(0,1,0,1), npp)');
+fragmentShaders.temp 	= template.replace('@OUTPUT', 'mix(vec4(1,0,0,1), vec4(0,0,1,1), smoothstep(30., -25., temp))');
+fragmentShaders.precip 	= template.replace('@OUTPUT', 'mix(vec4(1), vec4(0,0,1,1), smoothstep(0., 4500., precip))');
 
 fragmentShaders.debug = _multiline(function() {/**   
 
