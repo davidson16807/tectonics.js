@@ -35,6 +35,17 @@ Plate.prototype.getSize = function(){
 	return this._vertices.filter(function(vertex){return _isFilled(vertex)}).length;
 }
 
+Plate.prototype.getCentroid = function(){
+	var crust = this.world.crust;
+	var points = this._vertices.
+		filter(function(vertex){ return crust.isContinental(vertex); } );
+	return points.
+		reduce(function(a,b){
+			return new THREE.Vector3().addVectors(a,b);
+		}).
+		divideScalar(points.length).
+		normalize();
+}
 Plate.prototype.getContinentalSize = function(){
 	var crust = this.world.crust;
 	return this._vertices.filter(function(vertex){ return crust.isContinental(vertex) }).length;
@@ -247,11 +258,12 @@ Plate.prototype.split = function(){
 	var crust = this._crust;
 	var vertices = this._vertices;
 	
-	platesNum = world.platesNum - world.plates.length
-	plates = _.range(platesNum).map(function(i) { 
-		return new Plate(world, 
-			grid.getRandomPoint(), 
-			grid.getRandomPoint(), 
+	var centroid = this.getCentroid();
+	var platesNum = world.platesNum - world.plates.length
+	var plates = _.range(platesNum).map(function(i) { 
+		var pos = grid.getRandomPoint();
+		var eulerPole = new THREE.Vector3().crossVectors(centroid, pos).normalize();
+		return new Plate(world, pos, eulerPole, 
 			world.getRandomPlateSpeed());
 	});
 	var kdtree = new kdTree(_.range(platesNum).map(function(i) {
@@ -278,7 +290,7 @@ Plate.prototype.split = function(){
 Plate.prototype.destroy = function(){
 	view.remove(this);
 	
-	mesh = this.mesh;
+	var mesh = this.mesh;
 	this.mesh = void 0;
 	this._vertices = void 0;
 	this._material = void 0;

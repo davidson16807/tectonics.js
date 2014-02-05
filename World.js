@@ -5,7 +5,6 @@ function World(grid, optional){
 	optional = optional || {};
 	
 	var radius = optional['radius'] || 6367;
-	var continentsNum = optional['continentsNum'] || 3;
 	var continentRadius = (optional['continentRadius'] || 1250) / radius;
 	
 	this.radius = radius;
@@ -24,9 +23,7 @@ function World(grid, optional){
 	this.age = 0;
 	
 	var vertices = grid.initializer(1).vertices;
-	var shields = _.range(continentsNum).map(function(i) {
-		return grid.getRandomPoint();
-	});
+	var shield = grid.getRandomPoint();
 	var getRandomPlateSpeed 		= this.getRandomPlateSpeed;
 	var getRandomPlateDensityEffect = this.getRandomPlateDensityEffect;
 	plate = new Plate(this, 
@@ -36,7 +33,7 @@ function World(grid, optional){
 	this.plates = [plate];
 	for(var i=0, length = vertices.length; i<length; i++) {
 		var vertex = plate._vertices[i];
-		if(_.any(shields.map(function(shield) { return shield.distanceTo(vertices[i]) < continentRadius }))) { 
+		if(shield.distanceTo(vertices[i]) < continentRadius ) { 
 			this.crust.create(vertex, this.land);
 		} else {
 			this.crust.create(vertex, this.ocean);
