@@ -19,7 +19,6 @@ function World(grid, optional){
 		// from Carlson & Raskin 1984
 		
 	this.grid = grid;
-	this.crust = new Crust(this);
 	this.age = 0;
 	
 	var shield = this.getRandomPoint();
@@ -33,9 +32,9 @@ function World(grid, optional){
 	for(var i=0, length = plate._cells.length; i<length; i++) {
 		var cell = plate._cells[i];
 		if(shield.distanceTo(cell.pos) < continentRadius ) { 
-			this.crust.create(cell, this.land);
+			cell.create(this.land);
 		} else {
-			this.crust.create(cell, this.ocean);
+			cell.create(this.ocean);
 		}
 		cell.content.isostasy();
 	}

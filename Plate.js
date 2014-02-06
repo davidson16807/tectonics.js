@@ -15,7 +15,6 @@ function Plate(world, center, eulerPole, angularSpeed)
 	
 	//efficiency attributes, AKA attributes of attributes:
 	this._grid = world.grid;
-	this._crust = world.crust;
 	this._geometry = world.grid.template;
 	this._material	= new THREE.MeshBasicMaterial();
 	this._cells = [];
@@ -24,13 +23,8 @@ function Plate(world, center, eulerPole, angularSpeed)
 	
 	vertices = this._geometry.vertices;
 	for(var i = 0, length = vertices.length, cells = this._cells; i<length; i++){
-		cells.push({
-			pos: 	vertices[i],
-			plate: 	this,
-			id: 	i,
-			content:void 0
-		});
-	}
+		cells.push(new Cell(this, vertices[i], i));
+	};
 }
 Plate.prototype.get = function(i){
 	return this._cells[i];
@@ -40,9 +34,8 @@ Plate.prototype.getSize = function(){
 }
 
 Plate.prototype.getCentroid = function(){
-	var crust = this.world.crust;
 	var points = this._cells.
-		filter(function(cell){ return crust.isContinental(cell); } ).
+		filter(function(cell){ return cell.isContinental(); } ).
 		map(function(cell){ return cell.pos});
 	return points.
 		reduce(function(a,b){
@@ -52,8 +45,7 @@ Plate.prototype.getCentroid = function(){
 		normalize();
 }
 Plate.prototype.getContinentalSize = function(){
-	var crust = this.world.crust;
-	return this._cells.filter(function(cell){ return crust.isContinental(cell) }).length;
+	return this._cells.filter(function(cell){ return cell.isContinental() }).length;
 }
 Plate.prototype.getRandomPoint = function(){
 	var points = this._cells.filter(function(cell){return _isFilled(cell)});
@@ -68,9 +60,9 @@ Plate.prototype.getRandomBorder = function(){
 Plate.prototype.getRandomJunction = function() {
 	var cells = this._cells;
 	var candidates = this._geometry.faces.filter(function(face) { 
-		return  crust.isContinental(cells[face.a]) && 
-				crust.isContinental(cells[face.b]) && 
-				crust.isContinental(cells[face.c])
+		return  cells[face.a].isContinental() && 
+				cells[face.b].isContinental() && 
+				cells[face.c].isContinental()
 	});
 	if(candidates.length > 0){
 		var i = Math.floor(Math.random()*candidates.length);
@@ -152,7 +144,7 @@ Plate.prototype.deform = function(){
 		var absolute = mesh.localToWorld(cell.pos.clone());
 		var intersected = this._getIntersections(absolute, plates, grid, _getCollisionIntersection);
 		if(intersected){
-			this._crust.collide(cell, intersected);
+			cell.collide(intersected);
 			this._geometry.verticesNeedUpdate  = true;
 		}
 	}
@@ -180,7 +172,7 @@ Plate.prototype.rift = function(){
 		var absolute = mesh.localToWorld(cell.pos.clone());
 		intersected = this._getIntersections(absolute, plates, grid, _getRiftIntersection);
 		if(!intersected){
-			this._crust.create(cell, ocean);
+			cell.create(ocean);
 			cell.content.isostasy();
 			geometry.verticesNeedUpdate = true;
 		}
@@ -227,7 +219,6 @@ Plate.prototype.erode = function(timestep){
 }
 
 Plate.prototype.dock = function(subjugated){
-	var crust = this._crust;
 	var grid = this._grid;
 	var cells = this._cells;
 	var subjugatedPlate = subjugated.plate
@@ -248,9 +239,9 @@ Plate.prototype.dock = function(subjugated){
 		var id = grid.getNearestId(relative);
 		var hit = cells[id];
 		
-		if(!crust.isContinental(hit) || i > 100){
-			crust.replace(hit, subjugated);
-			crust.destroy(subjugated);
+		if(!hit.isContinental() || i > 100){
+			hit.replace(subjugated);
+			subjugated.destroy();
 			break;
 		}
 	}
@@ -260,7 +251,6 @@ Plate.prototype.split = function(){
 	var grid = this._grid;
 	var gridvertices = grid.template.vertices;
 	var world = this.world;
-	var crust = this._crust;
 	var cells = this._cells;
 	
 	var centroid = this.getCentroid();
@@ -287,7 +277,7 @@ Plate.prototype.split = function(){
 		var vertex = gridvertices[i];
 		var id = kdtree.nearest(vertex,1)[0][0].i;
 		var nearest = plates[id];
-		crust.replace(nearest._cells[i], cells[i]);
+		nearest._cells[i].replace(cells[i]);
 	}
 	
 	world.plates.splice(world.plates.indexOf(this),1);
