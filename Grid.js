@@ -29,7 +29,6 @@ function Grid(template, voronoi){
 	//If this seems like overkill, trust me - it's not
 	if (voronoi){
 		this._voronoi = voronoi;
-		console.log('hi mom!');
 	} else {
 		this._voronoi = new VoronoiSphere(this.template.vertices.length, this._kdtree);
 	}

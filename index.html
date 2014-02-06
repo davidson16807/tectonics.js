@@ -107,11 +107,9 @@
 	        querystring[hash[0]] = hash[1];
 	    }
 
-		var stats, scene, renderer, composer, clock;
-		var camera, cameraControl;
+		var stats, renderer, clock, controls;
 		var random = querystring['seed']? new Random(querystring['seed']) : new Random();
 		var MegaYearPerSecond = 5 //My/second
-		$('#speed').html("1 second : "+format(MegaYearPerSecond,100,2));
 
 		var world = new World(new Grid( new THREE.IcosahedronGeometry(1, 5), voronoiCache));
 		var view = new View(world, fragmentShaders[$('#fragmentShader').val()], vertexShaders[$('#vertexShader').val()]);
@@ -140,9 +138,8 @@
 			stats.domElement.style.bottom	= '0px';
 			document.body.appendChild( stats.domElement );
 
-
 			// create a camera contol
-			cameraControls	= new THREE.OrbitControls( view.camera, $("#container").get(0) );
+			controls	= new THREE.OrbitControls( view.camera, $("#container").get(0) );
 
 			// transparently support window resize
 			THREEx.WindowResize.bind(renderer, view.camera);
@@ -195,7 +192,7 @@
 		function render() {
 
 			// update camera controls
-			cameraControls.update();
+			controls.update();
 
 
 			// actually render the scene
