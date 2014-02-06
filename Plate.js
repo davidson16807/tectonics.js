@@ -266,7 +266,7 @@ Plate.prototype.split = function(){
 	var centroid = this.getCentroid();
 	var platesNum = world.platesNum - world.plates.length
 	var plates = _.range(platesNum).map(function(i) { 
-		var pos = grid.getRandomPoint();
+		var pos = world.getRandomPoint();
 		var eulerPole = new THREE.Vector3().crossVectors(centroid, pos).normalize();
 		return new Plate(world, pos, eulerPole, 
 			world.getRandomPlateSpeed());

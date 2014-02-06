@@ -109,7 +109,7 @@
 		var MegaYearPerSecond = 5 //My/second
 		$('#speed').html("1 second : "+format(MegaYearPerSecond,100,2));
 
-		var world = new World(new Grid(function(radius) { return new THREE.IcosahedronGeometry(radius, 5); }), 
+		var world = new World(new Grid( new THREE.IcosahedronGeometry(1, 5) ), 
 			{});
 		var view = new View(world, fragmentShaders[$('#fragmentShader').val()], vertexShaders[$('#vertexShader').val()]);
 		if( !init() ) animate();

@@ -73,7 +73,7 @@ View.prototype.add = function(plate){
 		fragmentShader: this._fragmentShader
 	});
 	var mesh = new THREE.Mesh( 
-		world.grid.initializer(this.SEALEVEL), 
+		world.grid.template.clone(), 
 		material);
 	
 	this.scene.add(mesh);

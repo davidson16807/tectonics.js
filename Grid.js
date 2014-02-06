@@ -1,7 +1,6 @@
 
-function Grid(initializer){
-	this.initializer = initializer;
-	this.template = initializer(1.0);
+function Grid(template){
+	this.template = template;
 	
 	//Precompute neighbors for O(1) lookups
 	var neighbors = this.template.vertices.map(function(vertex) { return new buckets.Set()});
@@ -30,11 +29,6 @@ function Grid(initializer){
 	this._voronoi = new VoronoiSphere(this._kdtree, this.template.vertices.length);
 	
 	//TODO: R-tree from https://github.com/mourner/rbush for astroblemes and the like
-}
-
-Grid.prototype.getRandomPoint = function() {
-	var i = Math.floor(random.random()*this.template.vertices.length);
-	return this.template.vertices[i];
 }
 
 Grid.prototype.getNearestId = function(vertex) { 
