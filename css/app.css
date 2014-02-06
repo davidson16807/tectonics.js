@@ -1,0 +1,24 @@
+body {
+	overflow	: hidden;
+}
+
+.dialog {
+	color: black;
+	background-color: white;
+	padding: 3.44%;
+	border-radius: 1em;
+}
+.parameters td {
+	padding: 0 0.5em 0 0.5em;
+    font-weight:bold;
+}
+.instructions {
+	color: grey;
+}
+.info a {
+	color: grey;
+	text-decoration	: none;
+}
+.info a:hover {
+	text-decoration	: underline;
+}

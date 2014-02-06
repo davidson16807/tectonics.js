@@ -17,7 +17,7 @@ function VoronoiSphere(pointsNum, kdtree){
 	size = Math.sqrt(pointsNum);
 	this.lonRange = 2*Math.PI;
 	this.lonMin = -Math.PI;
-	this.lonNum = 4*size;
+	this.lonNum = 2*size;
 	this.latRange = Math.PI;
 	this.latMin = -Math.PI / 2;
 	this.latNum = size;
