@@ -13,7 +13,7 @@ _bound = function(value, min, max){
 
 //Data structure mapping coordinates on a sphere to the nearest point in a kdtree
 //Retrievals from the map are of O(1) complexity. The result resembles a voronoi diagram, hence the name.
-function VoronoiSphere(kdtree, pointsNum){
+function VoronoiSphere(pointsNum, kdtree){
 	size = Math.sqrt(pointsNum);
 	this.lonRange = 2*Math.PI;
 	this.lonMin = -Math.PI;
@@ -21,17 +21,19 @@ function VoronoiSphere(kdtree, pointsNum){
 	this.latRange = Math.PI;
 	this.latMin = -Math.PI / 2;
 	this.latNum = size;
-	var raster = []
-	for(var i = 0, j=0, li = this.latNum, lj = this.lonNum; i<li; i++){
-		var latLine = []
-		for(j = 0; j<lj; j++){
-			var lat = i*this.latRange/li + this.latMin;
-			var lon = j*this.lonRange/lj + this.lonMin;
-			var vertex = _toCartesian({lat:lat, lon:lon});
-			var id = kdtree.nearest(vertex,1)[0][0].i;
-			latLine[j] = id;
+	var raster = [];
+	if(kdtree){
+		for(var i = 0, j=0, li = this.latNum, lj = this.lonNum; i<li; i++){
+			var latLine = []
+			for(j = 0; j<lj; j++){
+				var lat = i*this.latRange/li + this.latMin;
+				var lon = j*this.lonRange/lj + this.lonMin;
+				var vertex = _toCartesian({lat:lat, lon:lon});
+				var id = kdtree.nearest(vertex,1)[0][0].i;
+				latLine[j] = id;
+			}
+			raster[i] = latLine;
 		}
-		raster[i] = latLine;
 	}
 	this.raster = raster;
 }

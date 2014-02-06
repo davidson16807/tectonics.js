@@ -8,6 +8,11 @@
 		<![endif]-->
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+
+		<link  href="css/main.css" rel="stylesheet"/>
+		<link  href="css/modern.css" rel="stylesheet"/>
+		<link  href="css/app.css" rel="stylesheet"/>
+
 		<script src="http://code.jquery.com/jquery.min.js"></script>
 		<script src="vendor/three.js/Three.js"></script>
 		<script src="vendor/three.js/Detector.js"></script>
@@ -34,10 +39,7 @@
 		<script src="World.js"></script>
 		<script src="Style.js"></script>
 		<script src="Projection.js"></script>
-
-		<link  href="css/main.css" rel="stylesheet"/>
-		<link  href="css/modern.css" rel="stylesheet"/>
-		<link  href="css/app.css" rel="stylesheet"/>
+		<script src="Cached.js"></script>
 	</head>
 <body>
 	<!-- three.js container -->
@@ -145,8 +147,7 @@
 		var MegaYearPerSecond = 5 //My/second
 		$('#speed').html("1 second : "+format(MegaYearPerSecond,100,2));
 
-		var world = new World(new Grid( new THREE.IcosahedronGeometry(1, 5) ), 
-			{});
+		var world = new World(new Grid( new THREE.IcosahedronGeometry(1, 5), voronoiCache));
 		var view = new View(world, fragmentShaders[$('#fragmentShader').val()], vertexShaders[$('#vertexShader').val()]);
 		if( Detector.webgl ){
 			if( !init() ) animate();
