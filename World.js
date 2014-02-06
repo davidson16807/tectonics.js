@@ -22,23 +22,22 @@ function World(grid, optional){
 	this.crust = new Crust(this);
 	this.age = 0;
 	
-	var vertices = grid.initializer(1).vertices;
-	var shield = grid.getRandomPoint();
+	var shield = this.getRandomPoint();
 	var getRandomPlateSpeed 		= this.getRandomPlateSpeed;
 	var getRandomPlateDensityEffect = this.getRandomPlateDensityEffect;
 	plate = new Plate(this, 
-		grid.getRandomPoint(), 
-		grid.getRandomPoint(), 
+		this.getRandomPoint(), 
+		this.getRandomPoint(), 
 		getRandomPlateSpeed());
 	this.plates = [plate];
-	for(var i=0, length = vertices.length; i<length; i++) {
-		var vertex = plate._vertices[i];
-		if(shield.distanceTo(vertices[i]) < continentRadius ) { 
-			this.crust.create(vertex, this.land);
+	for(var i=0, length = plate._cells.length; i<length; i++) {
+		var cell = plate._cells[i];
+		if(shield.distanceTo(cell.pos) < continentRadius ) { 
+			this.crust.create(cell, this.land);
 		} else {
-			this.crust.create(vertex, this.ocean);
+			this.crust.create(cell, this.ocean);
 		}
-		vertex.content.isostasy();
+		cell.content.isostasy();
 	}
 	this.updateNeighbors();
 	this.updateBorders();
@@ -123,4 +122,11 @@ World.prototype.updateMatrices = function(){
 		plates[i].mesh.updateMatrix();
 		plates[i].mesh.updateMatrixWorld();
 	}
+}
+
+World.prototype.getRandomPoint = function() {
+	return _toCartesian({
+		lat: Math.asin(2*random.random() - 1),
+		lon: 2*Math.PI * random.random()
+	});
 }

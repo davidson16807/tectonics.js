@@ -17,12 +17,6 @@ function View(world, fragmentShader, vertexShader){
 	this.camera	= new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, .01, 10000 );
 	this.camera.position.set(0, 0, 5);
 	this.scene.add(this.camera);
-	
-	this.asthenosphere	= new THREE.Mesh( 
-		world.grid.initializer(this.THRESHOLD), 
-		new THREE.MeshBasicMaterial({color:0x0a0a32}));
-	this.asthenosphere.renderDepth = -1;
-	//this.scene.add(this.asthenosphere);
 }
 
 View.prototype.fragmentShader = function(fragmentShader){
@@ -52,10 +46,8 @@ View.prototype.update = function(){
 		mesh = this.meshes.get(plates[i]);
 		mesh.matrix = plates[i].mesh.matrix;
 		mesh.rotation.setFromRotationMatrix(mesh.matrix);
-		mesh.geometry.verticesNeedUpdate = true;
-		var vertices = mesh.geometry.vertices
 		var displacement = mesh.material.attributes.displacement.value;
-		for(var j=0, lj = plates[i]._vertices.length, cells = plates[i]._vertices; j<lj; j++){
+		for(var j=0, lj = plates[i]._cells.length, cells = plates[i]._cells; j<lj; j++){
 			var content = cells[j].content;
 			if(content){
 				displacement[j] = content.displacement;
@@ -81,7 +73,7 @@ View.prototype.add = function(plate){
 		fragmentShader: this._fragmentShader
 	});
 	var mesh = new THREE.Mesh( 
-		world.grid.initializer(this.SEALEVEL), 
+		world.grid.template.clone(), 
 		material);
 	
 	this.scene.add(mesh);
