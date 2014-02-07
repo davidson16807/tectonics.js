@@ -257,7 +257,10 @@ Plate.prototype.split = function(){
 	var platesNum = world.platesNum - world.plates.length
 	var plates = _.range(platesNum).map(function(i) { 
 		var pos = world.getRandomPoint();
-		var eulerPole = new THREE.Vector3().crossVectors(centroid, pos).normalize();
+		var eulerPole = pos.distanceToSquared(centroid) < 2? 
+			new THREE.Vector3().crossVectors(centroid, pos).normalize() :
+			new THREE.Vector3().crossVectors(pos, centroid).normalize();
+
 		return new Plate(world, pos, eulerPole, 
 			world.getRandomPlateSpeed());
 	});
@@ -274,10 +277,12 @@ Plate.prototype.split = function(){
 	}
 	
 	for(var i=0, li = cells.length; i<li; i++){
-		var vertex = gridvertices[i];
-		var id = kdtree.nearest(vertex,1)[0][0].i;
-		var nearest = plates[id];
-		nearest._cells[i].replace(cells[i]);
+		var cell = cells[i];
+		if(cell.content){
+			var id = kdtree.nearest(cell.pos,1)[0][0].i;
+			var nearest = plates[id];
+			nearest._cells[i].replace(cell);
+		}
 	}
 	
 	world.plates.splice(world.plates.indexOf(this),1);
