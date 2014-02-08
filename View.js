@@ -41,6 +41,14 @@ View.prototype.vertexShader = function(vertexShader){
 	}
 }
 
+View.prototype.uniform = function(key, value){
+	for(var i=0, li = this.world.plates.length, plates = world.plates; i<li; i++){
+		mesh = this.meshes.get(plates[i]);
+		mesh.material.uniforms[key].value = value;
+		mesh.material.uniforms[key].needsUpdate = true;
+	}
+}
+
 View.prototype.update = function(){
 	for(var i=0, li = this.world.plates.length, plates = world.plates; i<li; i++){
 		mesh = this.meshes.get(plates[i]);
