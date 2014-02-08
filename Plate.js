@@ -1,6 +1,7 @@
 _isFilled = function(vertex){
 	return vertex.content != void 0;
 }
+_isLand = function(cell){ return cell.isContinental() };
 _hashVector = function(vector){
 	return vector.id.toString()
 }
@@ -30,7 +31,10 @@ Plate.prototype.get = function(i){
 	return this._cells[i];
 }
 Plate.prototype.getSize = function(){
-	return this._cells.filter(function(cell){return _isFilled(cell)}).length;
+	return this._cells.filter(_isFilled).length;
+}
+Plate.prototype.getContinentalSize = function(){
+	return this._cells.filter(_isLand).length;
 }
 
 Plate.prototype.getCentroid = function(){
@@ -44,16 +48,18 @@ Plate.prototype.getCentroid = function(){
 		divideScalar(points.length).
 		normalize();
 }
-Plate.prototype.getContinentalSize = function(){
-	return this._cells.filter(function(cell){ return cell.isContinental() }).length;
-}
 Plate.prototype.getRandomPoint = function(){
-	var points = this._cells.filter(function(cell){return _isFilled(cell)});
+	var points = this._cells.filter(_isFilled);
+	var i = Math.floor(Math.random()*points.length);
+	return points[i];
+}
+Plate.prototype.getRandomLand = function(){
+	var points = this._cells.filter(_isLand);
 	var i = Math.floor(Math.random()*points.length);
 	return points[i];
 }
 Plate.prototype.getRandomBorder = function(){
-	var points = this._collideable.filter(function(cell){return _isFilled(cell)});
+	var points = this._collideable.filter(_isFilled);
 	var i = Math.floor(random.random()*points.length);
 	return points[i];
 }
@@ -248,6 +254,7 @@ Plate.prototype.dock = function(subjugated){
 }
 
 Plate.prototype.split = function(){
+	var _this = this;
 	var grid = this._grid;
 	var gridvertices = grid.template.vertices;
 	var world = this.world;
@@ -256,11 +263,12 @@ Plate.prototype.split = function(){
 	var centroid = this.getCentroid();
 	var platesNum = world.platesNum - world.plates.length
 	var plates = _.range(platesNum).map(function(i) { 
-		var pos = world.getRandomPoint();
+		//var junction = this.getRandomJunction();
+		var pos = _this.getRandomPoint().pos;
 		var eulerPole = pos.distanceToSquared(centroid) < 2? 
 			new THREE.Vector3().crossVectors(centroid, pos).normalize() :
 			new THREE.Vector3().crossVectors(pos, centroid).normalize();
-
+			
 		return new Plate(world, pos, eulerPole, 
 			world.getRandomPlateSpeed());
 	});
