@@ -81,6 +81,12 @@
 					</select>
 				</td>
 			</tr>
+			<tr>
+				<td>Sea Level:</td>
+				<td>
+					<input id="sealevel" type="range" value="1.0" min="0" max="1" step="0.1"/>
+				</td>
+			</tr>
 		</table>
 		<div></div>
 	</div>
@@ -233,6 +239,10 @@
 		});
 		$('#vertexShader').change(function(e){
 			view.vertexShader(vertexShaders[$('#vertexShader').val()]);
+		});
+		$('#sealevel').change(function(e){
+			console.log($('#sealevel').val());
+			view.uniform('sealevel_mod', $('#sealevel').val());
 		});
 	</script>
 </body>

@@ -41,6 +41,14 @@ View.prototype.vertexShader = function(vertexShader){
 	}
 }
 
+View.prototype.uniform = function(key, value){
+	for(var i=0, li = this.world.plates.length, plates = world.plates; i<li; i++){
+		mesh = this.meshes.get(plates[i]);
+		mesh.material.uniforms[key].value = value;
+		mesh.material.uniforms[key].needsUpdate = true;
+	}
+}
+
 View.prototype.update = function(){
 	for(var i=0, li = this.world.plates.length, plates = world.plates; i<li; i++){
 		mesh = this.meshes.get(plates[i]);
@@ -65,7 +73,8 @@ View.prototype.add = function(plate){
 		  displacement: { type: 'f', value: [] }
 		},
 		uniforms: {
-		  sealevel: 	{ type: 'f', value: this.world.SEALEVEL },
+		  sealevel: { type: 'f', value: this.world.SEALEVEL },
+		  sealevel_mod: { type: 'f', value: 1.0 },
 		  color: 	    { type: 'c', value: new THREE.Color(Math.random() * 0xffffff) },
 		},
 		blending: THREE.NoBlending,

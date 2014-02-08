@@ -8,7 +8,8 @@ template = _multiline(function() {/**
 	varying float vDisplacement;
 	varying vec4 vPosition;
 	
-	uniform  float sealevel;
+	uniform float sealevel;
+	uniform float sealevel_mod;
 
 	const vec4 NONE = vec4(0.0,0.0,0.0,0.0);
 	const vec4 OCEAN = vec4(0.04,0.04,0.2,1.0);
@@ -27,47 +28,42 @@ template = _multiline(function() {/**
 
 	void main() {
 		float epipelagic = sealevel - 200.0;
+		float mesopelagic = sealevel - 1000.0;
 		float abyssopelagic = sealevel - 4000.0;
 		float maxheight = sealevel + 15000.0; 
 
 		float felsic_fraction = smoothstep(abyssopelagic, maxheight, vDisplacement);
+
+		float mineral_fraction = smoothstep(maxheight, sealevel, vDisplacement);
+
+		float lat = degrees(asin(abs(vPosition.y)));
+		float lapse_rate = 6.4 / 1000.; // oC per m
+		
+		//Mean annual temperature, oC
+		float temp = mix(30., -25., abs(vPosition.y)) - lapse_rate * (vDisplacement - sealevel);
+		
+		//Mean annual precipitation, mm yr-1
+		float precip = 4500.;
+		precip = mix(precip, 	0., 	smoothstep(0.,  30., 	lat)); 	//hadley cell
+		precip = mix(precip, 	2250.,	smoothstep(30., 60., 	lat)); 	//ferrel cell
+		precip = mix(precip, 	0., 	smoothstep(60., 90., 	lat)); 	//polar cell
+
+		//Net Primary Productivity (NPP), expressed as the fraction of an modeled maximum (3 kg m-2 yr-1)
+		//Derived using the Miami model (Lieth et al. 1972). A summary is provided by Grieser et al. 2006
+		float npp_temp 		= (1. + exp(1.315 - 0.119 * temp)); //temperature limited npp
+		float npp_precip 	= (1. - exp(-0.000664 * precip)); 	//drought limited npp
+		float npp = min(npp_temp, npp_precip); 					//realized npp, the most conservative of the two estimates
+		
+		float organic_fraction 	= lat/90.; // smoothstep(30., -30., temp); // 
+
 		vec4 bedrock			= mix(MAFIC, FELSIC, felsic_fraction);
-
-		if (vDisplacement < epipelagic) {
-			gl_FragColor = OCEAN;
-		} else if (vDisplacement < sealevel) {
-			float x = smoothstep(epipelagic, sealevel, vDisplacement);
-			gl_FragColor =  mix(OCEAN, SHALLOW, x);
-		} else {
-
-			float mineral_fraction = smoothstep(maxheight, sealevel, vDisplacement);
-
-			float lat = degrees(asin(abs(vPosition.y)));
-			float lapse_rate = 6.4 / 1000.; // oC per m
-			
-			//Mean annual temperature, oC
-			float temp = mix(30., -25., abs(vPosition.y)) - lapse_rate * (vDisplacement - sealevel);
-			
-			//Mean annual precipitation, mm yr-1
-			float precip = 4500.;
-			precip = mix(precip, 	0., 	smoothstep(0.,  30., 	lat)); 	//hadley cell
-			precip = mix(precip, 	2250.,	smoothstep(30., 60., 	lat)); 	//ferrel cell
-			precip = mix(precip, 	0., 	smoothstep(60., 90., 	lat)); 	//polar cell
-
-			//Net Primary Productivity (NPP), expressed as the fraction of an modeled maximum (3 kg m-2 yr-1)
-			//Derived using the Miami model (Lieth et al. 1972). A summary is provided by Grieser et al. 2006
-			float npp_temp 		= (1. + exp(1.315 - 0.119 * temp)); //temperature limited npp
-			float npp_precip 	= (1. - exp(-0.000664 * precip)); 	//drought limited npp
-			float npp = min(npp_temp, npp_precip); 					//realized npp, the most conservative of the two estimates
-			
-			float organic_fraction 	= lat/90.; // smoothstep(30., -30., temp); // 
-
-			vec4 soil				= mix(bedrock, mix(SAND, PEAT, organic_fraction), mineral_fraction);
-			vec4 canopy 			= mix(soil, JUNGLE, npp);
-			vec4 snow 				= mix(canopy, SNOW, smoothstep(80., 85., lat));
-			
-			gl_FragColor = @OUTPUT;
-		}
+		vec4 soil				= mix(bedrock, mix(SAND, PEAT, organic_fraction), mineral_fraction);
+		vec4 canopy 			= mix(soil, JUNGLE, npp);
+		vec4 snow 				= mix(canopy, SNOW, smoothstep(75., 85., lat));
+		vec4 ocean 				= mix(OCEAN, SHALLOW, smoothstep(epipelagic, sealevel_mod * sealevel, vDisplacement));
+		
+		gl_FragColor = @OUTPUT;
+		gl_FragColor = vDisplacement < sealevel_mod * sealevel? ocean : gl_FragColor;
 	}
 
 **/});
