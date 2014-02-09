@@ -186,8 +186,9 @@ Plate.prototype.erode = function(timestep){
 	var grid = this.world.grid;
 	var vertex, intersected;
 	var cells = this._cells;
-	var precipitation = 3.8e5;
+	var precipitation = 7.8e5;
 	// ^^^ measured in meters of rain per million years
+	// global land average from wikipedia
 	var erosiveFactor = 1.8e-7; 
 	// ^^^ the rate of erosion per the rate of rainfall in that place
 	// measured in fraction of height gradient per meters of rain
@@ -203,7 +204,7 @@ Plate.prototype.erode = function(timestep){
 			if(_.isUndefined(neighbor)){
 				continue;
 			}
-			if(neighbor.displacement < world.sealevel && content.displacement < world.sealevel){
+			if(neighbor.displacement < world.SEALEVEL && content.displacement < world.SEALEVEL){
 				continue;
 			}
 			var dheight = content.displacement - neighbor.displacement;
