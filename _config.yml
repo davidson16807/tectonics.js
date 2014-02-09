@@ -1,0 +1,5 @@
+safe: true
+lsi: false
+pygments: true
+include: blog/
+url: http://davidson16807.github.io/tectonics.js

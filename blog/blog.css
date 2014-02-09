@@ -1,0 +1,125 @@
+﻿body
+{
+    font-family: Helvetica, Arial, sans-serif;
+    margin: 0;
+    background-color: white; 
+}
+
+h1, h2, h3, summary
+{
+	font-family: Garamond, Hoefler Text, Free Serif, serif;
+}
+h1 a, h2 a, h3 a
+{
+	color: black;
+	text-decoration: initial;
+}
+h1, h2
+{ 
+	margin-left: -2.128%; 
+} 
+h3, h4
+{ 
+	margin-left: -1.315%; 
+}
+h5, h6   
+{ 
+	margin-left: -0.813%; 
+} 
+h1 { font-size: 261%; margin-bottom: 0.813%; margin-top: 0.502%}
+h2 { font-size: 161%; }
+h3, summary
+{ 
+	font-size: 138%; 
+    font-weight:bold;
+}
+details
+{
+	margin-top: 1.315%	
+}
+details p 
+{ 
+	margin-left: 1.315%; 
+}
+
+img
+{
+    border-style: none;
+    text-decoration: none;
+}
+
+.quotation
+{
+	display:list-item;
+	list-style:none;
+	font-style:italic;
+	text-align:center;
+}
+.attribution
+{
+	display:list-item;
+	list-style:none;
+	font-style:normal;
+	text-indent:61%
+}
+.icon
+{
+	position	: fixed;
+	width       : 40%;
+	bottom		: -1em;
+	left		: -15%;
+	z-index		: -1;
+}
+.ads
+{
+    float: right;
+    width: 23.607%;
+	margin: 3.444% 5.573% 3.444% 3.444%;
+	padding: 0.813%;
+    border-color: #E0E0E0;
+    border-style: solid;
+}
+.ads img 
+{ 
+	max-height: 3em; 
+    max-width: 100%;
+    margin: 1.315%;
+}
+
+
+.ocean
+{
+    background-color:#0A0A32;
+    color:White;
+}
+.land
+{
+	background-color:#50721D;
+	color:#202020;
+}
+.tundra
+{
+	background-color:#444422;
+	color:#E0E0E0;
+}
+.shallow
+{
+	background-color:#0A968C;
+	color:Black;
+}
+.mountain
+{
+	background-color:#404040;
+	color:White;
+}
+.bright
+{
+	background-color:White;
+	color:Black;
+}
+.dark
+{
+	background-color:Black;
+	color:White;
+}
+
