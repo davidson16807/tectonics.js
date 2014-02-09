@@ -2,14 +2,13 @@ _isFilled = function(vertex){
 	return vertex.content != void 0;
 }
 _isLand = function(cell){ return cell.isContinental() };
-_hashVector = function(vector){
+_hashCell = function(vector){
 	return vector.id.toString()
 }
 
-function Plate(world, center, eulerPole, angularSpeed)
+function Plate(world, eulerPole, angularSpeed)
 {
 	this.world = world;
-	this.center = center; // TODO: remove
 	this.eulerPole = eulerPole;
 	this.angularSpeed = angularSpeed;
 	this.densityOffset = world.getRandomPlateDensityEffect();
@@ -30,12 +29,6 @@ function Plate(world, center, eulerPole, angularSpeed)
 Plate.prototype.get = function(i){
 	return this._cells[i];
 }
-Plate.prototype.getSize = function(){
-	return this._cells.filter(_isFilled).length;
-}
-Plate.prototype.getContinentalSize = function(){
-	return this._cells.filter(_isLand).length;
-}
 
 Plate.prototype.getCentroid = function(){
 	var points = this._cells.
@@ -48,6 +41,12 @@ Plate.prototype.getCentroid = function(){
 		divideScalar(points.length).
 		normalize();
 }
+Plate.prototype.getSize = function(){
+	return this._cells.filter(_isFilled).length;
+}
+Plate.prototype.getContinentalSize = function(){
+	return this._cells.filter(_isLand).length;
+}
 Plate.prototype.getRandomPoint = function(){
 	var points = this._cells.filter(_isFilled);
 	var i = Math.floor(Math.random()*points.length);
@@ -58,25 +57,17 @@ Plate.prototype.getRandomLand = function(){
 	var i = Math.floor(Math.random()*points.length);
 	return points[i];
 }
-Plate.prototype.getRandomBorder = function(){
-	var points = this._collideable.filter(_isFilled);
-	var i = Math.floor(random.random()*points.length);
-	return points[i];
-}
 Plate.prototype.getRandomJunction = function() {
 	var cells = this._cells;
 	var candidates = this._geometry.faces.filter(function(face) { 
-		return  cells[face.a].isContinental() && 
-				cells[face.b].isContinental() && 
-				cells[face.c].isContinental()
+		return  _isFilled(cells[face.a]) && 
+				_isFilled(cells[face.b]) && 
+				_isFilled(cells[face.c])
 	});
 	if(candidates.length > 0){
-		var i = Math.floor(Math.random()*candidates.length);
+		var i = Math.floor(random.random()*candidates.length);
 		var selection = candidates[i];
 		return [cells[selection.a], cells[selection.b], cells[selection.c]];
-	}
-	if(this._collideable.length > 0){
-		return [this.getRandomBorder(), this.getRandomBorder(), this.getRandomBorder()];
 	}
 	return [this.getRandomPoint(), this.getRandomPoint(), this.getRandomPoint()];
 }
@@ -261,21 +252,23 @@ Plate.prototype.split = function(){
 	var cells = this._cells;
 	
 	var centroid = this.getCentroid();
-	var platesNum = world.platesNum - world.plates.length
-	var plates = _.range(platesNum).map(function(i) { 
-		//var junction = this.getRandomJunction();
-		var pos = _this.getRandomPoint().pos;
+	var plates = [];
+	var seeds = new buckets.Dictionary(_hashCell);
+	for (var i = world.plates.length-1; i < Math.ceil(world.platesNum/2); i++) {
+		var junction = _this.getRandomJunction();
+		var pos = junction[0].pos;
 		var eulerPole = pos.distanceToSquared(centroid) < 2? 
 			new THREE.Vector3().crossVectors(centroid, pos).normalize() :
 			new THREE.Vector3().crossVectors(pos, centroid).normalize();
-			
-		return new Plate(world, pos, eulerPole, 
-			world.getRandomPlateSpeed());
-	});
-	var kdtree = new kdTree(_.range(platesNum).map(function(i) {
-		return {x:plates[i].center.x, y:plates[i].center.y, z:plates[i].center.z, i:i}
-	}), grid.getDistance, ["x","y","z"]);
-	
+
+		var smaller = new Plate(world, eulerPole, world.getRandomPlateSpeed());
+		var larger = new Plate(world, eulerPole, world.getRandomPlateSpeed());
+		plates.push(smaller);
+		plates.push(larger);
+		seeds.set(junction[0], smaller);
+		seeds.set(junction[1], larger);
+		seeds.set(junction[2], larger);
+	};
 	for(var i=0, li = plates.length; i<li; i++){
 		var plate = plates[i];
 		world.plates.push(plate);
@@ -283,13 +276,13 @@ Plate.prototype.split = function(){
 		plate.mesh.matrix = this.mesh.matrix;
 		plate.mesh.rotation.setFromRotationMatrix( this.mesh.matrix );
 	}
-	
 	for(var i=0, li = cells.length; i<li; i++){
 		var cell = cells[i];
 		if(cell.content){
-			var id = kdtree.nearest(cell.pos,1)[0][0].i;
-			var nearest = plates[id];
-			nearest._cells[i].replace(cell);
+			var nearest = _.min(seeds.keys(), function(x) {	
+				return x.pos.distanceTo(cell.pos); 
+			});
+			seeds.get(nearest)._cells[i].replace(cell);
 		}
 	}
 	

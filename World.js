@@ -24,8 +24,7 @@ function World(grid, optional){
 	var shield = this.getRandomPoint();
 	var getRandomPlateSpeed 		= this.getRandomPlateSpeed;
 	var getRandomPlateDensityEffect = this.getRandomPlateDensityEffect;
-	plate = new Plate(this, 
-		this.getRandomPoint(), 
+	plate = new Plate(this,  
 		this.getRandomPoint(), 
 		getRandomPlateSpeed());
 	this.plates = [plate];
