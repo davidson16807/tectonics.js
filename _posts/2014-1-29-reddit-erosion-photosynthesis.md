@@ -13,16 +13,16 @@ Fortunately, I've had a [solid erosion model](https://github.com/davidson16807/t
 
 Don't let the dense prose fool you - the model is stupid simple at its core. For each pair of neighboring grid cells, the model takes the height difference between the two and transfers a fraction of that height from one cell to another. The fraction that gets transferred is determined by two parameters: 
 
- * precipitation
+1.) precipitation
 
- * rate of erosion, expressed as a fraction of height per unit of precipitation
+2.) rate of erosion, expressed as a fraction of height per unit of precipitation
 
 That's it. The original publication embellishes upon this to partition bedrock erosion from sediment erosion, and I might do something like this in the future, but for now the model works good enough. Precipitation is also currently set to a constant reflecting the average rainfall experienced on Earth, but again, good enough.
 
 So mountains are less frequent, now. There are still issues though:
 
- * Mountains are still much taller than those encountered on earth, say, 15km.
+1.) Mountains are still much taller than those encountered on earth, say, 15km.
 
- * Coasts occassionally appear much more rounded than what we see on earth.
+2.) Coasts occassionally appear much more rounded than what we see on earth.
 
 Both may be symptoms for a number of problems that are both hard to pin down. It may be that the erosion parameters require calibration, but any parameter changes made to address one issue will likely exacerbate the other. Setting precipitation to something besides a constant may be a more plausible solution. Coasts may not be as well rounded if they reflect gradients in precipitation, doubly so if certain regions receive hardly any precipitation, whatsoever. Mountain height might still be overpredicted, but at least then calibration could be conducted on it without exacerbating issues with the coastline. Issues with mountain height may also be addressed by calibrating parameters that define the rate at which continental crust accretes. Previously I was wary to touch these parameters since the model was already predicting a reasonable landmass percentage, but landmass appears to have increased in size now that there is erosion, and it might be time to reinvestigate the accretion parameters.
