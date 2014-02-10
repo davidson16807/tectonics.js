@@ -212,6 +212,12 @@ Plate.prototype.erode = function(timestep){
 		}
 		var erosion = dheightSum * precipitation * timestep * erosiveFactor;
 		content.thickness -= erosion;
+	}
+	for(var i=0, li = cells.length; i<li; i++){
+		content = cells[i].content;
+		if(_.isUndefined(content)){
+			continue;
+		}
 		content.isostasy();
 	}
 }
