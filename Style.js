@@ -79,6 +79,7 @@ fragmentShaders.bedrock	= template.replace('@OUTPUT', 'bedrock');
 fragmentShaders.npp 	= template.replace('@OUTPUT', 'mix(vec4(1), vec4(0,1,0,1), npp)');
 fragmentShaders.temp 	= template.replace('@OUTPUT', 'mix(vec4(1,0,0,1), vec4(0,0,1,1), smoothstep(30., -25., temp))');
 fragmentShaders.precip 	= template.replace('@OUTPUT', 'mix(vec4(1), vec4(0,0,1,1), smoothstep(0., 4500., precip))');
+fragmentShaders.alt 	= template.replace('@OUTPUT', 'mix(vec4(1), vec4(0,0,0,1), smoothstep(sealevel, maxheight, alt))');
 
 fragmentShaders.debug = _multiline(function() {/**   
 
