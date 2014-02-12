@@ -1,9 +1,10 @@
-var _multiline = function(f) {
+'use strict';
+
+function _multiline(f) {
   return f.toString().split('\n').slice(1, -1).join('\n');
 }
 
-
-template = _multiline(function() {/**   
+var template = _multiline(function() {/**   
 
 	varying float vDisplacement;
 	varying vec4 vPosition;
@@ -71,7 +72,7 @@ template = _multiline(function() {/**
 
 **/});
 
-fragmentShaders = {}
+var fragmentShaders = {}
 
 fragmentShaders.satellite = template.replace('@OUTPUT', 'canopy');
 fragmentShaders.soil 	= template.replace('@OUTPUT', 'soil');

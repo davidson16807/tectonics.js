@@ -1,8 +1,10 @@
-var _multiline = function(f) {
+'use strict';
+
+function _multiline(f) {
   return f.toString().split('\n').slice(1, -1).join('\n');
 }
 
-vertexShaders = {};
+var vertexShaders = {};
 vertexShaders.equirectangular = _multiline(function() {/**   
 	const float PI = 3.14;
 	const float OCEAN = 0.0;

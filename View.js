@@ -1,3 +1,5 @@
+'use strict';
+
 var _hashPlate = function(plate){
 	return plate.mesh.uuid
 }
@@ -23,7 +25,7 @@ View.prototype.fragmentShader = function(fragmentShader){
 	if(this._fragmentShader != fragmentShader){
 		this._fragmentShader = fragmentShader;
 		for(var i=0, li = this.world.plates.length, plates = world.plates; i<li; i++){
-			mesh = this.meshes.get(plates[i]);
+			var mesh = this.meshes.get(plates[i]);
 			mesh.material.fragmentShader = fragmentShader;
 			mesh.material.needsUpdate = true;
 		}
@@ -34,7 +36,7 @@ View.prototype.vertexShader = function(vertexShader){
 	if(this._vertexShader != vertexShader){
 		this._vertexShader = vertexShader;
 		for(var i=0, li = this.world.plates.length, plates = world.plates; i<li; i++){
-			mesh = this.meshes.get(plates[i]);
+			var mesh = this.meshes.get(plates[i]);
 			mesh.material.vertexShader = vertexShader;
 			mesh.material.needsUpdate = true;
 		}
@@ -43,15 +45,16 @@ View.prototype.vertexShader = function(vertexShader){
 
 View.prototype.uniform = function(key, value){
 	for(var i=0, li = this.world.plates.length, plates = world.plates; i<li; i++){
-		mesh = this.meshes.get(plates[i]);
+		var mesh = this.meshes.get(plates[i]);
 		mesh.material.uniforms[key].value = value;
 		mesh.material.uniforms[key].needsUpdate = true;
 	}
 }
 
 View.prototype.update = function(){
+
 	for(var i=0, li = this.world.plates.length, plates = world.plates; i<li; i++){
-		mesh = this.meshes.get(plates[i]);
+		var mesh = this.meshes.get(plates[i]);
 		mesh.matrix = plates[i].mesh.matrix;
 		mesh.rotation.setFromRotationMatrix(mesh.matrix);
 		var displacement = mesh.material.attributes.displacement.value;
@@ -96,5 +99,5 @@ View.prototype.remove = function(plate){
 	this.scene.remove(mesh);
 	mesh.material.dispose();
 	mesh.geometry.dispose();
-	delete mesh;
+	delete this.meshes.get(plate);
 }
