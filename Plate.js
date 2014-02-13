@@ -1,8 +1,10 @@
-_isFilled = function(vertex){
+'use strict';
+
+function _isFilled(vertex){
 	return vertex.content != void 0;
 }
-_isLand = function(cell){ return cell.isContinental() };
-_hashCell = function(vector){
+function _isLand(cell){ return cell.isContinental() };
+function _hashCell(vector){
 	return vector.id.toString()
 }
 
@@ -21,7 +23,7 @@ function Plate(world, eulerPole, angularSpeed)
 	this._neighbors = [];
 	this.mesh	= new THREE.Mesh( this._geometry, this._material ); 
 	
-	vertices = this._geometry.vertices;
+	var vertices = this._geometry.vertices;
 	for(var i = 0, length = vertices.length, cells = this._cells; i<length; i++){
 		cells.push(new Cell(this, vertices[i], i));
 	};
@@ -120,7 +122,7 @@ Plate.prototype._getIntersections = function(absolute, plates, grid, getIntersec
 	}
 }
 
-_getCollisionIntersection = function(id, plate) {
+function _getCollisionIntersection(id, plate) {
 	var intersected = plate._cells[id];
 	if (intersected.content && !plate._collideable[id]) {
 		return intersected;
@@ -133,7 +135,7 @@ Plate.prototype.deform = function(){
 	var grid = this._grid;
 	var collideable = this._collideable;
 	var cell, intersected;
-	for(i=0, li = collideable.length; i<li; i++){
+	for(var i=0, li = collideable.length; i<li; i++){
 		var cell = collideable[i];
 		if(_.isUndefined(cell) || _.isUndefined(cell.content)){
 			continue;
@@ -147,7 +149,7 @@ Plate.prototype.deform = function(){
 	}
 }
 
-_getRiftIntersection = function(id, plate) {
+function _getRiftIntersection(id, plate) {
 	var intersected = plate._cells[id];
 	if (intersected.content || plate._riftable[id]) {
 		return intersected;
@@ -161,7 +163,7 @@ Plate.prototype.rift = function(){
 	var cell, intersected;
 	var riftable = this._riftable;
 	var ocean = this.world.ocean;
-	for(i=0, li = riftable.length; i<li; i++){
+	for(var i=0, li = riftable.length; i<li; i++){
 		cell = riftable[i];
 		if(_.isUndefined(cell) || !_.isUndefined(cell.content)){
 			continue;
@@ -193,7 +195,7 @@ Plate.prototype.erode = function(timestep){
 	// ^^^ the rate of erosion per the rate of rainfall in that place
 	// measured in fraction of height gradient per meters of rain
 	for(var i=0, li = cells.length; i<li; i++){
-		content = cells[i].content;
+		var content = cells[i].content;
 		if(_.isUndefined(content)){
 			continue;
 		}
@@ -304,6 +306,5 @@ Plate.prototype.destroy = function(){
 	
 	mesh.material.dispose();
 	
-	delete mesh;
-	
+	delete this.mesh;
 }

@@ -1,3 +1,4 @@
+'use strict';
 
 function Grid(template, voronoi){
 	this.template = template;

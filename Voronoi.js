@@ -1,20 +1,23 @@
-_toSpherical = function(cartesian){
+'use strict';
+
+function _toSpherical(cartesian){
 	return {lat: Math.asin(cartesian.y/cartesian.length()), lon: Math.atan2(-cartesian.z, cartesian.x)};
 }
-_toCartesian = function(spherical){
+
+function _toCartesian (spherical){
 	return new THREE.Vector3(
 		Math.cos(spherical.lat)  * Math.cos(spherical.lon),
 	    Math.sin(spherical.lat),
 		-Math.cos(spherical.lat) * Math.sin(spherical.lon));
 }
-_bound = function(value, min, max){
+function _bound (value, min, max){
 	return Math.max(Math.min(value, max), min);
 }
 
 //Data structure mapping coordinates on a sphere to the nearest point in a kdtree
 //Retrievals from the map are of O(1) complexity. The result resembles a voronoi diagram, hence the name.
 function VoronoiSphere(pointsNum, kdtree){
-	size = Math.sqrt(pointsNum);
+	var size = Math.sqrt(pointsNum);
 	this.lonRange = 2*Math.PI;
 	this.lonMin = -Math.PI;
 	this.lonNum = 2*size;

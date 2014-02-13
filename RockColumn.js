@@ -1,3 +1,5 @@
+'use strict';
+
 function RockColumn(world, elevation, thickness, density){
 	this.world = world;
 	this.elevation = elevation;
@@ -11,16 +13,16 @@ RockColumn.prototype.isContinental = function(){
 }
 
 RockColumn.prototype.accrete = function(subducted){
-	sialDensity = this.world.land.density
-	simaDensity = this.world.mantleDensity
+	var sialDensity = this.world.land.density
+	var simaDensity = this.world.mantleDensity
 	
-	sialFraction = (subducted.density - simaDensity) / (sialDensity - simaDensity)
+	var sialFraction = (subducted.density - simaDensity) / (sialDensity - simaDensity)
 	
-	thickness = this.thickness
-	heightChange = subducted.thickness * sialFraction
-	pressure = (thickness*this.density) +
+	var thickness = this.thickness
+	var heightChange = subducted.thickness * sialFraction
+	var pressure = (thickness*this.density) +
 			   (heightChange*sialDensity)
-	density  = pressure / (thickness + heightChange)
+	var density  = pressure / (thickness + heightChange)
 	this.thickness += heightChange
 	this.density = density
 	this.isostasy();
@@ -30,8 +32,8 @@ RockColumn.prototype.isostasy = function(){
 	//Calculates elevation as a function of crust density.
 	//This was chosen as it only requires knowledge of crust density and thickness, 
 	//which are relatively well known.
-	thickness = this.thickness
-	rootDepth = thickness * this.density / this.world.mantleDensity
-	displacement = thickness - rootDepth
+	var thickness = this.thickness
+	var rootDepth = thickness * this.density / this.world.mantleDensity
+	var displacement = thickness - rootDepth
 	this.displacement = displacement 
 }

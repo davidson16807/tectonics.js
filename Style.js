@@ -1,9 +1,10 @@
-var _multiline = function(f) {
+'use strict';
+
+function _multiline(f) {
   return f.toString().split('\n').slice(1, -1).join('\n');
 }
 
-
-template = _multiline(function() {/**   
+var template = _multiline(function() {/**   
 
 	varying float vDisplacement;
 	varying vec4 vPosition;
@@ -24,6 +25,18 @@ template = _multiline(function() {/**
 	const vec4 SNOW  = vec4(0.9, 0.9, 0.9, 0.9); 
 	const vec4 JUNGLE = vec4(30,50,10,255)/255.;
 	//const vec4 JUNGLE = vec4(20,45,5,255)/255.;
+
+	//converts float from 0-1 to a heat map visualtion
+	//credit goes to Gaëtan Renaudeau: http://greweb.me/glsl.js/examples/heatmap/
+	vec4 heat (float v) {
+		float value = 1.-v;
+		return (0.5+0.5*smoothstep(0.0, 0.1, value))*vec4(
+			smoothstep(0.5, 0.3, value),
+			value < 0.3 ? smoothstep(0.0, 0.3, value) : smoothstep(1.0, 0.6, value),
+			smoothstep(0.4, 0.6, value),
+			1
+		);
+	}
 
 	void main() {
 		float epipelagic = sealevel - 200.0;
@@ -71,14 +84,15 @@ template = _multiline(function() {/**
 
 **/});
 
-fragmentShaders = {}
+var fragmentShaders = {}
 
 fragmentShaders.satellite = template.replace('@OUTPUT', 'canopy');
 fragmentShaders.soil 	= template.replace('@OUTPUT', 'soil');
 fragmentShaders.bedrock	= template.replace('@OUTPUT', 'bedrock');
 fragmentShaders.npp 	= template.replace('@OUTPUT', 'mix(vec4(1), vec4(0,1,0,1), npp)');
-fragmentShaders.temp 	= template.replace('@OUTPUT', 'mix(vec4(1,0,0,1), vec4(0,0,1,1), smoothstep(30., -25., temp))');
-fragmentShaders.precip 	= template.replace('@OUTPUT', 'mix(vec4(1), vec4(0,0,1,1), smoothstep(0., 4500., precip))');
+fragmentShaders.temp 	= template.replace('@OUTPUT', 'heat(smoothstep(-25., 30., temp))');
+fragmentShaders.precip 	= template.replace('@OUTPUT', 'heat(smoothstep(4500., 0., precip))');
+fragmentShaders.alt 	= template.replace('@OUTPUT', 'mix(vec4(1), vec4(0,0,0,1), smoothstep(sealevel, maxheight, alt))');
 
 fragmentShaders.debug = _multiline(function() {/**   
 
