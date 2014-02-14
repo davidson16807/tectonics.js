@@ -45,22 +45,22 @@ var template = _multiline(function() {/**
 		float maxheight = sealevel + 15000.0; 
 
 		float alt = vDisplacement - sealevel;
-		float lat = degrees(asin(abs(vPosition.y)));
-		float lapse_rate = 6.4 / 1000.; // oC per m
+		float lat = (asin(abs(vPosition.y)));
+		float lapse_rate = 6.4 / 1000.; // °C per m
 		
-		//Mean annual temperature, oC
-		float temp = mix(30., -25., abs(vPosition.y)) - lapse_rate * alt;
+		//Mean annual temperature, °C
+		float temp = mix(-25., 30., cos(lat));// - lapse_rate * alt;
 		
 		//Mean annual precipitation, mm yr-1
-		float precip = 4500.;
-		precip = mix(precip, 	0., 	smoothstep(0.,  30., 	lat)); 	//hadley cell
-		precip = mix(precip, 	2250.,	smoothstep(30., 60., 	lat)); 	//ferrel cell
-		precip = mix(precip, 	0., 	smoothstep(60., 90., 	lat)); 	//polar cell
+		float precip = 2000.;
+		precip = mix(precip, 	0., 	smoothstep(0.,  30., 	degrees(lat))); 	//hadley cell
+		precip = mix(precip, 	1100.,	smoothstep(30., 60., 	degrees(lat))); 	//ferrel cell
+		precip = mix(precip, 	0., 	smoothstep(60., 90., 	degrees(lat))); 	//polar cell
 
 		//Net Primary Productivity (NPP), expressed as the fraction of an modeled maximum (3 kg m-2 yr-1)
 		//Derived using the Miami model (Lieth et al. 1972). A summary is provided by Grieser et al. 2006
-		float npp_temp 		= (1. + exp(1.315 - 0.119 * temp)); //temperature limited npp
-		float npp_precip 	= (1. - exp(-0.000664 * precip)); 	//drought limited npp
+		float npp_temp 		= 1./(1. + exp(1.315 - (0.5/4.) * temp)); //temperature limited npp
+		float npp_precip 	= (1. - exp(-(1./800.) * precip)); 	//drought limited npp
 		float npp = min(npp_temp, npp_precip); 					//realized npp, the most conservative of the two estimates
 
 		//Atmospheric pressure, kPa
@@ -69,8 +69,8 @@ var template = _multiline(function() {/**
 		
 		float felsic_fraction = smoothstep(abyssopelagic, maxheight, vDisplacement);
 		float mineral_fraction = smoothstep(maxheight, sealevel, vDisplacement);
-		float organic_fraction 	= lat/90.; // smoothstep(30., -30., temp); 
-		float ice_fraction = vDisplacement > mix(epipelagic, mesopelagic, smoothstep(70., 80., lat))? smoothstep(75., 80., lat) : 0.;
+		float organic_fraction 	= degrees(lat)/90.; // smoothstep(30., -30., temp); 
+		float ice_fraction = vDisplacement > mix(epipelagic, mesopelagic, smoothstep(70., 80., lat))? smoothstep(75., 80., degrees(lat) : 0.;
 
 		vec4 ocean 				= mix(OCEAN, SHALLOW, smoothstep(epipelagic, sealevel, vDisplacement));
 		vec4 bedrock			= mix(MAFIC, FELSIC, felsic_fraction);
