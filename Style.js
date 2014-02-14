@@ -60,7 +60,7 @@ var template = _multiline(function() {/**
 		//Net Primary Productivity (NPP), expressed as the fraction of an modeled maximum (3 kg m-2 yr-1)
 		//Derived using the Miami model (Lieth et al. 1972). A summary is provided by Grieser et al. 2006
 		float npp_temp 		= 1./(1. + exp(1.315 - (0.5/4.) * temp)); //temperature limited npp
-		float npp_precip 	= (1. - exp(-(1./800.) * precip)); 	//drought limited npp
+		float npp_precip 	= (1. - exp(-precip/800.)); 	//drought limited npp
 		float npp = min(npp_temp, npp_precip); 					//realized npp, the most conservative of the two estimates
 
 		//Atmospheric pressure, kPa
@@ -70,7 +70,7 @@ var template = _multiline(function() {/**
 		float felsic_fraction = smoothstep(abyssopelagic, maxheight, vDisplacement);
 		float mineral_fraction = smoothstep(maxheight, sealevel, vDisplacement);
 		float organic_fraction 	= degrees(lat)/90.; // smoothstep(30., -30., temp); 
-		float ice_fraction = vDisplacement > mix(epipelagic, mesopelagic, smoothstep(70., 80., lat))? smoothstep(75., 80., degrees(lat) : 0.;
+		float ice_fraction = vDisplacement > mix(epipelagic, mesopelagic, smoothstep(0., -10., temp))? smoothstep(0., -10., temp) : 0.;
 
 		vec4 ocean 				= mix(OCEAN, SHALLOW, smoothstep(epipelagic, sealevel, vDisplacement));
 		vec4 bedrock			= mix(MAFIC, FELSIC, felsic_fraction);
@@ -91,7 +91,7 @@ fragmentShaders.soil 	= template.replace('@OUTPUT', 'soil');
 fragmentShaders.bedrock	= template.replace('@OUTPUT', 'bedrock');
 fragmentShaders.npp 	= template.replace('@OUTPUT', 'mix(vec4(1), vec4(0,1,0,1), npp)');
 fragmentShaders.temp 	= template.replace('@OUTPUT', 'heat(smoothstep(-25., 30., temp))');
-fragmentShaders.precip 	= template.replace('@OUTPUT', 'heat(smoothstep(4500., 0., precip))');
+fragmentShaders.precip 	= template.replace('@OUTPUT', 'heat(smoothstep(2000., 0., precip))');
 fragmentShaders.alt 	= template.replace('@OUTPUT', 'mix(vec4(1), vec4(0,0,0,1), smoothstep(sealevel, maxheight, alt))');
 
 fragmentShaders.debug = _multiline(function() {/**   
