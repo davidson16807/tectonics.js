@@ -10,6 +10,7 @@ var template = _multiline(function() {/**
 	varying vec4 vPosition;
 	
 	uniform float sealevel;
+	uniform float sealevel_mod;
 
 	const vec4 NONE = vec4(0.0,0.0,0.0,0.0);
 	const vec4 OCEAN = vec4(0.04,0.04,0.2,1.0);
@@ -77,26 +78,26 @@ var template = _multiline(function() {/**
 
 		//Net Primary Productivity (NPP), expressed as the fraction of an modeled maximum (3 kg m-2 yr-1)
 		//Derived using the Miami model (Lieth et al. 1972). A summary is provided by Grieser et al. 2006
-		float npp_temp 		= 1./(1. + exp(1.315 - (0.5/4.) * temp)); 	//temperature limited npp
-		float npp_precip 	= (1. - exp(-(precip)/800.)); 		//drought limited npp
-		float npp = min(npp_temp, npp_precip); 							//realized npp, the most conservative of the two estimates
+		float npp_temp 		= 1./(1. + exp(1.315 - (0.5/4.) * temp)); 				//temperature limited npp
+		float npp_precip 	= (1. - exp(-(precip)/800.)); 							//drought limited npp
+		float npp = vDisplacement > sealevel? min(npp_temp, npp_precip) : 0.; 		//realized npp, the most conservative of the two estimates
 
 		//Atmospheric pressure, kPa
 		//Equation from the engineering toolbox
 		float pressure		= 101.325 * pow(1.- 2.25e-5 * alt, 5.25);
 		
 		float felsic_fraction = smoothstep(abyssopelagic, maxheight, vDisplacement);
-		float mineral_fraction = smoothstep(maxheight, sealevel, vDisplacement);
+		float mineral_fraction = vDisplacement > sealevel? smoothstep(maxheight, sealevel, vDisplacement) : 0.;
 		float organic_fraction 	= degrees(lat)/90.; // smoothstep(30., -30., temp); 
 		float ice_fraction = vDisplacement > mix(epipelagic, mesopelagic, smoothstep(0., -10., temp))? smoothstep(0., -10., temp) : 0.;
 
-		vec4 ocean 				= mix(OCEAN, SHALLOW, smoothstep(epipelagic, sealevel, vDisplacement));
+		vec4 ocean 				= mix(OCEAN, SHALLOW, smoothstep(epipelagic, sealevel * sealevel_mod, vDisplacement));
 		vec4 bedrock			= mix(MAFIC, FELSIC, felsic_fraction);
 		vec4 soil				= mix(bedrock, mix(SAND, PEAT, organic_fraction), mineral_fraction);
 		vec4 canopy 			= mix(soil, JUNGLE, npp);
 		
 		gl_FragColor = @OUTPUT;
-		gl_FragColor = vDisplacement < sealevel? ocean : gl_FragColor;
+		gl_FragColor = vDisplacement < sealevel * sealevel_mod? ocean : gl_FragColor;
 		gl_FragColor = mix(gl_FragColor, SNOW, ice_fraction);
 	}
 

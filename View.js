@@ -76,7 +76,8 @@ View.prototype.add = function(plate){
 		  displacement: { type: 'f', value: [] }
 		},
 		uniforms: {
-		  sealevel: 	{ type: 'f', value: this.world.SEALEVEL },
+		  sealevel: { type: 'f', value: this.world.SEALEVEL },
+		  sealevel_mod: { type: 'f', value: 1.0 },
 		  color: 	    { type: 'c', value: new THREE.Color(Math.random() * 0xffffff) },
 		},
 		blending: THREE.NoBlending,
