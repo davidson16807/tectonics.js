@@ -60,9 +60,9 @@ var template = _multiline(function() {/**
 		//some modifications made to improve goodness of fit and conceptual integrity 
 		//parameters fit to data from 
 
-		float precip_intercept 	= 1396.1; 	 	
+		float precip_intercept 	= 2000.; 	 	
 		float precip_min 		= 60.0;		 	
-		float cell_effect		= 0.6;			
+		float cell_effect		= 1.0;			
 
 		float precip = 	precip_intercept * 
 						(1. - lat / radians(90.)) * 							//latitude effect
@@ -78,7 +78,7 @@ var template = _multiline(function() {/**
 		//Net Primary Productivity (NPP), expressed as the fraction of an modeled maximum (3 kg m-2 yr-1)
 		//Derived using the Miami model (Lieth et al. 1972). A summary is provided by Grieser et al. 2006
 		float npp_temp 		= 1./(1. + exp(1.315 - (0.5/4.) * temp)); 	//temperature limited npp
-		float npp_precip 	= (1. - exp(-(precip-evap)/800.)); 			//drought limited npp
+		float npp_precip 	= (1. - exp(-(precip)/800.)); 		//drought limited npp
 		float npp = min(npp_temp, npp_precip); 							//realized npp, the most conservative of the two estimates
 
 		//Atmospheric pressure, kPa
