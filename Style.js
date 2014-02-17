@@ -26,6 +26,10 @@ var template = _multiline(function() {/**
 	const vec4 JUNGLE = vec4(30,50,10,255)/255.;
 	//const vec4 JUNGLE = vec4(20,45,5,255)/255.;
 
+	float cosh (float x){
+		return exp(x)+exp(-x)/2.;
+	}
+
 	//converts float from 0-1 to a heat map visualtion
 	//credit goes to Gaëtan Renaudeau: http://greweb.me/glsl.js/examples/heatmap/
 	vec4 heat (float v) {
@@ -51,17 +55,31 @@ var template = _multiline(function() {/**
 		//Mean annual temperature, °C
 		float temp = mix(-25., 30., cos(lat));// - lapse_rate * alt;
 		
-		//Mean annual precipitation, mm yr-1
-		float precip = 2000.;
-		precip = mix(precip, 	0., 	smoothstep(0.,  30., 	degrees(lat))); 	//hadley cell
-		precip = mix(precip, 	1100.,	smoothstep(30., 60., 	degrees(lat))); 	//ferrel cell
-		precip = mix(precip, 	0., 	smoothstep(60., 90., 	degrees(lat))); 	//polar cell
+		//Mean annual precipitation over land, mm yr-1
+		//credits for original model go to /u/astrographer, 
+		//some modifications made to improve goodness of fit and conceptual integrity 
+		//parameters fit to data from 
+
+		float precip_intercept 	= 1396.1; 	 	
+		float precip_min 		= 60.0;		 	
+		float cell_effect		= 0.6;			
+
+		float precip = 	precip_intercept * 
+						(1. - lat / radians(90.)) * 							//latitude effect
+						//amplitude of circulation cell decreases with latitude, and precip inherently must be positive
+						//for these reasons, we multiply the lat effect with the circulation effect
+						(cell_effect * cos(6.*lat + radians(30.)) + 1.) +		//circulation cell effect
+						precip_min;
+
+		//Mean annual evaporation over land, mm yr-1
+		float evap_intercept	= 1166.;
+		float evap 	 = evap_intercept / cosh(3.*lat);
 
 		//Net Primary Productivity (NPP), expressed as the fraction of an modeled maximum (3 kg m-2 yr-1)
 		//Derived using the Miami model (Lieth et al. 1972). A summary is provided by Grieser et al. 2006
-		float npp_temp 		= 1./(1. + exp(1.315 - (0.5/4.) * temp)); //temperature limited npp
-		float npp_precip 	= (1. - exp(-precip/800.)); 	//drought limited npp
-		float npp = min(npp_temp, npp_precip); 					//realized npp, the most conservative of the two estimates
+		float npp_temp 		= 1./(1. + exp(1.315 - (0.5/4.) * temp)); 	//temperature limited npp
+		float npp_precip 	= (1. - exp(-(precip-evap)/800.)); 			//drought limited npp
+		float npp = min(npp_temp, npp_precip); 							//realized npp, the most conservative of the two estimates
 
 		//Atmospheric pressure, kPa
 		//Equation from the engineering toolbox
