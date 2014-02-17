@@ -24,6 +24,9 @@ function smoothstep(edge0, edge1, x) {
 function degrees(x) {
 	return 180*x/Math.PI;
 }
+function radians(x) {
+	return Math.PI*x/180;
+}
 
 function Plate(world, eulerPole, angularSpeed)
 {
@@ -227,17 +230,24 @@ Plate.prototype.erode = function(timestep){
 			dheightSum += dheight / lj;
 		}
 		var y = mesh.localToWorld(cell.pos.clone()).y || 0;
-		y = Math.asin(1 - Math.abs(y))/1.57;
+		var lat = Math.asin(Math.abs(y));
 		if(!y){
 			console.log('something bad');
 		}
-		var precipitation =  4.5e6; 
-		// ^^^ measured in meters of rain per million years
-		precipitation = mix(precipitation, 	0., 	smoothstep(0.,  .3, 	y)); 	//hadley cell
-		precipitation = mix(precipitation, 	4.5e6/2,		smoothstep(.3, .6, 	y)); 	//ferrel cell
-		precipitation = mix(precipitation, 	0., 	smoothstep(.6, 1, 	y)); 	//polar cell
 
-		var erosion = dheightSum * precipitation * timestep * erosiveFactor;
+		var precip_intercept	= 2000e3; 	 	
+		var precip_min 			= 60e3;		 	
+		var cell_effect			= 1.0;			
+
+		// measured in meters of rain per million years
+		var precip = 	precip_intercept * 
+						(1. - lat / radians(90.)) * 							//latitude effect
+						//amplitude of circulation cell decreases with latitude, and precip inherently must be positive
+						//for these reasons, we multiply the lat effect with the circulation effect
+						(cell_effect * Math.cos(6.*lat + radians(30.)) + 1.) +		//circulation cell effect
+						precip_min;
+
+		var erosion = dheightSum * precip * timestep * erosiveFactor;
 		content.thickness -= erosion;
 	}
 	for(var i=0, li = cells.length; i<li; i++){
