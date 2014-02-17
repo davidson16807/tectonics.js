@@ -58,6 +58,15 @@
 				</td>
 			</tr>
 			<tr>
+				<td>Projection:</td>
+				<td>
+					<select id="vertexShader">
+						<option value="orthographic" selected>Orthographic</option>
+						<option value="equirectangular">Equirectangular</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
 				<td>View:</td>
 				<td>
 					<select id="fragmentShader">
@@ -70,21 +79,8 @@
 						<option value="precip">Precipitation</option>
 						<option value="debug">Plates</option>
 					</select>
-				</td>
-			</tr>
-			<tr>
-				<td>Projection:</td>
-				<td>
-					<select id="vertexShader">
-						<option value="orthographic" selected>Orthographic</option>
-						<option value="equirectangular">Equirectangular</option>
-					</select>
-				</td>
-			</tr>
-			<tr>
-				<td>Sea Level:</td>
-				<td>
-					<input id="sealevel" type="range" value="1.0" min="0" max="1" step="0.1"/>
+					<br/>
+					<input id="sealevel" type="checkbox" checked/> Sealevel
 				</td>
 			</tr>
 		</table>
@@ -243,8 +239,15 @@
 			view.vertexShader(vertexShaders[$('#vertexShader').val()]);
 		});
 		$('#sealevel').change(function(e){
-			console.log($('#sealevel').val());
-			view.uniform('sealevel_mod', $('#sealevel').val());
+			var checked = !$('#sealevel').is(':checked');
+			$({value: checked? 1:0}).animate(
+			  {value: checked? 0:1},
+			  {
+				step: function(value){
+					view.uniform('sealevel_mod', value);
+				}
+			  });
+			
 		});
 	</script>
 </body>
