@@ -78,16 +78,16 @@ var template = _multiline(function() {/**
 
 		//Net Primary Productivity (NPP), expressed as the fraction of an modeled maximum (3 kg m-2 yr-1)
 		//Derived using the Miami model (Lieth et al. 1972). A summary is provided by Grieser et al. 2006
-		float npp_temp 		= 1./(1. + exp(1.315 - (0.5/4.) * temp)); 	//temperature limited npp
-		float npp_precip 	= (1. - exp(-(precip)/800.)); 		//drought limited npp
-		float npp = min(npp_temp, npp_precip); 							//realized npp, the most conservative of the two estimates
+		float npp_temp 		= 1./(1. + exp(1.315 - (0.5/4.) * temp)); 				//temperature limited npp
+		float npp_precip 	= (1. - exp(-(precip)/800.)); 							//drought limited npp
+		float npp = vDisplacement > sealevel? min(npp_temp, npp_precip) : 0.; 		//realized npp, the most conservative of the two estimates
 
 		//Atmospheric pressure, kPa
 		//Equation from the engineering toolbox
 		float pressure		= 101.325 * pow(1.- 2.25e-5 * alt, 5.25);
 		
 		float felsic_fraction = smoothstep(abyssopelagic, maxheight, vDisplacement);
-		float mineral_fraction = smoothstep(maxheight, sealevel, vDisplacement);
+		float mineral_fraction = vDisplacement > sealevel? smoothstep(maxheight, sealevel, vDisplacement) : 0.;
 		float organic_fraction 	= degrees(lat)/90.; // smoothstep(30., -30., temp); 
 		float ice_fraction = vDisplacement > mix(epipelagic, mesopelagic, smoothstep(0., -10., temp))? smoothstep(0., -10., temp) : 0.;
 
