@@ -1,3 +1,4 @@
+'use strict';
 
 // grid: 	 an object of type Grid
 // optional: A list of optional parameters. Optional parameters default to values seen on early earth
@@ -24,8 +25,7 @@ function World(grid, optional){
 	var shield = this.getRandomPoint();
 	var getRandomPlateSpeed 		= this.getRandomPlateSpeed;
 	var getRandomPlateDensityEffect = this.getRandomPlateDensityEffect;
-	plate = new Plate(this, 
-		this.getRandomPoint(), 
+	var plate = new Plate(this,  
 		this.getRandomPoint(), 
 		getRandomPlateSpeed());
 	this.plates = [plate];
@@ -74,7 +74,7 @@ World.prototype.simulate = function(timestep){
 	for(i = 0; i<length; i++){
 		plates[i].deform();
 	}
-	platestemp = plates.slice(0); // copy the array
+	var platestemp = plates.slice(0); // copy the array
 	for(i = 0; i<length; i++){
 		if(platestemp[i].getSize() <= 100)
 		{

@@ -1,3 +1,4 @@
+'use strict';
 var voronoiCache = $.extend(new VoronoiSphere(1), { 
 "lonRange":6.283185307179586,"lonMin":-3.141592653589793,"lonNum":202.40553352119602,
 "latRange":3.141592653589793,"latMin":-1.5707963267948966,"latNum":101.20276676059801,

@@ -34,7 +34,6 @@
 		<script src="Plate.js"></script>
 		<script src="Voronoi.js"></script>
 		<script src="Grid.js"></script>
-		<script src="Layer.js"></script>
 		<script src="Style.js"></script>
 		<script src="View.js"></script>
 		<script src="World.js"></script>
@@ -65,6 +64,7 @@
 						<option value="satellite" selected>Satellite Image</option>
 						<option value="soil">Soil</option>
 						<option value="bedrock">Bedrock</option>
+						<option value="alt">Elevation</option>
 						<option value="npp">Plant Productivity</option>
 						<option value="temp">Temperature</option>
 						<option value="precip">Precipitation</option>
@@ -118,6 +118,8 @@
 	</div> 
 	
 	<script type="text/javascript">
+		'use strict';
+		
 		$('#noJs').hide();
 		//standards:
 		// all points are vectors

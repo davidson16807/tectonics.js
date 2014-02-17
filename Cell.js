@@ -1,3 +1,4 @@
+'use strict';
 
 function Cell(plate, pos, id, content){
 	this.world = plate.world;
