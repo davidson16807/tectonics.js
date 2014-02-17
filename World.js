@@ -1,3 +1,4 @@
+'use strict';
 
 // grid: 	 an object of type Grid
 // optional: A list of optional parameters. Optional parameters default to values seen on early earth
@@ -5,44 +6,37 @@ function World(grid, optional){
 	optional = optional || {};
 	
 	var radius = optional['radius'] || 6367;
-	var continentsNum = optional['continentsNum'] || 3;
 	var continentRadius = (optional['continentRadius'] || 1250) / radius;
 	
 	this.radius = radius;
 	this.platesNum = optional['platesNum'] || 7;
 	this.mountainWidth = (optional['mountainWidth'] || 300) / radius;
 	this.getRandomPlateSpeed = optional['getRandomPlateSpeed'] ||
-		//function() { return Math.exp(random.normal(3.492, 0.771)) / radius; }
-		// alternative:
-		function() { return random.normal(42.8, 27.7) / radius; }
-		// log normal and normal distributions fit from http://hypertextbook.com/facts/ZhenHuang.shtml
+		//function() { return Math.exp(random.normal(-5.13, 0.548)); }
+		function() { return random.normal(0.00687, 0.00380); }
+		//^^^ log normal and normal distribution fit to angular velocities from Larson et al. 1997
 	this.getRandomPlateDensityEffect = optional['getRandomPlateDensityEffect'] ||
 		function() { return random.normal(0,40); }
 		// from Carlson & Raskin 1984
 		
 	this.grid = grid;
-	this.crust = new Crust(this);
 	this.age = 0;
 	
-	var vertices = grid.initializer(1).vertices;
-	var shields = _.range(continentsNum).map(function(i) {
-		return grid.getRandomPoint();
-	});
+	var shield = this.getRandomPoint();
 	var getRandomPlateSpeed 		= this.getRandomPlateSpeed;
 	var getRandomPlateDensityEffect = this.getRandomPlateDensityEffect;
-	plate = new Plate(this, 
-		grid.getRandomPoint(), 
-		grid.getRandomPoint(), 
+	var plate = new Plate(this,  
+		this.getRandomPoint(), 
 		getRandomPlateSpeed());
 	this.plates = [plate];
-	for(var i=0, length = vertices.length; i<length; i++) {
-		var vertex = plate._vertices[i];
-		if(_.any(shields.map(function(shield) { return shield.distanceTo(vertices[i]) < continentRadius }))) { 
-			this.crust.create(vertex, this.land);
+	for(var i=0, length = plate._cells.length; i<length; i++) {
+		var cell = plate._cells[i];
+		if(shield.distanceTo(cell.pos) < continentRadius ) { 
+			cell.create(this.land);
 		} else {
-			this.crust.create(vertex, this.ocean);
+			cell.create(this.ocean);
 		}
-		vertex.content.isostasy();
+		cell.content.isostasy();
 	}
 	this.updateNeighbors();
 	this.updateBorders();
@@ -80,7 +74,7 @@ World.prototype.simulate = function(timestep){
 	for(i = 0; i<length; i++){
 		plates[i].deform();
 	}
-	platestemp = plates.slice(0); // copy the array
+	var platestemp = plates.slice(0); // copy the array
 	for(i = 0; i<length; i++){
 		if(platestemp[i].getSize() <= 100)
 		{
@@ -127,4 +121,11 @@ World.prototype.updateMatrices = function(){
 		plates[i].mesh.updateMatrix();
 		plates[i].mesh.updateMatrixWorld();
 	}
+}
+
+World.prototype.getRandomPoint = function() {
+	return _toCartesian({
+		lat: Math.asin(2*random.random() - 1),
+		lon: 2*Math.PI * random.random()
+	});
 }

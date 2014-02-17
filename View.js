@@ -1,3 +1,5 @@
+'use strict';
+
 var _hashPlate = function(plate){
 	return plate.mesh.uuid
 }
@@ -17,19 +19,13 @@ function View(world, fragmentShader, vertexShader){
 	this.camera	= new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, .01, 10000 );
 	this.camera.position.set(0, 0, 5);
 	this.scene.add(this.camera);
-	
-	this.asthenosphere	= new THREE.Mesh( 
-		world.grid.initializer(this.THRESHOLD), 
-		new THREE.MeshBasicMaterial({color:0x0a0a32}));
-	this.asthenosphere.renderDepth = -1;
-	//this.scene.add(this.asthenosphere);
 }
 
 View.prototype.fragmentShader = function(fragmentShader){
 	if(this._fragmentShader != fragmentShader){
 		this._fragmentShader = fragmentShader;
 		for(var i=0, li = this.world.plates.length, plates = world.plates; i<li; i++){
-			mesh = this.meshes.get(plates[i]);
+			var mesh = this.meshes.get(plates[i]);
 			mesh.material.fragmentShader = fragmentShader;
 			mesh.material.needsUpdate = true;
 		}
@@ -40,22 +36,29 @@ View.prototype.vertexShader = function(vertexShader){
 	if(this._vertexShader != vertexShader){
 		this._vertexShader = vertexShader;
 		for(var i=0, li = this.world.plates.length, plates = world.plates; i<li; i++){
-			mesh = this.meshes.get(plates[i]);
+			var mesh = this.meshes.get(plates[i]);
 			mesh.material.vertexShader = vertexShader;
 			mesh.material.needsUpdate = true;
 		}
 	}
 }
 
-View.prototype.update = function(){
+View.prototype.uniform = function(key, value){
 	for(var i=0, li = this.world.plates.length, plates = world.plates; i<li; i++){
-		mesh = this.meshes.get(plates[i]);
+		var mesh = this.meshes.get(plates[i]);
+		mesh.material.uniforms[key].value = value;
+		mesh.material.uniforms[key].needsUpdate = true;
+	}
+}
+
+View.prototype.update = function(){
+
+	for(var i=0, li = this.world.plates.length, plates = world.plates; i<li; i++){
+		var mesh = this.meshes.get(plates[i]);
 		mesh.matrix = plates[i].mesh.matrix;
 		mesh.rotation.setFromRotationMatrix(mesh.matrix);
-		mesh.geometry.verticesNeedUpdate = true;
-		var vertices = mesh.geometry.vertices
 		var displacement = mesh.material.attributes.displacement.value;
-		for(var j=0, lj = plates[i]._vertices.length, cells = plates[i]._vertices; j<lj; j++){
+		for(var j=0, lj = plates[i]._cells.length, cells = plates[i]._cells; j<lj; j++){
 			var content = cells[j].content;
 			if(content){
 				displacement[j] = content.displacement;
@@ -73,7 +76,8 @@ View.prototype.add = function(plate){
 		  displacement: { type: 'f', value: [] }
 		},
 		uniforms: {
-		  sealevel: 	{ type: 'f', value: this.world.SEALEVEL },
+		  sealevel: { type: 'f', value: this.world.SEALEVEL },
+		  sealevel_mod: { type: 'f', value: 1.0 },
 		  color: 	    { type: 'c', value: new THREE.Color(Math.random() * 0xffffff) },
 		},
 		blending: THREE.NoBlending,
@@ -81,7 +85,7 @@ View.prototype.add = function(plate){
 		fragmentShader: this._fragmentShader
 	});
 	var mesh = new THREE.Mesh( 
-		world.grid.initializer(this.SEALEVEL), 
+		world.grid.template.clone(), 
 		material);
 	
 	this.scene.add(mesh);
@@ -96,5 +100,5 @@ View.prototype.remove = function(plate){
 	this.scene.remove(mesh);
 	mesh.material.dispose();
 	mesh.geometry.dispose();
-	delete mesh;
+	delete this.meshes.get(plate);
 }

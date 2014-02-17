@@ -1,7 +1,7 @@
+'use strict';
 
-function Grid(initializer){
-	this.initializer = initializer;
-	this.template = initializer(1.0);
+function Grid(template, voronoi){
+	this.template = template;
 	
 	//Precompute neighbors for O(1) lookups
 	var neighbors = this.template.vertices.map(function(vertex) { return new buckets.Set()});
@@ -26,15 +26,20 @@ function Grid(initializer){
 	this._kdtree = new kdTree(points, this.getDistance, ["x","y","z"]);
 	
 	//Now feed that kdtree into a Voronoi diagram for O(1) lookups
+	//If cached voronoi is already provided, use that
 	//If this seems like overkill, trust me - it's not
-	this._voronoi = new VoronoiSphere(this._kdtree, this.template.vertices.length);
+	if (voronoi){
+		this._voronoi = voronoi;
+	} else {
+		this._voronoi = new VoronoiSphere(this.template.vertices.length, this._kdtree);
+	}
 	
 	//TODO: R-tree from https://github.com/mourner/rbush for astroblemes and the like
 }
 
-Grid.prototype.getRandomPoint = function() {
-	var i = Math.floor(random.random()*this.template.vertices.length);
-	return this.template.vertices[i];
+Grid.prototype.getVoronoi = function() {
+	//Now feed that kdtree into a Voronoi diagram for O(1) lookups
+	return new VoronoiSphere(this._kdtree, this.template.vertices.length);
 }
 
 Grid.prototype.getNearestId = function(vertex) { 

@@ -1,10 +1,19 @@
 <!doctype html>
 <html>
 	<head>
-		<title>tectonics.js - 3d plate tectonics in your web browser</title>
+		<title>Tectonics.js - 3d plate tectonics in your web browser</title>
+		<!--If using IE9 or lower, don't even bother - IE won't even parse three.js right-->
+		<!--[if lte IE 9]>
+			<meta http-equiv="refresh" content="0;url=ie.html" />
+		<![endif]-->
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-		
+
+		<link  href="css/main.css" rel="stylesheet"/>
+		<link  href="css/modern.css" rel="stylesheet"/>
+		<link  href="css/app.css" rel="stylesheet"/>
+
+		<script src="http://code.jquery.com/jquery.min.js"></script>
 		<script src="vendor/three.js/Three.js"></script>
 		<script src="vendor/three.js/Detector.js"></script>
 		<!-- https://github.com/mrdoob/stats.js -->
@@ -21,63 +30,93 @@
 		<script src="vendor/kdTree-min.js"></script>
 		<script src="Voronoi.js"></script>
 		<script src="Grid.js"></script>
-		<script src="Crust.js"></script>
+		<script src="Cell.js"></script>
 		<script src="Plate.js"></script>
 		<script src="Voronoi.js"></script>
 		<script src="Grid.js"></script>
-		<script src="Layer.js"></script>
 		<script src="Style.js"></script>
 		<script src="View.js"></script>
 		<script src="World.js"></script>
 		<script src="Style.js"></script>
 		<script src="Projection.js"></script>
-
-		<link  href="css/main.css" rel="stylesheet"/>
+		<script src="Cached.js"></script>
 	</head>
 <body>
 	<!-- three.js container -->
 	<div id="container"></div>
 	<!-- info on screen display -->
-	<div id="info">
-		<div class="top">
-			<table>
-				<tr>
-					<td>Age:</td>
-					<td><span id="age">initializing...</span></td>
-				</tr>
-				<tr>
-					<td>Speed:</td>
-					<td>
-						<input id="speedControl" type="number" value="5" min="0" max="10" step="1" style="width:30px" /> My/s
-					</td>
-				</tr>
-				<tr>
-					<td>View:</td>
-					<td>
-						<select id="fragmentShader">
-							<option value="satellite" selected>Satellite Image</option>
-							<option value="debug">Plates</option>
-						</select>
-					</td>
-				</tr>
-				<tr>
-					<td>Projection:</td>
-					<td>
-						<select id="vertexShader">
-							<option value="orthographic" selected>Orthographic</option>
-							<option value="equirectangular">Equirectangular</option>
-						</select>
-					</td>
-				</tr>
-			</table>
-			<div></div>
+	<div class="topright parameters">
+		<table>
+			<tr>
+				<td>Age:</td>
+				<td><span id="age">initializing...</span></td>
+			</tr>
+			<tr>
+				<td>Speed:</td>
+				<td>
+					<input id="speedControl" type="number" value="5" min="0" max="10" step="1" style="width:30px" /> My/s
+				</td>
+			</tr>
+			<tr>
+				<td>Projection:</td>
+				<td>
+					<select id="vertexShader">
+						<option value="orthographic" selected>Orthographic</option>
+						<option value="equirectangular">Equirectangular</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td>View:</td>
+				<td>
+					<select id="fragmentShader">
+						<option value="satellite" selected>Satellite Image</option>
+						<option value="soil">Soil</option>
+						<option value="bedrock">Bedrock</option>
+						<option value="alt">Elevation</option>
+						<option value="npp">Plant Productivity</option>
+						<option value="temp">Temperature</option>
+						<option value="precip">Precipitation</option>
+						<option value="debug">Plates</option>
+					</select>
+					<br/>
+					<input id="sealevel" type="checkbox" checked/> Sealevel
+				</td>
+			</tr>
+		</table>
+		<div></div>
+	</div>
+	<div class="bottomright instructions">
+		<ul>
+			<li id="screenshotLabel" class="hidden"><i>p</i> for screenshot</li>
+			<li id="fullscreenLabel" class="hidden"><i>f</i> for fullscreen</li>
+		</ul>
+	</div> 
+	<div class="vcenter">
+		<div id="noWebGl" class="hidden hcenter dialog">
+			<h2>Well, darn</h2>
+			<p>It looks like your using a web browser without WebGL.</p>
+			<p>WebGL is a technology that allows users to run high-end 3d graphics from their web-browser. Other technologies exist that can display simple 3d graphics to the user (canvas, svg, flash, etc.), but at present WebGL is the only web technology that allows developers to send their own code to a GPU.
+			</p>
+			<p>Writing a tectonics simulator in a browser is hard stuff. We're going to need all the tools we can get.
+			</p>
+			<p>It looks like you're using a browser that supports WebGL, but you just need to modify some settings, first. <a href="http://get.webgl.org/">Here</a> is a link that will help you get started.
+			</p>
+			<p>Until then, here's a video of what you're missing:
+			</p>
+			<iframe width="420" height="315" src="//www.youtube.com/embed/VE67RgnLdKw" frameborder="0" allowfullscreen></iframe>
 		</div>
-		<div class="bottom" id="inlineDoc" >
-			- <i>p</i> for screenshot
-		</div> 
+		<div id="noJs" class="hcenter dialog">
+			<h2>Might want to check your settings, there</h2>
+			<p>It looks like your surfing the web without javascript enabled.</p>
+			<p>Javascript is a fundamental component of the modern internet and there's no way a site like this can work without it. For instructions on how to enable javascript, check <a href="http://www.enable-javascript.com/">here</a>.</p>
+		</div>
 	</div> 
 	
 	<script type="text/javascript">
+		'use strict';
+		
+		$('#noJs').hide();
 		//standards:
 		// all points are vectors
 		// all angles are in radians
@@ -98,29 +137,26 @@
 	        querystring[hash[0]] = hash[1];
 	    }
 
-		var stats, scene, renderer, composer, clock;
-		var camera, cameraControl;
+		var stats, renderer, clock, controls;
 		var random = querystring['seed']? new Random(querystring['seed']) : new Random();
 		var MegaYearPerSecond = 5 //My/second
-		$('#speed').html("1 second : "+format(MegaYearPerSecond,100,2));
 
-		var world = new World(new Grid(function(radius) { return new THREE.IcosahedronGeometry(radius, 5); }), 
-			{});
+		var world = new World(new Grid( new THREE.IcosahedronGeometry(1, 5), voronoiCache));
 		var view = new View(world, fragmentShaders[$('#fragmentShader').val()], vertexShaders[$('#vertexShader').val()]);
-		if( !init() ) animate();
+		if( Detector.webgl ){
+			if( !init() ) animate();
+			$('#screenshotLabel').toggle();
+		} else {
+			$('#noWebGl').toggle();
+		}
 
 		// init the scene
 		function init(){
-
-			if( Detector.webgl ){
-				renderer = new THREE.WebGLRenderer({
-					antialias		: true,	// to get smoother output
-					preserveDrawingBuffer	: true	// to allow screenshot
-				});
-				renderer.setClearColor( 0x000000, 1 );
-			}else{
-				renderer	= new THREE.CanvasRenderer();
-			}
+			renderer = new THREE.WebGLRenderer({
+				antialias		: true,	// to get smoother output
+				preserveDrawingBuffer	: true	// to allow screenshot
+			});
+			renderer.setClearColor( 0x000000, 1 );
 			renderer.setSize( window.innerWidth, window.innerHeight );
 			$('#container').append(renderer.domElement);
 
@@ -132,9 +168,8 @@
 			stats.domElement.style.bottom	= '0px';
 			document.body.appendChild( stats.domElement );
 
-
 			// create a camera contol
-			cameraControls	= new THREE.OrbitControls( view.camera, $("#container").get(0) );
+			controls	= new THREE.OrbitControls( view.camera, $("#container").get(0) );
 
 			// transparently support window resize
 			THREEx.WindowResize.bind(renderer, view.camera);
@@ -143,7 +178,7 @@
 			// allow 'f' to go fullscreen where this feature is supported
 			if( THREEx.FullScreen.available() ){
 				THREEx.FullScreen.bindKey();
-				$('#inlineDoc').append("- <i>f</i> for fullscreen");
+				$('#fullscreenLabel').toggle();
 			} 
 		}
 		
@@ -187,7 +222,7 @@
 		function render() {
 
 			// update camera controls
-			cameraControls.update();
+			controls.update();
 
 
 			// actually render the scene
@@ -202,6 +237,17 @@
 		});
 		$('#vertexShader').change(function(e){
 			view.vertexShader(vertexShaders[$('#vertexShader').val()]);
+		});
+		$('#sealevel').change(function(e){
+			var checked = !$('#sealevel').is(':checked');
+			$({value: checked? 1:0}).animate(
+			  {value: checked? 0:1},
+			  {
+				step: function(value){
+					view.uniform('sealevel_mod', value);
+				}
+			  });
+			
 		});
 	</script>
 </body>
