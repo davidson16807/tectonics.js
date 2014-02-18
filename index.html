@@ -250,7 +250,11 @@
 		});
 		$('#pause').click(togglePause);
 		$('#play').click(togglePause);
-		$('body').keyup(togglePause);
+	    $('body').keyup(function(e){
+	        if(e.keyCode == 32){
+	            togglePause();
+	        }
+	    });
 		$('#fragmentShader').change(function(e){
 			view.fragmentShader(fragmentShaders[$('#fragmentShader').val()]);
 		});
