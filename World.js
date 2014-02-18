@@ -66,6 +66,9 @@ World.prototype.simulate = function(timestep){
 	for(i = 0; i<length; i++){
 		plates[i].erode(timestep);
 	}
+	for(i = 0; i<length; i++){
+		plates[i].isostasy();
+	}
 	this.updateMatrices();
 	this.updateBorders();
 	for(i = 0; i<length; i++){
