@@ -91,7 +91,7 @@ var template = _multiline(function() {/**
 		float organic_fraction 	= degrees(lat)/90.; // smoothstep(30., -30., temp); 
 		float ice_fraction = vDisplacement > mix(epipelagic, mesopelagic, smoothstep(0., -10., temp))? smoothstep(0., -10., temp) : 0.;
 
-		vec4 ocean 				= mix(OCEAN, SHALLOW, smoothstep(epipelagic, sealevel * sealevel_mod, vDisplacement));
+		vec4 ocean 				= mix(OCEAN, SHALLOW, smoothstep(epipelagic * sealevel_mod, sealevel * sealevel_mod, vDisplacement));
 		vec4 bedrock			= mix(MAFIC, FELSIC, felsic_fraction);
 		vec4 soil				= mix(bedrock, mix(SAND, PEAT, organic_fraction), mineral_fraction);
 		vec4 canopy 			= mix(soil, JUNGLE, npp);
