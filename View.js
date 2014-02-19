@@ -63,23 +63,11 @@ View.prototype.update = function(){
 			j<lj; j++, j3+=3){
 			face = faces[j];
 			content = cells[face.a].content;
-			if(content){
-				displacement[j3] = content.displacement;
-			} else {
-				displacement[j3] = 0;
-			}
+			displacement[j3] = content? content.displacement : 0;
 			content = cells[face.b].content;
-			if(content){
-				displacement[j3+1] = content.displacement;
-			} else {
-				displacement[j3+1] = 0;
-			}
+			displacement[j3+1] = content? content.displacement : 0;
 			content = cells[face.c].content;
-			if(content){
-				displacement[j3+2] = content.displacement;
-			} else {
-				displacement[j3+2] = 0;
-			}
+			displacement[j3+2] = content? content.displacement : 0;
 		}
 		mesh.geometry.attributes.displacement.needsUpdate = true;
 	}
