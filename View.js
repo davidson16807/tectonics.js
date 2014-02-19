@@ -81,6 +81,7 @@ View.prototype.update = function(){
 				displacement[j3+2] = 0;
 			}
 		}
+		mesh.geometry.attributes.displacement.needsUpdate = true;
 	}
 }
 
