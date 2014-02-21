@@ -61,7 +61,10 @@
 			<tr>
 				<td>Speed:</td>
 				<td>
-					<input id="speedControl" type="number" value="5" min="0" max="10" step="1" style="width:30px" /> My/s
+					<button id="play"  type="button" class="hidden">&#9654;</button>
+					<button id="pause" type="button">&#10074;&#10074;</button>
+					<input id="speedControl" type="number" value="5" min="0" max="10" step="1" style="width:30px" /> 
+					 My/s
 				</td>
 			</tr>
 			<tr>
@@ -95,6 +98,7 @@
 	</div>
 	<div class="bottomright instructions">
 		<ul>
+			<li id="pauseLabel" class="hidden"><i>space</i> to pause/play</li>
 			<li id="screenshotLabel" class="hidden"><i>p</i> for screenshot</li>
 			<li id="fullscreenLabel" class="hidden"><i>f</i> for fullscreen</li>
 		</ul>
@@ -153,6 +157,7 @@
 		if( Detector.webgl ){
 			if( !init() ) animate();
 			$('#screenshotLabel').toggle();
+			$('#pauseLabel').toggle();
 		} else {
 			$('#noWebGl').toggle();
 		}
@@ -227,10 +232,28 @@
 			// actually render the scene
 			renderer.render( view.scene, view.camera );
 		}
+		function togglePause(){
+			if($('#pause').is(':visible')){
+				MegaYearPerSecond = 0;
+			} else {
+				MegaYearPerSecond = $('#speedControl').val();
+			}
+			$('#pause').toggle();
+			$('#play').toggle();
+		}
 		
 		$('#speedControl').change(function(e){
-			MegaYearPerSecond = $('#speedControl').val();
+			if($('#pause').is(':visible')){
+				MegaYearPerSecond = $('#speedControl').val();
+			}
 		});
+		$('#pause').click(togglePause);
+		$('#play').click(togglePause);
+	    $('body').keyup(function(e){
+	        if(e.keyCode == 32){
+	            togglePause();
+	        }
+	    });
 		$('#fragmentShader').change(function(e){
 			view.fragmentShader(fragmentShaders[$('#fragmentShader').val()]);
 		});

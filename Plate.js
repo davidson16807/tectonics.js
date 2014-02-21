@@ -172,7 +172,6 @@ Plate.prototype.rift = function(){
 		intersected = this._getIntersections(absolute, plates, grid, _getRiftIntersection);
 		if(!intersected){
 			cell.create(ocean);
-			cell.content.isostasy();
 			geometry.verticesNeedUpdate = true;
 		}
 	}
@@ -215,8 +214,12 @@ Plate.prototype.erode = function(timestep){
 		var erosion = dheightSum * precipitation * timestep * erosiveFactor;
 		content.thickness -= erosion;
 	}
+}
+
+Plate.prototype.isostasy = function() {
+	var cells = this._cells;
 	for(var i=0, li = cells.length; i<li; i++){
-		content = cells[i].content;
+		var content = cells[i].content;
 		if(_.isUndefined(content)){
 			continue;
 		}

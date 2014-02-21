@@ -3,7 +3,7 @@
 function RockColumn(world, elevation, thickness, density){
 	this.world = world;
 	this.elevation = elevation;
-	this.displacement = void 0;
+	this.displacement = 0;
 	this.thickness = thickness;
 	this.density = density;
 }
@@ -25,7 +25,6 @@ RockColumn.prototype.accrete = function(subducted){
 	var density  = pressure / (thickness + heightChange)
 	this.thickness += heightChange
 	this.density = density
-	this.isostasy();
 }
 
 RockColumn.prototype.isostasy = function(){
