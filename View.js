@@ -52,28 +52,32 @@ View.prototype.uniform = function(key, value){
 }
 
 View.prototype.update = function(){
-
+	var faces = this.world.grid.template.faces;
 	for(var i=0, li = this.world.plates.length, plates = world.plates; i<li; i++){
 		var mesh = this.meshes.get(plates[i]);
+		var content, face;
 		mesh.matrix = plates[i].mesh.matrix;
 		mesh.rotation.setFromRotationMatrix(mesh.matrix);
-		var displacement = mesh.material.attributes.displacement.value;
-		for(var j=0, lj = plates[i]._cells.length, cells = plates[i]._cells; j<lj; j++){
-			var content = cells[j].content;
-			if(content){
-				displacement[j] = content.displacement;
-			} else {
-				displacement[j] = 0;
-			}
+		var displacement = mesh.geometry.attributes.displacement.array;
+		for(var j=0, j3=0, lj = faces.length, cells = plates[i]._cells; 
+			j<lj; j++, j3+=3){
+			face = faces[j];
+			content = cells[face.a].content;
+			displacement[j3] = content? content.displacement : 0;
+			content = cells[face.b].content;
+			displacement[j3+1] = content? content.displacement : 0;
+			content = cells[face.c].content;
+			displacement[j3+2] = content? content.displacement : 0;
 		}
-		mesh.material.attributes.displacement.needsUpdate = true;
+		mesh.geometry.attributes.displacement.needsUpdate = true;
 	}
 }
 
 View.prototype.add = function(plate){
+	var faces = this.world.grid.template.faces;
 	var material = new THREE.ShaderMaterial({
 		attributes: {
-		  displacement: { type: 'f', value: [] }
+		  displacement: { type: 'f', value: null }
 		},
 		uniforms: {
 		  sealevel: { type: 'f', value: this.world.SEALEVEL },
@@ -84,9 +88,9 @@ View.prototype.add = function(plate){
 		vertexShader: this._vertexShader,
 		fragmentShader: this._fragmentShader
 	});
-	var mesh = new THREE.Mesh( 
-		world.grid.template.clone(), 
-		material);
+	var geometry = THREE.BufferGeometryUtils.fromGeometry(this.world.grid.template);
+	geometry.addAttribute('displacement', Float32Array, faces.length*3, 1);
+	var mesh = new THREE.Mesh( geometry, material);
 	
 	this.scene.add(mesh);
 	this.meshes.set(plate, mesh);
