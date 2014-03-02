@@ -1,4 +1,3 @@
-'use strict';
 
 function _multiline(f) {
   return f.toString().split('\n').slice(1, -1).join('\n');
