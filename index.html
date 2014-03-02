@@ -46,7 +46,7 @@
 	<!-- three.js container -->
 	<div id="container"></div>
 	<!-- info on screen display -->
-	<div class="topright parameters">
+	<div class="topright hidden parameters">
 		<table>
 			<tr>
 				<td>Age:</td>
@@ -150,10 +150,11 @@
 		var view = new View(world, fragmentShaders[$('#fragmentShader').val()], vertexShaders[$('#vertexShader').val()]);
 		if( Detector.webgl ){
 			if( !init() ) animate();
-			$('#screenshotLabel').toggle();
-			$('#pauseLabel').toggle();
+			$('.parameters').show();
+			$('#screenshotLabel').show();
+			$('#pauseLabel').show();
 		} else {
-			$('#noWebGl').toggle();
+			$('#noWebGl').show();
 		}
 
 		// init the scene
