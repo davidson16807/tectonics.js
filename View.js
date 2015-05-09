@@ -32,9 +32,11 @@ View.prototype.fragmentShader = function(fragmentShader){
 		for(var i=0, li = this.world.plates.length, plates = world.plates; i<li; i++){
 			plate = plates[i];
 			meshes = this.meshes.get(plate);
-			mesh = meshes[0];
-			mesh.material.fragmentShader = fragmentShader;
-			mesh.material.needsUpdate = true;
+			for (var j = meshes.length - 1; j >= 0; j--) {
+				mesh = meshes[j];
+				mesh.material.fragmentShader = fragmentShader;
+				mesh.material.needsUpdate = true;
+			}
 		}
 	}
 }
@@ -46,9 +48,11 @@ View.prototype.vertexShader = function(vertexShader){
 		for(var i=0, li = this.world.plates.length, plates = world.plates; i<li; i++){
 			plate = plates[i];
 			meshes = this.meshes.get(plate);
-			mesh = meshes[0];
-			mesh.material.vertexShader = vertexShader;
-			mesh.material.needsUpdate = true;
+			for (var j = meshes.length - 1; j >= 0; j--) {
+				mesh = meshes[j];
+				mesh.material.vertexShader = vertexShader;
+				mesh.material.needsUpdate = true;
+			}
 		}
 	}
 }
@@ -58,9 +62,11 @@ View.prototype.uniform = function(key, value){
 	for(var i=0, li = this.world.plates.length, plates = world.plates; i<li; i++){
 		plate = plates[i];
 		meshes = this.meshes.get(plate);
-		mesh = meshes[0];
-		mesh.material.uniforms[key].value = value;
-		mesh.material.uniforms[key].needsUpdate = true;
+		for (var j = meshes.length - 1; j >= 0; j--) {
+			mesh = meshes[j];
+			mesh.material.uniforms[key].value = value;
+			mesh.material.uniforms[key].needsUpdate = true;
+		}
 	}
 }
 
@@ -71,9 +77,11 @@ View.prototype.update = function(){
 		plate = plates[i];
 
 		meshes = this.meshes.get(plate);
-		mesh = meshes[0];
-		mesh.matrix = plate.mesh.matrix;
-		mesh.rotation.setFromRotationMatrix(mesh.matrix);
+		for (var j = meshes.length - 1; j >= 0; j--) {
+			mesh = meshes[j];
+			mesh.matrix = plate.mesh.matrix;
+			mesh.rotation.setFromRotationMatrix(mesh.matrix);
+		}
 
 		geometry = this.geometries.get(plate);
 		displacement = geometry.attributes.displacement.array;
@@ -117,13 +125,16 @@ View.prototype.add = function(plate){
 
 View.prototype.remove = function(plate){
 	var meshes = this.meshes.get(plate);
-	var mesh = meshes[0];
-	if(!mesh){return;}
+	if(!meshes){return;}
 	this.meshes.remove(plate);
 	this.geometries.remove(plate);
 	
-	this.scene.remove(mesh);
-	mesh.material.dispose();
-	mesh.geometry.dispose();
-	delete this.meshes.get(plate);
+	var mesh;
+	for (var i = meshes.length - 1; i >= 0; i--) {
+		var mesh = meshes[i];
+		this.scene.remove(mesh);
+		mesh.material.dispose();
+		mesh.geometry.dispose();
+		delete this.meshes.get(plate);
+	};
 }
