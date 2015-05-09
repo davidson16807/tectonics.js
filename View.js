@@ -10,7 +10,11 @@ function View(world, fragmentShader, vertexShader){
 	this.world = world;
 	this._fragmentShader = fragmentShader;
 	this._vertexShader = vertexShader;
-	this.meshes = new buckets.Dictionary(_hashPlate);
+
+	this.geometries = new buckets.Dictionary(_hashPlate);
+	this.materials1 = new buckets.Dictionary(_hashPlate);
+	this.materials2 = new buckets.Dictionary(_hashPlate);
+	this.meshes = new buckets.MultiDictionary(_hashPlate);
 
 	// create a scene
 	this.scene = new THREE.Scene();
@@ -24,8 +28,11 @@ function View(world, fragmentShader, vertexShader){
 View.prototype.fragmentShader = function(fragmentShader){
 	if(this._fragmentShader != fragmentShader){
 		this._fragmentShader = fragmentShader;
+		var meshes, mesh, plate;
 		for(var i=0, li = this.world.plates.length, plates = world.plates; i<li; i++){
-			var mesh = this.meshes.get(plates[i]);
+			plate = plates[i];
+			meshes = this.meshes.get(plate);
+			mesh = meshes[0];
 			mesh.material.fragmentShader = fragmentShader;
 			mesh.material.needsUpdate = true;
 		}
@@ -35,8 +42,11 @@ View.prototype.fragmentShader = function(fragmentShader){
 View.prototype.vertexShader = function(vertexShader){
 	if(this._vertexShader != vertexShader){
 		this._vertexShader = vertexShader;
+		var meshes, mesh, plate;
 		for(var i=0, li = this.world.plates.length, plates = world.plates; i<li; i++){
-			var mesh = this.meshes.get(plates[i]);
+			plate = plates[i];
+			meshes = this.meshes.get(plate);
+			mesh = meshes[0];
 			mesh.material.vertexShader = vertexShader;
 			mesh.material.needsUpdate = true;
 		}
@@ -44,8 +54,11 @@ View.prototype.vertexShader = function(vertexShader){
 }
 
 View.prototype.uniform = function(key, value){
+	var meshes, mesh, plate;
 	for(var i=0, li = this.world.plates.length, plates = world.plates; i<li; i++){
-		var mesh = this.meshes.get(plates[i]);
+		plate = plates[i];
+		meshes = this.meshes.get(plate);
+		mesh = meshes[0];
 		mesh.material.uniforms[key].value = value;
 		mesh.material.uniforms[key].needsUpdate = true;
 	}
@@ -53,14 +66,15 @@ View.prototype.uniform = function(key, value){
 
 View.prototype.update = function(){
 	var faces = this.world.grid.template.faces;
+	var plate, meshes, mesh, content, face, displacement;
 	for(var i=0, li = this.world.plates.length, plates = world.plates; i<li; i++){
-		var mesh = this.meshes.get(plates[i]);
-		var content, face;
-		mesh.matrix = plates[i].mesh.matrix;
+		plate = plates[i];
+		meshes = this.meshes.get(plate);
+		mesh = meshes[0];
+		mesh.matrix = plate.mesh.matrix;
 		mesh.rotation.setFromRotationMatrix(mesh.matrix);
-		var displacement = mesh.geometry.attributes.displacement.array;
-		for(var j=0, j3=0, lj = faces.length, cells = plates[i]._cells; 
-			j<lj; j++, j3+=3){
+		displacement = mesh.geometry.attributes.displacement.array;
+		for(var j=0, j3=0, lj = faces.length, cells = plate._cells; j<lj; j++, j3+=3){
 			face = faces[j];
 			content = cells[face.a].content;
 			displacement[j3] = content? content.displacement : 0;
@@ -97,7 +111,8 @@ View.prototype.add = function(plate){
 }
 
 View.prototype.remove = function(plate){
-	var mesh = this.meshes.get(plate);
+	var meshes = this.meshes.get(plate);
+	var mesh = meshes[0];
 	if(!mesh){return;}
 	this.meshes.remove(plate);
 	
