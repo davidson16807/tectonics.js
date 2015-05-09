@@ -88,29 +88,46 @@ var template = _multiline(function() {/**
 		float felsic_fraction = smoothstep(abyssopelagic, maxheight, vDisplacement);
 		float mineral_fraction = vDisplacement > sealevel? smoothstep(maxheight, sealevel, vDisplacement) : 0.;
 		float organic_fraction 	= degrees(lat)/90.; // smoothstep(30., -30., temp); 
-		float ice_fraction = vDisplacement > mix(epipelagic, mesopelagic, smoothstep(0., -10., temp))? smoothstep(0., -10., temp) : 0.;
+		float ice_fraction = vDisplacement > mix(epipelagic, mesopelagic, smoothstep(0., -10., temp))? 
+		smoothstep(0., -10., temp) : 0.;
 
+		@OUTPUT
+	}
+
+**/});
+
+var realistic = template
+	.replace('@OUTPUT',
+		_multiline(function() {/**   
 		vec4 ocean 				= mix(OCEAN, SHALLOW, smoothstep(epipelagic * sealevel_mod, sealevel * sealevel_mod, vDisplacement));
 		vec4 bedrock			= mix(MAFIC, FELSIC, felsic_fraction);
 		vec4 soil				= mix(bedrock, mix(SAND, PEAT, organic_fraction), mineral_fraction);
 		vec4 canopy 			= mix(soil, JUNGLE, npp);
 		
-		gl_FragColor = @OUTPUT;
-		gl_FragColor = vDisplacement < sealevel * sealevel_mod? ocean : gl_FragColor;
-		gl_FragColor = mix(gl_FragColor, SNOW, ice_fraction);
-	}
+		vec4 uncovered = @UNCOVERED;
+		vec4 sea_covered = vDisplacement < sealevel * sealevel_mod? ocean : uncovered;
+		vec4 ice_covered = mix(sea_covered, SNOW, ice_fraction);
+		gl_FragColor = ice_covered;
+		**/}));
 
-**/});
+var representative = template
+	.replace('@OUTPUT',
+		_multiline(function() {/**   
+		vec4 uncovered 		= @UNCOVERED;
+		vec4 ocean 			= mix(OCEAN, uncovered, 0.5);
+		vec4 sea_covered 	= vDisplacement < sealevel * sealevel_mod? ocean : uncovered;
+		gl_FragColor = sea_covered;
+		**/}));
 
-var fragmentShaders = {}
+var fragmentShaders = {};
 
-fragmentShaders.satellite = template.replace('@OUTPUT', 'canopy');
-fragmentShaders.soil 	= template.replace('@OUTPUT', 'soil');
-fragmentShaders.bedrock	= template.replace('@OUTPUT', 'bedrock');
-fragmentShaders.npp 	= template.replace('@OUTPUT', 'mix(vec4(1), vec4(0,1,0,1), npp)');
-fragmentShaders.temp 	= template.replace('@OUTPUT', 'heat(smoothstep(-25., 30., temp))');
-fragmentShaders.precip 	= template.replace('@OUTPUT', 'heat(smoothstep(2000., 0., precip))');
-fragmentShaders.alt 	= template.replace('@OUTPUT', 'mix(vec4(1), vec4(0,0,0,1), smoothstep(sealevel, maxheight, alt))');
+fragmentShaders.satellite = realistic.replace('@UNCOVERED', 'canopy');
+fragmentShaders.soil 	= realistic.replace('@UNCOVERED', 'soil');
+fragmentShaders.bedrock	= realistic.replace('@UNCOVERED', 'bedrock');
+fragmentShaders.npp 	= representative.replace('@UNCOVERED', 'mix(vec4(1), vec4(0,1,0,1), npp)');
+fragmentShaders.temp 	= representative.replace('@UNCOVERED', 'heat(smoothstep(-25., 30., temp))');
+fragmentShaders.precip 	= representative.replace('@UNCOVERED', 'heat(smoothstep(2000., 0., precip))');
+fragmentShaders.alt 	= representative.replace('@UNCOVERED', 'mix(vec4(1), vec4(0,0,0,1), smoothstep(sealevel, maxheight, alt))');
 
 fragmentShaders.debug = _multiline(function() {/**   
 
