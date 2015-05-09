@@ -66,14 +66,17 @@ View.prototype.uniform = function(key, value){
 
 View.prototype.update = function(){
 	var faces = this.world.grid.template.faces;
-	var plate, meshes, mesh, content, face, displacement;
+	var plate, meshes, mesh, geometry, content, face, displacement;
 	for(var i=0, li = this.world.plates.length, plates = world.plates; i<li; i++){
 		plate = plates[i];
+
 		meshes = this.meshes.get(plate);
 		mesh = meshes[0];
 		mesh.matrix = plate.mesh.matrix;
 		mesh.rotation.setFromRotationMatrix(mesh.matrix);
-		displacement = mesh.geometry.attributes.displacement.array;
+
+		geometry = this.geometries.get(plate);
+		displacement = geometry.attributes.displacement.array;
 		for(var j=0, j3=0, lj = faces.length, cells = plate._cells; j<lj; j++, j3+=3){
 			face = faces[j];
 			content = cells[face.a].content;
@@ -83,7 +86,7 @@ View.prototype.update = function(){
 			content = cells[face.c].content;
 			displacement[j3+2] = content? content.displacement : 0;
 		}
-		mesh.geometry.attributes.displacement.needsUpdate = true;
+		geometry.attributes.displacement.needsUpdate = true;
 	}
 }
 
@@ -104,6 +107,8 @@ View.prototype.add = function(plate){
 	});
 	var geometry = THREE.BufferGeometryUtils.fromGeometry(this.world.grid.template);
 	geometry.addAttribute('displacement', Float32Array, faces.length*3, 1);
+	this.geometries.set(plate, geometry);
+
 	var mesh = new THREE.Mesh( geometry, material);
 	
 	this.scene.add(mesh);
@@ -115,6 +120,7 @@ View.prototype.remove = function(plate){
 	var mesh = meshes[0];
 	if(!mesh){return;}
 	this.meshes.remove(plate);
+	this.geometries.remove(plate);
 	
 	this.scene.remove(mesh);
 	mesh.material.dispose();
