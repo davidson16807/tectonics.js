@@ -105,6 +105,8 @@ View.prototype.add = function(plate){
 	geometry.addAttribute('displacement', Float32Array, faces.length*3, 1);
 	this.geometries.set(plate, geometry);
 
+	var color = new THREE.Color(Math.random() * 0xffffff);
+	
 	material = new THREE.ShaderMaterial({
 		attributes: {
 		  displacement: { type: 'f', value: null }
@@ -112,7 +114,7 @@ View.prototype.add = function(plate){
 		uniforms: {
 		  sealevel: { type: 'f', value: this.world.SEALEVEL },
 		  sealevel_mod: { type: 'f', value: 1.0 },
-		  color: 	    { type: 'c', value: new THREE.Color(Math.random() * 0xffffff) },
+		  color: 	    { type: 'c', value: color },
 		  index: 		{ type: 'f', value: -1 },
 		},
 		blending: THREE.NoBlending,
@@ -130,7 +132,7 @@ View.prototype.add = function(plate){
 		uniforms: {
 		  sealevel: { type: 'f', value: this.world.SEALEVEL },
 		  sealevel_mod: { type: 'f', value: 1.0 },
-		  color: 	    { type: 'c', value: new THREE.Color(Math.random() * 0xffffff) },
+		  color: 	    { type: 'c', value: color },
 		  index: 		{ type: 'f', value: 1 }
 		},
 		blending: THREE.NoBlending,
