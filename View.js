@@ -113,7 +113,7 @@ View.prototype.add = function(plate){
 		  sealevel: { type: 'f', value: this.world.SEALEVEL },
 		  sealevel_mod: { type: 'f', value: 1.0 },
 		  color: 	    { type: 'c', value: new THREE.Color(Math.random() * 0xffffff) },
-		  offset: 		{ type: 'i', value: 0 },
+		  index: 		{ type: 'f', value: -1 },
 		},
 		blending: THREE.NoBlending,
 		vertexShader: this._vertexShader,
@@ -131,7 +131,7 @@ View.prototype.add = function(plate){
 		  sealevel: { type: 'f', value: this.world.SEALEVEL },
 		  sealevel_mod: { type: 'f', value: 1.0 },
 		  color: 	    { type: 'c', value: new THREE.Color(Math.random() * 0xffffff) },
-		  offset: 		{ type: 'i', value: 1 }
+		  index: 		{ type: 'f', value: 1 }
 		},
 		blending: THREE.NoBlending,
 		vertexShader: this._vertexShader,
