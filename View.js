@@ -99,8 +99,13 @@ View.prototype.update = function(){
 }
 
 View.prototype.add = function(plate){
+	var faces, geometry, mesh, material;
 	var faces = this.world.grid.template.faces;
-	var material = new THREE.ShaderMaterial({
+	var geometry = THREE.BufferGeometryUtils.fromGeometry(this.world.grid.template);
+	geometry.addAttribute('displacement', Float32Array, faces.length*3, 1);
+	this.geometries.set(plate, geometry);
+
+	material = new THREE.ShaderMaterial({
 		attributes: {
 		  displacement: { type: 'f', value: null }
 		},
@@ -108,17 +113,31 @@ View.prototype.add = function(plate){
 		  sealevel: { type: 'f', value: this.world.SEALEVEL },
 		  sealevel_mod: { type: 'f', value: 1.0 },
 		  color: 	    { type: 'c', value: new THREE.Color(Math.random() * 0xffffff) },
+		  offset: 		{ type: 'i', value: 0 },
 		},
 		blending: THREE.NoBlending,
 		vertexShader: this._vertexShader,
 		fragmentShader: this._fragmentShader
 	});
-	var geometry = THREE.BufferGeometryUtils.fromGeometry(this.world.grid.template);
-	geometry.addAttribute('displacement', Float32Array, faces.length*3, 1);
-	this.geometries.set(plate, geometry);
+	mesh = new THREE.Mesh( geometry, material);
+	this.scene.add(mesh);
+	this.meshes.set(plate, mesh);
 
-	var mesh = new THREE.Mesh( geometry, material);
-	
+	material = new THREE.ShaderMaterial({
+		attributes: {
+		  displacement: { type: 'f', value: null }
+		},
+		uniforms: {
+		  sealevel: { type: 'f', value: this.world.SEALEVEL },
+		  sealevel_mod: { type: 'f', value: 1.0 },
+		  color: 	    { type: 'c', value: new THREE.Color(Math.random() * 0xffffff) },
+		  offset: 		{ type: 'i', value: 1 }
+		},
+		blending: THREE.NoBlending,
+		vertexShader: this._vertexShader,
+		fragmentShader: this._fragmentShader
+	});
+	mesh = new THREE.Mesh( geometry, material);
 	this.scene.add(mesh);
 	this.meshes.set(plate, mesh);
 }
