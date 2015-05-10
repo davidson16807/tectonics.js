@@ -93,9 +93,11 @@ World.prototype.simulate = function(timestep){
 }
 
 World.prototype.split = function(){
+	// don't bother if splitting will produce more plates than desired
 	if(this.plates.length >= this.platesNum){
 		return;
 	}
+	
 	var largest = this.plates.sort(function(a, b) { return b.getContinentalSize() - a.getContinentalSize(); })[0];
 	largest.split();
 	this.updateNeighbors();

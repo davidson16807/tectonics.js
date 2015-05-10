@@ -5,7 +5,7 @@ function _isFilled(vertex){
 }
 function _isLand(cell){ return cell.isContinental() };
 function _hashCell(vector){
-	return vector.id.toString()
+	return vector.id.toString();
 }
 
 function Plate(world, eulerPole, angularSpeed)
@@ -263,11 +263,13 @@ Plate.prototype.split = function(){
 	var world = this.world;
 	var cells = this._cells;
 	
+	
 	var centroid = this.getCentroid();
 	var plates = [];
 	var seeds = new buckets.Dictionary(_hashCell);
-	for (var i = world.plates.length-1; i < Math.ceil(world.platesNum/2); i++) {
+	while(plates.length + world.plates.length - 1  <  world.platesNum){
 		var junction = _this.getRandomJunction();
+		console.log(junction);
 		var pos = junction[0].pos;
 		var eulerPole = pos.distanceToSquared(centroid) < 2? 
 			new THREE.Vector3().crossVectors(centroid, pos).normalize() :
@@ -280,7 +282,8 @@ Plate.prototype.split = function(){
 		seeds.set(junction[0], smaller);
 		seeds.set(junction[1], larger);
 		seeds.set(junction[2], larger);
-	};
+	}
+
 	for(var i=0, li = plates.length; i<li; i++){
 		var plate = plates[i];
 		world.plates.push(plate);
