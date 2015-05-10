@@ -5,8 +5,10 @@ function _isFilled(vertex){
 }
 function _isLand(cell){ return cell.isContinental() };
 function _hashCell(vector){
-	return vector.id.toString()
+	return vector.id.toString();
 }
+
+var _MATERIAL = new THREE.MeshBasicMaterial();
 
 function Plate(world, eulerPole, angularSpeed)
 {
@@ -18,10 +20,9 @@ function Plate(world, eulerPole, angularSpeed)
 	//efficiency attributes, AKA attributes of attributes:
 	this._grid = world.grid;
 	this._geometry = world.grid.template;
-	this._material	= new THREE.MeshBasicMaterial();
 	this._cells = [];
 	this._neighbors = [];
-	this.mesh	= new THREE.Mesh( this._geometry, this._material ); 
+	this.mesh	= new THREE.Mesh( this._geometry, _MATERIAL ); 
 	
 	var vertices = this._geometry.vertices;
 	for(var i = 0, length = vertices.length, cells = this._cells; i<length; i++){
@@ -263,11 +264,13 @@ Plate.prototype.split = function(){
 	var world = this.world;
 	var cells = this._cells;
 	
+	
 	var centroid = this.getCentroid();
 	var plates = [];
 	var seeds = new buckets.Dictionary(_hashCell);
-	for (var i = world.plates.length-1; i < Math.ceil(world.platesNum/2); i++) {
+	while(plates.length + world.plates.length - 1  <  world.platesNum){
 		var junction = _this.getRandomJunction();
+		console.log(junction);
 		var pos = junction[0].pos;
 		var eulerPole = pos.distanceToSquared(centroid) < 2? 
 			new THREE.Vector3().crossVectors(centroid, pos).normalize() :
@@ -280,7 +283,8 @@ Plate.prototype.split = function(){
 		seeds.set(junction[0], smaller);
 		seeds.set(junction[1], larger);
 		seeds.set(junction[2], larger);
-	};
+	}
+
 	for(var i=0, li = plates.length; i<li; i++){
 		var plate = plates[i];
 		world.plates.push(plate);
@@ -305,7 +309,6 @@ Plate.prototype.destroy = function(){
 	
 	var mesh = this.mesh;
 	this.mesh = void 0;
-	this._material = void 0;
 	
 	mesh.material.dispose();
 	
