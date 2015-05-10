@@ -8,6 +8,8 @@ function _hashCell(vector){
 	return vector.id.toString();
 }
 
+var _MATERIAL = new THREE.MeshBasicMaterial();
+
 function Plate(world, eulerPole, angularSpeed)
 {
 	this.world = world;
@@ -18,10 +20,9 @@ function Plate(world, eulerPole, angularSpeed)
 	//efficiency attributes, AKA attributes of attributes:
 	this._grid = world.grid;
 	this._geometry = world.grid.template;
-	this._material	= new THREE.MeshBasicMaterial();
 	this._cells = [];
 	this._neighbors = [];
-	this.mesh	= new THREE.Mesh( this._geometry, this._material ); 
+	this.mesh	= new THREE.Mesh( this._geometry, _MATERIAL ); 
 	
 	var vertices = this._geometry.vertices;
 	for(var i = 0, length = vertices.length, cells = this._cells; i<length; i++){
@@ -308,7 +309,6 @@ Plate.prototype.destroy = function(){
 	
 	var mesh = this.mesh;
 	this.mesh = void 0;
-	this._material = void 0;
 	
 	mesh.material.dispose();
 	
