@@ -8,6 +8,8 @@ function World(grid, optional){
 	var radius = optional['radius'] || 6367;
 	var continentRadius = (optional['continentRadius'] || 1250) / radius;
 	
+	this.supercontinentCycle = new SupercontinentCycle(this);
+
 	this.radius = radius;
 	this.platesNum = optional['platesNum'] || 7;
 	this.mountainWidth = (optional['mountainWidth'] || 300) / radius;
@@ -86,13 +88,14 @@ World.prototype.simulate = function(timestep){
 			this.updateNeighbors();
 		}
 	}
-	if(plates.length <= 2){
-		this.split();
-	}
-	this.age += timestep
+	this.supercontinentCycle.update(timestep);
+	this.age += timestep;
 }
 
 World.prototype.split = function(){
+	if(this.plates.length >= this.platesNum){
+		return;
+	}
 	var largest = this.plates.sort(function(a, b) { return b.getContinentalSize() - a.getContinentalSize(); })[0];
 	largest.split();
 	this.updateNeighbors();
