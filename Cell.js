@@ -1,8 +1,10 @@
 'use strict';
 
 function Cell(plate, pos, id, content){
-	this.world = plate.world;
 	this.plate = plate;
+	this.world = plate.world;
+	this._mesh = plate.mesh;
+	this._grid = plate.grid;
 	this.pos = pos;
 	this.id = id;
 	this.content = content;
@@ -72,4 +74,21 @@ Cell.prototype.replace = function(replacement, invalid){
 Cell.prototype.destroy = function(){
 	this.content = void 0;
 	this.subductedBy = void 0;
+}
+
+Cell.prototype.getIntersections = function(plates, getIntersection){
+	var parent = this.plate;
+	var grid = this._grid;
+	var absolute_pos = this._mesh.localToWorld(this.pos.clone());
+	for(var j=0, lj = plates.length; j<lj; j++){
+		var plate = plates[j];
+		var relative = plate.mesh.worldToLocal(absolute_pos.clone());
+		var id = grid.getNearestId(relative);
+		var intersection = getIntersection(id, plate);
+		if(intersection) {
+			parent._neighbors.splice(j, 1);
+			parent._neighbors.unshift(plate);
+			return intersection; 
+		}
+	}
 }
