@@ -11,8 +11,11 @@ function Cell(plate, pos, id, content){
 }
 
 Cell.prototype.create = function(template, invalid){
-	this.content = new RockColumn(this.world,
-		template.elevation, template.thickness, template.density);
+	this.content = new RockColumn(this.world, {
+		elevation: 	template.elevation, 
+		thickness: 	template.thickness, 
+		density: 	template.density
+	});
 }
 
 Cell.prototype.isContinental = function(invalid){

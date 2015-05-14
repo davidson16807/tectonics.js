@@ -10,12 +10,13 @@ function _hashCell(vector){
 
 var _MATERIAL = new THREE.MeshBasicMaterial();
 
-function Plate(world, eulerPole, angularSpeed)
+function Plate(world, optional)
 {
+	optional = optional || {}
 	this.world = world;
-	this.eulerPole = eulerPole;
-	this.angularSpeed = angularSpeed;
-	this.densityOffset = world.getRandomPlateDensityEffect();
+	this.eulerPole = optional['eulerPole'] || world.getRandomPoint();
+	this.angularSpeed = optional['angularSpeed'] || world.getRandomPlateSpeed();
+	this.densityOffset = optional['densityOffset'] || world.getRandomPlateDensityEffect();
 	
 	//efficiency attributes, AKA attributes of attributes:
 	this.grid = world.grid;

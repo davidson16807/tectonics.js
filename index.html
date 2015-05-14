@@ -148,7 +148,7 @@
 		var random = querystring['seed']? new Random(querystring['seed']) : new Random();
 		var MegaYearPerSecond = 5 //My/second
 
-		var world = new World(new Grid( new THREE.IcosahedronGeometry(1, 5), voronoiCache));
+		var world = new World();
 		var view = new View(world, fragmentShaders[$('#fragmentShader').val()], vertexShaders[$('#vertexShader').val()]);
 		if( Detector.webgl ){
 			if( !init() ) animate();

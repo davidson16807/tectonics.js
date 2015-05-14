@@ -1,11 +1,11 @@
 'use strict';
 
-function RockColumn(world, elevation, thickness, density){
+function RockColumn(world, optional){
 	this.world = world;
-	this.elevation = elevation;
-	this.displacement = 0;
-	this.thickness = thickness;
-	this.density = density;
+	this.elevation = optional['elevation'] || elevation;
+	this.displacement = optional['displacement'] || 0;
+	this.thickness = optional['thickness'] || thickness;
+	this.density = optional['density'] || density;
 }
 
 RockColumn.prototype.isContinental = function(){
