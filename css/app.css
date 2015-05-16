@@ -13,13 +13,29 @@ body {
     font-weight:bold;
     vertical-align:text-top;
 }
-.controls.details button {
+.controls {
+	font-weight: bold;
+}
+.controls a {
+	color : white;
+	text-decoration	: none;
+}
+.controls a:hover {
+	text-decoration	: none;
+}
+.controls .expanded button {
 	width: 100%;
 	text-align:left;
 }
-.controls.summary button {
-    margin-right: -2px !important;
-    margin-left: -2px !important;
+.controls .expanded .details {
+	float:right;
+}
+/*.controls .expanded .details {
+	margin-left: 1em;
+}*/
+.controls .collapsed button {
+    margin-right: -2px;
+    margin-left: -2px;
 }
 .instructions {
 	color: grey;

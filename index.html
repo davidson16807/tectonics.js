@@ -95,87 +95,92 @@
 		</tr>
 	</table>
 </div>
-<!-- <div class="bottomright hidden controls summary">
-	<button id="new" style="border:0 0 0 0;">
-		<img src="icons/new-512px.svg" height="12em">
-	</button>
-	<a id="save" download>
-		<button>
-			<img src="icons/download-512px.svg" height="12em">
-		</button>
-	</a>
-	<button id="load">
-		<img src="icons/upload-512px.svg" height="12em">
-	</button>
-	<input id="load-input" type="file" class="hidden"/>
-	<a id="screenshot" class="hidden" download>
-		<button>
-			<img src="icons/camera-512px.svg" height="12em">
-		</button>
-	</a>
-	<button id="seed">
-		<img src="icons/dice-512px.svg" height="12em">
-	</button>
-	<button id="fullscreen" class="fullscreen hidden" >
-		<img src="icons/fullscreen-512px.svg" height="12em">
-	</button>
-	<button id="fullscreen" class="fullscreen hidden">
-		<img src="icons/fullscreen-exit-512px.svg" height="12em">
-	</button>
-</div> -->
-<div class="bottomright hidden controls details">
-	<!-- <div>
-		<button id="new">
-			<img src="icons/new-512px.svg" height="12em">
-			New
-			<span class="instructions">N</span>
-		</button>
-	</div> -->
-	<div>
-		<a id="save" download>
+<div class="bottomright hidden controls">
+	<div class="collapsed hidden">
+		<a class="summary" href="#">
+			&#9654;
+		</a>
+		<!-- <button class="new" style="border:0 0 0 0;">
+			<img src="icons/new-512px.svg" height="12em" title="New">
+		</button> -->
+		<a class="save" download>
 			<button>
-				<img src="icons/download-512px.svg" height="12em">
-				Save
-				<span class="instructions">S</span>
+				<img src="icons/download-512px.svg" height="12em" title="Save">
 			</button>
 		</a>
-	</div>
-	<div>
-		<button id="load">
-			<img src="icons/upload-512px.svg" height="12em">
-			Load
-			<span class="instructions">O</span>
+		<button class="load">
+			<img src="icons/upload-512px.svg" height="12em"  title="Load">
 		</button>
-		<input id="load-input" type="file" class="hidden"/>
-	</div>
-	<div>
-		<a id="screenshot" class="hidden" download>
+		<a class="hidden screenshot" download>
 			<button>
-				<img src="icons/camera-512px.svg" height="12em">
-				Screenshot
-				<span class="instructions">P</span>
+				<img src="icons/camera-512px.svg" height="12em"  title="Screenshot">
 			</button>
 		</a>
-	</div>
-	<!-- <div>
-		<button id="seed">
-			<img src="icons/dice-512px.svg" height="12em">
-			Seed
+		<!-- <button class="seed">
+			<img src="icons/dice-512px.svg" height="12em"  title="Seed">
+		</button> -->
+		<button class="fullscreen enter hidden" >
+			<img src="icons/fullscreen-512px.svg" height="12em"  title="Fullscreen">
 		</button>
-	</div> -->
-	<div>
-		<button id="fullscreen" class="fullscreen hidden" >
-			<img src="icons/fullscreen-512px.svg" height="12em">
-			Fullscreen
-			<span class="instructions">F11</span>
-		</button>
-		<button id="fullscreen" class="fullscreen hidden">
-			<img src="icons/fullscreen-exit-512px.svg" height="12em">
-			Exit Fullscreen
-			<span class="instructions">F11</span>
+		<button class="fullscreen exit hidden">
+			<img src="icons/fullscreen-exit-512px.svg" height="12em"  title="Exit Fullscreen">
 		</button>
 	</div>
-</div> 
+	<div class="expanded">
+		<a class="summary" href="#">&#9660;</a>
+		<div class="details">
+			<!-- <div>
+				<button class="new">
+					<img src="icons/new-512px.svg" height="12em">
+					New
+					<span class="instructions">N</span>
+				</button>
+			</div> -->
+			<div>
+				<a class="save" download>
+					<button>
+						<img src="icons/download-512px.svg" height="12em">
+						Save
+					</button>
+				</a>
+			</div>
+			<div>
+				<button class="load">
+					<img src="icons/upload-512px.svg" height="12em">
+					Load
+				</button>
+				<input id="load-input" type="file" class="hidden"/>
+			</div>
+			<div>
+				<a class="hidden screenshot" download>
+					<button>
+						<img src="icons/camera-512px.svg" height="12em">
+						Screenshot
+						<span class="instructions">P</span>
+					</button>
+				</a>
+			</div>
+			<!-- <div>
+				<button class="seed">
+					<img src="icons/dice-512px.svg" height="12em">
+					Seed
+				</button>
+			</div> -->
+			<div>
+				<button class="fullscreen enter hidden" >
+					<img src="icons/fullscreen-512px.svg" height="12em">
+					Fullscreen
+					<span class="instructions">F11</span>
+				</button>
+				<button class="fullscreen exit hidden">
+					<img src="icons/fullscreen-exit-512px.svg" height="12em">
+					Exit Fullscreen
+					<span class="instructions">F11</span>
+				</button>
+			</div>
+		</div>
+	</div> 
+</div>
 <div class="vcenter">
 	<div id="noWebGl" class="hidden hcenter dialog">
 		<h2>Well, darn</h2>
@@ -242,7 +247,7 @@
 		if( !init() ) animate();
 		$('.parameters').show();
 		$('.controls').show();
-		$('#screenshot').show();
+		$('.screenshot').show();
 		$('#pauseLabel').show();
 	} else {
 		$('#noWebGl').show();
@@ -276,7 +281,7 @@
 		// allow 'f' to go fullscreen where this feature is supported
 		if( THREEx.FullScreen.available() ){
 			THREEx.FullScreen.bindKey();
-			$('#fullscreen').show();
+			$('.fullscreen.enter').show();
 		} 
 	}
 	
@@ -318,10 +323,8 @@
 
 	// render the scene
 	function render() {
-
 		// update camera controls
 		controls.update();
-
 
 		// actually render the scene
 		renderer.render( view.scene, view.camera );
@@ -350,7 +353,10 @@
 		}
 	});
 	$('#pause,#play').click(togglePause);
-	$('#save').click(function() {
+	$('.summary').click(function() {
+		$('.expanded,.collapsed').toggle();
+	});
+	$('.save').click(function() {
 		var serialized = JsonSerializer.serialize(world);
 		var stringified = JSON.stringify(serialized);
 		var dataUrl = 
@@ -363,8 +369,8 @@
 			'.sim';
 		$(this).attr('href', dataUrl);
 		$(this).attr('download', filename);
-	})
-	$('#load').click(function() {
+	});
+	$('.load').click(function() {
 		$('#load-input').click();
 	});
 	$('#load-input').change(function(e) {
@@ -382,13 +388,17 @@
 
 	    reader.readAsText(e.target.files[0]);
 	});
-	$('#screenshot').click(function() {
+	$('.screenshot').click(function() {
 		$(this).attr('href', THREEx.Screenshot.toDataURL(renderer));
 	});
 	$('.fullscreen').click(toggleFullscreen);
 
     $('body').keyup(function(e){
-        if(e.keyCode == 32){
+    	var key = String
+    		.fromCharCode(e.keyCode)
+    		.toLowerCase();
+
+        if(key == ' '){
             togglePause();
         }
     });
