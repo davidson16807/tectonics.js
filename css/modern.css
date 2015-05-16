@@ -21,12 +21,12 @@ details p {
 }
 .bottomright {
 	position	: absolute;
-	bottom		: 0em;
+	bottom		: 1em;
 	right		: 1em;
 }
 .bottomleft {
 	position	: absolute;
-	bottom		: 0em;
+	bottom		: 1em;
 	left		: 1em;
 }
 .hcenter {

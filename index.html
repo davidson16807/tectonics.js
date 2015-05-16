@@ -26,9 +26,9 @@
 		<script src="vendor/jquery-1.10.2.min.js"></script>
 		<script src="vendor/underscore-min.js"></script>
 		<script src="vendor/buckets-minified.js"></script>
-		<script src="RockColumn.js"></script>
 		<script src="vendor/random-0.26.js"></script>
 		<script src="vendor/kdTree-min.js"></script>
+		<script src="RockColumn.js"></script>
 		<script src="Voronoi.js"></script>
 		<script src="Grid.js"></script>
 		<script src="Cell.js"></script>
@@ -42,10 +42,11 @@
 		<script src="Style.js"></script>
 		<script src="Projection.js"></script>
 		<script src="Cached.js"></script>
+		<script src="JsonSerializer.js"></script>
 	</head>
 <body>
 	<!-- three.js container -->
-	<div id="container"></div>
+	<div id="container" style=""></div>
 	<!-- info on screen display -->
 	<div class="topright hidden parameters">
 		<table>
@@ -56,8 +57,12 @@
 			<tr>
 				<td>Speed:</td>
 				<td>
-					<button id="play"  type="button" class="hidden">&#9654;</button>
-					<button id="pause" type="button">&#10074;&#10074;</button>
+					<button id="play" class="hidden">
+						<img src="icons/play-512px.svg" height="12em" width="12em">
+					</button>
+					<button id="pause">
+						<img src="icons/pause-512px.svg" height="12em" width="12em">
+					</button>
 					<input id="speedControl" type="number" value="5" min="0" max="10" step="1" style="width:30px" /> 
 					 My/s
 				</td>
@@ -90,14 +95,42 @@
 				</td>
 			</tr>
 		</table>
-		<div></div>
 	</div>
-	<div class="bottomright instructions">
-		<ul>
-			<li id="pauseLabel" class="hidden"><i>space</i> to pause/play</li>
-			<li id="screenshotLabel" class="hidden"><i>p</i> for screenshot</li>
-			<li id="fullscreenLabel" class="hidden"><i>f</i> for fullscreen</li>
-		</ul>
+	<div class="bottomright hidden controls">
+		<table>
+			<tr><td>
+				<a id="save" download>
+					<button>
+						<img src="icons/download-512px.svg" height="12em">
+						Save
+					</button>
+				</a>
+			</td></tr>
+			<tr><td>
+				<button id="load">
+					<img src="icons/upload-512px.svg" height="12em">
+					Load
+				</button>
+			</td></tr>
+			<tr><td>
+				<a id="screenshot" class="hidden" download>
+					<button>
+						<img src="icons/camera-512px.svg" height="12em">
+						Screenshot
+					</button>
+				</a>
+			</td></tr>
+			<tr><td>
+				<button id="fullscreen" class="fullscreen hidden" >
+					<img src="icons/fullscreen-512px.svg" height="12em">
+					Fullscreen
+				</button>
+				<button id="fullscreen" class="fullscreen hidden">
+					<img src="icons/fullscreen-exit-512px.svg" height="12em">
+					Exit Fullscreen
+				</button>
+			</td></tr>
+		</table>
 	</div> 
 	<div class="vcenter">
 		<div id="noWebGl" class="hidden hcenter dialog">
@@ -144,8 +177,19 @@
 	        querystring[hash[0]] = hash[1];
 	    }
 
+	    function parseSeed(text) {
+			var parsed = parseInt(text);
+			if(!parsed) {
+				for (var i = 0; i < min(8, text.length); i++) {
+					parsed = (parsed * 256) + text.charCodeAt(i);
+				}
+			}
+			return parsed;
+	    }
+		var seed = querystring['seed'] || (new Date).getTime().toString();
+		var random = new Random(parseSeed(seed));
+
 		var stats, renderer, clock, controls;
-		var random = querystring['seed']? new Random(querystring['seed']) : new Random();
 		var MegaYearPerSecond = 5 //My/second
 
 		var world = new World();
@@ -153,7 +197,8 @@
 		if( Detector.webgl ){
 			if( !init() ) animate();
 			$('.parameters').show();
-			$('#screenshotLabel').show();
+			$('.controls').show();
+			$('#screenshot').show();
 			$('#pauseLabel').show();
 		} else {
 			$('#noWebGl').show();
@@ -187,7 +232,7 @@
 			// allow 'f' to go fullscreen where this feature is supported
 			if( THREEx.FullScreen.available() ){
 				THREEx.FullScreen.bindKey();
-				$('#fullscreenLabel').toggle();
+				$('#fullscreen').show();
 			} 
 		}
 		
@@ -246,14 +291,35 @@
 			$('#pause').toggle();
 			$('#play').toggle();
 		}
-		
+		function toggleFullscreen () {
+			$('.fullscreen').toggle();
+			if( THREEx.FullScreen.activated() ){
+				THREEx.FullScreen.cancel();
+			}else{
+				THREEx.FullScreen.request(document.body);
+			}
+		}
+
 		$('#speedControl').change(function(e){
 			if($('#pause').is(':visible')){
 				MegaYearPerSecond = $('#speedControl').val();
 			}
 		});
-		$('#pause').click(togglePause);
-		$('#play').click(togglePause);
+		$('#pause,#play').click(togglePause);
+		var dataUrl;
+		$('#save').click(function() {
+			var serialized = JsonSerializer.serialize(world);
+			var stringified = JSON.stringify(serialized);
+			dataUrl = 
+				"data:application/json;"+
+				"charset=utf-8," + 
+				stringified;
+			$(this).attr('href', dataUrl);
+		})
+		$('#screenshot').click(function() {
+			$(this).attr('href', THREEx.Screenshot.toDataURL(renderer));
+		});
+		$('.fullscreen').click(toggleFullscreen);
 	    $('body').keyup(function(e){
 	        if(e.keyCode == 32){
 	            togglePause();
@@ -274,7 +340,6 @@
 					view.uniform('sealevel_mod', value);
 				}
 			  });
-			
 		});
 	</script>
 </body>

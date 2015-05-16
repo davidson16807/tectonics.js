@@ -13,8 +13,14 @@ body {
     font-weight:bold;
     vertical-align:text-top;
 }
+.controls button {
+	width: 100%;
+	text-align:left;
+}
 .instructions {
 	color: grey;
+	font-style: italic;
+	font-size: 0.9em;
 }
 .info a {
 	color: grey;
