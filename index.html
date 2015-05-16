@@ -357,7 +357,10 @@
 			"data:application/json;"+
 			"charset=utf-8," + 
 			stringified;
-		var filename = seed+'-'+$("#age").html().replace(/\s/,'');
+		var filename = 
+			seed+'-'+
+			$("#age").html().replace(/\s/,'')+
+			'.sim';
 		$(this).attr('href', dataUrl);
 		$(this).attr('download', filename);
 	})
