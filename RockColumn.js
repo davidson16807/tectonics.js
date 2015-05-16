@@ -2,7 +2,6 @@
 
 function RockColumn(world, optional){
 	this.world = world;
-	this.elevation = optional['elevation'] || elevation;
 	this.displacement = optional['displacement'] || 0;
 	this.thickness = optional['thickness'] || thickness;
 	this.density = optional['density'] || density;
