@@ -52,7 +52,7 @@ JsonSerializer.deserialize = function(json) {
 	seed = json.seed;
 	random = new Random(parseSeed(seed));
 
-	var world = new World(grid,	{
+	world = new World(grid,	{
 		radius: json.world.radius,
 		platesNum: json.world.platesNum,
 		mountainWidth: json.world.mountainWidth,
@@ -82,8 +82,6 @@ JsonSerializer.deserialize = function(json) {
 	});
 	world.updateNeighbors();
 	world.updateBorders();
-	world.supercontinentCycle = new SupercontinentCycle(world, {
-
-	});
+	world.supercontinentCycle = new SupercontinentCycle(world, json.world.supercontinentCycle);
 	return world;
 }
