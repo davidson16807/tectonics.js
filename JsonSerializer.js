@@ -49,10 +49,7 @@ JsonSerializer.serialize = function(world) {
 	};
 };
 JsonSerializer.deserialize = function(json) {
-	seed = json.seed;
-	random = new Random(parseSeed(seed));
-
-	world = new World(grid,	{
+	var _world = new World({
 		radius: json.world.radius,
 		platesNum: json.world.platesNum,
 		mountainWidth: json.world.mountainWidth,
@@ -61,27 +58,28 @@ JsonSerializer.deserialize = function(json) {
 		supercontinentCycle: undefined,
 		plates: [],
 	});
-	world.plates = json.world.plates.map(function(plate_json){
-		var plate = new Plates(world, {
+	_world.plates = json.world.plates.map(function(plate_json){
+		var plate = new Plate(_world, {
 			eulerPole: plate_json.eulerPole,
 			angularSpeed: plate_json.angularSpeed,
 			densityOffset: plate_json.densityOffset
 		});
-		for (var i = 0, li = plate_json.rockColumns.length; i < li; i--) {
+		for (var i = 0, li = plate_json.rockColumns.length; i < li; i++) {
 			var rockColumn_json = plate_json.rockColumns[i];
-			if(!rockColumn){
-				continue;
-			}
-			var rockColumn = new RockColumn(world, {
+			var rockColumn = new RockColumn(_world, {
 				thickness: rockColumn_json[1],
 				density: rockColumn_json[2]
 			});
 			rockColumn.isostasy();
-			plates._cells[rockColumn_json[0]] = rockColumn;
+			console.log(rockColumn_json[0]);
+			plate._cells[rockColumn_json[0]].content = rockColumn;
 		};
+		return plate;
 	});
-	world.updateNeighbors();
-	world.updateBorders();
-	world.supercontinentCycle = new SupercontinentCycle(world, json.world.supercontinentCycle);
-	return world;
+	_world.updateNeighbors();
+	_world.updateBorders();
+	_world.supercontinentCycle = new SupercontinentCycle(_world, json.world.supercontinentCycle);
+	seed = json.seed;
+	random = new Random(parseSeed(seed));
+	return _world;
 }

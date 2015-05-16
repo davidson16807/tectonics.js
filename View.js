@@ -4,16 +4,14 @@ var _hashPlate = function(plate){
 	return plate.mesh.uuid
 }
 
-function View(world, fragmentShader, vertexShader){
+function View(_world, fragmentShader, vertexShader){
 	this.THRESHOLD = 0.99;
 	this.SEALEVEL = 1.0;
-	this.world = world;
+	this._world = world;
 	this._fragmentShader = fragmentShader;
 	this._vertexShader = vertexShader;
 
 	this.geometries = new buckets.Dictionary(_hashPlate);
-	this.materials1 = new buckets.Dictionary(_hashPlate);
-	this.materials2 = new buckets.Dictionary(_hashPlate);
 	this.meshes = new buckets.MultiDictionary(_hashPlate);
 
 	// create a scene
@@ -25,11 +23,27 @@ function View(world, fragmentShader, vertexShader){
 	this.scene.add(this.camera);
 }
 
+View.prototype.world = function(world) {
+	if(!world){
+		return this._world;
+	}
+	if(this._world == world){
+		return;
+	}
+	for (var i = 0; i < this._world.plates.length; i++) {
+		this.remove(this._world.plates[i]);
+	};
+	for (var i = 0; i < world.plates.length; i++) {
+		this.add(world.plates[i]);
+	};
+	this._world = world;
+};
+
 View.prototype.fragmentShader = function(fragmentShader){
 	if(this._fragmentShader != fragmentShader){
 		this._fragmentShader = fragmentShader;
 		var meshes, mesh, plate;
-		for(var i=0, li = this.world.plates.length, plates = world.plates; i<li; i++){
+		for(var i=0, li = this._world.plates.length, plates = this._world.plates; i<li; i++){
 			plate = plates[i];
 			meshes = this.meshes.get(plate);
 			for (var j = meshes.length - 1; j >= 0; j--) {
@@ -45,7 +59,7 @@ View.prototype.vertexShader = function(vertexShader){
 	if(this._vertexShader != vertexShader){
 		this._vertexShader = vertexShader;
 		var meshes, mesh, plate;
-		for(var i=0, li = this.world.plates.length, plates = world.plates; i<li; i++){
+		for(var i=0, li = this._world.plates.length, plates = this._world.plates; i<li; i++){
 			plate = plates[i];
 			meshes = this.meshes.get(plate);
 			for (var j = meshes.length - 1; j >= 0; j--) {
@@ -59,7 +73,7 @@ View.prototype.vertexShader = function(vertexShader){
 
 View.prototype.uniform = function(key, value){
 	var meshes, mesh, plate;
-	for(var i=0, li = this.world.plates.length, plates = world.plates; i<li; i++){
+	for(var i=0, li = this._world.plates.length, plates = this._world.plates; i<li; i++){
 		plate = plates[i];
 		meshes = this.meshes.get(plate);
 		for (var j = meshes.length - 1; j >= 0; j--) {
@@ -71,9 +85,9 @@ View.prototype.uniform = function(key, value){
 }
 
 View.prototype.update = function(){
-	var faces = this.world.grid.template.faces;
+	var faces = this._world.grid.template.faces;
 	var plate, meshes, mesh, geometry, content, face, displacement;
-	for(var i=0, li = this.world.plates.length, plates = world.plates; i<li; i++){
+	for(var i=0, li = this._world.plates.length, plates = this._world.plates; i<li; i++){
 		plate = plates[i];
 
 		meshes = this.meshes.get(plate);
@@ -100,8 +114,8 @@ View.prototype.update = function(){
 
 View.prototype.add = function(plate){
 	var faces, geometry, mesh, material;
-	var faces = this.world.grid.template.faces;
-	var geometry = THREE.BufferGeometryUtils.fromGeometry(this.world.grid.template);
+	var faces = this._world.grid.template.faces;
+	var geometry = THREE.BufferGeometryUtils.fromGeometry(this._world.grid.template);
 	geometry.addAttribute('displacement', Float32Array, faces.length*3, 1);
 	this.geometries.set(plate, geometry);
 
@@ -112,7 +126,7 @@ View.prototype.add = function(plate){
 		  displacement: { type: 'f', value: null }
 		},
 		uniforms: {
-		  sealevel: { type: 'f', value: this.world.SEALEVEL },
+		  sealevel: { type: 'f', value: this._world.SEALEVEL },
 		  sealevel_mod: { type: 'f', value: 1.0 },
 		  color: 	    { type: 'c', value: color },
 		  index: 		{ type: 'f', value: -1 },
@@ -130,7 +144,7 @@ View.prototype.add = function(plate){
 		  displacement: { type: 'f', value: null }
 		},
 		uniforms: {
-		  sealevel: { type: 'f', value: this.world.SEALEVEL },
+		  sealevel: { type: 'f', value: this._world.SEALEVEL },
 		  sealevel_mod: { type: 'f', value: 1.0 },
 		  color: 	    { type: 'c', value: color },
 		  index: 		{ type: 'f', value: 1 }

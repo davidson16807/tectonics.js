@@ -374,9 +374,10 @@
 	    //reader.onabort = function(e) {};
 	    //reader.onloadstart = function(e) {};
 	    reader.onload = function(e) {
-	    	console.log(e.target.result)
 	    	var json = JSON.parse(e.target.result);
-	    	JsonSerializer.deserialize(json);
+	    	world = JsonSerializer.deserialize(json);
+			view.world(world);
+			console.log(world.plates);
 	    }
 
 	    reader.readAsText(e.target.files[0]);
