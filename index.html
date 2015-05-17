@@ -45,7 +45,7 @@
 </head>
 <body>
 <!-- three.js container -->
-<div id="container" style=""></div>
+<div id="container"></div>
 <!-- info on screen display -->
 <div class="topright hidden parameters">
 	<table>
@@ -148,6 +148,7 @@
 				<button class="load">
 					<img src="icons/upload-512px.svg" height="12em">
 					Load
+					<span class="instructions">drag</span>
 				</button>
 				<input id="load-input" type="file" class="hidden"/>
 			</div>
@@ -180,6 +181,9 @@
 			</div>
 		</div>
 	</div> 
+</div>
+<div id="drop-dialog" class="hidden">
+	DRAG HERE
 </div>
 <div class="vcenter">
 	<div id="noWebGl" class="hidden hcenter dialog">
@@ -346,6 +350,20 @@
 			THREEx.FullScreen.request(document.body);
 		}
 	}
+	function loadFile (file) {
+		var reader = new FileReader();
+	    //reader.onerror = function(e) {};
+	    //reader.onprogress = function(e) {};
+	    //reader.onabort = function(e) {};
+	    //reader.onloadstart = function(e) {};
+	    reader.onload = function(e) {
+	    	var json = JSON.parse(e.target.result);
+	    	world = JsonSerializer.deserialize(json);
+			view.world(world);
+	    }
+
+	    reader.readAsText(file);
+	}
 
 	$('#speedControl').change(function(e){
 		if($('#pause').is(':visible')){
@@ -375,18 +393,7 @@
 		$('#load-input').click();
 	});
 	$('#load-input').change(function(e) {
-		var reader = new FileReader();
-	    //reader.onerror = function(e) {};
-	    //reader.onprogress = function(e) {};
-	    //reader.onabort = function(e) {};
-	    //reader.onloadstart = function(e) {};
-	    reader.onload = function(e) {
-	    	var json = JSON.parse(e.target.result);
-	    	world = JsonSerializer.deserialize(json);
-			view.world(world);
-	    }
-
-	    reader.readAsText(e.target.files[0]);
+		loadFile(e.target.files[0]);
 	});
 	$('.screenshot').click(function() {
 		var dataurl = THREEx.Screenshot.toDataURL(renderer);
@@ -408,7 +415,50 @@
         if(key == ' '){
             togglePause();
         }
-    });
+    })
+
+    var last_drag_entered;
+    $('body').on(
+	    'dragover',
+	    function(e) {
+	        e.preventDefault();
+	        e.stopPropagation();
+	    }
+	)
+	$('body').on(
+	    'dragenter',
+	    function(e) {
+	        e.preventDefault();
+	        e.stopPropagation();
+	    	
+	    	last_drag_entered = e.target;
+	    	$('#drop-dialog').show();
+	    }
+	);
+	$('body').on(
+	    'dragleave',
+	    function(e) {
+	        e.preventDefault();
+	        e.stopPropagation();
+	    	
+	    	if(last_drag_entered == e.target){
+	    		$('#drop-dialog').hide();
+	    	}
+	    }
+	);
+	$('body').on(
+	    'drop',
+	    function(e) {
+	        e.preventDefault();
+	        e.stopPropagation();
+
+    		$('#drop-dialog').hide();
+        	while(!e.dataTransfer && e.originalEvent){
+        		e = e.originalEvent;
+        	}
+			loadFile(e.dataTransfer.files[0]);
+	    }
+	);
 	$('#fragmentShader').change(function(e){
 		view.fragmentShader(fragmentShaders[$('#fragmentShader').val()]);
 	});

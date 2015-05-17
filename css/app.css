@@ -2,6 +2,17 @@ body {
 	overflow	: hidden;
 }
 
+#drop-dialog {
+	position	: absolute;
+	top		    : 23%;
+	left		: 23%;
+	bottom		: 23%;
+	right		: 23%;
+	padding 	: 5.57%;
+	font-size 	: 161%;
+	text-align  : center;
+	border-style: dashed;
+}
 .dialog {
 	color: black;
 	background-color: white;
