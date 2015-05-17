@@ -26,7 +26,6 @@ JsonSerializer.serialize = function(world) {
 			rockColumns: 	[],
 			meshMatrix: 	plate.mesh.matrix.toArray()
 		};
-		console.log(plate_json.eulerPole);
 		for (var j = 0, lj = plate._cells.length; j < lj; j++) {
 			var cell = plate._cells[j];
 			if(!cell.content){
@@ -73,7 +72,6 @@ JsonSerializer.deserialize = function(json) {
 		plateMatrix.fromArray(plate_json.meshMatrix);
 		plate.mesh.rotation.setFromRotationMatrix( plateMatrix );
 		
-		console.log(plate_json.eulerPole);
 		for (var i = 0, li = plate_json.rockColumns.length; i < li; i++) {
 			var rockColumn_json = plate_json.rockColumns[i];
 			var rockColumn = new RockColumn(_world, {

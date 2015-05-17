@@ -256,7 +256,6 @@ Plate.prototype.split = function(){
 	var seeds = new buckets.Dictionary(_hashCell);
 	while(plates.length + world.plates.length - 1  <  world.platesNum){
 		var junction = _this.getRandomJunction();
-		console.log(junction);
 		var pos = junction[0].pos;
 		var eulerPole = pos.distanceToSquared(centroid) < 2? 
 			new THREE.Vector3().crossVectors(centroid, pos).normalize() :

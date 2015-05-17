@@ -84,9 +84,7 @@ World.prototype.simulate = function(timestep){
 	for(i = 0; i<length; i++){
 		if(platestemp[i].getSize() <= 100)
 		{
-			console.log(plates);
 			plates.splice(plates.indexOf(platestemp[i]),1);
-			console.log(plates);
 			platestemp[i].destroy();
 			this.updateNeighbors();
 		}
@@ -108,7 +106,6 @@ World.prototype.split = function(){
 	
 	largest.destroy();
 	
-	console.log(this.age);
 }
 
 World.prototype.updateNeighbors = function(){
