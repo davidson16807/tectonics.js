@@ -367,8 +367,9 @@
 			seed+'-'+
 			$("#age").html().replace(/\s/,'')+
 			'.sim';
-		$(this).attr('href', dataUrl);
-		$(this).attr('download', filename);
+		$(this)
+			.attr('href', dataUrl)
+			.attr('download', filename);
 	});
 	$('.load').click(function() {
 		$('#load-input').click();
@@ -383,13 +384,19 @@
 	    	var json = JSON.parse(e.target.result);
 	    	world = JsonSerializer.deserialize(json);
 			view.world(world);
-			console.log(world.plates);
 	    }
 
 	    reader.readAsText(e.target.files[0]);
 	});
 	$('.screenshot').click(function() {
-		$(this).attr('href', THREEx.Screenshot.toDataURL(renderer));
+		var dataurl = THREEx.Screenshot.toDataURL(renderer);
+		var filename = 
+			seed+'-'+
+			$("#age").html().replace(/\s/,'')+
+			'.png';
+		$(this)
+			.attr('href', dataurl)
+			.attr('download', filename);
 	});
 	$('.fullscreen').click(toggleFullscreen);
 

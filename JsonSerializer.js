@@ -20,11 +20,13 @@ JsonSerializer.serialize = function(world) {
 	for (var i = 0, li = world.plates.length; i < li; i++) {
 		plate = world.plates[i]
 		var plate_json = {
-			eulerPole: 		plate.eulerPole,
+			eulerPole: 		plate.eulerPole.toArray(),
 			angularSpeed: 	plate.angularSpeed,
 			densityOffset: 	plate.densityOffset,
 			rockColumns: 	[],
+			meshMatrix: 	plate.mesh.matrix.toArray()
 		};
+		console.log(plate_json.eulerPole);
 		for (var j = 0, lj = plate._cells.length; j < lj; j++) {
 			var cell = plate._cells[j];
 			if(!cell.content){
@@ -58,12 +60,20 @@ JsonSerializer.deserialize = function(json) {
 		supercontinentCycle: undefined,
 		plates: [],
 	});
+
 	_world.plates = json.world.plates.map(function(plate_json){
 		var plate = new Plate(_world, {
-			eulerPole: plate_json.eulerPole,
 			angularSpeed: plate_json.angularSpeed,
 			densityOffset: plate_json.densityOffset
 		});
+
+		plate.eulerPole.fromArray(plate_json.eulerPole);
+
+		var plateMatrix = plate.mesh.matrix;
+		plateMatrix.fromArray(plate_json.meshMatrix);
+		plate.mesh.rotation.setFromRotationMatrix( plateMatrix );
+		
+		console.log(plate_json.eulerPole);
 		for (var i = 0, li = plate_json.rockColumns.length; i < li; i++) {
 			var rockColumn_json = plate_json.rockColumns[i];
 			var rockColumn = new RockColumn(_world, {
@@ -71,7 +81,6 @@ JsonSerializer.deserialize = function(json) {
 				density: rockColumn_json[2]
 			});
 			rockColumn.isostasy();
-			console.log(rockColumn_json[0]);
 			plate._cells[rockColumn_json[0]].content = rockColumn;
 		};
 		return plate;
