@@ -2,6 +2,17 @@ body {
 	overflow	: hidden;
 }
 
+#drop-dialog {
+	position	: absolute;
+	top		    : 23%;
+	left		: 23%;
+	bottom		: 23%;
+	right		: 23%;
+	padding 	: 5.57%;
+	font-size 	: 161%;
+	text-align  : center;
+	border-style: dashed;
+}
 .dialog {
 	color: black;
 	background-color: white;
@@ -13,8 +24,36 @@ body {
     font-weight:bold;
     vertical-align:text-top;
 }
+.controls {
+	font-weight: bold;
+}
+.controls a {
+	color : white;
+	text-decoration	: none;
+}
+.controls a:hover {
+	text-decoration	: none;
+}
+.controls .expanded button {
+	width: 100%;
+	text-align:left;
+}
+.controls .expanded .details {
+	float:right;
+}
+/*.controls .expanded .details {
+	margin-left: 1em;
+}*/
+.controls .collapsed button {
+    margin-right: -2px;
+    margin-left: -2px;
+}
 .instructions {
 	color: grey;
+	font-style: italic;
+	font-size: 61%;
+	float:right;
+	padding-left:1em;
 }
 .info a {
 	color: grey;

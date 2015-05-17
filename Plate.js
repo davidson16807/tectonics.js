@@ -10,15 +10,16 @@ function _hashCell(vector){
 
 var _MATERIAL = new THREE.MeshBasicMaterial();
 
-function Plate(world, eulerPole, angularSpeed)
+function Plate(world, optional)
 {
+	optional = optional || {}
 	this.world = world;
-	this.eulerPole = eulerPole;
-	this.angularSpeed = angularSpeed;
-	this.densityOffset = world.getRandomPlateDensityEffect();
+	this.eulerPole = optional['eulerPole'] || world.getRandomPoint();
+	this.angularSpeed = optional['angularSpeed'] || world.getRandomPlateSpeed();
+	this.densityOffset = optional['densityOffset'] || world.getRandomPlateDensityEffect();
 	
 	//efficiency attributes, AKA attributes of attributes:
-	this._grid = world.grid;
+	this.grid = world.grid;
 	this._geometry = world.grid.template;
 	this._cells = [];
 	this._neighbors = [];
@@ -109,19 +110,6 @@ Plate.prototype.move = function(timestep){
 	this.mesh.rotation.setFromRotationMatrix( this.mesh.matrix );
 }
 
-Plate.prototype._getIntersections = function(absolute, plates, grid, getIntersection){
-	for(var j=0, lj = plates.length; j<lj; j++){
-		var plate = plates[j];
-		var relative = plate.mesh.worldToLocal(absolute.clone());
-		var id = grid.getNearestId(relative);
-		var intersection = getIntersection(id, plate);
-		if(intersection) {
-			this._neighbors.splice(j, 1);
-			this._neighbors.unshift(plate);
-			return intersection; 
-		}
-	}
-}
 
 function _getCollisionIntersection(id, plate) {
 	var intersected = plate._cells[id];
@@ -133,7 +121,7 @@ Plate.prototype.deform = function(){
 	var mesh = this.mesh;
 	var plates = this._neighbors;
 	var geometry = this._geometry;
-	var grid = this._grid;
+	var grid = this.grid;
 	var collideable = this._collideable;
 	var cell, intersected;
 	for(var i=0, li = collideable.length; i<li; i++){
@@ -141,8 +129,7 @@ Plate.prototype.deform = function(){
 		if(_.isUndefined(cell) || _.isUndefined(cell.content)){
 			continue;
 		}
-		var absolute = mesh.localToWorld(cell.pos.clone());
-		var intersected = this._getIntersections(absolute, plates, grid, _getCollisionIntersection);
+		var intersected = cell.getIntersections(plates, _getCollisionIntersection);
 		if(intersected){
 			cell.collide(intersected);
 			this._geometry.verticesNeedUpdate  = true;
@@ -169,8 +156,7 @@ Plate.prototype.rift = function(){
 		if(_.isUndefined(cell) || !_.isUndefined(cell.content)){
 			continue;
 		}
-		var absolute = mesh.localToWorld(cell.pos.clone());
-		intersected = this._getIntersections(absolute, plates, grid, _getRiftIntersection);
+		intersected = cell.getIntersections(plates, _getRiftIntersection);
 		if(!intersected){
 			cell.create(ocean);
 			geometry.verticesNeedUpdate = true;
@@ -229,7 +215,7 @@ Plate.prototype.isostasy = function() {
 }
 
 Plate.prototype.dock = function(subjugated){
-	var grid = this._grid;
+	var grid = this.grid;
 	var cells = this._cells;
 	var subjugatedPlate = subjugated.plate
 	var otherMesh = subjugatedPlate.mesh
@@ -259,7 +245,7 @@ Plate.prototype.dock = function(subjugated){
 
 Plate.prototype.split = function(){
 	var _this = this;
-	var grid = this._grid;
+	var grid = this.grid;
 	var gridvertices = grid.template.vertices;
 	var world = this.world;
 	var cells = this._cells;
@@ -270,7 +256,6 @@ Plate.prototype.split = function(){
 	var seeds = new buckets.Dictionary(_hashCell);
 	while(plates.length + world.plates.length - 1  <  world.platesNum){
 		var junction = _this.getRandomJunction();
-		console.log(junction);
 		var pos = junction[0].pos;
 		var eulerPole = pos.distanceToSquared(centroid) < 2? 
 			new THREE.Vector3().crossVectors(centroid, pos).normalize() :

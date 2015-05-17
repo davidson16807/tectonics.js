@@ -1,14 +1,15 @@
 function SupercontinentCycle(world, optional){
 	optional = optional || {};
-	
-	this.world = world;	
+
 	this.getRandomDuration = optional['getRandomDuration'] ||
 		function() { return random.uniform(300, 500); };
 		// from wikipedia
-	this.duration = this.getRandomDuration();
-	this.age = this.duration;
-	this.oldSupercontinentPos = optional['oldSupercontinentPos'];
-	this.newSupercontinentPos = world.getRandomPoint();
+	
+	this.world = world;	
+	this.duration = optional['duration'] || this.getRandomDuration();
+	this.age = optional['age'] || this.duration;
+	this.oldSupercontinentPos = optional['oldSupercontinentPos'] || world.getRandomPoint();
+	this.newSupercontinentPos = optional['newSupercontinentPos'] || world.getRandomPoint(); //this.getNewSupercontinentPos();
 };
 SupercontinentCycle.prototype.update = function(timestep) {
 	this.age += timestep;
