@@ -11,6 +11,9 @@ function View(_world, fragmentShader, vertexShader){
 	this._fragmentShader = fragmentShader;
 	this._vertexShader = vertexShader;
 
+	this._uniforms = {
+		sealevel_mod: 1.0
+	};
 	this.geometries = new buckets.Dictionary(_hashPlate);
 	this.meshes = new buckets.MultiDictionary(_hashPlate);
 
@@ -40,39 +43,45 @@ View.prototype.world = function(world) {
 };
 
 View.prototype.fragmentShader = function(fragmentShader){
-	if(this._fragmentShader != fragmentShader){
-		this._fragmentShader = fragmentShader;
-		var meshes, mesh, plate;
-		for(var i=0, li = this._world.plates.length, plates = this._world.plates; i<li; i++){
-			plate = plates[i];
-			meshes = this.meshes.get(plate);
-			for (var j = meshes.length - 1; j >= 0; j--) {
-				mesh = meshes[j];
-				mesh.material.fragmentShader = fragmentShader;
-				mesh.material.needsUpdate = true;
-			}
+	if(this._fragmentShader == fragmentShader){
+		return;
+	}
+	this._fragmentShader = fragmentShader;
+	var meshes, mesh, plate;
+	for(var i=0, li = this._world.plates.length, plates = this._world.plates; i<li; i++){
+		plate = plates[i];
+		meshes = this.meshes.get(plate);
+		for (var j = meshes.length - 1; j >= 0; j--) {
+			mesh = meshes[j];
+			mesh.material.fragmentShader = fragmentShader;
+			mesh.material.needsUpdate = true;
 		}
 	}
 }
 
 View.prototype.vertexShader = function(vertexShader){
-	if(this._vertexShader != vertexShader){
-		this._vertexShader = vertexShader;
-		var meshes, mesh, plate;
-		for(var i=0, li = this._world.plates.length, plates = this._world.plates; i<li; i++){
-			plate = plates[i];
-			meshes = this.meshes.get(plate);
-			for (var j = meshes.length - 1; j >= 0; j--) {
-				mesh = meshes[j];
-				mesh.material.vertexShader = vertexShader;
-				mesh.material.needsUpdate = true;
-			}
+	if(this._vertexShader == vertexShader){
+		return;
+	}
+	this._vertexShader = vertexShader;
+	var meshes, mesh, plate;
+	for(var i=0, li = this._world.plates.length, plates = this._world.plates; i<li; i++){
+		plate = plates[i];
+		meshes = this.meshes.get(plate);
+		for (var j = meshes.length - 1; j >= 0; j--) {
+			mesh = meshes[j];
+			mesh.material.vertexShader = vertexShader;
+			mesh.material.needsUpdate = true;
 		}
 	}
 }
 
 View.prototype.uniform = function(key, value){
-	var meshes, mesh, plate;
+	if(this._uniforms[key] == value){
+		return;
+	}
+	this._uniforms[key] = value;
+ 	var meshes, mesh, plate;
 	for(var i=0, li = this._world.plates.length, plates = this._world.plates; i<li; i++){
 		plate = plates[i];
 		meshes = this.meshes.get(plate);
@@ -120,14 +129,14 @@ View.prototype.add = function(plate){
 	this.geometries.set(plate, geometry);
 
 	var color = new THREE.Color(Math.random() * 0xffffff);
-	
+	var sealevel_mod = this._uniforms.sealevel_mod;
 	material = new THREE.ShaderMaterial({
 		attributes: {
 		  displacement: { type: 'f', value: null }
 		},
 		uniforms: {
 		  sealevel: { type: 'f', value: this._world.SEALEVEL },
-		  sealevel_mod: { type: 'f', value: 1.0 },
+		  sealevel_mod: { type: 'f', value: sealevel_mod },
 		  color: 	    { type: 'c', value: color },
 		  index: 		{ type: 'f', value: -1 },
 		},
@@ -145,7 +154,7 @@ View.prototype.add = function(plate){
 		},
 		uniforms: {
 		  sealevel: { type: 'f', value: this._world.SEALEVEL },
-		  sealevel_mod: { type: 'f', value: 1.0 },
+		  sealevel_mod: { type: 'f', value: sealevel_mod },
 		  color: 	    { type: 'c', value: color },
 		  index: 		{ type: 'f', value: 1 }
 		},
