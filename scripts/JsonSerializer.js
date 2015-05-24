@@ -15,7 +15,9 @@ JsonSerializer.serialize = function(world) {
 			oldSupercontinentPos: supercontinentCycle.oldSupercontinentPos,
 			newSupercontinentPos: supercontinentCycle.newSupercontinentPos,
 		},
+		random: JSON.parse(JSON.stringify(random)),
 	};
+	console.log(world_json.random)
 
 	for (var i = 0, li = world.plates.length; i < li; i++) {
 		plate = world.plates[i]
@@ -86,7 +88,19 @@ JsonSerializer.deserialize = function(json) {
 	_world.updateNeighbors();
 	_world.updateBorders();
 	_world.supercontinentCycle = new SupercontinentCycle(_world, json.world.supercontinentCycle);
+	
 	seed = json.seed;
 	random = new Random(parseSeed(seed));
+
+	var random_json = json.world.random;
+	console.log(random_json)
+	random.N  = random_json.N;
+	random.M  = random_json.M;
+	random.MATRIX_A  = random_json.MATRIX_A;
+	random.UPPER_MASK  = random_json.UPPER_MASK;
+	random.LOWER_MASK  = random_json.LOWER_MASK;
+	random.mt  = random_json.mt;
+	random.mti  = random_json.mti;
+
 	return _world;
 }
