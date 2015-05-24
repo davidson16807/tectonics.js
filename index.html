@@ -366,7 +366,8 @@
 	}
 	function toggleFullscreen () {
 		$('.fullscreen').toggle();
-		$('.collapsible').children().toggle();
+		$('.collapsible').children('.expanded').hide();
+		$('.collapsible').children('.collapsed').hide();
 		if( THREEx.FullScreen.activated() ){
 			THREEx.FullScreen.cancel();
 		}else{
