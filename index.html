@@ -248,12 +248,14 @@
 	var stats, renderer, clock, controls;
 	var MegaYearPerSecond = 5 //My/second
 
-	var world = querystring['load']? undefined : new World();
+	var world = undefined;
 	var view = new View(world, fragmentShaders[$('#fragmentShader').val()], vertexShaders[$('#vertexShader').val()]);
 
 	if (querystring['load']) {
 		loadUrl(querystring['load']);
 	} else {
+		world = new World();
+		view.world(world);
 		$('#loadingSave').hide();
 		$('.parameters').show();
 		$('.controls').show();
