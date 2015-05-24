@@ -18,31 +18,31 @@ body {
 	padding: 3.44%;
 	border-radius: 1em;
 }
+
+.expanded .details {
+	float:right;
+}
+a.summary {
+	color : white;
+	text-decoration	: none;
+}
+a:hover.summary {
+	text-decoration	: none;
+}
+
 .parameters td {
 	padding: 0 0.5em 0 0.5em;
     font-weight:bold;
     vertical-align:text-top;
 }
+
 .controls {
 	font-weight: bold;
-}
-.controls a {
-	color : white;
-	text-decoration	: none;
-}
-.controls a:hover {
-	text-decoration	: none;
 }
 .controls .expanded button {
 	width: 100%;
 	text-align:left;
 }
-.controls .expanded .details {
-	float:right;
-}
-/*.controls .expanded .details {
-	margin-left: 1em;
-}*/
 .controls .collapsed button {
     margin-right: -2px;
     margin-left: -2px;
@@ -53,11 +53,4 @@ body {
 	font-size: 61%;
 	float:right;
 	padding-left:1em;
-}
-.info a {
-	color: grey;
-	text-decoration	: none;
-}
-.info a:hover {
-	text-decoration	: underline;
 }
