@@ -7,7 +7,6 @@ JsonSerializer.serialize = function(world) {
 		platesNum: world.platesNum,
 		mountainWidth: world.mountainWidth,
 		age: world.age,
-		plates: [],
 		grid: undefined,
 		supercontinentCycle: {
 			duration: supercontinentCycle.duration,
@@ -15,16 +14,17 @@ JsonSerializer.serialize = function(world) {
 			oldSupercontinentPos: supercontinentCycle.oldSupercontinentPos,
 			newSupercontinentPos: supercontinentCycle.newSupercontinentPos,
 		},
+		plates: [],
 	};
 
 	for (var i = 0, li = world.plates.length; i < li; i++) {
 		plate = world.plates[i]
 		var plate_json = {
-			eulerPole: 		plate.eulerPole.toArray(),
-			angularSpeed: 	plate.angularSpeed,
-			densityOffset: 	plate.densityOffset,
-			rockColumns: 	[],
-			meshMatrix: 	plate.mesh.matrix.toArray()
+			eulerPole:      plate.eulerPole.toArray(),
+			angularSpeed:   plate.angularSpeed,
+			densityOffset:  plate.densityOffset,
+			meshMatrix:     plate.mesh.matrix.toArray(),
+			rockColumns:    {}
 		};
 		for (var j = 0, lj = plate._cells.length; j < lj; j++) {
 			var cell = plate._cells[j];
@@ -32,14 +32,11 @@ JsonSerializer.serialize = function(world) {
 				continue;
 			}
 			var rockColumn = cell.content;
-			var rockColumn_json = 
+                        plate_json.rockColumns[j] =
 			[
-				j,
 				Math.round(rockColumn.thickness),
 				Math.round(rockColumn.density),
 			]
-			plate_json.rockColumns.push(rockColumn_json);
-			// plate_json.rockColumns.push.apply(plate_json.rockColumns, rockColumn_json);
 		};
 		world_json.plates.push(plate_json);
 	};
@@ -72,15 +69,20 @@ JsonSerializer.deserialize = function(json) {
 		plateMatrix.fromArray(plate_json.meshMatrix);
 		plate.mesh.rotation.setFromRotationMatrix( plateMatrix );
 		
-		for (var i = 0, li = plate_json.rockColumns.length; i < li; i++) {
-			var rockColumn_json = plate_json.rockColumns[i];
-			var rockColumn = new RockColumn(_world, {
-				thickness: rockColumn_json[1],
-				density: rockColumn_json[2]
-			});
-			rockColumn.isostasy();
-			plate._cells[rockColumn_json[0]].content = rockColumn;
-		};
+		//for now it doesn't deal with empty rockColumns so there is no size change
+                for (var key in plate_json.rockColumns){
+                  if (plate_json.rockColumns.hasOwnProperty(key)) {
+                    plate._cells[parseInt(key)].content = new RockColumn(_world, {
+                      thickness: plate_json.rockColumns[key][0],
+                      density:   plate_json.rockColumns[key][1]
+                    });
+                  }
+                }
+                /* var rockColumn = new RockColumn(_world, {
+                *          thickness: plate_json.defaultThickness,
+                *          density:   plate_json.defaultDensity
+                *  });
+                */ // haven't add this to serialize yet
 		return plate;
 	});
 	_world.updateNeighbors();
