@@ -199,6 +199,10 @@
 		</div>
 	</div> 
 </div>
+<div class="bottomleft">
+	<div id="renderStats"></div>
+	<div id="updateStats"></div>
+</div>
 <div id="drop-dialog" class="hidden">
 	<h2>DRAG HERE</h2>
 </div>
@@ -264,9 +268,10 @@
 	var seed = querystring['seed'] || (new Date).getTime().toString();
 	var random = new Random(parseSeed(seed));
 
-	var renderer, clock, controls;
+	var renderStats, updateStats, renderer, clock, controls;
 	var MegaYearPerSecond = 5 //My/second
 	var BlockUpdate = false;
+	var IsProd = true;
 
 	var world = undefined;
 	var view = new View(world, fragmentShaders[$('#fragmentShader').val()], vertexShaders[$('#vertexShader').val()]);
@@ -302,6 +307,15 @@
 
 		clock = new THREE.Clock();
 		
+		if(!IsProd){
+			// add Stats.js - https://github.com/mrdoob/renderStats.js
+			renderStats = new Stats();
+			$('#renderStats').append( renderStats.domElement );
+
+			updateStats = new Stats();
+			$('#updateStats').append( updateStats.domElement );
+		}
+
 		// create a camera contol
 		controls	= new THREE.OrbitControls( view.camera, $("#container").get(0) );
 
@@ -314,17 +328,6 @@
 			THREEx.FullScreen.bindKey();
 			$('.fullscreen.enter').show();
 		} 
-	}
-	
-	function format(My, rollover, precision){
-		var quantity = My * 1000000;
-		var units = ['ky', 'My', 'By']
-		var unit = 'yr';
-		while(quantity > rollover) {
-			unit = units.shift();
-			quantity /= 1000;
-		}
-		return quantity.toPrecision(precision).toString() + " " + unit;
 	}
 
 	// animation loop
@@ -340,7 +343,9 @@
 		// actually render the scene
 		renderer.render( view.scene, view.camera );
 
-		// stats.update();
+		if(!IsProd){
+			renderStats.update();
+		}
 	}
 
 	function update(){
@@ -363,8 +368,22 @@
 		};
 		
 		view.update();
-	}
 
+		if(!IsProd){
+			updateStats.update();
+		}
+	}
+	
+	function format(My, rollover, precision){
+		var quantity = My * 1000000;
+		var units = ['ky', 'My', 'By']
+		var unit = 'yr';
+		while(quantity > rollover) {
+			unit = units.shift();
+			quantity /= 1000;
+		}
+		return quantity.toPrecision(precision).toString() + " " + unit;
+	}
 	function togglePause(){
 		if($('.pause').is(':visible')){
 			MegaYearPerSecond = 0;
