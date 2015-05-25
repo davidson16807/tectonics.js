@@ -401,12 +401,12 @@
 		$('.parameters').hide();
 		$('.controls').hide();
 		$.getJSON( url, function( json ) {
+			BlockUpdate = false;
 	    	world = JsonSerializer.deserialize(json);
 			view.world(world);
 			$('#loadingSave').hide();
 			$('.parameters').show();
 			$('.controls').show();
-			BlockUpdate = false;
 		});
 	}
 	function loadFile (file) {
@@ -417,10 +417,10 @@
 	    //reader.onabort = function(e) {};
 	    //reader.onloadstart = function(e) {};
 	    reader.onload = function(e) {
+			BlockUpdate = false;
 	    	var json = JSON.parse(e.target.result);
 	    	world = JsonSerializer.deserialize(json);
 			view.world(world);
-			BlockUpdate = false;
 	    }
 
 	    reader.readAsText(file);
@@ -450,13 +450,12 @@
 			.attr('href', dataUrl)
 			.attr('download', filename);
 	});
-	$('.load').click(function() {
+	$('.load').click(function(e) {
 		$('#load-input').click();
 	});
 	$('#load-input').on('change', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
 		loadFile(e.target.files[0]);
+		$('#load-input').val('');
 	});
 	$('.screenshot').click(function() {
 		var dataurl = THREEx.Screenshot.toDataURL(renderer);

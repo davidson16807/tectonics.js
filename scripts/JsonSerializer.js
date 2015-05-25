@@ -7,19 +7,17 @@ var _arrayToB64Uint8 = function(a) {
 var _toB64Uint16 = function(a) {
 	var u16 = new Uint16Array(a);
 	var str = String.fromCharCode.apply(null, u16);
-	return btoa(unescape(encodeURIComponent( str )));
+	return btoa((encodeURIComponent( str )));
 };
 var _fromB64UInt16 = function(b64) {
 	var start = new Date().getTime();
-	var str = decodeURIComponent(escape(window.atob( b64 )));
-	var chr = new Uint16Array(str.length);
+	var str = decodeURIComponent((window.atob( b64 )));
+	var u16 = new Uint16Array(str.length);
 	var end1 = new Date().getTime();
-	console.log(end1 - start);
 	for (var i = 0, li = str.length; i < li; i++) {
-		chr[i] = str.charCodeAt(i);
+		u16[i] = str.charCodeAt(i);
 	};
 	var end2 = new Date().getTime();
-	console.log(end2 - start);
     return u16;
 }
 
@@ -104,7 +102,6 @@ JsonSerializer.deserialize = function(json) {
 		plateMatrix.fromArray(plate_json.meshMatrix);
 		plate.mesh.rotation.setFromRotationMatrix( plateMatrix );
 		
-		console.log('starting everything')
 		var rockColumns_json = plate_json.rockColumns;
 		var ids = _fromB64UInt16(rockColumns_json.ids);
 		var thicknesses = _fromB64UInt16(rockColumns_json.thicknesses);
