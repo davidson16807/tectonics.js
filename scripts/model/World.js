@@ -60,6 +60,10 @@ World.prototype.land =
  });
 
 World.prototype.simulate = function(timestep){
+	if (timestep == 0) {
+		return;
+	};
+
 	var length = this.plates.length;
 	var plates = this.plates;
 	var i = 0;

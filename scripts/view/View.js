@@ -4,7 +4,7 @@ var _hashPlate = function(plate){
 	return plate.mesh.uuid
 }
 
-function View(_world, fragmentShader, vertexShader){
+function View(world, fragmentShader, vertexShader){
 	this.THRESHOLD = 0.99;
 	this.SEALEVEL = 1.0;
 	this._world = world;
@@ -27,18 +27,19 @@ function View(_world, fragmentShader, vertexShader){
 }
 
 View.prototype.world = function(world) {
-	if(!world){
-		return this._world;
-	}
 	if(this._world == world){
 		return;
 	}
-	for (var i = 0; i < this._world.plates.length; i++) {
-		this.remove(this._world.plates[i]);
-	};
-	for (var i = 0; i < world.plates.length; i++) {
-		this.add(world.plates[i]);
-	};
+	if(!_.isUndefined(this._world)){
+		for (var i = 0; i < this._world.plates.length; i++) {
+			this.remove(this._world.plates[i]);
+		};	
+	}
+	if(!_.isUndefined(world)){
+		for (var i = 0; i < world.plates.length; i++) {
+			this.add(world.plates[i]);
+		};
+	}
 	this._world = world;
 };
 
@@ -47,6 +48,9 @@ View.prototype.fragmentShader = function(fragmentShader){
 		return;
 	}
 	this._fragmentShader = fragmentShader;
+	if (_.isUndefined(this._world)) {
+		return;
+	};
 	var meshes, mesh, plate;
 	for(var i=0, li = this._world.plates.length, plates = this._world.plates; i<li; i++){
 		plate = plates[i];
@@ -64,6 +68,9 @@ View.prototype.vertexShader = function(vertexShader){
 		return;
 	}
 	this._vertexShader = vertexShader;
+	if (_.isUndefined(this._world)) {
+		return;
+	};
 	var meshes, mesh, plate;
 	for(var i=0, li = this._world.plates.length, plates = this._world.plates; i<li; i++){
 		plate = plates[i];
@@ -81,6 +88,9 @@ View.prototype.uniform = function(key, value){
 		return;
 	}
 	this._uniforms[key] = value;
+	if (_.isUndefined(this._world)) {
+		return;
+	};
  	var meshes, mesh, plate;
 	for(var i=0, li = this._world.plates.length, plates = this._world.plates; i<li; i++){
 		plate = plates[i];
@@ -94,6 +104,10 @@ View.prototype.uniform = function(key, value){
 }
 
 View.prototype.update = function(){
+	if(_.isUndefined(this._world)){
+		return
+	}
+
 	var faces = this._world.grid.template.faces;
 	var plate, meshes, mesh, geometry, content, face, displacement;
 	for(var i=0, li = this._world.plates.length, plates = this._world.plates; i<li; i++){
@@ -123,8 +137,8 @@ View.prototype.update = function(){
 
 View.prototype.add = function(plate){
 	var faces, geometry, mesh, material;
-	var faces = this._world.grid.template.faces;
-	var geometry = THREE.BufferGeometryUtils.fromGeometry(this._world.grid.template);
+	var faces = plate.world.grid.template.faces;
+	var geometry = THREE.BufferGeometryUtils.fromGeometry(plate.world.grid.template);
 	geometry.addAttribute('displacement', Float32Array, faces.length*3, 1);
 	this.geometries.set(plate, geometry);
 
@@ -135,7 +149,7 @@ View.prototype.add = function(plate){
 		  displacement: { type: 'f', value: null }
 		},
 		uniforms: {
-		  sealevel: { type: 'f', value: this._world.SEALEVEL },
+		  sealevel: { type: 'f', value: plate.world.SEALEVEL },
 		  sealevel_mod: { type: 'f', value: sealevel_mod },
 		  color: 	    { type: 'c', value: color },
 		  index: 		{ type: 'f', value: -1 },
@@ -153,7 +167,7 @@ View.prototype.add = function(plate){
 		  displacement: { type: 'f', value: null }
 		},
 		uniforms: {
-		  sealevel: { type: 'f', value: this._world.SEALEVEL },
+		  sealevel: { type: 'f', value: plate.world.SEALEVEL },
 		  sealevel_mod: { type: 'f', value: sealevel_mod },
 		  color: 	    { type: 'c', value: color },
 		  index: 		{ type: 'f', value: 1 }

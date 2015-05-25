@@ -34,6 +34,7 @@
 	<script src="scripts/model/Plate.js"></script>
 	<script src="scripts/model/SupercontinentCycle.js"></script>
 	<script src="scripts/model/World.js"></script>
+	<script src="scripts/model/Model.js"></script>
 	<script src="scripts/view/Style.js"></script>
 	<script src="scripts/view/View.js"></script>
 	<script src="scripts/view/Projection.js"></script>
@@ -54,55 +55,64 @@
 	</div>
 </div>
 <!-- info on screen display -->
-<div class="topright hidden parameters">
-	<table>
-		<tr>
-			<td>Age:</td>
-			<td><span id="age">initializing...</span></td>
-		</tr>
-		<tr>
-			<td>Speed:</td>
-			<td>
-				<button id="play" class="hidden">
-					<img src="icons/play-512px.svg" height="12em" width="12em">
-				</button>
-				<button id="pause">
-					<img src="icons/pause-512px.svg" height="12em" width="12em">
-				</button>
-				<input id="speedControl" type="number" value="5" min="0" max="10" step="1" style="width:30px" /> 
-				 My/s
-			</td>
-		</tr>
-		<tr>
-			<td>Projection:</td>
-			<td>
-				<select id="vertexShader">
-					<option value="orthographic" selected>Orthographic</option>
-					<option value="equirectangular">Equirectangular</option>
-					<option value="texture">Texture</option>
-				</select>
-			</td>
-		</tr>
-		<tr>
-			<td>View:</td>
-			<td>
-				<select id="fragmentShader">
-					<option value="satellite" selected>Satellite Image</option>
-					<option value="soil">Soil</option>
-					<option value="bedrock">Bedrock</option>
-					<option value="alt">Elevation</option>
-					<option value="npp">Plant Productivity</option>
-					<option value="temp">Temperature</option>
-					<option value="precip">Precipitation</option>
-					<option value="debug">Plates</option>
-				</select>
-				<br/>
-				<input id="sealevel" type="checkbox" checked/> Sealevel
-			</td>
-		</tr>
-	</table>
+<div class="topright hidden collapsible parameters">
+	<div class="collapsed hidden">
+		<a href="#" class="summary">&#9654;</a>
+		<span class="age">initializing...</span>
+		<button class="play hidden"><img src="icons/play-512px.svg" alt="" height="12em" width="12em"></button>
+		<button class="pause"><img src="icons/pause-512px.svg" alt="" height="12em" width="12em"></button>
+	</div>
+	<div class="expanded">
+		<a href="#" class="summary">&#9660;</a>
+		<table class="details">
+			<tr>
+				<td>Age:</td>
+				<td><span class="age">initializing...</span></td>
+			</tr>
+			<tr>
+				<td>Speed:</td>
+				<td>
+					<button class="play hidden">
+						<img src="icons/play-512px.svg" height="12em" width="12em">
+					</button>
+					<button class="pause">
+						<img src="icons/pause-512px.svg" height="12em" width="12em">
+					</button>
+					<input id="speedControl" type="number" value="5" min="0" max="10" step="1" style="width:30px" /> 
+					 My/s
+				</td>
+			</tr>
+			<tr>
+				<td>Projection:</td>
+				<td>
+					<select id="vertexShader">
+						<option value="orthographic" selected>Orthographic</option>
+						<option value="equirectangular">Equirectangular</option>
+						<option value="texture">Texture</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td>View:</td>
+				<td>
+					<select id="fragmentShader">
+						<option value="satellite" selected>Satellite Image</option>
+						<option value="soil">Soil</option>
+						<option value="bedrock">Bedrock</option>
+						<option value="alt">Elevation</option>
+						<option value="npp">Plant Productivity</option>
+						<option value="temp">Temperature</option>
+						<option value="precip">Precipitation</option>
+						<option value="debug">Plates</option>
+					</select>
+					<br/>
+					<input id="sealevel" type="checkbox" checked/> Sealevel
+				</td>
+			</tr>
+		</table>
+	</div>
 </div>
-<div class="bottomright hidden controls">
+<div class="bottomright hidden collapsible controls">
 	<div class="collapsed hidden">
 		<a class="summary" href="#">
 			&#9654;
@@ -211,6 +221,11 @@
 		<p>We're loading up the model, this shouldn't take more than a second.</p>
 		<p>If things are taking too long, you might consider checking your settings to make sure javascript is enabled. For instructions on how to enable javascript, check <a href="http://www.enable-javascript.com/">here</a>.</p>
 	</div>
+	<div id="loadingSave" class="hidden hcenter dialog">
+		<h2>Hang Tight</h2>
+		<p>We're loading up the save game, this shouldn't take more than a few seconds.</p>
+		<p>If things are taking too long, you might consider checking the save game url. Make sure the url exists and can be easily loaded.</p>
+	</div>
 </div> 
 
 <script type="text/javascript">
@@ -251,15 +266,26 @@
 
 	var renderer, clock, controls;
 	var MegaYearPerSecond = 5 //My/second
+	var BlockUpdate = false;
 
-	var world = new World();
+	var world = undefined;
 	var view = new View(world, fragmentShaders[$('#fragmentShader').val()], vertexShaders[$('#vertexShader').val()]);
-	if( Detector.webgl ){
-		if( !init() ) animate();
+
+	if (querystring['load']) {
+		loadUrl(querystring['load']);
+	} else {
+		world = new World();
+		view.world(world);
+		$('#loadingSave').hide();
 		$('.parameters').show();
 		$('.controls').show();
+	}
+	
+	if( Detector.webgl ){
+		init();
+		animate();
+		update();
 		$('.screenshot').show();
-		$('#pauseLabel').show();
 	} else {
 		$('#noWebGl').show();
 	}
@@ -303,52 +329,79 @@
 
 	// animation loop
 	function animate() {
-
-		// loop on request animation loop
+		// push to render queue and loop
 		// - it has to be at the begining of the function
-		// - see details at http://my.opera.com/emoller/blog/2011/12/20/requestanimationframe-for-smart-er-animating
-		
-		var timestep = clock.getDelta();
-		if (timestep > 1){
-			timestep = 1;
-		}
-		
+		// - to learn more: https://www.youtube.com/watch?v=8aGhZQkoFbQ
 		requestAnimationFrame( animate );
-		
-		world.simulate(MegaYearPerSecond*timestep);
-		
-		view.update();
-		$("#age").html(format(world.age, 1000, 3));
-		// do the render
-		render();
-	}
 
-	// render the scene
-	function render() {
 		// update camera controls
 		controls.update();
 
 		// actually render the scene
 		renderer.render( view.scene, view.camera );
+
+		stats.update();
 	}
+
+	function update(){
+		// push to task queue and loop
+		// - it has to be at the begining of the function
+		setTimeout(update, 0);
+
+		if (BlockUpdate) {
+			return;
+		};
+
+		var timestep = clock.getDelta();
+		if (timestep > 1){
+			timestep = 1;
+		}
+		
+		if (!_.isUndefined(world)) {
+			world.simulate(MegaYearPerSecond*timestep);
+			$(".age").html(format(world.age, 1000, 3));
+		};
+		
+		view.update();
+	}
+
 	function togglePause(){
-		if($('#pause').is(':visible')){
+		if($('.pause').is(':visible')){
 			MegaYearPerSecond = 0;
 		} else {
 			MegaYearPerSecond = $('#speedControl').val();
 		}
-		$('#pause').toggle();
-		$('#play').toggle();
+		$('.pause').toggle();
+		$('.play').toggle();
 	}
 	function toggleFullscreen () {
 		$('.fullscreen').toggle();
 		if( THREEx.FullScreen.activated() ){
 			THREEx.FullScreen.cancel();
+			$('.collapsible').children('.expanded').show();
+			$('.collapsible').children('.collapsed').hide();
 		}else{
 			THREEx.FullScreen.request(document.body);
+			$('.collapsible').children('.expanded').hide();
+			$('.collapsible').children('.collapsed').show();
 		}
 	}
+	function loadUrl (url) {
+		BlockUpdate = true;
+		$('#loadingSave').show();
+		$('.parameters').hide();
+		$('.controls').hide();
+		$.getJSON( url, function( json ) {
+	    	world = JsonSerializer.deserialize(json);
+			view.world(world);
+			$('#loadingSave').hide();
+			$('.parameters').show();
+			$('.controls').show();
+			BlockUpdate = false;
+		});
+	}
 	function loadFile (file) {
+		BlockUpdate = true;
 		var reader = new FileReader();
 	    //reader.onerror = function(e) {};
 	    //reader.onprogress = function(e) {};
@@ -358,19 +411,20 @@
 	    	var json = JSON.parse(e.target.result);
 	    	world = JsonSerializer.deserialize(json);
 			view.world(world);
+			BlockUpdate = false;
 	    }
 
 	    reader.readAsText(file);
 	}
 
 	$('#speedControl').change(function(e){
-		if($('#pause').is(':visible')){
+		if($('.pause').is(':visible')){
 			MegaYearPerSecond = $('#speedControl').val();
 		}
 	});
-	$('#pause,#play').click(togglePause);
+	$('.pause,.play').click(togglePause);
 	$('.summary').click(function() {
-		$('.expanded,.collapsed').toggle();
+		$(this).parents('.collapsible').children().toggle();
 	});
 	$('.save').click(function() {
 		var serialized = JsonSerializer.serialize(world);
@@ -381,7 +435,7 @@
 			stringified;
 		var filename = 
 			seed+'-'+
-			$("#age").html().replace(/\s/,'')+
+			format(world.age, 1000, 3).replace(/\s/,'')+
 			'.sim';
 		$(this)
 			.attr('href', dataUrl)
@@ -390,14 +444,16 @@
 	$('.load').click(function() {
 		$('#load-input').click();
 	});
-	$('#load-input').change(function(e) {
+	$('#load-input').on('change', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
 		loadFile(e.target.files[0]);
 	});
 	$('.screenshot').click(function() {
 		var dataurl = THREEx.Screenshot.toDataURL(renderer);
 		var filename = 
 			seed+'-'+
-			$("#age").html().replace(/\s/,'')+
+			format(world.age, 1000, 3).replace(/\s/,'')+
 			'.png';
 		$(this)
 			.attr('href', dataurl)
@@ -413,7 +469,7 @@
         if(key == ' '){
             togglePause();
         }
-    })
+    });
 
     var last_drag_entered;
     $('body').on(
@@ -422,7 +478,7 @@
 	        e.preventDefault();
 	        e.stopPropagation();
 	    }
-	)
+	);
 	$('body').on(
 	    'dragenter',
 	    function(e) {
