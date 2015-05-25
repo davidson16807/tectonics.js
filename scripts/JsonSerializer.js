@@ -55,7 +55,7 @@ JsonSerializer.deserialize = function(json) {
 		platesNum: json.world.platesNum,
 		mountainWidth: json.world.mountainWidth,
 		age: json.world.age,
-
+		grid: world.grid,					// HACK: shouldn't reference world
 		supercontinentCycle: undefined,
 		plates: [],
 	});
