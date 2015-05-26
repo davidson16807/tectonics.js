@@ -26,6 +26,7 @@
 	<script src="libraries/lodash.min.js"></script>
 	<script src="libraries/buckets-minified.js"></script>
 	<script src="libraries/random-0.26.js"></script>
+	<script src="libraries/base64-arraybuffer.js"></script>
 	<script src="libraries/kdTree-min.js"></script>
 	<script src="scripts/Voronoi.js"></script>
 	<script src="scripts/Grid.js"></script>
@@ -446,9 +447,8 @@
 			seed+'-'+
 			format(world.age, 1000, 3).replace(/\s/,'')+
 			'.sim';
-		$(this)
-			.attr('href', dataUrl)
-			.attr('download', filename);
+		$('.save').attr('href', dataUrl);
+		$('.save').attr('download', filename);
 	});
 	$('.load').click(function(e) {
 		$('#load-input').click();
