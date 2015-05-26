@@ -23,9 +23,10 @@
 	<script src="libraries/threex/THREEx.FullScreen.js"></script>
 	<script src="libraries/threex/THREEx.WindowResize.js"></script>
 	<script src="libraries/jquery-1.10.2.min.js"></script>
-	<script src="libraries/underscore-min.js"></script>
+	<script src="libraries/lodash.min.js"></script>
 	<script src="libraries/buckets-minified.js"></script>
 	<script src="libraries/random-0.26.js"></script>
+	<script src="libraries/base64-arraybuffer.js"></script>
 	<script src="libraries/kdTree-min.js"></script>
 	<script src="scripts/Voronoi.js"></script>
 	<script src="scripts/Grid.js"></script>
@@ -411,12 +412,12 @@
 		$('.parameters').hide();
 		$('.controls').hide();
 		$.getJSON( url, function( json ) {
+			BlockUpdate = false;
 	    	world = JsonSerializer.deserialize(json);
 			view.world(world);
 			$('#loadingSave').hide();
 			$('.parameters').show();
 			$('.controls').show();
-			BlockUpdate = false;
 		});
 	}
 	function loadFile (file) {
@@ -427,10 +428,10 @@
 	    //reader.onabort = function(e) {};
 	    //reader.onloadstart = function(e) {};
 	    reader.onload = function(e) {
+			BlockUpdate = false;
 	    	var json = JSON.parse(e.target.result);
 	    	world = JsonSerializer.deserialize(json);
 			view.world(world);
-			BlockUpdate = false;
 	    }
 
 	    reader.readAsText(file);
@@ -456,17 +457,15 @@
 			seed+'-'+
 			format(world.age, 1000, 3).replace(/\s/,'')+
 			'.sim';
-		$(this)
-			.attr('href', dataUrl)
-			.attr('download', filename);
+		$('.save').attr('href', dataUrl);
+		$('.save').attr('download', filename);
 	});
-	$('.load').click(function() {
+	$('.load').click(function(e) {
 		$('#load-input').click();
 	});
 	$('#load-input').on('change', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
 		loadFile(e.target.files[0]);
+		$('#load-input').val('');
 	});
 	$('.screenshot').click(function() {
 		var dataurl = THREEx.Screenshot.toDataURL(renderer);
