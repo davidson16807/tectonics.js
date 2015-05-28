@@ -28,6 +28,7 @@
 	<script src="libraries/random-0.26.js"></script>
 	<script src="libraries/base64-arraybuffer.js"></script>
 	<script src="libraries/kdTree-min.js"></script>
+	<script src="libraries/jszip.min.js"></script>
 	<script src="scripts/Voronoi.js"></script>
 	<script src="scripts/Grid.js"></script>
 	<script src="scripts/model/RockColumn.js"></script>
@@ -436,20 +437,42 @@
 	$('.summary').click(function() {
 		$(this).parents('.collapsible').children().toggle();
 	});
+	// $('.save').click(function() {
+		// var serialized = JsonSerializer.serialize(world, { base64: false });
+		// var stringified = JSON.stringify(serialized);
+		// var dataUrl = 
+			// "data:application/json;"+
+			// "charset=utf-8," + 
+			// stringified;
+		// var filename = 
+			// seed+'-'+
+			// format(world.age, 1000, 3).replace(/\s/,'')+
+			// '.sim';
+		// $('.save').attr('href', dataUrl);
+		// $('.save').attr('download', filename);
+	// });
+// 
 	$('.save').click(function() {
-		var serialized = JsonSerializer.serialize(world);
+		var serialized = JsonSerializer.serialize(world, { base64: true });
 		var stringified = JSON.stringify(serialized);
+		var zip = new JSZip();
+		zip.file('world.json', stringified);
 		var dataUrl = 
-			"data:application/json;"+
+			"data:application/zip;"+
 			"charset=utf-8," + 
-			stringified;
+			zip.generate({
+				compression: 'DEFLATE',
+				compressionOptions: {level: 9}
+			});
+		//	stringified;
 		var filename = 
 			seed+'-'+
 			format(world.age, 1000, 3).replace(/\s/,'')+
-			'.sim';
+			'.zip';
 		$('.save').attr('href', dataUrl);
 		$('.save').attr('download', filename);
 	});
+
 	$('.load').click(function(e) {
 		$('#load-input').click();
 	});
