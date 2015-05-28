@@ -1,6 +1,21 @@
+function _abTostr(buf) {
+  return String.fromCharCode.apply(null, new Uint16Array(buf));
+}
+
+function _strToab(str) {
+  var buf = new ArrayBuffer(str.length*2); // 2 bytes for each char
+  var bufView = new Uint16Array(buf);
+  for (var i=0, strLen=str.length; i<strLen; i++) {
+    bufView[i] = str.charCodeAt(i);
+  }
+  return buf;
+}
 
 JsonSerializer = {};
-JsonSerializer.serialize = function(world) {
+JsonSerializer.serialize = function(world, options) {
+	options = options || {};
+	options = options.base64 || true;
+
 	var supercontinentCycle = world.supercontinentCycle;
 
 	var world_json = {
@@ -47,10 +62,11 @@ JsonSerializer.serialize = function(world) {
 			thicknesses[j] = cell.content.thickness;
 			densities[j] = cell.content.density;
 		};
+		var encode = options.base64? Base64.encode : _abTostr
 		plate_json.rockColumns = {
-			ids: 			Base64.encode(ids.buffer),
-			thicknesses: 	Base64.encode(thicknesses.buffer),
-			densities: 		Base64.encode(densities.buffer),
+			ids: 			encode(ids.buffer),
+			thicknesses: 	encode(thicknesses.buffer),
+			densities: 		encode(densities.buffer),
 		};
 
 		world_json.plates.push(plate_json);
@@ -61,7 +77,10 @@ JsonSerializer.serialize = function(world) {
 		world: world_json
 	};
 };
-JsonSerializer.deserialize = function(json) {
+JsonSerializer.deserialize = function(json, options) {
+	options = options || {};
+	var base64 = options.base64 || true;
+
 	var _world = new World({
 		radius: json.world.radius,
 		platesNum: json.world.platesNum,
@@ -88,9 +107,11 @@ JsonSerializer.deserialize = function(json) {
 
 		var rockColumns_json = plate_json.rockColumns;
 		
-		var ids = 			new Uint16Array(Base64.decode(rockColumns_json.ids));
-		var thicknesses = 	new Uint16Array(Base64.decode(rockColumns_json.thicknesses));
-		var densities = 	new Uint16Array(Base64.decode(rockColumns_json.densities));
+		var decode = options.base64? Base64.decode : _strToab
+
+		var ids = 			new Uint16Array(decode(rockColumns_json.ids));
+		var thicknesses = 	new Uint16Array(decode(rockColumns_json.thicknesses));
+		var densities = 	new Uint16Array(decode(rockColumns_json.densities));
 
 		var cells = plate._cells;
 		var rockColumn;
