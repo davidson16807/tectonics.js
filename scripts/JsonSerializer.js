@@ -31,7 +31,10 @@ JsonSerializer.serialize = function(world, options) {
 			oldSupercontinentPos: supercontinentCycle.oldSupercontinentPos,
 			newSupercontinentPos: supercontinentCycle.newSupercontinentPos,
 		},
-		random: JSON.parse(JSON.stringify(random)),
+		random: {
+			mt: random.mt,
+			mti: random.mti
+		},
 	};
 	console.log(world_json.random)
 
@@ -138,11 +141,6 @@ JsonSerializer.deserialize = function(json, options) {
 
 	var random_json = json.world.random;
 	console.log(random_json)
-	random.N  = random_json.N;
-	random.M  = random_json.M;
-	random.MATRIX_A  = random_json.MATRIX_A;
-	random.UPPER_MASK  = random_json.UPPER_MASK;
-	random.LOWER_MASK  = random_json.LOWER_MASK;
 	random.mt  = random_json.mt;
 	random.mti  = random_json.mti;
 
