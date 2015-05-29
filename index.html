@@ -23,9 +23,10 @@
 	<script src="libraries/threex/THREEx.FullScreen.js"></script>
 	<script src="libraries/threex/THREEx.WindowResize.js"></script>
 	<script src="libraries/jquery-1.10.2.min.js"></script>
-	<script src="libraries/underscore-min.js"></script>
+	<script src="libraries/lodash.min.js"></script>
 	<script src="libraries/buckets-minified.js"></script>
 	<script src="libraries/random-0.26.js"></script>
+	<script src="libraries/base64-arraybuffer.js"></script>
 	<script src="libraries/kdTree-min.js"></script>
 	<script src="scripts/Voronoi.js"></script>
 	<script src="scripts/Grid.js"></script>
@@ -189,6 +190,10 @@
 		</div>
 	</div> 
 </div>
+<div class="bottomleft">
+	<div id="renderStats"></div>
+	<div id="updateStats"></div>
+</div>
 <div id="drop-dialog" class="hidden">
 	<h2>DRAG HERE</h2>
 </div>
@@ -254,8 +259,10 @@
 	var seed = querystring['seed'] || (new Date).getTime().toString();
 	var random = new Random(parseSeed(seed));
 
-	var stats, renderer, clock, controls;
+	var renderStats, updateStats, renderer, clock, controls;
 	var MegaYearPerSecond = 5 //My/second
+	var BlockUpdate = false;
+	var IsProd = false;
 
 	var world = undefined;
 	var view = new View(world, fragmentShaders[$('#fragmentShader').val()], vertexShaders[$('#vertexShader').val()]);
@@ -273,6 +280,7 @@
 	if( Detector.webgl ){
 		init();
 		animate();
+		update();
 		$('.screenshot').show();
 	} else {
 		$('#noWebGl').show();
@@ -290,11 +298,14 @@
 
 		clock = new THREE.Clock();
 		
-		// add Stats.js - https://github.com/mrdoob/stats.js
-		stats = new Stats();
-		stats.domElement.style.position	= 'absolute';
-		stats.domElement.style.bottom	= '0px';
-		document.body.appendChild( stats.domElement );
+		if(!IsProd){
+			// add Stats.js - https://github.com/mrdoob/renderStats.js
+			renderStats = new Stats();
+			$('#renderStats').append( renderStats.domElement );
+
+			updateStats = new Stats();
+			$('#updateStats').append( updateStats.domElement );
+		}
 
 		// create a camera contol
 		controls	= new THREE.OrbitControls( view.camera, $("#container").get(0) );
@@ -309,6 +320,50 @@
 			$('.fullscreen.enter').show();
 		} 
 	}
+
+	// animation loop
+	function animate() {
+		// push to render queue and loop
+		// - it has to be at the begining of the function
+		// - to learn more: https://www.youtube.com/watch?v=8aGhZQkoFbQ
+		requestAnimationFrame( animate );
+
+		// update camera controls
+		controls.update();
+
+		// actually render the scene
+		renderer.render( view.scene, view.camera );
+
+		if(!IsProd){
+			renderStats.update();
+		}
+	}
+
+	function update(){
+		// push to task queue and loop
+		// - it has to be at the begining of the function
+		setTimeout(update, 0);
+
+		if (BlockUpdate) {
+			return;
+		};
+
+		var timestep = clock.getDelta();
+		if (timestep > 1){
+			timestep = 1;
+		}
+		
+		if (!_.isUndefined(world)) {
+			world.simulate(MegaYearPerSecond*timestep);
+			$(".age").html(format(world.age, 1000, 3));
+		};
+		
+		view.update();
+
+		if(!IsProd){
+			updateStats.update();
+		}
+	}
 	
 	function format(My, rollover, precision){
 		var quantity = My * 1000000;
@@ -319,41 +374,6 @@
 			quantity /= 1000;
 		}
 		return quantity.toPrecision(precision).toString() + " " + unit;
-	}
-
-	// animation loop
-	function animate() {
-		// loop on request animation loop
-		// - it has to be at the begining of the function
-		// - see details at http://my.opera.com/emoller/blog/2011/12/20/requestanimationframe-for-smart-er-animating
-		
-		var timestep = clock.getDelta();
-		if (timestep > 1){
-			timestep = 1;
-		}
-		
-		requestAnimationFrame( animate );
-		
-		if (!_.isUndefined(world)) {
-			world.simulate(MegaYearPerSecond*timestep);
-			$(".age").html(format(world.age, 1000, 3));
-		};
-		
-		view.update();
-		// do the render
-		render();
-
-		// update stats
-		stats.update();
-	}
-
-	// render the scene
-	function render() {
-		// update camera controls
-		controls.update();
-
-		// actually render the scene
-		renderer.render( view.scene, view.camera );
 	}
 	function togglePause(){
 		if($('.pause').is(':visible')){
@@ -377,10 +397,12 @@
 		}
 	}
 	function loadUrl (url) {
+		BlockUpdate = true;
 		$('#loadingSave').show();
 		$('.parameters').hide();
 		$('.controls').hide();
 		$.getJSON( url, function( json ) {
+			BlockUpdate = false;
 	    	world = JsonSerializer.deserialize(json);
 			view.world(world);
 			$('#loadingSave').hide();
@@ -389,12 +411,14 @@
 		});
 	}
 	function loadFile (file) {
+		BlockUpdate = true;
 		var reader = new FileReader();
 	    //reader.onerror = function(e) {};
 	    //reader.onprogress = function(e) {};
 	    //reader.onabort = function(e) {};
 	    //reader.onloadstart = function(e) {};
 	    reader.onload = function(e) {
+			BlockUpdate = false;
 	    	var json = JSON.parse(e.target.result);
 	    	world = JsonSerializer.deserialize(json);
 			view.world(world);
@@ -423,15 +447,15 @@
 			seed+'-'+
 			format(world.age, 1000, 3).replace(/\s/,'')+
 			'.sim';
-		$(this)
-			.attr('href', dataUrl)
-			.attr('download', filename);
+		$('.save').attr('href', dataUrl);
+		$('.save').attr('download', filename);
 	});
-	$('.load').click(function() {
+	$('.load').click(function(e) {
 		$('#load-input').click();
 	});
-	$('#load-input').change(function(e) {
+	$('#load-input').on('change', function(e) {
 		loadFile(e.target.files[0]);
+		$('#load-input').val('');
 	});
 	$('.screenshot').click(function() {
 		var dataurl = THREEx.Screenshot.toDataURL(renderer);
@@ -453,7 +477,7 @@
         if(key == ' '){
             togglePause();
         }
-    })
+    });
 
     var last_drag_entered;
     $('body').on(
@@ -462,7 +486,7 @@
 	        e.preventDefault();
 	        e.stopPropagation();
 	    }
-	)
+	);
 	$('body').on(
 	    'dragenter',
 	    function(e) {
