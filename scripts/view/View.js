@@ -1,7 +1,7 @@
 'use strict';
 
 var _hashPlate = function(plate){
-	return plate.mesh.uuid
+	return plate.uuid
 }
 
 function View(world, fragmentShader, vertexShader){
@@ -103,36 +103,36 @@ View.prototype.uniform = function(key, value){
 	}
 }
 
-View.prototype.update = function(){
-	if(_.isUndefined(this._world)){
+View.prototype.update = function(plate){
+	if(_.isUndefined(plate.world)){
 		return
 	}
 
-	var faces = this._world.grid.template.faces;
-	var plate, meshes, mesh, geometry, content, face, displacement;
-	for(var i=0, li = this._world.plates.length, plates = this._world.plates; i<li; i++){
-		plate = plates[i];
+	var faces = plate.world.grid.template.faces;
+	var meshes, mesh, geometry, content, face, displacement;
 
-		meshes = this.meshes.get(plate);
-		for (var j = meshes.length - 1; j >= 0; j--) {
-			mesh = meshes[j];
-			mesh.matrix = plate.mesh.matrix;
-			mesh.rotation.setFromRotationMatrix(mesh.matrix);
-		}
-
-		geometry = this.geometries.get(plate);
-		displacement = geometry.attributes.displacement.array;
-		for(var j=0, j3=0, lj = faces.length, cells = plate._cells; j<lj; j++, j3+=3){
-			face = faces[j];
-			content = cells[face.a].content;
-			displacement[j3] = content? content.displacement : 0;
-			content = cells[face.b].content;
-			displacement[j3+1] = content? content.displacement : 0;
-			content = cells[face.c].content;
-			displacement[j3+2] = content? content.displacement : 0;
-		}
-		geometry.attributes.displacement.needsUpdate = true;
+	meshes = this.meshes.get(plate);
+	if (meshes.length < 1) {
+		return;
+	};
+	for (var j = meshes.length - 1; j >= 0; j--) {
+		mesh = meshes[j];
+		mesh.matrix = plate.mesh.matrix;
+		mesh.rotation.setFromRotationMatrix(mesh.matrix);
 	}
+
+	geometry = this.geometries.get(plate);
+	displacement = geometry.attributes.displacement.array;
+	for(var j=0, j3=0, lj = faces.length, cells = plate._cells; j<lj; j++, j3+=3){
+		face = faces[j];
+		content = cells[face.a].content;
+		displacement[j3] = content? content.displacement : 0;
+		content = cells[face.b].content;
+		displacement[j3+1] = content? content.displacement : 0;
+		content = cells[face.c].content;
+		displacement[j3+2] = content? content.displacement : 0;
+	}
+	geometry.attributes.displacement.needsUpdate = true;
 }
 
 View.prototype.add = function(plate){

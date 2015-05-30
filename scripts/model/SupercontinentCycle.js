@@ -26,7 +26,6 @@ SupercontinentCycle.prototype.restart = function() {
 
 	if (world.plates.length <= world.platesNum) {
 		world.split();
-		console.log(world.age);
 	};
 	
 	//set each plate's velocity to random value (at least for now)

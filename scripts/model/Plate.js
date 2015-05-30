@@ -24,7 +24,8 @@ function Plate(world, optional)
 	this._cells = [];
 	this._neighbors = [];
 	this.mesh	= new THREE.Mesh( this._geometry, _MATERIAL ); 
-	
+	this.uuid = optional['uuid'] || this.mesh.uuid;
+
 	var vertices = this._geometry.vertices;
 	for(var i = 0, length = vertices.length, cells = this._cells; i<length; i++){
 		cells.push(new Cell(this, vertices[i], i));
@@ -78,7 +79,7 @@ Plate.prototype.getRandomJunction = function() {
 Plate.prototype.updateNeighbors = function(){
 	var _this = this;
 	this._neighbors = this.world.plates.
-		filter(function(platemesh){return platemesh.mesh.uuid != _this.mesh.uuid});
+		filter(function(plate){return plate.uuid != _this.uuid});
 }
 Plate.prototype.updateBorders = function(){
 	var collideable = [];
@@ -273,7 +274,11 @@ Plate.prototype.split = function(){
 	for(var i=0, li = plates.length; i<li; i++){
 		var plate = plates[i];
 		world.plates.push(plate);
-		view.add(plate);
+		window.postMessage({
+			channel: 'plate',
+			topic: 'create',
+			content: JsonSerializer.plate(plate)
+		}, '*'); // NOTE: change this to something else when IsProd == true
 		plate.mesh.matrix = this.mesh.matrix;
 		plate.mesh.rotation.setFromRotationMatrix( this.mesh.matrix );
 	}
@@ -290,7 +295,11 @@ Plate.prototype.split = function(){
 	world.plates.splice(world.plates.indexOf(this),1);
 }
 Plate.prototype.destroy = function(){
-	view.remove(this);
+	window.postMessage({
+		channel: 'plate',
+		topic: 'delete',
+		content: JsonSerializer.plate(this)
+	}, '*'); // NOTE: change this to something else when IsProd == true
 	
 	var mesh = this.mesh;
 	this.mesh = void 0;

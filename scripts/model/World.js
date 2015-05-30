@@ -84,6 +84,13 @@ World.prototype.simulate = function(timestep){
 	for(i = 0; i<length; i++){
 		plates[i].deform();
 	}
+	for (var i = 0; i<length; i++) {
+		window.postMessage({
+			channel: 'plate',
+			topic: 'update',
+			content: JsonSerializer.plate(plates[i])
+		}, '*'); // NOTE: change this to something else when IsProd == true
+	};
 	var platestemp = plates.slice(0); // copy the array
 	for(i = 0; i<length; i++){
 		if(platestemp[i].getSize() <= 100)
