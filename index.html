@@ -536,20 +536,6 @@
 		  });
 	});
 
-	window.addEventListener('message', function (event) {
-		var channel = event.data.channel;
-		var topic = event.data.topic;
-		var content = event.data.content;
-		if (channel == 'plate') {
-			if (topic == 'create') {
-				view.add(JsonDeserializer.plate(content, world));
-			} else if(topic == 'delete') {
-				view.remove(JsonDeserializer.plate(content, world));
-			} else if(topic == 'update'){
-				view.update(JsonDeserializer.plate(content, world));
-			}
-		}
-	}, false);
 </script>
 </body>
 </html>

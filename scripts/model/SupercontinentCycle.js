@@ -22,6 +22,7 @@ SupercontinentCycle.prototype.isEnding = function() {
 	return this.age >= this.duration;
 };
 SupercontinentCycle.prototype.restart = function() {
+	console.log(this.world.age);
 	var world = this.world;
 
 	if (world.plates.length <= world.platesNum) {

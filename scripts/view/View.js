@@ -113,6 +113,7 @@ View.prototype.update = function(plate){
 
 	meshes = this.meshes.get(plate);
 	if (meshes.length < 1) {
+		console.log('warning: no meshes in view!')
 		return;
 	};
 	for (var j = meshes.length - 1; j >= 0; j--) {
@@ -196,3 +197,19 @@ View.prototype.remove = function(plate){
 		delete this.meshes.get(plate);
 	};
 }
+
+window.addEventListener('model-update', function (event) {
+	var channel = event.detail.channel;
+	var topic = event.detail.topic;
+	var content = event.detail.content;
+	// if (channel == 'plate') {
+		if(topic == 'update'){
+			view.update((content));
+		} else if (topic == 'create') {
+			view.add((content));
+		} else if(topic == 'delete') {
+			console.log('here')
+			view.remove((content));
+		} 
+	// }
+}, false);

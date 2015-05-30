@@ -28,6 +28,11 @@ function World(optional){
 		var continentRadius = (optional['continentRadius'] || 1250) / radius;
 		var shield = this.getRandomPoint();
 		var plate = new Plate(this);
+		window.dispatchEvent(new CustomEvent('model-update', {detail: {
+					'channel': 'plate',
+					'topic': 'create',
+					'content': plate
+				}}));
 		this.plates = [plate];
 		for(var i=0, length = plate._cells.length; i<length; i++) {
 			var cell = plate._cells[i];
@@ -85,11 +90,11 @@ World.prototype.simulate = function(timestep){
 		plates[i].deform();
 	}
 	for (var i = 0; i<length; i++) {
-		window.postMessage({
-			channel: 'plate',
-			topic: 'update',
-			content: JsonSerializer.plate(plates[i])
-		}, '*'); // NOTE: change this to something else when IsProd == true
+		window.dispatchEvent(new CustomEvent('model-update', {detail: {
+					'channel': 'plate',
+					'topic': 'update',
+					'content': (plates[i])
+				}}));
 	};
 	var platestemp = plates.slice(0); // copy the array
 	for(i = 0; i<length; i++){
