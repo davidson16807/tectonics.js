@@ -1,2 +1,2 @@
-cat FragmentShaders.template.js | sed -e '/TEMPLATE.GLSL.C/ r fragment/template.glsl.c' |	sed '/DEBUG.GLSL.C/ r fragment/debug.glsl.c' > FragmentShaders.js
-
+cat fragment/FragmentShaders.template.js | sed '/TEMPLATE.GLSL.C/ r fragment/template.glsl.c' |	sed '/DEBUG.GLSL.C/ r fragment/debug.glsl.c' > fragment/FragmentShaders.js
+cat vertex/VertexShaders.template.js | sed '/EQUIRECTANGULAR.GLSL.C/ r vertex/equirectangular.glsl.c' |	sed '/TEXTURE.GLSL.C/ r vertex/texture.glsl.c' | sed '/ORTHOGRAPHIC.GLSL.C/ r vertex/orthographic.glsl.c' > vertex/VertexShaders.js
