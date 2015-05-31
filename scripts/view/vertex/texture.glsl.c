@@ -1,4 +1,3 @@
-
 const float PI = 3.14;
 const float OCEAN = 0.0;
 const float LAND = 0.01;

@@ -6,7 +6,6 @@ function _multiline(f) {
 var vertexShaders = {};
 vertexShaders.equirectangular = _multiline(function() {/**   
 //EQUIRECTANGULAR.GLSL.C GOES HERE
-
 const float PI = 3.14;
 const float OCEAN = 0.0;
 const float LAND = 0.01;
@@ -47,10 +46,10 @@ void main() {
 	scaleMatrix[3] = viewMatrix[3];
 	gl_Position = projectionMatrix * scaleMatrix * displaced;
 }
+
 **/});
 vertexShaders.texture = _multiline(function() {/**
 //TEXTURE.GLSL.C GOES HERE
-
 const float PI = 3.14;
 const float OCEAN = 0.0;
 const float LAND = 0.01;
@@ -87,11 +86,10 @@ void main() {
 		lat_focused / (PI/2.), 
 		-height, 
 		1);
-}**/})
+}
+**/})
 vertexShaders.orthographic = _multiline(function() {/**   
 //ORTHOGRAPHIC.GLSL.C GOES HERE
-
-
 const float OCEAN = 0.0;
 const float LAND = 0.01;
 const float NONE = -0.01;
@@ -108,4 +106,5 @@ void main() {
 	float height = displacement > sealevel? LAND : displacement > 1.0? OCEAN : NONE;
 	vec4 displaced = vec4( position * (1.+height), 1.0 );
 	gl_Position = projectionMatrix * modelViewMatrix * displaced;
-}**/});
+}
+**/});

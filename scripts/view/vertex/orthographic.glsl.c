@@ -1,5 +1,3 @@
-
-
 const float OCEAN = 0.0;
 const float LAND = 0.01;
 const float NONE = -0.01;
