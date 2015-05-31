@@ -15,3 +15,4 @@ void main() {
 	vec4 displaced = vec4( position * (1.+height), 1.0 );
 	gl_Position = projectionMatrix * modelViewMatrix * displaced;
 }
+//this line left intentionally empty

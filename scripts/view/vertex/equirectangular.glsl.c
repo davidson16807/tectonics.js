@@ -38,3 +38,4 @@ void main() {
 	scaleMatrix[3] = viewMatrix[3];
 	gl_Position = projectionMatrix * scaleMatrix * displaced;
 }
+//this line left intentionally empty

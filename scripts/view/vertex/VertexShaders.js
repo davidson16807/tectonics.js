@@ -46,8 +46,7 @@ void main() {
 	scaleMatrix[3] = viewMatrix[3];
 	gl_Position = projectionMatrix * scaleMatrix * displaced;
 }
-
-**/});
+//this line left intentionally empty**/});
 vertexShaders.texture = _multiline(function() {/**
 //TEXTURE.GLSL.C GOES HERE
 const float PI = 3.14;
@@ -87,7 +86,7 @@ void main() {
 		-height, 
 		1);
 }
-**/})
+//this line left intentionally empty**/})
 vertexShaders.orthographic = _multiline(function() {/**   
 //ORTHOGRAPHIC.GLSL.C GOES HERE
 const float OCEAN = 0.0;
@@ -107,4 +106,4 @@ void main() {
 	vec4 displaced = vec4( position * (1.+height), 1.0 );
 	gl_Position = projectionMatrix * modelViewMatrix * displaced;
 }
-**/});
+//this line left intentionally empty**/});
