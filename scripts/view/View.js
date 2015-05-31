@@ -118,7 +118,10 @@ View.prototype.uniform = function(key, value){
 
 View.prototype.update = function(plate){
 	if(_.isUndefined(plate.world)){
-		return
+		return;
+	}
+	if(_.isUndefined(plate.mesh)){
+		return;
 	}
 
 	var faces = plate.world.grid.template.faces;
