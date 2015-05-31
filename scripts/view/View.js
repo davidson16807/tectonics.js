@@ -198,18 +198,14 @@ View.prototype.remove = function(plate){
 	};
 }
 
-window.addEventListener('model-update', function (event) {
-	var channel = event.detail.channel;
-	var topic = event.detail.topic;
-	var content = event.detail.content;
-	// if (channel == 'plate') {
-		if(topic == 'update'){
-			view.update((content));
-		} else if (topic == 'create') {
-			view.add((content));
-		} else if(topic == 'delete') {
-			console.log('here')
-			view.remove((content));
-		} 
-	// }
-}, false);
+Publisher.subscribe('plate', 'update', function (plate) {
+	view.update(plate);
+});
+Publisher.subscribe('plate', 'create', function (plate) {
+	console.log('create')
+	view.add(plate);
+});
+Publisher.subscribe('plate', 'delete', function (plate) {
+	console.log('delete')
+	view.remove(plate);
+});

@@ -274,11 +274,7 @@ Plate.prototype.split = function(){
 	for(var i=0, li = plates.length; i<li; i++){
 		var plate = plates[i];
 		world.plates.push(plate);
-		window.dispatchEvent(new CustomEvent('model-update', {detail: {
-					'channel': 'plate',
-					'topic': 'create',
-					'content': plate
-				}}));
+		Publisher.publish('plate', 'create', plate);
 		plate.mesh.matrix = this.mesh.matrix;
 		plate.mesh.rotation.setFromRotationMatrix( this.mesh.matrix );
 	}
@@ -295,12 +291,8 @@ Plate.prototype.split = function(){
 	world.plates.splice(world.plates.indexOf(this),1);
 }
 Plate.prototype.destroy = function(){
-	window.dispatchEvent(new CustomEvent('model-update', {detail: {
-				'channel': 'plate',
-				'topic': 'delete',
-				'content': this
-			}}));
-	
+	Publisher.publish('plate', 'delete', this);
+
 	var mesh = this.mesh;
 	this.mesh = void 0;
 	
