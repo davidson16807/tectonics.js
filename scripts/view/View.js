@@ -24,6 +24,19 @@ function View(world, fragmentShader, vertexShader){
 	this.camera	= new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, .01, 10000 );
 	this.camera.position.set(0, 0, 5);
 	this.scene.add(this.camera);
+
+	var this_ = this;
+	Publisher.subscribe('plate', 'update', function (plate) {
+		this_.update(plate);
+	});
+	Publisher.subscribe('plate', 'create', function (plate) {
+		console.log('create')
+		this_.add(plate);
+	});
+	Publisher.subscribe('plate', 'delete', function (plate) {
+		console.log('delete')
+		this_.remove(plate);
+	});
 }
 
 View.prototype.world = function(world) {
@@ -198,14 +211,3 @@ View.prototype.remove = function(plate){
 	};
 }
 
-Publisher.subscribe('plate', 'update', function (plate) {
-	view.update(plate);
-});
-Publisher.subscribe('plate', 'create', function (plate) {
-	console.log('create')
-	view.add(plate);
-});
-Publisher.subscribe('plate', 'delete', function (plate) {
-	console.log('delete')
-	view.remove(plate);
-});

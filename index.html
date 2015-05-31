@@ -37,9 +37,9 @@
 	<script src="scripts/model/SupercontinentCycle.js"></script>
 	<script src="scripts/model/World.js"></script>
 	<script src="scripts/model/Model.js"></script>
-	<script src="scripts/view/Style.js"></script>
+	<script src="scripts/view/fragment/FragmentShaders.js"></script>
+	<script src="scripts/view/vertex/VertexShaders.js"></script>
 	<script src="scripts/view/View.js"></script>
-	<script src="scripts/view/Projection.js"></script>
 	<script src="scripts/Cached.js"></script>
 	<script src="scripts/JsonSerializer.js"></script>
 </head>
@@ -343,19 +343,19 @@
 	function update(){
 		// push to task queue and loop
 		// - it has to be at the begining of the function
-		setTimeout(update, 0);
+		setTimeout(update, 20/1000);
 
 		if (BlockUpdate) {
 			return;
 		};
 
-		var timestep = clock.getDelta();
-		if (timestep > 1){
-			timestep = 1;
+		var seconds = clock.getDelta();
+		if (seconds > 1){
+			seconds = 1;
 		}
 		
 		if (!_.isUndefined(world)) {
-			world.simulate(MegaYearPerSecond*timestep);
+			world.simulate(MegaYearPerSecond*seconds);
 			$(".age").html(format(world.age, 1000, 3));
 		};
 		

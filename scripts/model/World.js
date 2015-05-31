@@ -29,7 +29,7 @@ function World(optional){
 		var shield = this.getRandomPoint();
 		var plate = new Plate(this);
 
-		Publisher.publish('plate', 'create', plate);
+		// Publisher.publish('plate', 'create', plate);
 
 		this.plates = [plate];
 		for(var i=0, length = plate._cells.length; i<length; i++) {
