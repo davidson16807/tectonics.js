@@ -17,7 +17,7 @@ function World(optional){
 	this.radius = radius;
 	
 	this.supercontinentCycle = optional["supercontinentCycle"] || new SupercontinentCycle(this);
-	this.grid = optional['grid'] || new Grid( new THREE.IcosahedronGeometry(1, 5), voronoiCache);
+	this.grid = optional['grid'] || new Grid( new THREE.IcosahedronGeometry(1, 5));
 	this.age = optional['age'] || 0;
 	this.platesNum = optional['platesNum'] || 7;
 	this.mountainWidth = (optional['mountainWidth'] || 300) / radius;
