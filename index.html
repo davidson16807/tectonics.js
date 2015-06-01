@@ -359,7 +359,7 @@
 		}
 		
 		if (!_.isUndefined(world)) {
-			world.simulate(MegaYearPerSecond*seconds);
+			model.update(MegaYearPerSecond*seconds);
 			$(".age").html(format(world.age, 1000, 3));
 		};
 		

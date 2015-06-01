@@ -42,8 +42,6 @@ function World(optional){
 	}
 	this.updateNeighbors();
 	this.updateBorders();
-
-	Publisher.publish('world', 'create', this);
 }
 
 World.prototype.SEALEVEL = 3682;
@@ -96,13 +94,12 @@ World.prototype.simulate = function(timestep){
 		{
 			plates.splice(plates.indexOf(platestemp[i]),1);
 			platestemp[i].destroy();
+			Publisher.publish('plate', 'delete', platestemp[i]);
 			this.updateNeighbors();
 		}
 	}
 	this.supercontinentCycle.update(timestep);
 	this.age += timestep;
-
-	Publisher.publish('world', 'update', this);
 }
 
 World.prototype.split = function(){
@@ -155,7 +152,4 @@ World.prototype.destroy = function() {
 	for (var i = 0, li = plates.length; i < li; i++) {
 		plates[i].destroy();
 	};
-	this.plates = [];
-
-	Publisher.publish('world', 'delete', this);
 };

@@ -288,11 +288,11 @@ Plate.prototype.split = function(){
 		}
 	}
 	
+	Publisher.publish('plate', 'delete', this);
+	
 	world.plates.splice(world.plates.indexOf(this),1);
 }
 Plate.prototype.destroy = function(){
-	Publisher.publish('plate', 'delete', this);
-
 	var mesh = this.mesh;
 	this.mesh = void 0;
 	
