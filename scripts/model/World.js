@@ -29,8 +29,6 @@ function World(optional){
 		var shield = this.getRandomPoint();
 		var plate = new Plate(this);
 
-		// Publisher.publish('plate', 'create', plate);
-
 		this.plates = [plate];
 		for(var i=0, length = plate._cells.length; i<length; i++) {
 			var cell = plate._cells[i];
@@ -44,6 +42,8 @@ function World(optional){
 	}
 	this.updateNeighbors();
 	this.updateBorders();
+
+	Publisher.publish('world', 'create', this);
 }
 
 World.prototype.SEALEVEL = 3682;
@@ -101,6 +101,8 @@ World.prototype.simulate = function(timestep){
 	}
 	this.supercontinentCycle.update(timestep);
 	this.age += timestep;
+
+	Publisher.publish('world', 'update', this);
 }
 
 World.prototype.split = function(){
@@ -147,3 +149,13 @@ World.prototype.getRandomPoint = function() {
 		lon: 2*Math.PI * random.random()
 	});
 }
+
+World.prototype.destroy = function() {
+	var plates = this.plates;
+	for (var i = 0, li = plates.length; i < li; i++) {
+		plates[i].destroy();
+	};
+	this.plates = [];
+
+	Publisher.publish('world', 'delete', this);
+};

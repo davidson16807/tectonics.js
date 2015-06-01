@@ -4,10 +4,9 @@ var _hashPlate = function(plate){
 	return plate.uuid
 }
 
-function View(world, fragmentShader, vertexShader){
+function View(fragmentShader, vertexShader){
 	this.THRESHOLD = 0.99;
 	this.SEALEVEL = 1.0;
-	this._world = world;
 	this._fragmentShader = fragmentShader;
 	this._vertexShader = vertexShader;
 
@@ -37,43 +36,32 @@ function View(world, fragmentShader, vertexShader){
 		console.log('delete')
 		this_.remove(plate);
 	});
+	// Publisher.subscribe('world', 'delete', function (world) {
+	// 	var plates = world.plates;
+	// 	for (var i = 0, li = plates.length; i < li; i++) {
+	// 		this.remove(plates[i])
+	// 	};
+	// });
+	// Publisher.subscribe('world', 'create', function (world) {
+	// 	var plates = world.plates;
+	// 	for (var i = 0, li = plates.length; i < li; i++) {
+	// 		this.add(plates[i]);
+	// 	};
+	// });
 }
-
-View.prototype.world = function(world) {
-	if(this._world == world){
-		return;
-	}
-	if(!_.isUndefined(this._world)){
-		for (var i = 0; i < this._world.plates.length; i++) {
-			this.remove(this._world.plates[i]);
-		};	
-	}
-	if(!_.isUndefined(world)){
-		for (var i = 0; i < world.plates.length; i++) {
-			this.add(world.plates[i]);
-		};
-	}
-	this._world = world;
-};
 
 View.prototype.fragmentShader = function(fragmentShader){
 	if(this._fragmentShader == fragmentShader){
 		return;
 	}
 	this._fragmentShader = fragmentShader;
-	if (_.isUndefined(this._world)) {
-		return;
+	var meshes, mesh;
+	meshes = this.meshes.values();
+	for (var i = 0, li = meshes.length; i < li; i++) {
+		mesh = meshes[i];
+		mesh.material.fragmentShader = fragmentShader;
+		mesh.material.needsUpdate = true;
 	};
-	var meshes, mesh, plate;
-	for(var i=0, li = this._world.plates.length, plates = this._world.plates; i<li; i++){
-		plate = plates[i];
-		meshes = this.meshes.get(plate);
-		for (var j = meshes.length - 1; j >= 0; j--) {
-			mesh = meshes[j];
-			mesh.material.fragmentShader = fragmentShader;
-			mesh.material.needsUpdate = true;
-		}
-	}
 }
 
 View.prototype.vertexShader = function(vertexShader){
@@ -81,19 +69,13 @@ View.prototype.vertexShader = function(vertexShader){
 		return;
 	}
 	this._vertexShader = vertexShader;
-	if (_.isUndefined(this._world)) {
-		return;
+	var meshes, mesh;
+	meshes = this.meshes.values();
+	for (var i = 0, li = meshes.length; i < li; i++) {
+		mesh = meshes[i];
+		mesh.material.vertexShader = vertexShader;
+		mesh.material.needsUpdate = true;
 	};
-	var meshes, mesh, plate;
-	for(var i=0, li = this._world.plates.length, plates = this._world.plates; i<li; i++){
-		plate = plates[i];
-		meshes = this.meshes.get(plate);
-		for (var j = meshes.length - 1; j >= 0; j--) {
-			mesh = meshes[j];
-			mesh.material.vertexShader = vertexShader;
-			mesh.material.needsUpdate = true;
-		}
-	}
 }
 
 View.prototype.uniform = function(key, value){
@@ -101,19 +83,13 @@ View.prototype.uniform = function(key, value){
 		return;
 	}
 	this._uniforms[key] = value;
-	if (_.isUndefined(this._world)) {
-		return;
+ 	var meshes, mesh;
+	meshes = this.meshes.values();
+	for (var i = 0, li = meshes.length; i < li; i++) {
+		mesh = meshes[i];
+		mesh.material.uniforms[key].value = value;
+		mesh.material.uniforms[key].needsUpdate = true;
 	};
- 	var meshes, mesh, plate;
-	for(var i=0, li = this._world.plates.length, plates = this._world.plates; i<li; i++){
-		plate = plates[i];
-		meshes = this.meshes.get(plate);
-		for (var j = meshes.length - 1; j >= 0; j--) {
-			mesh = meshes[j];
-			mesh.material.uniforms[key].value = value;
-			mesh.material.uniforms[key].needsUpdate = true;
-		}
-	}
 }
 
 View.prototype.update = function(plate){
@@ -123,15 +99,14 @@ View.prototype.update = function(plate){
 	if(_.isUndefined(plate.mesh)){
 		return;
 	}
-
-	var faces = plate.world.grid.template.faces;
-	var meshes, mesh, geometry, content, face, displacement;
-
-	meshes = this.meshes.get(plate);
+	var meshes = this.meshes.get(plate);
 	if (meshes.length < 1) {
 		console.log('warning: no meshes in view!')
 		return;
 	};
+
+	var faces = plate.world.grid.template.faces;
+	var meshes, mesh, geometry, content, face, displacement;
 	for (var j = meshes.length - 1; j >= 0; j--) {
 		mesh = meshes[j];
 		mesh.matrix = plate.mesh.matrix;
@@ -200,7 +175,9 @@ View.prototype.add = function(plate){
 
 View.prototype.remove = function(plate){
 	var meshes = this.meshes.get(plate);
-	if(!meshes){return;}
+	if(meshes.length < 1){
+		return;
+	}
 	this.meshes.remove(plate);
 	this.geometries.remove(plate);
 	
@@ -210,7 +187,5 @@ View.prototype.remove = function(plate){
 		this.scene.remove(mesh);
 		mesh.material.dispose();
 		mesh.geometry.dispose();
-		delete this.meshes.get(plate);
 	};
 }
-

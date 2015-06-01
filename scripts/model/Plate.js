@@ -30,6 +30,8 @@ function Plate(world, optional)
 	for(var i = 0, length = vertices.length, cells = this._cells; i<length; i++){
 		cells.push(new Cell(this, vertices[i], i));
 	};
+
+	Publisher.publish('plate', 'create', this);
 }
 Plate.prototype.get = function(i){
 	return this._cells[i];

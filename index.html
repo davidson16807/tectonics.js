@@ -265,14 +265,16 @@
 	var BlockUpdate = false;
 	var IsProd = false;
 
-	var world = undefined;
-	var view = new View(world, fragmentShaders[$('#fragmentShader').val()], vertexShaders[$('#vertexShader').val()]);
+	var view = new View(
+		fragmentShaders[$('#fragmentShader').val()], 
+		vertexShaders[$('#vertexShader').val()]
+	);
 
+	var world;
 	if (querystring['load']) {
 		loadUrl(querystring['load']);
 	} else {
 		world = new World();
-		view.world(world);
 		$('#loadingSave').hide();
 		$('.parameters').show();
 		$('.controls').show();
@@ -402,8 +404,11 @@
 		$('.controls').hide();
 		$.getJSON( url, function( json ) {
 			BlockUpdate = false;
-	    	world = JsonSerializer.deserialize(json);
-			view.world(world);
+
+			if(world){
+				world.destroy();
+			}
+	    	world = JsonDeserializer.world(json);
 			$('#loadingSave').hide();
 			$('.parameters').show();
 			$('.controls').show();
@@ -419,8 +424,11 @@
 	    reader.onload = function(e) {
 			BlockUpdate = false;
 	    	var json = JSON.parse(e.target.result);
-	    	world = JsonSerializer.deserialize(json);
-			view.world(world);
+
+	    	if(world){
+	    		world.destroy();
+	    	}
+	    	world = JsonDeserializer.world(json);
 	    }
 
 	    reader.readAsText(file);
@@ -436,7 +444,7 @@
 		$(this).parents('.collapsible').children().toggle();
 	});
 	$('.save').click(function() {
-		var serialized = JsonSerializer.serialize(world);
+		var serialized = JsonSerializer.world(world);
 		var stringified = JSON.stringify(serialized);
 		var dataUrl = 
 			"data:application/json;"+
