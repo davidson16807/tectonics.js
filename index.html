@@ -40,7 +40,7 @@
 	<script src="scripts/view/fragment/FragmentShaders.js"></script>
 	<script src="scripts/view/vertex/VertexShaders.js"></script>
 	<script src="scripts/view/View.js"></script>
-	<script src="scripts/Cached.js"></script>
+	<!-- <script src="scripts/Cached.js"></script> -->
 	<script src="scripts/JsonSerializer.js"></script>
 </head>
 <body>
@@ -269,12 +269,14 @@
 		fragmentShaders[$('#fragmentShader').val()], 
 		vertexShaders[$('#vertexShader').val()]
 	);
+	var model = new Model();
 
-	var world;
+	var world = void 0;
 	if (querystring['load']) {
 		loadUrl(querystring['load']);
 	} else {
 		world = new World();
+		model.world(world);
 		$('#loadingSave').hide();
 		$('.parameters').show();
 		$('.controls').show();
@@ -404,11 +406,8 @@
 		$('.controls').hide();
 		$.getJSON( url, function( json ) {
 			BlockUpdate = false;
-
-			if(world){
-				world.destroy();
-			}
 	    	world = JsonDeserializer.world(json);
+			model.world(world);
 			$('#loadingSave').hide();
 			$('.parameters').show();
 			$('.controls').show();
@@ -424,11 +423,8 @@
 	    reader.onload = function(e) {
 			BlockUpdate = false;
 	    	var json = JSON.parse(e.target.result);
-
-	    	if(world){
-	    		world.destroy();
-	    	}
 	    	world = JsonDeserializer.world(json);
+			model.world(world);
 	    }
 
 	    reader.readAsText(file);

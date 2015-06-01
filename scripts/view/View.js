@@ -36,18 +36,18 @@ function View(fragmentShader, vertexShader){
 		console.log('delete')
 		this_.remove(plate);
 	});
-	// Publisher.subscribe('world', 'delete', function (world) {
-	// 	var plates = world.plates;
-	// 	for (var i = 0, li = plates.length; i < li; i++) {
-	// 		this.remove(plates[i])
-	// 	};
-	// });
-	// Publisher.subscribe('world', 'create', function (world) {
-	// 	var plates = world.plates;
-	// 	for (var i = 0, li = plates.length; i < li; i++) {
-	// 		this.add(plates[i]);
-	// 	};
-	// });
+	Publisher.subscribe('world', 'delete', function (world) {
+		var plates = world.plates;
+		for (var i = 0, li = plates.length; i < li; i++) {
+			this_.remove(plates[i])
+		};
+	});
+	Publisher.subscribe('world', 'create', function (world) {
+		var plates = world.plates;
+		for (var i = 0, li = plates.length; i < li; i++) {
+			this_.add(plates[i]);
+		};
+	});
 }
 
 View.prototype.fragmentShader = function(fragmentShader){
