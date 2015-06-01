@@ -115,7 +115,7 @@ View.prototype.update = function(plate){
 
 	geometry = this.geometries.get(plate);
 	displacement = geometry.attributes.displacement.array;
-	for(var j=0, j3=0, lj = faces.length, cells = plate._cells; j<lj; j++, j3+=3){
+	for(var j=0, j3=0, lj = faces.length, cells = plate.cells; j<lj; j++, j3+=3){
 		face = faces[j];
 		content = cells[face.a].content;
 		displacement[j3] = content? content.displacement : 0;

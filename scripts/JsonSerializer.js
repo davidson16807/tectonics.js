@@ -63,7 +63,7 @@ JsonSerializer.plate = function (plate, options) {
 		uuid: 			plate.uuid,
 	};
 
-	var cells_unfiltered = plate._cells;
+	var cells_unfiltered = plate.cells;
 	var cells = [];
 	var cell;
 	for (var j = 0; j < cells_unfiltered.length; j++) {
@@ -116,7 +116,7 @@ JsonDeserializer.plate = function (plate_json, _world, options) {
 	var thicknesses = 	new Uint16Array(Base64.decode(rockColumns_json.thicknesses));
 	var densities = 	new Uint16Array(Base64.decode(rockColumns_json.densities));
 
-	var cells = plate._cells;
+	var cells = plate.cells;
 	var rockColumn;
 	for (var j = 0, li = ids.length; j < li; j++) {
 		rockColumn = new RockColumn(_world, {

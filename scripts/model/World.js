@@ -30,8 +30,8 @@ function World(optional){
 		var plate = new Plate(this);
 
 		this.plates = [plate];
-		for(var i=0, length = plate._cells.length; i<length; i++) {
-			var cell = plate._cells[i];
+		for(var i=0, length = plate.cells.length; i<length; i++) {
+			var cell = plate.cells[i];
 			if(shield.distanceTo(cell.pos) < continentRadius ) { 
 				cell.create(this.land);
 			} else {
