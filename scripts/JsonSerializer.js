@@ -40,16 +40,15 @@ JsonSerializer.world = function (world, options) {
 	};
 
 	for (var i = 0, li = world.plates.length; i < li; i++) {
-		var plate = world.plates[i]
+		var plate = world.plates[i];
 		var plate_json = JsonSerializer.plate(plate, options);
-		world_json.plates.push(plate_json, options);
+		world_json.plates.push(plate_json);
 	};
 	return {
 		version: 0,
 		seed: seed,
 		world: world_json
 	};
-	return world_json;
 }
 JsonSerializer.plate = function (plate, options) {
 	options = options || {};
@@ -83,11 +82,11 @@ JsonSerializer.plate = function (plate, options) {
 		thicknesses[j] = cell.content.thickness;
 		densities[j] = cell.content.density;
 	};
-	var encode = options.base64? Base64.encode : _abTostr
+	// var encode = options.base64? Base64.encode : _abTostr;
 	plate_json.rockColumns = {
-		ids: 			encode(ids.buffer),
-		thicknesses: 	encode(thicknesses.buffer),
-		densities: 		encode(densities.buffer),
+		ids: 			Base64.encode(ids.buffer),
+		thicknesses: 	Base64.encode(thicknesses.buffer),
+		densities: 		Base64.encode(densities.buffer),
 	};
 
 	return plate_json;
@@ -103,7 +102,6 @@ JsonDeserializer.plate = function (plate_json, _world, options) {
 		densityOffset: plate_json.densityOffset,
 		uuid: plate_json.uuid,
 	});
-	
 	plate.eulerPole.fromArray(plate_json.eulerPole);
 
 	var plateMatrix = plate.mesh.matrix;
@@ -112,11 +110,11 @@ JsonDeserializer.plate = function (plate_json, _world, options) {
 
 	var rockColumns_json = plate_json.rockColumns;
 	
-	var decode = options.base64? Base64.decode : _strToab
+	// var decode = options.base64? Base64.decode : _strToab;
 
-	var ids = 			new Uint16Array(decode(rockColumns_json.ids));
-	var thicknesses = 	new Uint16Array(decode(rockColumns_json.thicknesses));
-	var densities = 	new Uint16Array(decode(rockColumns_json.densities));
+	var ids = 			new Uint16Array(Base64.decode(rockColumns_json.ids));
+	var thicknesses = 	new Uint16Array(Base64.decode(rockColumns_json.thicknesses));
+	var densities = 	new Uint16Array(Base64.decode(rockColumns_json.densities));
 
 	var cells = plate._cells;
 	var rockColumn;
@@ -136,29 +134,29 @@ JsonDeserializer.world = function (world_json, options) {
 	var base64 = options.base64 || true;
 
 	var _world = new World({
-		radius: json.world.radius,
-		platesNum: json.world.platesNum,
-		mountainWidth: json.world.mountainWidth,
-		age: json.world.age,
+		radius: world_json.world.radius,
+		platesNum: world_json.world.platesNum,
+		mountainWidth: world_json.world.mountainWidth,
+		age: world_json.world.age,
 		grid: world.grid,					// HACK: shouldn't reference world
 		supercontinentCycle: undefined,
 		plates: [],
 	});
 
-	for (var i = 0; i < json.world.plates.length; i++) {
-		var plate_json = json.world.plates[i];
+	for (var i = 0; i < world_json.world.plates.length; i++) {
+		var plate_json = world_json.world.plates[i];
 		var plate = JsonDeserializer.plate(plate_json, _world, options);
 		_world.plates.push(plate);
 	};
 
 	_world.updateNeighbors();
 	_world.updateBorders();
-	_world.supercontinentCycle = new SupercontinentCycle(_world, json.world.supercontinentCycle);
+	_world.supercontinentCycle = new SupercontinentCycle(_world, world_json.world.supercontinentCycle);
 	
-	seed = json.seed;
+	seed = world_json.seed;
 	random = new Random(parseSeed(seed));
 
-	var random_json = json.world.random;
+	var random_json = world_json.world.random;
 	random.mt  = random_json.mt;
 	random.mti  = random_json.mti;
 
