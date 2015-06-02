@@ -3,7 +3,6 @@
 function Cell(plate, pos, id, content){
 	this.plate = plate;
 	this.world = plate.world;
-	this._mesh = plate.mesh;
 	this._grid = plate.grid;
 	this.pos = pos;
 	this.id = id;
@@ -82,10 +81,10 @@ Cell.prototype.destroy = function(){
 Cell.prototype.getIntersections = function(plates, getIntersection){
 	var parent = this.plate;
 	var grid = this._grid;
-	var absolute_pos = this._mesh.localToWorld(this.pos.clone());
+	var absolute_pos = this.plate.localToWorld(this.pos.clone());
 	for(var j=0, lj = plates.length; j<lj; j++){
 		var plate = plates[j];
-		var relative = plate.mesh.worldToLocal(absolute_pos.clone());
+		var relative = plate.worldToLocal(absolute_pos.clone());
 		var id = grid.getNearestId(relative);
 		var intersection = getIntersection(id, plate);
 		if(intersection) {

@@ -13,7 +13,7 @@ function _strToab(str) {
 
 
 
-JsonSerializer = {};
+JsonSerializer 	= {};
 JsonSerializer.world = function (world, options) {
 	options = options || {};
 	var base64 = options.base64 || true;
@@ -59,8 +59,7 @@ JsonSerializer.plate = function (plate, options) {
 		angularSpeed: 	plate.angularSpeed,
 		densityOffset: 	plate.densityOffset,
 		rockColumns: 	{},
-		meshMatrix: 	plate.mesh.matrix.toArray(),
-		uuid: 			plate.uuid,
+		matrix: 		plate.matrix.toArray(),
 	};
 
 	var cells_unfiltered = plate.cells;
@@ -104,9 +103,8 @@ JsonDeserializer.plate = function (plate_json, _world, options) {
 	});
 	plate.eulerPole.fromArray(plate_json.eulerPole);
 
-	var plateMatrix = plate.mesh.matrix;
-	plateMatrix.fromArray(plate_json.meshMatrix);
-	plate.mesh.rotation.setFromRotationMatrix( plateMatrix );
+	var plateMatrix = plate.matrix;
+	plateMatrix.fromArray(plate_json.matrix);
 
 	var rockColumns_json = plate_json.rockColumns;
 	

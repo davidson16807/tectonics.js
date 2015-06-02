@@ -11,7 +11,6 @@ Model.prototype.world = function(world) {
 
 	if (!_.isUndefined(this._world)){
 		Publisher.publish('world', 'delete', this._world)
-		this._world.destroy();
 	}
 	
 	Publisher.publish('world', 'create', world);

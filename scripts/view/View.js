@@ -96,9 +96,6 @@ View.prototype.update = function(plate){
 	if(_.isUndefined(plate.world)){
 		return;
 	}
-	if(_.isUndefined(plate.mesh)){
-		return;
-	}
 	var meshes = this.meshes.get(plate);
 	if (meshes.length < 1) {
 		console.log('warning: no meshes in view!')
@@ -109,7 +106,7 @@ View.prototype.update = function(plate){
 	var meshes, mesh, geometry, content, face, displacement;
 	for (var j = meshes.length - 1; j >= 0; j--) {
 		mesh = meshes[j];
-		mesh.matrix = plate.mesh.matrix;
+		mesh.matrix = plate.matrix;
 		mesh.rotation.setFromRotationMatrix(mesh.matrix);
 	}
 

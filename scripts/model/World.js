@@ -77,7 +77,6 @@ World.prototype.simulate = function(timestep){
 	for(i = 0; i<length; i++){
 		plates[i].isostasy();
 	}
-	this.updateMatrices();
 	this.updateBorders();
 	for(i = 0; i<length; i++){
 		plates[i].rift();
@@ -93,7 +92,6 @@ World.prototype.simulate = function(timestep){
 		if(platestemp[i].getSize() <= 100)
 		{
 			plates.splice(plates.indexOf(platestemp[i]),1);
-			platestemp[i].destroy();
 			Publisher.publish('plate', 'delete', platestemp[i]);
 			this.updateNeighbors();
 		}
@@ -113,7 +111,6 @@ World.prototype.split = function(){
 	this.updateNeighbors();
 	this.updateBorders();
 	
-	largest.destroy();
 	
 }
 
@@ -131,25 +128,9 @@ World.prototype.updateBorders = function(){
 	}
 }
 
-World.prototype.updateMatrices = function(){
-	var length = this.plates.length;
-	var plates = this.plates;
-	for(var i = 0; i<length; i++){
-		plates[i].mesh.updateMatrix();
-		plates[i].mesh.updateMatrixWorld();
-	}
-}
-
 World.prototype.getRandomPoint = function() {
 	return _toCartesian({
 		lat: Math.asin(2*random.random() - 1),
 		lon: 2*Math.PI * random.random()
 	});
 }
-
-World.prototype.destroy = function() {
-	var plates = this.plates;
-	for (var i = 0, li = plates.length; i < li; i++) {
-		plates[i].destroy();
-	};
-};

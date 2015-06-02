@@ -8,8 +8,6 @@ function _hashCell(vector){
 	return vector.id.toString();
 }
 
-var _MATERIAL = new THREE.MeshBasicMaterial();
-
 function Plate(world, optional)
 {
 	optional = optional || {}
@@ -23,14 +21,24 @@ function Plate(world, optional)
 	this._geometry = world.grid.template;
 	this.cells = [];
 	this._neighbors = [];
-	this.mesh	= new THREE.Mesh( this._geometry, _MATERIAL ); 
-	this.uuid = optional['uuid'] || this.mesh.uuid;
+	this.matrix = optional['matrix'] || new THREE.Matrix4();
+	this.uuid = optional['uuid'] || Uuid.create();
 
 	var vertices = this._geometry.vertices;
 	for(var i = 0, length = vertices.length, cells = this.cells; i<length; i++){
 		cells.push(new Cell(this, vertices[i], i));
 	};
 }
+
+Plate.prototype.localToWorld = function(a) {
+    return a.applyMatrix4(this.matrix);
+};
+Plate.prototype.worldToLocal = function() {
+    var a = new THREE.Matrix4;
+    return function(b) {
+        return b.applyMatrix4(a.getInverse(this.matrix))
+    }
+}(),
 Plate.prototype.get = function(i){
 	return this.cells[i];
 }
@@ -106,9 +114,8 @@ Plate.prototype.move = function(timestep){
 	this.increment = this.angularSpeed * timestep;
 	var rotationMatrix = new THREE.Matrix4();
 	rotationMatrix.makeRotationAxis( this.eulerPole, this.angularSpeed * timestep );
-	rotationMatrix.multiply( this.mesh.matrix ); 
-	this.mesh.matrix = rotationMatrix;
-	this.mesh.rotation.setFromRotationMatrix( this.mesh.matrix );
+	rotationMatrix.multiply( this.matrix ); 
+	this.matrix = rotationMatrix;
 }
 
 
@@ -119,7 +126,6 @@ function _getCollisionIntersection(id, plate) {
 	}
 }
 Plate.prototype.deform = function(){
-	var mesh = this.mesh;
 	var plates = this._neighbors;
 	var geometry = this._geometry;
 	var grid = this.grid;
@@ -145,7 +151,6 @@ function _getRiftIntersection(id, plate) {
 	}
 }
 Plate.prototype.rift = function(){
-	var mesh = this.mesh;
 	var plates = this._neighbors;
 	var geometry = this._geometry;
 	var grid = this.world.grid;
@@ -170,7 +175,6 @@ Plate.prototype.erode = function(timestep){
 	// This erosion model is characteristic in that its geared towards large spatiotemporal scales
 	// A sediment erosion model is also described there, but here we only implement bedrock erosion, for now
 	var world = this.world;
-	var mesh = this.mesh;
 	var geometry = this._geometry;
 	var grid = this.world.grid;
 	var vertex, intersected;
@@ -218,9 +222,7 @@ Plate.prototype.isostasy = function() {
 Plate.prototype.dock = function(subjugated){
 	var grid = this.grid;
 	var cells = this.cells;
-	var subjugatedPlate = subjugated.plate
-	var otherMesh = subjugatedPlate.mesh
-	var mesh = this.mesh;
+	var subjugatedPlate = subjugated.plate;
 	
 	var increment =    new THREE.Matrix4().makeRotationAxis( this.eulerPole, 		    -this.increment );
 	increment.multiply(new THREE.Matrix4().makeRotationAxis( subjugatedPlate.eulerPole, -subjugatedPlate.increment ));
@@ -231,8 +233,8 @@ Plate.prototype.dock = function(subjugated){
 		temp.applyMatrix4(increment);
 		
 		//check for continental collision
-		var absolute = otherMesh.localToWorld(temp.clone().normalize());
-		var relative = mesh.worldToLocal(absolute);
+		var absolute = subjugatedPlate.localToWorld(temp.clone().normalize());
+		var relative = this.worldToLocal(absolute);
 		var id = grid.getNearestId(relative);
 		var hit = cells[id];
 		
@@ -275,8 +277,7 @@ Plate.prototype.split = function(){
 		var plate = plates[i];
 		world.plates.push(plate);
 		Publisher.publish('plate', 'create', plate);
-		plate.mesh.matrix = this.mesh.matrix;
-		plate.mesh.rotation.setFromRotationMatrix( this.mesh.matrix );
+		plate.matrix = this.matrix;
 	}
 	for(var i=0, li = cells.length; i<li; i++){
 		var cell = cells[i];
@@ -291,12 +292,4 @@ Plate.prototype.split = function(){
 	Publisher.publish('plate', 'delete', this);
 	
 	world.plates.splice(world.plates.indexOf(this),1);
-}
-Plate.prototype.destroy = function(){
-	var mesh = this.mesh;
-	this.mesh = void 0;
-	
-	mesh.material.dispose();
-	
-	delete this.mesh;
 }
