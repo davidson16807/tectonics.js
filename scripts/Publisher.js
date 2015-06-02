@@ -30,7 +30,7 @@ Publisher.subscribe = function (channel, topic, callbackFn, deserializeFn) {
 			return;
 		};
 
-		window.setTimeout(callbackFn, 0, detail.content);
+		callbackFn(detail.content);
 	}, false);
 
 	if (false && IsProd && deserializeFn) { // NOTE: to be used upon implementing web workers
@@ -43,7 +43,7 @@ Publisher.subscribe = function (channel, topic, callbackFn, deserializeFn) {
 			if (!_.isUndefined(topic) && topic != data.topic){
 				return;
 			};
-			window.setTimeout(callbackFn, 0, detail.content);
+			callbackFn(data.content);
 	    }, false);
     }
 }
