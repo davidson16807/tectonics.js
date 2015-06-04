@@ -31,10 +31,7 @@ function VoronoiSphere(pointsNum, kdtree){
 			for(j = 0; j<lj; j++){
 				var lat = i*this.latRange/li + this.latMin;
 				var lon = j*this.lonRange/lj + this.lonMin;
-				var vertex = new THREE.Vector3(
-					Math.cos(lat)  * Math.cos(lon),
-				    Math.sin(lat),
-					-Math.cos(lat) * Math.sin(lon));
+				var vertex = _toCartesian({lat:lat, lon:lon});
 				var nearest_id = kdtree.nearest(vertex,1)[0][0].i;
 				var raster_id = i*this.lonNum + j;
 				raster[raster_id] = nearest_id;
@@ -45,12 +42,11 @@ function VoronoiSphere(pointsNum, kdtree){
 }
 
 VoronoiSphere.prototype.getNearestId = function(vector) {
-	var lat = Math.asin(vector.y/vector.length());
-	var lon = Math.atan2(-vector.z, vector.x);
-	var i = (lat - this.latMin) *this.latNum / this.latRange;
+	var spherical = _toSpherical(vector);
+    var i = (spherical.lat - this.latMin) *this.latNum / this.latRange;
 	i = Math.max(Math.min(i, this.latNum-1), 0);
 	i = Math.round(i);
-	var j = (lon - this.lonMin) *this.lonNum / this.lonRange;
+    var j = (spherical.lon - this.lonMin) *this.lonNum / this.lonRange;
 	j = Math.max(Math.min(j, this.lonNum-1), 0); 
 	j = Math.round(j);
 	var raster_id = i*this.lonNum + j;
