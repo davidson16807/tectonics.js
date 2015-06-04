@@ -22,7 +22,7 @@ Cell.prototype.isContinental = function(invalid){
 }
 
 Cell.prototype._canSubduct = function(subducted, invalid){
-	if(this.plate.densityOffset > subducted.plate.densityOffset){
+	if(this.plate.densityOffset < subducted.plate.densityOffset){
 		return false;
 	} else {
 		return true;
@@ -49,7 +49,7 @@ Cell.prototype.collide = function(other, invalid){
 }
 
 Cell.prototype._canDock = function(subjugated, invalid){
-	if(this.plate.densityOffset > subjugated.plate.densityOffset){
+	if(this.plate.densityOffset < subjugated.plate.densityOffset){
 		return false;
 	} else {
 		return true;

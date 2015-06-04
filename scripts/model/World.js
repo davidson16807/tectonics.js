@@ -39,6 +39,7 @@ function World(optional){
 			}
 			cell.content.isostasy();
 		}
+		plate.densityOffset = plate.getDensityOffset();
 	}
 	this.updateNeighbors();
 	this.updateBorders();

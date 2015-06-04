@@ -54,6 +54,20 @@ Plate.prototype.getCentroid = function(){
 		divideScalar(points.length).
 		normalize();
 }
+Plate.prototype.getDensityOffset = function() {
+	return -this.getContinentalSize();
+	//var densitySum = 0;
+	//var cells = this.cells;
+	//var content;
+	//for (var i = 0, li = cells.length; i < li; i++) {
+	//	content = cells[i].content;
+	//	if (content === void 0) {
+	//		continue;
+	//	};
+	//	densitySum += content.density;
+	//};
+	//return densitySum / this.getSize(); 
+};
 Plate.prototype.getSize = function(){
 	return this.cells.filter(_isFilled).length;
 }
@@ -271,8 +285,17 @@ Plate.prototype.split = function(){
 			new THREE.Vector3().crossVectors(centroid, pos).normalize() :
 			new THREE.Vector3().crossVectors(pos, centroid).normalize();
 
-		var smaller = new Plate(world, eulerPole, world.getRandomPlateSpeed());
-		var larger = new Plate(world, eulerPole, world.getRandomPlateSpeed());
+		var smaller = new Plate(world, 
+			{
+				eulerPole: eulerPole, 
+				angularSpeed: world.getRandomPlateSpeed(),
+			});
+		var larger = new Plate(world, 
+			{
+				eulerPole: eulerPole,
+				angularSpeed: world.getRandomPlateSpeed(),
+			});
+
 		plates.push(smaller);
 		plates.push(larger);
 		seeds.set(junction[0], smaller);
@@ -295,6 +318,8 @@ Plate.prototype.split = function(){
 			seeds.get(nearest).cells[i].replace(cell);
 		}
 	}
+	smaller.densityOffset = smaller.getDensityOffset();
+	larger.densityOffset = larger.getDensityOffset();
 
 	Publisher.publish('plate', 'delete', this);
 	
