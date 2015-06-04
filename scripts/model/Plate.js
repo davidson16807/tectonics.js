@@ -90,8 +90,8 @@ Plate.prototype.updateNeighbors = function(){
 		filter(function(plate){return plate.uuid != _this.uuid});
 }
 Plate.prototype.updateBorders = function(){
-	var collideable = [];
-	var riftable = [];
+	var collideable = new Uint8Array(this.cells.length);
+	var riftable = new Uint8Array(this.cells.length);
 	var a,b,c;
 	for(var i=0, cells = this.cells, length = this._geometry.faces.length; i<length; i++){
 		var face = this._geometry.faces[i];
@@ -99,12 +99,12 @@ Plate.prototype.updateBorders = function(){
 		b = _isFilled(cells[face.b]);
 		c = _isFilled(cells[face.c]);
 		if((a != b || b != c)){
-			if(a){ collideable[face.a] = cells[face.a]; }
-			else { riftable[face.a] = cells[face.a]; }
-			if(b){ collideable[face.b] = cells[face.b]; }
-			else { riftable[face.b] = cells[face.b]; }
-			if(c){ collideable[face.c] = cells[face.c]; }
-			else { riftable[face.c] = cells[face.c]; }
+			if(a){ collideable[face.a] = 1; }
+			else { riftable[face.a] = 1; }
+			if(b){ collideable[face.b] = 1; }
+			else { riftable[face.b] = 1; }
+			if(c){ collideable[face.c] = 1; }
+			else { riftable[face.c] = 1; }
 		}
 	}
 	this._collideable = collideable;
@@ -121,7 +121,7 @@ Plate.prototype.move = function(timestep){
 
 function _getCollisionIntersection(id, plate) {
 	var intersected = plate.cells[id];
-	if (intersected.content !== void 0 && plate._collideable[id] === void 0) {
+	if (intersected.content !== void 0 && plate._collideable[id] === 0) {
 		return intersected;
 	}
 }
@@ -129,14 +129,18 @@ Plate.prototype.deform = function(){
 	var plates = this._neighbors;
 	var grid = this.grid;
 	var collideable = this._collideable;
+	var cells = this.cells;
 	var cell, intersected;
 	var getIntersection = _getCollisionIntersection;
 	for(var i=0, li = collideable.length; i<li; i++){
-		var cell = collideable[i];
-		if(cell === void 0 || cell.content === void 0){
+		if(collideable[i] === 0){
 			continue;
 		}
-		var intersected = cell.getIntersections(plates, getIntersection);
+		cell = cells[i];
+		if(cell.content === void 0){
+			continue;
+		}
+		intersected = cell.getIntersections(plates, getIntersection);
 		if(intersected !== void 0){
 			cell.collide(intersected);
 		}
@@ -145,7 +149,7 @@ Plate.prototype.deform = function(){
 
 function _getRiftIntersection(id, plate) {
 	var intersected = plate.cells[id];
-	if (intersected.content !== void 0 || plate._riftable[id] !== void 0) {
+	if (intersected.content !== void 0 || plate._riftable[id] > 0) {
 		return intersected;
 	}
 }
@@ -154,11 +158,15 @@ Plate.prototype.rift = function(){
 	var grid = this.world.grid;
 	var cell, intersected;
 	var riftable = this._riftable;
+	var cells = this.cells;
 	var ocean = this.world.ocean;
 	var getIntersection = _getRiftIntersection;
 	for(var i=0, li = riftable.length; i<li; i++){
-		cell = riftable[i];
-		if(cell === void 0 || cell.content !== void 0){
+		if(riftable[i] === 0){
+			continue;
+		}
+		cell = cells[i];
+		if(cell.content !== void 0){
 			continue;
 		}
 		intersected = cell.getIntersections(plates, getIntersection);
