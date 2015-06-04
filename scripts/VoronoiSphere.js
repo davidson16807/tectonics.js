@@ -20,10 +20,11 @@ function VoronoiSphere(pointsNum, kdtree){
 	var size = Math.sqrt(pointsNum);
 	this.lonRange = 2*Math.PI;
 	this.lonMin = -Math.PI;
-	this.lonNum = 2*size;
+	this.lonNum = Math.round(2*size);
 	this.latRange = Math.PI;
 	this.latMin = -Math.PI / 2;
-	this.latNum = size;
+	this.latNum = Math.round(size);
+	console.log(this.latNum, this.lonNum);
 	var raster = new Uint16Array(this.latNum * this.lonNum);
 	if(kdtree){
 		for(var i = 0, j=0, li = this.latNum, lj = this.lonNum; i<li; i++){
