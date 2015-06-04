@@ -87,7 +87,7 @@ Cell.prototype.getIntersections = function(plates, getIntersection){
 		var relative = plate.worldToLocal(absolute_pos.clone());
 		var id = grid.getNearestId(relative);
 		var intersection = getIntersection(id, plate);
-		if(intersection) {
+		if(intersection !== void 0) {
 			parent._neighbors.splice(j, 1);
 			parent._neighbors.unshift(plate);
 			return intersection; 
