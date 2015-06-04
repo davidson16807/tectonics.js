@@ -181,9 +181,7 @@ Plate.prototype.erode = function(timestep){
 	// This erosion model is characteristic in that its geared towards large spatiotemporal scales
 	// A sediment erosion model is also described there, but here we only implement bedrock erosion, for now
 	var world = this.world;
-	var geometry = this._geometry;
 	var grid = this.world.grid;
-	var vertex, intersected;
 	var cells = this.cells;
 	var precipitation = 7.8e5;
 	// ^^^ measured in meters of rain per million years
@@ -191,25 +189,27 @@ Plate.prototype.erode = function(timestep){
 	var erosiveFactor = 1.8e-7; 
 	// ^^^ the rate of erosion per the rate of rainfall in that place
 	// measured in fraction of height gradient per meters of rain
-	for(var i=0, li = cells.length; i<li; i++){
-		var content = cells[i].content;
-		if(_.isUndefined(content)){
+
+	var i, j, li, lj, content, dheightSum, neighborIds, neighbor, dheight, erosion;
+	for(i=0, li = cells.length; i<li; i++){
+		content = cells[i].content;
+		if(content === void 0){
 			continue;
 		}
-		var dheightSum = 0;
-		var neighborIds = grid.getNeighborIds(i);
-		for(var j = 0, lj = neighborIds.length; j<lj; j++){
-			var neighbor = cells[neighborIds[j]].content;
-			if(_.isUndefined(neighbor)){
+		dheightSum = 0;
+		neighborIds = grid.getNeighborIds(i);
+		for(j = 0, lj = neighborIds.length; j<lj; j++){
+			neighbor = cells[neighborIds[j]].content;
+			if(neighbor === void 0){
 				continue;
 			}
 			if(neighbor.displacement < world.SEALEVEL && content.displacement < world.SEALEVEL){
 				continue;
 			}
-			var dheight = content.displacement - neighbor.displacement;
+			dheight = content.displacement - neighbor.displacement;
 			dheightSum += dheight / lj;
 		}
-		var erosion = dheightSum * precipitation * timestep * erosiveFactor;
+		erosion = dheightSum * precipitation * timestep * erosiveFactor;
 		content.thickness -= erosion;
 	}
 }
@@ -218,7 +218,7 @@ Plate.prototype.isostasy = function() {
 	var cells = this.cells;
 	for(var i=0, li = cells.length; i<li; i++){
 		var content = cells[i].content;
-		if(_.isUndefined(content)){
+		if(content === void 0){
 			continue;
 		}
 		content.isostasy();
@@ -234,15 +234,16 @@ Plate.prototype.dock = function(subjugated){
 	increment.multiply(new THREE.Matrix4().makeRotationAxis( subjugatedPlate.eulerPole, -subjugatedPlate.increment ));
 	var temp = subjugated.pos.clone();
 	
-	for(var i = 0; true; i++){
+	var absolute, relative, id, hit;
+ 	for(var i = 0; true; i++){
 		//move subjugated back by increment
 		temp.applyMatrix4(increment);
 		
 		//check for continental collision
-		var absolute = subjugatedPlate.localToWorld(temp.clone().normalize());
-		var relative = this.worldToLocal(absolute);
-		var id = grid.getNearestId(relative);
-		var hit = cells[id];
+		absolute = subjugatedPlate.localToWorld(temp.clone().normalize());
+		relative = this.worldToLocal(absolute);
+		id = grid.getNearestId(relative);
+		hit = cells[id];
 		
 		if(!hit.isContinental() || i > 100){
 			hit.replace(subjugated);
