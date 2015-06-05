@@ -108,10 +108,18 @@ World.prototype.split = function(){
 	}
 	
 	var largest = this.plates.sort(function(a, b) { return b.getContinentalSize() - a.getContinentalSize(); })[0];
-	largest.split();
+	var plates = largest.split();
+
+	for (var i = 0, li = plates.length; i < li; i++) {
+		var plate = plates[i];
+		this.plates.push(plate);
+		Publisher.publish('plate', 'create', plate);
+	};
+	this.plates.splice(this.plates.indexOf(largest),1);
+	Publisher.publish('plate', 'delete', largest);
+
 	this.updateNeighbors();
 	this.updateBorders();
-	
 	
 }
 

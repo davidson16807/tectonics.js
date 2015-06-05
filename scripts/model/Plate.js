@@ -309,8 +309,6 @@ Plate.prototype.split = function(){
 
 	for(var i=0, li = plates.length; i<li; i++){
 		var plate = plates[i];
-		world.plates.push(plate);
-		Publisher.publish('plate', 'create', plate);
 		plate.matrix = this.matrix;
 	}
 	for(var i=0, li = cells.length; i<li; i++){
@@ -325,7 +323,5 @@ Plate.prototype.split = function(){
 	smaller.densityOffset = smaller.getDensityOffset();
 	larger.densityOffset = larger.getDensityOffset();
 
-	Publisher.publish('plate', 'delete', this);
-	
-	world.plates.splice(world.plates.indexOf(this),1);
+	return plates;
 }
