@@ -15,7 +15,6 @@ function Plate(world, optional)
 	this.eulerPole = optional['eulerPole'] || world.getRandomPoint();
 	this.angularSpeed = optional['angularSpeed'] || world.getRandomPlateSpeed();
 	this.densityOffset = optional['densityOffset'] || world.getRandomPlateDensityEffect();
-	this._increment = 0;
 	
 	//efficiency attributes, AKA attributes of attributes:
 	this.grid = world.grid;
@@ -32,6 +31,7 @@ function Plate(world, optional)
 
 	this._collideable = new Uint8Array(this.cells.length);
 	this._riftable = new Uint8Array(this.cells.length);
+	this.increment = 0;
 }
 
 Plate.prototype.localToWorld = function(a) {
@@ -129,7 +129,7 @@ Plate.prototype.updateBorders = function(){
 	this._riftable = riftable;
 }
 Plate.prototype.move = function(timestep){
-	this._increment = this.angularSpeed * timestep;
+	this.increment = this.angularSpeed * timestep;
 	var rotationMatrix = new THREE.Matrix4();
 	rotationMatrix.makeRotationAxis( this.eulerPole, this.angularSpeed * timestep );
 	rotationMatrix.multiply( this.matrix ); 
@@ -248,7 +248,7 @@ Plate.prototype.dock = function(subjugated){
 	var cells = this.cells;
 	var subjugatedPlate = subjugated.plate;
 	
-	var increment =    new THREE.Matrix4().makeRotationAxis( this.eulerPole, 		    -this._increment );
+	var increment =    new THREE.Matrix4().makeRotationAxis( this.eulerPole, 		    -this.increment );
 	increment.multiply(new THREE.Matrix4().makeRotationAxis( subjugatedPlate.eulerPole, -subjugatedPlate.increment ));
 	var temp = subjugated.pos.clone();
 	
