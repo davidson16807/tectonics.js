@@ -87,9 +87,9 @@ Plate.prototype.getRandomLand = function(){
 Plate.prototype.getRandomJunction = function() {
 	var cells = this.cells;
 	var candidates = this._geometry.faces.filter(function(face) { 
-		return  _isFilled(cells[face.a]) && 
-				_isFilled(cells[face.b]) && 
-				_isFilled(cells[face.c])
+		return  cells[face.a] !== void 0 && 
+				cells[face.b] !== void 0 && 
+				cells[face.c] !== void 0
 	});
 	if(candidates.length > 0){
 		var i = Math.floor(random.random()*candidates.length);
@@ -106,12 +106,12 @@ Plate.prototype.updateNeighbors = function(){
 Plate.prototype.updateBorders = function(){
 	var collideable = new Uint8Array(this.cells.length);
 	var riftable = new Uint8Array(this.cells.length);
-	var a,b,c;
+	var face, a,b,c;
 	for(var i=0, cells = this.cells, length = this._geometry.faces.length; i<length; i++){
-		var face = this._geometry.faces[i];
-		a = _isFilled(cells[face.a]);
-		b = _isFilled(cells[face.b]);
-		c = _isFilled(cells[face.c]);
+		face = this._geometry.faces[i];
+		a = cells[face.a].content !== void 0;
+		b = cells[face.b].content !== void 0;
+		c = cells[face.c].content !== void 0;
 		if((a != b || b != c)){
 			if(a){ collideable[face.a] = 1; }
 			else { riftable[face.a] = 1; }
