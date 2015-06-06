@@ -23,44 +23,40 @@ THREE.ConvexGeometry = function( vertices ) {
 
 	var faces = [ [ 0, 1, 2 ], [ 0, 2, 1 ] ]; 
 
-	for ( var i = 3; i < vertices.length; i++ ) {
+	var vertex, vertexId, mag, hole, f, face, e, edge, boundary, h;
+	for ( var i = 3, li = vertices.length; i < li; i++ ) {
+		vertexId = i;
+		vertex = vertices[ vertexId ].clone();
 
-		addPoint( i );
-
-	}
-
-
-	function addPoint( vertexId ) {
-
-		var vertex = vertices[ vertexId ].clone();
-
-		var mag = vertex.length();
+		mag = vertex.length();
 		vertex.x += mag * randomOffset();
 		vertex.y += mag * randomOffset();
 		vertex.z += mag * randomOffset();
 
-		var hole = [];
+		hole = [];
+		lh = hole.length;
 
-		for ( var f = 0; f < faces.length; ) {
+		for ( f = 0, lf = faces.length; f < lf; ) {
 
-			var face = faces[ f ];
+			face = faces[ f ];
 
 			// for each face, if the vertex can see it,
 			// then we try to add the face's edges into the hole.
 			if ( visible( face, vertex ) ) {
 
-				for ( var e = 0; e < 3; e++ ) {
+				for ( e = 0; e < 3; e++ ) {
 
-					var edge = [ face[ e ], face[ ( e + 1 ) % 3 ] ];
-					var boundary = true;
+					edge = [ face[ e ], face[ ( e + 1 ) % 3 ] ];
+					boundary = true;
 
 					// remove duplicated edges.
-					for ( var h = 0; h < hole.length; h++ ) {
+					for ( h = 0; h < lh; h++) {
 
 						if ( equalEdge( hole[ h ], edge ) ) {
 
-							hole[ h ] = hole[ hole.length - 1 ];
+							hole[ h ] = hole[ lh - 1 ];
 							hole.pop();
+							lh--;
 							boundary = false;
 							break;
 
@@ -71,6 +67,7 @@ THREE.ConvexGeometry = function( vertices ) {
 					if ( boundary ) {
 
 						hole.push( edge );
+						lh++;
 
 					}
 
@@ -79,6 +76,7 @@ THREE.ConvexGeometry = function( vertices ) {
 				// remove faces[ f ]
 				faces[ f ] = faces[ faces.length - 1 ];
 				faces.pop();
+				lf--;
 
 			} else { // not visible
 
@@ -88,14 +86,12 @@ THREE.ConvexGeometry = function( vertices ) {
 		}
 
 		// construct the new faces formed by the edges of the hole and the vertex
-		for ( var h = 0; h < hole.length; h++ ) {
-
+		for ( var h = 0; h < lh; h++ ) {
 			faces.push( [ 
 				hole[ h ][ 0 ],
 				hole[ h ][ 1 ],
 				vertexId
 			] );
-
 		}
 	}
 
@@ -170,7 +166,7 @@ THREE.ConvexGeometry = function( vertices ) {
 	var id = 0;
 	var newId = new Array( vertices.length ); // map from old vertex id to new id
 
-	for ( var i = 0; i < faces.length; i++ ) {
+	for ( var i = 0, li = faces.length; i < li; i++ ) {
 
 		 var face = faces[ i ];
 
@@ -190,7 +186,7 @@ THREE.ConvexGeometry = function( vertices ) {
 	}
 
 	// Convert faces into instances of THREE.Face3
-	for ( var i = 0; i < faces.length; i++ ) {
+	for ( var i = 0, li = faces.length; i < li; i++ ) {
 
 		this.faces.push( new THREE.Face3( 
 				faces[ i ][ 0 ],
@@ -201,7 +197,7 @@ THREE.ConvexGeometry = function( vertices ) {
 	}
 
 	// Compute UVs
-	for ( var i = 0; i < this.faces.length; i++ ) {
+	for ( var i = 0, li = faces.length; i < li; i++ ) {
 
 		var face = this.faces[ i ];
 
