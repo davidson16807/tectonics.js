@@ -320,8 +320,8 @@ Plate.prototype.split = function(){
 			seeds.get(nearest).cells[i].replace(cell);
 		}
 	}
-	smaller.densityOffset = smaller.getDensityOffset();
-	larger.densityOffset = larger.getDensityOffset();
+	smaller.densityOffset = smaller.getDensityOffset() + random.random();
+	larger.densityOffset = larger.getDensityOffset() + random.random();
 
 	return plates;
 }
