@@ -86,14 +86,13 @@ World.prototype.simulate = function(timestep){
 		plates[i].deform();
 	}
 	for (var i = 0; i<length; i++) {
-		Publisher.publish('plate', 'update', plates[i]);
+		Publisher.publish('world.plates', 'update', { value: plates[i], uuid: this.uuid } );
 	};
 	var platestemp = plates.slice(0); // copy the array
 	for(i = 0; i<length; i++){
 		if(platestemp[i].getSize() <= 100)
 		{
-			plates.splice(plates.indexOf(platestemp[i]),1);
-			Publisher.publish('plate', 'delete', platestemp[i]);
+			this.remove(platestemp[i]);
 			this.updateNeighbors();
 		}
 	}
@@ -111,17 +110,23 @@ World.prototype.split = function(){
 	var plates = largest.split();
 
 	for (var i = 0, li = plates.length; i < li; i++) {
-		var plate = plates[i];
-		this.plates.push(plate);
-		Publisher.publish('plate', 'create', plate);
+		this.add(plates[i]);
 	};
-	this.plates.splice(this.plates.indexOf(largest),1);
-	Publisher.publish('plate', 'delete', largest);
+	this.remove(largest);
 
 	this.updateNeighbors();
 	this.updateBorders();
 	
 }
+
+World.prototype.add = function(plate) {
+	this.plates.push(plate);
+	Publisher.publish('world.plates', 'add', { value: plate, uuid: this.uuid } );
+};
+World.prototype.remove = function(plate) {
+	this.plates.splice(this.plates.indexOf(plate),1);
+	Publisher.publish('world.plates', 'remove', { value: plate, uuid: this.uuid });
+};
 
 World.prototype.updateNeighbors = function(){
 	for(var i = 0, length = this.plates.length; i<length; i++){

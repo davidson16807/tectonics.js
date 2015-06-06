@@ -25,29 +25,36 @@ function View(fragmentShader, vertexShader){
 	this.scene.add(this.camera);
 
 	var this_ = this;
-	Publisher.subscribe('plate', 'update', function (plate) {
-		this_.update(plate);
+	Publisher.subscribe('world.plates', 'update', function (content) {
+		this_.update(content.value);
 	});
-	Publisher.subscribe('plate', 'create', function (plate) {
-		console.log('create')
-		this_.add(plate);
+	Publisher.subscribe('world.plates', 'add', function (content) {
+		console.log('world.plates.add')
+		this_.add(content.value);
 	});
-	Publisher.subscribe('plate', 'delete', function (plate) {
-		console.log('delete')
-		this_.remove(plate);
+	Publisher.subscribe('world.plates', 'remove', function (content) {
+		console.log('world.plates.remove')
+		this_.remove(content.value);
 	});
-	Publisher.subscribe('world', 'delete', function (world) {
-		var plates = world.plates;
-		for (var i = 0, li = plates.length; i < li; i++) {
-			this_.remove(plates[i])
-		};
-	});
-	Publisher.subscribe('world', 'create', function (world) {
+	Publisher.subscribe('model.world', 'add', function (content) {
+		console.log('model.world.add');
+		var world = content.value;
 		var plates = world.plates;
 		for (var i = 0, li = plates.length; i < li; i++) {
 			this_.add(plates[i]);
 		};
 	});
+	Publisher.subscribe('model.world', 'remove', function (content) {
+		console.log('model.world.remove');
+		var world = content.value;
+		var plates = world.plates;
+		for (var i = 0, li = plates.length; i < li; i++) {
+			this_.remove(plates[i])
+		};
+	});
+	// Publisher.subscribe('model.world', 'update;', function (content) {
+	// 	var world = content.value;
+	// });
 }
 
 View.prototype.fragmentShader = function(fragmentShader){
