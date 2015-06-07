@@ -9,7 +9,7 @@ function SupercontinentCycle(world, optional){
 	this.duration = optional['duration'] || this.getRandomDuration();
 	this.age = optional['age'] || this.duration;
 	this.oldSupercontinentPos = optional['oldSupercontinentPos'] || world.getRandomPoint();
-	this.newSupercontinentPos = optional['newSupercontinentPos'] || world.getRandomPoint(); //this.getNewSupercontinentPos();
+	this.newSupercontinentPos = optional['newSupercontinentPos'] || this.getNewSupercontinentPos(this.oldSupercontinentPos);
 };
 SupercontinentCycle.prototype.update = function(timestep) {
 	this.age += timestep;
@@ -25,6 +25,11 @@ SupercontinentCycle.prototype.restart = function() {
 	console.log(this.world.age);
 	var world = this.world;
 
+	this.age = 0;
+	this.duration = this.getRandomDuration();
+	this.oldSupercontinentPos = this.newSupercontinentPos;
+	this.newSupercontinentPos = this.getNewSupercontinentPos(this.oldSupercontinentPos);
+	
 	if (world.plates.length <= world.platesNum) {
 		world.split();
 	};
@@ -32,10 +37,6 @@ SupercontinentCycle.prototype.restart = function() {
 	//set each plate's velocity to random value (at least for now)
 	//reset each plate's motion such that euler pole is the axis of rotation between oldSuperContinentPos, newSupercontinentPos, and plate's center
 
-	this.age = 0;
-	this.duration = this.getRandomDuration();
-	this.oldSupercontinentPos = this.newSupercontinentPos;
-	//this.newSupercontinentPos = this.world.getNewSupercontinentPos();
 };
 SupercontinentCycle.prototype.getNewSupercontinentPos = function(oldSupercontinentPos) {
 	// start with oldSupercontinentPos as z
