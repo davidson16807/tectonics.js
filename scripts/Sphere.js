@@ -34,3 +34,29 @@ Sphere.getRandomPointAlongGreatCircle = function(eulerPole) {
 	
 	return randomPoint;
 };
+
+Sphere.harmonics1_matrix = (function(){
+	//shorthand variables
+	var sqrt = Math.sqrt,
+		PI = Math.PI,
+		Matrix = THREE.Matrix4;
+
+	harmonics_lookup = {
+		0: 	new Matrix(	1,	0,	0,				0,
+						0,	1,	0,				0,
+						0,	0,	sqrt(3/PI)/2, 	0,
+						0,	0,	0,				1,	),
+	}
+
+	return function (order) {
+		if(order !== 0){
+			throw "Orders beside 0 are unsuported, at the moment"
+		}
+
+		if (harmonics_lookup[order]) {
+			return harmonics_lookup[order][0];
+		}
+
+		throw "harmonics of order " + order + "are not implemented" 
+	}
+})()

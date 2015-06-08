@@ -17,3 +17,9 @@ function point (position, color, size) {
 	mesh.position = position;
 	view.scene.add(mesh);
 }
+
+function basis (matrix) {
+	point(new THREE.Vector3(1,0,0).applyMatrix4(matrix), 'red')
+	point(new THREE.Vector3(0,1,0).applyMatrix4(matrix), 'green')
+	point(new THREE.Vector3(0,0,1).applyMatrix4(matrix), 'blue')
+}
