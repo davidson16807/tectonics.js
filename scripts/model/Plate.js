@@ -51,6 +51,9 @@ Plate.prototype.getCentroid = function(){
 	var points = this.cells.
 		filter(function(cell){ return cell.isContinental(); } ).
 		map(function(cell){ return cell.pos});
+	if(points.length < 1){
+		return undefined;
+	}
 	return points.
 		reduce(function(a,b){
 			return new THREE.Vector3().addVectors(a,b);
@@ -278,8 +281,11 @@ Plate.prototype.split = function(){
 	var world = this.world;
 	var cells = this.cells;
 	
-	
 	var centroid = this.getCentroid();
+	if(centroid === void 0){
+		return undefined;
+	}
+
 	var plates = [];
 	var seeds = new buckets.Dictionary(_hashCell);
 	while(plates.length + world.plates.length - 1  <  world.platesNum){

@@ -91,6 +91,9 @@ World.prototype.split = function(){
 	var largest = this.plates.sort(function(a, b) { return b.getContinentalSize() - a.getContinentalSize(); })[0];
 	var plates = largest.split();
 
+	if (plates === void 0) {
+		return;
+	};
 	for (var i = 0, li = plates.length; i < li; i++) {
 		this.add(plates[i]);
 	};
