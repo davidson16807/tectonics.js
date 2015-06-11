@@ -70,26 +70,30 @@ EliasWorldGenerator.generate = function (world, optional) {
 	// order cells by this new found  "height rank"
 	cells = plate.cells
 		.slice(0)
-		.sort(function(a, b) { return a.height_rank - b.height_rank });
-
-	// 70% of earth is covered by water
-	// we'll use this fact until we can flesh out the rest of the algorithm.
-
-	for (var i = 0, li = cells.length; i < li; i++) {
-		var cell = cells[i];
-		if(i < li * 0.25){
-			cell.create(world.land);
-		} else {
-			cell.create(world.ocean);
-		}
-
-		cell.content.isostasy();
-	};
+		.sort(function(a, b) { return a.height_rank - b.height_rank; });
 
 	// Next we find elevations whose magnitude and frequency match those of earth's.
 	// To do this, we generate a second dataset of equal size that represents actual elevations.
 	// This dataset is generated from statistical distributions matching those found on earth. 
 	// We sort the elevations and map each one to a cell from our height-rank sorted list.
+	heights = []
+	for (var i = 0, li = cells.length; i < li; i++) {
+		heights.push(random.normal(-4019,1113));
+		heights.push(random.normal(797,1169));
+	};
+	heights.sort(function(a,b) { return a-b; });
+
+	for (var i = 0, li = cells.length; i < li; i++) {
+		var height = heights[2*i];
+		
+		var cell = cells[i];
+		if(height > 0){
+			cell.create(world.land);
+		} else {
+			cell.create(world.ocean);
+		}
+		cell.content.isostasy();
+	};
 
 	// Our model does not work directly with elevation.
 	// We must express elevation in terms of thickness/density
