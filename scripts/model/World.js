@@ -49,13 +49,13 @@ World.prototype.SEALEVEL = 3682;
 World.prototype.mantleDensity=3300;
 World.prototype.waterDensity=1026;
 World.prototype.ocean =
- new RockColumn(void 0, {
+ RockColumn(void 0, {
 	elevation: 	-3682,	// Charette & Smith 2010
 	thickness: 	7100, 	// +/- 800, White McKenzie and O'nions 1992
 	density: 	2890	// Carlson & Raskin 1984
  });
 World.prototype.land =
- new RockColumn(void 0, {
+ RockColumn(void 0, {
 	elevation: 	840,   //Sverdrup & Fleming 1942
     thickness: 	36900, // +/- 2900, estimate for shields, Zandt & Ammon 1995
 	density: 	2700

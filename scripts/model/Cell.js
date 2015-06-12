@@ -10,7 +10,7 @@ function Cell(plate, pos, id, content){
 }
 
 Cell.prototype.create = function(template, invalid){
-	this.content = new RockColumn(this.world, {
+	this.content = RockColumn(this.world, {
 		elevation: 	template.elevation, 
 		thickness: 	template.thickness, 
 		density: 	template.density
