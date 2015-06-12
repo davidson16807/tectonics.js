@@ -34,8 +34,18 @@ EliasWorldGenerator.generate = function (world, optional) {
 	var optional = {};
 	var exp = Math.exp;
 
+	function lerp(a,b, x){
+		return a + x*(b-a);
+	}
 	function heaviside_approximation (x, k) {
 		return 2 / (1 + exp(-k*x)) - 1;
+	}
+	function clamp (x, minVal, maxVal) {
+		return Math.min(Math.max(x, minVal), maxVal);
+	}
+	function smoothstep (edge0, edge1, x) {
+		t = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
+    	return t * t * (3.0 - 2.0 * t);
 	}
 
 	// first, we generate matrices expressing direction of continent centers
@@ -83,23 +93,39 @@ EliasWorldGenerator.generate = function (world, optional) {
 	};
 	heights.sort(function(a,b) { return a-b; });
 
-	for (var i = 0, li = cells.length; i < li; i++) {
-		var height = heights[2*i];
-		
-		var cell = cells[i];
-		if(height > 0){
-			cell.create(world.land);
-		} else {
-			cell.create(world.ocean);
-		}
-		cell.content.isostasy();
-	};
-
 	// Our model does not work directly with elevation.
 	// We must express elevation in terms of thickness/density
 	// To do this, we start off with a set of rock column templates expressing
 	// what thickness/density should look like at a given density.
+
+	var ocean =
+	 new RockColumn(void 0, {
+		elevation: 	-3682,	// Charette & Smith 2010
+		thickness: 	7100, 	// +/- 800, White McKenzie and O'nions 1992
+		density: 	2890	// Carlson & Raskin 1984
+	 });
+	var land =
+	 new RockColumn(void 0, {
+		elevation: 	840,   //Sverdrup & Fleming 1942
+	    thickness: 	36900, // +/- 2900, estimate for shields, Zandt & Ammon 1995
+		density: 	2700
+	 });
+	 // World.prototype.mountiain
+	 // World.prototype.abyss
+
 	// We then use B-splines to interpolate between these templated values.
+	for (var i = 0, li = cells.length; i < li; i++) {
+		var height = heights[2*i];
+		console.log(height, ocean.elevation, land.elevation);
+		var land_fraction = smoothstep(ocean.elevation, land.elevation, height);
+		var cell = cells[i];
+		cell.create(new RockColumn(cell.world, {
+			elevation: 	height,
+			thickness: 	lerp(ocean.thickness, land.thickness, land_fraction),
+			density: 	lerp(ocean.density, land.density, land_fraction),
+		}));
+		cell.content.isostasy();
+	};
 
 	plate.densityOffset = plate.getDensityOffset();
 	world.plates = [plate];

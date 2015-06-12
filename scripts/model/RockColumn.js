@@ -7,6 +7,7 @@ function RockColumn(world, optional){
 	this.displacement = optional['displacement'] || 0;
 	this.thickness = optional['thickness'] || world.ocean.thickness;
 	this.density = optional['density'] || world.ocean.density;
+	this.elevation = optional['elevation'] || world.ocean.density;
 }
 
 RockColumn.prototype.isContinental = function(){
