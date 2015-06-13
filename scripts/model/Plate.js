@@ -119,12 +119,12 @@ Plate.prototype.updateBorders = function(){
 		a = cells[face.a].content !== void 0;
 		b = cells[face.b].content !== void 0;
 		c = cells[face.c].content !== void 0;
-		if((a != b || b != c)){
-			if(a){ collideable[face.a] = 1; }
+		if(a !== b || b !== c){
+			if(a === true){ collideable[face.a] = 1; }
 			else { riftable[face.a] = 1; }
-			if(b){ collideable[face.b] = 1; }
+			if(b === true){ collideable[face.b] = 1; }
 			else { riftable[face.b] = 1; }
-			if(c){ collideable[face.c] = 1; }
+			if(c === true){ collideable[face.c] = 1; }
 			else { riftable[face.c] = 1; }
 		}
 	}
@@ -153,6 +153,7 @@ Plate.prototype.deform = function(){
 	var cells = this.cells;
 	var cell, intersected;
 	var getIntersection = _getCollisionIntersection;
+	var plate, relative_pos, id;
 	for(var i=0, li = collideable.length; i<li; i++){
 		if(collideable[i] === 0){
 			continue;
@@ -161,7 +162,20 @@ Plate.prototype.deform = function(){
 		if(cell.content === void 0){
 			continue;
 		}
-		intersected = cell.getIntersections(plates, getIntersection);
+		var absolute_pos = this.localToWorld(cell.pos.clone());
+		intersected = void 0;
+		for(var j=0, lj = plates.length; j<lj; j++){
+			plate = plates[j];
+			relative_pos = plate.worldToLocal(absolute_pos.clone());
+			id = grid.getNearestId(relative_pos);
+			intersected = getIntersection(id, plate);
+			if(intersected !== void 0) {
+				this._neighbors.splice(j, 1);
+				this._neighbors.unshift(plate);
+				break;
+			}
+		}
+		
 		if(intersected !== void 0){
 			cell.collide(intersected);
 		}
@@ -177,11 +191,12 @@ function _getRiftIntersection(id, plate) {
 Plate.prototype.rift = function(){
 	var plates = this._neighbors;
 	var grid = this.world.grid;
-	var cell, intersected;
 	var riftable = this._riftable;
 	var cells = this.cells;
 	var ocean = this.world.ocean;
 	var getIntersection = _getRiftIntersection;
+	var cell, intersected;
+	var plate, relative_pos, id;
 	for(var i=0, li = riftable.length; i<li; i++){
 		if(riftable[i] === 0){
 			continue;
@@ -190,7 +205,20 @@ Plate.prototype.rift = function(){
 		if(cell.content !== void 0){
 			continue;
 		}
-		intersected = cell.getIntersections(plates, getIntersection);
+
+		var absolute_pos = this.localToWorld(cell.pos.clone());
+		intersected = void 0;
+		for(var j=0, lj = plates.length; j<lj; j++){
+			plate = plates[j];
+			relative_pos = plate.worldToLocal(absolute_pos.clone());
+			id = grid.getNearestId(relative_pos);
+			intersected = getIntersection(id, plate);
+			if(intersected !== void 0) {
+				this._neighbors.splice(j, 1);
+				this._neighbors.unshift(plate);
+				break;
+			}
+		}
 		if(intersected === void 0){
 			cell.create(ocean);
 		}
@@ -266,14 +294,26 @@ Plate.prototype.dock = function(subjugated){
 		id = grid.getNearestId(relative);
 		hit = cells[id];
 		
-		if(!hit.isContinental() || i > 100){
+		if(!hit.isContinental() === true || i > 100){
 			hit.replace(subjugated);
 			subjugated.destroy();
 			break;
 		}
 	}
 }
-
+var _min = function(list, getKey) {
+	var value = Infinity;
+	var result = void 0;
+	for (var i = 0, li = list.length; i < li; i++) {
+		var element = list[i];
+		var key = getKey(element);
+		if(key < value){
+			value = key;
+			result = element;
+		}
+	};
+	return result;
+};
 Plate.prototype.split = function(){
 	var _this = this;
 	var grid = this.grid;
@@ -319,8 +359,8 @@ Plate.prototype.split = function(){
 	}
 	for(var i=0, li = cells.length; i<li; i++){
 		var cell = cells[i];
-		if(cell.content){
-			var nearest = _.min(seeds.keys(), function(x) {	
+		if(cell.content !== void 0){
+			var nearest = _min(seeds.keys(), function(x) {	
 				return x.pos.distanceTo(cell.pos); 
 			});
 			seeds.get(nearest).cells[i].replace(cell);

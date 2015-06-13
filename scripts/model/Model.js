@@ -18,7 +18,7 @@ Model.prototype.world = function(world) {
 };
 
 Model.prototype.update = function(timestep) {
-	if (!_.isUndefined(world)) {
+	if (world !== void 0) {
 		world.simulate(timestep);
 	};
 };

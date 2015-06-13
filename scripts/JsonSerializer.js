@@ -67,7 +67,7 @@ JsonSerializer.plate = function (plate, options) {
 	var cell;
 	for (var j = 0; j < cells_unfiltered.length; j++) {
 		cell = cells_unfiltered[j];
-		if (!_.isUndefined(cell.content)) {
+		if (cell.content !== void 0) {
 			cells.push(cell);
 		};
 	};
@@ -117,7 +117,7 @@ JsonDeserializer.plate = function (plate_json, _world, options) {
 	var cells = plate.cells;
 	var rockColumn;
 	for (var j = 0, li = ids.length; j < li; j++) {
-		rockColumn = new RockColumn(_world, {
+		rockColumn = RockColumn(_world, {
 			thickness: thicknesses[j],
 			density: densities[j]
 		});
