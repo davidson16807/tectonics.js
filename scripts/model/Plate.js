@@ -298,7 +298,19 @@ Plate.prototype.dock = function(subjugated){
 		}
 	}
 }
-
+var _min = function(list, getKey) {
+	var value = Infinity;
+	var result = void 0;
+	for (var i = 0, li = list.length; i < li; i++) {
+		var element = list[i];
+		var key = getKey(element);
+		if(key < value){
+			value = key;
+			result = element;
+		}
+	};
+	return result;
+};
 Plate.prototype.split = function(){
 	var _this = this;
 	var grid = this.grid;
@@ -342,7 +354,7 @@ Plate.prototype.split = function(){
 	for(var i=0, li = cells.length; i<li; i++){
 		var cell = cells[i];
 		if(cell.content !== void 0){
-			var nearest = _.min(seeds.keys(), function(x) {	
+			var nearest = _min(seeds.keys(), function(x) {	
 				return x.pos.distanceTo(cell.pos); 
 			});
 			seeds.get(nearest).cells[i].replace(cell);

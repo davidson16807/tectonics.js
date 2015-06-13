@@ -358,7 +358,7 @@
 			seconds = 1;
 		}
 		
-		if (!_.isUndefined(world)) {
+		if ((world) !== void 0) {
 			model.update(MegaYearPerSecond*seconds);
 			$(".age").html(format(world.age, 1000, 3));
 		};
