@@ -28,18 +28,20 @@
 	<script src="libraries/random-0.26.js"></script>
 	<script src="libraries/base64-arraybuffer.js"></script>
 	<script src="libraries/kdTree-min.js"></script>
-	<script src="scripts/Voronoi.js"></script>
+	<script src="libraries/uuid.js"></script>
+	<script src="scripts/VoronoiSphere.js"></script>
 	<script src="scripts/Grid.js"></script>
+	<script src="scripts/Publisher.js"></script>
 	<script src="scripts/model/RockColumn.js"></script>
 	<script src="scripts/model/Cell.js"></script>
 	<script src="scripts/model/Plate.js"></script>
 	<script src="scripts/model/SupercontinentCycle.js"></script>
 	<script src="scripts/model/World.js"></script>
 	<script src="scripts/model/Model.js"></script>
-	<script src="scripts/view/Style.js"></script>
+	<script src="scripts/view/fragment/FragmentShaders.js"></script>
+	<script src="scripts/view/vertex/VertexShaders.js"></script>
 	<script src="scripts/view/View.js"></script>
-	<script src="scripts/view/Projection.js"></script>
-	<script src="scripts/Cached.js"></script>
+	<!-- <script src="scripts/Cached.js"></script> -->
 	<script src="scripts/JsonSerializer.js"></script>
 </head>
 <body>
@@ -274,14 +276,18 @@
 	var BlockUpdate = false;
 	var IsProd = true;
 
-	var world = undefined;
-	var view = new View(world, fragmentShaders[$('#fragmentShader').val()], vertexShaders[$('#vertexShader').val()]);
+	var view = new View(
+		fragmentShaders[$('#fragmentShader').val()], 
+		vertexShaders[$('#vertexShader').val()]
+	);
+	var model = new Model();
 
+	var world = void 0;
 	if (querystring['load']) {
 		loadUrl(querystring['load']);
 	} else {
 		world = new World();
-		view.world(world);
+		model.world(world);
 		$('#loadingSave').hide();
 		$('.parameters').show();
 		$('.controls').show();
@@ -358,18 +364,16 @@
 			return;
 		};
 
-		var timestep = clock.getDelta();
-		if (timestep > 1){
-			timestep = 1;
+		var seconds = clock.getDelta();
+		if (seconds > 1){
+			seconds = 1;
 		}
 		
 		if (!_.isUndefined(world)) {
-			world.simulate(MegaYearPerSecond*timestep);
+			model.update(MegaYearPerSecond*seconds);
 			$(".age").html(format(world.age, 1000, 3));
 		};
 		
-		view.update();
-
 		if(!IsProd){
 			updateStats.update();
 		}
@@ -413,8 +417,8 @@
 		$('.controls').hide();
 		$.getJSON( url, function( json ) {
 			BlockUpdate = false;
-	    	world = JsonSerializer.deserialize(json);
-			view.world(world);
+	    	world = JsonDeserializer.world(json);
+			model.world(world);
 			$('#loadingSave').hide();
 			$('.parameters').show();
 			$('.controls').show();
@@ -430,8 +434,8 @@
 	    reader.onload = function(e) {
 			BlockUpdate = false;
 	    	var json = JSON.parse(e.target.result);
-	    	world = JsonSerializer.deserialize(json);
-			view.world(world);
+	    	world = JsonDeserializer.world(json);
+			model.world(world);
 	    }
 
 	    reader.readAsText(file);
@@ -447,7 +451,7 @@
 		$(this).parents('.collapsible').children().toggle();
 	});
 	$('.save').click(function() {
-		var serialized = JsonSerializer.serialize(world);
+		var serialized = JsonSerializer.world(world);
 		var stringified = JSON.stringify(serialized);
 		var dataUrl = 
 			"data:application/json;"+
@@ -547,6 +551,7 @@
 			}
 		  });
 	});
+
 </script>
 </body>
 </html>

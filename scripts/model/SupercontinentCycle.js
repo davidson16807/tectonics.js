@@ -22,11 +22,11 @@ SupercontinentCycle.prototype.isEnding = function() {
 	return this.age >= this.duration;
 };
 SupercontinentCycle.prototype.restart = function() {
+	console.log(this.world.age);
 	var world = this.world;
 
 	if (world.plates.length <= world.platesNum) {
 		world.split();
-		console.log(world.age);
 	};
 	
 	//set each plate's velocity to random value (at least for now)

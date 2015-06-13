@@ -8,8 +8,6 @@ function _hashCell(vector){
 	return vector.id.toString();
 }
 
-var _MATERIAL = new THREE.MeshBasicMaterial();
-
 function Plate(world, optional)
 {
 	optional = optional || {}
@@ -21,21 +19,36 @@ function Plate(world, optional)
 	//efficiency attributes, AKA attributes of attributes:
 	this.grid = world.grid;
 	this._geometry = world.grid.template;
-	this._cells = [];
+	this.cells = [];
 	this._neighbors = [];
-	this.mesh	= new THREE.Mesh( this._geometry, _MATERIAL ); 
-	
+	this.matrix = optional['matrix'] || new THREE.Matrix4();
+	this.uuid = optional['uuid'] || Uuid.create();
+
 	var vertices = this._geometry.vertices;
-	for(var i = 0, length = vertices.length, cells = this._cells; i<length; i++){
+	for(var i = 0, length = vertices.length, cells = this.cells; i<length; i++){
 		cells.push(new Cell(this, vertices[i], i));
 	};
+
+	this._collideable = new Uint8Array(this.cells.length);
+	this._riftable = new Uint8Array(this.cells.length);
+	this.increment = 0;
 }
+
+Plate.prototype.localToWorld = function(a) {
+    return a.applyMatrix4(this.matrix);
+};
+Plate.prototype.worldToLocal = function() {
+    var a = new THREE.Matrix4;
+    return function(b) {
+        return b.applyMatrix4(a.getInverse(this.matrix))
+    }
+}(),
 Plate.prototype.get = function(i){
-	return this._cells[i];
+	return this.cells[i];
 }
 
 Plate.prototype.getCentroid = function(){
-	var points = this._cells.
+	var points = this.cells.
 		filter(function(cell){ return cell.isContinental(); } ).
 		map(function(cell){ return cell.pos});
 	return points.
@@ -45,28 +58,42 @@ Plate.prototype.getCentroid = function(){
 		divideScalar(points.length).
 		normalize();
 }
+Plate.prototype.getDensityOffset = function() {
+	return -this.getContinentalSize();
+	//var densitySum = 0;
+	//var cells = this.cells;
+	//var content;
+	//for (var i = 0, li = cells.length; i < li; i++) {
+	//	content = cells[i].content;
+	//	if (content === void 0) {
+	//		continue;
+	//	};
+	//	densitySum += content.density;
+	//};
+	//return densitySum / this.getSize(); 
+};
 Plate.prototype.getSize = function(){
-	return this._cells.filter(_isFilled).length;
+	return this.cells.filter(_isFilled).length;
 }
 Plate.prototype.getContinentalSize = function(){
-	return this._cells.filter(_isLand).length;
+	return this.cells.filter(_isLand).length;
 }
 Plate.prototype.getRandomPoint = function(){
-	var points = this._cells.filter(_isFilled);
+	var points = this.cells.filter(_isFilled);
 	var i = Math.floor(Math.random()*points.length);
 	return points[i];
 }
 Plate.prototype.getRandomLand = function(){
-	var points = this._cells.filter(_isLand);
+	var points = this.cells.filter(_isLand);
 	var i = Math.floor(Math.random()*points.length);
 	return points[i];
 }
 Plate.prototype.getRandomJunction = function() {
-	var cells = this._cells;
+	var cells = this.cells;
 	var candidates = this._geometry.faces.filter(function(face) { 
-		return  _isFilled(cells[face.a]) && 
-				_isFilled(cells[face.b]) && 
-				_isFilled(cells[face.c])
+		return  cells[face.a] !== void 0 && 
+				cells[face.b] !== void 0 && 
+				cells[face.c] !== void 0
 	});
 	if(candidates.length > 0){
 		var i = Math.floor(random.random()*candidates.length);
@@ -78,24 +105,24 @@ Plate.prototype.getRandomJunction = function() {
 Plate.prototype.updateNeighbors = function(){
 	var _this = this;
 	this._neighbors = this.world.plates.
-		filter(function(platemesh){return platemesh.mesh.uuid != _this.mesh.uuid});
+		filter(function(plate){return plate.uuid != _this.uuid});
 }
 Plate.prototype.updateBorders = function(){
-	var collideable = [];
-	var riftable = [];
-	var a,b,c;
-	for(var i=0, cells = this._cells, length = this._geometry.faces.length; i<length; i++){
-		var face = this._geometry.faces[i];
-		a = _isFilled(cells[face.a]);
-		b = _isFilled(cells[face.b]);
-		c = _isFilled(cells[face.c]);
+	var collideable = new Uint8Array(this.cells.length);
+	var riftable = new Uint8Array(this.cells.length);
+	var face, a,b,c;
+	for(var i=0, cells = this.cells, length = this._geometry.faces.length; i<length; i++){
+		face = this._geometry.faces[i];
+		a = cells[face.a].content !== void 0;
+		b = cells[face.b].content !== void 0;
+		c = cells[face.c].content !== void 0;
 		if((a != b || b != c)){
-			if(a){ collideable[face.a] = cells[face.a]; }
-			else { riftable[face.a] = cells[face.a]; }
-			if(b){ collideable[face.b] = cells[face.b]; }
-			else { riftable[face.b] = cells[face.b]; }
-			if(c){ collideable[face.c] = cells[face.c]; }
-			else { riftable[face.c] = cells[face.c]; }
+			if(a){ collideable[face.a] = 1; }
+			else { riftable[face.a] = 1; }
+			if(b){ collideable[face.b] = 1; }
+			else { riftable[face.b] = 1; }
+			if(c){ collideable[face.c] = 1; }
+			else { riftable[face.c] = 1; }
 		}
 	}
 	this._collideable = collideable;
@@ -105,61 +132,64 @@ Plate.prototype.move = function(timestep){
 	this.increment = this.angularSpeed * timestep;
 	var rotationMatrix = new THREE.Matrix4();
 	rotationMatrix.makeRotationAxis( this.eulerPole, this.angularSpeed * timestep );
-	rotationMatrix.multiply( this.mesh.matrix ); 
-	this.mesh.matrix = rotationMatrix;
-	this.mesh.rotation.setFromRotationMatrix( this.mesh.matrix );
+	rotationMatrix.multiply( this.matrix ); 
+	this.matrix = rotationMatrix;
 }
 
 
 function _getCollisionIntersection(id, plate) {
-	var intersected = plate._cells[id];
-	if (intersected.content && !plate._collideable[id]) {
+	var intersected = plate.cells[id];
+	if (intersected.content !== void 0 && plate._collideable[id] === 0) {
 		return intersected;
 	}
 }
 Plate.prototype.deform = function(){
-	var mesh = this.mesh;
 	var plates = this._neighbors;
-	var geometry = this._geometry;
 	var grid = this.grid;
 	var collideable = this._collideable;
+	var cells = this.cells;
 	var cell, intersected;
+	var getIntersection = _getCollisionIntersection;
 	for(var i=0, li = collideable.length; i<li; i++){
-		var cell = collideable[i];
-		if(_.isUndefined(cell) || _.isUndefined(cell.content)){
+		if(collideable[i] === 0){
 			continue;
 		}
-		var intersected = cell.getIntersections(plates, _getCollisionIntersection);
-		if(intersected){
+		cell = cells[i];
+		if(cell.content === void 0){
+			continue;
+		}
+		intersected = cell.getIntersections(plates, getIntersection);
+		if(intersected !== void 0){
 			cell.collide(intersected);
-			this._geometry.verticesNeedUpdate  = true;
 		}
 	}
 }
 
 function _getRiftIntersection(id, plate) {
-	var intersected = plate._cells[id];
-	if (intersected.content || plate._riftable[id]) {
+	var intersected = plate.cells[id];
+	if (intersected.content !== void 0 || plate._riftable[id] > 0) {
 		return intersected;
 	}
 }
 Plate.prototype.rift = function(){
-	var mesh = this.mesh;
 	var plates = this._neighbors;
-	var geometry = this._geometry;
 	var grid = this.world.grid;
 	var cell, intersected;
 	var riftable = this._riftable;
+	var cells = this.cells;
 	var ocean = this.world.ocean;
+	var getIntersection = _getRiftIntersection;
 	for(var i=0, li = riftable.length; i<li; i++){
-		cell = riftable[i];
-		if(_.isUndefined(cell) || !_.isUndefined(cell.content)){
+		if(riftable[i] === 0){
 			continue;
 		}
-		intersected = cell.getIntersections(plates, _getRiftIntersection);
-		if(!intersected){
+		cell = cells[i];
+		if(cell.content !== void 0){
+			continue;
+		}
+		intersected = cell.getIntersections(plates, getIntersection);
+		if(intersected === void 0){
 			cell.create(ocean);
-			geometry.verticesNeedUpdate = true;
 		}
 	}
 }
@@ -169,45 +199,44 @@ Plate.prototype.erode = function(timestep){
 	// This erosion model is characteristic in that its geared towards large spatiotemporal scales
 	// A sediment erosion model is also described there, but here we only implement bedrock erosion, for now
 	var world = this.world;
-	var mesh = this.mesh;
-	var geometry = this._geometry;
 	var grid = this.world.grid;
-	var vertex, intersected;
-	var cells = this._cells;
+	var cells = this.cells;
 	var precipitation = 7.8e5;
 	// ^^^ measured in meters of rain per million years
 	// global land average from wikipedia
 	var erosiveFactor = 1.8e-7; 
 	// ^^^ the rate of erosion per the rate of rainfall in that place
 	// measured in fraction of height gradient per meters of rain
-	for(var i=0, li = cells.length; i<li; i++){
-		var content = cells[i].content;
-		if(_.isUndefined(content)){
+
+	var i, j, li, lj, content, dheightSum, neighborIds, neighbor, dheight, erosion;
+	for(i=0, li = cells.length; i<li; i++){
+		content = cells[i].content;
+		if(content === void 0){
 			continue;
 		}
-		var dheightSum = 0;
-		var neighborIds = grid.getNeighborIds(i);
-		for(var j = 0, lj = neighborIds.length; j<lj; j++){
-			var neighbor = cells[neighborIds[j]].content;
-			if(_.isUndefined(neighbor)){
+		dheightSum = 0;
+		neighborIds = grid.getNeighborIds(i);
+		for(j = 0, lj = neighborIds.length; j<lj; j++){
+			neighbor = cells[neighborIds[j]].content;
+			if(neighbor === void 0){
 				continue;
 			}
 			if(neighbor.displacement < world.SEALEVEL && content.displacement < world.SEALEVEL){
 				continue;
 			}
-			var dheight = content.displacement - neighbor.displacement;
+			dheight = content.displacement - neighbor.displacement;
 			dheightSum += dheight / lj;
 		}
-		var erosion = dheightSum * precipitation * timestep * erosiveFactor;
+		erosion = dheightSum * precipitation * timestep * erosiveFactor;
 		content.thickness -= erosion;
 	}
 }
 
 Plate.prototype.isostasy = function() {
-	var cells = this._cells;
+	var cells = this.cells;
 	for(var i=0, li = cells.length; i<li; i++){
 		var content = cells[i].content;
-		if(_.isUndefined(content)){
+		if(content === void 0){
 			continue;
 		}
 		content.isostasy();
@@ -216,24 +245,23 @@ Plate.prototype.isostasy = function() {
 
 Plate.prototype.dock = function(subjugated){
 	var grid = this.grid;
-	var cells = this._cells;
-	var subjugatedPlate = subjugated.plate
-	var otherMesh = subjugatedPlate.mesh
-	var mesh = this.mesh;
+	var cells = this.cells;
+	var subjugatedPlate = subjugated.plate;
 	
 	var increment =    new THREE.Matrix4().makeRotationAxis( this.eulerPole, 		    -this.increment );
 	increment.multiply(new THREE.Matrix4().makeRotationAxis( subjugatedPlate.eulerPole, -subjugatedPlate.increment ));
 	var temp = subjugated.pos.clone();
 	
-	for(var i = 0; true; i++){
+	var absolute, relative, id, hit;
+ 	for(var i = 0; true; i++){
 		//move subjugated back by increment
 		temp.applyMatrix4(increment);
 		
 		//check for continental collision
-		var absolute = otherMesh.localToWorld(temp.clone().normalize());
-		var relative = mesh.worldToLocal(absolute);
-		var id = grid.getNearestId(relative);
-		var hit = cells[id];
+		absolute = subjugatedPlate.localToWorld(temp.clone().normalize());
+		relative = this.worldToLocal(absolute);
+		id = grid.getNearestId(relative);
+		hit = cells[id];
 		
 		if(!hit.isContinental() || i > 100){
 			hit.replace(subjugated);
@@ -248,7 +276,7 @@ Plate.prototype.split = function(){
 	var grid = this.grid;
 	var gridvertices = grid.template.vertices;
 	var world = this.world;
-	var cells = this._cells;
+	var cells = this.cells;
 	
 	
 	var centroid = this.getCentroid();
@@ -261,8 +289,17 @@ Plate.prototype.split = function(){
 			new THREE.Vector3().crossVectors(centroid, pos).normalize() :
 			new THREE.Vector3().crossVectors(pos, centroid).normalize();
 
-		var smaller = new Plate(world, eulerPole, world.getRandomPlateSpeed());
-		var larger = new Plate(world, eulerPole, world.getRandomPlateSpeed());
+		var smaller = new Plate(world, 
+			{
+				eulerPole: eulerPole, 
+				angularSpeed: world.getRandomPlateSpeed(),
+			});
+		var larger = new Plate(world, 
+			{
+				eulerPole: eulerPole,
+				angularSpeed: world.getRandomPlateSpeed(),
+			});
+
 		plates.push(smaller);
 		plates.push(larger);
 		seeds.set(junction[0], smaller);
@@ -272,10 +309,7 @@ Plate.prototype.split = function(){
 
 	for(var i=0, li = plates.length; i<li; i++){
 		var plate = plates[i];
-		world.plates.push(plate);
-		view.add(plate);
-		plate.mesh.matrix = this.mesh.matrix;
-		plate.mesh.rotation.setFromRotationMatrix( this.mesh.matrix );
+		plate.matrix = this.matrix;
 	}
 	for(var i=0, li = cells.length; i<li; i++){
 		var cell = cells[i];
@@ -283,19 +317,11 @@ Plate.prototype.split = function(){
 			var nearest = _.min(seeds.keys(), function(x) {	
 				return x.pos.distanceTo(cell.pos); 
 			});
-			seeds.get(nearest)._cells[i].replace(cell);
+			seeds.get(nearest).cells[i].replace(cell);
 		}
 	}
-	
-	world.plates.splice(world.plates.indexOf(this),1);
-}
-Plate.prototype.destroy = function(){
-	view.remove(this);
-	
-	var mesh = this.mesh;
-	this.mesh = void 0;
-	
-	mesh.material.dispose();
-	
-	delete this.mesh;
+	smaller.densityOffset = smaller.getDensityOffset() + random.random();
+	larger.densityOffset = larger.getDensityOffset() + random.random();
+
+	return plates;
 }

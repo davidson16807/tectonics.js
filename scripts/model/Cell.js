@@ -3,7 +3,6 @@
 function Cell(plate, pos, id, content){
 	this.plate = plate;
 	this.world = plate.world;
-	this._mesh = plate.mesh;
 	this._grid = plate.grid;
 	this.pos = pos;
 	this.id = id;
@@ -11,7 +10,7 @@ function Cell(plate, pos, id, content){
 }
 
 Cell.prototype.create = function(template, invalid){
-	this.content = new RockColumn(this.world, {
+	this.content = RockColumn(this.world, {
 		elevation: 	template.elevation, 
 		thickness: 	template.thickness, 
 		density: 	template.density
@@ -23,7 +22,7 @@ Cell.prototype.isContinental = function(invalid){
 }
 
 Cell.prototype._canSubduct = function(subducted, invalid){
-	if(this.plate.densityOffset > subducted.plate.densityOffset){
+	if(this.plate.densityOffset < subducted.plate.densityOffset){
 		return false;
 	} else {
 		return true;
@@ -50,7 +49,7 @@ Cell.prototype.collide = function(other, invalid){
 }
 
 Cell.prototype._canDock = function(subjugated, invalid){
-	if(this.plate.densityOffset > subjugated.plate.densityOffset){
+	if(this.plate.densityOffset < subjugated.plate.densityOffset){
 		return false;
 	} else {
 		return true;
@@ -82,16 +81,20 @@ Cell.prototype.destroy = function(){
 Cell.prototype.getIntersections = function(plates, getIntersection){
 	var parent = this.plate;
 	var grid = this._grid;
-	var absolute_pos = this._mesh.localToWorld(this.pos.clone());
+	var absolute_pos = parent.localToWorld(this.pos.clone());
+	var plate, relative_pos, id, intersection;
 	for(var j=0, lj = plates.length; j<lj; j++){
-		var plate = plates[j];
-		var relative = plate.mesh.worldToLocal(absolute_pos.clone());
-		var id = grid.getNearestId(relative);
-		var intersection = getIntersection(id, plate);
-		if(intersection) {
+		plate = plates[j];
+		relative_pos = plate.worldToLocal(absolute_pos.clone());
+		id = grid.getNearestId(relative_pos);
+		intersection = getIntersection(id, plate);
+		if(intersection !== void 0) {
 			parent._neighbors.splice(j, 1);
 			parent._neighbors.unshift(plate);
 			return intersection; 
 		}
 	}
 }
+
+
+

@@ -17,7 +17,7 @@ function World(optional){
 	this.radius = radius;
 	
 	this.supercontinentCycle = optional["supercontinentCycle"] || new SupercontinentCycle(this);
-	this.grid = optional['grid'] || new Grid( new THREE.IcosahedronGeometry(1, 5), voronoiCache);
+	this.grid = optional['grid'] || new Grid( new THREE.IcosahedronGeometry(1, 5));
 	this.age = optional['age'] || 0;
 	this.platesNum = optional['platesNum'] || 7;
 	this.mountainWidth = (optional['mountainWidth'] || 300) / radius;
@@ -28,9 +28,10 @@ function World(optional){
 		var continentRadius = (optional['continentRadius'] || 1250) / radius;
 		var shield = this.getRandomPoint();
 		var plate = new Plate(this);
+
 		this.plates = [plate];
-		for(var i=0, length = plate._cells.length; i<length; i++) {
-			var cell = plate._cells[i];
+		for(var i=0, length = plate.cells.length; i<length; i++) {
+			var cell = plate.cells[i];
 			if(shield.distanceTo(cell.pos) < continentRadius ) { 
 				cell.create(this.land);
 			} else {
@@ -38,6 +39,7 @@ function World(optional){
 			}
 			cell.content.isostasy();
 		}
+		plate.densityOffset = plate.getDensityOffset();
 	}
 	this.updateNeighbors();
 	this.updateBorders();
@@ -47,13 +49,13 @@ World.prototype.SEALEVEL = 3682;
 World.prototype.mantleDensity=3300;
 World.prototype.waterDensity=1026;
 World.prototype.ocean =
- new RockColumn(void 0, {
+ RockColumn(void 0, {
 	elevation: 	-3682,	// Charette & Smith 2010
 	thickness: 	7100, 	// +/- 800, White McKenzie and O'nions 1992
 	density: 	2890	// Carlson & Raskin 1984
  });
 World.prototype.land =
- new RockColumn(void 0, {
+ RockColumn(void 0, {
 	elevation: 	840,   //Sverdrup & Fleming 1942
     thickness: 	36900, // +/- 2900, estimate for shields, Zandt & Ammon 1995
 	density: 	2700
@@ -76,7 +78,6 @@ World.prototype.simulate = function(timestep){
 	for(i = 0; i<length; i++){
 		plates[i].isostasy();
 	}
-	this.updateMatrices();
 	this.updateBorders();
 	for(i = 0; i<length; i++){
 		plates[i].rift();
@@ -84,12 +85,14 @@ World.prototype.simulate = function(timestep){
 	for(i = 0; i<length; i++){
 		plates[i].deform();
 	}
+	for (var i = 0; i<length; i++) {
+		Publisher.publish('world.plates', 'update', { value: plates[i], uuid: this.uuid } );
+	};
 	var platestemp = plates.slice(0); // copy the array
 	for(i = 0; i<length; i++){
 		if(platestemp[i].getSize() <= 100)
 		{
-			plates.splice(plates.indexOf(platestemp[i]),1);
-			platestemp[i].destroy();
+			this.remove(platestemp[i]);
 			this.updateNeighbors();
 		}
 	}
@@ -104,13 +107,26 @@ World.prototype.split = function(){
 	}
 	
 	var largest = this.plates.sort(function(a, b) { return b.getContinentalSize() - a.getContinentalSize(); })[0];
-	largest.split();
+	var plates = largest.split();
+
+	for (var i = 0, li = plates.length; i < li; i++) {
+		this.add(plates[i]);
+	};
+	this.remove(largest);
+
 	this.updateNeighbors();
 	this.updateBorders();
 	
-	largest.destroy();
-	
 }
+
+World.prototype.add = function(plate) {
+	this.plates.push(plate);
+	Publisher.publish('world.plates', 'add', { value: plate, uuid: this.uuid } );
+};
+World.prototype.remove = function(plate) {
+	this.plates.splice(this.plates.indexOf(plate),1);
+	Publisher.publish('world.plates', 'remove', { value: plate, uuid: this.uuid });
+};
 
 World.prototype.updateNeighbors = function(){
 	for(var i = 0, length = this.plates.length; i<length; i++){
@@ -123,15 +139,6 @@ World.prototype.updateBorders = function(){
 	var plates = this.plates;
 	for(var i = 0; i<length; i++){
 		plates[i].updateBorders();
-	}
-}
-
-World.prototype.updateMatrices = function(){
-	var length = this.plates.length;
-	var plates = this.plates;
-	for(var i = 0; i<length; i++){
-		plates[i].mesh.updateMatrix();
-		plates[i].mesh.updateMatrixWorld();
 	}
 }
 
