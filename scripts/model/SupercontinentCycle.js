@@ -13,7 +13,7 @@ function SupercontinentCycle(world, optional){
 };
 SupercontinentCycle.prototype.update = function(timestep) {
 	this.age += timestep;
-	if(this.isEnding()){
+	if(this.isEnding() === true){
 		this.restart();
 	}
 };

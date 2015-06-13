@@ -67,7 +67,7 @@ JsonSerializer.plate = function (plate, options) {
 	var cell;
 	for (var j = 0; j < cells_unfiltered.length; j++) {
 		cell = cells_unfiltered[j];
-		if (!_.isUndefined(cell.content)) {
+		if (cell.content !== void 0) {
 			cells.push(cell);
 		};
 	};

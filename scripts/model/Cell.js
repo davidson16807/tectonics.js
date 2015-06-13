@@ -31,7 +31,7 @@ Cell.prototype._canSubduct = function(subducted, invalid){
 
 Cell.prototype.collide = function(other, invalid){
 	var top, bottom;
-	if(this._canSubduct(other)){
+	if(this._canSubduct(other) === true){
 		top = this;
 		bottom = other;
 	} else {
@@ -39,7 +39,7 @@ Cell.prototype.collide = function(other, invalid){
 		top = other;
 	}
 	if (true){//subducted.distanceTo(subducting) > this.world.mountainWidth / this.world.radius){
-		if(bottom.isContinental() && top.isContinental()){
+		if(bottom.isContinental() === true && top.isContinental() === true){
 			top.dock(bottom);
 		} else {
 			top.content.accrete(bottom.content);
@@ -58,7 +58,7 @@ Cell.prototype._canDock = function(subjugated, invalid){
 
 Cell.prototype.dock = function(other, invalid){
 	var subjugating, subjugated;
-	if(this._canDock(other)){
+	if(this._canDock(other) === true){
 		subjugating = this;
 		subjugated = other;
 	} else {

@@ -22,7 +22,7 @@ function World(optional){
 	this.platesNum = optional['platesNum'] || 7;
 	this.mountainWidth = (optional['mountainWidth'] || 300) / radius;
 	
-	if(!_.isUndefined(optional['plates'])){
+	if(optional['plates'] !== void 0){
 		this.plates = optional['plates'];
 	} else {
 		var continentRadius = (optional['continentRadius'] || 1250) / radius;
@@ -62,7 +62,7 @@ World.prototype.land =
  });
 
 World.prototype.simulate = function(timestep){
-	if (timestep == 0) {
+	if (timestep === 0) {
 		return;
 	};
 

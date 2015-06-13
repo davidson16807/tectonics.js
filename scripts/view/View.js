@@ -58,7 +58,7 @@ function View(fragmentShader, vertexShader){
 }
 
 View.prototype.fragmentShader = function(fragmentShader){
-	if(this._fragmentShader == fragmentShader){
+	if(this._fragmentShader === fragmentShader){
 		return;
 	}
 	this._fragmentShader = fragmentShader;
@@ -72,7 +72,7 @@ View.prototype.fragmentShader = function(fragmentShader){
 }
 
 View.prototype.vertexShader = function(vertexShader){
-	if(this._vertexShader == vertexShader){
+	if(this._vertexShader === vertexShader){
 		return;
 	}
 	this._vertexShader = vertexShader;
@@ -86,7 +86,7 @@ View.prototype.vertexShader = function(vertexShader){
 }
 
 View.prototype.uniform = function(key, value){
-	if(this._uniforms[key] == value){
+	if(this._uniforms[key] === value){
 		return;
 	}
 	this._uniforms[key] = value;
@@ -100,7 +100,7 @@ View.prototype.uniform = function(key, value){
 }
 
 View.prototype.update = function(plate){
-	if(_.isUndefined(plate.world)){
+	if(plate.world === void 0){
 		return;
 	}
 	var meshes = this.meshes.get(plate);

@@ -116,12 +116,12 @@ Plate.prototype.updateBorders = function(){
 		a = cells[face.a].content !== void 0;
 		b = cells[face.b].content !== void 0;
 		c = cells[face.c].content !== void 0;
-		if((a != b || b != c)){
-			if(a){ collideable[face.a] = 1; }
+		if(a !== b || b !== c){
+			if(a === true){ collideable[face.a] = 1; }
 			else { riftable[face.a] = 1; }
-			if(b){ collideable[face.b] = 1; }
+			if(b === true){ collideable[face.b] = 1; }
 			else { riftable[face.b] = 1; }
-			if(c){ collideable[face.c] = 1; }
+			if(c === true){ collideable[face.c] = 1; }
 			else { riftable[face.c] = 1; }
 		}
 	}
@@ -291,7 +291,7 @@ Plate.prototype.dock = function(subjugated){
 		id = grid.getNearestId(relative);
 		hit = cells[id];
 		
-		if(!hit.isContinental() || i > 100){
+		if(!hit.isContinental() === true || i > 100){
 			hit.replace(subjugated);
 			subjugated.destroy();
 			break;
@@ -341,7 +341,7 @@ Plate.prototype.split = function(){
 	}
 	for(var i=0, li = cells.length; i<li; i++){
 		var cell = cells[i];
-		if(cell.content){
+		if(cell.content !== void 0){
 			var nearest = _.min(seeds.keys(), function(x) {	
 				return x.pos.distanceTo(cell.pos); 
 			});
