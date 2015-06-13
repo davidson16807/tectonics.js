@@ -150,6 +150,7 @@ Plate.prototype.deform = function(){
 	var cells = this.cells;
 	var cell, intersected;
 	var getIntersection = _getCollisionIntersection;
+	var plate, relative_pos, id;
 	for(var i=0, li = collideable.length; i<li; i++){
 		if(collideable[i] === 0){
 			continue;
@@ -158,7 +159,20 @@ Plate.prototype.deform = function(){
 		if(cell.content === void 0){
 			continue;
 		}
-		intersected = cell.getIntersections(plates, getIntersection);
+		var absolute_pos = this.localToWorld(cell.pos.clone());
+		intersected = void 0;
+		for(var j=0, lj = plates.length; j<lj; j++){
+			plate = plates[j];
+			relative_pos = plate.worldToLocal(absolute_pos.clone());
+			id = grid.getNearestId(relative_pos);
+			intersected = getIntersection(id, plate);
+			if(intersected !== void 0) {
+				this._neighbors.splice(j, 1);
+				this._neighbors.unshift(plate);
+				break;
+			}
+		}
+		
 		if(intersected !== void 0){
 			cell.collide(intersected);
 		}
@@ -174,11 +188,12 @@ function _getRiftIntersection(id, plate) {
 Plate.prototype.rift = function(){
 	var plates = this._neighbors;
 	var grid = this.world.grid;
-	var cell, intersected;
 	var riftable = this._riftable;
 	var cells = this.cells;
 	var ocean = this.world.ocean;
 	var getIntersection = _getRiftIntersection;
+	var cell, intersected;
+	var plate, relative_pos, id;
 	for(var i=0, li = riftable.length; i<li; i++){
 		if(riftable[i] === 0){
 			continue;
@@ -187,7 +202,20 @@ Plate.prototype.rift = function(){
 		if(cell.content !== void 0){
 			continue;
 		}
-		intersected = cell.getIntersections(plates, getIntersection);
+
+		var absolute_pos = this.localToWorld(cell.pos.clone());
+		intersected = void 0;
+		for(var j=0, lj = plates.length; j<lj; j++){
+			plate = plates[j];
+			relative_pos = plate.worldToLocal(absolute_pos.clone());
+			id = grid.getNearestId(relative_pos);
+			intersected = getIntersection(id, plate);
+			if(intersected !== void 0) {
+				this._neighbors.splice(j, 1);
+				this._neighbors.unshift(plate);
+				break;
+			}
+		}
 		if(intersected === void 0){
 			cell.create(ocean);
 		}

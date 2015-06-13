@@ -78,23 +78,5 @@ Cell.prototype.destroy = function(){
 	this.subductedBy = void 0;
 }
 
-Cell.prototype.getIntersections = function(plates, getIntersection){
-	var parent = this.plate;
-	var grid = this._grid;
-	var absolute_pos = parent.localToWorld(this.pos.clone());
-	var plate, relative_pos, id, intersection;
-	for(var j=0, lj = plates.length; j<lj; j++){
-		plate = plates[j];
-		relative_pos = plate.worldToLocal(absolute_pos.clone());
-		id = grid.getNearestId(relative_pos);
-		intersection = getIntersection(id, plate);
-		if(intersection !== void 0) {
-			parent._neighbors.splice(j, 1);
-			parent._neighbors.unshift(plate);
-			return intersection; 
-		}
-	}
-}
-
 
 
