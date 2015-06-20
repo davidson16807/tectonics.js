@@ -119,14 +119,12 @@ View.prototype.update = function(plate){
 
 	geometry = this.geometries.get(plate);
 	displacement = geometry.attributes.displacement.array;
-	for(var j=0, j3=0, lj = faces.length, cells = plate.cells; j<lj; j++, j3+=3){
-		face = faces[j];
-		content = cells[face.a].content;
-		displacement[j3] = content !== void 0? content.displacement : 0;
-		content = cells[face.b].content;
-		displacement[j3+1] = content !== void 0? content.displacement : 0;
-		content = cells[face.c].content;
-		displacement[j3+2] = content !== void 0? content.displacement : 0;
+	var buffer_array_to_cell = plate.world.grid.buffer_array_to_cell;
+	var buffer_array_index, content;
+	for(var j=0, lj = displacement.length, cells = plate.cells; j<lj; j++){
+		buffer_array_index = buffer_array_to_cell[j];
+		content = cells[buffer_array_index].content;
+		displacement[j] = content !== void 0? content.displacement : 0;
 	}
 	geometry.attributes.displacement.needsUpdate = true;
 }

@@ -347,15 +347,18 @@
 	function update(){
 		// push to task queue and loop
 		// - it has to be at the begining of the function
-		setTimeout(update, 0);
+		//maximum fps of 60
+		setTimeout(update, 1000/60);
 
 		if (BlockUpdate) {
 			return;
 		};
 
 		var seconds = clock.getDelta();
-		if (seconds > 1){
-			seconds = 1;
+
+		//minimum fps of 5
+		if (seconds > 1/5){
+			return;
 		}
 		
 		if ((world) !== void 0) {
