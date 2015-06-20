@@ -151,7 +151,11 @@ Plate.prototype.deform = function(){
 	var cell, intersected;
 	var getIntersection = _getCollisionIntersection;
 	var plate, relative_pos, id;
-	for(var i=0, li = collideable.length; i<li; i++){
+	var absolute_pos;
+	var i,li,j,lj;
+	var li = collideable.length;
+	var lj = plates.length;
+	for(i=0; i<li; i++){
 		if(collideable[i] === 0){
 			continue;
 		}
@@ -159,9 +163,9 @@ Plate.prototype.deform = function(){
 		if(cell.content === void 0){
 			continue;
 		}
-		var absolute_pos = this.localToWorld(cell.pos.clone());
+		absolute_pos = this.localToWorld(cell.pos.clone());
 		intersected = void 0;
-		for(var j=0, lj = plates.length; j<lj; j++){
+		for(j=0; j<lj; j++){
 			plate = plates[j];
 			relative_pos = plate.worldToLocal(absolute_pos.clone());
 			id = grid.getNearestId(relative_pos);
@@ -194,7 +198,11 @@ Plate.prototype.rift = function(){
 	var getIntersection = _getRiftIntersection;
 	var cell, intersected;
 	var plate, relative_pos, id;
-	for(var i=0, li = riftable.length; i<li; i++){
+	var absolute_pos;
+	var i,li,j,lj;
+	var li = riftable.length;
+	var lj = plates.length;
+	for(i=0; i<li; i++){
 		if(riftable[i] === 0){
 			continue;
 		}
@@ -203,9 +211,9 @@ Plate.prototype.rift = function(){
 			continue;
 		}
 
-		var absolute_pos = this.localToWorld(cell.pos.clone());
+		absolute_pos = this.localToWorld(cell.pos.clone());
 		intersected = void 0;
-		for(var j=0, lj = plates.length; j<lj; j++){
+		for(j=0; j<lj; j++){
 			plate = plates[j];
 			relative_pos = plate.worldToLocal(absolute_pos.clone());
 			id = grid.getNearestId(relative_pos);
