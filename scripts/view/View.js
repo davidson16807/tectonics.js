@@ -122,11 +122,11 @@ View.prototype.update = function(plate){
 	for(var j=0, j3=0, lj = faces.length, cells = plate.cells; j<lj; j++, j3+=3){
 		face = faces[j];
 		content = cells[face.a].content;
-		displacement[j3] = content? content.displacement : 0;
+		displacement[j3] = content !== void 0? content.displacement : 0;
 		content = cells[face.b].content;
-		displacement[j3+1] = content? content.displacement : 0;
+		displacement[j3+1] = content !== void 0? content.displacement : 0;
 		content = cells[face.c].content;
-		displacement[j3+2] = content? content.displacement : 0;
+		displacement[j3+2] = content !== void 0? content.displacement : 0;
 	}
 	geometry.attributes.displacement.needsUpdate = true;
 }
