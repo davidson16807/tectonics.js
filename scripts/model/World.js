@@ -61,7 +61,7 @@ World.prototype.land =
 	density: 	2700
  });
 
-World.prototype.simulate = function(timestep){
+World.prototype.fast_update = function (timestep) {
 	if (timestep === 0) {
 		return;
 	};
@@ -72,6 +72,16 @@ World.prototype.simulate = function(timestep){
 	for(i = 0; i<length; i++){
 		plates[i].move(timestep);
 	}
+}
+
+World.prototype.slow_update = function(timestep){
+	if (timestep === 0) {
+		return;
+	};
+
+	var length = this.plates.length;
+	var plates = this.plates;
+	var i = 0;
 	for(i = 0; i<length; i++){
 		plates[i].erode(timestep);
 	}

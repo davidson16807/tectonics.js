@@ -1,6 +1,8 @@
 function Model () {
-	this.MegaYearPerSecond = void 0;
+	this.MegaYearPerSecond = 5;
 	this._world = void 0;
+	this.fast_update_clock = new THREE.Clock();
+	this.slow_update_clock = new THREE.Clock();
 }
 
 Model.prototype.world = function(world) {
@@ -17,8 +19,27 @@ Model.prototype.world = function(world) {
 	this._world = world;
 };
 
-Model.prototype.update = function(timestep) {
+Model.prototype.fast_update = function(timestep) {
+	var seconds = this.fast_update_clock.getDelta();
+	
+	//minimum refresh rate of 20fps
+	if (seconds > 1/20){
+		return;
+	}
+
 	if (world !== void 0) {
-		world.simulate(timestep);
+		world.fast_update(this.MegaYearPerSecond * seconds);
+	};
+};
+Model.prototype.slow_update = function(timestep) {
+	var seconds = this.slow_update_clock.getDelta();
+
+	//minimum refresh rate of 5fps
+	if (seconds > 1/5){
+		return;
+	}
+
+	if (world !== void 0) {
+		world.slow_update(this.MegaYearPerSecond * seconds);
 	};
 };
