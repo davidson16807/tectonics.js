@@ -131,12 +131,12 @@ JsonDeserializer.world = function (world_json, options) {
 	options = options || {};
 	var base64 = options.base64 || true;
 
-	var _world = new World({
+	var _world = new World(view.grid,
+	{
 		radius: world_json.world.radius,
 		platesNum: world_json.world.platesNum,
 		mountainWidth: world_json.world.mountainWidth,
 		age: world_json.world.age,
-		grid: world.grid,					// HACK: shouldn't reference world
 		supercontinentCycle: undefined,
 		plates: [],
 	});

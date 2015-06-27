@@ -265,6 +265,7 @@
 	var IsProd = false;
 
 	var view = new View(
+		new Grid( new THREE.IcosahedronGeometry(1, 5)),
 		fragmentShaders[$('#fragmentShader').val()], 
 		vertexShaders[$('#vertexShader').val()]
 	);
@@ -274,7 +275,7 @@
 	if (querystring['load']) {
 		loadUrl(querystring['load']);
 	} else {
-		world = new World();
+		world = new World( view.grid );
 		model.world(world);
 		$('#loadingSave').hide();
 		$('.parameters').show();

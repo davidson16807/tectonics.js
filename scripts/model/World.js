@@ -96,7 +96,7 @@ World.prototype.slow_update = function(timestep){
 		plates[i].deform();
 	}
 	for (var i = 0; i<length; i++) {
-		Publisher.publish('world.plates', 'update', { value: plates[i], uuid: this.uuid } );
+		Publisher.publish('plate.cells', 'update', { value: plates[i].cells, uuid: plates[i].uuid } );
 	};
 	var platestemp = plates.slice(0); // copy the array
 	for(i = 0; i<length; i++){

@@ -4,7 +4,8 @@ var _hashPlate = function(plate){
 	return plate.uuid;
 }
 
-function View(fragmentShader, vertexShader){
+function View(grid, fragmentShader, vertexShader){
+	this.grid = grid;
 	this.THRESHOLD = 0.99;
 	this.SEALEVEL = 1.0;
 	this._fragmentShader = fragmentShader;
@@ -26,10 +27,10 @@ function View(fragmentShader, vertexShader){
 
 	var this_ = this;
 	Publisher.subscribe('plate.matrix', 'update', function (content){
-		this_.update_matrices(content.uuid, content.value)
+		this_.matrix_update(content.uuid, content.value)
 	});
-	Publisher.subscribe('world.plates', 'update', function (content) {
-		this_.update(content.value);
+	Publisher.subscribe('plate.cells', 'update', function (content) {
+		this_.cell_update(content.uuid, content.value);
 	});
 	Publisher.subscribe('world.plates', 'add', function (content) {
 		console.log('world.plates.add')
@@ -101,7 +102,7 @@ View.prototype.uniform = function(key, value){
 		mesh.material.uniforms[key].needsUpdate = true;
 	};
 }
-View.prototype.update_matrices = function(uuid, matrix) {
+View.prototype.matrix_update = function(uuid, matrix) {
 	var meshes = this.meshes.get(uuid);
 	if (meshes.length < 1) {
 		console.log('warning: no meshes in view!')
@@ -115,17 +116,13 @@ View.prototype.update_matrices = function(uuid, matrix) {
 		mesh.rotation.setFromRotationMatrix(mesh.matrix);
 	}
 };
-View.prototype.update = function(plate){
-	if(plate.world === void 0){
-		return;
-	}
-
+View.prototype.cell_update = function(uuid, cells){
 	var geometry, content, displacement;
-	geometry = this.geometries.get(_hashPlate(plate));
+	geometry = this.geometries.get(uuid);
 	displacement = geometry.attributes.displacement.array;
-	var buffer_array_to_cell = plate.world.grid.buffer_array_to_cell;
+	var buffer_array_to_cell = this.grid.buffer_array_to_cell;
 	var buffer_array_index, content;
-	for(var j=0, lj = displacement.length, cells = plate.cells; j<lj; j++){
+	for(var j=0, lj = displacement.length, cells = cells; j<lj; j++){
 		buffer_array_index = buffer_array_to_cell[j];
 		content = cells[buffer_array_index].content;
 		displacement[j] = content !== void 0? content.displacement : 0;
@@ -135,8 +132,8 @@ View.prototype.update = function(plate){
 
 View.prototype.add = function(plate){
 	var faces, geometry, mesh, material;
-	var faces = plate.world.grid.template.faces;
-	var geometry = THREE.BufferGeometryUtils.fromGeometry(plate.world.grid.template);
+	var faces = this.grid.template.faces;
+	var geometry = THREE.BufferGeometryUtils.fromGeometry(this.grid.template);
 	geometry.addAttribute('displacement', Float32Array, faces.length*3, 1);
 	this.geometries.set(_hashPlate(plate), geometry);
 
