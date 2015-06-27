@@ -348,7 +348,7 @@
 		// push to task queue and loop
 		// - it has to be at the begining of the function
 		//maximum refresh rate of 20fps
-		setTimeout(update, 1000/20);
+		setTimeout(update, IsProd? 1000/20 : 0);
 
 		if (BlockUpdate) {
 			return;
