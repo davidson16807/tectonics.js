@@ -259,7 +259,7 @@ Plate.prototype.erode = function(timestep){
 			if(neighbor === void 0){
 				continue;
 			}
-			if(neighbor.displacement < world.SEALEVEL && content.displacement < world.SEALEVEL){
+			if(neighbor.displacement < world.EPIPELAGIC && content.displacement < world.EPIPELAGIC){
 				continue;
 			}
 			dheight = content.displacement - neighbor.displacement;
