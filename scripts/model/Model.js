@@ -22,10 +22,10 @@ Model.prototype.world = function(world) {
 Model.prototype.fast_update = function(timestep) {
 	var seconds = this.fast_update_clock.getDelta();
 	
-	//minimum refresh rate of 20fps
-	if (seconds > 1/20){
-		return;
-	}
+	// //minimum refresh rate of 15fps
+	// if (seconds > 1/15){
+	// 	return;
+	// }
 
 	if (world !== void 0) {
 		world.fast_update(this.MegaYearPerSecond * seconds);

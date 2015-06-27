@@ -134,6 +134,8 @@ Plate.prototype.move = function(timestep){
 	rotationMatrix.makeRotationAxis( this.eulerPole, this.angularSpeed * timestep );
 	rotationMatrix.multiply( this.matrix ); 
 	this.matrix = rotationMatrix;
+	Publisher.publish('plate.matrix', 'update', 
+		{ value: this.matrix, uuid: this.uuid } );
 }
 
 
