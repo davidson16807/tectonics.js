@@ -1,10 +1,11 @@
 'use strict';
 
 var _hashPlate = function(plate){
-	return plate.uuid
+	return plate.uuid;
 }
 
-function View(fragmentShader, vertexShader){
+function View(grid, fragmentShader, vertexShader){
+	this.grid = grid;
 	this.THRESHOLD = 0.99;
 	this.SEALEVEL = 1.0;
 	this._fragmentShader = fragmentShader;
@@ -13,8 +14,8 @@ function View(fragmentShader, vertexShader){
 	this._uniforms = {
 		sealevel_mod: 1.0
 	};
-	this.geometries = new buckets.Dictionary(_hashPlate);
-	this.meshes = new buckets.MultiDictionary(_hashPlate);
+	this.geometries = new buckets.Dictionary();
+	this.meshes = new buckets.MultiDictionary();
 
 	// create a scene
 	this.scene = new THREE.Scene();
@@ -25,8 +26,11 @@ function View(fragmentShader, vertexShader){
 	this.scene.add(this.camera);
 
 	var this_ = this;
-	Publisher.subscribe('world.plates', 'update', function (content) {
-		this_.update(content.value);
+	Publisher.subscribe('plate.matrix', 'update', function (content){
+		this_.matrix_update(content.uuid, content.value)
+	});
+	Publisher.subscribe('plate.cells', 'update', function (content) {
+		this_.cell_update(content.uuid, content.value);
 	});
 	Publisher.subscribe('world.plates', 'add', function (content) {
 		console.log('world.plates.add')
@@ -58,7 +62,7 @@ function View(fragmentShader, vertexShader){
 }
 
 View.prototype.fragmentShader = function(fragmentShader){
-	if(this._fragmentShader == fragmentShader){
+	if(this._fragmentShader === fragmentShader){
 		return;
 	}
 	this._fragmentShader = fragmentShader;
@@ -72,7 +76,7 @@ View.prototype.fragmentShader = function(fragmentShader){
 }
 
 View.prototype.vertexShader = function(vertexShader){
-	if(this._vertexShader == vertexShader){
+	if(this._vertexShader === vertexShader){
 		return;
 	}
 	this._vertexShader = vertexShader;
@@ -86,7 +90,7 @@ View.prototype.vertexShader = function(vertexShader){
 }
 
 View.prototype.uniform = function(key, value){
-	if(this._uniforms[key] == value){
+	if(this._uniforms[key] === value){
 		return;
 	}
 	this._uniforms[key] = value;
@@ -98,45 +102,40 @@ View.prototype.uniform = function(key, value){
 		mesh.material.uniforms[key].needsUpdate = true;
 	};
 }
-
-View.prototype.update = function(plate){
-	if(_.isUndefined(plate.world)){
-		return;
-	}
-	var meshes = this.meshes.get(plate);
+View.prototype.matrix_update = function(uuid, matrix) {
+	var meshes = this.meshes.get(uuid);
 	if (meshes.length < 1) {
 		console.log('warning: no meshes in view!')
 		return;
 	};
 
-	var faces = plate.world.grid.template.faces;
-	var meshes, mesh, geometry, content, face, displacement;
+	var meshes, mesh;
 	for (var j = meshes.length - 1; j >= 0; j--) {
 		mesh = meshes[j];
-		mesh.matrix = plate.matrix;
+		mesh.matrix = matrix;
 		mesh.rotation.setFromRotationMatrix(mesh.matrix);
 	}
-
-	geometry = this.geometries.get(plate);
+};
+View.prototype.cell_update = function(uuid, cells){
+	var geometry, content, displacement;
+	geometry = this.geometries.get(uuid);
 	displacement = geometry.attributes.displacement.array;
-	for(var j=0, j3=0, lj = faces.length, cells = plate.cells; j<lj; j++, j3+=3){
-		face = faces[j];
-		content = cells[face.a].content;
-		displacement[j3] = content? content.displacement : 0;
-		content = cells[face.b].content;
-		displacement[j3+1] = content? content.displacement : 0;
-		content = cells[face.c].content;
-		displacement[j3+2] = content? content.displacement : 0;
+	var buffer_array_to_cell = this.grid.buffer_array_to_cell;
+	var buffer_array_index, content;
+	for(var j=0, lj = displacement.length, cells = cells; j<lj; j++){
+		buffer_array_index = buffer_array_to_cell[j];
+		content = cells[buffer_array_index].content;
+		displacement[j] = content !== void 0? content.displacement : 0;
 	}
 	geometry.attributes.displacement.needsUpdate = true;
 }
 
 View.prototype.add = function(plate){
 	var faces, geometry, mesh, material;
-	var faces = plate.world.grid.template.faces;
-	var geometry = THREE.BufferGeometryUtils.fromGeometry(plate.world.grid.template);
+	var faces = this.grid.template.faces;
+	var geometry = THREE.BufferGeometryUtils.fromGeometry(this.grid.template);
 	geometry.addAttribute('displacement', Float32Array, faces.length*3, 1);
-	this.geometries.set(plate, geometry);
+	this.geometries.set(_hashPlate(plate), geometry);
 
 	var color = new THREE.Color(Math.random() * 0xffffff);
 	var sealevel_mod = this._uniforms.sealevel_mod;
@@ -156,7 +155,7 @@ View.prototype.add = function(plate){
 	});
 	mesh = new THREE.Mesh( geometry, material);
 	this.scene.add(mesh);
-	this.meshes.set(plate, mesh);
+	this.meshes.set(_hashPlate(plate), mesh);
 
 	material = new THREE.ShaderMaterial({
 		attributes: {
@@ -174,16 +173,16 @@ View.prototype.add = function(plate){
 	});
 	mesh = new THREE.Mesh( geometry, material);
 	this.scene.add(mesh);
-	this.meshes.set(plate, mesh);
+	this.meshes.set(_hashPlate(plate), mesh);
 }
 
 View.prototype.remove = function(plate){
-	var meshes = this.meshes.get(plate);
+	var meshes = this.meshes.get(_hashPlate(plate));
 	if(meshes.length < 1){
 		return;
 	}
 	this.meshes.remove(plate);
-	this.geometries.remove(plate);
+	this.geometries.remove(_hashPlate(plate));
 	
 	var mesh;
 	for (var i = meshes.length - 1; i >= 0; i--) {

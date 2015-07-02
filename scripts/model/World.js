@@ -22,7 +22,7 @@ function World(optional){
 	this.platesNum = optional['platesNum'] || 7;
 	this.mountainWidth = (optional['mountainWidth'] || 300) / radius;
 	
-	if(!_.isUndefined(optional['plates'])){
+	if(optional['plates'] !== void 0){
 		this.plates = optional['plates'];
 	} else {
 		var continentRadius = (optional['continentRadius'] || 1250) / radius;
@@ -46,6 +46,7 @@ function World(optional){
 }
 
 World.prototype.SEALEVEL = 3682;
+World.prototype.EPIPELAGIC = World.prototype.SEALEVEL - 200;
 World.prototype.mantleDensity=3300;
 World.prototype.waterDensity=1026;
 World.prototype.ocean =
@@ -61,8 +62,8 @@ World.prototype.land =
 	density: 	2700
  });
 
-World.prototype.simulate = function(timestep){
-	if (timestep == 0) {
+World.prototype.fast_update = function (timestep) {
+	if (timestep === 0) {
 		return;
 	};
 
@@ -72,6 +73,16 @@ World.prototype.simulate = function(timestep){
 	for(i = 0; i<length; i++){
 		plates[i].move(timestep);
 	}
+}
+
+World.prototype.slow_update = function(timestep){
+	if (timestep === 0) {
+		return;
+	};
+
+	var length = this.plates.length;
+	var plates = this.plates;
+	var i = 0;
 	for(i = 0; i<length; i++){
 		plates[i].erode(timestep);
 	}
@@ -86,7 +97,7 @@ World.prototype.simulate = function(timestep){
 		plates[i].deform();
 	}
 	for (var i = 0; i<length; i++) {
-		Publisher.publish('world.plates', 'update', { value: plates[i], uuid: this.uuid } );
+		Publisher.publish('plate.cells', 'update', { value: plates[i].cells, uuid: plates[i].uuid } );
 	};
 	var platestemp = plates.slice(0); // copy the array
 	for(i = 0; i<length; i++){
