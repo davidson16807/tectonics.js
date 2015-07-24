@@ -117,17 +117,20 @@ View.prototype.matrix_update = function(uuid, matrix) {
 	}
 };
 View.prototype.cell_update = function(uuid, cells){
-	var geometry, content, displacement;
+	var geometry, content, displacement, age;
 	geometry = this.geometries.get(uuid);
 	displacement = geometry.attributes.displacement.array;
+	age = geometry.attributes.age.array;
 	var buffer_array_to_cell = this.grid.buffer_array_to_cell;
 	var buffer_array_index, content;
 	for(var j=0, lj = displacement.length, cells = cells; j<lj; j++){
 		buffer_array_index = buffer_array_to_cell[j];
 		content = cells[buffer_array_index].content;
 		displacement[j] = content !== void 0? content.displacement : 0;
+		age[j] = content !== void 0? content.age : 0;
 	}
 	geometry.attributes.displacement.needsUpdate = true;
+	geometry.attributes.age.needsUpdate = true;
 }
 
 View.prototype.add = function(plate){
@@ -135,13 +138,15 @@ View.prototype.add = function(plate){
 	var faces = this.grid.template.faces;
 	var geometry = THREE.BufferGeometryUtils.fromGeometry(this.grid.template);
 	geometry.addAttribute('displacement', Float32Array, faces.length*3, 1);
+	geometry.addAttribute('age', Float32Array, faces.length*3, 1);
 	this.geometries.set(_hashPlate(plate), geometry);
 
 	var color = new THREE.Color(Math.random() * 0xffffff);
 	var sealevel_mod = this._uniforms.sealevel_mod;
 	material = new THREE.ShaderMaterial({
 		attributes: {
-		  displacement: { type: 'f', value: null }
+		  displacement: { type: 'f', value: null },
+		  age: { type: 'f', value: null }
 		},
 		uniforms: {
 		  sealevel: { type: 'f', value: plate.world.SEALEVEL },
@@ -159,7 +164,8 @@ View.prototype.add = function(plate){
 
 	material = new THREE.ShaderMaterial({
 		attributes: {
-		  displacement: { type: 'f', value: null }
+		  displacement: { type: 'f', value: null },
+		  age: { type: 'f', value: null }
 		},
 		uniforms: {
 		  sealevel: { type: 'f', value: plate.world.SEALEVEL },

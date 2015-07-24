@@ -8,6 +8,7 @@ float lat(vec3 pos) {
 
 void main() {
 	vDisplacement = displacement;
+	vAge = age;
 	vPosition = modelMatrix * vec4( position, 1.0 );
 	
 	vec4 modelPos = modelMatrix * vec4( position, 1.0 );
