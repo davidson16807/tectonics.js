@@ -5,6 +5,7 @@ function RockColumn(world, optional){
 
 	var this_ = {};
 	this_.world = world;
+	this_.age = optional['age'] || 0;
 	this_.displacement = optional['displacement'] || 0;
 	this_.thickness = optional['thickness'] || world.ocean.thickness;
 	this_.density = optional['density'] || world.ocean.density;
@@ -12,7 +13,9 @@ function RockColumn(world, optional){
 	this_.isContinental = function(){
 		return this_.thickness > 17000;
 	}
-
+	this_.update = function (timestep) {
+		this_.age += timestep;
+	}
 	this_.accrete = function(subducted){
 		var sialDensity = this_.world.land.density
 		var simaDensity = this_.world.mantleDensity

@@ -84,6 +84,9 @@ World.prototype.slow_update = function(timestep){
 	var plates = this.plates;
 	var i = 0;
 	for(i = 0; i<length; i++){
+		plates[i].update(timestep);
+	}
+	for(i = 0; i<length; i++){
 		plates[i].erode(timestep);
 	}
 	for(i = 0; i<length; i++){

@@ -231,7 +231,17 @@ Plate.prototype.rift = function(){
 		}
 	}
 }
-
+Plate.prototype.update = function(timestep) {
+	var i, li
+	var cells = this.cells;
+	for(i=0, li = cells.length; i<li; i++){
+		var content = cells[i].content;
+		if(content === void 0){
+			continue;
+		}
+		content.update(timestep);
+	}
+};
 Plate.prototype.erode = function(timestep){
 	// Model taken from Simoes et al. 2010
 	// This erosion model is characteristic in that its geared towards large spatiotemporal scales
