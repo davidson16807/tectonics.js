@@ -1,11 +1,3 @@
-const float OCEAN = 0.0;
-const float LAND = 0.01;
-const float NONE = -0.01;
-
-attribute float displacement;
-varying float vDisplacement;
-varying vec4 vPosition;
-uniform float sealevel;
 
 void main() {
 	vDisplacement = displacement;

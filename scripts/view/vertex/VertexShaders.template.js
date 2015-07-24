@@ -5,11 +5,14 @@ function _multiline(f) {
 
 var vertexShaders = {};
 vertexShaders.equirectangular = _multiline(function() {/**   
+//TEMPLATE.GLSL.C GOES HERE
 //EQUIRECTANGULAR.GLSL.C GOES HERE
 **/});
 vertexShaders.texture = _multiline(function() {/**
+//TEMPLATE.GLSL.C GOES HERE
 //TEXTURE.GLSL.C GOES HERE
 **/})
 vertexShaders.orthographic = _multiline(function() {/**   
+//TEMPLATE.GLSL.C GOES HERE
 //ORTHOGRAPHIC.GLSL.C GOES HERE
 **/});

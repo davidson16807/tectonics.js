@@ -5,7 +5,7 @@ function _multiline(f) {
 
 var vertexShaders = {};
 vertexShaders.equirectangular = _multiline(function() {/**   
-//EQUIRECTANGULAR.GLSL.C GOES HERE
+//TEMPLATE.GLSL.C GOES HERE
 const float PI = 3.14;
 const float OCEAN = 0.0;
 const float LAND = 0.01;
@@ -17,6 +17,8 @@ varying float vDisplacement;
 varying vec4 vPosition;
 uniform float sealevel;
 uniform float index;
+
+//this line left intentionally empty//EQUIRECTANGULAR.GLSL.C GOES HERE
 
 float lon(vec3 pos) {
 	return atan(-pos.z, pos.x) + PI;
@@ -48,7 +50,7 @@ void main() {
 }
 //this line left intentionally empty**/});
 vertexShaders.texture = _multiline(function() {/**
-//TEXTURE.GLSL.C GOES HERE
+//TEMPLATE.GLSL.C GOES HERE
 const float PI = 3.14;
 const float OCEAN = 0.0;
 const float LAND = 0.01;
@@ -60,6 +62,8 @@ varying float vDisplacement;
 varying vec4 vPosition;
 uniform float sealevel;
 uniform float index;
+
+//this line left intentionally empty//TEXTURE.GLSL.C GOES HERE
 
 float lon(vec3 pos) {
 	return atan(-pos.z, pos.x) + PI;
@@ -88,15 +92,20 @@ void main() {
 }
 //this line left intentionally empty**/})
 vertexShaders.orthographic = _multiline(function() {/**   
-//ORTHOGRAPHIC.GLSL.C GOES HERE
+//TEMPLATE.GLSL.C GOES HERE
+const float PI = 3.14;
 const float OCEAN = 0.0;
 const float LAND = 0.01;
 const float NONE = -0.01;
+const float INDEX_SPACING = PI * 0.75; // anything from 0.0 to 2.*PI
 
 attribute float displacement;
 varying float vDisplacement;
 varying vec4 vPosition;
 uniform float sealevel;
+uniform float index;
+
+//this line left intentionally empty//ORTHOGRAPHIC.GLSL.C GOES HERE
 
 void main() {
 	vDisplacement = displacement;
