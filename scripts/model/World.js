@@ -46,7 +46,6 @@ function World(optional){
 }
 
 World.prototype.SEALEVEL = 3682;
-World.prototype.EPIPELAGIC = World.prototype.SEALEVEL - 200;
 World.prototype.mantleDensity=3300;
 World.prototype.waterDensity=1026;
 World.prototype.ocean =
