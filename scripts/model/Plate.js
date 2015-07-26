@@ -380,8 +380,11 @@ Plate.prototype.split = function(){
 			seeds.get(nearest).cells[i].replace(cell);
 		}
 	}
-	smaller.densityOffset = smaller.getDensityOffset() + random.random();
-	larger.densityOffset = larger.getDensityOffset() + random.random();
+
+	for(var i=0, li = plates.length; i<li; i++){
+		var plate = plates[i];
+		plate.densityOffset = plate.getDensityOffset() + random.random();
+	}
 
 	return plates;
 }
