@@ -398,7 +398,8 @@ Plate.prototype.updateSpeed = function() {
 	var cells = this.cells;
 	var v = THREE.Vector3;
 	
-	var neighborIds, neighbor, cell, age_increment, age_gradient;
+	var neighborIds, neighbor, neighbor_length;
+	var cell, age_increment, age_gradient, speed;
 	var age_gradients = [];
 	var collideable = this._collideable;
 
@@ -409,26 +410,29 @@ Plate.prototype.updateSpeed = function() {
 		if (cell.content === void 0) {
 			continue;
 		}
-		// if(collideable[i] === 0){
-		// 	continue;
-		// }
+		if(collideable[i] === 0){
+			continue;
+		}
 
 		neighborIds = grid.getNeighborIds(i);
+		neighbor_length = 0;
 		for(var j = 0, lj = neighborIds.length; j<lj; j++){
 			neighbor = cells[neighborIds[j]];
 			if(neighbor.content === void 0){
 				continue;
 			}
+			neighbor_length += 1;
 			age_increment = cell.content.age - neighbor.content.age;
 			age_gradient.add(
-				new v().divide(
-					new v().subVectors(cell.pos, neighbor.pos),
-					new v(age_increment, age_increment, age_increment) 
-				)
-			);
+				new v(age_increment, age_increment, age_increment)
+					.divide(new v().subVectors(cell.pos, neighbor.pos))
+				);
 		}
-		age_gradient.divideScalar(neighborIds.length);
-		age_gradients[i] = age_gradient;
+		age_gradient.divideScalar(neighbor_length);
+		speed = new v(1,1,1).divide(age_gradient);
+		if (isFinite(speed.length())) {
+			age_gradients[i] = speed;
+		};
 	};
 
 	// second pass - calculate angular velocity metric for plate 
@@ -439,24 +443,31 @@ Plate.prototype.updateSpeed = function() {
 		if (cells[i].content === void 0) {
 			continue;
 		}
-		// if(collideable[i] === 0){
-		// 	continue;
-		// }
+		if (age_gradients[i] === void 0) {
+			continue;
+		}
 
 		neighborIds = grid.getNeighborIds(i);
 		for(var j = 0, lj = neighborIds.length; j<lj; j++) {
 			if(age_gradients[neighborIds[j]] === void 0){
 				continue;
 			}
+			neighbor_length += 1;
 			angular_velocity_metric.add(
 				new v().crossVectors(
 					age_gradients[i],
 					age_gradients[neighborIds[j]]
 				)
 			);
+			console.log(
+				age_gradients[i].clone().cross(age_gradients[neighborIds[j]])
+			);
 		}
-		angular_velocity_metric.divideScalar(neighborIds.length);
-		angular_velocity_metrics[i] = angular_velocity_metric;
+		angular_velocity_metric.divideScalar(neighbor_length);
+
+		if (isFinite(angular_velocity_metric.length())) {
+			angular_velocity_metrics[i] = angular_velocity_metric;
+		};
 	};
 
 	// third pass - calculate average angular velocity
@@ -467,9 +478,9 @@ Plate.prototype.updateSpeed = function() {
 			continue;
 		}
 		
-		// if(collideable[i] === 0){
-		// 	continue;
-		// }
+		if (angular_velocity_metrics[i] === void 0) {
+			continue;
+		}
 
 		collideable_length += 1;
 		angular_velocity_metric.add(angular_velocity_metrics[i]);
