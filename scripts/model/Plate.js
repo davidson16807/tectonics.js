@@ -40,7 +40,7 @@ Plate.prototype.localToWorld = function(a) {
 Plate.prototype.worldToLocal = function() {
     var a = new THREE.Matrix4;
     return function(b) {
-        return b.applyMatrix4(a.getInverse(this.matrix))
+        return b.applyMatrix4(a.getInverse(this.matrix));
     }
 }(),
 Plate.prototype.get = function(i){
@@ -421,8 +421,8 @@ Plate.prototype.updateSpeed = function() {
 			age_increment = cell.age - neighbor.age;
 			age_gradient.add(
 				new v().divide(
-					new v(age_increment, age_increment, age_increment), 
-					new v().subtract(cell.pos, neighbor.pos)
+					new v().subtract(cell.pos, neighbor.pos),
+					new v(age_increment, age_increment, age_increment) 
 				)
 			);
 		}
