@@ -337,7 +337,7 @@ Plate.prototype.split = function(){
 	var gridvertices = grid.template.vertices;
 	var world = this.world;
 	var cells = this.cells;
-	
+	var v = THREE.Vector3;
 	
 	var centroid = this.getCentroid();
 	var plates = [];
@@ -345,9 +345,10 @@ Plate.prototype.split = function(){
 	while(plates.length + world.plates.length - 1  <  world.platesNum){
 		var junction = _this.getRandomJunction();
 		var pos = junction[0].pos;
+
 		var eulerPole = pos.distanceToSquared(centroid) < 2? 
-			new THREE.Vector3().crossVectors(centroid, pos).normalize() :
-			new THREE.Vector3().crossVectors(pos, centroid).normalize();
+			new v().crossVectors(centroid, pos).normalize() :
+			new v().crossVectors(pos, centroid).normalize();
 
 		var smaller = new Plate(world, 
 			{
@@ -383,5 +384,95 @@ Plate.prototype.split = function(){
 	smaller.densityOffset = smaller.getDensityOffset() + random.random();
 	larger.densityOffset = larger.getDensityOffset() + random.random();
 
+	smaller.updateSpeed();
+	larger.updateSpeed();
+
 	return plates;
 }
+Plate.prototype.updateSpeed = function() {
+	console.log('updateSpeed');
+
+	var grid = this.grid;
+	var gridvertices = grid.template.vertices;
+	var world = this.world;
+	var cells = this.cells;
+	var v = THREE.Vector3;
+	
+	var neighborIds, neighbor, cell, age_increment, age_gradient;
+	var age_gradients = [];
+	var collideable = this._collideable;
+
+	// first pass - calculate age gradient
+	for (var i = 0, li = cells.length; i < li; i++) {
+		age_gradient = new v();
+		if (cells[i].content !== void 0) {
+			continue;
+		}
+		if(collideable[i] === 0){
+			continue;
+		}
+
+		neighborIds = grid.getNeighborIds(i);
+		for(var j = 0, lj = neighborIds.length; j<lj; j++){
+			neighbor = cells[neighborIds[j]].content;
+			if(neighbor === void 0){
+				continue;
+			}
+			age_increment = cell.age - neighbor.age;
+			age_gradient.add(
+				new v().divide(
+					new v(age_increment, age_increment, age_increment), 
+					new v().subtract(cell.pos, neighbor.pos)
+				)
+			);
+		}
+		age_gradient.divideScalar(neighborIds.length);
+		console.log(age_gradient)
+		age_gradients[i] = age_gradient;
+	};
+
+	// second pass - calculate angular velocity metric for plate 
+	var angular_velocity_metrics, angular_velocity_metric;
+	for (var i = 0, li = cells.length; i < li; i++) {
+		angular_velocity_metric = new v();
+		if (cells[i].content !== void 0) {
+			continue;
+		}
+		if(collideable[i] === 0){
+			continue;
+		}
+
+		neighborIds = grid.getNeighborIds(i);
+		for(var j = 0, lj = neighborIds.length; j<lj; j++) {
+			angular_velocity_metric.add(
+				new v().cross(
+					age_gradients[i],
+					age_gradients[neighborIds[j]]
+				)
+			);
+		}
+		angular_velocity_metric.divideScalar(neighborIds.length);
+		console.log(angular_velocity_metric);
+		angular_velocity_metrics[i] = angular_velocity_metric;
+	};
+
+	// third pass - calculate average angular velocity
+	angular_velocity_metric = new v();
+	var collideable_length = 0;
+	for (var i = 0, li = cells.length; i < li; i++) {
+		if (cells[i].content !== void 0) {
+			continue;
+		}
+		
+		if(collideable[i] === 0){
+			continue;
+		}
+
+		collideable_length += 1;
+		angular_velocity_metric.add(angular_velocity_metrics[i]);
+	}
+	angular_velocity_metric.divideScalar(collideable_length);
+
+	this.eulerPole = angular_velocity_metric.clone().normalize();
+	this.angularSpeed = Math.sqrt(angular_velocity_metric.clone().dot(angular_velocity_metric));
+};
