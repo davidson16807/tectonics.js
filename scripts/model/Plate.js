@@ -490,6 +490,8 @@ Plate.prototype.updateSpeed = function() {
 	}
 	angular_velocity_metric.divideScalar(collideable_length);
 
-	this.eulerPole = angular_velocity_metric.clone().normalize();
+	if (angular_velocity_metric.length() > 0) {
+		this.eulerPole = angular_velocity_metric.clone().normalize();
+	};
 	//this.angularSpeed = Math.sqrt(angular_velocity_metric.clone().dot(angular_velocity_metric));
 };
