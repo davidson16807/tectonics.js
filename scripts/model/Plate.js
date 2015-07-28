@@ -231,7 +231,17 @@ Plate.prototype.rift = function(){
 		}
 	}
 }
-
+Plate.prototype.update = function(timestep) {
+	var i, li
+	var cells = this.cells;
+	for(i=0, li = cells.length; i<li; i++){
+		var content = cells[i].content;
+		if(content === void 0){
+			continue;
+		}
+		content.update(timestep);
+	}
+};
 Plate.prototype.erode = function(timestep){
 	// Model taken from Simoes et al. 2010
 	// This erosion model is characteristic in that its geared towards large spatiotemporal scales
@@ -259,7 +269,7 @@ Plate.prototype.erode = function(timestep){
 			if(neighbor === void 0){
 				continue;
 			}
-			if(neighbor.displacement < world.EPIPELAGIC && content.displacement < world.EPIPELAGIC){
+			if(neighbor.displacement < world.SEALEVEL && content.displacement < world.SEALEVEL){
 				continue;
 			}
 			dheight = content.displacement - neighbor.displacement;
@@ -370,8 +380,11 @@ Plate.prototype.split = function(){
 			seeds.get(nearest).cells[i].replace(cell);
 		}
 	}
-	smaller.densityOffset = smaller.getDensityOffset() + random.random();
-	larger.densityOffset = larger.getDensityOffset() + random.random();
+
+	for(var i=0, li = plates.length; i<li; i++){
+		var plate = plates[i];
+		plate.densityOffset = plate.getDensityOffset() + random.random();
+	}
 
 	return plates;
 }

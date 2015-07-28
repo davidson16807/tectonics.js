@@ -46,7 +46,6 @@ function World(optional){
 }
 
 World.prototype.SEALEVEL = 3682;
-World.prototype.EPIPELAGIC = World.prototype.SEALEVEL - 200;
 World.prototype.mantleDensity=3300;
 World.prototype.waterDensity=1026;
 World.prototype.ocean =
@@ -83,6 +82,9 @@ World.prototype.slow_update = function(timestep){
 	var length = this.plates.length;
 	var plates = this.plates;
 	var i = 0;
+	for(i = 0; i<length; i++){
+		plates[i].update(timestep);
+	}
 	for(i = 0; i<length; i++){
 		plates[i].erode(timestep);
 	}

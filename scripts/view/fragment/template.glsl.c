@@ -1,5 +1,6 @@
 
 varying float vDisplacement;
+varying float vAge;
 varying vec4 vPosition;
 
 uniform float sealevel;

@@ -80,6 +80,7 @@ JsonSerializer.plate = function (plate, options) {
 		ids[j] = cell.id;
 		thicknesses[j] = cell.content.thickness;
 		densities[j] = cell.content.density;
+		age[j] = cell.content.age;
 	};
 	// var encode = options.base64? Base64.encode : _abTostr;
 	plate_json.rockColumns = {
@@ -120,6 +121,7 @@ JsonDeserializer.plate = function (plate_json, _world, options) {
 		rockColumn = RockColumn(_world, {
 			thickness: thicknesses[j],
 			density: densities[j]
+			age: age[j]
 		});
 		rockColumn.isostasy();
 
