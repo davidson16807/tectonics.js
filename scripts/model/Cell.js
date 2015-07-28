@@ -23,7 +23,7 @@ Cell.prototype.isContinental = function(invalid){
 
 Cell.prototype._canSubduct = function(subducted, invalid){
 	if (this.content !== void 0 && subducted.content !== void 0) {
-		return this.content.density < subducted.content.density;
+		return this.content.getDensityAtTemp() < subducted.content.getDensityAtTemp();
 	};
 
 	if(this.plate.densityOffset < subducted.plate.densityOffset){

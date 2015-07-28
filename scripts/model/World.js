@@ -48,6 +48,8 @@ function World(optional){
 World.prototype.SEALEVEL = 3682;
 World.prototype.EPIPELAGIC = World.prototype.SEALEVEL - 200;
 World.prototype.mantleDensity=3300;
+World.prototype.mantleTemp= 1200; // Celcius
+World.prototype.rockThermalExpansionCoefficient = 5.7e-5 // fraction per Celcius
 World.prototype.waterDensity=1026;
 World.prototype.ocean =
  RockColumn(void 0, {

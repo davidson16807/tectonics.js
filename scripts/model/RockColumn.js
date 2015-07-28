@@ -1,5 +1,8 @@
 'use strict';
 
+function getDensityAtTemp(ref_density, temp_change, expansion_coefficient){
+	return ref_density / (1 + expansion_coefficient * temp_change);
+}
 function RockColumn(world, optional){
 	optional = optional || {};
 
@@ -8,10 +11,23 @@ function RockColumn(world, optional){
 	this_.age = optional['age'] || 0;
 	this_.displacement = optional['displacement'] || 0;
 	this_.thickness = optional['thickness'] || world.ocean.thickness;
-	this_.density = optional['density'] || world.ocean.density;
+	this_.density = optional['density'] || world.ocean.density; // density at 0 Celcius
 	this_.elevation = optional['elevation'] || world.ocean.elevation;
 	this_.isContinental = function(){
 		return this_.thickness > 17000;
+	}
+	this_.getDensityAtTemp = function () {
+		// localized globals 
+		var mantleTemp = this_.world.mantleTemp;
+		var expansion_coefficient = this.world.rockThermalExpansionCoefficient;
+		// var conductivity = 
+		// var capacity = 
+		var diffusivity = 8e-7; // meters^2 / second
+
+		// average temp throughout lithosphere, see Davis & Lister 1974
+		var avgTemp = mantleTemp - 2 / Math.sqrt(Math.PI) * mantleTemp * Math.sqrt(diffusivity * this_.age);
+		// density at the average temperate of the lithosphere
+		var avgDensity = getDensityAtTemp(this_.density, avgTemp, expansion_coefficient);
 	}
 	this_.update = function (timestep) {
 		this_.age += timestep;
