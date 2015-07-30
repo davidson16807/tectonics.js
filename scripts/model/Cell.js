@@ -22,9 +22,9 @@ Cell.prototype.isContinental = function(invalid){
 }
 
 Cell.prototype._canSubduct = function(subducted, invalid){
-	if (this.content !== void 0 && subducted.content !== void 0) {
-		return this.content.getDensityAtTemp() < subducted.content.getDensityAtTemp();
-	};
+	// if (this.content !== void 0 && subducted.content !== void 0) {
+	// 	return this.content.getDensityAtTemp() < subducted.content.getDensityAtTemp();
+	// };
 
 	if(this.plate.densityOffset < subducted.plate.densityOffset){
 		return false;
@@ -34,8 +34,26 @@ Cell.prototype._canSubduct = function(subducted, invalid){
 }
 
 Cell.prototype.collide = function(other, invalid){
+	// no crust can exist past 250 my
+	// if any do, they must be destroyed asap
+	if (other.content.age > 200 && other.isContinental() === false && 
+		this.content.age > 200 && this.isContinental() === false) {
+		this.destroy();
+		other.destroy();
+		return;
+	};
+
 	var top, bottom;
-	if(this._canSubduct(other) === true){
+	if (this.content.age > 200 && this.isContinental() === false) {
+		bottom = this;
+		top = other;
+	} else if (other.content.age > 200 && other.isContinental() === false) {
+		top = this;
+		bottom = other;
+	}
+
+	// otherwise, follow normal subduction rules
+	else if(this._canSubduct(other) === true){
 		top = this;
 		bottom = other;
 	} else {
