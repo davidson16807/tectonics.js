@@ -44,8 +44,9 @@ EliasWorldGenerator.generate = function (world, optional) {
 		return Math.min(Math.max(x, minVal), maxVal);
 	}
 	function smoothstep (edge0, edge1, x) {
-		t = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
-    	return t * t * (3.0 - 2.0 * t);
+		var fraction = (x - edge0) / (edge1 - edge0);
+		return clamp(fraction, 0.0, 1.0);
+    	// return t * t * (3.0 - 2.0 * t);
 	}
 
 	// first, we generate matrices expressing direction of continent centers
@@ -63,7 +64,7 @@ EliasWorldGenerator.generate = function (world, optional) {
 	};
 
 	// Now, we iterate through the cells and find their "height rank".
-	// This value doesn't translate directly elevation. 
+	// This value doesn't translate directly to elevation. 
 	// It only represents how cells would rank if sorted by elevation.
 	// This is done so we can later derive elevations that are consistent with earth's.
 	var plate = new Plate(world);
@@ -87,22 +88,41 @@ EliasWorldGenerator.generate = function (world, optional) {
 	// This dataset is generated from statistical distributions matching those found on earth. 
 	// We sort the elevations and map each one to a cell from our height-rank sorted list.
 	heights = []
-	for (var i = 0, li = cells.length; i < li; i++) {
+	for (var i = 0, li = cells.length / 2; i < li; i++) {
 		heights.push(random.normal(-4019,1113));
 		heights.push(random.normal(797,1169));
 	};
 	heights.sort(function(a,b) { return a-b; });
-
+ 	
+ 	console.log(heights);
 	// Our model does not work directly with elevation.
 	// We must express elevation in terms of thickness/density
 	// To do this, we start off with a set of rock column templates expressing
 	// what thickness/density should look like at a given density.
 
-	var ocean =
+	var abyss = 
+	 new RockColumn(void 0, {
+		elevation: 	-11000,
+		thickness: 	4000, 
+		density: 	3000	// Carlson & Raskin 1984
+	 });
+	var deep_ocean = 
+	 new RockColumn(void 0, {
+		elevation: 	-6000,  
+		thickness:  7100-800,// +/- 800, White McKenzie and O'nions 1992
+		density: 	3000	// Carlson & Raskin 1984
+	 });
+	var shallow_ocean =
 	 new RockColumn(void 0, {
 		elevation: 	-3682,	// Charette & Smith 2010
-		thickness: 	7100, 	// +/- 800, White McKenzie and O'nions 1992
+		thickness: 	7100+800,// +/- 800, White McKenzie and O'nions 1992
 		density: 	2890	// Carlson & Raskin 1984
+	 });
+	var shelf = 
+	 new RockColumn(void 0, {
+		elevation: 	-200,   //Sverdrup & Fleming 1942
+	    thickness: 	17000, // +/- 2900, estimate for shields, Zandt & Ammon 1995
+		density: 	2700
 	 });
 	var land =
 	 new RockColumn(void 0, {
@@ -110,20 +130,38 @@ EliasWorldGenerator.generate = function (world, optional) {
 	    thickness: 	36900, // +/- 2900, estimate for shields, Zandt & Ammon 1995
 		density: 	2700
 	 });
-	 // World.prototype.mountiain
-	 // World.prototype.abyss
+	var mountain = 
+	 new RockColumn(void 0, {
+		elevation: 	8848,
+	    thickness: 	70000, // +/- 2900, estimate for shields, Zandt & Ammon 1995
+		density: 	2700
+	 });
+	var control_points = [abyss, deep_ocean, shallow_ocean, shelf, land, mountain];
+	 
+	// We then use interpolate between these templated values.
+	for (var i = 0, li = heights.length; i < li; i++) {
+		var height = heights[i];
 
-	// We then use B-splines to interpolate between these templated values.
-	for (var i = 0, li = cells.length; i < li; i++) {
-		var height = heights[2*i];
-		console.log(height, ocean.elevation, land.elevation);
-		var land_fraction = smoothstep(ocean.elevation, land.elevation, height);
+		var rock_column = void 0;
+		for (var j = 1; j < control_points.length; j++) {
+			var lower = control_points[j-1];
+			var upper = control_points[j];
+			if (height < upper.elevation || 
+				upper.elevation == mountain.elevation){
+				var fraction = smoothstep(lower.elevation, upper.elevation, height);
+				rock_column = new RockColumn(cell.world, {
+					elevation: 	height,
+					thickness:  lerp(lower.thickness, upper.thickness, fraction),
+					density:  	lerp(lower.density, upper.density, fraction),
+				});
+				console.log(height);
+				console.log(upper.elevation);
+				break;
+			}
+		};
+
 		var cell = cells[i];
-		cell.create(new RockColumn(cell.world, {
-			elevation: 	height,
-			thickness: 	lerp(ocean.thickness, land.thickness, land_fraction),
-			density: 	lerp(ocean.density, land.density, land_fraction),
-		}));
+		cell.create(rock_column);
 		cell.content.isostasy();
 	};
 
