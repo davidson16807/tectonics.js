@@ -22,12 +22,14 @@
 	<script src="libraries/threex/THREEx.screenshot.js"></script>
 	<script src="libraries/threex/THREEx.FullScreen.js"></script>
 	<script src="libraries/threex/THREEx.WindowResize.js"></script>
+	<script src="libraries/threex/THREEx.Debug.js"></script>
 	<script src="libraries/jquery-1.10.2.min.js"></script>
 	<script src="libraries/buckets-minified.js"></script>
 	<script src="libraries/random-0.26.js"></script>
 	<script src="libraries/base64-arraybuffer.js"></script>
 	<script src="libraries/kdTree-min.js"></script>
 	<script src="libraries/uuid.js"></script>
+	<script src="scripts/Sphere.js"></script>
 	<script src="scripts/VoronoiSphere.js"></script>
 	<script src="scripts/Grid.js"></script>
 	<script src="scripts/Publisher.js"></script>
@@ -36,6 +38,7 @@
 	<script src="scripts/model/Plate.js"></script>
 	<script src="scripts/model/SupercontinentCycle.js"></script>
 	<script src="scripts/model/World.js"></script>
+	<script src="scripts/model/WorldGenerator.js"></script>
 	<script src="scripts/model/Model.js"></script>
 	<script src="scripts/view/fragment/FragmentShaders.js"></script>
 	<script src="scripts/view/vertex/VertexShaders.js"></script>
@@ -276,7 +279,8 @@
 	if (querystring['load']) {
 		loadUrl(querystring['load']);
 	} else {
-		world = new World( view.grid );
+		world = new World();
+		EliasWorldGenerator.generate(world);
 		model.world(world);
 		$('#loadingSave').hide();
 		$('.parameters').show();
