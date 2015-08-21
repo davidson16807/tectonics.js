@@ -73,7 +73,7 @@ EliasWorldGenerator.generate = function (world, optional) {
 		var height_rank = 0;
 		for (var j = 0, lj = zDotMultipliers.length; j < lj; j++) {
 			var z = cell.pos.clone().dot(zDotMultipliers[j]);
-			height_rank += heaviside_approximation(z, 15);
+			height_rank += heaviside_approximation(z, 60);
 		};
 		cell.height_rank = height_rank;
 	}
@@ -88,9 +88,13 @@ EliasWorldGenerator.generate = function (world, optional) {
 	// This dataset is generated from statistical distributions matching those found on earth. 
 	// We sort the elevations and map each one to a cell from our height-rank sorted list.
 	heights = []
-	for (var i = 0, li = cells.length / 2; i < li; i++) {
-		heights.push(random.normal(-4019,1113));
-		heights.push(random.normal(797,1169));
+	var water_fraction = 0.05; // Earth = 0.71
+	for (var i = 0, li = cells.length; i < li; i++) {
+		if (random.uniform(0,1) > water_fraction) { 
+			heights.push(random.normal(-4019,1113));
+		} else {
+			heights.push(random.normal(797,1169) );
+		}
 	};
 	heights.sort(function(a,b) { return a-b; });
  	
@@ -154,8 +158,6 @@ EliasWorldGenerator.generate = function (world, optional) {
 					thickness:  lerp(lower.thickness, upper.thickness, fraction),
 					density:  	lerp(lower.density, upper.density, fraction),
 				});
-				console.log(height);
-				console.log(upper.elevation);
 				break;
 			}
 		};
