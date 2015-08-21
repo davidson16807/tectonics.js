@@ -22,25 +22,7 @@ function World(optional){
 	this.platesNum = optional['platesNum'] || 7;
 	this.mountainWidth = (optional['mountainWidth'] || 300) / radius;
 	
-	if(optional['plates'] !== void 0){
-		this.plates = optional['plates'];
-	} else {
-		var continentRadius = (optional['continentRadius'] || 1250) / radius;
-		var shield = this.getRandomPoint();
-		var plate = new Plate(this);
-
-		this.plates = [plate];
-		for(var i=0, length = plate.cells.length; i<length; i++) {
-			var cell = plate.cells[i];
-			if(shield.distanceTo(cell.pos) < continentRadius ) { 
-				cell.create(this.land);
-			} else {
-				cell.create(this.ocean);
-			}
-			cell.content.isostasy();
-		}
-		plate.densityOffset = plate.getDensityOffset();
-	}
+	this.plates = [];
 	this.updateNeighbors();
 	this.updateBorders();
 }
@@ -122,6 +104,9 @@ World.prototype.split = function(){
 	var largest = this.plates.sort(function(a, b) { return b.getContinentalSize() - a.getContinentalSize(); })[0];
 	var plates = largest.split();
 
+	if (plates === void 0) {
+		return;
+	};
 	for (var i = 0, li = plates.length; i < li; i++) {
 		this.add(plates[i]);
 	};

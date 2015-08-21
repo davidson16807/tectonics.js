@@ -30,6 +30,15 @@ Cell.prototype._canSubduct = function(subducted, invalid){
 }
 
 Cell.prototype.collide = function(other, invalid){
+	// no crust can exist past 250 my
+	// if any do, they must be destroyed asap
+	if (other.content.age > 200 && other.isContinental() === false && 
+		this.content.age > 200 && this.isContinental() === false) {
+		this.destroy();
+		other.destroy();
+		return;
+	};
+
 	var top, bottom;
 	if(this._canSubduct(other) === true){
 		top = this;

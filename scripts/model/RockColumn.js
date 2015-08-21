@@ -10,6 +10,7 @@ function RockColumn(world, optional){
 	this_.thickness = optional['thickness'] || world.ocean.thickness;
 	this_.density = optional['density'] || world.ocean.density;
 	this_.elevation = optional['elevation'] || world.ocean.elevation;
+
 	this_.isContinental = function(){
 		return this_.thickness > 17000;
 	}

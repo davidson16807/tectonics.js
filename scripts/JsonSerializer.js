@@ -120,7 +120,7 @@ JsonDeserializer.plate = function (plate_json, _world, options) {
 	for (var j = 0, li = ids.length; j < li; j++) {
 		rockColumn = RockColumn(_world, {
 			thickness: thicknesses[j],
-			density: densities[j]
+			density: densities[j],
 			age: age[j]
 		});
 		rockColumn.isostasy();

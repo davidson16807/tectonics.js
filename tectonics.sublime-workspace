@@ -1,0 +1,1626 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"bu",
+				"buffer_array_index"
+			],
+			[
+				"age",
+				"age_laplacian"
+			],
+			[
+				"agel",
+				"age_laplacians"
+			],
+			[
+				"scalarF",
+				"scalarFieldEditor"
+			],
+			[
+				"render",
+				"render_pass"
+			],
+			[
+				"data_pas",
+				"data_pass_target2"
+			],
+			[
+				"vectorFie",
+				"vectorField"
+			],
+			[
+				"scalarFie",
+				"scalarField"
+			],
+			[
+				"vectorF",
+				"vectorField"
+			],
+			[
+				"lapla",
+				"laplace_g"
+			],
+			[
+				"field_type",
+				"field_type"
+			],
+			[
+				"po",
+				"position"
+			],
+			[
+				"paddin",
+				"padding-top"
+			],
+			[
+				"padding",
+				"padding-left"
+			],
+			[
+				"padd",
+				"padding-top"
+			],
+			[
+				"back",
+				"background-color"
+			],
+			[
+				"demo",
+				"demo_selector"
+			],
+			[
+				"opt",
+				"option	Tag"
+			],
+			[
+				"vect",
+				"vector"
+			],
+			[
+				"scalar-demo",
+				"scalar-field-demo"
+			],
+			[
+				"grad",
+				"grad_grad_g"
+			],
+			[
+				"fiel",
+				"field_type"
+			],
+			[
+				"scalar",
+				"scalarFragmentShader"
+			],
+			[
+				"fragment",
+				"fragment_template"
+			],
+			[
+				"display",
+				"display_value"
+			],
+			[
+				"displa",
+				"display_value"
+			],
+			[
+				"Vect",
+				"Vector3"
+			],
+			[
+				"domain",
+				"domain-x"
+			],
+			[
+				"uniform",
+				"uniforms"
+			],
+			[
+				"vector",
+				"vectorShader"
+			],
+			[
+				"input",
+				"CHECKED	input"
+			],
+			[
+				"scalarfi",
+				"scalarFieldEditor"
+			],
+			[
+				"vectorField",
+				"vectorFieldEditor"
+			],
+			[
+				"move",
+				"move_text"
+			],
+			[
+				"soft",
+				"soft_redo"
+			],
+			[
+				"delete",
+				"delete_word"
+			],
+			[
+				"contex",
+				"contextual_move"
+			],
+			[
+				"scalarFiel",
+				"scalarFieldEditorContainer"
+			],
+			[
+				"pos",
+				"pos	position: ${1:relative};"
+			],
+			[
+				"for",
+				"for	for (…) {…} (custom)"
+			],
+			[
+				"at",
+				"attr	.attr() - multiple"
+			],
+			[
+				"rgb",
+				"rgba()"
+			],
+			[
+				"inline",
+				"inline-block"
+			],
+			[
+				"toggle",
+				"toggle	.toggle() (show/hide)"
+			],
+			[
+				"remove",
+				"removeClass	.removeClass()"
+			],
+			[
+				"pad",
+				"padding-right"
+			],
+			[
+				"padding-",
+				"padding-left"
+			],
+			[
+				"key",
+				"keys"
+			],
+			[
+				"text",
+				"texture"
+			],
+			[
+				"load",
+				"loadTexture"
+			],
+			[
+				"moll",
+				"mollweide_theta"
+			],
+			[
+				"vec",
+				"vec2"
+			],
+			[
+				"att",
+				"attr	.attr() - single"
+			],
+			[
+				"time",
+				"times"
+			],
+			[
+				"te",
+				"texture_file"
+			],
+			[
+				"ma",
+				"material"
+			],
+			[
+				"show_",
+				"show_at_center"
+			],
+			[
+				"land",
+				"land_fraction"
+			],
+			[
+				"thi",
+				"thickness"
+			],
+			[
+				"ocean",
+				"ocean_fraction"
+			],
+			[
+				"ed",
+				"edge1"
+			],
+			[
+				"max",
+				"maxVal"
+			],
+			[
+				"min",
+				"minVal"
+			],
+			[
+				"fun",
+				"fun	Function"
+			],
+			[
+				"proto",
+				"prototype"
+			],
+			[
+				"height",
+				"height_rank"
+			],
+			[
+				"z",
+				"zDotMultipliers"
+			],
+			[
+				"g",
+				"getRandomPoint"
+			],
+			[
+				"harmonics",
+				"harmonics_lookup"
+			],
+			[
+				"Mat",
+				"Matrix4"
+			],
+			[
+				"point",
+				"pointNum"
+			],
+			[
+				"poin",
+				"pointNum"
+			],
+			[
+				"getRan",
+				"getRandomPointAlongGreatCircle"
+			],
+			[
+				"euler",
+				"eulerPoleX"
+			],
+			[
+				"longest",
+				"longestPathEulerPole"
+			],
+			[
+				"short",
+				"shortestPathEulerPole"
+			],
+			[
+				"new",
+				"newSupercontinentPos"
+			],
+			[
+				"ol",
+				"oldSupercontinentPos"
+			],
+			[
+				"visible",
+				"visibleFaces"
+			],
+			[
+				"vertex",
+				"vertexId"
+			],
+			[
+				"ver",
+				"vertex"
+			],
+			[
+				"fa",
+				"faces"
+			],
+			[
+				"hol",
+				"hole"
+			],
+			[
+				"process",
+				"processing"
+			],
+			[
+				"assign",
+				"assignPoints"
+			],
+			[
+				"gol",
+				"golden"
+			],
+			[
+				"gold",
+				"golden_angle"
+			],
+			[
+				"T",
+				"THREEx"
+			],
+			[
+				"Th",
+				"THREE"
+			],
+			[
+				"cell",
+				"cells"
+			],
+			[
+				"density",
+				"densityOffset"
+			],
+			[
+				"vor",
+				"voronoiPointNum"
+			],
+			[
+				"l",
+				"length"
+			],
+			[
+				"nei",
+				"neighborIds"
+			],
+			[
+				"con",
+				"continue"
+			],
+			[
+				"lat",
+				"latNum"
+			],
+			[
+				"sub",
+				"subjugatedPlate"
+			],
+			[
+				"world",
+				"worldToLocal"
+			],
+			[
+				"up",
+				"update"
+			],
+			[
+				"this",
+				"this_"
+			],
+			[
+				"op",
+				"operand"
+			],
+			[
+				"pla",
+				"plates"
+			],
+			[
+				"valu",
+				"values"
+			],
+			[
+				"geome",
+				"geometries"
+			],
+			[
+				"fo",
+				"for	for (…) {…} (custom)"
+			],
+			[
+				"cont",
+				"content"
+			],
+			[
+				"raste",
+				"raster_id"
+			],
+			[
+				"Vertex",
+				"vertexShaders"
+			],
+			[
+				"Frag",
+				"fragmentShaders"
+			],
+			[
+				"even",
+				"event"
+			],
+			[
+				"plat",
+				"plate"
+			],
+			[
+				"plate",
+				"plate_json"
+			],
+			[
+				"J",
+				"JsonDeserializer"
+			],
+			[
+				"chan",
+				"channel"
+			],
+			[
+				"random",
+				"random"
+			],
+			[
+				"rock",
+				"rockColumn"
+			],
+			[
+				"c",
+				"cells_unfiltered"
+			],
+			[
+				"ce",
+				"cell"
+			],
+			[
+				"den",
+				"densities"
+			],
+			[
+				"bas",
+				"base64-arraybuffer"
+			],
+			[
+				"co",
+				"color"
+			],
+			[
+				"update",
+				"updateStats"
+			],
+			[
+				"tr",
+				"true"
+			],
+			[
+				"mod",
+				"model_view"
+			],
+			[
+				"ran",
+				"random_json"
+			],
+			[
+				"coll",
+				"collapsible"
+			],
+			[
+				"me",
+				"MegaYearPerSecond"
+			],
+			[
+				"wor",
+				"world"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "scripts/model/Plate.js",
+			"settings":
+			{
+				"buffer_size": 14614,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "scripts/view/View.js",
+			"settings":
+			{
+				"buffer_size": 6615,
+				"line_ending": "Windows"
+			}
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 392.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"levels",
+				"Levels: Update"
+			],
+			[
+				"javas",
+				"Set Syntax: JavaScript"
+			],
+			[
+				"key",
+				"Preferences: Key Bindings - Default"
+			],
+			[
+				"exp",
+				"Emmet: Expand Abbreviation"
+			],
+			[
+				"insta",
+				"Package Control: Install Package"
+			],
+			[
+				"wrap",
+				"HTML: Wrap Selection With Tag"
+			],
+			[
+				"go",
+				"Google Search: Search any"
+			],
+			[
+				"emme",
+				"Emmet: Expand Abbreviation"
+			],
+			[
+				"permut",
+				"Permute Lines: Reverse"
+			],
+			[
+				"goo",
+				"Google Search: Search any"
+			],
+			[
+				"inst",
+				"Package Control: Install Package"
+			],
+			[
+				"sort",
+				"Sort Lines"
+			],
+			[
+				"ex",
+				"Emmet: Expand Abbreviation"
+			],
+			[
+				"ke",
+				"Preferences: Key Bindings - User"
+			],
+			[
+				"del",
+				"File: Delete"
+			],
+			[
+				"g",
+				"Google Search: Search any"
+			],
+			[
+				"dele",
+				"File: Delete"
+			],
+			[
+				"expa",
+				"Emmet: Expand Abbreviation"
+			],
+			[
+				"emm",
+				"Emmet: Expand Abbreviation"
+			],
+			[
+				"",
+				"Browser Integration: Close browser"
+			],
+			[
+				"remove",
+				"Package Control: Remove Package"
+			],
+			[
+				"browser",
+				"Browser Integration: Close browser"
+			],
+			[
+				"in",
+				"Package Control: Install Package"
+			],
+			[
+				"instal",
+				"Package Control: Install Package"
+			],
+			[
+				"r",
+				"File: Rename"
+			],
+			[
+				"rename",
+				"File: Rename"
+			],
+			[
+				"beau",
+				"Javascript Beautify"
+			],
+			[
+				"renam",
+				"File: Rename"
+			],
+			[
+				"google",
+				"Google Search: Search any"
+			],
+			[
+				"remov",
+				"Package Control: Remove Package"
+			],
+			[
+				"beauti",
+				"Javascript Beautify"
+			],
+			[
+				"lint",
+				"JSLint"
+			],
+			[
+				"line ",
+				"Line Ending: Unix"
+			],
+			[
+				"lower",
+				"Convert Case: Lower Case"
+			],
+			[
+				"upp",
+				"Convert Case: Upper Case"
+			],
+			[
+				"upper",
+				"Convert Case: Upper Case"
+			],
+			[
+				"hex",
+				"Hex Viewer: Toggle Hex View"
+			],
+			[
+				"install",
+				"Package Control: Install Package"
+			],
+			[
+				"emmet",
+				"Emmet: Expand Abbreviation"
+			],
+			[
+				"mini",
+				"Minify Javascript"
+			],
+			[
+				"minify",
+				"Minify::Minify File"
+			],
+			[
+				"Snippet: for",
+				"Snippet: for (…) {…} (Improved Native For-Loop)"
+			],
+			[
+				"view in ",
+				"View In Browser"
+			],
+			[
+				"git push",
+				"Git (SideBarGit): Push"
+			],
+			[
+				"git commit",
+				"Git (SideBarGit): Commit…"
+			],
+			[
+				"package ",
+				"Preferences: Package Control Settings – User"
+			],
+			[
+				"package",
+				"Package Control: List Packages"
+			],
+			[
+				"commit",
+				"Git (SideBarGit): Commit…"
+			],
+			[
+				"remove p",
+				"Package Control: Remove Package"
+			],
+			[
+				"repl",
+				"Set Syntax: Io Repl"
+			]
+		],
+		"width": 416.0
+	},
+	"console":
+	{
+		"height": 273.0,
+		"history":
+		[
+			"`",
+			".618**3",
+			".618**2",
+			".618**4",
+			".618**3",
+			".618**2",
+			".38*.38",
+			".38^2",
+			".61**-2",
+			".61**-3",
+			".61**-1",
+			".61**2",
+			".618**11",
+			".618**10",
+			".618**6",
+			".618**5",
+			".618**2",
+			".61**4",
+			".61**3",
+			".61**2",
+			".61^2",
+			"5+2",
+			"view.run_command(\"toggle_overwrite\", {})",
+			"view.sel()",
+			"view",
+			"view.scanner.scan(1, 1)",
+			"window.scanner.scan(1, 1)",
+			"view.visible_region()",
+			"view.line(1)",
+			"view.line(0)",
+			"view.full_line(0)",
+			"view.full_line(1)",
+			"view.full_line()",
+			"view.substr()",
+			"view.substr(1)",
+			"window.substr(1)",
+			"substr(1)",
+			"window.scanner.scan(self.direction, self.indent_offset)",
+			"view.scanner.scan(self.direction, self.indent_offset)",
+			"self.scanner.scan(self.direction, self.indent_offset)",
+			"view.run_command(\"move\", {\"by\": \"groups\", \"forward\": False})",
+			"view.run_command(\"move\", {\"by\": \"group\", \"forward\": False})",
+			"view.run_command(\"move\", {\"by\": \"block\", \"forward\": False})",
+			"view.run_command(\"move\", {\"by\": \"blocks\", \"forward\": False})",
+			"view.run_command(\"move\", {\"by\": \"lines\", \"forward\": False})",
+			"view.run_command(\"contextual_move\", {\"context\": 'history'})",
+			"view.run_command(\"undo\", {})",
+			"view.run_command(\"contextual_move\", {\"direction\": 'up'})",
+			"view.run_command(\"contextual_move\", {\"context\": 'words'})",
+			"view.run_command(\"contextual_move\", {\"direction\": 'up'})",
+			"view.run_command(\"contextual_move\", {\"context\": 'words'})",
+			"view.run_command(\"contextual_move\", {\"context\": 'foo'})",
+			"view.run_command(\"contextual_move\", {})",
+			"view.run_command(\"contextual_move\", {\"context\": 'foo'})",
+			"view.run_command(\"contextual_move\", {})",
+			"view.run_command(\"contextual_move\", {foo: 'foo'})",
+			"view.run_command(\"contextual_move\", {state: 'foo'})",
+			"view.run_command(\"contextual_move\", {})",
+			"view.run_command(\"contextual_move\", {\"context\": 'foo'})",
+			"view.run_command(\"contextual_move\", {})",
+			"view.run_command(\"contextual_move\", {\"context\": False})",
+			"view.run_command(\"contextual_move\", {\"by\": \"lines\", \"forward\": False})",
+			"view.run_command(\"contextual_move\", {})",
+			"view.run_command(\"contextual_move\", {\"by\": \"lines\", \"forward\": False, \"extend\": True})",
+			"view.run_command(\"contextual_move\", {})",
+			"view.run_command(\"contextual_move\")",
+			"view.run_command(\"contextual_move\", {\"context\": \"lines\"})",
+			"view.xyzzy",
+			"view.foo",
+			"view.run_command(\"contextual_move\", {\"by\": \"lines\", \"forward\": False, \"extend\": True})",
+			"view.run_command(\"contextual_move\")",
+			"view.run_command(\"contextual_move\", {\"by\": \"lines\", \"forward\": False, \"extend\": True})",
+			"view.run_command(\"contextualmove\", {\"by\": \"lines\", \"forward\": False, \"extend\": True})",
+			"view.run_command(\"contextualMove\", {\"by\": \"lines\", \"forward\": False, \"extend\": True})",
+			"view.run_command(\"contextualmove\", {\"by\": \"lines\", \"forward\": False, \"extend\": True})",
+			"view.run_command(\"ContextualMoveCommand\", {\"by\": \"lines\", \"forward\": False, \"extend\": True})",
+			"view.run_command(\"move\", {\"by\": \"lines\", \"forward\": False, \"extend\": True})",
+			"view.run_command(\"move\", {\"by\": \"lines\", \"forward\": false, \"extend\": true})",
+			"view.run_command(\"move\", forward=False, extend=False)",
+			"view.run_command(\"move\", forward=false, extend=false)",
+			"view.run_command(\"move\", forward: false, extend: false)",
+			"view.run_command(\"move\");",
+			"view.run_command(\"move\", args= {\"by\": \"lines\", \"forward\": false, \"extend\": true})",
+			"view.run_command(\"move\", args: {\"by\": \"lines\", \"forward\": false, \"extend\": true})",
+			"view.run_command(\"move\", \"args\": {\"by\": \"lines\", \"forward\": false, \"extend\": true})",
+			"import urllib.request,os,hashlib; h = 'eb2297e1a458f27d836c04bb0cbaf282' + 'd0e7a3098092775ccb37ca9d6b2e4b7d'; pf = 'Package Control.sublime-package'; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); by = urllib.request.urlopen( 'http://packagecontrol.io/' + pf.replace(' ', '%20')).read(); dh = hashlib.sha256(by).hexdigest(); print('Error validating download (got %s instead of %s), please try manual install' % (dh, h)) if dh != h else open(os.path.join( ipp, pf), 'wb' ).write(by)"
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/F/Code/tectonics.js"
+	],
+	"file_history":
+	[
+		"/C/Users/Carl/AppData/Roaming/Sublime Text 3/Packages/User/Default (Windows).sublime-keymap",
+		"/F/Code/tectonics.js/tectonics.sublime-project",
+		"/F/Code/3BillionYears/index.html",
+		"/F/Code/field-calculator/css/main.css",
+		"/C/Users/Carl/AppData/Roaming/Sublime Text 3/Packages/ContextualMove/Default (Windows).sublime-keymap",
+		"/C/Users/Carl/AppData/Roaming/Sublime Text 3/Packages/ContextualMove/Default (Linux).sublime-keymap",
+		"/F/Code/field-calculator/index.html",
+		"/C/Users/Carl/AppData/Roaming/Sublime Text 3/Packages/ContextualMove/Default (OSX).sublime-keymap",
+		"/C/Users/Carl/AppData/Roaming/Sublime Text 3/Packages/ContextualMove/ContextualMoveCommand.py",
+		"/F/Code/field-calculator/vendor/three.js/RenderPass.js",
+		"/C/Users/Carl/AppData/Roaming/Sublime Text 3/Packages/Default/Default (Windows).sublime-keymap",
+		"/C/Users/Carl/AppData/Roaming/Sublime Text 3/Packages/User/Default (Windows).sublime.keymap",
+		"/C/Users/Carl/AppData/Roaming/Sublime Text 3/Packages/AceJump/Default (Windows).sublime.keymap",
+		"/F/Code/field-calculator/field-calculator.sublime-project",
+		"/F/Documents/Work/Pioneer/GT6.GenomeTileProvider.git/GenomeTileProvider/Browser/shader_demo.js",
+		"/F/Code/field-calculator/codemirror/clike.js",
+		"/F/Documents/Work/Pioneer/GT6.GenomeTileProvider.git/GenomeTileProvider/Browser/shader_demo.html",
+		"/C/Users/Carl/AppData/Roaming/Sublime Text 3/Packages/ContextualMove/TransposeCommand.py",
+		"/C/Users/Carl/AppData/Roaming/Sublime Text 3/Packages/ContextualMove/Delete Subword.sublime-macro",
+		"/C/Users/Carl/AppData/Roaming/Sublime Text 3/Packages/ContextualMove/README.md",
+		"/F/Code/field-calculator/README.md",
+		"/C/Users/Carl/AppData/Roaming/Sublime Text 3/Packages/ContextualMove/Delete Subword Before.sublime-macro",
+		"/C/Users/Carl/AppData/Roaming/Sublime Text 3/Packages/ContextualMove/Delete Line Before.sublime-macro",
+		"/C/Users/Carl/AppData/Roaming/Sublime Text 3/Packages/ContextualMove/Delete to BOL.sublime-macro",
+		"/C/Users/Carl/AppData/Local/Temp/7zEC45442FE/Find Results.hidden-tmLanguage",
+		"/F/Documents/Work/Pioneer/GT6.GenomeTileProvider.git/GenomeTileProvider/Browser/Points.js",
+		"/F/Documents/Work/Pioneer/GT6.GenomeTileProvider.git/GenomeTileProvider/Browser/reduce_demo.html",
+		"/F/Documents/Work/Pioneer/GT6.GenomeTileProvider.git/GenomeTileProvider/Browser/Nucleotides.js",
+		"/F/Documents/Work/Pioneer/GT6.GenomeTileProvider.git/GenomeTileProvider/Browser/ShaderPass.js",
+		"/F/Documents/Work/Pioneer/GT6.GenomeTileProvider.git/GenomeTileProvider/Browser/RenderPass.js",
+		"/F/Code/field-calculator/vendor/three.js/Three.js",
+		"/C/Users/Carl/AppData/Roaming/Sublime Text 3/Packages/ContextualMove/Delete Line.sublime-macro",
+		"/C/Users/Carl/AppData/Roaming/Sublime Text 3/Packages/ContextualMove/Delete Left Right.sublime-macro",
+		"/C/Users/Carl/AppData/Roaming/Sublime Text 3/Packages/ContextualMove/Delete to EOL.sublime-macro",
+		"/F/Documents/Work/Pioneer/GT6.GenomeTileProvider.git/GenomeTileProvider/Browser/fragment.glsl.c",
+		"/F/Code/field-calculator/field-calculator.sublime-workspace",
+		"/F/Code/multivariate-graphing-calculator/css/main.css",
+		"/F/Code/multivariate-graphing-calculator/index.html",
+		"/F/Code/field-calculator/vendor/threex/THREEx.Debug.js",
+		"/C/Users/Carl/AppData/Roaming/Sublime Text 3/Packages/Default/Preferences.sublime-settings",
+		"/F/Code/field-calculator/css/app.css",
+		"/F/Code/field-calculator/icons/pause-circled-512px.svg",
+		"/F/Code/field-calculator/icons/play-circled-512px.svg",
+		"/C/Users/Carl/Downloads/pause-circled-512px (1).svg",
+		"/F/Code/field-calculator/.git/COMMIT_EDITMSG",
+		"/F/Code/field-calculator/.git/config",
+		"/F/Code/field-calculator/.git/description",
+		"/F/Code/field-calculator/.git/HEAD",
+		"/F/Code/field-calculator/.git/index",
+		"/F/Code/field-calculator/.git/sourcetreeconfig",
+		"/F/Code/field-calculator/.git/refs/heads/master",
+		"/F/Code/field-calculator/molleweide.glsl.c",
+		"/F/Code/field-calculator/vendor/three.js/OrbitControls.js",
+		"/F/Code/field-calculator/field-calculator.sublime-project",
+		"/F/Code/tectonics.js/scripts/model/RockColumn.js",
+		"/F/Code/tectonics.js/scripts/view/View.js",
+		"/F/Code/tectonics.js/libraries/lodash.min.js",
+		"/F/Code/tectonics.js/scripts/Publisher.js",
+		"/F/Code/tectonics.js/scripts/model/Model.js",
+		"/F/Code/tectonics.js/index.html",
+		"/F/Code/tectonics.js/scripts/model/World.js",
+		"/F/Code/tectonics.js/scripts/model/Cell.js",
+		"/F/Code/tectonics.js/scripts/VoronoiSphere.js",
+		"/F/Code/tectonics.js/scripts/model/SupercontinentCycle.js",
+		"/F/Code/tectonics.js/scripts/model/Plate.js",
+		"/F/Code/tectonics.js/scripts/JsonSerializer.js",
+		"/F/Code/tectonics.js/styles/main.css",
+		"/F/Code/tectonics.js/scripts/model/WorldGenerator.js",
+		"/C/Users/Carl/AppData/Roaming/Sublime Text 3/Packages/User/optional.sublime-snippet",
+		"/F/Code/tectonics.js/libraries/three.js/Three.js",
+		"/F/Code/tectonics.js/scripts/Sphere.js",
+		"/C/Users/Carl/AppData/Roaming/Sublime Text 3/Packages/User/ContextualMoveCommand.py",
+		"/F/Code/tectonics.js/libraries/threex/THREEx.Debug.js",
+		"/F/Code/tectonics.js/scripts/model/EliasWorldGen.js",
+		"/F/Code/tectonics.js/scripts/model/CratonWorldGen.js",
+		"/F/Code/tectonics.js/scripts/view/fragment/debug.glsl.c",
+		"/F/Code/tectonics.js/scripts/Debug.js",
+		"/F/Code/tectonics.js/scripts/model/Sphere.js",
+		"/F/Documents/Work/UnderGrad/freshman/CMSC/Translator/translator.java",
+		"/F/Documents/Work/UnderGrad/freshman/CMSC/DeepSpaceDesign.doc",
+		"/F/Documents/Work/UnderGrad/freshman/CMSC/Camel/Camel.java",
+		"/F/Documents/Work/UnderGrad/freshman/CMSC/Adventure/enemies.txt",
+		"/F/Documents/Work/UnderGrad/freshman/CMSC/Adventure/objects.txt",
+		"/F/Documents/Work/UnderGrad/freshman/CMSC/Adventure/adventure.txt",
+		"/F/Documents/Work/UnderGrad/freshman/CMSC/Backups of Seaplane/Seaplane backed up on Sep 2 2006 at 5h53m21s PM.a2w",
+		"/F/Documents/Work/UnderGrad/freshman/CMSC/Virtual Pets/Main.java",
+		"/F/Documents/Work/UnderGrad/freshman/CMSC/Virtual Pets/Pet.java",
+		"/F/Documents/Work/UnderGrad/freshman/CMSC/ChaosConcept/ChaosConcept.txt",
+		"/F/Code/tectonics.js/libraries/three.js/ConvexGeometry.js",
+		"/F/Code/tectonics.js/libraries/threex/THREEx.FibonacciSphereGeometry.js",
+		"/F/Code/tectonics.js/libraries/random-0.26.js",
+		"/F/Code/tectonics.js/libraries/threex/THREEx.QuickHull.js",
+		"/F/Code/tectonics.js/scripts/Cached.js",
+		"/F/Repository/pyTectonics/Plates/grid/fibgrid.py",
+		"/F/Code/tectonics.js/scripts/THREEx.FibonacciSphereGeometry.js",
+		"/F/Repository/pyTectonics/Plates/grid/skippedgrid.py",
+		"/F/Code/tectonics.js/scripts/Grid.js",
+		"/F/Code/tectonics.js/libraries/threex/threex.embedded.js",
+		"/F/Code/tectonics.js/scripts/view/vertex/VertexShaders.js",
+		"/F/Code/tectonics.js/scripts/view/generate-shader-js.sh",
+		"/F/Code/tectonics.js/scripts/view/fragment/FragmentShaders.js",
+		"/F/Code/tectonics.js/libraries/uuid.js",
+		"/C/Users/Carl/Downloads/1433119387121-23.3My.sim",
+		"/C/Users/Carl/Downloads/1433118704206-17.0My.sim",
+		"/F/Code/tectonics.js/scripts/Voronoi.js",
+		"/C/Users/Carl/AppData/Roaming/Sublime Text 3/Packages/User/for-()-{}.sublime-snippet",
+		"/F/Code/tectonics.js/scripts/view/fragment/template.glsl.c",
+		"/F/Code/tectonics.js/scripts/view/vertex/orthographic.glsl.c",
+		"/F/Code/tectonics.js/scripts/view/vertex/texture.glsl.c",
+		"/F/Code/tectonics.js/scripts/view/vertex/equirectangular.glsl.c",
+		"/F/Code/tectonics.js/scripts/view/shaders/fragment/debug.glsl.c",
+		"/F/Code/tectonics.js/scripts/view/Style.template.js",
+		"/F/Code/tectonics.js/scripts/view/generate-shaders.sh",
+		"/F/Code/tectonics.js/scripts/view/Style.js",
+		"/F/Code/tectonics.js/scripts/view/shaders/generate.sh",
+		"/F/Code/tectonics.js/scripts/view/generate.py",
+		"/F/Code/tectonics.js/scripts/view/shaders/template.fragment.glsl.c",
+		"/F/Code/tectonics.js/scripts/view/shaders/debug.fragment.glsl.c",
+		"/F/Code/tectonics.js/scripts/view/shaders/texture.vertex.glsl.c",
+		"/F/Code/tectonics.js/scripts/view/shaders/orthographic.vertex.glsl.c",
+		"/F/Code/tectonics.js/scripts/view/shaders/equirectangular.glsl.c",
+		"/F/Code/tectonics.js/libraries/base64-arraybuffer.js",
+		"/C/Users/Carl/Desktop/temp/jump_along_indent.py",
+		"/C/Users/Carl/Desktop/temp/jump_along_indent.sublime-settings",
+		"/C/Users/Carl/AppData/Roaming/Sublime Text 3/Installed Packages/Jump Along Indent.sublime-package",
+		"/C/Users/Carl/Downloads/1432786169052-12.4My.sim",
+		"/C/Users/Carl/Downloads/1432787084923-10.1My.sim",
+		"/C/Users/Carl/Downloads/dist/jszip.js"
+	],
+	"find":
+	{
+		"height": 34.0
+	},
+	"find_in_files":
+	{
+		"height": 93.0,
+		"where_history":
+		[
+			"F:\\Code\\field-calculator",
+			"F:\\Code\\tectonics.js\\scripts",
+			"F:\\Code\\tectonics.js\\",
+			"F:\\Code\\tectonics.js\\scripts",
+			"F:\\Code\\tectonics.js\\",
+			"F:\\Code\\tectonics.js\\scripts",
+			"F:\\Code\\tectonics.js\\",
+			"F:\\Code\\tectonics.js\\scripts",
+			"F:\\Code\\tectonics.js\\",
+			"F:\\Code\\tectonics.js\\scripts"
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"neighbor			",
+			"neighbor		",
+			"neighbor	",
+			"neighbor",
+			"cells",
+			"age",
+			"age_gradient",
+			"age_laplacian",
+			"vectorfieldeditor",
+			"field_type",
+			"compile",
+			"func",
+			"script",
+			"link",
+			"vendor",
+			"css",
+			"js/",
+			"uniform sampler2D prev;",
+			"textContent",
+			"passThroughVertexShader",
+			"USER_INPUT",
+			"file",
+			"locus",
+			"snps",
+			"_getSnpPixel",
+			"_fileXyToFileUv",
+			"_locusToFileXy",
+			"prev",
+			"render_",
+			"prev",
+			"data_pass",
+			"material",
+			"data_render",
+			"renderer",
+			"data_pass",
+			"renderer",
+			"data_pass",
+			"_pass",
+			"data_",
+			"renderer",
+			"render_pass",
+			"render_p",
+			"render_",
+			"data_pass",
+			"vUv",
+			"scr",
+			"scrip",
+			"passThroughShader",
+			"fragment",
+			"data",
+			"Image",
+			"image",
+			"Image",
+			"image",
+			"var",
+			",",
+			"compile",
+			"vectorShader",
+			"scalarField",
+			"vectorShader",
+			"shad",
+			"init",
+			"Geomet",
+			"scalarShader",
+			"toggle",
+			"vectorShader",
+			"vectorField",
+			"vectorShader",
+			"compile",
+			".set",
+			"set",
+			"rep",
+			"context",
+			"var",
+			"geometry",
+			" ",
+			"var",
+			"shader",
+			"shaderFiel",
+			"shaderfiel",
+			"shader",
+			"shadermater",
+			"needsUpdate",
+			"scalarField",
+			"field",
+			"var",
+			"field",
+			"data_",
+			"render_",
+			"var",
+			"render_pass",
+			"scene",
+			"field",
+			"vectorField",
+			"scalarField",
+			"geometry",
+			"field",
+			"scalarfield",
+			"vectorshader",
+			"shadermat",
+			"compile",
+			"demo",
+			"field-",
+			"scrip",
+			"render_pass",
+			"scene",
+			"Scene",
+			"scene",
+			"camera",
+			"scene",
+			"addGetWebGLMessage",
+			"Detector",
+			"renderer",
+			"material",
+			"f_prev2",
+			"f_prev1",
+			"prev",
+			"texture2",
+			"texture1",
+			"mesh",
+			"a",
+			"A",
+			"a",
+			"seed",
+			"a",
+			"A",
+			"a",
+			"seed"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"make",
+			"prepare",
+			"detail",
+			"radius",
+			"indices",
+			"vertices",
+			"radius",
+			"renderer",
+			"find"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": false
+	},
+	"groups":
+	[
+		{
+			"selected": 1,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "scripts/model/Plate.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 14614,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								12660,
+								12660
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 6180.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "scripts/view/View.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 6615,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								4061,
+								4061
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 1650.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 22.0
+	},
+	"input":
+	{
+		"height": 36.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.exec":
+	{
+		"height": 23.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"output.hex_viewer_inspector":
+	{
+		"height": 142.0
+	},
+	"pinned_build_system": "field-calculator",
+	"project": "tectonics.sublime-project",
+	"replace":
+	{
+		"height": 40.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"view",
+				"scripts\\view\\View.js"
+			],
+			[
+				"css",
+				"css\\main.css"
+			],
+			[
+				"cs",
+				"css\\main.css"
+			],
+			[
+				"main",
+				"css\\main.css"
+			],
+			[
+				"read",
+				"README.md"
+			],
+			[
+				"three",
+				"vendor\\three.js\\Three.js"
+			],
+			[
+				"in",
+				"index.html"
+			],
+			[
+				"sh",
+				"F:\\Documents\\Work\\Pioneer\\GT6.GenomeTileProvider.git\\GenomeTileProvider\\Browser\\shader_demo.html"
+			],
+			[
+				"thr",
+				"vendor\\three.js\\Three.js"
+			],
+			[
+				"",
+				"index.html"
+			],
+			[
+				"ma",
+				"css\\main.css"
+			],
+			[
+				"m",
+				"css\\main.css"
+			],
+			[
+				"play",
+				"icons\\play-circled-512px.svg"
+			],
+			[
+				"ap",
+				"css\\app.css"
+			],
+			[
+				"i",
+				"index.html"
+			],
+			[
+				"app",
+				"css\\app.css"
+			],
+			[
+				"moll",
+				"molleweide.glsl.c"
+			],
+			[
+				"worl",
+				"scripts\\model\\WorldGenerator.js"
+			],
+			[
+				"rock",
+				"scripts\\model\\RockColumn.js"
+			],
+			[
+				"ind",
+				"index.html"
+			],
+			[
+				"lod",
+				"libraries\\lodash.min.js"
+			],
+			[
+				"mode",
+				"scripts\\model\\Model.js"
+			],
+			[
+				"p",
+				"scripts\\model\\Plate.js"
+			],
+			[
+				"c",
+				"scripts\\model\\Cell.js"
+			],
+			[
+				"pl",
+				"scripts\\model\\Plate.js"
+			],
+			[
+				"cel",
+				"scripts\\model\\Cell.js"
+			],
+			[
+				"ce",
+				"scripts\\model\\Cell.js"
+			],
+			[
+				"ro",
+				"scripts\\model\\RockColumn.js"
+			],
+			[
+				"wo",
+				"scripts\\model\\WorldGenerator.js"
+			],
+			[
+				"sph",
+				"scripts\\Sphere.js"
+			],
+			[
+				"deb",
+				"libraries\\threex\\THREEx.Debug.js"
+			],
+			[
+				"debug",
+				"libraries\\threex\\THREEx.Debug.js"
+			],
+			[
+				"world",
+				"scripts\\model\\WorldGenerator.js"
+			],
+			[
+				"sp",
+				"scripts\\Sphere.js"
+			],
+			[
+				"debug.",
+				"libraries\\threex\\THREEx.Debug.js"
+			],
+			[
+				"spher",
+				"scripts\\Sphere.js"
+			],
+			[
+				"su",
+				"scripts\\model\\SupercontinentCycle.js"
+			],
+			[
+				"sup",
+				"scripts\\model\\SupercontinentCycle.js"
+			],
+			[
+				"wor",
+				"scripts\\model\\World.js"
+			],
+			[
+				"random",
+				"libraries\\random-0.26.js"
+			],
+			[
+				"qui",
+				"libraries\\threex\\THREEx.QuickHull.js"
+			],
+			[
+				"fib",
+				"libraries\\threex\\THREEx.FibonacciSphereGeometry.js"
+			],
+			[
+				"quic",
+				"libraries\\threex\\THREEx.QuickHull.js"
+			],
+			[
+				"ca",
+				"scripts\\Cached.js"
+			],
+			[
+				"conv",
+				"libraries\\three.js\\ConvexGeometry.js"
+			],
+			[
+				"con",
+				"libraries\\three.js\\THREE.ConvexGeometry.js"
+			],
+			[
+				"quick",
+				"libraries\\threex\\THREEx.QuickHull"
+			],
+			[
+				"fi",
+				"F:\\Code\\tectonics.js\\scripts\\THREEx.FibonacciSphereGeometry.js"
+			],
+			[
+				"fibo",
+				"libraries\\threex\\THREEx.FibonacciSphereGeometry.js"
+			],
+			[
+				"w",
+				"scripts\\model\\World.js"
+			],
+			[
+				"threex",
+				"libraries\\threex\\threex.embedded.js"
+			],
+			[
+				"sphere",
+				"scripts\\FibonacciSphere.js"
+			],
+			[
+				"grid",
+				"scripts\\Grid.js"
+			],
+			[
+				"f",
+				"Find Results"
+			],
+			[
+				"fin",
+				"Find Results"
+			],
+			[
+				"g",
+				"scripts\\Grid.js"
+			],
+			[
+				"vor",
+				"scripts\\VoronoiSphere.js"
+			],
+			[
+				"vo",
+				"scripts\\VoronoiSphere.js"
+			],
+			[
+				"ver",
+				"scripts\\view\\vertex\\VertexShaders.js"
+			],
+			[
+				"shader",
+				"scripts\\view\\fragment\\FragmentShaders.js"
+			],
+			[
+				"gener",
+				"scripts\\view\\generate-shader-js.sh"
+			],
+			[
+				"cach",
+				"scripts\\Cached.js"
+			],
+			[
+				"v",
+				"scripts\\view\\View.js"
+			],
+			[
+				"voro",
+				"scripts\\Voronoi.js"
+			],
+			[
+				"plate",
+				"scripts\\model\\Plate.js"
+			],
+			[
+				"model",
+				"scripts\\model\\Model.js"
+			],
+			[
+				"json",
+				"scripts\\JsonSerializer.js"
+			],
+			[
+				"cell",
+				"scripts\\model\\Cell.js"
+			],
+			[
+				"pla",
+				"scripts\\model\\Plate.js"
+			],
+			[
+				"publi",
+				"scripts\\Publisher.js"
+			],
+			[
+				"late",
+				"scripts\\model\\Plate.js"
+			],
+			[
+				"vi",
+				"scripts\\view\\View.js"
+			],
+			[
+				"cac",
+				"scripts\\Cached.js"
+			],
+			[
+				"viewmod",
+				"scripts\\ViewModel.js"
+			],
+			[
+				"inde",
+				"index.html"
+			]
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 500.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 380.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+		"move_context": "words",
+		"move_context_do_once": false
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 145.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
