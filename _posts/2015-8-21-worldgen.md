@@ -2,7 +2,11 @@
 title: Model initialization using a Fractal Algorithm
 layout: default
 ---
-I've done some work to improve world initialization. Long time users will recall how the model always initialized with a single perfectly circular seed continent. It now initializes worlds with continents of arbitrary shape.  The world nevertheless maintains a [hypsography](https://en.wikipedia.org/wiki/Elevation#Hypsography) similar to that of Earth. 
+I've done some work to improve world initialization. Long time users will recall how the model always initialized with a single perfectly circular seed continent. 
+
+![](images/original.png)
+
+It now initializes worlds with continents of arbitrary shape.  The world nevertheless maintains a [hypsography](https://en.wikipedia.org/wiki/Elevation#Hypsography) similar to that of Earth. 
 
 How does it do this? With 2D models there are an abundance of algorithms used for generating terrain. There's diamond square, perlin noise, brownian surfaces, genetic algorithms... None of these translate well to 3D, though, and there's not a lot of algorithms that are tailor made for the circumstance. Really, I've only found one serious contender. This algorithm was first described by one [Hugo Elias](http://freespace.virgin.net/hugo.elias/models/m_landsp.htm), then later improved upon by one [Paul Bourke](http://paulbourke.net/fractals/noise/). Its original creator is unknown to me. The method is simple enough:
 
