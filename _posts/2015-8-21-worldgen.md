@@ -72,7 +72,7 @@ If we sort our grid cells by height rank, we get a sense for which cells are hig
 
 The technique is remarkably flexible. I can generate a planet similar to Earth, or Mars, or any other planet for which the hypsographic curve is known. I can also decompose Earth's hypsographic curve, seperating curves for ocean and land. I can combine these curves in any ratio to produce a planet with a specific percentage of ocean cover. 
 
-![](land_fraction0.05.png)
+![](images/land_fraction0.05.png)
 
 The technique is also easily abstracted. It's apparent the method works equally well for any terrain generation algorithm, but it goes beyond that. It can work for any procedural algorithm that describes a scalar field, and it works particularly well when that procedural algorithm can't reproduce a probability distribution found in nature. 
 
