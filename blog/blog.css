@@ -52,6 +52,10 @@ a {
     color: #0A968C;
     text-decoration: initial;
 }
+a:hover {
+    color: #0A5E68;
+    text-decoration: initial;
+}
 
 .quotation
 {
