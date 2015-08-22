@@ -10,13 +10,13 @@ How does it do this? With 2D models there are an abundance of algorithms used fo
  * add height to one of the halves
  * repeat as needed
 
-I've made a few contributions to the algorithm in my attempt to adapt it to the model. I'll describe these contributions later, but first I want describe this algorithm mathematically. 
+I've made a few contributions to the algorithm in my attempt to adapt it to the model. I'll describe these contributions later, but first I want to describe this algorithm mathematically. 
 
 Think about what happens in step 2, where you increase elevation depending on what side you're on. Consider the simplest case where the "random axis" happens to be the planet's axis of rotation. We'll call this our z axis. Now, we want everything in the northern hemisphere to increase in height. In other words, we increase elevation where z is positive. We'll use the [Heaviside step function](https://en.wikipedia.org/wiki/Heaviside_step_function) to describe this relation: 
 	
 <p>`Delta h prop H(x_z)`</p>
 	
-Where <span>`Delta h`</span> is the change in height, and x is our position in space. 
+Where <span>\(Delta h\)</span> is the change in height, and x is our position in space. 
 
 Now, back to step 1. We want to orient our northern hemisphere so that it faces some random direction. We can do this by applying a matrix to x. This matrix, denoted A, represents a random rotation in 3D space. 
 
