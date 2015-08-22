@@ -75,6 +75,7 @@ JsonSerializer.plate = function (plate, options) {
 	var ids = 			new Uint16Array(cells.length);
 	var thicknesses = 	new Uint16Array(cells.length);
 	var densities = 	new Uint16Array(cells.length);
+	var age = 			new Uint16Array(cells.length);
 	for (var j = 0, lj = cells.length; j < lj; j++) {
 		cell = cells[j];
 		ids[j] = cell.id;
@@ -87,6 +88,7 @@ JsonSerializer.plate = function (plate, options) {
 		ids: 			Base64.encode(ids.buffer),
 		thicknesses: 	Base64.encode(thicknesses.buffer),
 		densities: 		Base64.encode(densities.buffer),
+		ages: 			Base64.encode(age.buffer),
 	};
 
 	return plate_json;
@@ -114,6 +116,7 @@ JsonDeserializer.plate = function (plate_json, _world, options) {
 	var ids = 			new Uint16Array(Base64.decode(rockColumns_json.ids));
 	var thicknesses = 	new Uint16Array(Base64.decode(rockColumns_json.thicknesses));
 	var densities = 	new Uint16Array(Base64.decode(rockColumns_json.densities));
+	var ages = 			new Uint16Array(Base64.decode(rockColumns_json.ages));
 
 	var cells = plate.cells;
 	var rockColumn;
@@ -121,7 +124,7 @@ JsonDeserializer.plate = function (plate_json, _world, options) {
 		rockColumn = RockColumn(_world, {
 			thickness: thicknesses[j],
 			density: densities[j],
-			age: age[j]
+			age: ages[j]
 		});
 		rockColumn.isostasy();
 
