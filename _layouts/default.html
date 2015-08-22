@@ -33,20 +33,4 @@
 			{{ content }}
 		</div>
 	</body>
-	
-	<script type="text/javascript">
-	var mywindow = $(window);
-	var mypos = mywindow.scrollTop();
-	mywindow.scroll(function() {
-	    if(mywindow.scrollTop() > mypos)
-	    {
-	        $('.navigation').fadeOut();  
-	    }
-	    else
-	    {
-	        $('.navigation').fadeIn();
-	    }
-	    mypos = mywindow.scrollTop();
-	 });
-	</script>
 </html>
