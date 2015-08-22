@@ -28,11 +28,21 @@ Think about what happens in step 2, where you increase elevation depending on wh
 
 There are a few commonly cited problems with this algorithm. One problem occurs when you zoom in on the world. You start to see a bunch of straight lines that mark where the world was divided. 
 
-This has a rather obvious solution - use a smoother function. In my model, I use [the logistic function](https://en.wikipedia.org/wiki/Heaviside_step_function#Analytic_approximations), which is commonly used as a smooth approximation to the Heaviside:
+![](images/50i.png)
+
+You can mask this by increasing the number of iterations, but it still looks jagged - almost as if the world has no erosion. 
+
+![](images/1000i.png)
+
+This problem has a rather obvious solution - use a smoother function. In my model, I use [the logistic function](https://en.wikipedia.org/wiki/Heaviside_step_function#Analytic_approximations), which is commonly used as a smooth approximation to the Heaviside:
 
 <p>`H(x) ~~ 1 / (1 + e^(-2kx))`</p>
 
-<p>A larger value for k corresponds to a sharper transition. For my model, I set `k ~~ 60`. This is suitable for use with a unit sphere where `-1 < x_z < 1`. </p>
+<p>A larger value for k corresponds to a sharper transition. For my model, I set `k ~~ 300`. This is suitable for use with a unit sphere where `-1 < x_z < 1`. </p>
+
+| ![k = 50](images/50k.png) | ![k = 300](images/300k.png) |
+|--------------|---------------|
+| k = 50 | k = 300 |
 
 Another problem with the algorithm concerns the realism of the heights generated. Paul Bourke aluded to this when he noted that a planet generated this way would be symmetrical. Oceans on one side would perfectly match the shape of continents on the other side.
 
@@ -61,6 +71,8 @@ The hypsographic curve is a probability density function that tells us the proba
 If we sort our grid cells by height rank, we get a sense for which cells are high or low. All that's left is to sort a randomly generated list of elevations and pair them up with our ordered list of grid cells. Each grid cell now has an elevation that is in keeping with the hypsographic curve. 
 
 The technique is remarkably flexible. I can generate a planet similar to Earth, or Mars, or any other planet for which the hypsographic curve is known. I can also decompose Earth's hypsographic curve, seperating curves for ocean and land. I can combine these curves in any ratio to produce a planet with a specific percentage of ocean cover. 
+
+![](land_fraction0.05.png)
 
 The technique is also easily abstracted. It's apparent the method works equally well for any terrain generation algorithm, but it goes beyond that. It can work for any procedural algorithm that describes a scalar field, and it works particularly well when that procedural algorithm can't reproduce a probability distribution found in nature. 
 

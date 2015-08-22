@@ -39,6 +39,7 @@ EliasWorldGenerator.generate = function (world, optional) {
 	}
 	function heaviside_approximation (x, k) {
 		return 2 / (1 + exp(-k*x)) - 1;
+		return x>0? 1: 0; 
 	}
 	function clamp (x, minVal, maxVal) {
 		return Math.min(Math.max(x, minVal), maxVal);
@@ -73,7 +74,7 @@ EliasWorldGenerator.generate = function (world, optional) {
 		var height_rank = 0;
 		for (var j = 0, lj = zDotMultipliers.length; j < lj; j++) {
 			var z = cell.pos.clone().dot(zDotMultipliers[j]);
-			height_rank += heaviside_approximation(z, 60);
+			height_rank += heaviside_approximation(z, 300);
 		};
 		cell.height_rank = height_rank;
 	}
