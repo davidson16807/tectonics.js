@@ -10,7 +10,7 @@
     <link href="blog.css" rel="stylesheet" type="text/css"/>
     <link href="{{ site.url }}/styles/main.css" rel="stylesheet" type="text/css"/>
     <link href="{{ site.url }}/styles/modern.css" rel="stylesheet" type="text/css"/>
-    
+	<script src="http://code.jquery.com/jquery.min.js"></script>
     <script type="text/javascript"
       src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=AM_HTMLorMML-full"></script>
 </head>
@@ -33,4 +33,20 @@
 			{{ content }}
 		</div>
 	</body>
+	
+	<script type="text/javascript">
+	var mywindow = $(window);
+	var mypos = mywindow.scrollTop();
+	mywindow.scroll(function() {
+	    if(mywindow.scrollTop() > mypos)
+	    {
+	        $('.navigation').fadeOut();  
+	    }
+	    else
+	    {
+	        $('.navigation').fadeIn();
+	    }
+	    mypos = mywindow.scrollTop();
+	 });
+	</script>
 </html>
