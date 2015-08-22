@@ -18,7 +18,7 @@ Think about what happens in step 2, where you increase elevation depending on wh
 	
 <p>Where `Delta h` is the change in height, and `vec(x)` is our position in space. </p>
 
-<p>Now, back to step 1. We want to orient our northern hemisphere so that it faces some random direction. We can do this by applying a matrix to `vec(x)`. This matrix, denoted `A`, represents a random rotation in 3D space. </p>
+<p>Now, back to step 1. We want to orient our northern hemisphere so that it faces some random direction. We can do this by applying a matrix to `vec(x)`. This matrix, denoted `bb A`, represents a random rotation in 3D space. </p>
 
 <p>`Delta h prop H((bb A vec(x))_z)`</p>
 
@@ -44,7 +44,13 @@ However, the problems run deeper than this. Earth follows a very specific [hypso
 
 There's no way we're going to accomplish this by tweaking the existing model parameters. The solution requires us to use Earth's hypsographic curve as its own model parameter.
 
-The hypsographic curve is a probability density function that tells us the probability of finding a piece of land with a given elevation. We can use this probability density function to generate a series of random values. These random values will serve as the elevations that populate our world. 
+The hypsographic curve is a probability density function that tells us the probability of finding a piece of land with a given elevation. We can use this probability density function to generate a series of random values. These random values will serve as the elevations that populate our world. On earth, hypsography can be represented by the following statistical model:
+
+<p>`h ~ {(cc N(-4019, 1113), if f_{ocean} > 0.71),
+		 (cc N(797,1169),    if f_{ocean} < 0.71):}`</p>
+<p>`f_{ocean} ~ cc {unif}(0,1)`</p>
+
+<p>where `h` is height in meters, and f_{ocean} is a means to express the fraction of earth covered by ocean. </p>
 
 <p>But how do we map these elevations to location? That's the job for our algorithm. Our algorithm may not be able to provide us with elevation, but it can tell us which areas need to be high or low. For each grid cell in the model, our algorithm could be said to generate a height rank, `h_r` such that:</p>
 
