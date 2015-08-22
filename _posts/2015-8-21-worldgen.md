@@ -16,7 +16,7 @@ Think about what happens in step 2, where you increase elevation depending on wh
 	
 <p>`Delta h prop H(x_z)`</p>
 	
-Where <span>\(Delta h\)</span> is the change in height, and x is our position in space. 
+Where <span>\\\(Delta h\\\)</span> is the change in height, and x is our position in space. 
 
 Now, back to step 1. We want to orient our northern hemisphere so that it faces some random direction. We can do this by applying a matrix to x. This matrix, denoted A, represents a random rotation in 3D space. 
 
