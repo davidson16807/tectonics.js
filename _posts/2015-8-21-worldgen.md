@@ -16,13 +16,13 @@ Think about what happens in step 2, where you increase elevation depending on wh
 	
 <p>`Delta h prop H(x_z)`</p>
 	
-Where <span>\\\(Delta h\\\)</span> is the change in height, and x is our position in space. 
+Where <math>Delta h</math> is the change in height, and x is our position in space. 
 
 Now, back to step 1. We want to orient our northern hemisphere so that it faces some random direction. We can do this by applying a matrix to x. This matrix, denoted A, represents a random rotation in 3D space. 
 
 <p>`Delta h prop H((Ax)_z)`</p>
 
-We only wind up using the z component of the matrix, so this simplifies to taking the dot product of a random unit vector, denoted <span>`a`</span>.
+We only wind up using the z component of the matrix, so this simplifies to taking the dot product of a random unit vector, denoted <math>a</math>.
 
 <p>`Delta h prop H(a * x)`</p>
 
@@ -32,11 +32,11 @@ This has a rather obvious solution - use a smoother function. In my model, I use
 
 <p>`H(x) ~~ 1 / (1 + e^(-2kx))`</p>
 
-A larger value for k corresponds to a sharper transition. For my model, I set <span>`k ~~ 60`</span>. This is suitable for use with a unit sphere where <span>`-1 < x_z < 1`</span>. 
+A larger value for k corresponds to a sharper transition. For my model, I set <math>k ~~ 60</math>. This is suitable for use with a unit sphere where <math>-1 < x_z < 1</math>. 
 
 Another problem with the algorithm concerns the realism of the heights generated. Paul Bourke aluded to this when he noted that a planet generated this way would be symmetrical. Oceans on one side would perfectly match the shape of continents on the other side.
 
-Paul's solution was to offset <span>`a * x`</span> in the equations above by some random amount. The effect of this was to make one of the hemispheres slightly larger than the other. 
+Paul's solution was to offset <math>a * x</math> in the equations above by some random amount. The effect of this was to make one of the hemispheres slightly larger than the other. 
 
 <p>`Delta h prop H(a * x + b)`</p>
 
@@ -46,11 +46,11 @@ There's no way we're going to accomplish this by tweaking the existing model par
 
 The hypsographic curve is a probability density function that tells us the probability of finding a piece of land with a given elevation. We can use this probability density function to generate a series of random values. These random values will serve as the elevations that populate our world. 
 
-But how do we map these elevations to location? That's the job for our algorithm. Our algorithm may not be able to provide us with elevation, but it can tell us which areas need to be high or low. For each grid cell in the model, our algorithm could be said to generate a height rank, <span>`h_r`</span> such that:
+But how do we map these elevations to location? That's the job for our algorithm. Our algorithm may not be able to provide us with elevation, but it can tell us which areas need to be high or low. For each grid cell in the model, our algorithm could be said to generate a height rank, <math>h_r</math> such that:
 
 <p>`Delta h_r = H(a * x)`</p>
 
-Where <span>`Delta h_r`</span> is the change in height rank with each iteration of the algorithm. 
+Where <math>Delta h_r</math> is the change in height rank with each iteration of the algorithm. 
 
 If we sort our grid cells by height rank, we get a sense for which cells are high or low. All that's left is to sort a randomly generated list of elevations and pair them up with our ordered list of grid cells. Each grid cell now has an elevation that is in keeping with the hypsographic curve. 
 
