@@ -46,11 +46,11 @@ There's no way we're going to accomplish this by tweaking the existing model par
 
 The hypsographic curve is a probability density function that tells us the probability of finding a piece of land with a given elevation. We can use this probability density function to generate a series of random values. These random values will serve as the elevations that populate our world. On earth, hypsography can be represented by the following statistical model:
 
-<p>`h ~ {(cc N(-4019, 1113), if f_{ocean} > 0.71),
-		 (cc N(797,1169),    if f_{ocean} < 0.71):}`</p>
+<p>`h ~ {(N(-4019, 1113), if f_{ocean} > 0.71),
+		 (N(797,1169),    if f_{ocean} < 0.71):}`</p>
 <p>`f_{ocean} ~ uni f(0,1)`</p>
 
-<p>where `h` is height in meters, and `f_{ocean}` is a means to express the fraction of earth covered by ocean. `cc N` and `uni f` are the normal and uniform distribution functions, respectively. </p>
+<p>where `h` is height in meters, and `f_{ocean}` is a means to express the fraction of earth covered by ocean. `N` and `uni f` are the normal and uniform distribution functions, respectively. </p>
 
 <p>But how do we map these elevations to location? That's the job for our algorithm. Our algorithm may not be able to provide us with elevation, but it can tell us which areas need to be high or low. For each grid cell in the model, our algorithm could be said to generate a height rank, `h_r` such that:</p>
 
