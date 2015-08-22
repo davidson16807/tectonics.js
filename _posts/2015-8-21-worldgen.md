@@ -14,6 +14,12 @@ How does it do this? With 2D models there are an abundance of algorithms used fo
  * add height to one of the halves
  * repeat as needed
 
+The more iterations, the better it looks.
+
+| ![1 iteration](images/1i.png) | ![10 iterations](images/10i.png) |
+|--------------|---------------|
+| 1 iteration | 10 iterations |
+
 I've made a few contributions to the algorithm in my attempt to adapt it to the model. I'll describe these contributions later, but first I want to describe this algorithm mathematically. 
 
 Think about what happens in step 2, where you increase elevation depending on what side you're on. Consider the simplest case where the "random axis" happens to be the planet's axis of rotation. We'll call this the z component of our position vector. Now, we want everything in the northern hemisphere to increase in height. In other words, we increase elevation where the z component is positive. We'll use the [Heaviside step function](https://en.wikipedia.org/wiki/Heaviside_step_function) to describe this relation: 
@@ -32,11 +38,11 @@ Think about what happens in step 2, where you increase elevation depending on wh
 
 There are a few commonly cited problems with this algorithm. One problem occurs when you zoom in on the world. You start to see a bunch of straight lines that mark where the world was divided. 
 
-![](images/50i.png)
-
 You can mask this by increasing the number of iterations, but it still looks jagged - almost as if the world has no erosion. 
 
-![](images/1000i.png)
+| ![50 iterations](images/50i.png) | ![500 iterations](images/500i.png) |
+|--------------|---------------|
+| 50 iterations | 500 iterations |
 
 This problem has a rather obvious solution - use a smoother function. In my model, I use [the logistic function](https://en.wikipedia.org/wiki/Heaviside_step_function#Analytic_approximations), which is commonly used as a smooth approximation to the Heaviside:
 
