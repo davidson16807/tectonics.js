@@ -48,6 +48,11 @@ img
     text-decoration: none;
 }
 
+a {
+    color: #0A968C;
+    text-decoration: initial;
+}
+
 .quotation
 {
 	display:list-item;

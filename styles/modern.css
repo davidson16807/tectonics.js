@@ -10,22 +10,22 @@ details p {
 }
 
 .topleft {
-	position	: absolute;
+	position	: fixed;
 	top		    : 1em;
 	left		: 1em;
 }
 .topright {
-	position	: absolute;
+	position	: fixed;
 	top		    : 1em;
 	right		: 1em;
 }
 .bottomright {
-	position	: absolute;
+	position	: fixed;
 	bottom		: 1em;
 	right		: 1em;
 }
 .bottomleft {
-	position	: absolute;
+	position	: fixed;
 	bottom		: 1em;
 	left		: 1em;
 }
