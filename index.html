@@ -25,13 +25,14 @@
 	<script src="libraries/threex/THREEx.WindowResize.js"></script>
 	<!-- <script src="libraries/threex/THREEx.QuickHull.js"></script> -->
 	<script src="libraries/threex/THREEx.FibonacciSphereGeometry.js"></script>
+	<script src="libraries/threex/THREEx.Debug.js"></script>
 	<script src="libraries/jquery-1.10.2.min.js"></script>
-	<script src="libraries/lodash.min.js"></script>
 	<script src="libraries/buckets-minified.js"></script>
 	<script src="libraries/random-0.26.js"></script>
 	<script src="libraries/base64-arraybuffer.js"></script>
 	<script src="libraries/kdTree-min.js"></script>
 	<script src="libraries/uuid.js"></script>
+	<script src="scripts/Sphere.js"></script>
 	<script src="scripts/VoronoiSphere.js"></script>
 	<script src="scripts/Grid.js"></script>
 	<script src="scripts/Publisher.js"></script>
@@ -40,6 +41,7 @@
 	<script src="scripts/model/Plate.js"></script>
 	<script src="scripts/model/SupercontinentCycle.js"></script>
 	<script src="scripts/model/World.js"></script>
+	<script src="scripts/model/WorldGenerator.js"></script>
 	<script src="scripts/model/Model.js"></script>
 	<script src="scripts/view/fragment/FragmentShaders.js"></script>
 	<script src="scripts/view/vertex/VertexShaders.js"></script>
@@ -99,6 +101,7 @@
 						<option value="npp">Plant Productivity</option>
 						<option value="temp">Temperature</option>
 						<option value="precip">Precipitation</option>
+						<option value="age">Age</option>
 						<option value="debug">Plates</option>
 					</select>
 					<br/>
@@ -264,12 +267,12 @@
 	var seed = querystring['seed'] || (new Date).getTime().toString();
 	var random = new Random(parseSeed(seed));
 
-	var renderStats, updateStats, renderer, clock, controls;
-	var MegaYearPerSecond = 5 //My/second
+	var renderStats, updateStats, renderer, controls;
 	var BlockUpdate = false;
 	var IsProd = false;
 
 	var view = new View(
+		new Grid( new THREEx.FibonacciSphereGeometry(1, 10000)),
 		fragmentShaders[$('#fragmentShader').val()], 
 		vertexShaders[$('#vertexShader').val()]
 	);
@@ -279,7 +282,8 @@
 	if (querystring['load']) {
 		loadUrl(querystring['load']);
 	} else {
-		world = new World();
+		world = new World({ grid: view.grid });
+		EliasWorldGenerator.generate(world);
 		model.world(world);
 		$('#loadingSave').hide();
 		$('.parameters').show();
@@ -305,7 +309,6 @@
 		renderer.setSize( window.innerWidth, window.innerHeight );
 		$('#container').append(renderer.domElement);
 
-		clock = new THREE.Clock();
 		
 		if(!IsProd){
 			// add Stats.js - https://github.com/mrdoob/renderStats.js
@@ -342,6 +345,7 @@
 
 		// actually render the scene
 		renderer.render( view.scene, view.camera );
+		model.fast_update();
 
 		if(!IsProd){
 			renderStats.update();
@@ -351,19 +355,16 @@
 	function update(){
 		// push to task queue and loop
 		// - it has to be at the begining of the function
-		setTimeout(update, 0);
+		//maximum refresh rate of 20fps
+		setTimeout(update, IsProd? 1000/20 : 0);
 
 		if (BlockUpdate) {
 			return;
 		};
-
-		var seconds = clock.getDelta();
-		if (seconds > 1){
-			seconds = 1;
-		}
 		
-		if (!_.isUndefined(world)) {
-			model.update(MegaYearPerSecond*seconds);
+		model.slow_update();
+
+		if ((world) !== void 0) {
 			$(".age").html(format(world.age, 1000, 3));
 		};
 		
@@ -384,9 +385,9 @@
 	}
 	function togglePause(){
 		if($('.pause').is(':visible')){
-			MegaYearPerSecond = 0;
+			model.MegaYearPerSecond = 0;
 		} else {
-			MegaYearPerSecond = $('#speedControl').val();
+			model.MegaYearPerSecond = $('#speedControl').val();
 		}
 		$('.pause').toggle();
 		$('.play').toggle();
@@ -436,7 +437,7 @@
 
 	$('#speedControl').change(function(e){
 		if($('.pause').is(':visible')){
-			MegaYearPerSecond = $('#speedControl').val();
+			model.MegaYearPerSecond = $('#speedControl').val();
 		}
 	});
 	$('.pause,.play').click(togglePause);

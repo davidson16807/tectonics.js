@@ -1,5 +1,9 @@
 'use strict';
 
+// The Grid class contains is the one stop shop for high performance grid cell operations
+// You can find grid cells by neighbor, by position, and by the index of a WebGL buffer array
+// It is used by both 
+
 function Grid(template, options){
 	options = options || {};
 	var voronoi = options.voronoi;
@@ -8,8 +12,21 @@ function Grid(template, options){
 
 	this.template = template;
 	
+	// Precompute map between buffer array ids and grid cell ids
+	// This helps with mapping cells within the model to buffer arrays in three.js
+	// Map is created by flattening this.template.faces
+	var faces = this.template.faces;
+	var buffer_array_to_cell = new Uint16Array(faces.length * 3);
+	for (var i=0, i3=0, li = faces.length; i<li; i++, i3+=3) {
+		var face = faces[i];
+		buffer_array_to_cell[i3+0] = face.a;
+		buffer_array_to_cell[i3+1] = face.b;
+		buffer_array_to_cell[i3+2] = face.c;
+	};
+	this.buffer_array_to_cell = buffer_array_to_cell;
+
 	//Precompute neighbors for O(1) lookups
-	neighbors = this.template.vertices.map(function(vertex) { return new buckets.Set()});
+	var neighbors = this.template.vertices.map(function(vertex) { return new buckets.Set()});
 	for(var i=0, il = this.template.faces.length, faces = this.template.faces; i<il; i++){
 		face = faces[i];
 		neighbors[face.a].add(face.b);
@@ -41,8 +58,6 @@ function Grid(template, options){
 		voronoiPointNum = Math.pow(voronoiResolutionFactor * Math.sqrt(this.template.vertices.length), 2);
 		this._voronoi = new VoronoiSphere(voronoiPointNum, this._kdtree);
 	}
-	
-	//TODO: R-tree from https://github.com/mourner/rbush for astroblemes and the like
 }
 
 Grid.prototype.getVoronoi = function() {

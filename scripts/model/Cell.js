@@ -10,7 +10,7 @@ function Cell(plate, pos, id, content){
 }
 
 Cell.prototype.create = function(template, invalid){
-	this.content = new RockColumn(this.world, {
+	this.content = RockColumn(this.world, {
 		elevation: 	template.elevation, 
 		thickness: 	template.thickness, 
 		density: 	template.density
@@ -30,8 +30,17 @@ Cell.prototype._canSubduct = function(subducted, invalid){
 }
 
 Cell.prototype.collide = function(other, invalid){
+	// no crust can exist past 250 my
+	// if any do, they must be destroyed asap
+	if (other.content.age > 200 && other.isContinental() === false && 
+		this.content.age > 200 && this.isContinental() === false) {
+		this.destroy();
+		other.destroy();
+		return;
+	};
+
 	var top, bottom;
-	if(this._canSubduct(other)){
+	if(this._canSubduct(other) === true){
 		top = this;
 		bottom = other;
 	} else {
@@ -39,7 +48,7 @@ Cell.prototype.collide = function(other, invalid){
 		top = other;
 	}
 	if (true){//subducted.distanceTo(subducting) > this.world.mountainWidth / this.world.radius){
-		if(bottom.isContinental() && top.isContinental()){
+		if(bottom.isContinental() === true && top.isContinental() === true){
 			top.dock(bottom);
 		} else {
 			top.content.accrete(bottom.content);
@@ -58,7 +67,7 @@ Cell.prototype._canDock = function(subjugated, invalid){
 
 Cell.prototype.dock = function(other, invalid){
 	var subjugating, subjugated;
-	if(this._canDock(other)){
+	if(this._canDock(other) === true){
 		subjugating = this;
 		subjugated = other;
 	} else {
@@ -76,24 +85,6 @@ Cell.prototype.replace = function(replacement, invalid){
 Cell.prototype.destroy = function(){
 	this.content = void 0;
 	this.subductedBy = void 0;
-}
-
-Cell.prototype.getIntersections = function(plates, getIntersection){
-	var parent = this.plate;
-	var grid = this._grid;
-	var absolute_pos = parent.localToWorld(this.pos.clone());
-	var plate, relative_pos, id, intersection;
-	for(var j=0, lj = plates.length; j<lj; j++){
-		plate = plates[j];
-		relative_pos = plate.worldToLocal(absolute_pos.clone());
-		id = grid.getNearestId(relative_pos);
-		intersection = getIntersection(id, plate);
-		if(intersection !== void 0) {
-			parent._neighbors.splice(j, 1);
-			parent._neighbors.unshift(plate);
-			return intersection; 
-		}
-	}
 }
 
 

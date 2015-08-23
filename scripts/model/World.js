@@ -25,25 +25,7 @@ function World(optional){
 	this.platesNum = optional['platesNum'] || 7;
 	this.mountainWidth = (optional['mountainWidth'] || 300) / radius;
 	
-	if(!_.isUndefined(optional['plates'])){
-		this.plates = optional['plates'];
-	} else {
-		var continentRadius = (optional['continentRadius'] || 1250) / radius;
-		var shield = this.getRandomPoint();
-		var plate = new Plate(this);
-
-		this.plates = [plate];
-		for(var i=0, length = plate.cells.length; i<length; i++) {
-			var cell = plate.cells[i];
-			if(shield.distanceTo(cell.pos) < continentRadius ) { 
-				cell.create(this.land);
-			} else {
-				cell.create(this.ocean);
-			}
-			cell.content.isostasy();
-		}
-		plate.densityOffset = plate.getDensityOffset();
-	}
+	this.plates = [];
 	this.updateNeighbors();
 	this.updateBorders();
 }
@@ -52,20 +34,20 @@ World.prototype.SEALEVEL = 3682;
 World.prototype.mantleDensity=3300;
 World.prototype.waterDensity=1026;
 World.prototype.ocean =
- new RockColumn(void 0, {
+ RockColumn(void 0, {
 	elevation: 	-3682,	// Charette & Smith 2010
 	thickness: 	7100, 	// +/- 800, White McKenzie and O'nions 1992
 	density: 	2890	// Carlson & Raskin 1984
  });
 World.prototype.land =
- new RockColumn(void 0, {
+ RockColumn(void 0, {
 	elevation: 	840,   //Sverdrup & Fleming 1942
     thickness: 	36900, // +/- 2900, estimate for shields, Zandt & Ammon 1995
 	density: 	2700
  });
 
-World.prototype.simulate = function(timestep){
-	if (timestep == 0) {
+World.prototype.fast_update = function (timestep) {
+	if (timestep === 0) {
 		return;
 	};
 
@@ -74,6 +56,19 @@ World.prototype.simulate = function(timestep){
 	var i = 0;
 	for(i = 0; i<length; i++){
 		plates[i].move(timestep);
+	}
+}
+
+World.prototype.slow_update = function(timestep){
+	if (timestep === 0) {
+		return;
+	};
+
+	var length = this.plates.length;
+	var plates = this.plates;
+	var i = 0;
+	for(i = 0; i<length; i++){
+		plates[i].update(timestep);
 	}
 	for(i = 0; i<length; i++){
 		plates[i].erode(timestep);
@@ -89,7 +84,7 @@ World.prototype.simulate = function(timestep){
 		plates[i].deform();
 	}
 	for (var i = 0; i<length; i++) {
-		Publisher.publish('world.plates', 'update', { value: plates[i], uuid: this.uuid } );
+		Publisher.publish('plate.cells', 'update', { value: plates[i].cells, uuid: plates[i].uuid } );
 	};
 	var platestemp = plates.slice(0); // copy the array
 	for(i = 0; i<length; i++){
@@ -112,6 +107,9 @@ World.prototype.split = function(){
 	var largest = this.plates.sort(function(a, b) { return b.getContinentalSize() - a.getContinentalSize(); })[0];
 	var plates = largest.split();
 
+	if (plates === void 0) {
+		return;
+	};
 	for (var i = 0, li = plates.length; i < li; i++) {
 		this.add(plates[i]);
 	};

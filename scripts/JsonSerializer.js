@@ -67,7 +67,7 @@ JsonSerializer.plate = function (plate, options) {
 	var cell;
 	for (var j = 0; j < cells_unfiltered.length; j++) {
 		cell = cells_unfiltered[j];
-		if (!_.isUndefined(cell.content)) {
+		if (cell.content !== void 0) {
 			cells.push(cell);
 		};
 	};
@@ -75,17 +75,20 @@ JsonSerializer.plate = function (plate, options) {
 	var ids = 			new Uint16Array(cells.length);
 	var thicknesses = 	new Uint16Array(cells.length);
 	var densities = 	new Uint16Array(cells.length);
+	var age = 			new Uint16Array(cells.length);
 	for (var j = 0, lj = cells.length; j < lj; j++) {
 		cell = cells[j];
 		ids[j] = cell.id;
 		thicknesses[j] = cell.content.thickness;
 		densities[j] = cell.content.density;
+		age[j] = cell.content.age;
 	};
 	// var encode = options.base64? Base64.encode : _abTostr;
 	plate_json.rockColumns = {
 		ids: 			Base64.encode(ids.buffer),
 		thicknesses: 	Base64.encode(thicknesses.buffer),
 		densities: 		Base64.encode(densities.buffer),
+		ages: 			Base64.encode(age.buffer),
 	};
 
 	return plate_json;
@@ -113,13 +116,15 @@ JsonDeserializer.plate = function (plate_json, _world, options) {
 	var ids = 			new Uint16Array(Base64.decode(rockColumns_json.ids));
 	var thicknesses = 	new Uint16Array(Base64.decode(rockColumns_json.thicknesses));
 	var densities = 	new Uint16Array(Base64.decode(rockColumns_json.densities));
+	var ages = 			new Uint16Array(Base64.decode(rockColumns_json.ages));
 
 	var cells = plate.cells;
 	var rockColumn;
 	for (var j = 0, li = ids.length; j < li; j++) {
-		rockColumn = new RockColumn(_world, {
+		rockColumn = RockColumn(_world, {
 			thickness: thicknesses[j],
-			density: densities[j]
+			density: densities[j],
+			age: ages[j]
 		});
 		rockColumn.isostasy();
 
@@ -131,12 +136,12 @@ JsonDeserializer.world = function (world_json, options) {
 	options = options || {};
 	var base64 = options.base64 || true;
 
-	var _world = new World({
+	var _world = new World(view.grid,
+	{
 		radius: world_json.world.radius,
 		platesNum: world_json.world.platesNum,
 		mountainWidth: world_json.world.mountainWidth,
 		age: world_json.world.age,
-		grid: world.grid,					// HACK: shouldn't reference world
 		supercontinentCycle: undefined,
 		plates: [],
 	});
