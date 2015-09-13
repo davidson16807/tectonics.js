@@ -14,7 +14,7 @@ THREEx.FibonacciSphereGeometry = (function () {
 	function log(val, base) {
 	  return Math.log(val) / Math.log(base);
 	}
-	var golden_ratio = 1.618034;
+	var golden_ratio = 1.61803399;
 	var golden_angle = 2 * Math.PI * golden_ratio;
 	var sqrt5 = sqrt(5)
 	function fib (n) {
@@ -33,7 +33,6 @@ THREEx.FibonacciSphereGeometry = (function () {
 	function _pos(i, n){
 		return [];
 	}
-	
 
 	return function (radius, pointNum) {
 		var pointsPerHemisphere = pointNum / 2;
@@ -46,8 +45,6 @@ THREEx.FibonacciSphereGeometry = (function () {
 			 	)
             vertices.push(vertex);
 		};
-
-
 
 		/**
 		 * Whether the face is visible from the vertex
@@ -119,24 +116,46 @@ THREEx.FibonacciSphereGeometry = (function () {
 
 
 		THREE.Geometry.call( this );
-
 		this.vertices = vertices;
 
 		var faces = [];
 		// for i in 0:k where k is largest possible index for a fibonacci number on the grid:
 		// 		for j in 0:N-fib(i+2):
 		// 			create face with vertices at index j+fib(i), j+fib(i+1), and j+fib(i+2)
-		var max_fib_i = log(pointsPerHemisphere * sqrt5, golden_ratio);
-		for (var i = 0; i < max_fib_i; i++) {
-			for (var j = 0; j < pointsPerHemisphere; j++) {
-				if (j+fib(i+2) >= vertices.length) {
-					continue;
+		var max_i = log(pointsPerHemisphere * sqrt5, golden_ratio) + 1;
+		// console.log("max_i", max_i);
+		for (var j = 0; j < vertices.length; j++) {
+			var min_distance_i = 2;
+			var min_distance = Infinity;
+			for (var i = 2; i < max_i; i++) {
+				if (j+fib(i+1) >= vertices.length) {
+					break;
 				};
 
-				faces.push([j+fib(i+0),
-							j+fib(i+1),
-							j+fib(i+2) ]);
+				var distance = vertices[j].distanceTo(vertices[j+fib(i+1)]);
+				if (distance < min_distance) {
+					min_distance = distance;
+					min_distance_i = i;
+				};
 			};
+
+			if (j+fib(min_distance_i+1) >= vertices.length) {
+				continue;
+			};
+			faces.push([
+						j,
+						j+fib(min_distance_i),
+						j+fib(min_distance_i+1),
+							 ]);
+
+			if (j+fib(min_distance_i+2) >= vertices.length) {
+				continue;
+			};
+			faces.push([
+						j+fib(min_distance_i+2),
+						j+fib(min_distance_i),
+						j,
+							 ]);
 		};
 
 		this.faces = []
@@ -149,22 +168,18 @@ THREEx.FibonacciSphereGeometry = (function () {
 			) );
 		}
 
-
 		// Compute UVs
-		for ( var i = 0, li = faces.length; i < li; i++ ) {
+		//for ( var i = 0, li = faces.length; i < li; i++ ) {
+		//	var face = this.faces[ i ];
+		//	this.faceVertexUvs[ 0 ].push( [
+		//		vertexUv( this.vertices[ face.a ] ),
+		//		vertexUv( this.vertices[ face.b ] ),
+		//		vertexUv( this.vertices[ face.c ] )
+		//	] );
+		//}
 
-			var face = this.faces[ i ];
-			console.log(face.a, face.b, face.c)
-			this.faceVertexUvs[ 0 ].push( [
-				vertexUv( this.vertices[ face.a ] ),
-				vertexUv( this.vertices[ face.b ] ),
-				vertexUv( this.vertices[ face.c ])
-			] );
-
-		}
-
-		this.computeFaceNormals();
-		this.computeVertexNormals();
+		//this.computeFaceNormals();
+		//this.computeVertexNormals();
 
 		// THREE.ConvexGeometry.call(this, vertices);
 	}
