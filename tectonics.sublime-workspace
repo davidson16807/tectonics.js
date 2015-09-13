@@ -4,6 +4,30 @@
 		"selected_items":
 		[
 			[
+				"densit",
+				"density"
+			],
+			[
+				"heigh",
+				"height"
+			],
+			[
+				"con",
+				"control_points"
+			],
+			[
+				"rock",
+				"rock_column"
+			],
+			[
+				"cont",
+				"control_point"
+			],
+			[
+				"for",
+				"for	for (…) {…}"
+			],
+			[
 				"bu",
 				"buffer_array_index"
 			],
@@ -158,10 +182,6 @@
 			[
 				"pos",
 				"pos	position: ${1:relative};"
-			],
-			[
-				"for",
-				"for	for (…) {…} (custom)"
 			],
 			[
 				"at",
@@ -380,10 +400,6 @@
 				"neighborIds"
 			],
 			[
-				"con",
-				"continue"
-			],
-			[
 				"lat",
 				"latNum"
 			],
@@ -424,10 +440,6 @@
 				"for	for (…) {…} (custom)"
 			],
 			[
-				"cont",
-				"content"
-			],
-			[
 				"raste",
 				"raster_id"
 			],
@@ -462,10 +474,6 @@
 			[
 				"random",
 				"random"
-			],
-			[
-				"rock",
-				"rockColumn"
 			],
 			[
 				"c",
@@ -506,33 +514,65 @@
 			[
 				"coll",
 				"collapsible"
-			],
-			[
-				"me",
-				"MegaYearPerSecond"
-			],
-			[
-				"wor",
-				"world"
 			]
 		]
 	},
 	"buffers":
 	[
 		{
-			"file": "scripts/model/Plate.js",
+			"file": "scripts/model/World.js",
 			"settings":
 			{
-				"buffer_size": 14614,
-				"line_ending": "Windows"
+				"buffer_size": 4037,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "index.html",
+			"settings":
+			{
+				"buffer_size": 16618,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "scripts/Grid.js",
+			"settings":
+			{
+				"buffer_size": 2808,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "libraries/three.js/ConvexGeometry.js",
+			"settings":
+			{
+				"buffer_size": 4237,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "libraries/threex/THREEx.FibonacciSphereGeometry.js",
+			"settings":
+			{
+				"buffer_size": 2167,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "libraries/three.js/BufferGeometryUtils.js",
+			"settings":
+			{
+				"buffer_size": 3867,
+				"line_ending": "Unix"
 			}
 		},
 		{
 			"file": "scripts/view/View.js",
 			"settings":
 			{
-				"buffer_size": 6615,
-				"line_ending": "Windows"
+				"buffer_size": 5943,
+				"line_ending": "Unix"
 			}
 		}
 	],
@@ -548,6 +588,46 @@
 		"selected_items":
 		[
 			[
+				"pack",
+				"Package Control: Upgrade Package"
+			],
+			[
+				"key",
+				"Preferences: Key Bindings - User"
+			],
+			[
+				"markprev",
+				"Markdown Preview: Preview in Browser"
+			],
+			[
+				"wr",
+				"HTML: Wrap Selection With Tag"
+			],
+			[
+				"wrap",
+				"HTML: Wrap Selection With Tag"
+			],
+			[
+				"prev",
+				"Markdown Preview: Preview in Browser"
+			],
+			[
+				"previ",
+				"Markdown Preview: Preview in Browser"
+			],
+			[
+				"inst",
+				"Package Control: Install Package"
+			],
+			[
+				"insta",
+				"Package Control: Install Package"
+			],
+			[
+				"mark",
+				"Set Syntax: Markdown"
+			],
+			[
 				"levels",
 				"Levels: Update"
 			],
@@ -556,20 +636,8 @@
 				"Set Syntax: JavaScript"
 			],
 			[
-				"key",
-				"Preferences: Key Bindings - Default"
-			],
-			[
 				"exp",
 				"Emmet: Expand Abbreviation"
-			],
-			[
-				"insta",
-				"Package Control: Install Package"
-			],
-			[
-				"wrap",
-				"HTML: Wrap Selection With Tag"
 			],
 			[
 				"go",
@@ -586,10 +654,6 @@
 			[
 				"goo",
 				"Google Search: Search any"
-			],
-			[
-				"inst",
-				"Package Control: Install Package"
 			],
 			[
 				"sort",
@@ -748,13 +812,22 @@
 				"Set Syntax: Io Repl"
 			]
 		],
-		"width": 416.0
+		"width": 449.0
 	},
 	"console":
 	{
 		"height": 273.0,
 		"history":
 		[
+			"1.61**-4",
+			"1.61**-3",
+			"1.61**-2",
+			"1.61**2",
+			"1.61**-2",
+			"0.61**-2",
+			"0.61**-3",
+			"0.61^3",
+			"7100-800",
 			"`",
 			".618**3",
 			".618**2",
@@ -854,10 +927,34 @@
 	},
 	"expanded_folders":
 	[
-		"/F/Code/tectonics.js"
+		"/home/carl/Code/tectonics.js"
 	],
 	"file_history":
 	[
+		"/home/carl/Code/tectonics.js/libraries/three.js/BufferGeometryUtils.js",
+		"/home/carl/Code/tectonics.js/scripts/model/Plate.js",
+		"/home/carl/Code/tectonics.js/libraries/three.js/ConvexGeometry.js",
+		"/home/carl/Code/tectonics.js/scripts/model/WorldGenerator.js",
+		"/home/carl/Code/tectonics.js/libraries/threex/THREEx.FibonacciSphereGeometry.js",
+		"/home/carl/Code/tectonics.js/scripts/Grid.js",
+		"/home/carl/Code/tectonics.js/_layouts/default.html",
+		"/home/carl/Code/tectonics.js/blog/blog.css",
+		"/home/carl/Code/tectonics.js/styles/modern.css",
+		"/home/carl/Code/tectonics.js/styles/main.css",
+		"/home/carl/Code/tectonics.js/index.html",
+		"/home/carl/Code/tectonics.js/scripts/JsonSerializer.js",
+		"/home/carl/.config/sublime-text-3/Packages/User/Default (Linux).sublime-keymap",
+		"/home/carl/Code/tectonics.js/scripts/model/Model.js",
+		"/home/carl/Code/tectonics.js/_posts/2015-8-21-worldgen.md",
+		"/home/carl/Code/tectonics.js/scripts/view/View.js",
+		"/mnt/78DE6F2BDE6EE0BC/Code/nabla/index.html",
+		"/home/carl/Code/tectonics.js/_posts/2014-1-25-youtube.md",
+		"/home/carl/.xbindkeysrc",
+		"/home/carl/Code/tectonics.js/libraries/random-0.26.js",
+		"/home/carl/Code/tectonics.js/tectonics.sublime-project",
+		"/home/carl/Code/tectonics.js/scripts/view/fragment/FragmentShaders.js",
+		"/mnt/78DE6F2BDE6EE0BC/Code/sublime_contextual_move/Default (Linux).sublime-keymap",
+		"/home/carl/Code/tectonics.js/scripts/model/RockColumn.js",
 		"/C/Users/Carl/AppData/Roaming/Sublime Text 3/Packages/User/Default (Windows).sublime-keymap",
 		"/F/Code/tectonics.js/tectonics.sublime-project",
 		"/F/Code/3BillionYears/index.html",
@@ -961,41 +1058,19 @@
 		"/F/Code/tectonics.js/scripts/view/fragment/FragmentShaders.js",
 		"/F/Code/tectonics.js/libraries/uuid.js",
 		"/C/Users/Carl/Downloads/1433119387121-23.3My.sim",
-		"/C/Users/Carl/Downloads/1433118704206-17.0My.sim",
-		"/F/Code/tectonics.js/scripts/Voronoi.js",
-		"/C/Users/Carl/AppData/Roaming/Sublime Text 3/Packages/User/for-()-{}.sublime-snippet",
-		"/F/Code/tectonics.js/scripts/view/fragment/template.glsl.c",
-		"/F/Code/tectonics.js/scripts/view/vertex/orthographic.glsl.c",
-		"/F/Code/tectonics.js/scripts/view/vertex/texture.glsl.c",
-		"/F/Code/tectonics.js/scripts/view/vertex/equirectangular.glsl.c",
-		"/F/Code/tectonics.js/scripts/view/shaders/fragment/debug.glsl.c",
-		"/F/Code/tectonics.js/scripts/view/Style.template.js",
-		"/F/Code/tectonics.js/scripts/view/generate-shaders.sh",
-		"/F/Code/tectonics.js/scripts/view/Style.js",
-		"/F/Code/tectonics.js/scripts/view/shaders/generate.sh",
-		"/F/Code/tectonics.js/scripts/view/generate.py",
-		"/F/Code/tectonics.js/scripts/view/shaders/template.fragment.glsl.c",
-		"/F/Code/tectonics.js/scripts/view/shaders/debug.fragment.glsl.c",
-		"/F/Code/tectonics.js/scripts/view/shaders/texture.vertex.glsl.c",
-		"/F/Code/tectonics.js/scripts/view/shaders/orthographic.vertex.glsl.c",
-		"/F/Code/tectonics.js/scripts/view/shaders/equirectangular.glsl.c",
-		"/F/Code/tectonics.js/libraries/base64-arraybuffer.js",
-		"/C/Users/Carl/Desktop/temp/jump_along_indent.py",
-		"/C/Users/Carl/Desktop/temp/jump_along_indent.sublime-settings",
-		"/C/Users/Carl/AppData/Roaming/Sublime Text 3/Installed Packages/Jump Along Indent.sublime-package",
-		"/C/Users/Carl/Downloads/1432786169052-12.4My.sim",
-		"/C/Users/Carl/Downloads/1432787084923-10.1My.sim",
-		"/C/Users/Carl/Downloads/dist/jszip.js"
+		"/C/Users/Carl/Downloads/1433118704206-17.0My.sim"
 	],
 	"find":
 	{
-		"height": 34.0
+		"height": 35.0
 	},
 	"find_in_files":
 	{
 		"height": 93.0,
 		"where_history":
 		[
+			"F:\\Code\\tectonics.js\\",
+			"F:\\Code\\tectonics.js",
 			"F:\\Code\\field-calculator",
 			"F:\\Code\\tectonics.js\\scripts",
 			"F:\\Code\\tectonics.js\\",
@@ -1013,6 +1088,101 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"Geom",
+			"geom",
+			"length",
+			"view.",
+			"view",
+			"convex",
+			"icos",
+			"grid",
+			"elias",
+			"grid",
+			"world",
+			"publ",
+			"cell_update",
+			"cell_up",
+			"cell",
+			"cells",
+			"buffer",
+			"buffer_array",
+			"<<<",
+			"article",
+			"art",
+			">\n",
+			"sc",
+			"myDIV",
+			"navi",
+			"age",
+			"densities",
+			"age",
+			"ages",
+			"densities",
+			"age",
+			"absolute",
+			"abso",
+			"!",
+			"100",
+			"1000",
+			"!",
+			"1000",
+			"71",
+			".png",
+			"img",
+			"|",
+			"cc ",
+			"bb",
+			"71",
+			"x_ocean",
+			"water",
+			"denoted",
+			"a",
+			"x",
+			"A",
+			"x",
+			"z",
+			"<span>",
+			"span",
+			"</span>",
+			"<span>",
+			"````</span>",
+			"<span>````",
+			"```",
+			"`",
+			"span",
+			"want",
+			"`",
+			"`Delta h_r`",
+			"delta",
+			"<span>`z`</span>",
+			"span",
+			"`z`",
+			"`",
+			"#",
+			"ascii",
+			"fractal",
+			" ",
+			"|",
+			"369017000",
+			"3690",
+			"7900",
+			"17000",
+			"6300",
+			"7900",
+			"3000",
+			"6300",
+			"17000",
+			"<<",
+			"cells",
+			"thickness",
+			"smoothstep",
+			"control_point",
+			"smooth",
+			"i",
+			"alt",
+			"Elias",
+			"elias",
+			"getde",
 			"neighbor			",
 			"neighbor		",
 			"neighbor	",
@@ -1045,102 +1215,7 @@
 			"prev",
 			"data_pass",
 			"material",
-			"data_render",
-			"renderer",
-			"data_pass",
-			"renderer",
-			"data_pass",
-			"_pass",
-			"data_",
-			"renderer",
-			"render_pass",
-			"render_p",
-			"render_",
-			"data_pass",
-			"vUv",
-			"scr",
-			"scrip",
-			"passThroughShader",
-			"fragment",
-			"data",
-			"Image",
-			"image",
-			"Image",
-			"image",
-			"var",
-			",",
-			"compile",
-			"vectorShader",
-			"scalarField",
-			"vectorShader",
-			"shad",
-			"init",
-			"Geomet",
-			"scalarShader",
-			"toggle",
-			"vectorShader",
-			"vectorField",
-			"vectorShader",
-			"compile",
-			".set",
-			"set",
-			"rep",
-			"context",
-			"var",
-			"geometry",
-			" ",
-			"var",
-			"shader",
-			"shaderFiel",
-			"shaderfiel",
-			"shader",
-			"shadermater",
-			"needsUpdate",
-			"scalarField",
-			"field",
-			"var",
-			"field",
-			"data_",
-			"render_",
-			"var",
-			"render_pass",
-			"scene",
-			"field",
-			"vectorField",
-			"scalarField",
-			"geometry",
-			"field",
-			"scalarfield",
-			"vectorshader",
-			"shadermat",
-			"compile",
-			"demo",
-			"field-",
-			"scrip",
-			"render_pass",
-			"scene",
-			"Scene",
-			"scene",
-			"camera",
-			"scene",
-			"addGetWebGLMessage",
-			"Detector",
-			"renderer",
-			"material",
-			"f_prev2",
-			"f_prev1",
-			"prev",
-			"texture2",
-			"texture1",
-			"mesh",
-			"a",
-			"A",
-			"a",
-			"seed",
-			"a",
-			"A",
-			"a",
-			"seed"
+			"data_render"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -1167,24 +1242,24 @@
 	"groups":
 	[
 		{
-			"selected": 1,
+			"selected": 4,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "scripts/model/Plate.js",
+					"file": "scripts/model/World.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 14614,
+						"buffer_size": 4037,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								12660,
-								12660
+								1088,
+								1088
 							]
 						],
 						"settings":
@@ -1193,27 +1268,56 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 6180.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "index.html",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 16618,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								9398,
+								9398
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/HTML/HTML.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 4487.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 1,
 					"type": "text"
 				},
 				{
-					"buffer": 1,
-					"file": "scripts/view/View.js",
+					"buffer": 2,
+					"file": "scripts/Grid.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 6615,
+						"buffer_size": 2808,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								4061,
-								4061
+								245,
+								245
 							]
 						],
 						"settings":
@@ -1222,10 +1326,126 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 1650.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "libraries/three.js/ConvexGeometry.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4237,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "libraries/threex/THREEx.FibonacciSphereGeometry.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2167,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								742,
+								742
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "libraries/three.js/BufferGeometryUtils.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3867,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "scripts/view/View.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 5943,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								880,
+								880
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 8.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
 					"type": "text"
 				}
 			]
@@ -1264,7 +1484,7 @@
 	"menu_visible": true,
 	"output.exec":
 	{
-		"height": 23.0
+		"height": 212.0
 	},
 	"output.find_results":
 	{
@@ -1278,7 +1498,7 @@
 	"project": "tectonics.sublime-project",
 	"replace":
 	{
-		"height": 40.0
+		"height": 64.0
 	},
 	"save_all_on_build": true,
 	"select_file":
@@ -1288,19 +1508,131 @@
 		"selected_items":
 		[
 			[
+				"buf",
+				"libraries/three.js/BufferGeometryUtils.js"
+			],
+			[
+				"bufge",
+				"libraries/three.js/BufferGeometryUtils.js"
+			],
+			[
+				"gri",
+				"scripts/Grid.js"
+			],
+			[
+				"conv",
+				"libraries/three.js/ConvexGeometry.js"
+			],
+			[
+				"conve",
+				"libraries/three.js/ConvexGeometry.js"
+			],
+			[
+				"fib",
+				"libraries/threex/THREEx.FibonacciSphereGeometry.js"
+			],
+			[
+				"elwor",
+				"scripts/model/WorldGenerator.js"
+			],
+			[
+				"",
+				"index.html"
+			],
+			[
+				"wor",
+				"scripts/model/World.js"
+			],
+			[
+				"p",
+				"scripts/model/Plate.js"
+			],
+			[
+				"viewjs",
+				"scripts/view/View.js"
+			],
+			[
+				"ind",
+				"index.html"
+			],
+			[
+				"css",
+				"styles/modern.css"
+			],
+			[
+				"def",
+				"_layouts/default.html"
+			],
+			[
+				"main",
+				"styles/main.css"
+			],
+			[
+				"js",
+				"scripts/JsonSerializer.js"
+			],
+			[
+				"d",
+				"_layouts/default.html"
+			],
+			[
+				"bl",
+				"blog/blog.css"
+			],
+			[
+				"wg",
+				"scripts/model/WorldGenerator.js"
+			],
+			[
+				"worldmd",
+				"_posts/2015-8-21-worldgen.md"
+			],
+			[
+				"worlg",
+				"scripts/model/WorldGenerator.js"
+			],
+			[
+				"layou",
+				"_layouts/default.html"
+			],
+			[
+				"2md",
+				"_posts/2014-1-25-youtube.md"
+			],
+			[
+				"in",
+				"index.html"
+			],
+			[
+				"ran",
+				"libraries/random-0.26.js"
+			],
+			[
+				"fs",
+				"scripts/view/fragment/FragmentShaders.js"
+			],
+			[
+				"roc",
+				"scripts/model/RockColumn.js"
+			],
+			[
+				"worg",
+				"scripts/model/WorldGenerator.js"
+			],
+			[
+				"model",
+				"scripts/model/Model.js"
+			],
+			[
+				"rock",
+				"scripts/model/RockColumn.js"
+			],
+			[
 				"view",
 				"scripts\\view\\View.js"
 			],
 			[
-				"css",
-				"css\\main.css"
-			],
-			[
 				"cs",
-				"css\\main.css"
-			],
-			[
-				"main",
 				"css\\main.css"
 			],
 			[
@@ -1312,20 +1644,12 @@
 				"vendor\\three.js\\Three.js"
 			],
 			[
-				"in",
-				"index.html"
-			],
-			[
 				"sh",
 				"F:\\Documents\\Work\\Pioneer\\GT6.GenomeTileProvider.git\\GenomeTileProvider\\Browser\\shader_demo.html"
 			],
 			[
 				"thr",
 				"vendor\\three.js\\Three.js"
-			],
-			[
-				"",
-				"index.html"
 			],
 			[
 				"ma",
@@ -1360,24 +1684,12 @@
 				"scripts\\model\\WorldGenerator.js"
 			],
 			[
-				"rock",
-				"scripts\\model\\RockColumn.js"
-			],
-			[
-				"ind",
-				"index.html"
-			],
-			[
 				"lod",
 				"libraries\\lodash.min.js"
 			],
 			[
 				"mode",
 				"scripts\\model\\Model.js"
-			],
-			[
-				"p",
-				"scripts\\model\\Plate.js"
 			],
 			[
 				"c",
@@ -1440,10 +1752,6 @@
 				"scripts\\model\\SupercontinentCycle.js"
 			],
 			[
-				"wor",
-				"scripts\\model\\World.js"
-			],
-			[
 				"random",
 				"libraries\\random-0.26.js"
 			],
@@ -1452,20 +1760,12 @@
 				"libraries\\threex\\THREEx.QuickHull.js"
 			],
 			[
-				"fib",
-				"libraries\\threex\\THREEx.FibonacciSphereGeometry.js"
-			],
-			[
 				"quic",
 				"libraries\\threex\\THREEx.QuickHull.js"
 			],
 			[
 				"ca",
 				"scripts\\Cached.js"
-			],
-			[
-				"conv",
-				"libraries\\three.js\\ConvexGeometry.js"
 			],
 			[
 				"con",
@@ -1548,10 +1848,6 @@
 				"scripts\\model\\Plate.js"
 			],
 			[
-				"model",
-				"scripts\\model\\Model.js"
-			],
-			[
 				"json",
 				"scripts\\JsonSerializer.js"
 			],
@@ -1611,14 +1907,15 @@
 	"selected_group": 0,
 	"settings":
 	{
-		"move_context": "words",
-		"move_context_do_once": false
+		"move_context": "default",
+		"move_context_do_once": false,
+		"move_context_rep": 1
 	},
 	"show_minimap": true,
 	"show_open_files": false,
 	"show_tabs": true,
 	"side_bar_visible": true,
-	"side_bar_width": 145.0,
+	"side_bar_width": 211.0,
 	"status_bar_visible": true,
 	"template_settings":
 	{
