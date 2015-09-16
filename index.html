@@ -46,7 +46,7 @@
 	<script src="scripts/view/fragment/FragmentShaders.js"></script>
 	<script src="scripts/view/vertex/VertexShaders.js"></script>
 	<script src="scripts/view/View.js"></script>
-	<!-- <script src="scripts/Cached.js"></script> -->
+	<script src="scripts/Cached.js"></script>
 	<script src="scripts/JsonSerializer.js"></script>
 </head>
 <body>
@@ -272,7 +272,7 @@
 	var IsProd = false;
 
 	var view = new View(
-		new Grid( new THREEx.FibonacciSphereGeometry(1, 10000)),
+		new Grid( new THREEx.FibonacciSphereGeometry(1, 10000, fibGridFaceCache)),
 		fragmentShaders[$('#fragmentShader').val()], 
 		vertexShaders[$('#vertexShader').val()]
 	);
