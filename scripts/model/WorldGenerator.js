@@ -98,7 +98,6 @@ EliasWorldGenerator.generate = function (world, optional) {
 	};
 	heights.sort(function(a,b) { return a-b; });
  	
- 	console.log(heights);
 	// Our model does not work directly with elevation.
 	// We must express elevation in terms of thickness/density
 	// To do this, we start off with a set of rock column templates expressing

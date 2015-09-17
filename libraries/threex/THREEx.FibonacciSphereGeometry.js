@@ -285,7 +285,7 @@ THREEx.FibonacciSphereGeometry = (function () {
 		}
 
 		this.vertices = vertices;
-		console.log(faces);
+		// console.log(faces);
 		// Convert faces into instances of THREE.Face3
 		for ( var i = 0, li = faces.length; i < li; i++ ) {
 
