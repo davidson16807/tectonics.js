@@ -19,9 +19,12 @@
 	<script src="libraries/three.js/Stats.js"></script>
 	<script src="libraries/three.js/OrbitControls.js"></script>
 	<script src="libraries/three.js/BufferGeometryUtils.js"></script>
+	<script src="libraries/three.js/ConvexGeometry.js"></script>
 	<script src="libraries/threex/THREEx.screenshot.js"></script>
 	<script src="libraries/threex/THREEx.FullScreen.js"></script>
 	<script src="libraries/threex/THREEx.WindowResize.js"></script>
+	<!-- <script src="libraries/threex/THREEx.QuickHull.js"></script> -->
+	<script src="libraries/threex/THREEx.FibonacciSphereGeometry.js"></script>
 	<script src="libraries/threex/THREEx.Debug.js"></script>
 	<script src="libraries/jquery-1.10.2.min.js"></script>
 	<script src="libraries/buckets-minified.js"></script>
@@ -43,7 +46,7 @@
 	<script src="scripts/view/fragment/FragmentShaders.js"></script>
 	<script src="scripts/view/vertex/VertexShaders.js"></script>
 	<script src="scripts/view/View.js"></script>
-	<!-- <script src="scripts/Cached.js"></script> -->
+	<script src="scripts/Cached.js"></script>
 	<script src="scripts/JsonSerializer.js"></script>
 </head>
 <body>
@@ -279,7 +282,7 @@
 	var IsProd = true;
 
 	var view = new View(
-		new Grid( new THREE.IcosahedronGeometry(1, 5)),
+		new Grid( new THREEx.FibonacciSphereGeometry(1, 10000, fibGridFaceCache)),
 		fragmentShaders[$('#fragmentShader').val()], 
 		vertexShaders[$('#vertexShader').val()]
 	);
@@ -289,7 +292,7 @@
 	if (querystring['load']) {
 		loadUrl(querystring['load']);
 	} else {
-		world = new World();
+		world = new World({ grid: view.grid });
 		EliasWorldGenerator.generate(world);
 		model.world(world);
 		$('#loadingSave').hide();
