@@ -54,3 +54,12 @@ a:hover.summary {
 	float:right;
 	padding-left:1em;
 }
+
+.controls select, 
+.controls button, 
+.controls input, 
+.parameters select,
+.parameters button,
+.parameters input{
+	color: black;
+}
