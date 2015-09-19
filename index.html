@@ -9,9 +9,10 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 
-	<link href="styles/main.css" rel="stylesheet"/>
-	<link href="styles/modern.css" rel="stylesheet"/>
-	<link href="styles/app.css" rel="stylesheet"/>
+	<link rel="stylesheet" href="styles/bootstrap.min.css">
+	<link rel="stylesheet" href="styles/main.css"/>
+	<link rel="stylesheet" href="styles/modern.css"/>
+	<link rel="stylesheet" href="styles/app.css"/>
 
 	<script src="http://code.jquery.com/jquery.min.js"></script>
 	<script src="libraries/three.js/Three.js"></script>
@@ -53,11 +54,11 @@
 <!-- three.js container -->
 <div id="container"></div>
 <!-- info on screen display -->
-<div class="topright hidden collapsible parameters">
-	<div class="collapsed hidden">
+<div class="topright collapse collapsible parameters">
+	<div class="collapsed collapse">
 		<a href="#" class="summary">&#9654;</a>
 		<span class="age">initializing...</span>
-		<button class="play hidden"><img src="icons/play-512px.svg" alt="" height="12em" width="12em"></button>
+		<button class="play collapse"><img src="icons/play-512px.svg" alt="" height="12em" width="12em"></button>
 		<button class="pause"><img src="icons/pause-512px.svg" alt="" height="12em" width="12em"></button>
 	</div>
 	<div class="expanded">
@@ -70,7 +71,7 @@
 			<tr>
 				<td>Speed:</td>
 				<td>
-					<button class="play hidden">
+					<button class="play collapse">
 						<img src="icons/play-512px.svg" height="12em" width="12em">
 					</button>
 					<button class="pause">
@@ -111,8 +112,8 @@
 		</table>
 	</div>
 </div>
-<div class="bottomright hidden collapsible controls">
-	<div class="collapsed hidden">
+<div class="bottomright collapse collapsible controls">
+	<div class="collapsed collapse">
 		<a class="summary" href="#">
 			&#9654;
 		</a>
@@ -127,7 +128,7 @@
 		<button class="load">
 			<img src="icons/upload-512px.svg" height="12em"  title="Load">
 		</button>
-		<a class="hidden screenshot" download>
+		<a class="collapse screenshot" download>
 			<button>
 				<img src="icons/camera-512px.svg" height="12em"  title="Screenshot">
 			</button>
@@ -135,10 +136,10 @@
 		<!-- <button class="seed">
 			<img src="icons/dice-512px.svg" height="12em"  title="Seed">
 		</button> -->
-		<button class="fullscreen enter hidden" >
+		<button class="fullscreen enter collapse" >
 			<img src="icons/fullscreen-512px.svg" height="12em"  title="Fullscreen">
 		</button>
-		<button class="fullscreen exit hidden">
+		<button class="fullscreen exit collapse">
 			<img src="icons/fullscreen-exit-512px.svg" height="12em"  title="Exit Fullscreen">
 		</button>
 	</div>
@@ -169,7 +170,7 @@
 				<input id="load-input" type="file" class="hidden"/>
 			</div>
 			<div>
-				<a class="hidden screenshot" download>
+				<a class="collapse screenshot" download>
 					<button>
 						<img src="icons/camera-512px.svg" height="12em">
 						Screenshot
@@ -184,12 +185,12 @@
 				</button>
 			</div> -->
 			<div>
-				<button class="fullscreen enter hidden" >
+				<button class="fullscreen enter collapse" >
 					<img src="icons/fullscreen-512px.svg" height="12em">
 					Fullscreen
 					<span class="instructions">F11</span>
 				</button>
-				<button class="fullscreen exit hidden">
+				<button class="fullscreen exit collapse">
 					<img src="icons/fullscreen-exit-512px.svg" height="12em">
 					Exit Fullscreen
 					<span class="instructions">F11</span>
@@ -202,11 +203,11 @@
 	<div id="renderStats"></div>
 	<div id="updateStats"></div>
 </div>
-<div id="drop-dialog" class="hidden">
+<div id="drop-dialog" class="collapse">
 	<h2>DRAG HERE</h2>
 </div>
 <div class="vcenter">
-	<div id="noWebGl" class="hidden hcenter dialog">
+	<div id="noWebGl" class="collapse hcenter dialog">
 		<h2>Well, darn</h2>
 		<p>It looks like your using a web browser without WebGL.</p>
 		<p>WebGL is a technology that allows users to run high-end 3d graphics from their web-browser. Other technologies exist that can display simple 3d graphics to the user (canvas, svg, flash, etc.), but at present WebGL is the only web technology that allows developers to send their own code to a GPU.
@@ -224,7 +225,7 @@
 		<p>We're loading up the model, this shouldn't take more than a second.</p>
 		<p>If things are taking too long, you might consider checking your settings to make sure javascript is enabled. For instructions on how to enable javascript, check <a href="http://www.enable-javascript.com/">here</a>.</p>
 	</div>
-	<div id="loadingSave" class="hidden hcenter dialog">
+	<div id="loadingSave" class="collapse hcenter dialog">
 		<h2>Hang Tight</h2>
 		<p>We're loading up the save game, this shouldn't take more than a few seconds.</p>
 		<p>If things are taking too long, you might consider checking the save game url. Make sure the url exists and can be easily loaded.</p>
