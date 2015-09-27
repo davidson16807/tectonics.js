@@ -283,7 +283,7 @@
 
 	var renderStats, updateStats, renderer, controls;
 	var BlockUpdate = false;
-	var IsProd = true;
+	var IsProd = false;
 
 	var view = new View(
 		new Grid( new THREEx.FibonacciSphereGeometry(1, 10000, fibGridFaceCache)),
@@ -330,6 +330,8 @@
 
 			updateStats = new Stats();
 			$('#updateStats').append( updateStats.domElement );
+
+			$('.header').hide();
 		}
 
 		// create a camera contol
