@@ -93,19 +93,19 @@
 			</button>
 			<ul class="dropdown-menu btn-default btn-xs">
 				<li>
-					<button type="button" class="btn btn-default btn-xs">
+					<button type="button" class="btn btn-default btn-xs vertex-shader" data-value="orthographic">
 						<img src="icons/globe-512px.svg" height="16em" width="16em"/>
 						Globe
 					</button>
 				</li>
 				<li>
-					<button type="button" class="btn btn-default btn-xs">
+					<button type="button" class="btn btn-default btn-xs vertex-shader" data-value="equirectangular">
 						<img src="icons/map-512px.svg" height="16em" width="16em"/>
 						Map
 					</button>
 				</li>
 				<li>
-					<button type="button" class="btn btn-default btn-xs">
+					<button type="button" class="btn btn-default btn-xs vertex-shader" data-value="texture">
 						<img src="icons/texture-512px.svg" height="16em" width="16em"/>
 						Texture
 					</button>
@@ -120,19 +120,19 @@
 			</button>
 			<ul class="dropdown-menu btn-default btn-xs">
 				<li>
-					<button type="button" class="btn btn-default btn-xs sealevel" data-toggle="button" aria-pressed="true">
+					<button type="button" class="btn btn-default btn-xs ocean" data-toggle="button" aria-pressed="true">
 						<img src="icons/water-512px.svg" height="16em" width="16em"/>
 						Ocean
 					</button>
 				</li>
 				<li>
-					<button type="button" class="btn btn-default btn-xs sealevel" data-toggle="button" aria-pressed="true">
+					<button type="button" class="btn btn-default btn-xs vegetation" data-toggle="button" aria-pressed="true">
 						<img src="icons/tree-512px.svg" height="16em" width="16em"/>
 						Vegetation
 					</button>
 				</li>
 				<li>
-					<button type="button" class="btn btn-default btn-xs sealevel" data-toggle="button" aria-pressed="true">
+					<button type="button" class="btn btn-default btn-xs soil" data-toggle="button" aria-pressed="true">
 						<img src="icons/stone-pile.svg" height="16em" width="16em"/>
 						Soil
 					</button>
@@ -141,37 +141,37 @@
 				<li role="separator" class="divider"></li>
 
 				<li>
-					<button type="button" class="btn btn-default btn-xs alt" data-toggle="button">
+					<button type="button" class="btn btn-default btn-xs fragment-shader" data-value="alt">
 						<img src="icons/terrain-512px.svg" height="16em" width="16em"/>
 						Elevation
 					</button>
 				</li>
 				<li>
-					<button type="button" class="btn btn-default btn-xs npp" data-toggle="button">
+					<button type="button" class="btn btn-default btn-xs fragment-shader" data-value="npp">
 						<img src="icons/leaf-512px.svg" height="16em" width="16em"/>
 						Plant Productivity
 					</button>
 				</li>
 				<li>
-					<button type="button" class="btn btn-default btn-xs temp" data-toggle="button">
+					<button type="button" class="btn btn-default btn-xs fragment-shader" data-value="temp">
 						<img src="icons/thermometer-512px.svg" height="16em" width="16em"/>
 						Temperature
 					</button>
 				</li>
 				<li>
-					<button type="button" class="btn btn-default btn-xs precip" data-toggle="button">
+					<button type="button" class="btn btn-default btn-xs fragment-shader" data-value="precip">
 						<img src="icons/rain2-512px.svg" height="16em" width="16em"/>
 						Precipitation
 					</button>
 				</li>
 				<li>
-					<button type="button" class="btn btn-default btn-xs time" data-toggle="button">
+					<button type="button" class="btn btn-default btn-xs fragment-shader" data-value="age">
 						<img src="icons/clock-512px.svg" height="16em" width="16em"/>
 						Age
 					</button>
 				</li>
 				<li>
-					<button type="button" class="btn btn-default btn-xs plates" data-toggle="button">
+					<button type="button" class="btn btn-default btn-xs fragment-shader" data-value="debug">
 						<img src="icons/puzzle-512px.svg" height="16em" width="16em"/>
 						Plates
 					</button>
@@ -539,13 +539,14 @@
 			loadFile(e.dataTransfer.files[0]);
 	    }
 	);
-	$('#fragmentShader').change(function(e){
-		view.fragmentShader(fragmentShaders[$('#fragmentShader').val()]);
+	$('.fragment-shader').click(function(e){
+		view.fragmentShader(fragmentShaders[$(this).data('value')]);
 	});
-	$('#vertexShader').change(function(e){
-		view.vertexShader(vertexShaders[$('#vertexShader').val()]);
+	$('.vertex-shader').click(function(e){
+		console.log('vertex-shader');
+		view.vertexShader(vertexShaders[$(this).data('value')]);
 	});
-	$('#sealevel').change(function(e){
+	$('.ocean').click(function(e){
 		var checked = !$('#sealevel').is(':checked');
 		$({value: checked? 1:0}).animate(
 		  {value: checked? 0:1},
