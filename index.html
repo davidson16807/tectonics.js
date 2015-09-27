@@ -412,13 +412,13 @@
 		};
 	}
 	function togglePause(){
-		if($('.pause').is(':visible')){
-			model.MegaYearPerSecond = 0;
+		if(model.paused){
+			model.MegaYearPerSecond = parseInt($('#speedControl').val());
 		} else {
-			model.MegaYearPerSecond = $('#speedControl').val();
+			model.MegaYearPerSecond = 0;
 		}
-		$('.pause').toggle();
-		$('.play').toggle();
+		model.paused = !model.paused;
+		$('.play img').toggle();
 	}
 	function toggleFullscreen () {
 		$('.fullscreen').toggle();
@@ -435,14 +435,12 @@
 	function loadUrl (url) {
 		BlockUpdate = true;
 		$('#loadingSave').show();
-		$('.parameters').hide();
 		$('.controls').hide();
 		$.getJSON( url, function( json ) {
 			BlockUpdate = false;
 	    	world = JsonDeserializer.world(json);
 			model.world(world);
 			$('#loadingSave').hide();
-			$('.parameters').show();
 			$('.controls').show();
 		});
 	}
@@ -468,7 +466,7 @@
 			model.MegaYearPerSecond = $('#speedControl').val();
 		}
 	});
-	$('.pause,.play').click(togglePause);
+	$('.play').click(togglePause);
 	$('.summary').click(function() {
 		$(this).parents('.collapsible').children().toggle();
 	});
