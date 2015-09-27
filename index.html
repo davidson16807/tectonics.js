@@ -469,11 +469,9 @@
 		$('.save').attr('download', filename);
 	});
 	$('.load').click(function(e) {
-		console.log('click')
 		$('#load-input').click();
 	});
 	$('#load-input').on('change', function(e) {
-		console.log('changed')
 		loadFile(e.target.files[0]);
 		$('#load-input').val('');
 	});
