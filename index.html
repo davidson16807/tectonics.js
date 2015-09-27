@@ -10,11 +10,13 @@
 	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 
 	<link rel="stylesheet" href="styles/bootstrap.min.css">
+	<link rel="stylesheet" href="styles/bootstrap.custom.css">
 	<link rel="stylesheet" href="styles/main.css"/>
 	<link rel="stylesheet" href="styles/modern.css"/>
 	<link rel="stylesheet" href="styles/app.css"/>
 
 	<script src="http://code.jquery.com/jquery.min.js"></script>
+	<script src="libraries/bootstrap.js"></script>
 	<script src="libraries/three.js/Three.js"></script>
 	<script src="libraries/three.js/Detector.js"></script>
 	<script src="libraries/three.js/Stats.js"></script>
@@ -64,151 +66,159 @@
 	</div>
 </div>
 <!-- info on screen display -->
-<div class="topright collapse collapsible parameters">
-	<div class="collapsed collapse">
-		<a href="#" class="summary">&#9654;</a>
-		<span class="age">initializing...</span>
-		<button class="play collapse"><img src="icons/play-512px.svg" alt="" height="12em" width="12em"></button>
-		<button class="pause"><img src="icons/pause-512px.svg" alt="" height="12em" width="12em"></button>
-	</div>
-	<div class="expanded">
-		<a href="#" class="summary">&#9660;</a>
-		<table class="details">
-			<tr>
-				<td>Age:</td>
-				<td><span class="age">initializing...</span></td>
-			</tr>
-			<tr>
-				<td>Speed:</td>
-				<td>
-					<button class="play collapse">
-						<img src="icons/play-512px.svg" height="12em" width="12em">
-					</button>
-					<button class="pause">
-						<img src="icons/pause-512px.svg" height="12em" width="12em">
-					</button>
-					<input id="speedControl" type="number" value="5" min="0" max="10" step="1" style="width:30px" /> 
-					 My/s
-				</td>
-			</tr>
-			<tr>
-				<td>Projection:</td>
-				<td>
-					<select id="vertexShader">
-						<option value="orthographic" selected>Orthographic</option>
-						<option value="equirectangular">Equirectangular</option>
-						<option value="texture">Texture</option>
-					</select>
-				</td>
-			</tr>
-			<tr>
-				<td>View:</td>
-				<td>
-					<select id="fragmentShader">
-						<option value="satellite" selected>Satellite Image</option>
-						<option value="soil">Soil</option>
-						<option value="bedrock">Bedrock</option>
-						<option value="alt">Elevation</option>
-						<option value="npp">Plant Productivity</option>
-						<option value="temp">Temperature</option>
-						<option value="precip">Precipitation</option>
-						<option value="age">Age</option>
-						<option value="debug">Plates</option>
-					</select>
-					<br/>
-					<input id="sealevel" type="checkbox" checked/> Sealevel
-				</td>
-			</tr>
-		</table>
-	</div>
-</div>
-<div class="bottomright collapse collapsible controls">
-	<div class="collapsed collapse">
-		<a class="summary" href="#">
-			&#9654;
-		</a>
-		<!-- <button class="new" style="border:0 0 0 0;">
-			<img src="icons/new-512px.svg" height="12em" title="New">
-		</button> -->
-		<a class="save" download>
-			<button>
-				<img src="icons/download-512px.svg" height="12em" title="Save">
-			</button>
-		</a>
-		<button class="load">
-			<img src="icons/upload-512px.svg" height="12em"  title="Load">
-		</button>
-		<a class="collapse screenshot" download>
-			<button>
-				<img src="icons/camera-512px.svg" height="12em"  title="Screenshot">
-			</button>
-		</a>
-		<!-- <button class="seed">
-			<img src="icons/dice-512px.svg" height="12em"  title="Seed">
-		</button> -->
-		<button class="fullscreen enter collapse" >
-			<img src="icons/fullscreen-512px.svg" height="12em"  title="Fullscreen">
-		</button>
-		<button class="fullscreen exit collapse">
-			<img src="icons/fullscreen-exit-512px.svg" height="12em"  title="Exit Fullscreen">
-		</button>
-	</div>
-	<div class="expanded">
-		<a class="summary" href="#">&#9660;</a>
-		<div class="details">
-			<!-- <div>
-				<button class="new">
-					<img src="icons/new-512px.svg" height="12em">
-					New
-					<span class="instructions">N</span>
-				</button>
-			</div> -->
-			<div>
-				<a class="save" download>
-					<button>
-						<img src="icons/download-512px.svg" height="12em">
-						Save
-					</button>
-				</a>
-			</div>
-			<div>
-				<button class="load">
-					<img src="icons/upload-512px.svg" height="12em">
-					Load
-					<span class="instructions">drag</span>
-				</button>
-				<input id="load-input" type="file" class="hidden"/>
-			</div>
-			<div>
-				<a class="collapse screenshot" download>
-					<button>
-						<img src="icons/camera-512px.svg" height="12em">
-						Screenshot
-						<span class="instructions">P</span>
-					</button>
-				</a>
-			</div>
-			<!-- <div>
-				<button class="seed">
-					<img src="icons/dice-512px.svg" height="12em">
-					Seed
-				</button>
-			</div> -->
-			<div>
-				<button class="fullscreen enter collapse" >
-					<img src="icons/fullscreen-512px.svg" height="12em">
-					Fullscreen
-					<span class="instructions">F11</span>
-				</button>
-				<button class="fullscreen exit collapse">
-					<img src="icons/fullscreen-exit-512px.svg" height="12em">
-					Exit Fullscreen
-					<span class="instructions">F11</span>
-				</button>
-			</div>
+<div class="topright collapse collapsible controls" >
+	<!-- <a href="#" class="summary">&#9660;</a> -->
+	<div class="time-menu">
+		<div class="input-group age-group">
+			<span class="form-control input-sm age">initializing...</span>
+			<span class="input-group-addon age-units"></span>
 		</div>
-	</div> 
+		<div class="input-group speed-group">
+			<span class="input-group-addon play">
+					<img src="icons/play-512px.svg" height="12em" width="12em">
+					<img src="icons/pause-512px.svg" height="12em" width="12em" class="collapse">
+			</span>
+
+			<input class="form-control input-sm" id="speedControl" type="number" value="5" min="0" max="10" step="1"/> 
+
+			<span class="input-group-addon">My/s</span>
+		</div>
+	</div>
+	<div class="view-menu btn-group-vertical">
+	 	<div class="btn-group">
+			<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				<img src="icons/projection-512px.svg" height="16em" width="16em"/>
+				Projection 
+				<span class="caret"></span>
+			</button>
+			<ul class="dropdown-menu btn-default btn-xs">
+				<li>
+					<button type="button" class="btn btn-default btn-xs">
+						<img src="icons/globe-512px.svg" height="16em" width="16em"/>
+						Globe
+					</button>
+				</li>
+				<li>
+					<button type="button" class="btn btn-default btn-xs">
+						<img src="icons/map-512px.svg" height="16em" width="16em"/>
+						Map
+					</button>
+				</li>
+				<li>
+					<button type="button" class="btn btn-default btn-xs">
+						<img src="icons/texture-512px.svg" height="16em" width="16em"/>
+						Texture
+					</button>
+				</li>
+			</ul>
+		</div>
+		<div class="btn-group">
+			<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				<img src="icons/eye-512px.svg" height="16em" width="16em"/>
+				View 
+				<span class="caret"></span>
+			</button>
+			<ul class="dropdown-menu btn-default btn-xs">
+				<li>
+					<button type="button" class="btn btn-default btn-xs sealevel" data-toggle="button" aria-pressed="true">
+						<img src="icons/water-512px.svg" height="16em" width="16em"/>
+						Ocean
+					</button>
+				</li>
+				<li>
+					<button type="button" class="btn btn-default btn-xs sealevel" data-toggle="button" aria-pressed="true">
+						<img src="icons/tree-512px.svg" height="16em" width="16em"/>
+						Vegetation
+					</button>
+				</li>
+				<li>
+					<button type="button" class="btn btn-default btn-xs sealevel" data-toggle="button" aria-pressed="true">
+						<img src="icons/stone-pile.svg" height="16em" width="16em"/>
+						Soil
+					</button>
+				</li>
+
+				<li role="separator" class="divider"></li>
+
+				<li>
+					<button type="button" class="btn btn-default btn-xs alt" data-toggle="button">
+						<img src="icons/terrain-512px.svg" height="16em" width="16em"/>
+						Elevation
+					</button>
+				</li>
+				<li>
+					<button type="button" class="btn btn-default btn-xs npp" data-toggle="button">
+						<img src="icons/leaf-512px.svg" height="16em" width="16em"/>
+						Plant Productivity
+					</button>
+				</li>
+				<li>
+					<button type="button" class="btn btn-default btn-xs temp" data-toggle="button">
+						<img src="icons/thermometer-512px.svg" height="16em" width="16em"/>
+						Temperature
+					</button>
+				</li>
+				<li>
+					<button type="button" class="btn btn-default btn-xs precip" data-toggle="button">
+						<img src="icons/rain2-512px.svg" height="16em" width="16em"/>
+						Precipitation
+					</button>
+				</li>
+				<li>
+					<button type="button" class="btn btn-default btn-xs time" data-toggle="button">
+						<img src="icons/clock-512px.svg" height="16em" width="16em"/>
+						Age
+					</button>
+				</li>
+				<li>
+					<button type="button" class="btn btn-default btn-xs plates" data-toggle="button">
+						<img src="icons/puzzle-512px.svg" height="16em" width="16em"/>
+						Plates
+					</button>
+				</li>
+			</ul>
+		</div>
+
+
+		<button type="button" class="btn btn-default btn-xs" class="fullscreen enter collapse" >
+			<img src="icons/fullscreen-512px.svg" height="16em">
+			Fullscreen
+			<span class="instructions">F11</span>
+		</button>
+		<span class="fullscreen exit collapse">
+			<button type="button" class="btn btn-default btn-xs fullscreen exit">
+				<img src="icons/fullscreen-exit-512px.svg" height="16em">
+				Exit Fullscreen
+				<span class="instructions">F11</span>
+			</button>
+		</span>
+		<button type="button" class="btn btn-default btn-xs">
+			<a class="collapse screenshot" download>
+				<img src="icons/camera-512px.svg" height="16em">
+				Screenshot
+				<span class="instructions">P</span>
+			</a>
+		</button>
+	</div>
+
+
+	<div class="file-menu btn-group-vertical">
+		<button type="button" class="btn btn-default btn-xs">
+			<a class="save" download>
+				<img src="icons/download-512px.svg" height="16em">
+				Save
+			</a>
+		</button>
+		<button type="button" class="btn btn-default btn-xs" class="load">
+			<img src="icons/upload-512px.svg" height="16em">
+			Load
+			<span class="instructions">drag</span>
+		</button>
+	</div>
 </div>
+
+<input id="load-input" type="file" class="hidden"/>
+
 <div class="bottomleft">
 	<div id="renderStats"></div>
 	<div id="updateStats"></div>
@@ -284,8 +294,8 @@
 
 	var view = new View(
 		new Grid( new THREEx.FibonacciSphereGeometry(1, 10000, fibGridFaceCache)),
-		fragmentShaders[$('#fragmentShader').val()], 
-		vertexShaders[$('#vertexShader').val()]
+		fragmentShaders['satellite'], 
+		vertexShaders['orthographic']
 	);
 	var model = new Model();
 
@@ -297,7 +307,6 @@
 		EliasWorldGenerator.generate(world);
 		model.world(world);
 		$('#loadingSave').hide();
-		$('.parameters').show();
 		$('.controls').show();
 	}
 	
@@ -376,7 +385,8 @@
 		model.slow_update();
 
 		if ((world) !== void 0) {
-			$(".age").html(format(world.age, 1000, 3));
+			$(".age").html(format(world.age, 1000, 3).quantity);
+			$(".age-units").html(format(world.age, 1000, 3).unit);
 		};
 		
 		if(!IsProd){
@@ -384,6 +394,10 @@
 		}
 	}
 	
+	function format_text (My, rollover, precision) {
+		var formatted = format(My, rollover, precision);
+		return formatted.quantity + ' ' + formatted.unit;
+	}
 	function format(My, rollover, precision){
 		var quantity = My * 1000000;
 		var units = ['ky', 'My', 'By']
@@ -392,7 +406,10 @@
 			unit = units.shift();
 			quantity /= 1000;
 		}
-		return quantity.toPrecision(precision).toString() + " " + unit;
+		return {
+			quantity: 	quantity.toPrecision(precision).toString(), 
+			unit: 		unit,
+		};
 	}
 	function togglePause(){
 		if($('.pause').is(':visible')){
@@ -464,7 +481,7 @@
 			stringified;
 		var filename = 
 			seed+'-'+
-			format(world.age, 1000, 3).replace(/\s/,'')+
+			format_text(world.age, 1000, 3).replace(/\s/,'')+
 			'.sim';
 		$('.save').attr('href', dataUrl);
 		$('.save').attr('download', filename);
@@ -480,7 +497,7 @@
 		var dataurl = THREEx.Screenshot.toDataURL(renderer);
 		var filename = 
 			seed+'-'+
-			format(world.age, 1000, 3).replace(/\s/,'')+
+			format_text(world.age, 1000, 3).replace(/\s/,'')+
 			'.png';
 		$(this)
 			.attr('href', dataurl)

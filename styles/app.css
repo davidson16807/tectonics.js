@@ -2,6 +2,34 @@ body {
 	overflow	: hidden;
 }
 
+.controls {
+	width:61%;
+}
+.controls select, 
+.controls button, 
+.controls input{
+	color: black;
+}
+
+.time-menu {
+	width: 160px;
+	float: right;
+}
+.file-menu {
+	float: right;
+}
+.view-menu {
+	float: right;
+}
+
+.instructions {
+	color: grey;
+	font-style: italic;
+	font-size: 61%;
+	float:right;
+	padding-left:1em;
+}
+
 #drop-dialog {
 	position	: absolute;
 	top		    : 23%;
@@ -17,49 +45,4 @@ body {
 	background-color: white;
 	padding: 3.44%;
 	border-radius: 1em;
-}
-
-.expanded .details {
-	float:right;
-}
-a.summary {
-	color : white;
-	text-decoration	: none;
-}
-a:hover.summary {
-	text-decoration	: none;
-}
-
-.parameters td {
-	padding: 0 0.5em 0 0.5em;
-    font-weight:bold;
-    vertical-align:text-top;
-}
-
-.controls {
-	font-weight: bold;
-}
-.controls .expanded button {
-	width: 100%;
-	text-align:left;
-}
-.controls .collapsed button {
-    margin-right: -2px;
-    margin-left: -2px;
-}
-.instructions {
-	color: grey;
-	font-style: italic;
-	font-size: 61%;
-	float:right;
-	padding-left:1em;
-}
-
-.controls select, 
-.controls button, 
-.controls input, 
-.parameters select,
-.parameters button,
-.parameters input{
-	color: black;
 }
