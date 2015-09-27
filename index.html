@@ -202,7 +202,7 @@
 				Save
 			</a>
 		</button>
-		<button type="button" class="btn btn-default btn-xs" class="load">
+		<button type="button" class="btn btn-default btn-xs load">
 			<img src="icons/upload-512px.svg" height="16em">
 			Load
 			<span class="instructions">drag</span>
@@ -469,9 +469,11 @@
 		$('.save').attr('download', filename);
 	});
 	$('.load').click(function(e) {
+		console.log('click')
 		$('#load-input').click();
 	});
 	$('#load-input').on('change', function(e) {
+		console.log('changed')
 		loadFile(e.target.files[0]);
 		$('#load-input').val('');
 	});
