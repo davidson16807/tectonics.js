@@ -414,9 +414,7 @@
 	function togglePause(){
 		if(model.paused){
 			model.MegaYearPerSecond = parseInt($('#speedControl').val());
-		} else {
-			model.MegaYearPerSecond = 0;
-		}
+		} 
 		model.paused = !model.paused;
 		$('.play img').toggle();
 	}

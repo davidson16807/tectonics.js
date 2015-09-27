@@ -28,6 +28,9 @@ Model.prototype.fast_update = function(timestep) {
 	// 	return;
 	// }
 
+	if (this.paused){
+		return;
+	}
 	if (world !== void 0) {
 		world.fast_update(this.MegaYearPerSecond * seconds);
 	};
@@ -40,6 +43,9 @@ Model.prototype.slow_update = function(timestep) {
 		return;
 	}
 
+	if (this.paused){
+		return;
+	}
 	if (world !== void 0) {
 		world.slow_update(this.MegaYearPerSecond * seconds);
 	};
