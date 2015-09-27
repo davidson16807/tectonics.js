@@ -179,19 +179,12 @@
 			</ul>
 		</div>
 
-
-		<button type="button" class="btn btn-default btn-xs" class="fullscreen enter collapse" >
+		<button type="button" class="btn btn-default btn-xs fullscreen" data-toggle="button" aria-pressed="true">
 			<img src="icons/fullscreen-512px.svg" height="16em">
+			<img src="icons/fullscreen-exit-512px.svg" height="16em" class="collapse">
 			Fullscreen
 			<span class="instructions">F11</span>
 		</button>
-		<span class="fullscreen exit collapse">
-			<button type="button" class="btn btn-default btn-xs fullscreen exit">
-				<img src="icons/fullscreen-exit-512px.svg" height="16em">
-				Exit Fullscreen
-				<span class="instructions">F11</span>
-			</button>
-		</span>
 		<button type="button" class="btn btn-default btn-xs">
 			<a class="collapse screenshot" download>
 				<img src="icons/camera-512px.svg" height="16em">
@@ -416,15 +409,11 @@
 		$('.play img').toggle();
 	}
 	function toggleFullscreen () {
-		$('.fullscreen').toggle();
+		$('.fullscreen img').toggle();
 		if( THREEx.FullScreen.activated() ){
 			THREEx.FullScreen.cancel();
-			$('.collapsible').children('.expanded').show();
-			$('.collapsible').children('.collapsed').hide();
 		}else{
 			THREEx.FullScreen.request(document.body);
-			$('.collapsible').children('.expanded').hide();
-			$('.collapsible').children('.collapsed').show();
 		}
 	}
 	function loadUrl (url) {
