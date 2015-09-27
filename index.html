@@ -120,19 +120,19 @@
 			</button>
 			<ul class="dropdown-menu btn-default btn-xs">
 				<li>
-					<button type="button" class="btn btn-default btn-xs ocean" data-toggle="button" aria-pressed="true">
+					<button type="button" class="btn btn-default btn-xs active ocean" data-toggle="button" aria-pressed="true">
 						<img src="icons/water-512px.svg" height="16em" width="16em"/>
 						Ocean
 					</button>
 				</li>
 				<li>
-					<button type="button" class="btn btn-default btn-xs vegetation" data-toggle="button" aria-pressed="true">
+					<button type="button" class="btn btn-default btn-xs active vegetation" data-toggle="button" aria-pressed="true">
 						<img src="icons/tree-512px.svg" height="16em" width="16em"/>
 						Vegetation
 					</button>
 				</li>
 				<li>
-					<button type="button" class="btn btn-default btn-xs soil" data-toggle="button" aria-pressed="true">
+					<button type="button" class="btn btn-default btn-xs active soil" data-toggle="button" aria-pressed="true">
 						<img src="icons/stone-pile.svg" height="16em" width="16em"/>
 						Soil
 					</button>
@@ -547,7 +547,8 @@
 		view.vertexShader(vertexShaders[$(this).data('value')]);
 	});
 	$('.ocean').click(function(e){
-		var checked = !$('#sealevel').is(':checked');
+		var checked = $(this).hasClass('active');
+
 		$({value: checked? 1:0}).animate(
 		  {value: checked? 0:1},
 		  {
@@ -556,7 +557,30 @@
 			}
 		  });
 	});
+	$('.vegetation').click(function(e) {
+		var soil = $('.soil').hasClass('active');
+		var vegetation = !$('.vegetation').hasClass('active');
 
+		if (vegetation) {
+			view.fragmentShader(fragmentShaders.satellite);
+		} else if (soil) {
+			view.fragmentShader(fragmentShaders.soil);
+		} else {
+			view.fragmentShader(fragmentShaders.bedrock);
+		}
+	})
+	$('.soil').click(function(e) {
+		var soil = !$('.soil').hasClass('active');
+		var vegetation = $('.vegetation').hasClass('active');
+
+		if (vegetation) {
+			view.fragmentShader(fragmentShaders.satellite);
+		} else if (soil) {
+			view.fragmentShader(fragmentShaders.soil);
+		} else {
+			view.fragmentShader(fragmentShaders.bedrock);
+		}
+	})
 </script>
 </body>
 </html>
