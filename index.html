@@ -75,8 +75,8 @@
 		</div>
 		<div class="input-group speed-group">
 			<span class="input-group-addon play">
-					<img src="icons/play-512px.svg" height="12em" width="12em">
-					<img src="icons/pause-512px.svg" height="12em" width="12em" class="collapse">
+					<img src="icons/play-512px.svg" height="12em" width="12em"class="collapse">
+					<img src="icons/pause-512px.svg" height="12em" width="12em">
 			</span>
 
 			<input class="form-control input-sm" id="speedControl" type="number" value="5" min="0" max="10" step="1"/> 
@@ -412,10 +412,7 @@
 		};
 	}
 	function togglePause(){
-		if(model.paused){
-			model.MegaYearPerSecond = parseInt($('#speedControl').val());
-		} 
-		model.paused = !model.paused;
+		model.toggle_pause();
 		$('.play img').toggle();
 	}
 	function toggleFullscreen () {
