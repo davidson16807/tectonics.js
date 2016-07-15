@@ -37,12 +37,9 @@ function Plate(world, optional)
 Plate.prototype.localToWorld = function(a) {
     return a.applyMatrix4(this.matrix);
 };
-Plate.prototype.worldToLocal = function() {
-    var a = new THREE.Matrix4;
-    return function(b) {
-        return b.applyMatrix4(a.getInverse(this.matrix))
-    }
-}(),
+Plate.prototype.worldToLocal = function(b) {
+    return b.applyMatrix4(this.worldToLocalMatrix)
+},
 Plate.prototype.get = function(i){
 	return this.cells[i];
 }
@@ -137,6 +134,8 @@ Plate.prototype.move = function(timestep){
 	rotationMatrix.makeRotationAxis( this.eulerPole, this.angularSpeed * timestep );
 	rotationMatrix.multiply( this.matrix ); 
 	this.matrix = rotationMatrix;
+	this.worldToLocalMatrix = new THREE.Matrix4();
+	this.worldToLocalMatrix.getInverse(this.matrix);
 	Publisher.publish('plate.matrix', 'update', 
 		{ value: this.matrix, uuid: this.uuid } );
 }
@@ -155,8 +154,9 @@ Plate.prototype.deform = function(){
 	var cells = this.cells;
 	var cell, intersected;
 	var getIntersection = _getCollisionIntersection;
-	var plate, relative_pos, id;
-	var absolute_pos;
+	var plate, id;
+	var absolute_pos = new THREE.Vector3();
+	var relative_pos = new THREE.Vector3();
 	var i,li,j,lj;
 	var li = collideable.length;
 	var lj = plates.length;
@@ -168,11 +168,13 @@ Plate.prototype.deform = function(){
 		if(cell.content === void 0){
 			continue;
 		}
-		absolute_pos = this.localToWorld(cell.pos.clone());
+		absolute_pos.copy(cell.pos);
+		this.localToWorld(absolute_pos);
 		intersected = void 0;
 		for(j=0; j<lj; j++){
 			plate = plates[j];
-			relative_pos = plate.worldToLocal(absolute_pos.clone());
+			relative_pos.copy(absolute_pos);
+			plate.worldToLocal(relative_pos);
 			id = grid.getNearestId(relative_pos);
 			intersected = getIntersection(id, plate);
 			if(intersected !== void 0) {
@@ -202,8 +204,9 @@ Plate.prototype.rift = function(){
 	var ocean = this.world.ocean;
 	var getIntersection = _getRiftIntersection;
 	var cell, intersected;
-	var plate, relative_pos, id;
-	var absolute_pos;
+	var plate, id;
+	var absolute_pos = new THREE.Vector3();
+	var relative_pos = new THREE.Vector3();
 	var i,li,j,lj;
 	var li = riftable.length;
 	var lj = plates.length;
@@ -216,11 +219,13 @@ Plate.prototype.rift = function(){
 			continue;
 		}
 
-		absolute_pos = this.localToWorld(cell.pos.clone());
+		absolute_pos.copy(cell.pos);
+		this.localToWorld(absolute_pos);
 		intersected = void 0;
 		for(j=0; j<lj; j++){
 			plate = plates[j];
-			relative_pos = plate.worldToLocal(absolute_pos.clone());
+			relative_pos.copy(absolute_pos);
+			plate.worldToLocal(relative_pos);
 			id = grid.getNearestId(relative_pos);
 			intersected = getIntersection(id, plate);
 			if(intersected !== void 0) {
@@ -302,6 +307,8 @@ Plate.prototype.dock = function(subjugated){
 	var increment =    new THREE.Matrix4().makeRotationAxis( this.eulerPole, 		    -this.increment );
 	increment.multiply(new THREE.Matrix4().makeRotationAxis( subjugatedPlate.eulerPole, -subjugatedPlate.increment ));
 	var temp = subjugated.pos.clone();
+	var absolute = new THREE.Vector3();
+	var relative = new THREE.Vector3();
 	
 	var absolute, relative, id, hit;
  	for(var i = 0; true; i++){
@@ -309,8 +316,12 @@ Plate.prototype.dock = function(subjugated){
 		temp.applyMatrix4(increment);
 		
 		//check for continental collision
-		absolute = subjugatedPlate.localToWorld(temp.clone().normalize());
-		relative = this.worldToLocal(absolute);
+		absolute.copy(temp).normalize();
+		subjugatedPlate.localToWorld(absolute);
+
+		relative.copy(absolute);
+		this.worldToLocal(relative);
+
 		id = grid.getNearestId(relative);
 		hit = cells[id];
 		

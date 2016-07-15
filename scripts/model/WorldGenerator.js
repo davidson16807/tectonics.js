@@ -72,8 +72,9 @@ EliasWorldGenerator.generate = function (world, optional) {
 	for(var i=0, length = plate.cells.length; i<length; i++) {
 		var cell = plate.cells[i];
 		var height_rank = 0;
+		var cell_pos = cell.pos;
 		for (var j = 0, lj = zDotMultipliers.length; j < lj; j++) {
-			var z = cell.pos.clone().dot(zDotMultipliers[j]);
+			var z = cell_pos.dot(zDotMultipliers[j]);
 			height_rank += heaviside_approximation(z, 300);
 		};
 		cell.height_rank = height_rank;
