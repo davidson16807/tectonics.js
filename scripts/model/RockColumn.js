@@ -41,5 +41,12 @@ function RockColumn(world, optional){
 		var displacement = thickness - rootDepth;
 		this_.displacement = displacement ;
 	}
+
+	this_.subductability = function (rock) {
+		var continent = smoothstep(2800, 3000, rock.density);
+		return 	rock.density * (1-continent) 	+ 
+				lerp(rock.density, 3300, smoothstep(0,280, rock.age)) * continent
+	}
+	
 	return this_;
 }

@@ -13,8 +13,7 @@ Cell.prototype.create = function(template, invalid){
 	this.content = RockColumn(this.world, {
 		elevation: 	template.elevation, 
 		thickness: 	template.thickness, 
-		density: 	template.density,
-		age:        template.age,
+		density: 	template.density
 	});
 }
 

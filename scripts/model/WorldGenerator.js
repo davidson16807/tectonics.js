@@ -72,8 +72,9 @@ EliasWorldGenerator.generate = function (world, optional) {
 	for(var i=0, length = plate.cells.length; i<length; i++) {
 		var cell = plate.cells[i];
 		var height_rank = 0;
+		var cell_pos = cell.pos;
 		for (var j = 0, lj = zDotMultipliers.length; j < lj; j++) {
-			var z = cell.pos.clone().dot(zDotMultipliers[j]);
+			var z = cell_pos.dot(zDotMultipliers[j]);
 			height_rank += heaviside_approximation(z, 300);
 		};
 		cell.height_rank = height_rank;
@@ -108,43 +109,37 @@ EliasWorldGenerator.generate = function (world, optional) {
 	 new RockColumn(void 0, {
 		elevation: 	-11000,
 		thickness: 	4000, 
-		density: 	3000,	// Carlson & Raskin 1984
-		age:        280
+		density: 	3000	// Carlson & Raskin 1984
 	 });
 	var deep_ocean = 
 	 new RockColumn(void 0, {
 		elevation: 	-6000,  
 		thickness:  7100-800,// +/- 800, White McKenzie and O'nions 1992
-		density: 	3000,	// Carlson & Raskin 1984
-		age:        200
+		density: 	3000	// Carlson & Raskin 1984
 	 });
 	var shallow_ocean =
 	 new RockColumn(void 0, {
 		elevation: 	-3682,	// Charette & Smith 2010
 		thickness: 	7100+800,// +/- 800, White McKenzie and O'nions 1992
-		density: 	2890,	// Carlson & Raskin 1984
-		age:        0
+		density: 	2890	// Carlson & Raskin 1984
 	 });
 	var shelf = 
 	 new RockColumn(void 0, {
 		elevation: 	-200,   //Sverdrup & Fleming 1942
 	    thickness: 	17000, // +/- 2900, estimate for shields, Zandt & Ammon 1995
-		density: 	2700,
-		age:        750
+		density: 	2700
 	 });
 	var land =
 	 new RockColumn(void 0, {
 		elevation: 	840,   //Sverdrup & Fleming 1942
 	    thickness: 	36900, // +/- 2900, estimate for shields, Zandt & Ammon 1995
-		density: 	2700,
-		age:        750
+		density: 	2700
 	 });
 	var mountain = 
 	 new RockColumn(void 0, {
 		elevation: 	8848,
 	    thickness: 	70000, // +/- 2900, estimate for shields, Zandt & Ammon 1995
-		density: 	2700,
-		age:        750
+		density: 	2700
 	 });
 	var control_points = [abyss, deep_ocean, shallow_ocean, shelf, land, mountain];
 	 
@@ -163,7 +158,6 @@ EliasWorldGenerator.generate = function (world, optional) {
 					elevation: 	height,
 					thickness:  lerp(lower.thickness, upper.thickness, fraction),
 					density:  	lerp(lower.density, upper.density, fraction),
-					age:  	    lerp(lower.age, upper.age, fraction),
 				});
 				break;
 			}
