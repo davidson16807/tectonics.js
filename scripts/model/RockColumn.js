@@ -14,9 +14,6 @@ function RockColumn(world, optional){
 	this_.isContinental = function(){
 		return this_.thickness > 17000;
 	}
-	this_.update = function (timestep) {
-		this_.age += timestep;
-	}
 	this_.accrete = function(subducted){
 		var sialDensity = this_.world.land.density
 		var simaDensity = this_.world.mantleDensity
@@ -32,14 +29,5 @@ function RockColumn(world, optional){
 		this_.density = density;
 	}
 
-	this_.isostasy = function(){
-		//Calculates elevation as a function of crust density.
-		//This was chosen as it only requires knowledge of crust density and thickness, 
-		//which are relatively well known.
-		var thickness = this_.thickness;
-		var rootDepth = thickness * this_.density / this_.world.mantleDensity;
-		var displacement = thickness - rootDepth;
-		this_.displacement = displacement ;
-	}
 	return this_;
 }
