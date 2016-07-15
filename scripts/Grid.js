@@ -1,4 +1,4 @@
-'use strict';
+;'use strict';
 
 // The Grid class is the one stop shop for high performance grid cell operations
 // You can find grid cells by neighbor, by position, and by the index of a WebGL buffer array
@@ -16,6 +16,9 @@ function Grid(template, options){
 	// This helps with mapping cells within the model to buffer arrays in three.js
 	// Map is created by flattening this.template.faces
 	var faces = this.template.faces;
+	this.faces = faces;
+	this.pos = this.template.vertices;
+
 	var buffer_array_to_cell = new Uint16Array(faces.length * 3);
 	for (var i=0, i3=0, li = faces.length; i<li; i++, i3+=3) {
 		var face = faces[i];

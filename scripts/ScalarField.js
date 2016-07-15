@@ -1,85 +1,118 @@
 'use strict';
 
-// The ScalarField class is the representation of a mathematical scalar field.
+// The ScalarField namespace provides operations over mathematical scalar fields.
 // It should theoretically work for any manifold or coordinate system given the appropriate geometry,
 // However it is only intended for use with spheres 
 // It performs mathematical operations that are common to fields
-
-function ScalarField(grid){
-	this.grid = grid;
-
-	this._geometry = world.grid.template;
-	this._vertices = this._geometry.vertices;
-	this._faces = this._geometry.faces;
-	
-	this.values = new Float32Array(this._vertices.length);
-	this.length = this._vertices.length;
+var ScalarField = {}
+ScalarField.TypedArray = function(grid){
+	return new Float32Array(grid.pos.length);
 }
-ScalarField.prototype.add_field = function(field) {
-	var field_values = field.values;
-	var this_values = this.values;
-	for (var i = field_values.length - 1; i >= 0; i--) {
-		this_values[i] += field_values[i];
+ScalarField.add_field = function(field1, field2, result) {
+	result = result || new Float32Array(field.length)
+
+	var field_value = field.value;
+	var this_value = this.value;
+	for (var i = field_value.length - 1; i >= 0; i--) {
+		this_value[i] += field_value[i];
 	}
 	return this;
 };
-ScalarField.prototype.sub_field = function(field) {
-	var field_values = field.values;
-	var this_values = this.values;
-	for (var i = field_values.length - 1; i >= 0; i--) {
-		this_values[i] -= field_values[i];
+ScalarField.sub_field = function(field1, field2, result) {
+	result = result || new Float32Array(field.length)
+	
+	var field_value = field.value;
+	var this_value = this.value;
+	for (var i = field_value.length - 1; i >= 0; i--) {
+		this_value[i] -= field_value[i];
 	}
 	return this;
 };
-ScalarField.prototype.mult_field = function(field) {
-	var field_values = field.values;
-	var this_values = this.values;
-	for (var i = field_values.length - 1; i >= 0; i--) {
-		this_values[i] *= field_values[i];
+ScalarField.mult_field = function(field1, field2, result) {
+	result = result || new Float32Array(field.length)
+	
+	var field_value = field.value;
+	var this_value = this.value;
+	for (var i = field_value.length - 1; i >= 0; i--) {
+		this_value[i] *= field_value[i];
 	}
 	return this;
 };
-ScalarField.prototype.div_field = function(field) {
-	var field_values = field.values;
-	var this_values = this.values;
-	for (var i = field_values.length - 1; i >= 0; i--) {
-		this_values[i] /= field_values[i];
+ScalarField.div_field = function(field1, field2, result) {
+	result = result || new Float32Array(field.length)
+	
+	var field_value = field.value;
+	var this_value = this.value;
+	for (var i = field_value.length - 1; i >= 0; i--) {
+		this_value[i] /= field_value[i];
 	}
 	return this;
 };
-ScalarField.prototype.add_scalar = function(scalar) {
-	var this_values = this.values;
-	for (var i = this_values.length - 1; i >= 0; i--) {
-		this_values[i] += scalar;
+ScalarField.add_scalar = function(field, scalar, result) {
+	result = result || new Float32Array(field.length)
+	
+	var this_value = this.value;
+	for (var i = this_value.length - 1; i >= 0; i--) {
+		this_value[i] += scalar;
 	}
 	return this;
 };
-ScalarField.prototype.sub_scalar = function(scalar) {
-	var this_values = this.values;
-	for (var i = this_values.length - 1; i >= 0; i--) {
-		this_values[i] -= scalar;
+ScalarField.sub_scalar = function(field, scalar, result) {
+	result = result || new Float32Array(field.length)
+	
+	var this_value = this.value;
+	for (var i = this_value.length - 1; i >= 0; i--) {
+		this_value[i] -= scalar;
 	}
 	return this;
 };
-ScalarField.prototype.mult_scalar = function(scalar) {
-	var this_values = this.values;
-	for (var i = this_values.length - 1; i >= 0; i--) {
-		this_values[i] *= scalar;
+ScalarField.mult_scalar = function(field, scalar, result) {
+	result = result || new Float32Array(field.length)
+	
+	var this_value = this.value;
+	for (var i = this_value.length - 1; i >= 0; i--) {
+		this_value[i] *= scalar;
 	}
 	return this;
 };
-ScalarField.prototype.div_scalar = function(scalar) {
+ScalarField.div_scalar = function(field, scalar, result) {
+	result = result || new Float32Array(field.length)
+	
 	var inv_scalar = scalar;
-	var this_values = this.values;
-	for (var i = this_values.length - 1; i >= 0; i--) {
-		this_values[i] *= inv_scalar;
+	var this_value = this.value;
+	for (var i = this_value.length - 1; i >= 0; i--) {
+		this_value[i] *= inv_scalar;
 	}
 	return this;
 };
-ScalarField.prototype.map = function(fn) {
-	var this_values = this.values;
-	for (var i = field_values.length - 1; i >= 0; i--) {
-		this_values[i] = fn(this_values[i])
+// minimum value within the field
+ScalarField.min = function(field) {
+	var min = Infinity;
+	var value;
+	for (var i = field.length - 1; i >= 0; i--) {
+		value = field[i];
+		if (value < min) {
+			min = value;
+		}
+	}
+	return min;
+};
+// maximum value within the field
+ScalarField.max = function(field) {
+	var max = -Infinity;
+	var value;
+	for (var i = field.length - 1; i >= 0; i--) {
+		value = field[i];
+		if (value > max) {
+			max = value;
+		}
+	}
+	return max;
+};
+ScalarField.map = function(fn) {
+	var this_value = this.value;
+	for (var i = field_value.length - 1; i >= 0; i--) {
+		this_value[i] = fn(this_value[i])
 	}
 	return this;
 };
