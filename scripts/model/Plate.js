@@ -242,34 +242,30 @@ Plate.prototype.rift = function(){
 Plate.prototype.update = function(timestep) {
 	var i, li
 	var cells = this.cells;
+	var i, j, li, lj, content, dheightSum, neighborIds, neighbor, dheight, erosion;
 	for(i=0, li = cells.length; i<li; i++){
 		var content = cells[i].content;
 		if(content === void 0){
 			continue;
 		}
-		content.update(timestep);
-	}
-};
-Plate.prototype.erode = function(timestep){
-	// Model taken from Simoes et al. 2010
-	// This erosion model is characteristic in that its geared towards large spatiotemporal scales
-	// A sediment erosion model is also described there, but here we only implement bedrock erosion, for now
-	var world = this.world;
-	var grid = this.world.grid;
-	var cells = this.cells;
-	var precipitation = 7.8e5;
-	// ^^^ measured in meters of rain per million years
-	// global land average from wikipedia
-	var erosiveFactor = 1.8e-7; 
-	// ^^^ the rate of erosion per the rate of rainfall in that place
-	// measured in fraction of height gradient per meters of rain
+		content.age += timestep;
 
-	var i, j, li, lj, content, dheightSum, neighborIds, neighbor, dheight, erosion;
-	for(i=0, li = cells.length; i<li; i++){
-		content = cells[i].content;
-		if(content === void 0){
-			continue;
-		}
+		content.isostasy();
+
+		//EROSION
+		// Model taken from Simoes et al. 2010
+		// This erosion model is characteristic in that its geared towards large spatiotemporal scales
+		// A sediment erosion model is also described there, but here we only implement bedrock erosion, for now
+		var world = this.world;
+		var grid = this.world.grid;
+		var cells = this.cells;
+		var precipitation = 7.8e5;
+		// ^^^ measured in meters of rain per million years
+		// global land average from wikipedia
+		var erosiveFactor = 1.8e-7; 
+		// ^^^ the rate of erosion per the rate of rainfall in that place
+		// measured in fraction of height gradient per meters of rain
+
 		dheightSum = 0;
 		neighborIds = grid.getNeighborIds(i);
 		for(j = 0, lj = neighborIds.length; j<lj; j++){
@@ -286,18 +282,7 @@ Plate.prototype.erode = function(timestep){
 		erosion = dheightSum * precipitation * timestep * erosiveFactor;
 		content.thickness -= erosion;
 	}
-}
-
-Plate.prototype.isostasy = function() {
-	var cells = this.cells;
-	for(var i=0, li = cells.length; i<li; i++){
-		var content = cells[i].content;
-		if(content === void 0){
-			continue;
-		}
-		content.isostasy();
-	}
-}
+};
 
 Plate.prototype.dock = function(subjugated){
 	var grid = this.grid;
