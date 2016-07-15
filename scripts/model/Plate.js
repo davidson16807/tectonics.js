@@ -243,6 +243,10 @@ Plate.prototype.update = function(timestep) {
 	var i, li
 	var cells = this.cells;
 	var i, j, li, lj, content, dheightSum, neighborIds, neighbor, dheight, erosion;
+	
+	var mantleDensity = this.world.mantleDensity; 
+	var thickness, rootDepth; 
+	
 	for(i=0, li = cells.length; i<li; i++){
 		var content = cells[i].content;
 		if(content === void 0){
@@ -250,7 +254,9 @@ Plate.prototype.update = function(timestep) {
 		}
 		content.age += timestep;
 
-		content.isostasy();
+		thickness = content.thickness; 
+		rootDepth = thickness * content.density / mantleDensity; 
+		content.displacement = thickness - rootDepth; 
 
 		//EROSION
 		// Model taken from Simoes et al. 2010

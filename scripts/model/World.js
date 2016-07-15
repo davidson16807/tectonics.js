@@ -70,12 +70,6 @@ World.prototype.slow_update = function(timestep){
 	for(i = 0; i<length; i++){
 		plates[i].update(timestep);
 	}
-	for(i = 0; i<length; i++){
-		plates[i].erode(timestep);
-	}
-	for(i = 0; i<length; i++){
-		plates[i].isostasy();
-	}
 	this.updateBorders();
 	for(i = 0; i<length; i++){
 		plates[i].rift();
