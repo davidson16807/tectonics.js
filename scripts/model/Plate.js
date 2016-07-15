@@ -19,10 +19,16 @@ function Plate(world, optional)
 	//efficiency attributes, AKA attributes of attributes:
 	this.grid = world.grid;
 	this._geometry = world.grid.template;
-	this.cells = [];
 	this._neighbors = [];
+	this.cells = [];
 	this.matrix = optional['matrix'] || new THREE.Matrix4();
 	this.uuid = optional['uuid'] || Uuid.create();
+
+	this.age = new ScalarField(this.grid);
+	this.displacement = new ScalarField(this.grid);
+	this.thickness = new ScalarField(this.grid);
+	this.density = new ScalarField(this.grid);
+	this.elevation = new ScalarField(this.grid);
 
 	var vertices = this._geometry.vertices;
 	for(var i = 0, length = vertices.length, cells = this.cells; i<length; i++){
