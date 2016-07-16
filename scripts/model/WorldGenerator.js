@@ -69,21 +69,23 @@ EliasWorldGenerator.generate = function (world, optional) {
 	// It only represents how cells would rank if sorted by elevation.
 	// This is done so we can later derive elevations that are consistent with earth's.
 	var plate = new Plate(world);
-	for(var i=0, length = plate.cells.length; i<length; i++) {
-		var cell = plate.cells[i];
+	var grid = world.grid;
+	var positions = grid.pos;
+	var height_ranks = ScalarField.TypedArray(grid);
+	for(var i=0, length = height_ranks.length; i<length; i++) {
 		var height_rank = 0;
-		var cell_pos = cell.pos;
+		var pos = positions[i];
 		for (var j = 0, lj = zDotMultipliers.length; j < lj; j++) {
-			var z = cell_pos.dot(zDotMultipliers[j]);
+			var z = pos.dot(zDotMultipliers[j]);
 			height_rank += heaviside_approximation(z, 300);
 		};
-		cell.height_rank = height_rank;
+		height_ranks[i] = height_rank;
 	}
 
 	// order cells by this new found  "height rank"
 	cells = plate.cells
 		.slice(0)
-		.sort(function(a, b) { return a.height_rank - b.height_rank; });
+		.sort(function(a, b) { return height_ranks[a.id] - height_ranks[b.id]; });
 
 	// Next we find elevations whose magnitude and frequency match those of earth's.
 	// To do this, we generate a second dataset of equal size that represents actual elevations.
@@ -154,7 +156,7 @@ EliasWorldGenerator.generate = function (world, optional) {
 			if (height < upper.elevation || 
 				upper.elevation == mountain.elevation){
 				var fraction = smoothstep(lower.elevation, upper.elevation, height);
-				rock_column = new RockColumn(cell.world, {
+				rock_column = new RockColumn(world, {
 					elevation: 	height,
 					thickness:  lerp(lower.thickness, upper.thickness, fraction),
 					density:  	lerp(lower.density, upper.density, fraction),
