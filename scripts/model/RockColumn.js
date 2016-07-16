@@ -1,5 +1,30 @@
 'use strict';
 
+Crust = {};
+Crust.move = function(from_plate, from_id, to_plate, to_id ){
+	from_plate.is_member[from_id] 	= 0;
+
+	to_plate.is_member	[to_id] 	= from_plate.is_member	[from_id];
+	to_plate.age		[to_id] 	= from_plate.age		[from_id];
+	to_plate.displacement[to_id] 	= from_plate.displacement[from_id];
+	to_plate.thickness	[to_id] 	= from_plate.thickness	[from_id];
+	to_plate.density	[to_id]		= from_plate.density	[from_id];
+	to_plate.elevation	[to_id] 	= from_plate.elevation	[from_id];
+}
+
+Crust.remove = function(plate, id) {
+	from_plate.is_member[from_id] 	= 0;
+}
+
+Crust.add = function(plate, id, optional) {
+	var world = plate.world;
+	plate.age[id] 			= optional['age'] 		|| 0;
+	plate.displacement[id] 	= optional['displacement']|| 0;
+	plate.thickness[id] 	= optional['thickness'] || world.ocean.thickness;
+	plate.density[id] 		= optional['density'] 	|| world.ocean.density;
+	plate.elevation[id] 	= optional['elevation'] || world.ocean.elevation;
+}
+
 function RockColumn(world, optional){
 	optional = optional || {};
 
@@ -41,5 +66,12 @@ function RockColumn(world, optional){
 		var displacement = thickness - rootDepth;
 		this_.displacement = displacement ;
 	}
+
+	this_.subductability = function (rock) {
+		var continent = smoothstep(2800, 3000, rock.density);
+		return 	rock.density * (1-continent) 	+ 
+				lerp(rock.density, 3300, smoothstep(0,280, rock.age)) * continent
+	}
+	
 	return this_;
 }

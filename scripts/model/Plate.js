@@ -24,6 +24,7 @@ function Plate(world, optional)
 	this.matrix = optional['matrix'] || new THREE.Matrix4();
 	this.uuid = optional['uuid'] || Uuid.create();
 
+	this.is_member	= ScalarField.TypedArray( this.grid );
 	this.age 		= ScalarField.TypedArray( this.grid );
 	this.displacement= ScalarField.TypedArray( this.grid );
 	this.thickness 	= ScalarField.TypedArray( this.grid );
