@@ -31,8 +31,8 @@ function View(grid, fragmentShader, vertexShader){
 	});
 	Publisher.subscribe('plate.cells', 'update', function (content) {
 		this_.cell_update(content.uuid, {
-			displacement: content.value.map( cell => cell.content !== void 0? cell.content.displacement : 0 ),
-			age: content.value.map( cell => cell.content !== void 0? cell.content.age : 0 ),
+			displacement: content.value.displacement,
+			age: content.value.age,
 		});
 	});
 	Publisher.subscribe('world.plates', 'add', function (content) {

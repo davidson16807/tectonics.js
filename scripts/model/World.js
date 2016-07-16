@@ -84,7 +84,13 @@ World.prototype.slow_update = function(timestep){
 		plates[i].deform();
 	}
 	for (var i = 0; i<length; i++) {
-		Publisher.publish('plate.cells', 'update', { value: plates[i].cells, uuid: plates[i].uuid } );
+		Publisher.publish('plate.cells', 'update', { 
+			value: {
+				displacement: plates[i].cells.map( cell => cell.content !== void 0? cell.content.displacement : 0 ), 
+				age: plates[i].cells.map( cell => cell.content !== void 0? cell.content.age : 0 ),
+			}, 
+			uuid: plates[i].uuid } 
+		);
 	};
 	var platestemp = plates.slice(0); // copy the array
 	for(i = 0; i<length; i++){
