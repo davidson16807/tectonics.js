@@ -83,9 +83,11 @@ EliasWorldGenerator.generate = function (world, optional) {
 	}
 
 	// order cells by this new found  "height rank"
-	cells = plate.cells
-		.slice(0)
-		.sort(function(a, b) { return height_ranks[a.id] - height_ranks[b.id]; });
+	var cell_ids = new Uint16Array(height_ranks.length);
+	for(var i=0, length = cell_ids.length; i<length; i++) {
+		cell_ids[i] = i;
+	}
+	cell_ids.sort(function(a, b) { return height_ranks[a] - height_ranks[b]; });
 
 	// Next we find elevations whose magnitude and frequency match those of earth's.
 	// To do this, we generate a second dataset of equal size that represents actual elevations.
@@ -93,7 +95,7 @@ EliasWorldGenerator.generate = function (world, optional) {
 	// We sort the elevations and map each one to a cell from our height-rank sorted list.
 	heights = []
 	var water_fraction = 0.05; // Earth = 0.71
-	for (var i = 0, li = cells.length; i < li; i++) {
+	for (var i = 0, li = cell_ids.length; i < li; i++) {
 		if (random.uniform(0,1) > water_fraction) { 
 			heights.push(random.normal(-4019,1113));
 		} else {
@@ -145,8 +147,11 @@ EliasWorldGenerator.generate = function (world, optional) {
 	 });
 	var control_points = [abyss, deep_ocean, shallow_ocean, shelf, land, mountain];
 	 
+	var cells = plate.cells;
 	// We then use interpolate between these templated values.
-	for (var i = 0, li = heights.length; i < li; i++) {
+	for (var i = 0, li = cell_ids.length; i < li; i++) {
+		var cell_id = cell_ids[i];
+		var cell = cells[cell_id];
 		var height = heights[i];
 
 		var rock_column = void 0;
@@ -165,9 +170,7 @@ EliasWorldGenerator.generate = function (world, optional) {
 			}
 		};
 
-		var cell = cells[i];
 		cell.create(rock_column);
-		cell.content.isostasy();
 	};
 
 	plate.densityOffset = plate.getDensityOffset();
