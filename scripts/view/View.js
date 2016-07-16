@@ -30,7 +30,10 @@ function View(grid, fragmentShader, vertexShader){
 		this_.matrix_update(content.uuid, content.value)
 	});
 	Publisher.subscribe('plate.cells', 'update', function (content) {
-		this_.cell_update(content.uuid, content.value);
+		this_.cell_update(content.uuid, {
+			displacement: content.value.map( cell => cell.content !== void 0? cell.content.displacement : 0 ),
+			age: content.value.map( cell => cell.content !== void 0? cell.content.age : 0 ),
+		});
 	});
 	Publisher.subscribe('world.plates', 'add', function (content) {
 		console.log('world.plates.add')
@@ -139,17 +142,18 @@ function subductability (rock) {
 	return heaviside_approximation( density - 3000, 1/111 );
 }
 View.prototype.cell_update = function(uuid, cells){
-	var geometry, content, displacement, age;
+	var geometry, displacement, age;
 	geometry = this.geometries.get(uuid);
 	displacement = geometry.attributes.displacement.array;
 	age = geometry.attributes.age.array;
 	var buffer_array_to_cell = this.grid.buffer_array_to_cell;
-	var buffer_array_index, content;
-	for(var j=0, lj = displacement.length, cells = cells; j<lj; j++){
+	var buffer_array_index; 
+	var displacement_model = cells.displacement; 
+	var age_model = cells.age; 
+	for(var j=0, lj = displacement.length; j<lj; j++){ 
 		buffer_array_index = buffer_array_to_cell[j];
-		content = cells[buffer_array_index].content;
-		displacement[j] = content !== void 0? content.displacement : 0;
-		age[j] = content !== void 0? subductability(content) : 0;
+		displacement[j] = displacement_model[buffer_array_index]; 
+		age[j] = age_model[buffer_array_index]; 
 	}
 	geometry.attributes.displacement.needsUpdate = true;
 	geometry.attributes.age.needsUpdate = true;

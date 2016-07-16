@@ -1,6 +1,6 @@
 'use strict';
 
-Crust = {};
+var Crust = {};
 Crust.move = function(from_plate, from_id, to_plate, to_id ){
 	from_plate.is_member[from_id] 	= 0;
 
