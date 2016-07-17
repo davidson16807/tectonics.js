@@ -18,22 +18,29 @@ Crust.copy = function(from_plate, from_id, to_plate, to_id ){
 	to_plate.elevation	[to_id] 	= from_plate.elevation	[from_id];
 }
 Crust.move = function(from_plate, from_id, to_plate, to_id ){
-	from_plate.is_member[from_id] 	= 0;
-
 	to_plate.is_member	[to_id] 	= from_plate.is_member	[from_id];
 	to_plate.age		[to_id] 	= from_plate.age		[from_id];
 	to_plate.displacement[to_id] 	= from_plate.displacement[from_id];
 	to_plate.thickness	[to_id] 	= from_plate.thickness	[from_id];
 	to_plate.density	[to_id]		= from_plate.density	[from_id];
 	to_plate.elevation	[to_id] 	= from_plate.elevation	[from_id];
+	
+	from_plate.is_member[from_id] 	= 0;
 }
 
 Crust.remove = function(plate, id) {
 	from_plate.is_member[from_id] 	= 0;
 }
 
+Crust.create = function(plate, id, template) { 
+  plate.is_member[id]   = 1; 
+  plate.age[id]       = 0; 
+  plate.displacement[id]   = 0; 
+  plate.thickness[id]   = template.thickness; 
+  plate.density[id]     = template.density; 
+  plate.elevation[id]   = template.elevation; 
+} 
 Crust.add = function(plate, id, optional) {
-	var world = plate.world;
 	plate.is_member[id] 	= 1;
 	plate.age[id] 			= optional['age'] 		|| 0;
 	plate.displacement[id] 	= optional['displacement']|| 0;

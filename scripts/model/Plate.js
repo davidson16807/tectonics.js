@@ -111,14 +111,14 @@ Plate.prototype.updateNeighbors = function(){
 		filter(function(plate){return plate.uuid != _this.uuid});
 }
 Plate.prototype.updateBorders = function(){
-	var collideable = new Uint8Array(this.cells.length);
-	var riftable = new Uint8Array(this.cells.length);
+	var collideable = new Uint8Array(this.is_member.length);
+	var riftable = new Uint8Array(this.is_member.length);
 	var face, a,b,c;
-	for(var i=0, cells = this.cells, length = this._geometry.faces.length; i<length; i++){
+	for(var i=0, is_member = this.is_member, length = this._geometry.faces.length; i<length; i++){
 		face = this._geometry.faces[i];
-		a = cells[face.a].content !== void 0;
-		b = cells[face.b].content !== void 0;
-		c = cells[face.c].content !== void 0;
+		a = is_member[face.a] > 0;
+		b = is_member[face.b] > 0;
+		c = is_member[face.c] > 0;
 		if(a !== b || b !== c){
 			if(a === true){ collideable[face.a] = 1; }
 			else { riftable[face.a] = 1; }
@@ -179,7 +179,7 @@ Plate.prototype.deform = function(){
 			relative_pos.copy(absolute_pos);
 			plate.worldToLocal(relative_pos);
 			id = grid.getNearestId(relative_pos);
-			intersected = getIntersection(id, plate);
+			intersected = intersected.content !== void 0 || plate._riftable[id] > 0;
 			if(intersected !== void 0) {
 				this._neighbors.splice(j, 1);
 				this._neighbors.unshift(plate);
@@ -205,7 +205,6 @@ Plate.prototype.rift = function(){
 	var riftable = this._riftable;
 	var cells = this.cells;
 	var ocean = this.world.ocean;
-	var getIntersection = _getRiftIntersection;
 	var cell, intersected;
 	var plate, id;
 	var absolute_pos = new THREE.Vector3();
@@ -213,32 +212,37 @@ Plate.prototype.rift = function(){
 	var i,li,j,lj;
 	var li = riftable.length;
 	var lj = plates.length;
+
+	var create = Crust.create; 
+	
+	var is_member = this.is_member; 
+	var positions = this.pos; 
 	for(i=0; i<li; i++){
 		if(riftable[i] === 0){
 			continue;
 		}
-		cell = cells[i];
-		if(cell.content !== void 0){
+		if(is_member[i] === 1){
 			continue;
 		}
 
-		absolute_pos.copy(cell.pos);
+		absolute_pos.copy(positions[i]);
 		this.localToWorld(absolute_pos);
-		intersected = void 0;
+		intersected = false;
 		for(j=0; j<lj; j++){
 			plate = plates[j];
 			relative_pos.copy(absolute_pos);
 			plate.worldToLocal(relative_pos);
 			id = grid.getNearestId(relative_pos);
-			intersected = getIntersection(id, plate);
-			if(intersected !== void 0) {
+			intersected = plate.is_member[id] === 1 || plate._riftable[id] > 0;
+			if(intersected === true) {
 				this._neighbors.splice(j, 1);
 				this._neighbors.unshift(plate);
 				break;
 			}
 		}
-		if(intersected === void 0){
-			cell.create(ocean);
+		if(intersected === false){
+			Crust.create(this, i, ocean)
+			// cell.create(ocean);
 		}
 	}
 }
@@ -405,7 +409,7 @@ Plate.prototype.split = function(){
 	var is_member = this.is_member;
 	var positions = this.pos;
 	for(var i=0, li = is_member.length; i<li; i++){
-		if(is_member[i] === 1){
+		if(is_member[i] > 0){
 			var pos = positions[i];
 			var nearest = _min(seeds.keys(), function(x) {	
 				return x.pos.distanceTo(pos); 
