@@ -1,6 +1,22 @@
 'use strict';
 
 var Crust = {};
+Crust.init = function(plate, grid) {
+	plate.is_member	= ScalarField.TypedArray( grid );
+	plate.age 		= ScalarField.TypedArray( grid );
+	plate.displacement= ScalarField.TypedArray( grid );
+	plate.thickness = ScalarField.TypedArray( grid );
+	plate.density 	= ScalarField.TypedArray( grid );
+	plate.elevation = ScalarField.TypedArray( grid );
+}
+Crust.copy = function(from_plate, from_id, to_plate, to_id ){
+	to_plate.is_member	[to_id] 	= from_plate.is_member	[from_id];
+	to_plate.age		[to_id] 	= from_plate.age		[from_id];
+	to_plate.displacement[to_id] 	= from_plate.displacement[from_id];
+	to_plate.thickness	[to_id] 	= from_plate.thickness	[from_id];
+	to_plate.density	[to_id]		= from_plate.density	[from_id];
+	to_plate.elevation	[to_id] 	= from_plate.elevation	[from_id];
+}
 Crust.move = function(from_plate, from_id, to_plate, to_id ){
 	from_plate.is_member[from_id] 	= 0;
 
@@ -18,6 +34,7 @@ Crust.remove = function(plate, id) {
 
 Crust.add = function(plate, id, optional) {
 	var world = plate.world;
+	plate.is_member[id] 	= 1;
 	plate.age[id] 			= optional['age'] 		|| 0;
 	plate.displacement[id] 	= optional['displacement']|| 0;
 	plate.thickness[id] 	= optional['thickness'] || world.ocean.thickness;
@@ -55,16 +72,6 @@ function RockColumn(world, optional){
 		var density  = pressure / (thickness + heightChange);
 		this_.thickness += heightChange;
 		this_.density = density;
-	}
-
-	this_.isostasy = function(){
-		//Calculates elevation as a function of crust density.
-		//This was chosen as it only requires knowledge of crust density and thickness, 
-		//which are relatively well known.
-		var thickness = this_.thickness;
-		var rootDepth = thickness * this_.density / this_.world.mantleDensity;
-		var displacement = thickness - rootDepth;
-		this_.displacement = displacement ;
 	}
 
 	this_.subductability = function (rock) {

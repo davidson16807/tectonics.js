@@ -24,12 +24,8 @@ function Plate(world, optional)
 	this.matrix = optional['matrix'] || new THREE.Matrix4();
 	this.uuid = optional['uuid'] || Uuid.create();
 
-	this.is_member	= ScalarField.TypedArray( this.grid );
-	this.age 		= ScalarField.TypedArray( this.grid );
-	this.displacement= ScalarField.TypedArray( this.grid );
-	this.thickness 	= ScalarField.TypedArray( this.grid );
-	this.density 	= ScalarField.TypedArray( this.grid );
-	this.elevation 	= ScalarField.TypedArray( this.grid );
+	this.pos = this.grid.pos;
+	Crust.init(this, this.grid);
 
 	var vertices = this._geometry.vertices;
 	for(var i = 0, length = vertices.length, cells = this.cells; i<length; i++){
