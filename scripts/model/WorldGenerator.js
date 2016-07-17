@@ -70,7 +70,7 @@ EliasWorldGenerator.generate = function (world, optional) {
 	// This is done so we can later derive elevations that are consistent with earth's.
 	var plate = new Plate(world);
 	var grid = world.grid;
-	var positions = grid.pos;
+	var positions = grid.vertices;
 	var height_ranks = ScalarField.TypedArray(grid);
 	for(var i=0, length = height_ranks.length; i<length; i++) {
 		var height_rank = 0;

@@ -24,7 +24,7 @@ function Plate(world, optional)
 	this.matrix = optional['matrix'] || new THREE.Matrix4();
 	this.uuid = optional['uuid'] || Uuid.create();
 
-	this.pos = this.grid.pos;
+	this.pos = this.grid.vertices;
 	Crust.init(this, this.grid);
 
 	var vertices = this._geometry.vertices;

@@ -6,90 +6,93 @@
 // It performs mathematical operations that are common to fields
 var ScalarField = {}
 ScalarField.TypedArray = function(grid){
-	return new Float32Array(grid.pos.length);
+	return new Float32Array(grid.vertices.length);
+}
+ScalarField.VertexTypedArray = function(grid){
+	return new Float32Array(grid.vertices.length);
+}
+ScalarField.EdgeTypedArray = function(grid){
+	return new Float32Array(grid.edges.length);
+}
+ScalarField.ArrowTypedArray = function(grid){
+	return new Float32Array(grid.arrows.length);
+}
+ScalarField.TypedArrayOfLength = function(length){
+	return new Float32Array(length);
 }
 ScalarField.add_field = function(field1, field2, result) {
-	result = result || new Float32Array(field.length)
+	result = result || new Float32Array(field1.length)
 
-	var field_value = field.value;
-	var this_value = this.value;
-	for (var i = field_value.length - 1; i >= 0; i--) {
-		this_value[i] += field_value[i];
+	for (var i=0, li=field1.length; i<li; ++i) {
+		result[i] = field1[i] + field2[i];
 	}
-	return this;
+	return result;
 };
 ScalarField.sub_field = function(field1, field2, result) {
-	result = result || new Float32Array(field.length)
-	
-	var field_value = field.value;
-	var this_value = this.value;
-	for (var i = field_value.length - 1; i >= 0; i--) {
-		this_value[i] -= field_value[i];
+	result = result || new Float32Array(field1.length)
+
+	for (var i=0, li=field1.length; i<li; ++i) {
+		result[i] = field1[i] - field2[i];
 	}
-	return this;
+	return result;
 };
 ScalarField.mult_field = function(field1, field2, result) {
-	result = result || new Float32Array(field.length)
-	
-	var field_value = field.value;
-	var this_value = this.value;
-	for (var i = field_value.length - 1; i >= 0; i--) {
-		this_value[i] *= field_value[i];
+	result = result || new Float32Array(field1.length)
+
+	for (var i=0, li=field1.length; i<li; ++i) {
+		result[i] = field1[i] * field2[i];
 	}
-	return this;
+	return result;
 };
 ScalarField.div_field = function(field1, field2, result) {
-	result = result || new Float32Array(field.length)
-	
-	var field_value = field.value;
-	var this_value = this.value;
-	for (var i = field_value.length - 1; i >= 0; i--) {
-		this_value[i] /= field_value[i];
+	result = result || new Float32Array(field1.length)
+
+	for (var i=0, li=field1.length; i<li; ++i) {
+		result[i] = field1[i] / field2[i];
 	}
-	return this;
+	return result;
 };
+
 ScalarField.add_scalar = function(field, scalar, result) {
 	result = result || new Float32Array(field.length)
-	
-	var this_value = this.value;
-	for (var i = this_value.length - 1; i >= 0; i--) {
-		this_value[i] += scalar;
+
+	for (var i=0, li=field.length; i<li; ++i) {
+		result[i] = field[i] + scalar;
 	}
-	return this;
+	return result;
 };
 ScalarField.sub_scalar = function(field, scalar, result) {
 	result = result || new Float32Array(field.length)
-	
-	var this_value = this.value;
-	for (var i = this_value.length - 1; i >= 0; i--) {
-		this_value[i] -= scalar;
+
+	for (var i=0, li=field.length; i<li; ++i) {
+		result[i] = field[i] - scalar;
 	}
-	return this;
+	return result;
 };
 ScalarField.mult_scalar = function(field, scalar, result) {
 	result = result || new Float32Array(field.length)
-	
-	var this_value = this.value;
-	for (var i = this_value.length - 1; i >= 0; i--) {
-		this_value[i] *= scalar;
+
+	for (var i=0, li=field.length; i<li; ++i) {
+		result[i] = field[i] * scalar;
 	}
-	return this;
+	return result;
 };
 ScalarField.div_scalar = function(field, scalar, result) {
 	result = result || new Float32Array(field.length)
-	
-	var inv_scalar = scalar;
-	var this_value = this.value;
-	for (var i = this_value.length - 1; i >= 0; i--) {
-		this_value[i] *= inv_scalar;
+
+	var inv_scalar;
+	for (var i=0, li=field.length; i<li; ++i) {
+		result[i] = field[i] * inv_scalar;
 	}
-	return this;
+	return result;
 };
+
+
 // minimum value within the field
 ScalarField.min = function(field) {
 	var min = Infinity;
 	var value;
-	for (var i = field.length - 1; i >= 0; i--) {
+	for (var i=0, li=field.length; i<li; ++i) {
 		value = field[i];
 		if (value < min) {
 			min = value;
@@ -101,7 +104,7 @@ ScalarField.min = function(field) {
 ScalarField.max = function(field) {
 	var max = -Infinity;
 	var value;
-	for (var i = field.length - 1; i >= 0; i--) {
+	for (var i=0, li=field.length; i<li; ++i) {
 		value = field[i];
 		if (value > max) {
 			max = value;
@@ -109,10 +112,97 @@ ScalarField.max = function(field) {
 	}
 	return max;
 };
-ScalarField.map = function(fn) {
-	var this_value = this.value;
-	for (var i = field_value.length - 1; i >= 0; i--) {
-		this_value[i] = fn(this_value[i])
+
+// ∂X
+ScalarField.arrow_differential = function(field, grid, result) {
+	result = result || ScalarField.ArrowTypedArray(grid);
+
+	var arrows = grid.arrows;
+	var arrow = [];
+	for (var i = 0, li = arrows.length; i<li; i++) {
+		arrow = arrows[i];
+		result[i] = field[arrow[1]] - field[arrow[0]];
 	}
-	return this;
-};
+	return result;
+}
+
+// ∂X
+ScalarField.vertex_differential = function(field, grid, result){
+	result = result || VectorField.VertexTypedArray(grid);
+
+	var dpos = grid.pos_arrow_differential;
+
+	var arrows = grid.arrows;
+	var arrow = [];
+
+	var x = result.x;
+	var y = result.y;
+	var z = result.z;
+
+	for (var i=0, li=arrows.length; i<li; ++i) {
+	    arrow = arrows[i];
+	    x[arrow[0]] += (field[arrow[1]] - field[arrow[0]] );
+	    y[arrow[0]] += (field[arrow[1]] - field[arrow[0]] );
+	    z[arrow[0]] += (field[arrow[1]] - field[arrow[0]] );
+	}
+
+	var neighbor_lookup = grid.neighbor_lookup;
+	var neighbor_count = 0;
+	for (var i=0, li=neighbor_lookup.length; i<li; ++i) {
+	    neighbor_count = neighbor_lookup[i].length;
+	    x[i] /= neighbor_count;
+	    y[i] /= neighbor_count;
+	    z[i] /= neighbor_count;
+	}
+
+	return result;
+}
+
+// ∇X
+ScalarField.arrow_gradient = function(field, grid, result){
+	result = result || VectorField.ArrowTypedArray(grid);
+
+	var arrows = grid.arrows;
+	var arrow = [];
+	for (var i=0, li=arrows.length; i<li; ++i) {
+	    result[i] = field[arrow[1]] - field[arrow[0]];
+	}
+	return result;
+}
+
+// ∇X
+ScalarField.vertex_gradient = function(field, grid, result){
+	result = result || VectorField.VertexTypedArray(grid);
+
+	var dfield = 0;
+	var dpos = grid.pos_arrow_differential;
+	var dx = dpos.x;
+	var dy = dpos.y;
+	var dz = dpos.z;
+
+	var arrows = grid.arrows;
+	var arrow = [];
+
+	var x = result.x;
+	var y = result.y;
+	var z = result.z;
+
+	for (var i=0, li=arrows.length; i<li; ++i) {
+	    arrow = arrows[i];
+	    dfield = field[arrow[1]] - field[arrow[0]];
+	    x[arrow[0]] += dfield / dx[i];
+	    y[arrow[0]] += dfield / dy[i];
+	    z[arrow[0]] += dfield / dz[i];
+	}
+
+	var neighbor_lookup = grid.neighbor_lookup;
+	var neighbor_count = 0
+	for (var i=0, li=neighbor_lookup.length; i<li; ++i) {
+	    neighbor_count = neighbor_lookup[i].length;
+	    x[i] /= neighbor_count;
+	    y[i] /= neighbor_count;
+	    z[i] /= neighbor_count;
+	}
+
+	return result;
+}
