@@ -86,8 +86,8 @@ World.prototype.slow_update = function(timestep){
 	for (var i = 0; i<length; i++) {
 		Publisher.publish('plate.cells', 'update', { 
 			value: {
-				displacement: plates[i].cells.map( cell => cell.content !== void 0? cell.content.displacement : 0 ), 
-				age: plates[i].cells.map( cell => cell.content !== void 0? cell.content.age : 0 ),
+				displacement: plates[i].displacement,
+				age: plates[i].age,
 			}, 
 			uuid: plates[i].uuid } 
 		);
@@ -100,7 +100,7 @@ World.prototype.slow_update = function(timestep){
 			this.updateNeighbors();
 		}
 	}
-	this.supercontinentCycle.update(timestep);
+	// this.supercontinentCycle.update(timestep);
 	this.age += timestep;
 }
 

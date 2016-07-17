@@ -296,13 +296,24 @@ Plate.prototype.erode = function(timestep){
 }
 
 Plate.prototype.isostasy = function() {
-	var cells = this.cells;
-	for(var i=0, li = cells.length; i<li; i++){
-		var content = cells[i].content;
-		if(content === void 0){
+	var thicknesses = this.thickness; 
+	var densities = this.density; 
+	var displacements = this.displacement; 
+	var is_member = this.is_member; 
+	
+	var mantleDensity = this.world.mantleDensity; 
+	var thickness, rootDepth;
+	for(var i=0, li = displacements.length; i<li; i++){
+		if (is_member[i] !== 1) {
 			continue;
 		}
-		content.isostasy();
+
+		//Calculates elevation as a function of crust density. 
+		//This was chosen as it only requires knowledge of crust density and thickness,  
+		//which are relatively well known. 
+		thickness = thicknesses[i]; 
+		rootDepth = thickness * densities[i] / mantleDensity; 
+		displacements[i] = thickness - rootDepth;
 	}
 }
 

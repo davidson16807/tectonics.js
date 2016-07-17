@@ -148,11 +148,14 @@ EliasWorldGenerator.generate = function (world, optional) {
 	var control_points = [abyss, deep_ocean, shallow_ocean, shelf, land, mountain];
 	 
 	var cells = plate.cells;
+
+	var is_member 	= plate.is_member;
 	var age 		= plate.age;
 	var displacement= plate.displacement;
 	var thickness 	= plate.thickness;
 	var density 	= plate.density;
 	var elevation 	= plate.elevation;
+
 	// We then use interpolate between these templated values.
 	for (var i = 0, li = cell_ids.length; i < li; i++) {
 		var height = heights[i];
@@ -173,10 +176,12 @@ EliasWorldGenerator.generate = function (world, optional) {
 				var cell_id = cell_ids[i];
 				cells[cell_id].create(rock_column);
 
-				age[cell_id] = 0;
+				is_member[cell_id]	= 1;
+				age[cell_id] 		= 0;
 				thickness[cell_id] 	= lerp(lower.thickness, upper.thickness, fraction);
 				density[cell_id] 	= lerp(lower.density, upper.density, fraction);
 				elevation[cell_id] 	= height;
+				displacement[cell_id]= 0;
 
 				break;
 			}
