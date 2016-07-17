@@ -1,9 +1,9 @@
 'use strict';
 
-function _isFilled(vertex){
-	return vertex.content != void 0;
+function _isFilled(is_member){
+	return is_member === 1;
 }
-function _isLand(cell){ return cell.isContinental() };
+function _isLand(thickness){ return thickness > 17000 };
 function _hashCell(vector){
 	return vector.id.toString();
 }
@@ -76,18 +76,18 @@ Plate.prototype.getDensityOffset = function() {
 	//return densitySum / this.getSize(); 
 };
 Plate.prototype.getSize = function(){
-	return this.cells.filter(_isFilled).length;
+	return this.is_member.filter(_isFilled).length;
 }
 Plate.prototype.getContinentalSize = function(){
-	return this.cells.filter(_isLand).length;
+	return this.thickness.filter(_isLand).length;
 }
 Plate.prototype.getRandomPoint = function(){
-	var points = this.cells.filter(_isFilled);
+	var points = this.is_member.filter(_isFilled);
 	var i = Math.floor(Math.random()*points.length);
 	return points[i];
 }
 Plate.prototype.getRandomLand = function(){
-	var points = this.cells.filter(_isLand);
+	var points = this.thickness.filter(_isLand);
 	var i = Math.floor(Math.random()*points.length);
 	return points[i];
 }
@@ -364,7 +364,6 @@ Plate.prototype.split = function(){
 	var grid = this.grid;
 	var gridvertices = grid.template.vertices;
 	var world = this.world;
-	var cells = this.cells;
 	
 	var centroid = this.getCentroid();
 	if(centroid === void 0){
@@ -402,13 +401,17 @@ Plate.prototype.split = function(){
 		var plate = plates[i];
 		plate.matrix = this.matrix;
 	}
-	for(var i=0, li = cells.length; i<li; i++){
-		var cell = cells[i];
-		if(cell.content !== void 0){
+	var move = Crust.move;
+	var is_member = this.is_member;
+	var positions = this.pos;
+	for(var i=0, li = is_member.length; i<li; i++){
+		if(is_member[i] === 1){
+			var pos = positions[i];
 			var nearest = _min(seeds.keys(), function(x) {	
-				return x.pos.distanceTo(cell.pos); 
+				return x.pos.distanceTo(pos); 
 			});
-			seeds.get(nearest).cells[i].replace(cell);
+			var nearest_plate = seeds.get(nearest);
+			move(this, i, nearest_plate, i);
 		}
 	}
 

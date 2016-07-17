@@ -94,13 +94,13 @@ World.prototype.slow_update = function(timestep){
 	};
 	var platestemp = plates.slice(0); // copy the array
 	for(i = 0; i<length; i++){
-		if(platestemp[i].getSize() <= 100)
-		{
-			this.remove(platestemp[i]);
-			this.updateNeighbors();
-		}
+		// if(platestemp[i].getSize() <= 100)
+		// {
+		// 	this.remove(platestemp[i]);
+		// 	this.updateNeighbors();
+		// }
 	}
-	// this.supercontinentCycle.update(timestep);
+	this.supercontinentCycle.update(timestep);
 	this.age += timestep;
 }
 
