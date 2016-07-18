@@ -11,10 +11,10 @@ VectorField.VertexDataFrame = function(grid){
 	return VectorField.DataFrameOfLength(grid.vertices.length)
 }
 VectorField.EdgeDataFrame = function(grid){
-	return VectorField.DataFrameOfLength(grid.vertices.length)
+	return VectorField.DataFrameOfLength(grid.edges.length)
 }
 VectorField.ArrowDataFrame = function(grid){
-	return VectorField.DataFrameOfLength(grid.vertices.length)
+	return VectorField.DataFrameOfLength(grid.arrows.length)
 }
 
 // return vector field data structure given length
