@@ -19,7 +19,7 @@ function Grid(template, options){
 	this.faces = faces;
 	var vertices = this.template.vertices;
 	this.vertices = vertices;
-	
+
 	this.pos = VectorField.DataFrameOfVectors(this.vertices);
 
 	var buffer_array_to_cell = new Uint16Array(faces.length * 3);
@@ -42,8 +42,8 @@ function Grid(template, options){
 		neighbor_lookup[face.c].add(face.a);
 		neighbor_lookup[face.c].add(face.b);
 	}
-	this.neighbor_lookup = neighbor_lookup.map(function(set) { return set.toArray(); });
-	
+	neighbor_lookup = neighbor_lookup.map(function(set) { return set.toArray(); });
+	this.neighbor_lookup = neighbor_lookup;
 	// an "edge" in graph theory is a unordered set of vertices 
 	// i.e. this.edges does not contain duplicate neighbor pairs 
 	// e.g. it includes [1,2] but not [2,1] 
@@ -62,7 +62,7 @@ function Grid(template, options){
 	//Precompute a list of neighboring vertex pairs for O(N) traversal 
 	for (var i = 0, li=neighbor_lookup.length; i<li; i++) { 
 	  neighbors = neighbor_lookup[i]; 
-	  for (var j = 0; j < neighbors.length; j++) { 
+	  for (var j = 0, lj=neighbors.length; j<lj; j++) { 
 	    neighbor = neighbors[j]; 
 	    arrows.push([i, neighbor]); 
 	
@@ -80,10 +80,14 @@ function Grid(template, options){
 	    } 
 	  } 
 	} 
+
 	this.edges = edges; 
+	this.edge_lookup = edge_lookup; 
 	this.arrows = arrows; 
+	this.arrow_lookup = arrow_lookup; 
 	
 	this.pos_arrow_differential = VectorField.arrow_differential(this.pos, this); 
+	this.pos_edge_differential = VectorField.edge_differential(this.pos, this); 
 
 	//Feed locations into a kdtree for O(logN) lookups
 	points = [];

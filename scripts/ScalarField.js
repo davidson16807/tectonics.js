@@ -127,8 +127,21 @@ ScalarField.arrow_differential = function(field, grid, result) {
 }
 
 // ∂X
+ScalarField.edge_differential = function(field, grid, result) {
+	result = result || ScalarField.EdgeTypedArray(grid);
+
+	var edges = grid.edges;
+	var edge = [];
+	for (var i = 0, li = edges.length; i<li; i++) {
+		edge = edges[i];
+		result[i] = field[edge[1]] - field[edge[0]];
+	}
+	return result;
+}
+
+// ∂X
 ScalarField.vertex_differential = function(field, grid, result){
-	result = result || VectorField.VertexTypedArray(grid);
+	result = result || VectorField.VertexDataFrame(grid);
 
 	var dpos = grid.pos_arrow_differential;
 
@@ -160,7 +173,7 @@ ScalarField.vertex_differential = function(field, grid, result){
 
 // ∇X
 ScalarField.arrow_gradient = function(field, grid, result){
-	result = result || VectorField.ArrowTypedArray(grid);
+	result = result || VectorField.ArrowDataFrame(grid);
 
 	var arrows = grid.arrows;
 	var arrow = [];
@@ -172,7 +185,7 @@ ScalarField.arrow_gradient = function(field, grid, result){
 
 // ∇X
 ScalarField.vertex_gradient = function(field, grid, result){
-	result = result || VectorField.VertexTypedArray(grid);
+	result = result || VectorField.VertexDataFrame(grid);
 
 	var dfield = 0;
 	var dpos = grid.pos_arrow_differential;
@@ -205,4 +218,24 @@ ScalarField.vertex_gradient = function(field, grid, result){
 	}
 
 	return result;
+}
+
+// ∂⋅∇X
+// can be thought of as the similarity between neighbors
+ScalarField.edge_gradient_similarity = function(field, grid, result) {
+	result = result || ScalarField.EdgeTypedArray;
+
+	var gradient = ScalarField.vertex_gradient(field, grid);
+
+	VectorField.edge_similarity(field, grid, result);
+
+	return result;
+}
+
+// ∇⋅∇X, A.K.A. ∇²X
+// can be thought of as the difference between neighbors
+ScalarField.laplacian = function(field, grid, result) {
+	result = result || ScalarField.EdgeTypedArray;
+
+	var gradient = ScalarField.vertex_gradient(field, grid);
 }

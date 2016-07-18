@@ -395,25 +395,50 @@ VectorField.arrow_differential = function(field, grid, result) {
 	var z = result.z;
 
 	var arrows = grid.arrows;
-	var arrow = [];
+	var arrow_i_from = 0;
+	var arrow_i_to = 0;
 	for (var i = 0, li = arrows.length; i<li; i++) {
-		arrow = arrows[i];
-		x[i] = x1[arrow[1]] - x1[arrow[0]];
-		y[i] = y1[arrow[1]] - y1[arrow[0]];
-		z[i] = z1[arrow[1]] - z1[arrow[0]];
+		arrow_i_from = arrows[i][0];
+		arrow_i_to = arrows[i][1];
+		x[i] = x1[arrow_i_to] - x1[arrow_i_from];
+		y[i] = y1[arrow_i_to] - y1[arrow_i_from];
+		z[i] = z1[arrow_i_to] - z1[arrow_i_from];
 	}
 	return result;
 }
 
-// ∂⋅X
+// ∂X
+VectorField.edge_differential = function(field, grid, result) {
+	result = result || VectorField.EdgeDataFrame(grid);
+
+	var x1 = field.x;
+	var y1 = field.y;
+	var z1 = field.z;
+
+	var x = result.x;
+	var y = result.y;
+	var z = result.z;
+
+	var edges = grid.edges;
+	var edge_i_from = 0;
+	var edge_i_to = 0;
+	for (var i = 0, li = edges.length; i<li; i++) {
+		edge_i_from = edges[i][0];
+		edge_i_to = edges[i][1];
+		x[i] = x1[edge_i_to] - x1[edge_i_from];
+		y[i] = y1[edge_i_to] - y1[edge_i_from];
+		z[i] = z1[edge_i_to] - z1[edge_i_from];
+	}
+	return result;
+}
+
+// f(x+∂x)⋅f(x)
 //
 // ok, this is a nonstandard operation but bear with me
 // for every pair of neighboring vertices in a network, 
 // this operation gives their measure of similarity (i.e. dot product)
 // this is useful because you can perform a flood-fill 
 // to find regions of the field with similar direction and magnitude
-// 
-// Why not use ∇⋅X?
 // ∇⋅X measures how much they come together or apart
 // ∂⋅X measures how similar they are
 // there is a relation between them: when ∂⋅X>0, ∇⋅X=0,
@@ -433,16 +458,20 @@ VectorField.edge_similarity = function(field, grid, result) {
 	var z = field.z;
 
 	var edges = grid.edges;
-
+	var edges_i_from = 0;
+	var edges_i_to = 0;
 	for (var i = 0, li = edges.length; i<li; i++) {
-		result[i] = x1[edges[i][0]] * x2[edges[i][1]] + 
-					y1[edges[i][0]] * y2[edges[i][1]] + 
-					z1[edges[i][0]] * z2[edges[i][1]];
+		edges_i_from = edges[i][0];
+		edges_i_to = edges[i][1];
+		result[i] = x[edges_i_to] * x[edges_i_from] + 
+					y[edges_i_to] * y[edges_i_from] + 
+					z[edges_i_to] * z[edges_i_from];
 	}
 
 	return result;
 }
 
+// f(X+∂X)⋅f(X)
 VectorField.arrow_similarity = function(field, grid, result) {
 	result = result || new Float32Array(grid.arrow.length);
 
@@ -450,12 +479,67 @@ VectorField.arrow_similarity = function(field, grid, result) {
 	var y = field.y;
 	var z = field.z;
 
-	var arrow = grid.arrow;
+	var arrows = grid.arrows;
+	var arrow_i_from = 0;
+	var arrow_i_to = 0;
+	for (var i = 0, li = arrows.length; i<li; i++) {
+		arrow_i_from = arrows[i][0];
+		arrow_i_to = arrows[i][1];
+		result[i] = x[arrow_i_to] * x[arrow_i_from] + 
+					y[arrow_i_to] * y[arrow_i_from] + 
+					z[arrow_i_to] * z[arrow_i_from];
+	}
 
-	for (var i = 0, li = arrow.length; i<li; i++) {
-		result[i] = x1[arrow[i][0]] * x2[arrow[i][1]] + 
-					y1[arrow[i][0]] * y2[arrow[i][1]] + 
-					z1[arrow[i][0]] * z2[arrow[i][1]];
+	return result;
+}
+
+VectorField.edge_divergence = function(field, grid, result) {
+	result = result || new Float32Array(grid.edges.length);
+
+	var dpos = grid.pos_edge_differential;
+	var dx = dpos.x;
+	var dy = dpos.y;
+	var dz = dpos.z;
+
+	var x = field.x;
+	var y = field.y;
+	var z = field.z;
+
+	var edges = grid.edges;
+	var edges_i_from = 0;
+	var edges_i_to = 0;
+	for (var i = 0, li = edges.length; i<li; i++) {
+		edges_i_from = edges[i][0];
+		edges_i_to = edges[i][1];
+		result[i] = ( x[edges_i_to] - x[edges_i_from] ) / dx[i] + 
+					( y[edges_i_to] - y[edges_i_from] ) / dy[i] + 
+					( z[edges_i_to] - z[edges_i_from] ) / dz[i];
+	}
+
+	return result;
+}
+
+VectorField.arrow_divergence = function(field, grid, result) {
+	result = result || new Float32Array(grid.arrow.length);
+
+	var dpos = grid.pos_arrow_differential;
+	var dx = dpos.x;
+	var dy = dpos.y;
+	var dz = dpos.z;
+
+	var x = field.x;
+	var y = field.y;
+	var z = field.z;
+
+	var arrows = grid.arrows;
+	var arrow_i_from = 0;
+	var arrow_i_to = 0;
+	for (var i = 0, li = arrows.length; i<li; i++) {
+		arrow_i_from = arrows[i][0];
+		arrow_i_to = arrows[i][1];
+		result[i] = ( x[arrow_i_to] - x[arrow_i_from] ) / dx[i] + 
+					( y[arrow_i_to] - y[arrow_i_from] ) / dy[i] + 
+					( z[arrow_i_to] - z[arrow_i_from] ) / dz[i] ;
 	}
 
 	return result;
