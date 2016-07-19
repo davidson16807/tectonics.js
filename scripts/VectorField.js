@@ -443,15 +443,8 @@ VectorField.edge_differential = function(field, grid, result) {
 // ∂⋅X measures how similar they are
 // there is a relation between them: when ∂⋅X>0, ∇⋅X=0,
 // but ∇⋅X encodes more information at the expense of performance
-//
-// Why call it ∂⋅X? 
-// because I need a name for it
-// if you took the measure of similarity between vertices, 
-// and divided by their offset, you would get divergence.
-// divergence is ∇⋅X and ∇=[∂/∂x,∂/∂y,∂/∂z], 
-// so measure of similarity must be ∂⋅X
 VectorField.edge_similarity = function(field, grid, result) {
-	result = result || new Float32Array(grid.edges.length);
+	result = result || ScalarField.EdgeTypedArray(grid);
 
 	var x = field.x;
 	var y = field.y;
@@ -473,7 +466,7 @@ VectorField.edge_similarity = function(field, grid, result) {
 
 // f(X+∂X)⋅f(X)
 VectorField.arrow_similarity = function(field, grid, result) {
-	result = result || new Float32Array(grid.arrow.length);
+	result = result || ScalarField.ArrowTypedArray(grid);
 
 	var x = field.x;
 	var y = field.y;
@@ -494,7 +487,7 @@ VectorField.arrow_similarity = function(field, grid, result) {
 }
 
 VectorField.edge_divergence = function(field, grid, result) {
-	result = result || new Float32Array(grid.edges.length);
+	result = result || ScalarField.EdgeTypedArray(grid);
 
 	var dpos = grid.pos_edge_differential;
 	var dx = dpos.x;
@@ -508,19 +501,22 @@ VectorField.edge_divergence = function(field, grid, result) {
 	var edges = grid.edges;
 	var edges_i_from = 0;
 	var edges_i_to = 0;
+
+	var result_i = 0;
 	for (var i = 0, li = edges.length; i<li; i++) {
 		edges_i_from = edges[i][0];
 		edges_i_to = edges[i][1];
-		result[i] = ( x[edges_i_to] - x[edges_i_from] ) / dx[i] + 
+		result_i  = ( x[edges_i_to] - x[edges_i_from] ) / dx[i] + 
 					( y[edges_i_to] - y[edges_i_from] ) / dy[i] + 
 					( z[edges_i_to] - z[edges_i_from] ) / dz[i];
+		result[i] = result_i || 0;
 	}
 
 	return result;
 }
 
 VectorField.arrow_divergence = function(field, grid, result) {
-	result = result || new Float32Array(grid.arrow.length);
+	result = result || ScalarField.ArrowTypedArray(grid);
 
 	var dpos = grid.pos_arrow_differential;
 	var dx = dpos.x;
@@ -534,12 +530,15 @@ VectorField.arrow_divergence = function(field, grid, result) {
 	var arrows = grid.arrows;
 	var arrow_i_from = 0;
 	var arrow_i_to = 0;
+
+	var result_i = 0;
 	for (var i = 0, li = arrows.length; i<li; i++) {
 		arrow_i_from = arrows[i][0];
 		arrow_i_to = arrows[i][1];
-		result[i] = ( x[arrow_i_to] - x[arrow_i_from] ) / dx[i] + 
+		result_i  = ( x[arrow_i_to] - x[arrow_i_from] ) / dx[i] + 
 					( y[arrow_i_to] - y[arrow_i_from] ) / dy[i] + 
 					( z[arrow_i_to] - z[arrow_i_from] ) / dz[i] ;
+		result[i] = result_i || 0;
 	}
 
 	return result;
