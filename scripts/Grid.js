@@ -20,6 +20,12 @@ function Grid(template, options){
 	var vertices = this.template.vertices;
 	this.vertices = vertices;
 
+	vertex_ids = new Uint16Array(this.vertices.length);
+	for (var i=0, li=vertex_ids.length; i<li; ++i) {
+	    vertex_ids[i] = i;
+	}
+	this.vertex_ids = vertex_ids;
+
 	this.pos = VectorField.DataFrameOfVectors(this.vertices);
 
 	var buffer_array_to_cell = new Uint16Array(faces.length * 3);
