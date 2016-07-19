@@ -46,6 +46,11 @@ Model.prototype.slow_update = function(timestep) {
 	if (this.paused){
 		return;
 	}
+
+	if (BlockUpdate) {
+		return;
+	};
+
 	if (world !== void 0) {
 		world.slow_update(this.MegaYearPerSecond * seconds);
 	};
