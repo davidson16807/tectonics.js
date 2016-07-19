@@ -62,26 +62,33 @@ JsonSerializer.plate = function (plate, options) {
 		matrix: 		plate.matrix.toArray(),
 	};
 
-	var cells_unfiltered = plate.cells;
-	var cells = [];
-	var cell;
-	for (var j = 0; j < cells_unfiltered.length; j++) {
-		cell = cells_unfiltered[j];
-		if (cell.content !== void 0) {
-			cells.push(cell);
+	var grid = plate.grid;
+
+	var ids_unfiltered = grid.vertex_ids;
+	var thicknesses_unfiltered = plate.thickness;
+	var densities_unfiltered = plate.density;
+	var age_unfiltered = plate.age;
+
+	var is_member = plate.is_member;
+	var ids_array = [];
+	var id;
+	for (var i = 0; i < ids_unfiltered.length; i++) {
+		id = ids_unfiltered[i];
+		if (is_member[i] > 0) {
+			ids_array.push(id);
 		};
 	};
 
-	var ids = 			new Uint16Array(cells.length);
-	var thicknesses = 	new Uint16Array(cells.length);
-	var densities = 	new Uint16Array(cells.length);
-	var age = 			new Uint16Array(cells.length);
-	for (var j = 0, lj = cells.length; j < lj; j++) {
-		cell = cells[j];
-		ids[j] = cell.id;
-		thicknesses[j] = cell.content.thickness;
-		densities[j] = cell.content.density;
-		age[j] = cell.content.age;
+	var ids = 			new Uint16Array(ids_array.length);
+	var thicknesses = 	new Uint16Array(ids_array.length);
+	var densities = 	new Uint16Array(ids_array.length);
+	var age = 			new Uint16Array(ids_array.length);
+	for (var i = 0, li = ids_array.length; i < li; i++) {
+		id 				= ids_array[i];
+		ids[i] 			= id;
+		thicknesses[i] 	= thicknesses_unfiltered[id];
+		densities[i] 	= densities_unfiltered[id];
+		age[i] 			= age_unfiltered[id];
 	};
 	// var encode = options.base64? Base64.encode : _abTostr;
 	plate_json.rockColumns = {
