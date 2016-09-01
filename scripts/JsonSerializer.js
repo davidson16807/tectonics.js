@@ -13,7 +13,7 @@ function _strToab(str) {
 
 
 
-JsonSerializer 	= {};
+var JsonSerializer 	= {};
 JsonSerializer.world = function (world, options) {
 	options = options || {};
 	var base64 = options.base64 || true;
@@ -50,6 +50,7 @@ JsonSerializer.world = function (world, options) {
 		world: world_json
 	};
 }
+		console.log('hihihihihihihihihihihihihihi')
 JsonSerializer.plate = function (plate, options) {
 	options = options || {};
 	var base64 = options.base64 || true;
@@ -68,14 +69,19 @@ JsonSerializer.plate = function (plate, options) {
 	var thicknesses_unfiltered = plate.thickness;
 	var densities_unfiltered = plate.density;
 	var age_unfiltered = plate.age;
-
 	var is_member = plate.is_member;
-	var ids_array = [];
+
+	var ids_array 		= [];
+	var thicknesses_array= [];
+	var densities_array = [];
+	var age_array 		= [];
 	var id;
 	for (var i = 0; i < ids_unfiltered.length; i++) {
-		id = ids_unfiltered[i];
 		if (is_member[i] > 0) {
-			ids_array.push(id);
+			ids_array.push			( ids_unfiltered[i] );
+			thicknesses_array.push	( thicknesses_unfiltered[i] );
+			densities_array.push	( densities_unfiltered[i] );
+			age_array.push			( age_unfiltered[i] );
 		};
 	};
 
@@ -83,13 +89,13 @@ JsonSerializer.plate = function (plate, options) {
 	var thicknesses = 	new Uint16Array(ids_array.length);
 	var densities = 	new Uint16Array(ids_array.length);
 	var age = 			new Uint16Array(ids_array.length);
-	for (var i = 0, li = ids_array.length; i < li; i++) {
-		id 				= ids_array[i];
-		ids[i] 			= id;
-		thicknesses[i] 	= thicknesses_unfiltered[id];
-		densities[i] 	= densities_unfiltered[id];
-		age[i] 			= age_unfiltered[id];
+	for (var i = 0; i < ids_array.length; i++) {
+		ids[i] 			= ids_array[i];
+		thicknesses[i] 	= thicknesses_array[i];
+		densities[i] 	= densities_array[i];
+		age[i] 			= age_array[i];
 	};
+
 	// var encode = options.base64? Base64.encode : _abTostr;
 	plate_json.rockColumns = {
 		ids: 			Base64.encode(ids.buffer),
@@ -101,7 +107,7 @@ JsonSerializer.plate = function (plate, options) {
 	return plate_json;
 }
 
-JsonDeserializer = {};
+var JsonDeserializer = {};
 JsonDeserializer.plate = function (plate_json, _world, options) {
 	options = options || {};
 	base64 = options.base64 || true;
@@ -120,22 +126,22 @@ JsonDeserializer.plate = function (plate_json, _world, options) {
 	
 	// var decode = options.base64? Base64.decode : _strToab;
 
-	var ids = 			new Uint16Array(Base64.decode(rockColumns_json.ids));
-	var thicknesses = 	new Uint16Array(Base64.decode(rockColumns_json.thicknesses));
-	var densities = 	new Uint16Array(Base64.decode(rockColumns_json.densities));
-	var ages = 			new Uint16Array(Base64.decode(rockColumns_json.ages));
+	var file_ids 		= 	new Uint16Array(Base64.decode(rockColumns_json.ids));
+	var file_thickness  = 	new Uint16Array(Base64.decode(rockColumns_json.thicknesses));
+	var file_density 	= 	new Uint16Array(Base64.decode(rockColumns_json.densities));
+	var file_age 		=	new Uint16Array(Base64.decode(rockColumns_json.ages));
 
-	var cells = plate.cells;
-	var rockColumn;
-	for (var j = 0, li = ids.length; j < li; j++) {
-		rockColumn = RockColumn(_world, {
-			thickness: thicknesses[j],
-			density: densities[j],
-			age: ages[j]
-		});
-		rockColumn.isostasy();
-
-		cells[ids[j]].content = rockColumn;
+	var thickness = plate.thickness;
+	var density = plate.density;
+	var age = plate.age;
+	var is_member = plate.is_member;
+	var file_id;
+	for (var i = 0, li = file_ids.length; i < li; i++) {
+		file_id = file_ids[i];
+		is_member[file_id]  = 1;
+		thickness[file_id] 	= file_thickness[i];
+		density[file_id] 	= file_density[i];
+		age[file_id] 		= file_age[i];
 	};
 	return plate;
 }
