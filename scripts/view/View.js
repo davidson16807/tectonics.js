@@ -33,6 +33,7 @@ function View(grid, fragmentShader, vertexShader){
 		this_.cell_update(content.uuid, {
 			displacement: content.value.displacement,
 			age: content.value.age,
+			is_member: content.value.is_member,
 		});
 	});
 	Publisher.subscribe('world.plates', 'add', function (content) {
@@ -148,12 +149,15 @@ View.prototype.cell_update = function(uuid, cells){
 	age = geometry.attributes.age.array;
 	var buffer_array_to_cell = this.grid.buffer_array_to_cell;
 	var buffer_array_index; 
+	var is_member_model = cells.is_member; 
 	var displacement_model = cells.displacement; 
 	var age_model = cells.age; 
+	var is_member;
 	for(var j=0, lj = displacement.length; j<lj; j++){ 
 		buffer_array_index = buffer_array_to_cell[j];
-		displacement[j] = displacement_model[buffer_array_index]; 
-		age[j] = age_model[buffer_array_index]; 
+		is_member = is_member_model[buffer_array_index]
+		displacement[j] = is_member * displacement_model[buffer_array_index]; 
+		age[j] = is_member * age_model[buffer_array_index]; 
 	}
 	geometry.attributes.displacement.needsUpdate = true;
 	geometry.attributes.age.needsUpdate = true;

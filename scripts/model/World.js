@@ -88,6 +88,7 @@ World.prototype.slow_update = function(timestep){
 			value: {
 				displacement: plates[i].displacement,
 				age: plates[i].age,
+				is_member: plates[i].is_member
 			}, 
 			uuid: plates[i].uuid } 
 		);

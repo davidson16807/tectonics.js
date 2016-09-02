@@ -50,7 +50,6 @@ JsonSerializer.world = function (world, options) {
 		world: world_json
 	};
 }
-		console.log('hihihihihihihihihihihihihihi')
 JsonSerializer.plate = function (plate, options) {
 	options = options || {};
 	var base64 = options.base64 || true;

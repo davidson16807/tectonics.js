@@ -144,61 +144,59 @@ Plate.prototype.move = function(timestep){
 }
 
 
-function _getCollisionIntersection(id, plate) {
-	var intersected = plate.cells[id];
-	if (intersected.content !== void 0 && plate._collideable[id] === 0) {
-		return intersected;
-	}
-}
 Plate.prototype.deform = function(){
 	var plates = this._neighbors;
 	var grid = this.grid;
 	var collideable = this._collideable;
 	var cells = this.cells;
 	var cell, intersected;
-	var getIntersection = _getCollisionIntersection;
 	var plate, id;
 	var absolute_pos = new THREE.Vector3();
 	var relative_pos = new THREE.Vector3();
 	var i,li,j,lj;
 	var li = collideable.length;
 	var lj = plates.length;
+return
+	var is_member = this.is_member; 
+	var positions = this.pos; 
 	for(i=0; i<li; i++){
 		if(collideable[i] === 0){
 			continue;
 		}
-		cell = cells[i];
-		if(cell.content === void 0){
+		if(is_member[i] === 0){
 			continue;
 		}
-		absolute_pos.copy(cell.pos);
+		absolute_pos.copy(positions[i]);
 		this.localToWorld(absolute_pos);
-		intersected = void 0;
+		intersected = false;
 		for(j=0; j<lj; j++){
 			plate = plates[j];
 			relative_pos.copy(absolute_pos);
 			plate.worldToLocal(relative_pos);
 			id = grid.getNearestId(relative_pos);
-			intersected = intersected.content !== void 0 || plate._riftable[id] > 0;
-			if(intersected !== void 0) {
+			intersected = plate.is_member[id] === 1 && plate._collideable[id] === 0;
+			if(intersected !== false) {
 				this._neighbors.splice(j, 1);
 				this._neighbors.unshift(plate);
 				break;
 			}
 		}
 		
-		if(intersected !== void 0){
-			cell.collide(intersected);
+		if(intersected !== false){
+			this.is_member[i] = 0;
+			this.thickness[i] = 0;
+			this.age[i] = 0;
+
+			plate.is_member[id] = 0;
+			plate.thickness[id] = 0;
+			plate.age[id] = 0;
+
+			// Crust.collide(this, i, plate, id);
+			// cell.collide(intersected);
 		}
 	}
 }
 
-function _getRiftIntersection(id, plate) {
-	var intersected = plate.cells[id];
-	if (intersected.content !== void 0 || plate._riftable[id] > 0) {
-		return intersected;
-	}
-}
 Plate.prototype.rift = function(){
 	var plates = this._neighbors;
 	var grid = this.world.grid;
