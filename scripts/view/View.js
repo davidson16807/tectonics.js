@@ -29,12 +29,18 @@ function View(grid, fragmentShader, vertexShader){
 	Publisher.subscribe('plate.matrix', 'update', function (content){
 		this_.matrix_update(content.uuid, content.value)
 	});
-	Publisher.subscribe('plate.cells', 'update', function (content) {
-		this_.cell_update(content.uuid, {
-			displacement: content.value.displacement,
-			age: content.value.age,
-			is_member: content.value.is_member,
-		});
+	// Publisher.subscribe('plate.cells', 'update', function (content) {
+	// 	this_.cell_update(content.uuid, content.value);
+	// });
+	Publisher.subscribe('world.plates', 'update', function (content) {
+		var plate;
+		for (var i=0, li=world.plates.length; i<li; ++i) {
+		    var plate = world.plates[i];
+			this_.cell_update(plate.uuid, plate); 
+		}
+		// HACK: ideally should not make reference to "world",
+		//  but pass the values relevant to the subscriber function
+		//  This is so we will be eventually able to implement parallel processing
 	});
 	Publisher.subscribe('world.plates', 'add', function (content) {
 		console.log('world.plates.add')
@@ -142,16 +148,16 @@ function subductability (rock) {
 					lerp(rock.density, 3300, smoothstep(0,280, rock.age)) * continent
 	return heaviside_approximation( density - 3000, 1/111 );
 }
-View.prototype.cell_update = function(uuid, cells){
+View.prototype.cell_update = function(uuid, plate){
 	var geometry, displacement, age;
 	geometry = this.geometries.get(uuid);
 	displacement = geometry.attributes.displacement.array;
 	age = geometry.attributes.age.array;
 	var buffer_array_to_cell = this.grid.buffer_array_to_cell;
 	var buffer_array_index; 
-	var is_member_model = cells.is_member; 
-	var displacement_model = cells.displacement; 
-	var age_model = cells.age; 
+	var is_member_model = plate.is_member; 
+	var displacement_model = plate.displacement; 
+	var age_model = plate.age; 
 	var is_member;
 	for(var j=0, lj = displacement.length; j<lj; j++){ 
 		buffer_array_index = buffer_array_to_cell[j];

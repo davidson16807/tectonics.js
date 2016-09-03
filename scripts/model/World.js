@@ -83,16 +83,10 @@ World.prototype.slow_update = function(timestep){
 	for(i = 0; i<length; i++){
 		plates[i].deform();
 	}
-	for (var i = 0; i<length; i++) {
-		Publisher.publish('plate.cells', 'update', { 
-			value: {
-				displacement: plates[i].displacement,
-				age: plates[i].age,
-				is_member: plates[i].is_member
-			}, 
-			uuid: plates[i].uuid } 
-		);
-	};
+	Publisher.publish('world.plates', 'update', { 
+		value: { }, 
+		uuid: this.uuid } 
+	);
 	var platestemp = plates.slice(0); // copy the array
 	for(i = 0; i<length; i++){
 		// if(platestemp[i].getSize() <= 100)
