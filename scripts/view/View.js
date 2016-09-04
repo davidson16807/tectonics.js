@@ -149,24 +149,24 @@ function subductability (rock) {
 	return heaviside_approximation( density - 3000, 1/111 );
 }
 View.prototype.cell_update = function(uuid, plate){
-	var geometry, displacement, age;
+	var geometry, displacement, scalar;
 	geometry = this.geometries.get(uuid);
 	displacement = geometry.attributes.displacement.array;
-	age = geometry.attributes.age.array;
+	scalar = geometry.attributes.scalar.array;
 	var buffer_array_to_cell = this.grid.buffer_array_to_cell;
 	var buffer_array_index; 
 	var is_member_model = plate.is_member; 
 	var displacement_model = plate.displacement; 
-	var age_model = plate.age; 
+	var scalar_model = plate.age; 
 	var is_member;
 	for(var j=0, lj = displacement.length; j<lj; j++){ 
 		buffer_array_index = buffer_array_to_cell[j];
 		is_member = is_member_model[buffer_array_index]
 		displacement[j] = is_member * displacement_model[buffer_array_index]; 
-		age[j] = is_member * age_model[buffer_array_index]; 
+		scalar[j] = is_member * scalar_model[buffer_array_index]; 
 	}
 	geometry.attributes.displacement.needsUpdate = true;
-	geometry.attributes.age.needsUpdate = true;
+	geometry.attributes.scalar.needsUpdate = true;
 }
 
 View.prototype.add = function(plate){
@@ -174,7 +174,7 @@ View.prototype.add = function(plate){
 	var faces = this.grid.template.faces;
 	var geometry = THREE.BufferGeometryUtils.fromGeometry(this.grid.template);
 	geometry.addAttribute('displacement', Float32Array, faces.length*3, 1);
-	geometry.addAttribute('age', Float32Array, faces.length*3, 1);
+	geometry.addAttribute('scalar', Float32Array, faces.length*3, 1);
 	this.geometries.set(_hashPlate(plate), geometry);
 
 	var color = new THREE.Color(Math.random() * 0xffffff);
@@ -182,7 +182,7 @@ View.prototype.add = function(plate){
 	material = new THREE.ShaderMaterial({
 		attributes: {
 		  displacement: { type: 'f', value: null },
-		  age: { type: 'f', value: null }
+		  scalar: { type: 'f', value: null }
 		},
 		uniforms: {
 		  sealevel: { type: 'f', value: plate.world.SEALEVEL },
@@ -201,7 +201,7 @@ View.prototype.add = function(plate){
 	material = new THREE.ShaderMaterial({
 		attributes: {
 		  displacement: { type: 'f', value: null },
-		  age: { type: 'f', value: null }
+		  scalar: { type: 'f', value: null }
 		},
 		uniforms: {
 		  sealevel: { type: 'f', value: plate.world.SEALEVEL },

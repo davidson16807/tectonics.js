@@ -45,6 +45,6 @@ fragmentShaders.soil 	= realistic.replace('@UNCOVERED', 'soil');
 fragmentShaders.bedrock	= realistic.replace('@UNCOVERED', 'bedrock');
 fragmentShaders.npp 	= representative.replace('@UNCOVERED', 'mix(vec4(1), vec4(0,1,0,1), npp)');
 fragmentShaders.temp 	= representative.replace('@UNCOVERED', 'heat(smoothstep(-25., 30., temp))');
-fragmentShaders.age 	= representative.replace('@UNCOVERED', 'heat(smoothstep(250., 0., vAge))');
+fragmentShaders.age 	= representative.replace('@UNCOVERED', 'heat(smoothstep(250., 0., vScalar))');
 fragmentShaders.precip 	= representative.replace('@UNCOVERED', 'heat(smoothstep(2000., 0., precip))');
 fragmentShaders.alt 	= representative.replace('@UNCOVERED', 'mix(vec4(1), vec4(0,0,0,1), smoothstep(sealevel, maxheight, alt))');
