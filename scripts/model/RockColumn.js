@@ -29,7 +29,12 @@ Crust.move = function(from_plate, from_id, to_plate, to_id ){
 }
 
 Crust.remove = function(plate, id) {
-	from_plate.is_member[from_id] 	= 0;
+	plate.is_member[id]		= 0;
+	plate.age[id]       	= 0; 
+	plate.displacement[id]  = 0; 
+	plate.thickness[id]   	= 0;
+	plate.density[id]     	= 0;
+	plate.elevation[id]   	= 0;
 }
 
 Crust.create = function(plate, id, template) { 

@@ -245,14 +245,13 @@ Plate.prototype.rift = function(){
 	}
 }
 Plate.prototype.update = function(timestep) {
-	var i, li
-	var cells = this.cells;
-	for(i=0, li = cells.length; i<li; i++){
-		var content = cells[i].content;
-		if(content === void 0){
+	var is_member = this.is_member; 
+	var age = this.age;
+	for(var i=0, li = is_member.length; i<li; i++){
+		if(is_member[i] === 0){
 			continue;
 		}
-		content.update(timestep);
+		age[i] += timestep;
 	}
 };
 Plate.prototype.erode = function(timestep){
