@@ -74,25 +74,25 @@ function View(grid, display, vertexShader){
 }
 
 View.prototype.setScalarDisplay = function(display) {
-	if(this._display === display){
+	if(this._scalarDisplay === display){
 		return;
 	}
 	var meshes, mesh;
 	meshes = this.meshes.values();
 
-	if (this._display !== void 0) {
+	if (this._scalarDisplay !== void 0) {
 		for (var i = 0, li = meshes.length; i < li; i++) {
 			mesh = meshes[i];
-			this._display.removeFrom(mesh);
+			this._scalarDisplay.removeFrom(mesh);
 		};
 	}
 
-	this._display = display;
+	this._scalarDisplay = display;
 
-	if (this._display !== void 0) {
+	if (this._scalarDisplay !== void 0) {
 		for (var i = 0, li = meshes.length; i < li; i++) {
 			mesh = meshes[i];
-			this._display.addTo(mesh);
+			this._scalarDisplay.addTo(mesh);
 		};
 	}
 };
@@ -141,7 +141,7 @@ View.prototype.matrix_update = function(uuid, matrix) {
 
 View.prototype.cell_update = function(uuid, plate){
 	var geometry = this.geometries.get(uuid);
-	this._display.updateAttributes(geometry, plate);
+	this._scalarDisplay.updateAttributes(geometry, plate);
 }
 
 View.prototype.add = function(plate){
@@ -167,7 +167,7 @@ View.prototype.add = function(plate){
 		},
 		blending: THREE.NoBlending,
 		vertexShader: this._vertexShader,
-		fragmentShader: this._display._fragmentShader
+		fragmentShader: this._scalarDisplay._fragmentShader
 	});
 	mesh = new THREE.Mesh( geometry, material);
 	this.scene.add(mesh);
@@ -186,7 +186,7 @@ View.prototype.add = function(plate){
 		},
 		blending: THREE.NoBlending,
 		vertexShader: this._vertexShader,
-		fragmentShader: this._display._fragmentShader
+		fragmentShader: this._scalarDisplay._fragmentShader
 	});
 	mesh = new THREE.Mesh( geometry, material);
 	this.scene.add(mesh);
