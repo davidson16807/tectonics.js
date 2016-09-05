@@ -145,16 +145,18 @@ View.prototype.cell_update = function(uuid, plate){
 }
 
 View.prototype.add = function(plate){
-	var faces, geometry, mesh, material;
+	var faces, scalar_field_geometry, scalar_field_mesh, scalar_field_material;
 	var faces = this.grid.template.faces;
-	var geometry = THREE.BufferGeometryUtils.fromGeometry(this.grid.template);
-	geometry.addAttribute('displacement', Float32Array, faces.length*3, 1);
-	geometry.addAttribute('scalar', Float32Array, faces.length*3, 1);
-	this.geometries.set(_hashPlate(plate), geometry);
+	var scalar_field_geometry = THREE.BufferGeometryUtils.fromGeometry(this.grid.template);
+
+	scalar_field_geometry.addAttribute('displacement', Float32Array, faces.length*3, 1);
+	scalar_field_geometry.addAttribute('scalar', Float32Array, faces.length*3, 1);
+	this.geometries.set(_hashPlate(plate), scalar_field_geometry);
 
 	var color = new THREE.Color();
 	var sealevel_mod = this._uniforms.sealevel_mod;
-	material = new THREE.ShaderMaterial({
+
+	scalar_field_material = new THREE.ShaderMaterial({
 		attributes: {
 		  displacement: { type: 'f', value: null },
 		  scalar: { type: 'f', value: null }
@@ -169,11 +171,11 @@ View.prototype.add = function(plate){
 		vertexShader: this._vertexShader,
 		fragmentShader: this._scalarDisplay._fragmentShader
 	});
-	mesh = new THREE.Mesh( geometry, material);
-	this.scene.add(mesh);
-	this.meshes.set(_hashPlate(plate), mesh);
+	scalar_field_mesh = new THREE.Mesh( scalar_field_geometry, scalar_field_material);
+	this.scene.add(scalar_field_mesh);
+	this.meshes.set(_hashPlate(plate), scalar_field_mesh);
 
-	material = new THREE.ShaderMaterial({
+	scalar_field_material = new THREE.ShaderMaterial({
 		attributes: {
 		  displacement: { type: 'f', value: null },
 		  scalar: { type: 'f', value: null }
@@ -188,9 +190,27 @@ View.prototype.add = function(plate){
 		vertexShader: this._vertexShader,
 		fragmentShader: this._scalarDisplay._fragmentShader
 	});
-	mesh = new THREE.Mesh( geometry, material);
-	this.scene.add(mesh);
-	this.meshes.set(_hashPlate(plate), mesh);
+	scalar_field_mesh = new THREE.Mesh( scalar_field_geometry, scalar_field_material);
+	this.scene.add(scalar_field_mesh);
+	this.meshes.set(_hashPlate(plate), scalar_field_mesh);
+
+	var vector_field_shader = new THREE.ShaderMaterial({
+	        vertexShader: 	vertexShaders.vectorField,
+	        fragmentShader: fragmentShaders.vectorField,
+	        attributes: {
+	        	vector: { type: 'v3', value: [] }
+	        },
+	        uniforms: {  }
+	    });
+	var vector_field_geometry = new THREE.Geometry();
+	for (var i=0, li=plate.grid.vertices.length; i<li; ++i) {
+	    vector_field_geometry.vertices.push( plate.grid.vertices[i] );
+	    vector_field_geometry.vertices.push( plate.grid.vertices[i] );
+	    vector_field_shader.attributes.vector.value.push( new THREE.Vector3() );
+	    vector_field_shader.attributes.vector.value.push( new THREE.Vector3() );
+	}
+	var vector_field_mesh = new THREE.Line( vector_field_geometry, vector_field_shader, THREE.LinePieces);
+	this.scene.add(vector_field_mesh);
 }
 
 View.prototype.remove = function(plate){
