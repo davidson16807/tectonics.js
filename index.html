@@ -50,6 +50,7 @@
 	<script src="scripts/model/Model.js"></script>
 	<script src="scripts/view/fragment/FragmentShaders.js"></script>
 	<script src="scripts/view/vertex/VertexShaders.js"></script>
+	<script src="scripts/view/Display.js"></script>
 	<script src="scripts/view/View.js"></script>
 	<script src="scripts/Cached.js"></script>
 	<script src="scripts/JsonSerializer.js"></script>
@@ -289,7 +290,7 @@
 
 	var view = new View(
 		new Grid( new THREEx.FibonacciSphereGeometry(1, 10000, fibGridFaceCache)),
-		fragmentShaders['satellite'], 
+		displays.satellite, 
 		vertexShaders['orthographic']
 	);
 	var model = new Model();
@@ -544,7 +545,7 @@
 	    }
 	);
 	$('.fragment-shader').click(function(e){
-		view.fragmentShader(fragmentShaders[$(this).data('value')]);
+		view.setScalarDisplay(displays[$(this).data('value')]);
 	});
 	$('.vertex-shader').click(function(e){
 		console.log('vertex-shader');
@@ -561,29 +562,18 @@
 			}
 		  });
 	});
-	$('.vegetation').click(function(e) {
-		var soil = $('.soil').hasClass('active');
-		var vegetation = !$('.vegetation').hasClass('active');
-
-		if (vegetation) {
-			view.fragmentShader(fragmentShaders.satellite);
-		} else if (soil) {
-			view.fragmentShader(fragmentShaders.soil);
-		} else {
-			view.fragmentShader(fragmentShaders.bedrock);
-		}
-	})
-	$('.soil').click(function(e) {
-		var soil = !$('.soil').hasClass('active');
-		var vegetation = $('.vegetation').hasClass('active');
-
-		if (vegetation) {
-			view.fragmentShader(fragmentShaders.satellite);
-		} else if (soil) {
-			view.fragmentShader(fragmentShaders.soil);
-		} else {
-			view.fragmentShader(fragmentShaders.bedrock);
-		}
+	$('.vegetation,.soil').click(function(e) {
+		setTimeout(function() {
+			var soil = $('.soil').hasClass('active');
+			var vegetation = $('.vegetation').hasClass('active');
+			if (vegetation) {
+				view.setScalarDisplay(displays.satellite);
+			} else if (soil) {
+				view.setScalarDisplay(displays.soil);
+			} else {
+				view.setScalarDisplay(displays.bedrock);
+			}	
+		}, 0);
 	})
 </script>
 </body>

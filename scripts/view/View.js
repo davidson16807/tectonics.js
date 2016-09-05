@@ -4,12 +4,10 @@ var _hashPlate = function(plate){
 	return plate.uuid;
 }
 
-function View(grid, fragmentShader, vertexShader){
+function View(grid, display, vertexShader){
 	this.grid = grid;
 	this.THRESHOLD = 0.99;
 	this.SEALEVEL = 1.0;
-	this._fragmentShader = fragmentShader;
-	this._vertexShader = vertexShader;
 
 	this._uniforms = {
 		sealevel_mod: 1.0
@@ -24,6 +22,10 @@ function View(grid, fragmentShader, vertexShader){
 	this.camera	= new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, .01, 10000 );
 	this.camera.position.set(0, 0, 5);
 	this.scene.add(this.camera);
+
+	this.setScalarDisplay(display);
+	this._vertexShader = vertexShader;
+
 
 	var this_ = this;
 	Publisher.subscribe('plate.matrix', 'update', function (content){
@@ -71,19 +73,29 @@ function View(grid, fragmentShader, vertexShader){
 	// });
 }
 
-View.prototype.fragmentShader = function(fragmentShader){
-	if(this._fragmentShader === fragmentShader){
+View.prototype.setScalarDisplay = function(display) {
+	if(this._display === display){
 		return;
 	}
-	this._fragmentShader = fragmentShader;
 	var meshes, mesh;
 	meshes = this.meshes.values();
-	for (var i = 0, li = meshes.length; i < li; i++) {
-		mesh = meshes[i];
-		mesh.material.fragmentShader = fragmentShader;
-		mesh.material.needsUpdate = true;
-	};
-}
+
+	if (this._display !== void 0) {
+		for (var i = 0, li = meshes.length; i < li; i++) {
+			mesh = meshes[i];
+			this._display.removeFrom(mesh);
+		};
+	}
+
+	this._display = display;
+
+	if (this._display !== void 0) {
+		for (var i = 0, li = meshes.length; i < li; i++) {
+			mesh = meshes[i];
+			this._display.addTo(mesh);
+		};
+	}
+};
 
 View.prototype.vertexShader = function(vertexShader){
 	if(this._vertexShader === vertexShader){
@@ -149,24 +161,8 @@ function subductability (rock) {
 	return heaviside_approximation( density - 3000, 1/111 );
 }
 View.prototype.cell_update = function(uuid, plate){
-	var geometry, displacement, scalar;
-	geometry = this.geometries.get(uuid);
-	displacement = geometry.attributes.displacement.array;
-	scalar = geometry.attributes.scalar.array;
-	var buffer_array_to_cell = this.grid.buffer_array_to_cell;
-	var buffer_array_index; 
-	var is_member_model = plate.is_member; 
-	var displacement_model = plate.displacement; 
-	var scalar_model = plate.age; 
-	var is_member;
-	for(var j=0, lj = displacement.length; j<lj; j++){ 
-		buffer_array_index = buffer_array_to_cell[j];
-		is_member = is_member_model[buffer_array_index]
-		displacement[j] = is_member * displacement_model[buffer_array_index]; 
-		scalar[j] = is_member * scalar_model[buffer_array_index]; 
-	}
-	geometry.attributes.displacement.needsUpdate = true;
-	geometry.attributes.scalar.needsUpdate = true;
+	var geometry = this.geometries.get(uuid);
+	this._display.updateAttributes(geometry, plate);
 }
 
 View.prototype.add = function(plate){
@@ -192,7 +188,7 @@ View.prototype.add = function(plate){
 		},
 		blending: THREE.NoBlending,
 		vertexShader: this._vertexShader,
-		fragmentShader: this._fragmentShader
+		fragmentShader: this._display._fragmentShader
 	});
 	mesh = new THREE.Mesh( geometry, material);
 	this.scene.add(mesh);
@@ -211,7 +207,7 @@ View.prototype.add = function(plate){
 		},
 		blending: THREE.NoBlending,
 		vertexShader: this._vertexShader,
-		fragmentShader: this._fragmentShader
+		fragmentShader: this._display._fragmentShader
 	});
 	mesh = new THREE.Mesh( geometry, material);
 	this.scene.add(mesh);

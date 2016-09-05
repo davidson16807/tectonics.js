@@ -1,7 +1,7 @@
 
 void main() {
 	vDisplacement = displacement;
-	vAge = age;
+	vScalar = scalar;
 	vPosition = modelMatrix * vec4( position, 1.0 );
 	
 	float height = displacement > sealevel? LAND : displacement > 1.0? OCEAN : NONE;
