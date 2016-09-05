@@ -50,7 +50,7 @@
 	<script src="scripts/model/Model.js"></script>
 	<script src="scripts/view/fragment/FragmentShaders.js"></script>
 	<script src="scripts/view/vertex/VertexShaders.js"></script>
-	<script src="scripts/view/Display.js"></script>
+	<script src="scripts/view/ScalarDisplay.js"></script>
 	<script src="scripts/view/View.js"></script>
 	<script src="scripts/Cached.js"></script>
 	<script src="scripts/JsonSerializer.js"></script>
@@ -290,7 +290,7 @@
 
 	var view = new View(
 		new Grid( new THREEx.FibonacciSphereGeometry(1, 10000, fibGridFaceCache)),
-		displays.satellite, 
+		scalarDisplays.satellite, 
 		vertexShaders['orthographic']
 	);
 	var model = new Model();
@@ -545,7 +545,7 @@
 	    }
 	);
 	$('.fragment-shader').click(function(e){
-		view.setScalarDisplay(displays[$(this).data('value')]);
+		view.setScalarDisplay(scalarDisplays[$(this).data('value')]);
 	});
 	$('.vertex-shader').click(function(e){
 		console.log('vertex-shader');
@@ -567,11 +567,11 @@
 			var soil = $('.soil').hasClass('active');
 			var vegetation = $('.vegetation').hasClass('active');
 			if (vegetation) {
-				view.setScalarDisplay(displays.satellite);
+				view.setScalarDisplay(scalarDisplays.satellite);
 			} else if (soil) {
-				view.setScalarDisplay(displays.soil);
+				view.setScalarDisplay(scalarDisplays.soil);
 			} else {
-				view.setScalarDisplay(displays.bedrock);
+				view.setScalarDisplay(scalarDisplays.bedrock);
 			}	
 		}, 0);
 	})

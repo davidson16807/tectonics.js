@@ -1,6 +1,6 @@
 'use strict';
 
-var displays = {};
+var scalarDisplays = {};
 
 
 function ScalarDisplay(options) {
@@ -56,8 +56,8 @@ ScalarDisplay.prototype.updateAttributes = function(geometry, plate) {
 		geometry.attributes.scalar.needsUpdate = true;
 	}
 }
-displays.npp 	= new ScalarDisplay( {color: 0x00ff00, scalar: 'npp'} );
-displays.alt 	= new ScalarDisplay( {color: 0x000000, min:'sealevel', max:'maxheight', scalar: 'alt'} );
+scalarDisplays.npp 	= new ScalarDisplay( {color: 0x00ff00, scalar: 'npp'} );
+scalarDisplays.alt 	= new ScalarDisplay( {color: 0x000000, min:'sealevel', max:'maxheight', scalar: 'alt'} );
 
 
 function ScalarHeatDisplay(options) {
@@ -108,14 +108,14 @@ ScalarHeatDisplay.prototype.updateAttributes = function(geometry, plate) {
 		geometry.attributes.scalar.needsUpdate = true;
 	}
 }
-displays.temp 	= new ScalarHeatDisplay( { min: '-25.', max: '30.', scalar: 'temp', } );
-displays.precip = new ScalarHeatDisplay( { min: '2000.', max: '0.', scalar: 'precip', } );
-displays.age 	= new ScalarHeatDisplay( { min: '250.', max: '0.',  
+scalarDisplays.temp 	= new ScalarHeatDisplay( { min: '-25.', max: '30.', scalar: 'temp', } );
+scalarDisplays.precip = new ScalarHeatDisplay( { min: '2000.', max: '0.', scalar: 'precip', } );
+scalarDisplays.age 	= new ScalarHeatDisplay( { min: '250.', max: '0.',  
 		getField: function (plate) {
 			return plate.age;
 		} 
 	} );
-displays.subductability = new ScalarHeatDisplay( { 
+scalarDisplays.subductability = new ScalarHeatDisplay( { 
 		getField: function (plate) {
 			function lerp(a,b, x){
 				return a + x*(b-a);
@@ -188,9 +188,9 @@ RealisticDisplay.prototype.updateAttributes = function(geometry, plate) {
 	}
 	geometry.attributes.displacement.needsUpdate = true;
 }
-displays.satellite = new RealisticDisplay('canopy');
-displays.soil = new RealisticDisplay('soil');
-displays.bedrock = new RealisticDisplay('bedrock');
+scalarDisplays.satellite = new RealisticDisplay('canopy');
+scalarDisplays.soil = new RealisticDisplay('soil');
+scalarDisplays.bedrock = new RealisticDisplay('bedrock');
 
 
 function DebugDisplay(shader_return_value) {
@@ -220,4 +220,4 @@ DebugDisplay.prototype.updateAttributes = function(geometry, plate) {
 	}
 	geometry.attributes.displacement.needsUpdate = true;
 }
-displays.debug = new DebugDisplay();
+scalarDisplays.debug = new DebugDisplay();
