@@ -6,7 +6,7 @@ var displays = {};
 function ScalarDisplay(options) {
 	var color = options['color'] || 0x000000;
 	var min = options['min'] || '0.';
-	var max = options['max'];
+	var max = options['max'] || '1.';
 	var scalar = options['scalar'] || 'vScalar';
 	this.getField = options['getField'];
 	this._fragmentShader = fragmentShaders.template
@@ -56,13 +56,13 @@ ScalarDisplay.prototype.updateAttributes = function(geometry, plate) {
 		geometry.attributes.scalar.needsUpdate = true;
 	}
 }
-displays.npp 	= new ScalarDisplay( {color: 0x00ff00, max:'1.', scalar: 'npp'} );
+displays.npp 	= new ScalarDisplay( {color: 0x00ff00, scalar: 'npp'} );
 displays.alt 	= new ScalarDisplay( {color: 0x000000, min:'sealevel', max:'maxheight', scalar: 'alt'} );
 
 
 function ScalarHeatDisplay(options) {
 	var min = options['min'] || '0.';
-	var max = options['max'];
+	var max = options['max'] || '1.';
 	var scalar = options['scalar'] || 'vScalar';
 	this.getField = options['getField'];
 	this._fragmentShader = fragmentShaders.template
@@ -110,9 +110,42 @@ ScalarHeatDisplay.prototype.updateAttributes = function(geometry, plate) {
 }
 displays.temp 	= new ScalarHeatDisplay( { min: '-25.', max: '30.', scalar: 'temp', } );
 displays.precip = new ScalarHeatDisplay( { min: '2000.', max: '0.', scalar: 'precip', } );
-displays.age 	= new ScalarHeatDisplay( { min: '250.', max: '0.',  scalar: 'vScalar',
+displays.age 	= new ScalarHeatDisplay( { min: '250.', max: '0.',  
 		getField: function (plate) {
 			return plate.age;
+		} 
+	} );
+displays.subductability = new ScalarHeatDisplay( { 
+		getField: function (plate) {
+			function lerp(a,b, x){
+				return a + x*(b-a);
+			}
+			function smoothstep (edge0, edge1, x) {
+				var fraction = (x - edge0) / (edge1 - edge0);
+				return clamp(fraction, 0.0, 1.0);
+				// return t * t * (3.0 - 2.0 * t);
+			}
+			function clamp (x, minVal, maxVal) {
+				return Math.min(Math.max(x, minVal), maxVal);
+			}
+			function heaviside_approximation (x, k) {
+				return 2 / (1 + Math.exp(-k*x)) - 1;
+				return x>0? 1: 0; 
+			}
+			function get_subductability (density, age) {
+				var continent = smoothstep(2800, 3000, density);
+				var density = 	density * (1-continent) 	+ 
+								lerp(density, 3300, smoothstep(0,280, age)) * continent
+				return heaviside_approximation( density - 3000, 1/111 );
+			}
+			var subductability = ScalarField.TypedArray(plate.grid);
+			var is_member = plate.is_member;
+			var age = plate.age;
+			var density = plate.density;
+			for (var i=0, li=subductability.length; i<li; ++i) {
+			    subductability[i] = is_member[i] * get_subductability(density[i], age[i]);
+			}
+			return subductability;
 		} 
 	} );
 
@@ -185,4 +218,4 @@ DebugDisplay.prototype.updateAttributes = function(geometry, plate) {
 	}
 	geometry.attributes.displacement.needsUpdate = true;
 }
-displays.debug = new DebugDisplay()
+displays.debug = new DebugDisplay();

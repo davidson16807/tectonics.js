@@ -139,27 +139,6 @@ View.prototype.matrix_update = function(uuid, matrix) {
 	}
 };
 
-function lerp(a,b, x){
-	return a + x*(b-a);
-}
-function smoothstep (edge0, edge1, x) {
-	var fraction = (x - edge0) / (edge1 - edge0);
-	return clamp(fraction, 0.0, 1.0);
-	// return t * t * (3.0 - 2.0 * t);
-}
-function clamp (x, minVal, maxVal) {
-	return Math.min(Math.max(x, minVal), maxVal);
-}
-function heaviside_approximation (x, k) {
-	return 2 / (1 + Math.exp(-k*x)) - 1;
-	return x>0? 1: 0; 
-}
-function subductability (rock) {
-	var continent = smoothstep(2800, 3000, rock.density);
-	var density = 	rock.density * (1-continent) 	+ 
-					lerp(rock.density, 3300, smoothstep(0,280, rock.age)) * continent
-	return heaviside_approximation( density - 3000, 1/111 );
-}
 View.prototype.cell_update = function(uuid, plate){
 	var geometry = this.geometries.get(uuid);
 	this._display.updateAttributes(geometry, plate);
