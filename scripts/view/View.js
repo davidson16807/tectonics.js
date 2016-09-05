@@ -195,7 +195,7 @@ View.prototype.add = function(plate){
 	this.meshes.set(_hashPlate(plate), scalar_field_mesh);
 
 	var vector_field_shader = new THREE.ShaderMaterial({
-	        vertexShader: 	vertexShaders.vectorField,
+	        vertexShader: 	this._vertexShader,
 	        fragmentShader: fragmentShaders.vectorField,
 	        attributes: {
 	        	vector: { type: 'v3', value: [] }
