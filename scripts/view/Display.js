@@ -199,6 +199,8 @@ function DebugDisplay(shader_return_value) {
 DebugDisplay.prototype.addTo = function(mesh) {
 	mesh.material.fragmentShader = this._fragmentShader;
 	mesh.material.needsUpdate = true;
+	mesh.material.uniforms.color.value =  new THREE.Color(Math.random() * 0xffffff);
+	mesh.material.uniforms.color.needsUpdate = true;
 };
 DebugDisplay.prototype.removeFrom = function(mesh) {
 	

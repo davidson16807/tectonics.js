@@ -152,7 +152,7 @@ View.prototype.add = function(plate){
 	geometry.addAttribute('scalar', Float32Array, faces.length*3, 1);
 	this.geometries.set(_hashPlate(plate), geometry);
 
-	var color = new THREE.Color(Math.random() * 0xffffff);
+	var color = new THREE.Color();
 	var sealevel_mod = this._uniforms.sealevel_mod;
 	material = new THREE.ShaderMaterial({
 		attributes: {
