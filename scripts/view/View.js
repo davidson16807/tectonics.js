@@ -4,7 +4,7 @@ var _hashPlate = function(plate){
 	return plate.uuid;
 }
 
-function View(grid, display, vertexShader){
+function View(grid, scalarDisplay, vectorDisplay, vertexShader){
 	this.grid = grid;
 	this.THRESHOLD = 0.99;
 	this.SEALEVEL = 1.0;
@@ -14,6 +14,7 @@ function View(grid, display, vertexShader){
 	};
 	this.geometries = new buckets.Dictionary();
 	this.meshes = new buckets.MultiDictionary();
+	this.vectorFieldMeshes = new buckets.MultiDictionary();
 
 	// create a scene
 	this.scene = new THREE.Scene();
@@ -23,7 +24,8 @@ function View(grid, display, vertexShader){
 	this.camera.position.set(0, 0, 5);
 	this.scene.add(this.camera);
 
-	this.setScalarDisplay(display);
+	this.setScalarDisplay(scalarDisplay);
+	this.setVectorDisplay(vectorDisplay);
 	this._vertexShader = vertexShader;
 
 
@@ -97,6 +99,30 @@ View.prototype.setScalarDisplay = function(display) {
 	}
 };
 
+View.prototype.setVectorDisplay = function(display) {
+	if(this._vectorDisplay === display){
+		return;
+	}
+	var meshes, mesh;
+	meshes = this.vectorFieldMeshes.values();
+
+	if (this._vectorDisplay !== void 0) {
+		for (var i = 0, li = meshes.length; i < li; i++) {
+			mesh = meshes[i];
+			this._vectorDisplay.removeFrom(mesh);
+		};
+	}
+
+	this._vectorDisplay = display;
+
+	if (this._vectorDisplay !== void 0) {
+		for (var i = 0, li = meshes.length; i < li; i++) {
+			mesh = meshes[i];
+			this._vectorDisplay.addTo(mesh);
+		};
+	}
+};
+
 View.prototype.vertexShader = function(vertexShader){
 	if(this._vertexShader === vertexShader){
 		return;
@@ -125,21 +151,33 @@ View.prototype.uniform = function(key, value){
 	};
 }
 View.prototype.matrix_update = function(uuid, matrix) {
-	var meshes = this.meshes.get(uuid);
+	var meshes, mesh;
+	meshes = this.meshes.get(uuid);
 	if (meshes.length < 1) {
 		console.log('warning: no meshes in view!')
-		return;
-	};
+	} else {
+		for (var j = meshes.length - 1; j >= 0; j--) {
+			mesh = meshes[j];
+			mesh.matrix = matrix;
+			mesh.rotation.setFromRotationMatrix(mesh.matrix);
+		}
+	}
 
-	var meshes, mesh;
-	for (var j = meshes.length - 1; j >= 0; j--) {
-		mesh = meshes[j];
-		mesh.matrix = matrix;
-		mesh.rotation.setFromRotationMatrix(mesh.matrix);
+	meshes = this.vectorFieldMeshes.get(uuid);
+	if (meshes.length < 1) {
+		console.log('warning: no meshes in view!')
+	} else {
+		for (var j = meshes.length - 1; j >= 0; j--) {
+			mesh = meshes[j];
+			mesh.matrix = matrix;
+			mesh.rotation.setFromRotationMatrix(mesh.matrix);
+		}
 	}
 };
 
 View.prototype.cell_update = function(uuid, plate){
+	var geometry = this.geometries.get(uuid);
+	this._scalarDisplay.updateAttributes(geometry, plate);
 	var geometry = this.geometries.get(uuid);
 	this._scalarDisplay.updateAttributes(geometry, plate);
 }
@@ -194,7 +232,7 @@ View.prototype.add = function(plate){
 	this.scene.add(scalar_field_mesh);
 	this.meshes.set(_hashPlate(plate), scalar_field_mesh);
 
-	var vector_field_shader = new THREE.ShaderMaterial({
+	var vector_field_material = new THREE.ShaderMaterial({
 	        vertexShader: 	this._vertexShader,
 	        fragmentShader: fragmentShaders.vectorField,
 	        attributes: {
@@ -203,14 +241,16 @@ View.prototype.add = function(plate){
 	        uniforms: {  }
 	    });
 	var vector_field_geometry = new THREE.Geometry();
+	var is_member_model = plate.is_member;
 	for (var i=0, li=plate.grid.vertices.length; i<li; ++i) {
 	    vector_field_geometry.vertices.push( plate.grid.vertices[i] );
 	    vector_field_geometry.vertices.push( plate.grid.vertices[i] );
-	    vector_field_shader.attributes.vector.value.push( new THREE.Vector3() );
-	    vector_field_shader.attributes.vector.value.push( new THREE.Vector3() );
+	    vector_field_material.attributes.vector.value.push( new THREE.Vector3() );
+	    vector_field_material.attributes.vector.value.push( is_member_model[i]? new THREE.Vector3(0.03,0.03,0.03) : new THREE.Vector3() );
 	}
-	var vector_field_mesh = new THREE.Line( vector_field_geometry, vector_field_shader, THREE.LinePieces);
+	var vector_field_mesh = new THREE.Line( vector_field_geometry, vector_field_material, THREE.LinePieces);
 	this.scene.add(vector_field_mesh);
+	this.vectorFieldMeshes.set(_hashPlate(plate), vector_field_mesh);
 }
 
 View.prototype.remove = function(plate){
@@ -220,6 +260,20 @@ View.prototype.remove = function(plate){
 	}
 	this.meshes.remove(plate);
 	this.geometries.remove(_hashPlate(plate));
+	
+	var mesh;
+	for (var i = meshes.length - 1; i >= 0; i--) {
+		var mesh = meshes[i];
+		this.scene.remove(mesh);
+		mesh.material.dispose();
+		mesh.geometry.dispose();
+	};
+
+	var meshes = this.vectorFieldMeshes.get(_hashPlate(plate));
+	if(meshes.length < 1){
+		return;
+	}
+	this.meshes.remove(plate);
 	
 	var mesh;
 	for (var i = meshes.length - 1; i >= 0; i--) {
