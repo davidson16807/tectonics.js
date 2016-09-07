@@ -6,7 +6,9 @@ function PlateView(scene, plate, uniforms, vertexShader, fragmentShader) {
 
 	this.scene = scene;
 	this.grid = plate.grid;
-	this._uniforms = uniforms;
+	this._uniforms = {
+		sealevel_mod: uniforms.sealevel_mod
+	};
 	this._fragmentShader = fragmentShader;
 	this._vertexShader = vertexShader;
 
@@ -84,10 +86,10 @@ PlateView.prototype.cell_update = function(cells){
 }
 
 PlateView.prototype.fragmentShader = function(fragmentShader){
-	if(this._fragmentShader === value){
+	if(this._fragmentShader === fragmentShader){
 		return;
 	}
-	this._fragmentShader = value;
+	this._fragmentShader = fragmentShader;
 
 	var meshes, mesh;
 
@@ -101,10 +103,10 @@ PlateView.prototype.fragmentShader = function(fragmentShader){
 }
 
 PlateView.prototype.vertexShader = function(vertexShader){
-	if(this._vertexShader === value){
+	if(this._vertexShader === vertexShader){
 		return;
 	}
-	this._vertexShader = value;
+	this._vertexShader = vertexShader;
 
 	var meshes, mesh;
 
@@ -118,6 +120,7 @@ PlateView.prototype.vertexShader = function(vertexShader){
 }
 
 PlateView.prototype.uniform = function(key, value){
+	console.log(this._uniforms[key], value)
 	if(this._uniforms[key] === value){
 		return;
 	}
@@ -139,7 +142,7 @@ PlateView.prototype.destroy = function() {
 
 	this.scene.remove(this.mesh1);
 	this.scene.remove(this.mesh2);
-	
+
 	mesh = this.mesh1;
 	mesh.material.dispose();
 	mesh.geometry.dispose();
