@@ -197,7 +197,7 @@ function DebugDisplay(shader_return_value) {
 	this._fragmentShader = fragmentShaders.debug;
 }
 DebugDisplay.prototype.addTo = function(mesh) {
-	mesh.material.fragmentShader = this._fragmentShader;
+	mesh.material.fragmentShader = this._fragmentShader; 
 	mesh.material.needsUpdate = true;
 	mesh.material.uniforms.color.value =  new THREE.Color(Math.random() * 0xffffff);
 	mesh.material.uniforms.color.needsUpdate = true;
