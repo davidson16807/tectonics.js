@@ -21,6 +21,7 @@ function PlateView(scene, plate, uniforms, vertexShader, scalarDisplay, vectorDi
 	var color = new THREE.Color();
 	var sealevel_mod = this._uniforms.sealevel_mod;
 
+
 	scalar_field_material = new THREE.ShaderMaterial({
 		attributes: {
 		  displacement: { type: 'f', value: null },
@@ -39,6 +40,7 @@ function PlateView(scene, plate, uniforms, vertexShader, scalarDisplay, vectorDi
 	scalar_field_mesh = new THREE.Mesh( scalar_field_geometry, scalar_field_material);
 	scene.add(scalar_field_mesh);
 	this.scalar_field_mesh1 = scalar_field_mesh;
+
 
 	scalar_field_material = new THREE.ShaderMaterial({
 		attributes: {
@@ -59,6 +61,7 @@ function PlateView(scene, plate, uniforms, vertexShader, scalarDisplay, vectorDi
 	scene.add(scalar_field_mesh);
 	this.scalar_field_mesh2 = scalar_field_mesh;
 
+
 	var vector_field_material = new THREE.ShaderMaterial({
 	        vertexShader: 	this._vertexShader,
 	        fragmentShader: fragmentShaders.vectorField,
@@ -70,11 +73,12 @@ function PlateView(scene, plate, uniforms, vertexShader, scalarDisplay, vectorDi
 	var vector_field_geometry = new THREE.Geometry();
 	this.vector_field_material = vector_field_material;
 	var is_member_model = plate.is_member;
+	var positions = plate.pos;
 	for (var i=0, li=plate.grid.vertices.length; i<li; ++i) {
 	    vector_field_geometry.vertices.push( plate.grid.vertices[i] );
 	    vector_field_geometry.vertices.push( plate.grid.vertices[i] );
 	    vector_field_material.attributes.vector.value.push( new THREE.Vector3() );
-	    vector_field_material.attributes.vector.value.push( is_member_model[i]? new THREE.Vector3(0.03,0.03,0.03) : new THREE.Vector3() );
+	    vector_field_material.attributes.vector.value.push( new THREE.Vector3() );
 	}
 	var vector_field_mesh = new THREE.Line( vector_field_geometry, vector_field_material, THREE.LinePieces);
 	scene.add(vector_field_mesh);

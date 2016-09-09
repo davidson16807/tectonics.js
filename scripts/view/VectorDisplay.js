@@ -20,9 +20,10 @@ VectorDisplay.prototype.updateAttributes = function(material, plate) {
 	var is_member_model = plate.is_member; 
 	var vector_model = this.getField !== void 0? this.getField(plate) : new THREE.Vector3(0.03,0.03,0.03);
 	var is_member;
-	for(var j=0, lj = vector_model.length; j<lj; j++){
+	for(var i=0, li = is_member_model.length; i<li; i++){
+		var vector_i = 2*i+1;
 		is_member = is_member_model[i];
-		vector[j] = is_member * vector_model[i]; 
+		vector[vector_i] = is_member[i] > 0?  new THREE.Vector3(0.00,0.00,0.00) : new THREE.Vector3(0.00,0.00,0.00); 
 	}
 	material.attributes.vector.needsUpdate = true;
 }
