@@ -30,18 +30,13 @@ VectorDisplay.prototype.updateAttributes = function(material, plate) {
 vectorDisplays.test	= new VectorDisplay( {  } );
 
 
-function DisabledVectorDisplay(options) {
-	var min = options['min'] || '0.';
-	var max = options['max'] || '1.';
-	this.getField = options['getField'];
-}
+function DisabledVectorDisplay(options) {}
 DisabledVectorDisplay.prototype.addTo = function(mesh) {
-
+	var vector = mesh.material.attributes.vector.value;
+	for(var i=0, li = vector.length; i<li; i++){
+		vector[i] = new THREE.Vector3(); 
+	}
 };
-DisabledVectorDisplay.prototype.removeFrom = function(mesh) {
-		
-};
-DisabledVectorDisplay.prototype.updateAttributes = function(material, plate) {
-
-}
+DisabledVectorDisplay.prototype.removeFrom = function(mesh) {};
+DisabledVectorDisplay.prototype.updateAttributes = function(material, plate) {}
 vectorDisplays.disabled	= new DisabledVectorDisplay( {  } );
