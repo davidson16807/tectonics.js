@@ -23,8 +23,25 @@ VectorDisplay.prototype.updateAttributes = function(material, plate) {
 	for(var i=0, li = is_member_model.length; i<li; i++){
 		var vector_i = 2*i+1;
 		is_member = is_member_model[i];
-		vector[vector_i] = is_member[i] > 0?  new THREE.Vector3(0.00,0.00,0.00) : new THREE.Vector3(0.00,0.00,0.00); 
+		vector[vector_i] = is_member === 1?  new THREE.Vector3(1.00,0.00,0.00) : new THREE.Vector3(0.00,0.00,0.00); 
 	}
 	material.attributes.vector.needsUpdate = true;
 }
 vectorDisplays.test	= new VectorDisplay( {  } );
+
+
+function DisabledVectorDisplay(options) {
+	var min = options['min'] || '0.';
+	var max = options['max'] || '1.';
+	this.getField = options['getField'];
+}
+DisabledVectorDisplay.prototype.addTo = function(mesh) {
+
+};
+DisabledVectorDisplay.prototype.removeFrom = function(mesh) {
+		
+};
+DisabledVectorDisplay.prototype.updateAttributes = function(material, plate) {
+
+}
+vectorDisplays.disabled	= new DisabledVectorDisplay( {  } );
