@@ -8,10 +8,10 @@ float lat(vec3 pos) {
 
 void main() {
 	vDisplacement = displacement;
-	vAge = age;
+	vScalar = scalar;
 	vPosition = modelMatrix * vec4( position, 1.0 );
 	
-	vec4 modelPos = modelMatrix * vec4( position, 1.0 );
+	vec4 modelPos = modelMatrix * vec4( ( position + vector ), 1.0 );
 	
 	float index_offset = INDEX_SPACING * index;
 	float focus = lon(cameraPosition) + index_offset;

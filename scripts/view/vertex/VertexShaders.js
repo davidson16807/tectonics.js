@@ -13,9 +13,10 @@ const float NONE = -0.01;
 const float INDEX_SPACING = PI * 0.75; // anything from 0.0 to 2.*PI
 
 attribute float displacement;
-attribute float age;
+attribute float scalar;
+attribute vec3 vector;
 varying float vDisplacement;
-varying float vAge;
+varying float vScalar;
 varying vec4 vPosition;
 uniform float sealevel;
 uniform float index;
@@ -31,10 +32,10 @@ float lat(vec3 pos) {
 
 void main() {
 	vDisplacement = displacement;
-	vAge = age;
+	vScalar = scalar;
 	vPosition = modelMatrix * vec4( position, 1.0 );
 	
-	vec4 modelPos = modelMatrix * vec4( position, 1.0 );
+	vec4 modelPos = modelMatrix * vec4( ( position + vector ), 1.0 );
 	float height = displacement > sealevel? LAND : displacement > 1.0? OCEAN : NONE;
 	
 	float index_offset = INDEX_SPACING * index;
@@ -61,9 +62,10 @@ const float NONE = -0.01;
 const float INDEX_SPACING = PI * 0.75; // anything from 0.0 to 2.*PI
 
 attribute float displacement;
-attribute float age;
+attribute float scalar;
+attribute vec3 vector;
 varying float vDisplacement;
-varying float vAge;
+varying float vScalar;
 varying vec4 vPosition;
 uniform float sealevel;
 uniform float index;
@@ -79,10 +81,10 @@ float lat(vec3 pos) {
 
 void main() {
 	vDisplacement = displacement;
-	vAge = age;
+	vScalar = scalar;
 	vPosition = modelMatrix * vec4( position, 1.0 );
 	
-	vec4 modelPos = modelMatrix * vec4( position, 1.0 );
+	vec4 modelPos = modelMatrix * vec4( ( position + vector ), 1.0 );
 	
 	float index_offset = INDEX_SPACING * index;
 	float focus = lon(cameraPosition) + index_offset;
@@ -106,9 +108,10 @@ const float NONE = -0.01;
 const float INDEX_SPACING = PI * 0.75; // anything from 0.0 to 2.*PI
 
 attribute float displacement;
-attribute float age;
+attribute float scalar;
+attribute vec3 vector;
 varying float vDisplacement;
-varying float vAge;
+varying float vScalar;
 varying vec4 vPosition;
 uniform float sealevel;
 uniform float index;
@@ -117,11 +120,11 @@ uniform float index;
 
 void main() {
 	vDisplacement = displacement;
-	vAge = age;
+	vScalar = scalar;
 	vPosition = modelMatrix * vec4( position, 1.0 );
 	
 	float height = displacement > sealevel? LAND : displacement > 1.0? OCEAN : NONE;
-	vec4 displaced = vec4( position * (1.+height), 1.0 );
+	vec4 displaced = vec4( ( position + vector ) * (1.+height), 1.0 );
 	gl_Position = projectionMatrix * modelViewMatrix * displaced;
 }
 //this line left intentionally empty**/});
