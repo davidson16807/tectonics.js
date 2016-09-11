@@ -109,7 +109,8 @@ EliasWorldGenerator.generate = function (world, optional) {
 	 new RockColumn(void 0, {
 		elevation: 	-11000,
 		thickness: 	4000, 
-		density: 	3000	// Carlson & Raskin 1984
+		age: 		250,
+		density: 	3300	// Carlson & Raskin 1984
 	 });
 	var deep_ocean = 
 	 new RockColumn(void 0, {
@@ -123,7 +124,14 @@ EliasWorldGenerator.generate = function (world, optional) {
 		thickness: 	7100+800,// +/- 800, White McKenzie and O'nions 1992
 		density: 	2890	// Carlson & Raskin 1984
 	 });
-	var shelf = 
+	var shelf_bottom = 
+	 new RockColumn(void 0, {
+		elevation: 	-2000,   //Sverdrup & Fleming 1942
+	    thickness: 	7100+800, // +/- 2900, estimate for shields, Zandt & Ammon 1995
+		age: 		100,
+		density: 	2950
+	 });
+	var shelf_top = 
 	 new RockColumn(void 0, {
 		elevation: 	-200,   //Sverdrup & Fleming 1942
 	    thickness: 	17000, // +/- 2900, estimate for shields, Zandt & Ammon 1995
@@ -141,7 +149,15 @@ EliasWorldGenerator.generate = function (world, optional) {
 	    thickness: 	70000, // +/- 2900, estimate for shields, Zandt & Ammon 1995
 		density: 	2700
 	 });
-	var control_points = [abyss, deep_ocean, shallow_ocean, shelf, land, mountain];
+	var control_points = [
+		abyss,
+		deep_ocean,
+		shallow_ocean,
+		shelf_bottom,
+		shelf_top,
+		land,
+		mountain
+	];
 	 
 	// We then use interpolate between these templated values.
 	for (var i = 0, li = heights.length; i < li; i++) {
