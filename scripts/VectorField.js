@@ -7,23 +7,55 @@
 var VectorField = {}
 
 // return vector field data structures for aspects of a grid
-VectorField.VertexDataFrame = function(grid){
-	return VectorField.DataFrameOfLength(grid.vertices.length)
+VectorField.VertexDataFrame = function(grid, fill){
+	var result = VectorField.DataFrameOfLength(grid.vertices.length);
+	if (fill !== void 0) {
+		for (var i=0, li=result.x.length; i<li; ++i) {
+		    result.x[i] = fill.x;
+		    result.y[i] = fill.y;
+		    result.z[i] = fill.z;
+		}
+	}
+	return result;
 }
-VectorField.EdgeDataFrame = function(grid){
-	return VectorField.DataFrameOfLength(grid.edges.length)
+VectorField.EdgeDataFrame = function(grid, fill){
+	var result = VectorField.DataFrameOfLength(grid.edges.length);
+	if (fill !== void 0) {
+		for (var i=0, li=result.x.length; i<li; ++i) {
+		    result.x[i] = fill.x;
+		    result.y[i] = fill.y;
+		    result.z[i] = fill.z;
+		}
+	}
+	return result;
 }
-VectorField.ArrowDataFrame = function(grid){
-	return VectorField.DataFrameOfLength(grid.arrows.length)
+VectorField.ArrowDataFrame = function(grid, fill){
+	var result = VectorField.DataFrameOfLength(grid.arrows.length);
+	if (fill !== void 0) {
+		for (var i=0, li=result.x.length; i<li; ++i) {
+		    result.x[i] = fill.x;
+		    result.y[i] = fill.y;
+		    result.z[i] = fill.z;
+		}
+	}
+	return result;
 }
 
 // return vector field data structure given length
-VectorField.DataFrameOfLength = function(length){
-	return {
+VectorField.DataFrameOfLength = function(length, fill){
+	var result = {
 		x: new Float32Array(length),
 		y: new Float32Array(length),
 		z: new Float32Array(length),
 	};
+	if (fill !== void 0) {
+		for (var i=0, li=result.x.length; i<li; ++i) {
+		    result.x[i] = fill.x;
+		    result.y[i] = fill.y;
+		    result.z[i] = fill.z;
+		}
+	}
+	return result;
 }
 // return vector field data structure given array of single vector objects
 VectorField.DataFrameOfVectors = function(vectors){

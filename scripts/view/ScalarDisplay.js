@@ -144,7 +144,7 @@ scalarDisplays.subductability = new ScalarHeatDisplay(  {
 				return x>0? 1: 0; 
 			}
 			function get_subductability (density, age) {
-				var continent = smoothstep(2800, 3000, density);
+				var continent = smoothstep(2890, 3000, density);
 				var density = 	density * (1-continent) 	+ 
 								lerp(density, 3300, smoothstep(0,280, age)) * continent
 				return heaviside_approximation( density - 3000, 1/100 );
@@ -159,7 +159,6 @@ scalarDisplays.subductability = new ScalarHeatDisplay(  {
 			return subductability;
 		} 
 	} );
-
 
 function RealisticDisplay(shader_return_value) {
 	this._fragmentShader = fragmentShaders.template
