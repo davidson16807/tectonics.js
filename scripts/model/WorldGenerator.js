@@ -114,7 +114,7 @@ EliasWorldGenerator.generate = function (world, optional) {
 		elevation: 	-11000,
 		thickness: 	4000, 
 		age: 		250,
-		density: 	3000	// Carlson & Raskin 1984
+		density: 	3300	// Carlson & Raskin 1984
 	 });
 	var deep_ocean = 
 	 new RockColumn(void 0, {
@@ -130,7 +130,14 @@ EliasWorldGenerator.generate = function (world, optional) {
 		age: 		0,
 		density: 	2890	// Carlson & Raskin 1984
 	 });
-	var shelf = 
+	var shelf_bottom = 
+	 new RockColumn(void 0, {
+		elevation: 	-2000,   //Sverdrup & Fleming 1942
+	    thickness: 	7100+800, // +/- 2900, estimate for shields, Zandt & Ammon 1995
+		age: 		100,
+		density: 	2950
+	 });
+	var shelf_top = 
 	 new RockColumn(void 0, {
 		elevation: 	-200,   //Sverdrup & Fleming 1942
 	    thickness: 	17000, // +/- 2900, estimate for shields, Zandt & Ammon 1995
@@ -151,7 +158,15 @@ EliasWorldGenerator.generate = function (world, optional) {
 		age: 		1000,
 		density: 	2700
 	 });
-	var control_points = [abyss, deep_ocean, shallow_ocean, shelf, land, mountain];
+	var control_points = [
+		abyss,
+		deep_ocean,
+		shallow_ocean,
+		shelf_bottom,
+		shelf_top,
+		land,
+		mountain
+	];
 	 
 	var cells = plate.cells;
 
