@@ -115,7 +115,18 @@ scalarDisplays.age 	= new ScalarHeatDisplay( { min: '250.', max: '0.',
 			return plate.age;
 		} 
 	} );
-scalarDisplays.subductability = new ScalarHeatDisplay( { 
+scalarDisplays.thickness 	= new ScalarHeatDisplay( { min: '6000.', max: '70000.',  
+		getField: function (plate) {
+			return plate.thickness;
+		} 
+	} );
+scalarDisplays.density 	= new ScalarHeatDisplay( { min: '2700.', max: '3300.',  
+		getField: function (plate) {
+			return plate.density;
+		} 
+	} );
+scalarDisplays.subductability = new ScalarHeatDisplay(  { 
+		min: '1.', max: '0.',
 		getField: function (plate) {
 			function lerp(a,b, x){
 				return a + x*(b-a);
@@ -136,7 +147,7 @@ scalarDisplays.subductability = new ScalarHeatDisplay( {
 				var continent = smoothstep(2800, 3000, density);
 				var density = 	density * (1-continent) 	+ 
 								lerp(density, 3300, smoothstep(0,280, age)) * continent
-				return heaviside_approximation( density - 3000, 1/111 );
+				return heaviside_approximation( density - 3000, 1/100 );
 			}
 			var subductability = ScalarField.TypedArray(plate.grid);
 			var is_member = plate.is_member;
