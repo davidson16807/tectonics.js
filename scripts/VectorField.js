@@ -404,6 +404,21 @@ VectorField.div_scalar = function(vector, scalar, result) {
 
 	return result;
 };
+VectorField.magnitude = function(vector, result) {
+	result = result || ScalarField.TypedArrayOfLength(vector.x.length);
+
+	var x = vector.x;
+	var y = vector.y;
+	var z = vector.z;
+
+	var pow = Math.pow;
+	var sqrt = Math.sqrt;
+	for (var i=0, li=result.length; i<li; ++i) {
+	    result[i] += sqrt(pow(x[i], 2) + pow(y[i], 2) + pow(z[i], 2));
+	}
+
+	return result;
+};
 VectorField.map = function(field, fn, result) {
 	result = result || new Float32Array(field.length)
 

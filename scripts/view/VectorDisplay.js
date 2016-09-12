@@ -54,8 +54,7 @@ vectorDisplays.velocity	= new ThreeJsVectorDisplay( {
 
 
 function DataFrameVectorDisplay(options) {
-	var min = options['min'] || '0.';
-	var max = options['max'] || '1.';
+	this.max = options['max'];
 	this.getField = options['getField'];
 }
 DataFrameVectorDisplay.prototype.addTo = function(mesh) {};
@@ -66,6 +65,7 @@ DataFrameVectorDisplay.prototype.updateAttributes = function(material, plate) {
 	var is_member_model = plate.is_member; 
 
 	var vector_model = this.getField(plate);
+	var max = this.max ||  Math.max.apply(null, VectorField.magnitude(vector_model));
 	var is_member_model = plate.is_member;
 	for(var i=0, li = is_member_model.length; i<li; i++){
 		var start = vector[2*i];
@@ -74,7 +74,7 @@ DataFrameVectorDisplay.prototype.updateAttributes = function(material, plate) {
 			end.x = vector_model.x[i];
 			end.y = vector_model.y[i];
 			end.z = vector_model.z[i];
-			end.multiplyScalar(1/1111);
+			end.divideScalar(10*max);
 			// start.x = -end.x;
 			// start.y = -end.y;
 			// start.z = -end.z;
@@ -90,6 +90,13 @@ vectorDisplays.age_gradient	= new DataFrameVectorDisplay( {
 	getField: function (plate) {
 		var age = plate.age;
 		var gradient = ScalarField.vertex_gradient(age, plate.grid);
+		return gradient;
+	}
+} );
+vectorDisplays.density_gradient	= new DataFrameVectorDisplay( { 
+	getField: function (plate) {
+		var density = plate.density;
+		var gradient = ScalarField.vertex_gradient(density, plate.grid);
 		return gradient;
 	}
 } );
