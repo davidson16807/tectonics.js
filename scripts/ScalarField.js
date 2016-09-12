@@ -223,9 +223,9 @@ ScalarField.vertex_gradient = function (field, grid, result) {
   for (var i = 0, li = arrows.length; i < li; i++) {
     arrow = arrows[i];
     dfield = field[arrow[1]] - field[arrow[0]];
-    x[arrow[0]] += (dfield * dpos.x[i]) || 0;
-    y[arrow[0]] += (dfield * dpos.y[i]) || 0;
-    z[arrow[0]] += (dfield * dpos.z[i]) || 0;
+    x[arrow[0]] += (dfield * dx[i]) || 0;
+    y[arrow[0]] += (dfield * dy[i]) || 0;
+    z[arrow[0]] += (dfield * dz[i]) || 0;
   }
   var neighbor_lookup = grid.neighbor_lookup;
   var neighbor_count = 0;
