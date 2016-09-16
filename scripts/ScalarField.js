@@ -261,4 +261,20 @@ ScalarField.arrow_laplacian = function (field, grid, result) {
   VectorField.arrow_divergence(gradient, grid, result);
   return result;
 };
+ScalarField.vertex_laplacian = function (field, grid, result) {
+  result = result || ScalarField.VertexTypedArray(grid);
+  var arrows = grid.arrows;
+  var arrow
+  for (var i=0, li=arrows.length; i<li; ++i) {
+      arrow = arrows[i];
+      result[arrow[0]] += field[arrow[1]] - field[arrow[0]];
+  }
+  var neighbor_lookup = grid.neighbor_lookup;
+  var neighbor_count = 0;
+  for (var i = 0, li = neighbor_lookup.length; i < li; i++) {
+      neighbor_count = neighbor_lookup[i].length;
+      result[i] /= neighbor_count;
+  }
+  return result;
+};
 

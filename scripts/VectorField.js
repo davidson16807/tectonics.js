@@ -429,6 +429,26 @@ VectorField.map = function(field, fn, result) {
 };
 
 
+VectorField.vertex_magnitude = function(field, grid, result) {
+	result = result || ScalarField.VertexTypedArray(grid);
+
+	var x = field.x;
+	var y = field.y;
+	var z = field.z;
+
+	var xi=0, yi=0, zi=0;
+	var sqrt = Math.sqrt;
+	for (var i = 0, li = result.length; i<li; i++) {
+		var xi = x[i];
+		var yi = y[i];
+		var zi = z[i];
+		result[i] = sqrt(	xi * xi + 
+							yi * yi + 
+							zi * zi	  );
+	}
+	return result;
+}
+
 // ∂X
 VectorField.arrow_differential = function(field, grid, result) {
 	result = result || VectorField.ArrowDataFrame(grid);
@@ -500,12 +520,17 @@ VectorField.edge_similarity = function(field, grid, result) {
 	var edges = grid.edges;
 	var edges_i_from = 0;
 	var edges_i_to = 0;
+	var length = 0;
 	for (var i = 0, li = edges.length; i<li; i++) {
 		edges_i_from = edges[i][0];
 		edges_i_to = edges[i][1];
+		length = 	x[edges_i_to] * x[edges_i_to] + 
+					y[edges_i_to] * y[edges_i_to] + 
+					z[edges_i_to] * z[edges_i_to];
 		result[i] = x[edges_i_to] * x[edges_i_from] + 
 					y[edges_i_to] * y[edges_i_from] + 
 					z[edges_i_to] * z[edges_i_from];
+		result[i] /= length;
 	}
 
 	return result;
@@ -525,9 +550,64 @@ VectorField.arrow_similarity = function(field, grid, result) {
 	for (var i = 0, li = arrows.length; i<li; i++) {
 		arrow_i_from = arrows[i][0];
 		arrow_i_to = arrows[i][1];
+		length = 	x[arrow_i_to] * x[arrow_i_to] + 
+					y[arrow_i_to] * y[arrow_i_to] + 
+					z[arrow_i_to] * z[arrow_i_to];
 		result[i] = x[arrow_i_to] * x[arrow_i_from] + 
 					y[arrow_i_to] * y[arrow_i_from] + 
 					z[arrow_i_to] * z[arrow_i_from];
+		result[i] /= length;
+	}
+
+	return result;
+}
+
+VectorField.vertex_similarity_weighted_average = function(field, grid, result) {
+	result = result || VectorField.VertexDataFrame(grid);
+	var similarity_sum = new ScalarField.VertexTypedArray(grid, 1);
+
+	var x = field.x;
+	var y = field.y;
+	var z = field.z;
+
+	var x1 = result.x;
+	var y1 = result.y;
+	var z1 = result.z;
+
+	var arrows = grid.arrows;
+	var arrow_i_from = 0;
+	var arrow_i_to = 0;
+	var similarity = 0;
+	var length_from = 0;
+	var length_to = 0;
+	for (var i=0, li=x1.length; i<li; ++i) {
+	    x1[i] = x[i];
+	    y1[i] = y[i];
+	    z1[i] = z[i];
+	}
+	for (var i = 0, li = arrows.length; i<li; i++) {
+		arrow_i_from = arrows[i][0];
+		arrow_i_to = arrows[i][1];
+		length_from = 	x[arrow_i_from] * x[arrow_i_from] + 
+						y[arrow_i_from] * y[arrow_i_from] + 
+						z[arrow_i_from] * z[arrow_i_from];
+		length_to = 	x[arrow_i_to] * x[arrow_i_to] + 
+						y[arrow_i_to] * y[arrow_i_to] + 
+						z[arrow_i_to] * z[arrow_i_to];
+		similarity = 	x[arrow_i_to] * x[arrow_i_from] + 
+						y[arrow_i_to] * y[arrow_i_from] + 
+						z[arrow_i_to] * z[arrow_i_from];
+		similarity /= 	(length_from * length_to);
+		similarity = similarity < 0? 0 : similarity;
+		similarity_sum[arrow_i_from] += similarity;
+		x1[arrow_i_from] += x[arrow_i_to] * similarity;
+		y1[arrow_i_from] += y[arrow_i_to] * similarity;
+		z1[arrow_i_from] += z[arrow_i_to] * similarity;
+	}
+	for (var i=0, li=x1.length; i<li; ++i) {
+	    x1[i] /= similarity_sum[i];
+	    y1[i] /= similarity_sum[i];
+	    z1[i] /= similarity_sum[i];
 	}
 
 	return result;

@@ -125,38 +125,62 @@ scalarDisplays.density 	= new ScalarHeatDisplay( { min: '2700.', max: '3300.',
 			return plate.density;
 		} 
 	} );
+
+function getSubductability (plate) {
+	function lerp(a,b, x){
+		return a + x*(b-a);
+	}
+	function smoothstep (edge0, edge1, x) {
+		var fraction = (x - edge0) / (edge1 - edge0);
+		return clamp(fraction, 0.0, 1.0);
+		// return t * t * (3.0 - 2.0 * t);
+	}
+	function clamp (x, minVal, maxVal) {
+		return Math.min(Math.max(x, minVal), maxVal);
+	}
+	function heaviside_approximation (x, k) {
+		return 2 / (1 + Math.exp(-k*x)) - 1;
+		return x>0? 1: 0; 
+	}
+	function get_subductability (density, age) {
+		var continent = smoothstep(2890, 2800, density);
+		var density = 	density * continent 	+ 
+						lerp(density, 3300, smoothstep(200,250, age)) * (1-continent)
+		return heaviside_approximation( density - 3000, 1/100 );
+	}
+	var subductability = ScalarField.TypedArray(plate.grid);
+	var is_member = plate.is_member;
+	var age = plate.age;
+	var density = plate.density;
+	for (var i=0, li=subductability.length; i<li; ++i) {
+	    subductability[i] = is_member[i] * get_subductability(density[i], age[i]);
+	}
+	return subductability;
+} 
+function getSubductabilitySmoothed(plate, iterations) {
+	iterations = iterations || 30;
+	var laplacian, field;
+	field = getSubductability(plate);
+	for (var i=0; i<iterations; ++i) {
+		laplacian = ScalarField.vertex_laplacian(field, plate.grid);
+		field = ScalarField.add_field(field, laplacian);
+	}
+	return field;
+}
 scalarDisplays.subductability = new ScalarHeatDisplay(  { 
 		min: '1.', max: '0.',
+		getField: getSubductability
+	} );
+scalarDisplays.subductability_smoothed = new ScalarHeatDisplay(  { 
+		min: '1.', max: '0.',
+		getField: getSubductabilitySmoothed
+	} );
+scalarDisplays.subductability_smoothed_laplacian = new ScalarHeatDisplay(  { 
+		min: '1.', max: '0.',
 		getField: function (plate) {
-			function lerp(a,b, x){
-				return a + x*(b-a);
-			}
-			function smoothstep (edge0, edge1, x) {
-				var fraction = (x - edge0) / (edge1 - edge0);
-				return clamp(fraction, 0.0, 1.0);
-				// return t * t * (3.0 - 2.0 * t);
-			}
-			function clamp (x, minVal, maxVal) {
-				return Math.min(Math.max(x, minVal), maxVal);
-			}
-			function heaviside_approximation (x, k) {
-				return 2 / (1 + Math.exp(-k*x)) - 1;
-				return x>0? 1: 0; 
-			}
-			function get_subductability (density, age) {
-				var continent = smoothstep(2890, 3000, density);
-				var density = 	density * (1-continent) 	+ 
-								lerp(density, 3300, smoothstep(0,280, age)) * continent
-				return heaviside_approximation( density - 3000, 1/100 );
-			}
-			var subductability = ScalarField.TypedArray(plate.grid);
-			var is_member = plate.is_member;
-			var age = plate.age;
-			var density = plate.density;
-			for (var i=0, li=subductability.length; i<li; ++i) {
-			    subductability[i] = is_member[i] * get_subductability(density[i], age[i]);
-			}
-			return subductability;
+			var field = getSubductabilitySmoothed(plate)
+			var laplacian = ScalarField.vertex_laplacian(field, plate.grid);
+			return laplacian;
 		} 
 	} );
 
