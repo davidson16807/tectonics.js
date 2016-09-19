@@ -404,33 +404,22 @@ VectorField.div_scalar = function(vector, scalar, result) {
 
 	return result;
 };
-VectorField.magnitude = function(vector, result) {
-	result = result || ScalarField.TypedArrayOfLength(vector.x.length);
-
-	var x = vector.x;
-	var y = vector.y;
-	var z = vector.z;
-
-	var pow = Math.pow;
-	var sqrt = Math.sqrt;
-	for (var i=0, li=result.length; i<li; ++i) {
-	    result[i] += sqrt(pow(x[i], 2) + pow(y[i], 2) + pow(z[i], 2));
-	}
-
-	return result;
-};
 VectorField.map = function(field, fn, result) {
 	result = result || new Float32Array(field.length)
 
+	var x = field.x;
+	var y = field.y;
+	var z = field.z;
+
 	for (var i = field_value.length - 1; i >= 0; i--) {
-		this_value[i] = fn(this_value[i])
+		this_value[i] = fn(x[i], y[i], z[i]);
 	}
 	return result;
 };
 
 
-VectorField.vertex_magnitude = function(field, grid, result) {
-	result = result || ScalarField.VertexTypedArray(grid);
+VectorField.magnitude = function(field, result) {
+	result = result || new Float32Array(field.x.length);
 
 	var x = field.x;
 	var y = field.y;
@@ -501,15 +490,7 @@ VectorField.edge_differential = function(field, grid, result) {
 
 // f(x+∂x)⋅f(x)
 //
-// ok, this is a nonstandard operation but bear with me
-// for every pair of neighboring vertices in a network, 
-// this operation gives their measure of similarity (i.e. dot product)
-// this is useful because you can perform a flood-fill 
-// to find regions of the field with similar direction and magnitude
-// ∇⋅X measures how much they come together or apart
-// ∂⋅X measures how similar they are
-// there is a relation between them: when ∂⋅X>0, ∇⋅X=0,
-// but ∇⋅X encodes more information at the expense of performance
+// cosine similarity between neighbors
 VectorField.edge_similarity = function(field, grid, result) {
 	result = result || ScalarField.EdgeTypedArray(grid);
 
@@ -520,17 +501,21 @@ VectorField.edge_similarity = function(field, grid, result) {
 	var edges = grid.edges;
 	var edges_i_from = 0;
 	var edges_i_to = 0;
-	var length = 0;
+	var length1 = 0;
+	var length2 = 0;
 	for (var i = 0, li = edges.length; i<li; i++) {
 		edges_i_from = edges[i][0];
 		edges_i_to = edges[i][1];
-		length = 	x[edges_i_to] * x[edges_i_to] + 
+		length1 = 	x[edges_i_to] * x[edges_i_to] + 
 					y[edges_i_to] * y[edges_i_to] + 
 					z[edges_i_to] * z[edges_i_to];
+		length2 = 	x[edges_i_from] * x[edges_i_from] + 
+					y[edges_i_from] * y[edges_i_from] + 
+					z[edges_i_from] * z[edges_i_from];
 		result[i] = x[edges_i_to] * x[edges_i_from] + 
 					y[edges_i_to] * y[edges_i_from] + 
 					z[edges_i_to] * z[edges_i_from];
-		result[i] /= length;
+		result[i] /= ( length1 * length2);
 	}
 
 	return result;
@@ -547,12 +532,17 @@ VectorField.arrow_similarity = function(field, grid, result) {
 	var arrows = grid.arrows;
 	var arrow_i_from = 0;
 	var arrow_i_to = 0;
+	var length1 = 0;
+	var length2 = 0;
 	for (var i = 0, li = arrows.length; i<li; i++) {
 		arrow_i_from = arrows[i][0];
 		arrow_i_to = arrows[i][1];
-		length = 	x[arrow_i_to] * x[arrow_i_to] + 
-					y[arrow_i_to] * y[arrow_i_to] + 
-					z[arrow_i_to] * z[arrow_i_to];
+		length1 = 	x[edges_i_to] * x[edges_i_to] + 
+					y[edges_i_to] * y[edges_i_to] + 
+					z[edges_i_to] * z[edges_i_to];
+		length2 = 	x[edges_i_from] * x[edges_i_from] + 
+					y[edges_i_from] * y[edges_i_from] + 
+					z[edges_i_from] * z[edges_i_from];
 		result[i] = x[arrow_i_to] * x[arrow_i_from] + 
 					y[arrow_i_to] * y[arrow_i_from] + 
 					z[arrow_i_to] * z[arrow_i_from];
@@ -597,8 +587,58 @@ VectorField.vertex_similarity_weighted_average = function(field, grid, result) {
 		similarity = 	x[arrow_i_to] * x[arrow_i_from] + 
 						y[arrow_i_to] * y[arrow_i_from] + 
 						z[arrow_i_to] * z[arrow_i_from];
+		similarity /= 	(length_to);
+		similarity_sum[arrow_i_from] += similarity;
+		x1[arrow_i_from] += x[arrow_i_to] * similarity;
+		y1[arrow_i_from] += y[arrow_i_to] * similarity;
+		z1[arrow_i_from] += z[arrow_i_to] * similarity;
+	}
+	for (var i=0, li=x1.length; i<li; ++i) {
+	    x1[i] /= similarity_sum[i];
+	    y1[i] /= similarity_sum[i];
+	    z1[i] /= similarity_sum[i];
+	}
+
+	return result;
+}
+VectorField.vertex_similarity = function(field, grid, result) {
+	result = result || VectorField.VertexDataFrame(grid);
+	var similarity_sum = new ScalarField.VertexTypedArray(grid, 1);
+
+	var x = field.x;
+	var y = field.y;
+	var z = field.z;
+
+	var x1 = result.x;
+	var y1 = result.y;
+	var z1 = result.z;
+
+	var arrows = grid.arrows;
+	var arrow_i_from = 0;
+	var arrow_i_to = 0;
+	var similarity = 0;
+	var length_from = 0;
+	var length_to = 0;
+	for (var i=0, li=x1.length; i<li; ++i) {
+	    x1[i] = x[i];
+	    y1[i] = y[i];
+	    z1[i] = z[i];
+	}
+	for (var i = 0, li = arrows.length; i<li; i++) {
+		arrow_i_from = arrows[i][0];
+		arrow_i_to = arrows[i][1];
+		length_from = 	x[arrow_i_from] * x[arrow_i_from] + 
+						y[arrow_i_from] * y[arrow_i_from] + 
+						z[arrow_i_from] * z[arrow_i_from];
+		length_to = 	x[arrow_i_to] * x[arrow_i_to] + 
+						y[arrow_i_to] * y[arrow_i_to] + 
+						z[arrow_i_to] * z[arrow_i_to];
+		similarity = 	x[arrow_i_to] * x[arrow_i_from] + 
+						y[arrow_i_to] * y[arrow_i_from] + 
+						z[arrow_i_to] * z[arrow_i_from];
 		similarity /= 	(length_from * length_to);
 		similarity = similarity < 0? 0 : similarity;
+		similarity = 1;
 		similarity_sum[arrow_i_from] += similarity;
 		x1[arrow_i_from] += x[arrow_i_to] * similarity;
 		y1[arrow_i_from] += y[arrow_i_to] * similarity;
@@ -666,6 +706,102 @@ VectorField.arrow_divergence = function(field, grid, result) {
 					( y[arrow_i_to] - y[arrow_i_from] ) / dy[i] + 
 					( z[arrow_i_to] - z[arrow_i_from] ) / dz[i] ;
 		result[i] = result_i || 0;
+	}
+
+	return result;
+}
+
+VectorField.vertex_divergence = function(field, grid, result) {
+	result = result || ScalarField.ArrowTypedArray(grid);
+
+	var dpos = grid.pos_arrow_differential;
+	var dx = dpos.x;
+	var dy = dpos.y;
+	var dz = dpos.z;
+
+	var arrows = grid.arrows;
+	var arrow_i_from = 0;
+	var arrow_i_to = 0;
+
+	var x = field.x;
+	var y = field.y;
+	var z = field.z;
+	
+	for (var i = 0, li = arrows.length; i<li; i++) {
+		arrow_i_from = arrows[i][0];
+		arrow_i_to = arrows[i][1];
+		result[arrow_i_from] += ( x[arrow_i_to] - x[arrow_i_from] ) / dx[i] + 
+					 			( y[arrow_i_to] - y[arrow_i_from] ) / dy[i] + 
+					 			( z[arrow_i_to] - z[arrow_i_from] ) / dz[i] ;
+	}
+
+	var neighbor_lookup = grid.neighbor_lookup;
+	for (var i = 0, li = neighbor_lookup.length; i < li; i++) {
+		result[i] /= neighbor_lookup[i].length || 1;
+	}
+
+	return result;
+}
+
+var Vector = {};
+Vector.similarity = function(ax, ay, az, bx, by, bz) {
+	var sqrt = Math.sqrt;
+	return (ax*bx + 
+			ay*by + 
+			az*bz)   /   ( sqrt(ax*ax+
+								ay*ay+
+								az*az)   *   sqrt(bx*bx+
+											  	  by*by+
+											  	  bz*bz) );
+}
+Vector.dot = function(ax, ay, az, bx, by, bz) {
+	var sqrt = Math.sqrt;
+	return (ax*bx + ay*by + az*bz);
+}
+Vector.magnitude = function(x, y, z) {
+	return Math.sqrt(x*x + y*y + z*z);
+}
+VectorField.vertex_flood_fill = function function_name(field, grid, start_id, result) {
+	result = result || ScalarField.VertexTypedArray(grid, 0);
+
+	var neighbor_lookup = grid.neighbor_lookup;
+	var similarity = Vector.similarity;
+	var magnitude = Vector.magnitude;
+
+	var x = field.x;
+	var y = field.y;
+	var z = field.z;
+
+	var searching = [start_id];
+	var searched = ScalarField.VertexTypedArray(grid, 0, Int32Array);
+	var grouped  = result;
+
+	searched[start_id] = 1;
+
+	var id = 0;
+	var neighbor_id = 0;
+	var neighbors = [];
+	var is_similar = 0;
+	var is_small = 0;
+	while(searching.length > 0 || is_small){
+		id = searching.shift();
+
+		is_similar = similarity (x[id], 		y[id], 		z[id], 
+								 x[start_id],	y[start_id],	z[start_id]) > 0.707;
+		is_small =  Vector.magnitude(x[id], 		y[id], 		 z[id]) /  
+					Vector.magnitude(x[start_id], 	y[start_id], z[start_id]);
+		if (is_similar) {
+			grouped[id] = 1;
+
+			neighbors = neighbor_lookup[id];
+			for (var i=0, li=neighbors.length; i<li; ++i) {
+			    neighbor_id = neighbors[i];
+			    if (searched[neighbor_id] === 0) {
+			    	searching.push(neighbor_id);
+			    	searched[neighbor_id] = 1;
+			    }
+			}
+		}
 	}
 
 	return result;

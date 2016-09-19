@@ -114,10 +114,12 @@ vectorDisplays.subductability_gradient	= new DataFrameVectorDisplay( {
 		return gradient;
 	}
 } );
+var vf;
 vectorDisplays.subductability_smoothed = new DataFrameVectorDisplay( { 
 		getField: function (plate) {
 			var field = getSubductabilitySmoothed(plate);
 			var gradient = ScalarField.vertex_gradient(field, plate.grid);
+			vf = gradient;
 			return gradient;
 		} 
 	} );
@@ -125,8 +127,11 @@ vectorDisplays.subductability_smoothed_averaged = new DataFrameVectorDisplay( {
 		getField: function (plate) {
 			var field = getSubductabilitySmoothed(plate);
 			var gradient = ScalarField.vertex_gradient(field, plate.grid);
-			var averaged = VectorField.vertex_similarity_weighted_average(gradient, plate.grid);
-			// averaged = VectorField.vertex_similarity_weighted_average(averaged, plate.grid);
+			var averaged = gradient;
+			for (var i=0, li=1; i<li; ++i) {
+				// averaged = VectorField.vertex_similarity(averaged, plate.grid);
+				averaged = VectorField.vertex_similarity_weighted_average(averaged, plate.grid);
+			}
 			return averaged;
 		} 
 	} );

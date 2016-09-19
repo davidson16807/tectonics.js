@@ -126,6 +126,9 @@ scalarDisplays.density 	= new ScalarHeatDisplay( { min: '2700.', max: '3300.',
 		} 
 	} );
 
+var subduction_min_age_threshold = 150;
+var subduction_max_age_threshold = 200;
+var subductability_transition_factor = 1/100;
 function getSubductability (plate) {
 	function lerp(a,b, x){
 		return a + x*(b-a);
@@ -145,10 +148,15 @@ function getSubductability (plate) {
 	function get_subductability (density, age) {
 		var continent = smoothstep(2890, 2800, density);
 		var density = 	density * continent 	+ 
-						lerp(density, 3300, smoothstep(200,250, age)) * (1-continent)
-		return heaviside_approximation( density - 3000, 1/100 );
+						lerp(density, 3300, 
+							 smoothstep(
+								subduction_min_age_threshold, 
+								subduction_min_age_threshold, 
+								age)) 
+							* (1-continent)
+		return heaviside_approximation( density - 3000, subductability_transition_factor );
 	}
-	var subductability = ScalarField.TypedArray(plate.grid);
+	var subductability = ScalarField.VertexTypedArray(plate.grid);
 	var is_member = plate.is_member;
 	var age = plate.age;
 	var density = plate.density;
@@ -159,11 +167,11 @@ function getSubductability (plate) {
 } 
 function getSubductabilitySmoothed(plate, iterations) {
 	iterations = iterations || 30;
-	var laplacian, field;
-	field = getSubductability(plate);
+	var field = getSubductability(plate);
+	var laplacian = ScalarField.VertexTypedArray(plate.grid);
 	for (var i=0; i<iterations; ++i) {
-		laplacian = ScalarField.vertex_laplacian(field, plate.grid);
-		field = ScalarField.add_field(field, laplacian);
+		ScalarField.vertex_laplacian(field, plate.grid, laplacian);
+		ScalarField.add_field(field, laplacian, field);
 	}
 	return field;
 }
@@ -178,10 +186,44 @@ scalarDisplays.subductability_smoothed = new ScalarHeatDisplay(  {
 scalarDisplays.subductability_smoothed_laplacian = new ScalarHeatDisplay(  { 
 		min: '1.', max: '0.',
 		getField: function (plate) {
-			var field = getSubductabilitySmoothed(plate)
+			var field = getSubductability(plate)
 			var laplacian = ScalarField.vertex_laplacian(field, plate.grid);
+			// var gradient = ScalarField.vertex_gradient(field, plate.grid);
+			// laplacian = VectorField.vertex_divergence(gradient, plate.grid);
 			return laplacian;
 		} 
+	} );
+scalarDisplays.flood_fill = new ScalarHeatDisplay(  { 
+		min: '1.', max: '0.',
+		getField: function (plate) {
+			var field = getSubductabilitySmoothed(plate);
+			var gradient = ScalarField.vertex_gradient(field, plate.grid);
+			var magnitude = VectorField.magnitude(gradient);
+			var max_id = ScalarField.max_id(magnitude);
+			var flood_fill = VectorField.vertex_flood_fill(gradient, plate.grid, max_id);
+
+			ScalarField.sub_field(magnitude, ScalarField.mult_field(flood_fill, magnitude), magnitude);
+			max_id = ScalarField.max_id(magnitude);
+			var flood_fill2 = VectorField.vertex_flood_fill(gradient, plate.grid, max_id);
+
+			ScalarField.sub_field(magnitude, ScalarField.mult_field(flood_fill2, magnitude), magnitude);
+			max_id = ScalarField.max_id(magnitude);
+			var flood_fill3 = VectorField.vertex_flood_fill(gradient, plate.grid, max_id);
+
+			ScalarField.sub_field(magnitude, ScalarField.mult_field(flood_fill3, magnitude), magnitude);
+			max_id = ScalarField.max_id(magnitude);
+			var flood_fill4 = VectorField.vertex_flood_fill(gradient, plate.grid, max_id);
+
+			ScalarField.mult_scalar(flood_fill2, 0.6, flood_fill2);
+			ScalarField.add_field(flood_fill, flood_fill2, flood_fill);
+
+			ScalarField.mult_scalar(flood_fill3, 0.5, flood_fill3);
+			ScalarField.add_field(flood_fill, flood_fill3, flood_fill);
+
+			ScalarField.mult_scalar(flood_fill4, 0.4, flood_fill4);
+			ScalarField.add_field(flood_fill, flood_fill4, flood_fill);
+			return flood_fill;
+		}
 	} );
 
 function RealisticDisplay(shader_return_value) {

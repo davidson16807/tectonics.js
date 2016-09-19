@@ -1,22 +1,14 @@
 ("use strict");
 var ScalarField = {};
-ScalarField.TypedArray = function (grid, fill) {
-  var result = new Float32Array(grid.vertices.length);
+ScalarField.VertexTypedArray = function (grid, fill, Constructor) {
+  Constructor = Constructor || Float32Array;
+  var result = new Constructor(grid.vertices.length);
   if (fill !== void 0) { 
     for (var i=0, li=result.length; i<li; ++i) {
         result[i] = fill;
     }
   }
-  return result;  
-};
-ScalarField.VertexTypedArray = function (grid, fill) {
-  var result = new Float32Array(grid.vertices.length);
-  if (fill !== void 0) { 
-    for (var i=0, li=result.length; i<li; ++i) {
-        result[i] = fill;
-    }
-  }
-  return result;  
+  return result;
 };
 ScalarField.EdgeTypedArray = function (grid, fill) {
   var result = new Float32Array(grid.edges.length);
@@ -110,14 +102,21 @@ ScalarField.min = function (field) {
   }
   return min;
 };
-ScalarField.max = function (field) {
+ScalarField.max_id = function (field) {
   var max = -Infinity;
-  var value;
+  var max_id = 0;
+  var value = 0;
   for (var i = 0, li = field.length; i < li; i++) {
     value = field[i];
-    if (value > max) max = value;
+    if (value > max) {
+      max = value;
+      max_id = i;
+    };
   }
-  return max;
+  return max_id;
+};
+ScalarField.max = function (field) {
+  field[ScalarField.max_id(field)];
 };
 ScalarField.arrow_differential = function (field, grid, result) {
   result = result || ScalarField.ArrowTypedArray(grid);
