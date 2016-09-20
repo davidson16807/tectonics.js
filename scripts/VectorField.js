@@ -70,6 +70,31 @@ VectorField.DataFrameOfVectors = function(vectors){
 	}
 	return result;
 }
+
+VectorField.add_vector_field_term = function(field1, field2, scalar, result) {
+	result = result || VectorField.DataFrameOfLength(field1.x.length);
+
+	var x1 = field1.x;
+	var y1 = field1.y;
+	var z1 = field1.z;
+
+	var x2 = field2.x;
+	var y2 = field2.y;
+	var z2 = field2.z;
+
+	var x = result.x;
+	var y = result.y;
+	var z = result.z;
+
+	for (var i=0, li=x.length; i<li; ++i) {
+	    x[i] = x1[i] + scalar * x2[i];
+	    y[i] = y1[i] + scalar * y2[i];
+	    z[i] = z1[i] + scalar * z2[i];
+	}
+
+	return result;
+};
+
 VectorField.add_vector_field = function(field1, field2, result) {
 	result = result || VectorField.DataFrameOfLength(field1.x.length);
 
@@ -159,6 +184,45 @@ VectorField.hadamard_vector_field = function(field1, field2, result) {
 
 	return result;
 };
+VectorField.cross_vector_field = function (field1, field2, result) {
+	result = result || VectorField.DataFrameOfLength(field1.x.length);
+	
+	var ax = field1.x;
+	var ay = field1.y;
+	var az = field1.z;
+
+	var bx = field2.x;
+	var by = field2.y;
+	var bz = field2.z;
+
+	var x = result.x;
+	var y = result.y;
+	var z = result.z;
+
+	var axi = 0;
+	var ayi = 0;
+	var azi = 0;
+
+	var bxi = 0;
+	var byi = 0;
+	var bzi = 0;
+
+	for (var i = 0, li=x.length; i<li; ++i) {
+		axi = ax[i];
+		ayi = ay[i];
+		azi = az[i];
+
+		bxi = bx[i];
+		byi = by[i];
+		bzi = bz[i];
+
+		x[i] = ayi*bzi - azi*byi;
+		y[i] = azi*bxi - axi*bzi;
+		z[i] = axi*byi - ayi*bxi;
+	}
+
+	return result;
+}
 
 
 VectorField.add_vector = function(field1, vector, result) {
@@ -249,6 +313,35 @@ VectorField.hadamard_vector = function(field1, vector, result) {
 
 	return result;
 };
+VectorField.cross_vector = function (field, constant, result)  {
+	result = result || VectorField.DataFrameOfLength(field.x.length);
+
+	var ax = field.x;
+	var ay = field.y;
+	var az = field.z;
+
+	var x = result.x;
+	var y = result.y;
+	var z = result.z;
+
+	var axi = 0;
+	var ayi = 0;
+	var azi = 0;
+
+	var bxi = constant.x;
+	var byi = constant.y;
+	var bzi = constant.z;
+
+	for (var i = 0, li=x.length; i < li; ++i) {
+		axi = ax[i];
+		ayi = ay[i];
+		azi = az[i];
+
+		x[i] = ayi*bzi   -   azi*byi;
+		y[i] = azi*bxi   -   axi*bzi;
+		z[i] = axi*byi   -   ayi*bxi;
+	}
+}
 
 VectorField.add_scalar_field = function(vector, scalar, result) {
 	result = result || VectorField.DataFrameOfLength(vector.x.length);
@@ -326,6 +419,7 @@ VectorField.div_scalar_field = function(vector, scalar, result) {
 
 	return result;
 };
+
 
 VectorField.add_scalar = function(vector, scalar, result) {
 	result = result || VectorField.DataFrameOfLength(vector.x.length);
@@ -761,7 +855,7 @@ Vector.dot = function(ax, ay, az, bx, by, bz) {
 Vector.magnitude = function(x, y, z) {
 	return Math.sqrt(x*x + y*y + z*z);
 }
-VectorField.vertex_flood_fill = function function_name(field, grid, start_id, result) {
+VectorField.vertex_flood_fill = function function_name(field, grid, start_id, mask, result) {
 	result = result || ScalarField.VertexTypedArray(grid, 0);
 
 	var neighbor_lookup = grid.neighbor_lookup;
@@ -773,7 +867,7 @@ VectorField.vertex_flood_fill = function function_name(field, grid, start_id, re
 	var z = field.z;
 
 	var searching = [start_id];
-	var searched = ScalarField.VertexTypedArray(grid, 0, Int32Array);
+	var searched = ScalarField.VertexTypedArray(grid, 0, Uint8Array);
 	var grouped  = result;
 
 	searched[start_id] = 1;
@@ -782,21 +876,19 @@ VectorField.vertex_flood_fill = function function_name(field, grid, start_id, re
 	var neighbor_id = 0;
 	var neighbors = [];
 	var is_similar = 0;
-	var is_small = 0;
-	while(searching.length > 0 || is_small){
+	var threshold = Math.cos(Math.PI * 60/180);
+	while(searching.length > 0){
 		id = searching.shift();
 
 		is_similar = similarity (x[id], 		y[id], 		z[id], 
-								 x[start_id],	y[start_id],	z[start_id]) > 0.707;
-		is_small =  Vector.magnitude(x[id], 		y[id], 		 z[id]) /  
-					Vector.magnitude(x[start_id], 	y[start_id], z[start_id]);
+								 x[start_id],	y[start_id],	z[start_id]) > threshold;
 		if (is_similar) {
 			grouped[id] = 1;
 
 			neighbors = neighbor_lookup[id];
 			for (var i=0, li=neighbors.length; i<li; ++i) {
 			    neighbor_id = neighbors[i];
-			    if (searched[neighbor_id] === 0) {
+			    if (searched[neighbor_id] === 0 && mask[id] != 0) {
 			    	searching.push(neighbor_id);
 			    	searched[neighbor_id] = 1;
 			    }
@@ -806,3 +898,4 @@ VectorField.vertex_flood_fill = function function_name(field, grid, start_id, re
 
 	return result;
 }
+

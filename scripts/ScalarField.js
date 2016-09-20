@@ -37,6 +37,20 @@ ScalarField.TypedArrayOfLength = function (length, fill) {
   }
   return result;  
 };
+ScalarField.add_field_term = function (field1, field2, scalar, result) {
+  result = result || new Float32Array(field1.length);
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = field1[i] + scalar * field2[i];
+  }
+  return result;
+};
+ScalarField.add_field_term = function (field1, field2, scalar, result) {
+  result = result || new Float32Array(field1.length);
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = field1[i] + scalar * field2[i];
+  }
+  return result;
+};
 ScalarField.add_field = function (field1, field2, result) {
   result = result || new Float32Array(field1.length);
   for (var i = 0, li = result.length; i < li; i++) {
