@@ -293,12 +293,32 @@ scalarDisplays.flood_fill8 = new ScalarHeatDisplay(  {
 			var mask = ScalarField.VertexTypedArray(plate.grid, 1);
 			var flood_fill = VectorField.vertex_flood_fill(gradient, plate.grid, ScalarField.max_id(magnitude), mask);
 
+			var min_plate_size = 200;
 			var flood_fills = [flood_fill];
-			for (var i=1; i<7; ++i) {
+			for (var i=1; i<7; ) {
 				ScalarField.sub_field(magnitude, ScalarField.mult_field(flood_fill, magnitude), magnitude);
 				ScalarField.sub_field(mask, flood_fill, mask);
 				flood_fill = VectorField.vertex_flood_fill(gradient, plate.grid, ScalarField.max_id(magnitude), mask);   
-				flood_fills.push(flood_fill);
+			    if (ScalarField.sum(flood_fill) > min_plate_size) { 
+					flood_fills.push(flood_fill);
+					i++;
+				}
+			}
+
+			var binary;
+			var dilated;
+			for (var i=0, li=flood_fills.length; i<li; ++i) {
+			    flood_fill = flood_fills[i];
+			    binary = Morphology.to_binary(flood_fill);
+			    binary = Morphology.dilation(binary, plate.grid, 5);
+			    binary = Morphology.closing(binary, plate.grid, 5);
+			    // binary = Morphology.opening(binary, plate.grid, 5);
+			    for (var j=0, lj=flood_fills.length; j<lj; ++j) {
+			    	if (i != j) {
+				        binary = Morphology.difference(binary, flood_fills[j]);
+			    	}
+			    }
+			    flood_fills[i] = Morphology.to_float(binary);
 			}
 
 			var flood_fill_sum = ScalarField.VertexTypedArray(plate.grid, 0);
