@@ -79,49 +79,67 @@ Morphology.negation = function(field, result) {
 	return result;
 }
 
-Morphology.dilation = function(field, grid, result) {
+Morphology.dilation = function(field, grid, radius, result) {
+	radius = radius || 1;
 	result = result || new Uint8Array(field.length);
+	var buffer1 = radius % 2 == 1? result: 				new Uint8Array(field.length);
+	var buffer2 = radius % 2 == 0? result: radius > 1? 	field : Morphology.copy(field);
+	var temp = buffer1;
 
 	var neighbor_lookup = grid.neighbor_lookup;
 	var neighbors = [];
-	var result_i = true;
+	var buffer_i = true;
 
-	for (var i=0, li=neighbor_lookup.length; i<li; ++i) {
-	    neighbors = neighbor_lookup[i];
-	    result_i = field[i];
-	    for (var j=0, lj=neighbors.length; j<lj; ++j) {
-	        result_i = result_i || field[neighbors[j]];
-	    }
-	    result[i] = result_i? 1:0;
+	for (var k=0; k<radius; ++k) {
+		for (var i=0, li=neighbor_lookup.length; i<li; ++i) {
+		    neighbors = neighbor_lookup[i];
+		    buffer_i = buffer2[i];
+		    for (var j=0, lj=neighbors.length; j<lj; ++j) {
+		        buffer_i = buffer_i || buffer2[neighbors[j]];
+		    }
+		    buffer1[i] = buffer_i? 1:0;
+		}
+		temp = buffer1;
+		buffer1 = buffer2;
+		buffer2 = temp;
 	}
 
-	return result;
+	return buffer2;
 }
-Morphology.erosion = function(field, grid, result) {
+Morphology.erosion = function(field, grid, radius, result) {
+	radius = radius || 1;
 	result = result || new Uint8Array(field.length);
+	var buffer1 = radius % 2 == 1? result: 				new Uint8Array(field.length);
+	var buffer2 = radius % 2 == 0? result: radius > 1? 	field : Morphology.copy(field);
+	var temp = buffer1;
 
 	var neighbor_lookup = grid.neighbor_lookup;
 	var neighbors = [];
-	var result_i = true;
+	var buffer_i = true;
 
-	for (var i=0, li=neighbor_lookup.length; i<li; ++i) {
-	    neighbors = neighbor_lookup[i];
-	    result_i = field[i];
-	    for (var j=0, lj=neighbors.length; j<lj; ++j) {
-	        result_i = result_i && field[neighbors[j]];
-	    }
-	    result[i] = result_i? 1:0;
+	for (var k=0; k<radius; ++k) {
+		for (var i=0, li=neighbor_lookup.length; i<li; ++i) {
+		    neighbors = neighbor_lookup[i];
+		    buffer_i = buffer2[i];
+		    for (var j=0, lj=neighbors.length; j<lj; ++j) {
+		        buffer_i = buffer_i && buffer2[neighbors[j]];
+		    }
+		    buffer1[i] = buffer_i? 1:0;
+		}
+		temp = buffer1;
+		buffer1 = buffer2;
+		buffer2 = temp;
 	}
 
+	return buffer2;
+}
+Morphology.opening = function(field, grid, radius) {
+	var result = Morphology.erosion(field, grid, radius);
+	result = Morphology.dilation(result, grid, radius);
 	return result;
 }
-Morphology.opening = function(field, grid) {
-	var result = Morphology.erosion(field, grid);
-	result = Morphology.dilation(result, grid);
-	return result;
-}
-Morphology.closing = function(field, grid) {
-	var result = Morphology.dilation(field, grid);
-	result = Morphology.erosion(result, grid);
+Morphology.closing = function(field, grid, radius) {
+	var result = Morphology.dilation(field, grid, radius);
+	result = Morphology.erosion(result, grid, radius);
 	return result;	
 }
