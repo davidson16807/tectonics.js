@@ -37,6 +37,86 @@ ScalarField.TypedArrayOfLength = function (length, fill) {
   }
   return result;  
 };
+
+ScalarField.copy = function(field, result) {
+  var result = new Float32Array(length);
+  for (var i=0, li=field.length; i<li; ++i) {
+      result[i] = field[i];
+  }
+  return result;
+}
+ScalarField.fill = function (field, value) {
+  for (var i = 0, li = field.length; i < li; i++) {
+    field[i] = value;
+  }
+};
+ScalarField.min_id = function (field) {
+  var max = Infinity;
+  var max_id = 0;
+  var value = 0;
+  for (var i = 0, li = field.length; i < li; i++) {
+    value = field[i];
+    if (value < max) {
+      max = value;
+      max_id = i;
+    };
+  }
+  return max_id;
+};
+ScalarField.min = function (field) {
+  field[ScalarField.min_id(field)];
+};
+ScalarField.max_id = function (field) {
+  var max = -Infinity;
+  var max_id = 0;
+  var value = 0;
+  for (var i = 0, li = field.length; i < li; i++) {
+    value = field[i];
+    if (value > max) {
+      max = value;
+      max_id = i;
+    };
+  }
+  return max_id;
+};
+ScalarField.max = function (field) {
+  field[ScalarField.max_id(field)];
+};
+ScalarField.sum = function (field) {
+  var result = 0;
+  for (var i=0, li=field.length; i<li; ++i) {
+      result += field[i];
+  }
+  return result;
+};
+ScalarField.average = function (field) {
+  var result = 0;
+  for (var i=0, li=field.length; i<li; ++i) {
+      result += field[i];
+  }
+  return result / field.length;
+};
+ScalarField.weighted_average = function (field, weights) {
+  var result = 0;
+  var weight_sum = 0;
+  for (var i=0, li=field.length; i<li; ++i) {
+      result += field[i] * weights[i];
+      weight_sum += weights[i];
+  }
+  return result / weight_sum;
+};
+
+
+ScalarField.normalize_field = function(field, result) {
+  result = result || new Float32Array(field.length);
+
+  var min = ScalarField.min(field);
+  var max = ScalarField.max(field);
+  for (var i=0, li=field.length; i<li; ++i) {
+      field[i] = (field[i] - min) / (max - min);
+  }
+  return result;
+}
 ScalarField.add_field_term = function (field1, field2, scalar, result) {
   result = result || new Float32Array(field1.length);
   for (var i = 0, li = result.length; i < li; i++) {
@@ -106,31 +186,6 @@ ScalarField.div_scalar = function (field, scalar, result) {
     result[i] = field[i] / scalar;
   }
   return result;
-};
-ScalarField.min = function (field) {
-  var min = Infinity;
-  var value;
-  for (var i = 0, li = field.length; i < li; i++) {
-    value = field[i];
-    if (value < min) min = value;
-  }
-  return min;
-};
-ScalarField.max_id = function (field) {
-  var max = -Infinity;
-  var max_id = 0;
-  var value = 0;
-  for (var i = 0, li = field.length; i < li; i++) {
-    value = field[i];
-    if (value > max) {
-      max = value;
-      max_id = i;
-    };
-  }
-  return max_id;
-};
-ScalarField.max = function (field) {
-  field[ScalarField.max_id(field)];
 };
 ScalarField.arrow_differential = function (field, grid, result) {
   result = result || ScalarField.ArrowTypedArray(grid);

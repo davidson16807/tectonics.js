@@ -20,6 +20,13 @@ Morphology.to_float = function(field, result) {
 
 	return result;
 }
+Morphology.copy = function(field, result) {
+	result = result || new Uint8Array(field.length);
+	for (var i=0, li=field.length; i<li; ++i) {
+	    result[i] = field[i];
+	}
+	return result;
+}
 
 Morphology.universal = function(field) {
 	for (var i=0, li=field.length; i<li; ++i) {
