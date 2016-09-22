@@ -222,7 +222,7 @@ scalarDisplays.flood_fill_dilation = new ScalarHeatDisplay(  {
 			var mask = ScalarField.VertexTypedArray(plate.grid, 1);
 			var flood_fill = VectorField.vertex_flood_fill(gradient, plate.grid, max_id, mask);
 
-			var dilation = Morphology.dilation(Morphology.to_binary(flood_fill), plate.grid);
+			var dilation = Morphology.dilation(Morphology.to_binary(flood_fill), plate.grid, 5);
 
 			return Morphology.to_float(dilation);
 		}
@@ -240,7 +240,7 @@ scalarDisplays.flood_fill_erosion = new ScalarHeatDisplay(  {
 			var mask = ScalarField.VertexTypedArray(plate.grid, 1);
 			var flood_fill = VectorField.vertex_flood_fill(gradient, plate.grid, max_id, mask);
 
-			var erosion = Morphology.erosion(Morphology.to_binary(flood_fill), plate.grid);
+			var erosion = Morphology.erosion(Morphology.to_binary(flood_fill), plate.grid, 5);
 
 			return Morphology.to_float(erosion);
 		}
@@ -258,7 +258,7 @@ scalarDisplays.flood_fill_opening = new ScalarHeatDisplay(  {
 			var mask = ScalarField.VertexTypedArray(plate.grid, 1);
 			var flood_fill = VectorField.vertex_flood_fill(gradient, plate.grid, max_id, mask);
 
-			var opening = Morphology.opening(Morphology.to_binary(flood_fill), plate.grid);
+			var opening = Morphology.opening(Morphology.to_binary(flood_fill), plate.grid, 5);
 
 			return Morphology.to_float(opening);
 		}
@@ -276,13 +276,13 @@ scalarDisplays.flood_fill_closing = new ScalarHeatDisplay(  {
 			var mask = ScalarField.VertexTypedArray(plate.grid, 1);
 			var flood_fill = VectorField.vertex_flood_fill(gradient, plate.grid, max_id, mask);
 
-			var closing = Morphology.closing(Morphology.to_binary(flood_fill), plate.grid);
+			var closing = Morphology.closing(Morphology.to_binary(flood_fill), plate.grid, 5);
 
 			return Morphology.to_float(closing);
 		}
 	} );
 scalarDisplays.flood_fill8 = new ScalarHeatDisplay(  { 
-		min: '1.', max: '0.',
+		min: '10.', max: '0.',
 		getField: function (plate) {
 			var field = getSubductabilitySmoothed(plate);
 			var gradient = ScalarField.vertex_gradient(field, plate.grid);
@@ -290,53 +290,23 @@ scalarDisplays.flood_fill8 = new ScalarHeatDisplay(  {
 			var gradient = angular_velocity;
 			
 			var magnitude = VectorField.magnitude(gradient);
-			var max_id = ScalarField.max_id(magnitude);
 			var mask = ScalarField.VertexTypedArray(plate.grid, 1);
-			var flood_fill = VectorField.vertex_flood_fill(gradient, plate.grid, max_id, mask);
+			var flood_fill = VectorField.vertex_flood_fill(gradient, plate.grid, ScalarField.max_id(magnitude), mask);
 
-			ScalarField.sub_field(magnitude, ScalarField.mult_field(flood_fill, magnitude), magnitude);
-			max_id = ScalarField.max_id(magnitude);
-			ScalarField.sub_field(mask, flood_fill, mask);
-			var flood_fill2 = VectorField.vertex_flood_fill(gradient, plate.grid, max_id, mask);
+			var flood_fills = [flood_fill];
+			for (var i=1; i<7; ++i) {
+				ScalarField.sub_field(magnitude, ScalarField.mult_field(flood_fill, magnitude), magnitude);
+				ScalarField.sub_field(mask, flood_fill, mask);
+				flood_fill = VectorField.vertex_flood_fill(gradient, plate.grid, ScalarField.max_id(magnitude), mask);   
+				flood_fills.push(flood_fill);
+			}
 
-			ScalarField.sub_field(magnitude, ScalarField.mult_field(flood_fill2, magnitude), magnitude);
-			max_id = ScalarField.max_id(magnitude);
-			ScalarField.sub_field(mask, flood_fill2, mask);
-			var flood_fill3 = VectorField.vertex_flood_fill(gradient, plate.grid, max_id, mask);
+			var flood_fill_sum = ScalarField.VertexTypedArray(plate.grid, 0);
+			for (var i=0; i<flood_fills.length; ++i) {
+				ScalarField.add_field_term(flood_fill_sum, flood_fills[i], i+1, flood_fill_sum);
+			}
 
-			ScalarField.sub_field(magnitude, ScalarField.mult_field(flood_fill3, magnitude), magnitude);
-			max_id = ScalarField.max_id(magnitude);
-			ScalarField.sub_field(mask, flood_fill3, mask);
-			var flood_fill4 = VectorField.vertex_flood_fill(gradient, plate.grid, max_id, mask);
-
-			ScalarField.sub_field(magnitude, ScalarField.mult_field(flood_fill4, magnitude), magnitude);
-			max_id = ScalarField.max_id(magnitude);
-			ScalarField.sub_field(mask, flood_fill4, mask);
-			var flood_fill5 = VectorField.vertex_flood_fill(gradient, plate.grid, max_id, mask);
-
-			ScalarField.sub_field(magnitude, ScalarField.mult_field(flood_fill5, magnitude), magnitude);
-			max_id = ScalarField.max_id(magnitude);
-			ScalarField.sub_field(mask, flood_fill5, mask);
-			var flood_fill6 = VectorField.vertex_flood_fill(gradient, plate.grid, max_id, mask);
-
-			ScalarField.sub_field(magnitude, ScalarField.mult_field(flood_fill6, magnitude), magnitude);
-			max_id = ScalarField.max_id(magnitude);
-			ScalarField.sub_field(mask, flood_fill6, mask);
-			var flood_fill7 = VectorField.vertex_flood_fill(gradient, plate.grid, max_id, mask);
-
-			ScalarField.sub_field(magnitude, ScalarField.mult_field(flood_fill7, magnitude), magnitude);
-			max_id = ScalarField.max_id(magnitude);
-			ScalarField.sub_field(mask, flood_fill7, mask);
-			var flood_fill8 = VectorField.vertex_flood_fill(gradient, plate.grid, max_id, mask);
-
-			ScalarField.add_field_term(flood_fill, flood_fill2, 0.6, flood_fill);
-			ScalarField.add_field_term(flood_fill, flood_fill3, 0.5, flood_fill);
-			ScalarField.add_field_term(flood_fill, flood_fill4, 0.4, flood_fill);
-			ScalarField.add_field_term(flood_fill, flood_fill5, 0.3, flood_fill);
-			ScalarField.add_field_term(flood_fill, flood_fill6, 0.2, flood_fill);
-			ScalarField.add_field_term(flood_fill, flood_fill7, 0.15, flood_fill);
-			ScalarField.add_field_term(flood_fill, flood_fill8, 0.1, flood_fill);
-			return flood_fill;
+			return flood_fill_sum;
 		}
 	} );
 
