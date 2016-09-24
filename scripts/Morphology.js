@@ -83,7 +83,7 @@ Morphology.dilation = function(field, grid, radius, result) {
 	radius = radius || 1;
 	result = result || new Uint8Array(field.length);
 	var buffer1 = radius % 2 == 1? result: 				new Uint8Array(field.length);
-	var buffer2 = radius % 2 == 0? result: radius > 1? 	field : Morphology.copy(field);
+	var buffer2 = radius % 2 == 0? result: 				Morphology.copy(field);
 	var temp = buffer1;
 
 	var neighbor_lookup = grid.neighbor_lookup;
@@ -110,7 +110,7 @@ Morphology.erosion = function(field, grid, radius, result) {
 	radius = radius || 1;
 	result = result || new Uint8Array(field.length);
 	var buffer1 = radius % 2 == 1? result: 				new Uint8Array(field.length);
-	var buffer2 = radius % 2 == 0? result: radius > 1? 	field : Morphology.copy(field);
+	var buffer2 = radius % 2 == 0? result: 				Morphology.copy(field);
 	var temp = buffer1;
 
 	var neighbor_lookup = grid.neighbor_lookup;
@@ -135,11 +135,17 @@ Morphology.erosion = function(field, grid, radius, result) {
 }
 Morphology.opening = function(field, grid, radius) {
 	var result = Morphology.erosion(field, grid, radius);
-	result = Morphology.dilation(result, grid, radius);
-	return result;
+	return Morphology.dilation(result, grid, radius);
 }
 Morphology.closing = function(field, grid, radius) {
 	var result = Morphology.dilation(field, grid, radius);
-	result = Morphology.erosion(result, grid, radius);
-	return result;	
+	return Morphology.erosion(result, grid, radius);
+}
+Morphology.white_top_hat = function(field, grid, radius) {
+	var closing = Morphology.closing(field, grid, radius);
+	return Morphology.difference(closing, field);
+}
+Morphology.black_top_hat = function(field, grid, radius) {
+	var opening = Morphology.opening(field, grid, radius);
+	return Morphology.difference(field, opening);
 }
