@@ -209,6 +209,42 @@ scalarDisplays.flood_fill1 = new ScalarHeatDisplay(  {
 			return flood_fill;
 		}
 	} );
+
+scalarDisplays.flood_fill_white_top_hat = new ScalarHeatDisplay(  { 
+		min: '1.', max: '0.',
+		getField: function (plate) {
+			var field = getSubductabilitySmoothed(plate);
+			var gradient = ScalarField.vertex_gradient(field, plate.grid);
+			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
+			var gradient = angular_velocity;
+			
+			var magnitude = VectorField.magnitude(gradient);
+			var max_id = ScalarField.max_id(magnitude);
+			var mask = ScalarField.VertexTypedArray(plate.grid, 1);
+			var flood_fill = VectorField.vertex_flood_fill(gradient, plate.grid, max_id, mask);
+
+			var white_top_hat = Morphology.white_top_hat(Morphology.to_binary(flood_fill), plate.grid, 5);
+			return white_top_hat;
+		}
+	} );
+scalarDisplays.flood_fill_black_top_hat = new ScalarHeatDisplay(  { 
+		min: '1.', max: '0.',
+		getField: function (plate) {
+			var field = getSubductabilitySmoothed(plate);
+			var gradient = ScalarField.vertex_gradient(field, plate.grid);
+			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
+			var gradient = angular_velocity;
+			
+			var magnitude = VectorField.magnitude(gradient);
+			var max_id = ScalarField.max_id(magnitude);
+			var mask = ScalarField.VertexTypedArray(plate.grid, 1);
+			var flood_fill = VectorField.vertex_flood_fill(gradient, plate.grid, max_id, mask);
+
+			var white_top_hat = Morphology.white_top_hat(Morphology.to_binary(flood_fill), plate.grid, 5);
+			return white_top_hat;
+		}
+	} );
+
 scalarDisplays.flood_fill_dilation = new ScalarHeatDisplay(  { 
 		min: '1.', max: '0.',
 		getField: function (plate) {
