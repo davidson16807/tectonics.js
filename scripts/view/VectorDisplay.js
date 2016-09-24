@@ -114,13 +114,57 @@ vectorDisplays.subductability_gradient	= new DataFrameVectorDisplay( {
 		return gradient;
 	}
 } );
-var vf;
 vectorDisplays.subductability_smoothed = new DataFrameVectorDisplay( { 
 		getField: function (plate) {
 			var field = getSubductabilitySmoothed(plate);
 			var gradient = ScalarField.vertex_gradient(field, plate.grid);
-			vf = gradient;
 			return gradient;
+		} 
+	} );
+vectorDisplays.velocity = new DataFrameVectorDisplay( { 
+		getField: function (plate) {
+			var field = getSubductabilitySmoothed(plate)
+			var gradient = ScalarField.vertex_gradient(field, plate.grid);
+			// var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
+			// laplacian = VectorField.vertex_divergence(gradient, plate.grid);
+			return gradient;
+		} 
+	} );
+vectorDisplays.averaged_angular_velocity = new DataFrameVectorDisplay( { 
+		getField: function (plate) {
+			var field = getSubductabilitySmoothed(plate)
+			var gradient = ScalarField.vertex_gradient(field, plate.grid);
+
+			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
+			
+			var magnitude = VectorField.magnitude(angular_velocity);
+			var max_id = ScalarField.max_id(magnitude);
+			var mask = ScalarField.VertexTypedArray(plate.grid, 1);
+			var flood_fill = VectorField.vertex_flood_fill(angular_velocity, plate.grid, max_id, mask);
+
+			var averaged_angular_velocity = VectorField.weighted_average(angular_velocity, flood_fill);
+			var averaged_angular_velocity_field = ScalarField.mult_vector(flood_fill, averaged_angular_velocity);
+
+			return averaged_angular_velocity_field;
+		} 
+	} );
+vectorDisplays.averaged_velocity = new DataFrameVectorDisplay( { 
+		getField: function (plate) {
+			var field = getSubductabilitySmoothed(plate)
+			var gradient = ScalarField.vertex_gradient(field, plate.grid);
+
+			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
+			
+			var magnitude = VectorField.magnitude(angular_velocity);
+			var max_id = ScalarField.max_id(magnitude);
+			var mask = ScalarField.VertexTypedArray(plate.grid, 1);
+			var flood_fill = VectorField.vertex_flood_fill(angular_velocity, plate.grid, max_id, mask);
+
+			var averaged_angular_velocity = VectorField.weighted_average(angular_velocity, flood_fill);
+			var averaged_angular_velocity_field = ScalarField.mult_vector(flood_fill, averaged_angular_velocity);
+
+			var averaged_velocity = VectorField.cross_vector_field(plate.grid.pos, averaged_angular_velocity_field);
+			return averaged_velocity;
 		} 
 	} );
 vectorDisplays.angular_velocity = new DataFrameVectorDisplay( { 

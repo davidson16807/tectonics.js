@@ -180,6 +180,24 @@ ScalarField.mult_scalar = function (field, scalar, result) {
   }
   return result;
 };
+ScalarField.mult_vector = function (scalar, vector, result) {
+  result = result || VectorField.DataFrameOfLength(scalar.length);
+
+  var ix = vector.x;
+  var iy = vector.y;
+  var iz = vector.z;
+
+  var ox = result.x;
+  var oy = result.y;
+  var oz = result.z;
+
+  for (var i = 0, li = scalar.length; i < li; i++) {
+    ox[i] = scalar[i] * ix;
+    oy[i] = scalar[i] * iy;
+    oz[i] = scalar[i] * iz;
+  }
+  return result;
+};
 ScalarField.div_scalar = function (field, scalar, result) {
   result = result || new Float32Array(field.length);
   for (var i = 0, li = result.length; i < li; i++) {

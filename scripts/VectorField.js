@@ -120,10 +120,12 @@ VectorField.weighted_average = function (field, weights) {
 	var sum_y = 0;
 	var sum_z = 0;
 
-    for (var i=0, li=field.length; i<li; ++i) {
-        sum_x += x[i];
-        sum_y += y[i];
-        sum_z += z[i];
+	var weight_sum = 0;
+
+    for (var i=0, li=weights.length; i<li; ++i) {
+        sum_x += x[i] * weights[i];
+        sum_y += y[i] * weights[i];
+        sum_z += z[i] * weights[i];
       	weight_sum += weights[i];
     }
     
