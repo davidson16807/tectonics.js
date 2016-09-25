@@ -340,12 +340,16 @@ scalarDisplays.flood_fill8 = new ScalarHeatDisplay(  {
 					i++;
 				}
 			}
-
+			
 			var binary;
 			var dilated;
+			var binaries = [];
 			for (var i=0, li=flood_fills.length; i<li; ++i) {
 			    flood_fill = flood_fills[i];
-			    binary = Morphology.to_binary(flood_fill);
+			    binaries.push(Morphology.to_binary(flood_fill));
+			}
+			for (var i=0, li=binaries.length; i<li; ++i) {
+			    binary = binaries[i];
 			    binary = Morphology.dilation(binary, plate.grid, 5);
 			    binary = Morphology.closing(binary, plate.grid, 5);
 			    // binary = Morphology.opening(binary, plate.grid, 5);
