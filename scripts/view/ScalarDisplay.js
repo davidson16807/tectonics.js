@@ -317,6 +317,51 @@ scalarDisplays.flood_fill_closing = new ScalarHeatDisplay(  {
 			return Morphology.to_float(closing);
 		}
 	} );
+var split = function(vector_field, grid) {
+	var magnitude = VectorField.magnitude(vector_field);
+	var mask = ScalarField.VertexTypedArray(grid, 1);
+	var flood_fill = VectorField.vertex_flood_fill(vector_field, grid, ScalarField.max_id(magnitude), mask);
+
+	var min_plate_size = 200;
+	var flood_fills = [flood_fill];
+	for (var i=1; i<7; ) {
+		ScalarField.sub_field(magnitude, ScalarField.mult_field(flood_fill, magnitude), magnitude);
+		ScalarField.sub_field(mask, flood_fill, mask);
+		flood_fill = VectorField.vertex_flood_fill(vector_field, grid, ScalarField.max_id(magnitude), mask);   
+	    if (ScalarField.sum(flood_fill) > min_plate_size) { 
+			flood_fills.push(flood_fill);
+			i++;
+		}
+	}
+	
+	var result;
+	var results = [];
+	for (var i=0, li=flood_fills.length; i<li; ++i) {
+	    flood_fill = flood_fills[i];
+	    results.push(Morphology.copy(flood_fill));
+	}
+	for (var i=0, li=results.length; i<li; ++i) {
+	    result = results[i];
+	    result = Morphology.dilation(result, grid, 5);
+	    result = Morphology.closing(result, grid, 5);
+	    // result = Morphology.opening(result, grid, 5);
+	    for (var j=0, lj=flood_fills.length; j<lj; ++j) {
+	    	if (i != j) {
+		        result = Morphology.difference(result, flood_fills[j]);
+	    	}
+	    }
+	    flood_fills[i] = Morphology.to_float(result);
+	}
+
+	var flood_fill_sum = ScalarField.VertexTypedArray(grid, 0);
+	for (var i=0; i<flood_fills.length; ++i) {
+		ScalarField.add_field_term(flood_fill_sum, flood_fills[i], i+1, flood_fill_sum);
+	}
+
+	return flood_fill_sum;
+	// return list of boolean fields
+}
+
 scalarDisplays.flood_fill8 = new ScalarHeatDisplay(  { 
 		min: '10.', max: '0.',
 		getField: function (plate) {
@@ -324,49 +369,7 @@ scalarDisplays.flood_fill8 = new ScalarHeatDisplay(  {
 			var gradient = ScalarField.vertex_gradient(field, plate.grid);
 			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
 			var gradient = angular_velocity;
-			
-			var magnitude = VectorField.magnitude(gradient);
-			var mask = ScalarField.VertexTypedArray(plate.grid, 1);
-			var flood_fill = VectorField.vertex_flood_fill(gradient, plate.grid, ScalarField.max_id(magnitude), mask);
-
-			var min_plate_size = 200;
-			var flood_fills = [flood_fill];
-			for (var i=1; i<7; ) {
-				ScalarField.sub_field(magnitude, ScalarField.mult_field(flood_fill, magnitude), magnitude);
-				ScalarField.sub_field(mask, flood_fill, mask);
-				flood_fill = VectorField.vertex_flood_fill(gradient, plate.grid, ScalarField.max_id(magnitude), mask);   
-			    if (ScalarField.sum(flood_fill) > min_plate_size) { 
-					flood_fills.push(flood_fill);
-					i++;
-				}
-			}
-			
-			var binary;
-			var dilated;
-			var binaries = [];
-			for (var i=0, li=flood_fills.length; i<li; ++i) {
-			    flood_fill = flood_fills[i];
-			    binaries.push(Morphology.to_binary(flood_fill));
-			}
-			for (var i=0, li=binaries.length; i<li; ++i) {
-			    binary = binaries[i];
-			    binary = Morphology.dilation(binary, plate.grid, 5);
-			    binary = Morphology.closing(binary, plate.grid, 5);
-			    // binary = Morphology.opening(binary, plate.grid, 5);
-			    for (var j=0, lj=flood_fills.length; j<lj; ++j) {
-			    	if (i != j) {
-				        binary = Morphology.difference(binary, flood_fills[j]);
-			    	}
-			    }
-			    flood_fills[i] = Morphology.to_float(binary);
-			}
-
-			var flood_fill_sum = ScalarField.VertexTypedArray(plate.grid, 0);
-			for (var i=0; i<flood_fills.length; ++i) {
-				ScalarField.add_field_term(flood_fill_sum, flood_fills[i], i+1, flood_fill_sum);
-			}
-
-			return flood_fill_sum;
+			return split(gradient, plate.grid);
 		}
 	} );
 
