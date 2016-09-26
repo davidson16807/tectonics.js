@@ -1,6 +1,9 @@
 'use strict';
 
 var Morphology = {};
+Morphology.VertexTypedArray = function(grid) {
+	return new Uint8Array(grid.vertices.length);
+}
 Morphology.to_binary = function(field, threshold, result) {
 	result = result || new Uint8Array(field.length);
 	threshold = threshold || 0;
