@@ -409,6 +409,38 @@ VectorField.cross_vector = function (field, constant, result)  {
 	}
 }
 
+VectorField.mult_matrix = function (field, matrix, result)  {
+	result = result || VectorField.TypedDataFrameOfLength(field.x.length);
+
+	var ax = field.x;
+	var ay = field.y;
+	var az = field.z;
+
+	var xx = matrix[0][0];	var xy = matrix[0][1];	var xz = matrix[0][2];
+	var yx = matrix[1][0];	var yy = matrix[1][1];	var yz = matrix[1][2];
+	var zx = matrix[2][0];	var zy = matrix[2][1];	var zz = matrix[2][2];
+
+	var x = result.x;
+	var y = result.y;
+	var z = result.z;
+
+	var axi = 0;
+	var ayi = 0;
+	var azi = 0;
+
+	for (var i = 0, li=x.length; i < li; ++i) {
+		axi = ax[i];
+		ayi = ay[i];
+		azi = az[i];
+
+		x[i] = axi * xx    + ayi * xy     + azi * xz     ;
+		y[i] = axi * yx    + ayi * yy     + azi * yz     ;
+		z[i] = axi * zx    + ayi * zy     + azi * zz     ;
+	}
+
+	return result;
+}
+
 VectorField.add_scalar_field = function(vector, scalar, result) {
 	result = result || VectorField.DataFrameOfLength(vector.x.length);
 
@@ -564,6 +596,7 @@ VectorField.div_scalar = function(vector, scalar, result) {
 
 	return result;
 };
+
 VectorField.map = function(field, fn, result) {
 	result = result || new Float32Array(field.length)
 
