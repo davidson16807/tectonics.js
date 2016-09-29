@@ -364,3 +364,13 @@ ScalarField.vertex_laplacian = function (field, grid, result) {
   return result;
 };
 
+ScalarField.get_nearest_value = function(field, pos, grid) {
+  return field[grid.getNearestId(pos)];
+}
+ScalarField.get_nearest_values = function(value_field, pos_field, grid, result) {
+  var ids = grid.getNearestIds(pos_field);
+  result = result || ScalarField.TypedArrayOfLength(ids);
+  for (var i=0, li=ids.length; i<li; ++i) {
+      value_field[ids[i]];
+  }
+}
