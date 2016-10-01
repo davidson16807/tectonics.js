@@ -53,14 +53,15 @@ VoronoiSphere.prototype.getNearestId = function(vector) {
 }
 
 VoronoiSphere.prototype.getNearestIds = function(pos_field, result) {
-	result = result || new Uint16Array(pos_field.x.length);
+	// result = result || new Uint16Array(pos_field.x.length);
+	result = result || new Float32Array(pos_field.x.length);
 
 	var pos_x = pos_field.x;
 	var pos_y = pos_field.y;
 	var pos_z = pos_field.z;
 	var pos_lat = 0;
 	var pos_lon = 0;
-	var pos_magnitude = VertexField.magnitude(pos_field);
+	var pos_magnitude = VectorField.magnitude(pos_field);
 
 	var raster = this.raster;
 	var raster_i = 0;
@@ -88,12 +89,13 @@ VoronoiSphere.prototype.getNearestIds = function(pos_field, result) {
 	    raster_i = round(raster_i);
 
 	    pos_lon = atan2(-pos_z[i], pos_x[i]);
-    	raster_j = (pos_lon - lonMin) * lonNum / lonRange;
-    	raster_j = max(min(raster_j, lonNum-1), 0); 
-    	raster_j = round(raster_j);
+	   	raster_j = (pos_lon - lonMin) * lonNum / lonRange;
+	   	raster_j = max(min(raster_j, lonNum-1), 0); 
+	   	raster_j = round(raster_j);
 
-    	raster_id = raster_i*lonNum + raster_j;
-    	result[i] = raster[raster_id];
+	   	raster_id = raster_i*lonNum + raster_j;
+	    // result[i] = raster_id;
+   		result[i] = raster[raster_id];
 	}
 
 	return result;
