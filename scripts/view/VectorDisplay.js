@@ -86,6 +86,20 @@ DataFrameVectorDisplay.prototype.updateAttributes = function(material, plate) {
 	}
 	material.attributes.vector.needsUpdate = true;
 }
+vectorDisplays.pos	= new DataFrameVectorDisplay( { 
+	getField: function (plate) {
+		var pos = plate.grid.pos;
+		return pos;
+	}
+} );
+vectorDisplays.pos2	= new DataFrameVectorDisplay( { 
+	getField: function (plate) {
+		var rotationMatrix = new THREE.Matrix4();
+		rotationMatrix.makeRotationAxis( plate.eulerPole, 1 );
+		var pos = VectorField.mult_matrix(plate.grid.pos, rotationMatrix.toArray());
+		return pos;
+	}
+} );
 vectorDisplays.displacement_gradient	= new DataFrameVectorDisplay( { 
 	getField: function (plate) {
 		var displacement = plate.displacement;
@@ -121,82 +135,6 @@ vectorDisplays.subductability_smoothed = new DataFrameVectorDisplay( {
 			return gradient;
 		} 
 	} );
-vectorDisplays.velocity = new DataFrameVectorDisplay( { 
-		getField: function (plate) {
-			var field = getSubductabilitySmoothed(plate)
-			var gradient = ScalarField.vertex_gradient(field, plate.grid);
-			// var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
-			// laplacian = VectorField.vertex_divergence(gradient, plate.grid);
-			return gradient;
-		} 
-	} );
-vectorDisplays.averaged_angular_velocity = new DataFrameVectorDisplay( { 
-		getField: function (plate) {
-			var field = getSubductabilitySmoothed(plate)
-			var gradient = ScalarField.vertex_gradient(field, plate.grid);
-
-			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
-			
-			var magnitude = VectorField.magnitude(angular_velocity);
-			var max_id = ScalarField.max_id(magnitude);
-			var mask = ScalarField.VertexTypedArray(plate.grid, 1);
-			var flood_fill = Morphology.to_float(VectorField.vertex_flood_fill(angular_velocity, plate.grid, max_id, mask));
-
-			var averaged_angular_velocity = VectorField.weighted_average(angular_velocity, flood_fill);
-			var averaged_angular_velocity_field = ScalarField.mult_vector(flood_fill, averaged_angular_velocity);
-
-			return averaged_angular_velocity_field;
-		} 
-	} );
-vectorDisplays.averaged_angular_velocity2 = new DataFrameVectorDisplay( { 
-		getField: function (plate) {
-			var field = getSubductabilitySmoothed(plate);
-			var gradient = ScalarField.vertex_gradient(field, plate.grid);
-			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
-			var gradient = angular_velocity;
-			var plates = split(gradient, plate.grid);
-
-			var averaged_angular_velocity_field_sum = VectorField.VertexDataFrame(plate.grid, {x:0,y:0,z:0});
-			for (var i=0, li=plates.length; i<li; ++i) {
-			    var flood_fill = plates[i];
-				var averaged_angular_velocity = VectorField.weighted_average(angular_velocity, flood_fill);
-				var averaged_angular_velocity_field = ScalarField.mult_vector(flood_fill, averaged_angular_velocity);
-				VectorField.add_vector_field(averaged_angular_velocity_field_sum, averaged_angular_velocity_field, 
-					averaged_angular_velocity_field_sum);
-			}
-
-			return averaged_angular_velocity_field_sum;
-		} 
-	} );
-vectorDisplays.averaged_velocity = new DataFrameVectorDisplay( { 
-		getField: function (plate) {
-			var field = getSubductabilitySmoothed(plate)
-			var gradient = ScalarField.vertex_gradient(field, plate.grid);
-
-			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
-			
-			var magnitude = VectorField.magnitude(angular_velocity);
-			var max_id = ScalarField.max_id(magnitude);
-			var mask = ScalarField.VertexTypedArray(plate.grid, 1);
-			var flood_fill = Morphology.to_float(VectorField.vertex_flood_fill(angular_velocity, plate.grid, max_id, mask));
-
-			var averaged_angular_velocity = VectorField.weighted_average(angular_velocity, flood_fill);
-			var averaged_angular_velocity_field = ScalarField.mult_vector(flood_fill, averaged_angular_velocity);
-
-			var averaged_velocity = VectorField.cross_vector_field(plate.grid.pos, averaged_angular_velocity_field);
-			return averaged_velocity;
-		} 
-	} );
-vectorDisplays.angular_velocity = new DataFrameVectorDisplay( { 
-		getField: function (plate) {
-			var field = getSubductabilitySmoothed(plate)
-			var gradient = ScalarField.vertex_gradient(field, plate.grid);
-			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
-			// laplacian = VectorField.vertex_divergence(gradient, plate.grid);
-			return angular_velocity;
-		} 
-	} );
-
 
 function DisabledVectorDisplay(options) {}
 DisabledVectorDisplay.prototype.addTo = function(mesh) {
