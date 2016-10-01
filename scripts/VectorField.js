@@ -407,18 +407,21 @@ VectorField.cross_vector = function (field, constant, result)  {
 		y[i] = azi*bxi   -   axi*bzi;
 		z[i] = axi*byi   -   ayi*bxi;
 	}
+	return result;
 }
 
+// NOTE: matrix is structured to match the output of THREE.Matrix3.toArray()
+// i.e single array in column-major format
 VectorField.mult_matrix = function (field, matrix, result)  {
-	result = result || VectorField.TypedDataFrameOfLength(field.x.length);
+	result = result || VectorField.DataFrameOfLength(field.x.length);
 
 	var ax = field.x;
 	var ay = field.y;
 	var az = field.z;
 
-	var xx = matrix[0][0];	var xy = matrix[0][1];	var xz = matrix[0][2];
-	var yx = matrix[1][0];	var yy = matrix[1][1];	var yz = matrix[1][2];
-	var zx = matrix[2][0];	var zy = matrix[2][1];	var zz = matrix[2][2];
+	var xx = matrix[0];	var xy = matrix[4];	var xz = matrix[8];
+	var yx = matrix[1];	var yy = matrix[5];	var yz = matrix[9];
+	var zx = matrix[2];	var zy = matrix[6];	var zz = matrix[10];
 
 	var x = result.x;
 	var y = result.y;
