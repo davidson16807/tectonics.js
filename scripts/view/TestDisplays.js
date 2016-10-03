@@ -1,18 +1,19 @@
 // TESTS FOR VARIOUS FIELDS 
 // NOT TO BE INCLUDED IN PRODUCTION
 
+var test;
+
 // test for ScalarField.get_nearest_values()
 // rotates age by a certain amount
 scalarDisplays.age_rotated 	= new ScalarHeatDisplay( { min: '250.', max: '0.',  
 		// scaling: true,
-		getField: function (plate) {
+		getField: function (plate, result) {
 			var rotationMatrix = new THREE.Matrix4();
 			rotationMatrix.makeRotationAxis( plate.eulerPole, 0.5 );
 			var pos = VectorField.mult_matrix(plate.grid.pos, rotationMatrix.toArray());
-			// foo = (plate.grid.getNearestIds(pos));
-			foo = pos;
-			return ScalarField.get_nearest_values(plate.age, pos, plate.grid);
-			return foo;
+			// test = (plate.grid.getNearestIds(pos));
+			test = ScalarField.get_nearest_values(plate.age, pos, plate.grid, result);
+			return test;
 		} 
 	} );
 
@@ -25,6 +26,23 @@ scalarDisplays.ids 	= new ScalarHeatDisplay( {
 			    ids[i] = i;
 			}
 			return ids;
+		} 
+	} );
+
+scalarDisplays.id_rotated 	= new ScalarHeatDisplay( {
+		scaling: true,
+		getField: function (plate) {
+			var ids = new Float32Array(plate.age.length);
+			for (var i=0, li=ids.length; i<li; ++i) {
+			    ids[i] = i;
+			}
+
+			var rotationMatrix = new THREE.Matrix4();
+			rotationMatrix.makeRotationAxis( plate.eulerPole, 0.5 );
+			var pos = VectorField.mult_matrix(plate.grid.pos, rotationMatrix.toArray());
+			// test = (plate.grid.getNearestIds(pos));
+			test = ScalarField.get_nearest_values(ids, pos, plate.grid);
+			return test;
 		} 
 	} );
 
