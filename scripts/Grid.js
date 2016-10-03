@@ -127,8 +127,9 @@ Grid.prototype.getNearestId = function(vertex) {
 	return this._kdtree.nearest({x:vertex.x, y:vertex.y, z: vertex.z}, 1)[0][0].i;
 }
 
-Grid.prototype.getNearestIds = function(pos_field) {
-	return this._voronoi.getNearestIds(pos_field)
+Grid.prototype.getNearestIds = function(pos_field, result) {
+	result = result || new Uint16Array(pos_field.x.length);
+	return this._voronoi.getNearestIds(pos_field, result);
 }
 
 Grid.prototype.getNeighborIds = function(id) {

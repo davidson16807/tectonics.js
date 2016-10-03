@@ -67,6 +67,7 @@ function ScalarHeatDisplay(options) {
 	var scalar = options['scalar'] || 'vScalar';
 	this.getField = options['getField'];
 	this.scaling = scaling;
+	this.field = void 0;
 	this._fragmentShader = fragmentShaders.template
 		.replace('@OUTPUT',
 			_multiline(function() {/**   
@@ -81,6 +82,7 @@ function ScalarHeatDisplay(options) {
 		.replace('@SCALAR', scalar);
 }
 ScalarHeatDisplay.prototype.addTo = function(mesh) {
+	this.field = void 0;
 	mesh.material.fragmentShader = this._fragmentShader;
 	mesh.material.needsUpdate = true;
 };
@@ -95,15 +97,16 @@ ScalarHeatDisplay.prototype.updateAttributes = function(geometry, plate) {
 	var buffer_array_index; 
 	var is_member_model = plate.is_member; 
 	var displacement_model = plate.displacement; 
-	var scalar_model = this.getField !== void 0? this.getField(plate) : void 0;
+	this.field = this.field || ScalarField.VertexTypedArray(plate.grid);
+	var scalar_model = this.getField !== void 0? this.getField(plate, this.field) : void 0;
 	var is_member;
 	var max = this.scaling? Math.max.apply(null, scalar_model) || 1 : 1;
-	for(var j=0, lj = displacement.length; j<lj; j++){ 
-		buffer_array_index = buffer_array_to_cell[j];
-		is_member = is_member_model[buffer_array_index]
-		displacement[j] = is_member * displacement_model[buffer_array_index]; 
-		if (scalar_model !== void 0) {
-			scalar[j] = is_member * scalar_model[buffer_array_index] / max; 
+	if (scalar_model !== void 0) {
+		for(var j=0, lj = displacement.length; j<lj; j++){ 
+			buffer_array_index = buffer_array_to_cell[j];
+			is_member = is_member_model[buffer_array_index]
+			displacement[j] = is_member * displacement_model[buffer_array_index]; 
+				scalar[j] = is_member * scalar_model[buffer_array_index] / max; 
 		}
 	}
 	geometry.attributes.displacement.needsUpdate = true;
