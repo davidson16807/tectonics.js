@@ -41,8 +41,13 @@ scalarDisplays.id_rotated 	= new ScalarHeatDisplay( {
 			rotationMatrix.makeRotationAxis( plate.eulerPole, 0.5 );
 			var pos = VectorField.mult_matrix(plate.grid.pos, rotationMatrix.toArray());
 			// test = (plate.grid.getNearestIds(pos));
-			test = ScalarField.get_nearest_values(ids, pos, plate.grid);
-			return test;
+			return ScalarField.get_nearest_values(ids, pos, plate.grid);
+		} 
+	} );
+scalarDisplays.voronoi_ids	= new ScalarHeatDisplay( {
+		scaling: true,
+		getField: function (plate) {
+			return plate.grid.getNearestIds(plate.grid.pos);
 		} 
 	} );
 
