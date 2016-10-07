@@ -18,17 +18,6 @@ VectorField.VertexDataFrame = function(grid, fill){
 	}
 	return result;
 }
-VectorField.EdgeDataFrame = function(grid, fill){
-	var result = VectorField.DataFrameOfLength(grid.edges.length);
-	if (fill !== void 0) {
-		for (var i=0, li=result.x.length; i<li; ++i) {
-		    result.x[i] = fill.x;
-		    result.y[i] = fill.y;
-		    result.z[i] = fill.z;
-		}
-	}
-	return result;
-}
 VectorField.ArrowDataFrame = function(grid, fill){
 	var result = VectorField.DataFrameOfLength(grid.arrows.length);
 	if (fill !== void 0) {
@@ -659,95 +648,6 @@ VectorField.arrow_differential = function(field, grid, result) {
 	return result;
 }
 
-// ∂X
-VectorField.edge_differential = function(field, grid, result) {
-	result = result || VectorField.EdgeDataFrame(grid);
-
-	var x1 = field.x;
-	var y1 = field.y;
-	var z1 = field.z;
-
-	var x = result.x;
-	var y = result.y;
-	var z = result.z;
-
-	var edges = grid.edges;
-	var edge_i_from = 0;
-	var edge_i_to = 0;
-	for (var i = 0, li = edges.length; i<li; i++) {
-		edge_i_from = edges[i][0];
-		edge_i_to = edges[i][1];
-		x[i] = x1[edge_i_to] - x1[edge_i_from];
-		y[i] = y1[edge_i_to] - y1[edge_i_from];
-		z[i] = z1[edge_i_to] - z1[edge_i_from];
-	}
-	return result;
-}
-
-// f(x+∂x)⋅f(x)
-//
-// cosine similarity between neighbors
-VectorField.edge_similarity = function(field, grid, result) {
-	result = result || ScalarField.EdgeTypedArray(grid);
-
-	var x = field.x;
-	var y = field.y;
-	var z = field.z;
-
-	var edges = grid.edges;
-	var edges_i_from = 0;
-	var edges_i_to = 0;
-	var length1 = 0;
-	var length2 = 0;
-	for (var i = 0, li = edges.length; i<li; i++) {
-		edges_i_from = edges[i][0];
-		edges_i_to = edges[i][1];
-		length1 = 	x[edges_i_to] * x[edges_i_to] + 
-					y[edges_i_to] * y[edges_i_to] + 
-					z[edges_i_to] * z[edges_i_to];
-		length2 = 	x[edges_i_from] * x[edges_i_from] + 
-					y[edges_i_from] * y[edges_i_from] + 
-					z[edges_i_from] * z[edges_i_from];
-		result[i] = x[edges_i_to] * x[edges_i_from] + 
-					y[edges_i_to] * y[edges_i_from] + 
-					z[edges_i_to] * z[edges_i_from];
-		result[i] /= ( length1 * length2);
-	}
-
-	return result;
-}
-
-// f(X+∂X)⋅f(X)
-VectorField.arrow_similarity = function(field, grid, result) {
-	result = result || ScalarField.ArrowTypedArray(grid);
-
-	var x = field.x;
-	var y = field.y;
-	var z = field.z;
-
-	var arrows = grid.arrows;
-	var arrow_i_from = 0;
-	var arrow_i_to = 0;
-	var length1 = 0;
-	var length2 = 0;
-	for (var i = 0, li = arrows.length; i<li; i++) {
-		arrow_i_from = arrows[i][0];
-		arrow_i_to = arrows[i][1];
-		length1 = 	x[edges_i_to] * x[edges_i_to] + 
-					y[edges_i_to] * y[edges_i_to] + 
-					z[edges_i_to] * z[edges_i_to];
-		length2 = 	x[edges_i_from] * x[edges_i_from] + 
-					y[edges_i_from] * y[edges_i_from] + 
-					z[edges_i_from] * z[edges_i_from];
-		result[i] = x[arrow_i_to] * x[arrow_i_from] + 
-					y[arrow_i_to] * y[arrow_i_from] + 
-					z[arrow_i_to] * z[arrow_i_from];
-		result[i] /= length;
-	}
-
-	return result;
-}
-
 VectorField.vertex_similarity_weighted_average = function(field, grid, result) {
 	result = result || VectorField.VertexDataFrame(grid);
 	var similarity_sum = new ScalarField.VertexTypedArray(grid, 1);
@@ -844,64 +744,6 @@ VectorField.vertex_similarity = function(field, grid, result) {
 	    x1[i] /= similarity_sum[i];
 	    y1[i] /= similarity_sum[i];
 	    z1[i] /= similarity_sum[i];
-	}
-
-	return result;
-}
-
-VectorField.edge_divergence = function(field, grid, result) {
-	result = result || ScalarField.EdgeTypedArray(grid);
-
-	var dpos = grid.pos_edge_differential;
-	var dx = dpos.x;
-	var dy = dpos.y;
-	var dz = dpos.z;
-
-	var x = field.x;
-	var y = field.y;
-	var z = field.z;
-
-	var edges = grid.edges;
-	var edges_i_from = 0;
-	var edges_i_to = 0;
-
-	var result_i = 0;
-	for (var i = 0, li = edges.length; i<li; i++) {
-		edges_i_from = edges[i][0];
-		edges_i_to = edges[i][1];
-		result_i  = ( x[edges_i_to] - x[edges_i_from] ) / dx[i] + 
-					( y[edges_i_to] - y[edges_i_from] ) / dy[i] + 
-					( z[edges_i_to] - z[edges_i_from] ) / dz[i];
-		result[i] = result_i || 0;
-	}
-
-	return result;
-}
-
-VectorField.arrow_divergence = function(field, grid, result) {
-	result = result || ScalarField.ArrowTypedArray(grid);
-
-	var dpos = grid.pos_arrow_differential;
-	var dx = dpos.x;
-	var dy = dpos.y;
-	var dz = dpos.z;
-
-	var x = field.x;
-	var y = field.y;
-	var z = field.z;
-
-	var arrows = grid.arrows;
-	var arrow_i_from = 0;
-	var arrow_i_to = 0;
-
-	var result_i = 0;
-	for (var i = 0, li = arrows.length; i<li; i++) {
-		arrow_i_from = arrows[i][0];
-		arrow_i_to = arrows[i][1];
-		result_i  = ( x[arrow_i_to] - x[arrow_i_from] ) / dx[i] + 
-					( y[arrow_i_to] - y[arrow_i_from] ) / dy[i] + 
-					( z[arrow_i_to] - z[arrow_i_from] ) / dz[i] ;
-		result[i] = result_i || 0;
 	}
 
 	return result;

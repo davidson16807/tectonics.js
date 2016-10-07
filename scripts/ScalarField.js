@@ -10,24 +10,6 @@ ScalarField.VertexTypedArray = function (grid, fill, Constructor) {
   }
   return result;
 };
-ScalarField.EdgeTypedArray = function (grid, fill) {
-  var result = new Float32Array(grid.edges.length);
-  if (fill !== void 0) { 
-    for (var i=0, li=result.length; i<li; ++i) {
-        result[i] = fill;
-    }
-  }
-  return result;  
-};
-ScalarField.ArrowTypedArray = function (grid, fill) {
-  var result = new Float32Array(grid.arrows.length);
-  if (fill !== void 0) { 
-    for (var i=0, li=result.length; i<li; ++i) {
-        result[i] = fill;
-    }
-  }
-  return result;  
-};
 ScalarField.TypedArrayOfLength = function (length, fill) {
   var result = new Float32Array(length);
   if (fill !== void 0) { 
@@ -205,29 +187,8 @@ ScalarField.div_scalar = function (field, scalar, result) {
   }
   return result;
 };
-ScalarField.arrow_differential = function (field, grid, result) {
-  result = result || ScalarField.ArrowTypedArray(grid);
-  var arrows = grid.arrows;
-  var arrow = [];
-  for (var i = 0, li = arrows.length; i < li; i++) {
-    arrow = arrows[i];
-    result[i] = field[arrow[1]] - field[arrow[0]];
-  }
-  return result;
-};
-ScalarField.edge_differential = function (field, grid, result) {
-  result = result || ScalarField.EdgeTypedArray(grid);
-  var edges = grid.edges;
-  var edge = [];
-  for (var i = 0, li = edges.length; i < li; i++) {
-    edge = edges[i];
-    result[i] = field[edge[1]] - field[edge[0]];
-  }
-  return result;
-};
 ScalarField.vertex_differential = function (field, grid, result) {
   result = result || VectorField.VertexDataFrame(grid);
-  var dpos = grid.pos_arrow_differential;
   var arrows = grid.arrows;
   var arrow = [];
   var from = 0, to = 0;
@@ -249,48 +210,6 @@ ScalarField.vertex_differential = function (field, grid, result) {
     x[i] /= neighbor_count || 1;
     y[i] /= neighbor_count || 1;
     z[i] /= neighbor_count || 1;
-  }
-  return result;
-};
-ScalarField.edge_gradient = function (field, grid, result) {
-  result = result || VectorField.EdgeDataFrame(grid);
-  var dfield = 0;
-  var dpos = grid.pos_edge_differential;
-  var dx = dpos.x;
-  var dy = dpos.y;
-  var dz = dpos.z;
-  var x = result.x;
-  var y = result.y;
-  var z = result.z;
-  var edges = grid.edges;
-  var edge = [];
-  for (var i = 0, li = edges.length; i < li; i++) {
-    edge = edges[i];
-    dfield = field[edge[1]] - field[edge[0]];
-    x[i] = dfield / dx[i] || 0;
-    y[i] = dfield / dy[i] || 0;
-    z[i] = dfield / dz[i] || 0;
-  }
-  return result;
-};
-ScalarField.arrow_gradient = function (field, grid, result) {
-  result = result || VectorField.ArrowDataFrame(grid);
-  var dfield = 0;
-  var dpos = grid.pos_arrow_differential;
-  var dx = dpos.x;
-  var dy = dpos.y;
-  var dz = dpos.z;
-  var x = result.x;
-  var y = result.y;
-  var z = result.z;
-  var arrows = grid.arrows;
-  var arrow = [];
-  for (var i = 0, li = arrows.length; i < li; i++) {
-    arrow = arrows[i];
-    dfield = field[arrow[1]] - field[arrow[0]];
-    x[i] = dfield / dx[i] || 0;
-    y[i] = dfield / dy[i] || 0;
-    z[i] = dfield / dz[i] || 0;
   }
   return result;
 };
@@ -321,30 +240,6 @@ ScalarField.vertex_gradient = function (field, grid, result) {
     y[i] /= neighbor_count || 1;
     z[i] /= neighbor_count || 1;
   }
-  return result;
-};
-ScalarField.edge_gradient_similarity = function (field, grid, result) {
-  result = result || ScalarField.EdgeTypedArray(grid);
-  var gradient = ScalarField.vertex_gradient(field, grid);
-  VectorField.edge_similarity(gradient, grid, result);
-  return result;
-};
-ScalarField.arrow_gradient_similarity = function (field, grid, result) {
-  result = result || ScalarField.ArrowTypedArray(grid);
-  var gradient = ScalarField.vertex_gradient(field, grid);
-  VectorField.arrow_similarity(gradient, grid, result);
-  return result;
-};
-ScalarField.edge_laplacian = function (field, grid, result) {
-  result = result || ScalarField.EdgeTypedArray(grid);
-  var gradient = ScalarField.vertex_gradient(field, grid);
-  VectorField.edge_divergence(gradient, grid, result);
-  return result;
-};
-ScalarField.arrow_laplacian = function (field, grid, result) {
-  result = result || ScalarField.ArrowTypedArray(grid);
-  var gradient = ScalarField.vertex_gradient(field, grid);
-  VectorField.arrow_divergence(gradient, grid, result);
   return result;
 };
 ScalarField.vertex_laplacian = function (field, grid, result) {
