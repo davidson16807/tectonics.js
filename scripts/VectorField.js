@@ -644,7 +644,7 @@ VectorField.arrow_differential = function(field, grid, result) {
 }
 
 VectorField.divergence = function(field, grid, result) {
-	result = result || ScalarField.ArrowTypedArray(grid);
+	result = result || ScalarField.DataFrameOfLength(grid.vertices.length);
 
 	var dpos = grid.pos_arrow_differential;
 	var dx = dpos.x;
