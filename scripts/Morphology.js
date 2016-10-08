@@ -2,7 +2,9 @@
 
 var Morphology = {};
 Morphology.VertexTypedArray = function(grid) {
-	return new Uint8Array(grid.vertices.length);
+	var result = new Uint8Array(grid.vertices.length);
+	result.grid = grid;
+	return result;
 }
 Morphology.to_binary = function(field, threshold, result) {
 	result = result || new Uint8Array(field.length);

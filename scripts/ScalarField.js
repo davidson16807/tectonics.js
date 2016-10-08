@@ -163,7 +163,7 @@ ScalarField.mult_scalar = function (field, scalar, result) {
   return result;
 };
 ScalarField.mult_vector = function (scalar, vector, result) {
-  result = result || VectorField.DataFrameOfLength(scalar.length);
+  result = result || VectorField.DataFrame(scalar.grid);
 
   var ix = vector.x;
   var iy = vector.y;

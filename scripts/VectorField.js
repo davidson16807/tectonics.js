@@ -122,7 +122,7 @@ VectorField.weighted_average = function (field, weights) {
 
 
 VectorField.add_vector_field_term = function(field1, field2, scalar, result) {
-	result = result || VectorField.DataFrameOfLength(field1.x.length);
+	result = result || VectorField.DataFrame(field1.grid);
 
 	var x1 = field1.x;
 	var y1 = field1.y;
@@ -146,7 +146,7 @@ VectorField.add_vector_field_term = function(field1, field2, scalar, result) {
 };
 
 VectorField.add_vector_field = function(field1, field2, result) {
-	result = result || VectorField.DataFrameOfLength(field1.x.length);
+	result = result || VectorField.DataFrame(field1.grid);
 
 	var x1 = field1.x;
 	var y1 = field1.y;
@@ -170,7 +170,7 @@ VectorField.add_vector_field = function(field1, field2, result) {
 };
 
 VectorField.sub_vector_field = function(field1, field2, result) {
-	result = result || VectorField.DataFrameOfLength(field1.x.length);
+	result = result || VectorField.DataFrame(field1.grid);
 
 	var x1 = field1.x;
 	var y1 = field1.y;
@@ -193,7 +193,7 @@ VectorField.sub_vector_field = function(field1, field2, result) {
 	return result;
 };
 VectorField.dot_vector_field = function(field1, field2, result) {
-	result = result || ScalarField.TypedArrayOfLength(field1.x.length);
+	result = result || ScalarField.TypedArray(field1.grid);
 
 	var x1 = field1.x;
 	var y1 = field1.y;
@@ -212,7 +212,7 @@ VectorField.dot_vector_field = function(field1, field2, result) {
 	return result;
 };
 VectorField.hadamard_vector_field = function(field1, field2, result) {
-	result = result || VectorField.DataFrameOfLength(field1.x.length);
+	result = result || VectorField.DataFrame(field1.grid);
 
 	var x1 = field1.x;
 	var y1 = field1.y;
@@ -235,7 +235,7 @@ VectorField.hadamard_vector_field = function(field1, field2, result) {
 	return result;
 };
 VectorField.cross_vector_field = function (field1, field2, result) {
-	result = result || VectorField.DataFrameOfLength(field1.x.length);
+	result = result || VectorField.DataFrame(field1.grid);
 	
 	var ax = field1.x;
 	var ay = field1.y;
@@ -276,7 +276,7 @@ VectorField.cross_vector_field = function (field1, field2, result) {
 
 
 VectorField.add_vector = function(field1, vector, result) {
-	result = result || VectorField.DataFrameOfLength(field1.x.length);
+	result = result || VectorField.DataFrame(field1.grid);
 
 	var x1 = field1.x;
 	var y1 = field1.y;
@@ -300,7 +300,7 @@ VectorField.add_vector = function(field1, vector, result) {
 };
 
 VectorField.sub_vector = function(field1, vector, result) {
-	result = result || VectorField.DataFrameOfLength(field1.x.length);
+	result = result || VectorField.DataFrame(field1.grid);
 
 	var x1 = field1.x;
 	var y1 = field1.y;
@@ -323,7 +323,7 @@ VectorField.sub_vector = function(field1, vector, result) {
 	return result;
 };
 VectorField.dot_vector = function(field1, vector, result) {
-	result = result || ScalarField.TypedArrayOfLength(field1.x.length);
+	result = result || ScalarField.TypedArray(field1.grid);
 
 	var x1 = field1.x;
 	var y1 = field1.y;
@@ -341,7 +341,7 @@ VectorField.dot_vector = function(field1, vector, result) {
 	return result;
 };
 VectorField.hadamard_vector = function(field1, vector, result) {
-	result = result || VectorField.DataFrameOfLength(field1.x.length);
+	result = result || VectorField.DataFrame(field1.grid);
 
 	var x1 = field1.x;
 	var y1 = field1.y;
@@ -364,7 +364,7 @@ VectorField.hadamard_vector = function(field1, vector, result) {
 	return result;
 };
 VectorField.cross_vector = function (field, constant, result)  {
-	result = result || VectorField.DataFrameOfLength(field.x.length);
+	result = result || VectorField.DataFrame(field.grid);
 
 	var ax = field.x;
 	var ay = field.y;
@@ -397,7 +397,7 @@ VectorField.cross_vector = function (field, constant, result)  {
 // NOTE: matrix is structured to match the output of THREE.Matrix3.toArray()
 // i.e single array in column-major format
 VectorField.mult_matrix = function (field, matrix, result)  {
-	result = result || VectorField.DataFrameOfLength(field.x.length);
+	result = result || VectorField.DataFrame(field.grid);
 
 	var ax = field.x;
 	var ay = field.y;
@@ -429,7 +429,7 @@ VectorField.mult_matrix = function (field, matrix, result)  {
 }
 
 VectorField.add_scalar_field = function(vector, scalar, result) {
-	result = result || VectorField.DataFrameOfLength(vector.x.length);
+	result = result || VectorField.DataFrame(vector.grid);
 
 	var x1 = vector.x;
 	var y1 = vector.y;
@@ -448,7 +448,7 @@ VectorField.add_scalar_field = function(vector, scalar, result) {
 	return result;
 };
 VectorField.sub_scalar_field = function(vector, scalar, result) {
-	result = result || VectorField.DataFrameOfLength(vector.x.length);
+	result = result || VectorField.DataFrame(vector.grid);
 
 	var x1 = vector.x;
 	var y1 = vector.y;
@@ -467,7 +467,7 @@ VectorField.sub_scalar_field = function(vector, scalar, result) {
 	return result;
 };
 VectorField.mult_scalar_field = function(vector, scalar, result) {
-	result = result || VectorField.DataFrameOfLength(vector.x.length);
+	result = result || VectorField.DataFrame(vector.grid);
 
 	var x1 = vector.x;
 	var y1 = vector.y;
@@ -486,7 +486,7 @@ VectorField.mult_scalar_field = function(vector, scalar, result) {
 	return result;
 };
 VectorField.div_scalar_field = function(vector, scalar, result) {
-	result = result || VectorField.DataFrameOfLength(vector.x.length);
+	result = result || VectorField.DataFrame(vector.grid);
 
 	var x1 = vector.x;
 	var y1 = vector.y;
@@ -507,7 +507,7 @@ VectorField.div_scalar_field = function(vector, scalar, result) {
 
 
 VectorField.add_scalar = function(vector, scalar, result) {
-	result = result || VectorField.DataFrameOfLength(vector.x.length);
+	result = result || VectorField.DataFrame(vector.grid);
 
 	var x1 = vector.x;
 	var y1 = vector.y;
@@ -526,7 +526,7 @@ VectorField.add_scalar = function(vector, scalar, result) {
 	return result;
 };
 VectorField.sub_scalar = function(vector, scalar, result) {
-	result = result || VectorField.DataFrameOfLength(vector.x.length);
+	result = result || VectorField.DataFrame(vector.grid);
 
 	var x1 = vector.x;
 	var y1 = vector.y;
@@ -545,7 +545,7 @@ VectorField.sub_scalar = function(vector, scalar, result) {
 	return result;
 };
 VectorField.mult_scalar = function(vector, scalar, result) {
-	result = result || VectorField.DataFrameOfLength(vector.x.length);
+	result = result || VectorField.DataFrame(vector.grid);
 
 	var x1 = vector.x;
 	var y1 = vector.y;
@@ -564,7 +564,7 @@ VectorField.mult_scalar = function(vector, scalar, result) {
 	return result;
 };
 VectorField.div_scalar = function(vector, scalar, result) {
-	result = result || VectorField.DataFrameOfLength(vector.x.length);
+	result = result || VectorField.DataFrame(vector.grid);
 
 	var x1 = vector.x;
 	var y1 = vector.y;
@@ -585,7 +585,7 @@ VectorField.div_scalar = function(vector, scalar, result) {
 };
 
 VectorField.map = function(field, fn, result) {
-	result = result || ScalarField.TypedArrayOfLength(field.length)
+	result = result || ScalarField.TypedArray(field.grid)
 
 	var x = field.x;
 	var y = field.y;
@@ -599,7 +599,7 @@ VectorField.map = function(field, fn, result) {
 
 
 VectorField.magnitude = function(field, result) {
-	result = result || ScalarField.TypedArrayOfLength(field.length);
+	result = result || ScalarField.TypedArray(field.grid);
 
 	var x = field.x;
 	var y = field.y;
@@ -644,7 +644,7 @@ VectorField.arrow_differential = function(field, grid, result) {
 }
 
 VectorField.divergence = function(field, grid, result) {
-	result = result || ScalarField.DataFrame(grid);
+	result = result || ScalarField.TypedArray(field.grid);
 
 	var dpos = grid.pos_arrow_differential;
 	var dx = dpos.x;
