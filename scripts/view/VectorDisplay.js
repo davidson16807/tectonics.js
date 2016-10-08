@@ -103,35 +103,35 @@ vectorDisplays.pos2	= new DataFrameVectorDisplay( {
 vectorDisplays.displacement_gradient	= new DataFrameVectorDisplay( { 
 	getField: function (plate) {
 		var displacement = plate.displacement;
-		var gradient = ScalarField.vertex_gradient(displacement, plate.grid);
+		var gradient = ScalarField.gradient(displacement, plate.grid);
 		return gradient;
 	}
 } );
 vectorDisplays.age_gradient	= new DataFrameVectorDisplay( { 
 	getField: function (plate) {
 		var age = plate.age;
-		var gradient = ScalarField.vertex_gradient(age, plate.grid);
+		var gradient = ScalarField.gradient(age, plate.grid);
 		return gradient;
 	}
 } );
 vectorDisplays.density_gradient	= new DataFrameVectorDisplay( { 
 	getField: function (plate) {
 		var density = plate.density;
-		var gradient = ScalarField.vertex_gradient(density, plate.grid);
+		var gradient = ScalarField.gradient(density, plate.grid);
 		return gradient;
 	}
 } );
 vectorDisplays.subductability_gradient	= new DataFrameVectorDisplay( { 
 	getField: function (plate) {
 		var subductability = getSubductability(plate);
-		var gradient = ScalarField.vertex_gradient(subductability, plate.grid);
+		var gradient = ScalarField.gradient(subductability, plate.grid);
 		return gradient;
 	}
 } );
 vectorDisplays.subductability_smoothed = new DataFrameVectorDisplay( { 
 		getField: function (plate) {
 			var field = getSubductabilitySmoothed(plate);
-			var gradient = ScalarField.vertex_gradient(field, plate.grid);
+			var gradient = ScalarField.gradient(field, plate.grid);
 			return gradient;
 		} 
 	} );

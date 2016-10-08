@@ -187,7 +187,7 @@ ScalarField.div_scalar = function (field, scalar, result) {
   }
   return result;
 };
-ScalarField.vertex_differential = function (field, grid, result) {
+ScalarField.differential = function (field, grid, result) {
   result = result || VectorField.VertexDataFrame(grid);
   var arrows = grid.arrows;
   var arrow = [];
@@ -213,7 +213,7 @@ ScalarField.vertex_differential = function (field, grid, result) {
   }
   return result;
 };
-ScalarField.vertex_gradient = function (field, grid, result) {
+ScalarField.gradient = function (field, grid, result) {
   result = result || VectorField.VertexDataFrame(grid);
   var dfield = 0;
   var dpos = grid.pos_arrow_differential;
@@ -242,7 +242,7 @@ ScalarField.vertex_gradient = function (field, grid, result) {
   }
   return result;
 };
-ScalarField.vertex_laplacian = function (field, grid, result) {
+ScalarField.laplacian = function (field, grid, result) {
   result = result || ScalarField.VertexTypedArray(grid);
   var arrows = grid.arrows;
   var arrow

@@ -56,8 +56,8 @@ scalarDisplays.subductability_smoothed_laplacian = new ScalarHeatDisplay(  {
 		min: '1.', max: '0.',
 		getField: function (plate) {
 			var field = getSubductability(plate)
-			var laplacian = ScalarField.vertex_laplacian(field, plate.grid);
-			// var gradient = ScalarField.vertex_gradient(field, plate.grid);
+			var laplacian = ScalarField.laplacian(field, plate.grid);
+			// var gradient = ScalarField.gradient(field, plate.grid);
 			// laplacian = VectorField.vertex_divergence(gradient, plate.grid);
 			return laplacian;
 		} 
@@ -66,7 +66,7 @@ scalarDisplays.flood_fill1 = new ScalarHeatDisplay(  {
 		min: '1.', max: '0.',
 		getField: function (plate) {
 			var field = getSubductabilitySmoothed(plate);
-			var gradient = ScalarField.vertex_gradient(field, plate.grid);
+			var gradient = ScalarField.gradient(field, plate.grid);
 			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
 			var gradient = angular_velocity;
 			
@@ -83,7 +83,7 @@ scalarDisplays.flood_fill_white_top_hat = new ScalarHeatDisplay(  {
 		min: '1.', max: '0.',
 		getField: function (plate) {
 			var field = getSubductabilitySmoothed(plate);
-			var gradient = ScalarField.vertex_gradient(field, plate.grid);
+			var gradient = ScalarField.gradient(field, plate.grid);
 			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
 			var gradient = angular_velocity;
 			
@@ -100,7 +100,7 @@ scalarDisplays.flood_fill_black_top_hat = new ScalarHeatDisplay(  {
 		min: '1.', max: '0.',
 		getField: function (plate) {
 			var field = getSubductabilitySmoothed(plate);
-			var gradient = ScalarField.vertex_gradient(field, plate.grid);
+			var gradient = ScalarField.gradient(field, plate.grid);
 			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
 			var gradient = angular_velocity;
 			
@@ -118,7 +118,7 @@ scalarDisplays.flood_fill_dilation = new ScalarHeatDisplay(  {
 		min: '1.', max: '0.',
 		getField: function (plate) {
 			var field = getSubductabilitySmoothed(plate);
-			var gradient = ScalarField.vertex_gradient(field, plate.grid);
+			var gradient = ScalarField.gradient(field, plate.grid);
 			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
 			var gradient = angular_velocity;
 			
@@ -136,7 +136,7 @@ scalarDisplays.flood_fill_erosion = new ScalarHeatDisplay(  {
 		min: '1.', max: '0.',
 		getField: function (plate) {
 			var field = getSubductabilitySmoothed(plate);
-			var gradient = ScalarField.vertex_gradient(field, plate.grid);
+			var gradient = ScalarField.gradient(field, plate.grid);
 			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
 			var gradient = angular_velocity;
 			
@@ -154,7 +154,7 @@ scalarDisplays.flood_fill_opening = new ScalarHeatDisplay(  {
 		min: '1.', max: '0.',
 		getField: function (plate) {
 			var field = getSubductabilitySmoothed(plate);
-			var gradient = ScalarField.vertex_gradient(field, plate.grid);
+			var gradient = ScalarField.gradient(field, plate.grid);
 			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
 			var gradient = angular_velocity;
 			
@@ -172,7 +172,7 @@ scalarDisplays.flood_fill_closing = new ScalarHeatDisplay(  {
 		min: '1.', max: '0.',
 		getField: function (plate) {
 			var field = getSubductabilitySmoothed(plate);
-			var gradient = ScalarField.vertex_gradient(field, plate.grid);
+			var gradient = ScalarField.gradient(field, plate.grid);
 			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
 			var gradient = angular_velocity;
 			
@@ -231,7 +231,7 @@ scalarDisplays.flood_fill8 = new ScalarHeatDisplay(  {
 		min: '10.', max: '0.',
 		getField: function (plate) {
 			var field = getSubductabilitySmoothed(plate);
-			var gradient = ScalarField.vertex_gradient(field, plate.grid);
+			var gradient = ScalarField.gradient(field, plate.grid);
 			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
 			var gradient = angular_velocity;
 			var plate_fields = split(gradient, plate.grid);
@@ -249,7 +249,7 @@ scalarDisplays.flood_fill8 = new ScalarHeatDisplay(  {
 vectorDisplays.asthenosphere_angular_velocity = new DataFrameVectorDisplay( { 
 		getField: function (plate) {
 			var field = getSubductabilitySmoothed(plate)
-			var gradient = ScalarField.vertex_gradient(field, plate.grid);
+			var gradient = ScalarField.gradient(field, plate.grid);
 			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
 			// laplacian = VectorField.vertex_divergence(gradient, plate.grid);
 			return angular_velocity;
@@ -259,7 +259,7 @@ vectorDisplays.asthenosphere_angular_velocity = new DataFrameVectorDisplay( {
 vectorDisplays.asthenosphere_velocity = new DataFrameVectorDisplay( { 
 		getField: function (plate) {
 			var field = getSubductabilitySmoothed(plate)
-			var gradient = ScalarField.vertex_gradient(field, plate.grid);
+			var gradient = ScalarField.gradient(field, plate.grid);
 			// var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
 			// laplacian = VectorField.vertex_divergence(gradient, plate.grid);
 			return gradient;
@@ -268,7 +268,7 @@ vectorDisplays.asthenosphere_velocity = new DataFrameVectorDisplay( {
 vectorDisplays.averaged_angular_velocity = new DataFrameVectorDisplay( { 
 		getField: function (plate) {
 			var field = getSubductabilitySmoothed(plate);
-			var gradient = ScalarField.vertex_gradient(field, plate.grid);
+			var gradient = ScalarField.gradient(field, plate.grid);
 			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
 			var gradient = angular_velocity;
 			var plates = split(gradient, plate.grid);
@@ -288,7 +288,7 @@ vectorDisplays.averaged_angular_velocity = new DataFrameVectorDisplay( {
 vectorDisplays.averaged_velocity = new DataFrameVectorDisplay( { 
 		getField: function (plate) {
 			var field = getSubductabilitySmoothed(plate);
-			var gradient = ScalarField.vertex_gradient(field, plate.grid);
+			var gradient = ScalarField.gradient(field, plate.grid);
 			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
 			var gradient = angular_velocity;
 			var plates = split(gradient, plate.grid);
