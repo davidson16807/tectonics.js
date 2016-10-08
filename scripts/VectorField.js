@@ -7,19 +7,14 @@
 var VectorField = {}
 
 // return vector field data structures for aspects of a grid
-VectorField.VertexDataFrame = function(grid, fill){
-	var result = VectorField.DataFrameOfLength(grid.vertices.length);
-	if (fill !== void 0) {
-		for (var i=0, li=result.x.length; i<li; ++i) {
-		    result.x[i] = fill.x;
-		    result.y[i] = fill.y;
-		    result.z[i] = fill.z;
-		}
-	}
-	return result;
-}
-VectorField.ArrowDataFrame = function(grid, fill){
-	var result = VectorField.DataFrameOfLength(grid.arrows.length);
+VectorField.DataFrame = function(grid, fill){
+	var length = grid.vertices.length;
+	var result = {
+		x: new Float32Array(length),
+		y: new Float32Array(length),
+		z: new Float32Array(length),
+		grid: grid
+	};
 	if (fill !== void 0) {
 		for (var i=0, li=result.x.length; i<li; ++i) {
 		    result.x[i] = fill.x;
@@ -198,7 +193,7 @@ VectorField.sub_vector_field = function(field1, field2, result) {
 	return result;
 };
 VectorField.dot_vector_field = function(field1, field2, result) {
-	result = result || new Float32Array(field1.x.length);
+	result = result || ScalarField.TypedArrayOfLength(field1.x.length);
 
 	var x1 = field1.x;
 	var y1 = field1.y;
@@ -328,7 +323,7 @@ VectorField.sub_vector = function(field1, vector, result) {
 	return result;
 };
 VectorField.dot_vector = function(field1, vector, result) {
-	result = result || new Float32Array(field1.x.length);
+	result = result || ScalarField.TypedArrayOfLength(field1.x.length);
 
 	var x1 = field1.x;
 	var y1 = field1.y;
@@ -590,7 +585,7 @@ VectorField.div_scalar = function(vector, scalar, result) {
 };
 
 VectorField.map = function(field, fn, result) {
-	result = result || new Float32Array(field.length)
+	result = result || ScalarField.TypedArrayOfLength(field.length)
 
 	var x = field.x;
 	var y = field.y;
@@ -625,7 +620,7 @@ VectorField.magnitude = function(field, result) {
 
 // ∂X
 VectorField.arrow_differential = function(field, grid, result) {
-	result = result || VectorField.ArrowDataFrame(grid);
+	result = result || VectorField.DataFrameOfLength(grid.arrows.length);
 
 	var x1 = field.x;
 	var y1 = field.y;
@@ -648,108 +643,7 @@ VectorField.arrow_differential = function(field, grid, result) {
 	return result;
 }
 
-VectorField.vertex_similarity_weighted_average = function(field, grid, result) {
-	result = result || VectorField.VertexDataFrame(grid);
-	var similarity_sum = new ScalarField.VertexTypedArray(grid, 1);
-
-	var x = field.x;
-	var y = field.y;
-	var z = field.z;
-
-	var x1 = result.x;
-	var y1 = result.y;
-	var z1 = result.z;
-
-	var arrows = grid.arrows;
-	var arrow_i_from = 0;
-	var arrow_i_to = 0;
-	var similarity = 0;
-	var length_from = 0;
-	var length_to = 0;
-	for (var i=0, li=x1.length; i<li; ++i) {
-	    x1[i] = x[i];
-	    y1[i] = y[i];
-	    z1[i] = z[i];
-	}
-	for (var i = 0, li = arrows.length; i<li; i++) {
-		arrow_i_from = arrows[i][0];
-		arrow_i_to = arrows[i][1];
-		length_from = 	x[arrow_i_from] * x[arrow_i_from] + 
-						y[arrow_i_from] * y[arrow_i_from] + 
-						z[arrow_i_from] * z[arrow_i_from];
-		length_to = 	x[arrow_i_to] * x[arrow_i_to] + 
-						y[arrow_i_to] * y[arrow_i_to] + 
-						z[arrow_i_to] * z[arrow_i_to];
-		similarity = 	x[arrow_i_to] * x[arrow_i_from] + 
-						y[arrow_i_to] * y[arrow_i_from] + 
-						z[arrow_i_to] * z[arrow_i_from];
-		similarity /= 	(length_to);
-		similarity_sum[arrow_i_from] += similarity;
-		x1[arrow_i_from] += x[arrow_i_to] * similarity;
-		y1[arrow_i_from] += y[arrow_i_to] * similarity;
-		z1[arrow_i_from] += z[arrow_i_to] * similarity;
-	}
-	for (var i=0, li=x1.length; i<li; ++i) {
-	    x1[i] /= similarity_sum[i];
-	    y1[i] /= similarity_sum[i];
-	    z1[i] /= similarity_sum[i];
-	}
-
-	return result;
-}
-VectorField.vertex_similarity = function(field, grid, result) {
-	result = result || VectorField.VertexDataFrame(grid);
-	var similarity_sum = new ScalarField.VertexTypedArray(grid, 1);
-
-	var x = field.x;
-	var y = field.y;
-	var z = field.z;
-
-	var x1 = result.x;
-	var y1 = result.y;
-	var z1 = result.z;
-
-	var arrows = grid.arrows;
-	var arrow_i_from = 0;
-	var arrow_i_to = 0;
-	var similarity = 0;
-	var length_from = 0;
-	var length_to = 0;
-	for (var i=0, li=x1.length; i<li; ++i) {
-	    x1[i] = x[i];
-	    y1[i] = y[i];
-	    z1[i] = z[i];
-	}
-	for (var i = 0, li = arrows.length; i<li; i++) {
-		arrow_i_from = arrows[i][0];
-		arrow_i_to = arrows[i][1];
-		length_from = 	x[arrow_i_from] * x[arrow_i_from] + 
-						y[arrow_i_from] * y[arrow_i_from] + 
-						z[arrow_i_from] * z[arrow_i_from];
-		length_to = 	x[arrow_i_to] * x[arrow_i_to] + 
-						y[arrow_i_to] * y[arrow_i_to] + 
-						z[arrow_i_to] * z[arrow_i_to];
-		similarity = 	x[arrow_i_to] * x[arrow_i_from] + 
-						y[arrow_i_to] * y[arrow_i_from] + 
-						z[arrow_i_to] * z[arrow_i_from];
-		similarity /= 	(length_from * length_to);
-		similarity = similarity < 0? 0 : similarity;
-		similarity = 1;
-		similarity_sum[arrow_i_from] += similarity;
-		x1[arrow_i_from] += x[arrow_i_to] * similarity;
-		y1[arrow_i_from] += y[arrow_i_to] * similarity;
-		z1[arrow_i_from] += z[arrow_i_to] * similarity;
-	}
-	for (var i=0, li=x1.length; i<li; ++i) {
-	    x1[i] /= similarity_sum[i];
-	    y1[i] /= similarity_sum[i];
-	    z1[i] /= similarity_sum[i];
-	}
-
-	return result;
-}
-
-VectorField.vertex_divergence = function(field, grid, result) {
+VectorField.divergence = function(field, grid, result) {
 	result = result || ScalarField.ArrowTypedArray(grid);
 
 	var dpos = grid.pos_arrow_differential;
@@ -799,7 +693,7 @@ Vector.dot = function(ax, ay, az, bx, by, bz) {
 Vector.magnitude = function(x, y, z) {
 	return Math.sqrt(x*x + y*y + z*z);
 }
-VectorField.vertex_flood_fill = function function_name(field, grid, start_id, mask, result) {
+VectorField.flood_fill = function function_name(field, grid, start_id, mask, result) {
 	result = result || Morphology.VertexTypedArray(grid, 0);
 
 	var neighbor_lookup = grid.neighbor_lookup;

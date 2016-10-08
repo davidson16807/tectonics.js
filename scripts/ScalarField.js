@@ -1,6 +1,6 @@
 ("use strict");
 var ScalarField = {};
-ScalarField.VertexTypedArray = function (grid, fill, Constructor) {
+ScalarField.TypedArray = function (grid, fill, Constructor) {
   Constructor = Constructor || Float32Array;
   var result = new Constructor(grid.vertices.length);
   if (fill !== void 0) { 
@@ -188,7 +188,7 @@ ScalarField.div_scalar = function (field, scalar, result) {
   return result;
 };
 ScalarField.differential = function (field, grid, result) {
-  result = result || VectorField.VertexDataFrame(grid);
+  result = result || VectorField.DataFrame(grid);
   var arrows = grid.arrows;
   var arrow = [];
   var from = 0, to = 0;
@@ -214,7 +214,7 @@ ScalarField.differential = function (field, grid, result) {
   return result;
 };
 ScalarField.gradient = function (field, grid, result) {
-  result = result || VectorField.VertexDataFrame(grid);
+  result = result || VectorField.DataFrame(grid);
   var dfield = 0;
   var dpos = grid.pos_arrow_differential;
   var dx = dpos.x;
@@ -243,7 +243,7 @@ ScalarField.gradient = function (field, grid, result) {
   return result;
 };
 ScalarField.laplacian = function (field, grid, result) {
-  result = result || ScalarField.VertexTypedArray(grid);
+  result = result || ScalarField.TypedArray(grid);
   var arrows = grid.arrows;
   var arrow
   for (var i=0, li=arrows.length; i<li; ++i) {
