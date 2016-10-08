@@ -599,7 +599,7 @@ VectorField.map = function(field, fn, result) {
 
 
 VectorField.magnitude = function(field, result) {
-	result = result || new Float32Array(field.x.length);
+	result = result || ScalarField.TypedArrayOfLength(field.length);
 
 	var x = field.x;
 	var y = field.y;
@@ -644,7 +644,7 @@ VectorField.arrow_differential = function(field, grid, result) {
 }
 
 VectorField.divergence = function(field, grid, result) {
-	result = result || ScalarField.DataFrameOfLength(grid.vertices.length);
+	result = result || ScalarField.DataFrame(grid);
 
 	var dpos = grid.pos_arrow_differential;
 	var dx = dpos.x;
