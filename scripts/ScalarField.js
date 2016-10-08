@@ -1,8 +1,8 @@
 ("use strict");
 var ScalarField = {};
-ScalarField.TypedArray = function (grid, fill, Constructor) {
-  Constructor = Constructor || Float32Array;
-  var result = new Constructor(grid.vertices.length);
+ScalarField.TypedArray = function (grid, fill) {
+  var result = new Float32Array(grid.vertices.length);
+  result.grid = grid;
   if (fill !== void 0) { 
     for (var i=0, li=result.length; i<li; ++i) {
         result[i] = fill;
@@ -21,7 +21,7 @@ ScalarField.TypedArrayOfLength = function (length, fill) {
 };
 
 ScalarField.copy = function(field, result) {
-  var result = new Float32Array(length);
+  var result = ScalarField.TypedArray(field.grid);
   for (var i=0, li=field.length; i<li; ++i) {
       result[i] = field[i];
   }
@@ -90,7 +90,7 @@ ScalarField.weighted_average = function (field, weights) {
 
 
 ScalarField.normalize_field = function(field, result) {
-  result = result || new Float32Array(field.length);
+  result = result || ScalarField.TypedArray(field.grid);
 
   var min = ScalarField.min(field);
   var max = ScalarField.max(field);
@@ -100,63 +100,63 @@ ScalarField.normalize_field = function(field, result) {
   return result;
 }
 ScalarField.add_field_term = function (field1, field2, scalar, result) {
-  result = result || new Float32Array(field1.length);
+  result = result || ScalarField.TypedArray(field1.grid);
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] + scalar * field2[i];
   }
   return result;
 };
 ScalarField.add_field_term = function (field1, field2, scalar, result) {
-  result = result || new Float32Array(field1.length);
+  result = result || ScalarField.TypedArray(field1.grid);
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] + scalar * field2[i];
   }
   return result;
 };
 ScalarField.add_field = function (field1, field2, result) {
-  result = result || new Float32Array(field1.length);
+  result = result || ScalarField.TypedArray(field1.grid);
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] + field2[i];
   }
   return result;
 };
 ScalarField.sub_field = function (field1, field2, result) {
-  result = result || new Float32Array(field1.length);
+  result = result || ScalarField.TypedArray(field1.grid);
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] - field2[i];
   }
   return result;
 };
 ScalarField.mult_field = function (field1, field2, result) {
-  result = result || new Float32Array(field1.length);
+  result = result || ScalarField.TypedArray(field1.grid);
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] * field2[i];
   }
   return result;
 };
 ScalarField.div_field = function (field1, field2, result) {
-  result = result || new Float32Array(field1.length);
+  result = result || ScalarField.TypedArray(field1.grid);
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] / field2[i];
   }
   return result;
 };
 ScalarField.add_scalar = function (field, scalar, result) {
-  result = result || new Float32Array(field.length);
+  result = result || ScalarField.TypedArray(field.grid);
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field[i] + scalar;
   }
   return result;
 };
 ScalarField.sub_scalar = function (field, scalar, result) {
-  result = result || new Float32Array(field.length);
+  result = result || ScalarField.TypedArray(field.grid);
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field[i] - scalar;
   }
   return result;
 };
 ScalarField.mult_scalar = function (field, scalar, result) {
-  result = result || new Float32Array(field.length);
+  result = result || ScalarField.TypedArray(field.grid);
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field[i] * scalar;
   }
@@ -181,7 +181,7 @@ ScalarField.mult_vector = function (scalar, vector, result) {
   return result;
 };
 ScalarField.div_scalar = function (field, scalar, result) {
-  result = result || new Float32Array(field.length);
+  result = result || ScalarField.TypedArray(field.grid);
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field[i] / scalar;
   }
