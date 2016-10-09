@@ -187,9 +187,9 @@ ScalarField.div_scalar = function (field, scalar, result) {
   }
   return result;
 };
-ScalarField.differential = function (field, grid, result) {
-  result = result || VectorField.DataFrame(grid);
-  var arrows = grid.arrows;
+ScalarField.differential = function (field, result) {
+  result = result || VectorField.DataFrame(field.grid);
+  var arrows = field.grid.arrows;
   var arrow = [];
   var from = 0, to = 0;
   var x = result.x;
@@ -203,7 +203,7 @@ ScalarField.differential = function (field, grid, result) {
     y[to] += field[from] - field[to];
     z[to] += field[from] - field[to];
   }
-  var neighbor_lookup = grid.neighbor_lookup;
+  var neighbor_lookup = field.grid.neighbor_lookup;
   var neighbor_count = 0;
   for (var i = 0, li = neighbor_lookup.length; i < li; i++) {
     neighbor_count = neighbor_lookup[i].length;
@@ -213,14 +213,14 @@ ScalarField.differential = function (field, grid, result) {
   }
   return result;
 };
-ScalarField.gradient = function (field, grid, result) {
-  result = result || VectorField.DataFrame(grid);
+ScalarField.gradient = function (field, result) {
+  result = result || VectorField.DataFrame(field.grid);
   var dfield = 0;
-  var dpos = grid.pos_arrow_differential;
+  var dpos = field.grid.pos_arrow_differential;
   var dx = dpos.x;
   var dy = dpos.y;
   var dz = dpos.z;
-  var arrows = grid.arrows;
+  var arrows = field.grid.arrows;
   var arrow = [];
   var x = result.x;
   var y = result.y;
@@ -232,7 +232,7 @@ ScalarField.gradient = function (field, grid, result) {
     y[arrow[0]] += (dfield * dy[i]);
     z[arrow[0]] += (dfield * dz[i]);
   }
-  var neighbor_lookup = grid.neighbor_lookup;
+  var neighbor_lookup = field.grid.neighbor_lookup;
   var neighbor_count = 0;
   for (var i = 0, li = neighbor_lookup.length; i < li; i++) {
     neighbor_count = neighbor_lookup[i].length;
@@ -242,15 +242,15 @@ ScalarField.gradient = function (field, grid, result) {
   }
   return result;
 };
-ScalarField.laplacian = function (field, grid, result) {
-  result = result || ScalarField.TypedArray(grid);
-  var arrows = grid.arrows;
+ScalarField.laplacian = function (field, result) {
+  result = result || ScalarField.TypedArray(field.grid);
+  var arrows = field.grid.arrows;
   var arrow
   for (var i=0, li=arrows.length; i<li; ++i) {
       arrow = arrows[i];
       result[arrow[0]] += field[arrow[1]] - field[arrow[0]];
   }
-  var neighbor_lookup = grid.neighbor_lookup;
+  var neighbor_lookup = field.grid.neighbor_lookup;
   var neighbor_count = 0;
   for (var i = 0, li = neighbor_lookup.length; i < li; i++) {
       neighbor_count = neighbor_lookup[i].length;

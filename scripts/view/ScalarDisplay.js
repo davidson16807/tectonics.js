@@ -177,7 +177,7 @@ function getSubductabilitySmoothed(plate, iterations) {
 	var field = getSubductability(plate);
 	var laplacian = ScalarField.TypedArray(plate.grid);
 	for (var i=0; i<iterations; ++i) {
-		ScalarField.laplacian(field, plate.grid, laplacian);
+		ScalarField.laplacian(field, laplacian);
 		ScalarField.add_field(field, laplacian, field);
 	}
 	return field;
