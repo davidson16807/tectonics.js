@@ -159,7 +159,7 @@ ScalarField.mult_scalar = function (field, scalar, result) {
   return result;
 };
 ScalarField.mult_vector = function (scalar, vector, result) {
-  result = result || VectorField.DataFrame(scalar.grid);
+  result = result || VectorRaster(scalar.grid);
 
   var ix = vector.x;
   var iy = vector.y;
@@ -184,7 +184,7 @@ ScalarField.div_scalar = function (field, scalar, result) {
   return result;
 };
 ScalarField.differential = function (field, result) {
-  result = result || VectorField.DataFrame(field.grid);
+  result = result || VectorRaster(field.grid);
   var arrows = field.grid.arrows;
   var arrow = [];
   var from = 0, to = 0;
@@ -210,7 +210,7 @@ ScalarField.differential = function (field, result) {
   return result;
 };
 ScalarField.gradient = function (field, result) {
-  result = result || VectorField.DataFrame(field.grid);
+  result = result || VectorRaster(field.grid);
   var dfield = 0;
   var dpos = field.grid.pos_arrow_differential;
   var dx = dpos.x;
