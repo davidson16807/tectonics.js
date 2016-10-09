@@ -4,49 +4,11 @@
 // All fields are represented by raster objects, e.g. VectorRaster or Float32Raster
 var ScalarField = {};
 
-ScalarField.copy = function(field, result) {
-  var result = Float32Raster(field.grid);
-  for (var i=0, li=field.length; i<li; ++i) {
-      result[i] = field[i];
-  }
-  return result;
-}
-ScalarField.fill = function (field, value) {
-  for (var i = 0, li = field.length; i < li; i++) {
-    field[i] = value;
-  }
-};
-ScalarField.min_id = function (field) {
-  var max = Infinity;
-  var max_id = 0;
-  var value = 0;
-  for (var i = 0, li = field.length; i < li; i++) {
-    value = field[i];
-    if (value < max) {
-      max = value;
-      max_id = i;
-    };
-  }
-  return max_id;
-};
 ScalarField.min = function (field) {
-  field[ScalarField.min_id(field)];
-};
-ScalarField.max_id = function (field) {
-  var max = -Infinity;
-  var max_id = 0;
-  var value = 0;
-  for (var i = 0, li = field.length; i < li; i++) {
-    value = field[i];
-    if (value > max) {
-      max = value;
-      max_id = i;
-    };
-  }
-  return max_id;
+  field[Float32Raster.min_id(field)];
 };
 ScalarField.max = function (field) {
-  field[ScalarField.max_id(field)];
+  field[Float32Raster.max_id(field)];
 };
 ScalarField.sum = function (field) {
   var result = 0;

@@ -30,3 +30,58 @@ Uint8Raster.OfLength = function(length, grid) {
 	result.grid = grid;
 	return result;
 }
+Uint8Raster.FromFloat32Raster = function(raster) {
+  var result = Uint8Raster(raster.grid);
+  for (var i=0, li=result.length; i<li; ++i) {
+      result[i] = raster[i] | 0;
+  }
+  return result;
+}
+Uint8Raster.FromUint16Raster = function(raster) {
+  var result = Uint8Raster(raster.grid);
+  for (var i=0, li=result.length; i<li; ++i) {
+      result[i] = raster[i];
+  }
+  return result;
+}
+
+Uint8Raster.copy = function(field, result) {
+  var result = result || Uint8Raster(field.grid);
+  for (var i=0, li=field.length; i<li; ++i) {
+      result[i] = field[i];
+  }
+  return result;
+}
+Uint8Raster.fill = function (field, value) {
+  for (var i = 0, li = field.length; i < li; i++) {
+    field[i] = value;
+  }
+};
+
+Uint8Raster.min_id = function (field) {
+  var max = Infinity;
+  var max_id = 0;
+  var value = 0;
+  for (var i = 0, li = field.length; i < li; i++) {
+    value = field[i];
+    if (value < max) {
+      max = value;
+      max_id = i;
+    };
+  }
+  return max_id;
+};
+
+Uint8Raster.max_id = function (field) {
+  var max = -Infinity;
+  var max_id = 0;
+  var value = 0;
+  for (var i = 0, li = field.length; i < li; i++) {
+    value = field[i];
+    if (value > max) {
+      max = value;
+      max_id = i;
+    };
+  }
+  return max_id;
+};

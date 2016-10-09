@@ -70,8 +70,7 @@ scalarDisplays.flood_fill1 = new ScalarHeatDisplay(  {
 			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
 			var gradient = angular_velocity;
 			
-			var magnitude = VectorField.magnitude(gradient);
-			var max_id = ScalarField.max_id(magnitude);
+			var max_id = VectorRaster.max_id(gradient);
 			var mask = Float32Raster(plate.grid, 1);
 			var flood_fill = VectorField.flood_fill(gradient, max_id, mask);
 
@@ -87,8 +86,7 @@ scalarDisplays.flood_fill_white_top_hat = new ScalarHeatDisplay(  {
 			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
 			var gradient = angular_velocity;
 			
-			var magnitude = VectorField.magnitude(gradient);
-			var max_id = ScalarField.max_id(magnitude);
+			var max_id = VectorRaster.max_id(gradient);
 			var mask = Float32Raster(plate.grid, 1);
 			var flood_fill = VectorField.flood_fill(gradient, max_id, mask);
 
@@ -104,8 +102,7 @@ scalarDisplays.flood_fill_black_top_hat = new ScalarHeatDisplay(  {
 			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
 			var gradient = angular_velocity;
 			
-			var magnitude = VectorField.magnitude(gradient);
-			var max_id = ScalarField.max_id(magnitude);
+			var max_id = VectorRaster.max_id(gradient);
 			var mask = Float32Raster(plate.grid, 1);
 			var flood_fill = VectorField.flood_fill(gradient, max_id, mask);
 
@@ -122,8 +119,7 @@ scalarDisplays.flood_fill_dilation = new ScalarHeatDisplay(  {
 			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
 			var gradient = angular_velocity;
 			
-			var magnitude = VectorField.magnitude(gradient);
-			var max_id = ScalarField.max_id(magnitude);
+			var max_id = VectorRaster.max_id(gradient);
 			var mask = Float32Raster(plate.grid, 1);
 			var flood_fill = VectorField.flood_fill(gradient, max_id, mask);
 
@@ -140,8 +136,7 @@ scalarDisplays.flood_fill_erosion = new ScalarHeatDisplay(  {
 			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
 			var gradient = angular_velocity;
 			
-			var magnitude = VectorField.magnitude(gradient);
-			var max_id = ScalarField.max_id(magnitude);
+			var max_id = VectorRaster.max_id(gradient);
 			var mask = Float32Raster(plate.grid, 1);
 			var flood_fill = VectorField.flood_fill(gradient, max_id, mask);
 
@@ -158,8 +153,7 @@ scalarDisplays.flood_fill_opening = new ScalarHeatDisplay(  {
 			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
 			var gradient = angular_velocity;
 			
-			var magnitude = VectorField.magnitude(gradient);
-			var max_id = ScalarField.max_id(magnitude);
+			var max_id = VectorRaster.max_id(gradient);
 			var mask = Float32Raster(plate.grid, 1);
 			var flood_fill = VectorField.flood_fill(gradient, max_id, mask);
 
@@ -176,8 +170,7 @@ scalarDisplays.flood_fill_closing = new ScalarHeatDisplay(  {
 			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
 			var gradient = angular_velocity;
 			
-			var magnitude = VectorField.magnitude(gradient);
-			var max_id = ScalarField.max_id(magnitude);
+			var max_id = VectorRaster.max_id(gradient);
 			var mask = Float32Raster(plate.grid, 1);
 			var flood_fill = VectorField.flood_fill(gradient, max_id, mask);
 
@@ -196,7 +189,7 @@ var split = function(vector_field, grid) {
 	var flood_fills = [];
 	var flood_fill;
 	for (var i=1; i<7; ) {
-		flood_fill = VectorField.flood_fill(vector_field, ScalarField.max_id(magnitude), mask);   
+		flood_fill = VectorField.flood_fill(vector_field, Float32Raster.max_id(magnitude), mask);   
 		ScalarField.sub_field(magnitude, ScalarField.mult_field(flood_fill, magnitude), magnitude);
 		ScalarField.sub_field(mask, flood_fill, mask);
 	    if (ScalarField.sum(flood_fill) > min_plate_size) { 

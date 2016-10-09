@@ -46,3 +46,73 @@ VectorRaster.FromVectors = function(vectors, grid) {
 	}
 	return result;
 }
+
+VectorRaster.copy = function(input, output) {
+  var output = output || VectorRaster(input.grid);
+
+  var ix = input.x;
+  var iy = input.y;
+  var iz = input.z;
+
+  var ox = output.x;
+  var oy = output.y;
+  var oz = output.z;
+
+  for (var i=0, li=ix.length; i<li; ++i) {
+      ox[i] = ix[i];
+      oy[i] = iy[i];
+      oz[i] = iz[i];
+  }
+  return output;
+}
+VectorRaster.fill = function (value, output) {
+
+  var ix = value.x;
+  var iy = value.y;
+  var iz = value.z;
+
+  var ox = output.x;
+  var oy = output.y;
+  var oz = output.z;
+
+  for (var i=0, li=ix.length; i<li; ++i) {
+      ox[i] = ix[i];
+      oy[i] = iy[i];
+      oz[i] = iz[i];
+  }
+  return output;
+};
+
+VectorRaster.min_id = function (input) {
+  var max = Infinity;
+  var max_id = 0;
+  var mag = 0;
+  var ix = input.x;
+  var iy = input.y;
+  var iz = input.z;
+  for (var i = 0, li = ix.length; i < li; i++) {
+    mag = ix[i] * ix[i] + iy[i] * iy[i] + iz[i] * iz[i];
+    if (mag < max) {
+      max = mag;
+      max_id = i;
+    };
+  }
+  return max_id;
+};
+
+VectorRaster.max_id = function (field) {
+  var max = -Infinity;
+  var max_id = 0;
+  var mag = 0;
+  var ix = input.x;
+  var iy = input.y;
+  var iz = input.z;
+  for (var i = 0, li = ix.length; i < li; i++) {
+    mag = ix[i] * ix[i] + iy[i] * iy[i] + iz[i] * iz[i];
+    if (mag > max) {
+      max = mag;
+      max_id = i;
+    };
+  }
+  return max_id;
+};
