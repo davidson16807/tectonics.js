@@ -92,7 +92,7 @@ scalarDisplays.flood_fill_white_top_hat = new ScalarHeatDisplay(  {
 			var mask = ScalarField.TypedArray(plate.grid, 1);
 			var flood_fill = VectorField.flood_fill(gradient, plate.grid, max_id, mask);
 
-			var white_top_hat = Morphology.white_top_hat(Morphology.to_binary(flood_fill), plate.grid, 5);
+			var white_top_hat = BinaryMorphology.white_top_hat(BinaryMorphology.to_binary(flood_fill), plate.grid, 5);
 			return white_top_hat;
 		}
 	} );
@@ -109,7 +109,7 @@ scalarDisplays.flood_fill_black_top_hat = new ScalarHeatDisplay(  {
 			var mask = ScalarField.TypedArray(plate.grid, 1);
 			var flood_fill = VectorField.flood_fill(gradient, plate.grid, max_id, mask);
 
-			var white_top_hat = Morphology.white_top_hat(Morphology.to_binary(flood_fill), plate.grid, 5);
+			var white_top_hat = BinaryMorphology.white_top_hat(BinaryMorphology.to_binary(flood_fill), plate.grid, 5);
 			return white_top_hat;
 		}
 	} );
@@ -127,9 +127,9 @@ scalarDisplays.flood_fill_dilation = new ScalarHeatDisplay(  {
 			var mask = ScalarField.TypedArray(plate.grid, 1);
 			var flood_fill = VectorField.flood_fill(gradient, plate.grid, max_id, mask);
 
-			var dilation = Morphology.dilation(Morphology.to_binary(flood_fill), plate.grid, 5);
+			var dilation = BinaryMorphology.dilation(BinaryMorphology.to_binary(flood_fill), plate.grid, 5);
 
-			return Morphology.to_float(dilation);
+			return BinaryMorphology.to_float(dilation);
 		}
 	} );
 scalarDisplays.flood_fill_erosion = new ScalarHeatDisplay(  { 
@@ -145,9 +145,9 @@ scalarDisplays.flood_fill_erosion = new ScalarHeatDisplay(  {
 			var mask = ScalarField.TypedArray(plate.grid, 1);
 			var flood_fill = VectorField.flood_fill(gradient, plate.grid, max_id, mask);
 
-			var erosion = Morphology.erosion(Morphology.to_binary(flood_fill), plate.grid, 5);
+			var erosion = BinaryMorphology.erosion(BinaryMorphology.to_binary(flood_fill), plate.grid, 5);
 
-			return Morphology.to_float(erosion);
+			return BinaryMorphology.to_float(erosion);
 		}
 	} );
 scalarDisplays.flood_fill_opening = new ScalarHeatDisplay(  { 
@@ -163,9 +163,9 @@ scalarDisplays.flood_fill_opening = new ScalarHeatDisplay(  {
 			var mask = ScalarField.TypedArray(plate.grid, 1);
 			var flood_fill = VectorField.flood_fill(gradient, plate.grid, max_id, mask);
 
-			var opening = Morphology.opening(Morphology.to_binary(flood_fill), plate.grid, 5);
+			var opening = BinaryMorphology.opening(BinaryMorphology.to_binary(flood_fill), plate.grid, 5);
 
-			return Morphology.to_float(opening);
+			return BinaryMorphology.to_float(opening);
 		}
 	} );
 scalarDisplays.flood_fill_closing = new ScalarHeatDisplay(  { 
@@ -181,9 +181,9 @@ scalarDisplays.flood_fill_closing = new ScalarHeatDisplay(  {
 			var mask = ScalarField.TypedArray(plate.grid, 1);
 			var flood_fill = VectorField.flood_fill(gradient, plate.grid, max_id, mask);
 
-			var closing = Morphology.closing(Morphology.to_binary(flood_fill), plate.grid, 5);
+			var closing = BinaryMorphology.closing(BinaryMorphology.to_binary(flood_fill), plate.grid, 5);
 
-			return Morphology.to_float(closing);
+			return BinaryMorphology.to_float(closing);
 		}
 	} );
 
@@ -209,19 +209,19 @@ var split = function(vector_field, grid) {
 	var outputs = [];
 	var inputs = flood_fills;
 	for (var i=0, li=inputs.length; i<li; ++i) {
-	    outputs.push(Morphology.copy(inputs[i]));
+	    outputs.push(BinaryMorphology.copy(inputs[i]));
 	}
 	for (var i=0, li=outputs.length; i<li; ++i) {
 	    output = outputs[i];
-	    output = Morphology.dilation(output, grid, 5);
-	    output = Morphology.closing(output, grid, 5);
-	    // output = Morphology.opening(output, grid, 5);
+	    output = BinaryMorphology.dilation(output, grid, 5);
+	    output = BinaryMorphology.closing(output, grid, 5);
+	    // output = BinaryMorphology.opening(output, grid, 5);
 	    for (var j=0, lj=inputs.length; j<lj; ++j) {
 	    	if (i != j) {
-		        output = Morphology.difference(output, inputs[j]);
+		        output = BinaryMorphology.difference(output, inputs[j]);
 	    	}
 	    }
-	    inputs[i] = Morphology.to_float(output);
+	    inputs[i] = BinaryMorphology.to_float(output);
 	}
 
 	return inputs;

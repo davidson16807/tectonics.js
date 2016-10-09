@@ -688,7 +688,7 @@ Vector.magnitude = function(x, y, z) {
 	return Math.sqrt(x*x + y*y + z*z);
 }
 VectorField.flood_fill = function function_name(field, grid, start_id, mask, result) {
-	result = result || Morphology.VertexTypedArray(grid, 0);
+	result = result || BinaryMorphology.VertexTypedArray(grid, 0);
 
 	var neighbor_lookup = grid.neighbor_lookup;
 	var similarity = Vector.similarity;
@@ -699,7 +699,7 @@ VectorField.flood_fill = function function_name(field, grid, start_id, mask, res
 	var z = field.z;
 
 	var searching = [start_id];
-	var searched = Morphology.VertexTypedArray(grid, 0, Uint8Array);
+	var searched = BinaryMorphology.VertexTypedArray(grid, 0, Uint8Array);
 	var grouped  = result;
 
 	searched[start_id] = 1;
