@@ -10,13 +10,9 @@ ScalarField.TypedArray = function (grid, fill) {
   }
   return result;
 };
-ScalarField.TypedArrayOfLength = function (length, fill) {
+ScalarField.TypedArrayOfLength = function (length, grid) {
   var result = new Float32Array(length);
-  if (fill !== void 0) { 
-    for (var i=0, li=result.length; i<li; ++i) {
-        result[i] = fill;
-    }
-  }
+  result.grid = grid;
   return result;  
 };
 
@@ -263,7 +259,7 @@ ScalarField.get_nearest_value = function(field, pos, grid) {
   return field[grid.getNearestId(pos)];
 }
 ScalarField.get_nearest_values = function(value_field, pos_field, grid, result) {
-  result = result || ScalarField.TypedArrayOfLength(pos_field.x.length);
+  result = result || ScalarField.TypedArray(grid);
   var ids = grid.getNearestIds(pos_field);
   for (var i=0, li=ids.length; i<li; ++i) {
       result[i] = value_field[ids[i]];

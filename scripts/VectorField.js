@@ -26,24 +26,18 @@ VectorField.DataFrame = function(grid, fill){
 }
 
 // return vector field data structure given length
-VectorField.DataFrameOfLength = function(length, fill){
+VectorField.DataFrameOfLength = function(length, grid){
 	var result = {
 		x: new Float32Array(length),
 		y: new Float32Array(length),
 		z: new Float32Array(length),
+		grid: grid
 	};
-	if (fill !== void 0) {
-		for (var i=0, li=result.x.length; i<li; ++i) {
-		    result.x[i] = fill.x;
-		    result.y[i] = fill.y;
-		    result.z[i] = fill.z;
-		}
-	}
 	return result;
 }
 // return vector field data structure given array of single vector objects
-VectorField.DataFrameOfVectors = function(vectors){
-	var result = VectorField.DataFrameOfLength(vectors.length);
+VectorField.DataFrameOfVectors = function(vectors, grid){
+	var result = VectorField.DataFrameOfLength(vectors.length, grid);
 	var x = result.x;
 	var y = result.y;
 	var z = result.z;

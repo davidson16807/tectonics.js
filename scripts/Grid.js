@@ -26,7 +26,7 @@ function Grid(template, options){
 	}
 	this.vertex_ids = vertex_ids;
 
-	this.pos = VectorField.DataFrameOfVectors(this.vertices);
+	this.pos = VectorField.DataFrameOfVectors(this.vertices, this);
 
 	var buffer_array_to_cell = new Uint16Array(faces.length * 3);
 	for (var i=0, i3=0, li = faces.length; i<li; i++, i3+=3) {
