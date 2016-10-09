@@ -2,12 +2,12 @@
 
 var Crust = {};
 Crust.init = function(plate, grid) {
-	plate.is_member	= ScalarField.TypedArray( grid );
-	plate.age 		= ScalarField.TypedArray( grid );
-	plate.displacement= ScalarField.TypedArray( grid );
-	plate.thickness = ScalarField.TypedArray( grid );
-	plate.density 	= ScalarField.TypedArray( grid );
-	plate.elevation = ScalarField.TypedArray( grid );
+	plate.is_member	= Float32Raster( grid );
+	plate.age 		= Float32Raster( grid );
+	plate.displacement= Float32Raster( grid );
+	plate.thickness = Float32Raster( grid );
+	plate.density 	= Float32Raster( grid );
+	plate.elevation = Float32Raster( grid );
 }
 Crust.copy = function(from_plate, from_id, to_plate, to_id ){
 	to_plate.is_member	[to_id] 	= from_plate.is_member	[from_id];

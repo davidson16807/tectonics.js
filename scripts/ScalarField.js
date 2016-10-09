@@ -1,23 +1,8 @@
 ("use strict");
 var ScalarField = {};
-ScalarField.TypedArray = function (grid, fill) {
-  var result = new Float32Array(grid.vertices.length);
-  result.grid = grid;
-  if (fill !== void 0) { 
-    for (var i=0, li=result.length; i<li; ++i) {
-        result[i] = fill;
-    }
-  }
-  return result;
-};
-ScalarField.TypedArrayOfLength = function (length, grid) {
-  var result = new Float32Array(length);
-  result.grid = grid;
-  return result;  
-};
 
 ScalarField.copy = function(field, result) {
-  var result = ScalarField.TypedArray(field.grid);
+  var result = Float32Raster(field.grid);
   for (var i=0, li=field.length; i<li; ++i) {
       result[i] = field[i];
   }
@@ -86,7 +71,7 @@ ScalarField.weighted_average = function (field, weights) {
 
 
 ScalarField.normalize_field = function(field, result) {
-  result = result || ScalarField.TypedArray(field.grid);
+  result = result || Float32Raster(field.grid);
 
   var min = ScalarField.min(field);
   var max = ScalarField.max(field);
@@ -96,63 +81,63 @@ ScalarField.normalize_field = function(field, result) {
   return result;
 }
 ScalarField.add_field_term = function (field1, field2, scalar, result) {
-  result = result || ScalarField.TypedArray(field1.grid);
+  result = result || Float32Raster(field1.grid);
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] + scalar * field2[i];
   }
   return result;
 };
 ScalarField.add_field_term = function (field1, field2, scalar, result) {
-  result = result || ScalarField.TypedArray(field1.grid);
+  result = result || Float32Raster(field1.grid);
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] + scalar * field2[i];
   }
   return result;
 };
 ScalarField.add_field = function (field1, field2, result) {
-  result = result || ScalarField.TypedArray(field1.grid);
+  result = result || Float32Raster(field1.grid);
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] + field2[i];
   }
   return result;
 };
 ScalarField.sub_field = function (field1, field2, result) {
-  result = result || ScalarField.TypedArray(field1.grid);
+  result = result || Float32Raster(field1.grid);
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] - field2[i];
   }
   return result;
 };
 ScalarField.mult_field = function (field1, field2, result) {
-  result = result || ScalarField.TypedArray(field1.grid);
+  result = result || Float32Raster(field1.grid);
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] * field2[i];
   }
   return result;
 };
 ScalarField.div_field = function (field1, field2, result) {
-  result = result || ScalarField.TypedArray(field1.grid);
+  result = result || Float32Raster(field1.grid);
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] / field2[i];
   }
   return result;
 };
 ScalarField.add_scalar = function (field, scalar, result) {
-  result = result || ScalarField.TypedArray(field.grid);
+  result = result || Float32Raster(field.grid);
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field[i] + scalar;
   }
   return result;
 };
 ScalarField.sub_scalar = function (field, scalar, result) {
-  result = result || ScalarField.TypedArray(field.grid);
+  result = result || Float32Raster(field.grid);
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field[i] - scalar;
   }
   return result;
 };
 ScalarField.mult_scalar = function (field, scalar, result) {
-  result = result || ScalarField.TypedArray(field.grid);
+  result = result || Float32Raster(field.grid);
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field[i] * scalar;
   }
@@ -177,7 +162,7 @@ ScalarField.mult_vector = function (scalar, vector, result) {
   return result;
 };
 ScalarField.div_scalar = function (field, scalar, result) {
-  result = result || ScalarField.TypedArray(field.grid);
+  result = result || Float32Raster(field.grid);
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field[i] / scalar;
   }
@@ -239,7 +224,7 @@ ScalarField.gradient = function (field, result) {
   return result;
 };
 ScalarField.laplacian = function (field, result) {
-  result = result || ScalarField.TypedArray(field.grid);
+  result = result || Float32Raster(field.grid);
   var arrows = field.grid.arrows;
   var arrow
   for (var i=0, li=arrows.length; i<li; ++i) {
@@ -259,7 +244,7 @@ ScalarField.get_nearest_value = function(field, pos) {
   return field[field.grid.getNearestId(pos)];
 }
 ScalarField.get_nearest_values = function(value_field, pos_field, result) {
-  result = result || ScalarField.TypedArray(pos_field.grid);
+  result = result || Float32Raster(pos_field.grid);
   var ids = pos_field.grid.getNearestIds(pos_field);
   for (var i=0, li=ids.length; i<li; ++i) {
       result[i] = value_field[ids[i]];

@@ -1,8 +1,7 @@
 'use strict';
 
 // The VectorField namespace provides operations over mathematical vector fields.
-// It should theoretically work for any manifold or coordinate system in R^3 given the appropriate geometry,
-// However it is only intended for use with spheres 
+// All fields are represented on raster objects, e.g. VectorRaster or Float32Raster
 // It performs mathematical operations that are common to fields
 var VectorField = {}
 
@@ -143,7 +142,7 @@ VectorField.sub_vector_field = function(field1, field2, result) {
 	return result;
 };
 VectorField.dot_vector_field = function(field1, field2, result) {
-	result = result || ScalarField.TypedArray(field1.grid);
+	result = result || Float32Raster(field1.grid);
 
 	var x1 = field1.x;
 	var y1 = field1.y;
@@ -273,7 +272,7 @@ VectorField.sub_vector = function(field1, vector, result) {
 	return result;
 };
 VectorField.dot_vector = function(field1, vector, result) {
-	result = result || ScalarField.TypedArray(field1.grid);
+	result = result || Float32Raster(field1.grid);
 
 	var x1 = field1.x;
 	var y1 = field1.y;
@@ -535,7 +534,7 @@ VectorField.div_scalar = function(vector, scalar, result) {
 };
 
 VectorField.map = function(field, fn, result) {
-	result = result || ScalarField.TypedArray(field.grid)
+	result = result || Float32Raster(field.grid)
 
 	var x = field.x;
 	var y = field.y;
@@ -549,7 +548,7 @@ VectorField.map = function(field, fn, result) {
 
 
 VectorField.magnitude = function(field, result) {
-	result = result || ScalarField.TypedArray(field.grid);
+	result = result || Float32Raster(field.grid);
 
 	var x = field.x;
 	var y = field.y;
@@ -594,7 +593,7 @@ VectorField.arrow_differential = function(field, result) {
 }
 
 VectorField.divergence = function(field, result) {
-	result = result || ScalarField.TypedArray(field.grid);
+	result = result || Float32Raster(field.grid);
 
 	var dpos = field.grid.pos_arrow_differential;
 	var dx = dpos.x;

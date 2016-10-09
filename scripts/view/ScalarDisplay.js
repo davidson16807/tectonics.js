@@ -97,7 +97,7 @@ ScalarHeatDisplay.prototype.updateAttributes = function(geometry, plate) {
 	var buffer_array_index; 
 	var is_member_model = plate.is_member; 
 	var displacement_model = plate.displacement; 
-	this.field = this.field || ScalarField.TypedArray(plate.grid);
+	this.field = this.field || Float32Raster(plate.grid);
 	var scalar_model = this.getField !== void 0? this.getField(plate, this.field) : void 0;
 	var is_member;
 	var max = this.scaling? Math.max.apply(null, scalar_model) || 1 : 1;
@@ -163,7 +163,7 @@ function getSubductability (plate) {
 							* (1-continent)
 		return heaviside_approximation( density - 3000, subductability_transition_factor );
 	}
-	var subductability = ScalarField.TypedArray(plate.grid);
+	var subductability = Float32Raster(plate.grid);
 	var is_member = plate.is_member;
 	var age = plate.age;
 	var density = plate.density;
@@ -175,7 +175,7 @@ function getSubductability (plate) {
 function getSubductabilitySmoothed(plate, iterations) {
 	iterations = iterations || 30;
 	var field = getSubductability(plate);
-	var laplacian = ScalarField.TypedArray(plate.grid);
+	var laplacian = Float32Raster(plate.grid);
 	for (var i=0; i<iterations; ++i) {
 		ScalarField.laplacian(field, laplacian);
 		ScalarField.add_field(field, laplacian, field);
