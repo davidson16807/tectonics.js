@@ -1,4 +1,7 @@
 ("use strict");
+
+// The ScalarField namespace provides operations over mathematical scalar fields.
+// All fields are represented by raster objects, e.g. VectorRaster or Float32Raster
 var ScalarField = {};
 
 ScalarField.copy = function(field, result) {

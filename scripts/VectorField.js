@@ -2,8 +2,7 @@
 
 // The VectorField namespace provides operations over mathematical vector fields.
 // All fields are represented on raster objects, e.g. VectorRaster or Float32Raster
-// It performs mathematical operations that are common to fields
-var VectorField = {}
+var VectorField = {};
 
 
 VectorField.sum = function (field) {
@@ -643,7 +642,7 @@ Vector.magnitude = function(x, y, z) {
 	return Math.sqrt(x*x + y*y + z*z);
 }
 VectorField.flood_fill = function function_name(field, start_id, mask, result) {
-	result = result || BinaryMorphology.VertexTypedArray(field.grid, 0);
+	result = result || Uint8Raster(field.grid, 0);
 
 	var neighbor_lookup = field.grid.neighbor_lookup;
 	var similarity = Vector.similarity;
@@ -654,7 +653,7 @@ VectorField.flood_fill = function function_name(field, start_id, mask, result) {
 	var z = field.z;
 
 	var searching = [start_id];
-	var searched = BinaryMorphology.VertexTypedArray(field.grid, 0, Uint8Array);
+	var searched = Uint8Raster(field.grid, 0);
 	var grouped  = result;
 
 	searched[start_id] = 1;

@@ -71,7 +71,7 @@ EliasWorldGenerator.generate = function (world, optional) {
 	var plate = new Plate(world);
 	var grid = world.grid;
 	var positions = grid.vertices;
-	var height_ranks = ScalarField.TypedArray(grid);
+	var height_ranks = Float32Raster(grid);
 	for(var i=0, length = height_ranks.length; i<length; i++) {
 		var height_rank = 0;
 		var pos = positions[i];
