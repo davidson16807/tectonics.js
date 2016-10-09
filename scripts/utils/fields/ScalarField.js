@@ -1,50 +1,9 @@
-("use strict");
+'use strict';
 
 // The ScalarField namespace provides operations over mathematical scalar fields.
 // All fields are represented by raster objects, e.g. VectorRaster or Float32Raster
 var ScalarField = {};
 
-ScalarField.min = function (field) {
-  field[Float32Raster.min_id(field)];
-};
-ScalarField.max = function (field) {
-  field[Float32Raster.max_id(field)];
-};
-ScalarField.sum = function (field) {
-  var result = 0;
-  for (var i=0, li=field.length; i<li; ++i) {
-      result += field[i];
-  }
-  return result;
-};
-ScalarField.average = function (field) {
-  var result = 0;
-  for (var i=0, li=field.length; i<li; ++i) {
-      result += field[i];
-  }
-  return result / field.length;
-};
-ScalarField.weighted_average = function (field, weights) {
-  var result = 0;
-  var weight_sum = 0;
-  for (var i=0, li=field.length; i<li; ++i) {
-      result += field[i] * weights[i];
-      weight_sum += weights[i];
-  }
-  return result / weight_sum;
-};
-
-
-ScalarField.normalize_field = function(field, result) {
-  result = result || Float32Raster(field.grid);
-
-  var min = ScalarField.min(field);
-  var max = ScalarField.max(field);
-  for (var i=0, li=field.length; i<li; ++i) {
-      field[i] = (field[i] - min) / (max - min);
-  }
-  return result;
-}
 ScalarField.add_field_term = function (field1, field2, scalar, result) {
   result = result || Float32Raster(field1.grid);
   for (var i = 0, li = result.length; i < li; i++) {

@@ -192,7 +192,7 @@ var split = function(vector_field, grid) {
 		flood_fill = VectorField.flood_fill(vector_field, Float32Raster.max_id(magnitude), mask);   
 		ScalarField.sub_field(magnitude, ScalarField.mult_field(flood_fill, magnitude), magnitude);
 		ScalarField.sub_field(mask, flood_fill, mask);
-	    if (ScalarField.sum(flood_fill) > min_plate_size) { 
+	    if (Float32Dataset.sum(flood_fill) > min_plate_size) { 
 			flood_fills.push(flood_fill);
 			i++;
 		}
@@ -269,7 +269,7 @@ vectorDisplays.averaged_angular_velocity = new DataFrameVectorDisplay( {
 			var averaged_angular_velocity_field_sum = VectorField.DataFrame(plate.grid, {x:0,y:0,z:0});
 			for (var i=0, li=plates.length; i<li; ++i) {
 			    var flood_fill = plates[i];
-				var averaged_angular_velocity = VectorField.weighted_average(angular_velocity, flood_fill);
+				var averaged_angular_velocity = VectorDataset.weighted_average(angular_velocity, flood_fill);
 				var averaged_angular_velocity_field = ScalarField.mult_vector(flood_fill, averaged_angular_velocity);
 				VectorField.add_vector_field(averaged_angular_velocity_field_sum, averaged_angular_velocity_field, 
 					averaged_angular_velocity_field_sum);
@@ -289,7 +289,7 @@ vectorDisplays.averaged_velocity = new DataFrameVectorDisplay( {
 			var averaged_angular_velocity_field_sum = VectorField.DataFrame(plate.grid, {x:0,y:0,z:0});
 			for (var i=0, li=plates.length; i<li; ++i) {
 			    var flood_fill = plates[i];
-				var averaged_angular_velocity = VectorField.weighted_average(angular_velocity, flood_fill);
+				var averaged_angular_velocity = VectorDataset.weighted_average(angular_velocity, flood_fill);
 				var averaged_angular_velocity_field = ScalarField.mult_vector(flood_fill, averaged_angular_velocity);
 				VectorField.add_vector_field(averaged_angular_velocity_field_sum, averaged_angular_velocity_field, 
 					averaged_angular_velocity_field_sum);

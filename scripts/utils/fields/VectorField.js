@@ -5,69 +5,6 @@
 var VectorField = {};
 
 
-VectorField.sum = function (field) {
-	var x = field.x;
-	var y = field.y;
-	var z = field.z;
-
-	var sum_x = 0;
-	var sum_y = 0;
-	var sum_z = 0;
-
-    for (var i=0, li=field.length; i<li; ++i) {
-        sum_x += x[i];
-        sum_y += y[i];
-        sum_z += z[i];
-    }
-
-    return {x:sum_x, y:sum_y, z:sum_z};
-};
-VectorField.average = function (field) {
-	var x = field.x;
-	var y = field.y;
-	var z = field.z;
-
-	var sum_x = 0;
-	var sum_y = 0;
-	var sum_z = 0;
-
-    for (var i=0, li=field.length; i<li; ++i) {
-        sum_x += x[i];
-        sum_y += y[i];
-        sum_z += z[i];
-    }
-    
-    return {
-		x:sum_x / field.length, 
-		y:sum_y / field.length, 
-		z:sum_z / field.length
-	};
-};
-VectorField.weighted_average = function (field, weights) {
-	var x = field.x;
-	var y = field.y;
-	var z = field.z;
-
-	var sum_x = 0;
-	var sum_y = 0;
-	var sum_z = 0;
-
-	var weight_sum = 0;
-
-    for (var i=0, li=weights.length; i<li; ++i) {
-        sum_x += x[i] * weights[i];
-        sum_y += y[i] * weights[i];
-        sum_z += z[i] * weights[i];
-      	weight_sum += weights[i];
-    }
-    
-    return {
-		x:sum_x / weight_sum, 
-		y:sum_y / weight_sum, 
-		z:sum_z / weight_sum
-	};
-};
-
 
 VectorField.add_vector_field_term = function(field1, field2, scalar, result) {
 	result = result || VectorRaster(field1.grid);
