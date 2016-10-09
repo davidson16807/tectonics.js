@@ -255,12 +255,12 @@ ScalarField.laplacian = function (field, result) {
   return result;
 };
 
-ScalarField.get_nearest_value = function(field, pos, grid) {
-  return field[grid.getNearestId(pos)];
+ScalarField.get_nearest_value = function(field, pos) {
+  return field[field.grid.getNearestId(pos)];
 }
-ScalarField.get_nearest_values = function(value_field, pos_field, grid, result) {
-  result = result || ScalarField.TypedArray(grid);
-  var ids = grid.getNearestIds(pos_field);
+ScalarField.get_nearest_values = function(value_field, pos_field, result) {
+  result = result || ScalarField.TypedArray(pos_field.grid);
+  var ids = pos_field.grid.getNearestIds(pos_field);
   for (var i=0, li=ids.length; i<li; ++i) {
       result[i] = value_field[ids[i]];
   }

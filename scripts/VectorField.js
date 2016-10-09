@@ -613,8 +613,8 @@ VectorField.magnitude = function(field, result) {
 }
 
 // ∂X
-VectorField.arrow_differential = function(field, grid, result) {
-	result = result || VectorField.DataFrameOfLength(grid.arrows.length);
+VectorField.arrow_differential = function(field, result) {
+	result = result || VectorField.DataFrameOfLength(field.grid.arrows.length, field.grid);
 
 	var x1 = field.x;
 	var y1 = field.y;
@@ -624,7 +624,7 @@ VectorField.arrow_differential = function(field, grid, result) {
 	var y = result.y;
 	var z = result.z;
 
-	var arrows = grid.arrows;
+	var arrows = field.grid.arrows;
 	var arrow_i_from = 0;
 	var arrow_i_to = 0;
 	for (var i = 0, li = arrows.length; i<li; i++) {
@@ -637,15 +637,15 @@ VectorField.arrow_differential = function(field, grid, result) {
 	return result;
 }
 
-VectorField.divergence = function(field, grid, result) {
+VectorField.divergence = function(field, result) {
 	result = result || ScalarField.TypedArray(field.grid);
 
-	var dpos = grid.pos_arrow_differential;
+	var dpos = field.grid.pos_arrow_differential;
 	var dx = dpos.x;
 	var dy = dpos.y;
 	var dz = dpos.z;
 
-	var arrows = grid.arrows;
+	var arrows = field.grid.arrows;
 	var arrow_i_from = 0;
 	var arrow_i_to = 0;
 
@@ -661,7 +661,7 @@ VectorField.divergence = function(field, grid, result) {
 					 			( z[arrow_i_to] - z[arrow_i_from] ) / dz[i] ;
 	}
 
-	var neighbor_lookup = grid.neighbor_lookup;
+	var neighbor_lookup = field.grid.neighbor_lookup;
 	for (var i = 0, li = neighbor_lookup.length; i < li; i++) {
 		result[i] /= neighbor_lookup[i].length || 1;
 	}
@@ -687,10 +687,10 @@ Vector.dot = function(ax, ay, az, bx, by, bz) {
 Vector.magnitude = function(x, y, z) {
 	return Math.sqrt(x*x + y*y + z*z);
 }
-VectorField.flood_fill = function function_name(field, grid, start_id, mask, result) {
-	result = result || BinaryMorphology.VertexTypedArray(grid, 0);
+VectorField.flood_fill = function function_name(field, start_id, mask, result) {
+	result = result || BinaryMorphology.VertexTypedArray(field.grid, 0);
 
-	var neighbor_lookup = grid.neighbor_lookup;
+	var neighbor_lookup = field.grid.neighbor_lookup;
 	var similarity = Vector.similarity;
 	var magnitude = Vector.magnitude;
 
@@ -699,7 +699,7 @@ VectorField.flood_fill = function function_name(field, grid, start_id, mask, res
 	var z = field.z;
 
 	var searching = [start_id];
-	var searched = BinaryMorphology.VertexTypedArray(grid, 0, Uint8Array);
+	var searched = BinaryMorphology.VertexTypedArray(field.grid, 0, Uint8Array);
 	var grouped  = result;
 
 	searched[start_id] = 1;

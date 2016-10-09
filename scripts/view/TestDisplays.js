@@ -12,7 +12,7 @@ scalarDisplays.age_rotated 	= new ScalarHeatDisplay( { min: '250.', max: '0.',
 			rotationMatrix.makeRotationAxis( plate.eulerPole, 0.5 );
 			var pos = VectorField.mult_matrix(plate.grid.pos, rotationMatrix.toArray());
 			// test = (plate.grid.getNearestIds(pos));
-			test = ScalarField.get_nearest_values(plate.age, pos, plate.grid, result);
+			test = ScalarField.get_nearest_values(plate.age, pos, result);
 			return test;
 		} 
 	} );
@@ -41,7 +41,7 @@ scalarDisplays.id_rotated 	= new ScalarHeatDisplay( {
 			rotationMatrix.makeRotationAxis( plate.eulerPole, 0.5 );
 			var pos = VectorField.mult_matrix(plate.grid.pos, rotationMatrix.toArray());
 			// test = (plate.grid.getNearestIds(pos));
-			return ScalarField.get_nearest_values(ids, pos, plate.grid);
+			return ScalarField.get_nearest_values(ids, pos);
 		} 
 	} );
 scalarDisplays.voronoi_ids	= new ScalarHeatDisplay( {
@@ -58,7 +58,7 @@ scalarDisplays.subductability_smoothed_laplacian = new ScalarHeatDisplay(  {
 			var field = getSubductability(plate)
 			var laplacian = ScalarField.laplacian(field);
 			// var gradient = ScalarField.gradient(field);
-			// laplacian = VectorField.divergence(gradient, plate.grid);
+			// laplacian = VectorField.divergence(gradient);
 			return laplacian;
 		} 
 	} );
@@ -73,7 +73,7 @@ scalarDisplays.flood_fill1 = new ScalarHeatDisplay(  {
 			var magnitude = VectorField.magnitude(gradient);
 			var max_id = ScalarField.max_id(magnitude);
 			var mask = ScalarField.TypedArray(plate.grid, 1);
-			var flood_fill = VectorField.flood_fill(gradient, plate.grid, max_id, mask);
+			var flood_fill = VectorField.flood_fill(gradient, max_id, mask);
 
 			return flood_fill;
 		}
@@ -90,7 +90,7 @@ scalarDisplays.flood_fill_white_top_hat = new ScalarHeatDisplay(  {
 			var magnitude = VectorField.magnitude(gradient);
 			var max_id = ScalarField.max_id(magnitude);
 			var mask = ScalarField.TypedArray(plate.grid, 1);
-			var flood_fill = VectorField.flood_fill(gradient, plate.grid, max_id, mask);
+			var flood_fill = VectorField.flood_fill(gradient, max_id, mask);
 
 			var white_top_hat = BinaryMorphology.white_top_hat(BinaryMorphology.to_binary(flood_fill), plate.grid, 5);
 			return white_top_hat;
@@ -107,7 +107,7 @@ scalarDisplays.flood_fill_black_top_hat = new ScalarHeatDisplay(  {
 			var magnitude = VectorField.magnitude(gradient);
 			var max_id = ScalarField.max_id(magnitude);
 			var mask = ScalarField.TypedArray(plate.grid, 1);
-			var flood_fill = VectorField.flood_fill(gradient, plate.grid, max_id, mask);
+			var flood_fill = VectorField.flood_fill(gradient, max_id, mask);
 
 			var white_top_hat = BinaryMorphology.white_top_hat(BinaryMorphology.to_binary(flood_fill), plate.grid, 5);
 			return white_top_hat;
@@ -125,7 +125,7 @@ scalarDisplays.flood_fill_dilation = new ScalarHeatDisplay(  {
 			var magnitude = VectorField.magnitude(gradient);
 			var max_id = ScalarField.max_id(magnitude);
 			var mask = ScalarField.TypedArray(plate.grid, 1);
-			var flood_fill = VectorField.flood_fill(gradient, plate.grid, max_id, mask);
+			var flood_fill = VectorField.flood_fill(gradient, max_id, mask);
 
 			var dilation = BinaryMorphology.dilation(BinaryMorphology.to_binary(flood_fill), plate.grid, 5);
 
@@ -143,7 +143,7 @@ scalarDisplays.flood_fill_erosion = new ScalarHeatDisplay(  {
 			var magnitude = VectorField.magnitude(gradient);
 			var max_id = ScalarField.max_id(magnitude);
 			var mask = ScalarField.TypedArray(plate.grid, 1);
-			var flood_fill = VectorField.flood_fill(gradient, plate.grid, max_id, mask);
+			var flood_fill = VectorField.flood_fill(gradient, max_id, mask);
 
 			var erosion = BinaryMorphology.erosion(BinaryMorphology.to_binary(flood_fill), plate.grid, 5);
 
@@ -161,7 +161,7 @@ scalarDisplays.flood_fill_opening = new ScalarHeatDisplay(  {
 			var magnitude = VectorField.magnitude(gradient);
 			var max_id = ScalarField.max_id(magnitude);
 			var mask = ScalarField.TypedArray(plate.grid, 1);
-			var flood_fill = VectorField.flood_fill(gradient, plate.grid, max_id, mask);
+			var flood_fill = VectorField.flood_fill(gradient, max_id, mask);
 
 			var opening = BinaryMorphology.opening(BinaryMorphology.to_binary(flood_fill), plate.grid, 5);
 
@@ -179,7 +179,7 @@ scalarDisplays.flood_fill_closing = new ScalarHeatDisplay(  {
 			var magnitude = VectorField.magnitude(gradient);
 			var max_id = ScalarField.max_id(magnitude);
 			var mask = ScalarField.TypedArray(plate.grid, 1);
-			var flood_fill = VectorField.flood_fill(gradient, plate.grid, max_id, mask);
+			var flood_fill = VectorField.flood_fill(gradient, max_id, mask);
 
 			var closing = BinaryMorphology.closing(BinaryMorphology.to_binary(flood_fill), plate.grid, 5);
 
@@ -196,7 +196,7 @@ var split = function(vector_field, grid) {
 	var flood_fills = [];
 	var flood_fill;
 	for (var i=1; i<7; ) {
-		flood_fill = VectorField.flood_fill(vector_field, grid, ScalarField.max_id(magnitude), mask);   
+		flood_fill = VectorField.flood_fill(vector_field, ScalarField.max_id(magnitude), mask);   
 		ScalarField.sub_field(magnitude, ScalarField.mult_field(flood_fill, magnitude), magnitude);
 		ScalarField.sub_field(mask, flood_fill, mask);
 	    if (ScalarField.sum(flood_fill) > min_plate_size) { 
@@ -251,7 +251,7 @@ vectorDisplays.asthenosphere_angular_velocity = new DataFrameVectorDisplay( {
 			var field = getSubductabilitySmoothed(plate)
 			var gradient = ScalarField.gradient(field);
 			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
-			// laplacian = VectorField.divergence(gradient, plate.grid);
+			// laplacian = VectorField.divergence(gradient);
 			return angular_velocity;
 		} 
 	} );
@@ -261,7 +261,7 @@ vectorDisplays.asthenosphere_velocity = new DataFrameVectorDisplay( {
 			var field = getSubductabilitySmoothed(plate)
 			var gradient = ScalarField.gradient(field);
 			// var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
-			// laplacian = VectorField.divergence(gradient, plate.grid);
+			// laplacian = VectorField.divergence(gradient);
 			return gradient;
 		} 
 	} );

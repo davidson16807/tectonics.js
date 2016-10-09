@@ -92,7 +92,7 @@ function Grid(template, options){
 	this.arrows = arrows; 
 	this.arrow_lookup = arrow_lookup; 
 	
-	this.pos_arrow_differential = VectorField.arrow_differential(this.pos, this); 
+	this.pos_arrow_differential = VectorField.arrow_differential(this.pos); 
 
 	//Feed locations into a kdtree for O(logN) lookups
 	points = [];
