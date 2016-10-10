@@ -32,13 +32,3 @@ Uint16Dataset.weighted_average = function (field, weights) {
   }
   return result / weight_sum;
 };
-Uint16Dataset.normalize = function(field, result) {
-  result = result || Uint16Raster(field.grid);
-
-  var min = Uint16Dataset.min(field);
-  var max = Uint16Dataset.max(field);
-  for (var i=0, li=field.length; i<li; ++i) {
-      field[i] = (field[i] - min) / (max - min);
-  }
-  return result;
-}

@@ -32,13 +32,3 @@ Uint8Dataset.weighted_average = function (field, weights) {
   }
   return result / weight_sum;
 };
-Uint8Dataset.normalize = function(field, result) {
-  result = result || Uint8Raster(field.grid);
-
-  var min = Uint8Dataset.min(field);
-  var max = Uint8Dataset.max(field);
-  for (var i=0, li=field.length; i<li; ++i) {
-      field[i] = (field[i] - min) / (max - min);
-  }
-  return result;
-}

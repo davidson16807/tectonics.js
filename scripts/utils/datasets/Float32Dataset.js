@@ -32,13 +32,35 @@ Float32Dataset.weighted_average = function (field, weights) {
   }
   return result / weight_sum;
 };
-Float32Dataset.normalize = function(field, result) {
-  result = result || Float32Raster(field.grid);
+Float32Dataset.normalize = function(input, output, min_new, max_new) {
+  output = output || Float32Raster(input.grid);
 
-  var min = Float32Dataset.min(field);
-  var max = Float32Dataset.max(field);
-  for (var i=0, li=field.length; i<li; ++i) {
-      field[i] = (field[i] - min) / (max - min);
+  var min = Float32Dataset.min(input);
+  min_new = min_new || 0;
+  
+  var max = Float32Dataset.max(input);
+  max_new = max_new || 1;
+
+  var range = max - min;
+  var range_new = max_new - min_new;
+
+  var scaling_factor = range_new / range;
+
+  for (var i=0, li=input.length; i<li; ++i) {
+      output[i] = scaling_factor * (input[i] - min) + min_new;
   }
-  return result;
+  return output;
+}
+
+Float32Dataset.rescale = function(input, output, max_new) {
+  output = output || Float32Raster(input.grid);
+
+  var max = Float32Dataset.max(input);
+  var max_new = max_new || 1;
+  var scaling_factor = max_new / max;
+
+  for (var i=0, li=input.length; i<li; ++i) {
+      output[i] = scaling_factor * input[i];
+  }
+  return output;
 }
