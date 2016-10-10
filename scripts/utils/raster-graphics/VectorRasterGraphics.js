@@ -46,3 +46,51 @@ VectorRasterGraphics.magic_wand_select = function function_name(field, start_id,
 	return result;
 }
 
+VectorRasterGraphics.copy_into_selection = function(field, copied, selection, result) {
+	result = result || Float32Raster(field.grid);
+
+	var ax = field.x;
+	var ay = field.y;
+	var az = field.z;
+
+	var bx = copied.x;
+	var by = copied.y;
+	var bz = copied.z;
+
+	var cx = result.x;
+	var cy = result.y;
+	var cz = result.z;
+
+	for (var i=0, li=field.length; i<li; ++i) {
+	    cx[i] = selection[i] === 1? bx[i] : ax[i];
+	    cy[i] = selection[i] === 1? by[i] : ay[i];
+	    cz[i] = selection[i] === 1? bz[i] : az[i];
+	}
+
+	return result;
+}
+
+VectorRasterGraphics.fill_into_selection = function(field, fill, selection, result) {
+	result = result || Float32Raster(field.grid);
+
+	var ax = field.x;
+	var ay = field.y;
+	var az = field.z;
+
+	var bx = fill.x;
+	var by = fill.y;
+	var bz = fill.z;
+
+	var cx = result.x;
+	var cy = result.y;
+	var cz = result.z;
+
+	for (var i=0, li=field.length; i<li; ++i) {
+	    cx[i] = selection[i] === 1? bx : ax[i];
+	    cy[i] = selection[i] === 1? by : ay[i];
+	    cz[i] = selection[i] === 1? bz : az[i];
+	}
+
+	return result;
+}
+

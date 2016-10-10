@@ -13,7 +13,7 @@ Float32RasterGraphics.threshold_select = function(field, threshold, result) {
 }
 
 Float32RasterGraphics.copy_into_selection = function(field, copied, selection, result) {
-	result = result || Uint8Raster(field.grid);
+	result = result || Float32Raster(field.grid);
 
 	for (var i=0, li=field.length; i<li; ++i) {
 	    result[i] = selection[i] === 1? copied[i] : field[i];
@@ -23,7 +23,7 @@ Float32RasterGraphics.copy_into_selection = function(field, copied, selection, r
 }
 
 Float32RasterGraphics.fill_into_selection = function(field, fill, selection, result) {
-	result = result || Uint8Raster(field.grid);
+	result = result || Float32Raster(field.grid);
 
 	for (var i=0, li=field.length; i<li; ++i) {
 	    result[i] = selection[i] === 1? fill : field[i];
