@@ -154,3 +154,23 @@ BinaryMorphology.black_top_hat = function(field, radius) {
 	var opening = BinaryMorphology.opening(field, radius);
 	return BinaryMorphology.difference(field, opening);
 }
+
+
+// NOTE: this is not an standard concept in math morphology
+// It is meant to represent the difference between a figure and its dilation
+// Its name eludes to the "margin" concept within the html html box model
+BinaryMorphology.margin = function(field, radius) {
+	return BinaryMorphology.difference(
+		BinaryMorphology.dilation(field, radius),
+		field
+	);
+}
+// NOTE: this is not an standard concept in math morphology
+// It is meant to represent the difference between a figure and its erosion
+// Its name eludes to the "padding" concept within the html box model
+BinaryMorphology.padding = function(field, radius) {
+	return BinaryMorphology.difference(
+		field,
+		BinaryMorphology.erosion(field, radius)
+	);
+}
