@@ -7,7 +7,7 @@ BinaryMorphology.VertexTypedArray = function(grid) {
 	return result;
 }
 BinaryMorphology.to_binary = function(field, threshold, result) {
-	result = result || new Uint8Array(field.length);
+	result = result || Uint8Raster(field.grid);
 	threshold = threshold || 0;
 
 	for (var i=0, li=field.length; i<li; ++i) {
@@ -26,7 +26,7 @@ BinaryMorphology.to_float = function(field, result) {
 	return result;
 }
 BinaryMorphology.copy = function(field, result) {
-	result = result || new Uint8Array(field.length);
+	result = result || Uint8Raster(field.grid);
 	for (var i=0, li=field.length; i<li; ++i) {
 	    result[i] = field[i];
 	}
@@ -45,7 +45,7 @@ BinaryMorphology.empty = function(field) {
 }
 
 BinaryMorphology.union = function(field1, field2, result) {
-	result = result || new Uint8Array(field1.length);
+	result = result || Uint8Raster(field1.grid);
 
 	for (var i=0, li=field1.length; i<li; ++i) {
 	    result[i] = (field1[i]===1 || field2[i]===1)? 1:0;
@@ -55,7 +55,7 @@ BinaryMorphology.union = function(field1, field2, result) {
 }
 
 BinaryMorphology.intersection = function(field1, field2, result) {
-	result = result || new Uint8Array(field1.length);
+	result = result || Uint8Raster(field1.grid);
 
 	for (var i=0, li=field1.length; i<li; ++i) {
 	    result[i] = (field1[i]===1 && field2[i]===1)? 1:0;
@@ -65,7 +65,7 @@ BinaryMorphology.intersection = function(field1, field2, result) {
 }
 
 BinaryMorphology.difference = function(field1, field2, result) {
-	result = result || new Uint8Array(field1.length);
+	result = result || Uint8Raster(field1.grid);
 
 	for (var i=0, li=field1.length; i<li; ++i) {
 	    result[i] = (field1[i]===1 && field2[i]===0)? 1:0;
@@ -75,7 +75,7 @@ BinaryMorphology.difference = function(field1, field2, result) {
 }
 
 BinaryMorphology.negation = function(field, result) {
-	result = result || new Uint8Array(field1.length);
+	result = result || Uint8Raster(field1.grid);
 
 	for (var i=0, li=field1.length; i<li; ++i) {
 	    result[i] = (field1[i]===0)? 1:0;
@@ -84,14 +84,14 @@ BinaryMorphology.negation = function(field, result) {
 	return result;
 }
 
-BinaryMorphology.dilation = function(field, grid, radius, result) {
+BinaryMorphology.dilation = function(field, radius, result) {
 	radius = radius || 1;
-	result = result || new Uint8Array(field.length);
-	var buffer1 = radius % 2 == 1? result: 				new Uint8Array(field.length);
+	result = result || Uint8Raster(field.grid);
+	var buffer1 = radius % 2 == 1? result: 				Uint8Raster(field.grid);
 	var buffer2 = radius % 2 == 0? result: 				BinaryMorphology.copy(field);
 	var temp = buffer1;
 
-	var neighbor_lookup = grid.neighbor_lookup;
+	var neighbor_lookup = field.grid.neighbor_lookup;
 	var neighbors = [];
 	var buffer_i = true;
 
@@ -111,14 +111,14 @@ BinaryMorphology.dilation = function(field, grid, radius, result) {
 
 	return buffer2;
 }
-BinaryMorphology.erosion = function(field, grid, radius, result) {
+BinaryMorphology.erosion = function(field, radius, result) {
 	radius = radius || 1;
-	result = result || new Uint8Array(field.length);
-	var buffer1 = radius % 2 == 1? result: 				new Uint8Array(field.length);
+	result = result || Uint8Raster(field.grid);
+	var buffer1 = radius % 2 == 1? result: 				Uint8Raster(field.grid);
 	var buffer2 = radius % 2 == 0? result: 				BinaryMorphology.copy(field);
 	var temp = buffer1;
 
-	var neighbor_lookup = grid.neighbor_lookup;
+	var neighbor_lookup = field.grid.neighbor_lookup;
 	var neighbors = [];
 	var buffer_i = true;
 
@@ -138,19 +138,19 @@ BinaryMorphology.erosion = function(field, grid, radius, result) {
 
 	return buffer2;
 }
-BinaryMorphology.opening = function(field, grid, radius) {
-	var result = BinaryMorphology.erosion(field, grid, radius);
-	return BinaryMorphology.dilation(result, grid, radius);
+BinaryMorphology.opening = function(field, radius) {
+	var result = BinaryMorphology.erosion(field, radius);
+	return BinaryMorphology.dilation(result, radius);
 }
-BinaryMorphology.closing = function(field, grid, radius) {
-	var result = BinaryMorphology.dilation(field, grid, radius);
-	return BinaryMorphology.erosion(result, grid, radius);
+BinaryMorphology.closing = function(field, radius) {
+	var result = BinaryMorphology.dilation(field, radius);
+	return BinaryMorphology.erosion(result, radius);
 }
-BinaryMorphology.white_top_hat = function(field, grid, radius) {
-	var closing = BinaryMorphology.closing(field, grid, radius);
+BinaryMorphology.white_top_hat = function(field, radius) {
+	var closing = BinaryMorphology.closing(field, radius);
 	return BinaryMorphology.difference(closing, field);
 }
-BinaryMorphology.black_top_hat = function(field, grid, radius) {
-	var opening = BinaryMorphology.opening(field, grid, radius);
+BinaryMorphology.black_top_hat = function(field, radius) {
+	var opening = BinaryMorphology.opening(field, radius);
 	return BinaryMorphology.difference(field, opening);
 }

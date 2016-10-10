@@ -72,7 +72,7 @@ scalarDisplays.flood_fill1 = new ScalarHeatDisplay(  {
 			
 			var max_id = VectorRaster.max_id(gradient);
 			var mask = Float32Raster(plate.grid, 1);
-			var flood_fill = VectorField.flood_fill(gradient, max_id, mask);
+			var flood_fill = VectorRasterGraphics.magic_wand_select(gradient, max_id, mask);
 
 			return flood_fill;
 		}
@@ -88,9 +88,9 @@ scalarDisplays.flood_fill_white_top_hat = new ScalarHeatDisplay(  {
 			
 			var max_id = VectorRaster.max_id(gradient);
 			var mask = Float32Raster(plate.grid, 1);
-			var flood_fill = VectorField.flood_fill(gradient, max_id, mask);
+			var flood_fill = VectorRasterGraphics.magic_wand_select(gradient, max_id, mask);
 
-			var white_top_hat = BinaryMorphology.white_top_hat(BinaryMorphology.to_binary(flood_fill), plate.grid, 5);
+			var white_top_hat = BinaryMorphology.white_top_hat(BinaryMorphology.to_binary(flood_fill), 5);
 			return white_top_hat;
 		}
 	} );
@@ -104,9 +104,9 @@ scalarDisplays.flood_fill_black_top_hat = new ScalarHeatDisplay(  {
 			
 			var max_id = VectorRaster.max_id(gradient);
 			var mask = Float32Raster(plate.grid, 1);
-			var flood_fill = VectorField.flood_fill(gradient, max_id, mask);
+			var flood_fill = VectorRasterGraphics.magic_wand_select(gradient, max_id, mask);
 
-			var white_top_hat = BinaryMorphology.white_top_hat(BinaryMorphology.to_binary(flood_fill), plate.grid, 5);
+			var white_top_hat = BinaryMorphology.white_top_hat(BinaryMorphology.to_binary(flood_fill), 5);
 			return white_top_hat;
 		}
 	} );
@@ -121,9 +121,9 @@ scalarDisplays.flood_fill_dilation = new ScalarHeatDisplay(  {
 			
 			var max_id = VectorRaster.max_id(gradient);
 			var mask = Float32Raster(plate.grid, 1);
-			var flood_fill = VectorField.flood_fill(gradient, max_id, mask);
+			var flood_fill = VectorRasterGraphics.magic_wand_select(gradient, max_id, mask);
 
-			var dilation = BinaryMorphology.dilation(BinaryMorphology.to_binary(flood_fill), plate.grid, 5);
+			var dilation = BinaryMorphology.dilation(BinaryMorphology.to_binary(flood_fill), 5);
 
 			return BinaryMorphology.to_float(dilation);
 		}
@@ -138,7 +138,7 @@ scalarDisplays.flood_fill_erosion = new ScalarHeatDisplay(  {
 			
 			var max_id = VectorRaster.max_id(gradient);
 			var mask = Float32Raster(plate.grid, 1);
-			var flood_fill = VectorField.flood_fill(gradient, max_id, mask);
+			var flood_fill = VectorRasterGraphics.magic_wand_select(gradient, max_id, mask);
 
 			var erosion = BinaryMorphology.erosion(BinaryMorphology.to_binary(flood_fill), plate.grid, 5);
 
@@ -155,9 +155,9 @@ scalarDisplays.flood_fill_opening = new ScalarHeatDisplay(  {
 			
 			var max_id = VectorRaster.max_id(gradient);
 			var mask = Float32Raster(plate.grid, 1);
-			var flood_fill = VectorField.flood_fill(gradient, max_id, mask);
+			var flood_fill = VectorRasterGraphics.magic_wand_select(gradient, max_id, mask);
 
-			var opening = BinaryMorphology.opening(BinaryMorphology.to_binary(flood_fill), plate.grid, 5);
+			var opening = BinaryMorphology.opening(BinaryMorphology.to_binary(flood_fill), 5);
 
 			return BinaryMorphology.to_float(opening);
 		}
@@ -172,9 +172,9 @@ scalarDisplays.flood_fill_closing = new ScalarHeatDisplay(  {
 			
 			var max_id = VectorRaster.max_id(gradient);
 			var mask = Float32Raster(plate.grid, 1);
-			var flood_fill = VectorField.flood_fill(gradient, max_id, mask);
+			var flood_fill = VectorRasterGraphics.magic_wand_select(gradient, max_id, mask);
 
-			var closing = BinaryMorphology.closing(BinaryMorphology.to_binary(flood_fill), plate.grid, 5);
+			var closing = BinaryMorphology.closing(BinaryMorphology.to_binary(flood_fill), 5);
 
 			return BinaryMorphology.to_float(closing);
 		}
@@ -189,7 +189,7 @@ var split = function(vector_field, grid) {
 	var flood_fills = [];
 	var flood_fill;
 	for (var i=1; i<7; ) {
-		flood_fill = VectorField.flood_fill(vector_field, Float32Raster.max_id(magnitude), mask);   
+		flood_fill = VectorRasterGraphics.magic_wand_select(vector_field, Float32Raster.max_id(magnitude), mask);   
 		ScalarField.sub_field(magnitude, ScalarField.mult_field(flood_fill, magnitude), magnitude);
 		ScalarField.sub_field(mask, flood_fill, mask);
 	    if (Float32Dataset.sum(flood_fill) > min_plate_size) { 
@@ -206,9 +206,9 @@ var split = function(vector_field, grid) {
 	}
 	for (var i=0, li=outputs.length; i<li; ++i) {
 	    output = outputs[i];
-	    output = BinaryMorphology.dilation(output, grid, 5);
-	    output = BinaryMorphology.closing(output, grid, 5);
-	    // output = BinaryMorphology.opening(output, grid, 5);
+	    output = BinaryMorphology.dilation(output, 5);
+	    output = BinaryMorphology.closing(output, 5);
+	    // output = BinaryMorphology.opening(output, 5);
 	    for (var j=0, lj=inputs.length; j<lj; ++j) {
 	    	if (i != j) {
 		        output = BinaryMorphology.difference(output, inputs[j]);
