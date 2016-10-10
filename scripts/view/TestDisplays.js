@@ -3,7 +3,7 @@
 
 var test;
 
-// test for ScalarField.get_nearest_values()
+// test for Float32Raster.get_nearest_values()
 // rotates age by a certain amount
 scalarDisplays.age_rotated 	= new ScalarHeatDisplay( { min: '250.', max: '0.',  
 		// scaling: true,
@@ -12,7 +12,7 @@ scalarDisplays.age_rotated 	= new ScalarHeatDisplay( { min: '250.', max: '0.',
 			rotationMatrix.makeRotationAxis( plate.eulerPole, 0.5 );
 			var pos = VectorField.mult_matrix(plate.grid.pos, rotationMatrix.toArray());
 			// test = (plate.grid.getNearestIds(pos));
-			test = ScalarField.get_nearest_values(plate.age, pos, result);
+			test = Float32Raster.get_nearest_values(plate.age, pos, result);
 			return test;
 		} 
 	} );
@@ -41,7 +41,7 @@ scalarDisplays.id_rotated 	= new ScalarHeatDisplay( {
 			rotationMatrix.makeRotationAxis( plate.eulerPole, 0.5 );
 			var pos = VectorField.mult_matrix(plate.grid.pos, rotationMatrix.toArray());
 			// test = (plate.grid.getNearestIds(pos));
-			return ScalarField.get_nearest_values(ids, pos);
+			return Float32Raster.get_nearest_values(ids, pos);
 		} 
 	} );
 scalarDisplays.voronoi_ids	= new ScalarHeatDisplay( {

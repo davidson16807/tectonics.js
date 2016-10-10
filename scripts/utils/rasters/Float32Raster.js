@@ -84,3 +84,15 @@ Float32Raster.max_id = function (field) {
   }
   return max_id;
 };
+
+Float32Raster.get_nearest_value = function(field, pos) {
+  return field[field.grid.getNearestId(pos)];
+}
+Float32Raster.get_nearest_values = function(value_field, pos_field, result) {
+  result = result || Float32Raster(pos_field.grid);
+  var ids = pos_field.grid.getNearestIds(pos_field);
+  for (var i=0, li=ids.length; i<li; ++i) {
+      result[i] = value_field[ids[i]];
+  }
+  return result;
+}
