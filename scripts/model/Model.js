@@ -18,6 +18,10 @@ Model.prototype.world = function(world) {
 	console.log('publishing model.world.add')
 	Publisher.publish('model.world', 'add', { value: world, uuid: this.uuid });
 	this._world = world;
+	Publisher.publish('world.plates', 'add', { 
+		value: world, 
+		uuid: world.uuid } 
+	);
 };
 
 Model.prototype.fast_update = function(timestep) {

@@ -39,16 +39,14 @@ ScalarDisplay.prototype.updateAttributes = function(geometry, plate) {
 	scalar = geometry.attributes.scalar.array;
 	var buffer_array_to_cell = view.grid.buffer_array_to_cell;
 	var buffer_array_index; 
-	var is_member_model = plate.is_member; 
 	var displacement_model = plate.displacement; 
 	var scalar_model = this.getField !== void 0? this.getField(plate) : void 0;
 	var is_member;
 	for(var j=0, lj = displacement.length; j<lj; j++){ 
 		buffer_array_index = buffer_array_to_cell[j];
-		is_member = is_member_model[buffer_array_index]
-		displacement[j] = is_member * displacement_model[buffer_array_index]; 
+		displacement[j] = displacement_model[buffer_array_index]; 
 		if (scalar_model !== void 0) {
-			scalar[j] = is_member * scalar_model[buffer_array_index]; 
+			scalar[j] = scalar_model[buffer_array_index]; 
 		}
 	}
 	geometry.attributes.displacement.needsUpdate = true;
@@ -95,18 +93,15 @@ ScalarHeatDisplay.prototype.updateAttributes = function(geometry, plate) {
 	scalar = geometry.attributes.scalar.array;
 	var buffer_array_to_cell = view.grid.buffer_array_to_cell;
 	var buffer_array_index; 
-	var is_member_model = plate.is_member; 
 	var displacement_model = plate.displacement; 
 	this.field = this.field || Float32Raster(plate.grid);
 	var scalar_model = this.getField !== void 0? this.getField(plate, this.field) : void 0;
-	var is_member;
 	var max = this.scaling? Math.max.apply(null, scalar_model) || 1 : 1;
 	if (scalar_model !== void 0) {
 		for(var j=0, lj = displacement.length; j<lj; j++){ 
 			buffer_array_index = buffer_array_to_cell[j];
-			is_member = is_member_model[buffer_array_index]
-			displacement[j] = is_member * displacement_model[buffer_array_index]; 
-				scalar[j] = is_member * scalar_model[buffer_array_index] / max; 
+			displacement[j] = displacement_model[buffer_array_index]; 
+				scalar[j] = scalar_model[buffer_array_index] / max; 
 		}
 	}
 	geometry.attributes.displacement.needsUpdate = true;
@@ -218,13 +213,11 @@ RealisticDisplay.prototype.updateAttributes = function(geometry, plate) {
 	displacement = geometry.attributes.displacement.array;
 	var buffer_array_to_cell = view.grid.buffer_array_to_cell;
 	var buffer_array_index; 
-	var is_member_model = plate.is_member; 
 	var displacement_model = plate.displacement; 
 	var is_member;
 	for(var j=0, lj = displacement.length; j<lj; j++){ 
 		buffer_array_index = buffer_array_to_cell[j];
-		is_member = is_member_model[buffer_array_index]
-		displacement[j] = is_member * displacement_model[buffer_array_index]; 
+		displacement[j] = displacement_model[buffer_array_index]; 
 	}
 	geometry.attributes.displacement.needsUpdate = true;
 }
@@ -250,13 +243,11 @@ DebugDisplay.prototype.updateAttributes = function(geometry, plate) {
 	displacement = geometry.attributes.displacement.array;
 	var buffer_array_to_cell = view.grid.buffer_array_to_cell;
 	var buffer_array_index; 
-	var is_member_model = plate.is_member; 
 	var displacement_model = plate.displacement; 
 	var is_member;
 	for(var j=0, lj = displacement.length; j<lj; j++){ 
 		buffer_array_index = buffer_array_to_cell[j];
-		is_member = is_member_model[buffer_array_index]
-		displacement[j] = is_member * displacement_model[buffer_array_index]; 
+		displacement[j] = displacement_model[buffer_array_index]; 
 	}
 	geometry.attributes.displacement.needsUpdate = true;
 }

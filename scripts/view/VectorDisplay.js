@@ -16,11 +16,9 @@ ThreeJsVectorDisplay.prototype.updateAttributes = function(material, plate) {
 
 	var vector_model = this.getField(plate);
 	var is_member_model = plate.is_member;
-	for(var i=0, li = is_member_model.length; i<li; i++){
+	for(var i=0, li = vector_model.length; i<li; i++){
 		var vector_i = 2*i+1;
-		vector[vector_i] = is_member_model[i] === 1?  
-			vector_model[i] : 
-			new THREE.Vector3(0.00,0.00,0.00); 
+		vector[vector_i] = vector_model[i]; 
 	}
 	material.attributes.vector.needsUpdate = true;
 }
@@ -70,19 +68,13 @@ DataFrameVectorDisplay.prototype.updateAttributes = function(material, plate) {
 	for(var i=0, li = is_member_model.length; i<li; i++){
 		var start = vector[2*i];
 		var end = vector[2*i+1];
-		if (is_member_model[i]) {
-			end.x = vector_model.x[i];
-			end.y = vector_model.y[i];
-			end.z = vector_model.z[i];
-			end.divideScalar(10*max);
-			// start.x = -end.x;
-			// start.y = -end.y;
-			// start.z = -end.z;
-		} else {
-			end.x = 0;
-			end.y = 0;
-			end.z = 0;
-		}
+		end.x = vector_model.x[i];
+		end.y = vector_model.y[i];
+		end.z = vector_model.z[i];
+		end.divideScalar(10*max);
+		// start.x = -end.x;
+		// start.y = -end.y;
+		// start.z = -end.z;
 	}
 	material.attributes.vector.needsUpdate = true;
 }

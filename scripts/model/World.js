@@ -1,152 +1,130 @@
 'use strict';
 
-// grid: 	 an object of type Grid
-// optional: A list of optional parameters. Optional parameters default to values seen on early earth
-function World(optional){
-	optional = optional || {};
 
-	this.getRandomPlateSpeed = optional['getRandomPlateSpeed'] ||
-		//function() { return Math.exp(random.normal(-5.13, 0.548)); }
-		function() { return random.normal(0.00687, 0.00380); }
-		//^^^ log normal and normal distribution fit to angular velocities from Larson et al. 1997
-	this.getRandomPlateDensityEffect = optional['getRandomPlateDensityEffect'] ||
-		function() { return random.normal(0,40); }
-		// from Carlson & Raskin 1984
+function Crust(optional) {
+	this.grid = optional['grid'];
+	this.displacement = Float32Raster(this.grid);
+	this.elevation = Float32Raster(this.grid);
+	this.thickness = Float32Raster(this.grid);
+	this.density = Float32Raster(this.grid);
+	this.age = Float32Raster(this.grid);
+	this.uuid = Uuid.create();
+}
 
-	var radius = optional['radius'] || 6367;
-	this.radius = radius;
-	
-	this.supercontinentCycle = optional["supercontinentCycle"] || new SupercontinentCycle(this);
-	this.grid = optional['grid'] || new Grid( 
-		new THREEx.FibonacciSphereGeometry(1, 10000)
-		/*new THREE.IcosahedronGeometry(1, 5)*/
+var World = (function() {
+	function get_subductability(output) {
+		// body...
+	}
+	function get_aesthenosphere_velocity(subductability, output) {
+		// body...
+	}
+	function get_plate_masks(aesthenosphere_velocity) {
+		// get_plates? get_plate_segments? get_plate_regions? get_plate_boundaries?
+		// body...
+	}
+	function branch_plates(masks) {
+		// body...
+	}
+	function merge_plates_to_master(plates, world) {
+		// body...
+	}
+	function merge_master_to_plates(world, plates) {
+		// body...
+	}
+	function isostasy(world) {
+		var thicknesses = world.thickness; 
+		var densities = world.density; 
+		var displacements = world.displacement; 
+		var is_member = world.is_member; 
+		
+		var mantleDensity = world.mantleDensity; 
+		var thickness, rootDepth;
+		for(var i=0, li = displacements.length; i<li; i++){
+
+			//Calculates elevation as a function of crust density. 
+			//This was chosen as it only requires knowledge of crust density and thickness,  
+			//which are relatively well known. 
+			thickness = thicknesses[i]; 
+			rootDepth = thickness * densities[i] / mantleDensity; 
+			displacements[i] = thickness - rootDepth;
+		}
+	}
+
+	function World(optional) {
+		Crust.call(this, optional);
+
+		this.getRandomPlateSpeed = optional['getRandomPlateSpeed'] ||
+			//function() { return Math.exp(random.normal(-5.13, 0.548)); }
+			function() { return random.normal(0.00687, 0.00380); }
+			//^^^ log normal and normal distribution fit to angular velocities from Larson et al. 1997
+
+		this.radius = optional['radius'] || 6367;
+		// this.age = optional['age'] || 0;
+		this.maxPlatesNum = optional['platesNum'] || 8;
+
+		this.plates = [];
+	}
+	World.prototype = Object.create(Crust);
+	World.prototype.constructor = World;
+
+
+	World.prototype.SEALEVEL = 3682;
+	World.prototype.mantleDensity=3300;
+	World.prototype.waterDensity=1026;
+	World.prototype.ocean =
+	 RockColumn(void 0, {
+		elevation: 	-3682,	// Charette & Smith 2010
+		thickness: 	7100, 	// +/- 800, White McKenzie and O'nions 1992
+		density: 	2890	// Carlson & Raskin 1984
+	 });
+	World.prototype.land =
+	 RockColumn(void 0, {
+		elevation: 	840,   //Sverdrup & Fleming 1942
+	    thickness: 	36900, // +/- 2900, estimate for shields, Zandt & Ammon 1995
+		density: 	2700
+	 });
+
+
+	World.prototype.resetPlates = function() {
+		return;
+	};
+
+
+	World.prototype.fast_update = function (timestep) {
+	 	if (timestep === 0) {
+	 		return;
+	 	};
+
+	}
+	World.prototype.slow_update = function(timestep){
+		if (timestep === 0) {
+			return;
+		};
+
+		//option 1 seems to make more sense - there is no final merge function that serves only to prepare for next timestep
+
+		//OPTION 1:
+		merge_master_to_plates(this, this.plates);
+
+		// plate submodels go here: plate motion and erosion, namely
+
+		merge_plates_to_master(this.plates, this);
+
+		// World submodels go here: atmo model, hydro model, bio model, etc.
+
+
+
+		//FIRST ITERATION? 
+		// var new_pos = add_scalar_term(grid.pos, aesthenosphere_velocity, -timestep);
+		// var ids = get_nearest_ids(new_pos);
+		// get_values(fields, ids); giving fields
+
+		isostasy(this);
+
+		Publisher.publish('world.plates', 'update', { 
+			value: this, 
+			uuid: this.uuid } 
 		);
-	this.age = optional['age'] || 0;
-	this.platesNum = optional['platesNum'] || 7;
-	this.mountainWidth = (optional['mountainWidth'] || 300) / radius;
-	
-	this.plates = [];
-	this.updateNeighbors();
-	this.updateBorders();
-}
-
-World.prototype.SEALEVEL = 3682;
-World.prototype.mantleDensity=3300;
-World.prototype.waterDensity=1026;
-World.prototype.ocean =
- RockColumn(void 0, {
-	elevation: 	-3682,	// Charette & Smith 2010
-	thickness: 	7100, 	// +/- 800, White McKenzie and O'nions 1992
-	density: 	2890	// Carlson & Raskin 1984
- });
-World.prototype.land =
- RockColumn(void 0, {
-	elevation: 	840,   //Sverdrup & Fleming 1942
-    thickness: 	36900, // +/- 2900, estimate for shields, Zandt & Ammon 1995
-	density: 	2700
- });
-
-World.prototype.fast_update = function (timestep) {
-	if (timestep === 0) {
-		return;
 	};
-
-	var length = this.plates.length;
-	var plates = this.plates;
-	var i = 0;
-	for(i = 0; i<length; i++){
-		plates[i].move(timestep);
-	}
-}
-
-World.prototype.slow_update = function(timestep){
-	if (timestep === 0) {
-		return;
-	};
-
-	var length = this.plates.length;
-	var plates = this.plates;
-	var i = 0;
-	for(i = 0; i<length; i++){
-		plates[i].update(timestep);
-	}
-	for(i = 0; i<length; i++){
-		plates[i].erode(timestep);
-	}
-	for(i = 0; i<length; i++){
-		plates[i].isostasy();
-	}
-	this.updateBorders();
-	for(i = 0; i<length; i++){
-		plates[i].rift();
-	}
-	for(i = 0; i<length; i++){
-		plates[i].deform();
-	}
-	Publisher.publish('world.plates', 'update', { 
-		value: { }, 
-		uuid: this.uuid } 
-	);
-	var platestemp = plates.slice(0); // copy the array
-	for(i = 0; i<length; i++){
-		// if(platestemp[i].getSize() <= 100)
-		// {
-		// 	this.remove(platestemp[i]);
-		// 	this.updateNeighbors();
-		// }
-	}
-	this.supercontinentCycle.update(timestep);
-	this.age += timestep;
-}
-
-World.prototype.split = function(){
-	// don't bother if splitting will produce more plates than desired
-	if(this.plates.length >= this.platesNum){
-		return;
-	}
-	
-	var largest = this.plates.sort(function(a, b) { return b.getContinentalSize() - a.getContinentalSize(); })[0];
-	var plates = largest.split();
-
-	if (plates === void 0) {
-		return;
-	};
-	for (var i = 0, li = plates.length; i < li; i++) {
-		this.add(plates[i]);
-	};
-	this.remove(largest);
-
-	this.updateNeighbors();
-	this.updateBorders();
-	
-}
-
-World.prototype.add = function(plate) {
-	this.plates.push(plate);
-	Publisher.publish('world.plates', 'add', { value: plate, uuid: this.uuid } );
-};
-World.prototype.remove = function(plate) {
-	this.plates.splice(this.plates.indexOf(plate),1);
-	Publisher.publish('world.plates', 'remove', { value: plate, uuid: this.uuid });
-};
-
-World.prototype.updateNeighbors = function(){
-	for(var i = 0, length = this.plates.length; i<length; i++){
-		this.plates[i].updateNeighbors();
-	}
-}
-
-World.prototype.updateBorders = function(){
-	var length = this.plates.length;
-	var plates = this.plates;
-	for(var i = 0; i<length; i++){
-		plates[i].updateBorders();
-	}
-}
-
-World.prototype.getRandomPoint = function() {
-	return _toCartesian({
-		lat: Math.asin(2*random.random() - 1),
-		lon: 2*Math.PI * random.random()
-	});
-}
+	return World;
+})();

@@ -28,7 +28,7 @@ function PlateView(scene, plate, uniforms, vertexShader, scalarDisplay, vectorDi
 		  scalar: { type: 'f', value: null }
 		},
 		uniforms: {
-		  sealevel: { type: 'f', value: plate.world.SEALEVEL },
+		  sealevel: { type: 'f', value: plate.SEALEVEL },
 		  sealevel_mod: { type: 'f', value: sealevel_mod },
 		  color: 	    { type: 'c', value: color },
 		  index: 		{ type: 'f', value: -1 },
@@ -48,7 +48,7 @@ function PlateView(scene, plate, uniforms, vertexShader, scalarDisplay, vectorDi
 		  scalar: { type: 'f', value: null }
 		},
 		uniforms: {
-		  sealevel: { type: 'f', value: plate.world.SEALEVEL },
+		  sealevel: { type: 'f', value: plate.SEALEVEL },
 		  sealevel_mod: { type: 'f', value: sealevel_mod },
 		  color: 	    { type: 'c', value: color },
 		  index: 		{ type: 'f', value: 1 }
@@ -72,8 +72,7 @@ function PlateView(scene, plate, uniforms, vertexShader, scalarDisplay, vectorDi
 	    });
 	var vector_field_geometry = new THREE.Geometry();
 	this.vector_field_material = vector_field_material;
-	var is_member_model = plate.is_member;
-	var positions = plate.pos;
+	var positions = plate.grid.pos;
 	for (var i=0, li=plate.grid.vertices.length; i<li; ++i) {
 	    vector_field_geometry.vertices.push( plate.grid.vertices[i] );
 	    vector_field_geometry.vertices.push( plate.grid.vertices[i] );

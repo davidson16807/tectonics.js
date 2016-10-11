@@ -1,22 +1,3 @@
-CratonWorldGenerator = {}
-CratonWorldGenerator.generate = function (world, optional) {
-	var optional = {};
-	var continentRadius = (optional['continentRadius'] || 1250) / world.radius;
-	var shield = world.getRandomPoint();
-
-	var plate = new Plate(world);
-	for(var i=0, length = plate.cells.length; i<length; i++) {
-		var cell = plate.cells[i];
-		if(shield.distanceTo(cell.pos) < continentRadius ) { 
-			cell.create(world.land);
-		} else {
-			cell.create(world.ocean);
-		}
-		cell.content.isostasy();
-	}
-	plate.densityOffset = plate.getDensityOffset();
-	world.plates = [plate];
-}
 
 
 // what follows is an implementation of the terrain generation algorithm discussed by
@@ -68,7 +49,6 @@ EliasWorldGenerator.generate = function (world, optional) {
 	// This value doesn't translate directly to elevation. 
 	// It only represents how cells would rank if sorted by elevation.
 	// This is done so we can later derive elevations that are consistent with earth's.
-	var plate = new Plate(world);
 	var grid = world.grid;
 	var positions = grid.vertices;
 	var height_ranks = Float32Raster(grid);
@@ -168,36 +148,25 @@ EliasWorldGenerator.generate = function (world, optional) {
 		mountain
 	];
 	 
-	var cells = plate.cells;
-
-	var is_member 	= plate.is_member;
-	var age 		= plate.age;
-	var displacement= plate.displacement;
-	var thickness 	= plate.thickness;
-	var density 	= plate.density;
-	var elevation 	= plate.elevation;
+	var age 		= world.age;
+	var displacement= world.displacement;
+	var thickness 	= world.thickness;
+	var density 	= world.density;
+	var elevation 	= world.elevation;
 
 	// We then use interpolate between these templated values.
 	for (var i = 0, li = cell_ids.length; i < li; i++) {
 		var height = heights[i];
 
-		var rock_column = void 0;
 		for (var j = 1; j < control_points.length; j++) {
 			var lower = control_points[j-1];
 			var upper = control_points[j];
 			if (height < upper.elevation || 
 				upper.elevation == mountain.elevation){
 				var fraction = smoothstep(lower.elevation, upper.elevation, height);
-				rock_column = new RockColumn(world, {
-					elevation: 	height,
-					thickness:  lerp(lower.thickness, upper.thickness, fraction),
-					density:  	lerp(lower.density, upper.density, fraction),
-				});
 				
 				var cell_id = cell_ids[i];
-				cells[cell_id].create(rock_column);
 
-				is_member[cell_id]	= 1;
 				age[cell_id] 		= lerp(lower.age, upper.age, fraction);
 				thickness[cell_id] 	= lerp(lower.thickness, upper.thickness, fraction);
 				density[cell_id] 	= lerp(lower.density, upper.density, fraction);
@@ -207,10 +176,5 @@ EliasWorldGenerator.generate = function (world, optional) {
 				break;
 			}
 		};
-
-
 	};
-
-	plate.densityOffset = plate.getDensityOffset();
-	world.plates = [plate];
 }

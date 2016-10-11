@@ -31,11 +31,8 @@ function View(grid, scalarDisplay, vectorDisplay, vertexShader){
 	// 	this_.cell_update(content.uuid, content.value);
 	// });
 	Publisher.subscribe('world.plates', 'update', function (content) {
-		var plate;
-		for (var i=0, li=world.plates.length; i<li; ++i) {
-		    var plate = world.plates[i];
-			this_.cell_update(plate.uuid, plate); 
-		}
+		var plate = world;
+		this_.cell_update(plate.uuid, plate); 
 		// HACK: ideally should not make reference to "world",
 		//  but pass the values relevant to the subscriber function
 		//  This is so we will be eventually able to implement parallel processing
