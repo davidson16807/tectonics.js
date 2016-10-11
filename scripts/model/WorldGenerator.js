@@ -15,9 +15,6 @@ EliasWorldGenerator.generate = function (world, optional) {
 	var optional = {};
 	var exp = Math.exp;
 
-	function lerp(a,b, x){
-		return a + x*(b-a);
-	}
 	function heaviside_approximation (x, k) {
 		return 2 / (1 + exp(-k*x)) - 1;
 		return x>0? 1: 0; 
@@ -73,14 +70,12 @@ EliasWorldGenerator.generate = function (world, optional) {
 	// To do this, we generate a second dataset of equal size that represents actual elevations.
 	// This dataset is generated from statistical distributions matching those found on earth. 
 	// We sort the elevations and map each one to a cell from our height-rank sorted list.
-	heights = []
+	heights = new Float32Array(cell_ids.length);
 	var water_fraction = 0.05; // Earth = 0.71
-	for (var i = 0, li = cell_ids.length; i < li; i++) {
-		if (random.uniform(0,1) > water_fraction) { 
-			heights.push(random.normal(-4019,1113));
-		} else {
-			heights.push(random.normal(797,1169) );
-		}
+	for (var i = 0, li = heights.length; i < li; i++) {
+		heights[i] = random.uniform(0,1) > water_fraction? 
+			random.normal(-4019,1113) :
+			random.normal(797,1169);
 	};
 	heights.sort(function(a,b) { return a-b; });
  	
@@ -90,49 +85,49 @@ EliasWorldGenerator.generate = function (world, optional) {
 	// what thickness/density should look like at a given density.
 
 	var abyss = 
-	 new RockColumn(void 0, {
+	 new RockColumn({
 		elevation: 	-11000,
 		thickness: 	4000, 
 		age: 		250,
 		density: 	3300	// Carlson & Raskin 1984
 	 });
 	var deep_ocean = 
-	 new RockColumn(void 0, {
+	 new RockColumn({
 		elevation: 	-6000,  
 		thickness:  7100-800,// +/- 800, White McKenzie and O'nions 1992
 		age: 		200,
 		density: 	3000	// Carlson & Raskin 1984
 	 });
 	var shallow_ocean =
-	 new RockColumn(void 0, {
+	 new RockColumn({
 		elevation: 	-3682,	// Charette & Smith 2010
 		thickness: 	7100+800,// +/- 800, White McKenzie and O'nions 1992
 		age: 		0,
 		density: 	2890	// Carlson & Raskin 1984
 	 });
 	var shelf_bottom = 
-	 new RockColumn(void 0, {
+	 new RockColumn({
 		elevation: 	-2000,   //Sverdrup & Fleming 1942
 	    thickness: 	7100+800, // +/- 2900, estimate for shields, Zandt & Ammon 1995
 		age: 		100,
 		density: 	2950
 	 });
 	var shelf_top = 
-	 new RockColumn(void 0, {
+	 new RockColumn({
 		elevation: 	-200,   //Sverdrup & Fleming 1942
 	    thickness: 	17000, // +/- 2900, estimate for shields, Zandt & Ammon 1995
 		age: 		1000,
 		density: 	2700
 	 });
 	var land =
-	 new RockColumn(void 0, {
+	 new RockColumn({
 		elevation: 	840,   //Sverdrup & Fleming 1942
 	    thickness: 	36900, // +/- 2900, estimate for shields, Zandt & Ammon 1995
 		age: 		1000,
 		density: 	2700
 	 });
 	var mountain = 
-	 new RockColumn(void 0, {
+	 new RockColumn({
 		elevation: 	8848,
 	    thickness: 	70000, // +/- 2900, estimate for shields, Zandt & Ammon 1995
 		age: 		1000,
@@ -165,13 +160,7 @@ EliasWorldGenerator.generate = function (world, optional) {
 				upper.elevation == mountain.elevation){
 				var fraction = smoothstep(lower.elevation, upper.elevation, height);
 				
-				var cell_id = cell_ids[i];
-
-				age[cell_id] 		= lerp(lower.age, upper.age, fraction);
-				thickness[cell_id] 	= lerp(lower.thickness, upper.thickness, fraction);
-				density[cell_id] 	= lerp(lower.density, upper.density, fraction);
-				elevation[cell_id] 	= height;
-				displacement[cell_id]= 0;
+				Crust.set_value( world, cell_ids[i], RockColumn.lerp(lower, upper, fraction) );
 
 				break;
 			}
