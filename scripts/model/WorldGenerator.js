@@ -85,54 +85,54 @@ EliasWorldGenerator.generate = function (world, optional) {
 	// what thickness/density should look like at a given density.
 
 	var abyss = 
-	 new RockColumn({
+	 {
 		elevation: 	-11000,
 		thickness: 	4000, 
 		age: 		250,
 		density: 	3300	// Carlson & Raskin 1984
-	 });
+	 };
 	var deep_ocean = 
-	 new RockColumn({
+	 {
 		elevation: 	-6000,  
 		thickness:  7100-800,// +/- 800, White McKenzie and O'nions 1992
 		age: 		200,
 		density: 	3000	// Carlson & Raskin 1984
-	 });
+	 };
 	var shallow_ocean =
-	 new RockColumn({
+	 {
 		elevation: 	-3682,	// Charette & Smith 2010
 		thickness: 	7100+800,// +/- 800, White McKenzie and O'nions 1992
 		age: 		0,
 		density: 	2890	// Carlson & Raskin 1984
-	 });
+	 };
 	var shelf_bottom = 
-	 new RockColumn({
+	 {
 		elevation: 	-2000,   //Sverdrup & Fleming 1942
 	    thickness: 	7100+800, // +/- 2900, estimate for shields, Zandt & Ammon 1995
 		age: 		100,
 		density: 	2950
-	 });
+	 };
 	var shelf_top = 
-	 new RockColumn({
+	 {
 		elevation: 	-200,   //Sverdrup & Fleming 1942
 	    thickness: 	17000, // +/- 2900, estimate for shields, Zandt & Ammon 1995
 		age: 		1000,
 		density: 	2700
-	 });
+	 };
 	var land =
-	 new RockColumn({
+	 {
 		elevation: 	840,   //Sverdrup & Fleming 1942
 	    thickness: 	36900, // +/- 2900, estimate for shields, Zandt & Ammon 1995
 		age: 		1000,
 		density: 	2700
-	 });
+	 };
 	var mountain = 
-	 new RockColumn({
+	 {
 		elevation: 	8848,
 	    thickness: 	70000, // +/- 2900, estimate for shields, Zandt & Ammon 1995
 		age: 		1000,
 		density: 	2700
-	 });
+	 };
 	var control_points = [
 		abyss,
 		deep_ocean,
