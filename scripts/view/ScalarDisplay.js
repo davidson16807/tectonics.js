@@ -94,8 +94,8 @@ ScalarHeatDisplay.prototype.updateAttributes = function(geometry, plate) {
 	var buffer_array_to_cell = view.grid.buffer_array_to_cell;
 	var buffer_array_index; 
 	var displacement_model = plate.displacement; 
-	this.field = this.field || Float32Raster(plate.grid);
-	var scalar_model = this.getField !== void 0? this.getField(plate, this.field) : void 0;
+	// this.field = this.field || Float32Raster(plate.grid);
+	var scalar_model = this.getField !== void 0? this.getField(plate) : void 0;
 	var max = this.scaling? Math.max.apply(null, scalar_model) || 1 : 1;
 	if (scalar_model !== void 0) {
 		for(var j=0, lj = displacement.length; j<lj; j++){ 
@@ -131,7 +131,7 @@ scalarDisplays.density 	= new ScalarHeatDisplay( { min: '2700.', max: '3300.',
 var subduction_min_age_threshold = 150;
 var subduction_max_age_threshold = 200;
 var subductability_transition_factor = 1/100;
-function getSubductability (plate) {
+function getSubductability (plate, output) {
 	function lerp(a,b, x){
 		return a + x*(b-a);
 	}
@@ -158,24 +158,24 @@ function getSubductability (plate) {
 							* (1-continent)
 		return heaviside_approximation( density - 3000, subductability_transition_factor );
 	}
-	var subductability = Float32Raster(plate.grid);
-	var is_member = plate.is_member;
+	var subductability = output || Float32Raster(plate.grid);
 	var age = plate.age;
 	var density = plate.density;
 	for (var i=0, li=subductability.length; i<li; ++i) {
-	    subductability[i] = is_member[i] * get_subductability(density[i], age[i]);
+	    subductability[i] = get_subductability(density[i], age[i]);
 	}
 	return subductability;
 } 
-function getSubductabilitySmoothed(plate, iterations) {
-	iterations = iterations || 30;
-	var field = getSubductability(plate);
-	var laplacian = Float32Raster(plate.grid);
+function getSubductabilitySmoothed(plate, output, scratch, iterations) {
+	iterations =  30;
+	output = output || Float32Raster(plate.grid);
+	getSubductability(plate, output);
+	var laplacian = scratch || Float32Raster(plate.grid);
 	for (var i=0; i<iterations; ++i) {
-		ScalarField.laplacian(field, laplacian);
-		ScalarField.add_field(field, laplacian, field);
+		ScalarField.laplacian(output, laplacian);
+		ScalarField.add_field(output, laplacian, output);
 	}
-	return field;
+	return output;
 }
 scalarDisplays.subductability = new ScalarHeatDisplay(  { 
 		min: '1.', max: '0.',
