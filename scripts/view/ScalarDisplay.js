@@ -167,13 +167,14 @@ function getSubductability (plate, output) {
 	return subductability;
 } 
 function getSubductabilitySmoothed(plate, output, scratch, iterations) {
-	iterations =  30;
 	output = output || Float32Raster(plate.grid);
-	getSubductability(plate, output);
 	var laplacian = scratch || Float32Raster(plate.grid);
+	iterations = iterations || 30;
+	getSubductability(plate, output);
 	for (var i=0; i<iterations; ++i) {
-		ScalarField.laplacian(output, laplacian);
-		ScalarField.add_field(output, laplacian, output);
+		ScalarField.diffusion_by_constant(output, 1, output, laplacian);
+		// ScalarField.laplacian(output, laplacian);
+		// ScalarField.add_field(output, laplacian, output);
 	}
 	return output;
 }

@@ -163,3 +163,45 @@ ScalarField.laplacian = function (field, result) {
   }
   return result;
 };
+// iterates through time using the diffusion equation
+ScalarField.diffusion_by_constant = function (input, constant, output, scratch) {
+  output = output || Float32Raster(input.grid);
+  var laplacian = scratch || Float32Raster(input.grid);
+  var arrows = input.grid.arrows;
+  var arrow
+  for (var i=0, li=arrows.length; i<li; ++i) {
+      arrow = arrows[i];
+      laplacian[arrow[0]] += input[arrow[1]] - input[arrow[0]];
+  }
+  var neighbor_lookup = input.grid.neighbor_lookup;
+  var neighbor_count = 0;
+  for (var i = 0, li = neighbor_lookup.length; i < li; i++) {
+      neighbor_count = neighbor_lookup[i].length;
+      laplacian[i] /= neighbor_count;
+  }
+  for (var i=0, li=laplacian.length; i<li; ++i) {
+      output[i] = input[i] + constant * laplacian[i];
+  }
+  return output;
+};
+// iterates through time using the diffusion equation
+ScalarField.diffusion_by_field = function (input, field, output) {
+  output = output || Float32Raster(input.grid);
+  var laplacian = scratch || Float32Raster(input.grid);
+  var arrows = input.grid.arrows;
+  var arrow
+  for (var i=0, li=arrows.length; i<li; ++i) {
+      arrow = arrows[i];
+      laplacian[arrow[0]] += input[arrow[1]] - input[arrow[0]];
+  }
+  var neighbor_lookup = input.grid.neighbor_lookup;
+  var neighbor_count = 0;
+  for (var i = 0, li = neighbor_lookup.length; i < li; i++) {
+      neighbor_count = neighbor_lookup[i].length;
+      laplacian[i] /= neighbor_count;
+  }
+  for (var i=0, li=laplacian.length; i<li; ++i) {
+      output[i] = input[i] + field[i] * laplacian[i];
+  }
+  return output;
+};
