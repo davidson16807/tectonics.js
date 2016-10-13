@@ -66,6 +66,7 @@ function ScalarHeatDisplay(options) {
 	this.getField = options['getField'];
 	this.scaling = scaling;
 	this.field = void 0;
+	this.scratch = void 0;
 	this._fragmentShader = fragmentShaders.template
 		.replace('@OUTPUT',
 			_multiline(function() {/**   
@@ -81,6 +82,7 @@ function ScalarHeatDisplay(options) {
 }
 ScalarHeatDisplay.prototype.addTo = function(mesh) {
 	this.field = void 0;
+	this.scratch = void 0;
 	mesh.material.fragmentShader = this._fragmentShader;
 	mesh.material.needsUpdate = true;
 };
@@ -94,8 +96,9 @@ ScalarHeatDisplay.prototype.updateAttributes = function(geometry, plate) {
 	var buffer_array_to_cell = view.grid.buffer_array_to_cell;
 	var buffer_array_index; 
 	var displacement_model = plate.displacement; 
-	// this.field = this.field || Float32Raster(plate.grid);
-	var scalar_model = this.getField !== void 0? this.getField(plate) : void 0;
+	this.field = this.field || Float32Raster(plate.grid);
+	this.scratch = this.scratch || Float32Raster(plate.grid);
+	var scalar_model = this.getField !== void 0? this.getField(plate, this.field, this.scratch) : void 0;
 	var max = this.scaling? Math.max.apply(null, scalar_model) || 1 : 1;
 	if (scalar_model !== void 0) {
 		for(var j=0, lj = displacement.length; j<lj; j++){ 
@@ -158,7 +161,7 @@ function getSubductability (plate, output) {
 							* (1-continent)
 		return heaviside_approximation( density - 3000, subductability_transition_factor );
 	}
-	var subductability = output || Float32Raster(plate.grid);
+	var subductability = output;
 	var age = plate.age;
 	var density = plate.density;
 	for (var i=0, li=subductability.length; i<li; ++i) {
@@ -167,12 +170,10 @@ function getSubductability (plate, output) {
 	return subductability;
 } 
 function getSubductabilitySmoothed(plate, output, scratch, iterations) {
-	output = output || Float32Raster(plate.grid);
-	var laplacian = scratch || Float32Raster(plate.grid);
-	iterations = iterations || 30;
+	iterations = iterations || 15;
 	getSubductability(plate, output);
 	for (var i=0; i<iterations; ++i) {
-		ScalarField.diffusion_by_constant(output, 1, output, laplacian);
+		ScalarField.diffusion_by_constant(output, 1, output, scratch);
 		// ScalarField.laplacian(output, laplacian);
 		// ScalarField.add_field(output, laplacian, output);
 	}
