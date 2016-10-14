@@ -8,6 +8,8 @@ function ScalarDisplay(options) {
 	var min = options['min'] || '0.';
 	var max = options['max'] || '1.';
 	var scalar = options['scalar'] || 'vScalar';
+	this.field = void 0;
+	this.scratch = void 0;
 	this.getField = options['getField'];
 	this._fragmentShader = fragmentShaders.template
 		.replace('@OUTPUT',
@@ -24,6 +26,9 @@ function ScalarDisplay(options) {
 	this._color = new THREE.Color(color);
 }
 ScalarDisplay.prototype.addTo = function(mesh) {
+	this.field = void 0;
+	this.scratch = void 0;
+
 	mesh.material.fragmentShader = this._fragmentShader;
 	mesh.material.needsUpdate = true;
 
@@ -40,7 +45,9 @@ ScalarDisplay.prototype.updateAttributes = function(geometry, plate) {
 	var buffer_array_to_cell = view.grid.buffer_array_to_cell;
 	var buffer_array_index; 
 	var displacement_model = plate.displacement; 
-	var scalar_model = this.getField !== void 0? this.getField(plate) : void 0;
+	this.field = this.field || Float32Raster(plate.grid);
+	this.scratch = this.scratch || Float32Raster(plate.grid);
+	var scalar_model = this.getField !== void 0? this.getField(plate, this.field, this.scratch) : void 0;
 	var is_member;
 	for(var j=0, lj = displacement.length; j<lj; j++){ 
 		buffer_array_index = buffer_array_to_cell[j];
