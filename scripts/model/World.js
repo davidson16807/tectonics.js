@@ -2,8 +2,56 @@
 
 
 var World = (function() {
-	function get_subductability(output) {
-		// body...
+
+	var subduction_min_age_threshold = 150;
+	var subduction_max_age_threshold = 200;
+	var subductability_transition_factor = 1/100;
+
+	function lerp(a,b, x){
+		return a + x*(b-a);
+	}
+	function smoothstep (edge0, edge1, x) {
+		var fraction = (x - edge0) / (edge1 - edge0);
+		return clamp(fraction, 0.0, 1.0);
+		// return t * t * (3.0 - 2.0 * t);
+	}
+	function clamp (x, minVal, maxVal) {
+		return Math.min(Math.max(x, minVal), maxVal);
+	}
+	function heaviside_approximation (x, k) {
+		return 2 / (1 + Math.exp(-k*x)) - 1;
+		return x>0? 1: 0; 
+	}
+	
+	function get_subductability(crust, output) {
+		var subductability = output;
+		var age = crust.age;
+		var density = crust.density;
+		for (var i=0, li=subductability.length; i<li; ++i) {
+			var continent = smoothstep(2890, 2800, density);
+			var density_i = density[i];
+			var age_i = age[i];
+			var density = 	density_i * continent 	+ 
+							lerp(density_i, 3300, 
+								 smoothstep(
+									subduction_min_age_threshold, 
+									subduction_min_age_threshold, 
+									age_i)) 
+								* (1-continent)
+			subductability[i] =  heaviside_approximation( density_i - 3000, subductability_transition_factor );
+		}
+		return subductability;
+	}
+	
+	function get_diffused_subductability(plate, output, scratch, iterations) {
+		iterations = iterations || 15;
+		getSubductability(plate, output);
+		for (var i=0; i<iterations; ++i) {
+			ScalarField.diffusion_by_constant(output, 1, output, scratch);
+			// ScalarField.laplacian(output, laplacian);
+			// ScalarField.add_field(output, laplacian, output);
+		}
+		return output;
 	}
 	function get_aesthenosphere_velocity(subductability, output) {
 		// body...
@@ -48,6 +96,8 @@ var World = (function() {
 			function() { return random.normal(0.00687, 0.00380); }
 			//^^^ log normal and normal distribution fit to angular velocities from Larson et al. 1997
 
+		this.subductability = Float32Raster(this.grid);
+
 		this.radius = optional['radius'] || 6367;
 		// this.age = optional['age'] || 0;
 		this.maxPlatesNum = optional['platesNum'] || 8;
@@ -61,7 +111,7 @@ var World = (function() {
 	World.prototype.SEALEVEL = 3682;
 	World.prototype.mantleDensity=3300;
 	World.prototype.waterDensity=1026;
-	World.prototype.ocean =
+	World.prototype.ocean = 
 	 new RockColumn({
 		elevation: 	-3682,	// Charette & Smith 2010
 		thickness: 	7100, 	// +/- 800, White McKenzie and O'nions 1992
@@ -91,9 +141,8 @@ var World = (function() {
 			return;
 		};
 
-		//option 1 seems to make more sense - there is no final merge function that serves only to prepare for next timestep
+		get_subductability(this, this.subductability);
 
-		//OPTION 1:
 		merge_master_to_plates(this, this.plates);
 
 		// plate submodels go here: plate motion and erosion, namely
