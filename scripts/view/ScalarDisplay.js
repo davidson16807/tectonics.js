@@ -141,44 +141,10 @@ scalarDisplays.density 	= new ScalarHeatDisplay( { min: '2700.', max: '3300.',
 var subduction_min_age_threshold = 150;
 var subduction_max_age_threshold = 200;
 var subductability_transition_factor = 1/100;
-function getSubductability (plate, output) {
-	function lerp(a,b, x){
-		return a + x*(b-a);
-	}
-	function smoothstep (edge0, edge1, x) {
-		var fraction = (x - edge0) / (edge1 - edge0);
-		return clamp(fraction, 0.0, 1.0);
-		// return t * t * (3.0 - 2.0 * t);
-	}
-	function clamp (x, minVal, maxVal) {
-		return Math.min(Math.max(x, minVal), maxVal);
-	}
-	function heaviside_approximation (x, k) {
-		return 2 / (1 + Math.exp(-k*x)) - 1;
-		return x>0? 1: 0; 
-	}
-	function get_subductability (density, age) {
-		var continent = smoothstep(2890, 2800, density);
-		var density = 	density * continent 	+ 
-						lerp(density, 3300, 
-							 smoothstep(
-								subduction_min_age_threshold, 
-								subduction_min_age_threshold, 
-								age)) 
-							* (1-continent)
-		return heaviside_approximation( density - 3000, subductability_transition_factor );
-	}
-	var subductability = output;
-	var age = plate.age;
-	var density = plate.density;
-	for (var i=0, li=subductability.length; i<li; ++i) {
-	    subductability[i] = get_subductability(density[i], age[i]);
-	}
-	return subductability;
-} 
 function getSubductabilitySmoothed(plate, output, scratch, iterations) {
 	iterations = iterations || 15;
-	getSubductability(plate, output);
+
+	Float32Raster.copy(plate.subductability, output);
 	for (var i=0; i<iterations; ++i) {
 		ScalarField.diffusion_by_constant(output, 1, output, scratch);
 		// ScalarField.laplacian(output, laplacian);
@@ -188,7 +154,9 @@ function getSubductabilitySmoothed(plate, output, scratch, iterations) {
 }
 scalarDisplays.subductability = new ScalarHeatDisplay(  { 
 		min: '1.', max: '0.',
-		getField: getSubductability
+		getField: function (crust) {
+			return crust.subductability;
+		}
 	} );
 scalarDisplays.subductability_smoothed = new ScalarHeatDisplay(  { 
 		min: '1.', max: '0.',

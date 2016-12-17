@@ -22,16 +22,16 @@ var World = (function() {
 		return 2 / (1 + Math.exp(-k*x)) - 1;
 		return x>0? 1: 0; 
 	}
-	
 	function get_subductability(crust, output) {
 		var subductability = output;
 		var age = crust.age;
 		var density = crust.density;
+		
 		for (var i=0, li=subductability.length; i<li; ++i) {
-			var continent = smoothstep(2890, 2800, density);
 			var density_i = density[i];
+			var continent = smoothstep(2890, 2800, density_i);
 			var age_i = age[i];
-			var density = 	density_i * continent 	+ 
+			var density_i = 	density_i * continent 	+ 
 							lerp(density_i, 3300, 
 								 smoothstep(
 									subduction_min_age_threshold, 
