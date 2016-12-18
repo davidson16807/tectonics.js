@@ -75,10 +75,10 @@ VectorRaster.fill = function (value, output) {
   var oy = output.y;
   var oz = output.z;
 
-  for (var i=0, li=ix.length; i<li; ++i) {
-      ox[i] = ix[i];
-      oy[i] = iy[i];
-      oz[i] = iz[i];
+  for (var i=0, li=ox.length; i<li; ++i) {
+      ox[i] = ix;
+      oy[i] = iy;
+      oz[i] = iz;
   }
   return output;
 };
