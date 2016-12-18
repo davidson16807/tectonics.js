@@ -48,7 +48,6 @@ ScalarDisplay.prototype.updateAttributes = function(geometry, plate) {
 	this.field = this.field || Float32Raster(plate.grid);
 	this.scratch = this.scratch || Float32Raster(plate.grid);
 	var scalar_model = this.getField !== void 0? this.getField(plate, this.field, this.scratch) : void 0;
-	var is_member;
 	for(var j=0, lj = displacement.length; j<lj; j++){ 
 		buffer_array_index = buffer_array_to_cell[j];
 		displacement[j] = displacement_model[buffer_array_index]; 
@@ -191,7 +190,6 @@ RealisticDisplay.prototype.updateAttributes = function(geometry, plate) {
 	var buffer_array_to_cell = view.grid.buffer_array_to_cell;
 	var buffer_array_index; 
 	var displacement_model = plate.displacement; 
-	var is_member;
 	for(var j=0, lj = displacement.length; j<lj; j++){ 
 		buffer_array_index = buffer_array_to_cell[j];
 		displacement[j] = displacement_model[buffer_array_index]; 
@@ -221,7 +219,6 @@ DebugDisplay.prototype.updateAttributes = function(geometry, plate) {
 	var buffer_array_to_cell = view.grid.buffer_array_to_cell;
 	var buffer_array_index; 
 	var displacement_model = plate.displacement; 
-	var is_member;
 	for(var j=0, lj = displacement.length; j<lj; j++){ 
 		buffer_array_index = buffer_array_to_cell[j];
 		displacement[j] = displacement_model[buffer_array_index]; 
