@@ -239,6 +239,15 @@ scalarDisplays.flood_fill8 = new ScalarHeatDisplay(  {
 
 
 
+vectorDisplays.test = new DataFrameVectorDisplay( { 
+		getField: function (plate) {
+			var vector = VectorRaster(plate.grid);
+			for(var i=0, li = vector.length; i<li; i++){
+				vector[i] = new THREE.Vector3(1,0,0); 
+			}
+			return plate.grid.pos;
+		} 
+	} );
 vectorDisplays.asthenosphere_angular_velocity = new DataFrameVectorDisplay( { 
 		getField: function (plate) {
 			var field = getSubductabilitySmoothed(plate)

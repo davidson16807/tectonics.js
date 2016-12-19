@@ -12,10 +12,8 @@ ThreeJsVectorDisplay.prototype.removeFrom = function(mesh) {};
 ThreeJsVectorDisplay.prototype.updateAttributes = function(material, plate) {
 	var material, displacement;
 	var vector = material.attributes.vector.value;
-	var is_member_model = plate.is_member; 
 
 	var vector_model = this.getField(plate);
-	var is_member_model = plate.is_member;
 	for(var i=0, li = vector_model.length; i<li; i++){
 		var vector_i = 2*i+1;
 		vector[vector_i] = vector_model[i]; 
@@ -25,7 +23,7 @@ ThreeJsVectorDisplay.prototype.updateAttributes = function(material, plate) {
 vectorDisplays.angularVelocity	= new ThreeJsVectorDisplay( { 
 	getField: function (plate) {
 		var field = [];
-		var pos = plate.pos;
+		var pos = plate.grid.pos;
 		var vector = plate.eulerPole.clone().multiplyScalar(1/17);
 		for (var i=0, li=pos.length; i<li; ++i) {
 		    field.push(vector);
@@ -36,8 +34,7 @@ vectorDisplays.angularVelocity	= new ThreeJsVectorDisplay( {
 vectorDisplays.velocity	= new ThreeJsVectorDisplay( { 
 	getField: function (plate) {
 		var field = [];
-		var positions_model = plate.pos;
-		var is_member_model = plate.is_member;
+		var positions_model = plate.grid.pos;
 		for (var i=0, li=positions_model.length; i<li; ++i) {
 			var velocity = plate.eulerPole
 				.clone()
@@ -58,23 +55,27 @@ function DataFrameVectorDisplay(options) {
 DataFrameVectorDisplay.prototype.addTo = function(mesh) {};
 DataFrameVectorDisplay.prototype.removeFrom = function(mesh) {};
 DataFrameVectorDisplay.prototype.updateAttributes = function(material, plate) {
+	var offset_length = 0.02; 	// offset of arrow from surface of sphere, in radii
+	var max_arrow_length = 0.1; // max arrow length, in radii
+
 	var material, displacement;
 	var vector = material.attributes.vector.value;
-	var is_member_model = plate.is_member; 
 
 	var vector_model = this.getField(plate);
 	var max = this.max ||  Math.max.apply(null, VectorField.magnitude(vector_model));
-	var is_member_model = plate.is_member;
-	for(var i=0, li = is_member_model.length; i<li; i++){
+		log_once(vector)
+	var scaling = max_arrow_length / max;
+
+	var pos = plate.grid.pos;
+	for(var i=0, li = vector_model.x.length; i<li; i++){
 		var start = vector[2*i];
+		start.x = offset_length * pos.x[i];
+		start.y = offset_length * pos.y[i];
+		start.z = offset_length * pos.z[i];
 		var end = vector[2*i+1];
-		end.x = vector_model.x[i];
-		end.y = vector_model.y[i];
-		end.z = vector_model.z[i];
-		end.divideScalar(10*max);
-		// start.x = -end.x;
-		// start.y = -end.y;
-		// start.z = -end.z;
+		end.x = vector_model.x[i] * scaling + start.x;
+		end.y = vector_model.y[i] * scaling + start.y;
+		end.z = vector_model.z[i] * scaling + start.z;
 	}
 	material.attributes.vector.needsUpdate = true;
 }
@@ -101,9 +102,12 @@ vectorDisplays.displacement_gradient	= new DataFrameVectorDisplay( {
 } );
 vectorDisplays.age_gradient	= new DataFrameVectorDisplay( { 
 	getField: function (plate) {
-		var age = plate.age;
-		var gradient = ScalarField.gradient(age);
-		return gradient;
+		return ScalarField.gradient(plate.age);
+	}
+} );
+vectorDisplays.pos_gradient	= new DataFrameVectorDisplay( { 
+	getField: function (plate) {
+		return ScalarField.gradient(plate.grid.pos);
 	}
 } );
 vectorDisplays.density_gradient	= new DataFrameVectorDisplay( { 
@@ -115,7 +119,7 @@ vectorDisplays.density_gradient	= new DataFrameVectorDisplay( {
 } );
 vectorDisplays.subductability_gradient	= new DataFrameVectorDisplay( { 
 	getField: function (plate) {
-		var subductability = getSubductability(plate);
+		var subductability = plate.subductability;
 		var gradient = ScalarField.gradient(subductability);
 		return gradient;
 	}
@@ -128,6 +132,22 @@ vectorDisplays.subductability_smoothed = new DataFrameVectorDisplay( {
 		} 
 	} );
 
+vectorDisplays.aesthenosphere_velocity	= new DataFrameVectorDisplay( { 
+		getField: function (crust) {
+			return crust.aesthenosphere_velocity;
+		}
+	} );
+
+var last_x = void 0;
+function log_unique(x) {
+	if(x !== last_x){
+		console.log(x);
+	}
+}
+function log_once(x) {
+	console.log(x);
+	log_once = function(x){};
+}
 function DisabledVectorDisplay(options) {}
 DisabledVectorDisplay.prototype.addTo = function(mesh) {
 	var vector = mesh.material.attributes.vector.value;
