@@ -29,21 +29,21 @@ scalarDisplays.ids 	= new ScalarHeatDisplay( {
 		} 
 	} );
 
-scalarDisplays.id_rotated 	= new ScalarHeatDisplay( {
-		scaling: true,
-		getField: function (plate) {
-			var ids = new Float32Array(plate.age.length);
-			for (var i=0, li=ids.length; i<li; ++i) {
-			    ids[i] = i;
-			}
+// scalarDisplays.id_rotated 	= new ScalarHeatDisplay( {
+// 		scaling: true,
+// 		getField: function (plate) {
+// 			var ids = new Float32Array(plate.age.length);
+// 			for (var i=0, li=ids.length; i<li; ++i) {
+// 			    ids[i] = i;
+// 			}
 
-			var rotationMatrix = new THREE.Matrix4();
-			rotationMatrix.makeRotationAxis( plate.eulerPole, 0.5 );
-			var pos = VectorField.mult_matrix(plate.grid.pos, rotationMatrix.toArray());
-			// test = (plate.grid.getNearestIds(pos));
-			return Float32Raster.get_nearest_values(ids, pos);
-		} 
-	} );
+// 			var rotationMatrix = new THREE.Matrix4();
+// 			rotationMatrix.makeRotationAxis( plate.eulerPole, 0.5 );
+// 			var pos = VectorField.mult_matrix(plate.grid.pos, rotationMatrix.toArray());
+// 			// test = (plate.grid.getNearestIds(pos));
+// 			return Float32Raster.get_nearest_values(ids, pos);
+// 		} 
+// 	} );
 scalarDisplays.voronoi_ids	= new ScalarHeatDisplay( {
 		scaling: true,
 		getField: function (plate) {
@@ -51,17 +51,6 @@ scalarDisplays.voronoi_ids	= new ScalarHeatDisplay( {
 		} 
 	} );
 
-
-scalarDisplays.subductability_smoothed_laplacian = new ScalarHeatDisplay(  { 
-		min: '1.', max: '0.',
-		getField: function (plate) {
-			var field = getSubductability(plate)
-			var laplacian = ScalarField.laplacian(field);
-			// var gradient = ScalarField.gradient(field);
-			// laplacian = VectorField.divergence(gradient);
-			return laplacian;
-		} 
-	} );
 scalarDisplays.flood_fill1 = new ScalarHeatDisplay(  { 
 		min: '1.', max: '0.',
 		getField: function (plate) {
@@ -180,60 +169,19 @@ scalarDisplays.flood_fill_closing = new ScalarHeatDisplay(  {
 		}
 	} );
 
-
-var split = function(vector_field, grid) {
-	var magnitude = VectorField.magnitude(vector_field);
-	var mask = Float32Raster(grid, 1);
-
-	var min_plate_size = 200;
-	var flood_fills = [];
-	var flood_fill;
-	for (var i=1; i<7; ) {
-		flood_fill = VectorRasterGraphics.magic_wand_select(vector_field, Float32Raster.max_id(magnitude), mask);   
-		ScalarField.sub_field(magnitude, ScalarField.mult_field(flood_fill, magnitude), magnitude);
-		ScalarField.sub_field(mask, flood_fill, mask);
-	    if (Float32Dataset.sum(flood_fill) > min_plate_size) { 
-			flood_fills.push(flood_fill);
-			i++;
-		}
-	}
-	
-	var output;
-	var outputs = [];
-	var inputs = flood_fills;
-	for (var i=0, li=inputs.length; i<li; ++i) {
-	    outputs.push(BinaryMorphology.copy(inputs[i]));
-	}
-	for (var i=0, li=outputs.length; i<li; ++i) {
-	    output = outputs[i];
-	    output = BinaryMorphology.dilation(output, 5);
-	    output = BinaryMorphology.closing(output, 5);
-	    // output = BinaryMorphology.opening(output, 5);
-	    for (var j=0, lj=inputs.length; j<lj; ++j) {
-	    	if (i != j) {
-		        output = BinaryMorphology.difference(output, inputs[j]);
-	    	}
-	    }
-	    inputs[i] = BinaryMorphology.to_float(output);
-	}
-
-	return inputs;
-}
-
 scalarDisplays.flood_fill8 = new ScalarHeatDisplay(  { 
 		min: '10.', max: '0.',
-		getField: function (plate) {
-			var field = getSubductabilitySmoothed(plate);
-			var gradient = ScalarField.gradient(field);
-			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
+		getField: function (crust) {
+			var gradient = crust.asthenosphere_velocity;
+			var angular_velocity = VectorField.cross_vector_field(gradient, crust.grid.pos);
 			var gradient = angular_velocity;
-			var plate_fields = split(gradient, plate.grid);
-
-			var plate_field_sum = Float32Raster(plate.grid, 0);
-			for (var i=0; i<plate_fields.length; ++i) {
-				ScalarField.add_field_term(plate_field_sum, plate_fields[i], i+1, plate_field_sum);
+			var crust_fields = VectorImageAnalysis.image_segmentation(gradient, crust.grid);
+			
+			var crust_field_sum = Float32Raster(crust.grid, 0);
+			for (var i=0; i<crust_fields.length; ++i) {
+				ScalarField.add_field_term(crust_field_sum, crust_fields[i], i+1, crust_field_sum);
 			}
-			return plate_field_sum;
+			return crust_field_sum;
 		}
 	} );
 

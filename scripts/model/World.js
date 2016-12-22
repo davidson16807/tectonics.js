@@ -42,7 +42,7 @@ var World = (function() {
 		}
 		return subductability;
 	}
-	function get_aesthenosphere_velocity(subductability, output, scratch1, scratch2) {
+	function get_asthenosphere_velocity(subductability, output, scratch1, scratch2) {
 		output = output || Float32Raster(subductability.grid);
 		scratch1 = scratch1 || Float32Raster(subductability.grid);
 		scratch2 = scratch2 || Float32Raster(subductability.grid);
@@ -63,46 +63,6 @@ var World = (function() {
 	}
 	function get_angular_velocity(velocity, pos, output) {
 		return VectorField.cross_vector_field(velocity, pos, output);
-	}
-
-	function get_plate_masks(angular_velocity_field, grid) {
-		var magnitude = VectorField.magnitude(angular_velocity_field);
-		var is_unfilled_mask = Float32Raster(angular_velocity_field.grid, 1);
-
-		var min_plate_size = 200;
-		var flood_fills = [];
-		var flood_fill;
-		for (var i=1; i<7; ) {
-			flood_fill = VectorRasterGraphics.magic_wand_select(angular_velocity_field, Float32Raster.max_id(magnitude), is_unfilled_mask);   
-			ScalarField.sub_field(magnitude, ScalarField.mult_field(flood_fill, magnitude), magnitude);
-			ScalarField.sub_field(is_unfilled_mask, flood_fill, is_unfilled_mask);
-		    if (Float32Dataset.sum(flood_fill) > min_plate_size) { 
-				flood_fills.push(flood_fill);
-				i++;
-			}
-		}
-		
-		// Now, iterate through plate masks and remove intersections
-		var output;
-		var outputs = [];
-		var inputs = flood_fills;
-		for (var i=0, li=inputs.length; i<li; ++i) {
-		    outputs.push(BinaryMorphology.copy(inputs[i]));
-		}
-		for (var i=0, li=outputs.length; i<li; ++i) {
-		    output = outputs[i];
-		    output = BinaryMorphology.dilation(output, 5);
-		    output = BinaryMorphology.closing(output, 5);
-		    // output = BinaryMorphology.opening(output, 5);
-		    for (var j=0, lj=inputs.length; j<lj; ++j) {
-		    	if (i != j) {
-			        output = BinaryMorphology.difference(output, inputs[j]);
-		    	}
-		    }
-		    inputs[i] = BinaryMorphology.to_float(output);
-		}
-
-		return inputs;
 	}
 	function branch_plates(masks) {
 		// body...
@@ -141,7 +101,7 @@ var World = (function() {
 			//^^^ log normal and normal distribution fit to angular velocities from Larson et al. 1997
 
 		this.subductability = Float32Raster(this.grid);
-		this.aesthenosphere_velocity = VectorRaster(this.grid);
+		this.asthenosphere_velocity = VectorRaster(this.grid);
 		this.plate_masks = [];
 
 		this.radius = optional['radius'] || 6367;
@@ -188,7 +148,7 @@ var World = (function() {
 		};
 
 		get_subductability(this.age, this.density, this.subductability);
-		get_aesthenosphere_velocity(this.subductability, this.aesthenosphere_velocity);
+		get_asthenosphere_velocity(this.subductability, this.asthenosphere_velocity);
 
 		merge_master_to_plates(this, this.plates);
 
@@ -201,7 +161,7 @@ var World = (function() {
 
 
 		//FIRST ITERATION? 
-		// var new_pos = add_scalar_term(grid.pos, aesthenosphere_velocity, -timestep);
+		// var new_pos = add_scalar_term(grid.pos, asthenosphere_velocity, -timestep);
 		// var ids = get_nearest_ids(new_pos);
 		// get_values(fields, ids); giving fields
 
