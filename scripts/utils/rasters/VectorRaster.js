@@ -125,9 +125,9 @@ VectorRaster.get_nearest_values = function(value_field, pos_field, result) {
 	result = result || VectorRaster(pos_field.grid);
 	var ids = pos_field.grid.getNearestIds(pos_field);
 
-	var ix = input.x;
-	var iy = input.y;
-	var iz = input.z;
+  var ix = value_field.x; 
+  var iy = value_field.y; 
+  var iz = value_field.z; 
 
 	var ox = result.x;
 	var oy = result.y;
