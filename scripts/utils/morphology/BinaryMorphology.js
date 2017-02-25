@@ -75,10 +75,10 @@ BinaryMorphology.difference = function(field1, field2, result) {
 }
 
 BinaryMorphology.negation = function(field, result) {
-	result = result || Uint8Raster(field1.grid);
+	result = result || Uint8Raster(field.grid);
 
-	for (var i=0, li=field1.length; i<li; ++i) {
-	    result[i] = (field1[i]===0)? 1:0;
+	for (var i=0, li=field.length; i<li; ++i) {
+	    result[i] = (field[i]===0)? 1:0;
 	}
 
 	return result;

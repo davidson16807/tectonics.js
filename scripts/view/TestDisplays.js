@@ -51,6 +51,17 @@ scalarDisplays.voronoi_ids	= new ScalarHeatDisplay( {
 		} 
 	} );
 
+scalarDisplays.plate0 	= new ScalarHeatDisplay( { min: '0.', max: '1.',  
+		getField: function (world) {
+			return world.plates[0].mask;
+		} 
+	} );
+scalarDisplays.plate0age 	= new ScalarHeatDisplay( { min: '250.', max: '0.',  
+		getField: function (world) {
+			return world.plates[0].age;
+		} 
+	} );
+
 scalarDisplays.flood_fill1 = new ScalarHeatDisplay(  { 
 		min: '1.', max: '0.',
 		getField: function (plate) {

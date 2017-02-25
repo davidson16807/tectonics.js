@@ -1,6 +1,6 @@
 function Model () {
 	this.paused = false;
-	this.MegaYearPerSecond = 5;
+	this.MegaYearPerSecond = 0.001;//5;
 	this._world = void 0;
 	this.fast_update_clock = new THREE.Clock();
 	this.slow_update_clock = new THREE.Clock();

@@ -1,13 +1,13 @@
 'use strict';
 
 
-function Crust(optional) {
-	this.grid = optional['grid'];
+function Crust(params) {
+	this.grid = params['grid'] || stop('missing parameter: "grid"');
 	this.displacement = Float32Raster(this.grid);
 	this.thickness = Float32Raster(this.grid);
 	this.density = Float32Raster(this.grid);
 	this.age = Float32Raster(this.grid);
-	this.uuid = optional['uuid'] || Uuid.create();
+	this.uuid = params['uuid'] || Uuid.create();
 }
 Crust.get_value = function(crust, i) {
 	return new RockColumn({
