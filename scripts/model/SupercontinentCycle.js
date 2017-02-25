@@ -24,7 +24,7 @@ SupercontinentCycle.prototype.isEnding = function() {
 SupercontinentCycle.prototype.restart = function() {
 	var world = this.world;
 
-	this.age = 0;
+	this.age = -Infinity;
 	this.duration = this.getRandomDuration();
 
 	world.resetPlates();
