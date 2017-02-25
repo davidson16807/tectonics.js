@@ -4,14 +4,56 @@
 // All fields are represented by raster objects, e.g. VectorRaster or Uint8Raster
 var Uint8Field = {};
 
-Uint8Field.add_field_term = function (field1, field2, scalar, result) {
+ScalarField.min_field = function (field1, field2, result) {
   result = result || Uint8Raster(field1.grid);
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] + scalar * field2[i];
+    result[i] = field1[i] < field2[i]? field1[i] : field2[i];
   }
   return result;
 };
-Uint8Field.add_field_term = function (field1, field2, scalar, result) {
+ScalarField.max_field = function (field1, field2, result) {
+  result = result || Uint8Raster(field1.grid);
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = field1[i] > field2[i]? field1[i] : field2[i];
+  }
+  return result;
+};
+ScalarField.gt_field = function (field1, field2, result) {
+  result = result || Uint8Raster(field1.grid);
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = field1[i] > field2[i]? 1:0;
+  }
+  return result;
+};
+ScalarField.gte_field = function (field1, field2, result) {
+  result = result || Uint8Raster(field1.grid);
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = field1[i] >= field2[i]? 1:0;
+  }
+  return result;
+};
+ScalarField.lt_field = function (field1, field2, result) {
+  result = result || Uint8Raster(field1.grid);
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = field1[i] < field2[i]? 1:0;
+  }
+  return result;
+};
+ScalarField.lte_field = function (field1, field2, result) {
+  result = result || Uint8Raster(field1.grid);
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = field1[i] <= field2[i]? 1:0;
+  }
+  return result;
+};
+ScalarField.add_field_term = function (field1, field2, field3, result) {
+  result = result || Uint8Raster(field1.grid);
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = field1[i] + field3[i] * field2[i];
+  }
+  return result;
+};
+ScalarField.add_scalar_term = function (field1, field2, scalar, result) {
   result = result || Uint8Raster(field1.grid);
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] + scalar * field2[i];
