@@ -1,4 +1,6 @@
 'use strict';
+// The VectorRasterGraphics namespace encompasses functionality 
+// you've come to expect from a standard image editor like Gimp or MS Paint
 
 var VectorRasterGraphics = {};
 
