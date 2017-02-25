@@ -103,7 +103,7 @@
 					<img src="icons/pause.svg" height="12em" width="12em">
 			</span>
 
-			<input class="form-control input-sm" id="speedControl" type="number" value="0.001" min="0" max="10" step="1"/> 
+			<input class="form-control input-sm" id="speedControl" type="number" value="5" min="0" max="10" step="1"/> 
 
 			<span class="input-group-addon">My/s</span>
 		</div>
@@ -417,8 +417,8 @@
 		model.slow_update();
 
 		if ((world) !== void 0) {
-			$(".age").html(format(world.age, 1000, 3).quantity);
-			$(".age-units").html(format(world.age, 1000, 3).unit);
+			$(".age").html(format(model.age, 1000, 3).quantity);
+			$(".age-units").html(format(model.age, 1000, 3).unit);
 		};
 		
 		if(!IsProd){

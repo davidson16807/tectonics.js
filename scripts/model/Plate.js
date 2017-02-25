@@ -16,12 +16,12 @@ function Plate(params)
 	this.global_to_local_matrix = params['matrix'] || new THREE.Matrix4();
 }
 Plate.prototype.move = function(timestep){
-	this.angularSpeed = 0;
+	// this.angularSpeed = 0;
 	this.increment = this.angularSpeed * timestep;
 	var rotationMatrix = new THREE.Matrix4();
 	rotationMatrix.makeRotationAxis( this.eulerPole, this.angularSpeed * timestep );
-	rotationMatrix.multiply( this.matrix ); 
-	this.matrix = rotationMatrix;
-	this.worldToLocalMatrix = new THREE.Matrix4();
-	this.worldToLocalMatrix.getInverse(this.matrix);
+	rotationMatrix.multiply( this.local_to_global_matrix ); 
+	this.local_to_global_matrix = rotationMatrix;
+	this.global_to_local_matrix = new THREE.Matrix4();
+	this.global_to_local_matrix.getInverse(this.local_to_global_matrix);
 }

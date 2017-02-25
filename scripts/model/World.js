@@ -67,17 +67,16 @@ var World = (function() {
 	function branch_plates(masks) {
 		// body...
 	}
-	function merge_plates_to_master(plates, master) {
-		return;
-		var plate;
-		var globalized_plate_mask = Uint8Raster(master.grid);
-		var localized_pos = VectorRaster(master.grid);
-		var globalized_scalar_field = Float32Raster(master.grid);
-		for (var i = 0; i < plates.length; i++) {
-			plate = plates[i];
-			VectorField.mult_matrix(master.grid.pos, plate.global_to_local_matrix, localized_pos);
-
-			Uint8Raster.get_nearest_values(plate.mask, localized_pos, globalized_plate_mask);
+	function merge_plates_to_master(plates, master) { 
+	  var plate; 
+	  var globalized_plate_mask = Uint8Raster(master.grid); 
+	  var localized_pos = VectorRaster(master.grid); 
+	  var globalized_scalar_field = Float32Raster(master.grid); 
+	  for (var i = 0; i < plates.length; i++) { 
+		    plate = plates[i]; 
+		    VectorField.mult_matrix(master.grid.pos, plate.global_to_local_matrix.elements, localized_pos); 
+		
+		    Uint8Raster.get_nearest_values(plate.mask, localized_pos, globalized_plate_mask); 
 
 			Float32Raster.get_nearest_values(plate.thickness, localized_pos, globalized_scalar_field);
 			Float32RasterGraphics.copy_into_selection(master.thickness, globalized_scalar_field, globalized_plate_mask, master.thickness);
@@ -97,23 +96,30 @@ var World = (function() {
 		var local_plate_mask_negation = Uint8Raster(master.grid);
 		var globalized_pos = VectorRaster(master.grid);
 		var localized_scalar_field = Float32Raster(master.grid);
+		var localized_vector_field = VectorRaster(master.grid); 
+		
+		var angular_velocity = VectorField.cross_vector_field(master.asthenosphere_velocity, master.grid.pos); 
 		for (var i = 0; i < plates.length; i++) {
 			plate = plates[i];
-			VectorField.mult_matrix(master.grid.pos, plate.local_to_global_matrix, globalized_pos);
+			VectorField.mult_matrix(master.grid.pos, plate.local_to_global_matrix.elements, globalized_pos);
 
-			BinaryMorphology.negation(plate.mask, local_plate_mask_negation);
+			//BinaryMorphology.negation(plate.mask, local_plate_mask_negation);
+//
+//			//Float32Raster.get_nearest_values(master.thickness, globalized_pos, localized_scalar_field);
+//			//Float32RasterGraphics.copy_into_selection(plate.thickness, localized_scalar_field, local_plate_mask_negation, plate.thickness);
+//
+//			//Float32Raster.get_nearest_values(master.density, globalized_pos, localized_scalar_field);
+//			//Float32RasterGraphics.copy_into_selection(plate.density, localized_scalar_field, local_plate_mask_negation, plate.density);
+//
+//			//Float32Raster.get_nearest_values(master.displacement, globalized_pos, localized_scalar_field);
+//			//Float32RasterGraphics.copy_into_selection(plate.displacement, localized_scalar_field, local_plate_mask_negation, plate.displacement);
+//
+			//Float32Raster.get_nearest_values(master.age, globalized_pos, localized_scalar_field);
+			//Float32RasterGraphics.copy_into_selection(plate.age, localized_scalar_field, local_plate_mask_negation, plate.age);
 
-			Float32Raster.get_nearest_values(master.thickness, globalized_pos, localized_scalar_field);
-			Float32RasterGraphics.copy_into_selection(plate.thickness, localized_scalar_field, local_plate_mask_negation, plate.thickness);
-
-			Float32Raster.get_nearest_values(master.density, globalized_pos, localized_scalar_field);
-			Float32RasterGraphics.copy_into_selection(plate.density, localized_scalar_field, local_plate_mask_negation, plate.density);
-
-			Float32Raster.get_nearest_values(master.displacement, globalized_pos, localized_scalar_field);
-			Float32RasterGraphics.copy_into_selection(plate.displacement, localized_scalar_field, local_plate_mask_negation, plate.displacement);
-
-			Float32Raster.get_nearest_values(master.age, globalized_pos, localized_scalar_field);
-			Float32RasterGraphics.copy_into_selection(plate.age, localized_scalar_field, local_plate_mask_negation, plate.age);
+			VectorRaster.get_nearest_values(angular_velocity, globalized_pos, localized_vector_field); 
+			var eulerPole = VectorDataset.weighted_average(localized_vector_field, plate.mask)
+			plate.eulerPole = new THREE.Vector3(eulerPole.x, eulerPole.y, eulerPole.z).normalize(); 
 		}
 	}
 	function isostasy(world) {
@@ -177,7 +183,6 @@ var World = (function() {
 
 	World.prototype.resetPlates = function() {
 		// get plate masks from image segmentation of asthenosphere velocity
-		console.log('resetPlates');
 		var angular_velocity = VectorField.cross_vector_field(this.asthenosphere_velocity, this.grid.pos);
 		var plate_masks = VectorImageAnalysis.image_segmentation(angular_velocity, this.grid);
 		console.log(plate_masks);
@@ -194,6 +199,9 @@ var World = (function() {
 			Float32Raster.copy(this.thickness, plate.thickness);
 			Float32Raster.copy(this.density, plate.density);
 			Float32Raster.copy(this.age, plate.age);
+
+			plate.angularSpeed = this.getRandomPlateSpeed();
+
 			this.plates.push(plate);
 		}
 	};
@@ -204,6 +212,9 @@ var World = (function() {
 	 		return;
 	 	};
 
+	 	for (var i = 0; i < this.plates.length; i++) {
+	 		this.plates[i].move(timestep)
+	 	}
 	}
 	World.prototype.slow_update = function(timestep){
 		if (timestep === 0) {
@@ -218,6 +229,7 @@ var World = (function() {
 		merge_master_to_plates(this, this.plates);
 
 		// plate submodels go here: plate motion and erosion, namely
+
 
 		merge_plates_to_master(this.plates, this);
 

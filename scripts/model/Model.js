@@ -1,6 +1,7 @@
 function Model () {
 	this.paused = false;
-	this.MegaYearPerSecond = 0.001;//5;
+	this.MegaYearPerSecond = 5;
+	this.age = 0;
 	this._world = void 0;
 	this.fast_update_clock = new THREE.Clock();
 	this.slow_update_clock = new THREE.Clock();
@@ -36,6 +37,7 @@ Model.prototype.fast_update = function(timestep) {
 		return;
 	}
 	if (world !== void 0) {
+		this.age += this.MegaYearPerSecond * seconds;
 		world.fast_update(this.MegaYearPerSecond * seconds);
 	};
 };
