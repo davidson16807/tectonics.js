@@ -46,6 +46,72 @@ Uint8Field.lte_field = function (field1, field2, result) {
   }
   return result;
 };
+Uint8Field.eq_field = function (field1, field2, result) {
+  result = result || Uint8Raster(field1.grid);
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = field1[i] == field2[i]? 1:0;
+  }
+  return result;
+};
+
+
+
+
+
+
+Uint8Field.min_scalar = function (field1, scalar, result) {
+  result = result || Uint8Raster(field1.grid);
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = field1[i] < scalar? field1[i] : scalar;
+  }
+  return result;
+};
+Uint8Field.max_scalar = function (field1, scalar, result) {
+  result = result || Uint8Raster(field1.grid);
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = field1[i] > scalar? field1[i] : scalar;
+  }
+  return result;
+};
+Uint8Field.gt_scalar = function (field1, scalar, result) {
+  result = result || Uint8Raster(field1.grid);
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = field1[i] > scalar? 1:0;
+  }
+  return result;
+};
+Uint8Field.gte_scalar = function (field1, scalar, result) {
+  result = result || Uint8Raster(field1.grid);
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = field1[i] >= scalar? 1:0;
+  }
+  return result;
+};
+Uint8Field.lt_scalar = function (field1, scalar, result) {
+  result = result || Uint8Raster(field1.grid);
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = field1[i] < scalar? 1:0;
+  }
+  return result;
+};
+Uint8Field.lte_scalar = function (field1, scalar, result) {
+  result = result || Uint8Raster(field1.grid);
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = field1[i] <= scalar? 1:0;
+  }
+  return result;
+};
+Uint8Field.eq_scalar = function (field1, scalar, result) {
+  result = result || Uint8Raster(field1.grid);
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = field1[i] == scalar? 1:0;
+  }
+  return result;
+};
+
+
+
+
 Uint8Field.add_field_term = function (field1, field2, field3, result) {
   result = result || Uint8Raster(field1.grid);
   for (var i = 0, li = result.length; i < li; i++) {

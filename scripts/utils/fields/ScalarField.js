@@ -46,6 +46,51 @@ ScalarField.lte_field = function (field1, field2, result) {
   }
   return result;
 };
+
+
+ScalarField.min_scalar = function (field1, scalar, result) {
+  result = result || Float32Raster(field1.grid);
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = field1[i] < scalar? field1[i] : scalar;
+  }
+  return result;
+};
+ScalarField.max_scalar = function (field1, scalar, result) {
+  result = result || Float32Raster(field1.grid);
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = field1[i] > scalar? field1[i] : scalar;
+  }
+  return result;
+};
+ScalarField.gt_scalar = function (field1, scalar, result) {
+  result = result || Uint8Raster(field1.grid);
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = field1[i] > scalar? 1:0;
+  }
+  return result;
+};
+ScalarField.gte_scalar = function (field1, scalar, result) {
+  result = result || Uint8Raster(field1.grid);
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = field1[i] >= scalar? 1:0;
+  }
+  return result;
+};
+ScalarField.lt_scalar = function (field1, scalar, result) {
+  result = result || Uint8Raster(field1.grid);
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = field1[i] < scalar? 1:0;
+  }
+  return result;
+};
+ScalarField.lte_scalar = function (field1, scalar, result) {
+  result = result || Uint8Raster(field1.grid);
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = field1[i] <= scalar? 1:0;
+  }
+  return result;
+};
+
 ScalarField.add_field_term = function (field1, field2, field3, result) {
   result = result || Float32Raster(field1.grid);
   for (var i = 0, li = result.length; i < li; i++) {

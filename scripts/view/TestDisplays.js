@@ -71,6 +71,16 @@ scalarDisplays.plate0age 	= new ScalarHeatDisplay( { min: '250.', max: '0.',
 			return world.plates[0].age;
 		} 
 	} );
+scalarDisplays.plate_masks 	= new ScalarHeatDisplay( { min: '-1.', max: '7.',  
+		getField: function (world) {
+			return world.plate_masks;
+		} 
+	} );
+scalarDisplays.plate_count 	= new ScalarHeatDisplay( { min: '0.', max: '7.',  
+		getField: function (world) {
+			return world.plate_count;
+		} 
+	} );
 
 scalarDisplays.flood_fill1 = new ScalarHeatDisplay(  { 
 		min: '1.', max: '0.',

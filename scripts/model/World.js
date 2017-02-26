@@ -73,7 +73,8 @@ var World = (function() {
 		Float32Raster.fill(master.displacement, 0);
 		Float32Raster.fill(master.age, 9999);
 		Float32Raster.fill(master.subductability, 9999);
-		Float32Raster.fill(master.plate_masks, 0);
+		Float32Raster.fill(master.plate_masks, -1);
+		Float32Raster.fill(master.plate_count, 0);
 
 	  	var plate; 
 		var globalized_plate_mask = Uint8Raster(master.grid); 
@@ -96,7 +97,8 @@ var World = (function() {
 		    BinaryMorphology.intersection(is_on_top, globalized_plate_mask, is_on_top);
 
 		    Uint8RasterGraphics.fill_into_selection(master.plate_masks, i, is_on_top, master.plate_masks);
-		    
+		    Uint8Field.add_field(master.plate_count, is_on_top, master.plate_count);
+
 		    // sum between plates
 		    Float32Raster.get_nearest_values(plate.thickness, localized_pos, globalized_scalar_field);
 		    ScalarField.add_field_term(master.thickness, globalized_scalar_field, globalized_plate_mask, master.thickness);
@@ -147,23 +149,6 @@ var World = (function() {
 			// plate.eulerPole = new THREE.Vector3(-eulerPole.x, -eulerPole.y, -eulerPole.z).normalize(); 
 		}
 	}
-	function isostasy(world) {
-		var thicknesses = world.thickness; 
-		var densities = world.density; 
-		var displacements = world.displacement; 
-		
-		var mantleDensity = world.mantleDensity; 
-		var thickness, rootDepth;
-		for(var i=0, li = displacements.length; i<li; i++){
-
-			//Calculates elevation as a function of crust density. 
-			//This was chosen as it only requires knowledge of crust density and thickness,  
-			//which are relatively well known. 
-			thickness = thicknesses[i]; 
-			rootDepth = thickness * densities[i] / mantleDensity; 
-			displacements[i] = thickness - rootDepth;
-		}
-	}
 
 	function World(parameters) {
 		Crust.call(this, parameters);
@@ -178,6 +163,7 @@ var World = (function() {
 
 		this.subductability = Float32Raster(this.grid);
 		this.plate_masks = Uint8Raster(this.grid);
+		this.plate_count = Uint8Raster(this.grid);
 		this.asthenosphere_velocity = VectorRaster(this.grid);
 
 		this.radius = parameters['radius'] || 6367;
@@ -206,6 +192,23 @@ var World = (function() {
 		density: 	2700
 	 });
 
+	 function isostasy(world) {
+	 	var thicknesses = world.thickness; 
+	 	var densities = world.density; 
+	 	var displacements = world.displacement; 
+	 	
+	 	var mantleDensity = world.mantleDensity; 
+	 	var thickness, rootDepth;
+	 	for(var i=0, li = displacements.length; i<li; i++){
+
+	 		//Calculates elevation as a function of crust density. 
+	 		//This was chosen as it only requires knowledge of crust density and thickness,  
+	 		//which are relatively well known. 
+	 		thickness = thicknesses[i]; 
+	 		rootDepth = thickness * densities[i] / mantleDensity; 
+	 		displacements[i] = thickness - rootDepth;
+	 	}
+	 }
 
 	World.prototype.resetPlates = function() {
 		// get plate masks from image segmentation of asthenosphere velocity
