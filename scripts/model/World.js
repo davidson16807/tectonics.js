@@ -68,27 +68,45 @@ var World = (function() {
 		// body...
 	}
 	function merge_plates_to_master(plates, master) { 
-	  var plate; 
-	  var globalized_plate_mask = Uint8Raster(master.grid); 
-	  var localized_pos = VectorRaster(master.grid); 
-	  var globalized_scalar_field = Float32Raster(master.grid); 
-	  for (var i = 0; i < plates.length; i++) { 
+		Float32Raster.fill(master.thickness, 0);
+		Float32Raster.fill(master.density, 9999);
+		Float32Raster.fill(master.displacement, 0);
+		Float32Raster.fill(master.age, 9999);
+
+	  	var plate; 
+		var globalized_plate_mask = Uint8Raster(master.grid); 
+		var localized_pos = VectorRaster(master.grid); 
+		var subductability = Float32Raster(master.grid); 
+		var globalized_scalar_field = Float32Raster(master.grid); 
+		var is_on_top = Uint8Raster(master.grid);
+		Float32Raster.fill(is_on_top, 1);
+		for (var i = 0; i < plates.length; i++) { 
 		    plate = plates[i]; 
+
 		    VectorField.mult_matrix(master.grid.pos, plate.global_to_local_matrix.elements, localized_pos); 
-		
+
 		    Uint8Raster.get_nearest_values(plate.mask, localized_pos, globalized_plate_mask); 
 
-			Float32Raster.get_nearest_values(plate.thickness, localized_pos, globalized_scalar_field);
-			Float32RasterGraphics.copy_into_selection(master.thickness, globalized_scalar_field, globalized_plate_mask, master.thickness);
+		    get_subductability(plate.age, plate.density, subductability);
 
-			Float32Raster.get_nearest_values(plate.density, localized_pos, globalized_scalar_field);
-			Float32RasterGraphics.copy_into_selection(master.density, globalized_scalar_field, globalized_plate_mask, master.density);
+		    // Float32Raster.get_nearest_values(subductability, localized_pos, globalized_scalar_field);
+		    // ScalarField.lt_field(master.subductability, globalized_scalar_field, is_on_top);
 
-			Float32Raster.get_nearest_values(plate.displacement, localized_pos, globalized_scalar_field);
-			Float32RasterGraphics.copy_into_selection(master.displacement, globalized_scalar_field, globalized_plate_mask, master.displacement);
+		    // sum between plates
+		    Float32Raster.get_nearest_values(plate.thickness, localized_pos, globalized_scalar_field);
+		    ScalarField.add_field_term(master.thickness, globalized_scalar_field, globalized_plate_mask, master.thickness);
 
-			Float32Raster.get_nearest_values(plate.age, localized_pos, globalized_scalar_field);
-			Float32RasterGraphics.copy_into_selection(master.age, globalized_scalar_field, globalized_plate_mask, master.age);
+		    // min function
+		    Float32Raster.get_nearest_values(plate.density, localized_pos, globalized_scalar_field);
+		    Float32RasterGraphics.copy_into_selection(master.density, globalized_scalar_field, is_on_top, master.density);
+
+		    // doesn't matter - recalculate via isostasy
+		    Float32Raster.get_nearest_values(plate.displacement, localized_pos, globalized_scalar_field);
+		    Float32RasterGraphics.copy_into_selection(master.displacement, globalized_scalar_field, is_on_top, master.displacement);
+
+		    // take whatever the lighter plate is
+		    Float32Raster.get_nearest_values(plate.age, localized_pos, globalized_scalar_field);
+		    Float32RasterGraphics.copy_into_selection(master.age, globalized_scalar_field, is_on_top, master.age);
 		}
 	}
 	function merge_master_to_plates(master, plates) {
@@ -117,9 +135,10 @@ var World = (function() {
 			//Float32Raster.get_nearest_values(master.age, globalized_pos, localized_scalar_field);
 			//Float32RasterGraphics.copy_into_selection(plate.age, localized_scalar_field, local_plate_mask_negation, plate.age);
 
-			VectorRaster.get_nearest_values(angular_velocity, globalized_pos, localized_vector_field); 
-			var eulerPole = VectorDataset.weighted_average(localized_vector_field, plate.mask)
-			plate.eulerPole = new THREE.Vector3(eulerPole.x, eulerPole.y, eulerPole.z).normalize(); 
+			// VectorRaster.get_nearest_values(angular_velocity, globalized_pos, localized_vector_field); 
+			// var eulerPole = VectorDataset.weighted_average(localized_vector_field, plate.mask)
+			// //todo: fix it properly - no negation!
+			// plate.eulerPole = new THREE.Vector3(-eulerPole.x, -eulerPole.y, -eulerPole.z).normalize(); 
 		}
 	}
 	function isostasy(world) {
@@ -203,6 +222,11 @@ var World = (function() {
 			plate.angularSpeed = this.getRandomPlateSpeed();
 
 			this.plates.push(plate);
+
+			//TODO: comment this out when you're done
+			var eulerPole = VectorDataset.weighted_average(angular_velocity, plate.mask)
+			//todo: fix it properly - no negation!
+			plate.eulerPole = new THREE.Vector3(-eulerPole.x, -eulerPole.y, -eulerPole.z).normalize(); 
 		}
 	};
 
