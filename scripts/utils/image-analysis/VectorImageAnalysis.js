@@ -12,6 +12,7 @@ VectorImageAnalysis.image_segmentation = function(vector_field, grid) {
 	var magnitude = VectorField.magnitude(vector_field);
 	var mask = Float32Raster(grid, 1);
 
+	// step 1: run flood fill algorithm several times
 	var min_plate_size = 200;
 	var flood_fills = [];
 	var flood_fill;
@@ -25,25 +26,34 @@ VectorImageAnalysis.image_segmentation = function(vector_field, grid) {
 		}
 	}
 	
-	var output;
-	var outputs = [];
-	var inputs = flood_fills;
-	for (var i=0, li=inputs.length; i<li; ++i) {
-	    outputs.push(BinaryMorphology.copy(inputs[i]));
+	// step 2: expand boundaries so all regions of globe map to exactly one plate
+	var original_mask;
+	var original_masks = [];
+	var edited_masks = flood_fills;
+	for (var i=0, li=edited_masks.length; i<li; ++i) {
+	    original_masks.push(BinaryMorphology.copy(edited_masks[i]));
 	}
-	for (var i=0, li=outputs.length; i<li; ++i) {
-	    output = outputs[i];
-	    output = BinaryMorphology.dilation(output, 5);
-	    output = BinaryMorphology.closing(output, 5);
-	    // output = BinaryMorphology.opening(output, 5);
-	    for (var j=0, lj=inputs.length; j<lj; ++j) {
+	for (var i=0, li=original_masks.length; i<li; ++i) {
+	    original_mask = original_masks[i];
+	    original_mask = BinaryMorphology.dilation(original_mask, 5);
+	    original_mask = BinaryMorphology.closing(original_mask, 5);
+	    // original_mask = BinaryMorphology.opening(original_mask, 5);
+	    for (var j=0, lj=edited_masks.length; j<lj; ++j) {
 	    	if (i != j) {
-		        output = BinaryMorphology.difference(output, inputs[j]);
+		        original_mask = BinaryMorphology.difference(original_mask, edited_masks[j]);
 	    	}
 	    }
-	    inputs[i] = BinaryMorphology.to_float(output);
+	    edited_masks[i] = BinaryMorphology.to_float(original_mask);
 	}
 
-	return inputs;
+	// step 3: find the remaining region that is not mapped to a plate, and make a new plate just for it
+	var masks = edited_masks;
+	var is_not_mapped = Uint8Raster(grid, 1);
+	for (var i=0, li=edited_masks.length; i<li; ++i) {
+	    BinaryMorphology.difference(is_not_mapped, edited_masks[i], is_not_mapped);
+	}
+	masks.push(is_not_mapped);
+
+	return masks;
 }
 
