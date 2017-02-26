@@ -72,6 +72,8 @@ var World = (function() {
 		Float32Raster.fill(master.density, 9999);
 		Float32Raster.fill(master.displacement, 0);
 		Float32Raster.fill(master.age, 9999);
+		Float32Raster.fill(master.subductability, 9999);
+		Float32Raster.fill(master.plate_masks, 0);
 
 	  	var plate; 
 		var globalized_plate_mask = Uint8Raster(master.grid); 
@@ -80,7 +82,7 @@ var World = (function() {
 		var globalized_scalar_field = Float32Raster(master.grid); 
 		var is_on_top = Uint8Raster(master.grid);
 		Float32Raster.fill(is_on_top, 1);
-		for (var i = 0; i < plates.length; i++) { 
+		for (var i=0, li=plates.length; i<li; ++i) {
 		    plate = plates[i]; 
 
 		    VectorField.mult_matrix(master.grid.pos, plate.global_to_local_matrix.elements, localized_pos); 
@@ -89,9 +91,12 @@ var World = (function() {
 
 		    get_subductability(plate.age, plate.density, subductability);
 
-		    // Float32Raster.get_nearest_values(subductability, localized_pos, globalized_scalar_field);
-		    // ScalarField.lt_field(master.subductability, globalized_scalar_field, is_on_top);
+		    Float32Raster.get_nearest_values(subductability, localized_pos, globalized_scalar_field);
+		    ScalarField.lt_field(globalized_scalar_field, master.subductability, is_on_top);
+		    BinaryMorphology.intersection(is_on_top, globalized_plate_mask, is_on_top);
 
+		    Uint8RasterGraphics.fill_into_selection(master.plate_masks, i, is_on_top, master.plate_masks);
+		    
 		    // sum between plates
 		    Float32Raster.get_nearest_values(plate.thickness, localized_pos, globalized_scalar_field);
 		    ScalarField.add_field_term(master.thickness, globalized_scalar_field, globalized_plate_mask, master.thickness);
@@ -107,6 +112,7 @@ var World = (function() {
 		    // take whatever the lighter plate is
 		    Float32Raster.get_nearest_values(plate.age, localized_pos, globalized_scalar_field);
 		    Float32RasterGraphics.copy_into_selection(master.age, globalized_scalar_field, is_on_top, master.age);
+
 		}
 	}
 	function merge_master_to_plates(master, plates) {
@@ -171,6 +177,7 @@ var World = (function() {
 		this.supercontinentCycle = parameters['supercontinentCycle'] || new SupercontinentCycle(parameters);
 
 		this.subductability = Float32Raster(this.grid);
+		this.plate_masks = Uint8Raster(this.grid);
 		this.asthenosphere_velocity = VectorRaster(this.grid);
 
 		this.radius = parameters['radius'] || 6367;

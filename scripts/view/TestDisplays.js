@@ -56,6 +56,16 @@ scalarDisplays.plate0 	= new ScalarHeatDisplay( { min: '0.', max: '1.',
 			return world.plates[0].mask;
 		} 
 	} );
+scalarDisplays.plates 	= new ScalarHeatDisplay( { min: '0.', max: '5.',  
+		getField: function (world) {
+			var plates = world.plates;
+			var result = Float32Raster(world.grid);
+			for (var i = 0; i < plates.length; i++) {
+				ScalarField.add_scalar_term(result, plates[i].mask, i, result);
+			}
+			return result;
+		} 
+	} );
 scalarDisplays.plate0age 	= new ScalarHeatDisplay( { min: '250.', max: '0.',  
 		getField: function (world) {
 			return world.plates[0].age;
