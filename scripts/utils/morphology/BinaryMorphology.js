@@ -17,7 +17,7 @@ BinaryMorphology.to_binary = function(field, threshold, result) {
 	return result;
 }
 BinaryMorphology.to_float = function(field, result) {
-	result = result || new Float32Array(field.length);
+	result = result || new Float32Raster(field.grid);
 	
 	for (var i=0, li=field.length; i<li; ++i) {
 	    result[i] = (field[i]===1)? 1:0;

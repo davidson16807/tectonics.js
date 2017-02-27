@@ -75,29 +75,44 @@ var World = (function() {
 		Float32Raster.fill(master.subductability, 9999);
 		Float32Raster.fill(master.plate_masks, -1);
 		Float32Raster.fill(master.plate_count, 0);
+		Float32Raster.fill(master.is_rifting, 0);
+		Float32Raster.fill(master.is_detaching, 0);
 
 	  	var plate; 
-		var globalized_plate_mask = Uint8Raster(master.grid); 
 		var localized_pos = VectorRaster(master.grid); 
-		var subductability = Float32Raster(master.grid); 
+		var localized_subductability = Float32Raster(master.grid); 
+		var localized_plate_count = Uint8Raster(master.grid);
+		var localized_is_rifting = Uint8Raster(master.grid); 
+		var localized_is_detaching = Uint8Raster(master.grid); 
+		var localized_is_subducting = Uint8Raster(master.grid); 
+		var localized_is_on_top = Uint8Raster(master.grid); 
+		var localized_is_uncovered = Uint8Raster(master.grid); 
+
+		var globalized_plate_mask = Uint8Raster(master.grid); 
+		var globalized_pos = VectorRaster(master.grid);
 		var globalized_scalar_field = Float32Raster(master.grid); 
-		var is_on_top = Uint8Raster(master.grid);
-		Float32Raster.fill(is_on_top, 1);
+		var globalized_is_rifting = Uint8Raster(master.grid); 
+		var globalized_is_detaching = Uint8Raster(master.grid); 
+		var globalized_is_on_top = Uint8Raster(master.grid);
+		Float32Raster.fill(globalized_is_on_top, 1);
 		for (var i=0, li=plates.length; i<li; ++i) {
 		    plate = plates[i]; 
 
 		    VectorField.mult_matrix(master.grid.pos, plate.global_to_local_matrix.elements, localized_pos); 
 
+
 		    Uint8Raster.get_nearest_values(plate.mask, localized_pos, globalized_plate_mask); 
 
-		    get_subductability(plate.age, plate.density, subductability);
+		    get_subductability(plate.age, plate.density, localized_subductability);
 
-		    Float32Raster.get_nearest_values(subductability, localized_pos, globalized_scalar_field);
-		    ScalarField.lt_field(globalized_scalar_field, master.subductability, is_on_top);
-		    BinaryMorphology.intersection(is_on_top, globalized_plate_mask, is_on_top);
+		    //generate globalized_is_on_top
+		    Float32Raster.get_nearest_values(localized_subductability, localized_pos, globalized_scalar_field);
+		    ScalarField.lt_field(globalized_scalar_field, master.subductability, globalized_is_on_top);
+		    BinaryMorphology.intersection(globalized_is_on_top, globalized_plate_mask, globalized_is_on_top);
 
-		    Uint8RasterGraphics.fill_into_selection(master.plate_masks, i, is_on_top, master.plate_masks);
-		    Uint8Field.add_field(master.plate_count, is_on_top, master.plate_count);
+		    //generate plate_count
+		    Uint8RasterGraphics.fill_into_selection(master.plate_masks, i, globalized_is_on_top, master.plate_masks);
+		    Uint8Field.add_field(master.plate_count, globalized_is_on_top, master.plate_count);
 
 		    // sum between plates
 		    Float32Raster.get_nearest_values(plate.thickness, localized_pos, globalized_scalar_field);
@@ -105,15 +120,41 @@ var World = (function() {
 
 		    // min function
 		    Float32Raster.get_nearest_values(plate.density, localized_pos, globalized_scalar_field);
-		    Float32RasterGraphics.copy_into_selection(master.density, globalized_scalar_field, is_on_top, master.density);
+		    Float32RasterGraphics.copy_into_selection(master.density, globalized_scalar_field, globalized_is_on_top, master.density);
 
 		    // doesn't matter - recalculate via isostasy
 		    Float32Raster.get_nearest_values(plate.displacement, localized_pos, globalized_scalar_field);
-		    Float32RasterGraphics.copy_into_selection(master.displacement, globalized_scalar_field, is_on_top, master.displacement);
+		    Float32RasterGraphics.copy_into_selection(master.displacement, globalized_scalar_field, globalized_is_on_top, master.displacement);
 
 		    // take whatever the lighter plate is
 		    Float32Raster.get_nearest_values(plate.age, localized_pos, globalized_scalar_field);
-		    Float32RasterGraphics.copy_into_selection(master.age, globalized_scalar_field, is_on_top, master.age);
+		    Float32RasterGraphics.copy_into_selection(master.age, globalized_scalar_field, globalized_is_on_top, master.age);
+		}
+
+		for (var i=0, li=plates.length; i<li; ++i) {
+		    plate = plates[i];
+
+		    VectorField.mult_matrix(master.grid.pos, plate.global_to_local_matrix.elements, localized_pos); 
+	        VectorField.mult_matrix(plate.grid.pos, plate.local_to_global_matrix.elements, globalized_pos);
+
+	    	get_subductability(plate.age, plate.density, localized_subductability);
+	    	Uint8Field.gt_scalar(localized_subductability, 0.9, localized_is_subducting);
+
+	    	Uint8Raster.get_nearest_values(master.plate_count, globalized_pos, localized_plate_count);
+	    	Uint8Field.eq_scalar(localized_plate_count, 0, localized_is_uncovered);
+
+	        //trying to get detach to work
+	    	Uint8Raster.get_nearest_values(globalized_is_on_top, globalized_pos, localized_is_on_top);
+	    	BinaryMorphology.intersection(localized_is_subducting, localized_is_on_top, localized_is_detaching);
+	        Uint8Raster.get_nearest_values(localized_is_detaching, localized_pos, globalized_is_detaching);
+	        BinaryMorphology.union(globalized_is_detaching, master.is_detaching, master.is_detaching);
+
+		    //trying to get rifting to work
+		    localized_is_rifting = BinaryMorphology.margin(plate.mask, 1);
+		    BinaryMorphology.intersection(localized_is_rifting, localized_is_uncovered, localized_is_rifting);
+		    Uint8Raster.get_nearest_values(localized_is_rifting, localized_pos, globalized_is_rifting);
+		    BinaryMorphology.union(globalized_is_rifting, master.is_rifting, master.is_rifting);
+		    // Uint8Raster.copy(globalized_is_rifting, master.is_rifting);  // test code for viewing rift for single plate
 
 		}
 	}
@@ -127,7 +168,7 @@ var World = (function() {
 		var angular_velocity = VectorField.cross_vector_field(master.asthenosphere_velocity, master.grid.pos); 
 		for (var i = 0; i < plates.length; i++) {
 			plate = plates[i];
-			VectorField.mult_matrix(master.grid.pos, plate.local_to_global_matrix.elements, globalized_pos);
+			VectorField.mult_matrix(plate.grid.pos, plate.local_to_global_matrix.elements, globalized_pos);
 
 			//BinaryMorphology.negation(plate.mask, local_plate_mask_negation);
 //
@@ -164,6 +205,8 @@ var World = (function() {
 		this.subductability = Float32Raster(this.grid);
 		this.plate_masks = Uint8Raster(this.grid);
 		this.plate_count = Uint8Raster(this.grid);
+		this.is_rifting = Uint8Raster(this.grid);
+		this.is_detaching = Uint8Raster(this.grid);
 		this.asthenosphere_velocity = VectorRaster(this.grid);
 
 		this.radius = parameters['radius'] || 6367;
