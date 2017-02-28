@@ -156,21 +156,24 @@ BinaryMorphology.black_top_hat = function(field, radius) {
 }
 
 
-// NOTE: this is not an standard concept in math morphology
+
+// NOTE: this is not a standard concept in math morphology
 // It is meant to represent the difference between a figure and its dilation
-// Its name eludes to the "margin" concept within the html html box model
-BinaryMorphology.margin = function(field, radius) {
-	return BinaryMorphology.difference(
-		BinaryMorphology.dilation(field, radius),
-		field
-	);
+// Its name eludes to the "margin" concept within the html box model
+BinaryMorphology.margin = function(field, radius, result) {
+	result = result || Uint8Raster(field.grid);
+	if(field === result) throw ("cannot use same input for 'field' and 'result' - margin() is not an in-place function")
+	var dilation = result; // reuse result raster for performance reasons
+	BinaryMorphology.dilation(field, radius, dilation);
+	return BinaryMorphology.difference(dilation, field, result);
 }
-// NOTE: this is not an standard concept in math morphology
+// NOTE: this is not a standard concept in math morphology
 // It is meant to represent the difference between a figure and its erosion
 // Its name eludes to the "padding" concept within the html box model
-BinaryMorphology.padding = function(field, radius) {
-	return BinaryMorphology.difference(
-		field,
-		BinaryMorphology.erosion(field, radius)
-	);
+BinaryMorphology.padding = function(field, radius, result) {
+	result = result || Uint8Raster(field.grid);
+	if(field === result) throw ("cannot use same input for 'field' and 'result' - padding() is not an in-place function")
+	var erosion = result; // reuse result raster for performance reasons
+	BinaryMorphology.erosion(field, radius, erosion);
+	return BinaryMorphology.difference(field, erosion, result);
 }
