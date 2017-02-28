@@ -53,6 +53,13 @@ Uint16Field.eq_field = function (field1, field2, result) {
   }
   return result;
 };
+Uint16Field.ne_field = function (field1, field2, result) {
+  result = result || Uint8Raster(field1.grid);
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = field1[i] != field2[i]? 1:0;
+  }
+  return result;
+};
 
 
 
@@ -105,6 +112,13 @@ Uint16Field.eq_scalar = function (field1, scalar, result) {
   result = result || Uint16Field(field1.grid);
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] == scalar? 1:0;
+  }
+  return result;
+};
+Uint16Field.ne_scalar = function (field1, scalar, result) {
+  result = result || Uint16Field(field1.grid);
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = field1[i] != scalar? 1:0;
   }
   return result;
 };
