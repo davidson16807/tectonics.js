@@ -144,13 +144,14 @@ var World = (function() {
 	    	Uint8Field.eq_scalar(localized_plate_count, 0, localized_is_uncovered);
 
 	        //trying to get detach to work
+		    BinaryMorphology.margin(plate.mask, 1, localized_is_detaching);
 	    	Uint8Raster.get_nearest_values(globalized_is_on_top, globalized_pos, localized_is_on_top);
 	    	BinaryMorphology.intersection(localized_is_subducting, localized_is_on_top, localized_is_detaching);
 	        Uint8Raster.get_nearest_values(localized_is_detaching, localized_pos, globalized_is_detaching);
 	        BinaryMorphology.union(globalized_is_detaching, master.is_detaching, master.is_detaching);
 
 		    //trying to get rifting to work
-		    localized_is_rifting = BinaryMorphology.margin(plate.mask, 1);
+		    BinaryMorphology.margin(plate.mask, 1, localized_is_rifting);
 		    BinaryMorphology.intersection(localized_is_rifting, localized_is_uncovered, localized_is_rifting);
 		    Uint8Raster.get_nearest_values(localized_is_rifting, localized_pos, globalized_is_rifting);
 		    BinaryMorphology.union(globalized_is_rifting, master.is_rifting, master.is_rifting);
