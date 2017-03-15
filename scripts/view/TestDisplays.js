@@ -81,12 +81,12 @@ scalarDisplays.plate_count 	= new ScalarHeatDisplay( { min: '0.', max: '3.',
 			return world.plate_count;
 		} 
 	} );
-scalarDisplays.is_detaching 	= new ScalarHeatDisplay( { min: '0.', max: '1.',
+scalarDisplays.is_detaching 	= new ScalarHeatDisplay( { min: '0.', max: '7.',
 		getField: function (world) {
 			return world.is_detaching;
 		} 
 	} );
-scalarDisplays.is_rifting 	= new ScalarHeatDisplay( { min: '0.', max: '1.',
+scalarDisplays.is_rifting 	= new ScalarHeatDisplay( { min: '0.', max: '7.',
 		getField: function (world) {
 			return world.is_rifting;
 		} 
