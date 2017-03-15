@@ -96,3 +96,13 @@ Float32Raster.get_nearest_values = function(value_field, pos_field, result) {
   }
   return result;
 }
+Float32Raster.get_id = function(field, id) {
+  return field[id];
+}
+Float32Raster.get_ids = function(value_field, id_raster, result) {
+  result = result || Float32Raster(id_raster.grid);
+  for (var i=0, li=id_raster.length; i<li; ++i) {
+      result[i] = value_field[id_raster[i]];
+  }
+  return result;
+}
