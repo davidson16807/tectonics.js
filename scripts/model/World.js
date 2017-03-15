@@ -68,128 +68,158 @@ var World = (function() {
 		// body...
 	}
 	function merge_plates_to_master(plates, master) { 
-		Float32Raster.fill(master.thickness, 0);
-		Float32Raster.fill(master.density, 9999);
-		Float32Raster.fill(master.displacement, 0);
-		Float32Raster.fill(master.age, 9999);
-		Float32Raster.fill(master.subductability, 9999);
-		Float32Raster.fill(master.plate_masks, -1);
-		Float32Raster.fill(master.plate_count, 0);
-		Float32Raster.fill(master.is_rifting, 0);
-		Float32Raster.fill(master.is_detaching, 0);
+
+		var UINT8_NULL = 255;
+		var UINT16_NULL = 65535;
+
+		var fill = Float32Raster.fill;
+
+
+		fill(master.thickness, 0);
+		fill(master.density, 9999);
+		fill(master.displacement, 0);
+		fill(master.age, 9999);
+		fill(master.subductability, 9999);
+		fill(master.plate_masks, -1);
+		fill(master.plate_count, 0);
+		fill(master.is_rifting, 0);
+		fill(master.is_detaching, 0);
 
 	  	var plate; 
+
+	  	//rifting variables
+		var localized_is_on_top_or_empty = Uint8Raster(master.grid);
+		var localized_will_stay_on_top_or_empty = Uint8Raster(master.grid);
+		var localized_is_just_outside_border = Uint8Raster(master.grid);
+		var localized_is_rifting = Uint8Raster(master.grid);
+		
+		//detaching variables
+		var localized_is_on_bottom = Uint8Raster(master.grid);
+		var localized_will_stay_on_bottom = Uint8Raster(master.grid);
+		var localized_is_just_inside_border = Uint8Raster(master.grid);
+		var localized_is_detachable = Uint8Raster(master.grid);
+		var localized_is_detaching = Uint8Raster(master.grid);
+
 		var localized_pos = VectorRaster(master.grid); 
 		var localized_subductability = Float32Raster(master.grid); 
-		var localized_plate_masks = Uint8Raster(master.grid);
-		var localized_plate_count = Uint8Raster(master.grid);
-		var localized_is_rifting = Uint8Raster(master.grid); 
-		var localized_is_detaching = Uint8Raster(master.grid); 
-		var localized_is_subducting = Uint8Raster(master.grid); 
-		var localized_is_on_top = Uint8Raster(master.grid); 
-		var localized_is_not_on_top = Uint8Raster(master.grid); 
-		var localized_is_uncovered = Uint8Raster(master.grid); 
+
+		//global rifting/detaching variables
+		var globalized_is_empty = Uint8Raster(master.grid);
+		var globalized_is_on_top = Uint8Raster(master.grid);
+		var globalized_is_on_top_or_empty = Uint8Raster(master.grid);
+		var globalized_is_on_bottom = Uint8Raster(master.grid);
+		var globalized_is_rifting = Uint8Raster(master.grid); 
+		var globalized_is_detaching = Uint8Raster(master.grid); 
 
 		var globalized_plate_mask = Uint8Raster(master.grid); 
 		var globalized_pos = VectorRaster(master.grid);
 		var globalized_scalar_field = Float32Raster(master.grid); 
-		var globalized_is_rifting = Uint8Raster(master.grid); 
-		var globalized_is_detaching = Uint8Raster(master.grid); 
-		var globalized_is_on_top = Uint8Raster(master.grid);
-		var globalized_is_not_on_top = Uint8Raster(master.grid);
-		var globalized_is_uncovered = Uint8Raster(master.grid);
-		Float32Raster.fill(globalized_is_on_top, 1);
+
+
+		var mult_matrix = VectorField.mult_matrix;
+		var fill = Uint8Raster.fill;
+		var fill_into = Uint8RasterGraphics.fill_into_selection;
+		var copy_into = Float32RasterGraphics.copy_into_selection;
+		var add_term = ScalarField.add_field_term;
+		var add_ui8 = Uint8Field.add_field
+		var resample = Float32Raster.get_nearest_values;
+		var resample_ui8 = Uint8Raster.get_nearest_values;
+		var and = BinaryMorphology.intersection;
+		var lt = ScalarField.lt_field;
+
+		fill(globalized_is_on_top, 1);
 		for (var i=0, li=plates.length; i<li; ++i) {
 		    plate = plates[i]; 
 
-		    VectorField.mult_matrix(master.grid.pos, plate.global_to_local_matrix.elements, localized_pos); 
+		    mult_matrix(master.grid.pos, plate.global_to_local_matrix.elements, localized_pos); 
 
-
-		    Uint8Raster.get_nearest_values(plate.mask, localized_pos, globalized_plate_mask); 
+		    resample_ui8(plate.mask, localized_pos, globalized_plate_mask); 
 
 		    get_subductability(plate.age, plate.density, localized_subductability);
 
 		    //generate globalized_is_on_top
-		    Float32Raster.get_nearest_values(localized_subductability, localized_pos, globalized_scalar_field);
-		    ScalarField.lt_field(globalized_scalar_field, master.subductability, globalized_is_on_top);
-		    BinaryMorphology.intersection(globalized_is_on_top, globalized_plate_mask, globalized_is_on_top);
+		    resample 	(localized_subductability, localized_pos, 					globalized_scalar_field);
+		    lt 			(globalized_scalar_field, master.subductability, 			globalized_is_on_top);
+		    and 		(globalized_is_on_top, globalized_plate_mask, 				globalized_is_on_top);
 
 		    //generate plate_count
-		    Uint8RasterGraphics.fill_into_selection(master.plate_masks, i, globalized_is_on_top, master.plate_masks);
-		    Uint8Field.add_field(master.plate_count, globalized_is_on_top, master.plate_count);
+		    fill_into 	(master.plate_masks, i, globalized_is_on_top, master.plate_masks);
+		    add_ui8 	(master.plate_count, globalized_is_on_top, master.plate_count);
 
 		    // sum between plates
-		    Float32Raster.get_nearest_values(plate.thickness, localized_pos, globalized_scalar_field);
-		    ScalarField.add_field_term(master.thickness, globalized_scalar_field, globalized_plate_mask, master.thickness);
+		    resample 	(plate.thickness, localized_pos, globalized_scalar_field);
+		    add_term 	(master.thickness, globalized_scalar_field, globalized_plate_mask, 	master.thickness);
 
 		    // min function
-		    Float32Raster.get_nearest_values(plate.density, localized_pos, globalized_scalar_field);
-		    Float32RasterGraphics.copy_into_selection(master.density, globalized_scalar_field, globalized_is_on_top, master.density);
+		    resample 	(plate.density, localized_pos, 									globalized_scalar_field);
+		    copy_into 	(master.density, globalized_scalar_field, globalized_is_on_top, master.density);
 
 		    // doesn't matter - recalculate via isostasy
-		    Float32Raster.get_nearest_values(plate.displacement, localized_pos, globalized_scalar_field);
-		    Float32RasterGraphics.copy_into_selection(master.displacement, globalized_scalar_field, globalized_is_on_top, master.displacement);
+		    resample 	(plate.displacement, localized_pos, 							globalized_scalar_field);
+		    copy_into 	(master.displacement, globalized_scalar_field, globalized_is_on_top, master.displacement);
 
 		    // take whatever the lighter plate is
-		    Float32Raster.get_nearest_values(plate.age, localized_pos, globalized_scalar_field);
-		    Float32RasterGraphics.copy_into_selection(master.age, globalized_scalar_field, globalized_is_on_top, master.age);
+		    resample 	(plate.age, localized_pos, 										globalized_scalar_field);
+		    copy_into 	(master.age, globalized_scalar_field, globalized_is_on_top, master.age);
 		}
+
+
+		var mult_matrix = VectorField.mult_matrix;
+		var fill_into = Uint8RasterGraphics.fill_into_selection;
+		var resample = Uint8Raster.get_nearest_values;
+		var margin = BinaryMorphology.margin;
+		var padding = BinaryMorphology.padding;
+		var or = BinaryMorphology.union;
+		var and = BinaryMorphology.intersection;
+		var erode = BinaryMorphology.erosion;
+		var not = BinaryMorphology.negation;
+		var equals = Uint8Field.eq_scalar;
+		var gt = ScalarField.gt_scalar;
+		var globalized_ids; 
+
+	    //shared variables for detaching and rifting
+		// op 	operands																result
+		equals 	(master.plate_masks, UINT8_NULL, 										globalized_is_empty);
+		equals 	(master.plate_masks, i, 												globalized_is_on_top);
+	    or 		(globalized_is_on_top, globalized_is_empty,								globalized_is_on_top_or_empty);
+	    not 	(globalized_is_on_top_or_empty, 										globalized_is_on_bottom);
 
 		for (var i=0, li=plates.length; i<li; ++i) {
 		    plate = plates[i];
 
-		    VectorField.mult_matrix(master.grid.pos, plate.global_to_local_matrix.elements, localized_pos); 
-	        VectorField.mult_matrix(plate.grid.pos, plate.local_to_global_matrix.elements, globalized_pos);
+		    mult_matrix(master.grid.pos, plate.global_to_local_matrix.elements, localized_pos); 
+	        mult_matrix(plate.grid.pos, plate.local_to_global_matrix.elements, globalized_pos);
 
 	    	get_subductability(plate.age, plate.density, localized_subductability);
-	    	Uint8Field.gt_scalar(localized_subductability, 0.9, localized_is_subducting);
 
-
-	        //trying to get detach to work
-
-	        	//detaching
-	        	// must be just inside the border
-	        	BinaryMorphology.padding(plate.mask, 1, localized_is_detaching);
-
-	        	Uint8Raster.get_nearest_values(master.plate_masks, globalized_pos, localized_plate_masks);
-	        	Uint8Field.ne_scalar(localized_plate_masks, i, localized_is_not_on_top);
-	        	//alternate to above
-//	        	// must be covered by another plate
-	        	//Uint8Field.ne_scalar(master.plate_masks, i, globalized_is_not_on_top) // todo: rename "ne" to "not equals" etc.
-	        	//Uint8Raster.get_nearest_values(globalized_is_not_on_top, globalized_pos, localized_is_not_on_top);
-	        	BinaryMorphology.intersection(localized_is_not_on_top, localized_is_detaching, localized_is_detaching)
-//
-//	        	// must be old enough to destroy
-	        	ScalarField.gt_scalar(localized_subductability, 0.0, localized_is_subducting) 
-	        	// todo: rename "gt" to "greater than" etc.
-	        	// todo: increase threshold
-	        	// todo: turn this back on
-	        //	BinaryMorphology.intersection(localized_is_subducting, localized_is_detaching, localized_is_detaching)
-//
-//
-	            Uint8Raster.get_nearest_values(localized_is_detaching, localized_pos, globalized_is_detaching);
-//	            BinaryMorphology.union(globalized_is_detaching, master.is_detaching, master.is_detaching);
-				Uint8Raster.copy(globalized_is_detaching, master.is_detaching);  // test code for viewing rift for single plate
-
-
-
+	    	// globalized_ids = plate.grid.getNearestIds(globalized_pos.grid);
+	    	// localized_ids = plate.grid.getNearestIds(localized_pos.grid);
 
 		    //trying to get rifting to work
-			// must be just outside the border
-		    BinaryMorphology.margin(plate.mask, 1, localized_is_rifting);
-		            	
-        	Uint8Raster.get_nearest_values(master.plate_count, globalized_pos, localized_plate_count);
-        	Uint8Field.eq_scalar(localized_plate_count, 0, localized_is_uncovered);
-        	//alternate to above, doesn't work
-		    //Uint8Field.eq_scalar(master.plate_masks, -1, globalized_is_uncovered) // todo: rename "ne" to "not equals" etc.
-		    //Uint8Raster.get_nearest_values(globalized_is_uncovered, globalized_pos, localized_is_uncovered);
+			// op 	operands																result
+            resample(globalized_is_on_top_or_empty, globalized_pos, 						localized_is_on_top_or_empty);
+		    erode	(localized_is_on_top_or_empty, 1, 										localized_will_stay_on_top_or_empty);
+		    margin	(plate.mask, 1, 														localized_is_just_outside_border);
+		    and 	(localized_will_stay_on_top_or_empty, localized_is_just_outside_border,	localized_is_rifting);
 
-        	BinaryMorphology.intersection(localized_is_uncovered, localized_is_rifting, localized_is_rifting);
-            Uint8Raster.get_nearest_values(localized_is_rifting, localized_pos, globalized_is_rifting);
-            BinaryMorphology.union(globalized_is_rifting, master.is_rifting, master.is_rifting);
-		    // Uint8Raster.copy(globalized_is_rifting, master.is_rifting);  // test code for viewing rift for single plate
+		    //trying to get detachment to work
+			// op 	operands																result
+            resample(globalized_is_on_bottom, globalized_pos, 								localized_is_on_bottom);
+		    erode	(localized_is_on_bottom, 1,												localized_will_stay_on_bottom);
+		    padding (plate.mask, 1, 														localized_is_just_inside_border);
+        	gt 		(localized_subductability, 0.5, 										localized_is_detachable);			//todo: set this to higher threshold
+		    and 	(localized_will_stay_on_bottom, localized_is_just_inside_border, 		localized_is_detaching);
+		    and 	(localized_is_detaching, localized_is_detachable, 						localized_is_detaching);
 
+		    //display detaching
+	        resample(localized_is_detaching, localized_pos, 								globalized_is_detaching);
+	        // and 	(globalized_is_detaching, master.is_detaching, 							master.is_detaching);
+			fill_into(master.is_detaching, i, globalized_is_detaching, master.is_detaching);  // test code for viewing detaching for single plate
 
+			//display rifting
+            resample(localized_is_rifting, localized_pos, 									globalized_is_rifting);
+            // and 	(globalized_is_rifting, master.is_rifting, 								master.is_rifting);
+		    fill_into(master.is_rifting, i, globalized_is_rifting, 							master.is_rifting);  // test code for viewing rifting for single plate
 		}
 	}
 	function merge_master_to_plates(master, plates) {
