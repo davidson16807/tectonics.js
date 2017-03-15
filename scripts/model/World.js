@@ -22,26 +22,70 @@ var World = (function() {
 		return 2 / (1 + Math.exp(-k*x)) - 1;
 		return x>0? 1: 0; 
 	}
+
+
+	//old version
 	function get_subductability(age, density, output) {
 		var subductability = output;
 		var age = age;
 		var density = density;
-		
+		var _lerp = lerp;
+		var _smoothstep = smoothstep;
+		var _heaviside_approximation = heaviside_approximation;
+		var _subductability_transition_factor = subductability_transition_factor;
 		for (var i=0, li=subductability.length; i<li; ++i) {
 			var density_i = density[i];
-			var continent = smoothstep(2890, 2800, density_i);
+			var continent = _smoothstep(2890, 2800, density_i);
 			var age_i = age[i];
 			var density_i = 	density_i * continent 	+ 
-							lerp(density_i, 3300, 
-								 smoothstep(
+							_lerp(density_i, 3300, 
+								 _smoothstep(
 									subduction_min_age_threshold, 
 									subduction_min_age_threshold, 
 									age_i)) 
 								* (1-continent)
-			subductability[i] =  heaviside_approximation( density_i - 3000, subductability_transition_factor );
+			subductability[i] =  _heaviside_approximation( density_i - 3000, _subductability_transition_factor );
 		}
 		return subductability;
 	}
+	//field version
+	function smoothstep (x, edge0, edge1, output) {
+		var fraction;
+		for (var i=0, li=x.length; i<li; ++i) {
+			fraction = (x[i] - edge0) / (edge1 - edge0);
+			output[i] = 0.0 > fraction? 0.0 : 1.0 < fraction? 1.0 : fraction;
+		}
+	}
+	//slower, more complex, probably more easily controllable and realistic
+	function get_subductability(age, density, output, scratch) {
+		var age_adjusted_density = scratch || Float32Raster(density.grid);
+		var subductability = output;
+		
+		Float32RasterInterpolation.smoothstep(age, subduction_min_age_threshold, subduction_max_age_threshold, is_old);
+		Float32RasterInterpolation.lerp_fsf(density, 3300, is_old, age_adjusted_oceanic_density);
+
+		Float32RasterInterpolation.smoothstep(density, 2890, 2800, is_continental);
+		Float32RasterInterpolation.lerp_fff(density, age_adjusted_oceanic_density, is_continental, age_adjusted_density);
+		Float32RasterInterpolation.smoothstep(density, 3000, 3300, subductability);
+		// alternative to above:
+		// Float32RasterInterpolation.sigmoid(density, subductability_transition_factor, 3000);
+
+		return subductability;
+	}
+	//another, simpler method
+	function get_subductability(age, density, output, scratch1, scratch2) {
+		var is_old = scratch1 || Float32Raster(age.grid);
+		var is_oceanic = scratch2 || Float32Raster(density.grid);
+		var subductability = output;
+		
+		smoothstep(age, subduction_min_age_threshold, subduction_max_age_threshold, is_old);
+		smoothstep(density, 2800, 2890, is_oceanic);
+
+		ScalarField.mult_field(is_old, is_oceanic, subductability);
+
+		return subductability;
+	}
+
 	function get_asthenosphere_velocity(subductability, output, scratch1, scratch2) {
 		output = output || Float32Raster(subductability.grid);
 		scratch1 = scratch1 || Float32Raster(subductability.grid);
@@ -51,8 +95,9 @@ var World = (function() {
 		var scratch = scratch2;
 		var smoothing_iterations =  15;
 		Float32Raster.copy(subductability, diffused_subductability);
+		var diffuse = ScalarField.diffusion_by_constant
 		for (var i=0; i<smoothing_iterations; ++i) {
-			ScalarField.diffusion_by_constant(diffused_subductability, 1, diffused_subductability, scratch);
+			diffuse(diffused_subductability, 1, diffused_subductability, scratch);
 			// ScalarField.laplacian(diffused_subductability, laplacian);
 			// ScalarField.add_field(diffused_subductability, laplacian, diffused_subductability);
 		}
@@ -122,8 +167,8 @@ var World = (function() {
 		var copy_into = Float32RasterGraphics.copy_into_selection;
 		var add_term = ScalarField.add_field_term;
 		var add_ui8 = Uint8Field.add_field
-		var resample = Float32Raster.get_nearest_values;
-		var resample_ui8 = Uint8Raster.get_nearest_values;
+		var resample = Float32Raster.get_ids;
+		var resample_ui8 = Uint8Raster.get_ids;
 		var and = BinaryMorphology.intersection;
 		var lt = ScalarField.lt_field;
 
@@ -133,12 +178,14 @@ var World = (function() {
 
 		    mult_matrix(master.grid.pos, plate.global_to_local_matrix.elements, localized_pos); 
 
-		    resample_ui8(plate.mask, localized_pos, globalized_plate_mask); 
+	    	localized_ids = plate.grid.getNearestIds(localized_pos);
 
-		    get_subductability(plate.age, plate.density, localized_subductability);
+		    resample_ui8(plate.mask, localized_ids, globalized_plate_mask); 
+
+		    get_subductability(plate.age, plate.density, plate.subductability);
 
 		    //generate globalized_is_on_top
-		    resample 	(localized_subductability, localized_pos, 					globalized_scalar_field);
+		    resample 	(localized_subductability, localized_ids, 					globalized_scalar_field);
 		    lt 			(globalized_scalar_field, master.subductability, 			globalized_is_on_top);
 		    and 		(globalized_is_on_top, globalized_plate_mask, 				globalized_is_on_top);
 
@@ -147,26 +194,26 @@ var World = (function() {
 		    add_ui8 	(master.plate_count, globalized_is_on_top, master.plate_count);
 
 		    // sum between plates
-		    resample 	(plate.thickness, localized_pos, globalized_scalar_field);
+		    resample 	(plate.thickness, localized_ids, globalized_scalar_field);
 		    add_term 	(master.thickness, globalized_scalar_field, globalized_plate_mask, 	master.thickness);
 
 		    // min function
-		    resample 	(plate.density, localized_pos, 									globalized_scalar_field);
+		    resample 	(plate.density, localized_ids, 									globalized_scalar_field);
 		    copy_into 	(master.density, globalized_scalar_field, globalized_is_on_top, master.density);
 
 		    // doesn't matter - recalculate via isostasy
-		    resample 	(plate.displacement, localized_pos, 							globalized_scalar_field);
+		    resample 	(plate.displacement, localized_ids, 							globalized_scalar_field);
 		    copy_into 	(master.displacement, globalized_scalar_field, globalized_is_on_top, master.displacement);
 
 		    // take whatever the lighter plate is
-		    resample 	(plate.age, localized_pos, 										globalized_scalar_field);
+		    resample 	(plate.age, localized_ids, 										globalized_scalar_field);
 		    copy_into 	(master.age, globalized_scalar_field, globalized_is_on_top, master.age);
 		}
 
 
 		var mult_matrix = VectorField.mult_matrix;
 		var fill_into = Uint8RasterGraphics.fill_into_selection;
-		var resample = Uint8Raster.get_nearest_values;
+		var resample = Uint8Raster.get_ids;
 		var margin = BinaryMorphology.margin;
 		var padding = BinaryMorphology.padding;
 		var or = BinaryMorphology.union;
@@ -175,7 +222,7 @@ var World = (function() {
 		var not = BinaryMorphology.negation;
 		var equals = Uint8Field.eq_scalar;
 		var gt = ScalarField.gt_scalar;
-		var globalized_ids; 
+		var globalized_ids, localized_ids; 
 
 	    //shared variables for detaching and rifting
 		// op 	operands																result
@@ -190,21 +237,21 @@ var World = (function() {
 		    mult_matrix(master.grid.pos, plate.global_to_local_matrix.elements, localized_pos); 
 	        mult_matrix(plate.grid.pos, plate.local_to_global_matrix.elements, globalized_pos);
 
-	    	get_subductability(plate.age, plate.density, localized_subductability);
+	 		localized_subductability = plate.subductability;
 
-	    	// globalized_ids = plate.grid.getNearestIds(globalized_pos.grid);
-	    	// localized_ids = plate.grid.getNearestIds(localized_pos.grid);
+	    	globalized_ids = plate.grid.getNearestIds(globalized_pos);
+	    	localized_ids = plate.grid.getNearestIds(localized_pos);
 
 		    //trying to get rifting to work
 			// op 	operands																result
-            resample(globalized_is_on_top_or_empty, globalized_pos, 						localized_is_on_top_or_empty);
+            resample(globalized_is_on_top_or_empty, globalized_ids, 						localized_is_on_top_or_empty);
 		    erode	(localized_is_on_top_or_empty, 1, 										localized_will_stay_on_top_or_empty);
 		    margin	(plate.mask, 1, 														localized_is_just_outside_border);
 		    and 	(localized_will_stay_on_top_or_empty, localized_is_just_outside_border,	localized_is_rifting);
 
 		    //trying to get detachment to work
 			// op 	operands																result
-            resample(globalized_is_on_bottom, globalized_pos, 								localized_is_on_bottom);
+            resample(globalized_is_on_bottom, globalized_ids, 								localized_is_on_bottom);
 		    erode	(localized_is_on_bottom, 1,												localized_will_stay_on_bottom);
 		    padding (plate.mask, 1, 														localized_is_just_inside_border);
         	gt 		(localized_subductability, 0.5, 										localized_is_detachable);			//todo: set this to higher threshold
@@ -212,12 +259,12 @@ var World = (function() {
 		    and 	(localized_is_detaching, localized_is_detachable, 						localized_is_detaching);
 
 		    //display detaching
-	        resample(localized_is_detaching, localized_pos, 								globalized_is_detaching);
+	        resample(localized_is_detaching, localized_ids, 								globalized_is_detaching);
 	        // and 	(globalized_is_detaching, master.is_detaching, 							master.is_detaching);
 			fill_into(master.is_detaching, i, globalized_is_detaching, master.is_detaching);  // test code for viewing detaching for single plate
 
 			//display rifting
-            resample(localized_is_rifting, localized_pos, 									globalized_is_rifting);
+            resample(localized_is_rifting, localized_ids, 									globalized_is_rifting);
             // and 	(globalized_is_rifting, master.is_rifting, 								master.is_rifting);
 		    fill_into(master.is_rifting, i, globalized_is_rifting, 							master.is_rifting);  // test code for viewing rifting for single plate
 		}
