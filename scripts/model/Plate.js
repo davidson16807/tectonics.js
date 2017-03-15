@@ -6,6 +6,7 @@ function Plate(params)
 	this.world = params['world'] || stop('missing parameter: "world"');
 	params.grid = world.grid;
 	Crust.call(this, params);
+	this.subductability = Float32Raster(this.grid);
 
 	this.mask = params['mask'] || stop('mask')
 
