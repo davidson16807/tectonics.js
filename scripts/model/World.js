@@ -175,6 +175,8 @@ var World = (function() {
 
 		//global rifting/detaching variables
 		var globalized_is_empty = Uint8Raster(master.grid);
+		var globalized_is_alone = Uint8Raster(master.grid);
+		var globalized_is_riftable = Uint8Raster(master.grid);
 		var globalized_is_on_top = Uint8Raster(master.grid);
 		var globalized_is_on_top_or_empty = Uint8Raster(master.grid);
 		var globalized_is_on_bottom = Uint8Raster(master.grid);
@@ -249,13 +251,6 @@ var World = (function() {
 		var gt = ScalarField.gt_scalar;
 		var globalized_ids, localized_ids; 
 
-	    //shared variables for detaching and rifting
-		// op 	operands																result
-		equals 	(master.plate_masks, UINT8_NULL, 										globalized_is_empty);
-		equals 	(master.plate_masks, i, 												globalized_is_on_top);
-	    or 		(globalized_is_on_top, globalized_is_empty,								globalized_is_on_top_or_empty);
-	    not 	(globalized_is_on_top_or_empty, 										globalized_is_on_bottom);
-
 		for (var i=0, li=plates.length; i<li; ++i) {
 		    plate = plates[i];
 
@@ -267,14 +262,21 @@ var World = (function() {
 	    	globalized_ids = plate.grid.getNearestIds(globalized_pos);
 	    	localized_ids = plate.grid.getNearestIds(localized_pos);
 
-		    //trying to get rifting to work
+		    //shared variables for detaching and rifting
+			// op 	operands																result
+			equals 	(master.plate_masks, UINT8_NULL, 										globalized_is_empty);
+			equals 	(master.plate_masks, i, 												globalized_is_on_top);
+		    or 		(globalized_is_on_top, globalized_is_empty,								globalized_is_on_top_or_empty);
+		    not 	(globalized_is_on_top_or_empty, 										globalized_is_on_bottom);
+
+		    //detect rifting
 			// op 	operands																result
             resample(globalized_is_on_top_or_empty, globalized_ids, 						localized_is_on_top_or_empty);
 		    erode	(localized_is_on_top_or_empty, 1, 										localized_will_stay_on_top_or_empty);
 		    margin	(plate.mask, 1, 														localized_is_just_outside_border);
 		    and 	(localized_will_stay_on_top_or_empty, localized_is_just_outside_border,	localized_is_rifting);
 
-		    //trying to get detachment to work
+		    //detect detachment
 			// op 	operands																result
             resample(globalized_is_on_bottom, globalized_ids, 								localized_is_on_bottom);
 		    erode	(localized_is_on_bottom, 1,												localized_will_stay_on_bottom);
@@ -282,6 +284,13 @@ var World = (function() {
         	gt 		(localized_subductability, 0.5, 										localized_is_detachable);			//todo: set this to higher threshold
 		    and 	(localized_will_stay_on_bottom, localized_is_just_inside_border, 		localized_is_detaching);
 		    and 	(localized_is_detaching, localized_is_detachable, 						localized_is_detaching);
+
+	        //rift 
+	        //fill_into(plate.mask, 1, localized_is_rifting,                 plate.mask); 
+	        // fill_into(plate.age, 0, localized_is_rifting,                 plate.age); 
+	        // fill_into(plate.density, master.ocean.density, localized_is_rifting,     plate.density); 
+	        // fill_into(plate.thickness, master.ocean.thickness, localized_is_rifting,   plate.thickness); 
+	        // isostasy(plate, master.mantleDensity); 
 
 		    //display detaching
 	        resample(localized_is_detaching, localized_ids, 								globalized_is_detaching);
@@ -372,12 +381,11 @@ var World = (function() {
 		density: 	2700
 	 });
 
-	 function isostasy(world) {
+	function isostasy(world, mantleDensity) { 
 	 	var thicknesses = world.thickness; 
 	 	var densities = world.density; 
 	 	var displacements = world.displacement; 
 	 	
-	 	var mantleDensity = world.mantleDensity; 
 	 	var thickness, rootDepth;
 	 	for(var i=0, li = displacements.length; i<li; i++){
 
@@ -456,7 +464,7 @@ var World = (function() {
 		// var ids = get_nearest_ids(new_pos);
 		// get_values(fields, ids); giving fields
 
-		isostasy(this);
+		isostasy(this, world.mantleDensity);
 
 		Publisher.publish('world.plates', 'update', { 
 			value: this, 
