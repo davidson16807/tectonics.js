@@ -187,6 +187,7 @@ var World = (function() {
 
 
 		var mult_matrix = VectorField.mult_matrix;
+		var mult = ScalarField.mult_field;
 		var fill = Uint8Raster.fill;
 		var fill_into = Uint8RasterGraphics.fill_into_selection;
 		var copy_into = Float32RasterGraphics.copy_into_selection;
@@ -210,8 +211,10 @@ var World = (function() {
 		    get_subductability(plate.age, plate.density, plate.subductability);
 
 		    //generate globalized_is_on_top
-		    resample 	(localized_subductability, localized_ids, 					globalized_scalar_field);
+		    resample 	(plate.subductability, localized_ids, 					globalized_scalar_field);
+		    mult 		(globalized_scalar_field, globalized_plate_mask, 			globalized_scalar_field);
 		    lt 			(globalized_scalar_field, globalized_subductability,		globalized_is_on_top);
+		    copy_into 	(globalized_subductability, globalized_scalar_field, globalized_is_on_top, globalized_subductability);
 		    and 		(globalized_is_on_top, globalized_plate_mask, 				globalized_is_on_top);
 
 		    //generate plate_count and plate_mask
