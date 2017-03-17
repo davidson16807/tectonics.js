@@ -9,8 +9,10 @@ var VectorImageAnalysis = {};
 // This function repeatedly uses the flood fill algorithm from VectorRasterGraphics,
 // then uses mathematical morphology to ensure there are no overlapping regions between segments
 VectorImageAnalysis.image_segmentation = function(vector_field, grid) {
+	//TODO: holy shit, this needs perf improvement
 	var magnitude = VectorField.magnitude(vector_field);
-	var mask = Float32Raster(grid, 1);
+	var mask = Uint8Raster(grid);
+	Uint8Raster.fill(mask, 1);
 
 	// step 1: run flood fill algorithm several times
 	var min_plate_size = 200;
@@ -19,7 +21,7 @@ VectorImageAnalysis.image_segmentation = function(vector_field, grid) {
 	for (var i=1; i<7; ) {
 		flood_fill = VectorRasterGraphics.magic_wand_select(vector_field, Float32Raster.max_id(magnitude), mask);   
 		ScalarField.sub_field(magnitude, ScalarField.mult_field(flood_fill, magnitude), magnitude);
-		ScalarField.sub_field(mask, flood_fill, mask);
+		Uint8Field.sub_field(mask, flood_fill, mask);
 	    if (Float32Dataset.sum(flood_fill) > min_plate_size) { 
 			flood_fills.push(flood_fill);
 			i++;
@@ -43,7 +45,7 @@ VectorImageAnalysis.image_segmentation = function(vector_field, grid) {
 		        original_mask = BinaryMorphology.difference(original_mask, edited_masks[j]);
 	    	}
 	    }
-	    edited_masks[i] = BinaryMorphology.to_float(original_mask);
+	    edited_masks[i] = original_mask;
 	}
 
 	// step 3: find the remaining region that is not mapped to a plate, and make a new plate just for it
