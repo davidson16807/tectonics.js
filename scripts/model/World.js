@@ -139,21 +139,22 @@ var World = (function() {
 		var UINT8_NULL = 255;
 		var UINT16_NULL = 65535;
 
-		var fill = Float32Raster.fill;
+		var fill_f32 = Float32Raster.fill;
+		var fill_ui8 = Uint8Raster.fill;
 
 
 
-		fill(master.thickness, 0);
-		// fill(master.density, 9999);
-		fill(master.displacement, 0);
-		// fill(master.age, 9999);
-		fill(master.plate_masks, -1);
-		fill(master.plate_count, 0);
-		fill(master.is_rifting, 0);
-		fill(master.is_detaching, 0);
+		fill_f32(master.thickness, 0);
+		// fill_f32(master.density, 9999);
+		fill_f32(master.displacement, 0);
+		// fill_f32(master.age, 9999);
+		fill_ui8(master.plate_masks, -1);
+		fill_ui8(master.plate_count, 0);
+		fill_ui8(master.is_rifting, 0);
+		fill_ui8(master.is_detaching, 0);
 
 		var globalized_subductability = Float32Raster(master.grid); 
-		fill(globalized_subductability, 9999);
+		fill_f32(globalized_subductability, 9999);
 
 	  	var plate; 
 
@@ -290,7 +291,7 @@ var World = (function() {
 		    and 	(localized_is_detaching, localized_is_detachable, 						localized_is_detaching);
 
 	        //rift 
-	        if(true){
+	        if(false){
 		        fill_into(plate.mask, 1, localized_is_rifting,                 plate.mask); 
 		        fill_into(plate.age, 0, localized_is_rifting,                 plate.age); 
 		        fill_into(plate.density, master.ocean.density, localized_is_rifting,     plate.density); 
