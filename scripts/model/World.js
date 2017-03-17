@@ -158,8 +158,8 @@ var World = (function() {
 	  	var plate; 
 
 	  	//rifting variables
-		var localized_is_on_top_or_empty = Uint8Raster(master.grid);
-		var localized_will_stay_on_top_or_empty = Uint8Raster(master.grid);
+		var localized_is_riftable = Uint8Raster(master.grid);
+		var localized_will_stay_riftable = Uint8Raster(master	.grid);
 		var localized_is_just_outside_border = Uint8Raster(master.grid);
 		var localized_is_rifting = Uint8Raster(master.grid);
 		
@@ -240,6 +240,7 @@ var World = (function() {
 
 		var mult_matrix = VectorField.mult_matrix;
 		var fill_into = Uint8RasterGraphics.fill_into_selection;
+		var copy = Uint8Raster.copy;
 		var resample = Uint8Raster.get_ids;
 		var margin = BinaryMorphology.margin;
 		var padding = BinaryMorphology.padding;
@@ -264,17 +265,20 @@ var World = (function() {
 
 		    //shared variables for detaching and rifting
 			// op 	operands																result
-			equals 	(master.plate_masks, UINT8_NULL, 										globalized_is_empty);
+			equals 	(master.plate_count, 0, 												globalized_is_empty);
+			equals 	(master.plate_count, 1, 												globalized_is_alone);
 			equals 	(master.plate_masks, i, 												globalized_is_on_top);
+			and 	(globalized_is_alone, globalized_is_on_top, 							globalized_is_riftable);
+			or 		(globalized_is_riftable, globalized_is_empty, 							globalized_is_riftable);
 		    or 		(globalized_is_on_top, globalized_is_empty,								globalized_is_on_top_or_empty);
 		    not 	(globalized_is_on_top_or_empty, 										globalized_is_on_bottom);
 
 		    //detect rifting
 			// op 	operands																result
-            resample(globalized_is_on_top_or_empty, globalized_ids, 						localized_is_on_top_or_empty);
-		    erode	(localized_is_on_top_or_empty, 1, 										localized_will_stay_on_top_or_empty);
+            resample(globalized_is_riftable, globalized_ids, 								localized_is_riftable);
+		    erode	(localized_is_riftable, 1, 												localized_will_stay_riftable);
 		    margin	(plate.mask, 1, 														localized_is_just_outside_border);
-		    and 	(localized_will_stay_on_top_or_empty, localized_is_just_outside_border,	localized_is_rifting);
+		    and 	(localized_will_stay_riftable, localized_is_just_outside_border,		localized_is_rifting);
 
 		    //detect detachment
 			// op 	operands																result
@@ -286,21 +290,24 @@ var World = (function() {
 		    and 	(localized_is_detaching, localized_is_detachable, 						localized_is_detaching);
 
 	        //rift 
-	        //fill_into(plate.mask, 1, localized_is_rifting,                 plate.mask); 
-	        // fill_into(plate.age, 0, localized_is_rifting,                 plate.age); 
-	        // fill_into(plate.density, master.ocean.density, localized_is_rifting,     plate.density); 
-	        // fill_into(plate.thickness, master.ocean.thickness, localized_is_rifting,   plate.thickness); 
-	        // isostasy(plate, master.mantleDensity); 
+	        if(true){
+		        fill_into(plate.mask, 1, localized_is_rifting,                 plate.mask); 
+		        fill_into(plate.age, 0, localized_is_rifting,                 plate.age); 
+		        fill_into(plate.density, master.ocean.density, localized_is_rifting,     plate.density); 
+		        fill_into(plate.thickness, master.ocean.thickness, localized_is_rifting,   plate.thickness); 
+		        isostasy(plate, master.mantleDensity); 
+	        }
 
 		    //display detaching
-	        resample(localized_is_detaching, localized_ids, 								globalized_is_detaching);
+	        resample(localized_is_riftable, localized_ids, 								globalized_is_detaching);
 	        // and 	(globalized_is_detaching, master.is_detaching, 							master.is_detaching);
-			fill_into(master.is_detaching, i, globalized_is_detaching, master.is_detaching);  // test code for viewing detaching for single plate
+			fill_into(master.is_detaching, i, globalized_is_detaching, master.is_detaching);  
+		    // copy(master.is_detaching, globalized_is_detaching, 									master.is_detaching);  // test code for viewing rifting for single plate
 
 			//display rifting
             resample(localized_is_rifting, localized_ids, 									globalized_is_rifting);
             // and 	(globalized_is_rifting, master.is_rifting, 								master.is_rifting);
-		    fill_into(master.is_rifting, i, globalized_is_rifting, 							master.is_rifting);  // test code for viewing rifting for single plate
+		    fill_into(master.is_rifting, i, globalized_is_rifting, 						master.is_rifting);  
 		}
 	}
 	function merge_master_to_plates(master, plates) {
