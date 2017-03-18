@@ -1,4 +1,9 @@
-"use strict";
+
+#ifndef STRICT
+#define STRICT
+'use strict';
+#endif
+
 // VectorRaster represents a grid where each cell contains a vector value. It is a specific kind of a multibanded raster.
 // A VectorRaster is composed of two parts
 // 		The first is a object of type Grid, representing a collection of vertices that are connected by edges

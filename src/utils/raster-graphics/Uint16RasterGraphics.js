@@ -1,9 +1,14 @@
+
+#ifndef STRICT
+#define STRICT
 'use strict';
+#endif
 
-var Float32RasterGraphics = {};
+
+var Uint16RasterGraphics = {};
 
 
-Float32RasterGraphics.copy_into_selection = function(field, copied, selection, result) {
+Uint16RasterGraphics.copy_into_selection = function(field, copied, selection, result) {
 	result = result || Float32Raster(field.grid);
 
 	for (var i=0, li=field.length; i<li; ++i) {
@@ -13,7 +18,7 @@ Float32RasterGraphics.copy_into_selection = function(field, copied, selection, r
 	return result;
 }
 
-Float32RasterGraphics.fill_into_selection = function(field, fill, selection, result) {
+Uint16RasterGraphics.fill_into_selection = function(field, fill, selection, result) {
 	result = result || Float32Raster(field.grid);
 
 	for (var i=0, li=field.length; i<li; ++i) {

@@ -1,4 +1,9 @@
+
+#ifndef STRICT
+#define STRICT
 'use strict';
+#endif
+
 
 var BinaryMorphology = {};
 BinaryMorphology.VertexTypedArray = function(grid) {

@@ -1,4 +1,9 @@
+
+#ifndef STRICT
+#define STRICT
 'use strict';
+#endif
+
 
 // The ScalarField namespace provides operations over mathematical scalar fields.
 // All fields are represented by raster objects, e.g. VectorRaster or Float32Raster

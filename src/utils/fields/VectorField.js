@@ -1,4 +1,9 @@
+
+#ifndef STRICT
+#define STRICT
 'use strict';
+#endif
+
 
 // The VectorField namespace provides operations over mathematical vector fields.
 // All fields are represented on raster objects, e.g. VectorRaster or Float32Raster

@@ -1,4 +1,9 @@
+
+#ifndef STRICT
+#define STRICT
 'use strict';
+#endif
+
 
 // The Uint8Field namespace provides operations over mathematical scalar fields.
 // All fields are represented by raster objects, e.g. VectorRaster or Uint8Raster
