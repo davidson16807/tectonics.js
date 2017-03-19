@@ -1,9 +1,4 @@
 
-#ifndef STRICT
-#define STRICT
-'use strict';
-#endif
-
 // Uint16Raster represents a grid where each cell contains a 16 bit integer
 // A Uint16Raster is composed of two parts:
 // 		The first is a object of type Grid, representing a collection of vertices that are connected by edges

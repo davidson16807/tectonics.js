@@ -1,9 +1,4 @@
 
-#ifndef STRICT
-#define STRICT
-'use strict';
-#endif
-
 var Vector = {};
 Vector.similarity = function(ax, ay, az, bx, by, bz) {
 	var sqrt = Math.sqrt;
@@ -45,7 +40,7 @@ VectorImageAnalysis.image_segmentation = function(vector_field, grid) {
 	var flood_fill;
 	for (var i=1; i<7; ) {
 		flood_fill = VectorRasterGraphics.magic_wand_select(vector_field, Float32Raster.max_id(magnitude), mask);   
-		ScalarField.sub_field(magnitude, ScalarField.mult_field(flood_fill, magnitude), magnitude);
+		ScalarField.sub_field_term(magnitude, flood_fill, magnitude, magnitude);
 		Uint8Field.sub_field(mask, flood_fill, mask);
 	    if (Float32Dataset.sum(flood_fill) > min_plate_size) { 
 			flood_fills.push(flood_fill);

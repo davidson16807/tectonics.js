@@ -1,10 +1,4 @@
 
-#ifndef STRICT
-#define STRICT
-'use strict';
-#endif
-
-
 // The VectorDataset namespace provides operations over raster objects
 // treating them as if each cell were an entry in a statistical dataset
 

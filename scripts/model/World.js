@@ -145,9 +145,9 @@ var World = (function() {
 
 
 		fill_f32(master.thickness, 0);
-		// fill_f32(master.density, 9999);
+		fill_f32(master.density, master.ocean.density);
 		fill_f32(master.displacement, 0);
-		// fill_f32(master.age, 9999);
+		fill_f32(master.age, 0);
 		fill_ui8(master.plate_masks, -1);
 		fill_ui8(master.plate_count, 0);
 		fill_ui8(master.is_rifting, 0);
@@ -160,7 +160,9 @@ var World = (function() {
 
 	  	//rifting variables
 		var localized_is_riftable = Uint8Raster(master.grid);
-		var localized_will_stay_riftable = Uint8Raster(master	.grid);
+		var localized_is_detachable = Uint8Raster(master.grid);
+		var localized_will_stay_riftable = Uint8Raster(master.grid);
+		var localized_will_stay_detachable = Uint8Raster(master.grid);
 		var localized_is_just_outside_border = Uint8Raster(master.grid);
 		var localized_is_rifting = Uint8Raster(master.grid);
 		
@@ -168,7 +170,6 @@ var World = (function() {
 		var localized_is_on_bottom = Uint8Raster(master.grid);
 		var localized_will_stay_on_bottom = Uint8Raster(master.grid);
 		var localized_is_just_inside_border = Uint8Raster(master.grid);
-		var localized_is_detachable = Uint8Raster(master.grid);
 		var localized_is_detaching = Uint8Raster(master.grid);
 
 		var localized_pos = VectorRaster(master.grid); 
@@ -177,8 +178,11 @@ var World = (function() {
 		//global rifting/detaching variables
 		var globalized_is_empty = Uint8Raster(master.grid);
 		var globalized_is_alone = Uint8Raster(master.grid);
+		var globalized_is_not_alone = Uint8Raster(master.grid);
 		var globalized_is_riftable = Uint8Raster(master.grid);
+		var globalized_is_detachable = Uint8Raster(master.grid);
 		var globalized_is_on_top = Uint8Raster(master.grid);
+		var globalized_is_not_on_top = Uint8Raster(master.grid);
 		var globalized_is_on_top_or_empty = Uint8Raster(master.grid);
 		var globalized_is_on_bottom = Uint8Raster(master.grid);
 		var globalized_is_rifting = Uint8Raster(master.grid); 
@@ -250,7 +254,8 @@ var World = (function() {
 		var erode = BinaryMorphology.erosion;
 		var not = BinaryMorphology.negation;
 		var equals = Uint8Field.eq_scalar;
-		var gt = ScalarField.gt_scalar;
+		var gt_f32 = ScalarField.gt_scalar;
+		var gt_ui8 = Uint8Field.gt_scalar;
 		var globalized_ids, localized_ids; 
 
 		for (var i=0, li=plates.length; i<li; ++i) {
@@ -268,11 +273,14 @@ var World = (function() {
 			// op 	operands																result
 			equals 	(master.plate_count, 0, 												globalized_is_empty);
 			equals 	(master.plate_count, 1, 												globalized_is_alone);
+			gt_ui8	(master.plate_count, 1, 												globalized_is_not_alone);
 			equals 	(master.plate_masks, i, 												globalized_is_on_top);
+		    not 	(globalized_is_on_top, 													globalized_is_not_on_top);
+		    // is_riftable: count == 0 or (count = 1 and top_plate = i)
 			and 	(globalized_is_alone, globalized_is_on_top, 							globalized_is_riftable);
 			or 		(globalized_is_riftable, globalized_is_empty, 							globalized_is_riftable);
-		    or 		(globalized_is_on_top, globalized_is_empty,								globalized_is_on_top_or_empty);
-		    not 	(globalized_is_on_top_or_empty, 										globalized_is_on_bottom);
+			// is_detachable: count > 1 and top_plate != i
+		    and 	(globalized_is_not_alone, globalized_is_not_on_top,						globalized_is_detachable);
 
 		    //detect rifting
 			// op 	operands																result
@@ -283,11 +291,11 @@ var World = (function() {
 
 		    //detect detachment
 			// op 	operands																result
-            resample(globalized_is_on_bottom, globalized_ids, 								localized_is_on_bottom);
-		    erode	(localized_is_on_bottom, 1,												localized_will_stay_on_bottom);
+            resample(globalized_is_detachable, globalized_ids, 								localized_is_detachable);
+		    erode	(localized_is_detachable, 1,											localized_will_stay_detachable);
 		    padding (plate.mask, 1, 														localized_is_just_inside_border);
-        	gt 		(localized_subductability, 0.5, 										localized_is_detachable);			//todo: set this to higher threshold
-		    and 	(localized_will_stay_on_bottom, localized_is_just_inside_border, 		localized_is_detaching);
+        	gt_f32	(localized_subductability, 0.5, 										localized_is_detachable);//todo: set this to higher threshold
+		    and 	(localized_will_stay_detachable, localized_is_just_inside_border, 		localized_is_detaching);
 		    and 	(localized_is_detaching, localized_is_detachable, 						localized_is_detaching);
 
 	        //rift 
@@ -300,7 +308,7 @@ var World = (function() {
 	        }
 
 		    //display detaching
-	        resample(localized_is_riftable, localized_ids, 								globalized_is_detaching);
+	        resample(localized_is_detaching, localized_ids, 								globalized_is_detaching);
 	        // and 	(globalized_is_detaching, master.is_detaching, 							master.is_detaching);
 			fill_into(master.is_detaching, i, globalized_is_detaching, master.is_detaching);  
 		    // copy(master.is_detaching, globalized_is_detaching, 									master.is_detaching);  // test code for viewing rifting for single plate

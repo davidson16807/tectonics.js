@@ -1,16 +1,13 @@
 
-#ifndef STRICT
-#define STRICT
-'use strict';
-#endif
-
-
 // The ScalarField namespace provides operations over mathematical scalar fields.
 // All fields are represented by raster objects, e.g. VectorRaster or Float32Raster
 var ScalarField = {};
 
 ScalarField.min_field = function (field1, field2, result) {
   result = result || Float32Raster(field1.grid);
+  TYPE_CHECK_ARRAY(field1, Float32Array)
+  TYPE_CHECK_ARRAY(field2, Float32Array)
+  TYPE_CHECK_ARRAY(result, Uint8Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] < field2[i]? field1[i] : field2[i];
   }
@@ -18,6 +15,10 @@ ScalarField.min_field = function (field1, field2, result) {
 };
 ScalarField.max_field = function (field1, field2, result) {
   result = result || Float32Raster(field1.grid);
+  TYPE_CHECK_ARRAY(field1, Float32Array)
+  TYPE_CHECK_ARRAY(field2, Float32Array)
+  TYPE_CHECK_ARRAY(result, Uint8Array)
+
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] > field2[i]? field1[i] : field2[i];
   }
@@ -25,6 +26,10 @@ ScalarField.max_field = function (field1, field2, result) {
 };
 ScalarField.gt_field = function (field1, field2, result) {
   result = result || Uint8Raster(field1.grid);
+  TYPE_CHECK_ARRAY(field1, Float32Array)
+  TYPE_CHECK_ARRAY(field2, Float32Array)
+  TYPE_CHECK_ARRAY(result, Uint8Array)
+
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] > field2[i]? 1:0;
   }
@@ -32,6 +37,10 @@ ScalarField.gt_field = function (field1, field2, result) {
 };
 ScalarField.gte_field = function (field1, field2, result) {
   result = result || Uint8Raster(field1.grid);
+  TYPE_CHECK_ARRAY(field1, Float32Array)
+  TYPE_CHECK_ARRAY(field2, Float32Array)
+  TYPE_CHECK_ARRAY(result, Uint8Array)
+
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] >= field2[i]? 1:0;
   }
@@ -39,6 +48,10 @@ ScalarField.gte_field = function (field1, field2, result) {
 };
 ScalarField.lt_field = function (field1, field2, result) {
   result = result || Uint8Raster(field1.grid);
+  TYPE_CHECK_ARRAY(field1, Float32Array)
+  TYPE_CHECK_ARRAY(field2, Float32Array)
+  TYPE_CHECK_ARRAY(result, Uint8Array)
+
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] < field2[i]? 1:0;
   }
@@ -46,6 +59,10 @@ ScalarField.lt_field = function (field1, field2, result) {
 };
 ScalarField.lte_field = function (field1, field2, result) {
   result = result || Uint8Raster(field1.grid);
+  TYPE_CHECK_ARRAY(field1, Float32Array)
+  TYPE_CHECK_ARRAY(field2, Float32Array)
+  TYPE_CHECK_ARRAY(result, Uint8Array)
+
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] <= field2[i]? 1:0;
   }
@@ -55,6 +72,9 @@ ScalarField.lte_field = function (field1, field2, result) {
 
 ScalarField.min_scalar = function (field1, scalar, result) {
   result = result || Float32Raster(field1.grid);
+  TYPE_CHECK_ARRAY(field1, Float32Array)
+  TYPE_CHECK(scalar, number)
+  TYPE_CHECK_ARRAY(result, Uint8Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] < scalar? field1[i] : scalar;
   }
@@ -62,6 +82,9 @@ ScalarField.min_scalar = function (field1, scalar, result) {
 };
 ScalarField.max_scalar = function (field1, scalar, result) {
   result = result || Float32Raster(field1.grid);
+  TYPE_CHECK_ARRAY(field1, Float32Array)
+  TYPE_CHECK(scalar, number)
+  TYPE_CHECK_ARRAY(result, Uint8Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] > scalar? field1[i] : scalar;
   }
@@ -69,6 +92,9 @@ ScalarField.max_scalar = function (field1, scalar, result) {
 };
 ScalarField.gt_scalar = function (field1, scalar, result) {
   result = result || Uint8Raster(field1.grid);
+  TYPE_CHECK_ARRAY(field1, Float32Array)
+  TYPE_CHECK(scalar, number)
+  TYPE_CHECK_ARRAY(result, Uint8Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] > scalar? 1:0;
   }
@@ -76,6 +102,9 @@ ScalarField.gt_scalar = function (field1, scalar, result) {
 };
 ScalarField.gte_scalar = function (field1, scalar, result) {
   result = result || Uint8Raster(field1.grid);
+  TYPE_CHECK_ARRAY(field1, Float32Array)
+  TYPE_CHECK(scalar, number)
+  TYPE_CHECK_ARRAY(result, Uint8Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] >= scalar? 1:0;
   }
@@ -83,6 +112,9 @@ ScalarField.gte_scalar = function (field1, scalar, result) {
 };
 ScalarField.lt_scalar = function (field1, scalar, result) {
   result = result || Uint8Raster(field1.grid);
+  TYPE_CHECK_ARRAY(field1, Float32Array)
+  TYPE_CHECK(scalar, number)
+  TYPE_CHECK_ARRAY(result, Uint8Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] < scalar? 1:0;
   }
@@ -90,6 +122,9 @@ ScalarField.lt_scalar = function (field1, scalar, result) {
 };
 ScalarField.lte_scalar = function (field1, scalar, result) {
   result = result || Uint8Raster(field1.grid);
+  TYPE_CHECK_ARRAY(field1, Float32Array)
+  TYPE_CHECK(scalar, number)
+  TYPE_CHECK_ARRAY(result, Uint8Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] <= scalar? 1:0;
   }
@@ -98,6 +133,10 @@ ScalarField.lte_scalar = function (field1, scalar, result) {
 
 ScalarField.add_field_term = function (field1, field2, field3, result) {
   result = result || Float32Raster(field1.grid);
+  TYPE_CHECK_ARRAY(field1, Float32Array)
+  TYPE_CHECK_ANY_ARRAY(field2) 
+  TYPE_CHECK_ANY_ARRAY(field3) 
+  TYPE_CHECK_ARRAY(result, Float32Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] + field3[i] * field2[i];
   }
@@ -105,6 +144,10 @@ ScalarField.add_field_term = function (field1, field2, field3, result) {
 };
 ScalarField.add_scalar_term = function (field1, field2, scalar, result) {
   result = result || Float32Raster(field1.grid);
+  TYPE_CHECK_ARRAY(field1, Float32Array)
+  TYPE_CHECK_ANY_ARRAY(field2) 
+  TYPE_CHECK(scalar, number)
+  TYPE_CHECK_ARRAY(result, Float32Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] + scalar * field2[i];
   }
@@ -112,6 +155,9 @@ ScalarField.add_scalar_term = function (field1, field2, scalar, result) {
 };
 ScalarField.add_field = function (field1, field2, result) {
   result = result || Float32Raster(field1.grid);
+  TYPE_CHECK_ARRAY(field1, Float32Array)
+  TYPE_CHECK_ANY_ARRAY(field2) 
+  TYPE_CHECK_ARRAY(result, Float32Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] + field2[i];
   }
@@ -119,13 +165,41 @@ ScalarField.add_field = function (field1, field2, result) {
 };
 ScalarField.sub_field = function (field1, field2, result) {
   result = result || Float32Raster(field1.grid);
+  TYPE_CHECK_ARRAY(field1, Float32Array)
+  TYPE_CHECK_ANY_ARRAY(field2) 
+  TYPE_CHECK_ARRAY(result, Float32Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] - field2[i];
   }
   return result;
 };
+ScalarField.sub_field_term = function (field1, field2, field3, result) {
+  result = result || Float32Raster(field1.grid);
+  TYPE_CHECK_ARRAY(field1, Float32Array)
+  TYPE_CHECK_ANY_ARRAY(field2) 
+  TYPE_CHECK_ANY_ARRAY(field3) 
+  TYPE_CHECK_ARRAY(result, Float32Array)
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = field1[i] - field3[i] * field2[i];
+  }
+  return result;
+};
+ScalarField.sub_scalar_term = function (field1, field2, scalar, result) {
+  result = result || Float32Raster(field1.grid);
+  TYPE_CHECK_ARRAY(field1, Float32Array)
+  TYPE_CHECK_ANY_ARRAY(field2) 
+  TYPE_CHECK(scalar, number)
+  TYPE_CHECK_ARRAY(result, Float32Array)
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = field1[i] - scalar * field2[i];
+  }
+  return result;
+};
 ScalarField.mult_field = function (field1, field2, result) {
   result = result || Float32Raster(field1.grid);
+  TYPE_CHECK_ARRAY(field1, Float32Array)
+  TYPE_CHECK_ANY_ARRAY(field2) 
+  TYPE_CHECK_ARRAY(result, Float32Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] * field2[i];
   }
@@ -133,6 +207,9 @@ ScalarField.mult_field = function (field1, field2, result) {
 };
 ScalarField.div_field = function (field1, field2, result) {
   result = result || Float32Raster(field1.grid);
+  TYPE_CHECK_ARRAY(field1, Float32Array)
+  TYPE_CHECK_ANY_ARRAY(field2) 
+  TYPE_CHECK_ARRAY(result, Float32Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] / field2[i];
   }
@@ -140,6 +217,9 @@ ScalarField.div_field = function (field1, field2, result) {
 };
 ScalarField.add_scalar = function (field, scalar, result) {
   result = result || Float32Raster(field.grid);
+  TYPE_CHECK_ARRAY(field, Float32Array)
+  TYPE_CHECK(scalar, number)
+  TYPE_CHECK_ARRAY(result, Float32Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field[i] + scalar;
   }
@@ -147,6 +227,9 @@ ScalarField.add_scalar = function (field, scalar, result) {
 };
 ScalarField.sub_scalar = function (field, scalar, result) {
   result = result || Float32Raster(field.grid);
+  TYPE_CHECK_ARRAY(field, Float32Array)
+  TYPE_CHECK(scalar, number)
+  TYPE_CHECK_ARRAY(result, Float32Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field[i] - scalar;
   }
@@ -154,6 +237,9 @@ ScalarField.sub_scalar = function (field, scalar, result) {
 };
 ScalarField.mult_scalar = function (field, scalar, result) {
   result = result || Float32Raster(field.grid);
+  TYPE_CHECK_ARRAY(field, Float32Array)
+  TYPE_CHECK(scalar, number)
+  TYPE_CHECK_ARRAY(result, Float32Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field[i] * scalar;
   }

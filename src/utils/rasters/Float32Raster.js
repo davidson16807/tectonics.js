@@ -1,9 +1,4 @@
 
-#ifndef STRICT
-#define STRICT
-'use strict';
-#endif
-
 // Float32Raster represents a grid where each cell contains a 32 bit floating point value
 // A Float32Raster is composed of two parts:
 // 		The first is a object of type Grid, representing a collection of vertices that are connected by edges

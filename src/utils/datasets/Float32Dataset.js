@@ -1,10 +1,4 @@
 
-#ifndef STRICT
-#define STRICT
-'use strict';
-#endif
-
-
 // The Dataset namespaces provide operations over statistical datasets.
 // All datasets are represented by raster objects, e.g. VectorRaster or Float32Raster
 var Float32Dataset = {};

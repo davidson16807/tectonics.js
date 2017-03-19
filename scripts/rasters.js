@@ -240,6 +240,9 @@ VectorDataset.rescale = function(input, output, max_new) {
 var ScalarField = {};
 ScalarField.min_field = function (field1, field2, result) {
   result = result || Float32Raster(field1.grid);
+  if (!(field1 instanceof Float32Array)) { throw "field1" + ' is not a ' + "Float32Array"; }
+  if (!(field2 instanceof Float32Array)) { throw "field2" + ' is not a ' + "Float32Array"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] < field2[i]? field1[i] : field2[i];
   }
@@ -247,6 +250,9 @@ ScalarField.min_field = function (field1, field2, result) {
 };
 ScalarField.max_field = function (field1, field2, result) {
   result = result || Float32Raster(field1.grid);
+  if (!(field1 instanceof Float32Array)) { throw "field1" + ' is not a ' + "Float32Array"; }
+  if (!(field2 instanceof Float32Array)) { throw "field2" + ' is not a ' + "Float32Array"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] > field2[i]? field1[i] : field2[i];
   }
@@ -254,6 +260,9 @@ ScalarField.max_field = function (field1, field2, result) {
 };
 ScalarField.gt_field = function (field1, field2, result) {
   result = result || Uint8Raster(field1.grid);
+  if (!(field1 instanceof Float32Array)) { throw "field1" + ' is not a ' + "Float32Array"; }
+  if (!(field2 instanceof Float32Array)) { throw "field2" + ' is not a ' + "Float32Array"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] > field2[i]? 1:0;
   }
@@ -261,6 +270,9 @@ ScalarField.gt_field = function (field1, field2, result) {
 };
 ScalarField.gte_field = function (field1, field2, result) {
   result = result || Uint8Raster(field1.grid);
+  if (!(field1 instanceof Float32Array)) { throw "field1" + ' is not a ' + "Float32Array"; }
+  if (!(field2 instanceof Float32Array)) { throw "field2" + ' is not a ' + "Float32Array"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] >= field2[i]? 1:0;
   }
@@ -268,6 +280,9 @@ ScalarField.gte_field = function (field1, field2, result) {
 };
 ScalarField.lt_field = function (field1, field2, result) {
   result = result || Uint8Raster(field1.grid);
+  if (!(field1 instanceof Float32Array)) { throw "field1" + ' is not a ' + "Float32Array"; }
+  if (!(field2 instanceof Float32Array)) { throw "field2" + ' is not a ' + "Float32Array"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] < field2[i]? 1:0;
   }
@@ -275,6 +290,9 @@ ScalarField.lt_field = function (field1, field2, result) {
 };
 ScalarField.lte_field = function (field1, field2, result) {
   result = result || Uint8Raster(field1.grid);
+  if (!(field1 instanceof Float32Array)) { throw "field1" + ' is not a ' + "Float32Array"; }
+  if (!(field2 instanceof Float32Array)) { throw "field2" + ' is not a ' + "Float32Array"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] <= field2[i]? 1:0;
   }
@@ -282,6 +300,9 @@ ScalarField.lte_field = function (field1, field2, result) {
 };
 ScalarField.min_scalar = function (field1, scalar, result) {
   result = result || Float32Raster(field1.grid);
+  if (!(field1 instanceof Float32Array)) { throw "field1" + ' is not a ' + "Float32Array"; }
+  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] < scalar? field1[i] : scalar;
   }
@@ -289,6 +310,9 @@ ScalarField.min_scalar = function (field1, scalar, result) {
 };
 ScalarField.max_scalar = function (field1, scalar, result) {
   result = result || Float32Raster(field1.grid);
+  if (!(field1 instanceof Float32Array)) { throw "field1" + ' is not a ' + "Float32Array"; }
+  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] > scalar? field1[i] : scalar;
   }
@@ -296,6 +320,9 @@ ScalarField.max_scalar = function (field1, scalar, result) {
 };
 ScalarField.gt_scalar = function (field1, scalar, result) {
   result = result || Uint8Raster(field1.grid);
+  if (!(field1 instanceof Float32Array)) { throw "field1" + ' is not a ' + "Float32Array"; }
+  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] > scalar? 1:0;
   }
@@ -303,6 +330,9 @@ ScalarField.gt_scalar = function (field1, scalar, result) {
 };
 ScalarField.gte_scalar = function (field1, scalar, result) {
   result = result || Uint8Raster(field1.grid);
+  if (!(field1 instanceof Float32Array)) { throw "field1" + ' is not a ' + "Float32Array"; }
+  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] >= scalar? 1:0;
   }
@@ -310,6 +340,9 @@ ScalarField.gte_scalar = function (field1, scalar, result) {
 };
 ScalarField.lt_scalar = function (field1, scalar, result) {
   result = result || Uint8Raster(field1.grid);
+  if (!(field1 instanceof Float32Array)) { throw "field1" + ' is not a ' + "Float32Array"; }
+  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] < scalar? 1:0;
   }
@@ -317,6 +350,9 @@ ScalarField.lt_scalar = function (field1, scalar, result) {
 };
 ScalarField.lte_scalar = function (field1, scalar, result) {
   result = result || Uint8Raster(field1.grid);
+  if (!(field1 instanceof Float32Array)) { throw "field1" + ' is not a ' + "Float32Array"; }
+  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] <= scalar? 1:0;
   }
@@ -324,6 +360,10 @@ ScalarField.lte_scalar = function (field1, scalar, result) {
 };
 ScalarField.add_field_term = function (field1, field2, field3, result) {
   result = result || Float32Raster(field1.grid);
+  if (!(field1 instanceof Float32Array)) { throw "field1" + ' is not a ' + "Float32Array"; }
+  if (!(field2 instanceof Float32Array || field2 instanceof Uint16Array || field2 instanceof Uint8Array)) { throw "field2" + ' is not a typed array'; }
+  if (!(field3 instanceof Float32Array || field3 instanceof Uint16Array || field3 instanceof Uint8Array)) { throw "field3" + ' is not a typed array'; }
+  if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] + field3[i] * field2[i];
   }
@@ -331,6 +371,10 @@ ScalarField.add_field_term = function (field1, field2, field3, result) {
 };
 ScalarField.add_scalar_term = function (field1, field2, scalar, result) {
   result = result || Float32Raster(field1.grid);
+  if (!(field1 instanceof Float32Array)) { throw "field1" + ' is not a ' + "Float32Array"; }
+  if (!(field2 instanceof Float32Array || field2 instanceof Uint16Array || field2 instanceof Uint8Array)) { throw "field2" + ' is not a typed array'; }
+  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] + scalar * field2[i];
   }
@@ -338,6 +382,9 @@ ScalarField.add_scalar_term = function (field1, field2, scalar, result) {
 };
 ScalarField.add_field = function (field1, field2, result) {
   result = result || Float32Raster(field1.grid);
+  if (!(field1 instanceof Float32Array)) { throw "field1" + ' is not a ' + "Float32Array"; }
+  if (!(field2 instanceof Float32Array || field2 instanceof Uint16Array || field2 instanceof Uint8Array)) { throw "field2" + ' is not a typed array'; }
+  if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] + field2[i];
   }
@@ -345,13 +392,41 @@ ScalarField.add_field = function (field1, field2, result) {
 };
 ScalarField.sub_field = function (field1, field2, result) {
   result = result || Float32Raster(field1.grid);
+  if (!(field1 instanceof Float32Array)) { throw "field1" + ' is not a ' + "Float32Array"; }
+  if (!(field2 instanceof Float32Array || field2 instanceof Uint16Array || field2 instanceof Uint8Array)) { throw "field2" + ' is not a typed array'; }
+  if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] - field2[i];
   }
   return result;
 };
+ScalarField.sub_field_term = function (field1, field2, field3, result) {
+  result = result || Float32Raster(field1.grid);
+  if (!(field1 instanceof Float32Array)) { throw "field1" + ' is not a ' + "Float32Array"; }
+  if (!(field2 instanceof Float32Array || field2 instanceof Uint16Array || field2 instanceof Uint8Array)) { throw "field2" + ' is not a typed array'; }
+  if (!(field3 instanceof Float32Array || field3 instanceof Uint16Array || field3 instanceof Uint8Array)) { throw "field3" + ' is not a typed array'; }
+  if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = field1[i] - field3[i] * field2[i];
+  }
+  return result;
+};
+ScalarField.sub_scalar_term = function (field1, field2, scalar, result) {
+  result = result || Float32Raster(field1.grid);
+  if (!(field1 instanceof Float32Array)) { throw "field1" + ' is not a ' + "Float32Array"; }
+  if (!(field2 instanceof Float32Array || field2 instanceof Uint16Array || field2 instanceof Uint8Array)) { throw "field2" + ' is not a typed array'; }
+  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = field1[i] - scalar * field2[i];
+  }
+  return result;
+};
 ScalarField.mult_field = function (field1, field2, result) {
   result = result || Float32Raster(field1.grid);
+  if (!(field1 instanceof Float32Array)) { throw "field1" + ' is not a ' + "Float32Array"; }
+  if (!(field2 instanceof Float32Array || field2 instanceof Uint16Array || field2 instanceof Uint8Array)) { throw "field2" + ' is not a typed array'; }
+  if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] * field2[i];
   }
@@ -359,6 +434,9 @@ ScalarField.mult_field = function (field1, field2, result) {
 };
 ScalarField.div_field = function (field1, field2, result) {
   result = result || Float32Raster(field1.grid);
+  if (!(field1 instanceof Float32Array)) { throw "field1" + ' is not a ' + "Float32Array"; }
+  if (!(field2 instanceof Float32Array || field2 instanceof Uint16Array || field2 instanceof Uint8Array)) { throw "field2" + ' is not a typed array'; }
+  if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] / field2[i];
   }
@@ -366,6 +444,9 @@ ScalarField.div_field = function (field1, field2, result) {
 };
 ScalarField.add_scalar = function (field, scalar, result) {
   result = result || Float32Raster(field.grid);
+  if (!(field instanceof Float32Array)) { throw "field" + ' is not a ' + "Float32Array"; }
+  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field[i] + scalar;
   }
@@ -373,6 +454,9 @@ ScalarField.add_scalar = function (field, scalar, result) {
 };
 ScalarField.sub_scalar = function (field, scalar, result) {
   result = result || Float32Raster(field.grid);
+  if (!(field instanceof Float32Array)) { throw "field" + ' is not a ' + "Float32Array"; }
+  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field[i] - scalar;
   }
@@ -380,6 +464,9 @@ ScalarField.sub_scalar = function (field, scalar, result) {
 };
 ScalarField.mult_scalar = function (field, scalar, result) {
   result = result || Float32Raster(field.grid);
+  if (!(field instanceof Float32Array)) { throw "field" + ' is not a ' + "Float32Array"; }
+  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field[i] * scalar;
   }
@@ -1353,227 +1440,6 @@ VectorField.divergence = function(field, result) {
  }
  return result;
 }
-var Vector = {};
-Vector.similarity = function(ax, ay, az, bx, by, bz) {
- var sqrt = Math.sqrt;
- return (ax*bx +
-   ay*by +
-   az*bz) / ( sqrt(ax*ax+
-        ay*ay+
-        az*az) * sqrt(bx*bx+
-                by*by+
-                bz*bz) );
-}
-Vector.dot = function(ax, ay, az, bx, by, bz) {
- var sqrt = Math.sqrt;
- return (ax*bx + ay*by + az*bz);
-}
-Vector.magnitude = function(x, y, z) {
- return Math.sqrt(x*x + y*y + z*z);
-}
-// The VectorImageAnalysis namespace encompasses advanced functionality 
-// common to image analysis
-var VectorImageAnalysis = {};
-// performs image segmentation
-// NOTE: this uses no particular algorithm, I wrote it before I started looking into the research
-// This function repeatedly uses the flood fill algorithm from VectorRasterGraphics,
-// then uses mathematical morphology to ensure there are no overlapping regions between segments
-VectorImageAnalysis.image_segmentation = function(vector_field, grid) {
- //TODO: holy shit, this needs perf improvement
- var magnitude = VectorField.magnitude(vector_field);
- var mask = Uint8Raster(grid);
- Uint8Raster.fill(mask, 1);
- // step 1: run flood fill algorithm several times
- var min_plate_size = 200;
- var flood_fills = [];
- var flood_fill;
- for (var i=1; i<7; ) {
-  flood_fill = VectorRasterGraphics.magic_wand_select(vector_field, Float32Raster.max_id(magnitude), mask);
-  ScalarField.sub_field(magnitude, ScalarField.mult_field(flood_fill, magnitude), magnitude);
-  Uint8Field.sub_field(mask, flood_fill, mask);
-     if (Float32Dataset.sum(flood_fill) > min_plate_size) {
-   flood_fills.push(flood_fill);
-   i++;
-  }
- }
- // step 2: expand boundaries so all regions of globe map to exactly one plate
- var original_mask;
- var original_masks = [];
- var edited_masks = flood_fills;
- for (var i=0, li=edited_masks.length; i<li; ++i) {
-     original_masks.push(BinaryMorphology.copy(edited_masks[i]));
- }
- for (var i=0, li=original_masks.length; i<li; ++i) {
-     original_mask = original_masks[i];
-     original_mask = BinaryMorphology.dilation(original_mask, 5);
-     original_mask = BinaryMorphology.closing(original_mask, 5);
-     // original_mask = BinaryMorphology.opening(original_mask, 5);
-     for (var j=0, lj=edited_masks.length; j<lj; ++j) {
-      if (i != j) {
-          original_mask = BinaryMorphology.difference(original_mask, edited_masks[j]);
-      }
-     }
-     edited_masks[i] = original_mask;
- }
- // step 3: find the remaining region that is not mapped to a plate, and make a new plate just for it
- var masks = edited_masks;
- var is_not_mapped = Uint8Raster(grid, 1);
- for (var i=0, li=edited_masks.length; i<li; ++i) {
-     BinaryMorphology.difference(is_not_mapped, edited_masks[i], is_not_mapped);
- }
- masks.push(is_not_mapped);
- return masks;
-}
-var BinaryMorphology = {};
-BinaryMorphology.VertexTypedArray = function(grid) {
- var result = new Uint8Array(grid.vertices.length);
- result.grid = grid;
- return result;
-}
-BinaryMorphology.to_binary = function(field, threshold, result) {
- result = result || Uint8Raster(field.grid);
- threshold = threshold || 0;
- for (var i=0, li=field.length; i<li; ++i) {
-     result[i] = (field[i] > threshold)? 1:0;
- }
- return result;
-}
-BinaryMorphology.to_float = function(field, result) {
- result = result || new Float32Raster(field.grid);
- for (var i=0, li=field.length; i<li; ++i) {
-     result[i] = (field[i]===1)? 1:0;
- }
- return result;
-}
-BinaryMorphology.copy = function(field, result) {
- result = result || Uint8Raster(field.grid);
- for (var i=0, li=field.length; i<li; ++i) {
-     result[i] = field[i];
- }
- return result;
-}
-BinaryMorphology.universal = function(field) {
- for (var i=0, li=field.length; i<li; ++i) {
-     field[i] = 1;
- }
-}
-BinaryMorphology.empty = function(field) {
- for (var i=0, li=field.length; i<li; ++i) {
-     field[i] = 0;
- }
-}
-BinaryMorphology.union = function(field1, field2, result) {
- result = result || Uint8Raster(field1.grid);
- for (var i=0, li=field1.length; i<li; ++i) {
-     result[i] = (field1[i]===1 || field2[i]===1)? 1:0;
- }
- return result;
-}
-BinaryMorphology.intersection = function(field1, field2, result) {
- result = result || Uint8Raster(field1.grid);
- for (var i=0, li=field1.length; i<li; ++i) {
-     result[i] = (field1[i]===1 && field2[i]===1)? 1:0;
- }
- return result;
-}
-BinaryMorphology.difference = function(field1, field2, result) {
- result = result || Uint8Raster(field1.grid);
- for (var i=0, li=field1.length; i<li; ++i) {
-     result[i] = (field1[i]===1 && field2[i]===0)? 1:0;
- }
- return result;
-}
-BinaryMorphology.negation = function(field, result) {
- result = result || Uint8Raster(field.grid);
- for (var i=0, li=field.length; i<li; ++i) {
-     result[i] = (field[i]===0)? 1:0;
- }
- return result;
-}
-BinaryMorphology.dilation = function(field, radius, result) {
- radius = radius || 1;
- result = result || Uint8Raster(field.grid);
- var buffer1 = radius % 2 == 1? result: Uint8Raster(field.grid);
- var buffer2 = radius % 2 == 0? result: BinaryMorphology.copy(field);
- var temp = buffer1;
- var neighbor_lookup = field.grid.neighbor_lookup;
- var neighbors = [];
- var buffer_i = true;
- for (var k=0; k<radius; ++k) {
-  for (var i=0, li=neighbor_lookup.length; i<li; ++i) {
-      neighbors = neighbor_lookup[i];
-      buffer_i = buffer2[i];
-      for (var j=0, lj=neighbors.length; j<lj; ++j) {
-          buffer_i = buffer_i || buffer2[neighbors[j]];
-      }
-      buffer1[i] = buffer_i? 1:0;
-  }
-  temp = buffer1;
-  buffer1 = buffer2;
-  buffer2 = temp;
- }
- return buffer2;
-}
-BinaryMorphology.erosion = function(field, radius, result) {
- radius = radius || 1;
- result = result || Uint8Raster(field.grid);
- var buffer1 = radius % 2 == 1? result: Uint8Raster(field.grid);
- var buffer2 = radius % 2 == 0? result: BinaryMorphology.copy(field);
- var temp = buffer1;
- var neighbor_lookup = field.grid.neighbor_lookup;
- var neighbors = [];
- var buffer_i = true;
- for (var k=0; k<radius; ++k) {
-  for (var i=0, li=neighbor_lookup.length; i<li; ++i) {
-      neighbors = neighbor_lookup[i];
-      buffer_i = buffer2[i];
-      for (var j=0, lj=neighbors.length; j<lj; ++j) {
-          buffer_i = buffer_i && buffer2[neighbors[j]];
-      }
-      buffer1[i] = buffer_i? 1:0;
-  }
-  temp = buffer1;
-  buffer1 = buffer2;
-  buffer2 = temp;
- }
- return buffer2;
-}
-BinaryMorphology.opening = function(field, radius) {
- var result = BinaryMorphology.erosion(field, radius);
- return BinaryMorphology.dilation(result, radius);
-}
-BinaryMorphology.closing = function(field, radius) {
- var result = BinaryMorphology.dilation(field, radius);
- return BinaryMorphology.erosion(result, radius);
-}
-BinaryMorphology.white_top_hat = function(field, radius) {
- var closing = BinaryMorphology.closing(field, radius);
- return BinaryMorphology.difference(closing, field);
-}
-BinaryMorphology.black_top_hat = function(field, radius) {
- var opening = BinaryMorphology.opening(field, radius);
- return BinaryMorphology.difference(field, opening);
-}
-// NOTE: this is not a standard concept in math morphology
-// It is meant to represent the difference between a figure and its dilation
-// Its name eludes to the "margin" concept within the html box model
-BinaryMorphology.margin = function(field, radius, result) {
- result = result || Uint8Raster(field.grid);
- if(field === result) throw ("cannot use same input for 'field' and 'result' - margin() is not an in-place function")
- var dilation = result; // reuse result raster for performance reasons
- BinaryMorphology.dilation(field, radius, dilation);
- return BinaryMorphology.difference(dilation, field, result);
-}
-// NOTE: this is not a standard concept in math morphology
-// It is meant to represent the difference between a figure and its erosion
-// Its name eludes to the "padding" concept within the html box model
-BinaryMorphology.padding = function(field, radius, result) {
- result = result || Uint8Raster(field.grid);
- if(field === result) throw ("cannot use same input for 'field' and 'result' - padding() is not an in-place function")
- var erosion = result; // reuse result raster for performance reasons
- BinaryMorphology.erosion(field, radius, erosion);
- return BinaryMorphology.difference(field, erosion, result);
-}
 var Float32RasterGraphics = {};
 Float32RasterGraphics.copy_into_selection = function(field, copied, selection, result) {
  result = result || Float32Raster(field.grid);
@@ -2107,4 +1973,251 @@ VectorRaster.get_nearest_values = function(value_field, pos_field, result) {
   oz[i] = iz[ids[i]];
  }
  return result;
+}
+var Vector = {};
+Vector.similarity = function(ax, ay, az, bx, by, bz) {
+ var sqrt = Math.sqrt;
+ return (ax*bx +
+   ay*by +
+   az*bz) / ( sqrt(ax*ax+
+        ay*ay+
+        az*az) * sqrt(bx*bx+
+                by*by+
+                bz*bz) );
+}
+Vector.dot = function(ax, ay, az, bx, by, bz) {
+ var sqrt = Math.sqrt;
+ return (ax*bx + ay*by + az*bz);
+}
+Vector.magnitude = function(x, y, z) {
+ return Math.sqrt(x*x + y*y + z*z);
+}
+// The VectorImageAnalysis namespace encompasses advanced functionality 
+// common to image analysis
+var VectorImageAnalysis = {};
+// performs image segmentation
+// NOTE: this uses no particular algorithm, I wrote it before I started looking into the research
+// This function repeatedly uses the flood fill algorithm from VectorRasterGraphics,
+// then uses mathematical morphology to ensure there are no overlapping regions between segments
+VectorImageAnalysis.image_segmentation = function(vector_field, grid) {
+ //TODO: holy shit, this needs perf improvement
+ var magnitude = VectorField.magnitude(vector_field);
+ var mask = Uint8Raster(grid);
+ Uint8Raster.fill(mask, 1);
+ // step 1: run flood fill algorithm several times
+ var min_plate_size = 200;
+ var flood_fills = [];
+ var flood_fill;
+ for (var i=1; i<7; ) {
+  flood_fill = VectorRasterGraphics.magic_wand_select(vector_field, Float32Raster.max_id(magnitude), mask);
+  ScalarField.sub_field_term(magnitude, flood_fill, magnitude, magnitude);
+  Uint8Field.sub_field(mask, flood_fill, mask);
+     if (Float32Dataset.sum(flood_fill) > min_plate_size) {
+   flood_fills.push(flood_fill);
+   i++;
+  }
+ }
+ // step 2: expand boundaries so all regions of globe map to exactly one plate
+ var original_mask;
+ var original_masks = [];
+ var edited_masks = flood_fills;
+ for (var i=0, li=edited_masks.length; i<li; ++i) {
+     original_masks.push(BinaryMorphology.copy(edited_masks[i]));
+ }
+ for (var i=0, li=original_masks.length; i<li; ++i) {
+     original_mask = original_masks[i];
+     original_mask = BinaryMorphology.dilation(original_mask, 5);
+     original_mask = BinaryMorphology.closing(original_mask, 5);
+     // original_mask = BinaryMorphology.opening(original_mask, 5);
+     for (var j=0, lj=edited_masks.length; j<lj; ++j) {
+      if (i != j) {
+          original_mask = BinaryMorphology.difference(original_mask, edited_masks[j]);
+      }
+     }
+     edited_masks[i] = original_mask;
+ }
+ // step 3: find the remaining region that is not mapped to a plate, and make a new plate just for it
+ var masks = edited_masks;
+ var is_not_mapped = Uint8Raster(grid, 1);
+ for (var i=0, li=edited_masks.length; i<li; ++i) {
+     BinaryMorphology.difference(is_not_mapped, edited_masks[i], is_not_mapped);
+ }
+ masks.push(is_not_mapped);
+ return masks;
+}
+var BinaryMorphology = {};
+BinaryMorphology.VertexTypedArray = function(grid) {
+ var result = new Uint8Array(grid.vertices.length);
+ result.grid = grid;
+ return result;
+}
+BinaryMorphology.to_binary = function(field, threshold, result) {
+ result = result || Uint8Raster(field.grid);
+ threshold = threshold || 0;
+ if (!(field instanceof Uint8Array)) { throw "field" + ' is not a ' + "Uint8Array"; };
+ for (var i=0, li=field.length; i<li; ++i) {
+     result[i] = (field[i] > threshold)? 1:0;
+ }
+ return result;
+}
+BinaryMorphology.to_float = function(field, result) {
+ result = result || new Float32Raster(field.grid);
+ if (!(field instanceof Uint8Array)) { throw "field" + ' is not a ' + "Uint8Array"; }
+ if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
+ for (var i=0, li=field.length; i<li; ++i) {
+     result[i] = (field[i]===1)? 1:0;
+ }
+ return result;
+}
+BinaryMorphology.copy = function(field, result) {
+ result = result || Uint8Raster(field.grid);
+ if (!(field instanceof Uint8Array)) { throw "field" + ' is not a ' + "Uint8Array"; };
+ if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; };
+ for (var i=0, li=field.length; i<li; ++i) {
+     result[i] = field[i];
+ }
+ return result;
+}
+BinaryMorphology.universal = function(field) {
+ if (!(field instanceof Uint8Array)) { throw "field" + ' is not a ' + "Uint8Array"; };
+ for (var i=0, li=field.length; i<li; ++i) {
+     field[i] = 1;
+ }
+}
+BinaryMorphology.empty = function(field) {
+ if (!(field instanceof Uint8Array)) { throw "field" + ' is not a ' + "Uint8Array"; };
+ for (var i=0, li=field.length; i<li; ++i) {
+     field[i] = 0;
+ }
+}
+BinaryMorphology.union = function(field1, field2, result) {
+ result = result || Uint8Raster(field1.grid);
+ if (!(field1 instanceof Uint8Array)) { throw "field1" + ' is not a ' + "Uint8Array"; };
+ if (!(field2 instanceof Uint8Array)) { throw "field2" + ' is not a ' + "Uint8Array"; };
+ if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; };
+ for (var i=0, li=field1.length; i<li; ++i) {
+     result[i] = (field1[i]===1 || field2[i]===1)? 1:0;
+ }
+ return result;
+}
+BinaryMorphology.intersection = function(field1, field2, result) {
+ result = result || Uint8Raster(field1.grid);
+ if (!(field1 instanceof Uint8Array)) { throw "field1" + ' is not a ' + "Uint8Array"; };
+ if (!(field2 instanceof Uint8Array)) { throw "field2" + ' is not a ' + "Uint8Array"; };
+ if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; };
+ for (var i=0, li=field1.length; i<li; ++i) {
+     result[i] = (field1[i]===1 && field2[i]===1)? 1:0;
+ }
+ return result;
+}
+BinaryMorphology.difference = function(field1, field2, result) {
+ result = result || Uint8Raster(field1.grid);
+ if (!(field1 instanceof Uint8Array)) { throw "field1" + ' is not a ' + "Uint8Array"; };
+ if (!(field2 instanceof Uint8Array)) { throw "field2" + ' is not a ' + "Uint8Array"; };
+ if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; };
+ for (var i=0, li=field1.length; i<li; ++i) {
+     result[i] = (field1[i]===1 && field2[i]===0)? 1:0;
+ }
+ return result;
+}
+BinaryMorphology.negation = function(field, result) {
+ result = result || Uint8Raster(field.grid);
+ if (!(field instanceof Uint8Array)) { throw "field" + ' is not a ' + "Uint8Array"; };
+ if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; };
+ for (var i=0, li=field.length; i<li; ++i) {
+     result[i] = (field[i]===0)? 1:0;
+ }
+ return result;
+}
+BinaryMorphology.dilation = function(field, radius, result) {
+ radius = radius || 1;
+ result = result || Uint8Raster(field.grid);
+ if (!(field instanceof Uint8Array)) { throw "field" + ' is not a ' + "Uint8Array"; };
+ if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; };
+ var buffer1 = radius % 2 == 1? result: Uint8Raster(field.grid);
+ var buffer2 = radius % 2 == 0? result: BinaryMorphology.copy(field);
+ var temp = buffer1;
+ var neighbor_lookup = field.grid.neighbor_lookup;
+ var neighbors = [];
+ var buffer_i = true;
+ for (var k=0; k<radius; ++k) {
+  for (var i=0, li=neighbor_lookup.length; i<li; ++i) {
+      neighbors = neighbor_lookup[i];
+      buffer_i = buffer2[i];
+      for (var j=0, lj=neighbors.length; j<lj; ++j) {
+          buffer_i = buffer_i || buffer2[neighbors[j]];
+      }
+      buffer1[i] = buffer_i? 1:0;
+  }
+  temp = buffer1;
+  buffer1 = buffer2;
+  buffer2 = temp;
+ }
+ return buffer2;
+}
+BinaryMorphology.erosion = function(field, radius, result) {
+ radius = radius || 1;
+ result = result || Uint8Raster(field.grid);
+ if (!(field instanceof Uint8Array)) { throw "field" + ' is not a ' + "Uint8Array"; };
+ if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; };
+ var buffer1 = radius % 2 == 1? result: Uint8Raster(field.grid);
+ var buffer2 = radius % 2 == 0? result: BinaryMorphology.copy(field);
+ var temp = buffer1;
+ var neighbor_lookup = field.grid.neighbor_lookup;
+ var neighbors = [];
+ var buffer_i = true;
+ for (var k=0; k<radius; ++k) {
+  for (var i=0, li=neighbor_lookup.length; i<li; ++i) {
+      neighbors = neighbor_lookup[i];
+      buffer_i = buffer2[i];
+      for (var j=0, lj=neighbors.length; j<lj; ++j) {
+          buffer_i = buffer_i && buffer2[neighbors[j]];
+      }
+      buffer1[i] = buffer_i? 1:0;
+  }
+  temp = buffer1;
+  buffer1 = buffer2;
+  buffer2 = temp;
+ }
+ return buffer2;
+}
+BinaryMorphology.opening = function(field, radius) {
+ var result = BinaryMorphology.erosion(field, radius);
+ return BinaryMorphology.dilation(result, radius);
+}
+BinaryMorphology.closing = function(field, radius) {
+ var result = BinaryMorphology.dilation(field, radius);
+ return BinaryMorphology.erosion(result, radius);
+}
+BinaryMorphology.white_top_hat = function(field, radius) {
+ var closing = BinaryMorphology.closing(field, radius);
+ return BinaryMorphology.difference(closing, field);
+}
+BinaryMorphology.black_top_hat = function(field, radius) {
+ var opening = BinaryMorphology.opening(field, radius);
+ return BinaryMorphology.difference(field, opening);
+}
+// NOTE: this is not a standard concept in math morphology
+// It is meant to represent the difference between a figure and its dilation
+// Its name eludes to the "margin" concept within the html box model
+BinaryMorphology.margin = function(field, radius, result) {
+ result = result || Uint8Raster(field.grid);
+ if (!(field instanceof Uint8Array)) { throw "field" + ' is not a ' + "Uint8Array"; };
+ if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; };
+ if(field === result) throw ("cannot use same input for 'field' and 'result' - margin() is not an in-place function")
+ var dilation = result; // reuse result raster for performance reasons
+ BinaryMorphology.dilation(field, radius, dilation);
+ return BinaryMorphology.difference(dilation, field, result);
+}
+// NOTE: this is not a standard concept in math morphology
+// It is meant to represent the difference between a figure and its erosion
+// Its name eludes to the "padding" concept within the html box model
+BinaryMorphology.padding = function(field, radius, result) {
+ result = result || Uint8Raster(field.grid);
+ if (!(field instanceof Uint8Array)) { throw "field" + ' is not a ' + "Uint8Array"; };
+ if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; };
+ if(field === result) throw ("cannot use same input for 'field' and 'result' - padding() is not an in-place function")
+ var erosion = result; // reuse result raster for performance reasons
+ BinaryMorphology.erosion(field, radius, erosion);
+ return BinaryMorphology.difference(field, erosion, result);
 }

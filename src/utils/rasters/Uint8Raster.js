@@ -1,9 +1,4 @@
 
-#ifndef STRICT
-#define STRICT
-'use strict';
-#endif
-
 // Uint8Raster represents a grid where each cell contains a 8 bit integer
 // A Uint8Raster is composed of two parts:
 // 		The first is a object of type Grid, representing a collection of vertices that are connected by edges

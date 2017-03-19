@@ -1,10 +1,4 @@
 
-#ifndef STRICT
-#define STRICT
-'use strict';
-#endif
-
-
 var Uint8RasterGraphics = {};
 
 
