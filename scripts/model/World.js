@@ -219,10 +219,9 @@ var World = (function() {
 
 		    //generate globalized_is_on_top
 		    resample 	(plate.subductability, localized_ids, 					globalized_scalar_field);
-		    mult 		(globalized_scalar_field, globalized_plate_mask, 			globalized_scalar_field);
 		    lt 			(globalized_scalar_field, globalized_subductability,		globalized_is_on_top);
-		    copy_into 	(globalized_subductability, globalized_scalar_field, globalized_is_on_top, globalized_subductability);
 		    and 		(globalized_is_on_top, globalized_plate_mask, 				globalized_is_on_top);
+		    copy_into 	(globalized_subductability, globalized_scalar_field, globalized_is_on_top, globalized_subductability);
 
 		    //generate plate_count and plate_mask
 		    fill_into 	(master.plate_masks, i, globalized_is_on_top, master.plate_masks);
