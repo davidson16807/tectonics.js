@@ -249,11 +249,11 @@ vectorDisplays.asthenosphere_angular_velocity = new DataFrameVectorDisplay( {
 
 vectorDisplays.asthenosphere_velocity = new DataFrameVectorDisplay( { 
 		getField: function (plate) {
-			var field = getSubductabilitySmoothed(plate)
-			var gradient = ScalarField.gradient(field);
+			// var field = getSubductabilitySmoothed(plate)
+			// var gradient = ScalarField.gradient(field);
 			// var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
 			// laplacian = VectorField.divergence(gradient);
-			return gradient;
+			return plate.asthenosphere_velocity;
 		} 
 	} );
 vectorDisplays.averaged_angular_velocity = new DataFrameVectorDisplay( { 
