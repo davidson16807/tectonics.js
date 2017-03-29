@@ -4,7 +4,8 @@ function SupercontinentCycle(parameters){
 	parameters = parameters || {};
 
 	this.getRandomDuration = parameters['getRandomDuration'] ||
-		function() { return random.uniform(300, 500); };
+		function() { return 150; };
+		// function() { return random.uniform(300, 500); };
 		// from wikipedia
 	
 	this.world = parameters['world'] || stop('missing parameter: "world"');
@@ -24,7 +25,7 @@ SupercontinentCycle.prototype.isEnding = function() {
 SupercontinentCycle.prototype.restart = function() {
 	var world = this.world;
 
-	this.age = -Infinity;
+	this.age = 0;
 	this.duration = this.getRandomDuration();
 
 	world.resetPlates();
