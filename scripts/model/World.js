@@ -298,12 +298,15 @@ var World = (function() {
 		    and 	(localized_is_detaching, localized_is_detachable, 						localized_is_detaching);
 
 	        //rift 
-	        if(false){
+	        if(true){
 		        fill_into(plate.mask, 1, localized_is_rifting,                 plate.mask); 
 		        fill_into(plate.age, 0, localized_is_rifting,                 plate.age); 
 		        fill_into(plate.density, master.ocean.density, localized_is_rifting,     plate.density); 
 		        fill_into(plate.thickness, master.ocean.thickness, localized_is_rifting,   plate.thickness); 
 		        isostasy(plate, master.mantleDensity); 
+	        }
+	        if(false){
+		        fill_into(plate.mask, 1, localized_is_detaching,                 plate.mask); 
 	        }
 
 		    //display detaching
@@ -465,7 +468,11 @@ var World = (function() {
 		merge_master_to_plates(this, this.plates);
 
 		// plate submodels go here: plate motion and erosion, namely
-
+		var plate;
+		for (var i = 0; i < this.plates.length; i++) {
+			var plate = this.plates[i]
+			ScalarField.add_scalar(plate.age, timestep, plate.age);
+		}
 
 		merge_plates_to_master(this.plates, this);
 
