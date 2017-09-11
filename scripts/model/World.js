@@ -142,13 +142,12 @@ var World = (function() {
 		var fill_f32 = Float32Raster.fill;
 		var fill_ui8 = Uint8Raster.fill;
 
-
-
+		//WIPE MASTER RASTERS CLEAN
 		fill_f32(master.thickness, 0);
 		fill_f32(master.density, master.ocean.density);
 		fill_f32(master.displacement, 0);
 		fill_f32(master.age, 0);
-		fill_ui8(master.plate_masks, -1);
+		fill_ui8(master.plate_masks, UINT8_NULL);
 		fill_ui8(master.plate_count, 0);
 		fill_ui8(master.is_rifting, 0);
 		fill_ui8(master.is_detaching, 0);
