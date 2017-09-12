@@ -159,9 +159,9 @@ var World = (function() {
 
 		//local variables
 		var localized_pos = VectorRaster(master.grid); 
+		var localized_ids; 
 
 		//global variables
-		var globalized_pos = VectorRaster(master.grid);
 		var globalized_is_on_top = Uint8Raster(master.grid);
 		var globalized_plate_mask = Uint8Raster(master.grid); 
 
@@ -169,7 +169,6 @@ var World = (function() {
 		// this is used for performance reasons
 		var globalized_scalar_field = Float32Raster(master.grid); 
 
-		var localized_ids; 
 
 		var mult_matrix = VectorField.mult_matrix;
 		var fill = Uint8Raster.fill;
@@ -231,11 +230,7 @@ var World = (function() {
 		}
 	}
 
-	function update_plates(plates, master) { 
-
-		var UINT8_NULL = 255;
-		var UINT16_NULL = 65535;
-
+	function rift_and_detach(plates, master) { 
 	  	var plate; 
 
 	  	//rifting variables
@@ -286,8 +281,13 @@ var World = (function() {
 		var equals = Uint8Field.eq_scalar;
 		var gt_f32 = ScalarField.gt_scalar;
 		var gt_ui8 = Uint8Field.gt_scalar;
-		var globalized_ids, localized_ids; 
+		var globalized_ids, localized_ids;
 
+	    //shared variables for detaching and rifting
+		// op 	operands																result
+		equals 	(master.plate_count, 0, 												globalized_is_empty);
+		equals 	(master.plate_count, 1, 												globalized_is_alone);
+		not		(globalized_is_alone, 													globalized_is_not_alone);
 		for (var i=0, li=plates.length; i<li; ++i) {
 		    plate = plates[i];
 
@@ -301,28 +301,25 @@ var World = (function() {
 
 		    //shared variables for detaching and rifting
 			// op 	operands																result
-			equals 	(master.plate_count, 0, 												globalized_is_empty);
-			equals 	(master.plate_count, 1, 												globalized_is_alone);
-			gt_ui8	(master.plate_count, 1, 												globalized_is_not_alone);
 			equals 	(master.plate_masks, i, 												globalized_is_on_top);
 		    not 	(globalized_is_on_top, 													globalized_is_not_on_top);
+
+		    //detect rifting
 		    // is_riftable: count == 0 or (count = 1 and top_plate = i)
 			and 	(globalized_is_alone, globalized_is_on_top, 							globalized_is_riftable);
 			or 		(globalized_is_riftable, globalized_is_empty, 							globalized_is_riftable);
-			// is_detachable: count > 1 and top_plate != i
-		    and 	(globalized_is_not_alone, globalized_is_not_on_top,						globalized_is_detachable);
 
-		    //detect rifting
-			// op 	operands																result
             resample(globalized_is_riftable, globalized_ids, 								localized_is_riftable);
 		    erode	(localized_is_riftable, 1, 												localized_will_stay_riftable);
 		    margin	(plate.mask, 1, 														localized_is_just_outside_border);
 		    and 	(localized_will_stay_riftable, localized_is_just_outside_border,		localized_is_rifting);
 
 		    //detect detachment
-			// op 	operands																result
+			// is_detachable: count > 1 and top_plate != i
+		    and 	(globalized_is_not_alone, globalized_is_not_on_top,						globalized_is_detachable);
+
             resample(globalized_is_detachable, globalized_ids, 								localized_is_detachable);
-		    erode	(localized_is_detachable, 1,											localized_will_stay_detachable);
+            erode	(localized_is_detachable, 1,											localized_will_stay_detachable);
 		    padding (plate.mask, 1, 														localized_is_just_inside_border);
         	gt_f32	(localized_subductability, 0.5, 										localized_is_detachable);//todo: set this to higher threshold
 		    and 	(localized_will_stay_detachable, localized_is_just_inside_border, 		localized_is_detaching);
@@ -336,8 +333,10 @@ var World = (function() {
 		        fill_into(plate.thickness, master.ocean.thickness, localized_is_rifting,   	plate.thickness); 
 		        isostasy(plate, master.mantleDensity); 
 	        }
-	        if(false){
-		        fill_into(plate.mask, 1, localized_is_detaching,                 plate.mask); 
+	        //detach
+	        if(true){
+		        fill_into(plate.mask, 1, localized_is_detaching,                 			plate.mask); 
+		        // TODO: accrete mass onto top plate
 	        }
 
 		    //display detaching
@@ -349,7 +348,23 @@ var World = (function() {
 			//display rifting
             resample(localized_is_rifting, localized_ids, 									globalized_is_rifting);
             // and 	(globalized_is_rifting, master.is_rifting, 								master.is_rifting);
-		    fill_into(master.is_rifting, i, globalized_is_rifting, 						master.is_rifting);  
+		    fill_into(master.is_rifting, i, globalized_is_rifting, 							master.is_rifting);  
+		}
+	}
+	function erode(plates, master, timestep){
+		var precipitation = 7.8e5;
+		// ^^^ measured in meters of rain per million years
+		// global land average from wikipedia
+		var erosiveFactor = 1.8e-7; 
+		// ^^^ the rate of erosion per the rate of rainfall in that place
+		// measured in fraction of height gradient per meters of rain per million years
+
+		var plate;
+		var scratch = Float32Raster(master.grid); 
+		var diffuse = ScalarField.diffusion_by_constant;
+		for (var i=0, li=plates.length; i<li; ++i) {
+		    plate = plates[i];
+		    diffuse(plate.thickness, precipitation * timestep * erosiveFactor, 				plate.thickness, scratch)
 		}
 	}
 	function merge_master_to_plates(master, plates) {
@@ -506,8 +521,8 @@ var World = (function() {
 		}
 
 		merge_plates_to_master(this.plates, this);
-		update_plates(this.plates, this);
-
+		rift_and_detach(this.plates, this);
+		//erode(this.plates, this, timestep);
 
 		// World submodels go here: atmo model, hydro model, bio model, etc.
 
