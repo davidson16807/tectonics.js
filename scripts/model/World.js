@@ -152,8 +152,89 @@ var World = (function() {
 		fill_ui8(master.is_rifting, 0);
 		fill_ui8(master.is_detaching, 0);
 
-		var globalized_subductability = Float32Raster(master.grid); 
-		fill_f32(globalized_subductability, 9999);
+	  	var plate; 
+		
+		var master_subductability = Float32Raster(master.grid); 
+		fill_f32(master_subductability, 9999);
+
+		//local variables
+		var localized_pos = VectorRaster(master.grid); 
+
+		//global variables
+		var globalized_pos = VectorRaster(master.grid);
+		var globalized_is_on_top = Uint8Raster(master.grid);
+		var globalized_plate_mask = Uint8Raster(master.grid); 
+
+		// float32array used for temporary storage of globalized scalar fields
+		// this is used for performance reasons
+		var globalized_scalar_field = Float32Raster(master.grid); 
+
+		var localized_ids; 
+
+		var mult_matrix = VectorField.mult_matrix;
+		var fill = Uint8Raster.fill;
+		var fill_into = Uint8RasterGraphics.fill_into_selection;
+		var copy_into = Float32RasterGraphics.copy_into_selection;
+		var add_term = ScalarField.add_field_term;
+		var add_ui8 = Uint8Field.add_field
+		var resample = Float32Raster.get_ids;
+		var resample_ui8 = Uint8Raster.get_ids;
+		var and = BinaryMorphology.intersection;
+		var lt = ScalarField.lt_field;
+
+		fill(globalized_is_on_top, 1);
+		for (var i=0, li=plates.length; i<li; ++i) {
+		    plate = plates[i]; 
+
+		    // find localized_ids
+		    // for each cell in the master's grid, this raster indicates the id of the corresponding cell in the plate's grid
+		    // this is used to convert between global and local coordinate systems
+		    mult_matrix(master.grid.pos, plate.global_to_local_matrix.elements, 				localized_pos); 
+	    	localized_ids = master.grid.getNearestIds(localized_pos);
+
+	    	// generate globalized_plate_mask
+	    	// this raster indicates whether the plate exists in a region of the planet
+	    	// this raster will be used when merging other rasters
+		    resample_ui8(plate.mask, localized_ids, 											globalized_plate_mask); 
+
+		    // generate globalized_is_on_top
+		    // this raster indicates whether the plate is viewable from space
+		    // this raster will be used when merging other fields
+		    get_subductability(plate.age, plate.density, 										plate.subductability); // TODO: we should memoize this
+		    resample 	(plate.subductability,		 localized_ids, 							globalized_scalar_field);
+		    lt 			(globalized_scalar_field,	 master_subductability,						globalized_is_on_top);
+		    and 		(globalized_is_on_top,		 globalized_plate_mask, 					globalized_is_on_top);
+		    copy_into 	(master_subductability,	 globalized_scalar_field, globalized_is_on_top, master_subductability);
+
+		    // merge plates with master
+		    // set plate_mask to current plate's index where current plate is on top
+		    fill_into 	(master.plate_masks, i, globalized_is_on_top, 							master.plate_masks);
+		    
+		    // add 1 to master.plate_count where current plate exists
+		    add_ui8 	(master.plate_count, globalized_plate_mask, 							master.plate_count);
+
+		    // add current plate thickness to master thickness wherever current plate exists
+		    resample 	(plate.thickness, localized_ids, 										globalized_scalar_field);
+		    add_term 	(master.thickness, globalized_scalar_field, globalized_plate_mask, 		master.thickness);
+
+		    // overwrite master wherever current plate is on top
+		    resample 	(plate.density, localized_ids, 											globalized_scalar_field);
+		    copy_into 	(master.density, globalized_scalar_field, globalized_is_on_top, 		master.density);
+
+		    // overwrite master wherever current plate is on top
+		    resample 	(plate.displacement, localized_ids, 									globalized_scalar_field);
+		    copy_into 	(master.displacement, globalized_scalar_field, globalized_is_on_top, 	master.displacement);
+
+		    // overwrite master wherever current plate is on top
+		    resample 	(plate.age, localized_ids, 												globalized_scalar_field);
+		    copy_into 	(master.age, globalized_scalar_field, globalized_is_on_top, 			master.age);
+		}
+	}
+
+	function update_plates(plates, master) { 
+
+		var UINT8_NULL = 255;
+		var UINT16_NULL = 65535;
 
 	  	var plate; 
 
@@ -193,55 +274,6 @@ var World = (function() {
 
 
 		var mult_matrix = VectorField.mult_matrix;
-		var mult = ScalarField.mult_field;
-		var fill = Uint8Raster.fill;
-		var fill_into = Uint8RasterGraphics.fill_into_selection;
-		var copy_into = Float32RasterGraphics.copy_into_selection;
-		var add_term = ScalarField.add_field_term;
-		var add_ui8 = Uint8Field.add_field
-		var resample = Float32Raster.get_ids;
-		var resample_ui8 = Uint8Raster.get_ids;
-		var and = BinaryMorphology.intersection;
-		var lt = ScalarField.lt_field;
-
-		fill(globalized_is_on_top, 1);
-		for (var i=0, li=plates.length; i<li; ++i) {
-		    plate = plates[i]; 
-
-		    mult_matrix(master.grid.pos, plate.global_to_local_matrix.elements, localized_pos); 
-
-	    	localized_ids = plate.grid.getNearestIds(localized_pos);
-
-		    resample_ui8(plate.mask, localized_ids, globalized_plate_mask); 
-
-		    get_subductability(plate.age, plate.density, plate.subductability);
-
-		    //generate globalized_is_on_top
-		    resample 	(plate.subductability, localized_ids, 					globalized_scalar_field);
-		    lt 			(globalized_scalar_field, globalized_subductability,		globalized_is_on_top);
-		    and 		(globalized_is_on_top, globalized_plate_mask, 				globalized_is_on_top);
-		    copy_into 	(globalized_subductability, globalized_scalar_field, globalized_is_on_top, globalized_subductability);
-
-		    //generate plate_count and plate_mask
-		    fill_into 	(master.plate_masks, i, globalized_is_on_top, master.plate_masks);
-		    add_ui8 	(master.plate_count, globalized_plate_mask, master.plate_count);
-
-		    // sum between plates
-		    resample 	(plate.thickness, localized_ids, globalized_scalar_field);
-		    add_term 	(master.thickness, globalized_scalar_field, globalized_plate_mask, 	master.thickness);
-
-		    resample 	(plate.density, localized_ids, 									globalized_scalar_field);
-		    copy_into 	(master.density, globalized_scalar_field, globalized_is_on_top, master.density);
-
-		    resample 	(plate.displacement, localized_ids, 							globalized_scalar_field);
-		    copy_into 	(master.displacement, globalized_scalar_field, globalized_is_on_top, master.displacement);
-
-		    resample 	(plate.age, localized_ids, 										globalized_scalar_field);
-		    copy_into 	(master.age, globalized_scalar_field, globalized_is_on_top, master.age);
-		}
-
-
-		var mult_matrix = VectorField.mult_matrix;
 		var fill_into = Uint8RasterGraphics.fill_into_selection;
 		var copy = Uint8Raster.copy;
 		var resample = Uint8Raster.get_ids;
@@ -260,12 +292,12 @@ var World = (function() {
 		    plate = plates[i];
 
 		    mult_matrix(master.grid.pos, plate.global_to_local_matrix.elements, localized_pos); 
+	    	localized_ids = plate.grid.getNearestIds(localized_pos);
+
 	        mult_matrix(plate.grid.pos, plate.local_to_global_matrix.elements, globalized_pos);
+	    	globalized_ids = plate.grid.getNearestIds(globalized_pos);
 
 	 		localized_subductability = plate.subductability;
-
-	    	globalized_ids = plate.grid.getNearestIds(globalized_pos);
-	    	localized_ids = plate.grid.getNearestIds(localized_pos);
 
 		    //shared variables for detaching and rifting
 			// op 	operands																result
@@ -298,10 +330,10 @@ var World = (function() {
 
 	        //rift 
 	        if(true){
-		        fill_into(plate.mask, 1, localized_is_rifting,                 plate.mask); 
-		        fill_into(plate.age, 0, localized_is_rifting,                 plate.age); 
-		        fill_into(plate.density, master.ocean.density, localized_is_rifting,     plate.density); 
-		        fill_into(plate.thickness, master.ocean.thickness, localized_is_rifting,   plate.thickness); 
+		        fill_into(plate.mask, 1, localized_is_rifting,                 				plate.mask); 
+		        fill_into(plate.age, 0, localized_is_rifting,                 				plate.age); 
+		        fill_into(plate.density, master.ocean.density, localized_is_rifting,     	plate.density); 
+		        fill_into(plate.thickness, master.ocean.thickness, localized_is_rifting,   	plate.thickness); 
 		        isostasy(plate, master.mantleDensity); 
 	        }
 	        if(false){
@@ -311,8 +343,8 @@ var World = (function() {
 		    //display detaching
 	        resample(localized_is_detaching, localized_ids, 								globalized_is_detaching);
 	        // and 	(globalized_is_detaching, master.is_detaching, 							master.is_detaching);
-			fill_into(master.is_detaching, i, globalized_is_detaching, master.is_detaching);  
-		    // copy(master.is_detaching, globalized_is_detaching, 									master.is_detaching);  // test code for viewing rifting for single plate
+			fill_into(master.is_detaching, i, globalized_is_detaching, 						master.is_detaching);  
+		    // copy(master.is_detaching, globalized_is_detaching, 							master.is_detaching);  // test code for viewing rifting for single plate
 
 			//display rifting
             resample(localized_is_rifting, localized_ids, 									globalized_is_rifting);
@@ -474,6 +506,7 @@ var World = (function() {
 		}
 
 		merge_plates_to_master(this.plates, this);
+		update_plates(this.plates, this);
 
 
 		// World submodels go here: atmo model, hydro model, bio model, etc.
