@@ -316,7 +316,11 @@
 		loadUrl(querystring['load']);
 	} else {
 		world = new World({ grid: view.grid });
-		EliasWorldGenerator.generate(world);
+		WorldGenerator.generate(world, 
+			EliasHeightMapGenerator.generate(world.grid), 
+			WorldGenerator.early_earth_hypsography, 
+			WorldGenerator.modern_earth_control_points
+		);
 		model.world(world);
 		$('#loadingSave').hide();
 		$('.controls').show();
