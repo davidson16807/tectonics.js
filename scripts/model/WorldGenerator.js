@@ -94,9 +94,9 @@ WorldGenerator.generate = function (world, height_ranks, hypsography, control_po
 		for (var j = 1; j < control_points.length; j++) {
 			var lower = control_points[j-1];
 			var upper = control_points[j];
-			if (height < upper.elevation || 
-				upper.elevation == tallest.elevation){
-				var fraction = smoothstep(lower.elevation, upper.elevation, height);
+			if (height < upper.displacement || 
+				upper.displacement == tallest.displacement){
+				var fraction = smoothstep(lower.displacement, upper.displacement, height);
 				
 				Crust.set_value( world, cell_ids[i], RockColumn.lerp(lower, upper, fraction) );
 
@@ -120,52 +120,59 @@ WorldGenerator.modern_earth_hypsography = function() {
 };
 WorldGenerator.modern_earth_control_points = [
 	//abyss
-	{
-		elevation: 	-11000,
-		thickness: 		4000, 
+	new RockColumn({
+		displacement: -11000,
+		sima: 		4000, 
+		thickness: 	4000, 
 		age: 		250,
 		density: 	3300	 // Carlson & Raskin 1984
-	},
+	}),
 	//deep_ocean
-	{
-		elevation: 	-6000,  
-		thickness: 	 7100-800, // +/- 800, White McKenzie and O'nions 1992
+	new RockColumn({
+		displacement: -6000,  
+		sima: 	 7100-800, // +/- 800, White McKenzie and O'nions 1992
+		thickness: 	7100-800, // +/- 800, White McKenzie and O'nions 1992
 		age: 		200,
 		density: 	3000	 // Carlson & Raskin 1984
-	},
+	}),
 	//shallow_ocean
-	{
-		elevation: 	-3682,	 // Charette & Smith 2010
-		thickness: 		7100+800, // +/- 800, White McKenzie and O'nions 1992
+	new RockColumn({
+		displacement: -3682,	 // Charette & Smith 2010
+		sima: 		7100+800, // +/- 800, White McKenzie and O'nions 1992
+		thickness: 	7100+800, // +/- 800, White McKenzie and O'nions 1992
 		age: 		0,
 		density: 	2890	 // Carlson & Raskin 1984
-	},
+	}),
 	//shelf_bottom
-	{
-		elevation: 	-2000,    //Sverdrup & Fleming 1942
-	    thickness: 		7100+800,  // +/- 2900, estimate for shields, Zandt & Ammon 1995
+	new RockColumn({
+		displacement: -2000,    //Sverdrup & Fleming 1942
+		sima: 		7100+800,  // +/- 2900, estimate for shields, Zandt & Ammon 1995
+		thickness: 	7100+800,  // +/- 2900, estimate for shields, Zandt & Ammon 1995
 		age: 		100,
 		density: 	2950
-	},
+	}),
 	//shelf_top
-	{
-		elevation: 	-200,    //Sverdrup & Fleming 1942
-	    thickness: 		17000,  // +/- 2900, estimate for shields, Zandt & Ammon 1995
+	new RockColumn({
+		displacement: -200,    //Sverdrup & Fleming 1942
+		sial: 		17000,  // +/- 2900, estimate for shields, Zandt & Ammon 1995
+		thickness: 	17000,  // +/- 2900, estimate for shields, Zandt & Ammon 1995
 		age: 		1000,
 		density: 	2700
-	},
+	}),
 	//land
-	{
-		elevation: 	840,    //Sverdrup & Fleming 1942
-	    thickness: 		36900,  // +/- 2900, estimate for shields, Zandt & Ammon 1995
+	new RockColumn({
+		displacement: 840,    //Sverdrup & Fleming 1942
+		sial: 		36900,  // +/- 2900, estimate for shields, Zandt & Ammon 1995
+		thickness: 	36900,  // +/- 2900, estimate for shields, Zandt & Ammon 1995
 		age: 		1000,
 		density: 	2700
-	},
+	}),
 	//mountain
-	{
-		elevation: 	8848,
-	    thickness: 		70000,  // +/- 2900, estimate for shields, Zandt & Ammon 1995
+	new RockColumn({
+		displacement: 8848,
+		sial: 		70000,  // +/- 2900, estimate for shields, Zandt & Ammon 1995
+		thickness: 	70000,  // +/- 2900, estimate for shields, Zandt & Ammon 1995
 		age: 		1000,
 		density: 	2700
-	}
+	})
 ];
