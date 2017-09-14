@@ -3,6 +3,84 @@
 
 var test;
 
+scalarDisplays.thickness 	= new ScalarHeatDisplay( { min: '6000.', max: '70000.',  
+		getField: function (plate) {
+			return ScalarField.add_field(plate.sima, plate.sial);
+		} 
+	} );
+scalarDisplays.sima 	= new ScalarHeatDisplay( { min: '6000.', max: '7000.',  
+		getField: function (plate) {
+			return plate.sima;
+		} 
+	} );
+scalarDisplays.sial 	= new ScalarHeatDisplay( { min: '6000.', max: '70000.',  
+		getField: function (plate) {
+			return plate.sial;
+		} 
+	} );
+function lerp(a,b, x){
+	return a + x*(b-a);
+}
+function clamp (x, minVal, maxVal) {
+	return Math.min(Math.max(x, minVal), maxVal);
+}
+function smoothstep (edge0, edge1, x) {
+	var fraction = (x - edge0) / (edge1 - edge0);
+	return clamp(fraction, 0.0, 1.0);
+	// return t * t * (3.0 - 2.0 * t);
+}
+function get_density(sima, sial, age, density) {
+	density = density || Float32Raster(sima.grid);
+	var sima_density;
+    for (var i = 0, li = density.length; i < li; i++) {
+    	sima_density = lerp(2890, 3300, smoothstep(0, 250, age[i]));
+    	density[i] = (sima[i] * sima_density + sial[i] * 2700) / (sima[i] + sial[i]);
+    }
+    return density;
+}
+function get_displacement(thickness, density, mantleDensity, displacement) {
+	displacement = displacement || Float32Raster(thickness.grid);
+ 	var thickness_i, rootDepth;
+ 	for(var i=0, li = displacement.length; i<li; i++){
+
+ 		//Calculates elevation as a function of crust density. 
+ 		//This was chosen as it only requires knowledge of crust density and thickness,  
+ 		//which are relatively well known. 
+ 		thickness_i = thickness[i]; 
+ 		rootDepth = thickness_i * density[i] / mantleDensity; 
+ 		displacement[i] = thickness_i - rootDepth;
+ 	}
+ 	return displacement;
+}
+scalarDisplays.density 	= new ScalarHeatDisplay( { min: '2700.', max: '3300.',  
+		getField: function (plate) {
+			return get_density(plate.sima, plate.sial, plate.age);
+		} 
+	} );
+scalarDisplays.displacement 	= new ScalarHeatDisplay( { min: '3682.', max: '12000.',  
+		getField: function (plate) {
+			var thickness = ScalarField.add_field(plate.sima, plate.sial);
+			var density = get_density(plate.sima, plate.sial, plate.age);
+			return get_displacement(thickness, density, 3300);
+		}
+	} );
+
+var subduction_min_age_threshold = 150;
+var subduction_max_age_threshold = 200;
+var subductability_transition_factor = 1/100;
+scalarDisplays.subductability = new ScalarHeatDisplay(  { 
+		min: '1.', max: '0.',
+		getField: function (crust) {
+			var thickness = ScalarField.add_field(crust.sima, crust.sial);
+			var density = get_density(crust.sima, crust.sial, crust.age);
+			var foundering = Float32Raster(crust.grid);
+ 			for(var i=0, li = foundering.length; i<li; i++){
+ 				foundering[i] = density[i] > 3150;
+			}
+			return foundering;
+		}
+	} );
+
 // test for Float32Raster.get_nearest_values()
 // rotates age by a certain amount
 scalarDisplays.age_rotated 	= new ScalarHeatDisplay( { min: '250.', max: '0.',  
