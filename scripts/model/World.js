@@ -2,6 +2,33 @@
 
 
 var World = (function() {
+	function World(parameters) {
+		Crust.call(this, parameters);
+
+		this.getRandomPlateSpeed = parameters['getRandomPlateSpeed'] ||
+			//function() { return Math.exp(random.normal(-5.13, 0.548)); }
+			function() { return random.normal(0.00687, 0.00380); }
+			//^^^ log normal and normal distribution fit to angular velocities from Larson et al. 1997
+
+		parameters.world = this;
+		this.supercontinentCycle = parameters['supercontinentCycle'] || new SupercontinentCycle(parameters);
+
+		this.subductability = Float32Raster(this.grid);
+		this.plate_masks = Uint8Raster(this.grid);
+		this.plate_count = Uint8Raster(this.grid);
+		this.is_rifting = Uint8Raster(this.grid);
+		this.is_detaching = Uint8Raster(this.grid);
+		this.asthenosphere_velocity = VectorRaster(this.grid);
+
+		this.radius = parameters['radius'] || 6367;
+		// this.age = parameters['age'] || 0;
+		this.maxPlatesNum = parameters['platesNum'] || 8;
+
+		this.plates = [];
+	}
+	World.prototype = Object.create(Crust);
+	World.prototype.constructor = World;
+
 
 	var subduction_min_age_threshold = 150;
 	var subduction_max_age_threshold = 200;
@@ -23,68 +50,6 @@ var World = (function() {
 		return x>0? 1: 0; 
 	}
 
-
-	//old version
-	function get_subductability(age, density, output) {
-		var subductability = output;
-		var age = age;
-		var density = density;
-		var _lerp = lerp;
-		var _smoothstep = smoothstep;
-		var _heaviside_approximation = heaviside_approximation;
-		var _subductability_transition_factor = subductability_transition_factor;
-		for (var i=0, li=subductability.length; i<li; ++i) {
-			var density_i = density[i];
-			var continent = _smoothstep(2890, 2800, density_i);
-			var age_i = age[i];
-			var density_i = 	density_i * continent 	+ 
-							_lerp(density_i, 3300, 
-								 _smoothstep(
-									subduction_min_age_threshold, 
-									subduction_min_age_threshold, 
-									age_i)) 
-								* (1-continent)
-			subductability[i] =  _heaviside_approximation( density_i - 3000, _subductability_transition_factor );
-		}
-		return subductability;
-	}
-	//field version
-	function smoothstep_raster (x, edge0, edge1, output) {
-		var fraction;
-		for (var i=0, li=x.length; i<li; ++i) {
-			fraction = (x[i] - edge0) / (edge1 - edge0);
-			output[i] = 0.0 > fraction? 0.0 : 1.0 < fraction? 1.0 : fraction;
-		}
-	}
-	//slower, more complex, probably more easily controllable and realistic
-	function get_subductability(age, density, output, scratch) {
-		var age_adjusted_density = scratch || Float32Raster(density.grid);
-		var subductability = output;
-		
-		Float32RasterInterpolation.smoothstep_raster(age, subduction_min_age_threshold, subduction_max_age_threshold, is_old);
-		Float32RasterInterpolation.lerp_fsf(density, 3300, is_old, age_adjusted_oceanic_density);
-
-		Float32RasterInterpolation.smoothstep_raster(density, 2890, 2800, is_continental);
-		Float32RasterInterpolation.lerp_fff(density, age_adjusted_oceanic_density, is_continental, age_adjusted_density);
-		Float32RasterInterpolation.smoothstep_raster(density, 3000, 3300, subductability);
-		// alternative to above:
-		// Float32RasterInterpolation.sigmoid(density, subductability_transition_factor, 3000);
-
-		return subductability;
-	}
-	//another, simpler method
-	function get_subductability(age, density, output, scratch1, scratch2) {
-		var is_old = scratch1 || Float32Raster(age.grid);
-		var is_oceanic = scratch2 || Float32Raster(density.grid);
-		var subductability = output;
-		
-		smoothstep_raster(age, subduction_min_age_threshold, subduction_max_age_threshold, is_old);
-		smoothstep_raster(density, 2800, 2890, is_oceanic);
-
-		ScalarField.mult_field(is_old, is_oceanic, subductability);
-
-		return subductability;
-	}
 
 	//original method: slowest of them all, requires older smoothstep
 	function get_subductability(age, density, output) {
@@ -131,10 +96,35 @@ var World = (function() {
 	function get_angular_velocity(velocity, pos, output) {
 		return VectorField.cross_vector_field(velocity, pos, output);
 	}
-	function branch_plates(masks) {
-		// body...
+	// gets displacement using an isostatic model
+	function get_displacement(thickness, density, mantleDensity, displacement) {
+	 	var thickness_i, rootDepth;
+	 	for(var i=0, li = displacement.length; i<li; i++){
+
+	 		//Calculates elevation as a function of crust density. 
+	 		//This was chosen as it only requires knowledge of crust density and thickness,  
+	 		//which are relatively well known. 
+	 		thickness_i = thickness[i]; 
+	 		rootDepth = thickness_i * density[i] / mantleDensity; 
+	 		displacement[i] = thickness_i - rootDepth;
+	 	}
+	 	return displacement;
 	}
-	function merge_plates_to_master(plates, master) { 
+	function get_erosion(thickness, erosion){
+		var precipitation = 7.8e5;
+		// ^^^ measured in meters of rain per million years
+		// global land average from wikipedia
+		var erosiveFactor = 1.8e-7; 
+		// ^^^ the rate of erosion per the rate of rainfall in that place
+		// measured in fraction of height difference per meters of rain per million years
+
+		// NOTE: erosion array does double duty for performance reasons
+		var height_difference = erosion;
+		ScalarField.laplacian(thickness, height_difference);
+		ScalarField.mult_scalar(height_difference, precipitation * timestep * erosiveFactor, erosion);
+		return erosion;
+	}
+	function merge_plates_to_master(plates, master) {
 
 		var UINT8_NULL = 255;
 		var UINT16_NULL = 65535;
@@ -143,10 +133,7 @@ var World = (function() {
 		var fill_ui8 = Uint8Raster.fill;
 
 		//WIPE MASTER RASTERS CLEAN
-		fill_f32(master.thickness, 0);
-		fill_f32(master.density, master.ocean.density);
-		fill_f32(master.displacement, 0);
-		fill_f32(master.age, 0);
+		Crust.fill(master, new RockColumn({ density: master.ocean.density }));
 		fill_ui8(master.plate_masks, UINT8_NULL);
 		fill_ui8(master.plate_count, 0);
 		fill_ui8(master.is_rifting, 0);
@@ -230,6 +217,14 @@ var World = (function() {
 		}
 	}
 
+	function get_is_rifting(plate_masks, plate_count, is_rifting) {
+		
+		return is_rifting;
+	}
+	function get_is_detaching(plate_masks, plate_count, is_detaching) {
+		
+		return is_detaching;
+	}
 	function rift_and_detach(plates, master) { 
 	  	var plate; 
 
@@ -270,6 +265,7 @@ var World = (function() {
 
 		var mult_matrix = VectorField.mult_matrix;
 		var fill_into = Uint8RasterGraphics.fill_into_selection;
+		var fill_into_crust = Crust.fill_into_selection;
 		var copy = Uint8Raster.copy;
 		var resample = Uint8Raster.get_ids;
 		var margin = BinaryMorphology.margin;
@@ -328,43 +324,13 @@ var World = (function() {
 	        //rift 
 	        if(true){
 		        fill_into(plate.mask, 1, localized_is_rifting,                 				plate.mask); 
-		        fill_into(plate.age, 0, localized_is_rifting,                 				plate.age); 
-		        fill_into(plate.density, master.ocean.density, localized_is_rifting,     	plate.density); 
-		        fill_into(plate.thickness, master.ocean.thickness, localized_is_rifting,   	plate.thickness); 
-		        isostasy(plate, master.mantleDensity); 
+		        fill_into_crust(plate, master.ocean, localized_is_rifting, plate);
 	        }
 	        //detach
 	        if(true){
 		        fill_into(plate.mask, 1, localized_is_detaching,                 			plate.mask); 
 		        // TODO: accrete mass onto top plate
 	        }
-
-		    //display detaching
-	        resample(localized_is_detaching, localized_ids, 								globalized_is_detaching);
-	        // and 	(globalized_is_detaching, master.is_detaching, 							master.is_detaching);
-			fill_into(master.is_detaching, i, globalized_is_detaching, 						master.is_detaching);  
-		    // copy(master.is_detaching, globalized_is_detaching, 							master.is_detaching);  // test code for viewing rifting for single plate
-
-			//display rifting
-            resample(localized_is_rifting, localized_ids, 									globalized_is_rifting);
-            // and 	(globalized_is_rifting, master.is_rifting, 								master.is_rifting);
-		    fill_into(master.is_rifting, i, globalized_is_rifting, 							master.is_rifting);  
-		}
-	}
-	function erode(plates, master, timestep){
-		var precipitation = 7.8e5;
-		// ^^^ measured in meters of rain per million years
-		// global land average from wikipedia
-		var erosiveFactor = 1.8e-7; 
-		// ^^^ the rate of erosion per the rate of rainfall in that place
-		// measured in fraction of height gradient per meters of rain per million years
-
-		var plate;
-		var scratch = Float32Raster(master.grid); 
-		var diffuse = ScalarField.diffusion_by_constant;
-		for (var i=0, li=plates.length; i<li; ++i) {
-		    plate = plates[i];
-		    diffuse(plate.thickness, precipitation * timestep * erosiveFactor, 				plate.thickness, scratch)
 		}
 	}
 	function merge_master_to_plates(master, plates) {
@@ -401,33 +367,6 @@ var World = (function() {
 		}
 	}
 
-	function World(parameters) {
-		Crust.call(this, parameters);
-
-		this.getRandomPlateSpeed = parameters['getRandomPlateSpeed'] ||
-			//function() { return Math.exp(random.normal(-5.13, 0.548)); }
-			function() { return random.normal(0.00687, 0.00380); }
-			//^^^ log normal and normal distribution fit to angular velocities from Larson et al. 1997
-
-		parameters.world = this;
-		this.supercontinentCycle = parameters['supercontinentCycle'] || new SupercontinentCycle(parameters);
-
-		this.subductability = Float32Raster(this.grid);
-		this.plate_masks = Uint8Raster(this.grid);
-		this.plate_count = Uint8Raster(this.grid);
-		this.is_rifting = Uint8Raster(this.grid);
-		this.is_detaching = Uint8Raster(this.grid);
-		this.asthenosphere_velocity = VectorRaster(this.grid);
-
-		this.radius = parameters['radius'] || 6367;
-		// this.age = parameters['age'] || 0;
-		this.maxPlatesNum = parameters['platesNum'] || 8;
-
-		this.plates = [];
-	}
-	World.prototype = Object.create(Crust);
-	World.prototype.constructor = World;
-
 
 	World.prototype.SEALEVEL = 3682;
 	World.prototype.mantleDensity=3300;
@@ -444,23 +383,6 @@ var World = (function() {
 	    thickness: 	36900, // +/- 2900, estimate for shields, Zandt & Ammon 1995
 		density: 	2700
 	 });
-
-	function isostasy(world, mantleDensity) { 
-	 	var thicknesses = world.thickness; 
-	 	var densities = world.density; 
-	 	var displacements = world.displacement; 
-	 	
-	 	var thickness, rootDepth;
-	 	for(var i=0, li = displacements.length; i<li; i++){
-
-	 		//Calculates elevation as a function of crust density. 
-	 		//This was chosen as it only requires knowledge of crust density and thickness,  
-	 		//which are relatively well known. 
-	 		thickness = thicknesses[i]; 
-	 		rootDepth = thickness * densities[i] / mantleDensity; 
-	 		displacements[i] = thickness - rootDepth;
-	 	}
-	 }
 
 	World.prototype.resetPlates = function() {
 		// get plate masks from image segmentation of asthenosphere velocity
@@ -533,7 +455,7 @@ var World = (function() {
 		// var ids = get_nearest_ids(new_pos);
 		// get_values(fields, ids); giving fields
 
-		isostasy(this, world.mantleDensity);
+		get_displacement(world.thickness, world.density, world.mantleDensity, world.displacement);
 
 		Publisher.publish('world.plates', 'update', { 
 			value: this, 
