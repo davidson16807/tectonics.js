@@ -216,51 +216,43 @@ var World = (function() {
 		    copy_into 	(master.age, globalized_scalar_field, globalized_is_on_top, 			master.age);
 		}
 	}
-
-	function get_is_rifting(plate_masks, plate_count, is_rifting) {
-		
-		return is_rifting;
-	}
-	function get_is_detaching(plate_masks, plate_count, is_detaching) {
-		
-		return is_detaching;
-	}
-	function rift_and_detach(plates, master) { 
+	function rift_and_detach(plate_count, plate_masks, ocean, plates) { 
 	  	var plate; 
+	  	var grid = plate_count.grid;
 
 	  	//rifting variables
-		var localized_is_riftable = Uint8Raster(master.grid);
-		var localized_is_detachable = Uint8Raster(master.grid);
-		var localized_will_stay_riftable = Uint8Raster(master.grid);
-		var localized_will_stay_detachable = Uint8Raster(master.grid);
-		var localized_is_just_outside_border = Uint8Raster(master.grid);
-		var localized_is_rifting = Uint8Raster(master.grid);
+		var localized_is_riftable = Uint8Raster(grid);
+		var localized_is_detachable = Uint8Raster(grid);
+		var localized_will_stay_riftable = Uint8Raster(grid);
+		var localized_will_stay_detachable = Uint8Raster(grid);
+		var localized_is_just_outside_border = Uint8Raster(grid);
+		var localized_is_rifting = Uint8Raster(grid);
 		
 		//detaching variables
-		var localized_is_on_bottom = Uint8Raster(master.grid);
-		var localized_will_stay_on_bottom = Uint8Raster(master.grid);
-		var localized_is_just_inside_border = Uint8Raster(master.grid);
-		var localized_is_detaching = Uint8Raster(master.grid);
+		var localized_is_on_bottom = Uint8Raster(grid);
+		var localized_will_stay_on_bottom = Uint8Raster(grid);
+		var localized_is_just_inside_border = Uint8Raster(grid);
+		var localized_is_detaching = Uint8Raster(grid);
 
-		var localized_pos = VectorRaster(master.grid); 
-		var localized_subductability = Float32Raster(master.grid); 
+		var localized_pos = VectorRaster(grid); 
+		var localized_subductability = Float32Raster(grid); 
 
 		//global rifting/detaching variables
-		var globalized_is_empty = Uint8Raster(master.grid);
-		var globalized_is_alone = Uint8Raster(master.grid);
-		var globalized_is_not_alone = Uint8Raster(master.grid);
-		var globalized_is_riftable = Uint8Raster(master.grid);
-		var globalized_is_detachable = Uint8Raster(master.grid);
-		var globalized_is_on_top = Uint8Raster(master.grid);
-		var globalized_is_not_on_top = Uint8Raster(master.grid);
-		var globalized_is_on_top_or_empty = Uint8Raster(master.grid);
-		var globalized_is_on_bottom = Uint8Raster(master.grid);
-		var globalized_is_rifting = Uint8Raster(master.grid); 
-		var globalized_is_detaching = Uint8Raster(master.grid); 
+		var globalized_is_empty = Uint8Raster(grid);
+		var globalized_is_alone = Uint8Raster(grid);
+		var globalized_is_not_alone = Uint8Raster(grid);
+		var globalized_is_riftable = Uint8Raster(grid);
+		var globalized_is_detachable = Uint8Raster(grid);
+		var globalized_is_on_top = Uint8Raster(grid);
+		var globalized_is_not_on_top = Uint8Raster(grid);
+		var globalized_is_on_top_or_empty = Uint8Raster(grid);
+		var globalized_is_on_bottom = Uint8Raster(grid);
+		var globalized_is_rifting = Uint8Raster(grid); 
+		var globalized_is_detaching = Uint8Raster(grid); 
 
-		var globalized_plate_mask = Uint8Raster(master.grid); 
-		var globalized_pos = VectorRaster(master.grid);
-		var globalized_scalar_field = Float32Raster(master.grid); 
+		var globalized_plate_mask = Uint8Raster(grid); 
+		var globalized_pos = VectorRaster(grid);
+		var globalized_scalar_field = Float32Raster(grid); 
 
 
 		var mult_matrix = VectorField.mult_matrix;
@@ -281,13 +273,13 @@ var World = (function() {
 
 	    //shared variables for detaching and rifting
 		// op 	operands																result
-		equals 	(master.plate_count, 0, 												globalized_is_empty);
-		equals 	(master.plate_count, 1, 												globalized_is_alone);
+		equals 	(plate_count, 0, 														globalized_is_empty);
+		equals 	(plate_count, 1, 														globalized_is_alone);
 		not		(globalized_is_alone, 													globalized_is_not_alone);
 		for (var i=0, li=plates.length; i<li; ++i) {
 		    plate = plates[i];
 
-		    mult_matrix(master.grid.pos, plate.global_to_local_matrix.elements, localized_pos); 
+		    mult_matrix(grid.pos, plate.global_to_local_matrix.elements, localized_pos); 
 	    	localized_ids = plate.grid.getNearestIds(localized_pos);
 
 	        mult_matrix(plate.grid.pos, plate.local_to_global_matrix.elements, globalized_pos);
@@ -297,7 +289,7 @@ var World = (function() {
 
 		    //shared variables for detaching and rifting
 			// op 	operands																result
-			equals 	(master.plate_masks, i, 												globalized_is_on_top);
+			equals 	(plate_masks, i, 														globalized_is_on_top);
 		    not 	(globalized_is_on_top, 													globalized_is_not_on_top);
 
 		    //detect rifting
@@ -324,7 +316,7 @@ var World = (function() {
 	        //rift 
 	        if(true){
 		        fill_into(plate.mask, 1, localized_is_rifting,                 				plate.mask); 
-		        fill_into_crust(plate, master.ocean, localized_is_rifting, plate);
+		        fill_into_crust(plate, ocean, localized_is_rifting, plate);
 	        }
 	        //detach
 	        if(true){
@@ -440,11 +432,11 @@ var World = (function() {
 		for (var i = 0; i < this.plates.length; i++) {
 			var plate = this.plates[i]
 			ScalarField.add_scalar(plate.age, timestep, plate.age);
+			//get_erosion(this.plates, this, timestep);
 		}
 
 		merge_plates_to_master(this.plates, this);
-		rift_and_detach(this.plates, this);
-		//erode(this.plates, this, timestep);
+		rift_and_detach(this.plate_count, this.plate_masks, this.ocean, this.plates);
 
 		// World submodels go here: atmo model, hydro model, bio model, etc.
 
