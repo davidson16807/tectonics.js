@@ -366,14 +366,9 @@ var World = (function() {
 	World.prototype.ocean = 
 	 new RockColumn({
 		elevation: 	-3682,	// Charette & Smith 2010
+		sima: 		7100, 	// +/- 800, White McKenzie and O'nions 1992
 		thickness: 	7100, 	// +/- 800, White McKenzie and O'nions 1992
 		density: 	2890	// Carlson & Raskin 1984
-	 });
-	World.prototype.land =
-	 new RockColumn({
-		elevation: 	840,   //Sverdrup & Fleming 1942
-	    thickness: 	36900, // +/- 2900, estimate for shields, Zandt & Ammon 1995
-		density: 	2700
 	 });
 
 	World.prototype.resetPlates = function() {
