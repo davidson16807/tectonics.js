@@ -50,13 +50,21 @@ var World = (function() {
 		return x>0? 1: 0; 
 	}
 
+	function get_thickness(sima, sial, thickness) {
+		return ScalarField.add_field(sima, sial, thickness)
+	}
+	function get_density(sima, sial, age, density) {
+		density = density || Float32Raster(sima.grid);
+		var sima_density;
+	    for (var i = 0, li = density.length; i < li; i++) {
+	    	sima_density = lerp(2890, 3300, smoothstep(0, 250, age[i]));
+	    	density[i] = sima[i] + sial[i] > 0? (sima[i] * sima_density + sial[i] * 2700) / (sima[i] + sial[i]) : 2890;
+	    }
+	    return density;
+	}
 
 	//original method: slowest of them all, requires older smoothstep
-	function get_subductability(age, density, output) {
-		var subductability = output;
-		var age = age;
-		var density = density;
-		
+	function get_subductability(age, density, subductability) {
 		for (var i=0, li=subductability.length; i<li; ++i) {
 			var density_i = density[i];
 			var continent = smoothstep(2890, 2800, density_i);
@@ -447,7 +455,9 @@ var World = (function() {
 		// var ids = get_nearest_ids(new_pos);
 		// get_values(fields, ids); giving fields
 
-		get_displacement(world.thickness, world.density, world.mantleDensity, world.displacement);
+		var thickness = ScalarField.add_field(world.sima, world.sial);
+		var density = get_density(world.sima, world.sial, world.age);
+		get_displacement(thickness, density, world.mantleDensity, world.displacement);
 
 		Publisher.publish('world.plates', 'update', { 
 			value: this, 
