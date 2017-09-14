@@ -203,6 +203,14 @@ var World = (function() {
 		    resample 	(plate.thickness, localized_ids, 										globalized_scalar_field);
 		    add_term 	(master.thickness, globalized_scalar_field, globalized_plate_mask, 		master.thickness);
 
+		    // add current plate thickness to master thickness wherever current plate exists
+		    resample 	(plate.sial, localized_ids, 											globalized_scalar_field);
+		    add_term 	(master.sial, globalized_scalar_field, globalized_plate_mask, 			master.sial);
+
+		    // overwrite master wherever current plate is on top
+		    resample 	(plate.sima, localized_ids, 											globalized_scalar_field);
+		    copy_into 	(master.sima, globalized_scalar_field, globalized_is_on_top, 			master.sima);
+
 		    // overwrite master wherever current plate is on top
 		    resample 	(plate.density, localized_ids, 											globalized_scalar_field);
 		    copy_into 	(master.density, globalized_scalar_field, globalized_is_on_top, 		master.density);
@@ -384,10 +392,7 @@ var World = (function() {
 				world: 	this,
 				mask: 	plate_masks[i]
 			})
-			Float32Raster.copy(this.displacement, plate.displacement);
-			Float32Raster.copy(this.thickness, plate.thickness);
-			Float32Raster.copy(this.density, plate.density);
-			Float32Raster.copy(this.age, plate.age);
+			Crust.copy(this, plate);
 
 			plate.angularSpeed = this.getRandomPlateSpeed();
 
