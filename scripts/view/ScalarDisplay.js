@@ -131,6 +131,16 @@ scalarDisplays.thickness 	= new ScalarHeatDisplay( { min: '6000.', max: '70000.'
 			return plate.thickness;
 		} 
 	} );
+scalarDisplays.sima 	= new ScalarHeatDisplay( { min: '6000.', max: '70000.',  
+		getField: function (plate) {
+			return plate.sima;
+		} 
+	} );
+scalarDisplays.sial 	= new ScalarHeatDisplay( { min: '6000.', max: '70000.',  
+		getField: function (plate) {
+			return plate.sial;
+		} 
+	} );
 scalarDisplays.density 	= new ScalarHeatDisplay( { min: '2700.', max: '3300.',  
 		getField: function (plate) {
 			return plate.density;
