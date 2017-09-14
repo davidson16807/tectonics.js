@@ -65,7 +65,7 @@ var World = (function() {
 							lerp(density_i, 3300, 
 								 smoothstep(
 									subduction_min_age_threshold, 
-									subduction_min_age_threshold, 
+									subduction_max_age_threshold, 
 									age_i)) 
 								* (1-continent)
 			subductability[i] =  heaviside_approximation( density_i - 3000, subductability_transition_factor );
