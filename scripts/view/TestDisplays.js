@@ -1,468 +1,377 @@
-'use strict';
+// TESTS FOR VARIOUS FIELDS 
+// NOT TO BE INCLUDED IN PRODUCTION
 
+var test;
 
-var World = (function() {
-	function World(parameters) {
-		Crust.call(this, parameters);
+scalarDisplays.thickness 	= new ScalarHeatDisplay( { min: '6000.', max: '70000.',  
+		getField: function (plate) {
+			return ScalarField.add_field(plate.sima, plate.sial);
+		} 
+	} );
+scalarDisplays.sima 	= new ScalarHeatDisplay( { min: '6000.', max: '7000.',  
+		getField: function (plate) {
+			return plate.sima;
+		} 
+	} );
+scalarDisplays.sial 	= new ScalarHeatDisplay( { min: '6000.', max: '70000.',  
+		getField: function (plate) {
+			return plate.sial;
+		} 
+	} );
+function lerp(a,b, x){
+	return a + x*(b-a);
+}
+function clamp (x, minVal, maxVal) {
+	return Math.min(Math.max(x, minVal), maxVal);
+}
+function smoothstep (edge0, edge1, x) {
+	var fraction = (x - edge0) / (edge1 - edge0);
+	return clamp(fraction, 0.0, 1.0);
+	// return t * t * (3.0 - 2.0 * t);
+}
+function get_density(sima, sial, age, density) {
+	density = density || Float32Raster(sima.grid);
+	var sima_density;
+    for (var i = 0, li = density.length; i < li; i++) {
+    	sima_density = lerp(2890, 3300, smoothstep(0, 250, age[i]));
+    	density[i] = sima[i] + sial[i] > 0? (sima[i] * sima_density + sial[i] * 2700) / (sima[i] + sial[i]) : 2890;
+    }
+    return density;
+}
+function get_displacement(thickness, density, mantleDensity, displacement) {
+	displacement = displacement || Float32Raster(thickness.grid);
+ 	var thickness_i, rootDepth;
+ 	for(var i=0, li = displacement.length; i<li; i++){
 
-		this.getRandomPlateSpeed = parameters['getRandomPlateSpeed'] ||
-			//function() { return Math.exp(random.normal(-5.13, 0.548)); }
-			function() { return random.normal(0.00687, 0.00380); }
-			//^^^ log normal and normal distribution fit to angular velocities from Larson et al. 1997
-
-		parameters.world = this;
-		this.supercontinentCycle = parameters['supercontinentCycle'] || new SupercontinentCycle(parameters);
-
-		this.subductability = Float32Raster(this.grid);
-		this.plate_masks = Uint8Raster(this.grid);
-		this.plate_count = Uint8Raster(this.grid);
-		this.is_rifting = Uint8Raster(this.grid);
-		this.is_detaching = Uint8Raster(this.grid);
-		this.asthenosphere_velocity = VectorRaster(this.grid);
-
-		this.radius = parameters['radius'] || 6367;
-		// this.age = parameters['age'] || 0;
-		this.maxPlatesNum = parameters['platesNum'] || 8;
-
-		this.plates = [];
-	}
-	World.prototype = Object.create(Crust);
-	World.prototype.constructor = World;
-
-
-	var subduction_min_age_threshold = 150;
-	var subduction_max_age_threshold = 200;
-	var subductability_transition_factor = 1/100;
-
-	function lerp(a,b, x){
-		return a + x*(b-a);
-	}
-	function smoothstep (edge0, edge1, x) {
-		var fraction = (x - edge0) / (edge1 - edge0);
-		return clamp(fraction, 0.0, 1.0);
-		// return t * t * (3.0 - 2.0 * t);
-	}
-	function clamp (x, minVal, maxVal) {
-		return Math.min(Math.max(x, minVal), maxVal);
-	}
-	function heaviside_approximation (x, k) {
-		return 2 / (1 + Math.exp(-k*x)) - 1;
-		return x>0? 1: 0; 
-	}
-
-	function get_thickness(sima, sial, thickness) {
-		return ScalarField.add_field(sima, sial, thickness)
-	}
-	function get_density(sima, sial, age, density) {
-		density = density || Float32Raster(sima.grid);
-		var sima_density;
-	    for (var i = 0, li = density.length; i < li; i++) {
-	    	sima_density = lerp(2890, 3300, smoothstep(0, 250, age[i]));
-	    	density[i] = sima[i] + sial[i] > 0? (sima[i] * sima_density + sial[i] * 2700) / (sima[i] + sial[i]) : 2890;
-	    }
-	    return density;
-	}
-
-	//original method: slowest of them all, requires older smoothstep
-	function get_subductability(age, density, subductability) {
-		for (var i=0, li=subductability.length; i<li; ++i) {
-			var density_i = density[i];
-			var continent = smoothstep(2890, 2800, density_i);
-			var age_i = age[i];
-			var density_i = 	density_i * continent 	+ 
-							lerp(density_i, 3300, 
-								 smoothstep(
-									subduction_min_age_threshold, 
-									subduction_max_age_threshold, 
-									age_i)) 
-								* (1-continent)
-			subductability[i] =  heaviside_approximation( density_i - 3000, subductability_transition_factor );
+ 		//Calculates elevation as a function of crust density. 
+ 		//This was chosen as it only requires knowledge of crust density and thickness,  
+ 		//which are relatively well known. 
+ 		thickness_i = thickness[i]; 
+ 		rootDepth = thickness_i * density[i] / mantleDensity; 
+ 		displacement[i] = thickness_i - rootDepth;
+ 	}
+ 	return displacement;
+}
+scalarDisplays.density 	= new ScalarHeatDisplay( { min: '2700.', max: '3300.',  
+		getField: function (plate) {
+			return get_density(plate.sima, plate.sial, plate.age);
+		} 
+	} );
+scalarDisplays.displacement 	= new ScalarHeatDisplay( { min: '3682.', max: '12000.',  
+		getField: function (plate) {
+			var thickness = ScalarField.add_field(plate.sima, plate.sial);
+			var density = get_density(plate.sima, plate.sial, plate.age);
+			return get_displacement(thickness, density, 3300);
 		}
-		return subductability;
-	}
+	} );
 
-	function get_asthenosphere_velocity(subductability, output, scratch1, scratch2) {
-		output = output || Float32Raster(subductability.grid);
-		scratch1 = scratch1 || Float32Raster(subductability.grid);
-		scratch2 = scratch2 || Float32Raster(subductability.grid);
-
-		var diffused_subductability = scratch1;
-		var scratch = scratch2;
-		var smoothing_iterations =  15;
-		Float32Raster.copy(subductability, diffused_subductability);
-		var diffuse = ScalarField.diffusion_by_constant
-		for (var i=0; i<smoothing_iterations; ++i) {
-			diffuse(diffused_subductability, 1, diffused_subductability, scratch);
-			// ScalarField.laplacian(diffused_subductability, laplacian);
-			// ScalarField.add_field(diffused_subductability, laplacian, diffused_subductability);
+var subduction_min_age_threshold = 150;
+var subduction_max_age_threshold = 200;
+var subductability_transition_factor = 1/100;
+scalarDisplays.subductability = new ScalarHeatDisplay(  {
+		min: '1.', max: '0.',
+		getField: function (crust) {
+			var thickness = ScalarField.add_field(crust.sima, crust.sial);
+			var density = get_density(crust.sima, crust.sial, crust.age);
+			var foundering = Float32Raster(crust.grid);
+ 			for(var i=0, li = foundering.length; i<li; i++){
+ 				foundering[i] = density[i] > 3150;
+			}
+			return foundering;
 		}
+	} );
 
-		ScalarField.gradient(diffused_subductability, output);
-
-		return output;
-	}
-	function get_angular_velocity(velocity, pos, output) {
-		return VectorField.cross_vector_field(velocity, pos, output);
-	}
-	// gets displacement using an isostatic model
-	function get_displacement(thickness, density, mantleDensity, displacement) {
-	 	var thickness_i, rootDepth;
-	 	for(var i=0, li = displacement.length; i<li; i++){
-
-	 		//Calculates elevation as a function of crust density. 
-	 		//This was chosen as it only requires knowledge of crust density and thickness,  
-	 		//which are relatively well known. 
-	 		thickness_i = thickness[i]; 
-	 		rootDepth = thickness_i * density[i] / mantleDensity; 
-	 		displacement[i] = thickness_i - rootDepth;
-	 	}
-	 	return displacement;
-	}
-	function get_erosion(thickness, erosion){
-		var precipitation = 7.8e5;
-		// ^^^ measured in meters of rain per million years
-		// global land average from wikipedia
-		var erosiveFactor = 1.8e-7; 
-		// ^^^ the rate of erosion per the rate of rainfall in that place
-		// measured in fraction of height difference per meters of rain per million years
-
-		// NOTE: erosion array does double duty for performance reasons
-		var height_difference = erosion;
-		ScalarField.laplacian(thickness, height_difference);
-		ScalarField.mult_scalar(height_difference, precipitation * timestep * erosiveFactor, erosion);
-		return erosion;
-	}
-	function merge_plates_to_master(plates, master) {
-
-		var UINT8_NULL = 255;
-		var UINT16_NULL = 65535;
-
-		var fill_f32 = Float32Raster.fill;
-		var fill_ui8 = Uint8Raster.fill;
-
-		//WIPE MASTER RASTERS CLEAN
-		Crust.fill(master, new RockColumn({ density: master.ocean.density }));
-		fill_ui8(master.plate_masks, UINT8_NULL);
-		fill_ui8(master.plate_count, 0);
-		fill_ui8(master.is_rifting, 0);
-		fill_ui8(master.is_detaching, 0);
-
-	  	var plate; 
-		
-		var master_subductability = Float32Raster(master.grid); 
-		fill_f32(master_subductability, 9999);
-
-		//local variables
-		var localized_pos = VectorRaster(master.grid); 
-		var localized_ids; 
-
-		//global variables
-		var globalized_is_on_top = Uint8Raster(master.grid);
-		var globalized_plate_mask = Uint8Raster(master.grid); 
-
-		// float32array used for temporary storage of globalized scalar fields
-		// this is used for performance reasons
-		var globalized_scalar_field = Float32Raster(master.grid); 
+// test for Float32Raster.get_nearest_values()
+// rotates age by a certain amount
+scalarDisplays.age_rotated 	= new ScalarHeatDisplay( { min: '250.', max: '0.',  
+		// scaling: true,
+		getField: function (plate, result) {
+			var rotationMatrix = new THREE.Matrix4();
+			rotationMatrix.makeRotationAxis( plate.eulerPole, 0.5 );
+			var pos = VectorField.mult_matrix(plate.grid.pos, rotationMatrix.toArray());
+			// test = (plate.grid.getNearestIds(pos));
+			test = Float32Raster.get_nearest_values(plate.age, pos, result);
+			return test;
+		} 
+	} );
 
 
-		var mult_matrix = VectorField.mult_matrix;
-		var fill = Uint8Raster.fill;
-		var fill_into = Uint8RasterGraphics.fill_into_selection;
-		var copy_into = Float32RasterGraphics.copy_into_selection;
-		var add_term = ScalarField.add_field_term;
-		var add_ui8 = Uint8Field.add_field
-		var resample = Float32Raster.get_ids;
-		var resample_ui8 = Uint8Raster.get_ids;
-		var and = BinaryMorphology.intersection;
-		var lt = ScalarField.lt_field;
+scalarDisplays.ids 	= new ScalarHeatDisplay( { 
+		scaling: true,
+		getField: function (plate) {
+			var ids = new Float32Array(plate.age.length);
+			for (var i=0, li=ids.length; i<li; ++i) {
+			    ids[i] = i;
+			}
+			return ids;
+		} 
+	} );
 
-		fill(globalized_is_on_top, 1);
-		for (var i=0, li=plates.length; i<li; ++i) {
-		    plate = plates[i]; 
+// scalarDisplays.id_rotated 	= new ScalarHeatDisplay( {
+// 		scaling: true,
+// 		getField: function (plate) {
+// 			var ids = new Float32Array(plate.age.length);
+// 			for (var i=0, li=ids.length; i<li; ++i) {
+// 			    ids[i] = i;
+// 			}
 
-		    // find localized_ids
-		    // for each cell in the master's grid, this raster indicates the id of the corresponding cell in the plate's grid
-		    // this is used to convert between global and local coordinate systems
-		    mult_matrix(master.grid.pos, plate.global_to_local_matrix.elements, 				localized_pos); 
-	    	localized_ids = master.grid.getNearestIds(localized_pos);
+// 			var rotationMatrix = new THREE.Matrix4();
+// 			rotationMatrix.makeRotationAxis( plate.eulerPole, 0.5 );
+// 			var pos = VectorField.mult_matrix(plate.grid.pos, rotationMatrix.toArray());
+// 			// test = (plate.grid.getNearestIds(pos));
+// 			return Float32Raster.get_nearest_values(ids, pos);
+// 		} 
+// 	} );
+scalarDisplays.voronoi_ids	= new ScalarHeatDisplay( {
+		scaling: true,
+		getField: function (plate) {
+			return plate.grid.getNearestIds(plate.grid.pos);
+		} 
+	} );
 
-	    	// generate globalized_plate_mask
-	    	// this raster indicates whether the plate exists in a region of the planet
-	    	// this raster will be used when merging other rasters
-		    resample_ui8(plate.mask, localized_ids, 											globalized_plate_mask); 
+scalarDisplays.plate0 	= new ScalarHeatDisplay( { min: '0.', max: '1.',  
+		getField: function (world) {
+			return world.plates[0].mask;
+		} 
+	} );
+scalarDisplays.plates 	= new ScalarHeatDisplay( { min: '0.', max: '5.',  
+		getField: function (world) {
+			var plates = world.plates;
+			var result = Float32Raster(world.grid);
+			for (var i = 0; i < plates.length; i++) {
+				ScalarField.add_scalar_term(result, plates[i].mask, i, result);
+			}
+			return result;
+		} 
+	} );
+scalarDisplays.plate0age 	= new ScalarHeatDisplay( { min: '250.', max: '0.',  
+		getField: function (world) {
+			return world.plates[0].age;
+		} 
+	} );
+scalarDisplays.plate_masks 	= new ScalarHeatDisplay( { min: '-1.', max: '7.',  
+		getField: function (world) {
+			return world.plate_masks;
+		} 
+	} );
+scalarDisplays.plate_count 	= new ScalarHeatDisplay( { min: '0.', max: '3.',  
+		getField: function (world) {
+			return world.plate_count;
+		} 
+	} );
+scalarDisplays.is_detaching 	= new ScalarHeatDisplay( { min: '0.', max: '7.',
+		getField: function (world) {
+			return world.is_detaching;
+		} 
+	} );
+scalarDisplays.is_rifting 	= new ScalarHeatDisplay( { min: '0.', max: '7.',
+		getField: function (world) {
+			return world.is_rifting;
+		} 
+	} );
 
-		    // generate globalized_is_on_top
-		    // this raster indicates whether the plate is viewable from space
-		    // this raster will be used when merging other fields
-		    get_subductability(plate.age, plate.density, 										plate.subductability); // TODO: we should memoize this
-		    resample 	(plate.subductability,		 localized_ids, 							globalized_scalar_field);
-		    lt 			(globalized_scalar_field,	 master_subductability,						globalized_is_on_top);
-		    and 		(globalized_is_on_top,		 globalized_plate_mask, 					globalized_is_on_top);
-		    copy_into 	(master_subductability,	 globalized_scalar_field, globalized_is_on_top, master_subductability);
+scalarDisplays.flood_fill1 = new ScalarHeatDisplay(  { 
+		min: '1.', max: '0.',
+		getField: function (plate) {
+			var field = getSubductabilitySmoothed(plate);
+			var gradient = ScalarField.gradient(field);
+			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
+			var gradient = angular_velocity;
+			
+			var max_id = VectorRaster.max_id(gradient);
+			var mask = Float32Raster(plate.grid, 1);
+			var flood_fill = VectorRasterGraphics.magic_wand_select(gradient, max_id, mask);
 
-		    // merge plates with master
-		    // set plate_mask to current plate's index where current plate is on top
-		    fill_into 	(master.plate_masks, i, globalized_is_on_top, 							master.plate_masks);
-		    
-		    // add 1 to master.plate_count where current plate exists
-		    add_ui8 	(master.plate_count, globalized_plate_mask, 							master.plate_count);
-
-		    // add current plate thickness to master thickness wherever current plate exists
-		    resample 	(plate.thickness, localized_ids, 										globalized_scalar_field);
-		    add_term 	(master.thickness, globalized_scalar_field, globalized_plate_mask, 		master.thickness);
-
-		    // add current plate thickness to master thickness wherever current plate exists
-		    resample 	(plate.sial, localized_ids, 											globalized_scalar_field);
-		    add_term 	(master.sial, globalized_scalar_field, globalized_plate_mask, 			master.sial);
-
-		    // overwrite master wherever current plate is on top
-		    resample 	(plate.sima, localized_ids, 											globalized_scalar_field);
-		    copy_into 	(master.sima, globalized_scalar_field, globalized_is_on_top, 			master.sima);
-
-		    // overwrite master wherever current plate is on top
-		    resample 	(plate.density, localized_ids, 											globalized_scalar_field);
-		    copy_into 	(master.density, globalized_scalar_field, globalized_is_on_top, 		master.density);
-
-		    // overwrite master wherever current plate is on top
-		    resample 	(plate.displacement, localized_ids, 									globalized_scalar_field);
-		    copy_into 	(master.displacement, globalized_scalar_field, globalized_is_on_top, 	master.displacement);
-
-		    // overwrite master wherever current plate is on top
-		    resample 	(plate.age, localized_ids, 												globalized_scalar_field);
-		    copy_into 	(master.age, globalized_scalar_field, globalized_is_on_top, 			master.age);
+			return flood_fill;
 		}
-	}
-	function rift_and_detach(plate_count, plate_masks, ocean, plates) { 
-	  	var plate; 
-	  	var grid = plate_count.grid;
+	} );
 
-	  	//rifting variables
-		var localized_is_riftable = Uint8Raster(grid);
-		var localized_is_detachable = Uint8Raster(grid);
-		var localized_will_stay_riftable = Uint8Raster(grid);
-		var localized_will_stay_detachable = Uint8Raster(grid);
-		var localized_is_just_outside_border = Uint8Raster(grid);
-		var localized_is_rifting = Uint8Raster(grid);
-		
-		//detaching variables
-		var localized_is_on_bottom = Uint8Raster(grid);
-		var localized_will_stay_on_bottom = Uint8Raster(grid);
-		var localized_is_just_inside_border = Uint8Raster(grid);
-		var localized_is_detaching = Uint8Raster(grid);
+scalarDisplays.flood_fill_white_top_hat = new ScalarHeatDisplay(  { 
+		min: '1.', max: '0.',
+		getField: function (plate) {
+			var field = getSubductabilitySmoothed(plate);
+			var gradient = ScalarField.gradient(field);
+			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
+			var gradient = angular_velocity;
+			
+			var max_id = VectorRaster.max_id(gradient);
+			var mask = Float32Raster(plate.grid, 1);
+			var flood_fill = VectorRasterGraphics.magic_wand_select(gradient, max_id, mask);
 
-		var localized_pos = VectorRaster(grid); 
-		var localized_subductability = Float32Raster(grid); 
-
-		//global rifting/detaching variables
-		var globalized_is_empty = Uint8Raster(grid);
-		var globalized_is_alone = Uint8Raster(grid);
-		var globalized_is_not_alone = Uint8Raster(grid);
-		var globalized_is_riftable = Uint8Raster(grid);
-		var globalized_is_detachable = Uint8Raster(grid);
-		var globalized_is_on_top = Uint8Raster(grid);
-		var globalized_is_not_on_top = Uint8Raster(grid);
-		var globalized_is_on_top_or_empty = Uint8Raster(grid);
-		var globalized_is_on_bottom = Uint8Raster(grid);
-		var globalized_is_rifting = Uint8Raster(grid); 
-		var globalized_is_detaching = Uint8Raster(grid); 
-
-		var globalized_plate_mask = Uint8Raster(grid); 
-		var globalized_pos = VectorRaster(grid);
-		var globalized_scalar_field = Float32Raster(grid); 
-
-
-		var mult_matrix = VectorField.mult_matrix;
-		var fill_into = Uint8RasterGraphics.fill_into_selection;
-		var fill_into_crust = Crust.fill_into_selection;
-		var copy = Uint8Raster.copy;
-		var resample = Uint8Raster.get_ids;
-		var margin = BinaryMorphology.margin;
-		var padding = BinaryMorphology.padding;
-		var or = BinaryMorphology.union;
-		var and = BinaryMorphology.intersection;
-		var erode = BinaryMorphology.erosion;
-		var not = BinaryMorphology.negation;
-		var equals = Uint8Field.eq_scalar;
-		var gt_f32 = ScalarField.gt_scalar;
-		var gt_ui8 = Uint8Field.gt_scalar;
-		var globalized_ids, localized_ids;
-
-	    //shared variables for detaching and rifting
-		// op 	operands																result
-		equals 	(plate_count, 0, 														globalized_is_empty);
-		equals 	(plate_count, 1, 														globalized_is_alone);
-		not		(globalized_is_alone, 													globalized_is_not_alone);
-		for (var i=0, li=plates.length; i<li; ++i) {
-		    plate = plates[i];
-
-		    mult_matrix(grid.pos, plate.global_to_local_matrix.elements, localized_pos); 
-	    	localized_ids = plate.grid.getNearestIds(localized_pos);
-
-	        mult_matrix(plate.grid.pos, plate.local_to_global_matrix.elements, globalized_pos);
-	    	globalized_ids = plate.grid.getNearestIds(globalized_pos);
-
-	 		localized_subductability = plate.subductability;
-
-		    //shared variables for detaching and rifting
-			// op 	operands																result
-			equals 	(plate_masks, i, 														globalized_is_on_top);
-		    not 	(globalized_is_on_top, 													globalized_is_not_on_top);
-
-		    //detect rifting
-		    // is_riftable: count == 0 or (count = 1 and top_plate = i)
-			and 	(globalized_is_alone, globalized_is_on_top, 							globalized_is_riftable);
-			or 		(globalized_is_riftable, globalized_is_empty, 							globalized_is_riftable);
-
-            resample(globalized_is_riftable, globalized_ids, 								localized_is_riftable);
-		    erode	(localized_is_riftable, 1, 												localized_will_stay_riftable);
-		    margin	(plate.mask, 1, 														localized_is_just_outside_border);
-		    and 	(localized_will_stay_riftable, localized_is_just_outside_border,		localized_is_rifting);
-
-		    //detect detachment
-			// is_detachable: count > 1 and top_plate != i
-		    and 	(globalized_is_not_alone, globalized_is_not_on_top,						globalized_is_detachable);
-
-            resample(globalized_is_detachable, globalized_ids, 								localized_is_detachable);
-            erode	(localized_is_detachable, 1,											localized_will_stay_detachable);
-		    padding (plate.mask, 1, 														localized_is_just_inside_border);
-        	gt_f32	(localized_subductability, 0.5, 										localized_is_detachable);//todo: set this to higher threshold
-		    and 	(localized_will_stay_detachable, localized_is_just_inside_border, 		localized_is_detaching);
-		    and 	(localized_is_detaching, localized_is_detachable, 						localized_is_detaching);
-
-	        //rift 
-	        if(true){
-		        fill_into(plate.mask, 1, localized_is_rifting,                 				plate.mask); 
-		        fill_into_crust(plate, ocean, localized_is_rifting, plate);
-	        }
-	        //detach
-	        if(true){
-		        fill_into(plate.mask, 1, localized_is_detaching,                 			plate.mask); 
-		        // TODO: accrete mass onto top plate
-	        }
+			var white_top_hat = BinaryMorphology.white_top_hat(BinaryMorphology.to_binary(flood_fill), 5);
+			return white_top_hat;
 		}
-	}
-	function merge_master_to_plates(master, plates) {
-		return;
-		var plate;
-		var local_plate_mask_negation = Uint8Raster(master.grid);
-		var globalized_pos = VectorRaster(master.grid);
-		var localized_scalar_field = Float32Raster(master.grid);
-		var localized_vector_field = VectorRaster(master.grid); 
-		
-		var angular_velocity = VectorField.cross_vector_field(master.asthenosphere_velocity, master.grid.pos); 
-		for (var i = 0; i < plates.length; i++) {
-			plate = plates[i];
-			VectorField.mult_matrix(plate.grid.pos, plate.local_to_global_matrix.elements, globalized_pos);
+	} );
+scalarDisplays.flood_fill_black_top_hat = new ScalarHeatDisplay(  { 
+		min: '1.', max: '0.',
+		getField: function (plate) {
+			var field = getSubductabilitySmoothed(plate);
+			var gradient = ScalarField.gradient(field);
+			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
+			var gradient = angular_velocity;
+			
+			var max_id = VectorRaster.max_id(gradient);
+			var mask = Float32Raster(plate.grid, 1);
+			var flood_fill = VectorRasterGraphics.magic_wand_select(gradient, max_id, mask);
 
-			//BinaryMorphology.negation(plate.mask, local_plate_mask_negation);
-//
-//			//Float32Raster.get_nearest_values(master.thickness, globalized_pos, localized_scalar_field);
-//			//Float32RasterGraphics.copy_into_selection(plate.thickness, localized_scalar_field, local_plate_mask_negation, plate.thickness);
-//
-//			//Float32Raster.get_nearest_values(master.density, globalized_pos, localized_scalar_field);
-//			//Float32RasterGraphics.copy_into_selection(plate.density, localized_scalar_field, local_plate_mask_negation, plate.density);
-//
-//			//Float32Raster.get_nearest_values(master.displacement, globalized_pos, localized_scalar_field);
-//			//Float32RasterGraphics.copy_into_selection(plate.displacement, localized_scalar_field, local_plate_mask_negation, plate.displacement);
-//
-			//Float32Raster.get_nearest_values(master.age, globalized_pos, localized_scalar_field);
-			//Float32RasterGraphics.copy_into_selection(plate.age, localized_scalar_field, local_plate_mask_negation, plate.age);
-
-			// VectorRaster.get_nearest_values(angular_velocity, globalized_pos, localized_vector_field); 
-			// var eulerPole = VectorDataset.weighted_average(localized_vector_field, plate.mask)
-			// //todo: fix it properly - no negation!
-			// plate.eulerPole = new THREE.Vector3(-eulerPole.x, -eulerPole.y, -eulerPole.z).normalize(); 
+			var white_top_hat = BinaryMorphology.white_top_hat(BinaryMorphology.to_binary(flood_fill), 5);
+			return white_top_hat;
 		}
-	}
+	} );
 
+scalarDisplays.flood_fill_dilation = new ScalarHeatDisplay(  { 
+		min: '1.', max: '0.',
+		getField: function (plate) {
+			var field = getSubductabilitySmoothed(plate);
+			var gradient = ScalarField.gradient(field);
+			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
+			var gradient = angular_velocity;
+			
+			var max_id = VectorRaster.max_id(gradient);
+			var mask = Float32Raster(plate.grid, 1);
+			var flood_fill = VectorRasterGraphics.magic_wand_select(gradient, max_id, mask);
 
-	World.prototype.SEALEVEL = 3682;
-	World.prototype.mantleDensity=3300;
-	World.prototype.waterDensity=1026;
-	World.prototype.ocean = 
-	 new RockColumn({
-		elevation: 	-3682,	// Charette & Smith 2010
-		sima: 		7100, 	// +/- 800, White McKenzie and O'nions 1992
-		thickness: 	7100, 	// +/- 800, White McKenzie and O'nions 1992
-		density: 	2890	// Carlson & Raskin 1984
-	 });
+			var dilation = BinaryMorphology.dilation(BinaryMorphology.to_binary(flood_fill), 5);
 
-	World.prototype.resetPlates = function() {
-		// get plate masks from image segmentation of asthenosphere velocity
-		var angular_velocity = VectorField.cross_vector_field(this.asthenosphere_velocity, this.grid.pos);
-		var plate_masks = VectorImageAnalysis.image_segmentation(angular_velocity, this.grid);
-		this.plates = [];
-
-		var plate;
-		// todo: overwrite plates instead of creating new ones, create separate function for plate initialization
-		for (var i = 0, li = plate_masks.length; i < li; ++i) {
-			plate = new Plate({
-				world: 	this,
-				mask: 	plate_masks[i]
-			})
-			Crust.copy(this, plate);
-
-			plate.angularSpeed = this.getRandomPlateSpeed();
-
-			this.plates.push(plate);
-
-			//TODO: comment this out when you're done
-			var eulerPole = VectorDataset.weighted_average(angular_velocity, plate.mask)
-			//todo: fix it properly - no negation!
-			plate.eulerPole = new THREE.Vector3(-eulerPole.x, -eulerPole.y, -eulerPole.z).normalize(); 
+			return BinaryMorphology.to_float(dilation);
 		}
-	};
+	} );
+scalarDisplays.flood_fill_erosion = new ScalarHeatDisplay(  { 
+		min: '1.', max: '0.',
+		getField: function (plate) {
+			var field = getSubductabilitySmoothed(plate);
+			var gradient = ScalarField.gradient(field);
+			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
+			var gradient = angular_velocity;
+			
+			var max_id = VectorRaster.max_id(gradient);
+			var mask = Float32Raster(plate.grid, 1);
+			var flood_fill = VectorRasterGraphics.magic_wand_select(gradient, max_id, mask);
 
+			var erosion = BinaryMorphology.erosion(BinaryMorphology.to_binary(flood_fill), plate.grid, 5);
 
-	World.prototype.fast_update = function (timestep) {
-	 	if (timestep === 0) {
-	 		return;
-	 	};
-
-	 	for (var i = 0; i < this.plates.length; i++) {
-	 		this.plates[i].move(timestep)
-	 	}
-	}
-	World.prototype.slow_update = function(timestep){
-		if (timestep === 0) {
-			return;
-		};
-
-		get_subductability(this.age, this.density, this.subductability);
-		get_asthenosphere_velocity(this.subductability, this.asthenosphere_velocity);
-
-		this.supercontinentCycle.update(timestep);
-
-		merge_master_to_plates(this, this.plates);
-
-		// plate submodels go here: plate motion and erosion, namely
-		var plate;
-		for (var i = 0; i < this.plates.length; i++) {
-			var plate = this.plates[i]
-			ScalarField.add_scalar(plate.age, timestep, plate.age);
-			//get_erosion(this.plates, this, timestep);
+			return BinaryMorphology.to_float(erosion);
 		}
+	} );
+scalarDisplays.flood_fill_opening = new ScalarHeatDisplay(  { 
+		min: '1.', max: '0.',
+		getField: function (plate) {
+			var field = getSubductabilitySmoothed(plate);
+			var gradient = ScalarField.gradient(field);
+			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
+			var gradient = angular_velocity;
+			
+			var max_id = VectorRaster.max_id(gradient);
+			var mask = Float32Raster(plate.grid, 1);
+			var flood_fill = VectorRasterGraphics.magic_wand_select(gradient, max_id, mask);
 
-		merge_plates_to_master(this.plates, this);
-		rift_and_detach(this.plate_count, this.plate_masks, this.ocean, this.plates);
+			var opening = BinaryMorphology.opening(BinaryMorphology.to_binary(flood_fill), 5);
 
-		// World submodels go here: atmo model, hydro model, bio model, etc.
+			return BinaryMorphology.to_float(opening);
+		}
+	} );
+scalarDisplays.flood_fill_closing = new ScalarHeatDisplay(  { 
+		min: '1.', max: '0.',
+		getField: function (plate) {
+			var field = getSubductabilitySmoothed(plate);
+			var gradient = ScalarField.gradient(field);
+			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
+			var gradient = angular_velocity;
+			
+			var max_id = VectorRaster.max_id(gradient);
+			var mask = Float32Raster(plate.grid, 1);
+			var flood_fill = VectorRasterGraphics.magic_wand_select(gradient, max_id, mask);
+
+			var closing = BinaryMorphology.closing(BinaryMorphology.to_binary(flood_fill), 5);
+
+			return BinaryMorphology.to_float(closing);
+		}
+	} );
+
+scalarDisplays.flood_fill8 = new ScalarHeatDisplay(  { 
+		min: '10.', max: '0.',
+		getField: function (crust) {
+			var gradient = crust.asthenosphere_velocity;
+			var angular_velocity = VectorField.cross_vector_field(gradient, crust.grid.pos);
+			var gradient = angular_velocity;
+			var crust_fields = VectorImageAnalysis.image_segmentation(gradient, crust.grid);
+			
+			var crust_field_sum = Float32Raster(crust.grid, 0);
+			for (var i=0; i<crust_fields.length; ++i) {
+				ScalarField.add_field_term(crust_field_sum, crust_fields[i], i+1, crust_field_sum);
+			}
+			return crust_field_sum;
+		}
+	} );
 
 
 
-		//FIRST ITERATION? 
-		// var new_pos = add_scalar_term(grid.pos, asthenosphere_velocity, -timestep);
-		// var ids = get_nearest_ids(new_pos);
-		// get_values(fields, ids); giving fields
+vectorDisplays.test = new DataFrameVectorDisplay( { 
+		getField: function (plate) {
+			var vector = VectorRaster(plate.grid);
+			for(var i=0, li = vector.length; i<li; i++){
+				vector[i] = new THREE.Vector3(1,0,0); 
+			}
+			return plate.grid.pos;
+		} 
+	} );
+vectorDisplays.asthenosphere_angular_velocity = new DataFrameVectorDisplay( { 
+		getField: function (plate) {
+			var field = getSubductabilitySmoothed(plate)
+			var gradient = ScalarField.gradient(field);
+			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
+			// laplacian = VectorField.divergence(gradient);
+			return angular_velocity;
+		} 
+	} );
 
-		var thickness = ScalarField.add_field(world.sima, world.sial);
-		var density = get_density(world.sima, world.sial, world.age);
-		get_displacement(thickness, density, world.mantleDensity, world.displacement);
+vectorDisplays.asthenosphere_velocity = new DataFrameVectorDisplay( { 
+		getField: function (plate) {
+			// var field = getSubductabilitySmoothed(plate)
+			// var gradient = ScalarField.gradient(field);
+			// var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
+			// laplacian = VectorField.divergence(gradient);
+			return plate.asthenosphere_velocity;
+		} 
+	} );
+vectorDisplays.averaged_angular_velocity = new DataFrameVectorDisplay( { 
+		getField: function (plate) {
+			var field = getSubductabilitySmoothed(plate);
+			var gradient = ScalarField.gradient(field);
+			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
+			var gradient = angular_velocity;
+			var plates = split(gradient, plate.grid);
 
-		Publisher.publish('world.plates', 'update', { 
-			value: this, 
-			uuid: this.uuid } 
-		);
-	};
-	return World;
-})();
+			var averaged_angular_velocity_field_sum = VectorField.DataFrame(plate.grid, {x:0,y:0,z:0});
+			for (var i=0, li=plates.length; i<li; ++i) {
+			    var flood_fill = plates[i];
+				var averaged_angular_velocity = VectorDataset.weighted_average(angular_velocity, flood_fill);
+				var averaged_angular_velocity_field = ScalarField.mult_vector(flood_fill, averaged_angular_velocity);
+				VectorField.add_vector_field(averaged_angular_velocity_field_sum, averaged_angular_velocity_field, 
+					averaged_angular_velocity_field_sum);
+			}
+
+			return averaged_angular_velocity_field_sum;
+		} 
+	} );
+vectorDisplays.averaged_velocity = new DataFrameVectorDisplay( { 
+		getField: function (plate) {
+			var field = getSubductabilitySmoothed(plate);
+			var gradient = ScalarField.gradient(field);
+			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
+			var gradient = angular_velocity;
+			var plates = split(gradient, plate.grid);
+
+			var averaged_angular_velocity_field_sum = VectorField.DataFrame(plate.grid, {x:0,y:0,z:0});
+			for (var i=0, li=plates.length; i<li; ++i) {
+			    var flood_fill = plates[i];
+				var averaged_angular_velocity = VectorDataset.weighted_average(angular_velocity, flood_fill);
+				var averaged_angular_velocity_field = ScalarField.mult_vector(flood_fill, averaged_angular_velocity);
+				VectorField.add_vector_field(averaged_angular_velocity_field_sum, averaged_angular_velocity_field, 
+					averaged_angular_velocity_field_sum);
+			}
+
+			var averaged_velocity = VectorField.cross_vector_field(plate.grid.pos, averaged_angular_velocity_field_sum);
+			return averaged_velocity;
+		} 
+	} );
