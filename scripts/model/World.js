@@ -34,38 +34,49 @@ var World = (function() {
 	var subduction_max_age_threshold = 200;
 	var subductability_transition_factor = 1/100;
 
-	function lerp(a,b, x){
-		return a + x*(b-a);
+	function lerp(a,b, x, result){
+	    for (var i = 0, li = result.length; i < li; i++) {
+			result[i] = a + x[i]*(b-a);
+	    }
+	    return result;
 	}
-	function smoothstep (edge0, edge1, x) {
-		var fraction = (x - edge0) / (edge1 - edge0);
-		return clamp(fraction, 0.0, 1.0);
-		// return t * t * (3.0 - 2.0 * t);
+	function smoothstep (edge0, edge1, x, result) {
+		var fraction;
+		var inverse_edge_distance = 1 / (edge1 - edge0);
+	    for (var i = 0, li = result.length; i < li; i++) {
+			fraction = (x[i] - edge0) * inverse_edge_distance;
+			result[i] = fraction > 1.0? 1.0 : fraction < 0.0? 0.0 : fraction;
+		}
+		return result;
 	}
-	function clamp (x, minVal, maxVal) {
-		return Math.min(Math.max(x, minVal), maxVal);
-	}
-	function heaviside_approximation (x, k) {
+	function heaviside_approximation(x, k) {
 		return 2 / (1 + Math.exp(-k*x)) - 1;
 		return x>0? 1: 0; 
 	}
 
 	function get_thickness(sima, sial, thickness) {
-		return ScalarField.add_field(sima, sial, thickness)
+		return ScalarField.add_field(sima, sial, thickness);
 	}
 	function get_density(sima, sial, age, density) {
 		density = density || Float32Raster(sima.grid);
-		var sima_density;
+
+		// NOTE: density does double duty for performance reasons
+		var fraction_of_lifetime = density;
+		var sima_density = density;
+
+		smoothstep	(0, 250, age, 						fraction_of_lifetime);
+		lerp		(2890, 3300, fraction_of_lifetime, 	density);
+
 	    for (var i = 0, li = density.length; i < li; i++) {
-	    	sima_density = lerp(2890, 3300, smoothstep(0, 250, age[i]));
-	    	density[i] = sima[i] + sial[i] > 0? (sima[i] * sima_density + sial[i] * 2700) / (sima[i] + sial[i]) : 2890;
+	    	density[i] = sima[i] + sial[i] > 0? (sima[i] * sima_density[i] + sial[i] * 2700) / (sima[i] + sial[i]) : 2890;
 	    }
 	    return density;
 	}
 
 	function get_subductability(density, subductability) {
+		var exp = Math.exp;
 		for (var i=0, li=subductability.length; i<li; ++i) {
-			subductability[i] =  heaviside_approximation( density[i] - 3000, subductability_transition_factor );
+			subductability[i] = 2 / (1 + exp( -(density[i] - 3000) * subductability_transition_factor )) - 1;
 		}
 		return subductability;
 	}
@@ -96,14 +107,13 @@ var World = (function() {
 	// gets displacement using an isostatic model
 	function get_displacement(thickness, density, mantleDensity, displacement) {
 	 	var thickness_i, rootDepth;
+	 	var inverse_mantle_density = 1 / mantleDensity;
 	 	for(var i=0, li = displacement.length; i<li; i++){
-
 	 		//Calculates elevation as a function of crust density. 
 	 		//This was chosen as it only requires knowledge of crust density and thickness,  
 	 		//which are relatively well known. 
 	 		thickness_i = thickness[i]; 
-	 		rootDepth = thickness_i * density[i] / mantleDensity; 
-	 		displacement[i] = thickness_i - rootDepth;
+	 		displacement[i] = thickness_i - thickness_i * density[i] * inverse_mantle_density;
 	 	}
 	 	return displacement;
 	}
@@ -368,6 +378,7 @@ var World = (function() {
 
 	World.prototype.resetPlates = function() {
 		// get plate masks from image segmentation of asthenosphere velocity
+		get_asthenosphere_velocity(this.subductability, this.asthenosphere_velocity);
 		var angular_velocity = VectorField.cross_vector_field(this.asthenosphere_velocity, this.grid.pos);
 		var plate_masks = VectorImageAnalysis.image_segmentation(angular_velocity, this.grid);
 		this.plates = [];
@@ -416,7 +427,7 @@ var World = (function() {
 
 		update_calculated_fields(this);
 
-		get_asthenosphere_velocity(this.subductability, this.asthenosphere_velocity);
+		//get_asthenosphere_velocity(this.subductability, this.asthenosphere_velocity);
 		
 		this.supercontinentCycle.update(timestep);
 
