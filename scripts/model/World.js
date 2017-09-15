@@ -63,20 +63,9 @@ var World = (function() {
 	    return density;
 	}
 
-	//original method: slowest of them all, requires older smoothstep
-	function get_subductability(age, density, subductability) {
+	function get_subductability(density, subductability) {
 		for (var i=0, li=subductability.length; i<li; ++i) {
-			var density_i = density[i];
-			var continent = smoothstep(2890, 2800, density_i);
-			var age_i = age[i];
-			var density_i = 	density_i * continent 	+ 
-							lerp(density_i, 3300, 
-								 smoothstep(
-									subduction_min_age_threshold, 
-									subduction_max_age_threshold, 
-									age_i)) 
-								* (1-continent)
-			subductability[i] =  heaviside_approximation( density_i - 3000, subductability_transition_factor );
+			subductability[i] =  heaviside_approximation( density[i] - 3000, subductability_transition_factor );
 		}
 		return subductability;
 	}
@@ -426,11 +415,10 @@ var World = (function() {
 	}
 	// update fields that are derived from others
 	function update_calculated_fields(crust) {
-		get_subductability(crust.age, crust.density, crust.subductability);
-		
-		var thickness = ScalarField.add_field(world.sima, world.sial);
-		var density = get_density(world.sima, world.sial, world.age);
-		get_displacement(thickness, density, world.mantleDensity, world.displacement);
+		get_thickness(crust.sima, crust.sial, crust.thickness);
+		get_density(crust.sima, crust.sial, crust.age, crust.density);
+		get_subductability(crust.density, crust.subductability);
+		get_displacement(crust.thickness, crust.density, world.mantleDensity, crust.displacement);
 	}
 	World.prototype.slow_update = function(timestep){
 		if (timestep === 0) {
