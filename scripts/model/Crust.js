@@ -2,16 +2,47 @@
 
 // A "Crust" is defined as a set of rasters that represent a planet's crust
 // The Crust namespace provides methods that extend the functionality of rasters.js to Crust objects
+// It also provides functions for modeling properties of Crust
 function Crust(params) {
 	this.uuid = params['uuid'] || Uuid.create();
 	this.grid = params['grid'] || stop('missing parameter: "grid"');
 
-	this.displacement = Float32Raster(this.grid);
-	this.thickness = Float32Raster(this.grid);
-	this.density = Float32Raster(this.grid);
-	this.sima = Float32Raster(this.grid);
+	// TODO:
+	// * rename sima/sial to subductable/unsubductable
+	// * record sima/sial in metric tons, not meters thickness
+	// * switch densities to T/m^3
+
+	// The following are the most fundamental fields to the tectonics model:
+
 	this.sial = Float32Raster(this.grid);
+	// "sial" is the thickness of the buoyant, unsubductable component of the crust
+	// AKA "sial", "felsic", or "continental" crust
+	// Why don't we call it "continental" or some other name? Two reasons:
+	//  1.) programmers will immediately understand what it does
+	//  2.) we may want this model to simulate planets where alternate names don't apply, e.g. Pluto
+	// sial is a conserved quantity - it is never created or destroyed without our explicit say-so
+	// This is to provide our model with a way to check for errors
+
+	this.sima = Float32Raster(this.grid);
+	// "sima" is the thickness of the denser, subductable component of the crust
+	// AKA "sima", "mafsic", or "oceanic" crust
+	// Why don't we call it "oceanic" or some other name? Two reasons:
+	//  1.) programmers will immediately understand what it does
+	//  2.) we may want this model to simulate planets where alternate names don't apply, e.g. Pluto
+
 	this.age = Float32Raster(this.grid);
+	// the age of the subductable component of the crust
+	// we don't track the age of unsubductable crust because it doesn't affect model behavior
+
+
+	// The following are fields that are derived from other fields:
+	this.displacement = Float32Raster(this.grid);
+	// "displacement is the height of the crust relative to an arbitrary datum level
+	// It is not called "elevation" to emphasize that it is not relative to sea level
+	this.thickness = Float32Raster(this.grid);
+	// the thickness of the crust in km
+	this.density = Float32Raster(this.grid);
+	// the average density of the crust, in kg/m^3
 }
 Crust.get_value = function(crust, i) {
 	return new RockColumn({
