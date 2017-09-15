@@ -427,6 +427,10 @@ var World = (function() {
 	// update fields that are derived from others
 	function update_calculated_fields(crust) {
 		get_subductability(crust.age, crust.density, crust.subductability);
+		
+		var thickness = ScalarField.add_field(world.sima, world.sial);
+		var density = get_density(world.sima, world.sial, world.age);
+		get_displacement(thickness, density, world.mantleDensity, world.displacement);
 	}
 	World.prototype.slow_update = function(timestep){
 		if (timestep === 0) {
@@ -454,16 +458,10 @@ var World = (function() {
 
 		// World submodels go here: atmo model, hydro model, bio model, etc.
 
-
-
 		//FIRST ITERATION? 
 		// var new_pos = add_scalar_term(grid.pos, asthenosphere_velocity, -timestep);
 		// var ids = get_nearest_ids(new_pos);
 		// get_values(fields, ids); giving fields
-
-		var thickness = ScalarField.add_field(world.sima, world.sial);
-		var density = get_density(world.sima, world.sial, world.age);
-		get_displacement(thickness, density, world.mantleDensity, world.displacement);
 
 		Publisher.publish('world.plates', 'update', { 
 			value: this, 
