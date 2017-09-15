@@ -194,7 +194,8 @@ var World = (function() {
 		    // generate globalized_is_on_top
 		    // this raster indicates whether the plate is viewable from space
 		    // this raster will be used when merging other fields
-		    get_subductability(plate.age, plate.density, 										plate.subductability); // TODO: we should memoize this
+		    update_calculated_fields(plate);
+
 		    resample 	(plate.subductability,		 localized_ids, 							globalized_scalar_field);
 		    lt 			(globalized_scalar_field,	 master_subductability,						globalized_is_on_top);
 		    and 		(globalized_is_on_top,		 globalized_plate_mask, 					globalized_is_on_top);
@@ -423,14 +424,19 @@ var World = (function() {
 	 		this.plates[i].move(timestep)
 	 	}
 	}
+	// update fields that are derived from others
+	function update_calculated_fields(crust) {
+		get_subductability(crust.age, crust.density, crust.subductability);
+	}
 	World.prototype.slow_update = function(timestep){
 		if (timestep === 0) {
 			return;
 		};
 
-		get_subductability(this.age, this.density, this.subductability);
-		get_asthenosphere_velocity(this.subductability, this.asthenosphere_velocity);
+		update_calculated_fields(this);
 
+		get_asthenosphere_velocity(this.subductability, this.asthenosphere_velocity);
+		
 		this.supercontinentCycle.update(timestep);
 
 		merge_master_to_plates(this, this.plates);
