@@ -198,10 +198,6 @@ var World = (function() {
 		    add_ui8 	(master.plate_count, globalized_plate_mask, 							master.plate_count);
 
 		    // add current plate thickness to master thickness wherever current plate exists
-		    resample 	(plate.thickness, localized_ids, 										globalized_scalar_field);
-		    add_term 	(master.thickness, globalized_scalar_field, globalized_plate_mask, 		master.thickness);
-
-		    // add current plate thickness to master thickness wherever current plate exists
 		    resample 	(plate.sial, localized_ids, 											globalized_scalar_field);
 		    add_term 	(master.sial, globalized_scalar_field, globalized_plate_mask, 			master.sial);
 
@@ -210,17 +206,10 @@ var World = (function() {
 		    copy_into 	(master.sima, globalized_scalar_field, globalized_is_on_top, 			master.sima);
 
 		    // overwrite master wherever current plate is on top
-		    resample 	(plate.density, localized_ids, 											globalized_scalar_field);
-		    copy_into 	(master.density, globalized_scalar_field, globalized_is_on_top, 		master.density);
-
-		    // overwrite master wherever current plate is on top
-		    resample 	(plate.displacement, localized_ids, 									globalized_scalar_field);
-		    copy_into 	(master.displacement, globalized_scalar_field, globalized_is_on_top, 	master.displacement);
-
-		    // overwrite master wherever current plate is on top
 		    resample 	(plate.age, localized_ids, 												globalized_scalar_field);
 		    copy_into 	(master.age, globalized_scalar_field, globalized_is_on_top, 			master.age);
 		}
+		update_calculated_fields(master);
 	}
 	function rift_and_detach(plate_count, plate_masks, ocean, plates) { 
 	  	var plate; 
