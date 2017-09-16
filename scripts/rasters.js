@@ -302,7 +302,7 @@ ScalarField.min_scalar = function (field1, scalar, result) {
   result = result || Float32Raster(field1.grid);
   if (!(field1 instanceof Float32Array)) { throw "field1" + ' is not a ' + "Float32Array"; }
   if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
-  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
+  if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] < scalar? field1[i] : scalar;
   }
@@ -312,7 +312,7 @@ ScalarField.max_scalar = function (field1, scalar, result) {
   result = result || Float32Raster(field1.grid);
   if (!(field1 instanceof Float32Array)) { throw "field1" + ' is not a ' + "Float32Array"; }
   if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
-  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
+  if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] > scalar? field1[i] : scalar;
   }

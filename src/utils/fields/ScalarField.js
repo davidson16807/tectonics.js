@@ -74,7 +74,7 @@ ScalarField.min_scalar = function (field1, scalar, result) {
   result = result || Float32Raster(field1.grid);
   TYPE_CHECK_ARRAY(field1, Float32Array)
   TYPE_CHECK(scalar, number)
-  TYPE_CHECK_ARRAY(result, Uint8Array)
+  TYPE_CHECK_ARRAY(result, Float32Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] < scalar? field1[i] : scalar;
   }
@@ -84,7 +84,7 @@ ScalarField.max_scalar = function (field1, scalar, result) {
   result = result || Float32Raster(field1.grid);
   TYPE_CHECK_ARRAY(field1, Float32Array)
   TYPE_CHECK(scalar, number)
-  TYPE_CHECK_ARRAY(result, Uint8Array)
+  TYPE_CHECK_ARRAY(result, Float32Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] > scalar? field1[i] : scalar;
   }
