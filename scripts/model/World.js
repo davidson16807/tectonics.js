@@ -372,7 +372,7 @@ var World = (function() {
 	 new RockColumn({
 		elevation: 	-3682,	// Charette & Smith 2010
 		sima: 		7100, 	// +/- 800, White McKenzie and O'nions 1992
-		thickness: 	7100, 	// +/- 800, White McKenzie and O'nions 1992
+		// thickness: 	7100, 	// +/- 800, White McKenzie and O'nions 1992
 		density: 	2890	// Carlson & Raskin 1984
 	 });
 
