@@ -117,7 +117,10 @@ var World = (function() {
 	 	}
 	 	return displacement;
 	}
-	function get_erosion(thickness, erosion){
+	function get_erosion(displacement, sealevel, timestep, erosion, scratch){
+		erosion = erosion || Float32Raster(displacement.grid);
+		scratch = scratch || Float32Raster(displacement.grid);
+
 		var precipitation = 7.8e5;
 		// ^^^ measured in meters of rain per million years
 		// global land average from wikipedia
@@ -127,8 +130,10 @@ var World = (function() {
 
 		// NOTE: erosion array does double duty for performance reasons
 		var height_difference = erosion;
-		ScalarField.laplacian(thickness, height_difference);
-		ScalarField.mult_scalar(height_difference, precipitation * timestep * erosiveFactor, erosion);
+		var water_height = scratch;
+		ScalarField.max_scalar(displacement, sealevel, water_height);
+		ScalarField.laplacian(water_height, height_difference);
+		ScalarField.mult_scalar(height_difference, precipitation * timestep * erosiveFactor, erosion)
 		return erosion;
 	}
 	function merge_plates_to_master(plates, master) {
@@ -221,8 +226,13 @@ var World = (function() {
 		}
 		update_calculated_fields(master);
 	}
-	function rift_and_detach(plate_count, plate_masks, ocean, plates) { 
+	function update_plates(world, timestep, plates) { 
 	  	var plate; 
+	  	var plate_count = world.plate_count;
+	  	var plate_masks = world.plate_masks;
+	  	var displacement = world.displacement;
+	  	var ocean = world.ocean;
+
 	  	var grid = plate_count.grid;
 
 	  	//rifting variables
@@ -234,6 +244,7 @@ var World = (function() {
 		var localized_is_rifting = Uint8Raster(grid);
 		
 		//detaching variables
+		var localized_is_on_top = Uint8Raster(grid);
 		var localized_is_on_bottom = Uint8Raster(grid);
 		var localized_will_stay_on_bottom = Uint8Raster(grid);
 		var localized_is_just_inside_border = Uint8Raster(grid);
@@ -241,6 +252,8 @@ var World = (function() {
 
 		var localized_pos = VectorRaster(grid); 
 		var localized_subductability = Float32Raster(grid); 
+		var localized_erosion = Float32Raster(grid); 
+		var localized_accretion = Float32Raster(grid); 
 
 		//global rifting/detaching variables
 		var globalized_is_empty = Uint8Raster(grid);
@@ -258,9 +271,10 @@ var World = (function() {
 		var globalized_plate_mask = Uint8Raster(grid); 
 		var globalized_pos = VectorRaster(grid);
 		var globalized_scalar_field = Float32Raster(grid); 
-
+		
 
 		var mult_matrix = VectorField.mult_matrix;
+		var mult_field = ScalarField.mult_field;
 		var fill_into = Uint8RasterGraphics.fill_into_selection;
 		var fill_into_crust = Crust.fill_into_selection;
 		var copy = Uint8Raster.copy;
@@ -275,6 +289,18 @@ var World = (function() {
 		var gt_f32 = ScalarField.gt_scalar;
 		var gt_ui8 = Uint8Field.gt_scalar;
 		var globalized_ids, localized_ids;
+		var add_term = ScalarField.add_field_term;
+		var add = ScalarField.add_field;
+
+		var globalized_accretion = Float32Raster(grid); 
+		Float32Raster.fill(globalized_accretion, 0);
+		var globalized_erosion = Float32Raster(grid);
+		get_erosion(displacement, world.SEALEVEL, timestep, globalized_erosion, globalized_scalar_field);
+
+		var RIFT = true;
+		var DETACH = true;
+		var ERODE = true;
+		var ACCRETE = true;
 
 	    //shared variables for detaching and rifting
 		// op 	operands																result
@@ -319,14 +345,41 @@ var World = (function() {
 		    and 	(localized_is_detaching, localized_is_detachable, 						localized_is_detaching);
 
 	        //rift 
-	        if(true){
+	        if(RIFT){
 		        fill_into(plate.mask, 1, localized_is_rifting,                 				plate.mask); 
 		        fill_into_crust(plate, ocean, localized_is_rifting, plate);
 	        }
 	        //detach
-	        if(true){
+	        if(DETACH){
 		        fill_into(plate.mask, 1, localized_is_detaching,                 			plate.mask); 
-		        // TODO: accrete mass onto top plate
+		        //accrete, part 1
+		        if(ACCRETE) {
+		        	mult_field	(plate.sial, localized_is_detaching,						localized_accretion);
+	            	resample 	(localized_accretion, localized_ids,						globalized_scalar_field);
+	            	add 		(globalized_accretion, globalized_scalar_field, 			globalized_accretion);
+		        }
+	        }
+	        //erode
+	        if(ERODE) {
+            	resample(globalized_erosion, globalized_ids,								localized_erosion);
+            	resample(globalized_is_on_top, globalized_ids,								localized_is_on_top);
+	        	add_term(plate.sial, localized_erosion, localized_is_on_top,				plate.sial);
+	        }
+
+	        //aging
+			ScalarField.add_scalar(plate.age, timestep, plate.age);
+		}
+		for (var i=0, li=plates.length; i<li; ++i) {
+		    plate = plates[i];
+
+	        mult_matrix(plate.grid.pos, plate.local_to_global_matrix.elements, globalized_pos);
+	    	globalized_ids = plate.grid.getNearestIds(globalized_pos);
+
+	        //accrete, part 2
+	        if(ACCRETE) {
+            	resample(globalized_is_on_top, globalized_ids,								localized_is_on_top);
+            	resample(globalized_accretion, globalized_ids,								localized_accretion);
+	        	add_term(plate.sial, localized_accretion, localized_is_on_top,				plate.sial);
 	        }
 		}
 	}
@@ -372,6 +425,7 @@ var World = (function() {
 	 new RockColumn({
 		elevation: 	-3682,	// Charette & Smith 2010
 		sima: 		7100, 	// +/- 800, White McKenzie and O'nions 1992
+		// sial: 		100, // This can be set above zero to "cheat" on sial mass conservation
 		// thickness: 	7100, 	// +/- 800, White McKenzie and O'nions 1992
 		density: 	2890	// Carlson & Raskin 1984
 	 });
@@ -433,16 +487,8 @@ var World = (function() {
 
 		merge_master_to_plates(this, this.plates);
 
-		// plate submodels go here: plate motion and erosion, namely
-		var plate;
-		for (var i = 0; i < this.plates.length; i++) {
-			var plate = this.plates[i]
-			ScalarField.add_scalar(plate.age, timestep, plate.age);
-			//get_erosion(this.plates, this, timestep);
-		}
-
 		merge_plates_to_master(this.plates, this);
-		rift_and_detach(this.plate_count, this.plate_masks, this.ocean, this.plates);
+		update_plates(this, timestep, this.plates);
 
 		// World submodels go here: atmo model, hydro model, bio model, etc.
 
