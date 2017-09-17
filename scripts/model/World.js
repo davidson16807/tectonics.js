@@ -496,7 +496,7 @@ var World = (function() {
 		// var ids = get_nearest_ids(new_pos);
 		// get_values(fields, ids); giving fields
 
-		Publisher.publish('world.plates', 'update', { 
+		Publisher.publish('crust', 'update', { 
 			value: this, 
 			uuid: this.uuid } 
 		);
