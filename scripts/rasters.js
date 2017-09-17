@@ -1652,15 +1652,24 @@ Float32Raster.get_nearest_values = function(value_field, pos_field, result) {
   }
   return result;
 }
-Float32Raster.get_id = function(field, id) {
-  return field[id];
-}
-Float32Raster.get_ids = function(value_field, id_raster, result) {
-  result = result || Float32Raster(id_raster.grid);
-  for (var i=0, li=id_raster.length; i<li; ++i) {
-      result[i] = value_field[id_raster[i]];
+Float32Raster.get_ids = function(value_field, id_array, result) {
+  result = result || (id_array.grid !== void 0? Float32Raster(id_array.grid) : Float32Array(id_array.length));
+  for (var i=0, li=id_array.length; i<li; ++i) {
+      result[i] = value_field[id_array[i]];
   }
   return result;
+}
+Float32Raster.set_ids_to_value = function(field, id_array, value) {
+  for (var i=0, li=id_array.length; i<li; ++i) {
+      field[id_array[i]] = value;
+  }
+  return field;
+}
+Float32Raster.set_ids_to_values = function(field, id_array, value_array) {
+  for (var i=0, li=id_array.length; i<li; ++i) {
+      field[id_array[i]] = value_array[i];
+  }
+  return field;
 }
 // Uint16Raster represents a grid where each cell contains a 16 bit integer
 // A Uint16Raster is composed of two parts:

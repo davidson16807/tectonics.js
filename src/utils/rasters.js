@@ -1,6 +1,13 @@
 'use strict';
 
 #ifndef IS_PROD
+#define TYPE_CHECK_DEFINED(INPUT, TYPE) \
+	if (INPUT !== void 0) { throw #INPUT + ' is undefined'; }
+#else
+#define TYPE_CHECK_DEFINED(INPUT, TYPE)
+#endif
+
+#ifndef IS_PROD
 #define TYPE_CHECK_ARRAY(INPUT, TYPE) \
 	if (!(INPUT instanceof TYPE)) { throw #INPUT + ' is not a ' + #TYPE; }
 #else

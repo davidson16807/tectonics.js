@@ -16,7 +16,6 @@ function _strToab(str) {
 var JsonSerializer 	= {};
 JsonSerializer.world = function (world, options) {
 	options = options || {};
-	var base64 = options.base64 || true;
 
 	var supercontinentCycle = world.supercontinentCycle;
 
@@ -46,7 +45,6 @@ JsonSerializer.world = function (world, options) {
 }
 JsonSerializer.plate = function (plate, options) {
 	options = options || {};
-	var base64 = options.base64 || true;
 	
 	// serialize non-field values to json
 	var plate_json = {
@@ -104,7 +102,6 @@ JsonSerializer.plate = function (plate, options) {
 var JsonDeserializer = {};
 JsonDeserializer.plate = function (plate_json, _world, options) {
 	options = options || {};
-	base64 = options.base64 || true;
 
 	var plate = new Plate({
 		world: _world,
@@ -115,30 +112,16 @@ JsonDeserializer.plate = function (plate_json, _world, options) {
 	plate.eulerPole.fromArray(plate_json.eulerPole);
 	plate.local_to_global_matrix.fromArray(plate_json.local_to_global_matrix);
 
-	var file_ids 		= 	new Uint16Array(Base64.decode(plate_json.ids));
-	var file_sima 		= 	new Uint16Array(Base64.decode(plate_json.sima));
-	var file_sial 		= 	new Uint16Array(Base64.decode(plate_json.sial));
-	var file_age 		=	new Uint16Array(Base64.decode(plate_json.age));
-
-	var sial = plate.sial;
-	var sima = plate.sima;
-	var age = plate.age;
-	var mask = plate.mask;
-
-	var file_id;
-	for (var i = 0, li = file_ids.length; i < li; i++) {
-		file_id = file_ids[i];
-		mask[file_id]  = 1;
-		sima[file_id] 	= file_sima[i];
-		sial[file_id] 	= file_sial[i];
-		age[file_id] 	= file_age[i];
-	};
+	var file_ids = new Uint16Array(Base64.decode(plate_json.ids));
+	Float32Raster.set_ids_to_value	(plate.mask, file_ids, 1);
+	Float32Raster.set_ids_to_values	(plate.sima, 	file_ids, new Uint16Array(Base64.decode(plate_json.sima)) );
+	Float32Raster.set_ids_to_values	(plate.sial, 	file_ids, new Uint16Array(Base64.decode(plate_json.sial)) );
+	Float32Raster.set_ids_to_values	(plate.age, 	file_ids, new Uint16Array(Base64.decode(plate_json.age))  );
 
 	return plate;
 }
 JsonDeserializer.world = function (world_json, options) {
 	options = options || {};
-	var base64 = options.base64 || true;
 
 	var _world = new World(
 	{
