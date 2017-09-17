@@ -1,6 +1,6 @@
 'use strict';
 
-function SupercontinentCycle(parameters){
+function SupercontinentCycle(world, parameters){
 	parameters = parameters || {};
 
 	this.getRandomDuration = parameters['getRandomDuration'] ||
@@ -8,7 +8,7 @@ function SupercontinentCycle(parameters){
 		// function() { return random.uniform(300, 500); };
 		// from wikipedia
 	
-	this.world = parameters['world'] || stop('missing parameter: "world"');
+	this.world = world;
 	this.duration = parameters['duration'] || this.getRandomDuration();
 	this.age = parameters['age'] || this.duration;
 };

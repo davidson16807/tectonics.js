@@ -10,8 +10,7 @@ var World = (function() {
 			function() { return random.normal(0.00687, 0.00380); }
 			//^^^ log normal and normal distribution fit to angular velocities from Larson et al. 1997
 
-		parameters.world = this;
-		this.supercontinentCycle = parameters['supercontinentCycle'] || new SupercontinentCycle(parameters);
+		this.supercontinentCycle = parameters['supercontinentCycle'] || new SupercontinentCycle(this, parameters);
 
 		this.subductability = Float32Raster(this.grid);
 		this.plate_masks = Uint8Raster(this.grid);
@@ -20,9 +19,9 @@ var World = (function() {
 		this.is_detaching = Uint8Raster(this.grid);
 		this.asthenosphere_velocity = VectorRaster(this.grid);
 
-		this.radius = parameters['radius'] || 6367;
+		// this.radius = parameters['radius'] || 6367;
 		// this.age = parameters['age'] || 0;
-		this.maxPlatesNum = parameters['platesNum'] || 8;
+		// this.maxPlatesNum = parameters['platesNum'] || 8;
 
 		this.plates = [];
 	}
@@ -438,7 +437,7 @@ var World = (function() {
 		this.plates = [];
 
 		var plate;
-		// todo: overwrite plates instead of creating new ones, create separate function for plate initialization
+		// TODO: overwrite plates instead of creating new ones, create separate function for plate initialization
 		for (var i = 0, li = plate_masks.length; i < li; ++i) {
 			plate = new Plate({
 				world: 	this,
@@ -452,7 +451,7 @@ var World = (function() {
 
 			//TODO: comment this out when you're done
 			var eulerPole = VectorDataset.weighted_average(angular_velocity, plate.mask)
-			//todo: fix it properly - no negation!
+			//TODO: fix it properly - no negation!
 			plate.eulerPole = new THREE.Vector3(-eulerPole.x, -eulerPole.y, -eulerPole.z).normalize(); 
 		}
 	};

@@ -47,19 +47,21 @@ function View(grid, scalarDisplay, vectorDisplay, vertexShader){
 	});
 	Publisher.subscribe('model.world', 'add', function (content) {
 		console.log('model.world.add');
-		var world = content.value;
-		var plates = world.plates;
-		for (var i = 0, li = plates.length; i < li; i++) {
-			this_.add(plates[i]);
-		};
+		//var world = content.value;
+		//this_.add(world);
+		//var plates = world.plates;
+		//for (var i = 0, li = plates.length; i < li; i++) {
+		//	this_.add(plates[i]);
+		//};
 	});
 	Publisher.subscribe('model.world', 'remove', function (content) {
 		console.log('model.world.remove');
-		var world = content.value;
-		var plates = world.plates;
-		for (var i = 0, li = plates.length; i < li; i++) {
-			this_.remove(plates[i])
-		};
+		//var world = content.value;
+		//this_.remove(world);
+		//var plates = world.plates;
+		//for (var i = 0, li = plates.length; i < li; i++) {
+		//	this_.remove(plates[i])
+		//};
 	});
 	// Publisher.subscribe('model.world', 'update;', function (content) {
 	// 	var world = content.value;

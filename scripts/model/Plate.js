@@ -8,13 +8,14 @@ function Plate(params)
 	Crust.call(this, params);
 	this.subductability = Float32Raster(this.grid);
 
-	this.mask = params['mask'] || stop('mask')
+	this.mask = params['mask'] || Uint8Raster(this.grid);
 
-	this.eulerPole = params['eulerPole'];
+	this.eulerPole = params['eulerPole'] || new THREE.Vector3();
 	this.angularSpeed = params['angularSpeed'];
 	
-	this.local_to_global_matrix = params['matrix'] || new THREE.Matrix4();
-	this.global_to_local_matrix = params['matrix'] || new THREE.Matrix4();
+	this.local_to_global_matrix = params['local_to_global_matrix'] || new THREE.Matrix4();
+	this.global_to_local_matrix = new THREE.Matrix4();
+	this.global_to_local_matrix.getInverse(this.local_to_global_matrix);
 }
 Plate.prototype.move = function(timestep){
 	// this.angularSpeed = 0;

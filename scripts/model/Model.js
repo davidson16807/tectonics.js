@@ -15,6 +15,10 @@ Model.prototype.world = function(world) {
 	if(this._world !== void 0){
 		console.log('publishing model.world.remove')
 		Publisher.publish('model.world', 'remove', { value: this._world, uuid: this._world.uuid });
+		Publisher.publish('world.plates', 'remove', { 
+			value: this._world, 
+			uuid: this._world.uuid } 
+		);
 	};
 	console.log('publishing model.world.add')
 	Publisher.publish('model.world', 'add', { value: world, uuid: this.uuid });
