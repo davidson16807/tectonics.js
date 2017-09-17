@@ -1659,6 +1659,16 @@ Float32Raster.get_ids = function(value_field, id_array, result) {
   }
   return result;
 }
+Float32Raster.get_mask = function(raster, mask) {
+  var result = new Float32Array(Uint8Dataset.sum(mask));
+  for (var i = 0, j = 0, li = mask.length; i < li; i++) {
+    if (mask[i] > 0) {
+      result[j] = raster[i];
+      j++;
+    }
+  }
+  return result;
+}
 Float32Raster.set_ids_to_value = function(field, id_array, value) {
   for (var i=0, li=id_array.length; i<li; ++i) {
       field[id_array[i]] = value;
