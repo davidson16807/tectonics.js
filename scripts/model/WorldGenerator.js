@@ -1,22 +1,3 @@
-CratonWorldGenerator = {}
-CratonWorldGenerator.generate = function (world, optional) {
-	var optional = {};
-	var continentRadius = (optional['continentRadius'] || 1250) / world.radius;
-	var shield = world.getRandomPoint();
-
-	var plate = new Plate(world);
-	for(var i=0, length = plate.cells.length; i<length; i++) {
-		var cell = plate.cells[i];
-		if(shield.distanceTo(cell.pos) < continentRadius ) { 
-			cell.create(world.land);
-		} else {
-			cell.create(world.ocean);
-		}
-		cell.content.isostasy();
-	}
-	plate.densityOffset = plate.getDensityOffset();
-	world.plates = [plate];
-}
 
 
 // what follows is an implementation of the terrain generation algorithm discussed by
@@ -26,28 +7,17 @@ CratonWorldGenerator.generate = function (world, optional) {
 // half and adding some random amount of landmass to one of the sides.
 // It does this until an attractive landmass results.
 // 
-// Its a bit more sophisticated in that it uses spherical harmonics of degree 1 
+// Its a bit more sophisticated in that it uses a smooth function
 // instead of an immediate drop off between sides. 
 // This is done to produce smoother terrain using fewer iterations 
-EliasWorldGenerator = {}
-EliasWorldGenerator.generate = function (world, optional) {
+var EliasHeightMapGenerator = {};
+EliasHeightMapGenerator.generate = function (grid, optional) {
 	var optional = {};
 	var exp = Math.exp;
 
-	function lerp(a,b, x){
-		return a + x*(b-a);
-	}
 	function heaviside_approximation (x, k) {
 		return 2 / (1 + exp(-k*x)) - 1;
 		return x>0? 1: 0; 
-	}
-	function clamp (x, minVal, maxVal) {
-		return Math.min(Math.max(x, minVal), maxVal);
-	}
-	function smoothstep (edge0, edge1, x) {
-		var fraction = (x - edge0) / (edge1 - edge0);
-		return clamp(fraction, 0.0, 1.0);
-    	// return t * t * (3.0 - 2.0 * t);
 	}
 
 	// first, we generate matrices expressing direction of continent centers
@@ -68,34 +38,47 @@ EliasWorldGenerator.generate = function (world, optional) {
 	// This value doesn't translate directly to elevation. 
 	// It only represents how cells would rank if sorted by elevation.
 	// This is done so we can later derive elevations that are consistent with earth's.
-	var plate = new Plate(world);
-	for(var i=0, length = plate.cells.length; i<length; i++) {
-		var cell = plate.cells[i];
+	var positions = grid.vertices;
+	var height_ranks = Float32Raster(grid);
+	for(var i=0, length = height_ranks.length; i<length; i++) {
 		var height_rank = 0;
+		var pos = positions[i];
 		for (var j = 0, lj = zDotMultipliers.length; j < lj; j++) {
-			var z = cell.pos.clone().dot(zDotMultipliers[j]);
+			var z = pos.dot(zDotMultipliers[j]);
 			height_rank += heaviside_approximation(z, 300);
 		};
-		cell.height_rank = height_rank;
+		height_ranks[i] = height_rank;
+	}
+
+	return height_ranks;
+}
+
+
+var WorldGenerator = {};
+WorldGenerator.generate = function (world, height_ranks, hypsography, control_points) {
+	function clamp (x, minVal, maxVal) {
+		return Math.min(Math.max(x, minVal), maxVal);
+	}
+	function smoothstep (edge0, edge1, x) {
+		var fraction = (x - edge0) / (edge1 - edge0);
+		return clamp(fraction, 0.0, 1.0);
+    	// return t * t * (3.0 - 2.0 * t);
 	}
 
 	// order cells by this new found  "height rank"
-	cells = plate.cells
-		.slice(0)
-		.sort(function(a, b) { return a.height_rank - b.height_rank; });
+	var cell_ids = new Uint16Array(height_ranks.length);
+	for(var i=0, length = cell_ids.length; i<length; i++) {
+		cell_ids[i] = i;
+	}
+	cell_ids.sort(function(a, b) { return height_ranks[a] - height_ranks[b]; });
 
 	// Next we find elevations whose magnitude and frequency match those of earth's.
 	// To do this, we generate a second dataset of equal size that represents actual elevations.
 	// This dataset is generated from statistical distributions matching those found on earth. 
 	// We sort the elevations and map each one to a cell from our height-rank sorted list.
-	heights = []
-	var water_fraction = 0.05; // Earth = 0.71
-	for (var i = 0, li = cells.length; i < li; i++) {
-		if (random.uniform(0,1) > water_fraction) { 
-			heights.push(random.normal(-4019,1113));
-		} else {
-			heights.push(random.normal(797,1169) );
-		}
+	heights = new Float32Array(cell_ids.length);
+	for (var i = 0, li = heights.length; i < li; i++) {
+		heights[i] = hypsography();
 	};
 	heights.sort(function(a,b) { return a-b; });
  	
@@ -103,70 +86,79 @@ EliasWorldGenerator.generate = function (world, optional) {
 	// We must express elevation in terms of thickness/density
 	// To do this, we start off with a set of rock column templates expressing
 	// what thickness/density should look like at a given density.
-
-	var abyss = 
-	 new RockColumn(void 0, {
-		elevation: 	-11000,
-		thickness: 	4000, 
-		density: 	3000	// Carlson & Raskin 1984
-	 });
-	var deep_ocean = 
-	 new RockColumn(void 0, {
-		elevation: 	-6000,  
-		thickness:  7100-800,// +/- 800, White McKenzie and O'nions 1992
-		density: 	3000	// Carlson & Raskin 1984
-	 });
-	var shallow_ocean =
-	 new RockColumn(void 0, {
-		elevation: 	-3682,	// Charette & Smith 2010
-		thickness: 	7100+800,// +/- 800, White McKenzie and O'nions 1992
-		density: 	2890	// Carlson & Raskin 1984
-	 });
-	var shelf = 
-	 new RockColumn(void 0, {
-		elevation: 	-200,   //Sverdrup & Fleming 1942
-	    thickness: 	17000, // +/- 2900, estimate for shields, Zandt & Ammon 1995
-		density: 	2700
-	 });
-	var land =
-	 new RockColumn(void 0, {
-		elevation: 	840,   //Sverdrup & Fleming 1942
-	    thickness: 	36900, // +/- 2900, estimate for shields, Zandt & Ammon 1995
-		density: 	2700
-	 });
-	var mountain = 
-	 new RockColumn(void 0, {
-		elevation: 	8848,
-	    thickness: 	70000, // +/- 2900, estimate for shields, Zandt & Ammon 1995
-		density: 	2700
-	 });
-	var control_points = [abyss, deep_ocean, shallow_ocean, shelf, land, mountain];
-	 
-	// We then use interpolate between these templated values.
-	for (var i = 0, li = heights.length; i < li; i++) {
+	// We then interpolate between these templated values.
+	var tallest = control_points[control_points.length - 1];
+	for (var i = 0, li = cell_ids.length; i < li; i++) {
 		var height = heights[i];
 
-		var rock_column = void 0;
 		for (var j = 1; j < control_points.length; j++) {
 			var lower = control_points[j-1];
 			var upper = control_points[j];
-			if (height < upper.elevation || 
-				upper.elevation == mountain.elevation){
-				var fraction = smoothstep(lower.elevation, upper.elevation, height);
-				rock_column = new RockColumn(cell.world, {
-					elevation: 	height,
-					thickness:  lerp(lower.thickness, upper.thickness, fraction),
-					density:  	lerp(lower.density, upper.density, fraction),
-				});
+			if (height < upper.displacement || 
+				upper.displacement == tallest.displacement){
+				var fraction = smoothstep(lower.displacement, upper.displacement, height);
+				
+				Crust.set_value( world, cell_ids[i], RockColumn.lerp(lower, upper, fraction) );
+
 				break;
 			}
 		};
-
-		var cell = cells[i];
-		cell.create(rock_column);
-		cell.content.isostasy();
 	};
+};
 
-	plate.densityOffset = plate.getDensityOffset();
-	world.plates = [plate];
-}
+WorldGenerator.early_earth_hypsography = function() {
+	var water_fraction = 0.05; // Earth = 0.71
+	return random.uniform(0,1) > water_fraction? 
+		random.normal(-4019,1113) :
+		random.normal(797,1169);
+};
+WorldGenerator.modern_earth_hypsography = function() {
+	var water_fraction = 0.29; 
+	return random.uniform(0,1) > water_fraction? 
+		random.normal(-4019,1113) :
+		random.normal(797,1169);
+};
+WorldGenerator.modern_earth_control_points = [
+	//abyss
+	new RockColumn({
+		displacement: -11000,
+		sima: 		4000, 
+		age: 		250,
+	}),
+	//deep_ocean
+	new RockColumn({
+		displacement: -6000,  
+		sima: 	 7100-800, // +/- 800, White McKenzie and O'nions 1992
+		age: 		200,
+	}),
+	//shallow_ocean
+	new RockColumn({
+		displacement: -3682,	 // Charette & Smith 2010
+		sima: 		7100+800, // +/- 800, White McKenzie and O'nions 1992
+		age: 		0,
+	}),
+	//shelf_bottom
+	new RockColumn({
+		displacement: -2000,    //Sverdrup & Fleming 1942
+		sima: 		7100+800,  // +/- 2900, estimate for shields, Zandt & Ammon 1995
+		age: 		100,
+	}),
+	//shelf_top
+	new RockColumn({
+		displacement: -200,    //Sverdrup & Fleming 1942
+		sial: 		17000,  // +/- 2900, estimate for shields, Zandt & Ammon 1995
+		age: 		1000,
+	}),
+	//land
+	new RockColumn({
+		displacement: 840,    //Sverdrup & Fleming 1942
+		sial: 		36900,  // +/- 2900, estimate for shields, Zandt & Ammon 1995
+		age: 		1000,
+	}),
+	//mountain
+	new RockColumn({
+		displacement: 8848,
+		sial: 		70000,  // +/- 2900, estimate for shields, Zandt & Ammon 1995
+		age: 		1000,
+	})
+];
