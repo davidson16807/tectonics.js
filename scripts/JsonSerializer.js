@@ -13,25 +13,18 @@ function _strToab(str) {
 
 
 
-JsonSerializer 	= {};
+var JsonSerializer 	= {};
 JsonSerializer.world = function (world, options) {
 	options = options || {};
-	var base64 = options.base64 || true;
 
 	var supercontinentCycle = world.supercontinentCycle;
 
 	var world_json = {
-		radius: world.radius,
-		platesNum: world.platesNum,
-		mountainWidth: world.mountainWidth,
-		age: world.age,
 		plates: [],
 		grid: undefined,
 		supercontinentCycle: {
 			duration: supercontinentCycle.duration,
 			age: supercontinentCycle.age,
-			oldSupercontinentPos: supercontinentCycle.oldSupercontinentPos,
-			newSupercontinentPos: supercontinentCycle.newSupercontinentPos,
 		},
 		random: {
 			mt: random.mt,
@@ -45,103 +38,57 @@ JsonSerializer.world = function (world, options) {
 		world_json.plates.push(plate_json);
 	};
 	return {
-		version: 0,
-		seed: seed,
+		version: '1.0',
+		seed: seed, // TODO: don't use global variable!
 		world: world_json
 	};
 }
 JsonSerializer.plate = function (plate, options) {
 	options = options || {};
-	var base64 = options.base64 || true;
 	
+	// serialize non-field values to json
 	var plate_json = {
-		eulerPole: 		plate.eulerPole.toArray(),
-		angularSpeed: 	plate.angularSpeed,
-		densityOffset: 	plate.densityOffset,
-		rockColumns: 	{},
-		matrix: 		plate.matrix.toArray(),
+		uuid: 					plate.uuid,
+		eulerPole: 				plate.eulerPole.toArray(),
+		angularSpeed: 			plate.angularSpeed,
+		local_to_global_matrix: plate.local_to_global_matrix.toArray(),
 	};
 
-	var cells_unfiltered = plate.cells;
-	var cells = [];
-	var cell;
-	for (var j = 0; j < cells_unfiltered.length; j++) {
-		cell = cells_unfiltered[j];
-		if (cell.content !== void 0) {
-			cells.push(cell);
-		};
-	};
-
-	var ids = 			new Uint16Array(cells.length);
-	var thicknesses = 	new Uint16Array(cells.length);
-	var densities = 	new Uint16Array(cells.length);
-	var age = 			new Uint16Array(cells.length);
-	for (var j = 0, lj = cells.length; j < lj; j++) {
-		cell = cells[j];
-		ids[j] = cell.id;
-		thicknesses[j] = cell.content.thickness;
-		densities[j] = cell.content.density;
-		age[j] = cell.content.age;
-	};
-	// var encode = options.base64? Base64.encode : _abTostr;
-	plate_json.rockColumns = {
-		ids: 			Base64.encode(ids.buffer),
-		thicknesses: 	Base64.encode(thicknesses.buffer),
-		densities: 		Base64.encode(densities.buffer),
-		ages: 			Base64.encode(age.buffer),
-	};
+	// encode in base64
+	plate_json.ids 	= Base64.encode(Uint16Array.from( Float32Raster.get_mask(plate.grid.vertex_ids,	plate.mask) ).buffer);
+	plate_json.sima = Base64.encode(Uint16Array.from( Float32Raster.get_mask(plate.sima, 			plate.mask) ).buffer);
+	plate_json.sial = Base64.encode(Uint16Array.from( Float32Raster.get_mask(plate.sial, 			plate.mask) ).buffer);
+	plate_json.age 	= Base64.encode(Uint16Array.from( Float32Raster.get_mask(plate.age, 			plate.mask) ).buffer);
 
 	return plate_json;
 }
 
-JsonDeserializer = {};
+var JsonDeserializer = {};
 JsonDeserializer.plate = function (plate_json, _world, options) {
 	options = options || {};
-	base64 = options.base64 || true;
 
-	var plate = new Plate(_world, {
+	var plate = new Plate({
+		world: _world,
 		angularSpeed: plate_json.angularSpeed,
-		densityOffset: plate_json.densityOffset,
 		uuid: plate_json.uuid,
 	});
 	plate.eulerPole.fromArray(plate_json.eulerPole);
+	plate.local_to_global_matrix.fromArray(plate_json.local_to_global_matrix);
 
-	var plateMatrix = plate.matrix;
-	plateMatrix.fromArray(plate_json.matrix);
+	var file_ids = new Uint16Array(Base64.decode(plate_json.ids));
+	Float32Raster.set_ids_to_value	(plate.mask, 	file_ids, 1);
+	Float32Raster.set_ids_to_values	(plate.sima, 	file_ids, new Uint16Array(Base64.decode(plate_json.sima)) );
+	Float32Raster.set_ids_to_values	(plate.sial, 	file_ids, new Uint16Array(Base64.decode(plate_json.sial)) );
+	Float32Raster.set_ids_to_values	(plate.age, 	file_ids, new Uint16Array(Base64.decode(plate_json.age))  );
 
-	var rockColumns_json = plate_json.rockColumns;
-	
-	// var decode = options.base64? Base64.decode : _strToab;
-
-	var ids = 			new Uint16Array(Base64.decode(rockColumns_json.ids));
-	var thicknesses = 	new Uint16Array(Base64.decode(rockColumns_json.thicknesses));
-	var densities = 	new Uint16Array(Base64.decode(rockColumns_json.densities));
-	var ages = 			new Uint16Array(Base64.decode(rockColumns_json.ages));
-
-	var cells = plate.cells;
-	var rockColumn;
-	for (var j = 0, li = ids.length; j < li; j++) {
-		rockColumn = RockColumn(_world, {
-			thickness: thicknesses[j],
-			density: densities[j],
-			age: ages[j]
-		});
-		rockColumn.isostasy();
-
-		cells[ids[j]].content = rockColumn;
-	};
 	return plate;
 }
 JsonDeserializer.world = function (world_json, options) {
 	options = options || {};
-	var base64 = options.base64 || true;
 
-	var _world = new World(view.grid,
+	var _world = new World(
 	{
-		radius: world_json.world.radius,
-		platesNum: world_json.world.platesNum,
-		mountainWidth: world_json.world.mountainWidth,
-		age: world_json.world.age,
+		grid: view.grid,
 		supercontinentCycle: undefined,
 		plates: [],
 	});
@@ -152,8 +99,6 @@ JsonDeserializer.world = function (world_json, options) {
 		_world.plates.push(plate);
 	};
 
-	_world.updateNeighbors();
-	_world.updateBorders();
 	_world.supercontinentCycle = new SupercontinentCycle(_world, world_json.world.supercontinentCycle);
 	
 	seed = world_json.seed;

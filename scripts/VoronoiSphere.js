@@ -85,6 +85,7 @@ function VoronoiSphere(pointsNum, kdtree){
 				raster[raster_id] = nearest_id;
 			}
 		}
+		test = raster;
 	}
 	this.sides = sides;
 	this.xy = xy;
@@ -97,73 +98,6 @@ function VoronoiSphere(pointsNum, kdtree){
 	this.raster_dim_size = raster_dim_size;
 }
 
-VoronoiSphere.prototype.getNearestId = function(vector) { 
-	var xy = this.xy;
-	var yz = this.yz;
-	var zx = this.zx;
-	var yx = this.yx;
-	var zy = this.zy;
-	var xz = this.xz;
-
-	var cell_half_width = this.cell_half_width;
-	var raster_dim_size = this.raster_dim_size;
-
-	var xi = 0.0;
-	var yi = 0.0;
-	var zi = 0.0;
-	var xi2 = 0.0;
-	var yi2 = 0.0;
-	var zi2 = 0.0;
-	var raster = xy;
-	var raster_x = 0.0;
-	var raster_y = 0.0;
-	var raster_i = 0;
-	var raster_j = 0;
-	var raster_id = 0;
-
-	var xi = vector.x;
-	var yi = vector.y;
-	var zi = vector.z;
-	xi2 = xi * xi;
-	yi2 = yi * yi;
-	zi2 = zi * zi;
-	if (xi2 > yi2 && xi2 > zi2) { // x is greatest
-		if (xi > 0) {
-			raster = yz;
-			raster_x = yi;
-			raster_y = zi;
-		} else {
-			raster = zy;
-			raster_x = zi;
-			raster_y = yi;
-		}
-	} else if (yi2 > xi2 && yi2 > zi2) { // y is greatest
-		if (yi > 0) {
-			raster = zx;
-			raster_x = zi;
-			raster_y = xi;
-		} else {
-			raster = xz;
-			raster_x = xi;
-			raster_y = zi;
-		}
-	} else if (zi2 > xi2 && zi2 > yi2) { // z is greatest
-		if (zi > 0) {
-			raster = xy;
-			raster_x = xi;
-			raster_y = yi;
-		} else {
-			raster = yx;
-			raster_x = yi;
-			raster_y = xi;
-		}
-	}
-	raster_i = ((raster_x + 1) / cell_half_width) | 0;
-	raster_j = ((raster_y + 1) / cell_half_width) | 0;
-	raster_id = raster_i * raster_dim_size + raster_j;
-
-  return raster[raster_id]; 
-} 
 VoronoiSphere.prototype.getNearestIds = function(pos_field, result) {
 	result = result || new Uint16Array(pos_field.x.length);
 

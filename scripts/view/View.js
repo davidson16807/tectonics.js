@@ -4,10 +4,8 @@ var _hashPlate = function(plate){
 	return plate.uuid;
 }
 
-function View(grid, fragmentShader, vertexShader){
+function View(grid, scalarDisplay, vectorDisplay, vertexShader){
 	this.grid = grid;
-	this._fragmentShader = fragmentShader;
-	this._vertexShader = vertexShader;
 	this._uniforms = {
 		sealevel_mod: 1.0
 	};
@@ -21,53 +19,60 @@ function View(grid, fragmentShader, vertexShader){
 	this.camera.position.set(0, 0, 5);
 	this.scene.add(this.camera);
 
+	this.setScalarDisplay(scalarDisplay);
+	this.setVectorDisplay(vectorDisplay);
+	this._vertexShader = vertexShader;
+
 	var this_ = this;
 	Publisher.subscribe('plate.matrix', 'update', function (content){
 		this_.matrix_update(content.uuid, content.value)
 	});
-	Publisher.subscribe('plate.cells', 'update', function (content) {
-		this_.cell_update(content.uuid, content.value);
+	// Publisher.subscribe('plate.cells', 'update', function (content) {
+	// 	this_.cell_update(content.uuid, content.value);
+	// });
+	Publisher.subscribe('crust', 'update', function (content) {
+		var plate = world;
+		this_.cell_update(plate.uuid, plate); 
+		// HACK: ideally should not make reference to "world",
+		//  but pass the values relevant to the subscriber function
+		//  This is so we will be eventually able to implement parallel processing
 	});
-	Publisher.subscribe('world.plates', 'add', function (content) {
+	Publisher.subscribe('crust', 'add', function (content) {
 		console.log('world.plates.add')
 		this_.add(content.value);
 	});
-	Publisher.subscribe('world.plates', 'remove', function (content) {
+	Publisher.subscribe('crust', 'remove', function (content) {
 		console.log('world.plates.remove')
 		this_.remove(content.value);
-	});
-	Publisher.subscribe('model.world', 'add', function (content) {
-		console.log('model.world.add');
-		var world = content.value;
-		var plates = world.plates;
-		for (var i = 0, li = plates.length; i < li; i++) {
-			this_.add(plates[i]);
-		};
-	});
-	Publisher.subscribe('model.world', 'remove', function (content) {
-		console.log('model.world.remove');
-		var world = content.value;
-		var plates = world.plates;
-		for (var i = 0, li = plates.length; i < li; i++) {
-			this_.remove(plates[i])
-		};
 	});
 	// Publisher.subscribe('model.world', 'update;', function (content) {
 	// 	var world = content.value;
 	// });
 }
 
-View.prototype.fragmentShader = function(fragmentShader){
-	if(this._fragmentShader === fragmentShader){
+View.prototype.setScalarDisplay = function(display) {
+	if(this._scalarDisplay === display){
 		return;
 	}
-	this._fragmentShader = fragmentShader;
-
 	var views = this.plateViews.values();
+
+	this._scalarDisplay = display;
 	for (var i = 0, li = views.length; i < li; i++) {
-		views[i].fragmentShader(fragmentShader);
+		views[i].setScalarDisplay(this._scalarDisplay);
 	};
-}
+};
+
+View.prototype.setVectorDisplay = function(display) {
+	if(this._vectorDisplay === display){
+		return;
+	}
+	var views = this.plateViews.values();
+
+	this._vectorDisplay = display;
+	for (var i = 0, li = views.length; i < li; i++) {
+		views[i].setVectorDisplay(this._vectorDisplay);
+	};
+};
 
 View.prototype.vertexShader = function(vertexShader){
 	if(this._vertexShader === vertexShader){
@@ -100,18 +105,19 @@ View.prototype.matrix_update = function(uuid, matrix) {
 	};
 	view.matrix_update(matrix);
 };
-View.prototype.cell_update = function(uuid, cells){
+
+View.prototype.cell_update = function(uuid, plate){
 	var view = this.plateViews.get(uuid);
 	if (view.length < 1) {
 		console.log('warning: nothing in view matches this plate!')
 		return;
 	};
-	view.cell_update(cells);
+	view.cell_update(plate);
 }
 
 View.prototype.add = function(plate){
 	var view = new PlateView(this.scene, plate, 
-		this._uniforms, this._vertexShader, this._fragmentShader);
+		this._uniforms, this._vertexShader, this._scalarDisplay, this._vectorDisplay);
 	this.plateViews.set(_hashPlate(plate), view);
 }
 

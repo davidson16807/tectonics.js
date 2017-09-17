@@ -35,12 +35,14 @@
 	<script src="libraries/base64-arraybuffer.js"></script>
 	<script src="libraries/kdTree-min.js"></script>
 	<script src="libraries/uuid.js"></script>
+	<script src="scripts/Grid.js"></script>
+	<script src="scripts/Utils.js"></script>
+	<script src="scripts/rasters.js"></script>
 	<script src="scripts/Sphere.js"></script>
 	<script src="scripts/VoronoiSphere.js"></script>
-	<script src="scripts/Grid.js"></script>
 	<script src="scripts/Publisher.js"></script>
+	<script src="scripts/model/Crust.js"></script>
 	<script src="scripts/model/RockColumn.js"></script>
-	<script src="scripts/model/Cell.js"></script>
 	<script src="scripts/model/Plate.js"></script>
 	<script src="scripts/model/SupercontinentCycle.js"></script>
 	<script src="scripts/model/World.js"></script>
@@ -48,6 +50,9 @@
 	<script src="scripts/model/Model.js"></script>
 	<script src="scripts/view/fragment/FragmentShaders.js"></script>
 	<script src="scripts/view/vertex/VertexShaders.js"></script>
+	<script src="scripts/view/ScalarDisplay.js"></script>
+	<script src="scripts/view/VectorDisplay.js"></script>
+	<script src="scripts/view/TestDisplays.js"></script>
 	<script src="scripts/view/PlateView.js"></script>
 	<script src="scripts/view/View.js"></script>
 	<script src="scripts/Cached.js"></script>
@@ -76,8 +81,8 @@
 		</div>
 		<div class="input-group speed-group">
 			<span class="input-group-addon play">
-					<img src="icons/play-512px.svg" height="12em" width="12em"class="collapse">
-					<img src="icons/pause-512px.svg" height="12em" width="12em">
+					<img src="icons/play.svg" height="12em" width="12em"class="collapse">
+					<img src="icons/pause.svg" height="12em" width="12em">
 			</span>
 
 			<input class="form-control input-sm" id="speedControl" type="number" value="5" min="0" max="10" step="1"/> 
@@ -88,26 +93,26 @@
 	<div class="view-menu btn-group-vertical">
 	 	<div class="btn-group">
 			<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-				<img src="icons/projection-512px.svg" height="16em" width="16em"/>
+				<img src="icons/projector-screen.svg" height="16em" width="16em"/>
 				Projection 
 				<span class="caret"></span>
 			</button>
 			<ul class="dropdown-menu btn-default btn-xs">
 				<li>
 					<button type="button" class="btn btn-default btn-xs vertex-shader" data-value="orthographic">
-						<img src="icons/globe-512px.svg" height="16em" width="16em"/>
+						<img src="icons/earth.svg" height="16em" width="16em"/>
 						Globe
 					</button>
 				</li>
 				<li>
 					<button type="button" class="btn btn-default btn-xs vertex-shader" data-value="equirectangular">
-						<img src="icons/map-512px.svg" height="16em" width="16em"/>
+						<img src="icons/map.svg" height="16em" width="16em"/>
 						Map
 					</button>
 				</li>
 				<li>
 					<button type="button" class="btn btn-default btn-xs vertex-shader" data-value="texture">
-						<img src="icons/texture-512px.svg" height="16em" width="16em"/>
+						<img src="icons/texture.svg" height="16em" width="16em"/>
 						Texture
 					</button>
 				</li>
@@ -115,20 +120,20 @@
 		</div>
 		<div class="btn-group">
 			<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-				<img src="icons/eye-512px.svg" height="16em" width="16em"/>
-				View 
+				<img src="icons/eye.svg" height="16em" width="16em"/>
+				Display 
 				<span class="caret"></span>
 			</button>
 			<ul class="dropdown-menu btn-default btn-xs">
 				<li>
 					<button type="button" class="btn btn-default btn-xs active ocean" data-toggle="button" aria-pressed="true">
-						<img src="icons/water-512px.svg" height="16em" width="16em"/>
+						<img src="icons/water.svg" height="16em" width="16em"/>
 						Ocean
 					</button>
 				</li>
 				<li>
 					<button type="button" class="btn btn-default btn-xs active vegetation" data-toggle="button" aria-pressed="true">
-						<img src="icons/tree-512px.svg" height="16em" width="16em"/>
+						<img src="icons/tree.svg" height="16em" width="16em"/>
 						Vegetation
 					</button>
 				</li>
@@ -143,37 +148,49 @@
 
 				<li>
 					<button type="button" class="btn btn-default btn-xs fragment-shader" data-value="alt">
-						<img src="icons/terrain-512px.svg" height="16em" width="16em"/>
+						<img src="icons/terrain.svg" height="16em" width="16em"/>
 						Elevation
 					</button>
 				</li>
 				<li>
 					<button type="button" class="btn btn-default btn-xs fragment-shader" data-value="npp">
-						<img src="icons/leaf-512px.svg" height="16em" width="16em"/>
+						<img src="icons/leaf.svg" height="16em" width="16em"/>
 						Plant Productivity
 					</button>
 				</li>
 				<li>
 					<button type="button" class="btn btn-default btn-xs fragment-shader" data-value="temp">
-						<img src="icons/thermometer-512px.svg" height="16em" width="16em"/>
+						<img src="icons/thermometer.svg" height="16em" width="16em"/>
 						Temperature
 					</button>
 				</li>
 				<li>
 					<button type="button" class="btn btn-default btn-xs fragment-shader" data-value="precip">
-						<img src="icons/rain2-512px.svg" height="16em" width="16em"/>
+						<img src="icons/weather-raining.svg" height="16em" width="16em"/>
 						Precipitation
 					</button>
 				</li>
 				<li>
 					<button type="button" class="btn btn-default btn-xs fragment-shader" data-value="age">
-						<img src="icons/clock-512px.svg" height="16em" width="16em"/>
+						<img src="icons/clock.svg" height="16em" width="16em"/>
 						Age
 					</button>
 				</li>
 				<li>
+					<button type="button" class="btn btn-default btn-xs fragment-shader" data-value="density">
+						<img src="icons/scale.svg" height="16em" width="16em"/>
+						Density
+					</button>
+				</li>
+				<li>
+					<button type="button" class="btn btn-default btn-xs fragment-shader" data-value="density">
+						<img src="icons/ruler.svg" height="16em" width="16em"/>
+						Thickness
+					</button>
+				</li>
+				<li>
 					<button type="button" class="btn btn-default btn-xs fragment-shader" data-value="debug">
-						<img src="icons/puzzle-512px.svg" height="16em" width="16em"/>
+						<img src="icons/puzzle.svg" height="16em" width="16em"/>
 						Plates
 					</button>
 				</li>
@@ -181,14 +198,14 @@
 		</div>
 
 		<button type="button" class="btn btn-default btn-xs fullscreen" data-toggle="button" aria-pressed="true">
-			<img src="icons/fullscreen-512px.svg" height="16em">
-			<img src="icons/fullscreen-exit-512px.svg" height="16em" class="collapse">
+			<img src="icons/fullscreen.svg" height="16em">
+			<img src="icons/fullscreen-exit.svg" height="16em" class="collapse">
 			Fullscreen
 			<span class="instructions">F11</span>
 		</button>
 		<button type="button" class="btn btn-default btn-xs">
 			<a class="collapse screenshot" download>
-				<img src="icons/camera-512px.svg" height="16em">
+				<img src="icons/camera.svg" height="16em">
 				Screenshot
 				<span class="instructions">P</span>
 			</a>
@@ -199,12 +216,12 @@
 	<div class="file-menu btn-group-vertical">
 		<button type="button" class="btn btn-default btn-xs">
 			<a class="save" download>
-				<img src="icons/download-512px.svg" height="16em">
+				<img src="icons/download.svg" height="16em">
 				Save
 			</a>
 		</button>
 		<button type="button" class="btn btn-default btn-xs load">
-			<img src="icons/upload-512px.svg" height="16em">
+			<img src="icons/upload.svg" height="16em">
 			Load
 			<span class="instructions">drag</span>
 		</button>
@@ -288,7 +305,8 @@
 
 	var view = new View(
 		new Grid( new THREEx.FibonacciSphereGeometry(1, 10000, fibGridFaceCache)),
-		fragmentShaders['satellite'], 
+		scalarDisplays.satellite, 
+		vectorDisplays.disabled, 
 		vertexShaders['orthographic']
 	);
 	var model = new Model();
@@ -298,7 +316,11 @@
 		loadUrl(querystring['load']);
 	} else {
 		world = new World({ grid: view.grid });
-		EliasWorldGenerator.generate(world);
+		WorldGenerator.generate(world, 
+			EliasHeightMapGenerator.generate(world.grid), 
+			WorldGenerator.modern_earth_hypsography, 
+			WorldGenerator.modern_earth_control_points
+		);
 		model.world(world);
 		$('#loadingSave').hide();
 		$('.controls').show();
@@ -381,8 +403,8 @@
 		model.slow_update();
 
 		if ((world) !== void 0) {
-			$(".age").html(format(world.age, 1000, 3).quantity);
-			$(".age-units").html(format(world.age, 1000, 3).unit);
+			$(".age").html(format(model.age, 1000, 3).quantity);
+			$(".age-units").html(format(model.age, 1000, 3).unit);
 		};
 		
 		if(!IsProd){
@@ -543,7 +565,7 @@
 	    }
 	);
 	$('.fragment-shader').click(function(e){
-		view.fragmentShader(fragmentShaders[$(this).data('value')]);
+		view.setScalarDisplay(scalarDisplays[$(this).data('value')]);
 	});
 	$('.vertex-shader').click(function(e){
 		console.log('vertex-shader');
@@ -560,29 +582,18 @@
 			}
 		  });
 	});
-	$('.vegetation').click(function(e) {
-		var soil = $('.soil').hasClass('active');
-		var vegetation = !$('.vegetation').hasClass('active');
-
-		if (vegetation) {
-			view.fragmentShader(fragmentShaders.satellite);
-		} else if (soil) {
-			view.fragmentShader(fragmentShaders.soil);
-		} else {
-			view.fragmentShader(fragmentShaders.bedrock);
-		}
-	})
-	$('.soil').click(function(e) {
-		var soil = !$('.soil').hasClass('active');
-		var vegetation = $('.vegetation').hasClass('active');
-
-		if (vegetation) {
-			view.fragmentShader(fragmentShaders.satellite);
-		} else if (soil) {
-			view.fragmentShader(fragmentShaders.soil);
-		} else {
-			view.fragmentShader(fragmentShaders.bedrock);
-		}
+	$('.vegetation,.soil').click(function(e) {
+		setTimeout(function() {
+			var soil = $('.soil').hasClass('active');
+			var vegetation = $('.vegetation').hasClass('active');
+			if (vegetation) {
+				view.setScalarDisplay(scalarDisplays.satellite);
+			} else if (soil) {
+				view.setScalarDisplay(scalarDisplays.soil);
+			} else {
+				view.setScalarDisplay(scalarDisplays.bedrock);
+			}	
+		}, 0);
 	})
 </script>
 </body>

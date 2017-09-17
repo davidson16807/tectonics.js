@@ -1,105 +1,132 @@
 'use strict';
 
-function PlateView(scene, plate, uniforms, vertexShader, fragmentShader) {
-	var faces, geometry, mesh, material;
-	var faces = plate.grid.template.faces;
-
+function PlateView(scene, plate, uniforms, vertexShader, scalarDisplay, vectorDisplay) {
 	this.scene = scene;
 	this.grid = plate.grid;
-	this._uniforms = {
-		sealevel_mod: uniforms.sealevel_mod
-	};
-	this._fragmentShader = fragmentShader;
 	this._vertexShader = vertexShader;
+	this._scalarDisplay = scalarDisplay;
+	this._vectorDisplay = vectorDisplay;
+	this._uniforms = {
+		sealevel_mod: 1.0
+	};
 
-	geometry = THREE.BufferGeometryUtils.fromGeometry(this.grid.template);
-	geometry.addAttribute('displacement', Float32Array, faces.length*3, 1);
-	geometry.addAttribute('age', Float32Array, faces.length*3, 1);
-	this.geometry = geometry;
+	var faces, scalar_field_geometry, scalar_field_mesh, scalar_field_material;
+	var faces = this.grid.template.faces;
+	var scalar_field_geometry = THREE.BufferGeometryUtils.fromGeometry(this.grid.template);
 
-	var color = new THREE.Color(Math.random() * 0xffffff);
+	scalar_field_geometry.addAttribute('displacement', Float32Array, faces.length*3, 1);
+	scalar_field_geometry.addAttribute('scalar', Float32Array, faces.length*3, 1);
+	this.scalar_field_geometry = scalar_field_geometry;
+
+	var color = new THREE.Color();
 	var sealevel_mod = this._uniforms.sealevel_mod;
-	material = new THREE.ShaderMaterial({
+
+
+	scalar_field_material = new THREE.ShaderMaterial({
 		attributes: {
 		  displacement: { type: 'f', value: null },
-		  age: { type: 'f', value: null }
+		  scalar: { type: 'f', value: null }
 		},
 		uniforms: {
-		  sealevel: { type: 'f', value: plate.world.SEALEVEL },
+		  sealevel: { type: 'f', value: plate.SEALEVEL },
 		  sealevel_mod: { type: 'f', value: sealevel_mod },
 		  color: 	    { type: 'c', value: color },
 		  index: 		{ type: 'f', value: -1 },
 		},
 		blending: THREE.NoBlending,
-		vertexShader: vertexShader,
-		fragmentShader: fragmentShader
+		vertexShader: this._vertexShader,
+		fragmentShader: this._scalarDisplay._fragmentShader
 	});
-	mesh = new THREE.Mesh( geometry, material);
-	this.scene.add(mesh);
-	this.mesh1 = mesh;
+	scalar_field_mesh = new THREE.Mesh( scalar_field_geometry, scalar_field_material);
+	scene.add(scalar_field_mesh);
+	this.scalar_field_mesh1 = scalar_field_mesh;
 
-	material = new THREE.ShaderMaterial({
+
+	scalar_field_material = new THREE.ShaderMaterial({
 		attributes: {
 		  displacement: { type: 'f', value: null },
-		  age: { type: 'f', value: null }
+		  scalar: { type: 'f', value: null }
 		},
 		uniforms: {
-		  sealevel: { type: 'f', value: plate.world.SEALEVEL },
+		  sealevel: { type: 'f', value: plate.SEALEVEL },
 		  sealevel_mod: { type: 'f', value: sealevel_mod },
 		  color: 	    { type: 'c', value: color },
 		  index: 		{ type: 'f', value: 1 }
 		},
 		blending: THREE.NoBlending,
-		vertexShader: vertexShader,
-		fragmentShader: fragmentShader
+		vertexShader: this._vertexShader,
+		fragmentShader: this._scalarDisplay._fragmentShader
 	});
-	mesh = new THREE.Mesh( geometry, material);
-	this.scene.add(mesh);
-	this.mesh2 = mesh;
+	scalar_field_mesh = new THREE.Mesh( scalar_field_geometry, scalar_field_material);
+	scene.add(scalar_field_mesh);
+	this.scalar_field_mesh2 = scalar_field_mesh;
+
+
+	var vector_field_material = new THREE.ShaderMaterial({
+	        vertexShader: 	this._vertexShader,
+	        fragmentShader: fragmentShaders.vectorField,
+	        attributes: {
+	        	vector: { type: 'v3', value: [] }
+	        },
+	        uniforms: {  }
+	    });
+	var vector_field_geometry = new THREE.Geometry();
+	this.vector_field_material = vector_field_material;
+	var positions = plate.grid.pos;
+	for (var i=0, li=plate.grid.vertices.length; i<li; ++i) {
+	    vector_field_geometry.vertices.push( plate.grid.vertices[i] );
+	    vector_field_geometry.vertices.push( plate.grid.vertices[i] );
+	    vector_field_material.attributes.vector.value.push( new THREE.Vector3() );
+	    vector_field_material.attributes.vector.value.push( new THREE.Vector3() );
+	}
+	var vector_field_mesh = new THREE.Line( vector_field_geometry, vector_field_material, THREE.LinePieces);
+	scene.add(vector_field_mesh);
+	this.vector_field_mesh = vector_field_mesh;
 }
 
+PlateView.prototype.setScalarDisplay = function(display) {
+	if(this._scalarDisplay === display){
+		return;
+	}
+	this._scalarDisplay.removeFrom(this.scalar_field_mesh1);
+	this._scalarDisplay.removeFrom(this.scalar_field_mesh2);
+
+	this._scalarDisplay = display;
+
+	this._scalarDisplay.addTo(this.scalar_field_mesh1);
+	this._scalarDisplay.addTo(this.scalar_field_mesh2);
+};
+
+PlateView.prototype.setVectorDisplay = function(display) {
+	if(this._vectorDisplay === display){
+		return;
+	}
+	this._vectorDisplay.removeFrom(this.vector_field_mesh);
+
+	this._vectorDisplay = display;
+
+	this._vectorDisplay.addTo(this.vector_field_mesh);
+};
+
 PlateView.prototype.matrix_update = function(matrix) {
-	var mesh = this.mesh1;
+	var mesh;
+
+	mesh = this.scalar_field_mesh1;
 	mesh.matrix = matrix;
 	mesh.rotation.setFromRotationMatrix(mesh.matrix);
 
-	var mesh = this.mesh2;
+	mesh = this.scalar_field_mesh2;
+	mesh.matrix = matrix;
+	mesh.rotation.setFromRotationMatrix(mesh.matrix);
+
+	mesh = this.vector_field_mesh;
 	mesh.matrix = matrix;
 	mesh.rotation.setFromRotationMatrix(mesh.matrix);
 };
 
-PlateView.prototype.cell_update = function(cells){
-	var geometry, content, displacement, age;
-	var geometry = this.geometry;
-	displacement = geometry.attributes.displacement.array;
-	age = geometry.attributes.age.array;
-	var buffer_array_to_cell = this.grid.buffer_array_to_cell;
-	var buffer_array_index, content;
-	for(var j=0, lj = displacement.length, cells = cells; j<lj; j++){
-		buffer_array_index = buffer_array_to_cell[j];
-		content = cells[buffer_array_index].content;
-		displacement[j] = content !== void 0? content.displacement : 0;
-		age[j] = content !== void 0? content.age : 0;
-	}
-	geometry.attributes.displacement.needsUpdate = true;
-	geometry.attributes.age.needsUpdate = true;
-}
-
-PlateView.prototype.fragmentShader = function(fragmentShader){
-	if(this._fragmentShader === fragmentShader){
-		return;
-	}
-	this._fragmentShader = fragmentShader;
-
-	var meshes, mesh;
-
-	mesh = this.mesh1;
-	mesh.material.fragmentShader = fragmentShader;
-	mesh.material.needsUpdate = true;
-
-	mesh = this.mesh2;
-	mesh.material.fragmentShader = fragmentShader;
-	mesh.material.needsUpdate = true;
+PlateView.prototype.cell_update = function(plate){
+	this._scalarDisplay.updateAttributes(this.scalar_field_geometry, plate);
+	this._vectorDisplay.updateAttributes(this.vector_field_material, plate);
 }
 
 PlateView.prototype.vertexShader = function(vertexShader){
@@ -110,11 +137,15 @@ PlateView.prototype.vertexShader = function(vertexShader){
 
 	var meshes, mesh;
 
-	mesh = this.mesh1
+	mesh = this.scalar_field_mesh1
 	mesh.material.vertexShader = vertexShader;
 	mesh.material.needsUpdate = true;
 
-	mesh = this.mesh2;
+	mesh = this.scalar_field_mesh2;
+	mesh.material.vertexShader = vertexShader;
+	mesh.material.needsUpdate = true;
+
+	mesh = this.vector_field_mesh;
 	mesh.material.vertexShader = vertexShader;
 	mesh.material.needsUpdate = true;
 }
@@ -128,11 +159,15 @@ PlateView.prototype.uniform = function(key, value){
 
  	var meshes, mesh;
 
- 	mesh = this.mesh1;
+ 	mesh = this.scalar_field_mesh1;
  	mesh.material.uniforms[key].value = value;
  	mesh.material.uniforms[key].needsUpdate = true;
 
- 	mesh = this.mesh2;
+ 	mesh = this.scalar_field_mesh2;
+ 	mesh.material.uniforms[key].value = value;
+ 	mesh.material.uniforms[key].needsUpdate = true;
+
+ 	mesh = this.vector_field_mesh;
  	mesh.material.uniforms[key].value = value;
  	mesh.material.uniforms[key].needsUpdate = true;
 }
@@ -140,14 +175,19 @@ PlateView.prototype.uniform = function(key, value){
 PlateView.prototype.destroy = function() {
 	var mesh;
 
-	this.scene.remove(this.mesh1);
-	this.scene.remove(this.mesh2);
+	this.scene.remove(this.scalar_field_mesh1);
+	this.scene.remove(this.scalar_field_mesh2);
+	this.scene.remove(this.vector_field_mesh);
 
-	mesh = this.mesh1;
+	mesh = this.scalar_field_mesh1;
 	mesh.material.dispose();
 	mesh.geometry.dispose();
 
-	mesh = this.mesh2;
+	mesh = this.scalar_field_mesh2;
+	mesh.material.dispose();
+	mesh.geometry.dispose();
+
+	mesh = this.vector_field_mesh;
 	mesh.material.dispose();
 	mesh.geometry.dispose();
 };
