@@ -28,11 +28,22 @@ layout: default
 </details>
 <details>
 <summary>How does it work?</summary>
-<p>It's largely a geometry problem. You start out with any number of roughly equidistant points on a sphere representing samples of the crust. Points can be arranged in any way so long as they're equidistant. The points are divided up by plates. Plates are randomly assigned a speed and what's known as an euler pole. Every plate in real life has these. From there on, plate motion is simulated in timesteps of given length.</p>
-<p>Points that overlap represent subduction - the denser of the two sinks below the other, just like in real life. There, it continues to move for a predefined distance until its said to detach from the lithosphere. In other words, it's destroyed from memory. The predefined distance a point travels before destruction effectively describes the width of mountains on a planet. I've wanted to incorporate models to describe this distance mechanistically, but all research I've read so far suggest this would require adding way more parameters that could not go on to be used elsewhere, and I do want to keep this thing parsimonious.</p>
-<p>As opposed to overlaps, gaps forming between points represent rifting. Here, a new point is formed that represents ocean crust. Each plate stores its points in a grid matching the planet's original configuration, and points are added to this grid - this way, points don't start looking messy as time progresses.</p>
-<p>There's other submodels, but this is the gist of it. For more information, you can check the <a href="http://sourceforge.net/p/pytectonics/wiki/Home/">wiki</a> of an earlier project which tectonics.js has been based on. As time goes on, the project is expected to develop its own wiki on github </p>
+<p>The model tracks the age of oceanic crust. </p>
+<img src="images/version2/age.png"></img>
+<p>Age is used to calculate density (since oceanic crust gets dense with age). </p>
+<img src="images/version2/density.png"></img>
+<p>When crust density exceeds a threshold, the crust is marked for subduction. </p>
+<img src="images/version2/subductability.png"></img>
+<p>Velocity lines are calculated so that crust will be drawn towards subducting regions. This is done using vector calculus. </p>
+<img src="images/version2/subductability_smoothed_gradient.png"></img>
+<p>An image segmentation algorithm identifies regions where velocity lines are similar. These regions represent plates in the real world. </p>
+<img src="images/version2/flood_fill8.png"></img>
+<p>The weighted average of the velocity lines become the velocity of the plate.</p>
+<img src="images/version2/average_velocity.png"></img>
+<p>Because plates are drawn towards subducting regions, overlaps will occur in the subducting regions. When subducting crust overlaps, it gets deleted from the model. </p>
+<p>Gaps also form as the crust moves. New crust is created to fill these gaps. This new crust represents a planet's mid ocean ridges. </p>
 </details>
+
 <details>
 <summary>Can I build off your model?</summary>
 <p>Yes. Tectonics.js is licensed under version 2.0 of the <a href="http://creativecommons.org/licenses/by-nc/2.0/">Creative Commons Non-Commercial Attribution license</a>. This means you are free to share and modify the model in most any way you please. There are however two restrictions: </p>
