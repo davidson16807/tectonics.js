@@ -100,7 +100,7 @@ VectorRaster.min_id = function (input) {
   return max_id;
 };
 
-VectorRaster.max_id = function (field) {
+VectorRaster.max_id = function (input) {
   var max = -Infinity;
   var max_id = 0;
   var mag = 0;
