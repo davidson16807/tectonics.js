@@ -50,6 +50,13 @@ function Grid(template, options){
 	}
 	neighbor_lookup = neighbor_lookup.map(function(set) { return set.toArray(); });
 	this.neighbor_lookup = neighbor_lookup;
+
+	var neighbor_count = Uint8Raster(this);
+	for (var i = 0, li=neighbor_lookup.length; i<li; i++) { 
+		neighbor_count[i] = neighbor_lookup[i];
+	}
+	this.neighbor_count = neighbor_count;
+
 	// an "edge" in graph theory is a unordered set of vertices 
 	// i.e. this.edges does not contain duplicate neighbor pairs 
 	// e.g. it includes [1,2] but not [2,1] 
@@ -93,6 +100,7 @@ function Grid(template, options){
 	this.arrow_lookup = arrow_lookup; 
 	
 	this.pos_arrow_differential = VectorField.arrow_differential(this.pos); 
+	this.average_distance = Float32Dataset.average(VectorField.magnitude(this.pos_arrow_differential));
 
 	//Feed locations into a kdtree for O(logN) lookups
 	points = [];
