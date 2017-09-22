@@ -131,8 +131,9 @@ var World = (function() {
 		var height_difference = erosion;
 		var water_height = scratch;
 		ScalarField.max_scalar(displacement, sealevel, water_height);
-		ScalarField.laplacian(water_height, height_difference);
+		ScalarField.average_difference(water_height, height_difference);
 		ScalarField.mult_scalar(height_difference, precipitation * timestep * erosiveFactor, erosion)
+		// console.log(Float32Dataset.average(erosion));
 		return erosion;
 	}
 	function merge_plates_to_master(plates, master) {

@@ -325,7 +325,8 @@ ScalarField.gradient = function (field, result) {
   }
   return result;
 };
-ScalarField.laplacian = function (field, result) {
+
+ScalarField.average_difference = function (field, result) {
   result = result || Float32Raster(field.grid);
   var arrows = field.grid.arrows;
   var arrow
@@ -338,6 +339,45 @@ ScalarField.laplacian = function (field, result) {
   for (var i = 0, li = neighbor_lookup.length; i < li; i++) {
       neighbor_count = neighbor_lookup[i].length;
       result[i] /= neighbor_count;
+  }
+  return result;
+};
+ 
+// This function computes the laplacian of a surface. 
+// The laplacian can be thought of as a metric for the average difference across space. 
+// By applying it to a surface, we mean it's only done for the 2d surface of a 3d object. 
+// We assume all vertices in field.grid are equidistant on a surface. 
+// 
+// Let ε be a small number and eᵢ be a component of the basis (e.g. [1,0] or [0,1]) 
+// ∇²f = ∇ (     f(x+εeᵢ)     -     f(x-εeᵢ))      /  2ε 
+// ∇²f =   ((f(x+2εeᵢ) -f(x)) - (f(x) -f(x-2εeᵢ))) / (2ε)² 
+// ∇²f =   ( f(x+2εeᵢ) -f(x) 
+//           f(x-2εeᵢ) -f(x)) ) / (2ε)² 
+//   So for 2d: 
+// ∇²f =   ( f(x+2ε, y) - f(x,y) 
+//           f(x, y+2ε) - f(x,y) 
+//           f(x-2ε, y) - f(x,y) 
+//           f(x, y-2ε) - f(x,y) ) / (2ε)² 
+//  
+// Think of it as taking the sum of differences between the center point and four neighbors. 
+// That means if we have an arbitrary number of neighbors,  
+// we find the average difference and multiply it by 4. 
+ScalarField.laplacian = function (field, result) { 
+  result = result || Float32Raster(field.grid);
+  for (var i = 0; i < result.length; i++) { 
+    result[i] = -4*field[i]; 
+  } 
+  var arrows = field.grid.arrows;
+  var arrow;
+  for (var i=0, li=arrows.length; i<li; ++i) {
+      arrow = arrows[i];
+      result[arrow[0]] += field[arrow[1]]; 
+  }
+  var neighbor_count = field.grid.neighbor_count; 
+  var average_distance = field.grid.average_distance * field.grid.average_distance; 
+  for (var i = 0, li = neighbor_count.length; i < li; i++) { 
+      result[i] *= 4; 
+      result[i] /= neighbor_count[i] * average_distance; 
   }
   return result;
 };
