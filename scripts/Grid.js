@@ -53,7 +53,7 @@ function Grid(template, options){
 
 	var neighbor_count = Uint8Raster(this);
 	for (var i = 0, li=neighbor_lookup.length; i<li; i++) { 
-		neighbor_count[i] = neighbor_lookup[i];
+		neighbor_count[i] = neighbor_lookup[i].length;
 	}
 	this.neighbor_count = neighbor_count;
 
