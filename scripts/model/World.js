@@ -28,90 +28,6 @@ var World = (function() {
 	World.prototype = Object.create(Crust);
 	World.prototype.constructor = World;
 
-	function get_thickness(sima, sial, thickness) {
-		return ScalarField.add_field(sima, sial, thickness);
-	}
-	function get_density(sima, sial, age, density) {
-		density = density || Float32Raster(sima.grid);
-
-		// NOTE: density does double duty for performance reasons
-		var fraction_of_lifetime = density;
-		var sima_density = density;
-
-		Float32RasterInterpolation.smoothstep	(0, 250, age, 						fraction_of_lifetime);
-		Float32RasterInterpolation.lerp			(2890, 3300, fraction_of_lifetime, 	density);
-
-	    for (var i = 0, li = density.length; i < li; i++) {
-	    	density[i] = sima[i] + sial[i] > 0? (sima[i] * sima_density[i] + sial[i] * 2700) / (sima[i] + sial[i]) : 2890;
-	    }
-	    return density;
-	}
-
-	function get_subductability(density, subductability) {
-		var subductability_transition_factor = 1/100;
-		var exp = Math.exp;
-		for (var i=0, li=subductability.length; i<li; ++i) {
-			subductability[i] = 2 / (1 + exp( -(density[i] - 3000) * subductability_transition_factor )) - 1;
-		}
-		return subductability;
-	}
-
-	function get_asthenosphere_velocity(subductability, output, scratch1, scratch2) {
-		output = output || Float32Raster(subductability.grid);
-		scratch1 = scratch1 || Float32Raster(subductability.grid);
-		scratch2 = scratch2 || Float32Raster(subductability.grid);
-
-		var diffused_subductability = scratch1;
-		var scratch = scratch2;
-		var smoothing_iterations =  15;
-		Float32Raster.copy(subductability, diffused_subductability);
-		var diffuse = ScalarField.diffusion_by_constant
-		for (var i=0; i<smoothing_iterations; ++i) {
-			diffuse(diffused_subductability, 1, diffused_subductability, scratch);
-			// ScalarField.laplacian(diffused_subductability, laplacian);
-			// ScalarField.add_field(diffused_subductability, laplacian, diffused_subductability);
-		}
-
-		ScalarField.gradient(diffused_subductability, output);
-
-		return output;
-	}
-	function get_angular_velocity(velocity, pos, output) {
-		return VectorField.cross_vector_field(velocity, pos, output);
-	}
-	// gets displacement using an isostatic model
-	function get_displacement(thickness, density, mantleDensity, displacement) {
-	 	var thickness_i, rootDepth;
-	 	var inverse_mantle_density = 1 / mantleDensity;
-	 	for(var i=0, li = displacement.length; i<li; i++){
-	 		//Calculates elevation as a function of crust density. 
-	 		//This was chosen as it only requires knowledge of crust density and thickness,  
-	 		//which are relatively well known. 
-	 		thickness_i = thickness[i]; 
-	 		displacement[i] = thickness_i - thickness_i * density[i] * inverse_mantle_density;
-	 	}
-	 	return displacement;
-	}
-	function get_erosion(displacement, sealevel, timestep, erosion, scratch){
-		erosion = erosion || Float32Raster(displacement.grid);
-		scratch = scratch || Float32Raster(displacement.grid);
-
-		var precipitation = 7.8e5;
-		// ^^^ measured in meters of rain per million years
-		// global land average from wikipedia
-		var erosiveFactor = 1.8e-7; 
-		// ^^^ the rate of erosion per the rate of rainfall in that place
-		// measured in fraction of height difference per meters of rain per million years
-
-		// NOTE: erosion array does double duty for performance reasons
-		var height_difference = erosion;
-		var water_height = scratch;
-		ScalarField.max_scalar(displacement, sealevel, water_height);
-		ScalarField.average_difference(water_height, height_difference);
-		ScalarField.mult_scalar(height_difference, precipitation * timestep * erosiveFactor, erosion)
-		// console.log(Float32Dataset.average(erosion));
-		return erosion;
-	}
 	function merge_plates_to_master(plates, master) {
 
 		var UINT8_NULL = 255;
@@ -271,7 +187,7 @@ var World = (function() {
 		var globalized_accretion = Float32Raster(grid); 
 		Float32Raster.fill(globalized_accretion, 0);
 		var globalized_erosion = Float32Raster(grid);
-		get_erosion(displacement, world.SEALEVEL, timestep, globalized_erosion, globalized_scalar_field);
+		TectonicsModeling.get_erosion(displacement, world.SEALEVEL, timestep, globalized_erosion, globalized_scalar_field);
 
 		var RIFT = true;
 		var DETACH = true;
@@ -408,7 +324,7 @@ var World = (function() {
 
 	World.prototype.resetPlates = function() {
 		// get plate masks from image segmentation of asthenosphere velocity
-		get_asthenosphere_velocity(this.subductability, this.asthenosphere_velocity);
+		TectonicsModeling.get_asthenosphere_velocity(this.subductability, this.asthenosphere_velocity);
 		var angular_velocity = VectorField.cross_vector_field(this.asthenosphere_velocity, this.grid.pos);
 		var plate_masks = VectorImageAnalysis.image_segmentation(angular_velocity, this.grid);
 		this.plates = [];
@@ -445,10 +361,10 @@ var World = (function() {
 	}
 	// update fields that are derived from others
 	function update_calculated_fields(crust) {
-		get_thickness(crust.sima, crust.sial, crust.thickness);
-		get_density(crust.sima, crust.sial, crust.age, crust.density);
-		get_subductability(crust.density, crust.subductability);
-		get_displacement(crust.thickness, crust.density, world.mantleDensity, crust.displacement);
+		TectonicsModeling.get_thickness(crust.sima, crust.sial, crust.thickness);
+		TectonicsModeling.get_density(crust.sima, crust.sial, crust.age, crust.density);
+		TectonicsModeling.get_subductability(crust.density, crust.subductability);
+		TectonicsModeling.get_displacement(crust.thickness, crust.density, world.mantleDensity, crust.displacement);
 	}
 	World.prototype.slow_update = function(timestep){
 		if (timestep === 0) {
@@ -457,7 +373,7 @@ var World = (function() {
 
 		update_calculated_fields(this);
 
-		//get_asthenosphere_velocity(this.subductability, this.asthenosphere_velocity);
+		//TectonicsModeling.get_asthenosphere_velocity(this.subductability, this.asthenosphere_velocity);
 		
 		this.supercontinentCycle.update(timestep);
 
