@@ -85,7 +85,6 @@ function VoronoiSphere(pointsNum, kdtree){
 				raster[raster_id] = nearest_id;
 			}
 		}
-		test = raster;
 	}
 	this.sides = sides;
 	this.xy = xy;
