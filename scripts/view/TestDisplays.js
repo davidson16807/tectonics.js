@@ -7,15 +7,12 @@ var testDisplays = {};
 testDisplays.ids 	= new ScalarHeatDisplay( { 
 		scaling: true,
 		getField: function (plate) {
-			var ids = new Float32Array(plate.age.length);
-			for (var i=0, li=ids.length; i<li; ++i) {
-			    ids[i] = i;
-			}
-			return ids;
+			return ids.grid.vertex_ids;
 		} 
 	} );
 
 // test for voronoi diagram used by grid.getNearestIds
+// should look just like testDisplays.ids
 testDisplays.voronoi_ids	= new ScalarHeatDisplay( {
 		scaling: true,
 		getField: function (plate) {
@@ -24,6 +21,7 @@ testDisplays.voronoi_ids	= new ScalarHeatDisplay( {
 	} );
 
 // test for get_nearest_values - does it reconstruct the ids field after rotation?
+// should look just like testDisplays.ids, but rotated
 testDisplays.id_rotated 	= new ScalarHeatDisplay( {
 		scaling: true,
 		getField: function (plate) {
@@ -38,22 +36,6 @@ testDisplays.id_rotated 	= new ScalarHeatDisplay( {
 			return Float32Raster.get_nearest_values(ids, pos);
 		} 
  	} );
-
-// test for ScalarField.diffusion_by_constant()
-testDisplays.subductability_smoothed = new ScalarHeatDisplay(  { 
-		min: '1.', max: '0.',
-		getField: function (plate, output, scratch, iterations) {
-			iterations = iterations || 15;
-
-			Float32Raster.copy(plate.subductability, output);
-			for (var i=0; i<iterations; ++i) {
-				ScalarField.diffusion_by_constant(output, 1, output, scratch);
-				// ScalarField.laplacian(output, laplacian);
-				// ScalarField.add_field(output, laplacian, output);
-			}
-			return output;
-		}
-	} );
 
 // test for Float32Raster.get_nearest_values()
 // rotates the age field by a certain amount
@@ -88,9 +70,14 @@ testDisplays.single_plate = new ScalarHeatDisplay( { min: '0.', max: '1.',
 // test for the flood fill algorithm, AKA "magic wand select"
 testDisplays.flood_fill1 = new ScalarHeatDisplay(  { 
 		min: '1.', max: '0.',
-		getField: function (plate) {
-			var field = getSubductabilitySmoothed(plate);
-			var gradient = ScalarField.gradient(field);
+		getField: function (plate, flood_fill, scratch1) {
+			// scratch represents pressure
+			var pressure = scratch1;
+			// flood_fill does double duty for performance reasons
+			var scratch2 = flood_fill;
+			var field = TectonicsModeling.get_asthenosphere_pressure(plate.subductability, pressure, scratch2);
+
+			var gradient = ScalarField.gradient(pressure);
 			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
 			var gradient = angular_velocity;
 			
@@ -105,8 +92,13 @@ testDisplays.flood_fill1 = new ScalarHeatDisplay(  {
 // test for binary morphology
 testDisplays.flood_fill_white_top_hat = new ScalarHeatDisplay(  { 
 		min: '1.', max: '0.',
-		getField: function (plate) {
-			var field = getSubductabilitySmoothed(plate);
+		getField: function (plate, flood_fill, scratch1) {
+			// scratch represents pressure
+			var pressure = scratch1;
+			// flood_fill does double duty for performance reasons
+			var scratch2 = flood_fill;
+			var field = TectonicsModeling.get_asthenosphere_pressure(plate.subductability, pressure, scratch2);
+
 			var gradient = ScalarField.gradient(field);
 			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
 			var gradient = angular_velocity;
@@ -123,8 +115,12 @@ testDisplays.flood_fill_white_top_hat = new ScalarHeatDisplay(  {
 // test for binary morphology
 testDisplays.flood_fill_black_top_hat = new ScalarHeatDisplay(  { 
 		min: '1.', max: '0.',
-		getField: function (plate) {
-			var field = getSubductabilitySmoothed(plate);
+		getField: function (plate, flood_fill, scratch1) {
+			// scratch represents pressure
+			var pressure = scratch1;
+			// flood_fill does double duty for performance reasons
+			var scratch2 = flood_fill;
+			var field = TectonicsModeling.get_asthenosphere_pressure(plate.subductability, pressure, scratch2);
 			var gradient = ScalarField.gradient(field);
 			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
 			var gradient = angular_velocity;
@@ -141,8 +137,12 @@ testDisplays.flood_fill_black_top_hat = new ScalarHeatDisplay(  {
 // test for binary morphology
 testDisplays.flood_fill_dilation = new ScalarHeatDisplay(  { 
 		min: '1.', max: '0.',
-		getField: function (plate) {
-			var field = getSubductabilitySmoothed(plate);
+		getField: function (plate, flood_fill, scratch1) {
+			// scratch represents pressure
+			var pressure = scratch1;
+			// flood_fill does double duty for performance reasons
+			var scratch2 = flood_fill;
+			var field = TectonicsModeling.get_asthenosphere_pressure(plate.subductability, pressure, scratch2);
 			var gradient = ScalarField.gradient(field);
 			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
 			var gradient = angular_velocity;
@@ -159,8 +159,12 @@ testDisplays.flood_fill_dilation = new ScalarHeatDisplay(  {
 // test for binary morphology
 testDisplays.flood_fill_erosion = new ScalarHeatDisplay(  { 
 		min: '1.', max: '0.',
-		getField: function (plate) {
-			var field = getSubductabilitySmoothed(plate);
+		getField: function (plate, flood_fill, scratch1) {
+			// scratch represents pressure
+			var pressure = scratch1;
+			// flood_fill does double duty for performance reasons
+			var scratch2 = flood_fill;
+			var field = TectonicsModeling.get_asthenosphere_pressure(plate.subductability, pressure, scratch2);
 			var gradient = ScalarField.gradient(field);
 			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
 			var gradient = angular_velocity;
@@ -177,8 +181,12 @@ testDisplays.flood_fill_erosion = new ScalarHeatDisplay(  {
 // test for binary morphology
 testDisplays.flood_fill_opening = new ScalarHeatDisplay(  { 
 		min: '1.', max: '0.',
-		getField: function (plate) {
-			var field = getSubductabilitySmoothed(plate);
+		getField: function (plate, flood_fill, scratch1) {
+			// scratch represents pressure
+			var pressure = scratch1;
+			// flood_fill does double duty for performance reasons
+			var scratch2 = flood_fill;
+			var field = TectonicsModeling.get_asthenosphere_pressure(plate.subductability, pressure, scratch2);
 			var gradient = ScalarField.gradient(field);
 			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
 			var gradient = angular_velocity;
@@ -195,8 +203,12 @@ testDisplays.flood_fill_opening = new ScalarHeatDisplay(  {
 // test for binary morphology
 testDisplays.flood_fill_closing = new ScalarHeatDisplay(  { 
 		min: '1.', max: '0.',
-		getField: function (plate) {
-			var field = getSubductabilitySmoothed(plate);
+		getField: function (plate, flood_fill, scratch1) {
+			// scratch represents pressure
+			var pressure = scratch1;
+			// flood_fill does double duty for performance reasons
+			var scratch2 = flood_fill;
+			var field = TectonicsModeling.get_asthenosphere_pressure(plate.subductability, pressure, scratch2);
 			var gradient = ScalarField.gradient(field);
 			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
 			var gradient = angular_velocity;
@@ -214,15 +226,20 @@ testDisplays.flood_fill_closing = new ScalarHeatDisplay(  {
 // test for image segmentation algorithm
 testDisplays.flood_fill8 = new ScalarHeatDisplay(  { 
 		min: '10.', max: '0.',
-		getField: function (crust) {
-			var gradient = crust.asthenosphere_velocity;
+		getField: function (crust, flood_fill, scratch1) {
+			// scratch represents pressure
+			var pressure = scratch1;
+			// flood_fill does double duty for performance reasons
+			var scratch2 = flood_fill;
+			var field = TectonicsModeling.get_asthenosphere_pressure(crust.subductability, pressure, scratch2);
+			var gradient = ScalarField.gradient(field);
 			var angular_velocity = VectorField.cross_vector_field(gradient, crust.grid.pos);
 			var gradient = angular_velocity;
 			var crust_fields = VectorImageAnalysis.image_segmentation(gradient, crust.grid);
 			
 			var crust_field_sum = Float32Raster(crust.grid, 0);
 			for (var i=0; i<crust_fields.length; ++i) {
-				ScalarField.add_field_term(crust_field_sum, crust_fields[i], i+1, crust_field_sum);
+				ScalarField.add_scalar_term(crust_field_sum, crust_fields[i], i+1, crust_field_sum);
 			}
 			return crust_field_sum;
 		}
@@ -240,23 +257,28 @@ vectorDisplays.test = new DataFrameVectorDisplay( {
 		} 
 	} );
 
+vectorDisplays.asthenosphere_velocity = new DataFrameVectorDisplay( { 
+		getField: function (crust, flood_fill, scratch1) {
+			// scratch represents pressure
+			var pressure = scratch1;
+			// flood_fill does double duty for performance reasons
+			var scratch2 = flood_fill;
+			var field = TectonicsModeling.get_asthenosphere_pressure(crust.subductability, pressure, scratch2);
+			return plate.asthenosphere_velocity;
+		} 
+	} );
+
 vectorDisplays.asthenosphere_angular_velocity = new DataFrameVectorDisplay( { 
-		getField: function (plate) {
-			var field = getSubductabilitySmoothed(plate)
+		getField: function (crust, flood_fill, scratch1) {
+			// scratch represents pressure
+			var pressure = scratch1;
+			// flood_fill does double duty for performance reasons
+			var scratch2 = flood_fill;
+			var field = TectonicsModeling.get_asthenosphere_pressure(crust.subductability, pressure, scratch2);
 			var gradient = ScalarField.gradient(field);
 			var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
 			// laplacian = VectorField.divergence(gradient);
 			return angular_velocity;
-		} 
-	} );
-
-vectorDisplays.asthenosphere_velocity = new DataFrameVectorDisplay( { 
-		getField: function (plate) {
-			// var field = getSubductabilitySmoothed(plate)
-			// var gradient = ScalarField.gradient(field);
-			// var angular_velocity = VectorField.cross_vector_field(gradient, plate.grid.pos);
-			// laplacian = VectorField.divergence(gradient);
-			return plate.asthenosphere_velocity;
 		} 
 	} );
 

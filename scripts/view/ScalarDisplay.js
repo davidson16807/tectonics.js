@@ -209,3 +209,9 @@ scalarDisplays.subductability = new ScalarHeatDisplay(  {
 			return crust.subductability;
 		}
 	} );
+scalarDisplays.pressure = new ScalarHeatDisplay(  { 
+		min: '1.', max: '0.',
+		getField: function (plate, output, scratch, iterations) {
+			return TectonicsModeling.get_asthenosphere_pressure(plate.subductability, output, scratch);
+		}
+	} );
