@@ -10,7 +10,7 @@ BinaryMorphology.to_binary = function(field, threshold, result) {
 	result = result || Uint8Raster(field.grid);
 	threshold = threshold || 0;
 
-	TYPE_CHECK_ARRAY(field, Uint8Array);
+	ASSERT_IS_ARRAY(field, Uint8Array);
 	for (var i=0, li=field.length; i<li; ++i) {
 	    result[i] = (field[i] > threshold)? 1:0;
 	}
@@ -19,8 +19,8 @@ BinaryMorphology.to_binary = function(field, threshold, result) {
 }
 BinaryMorphology.to_float = function(field, result) {
 	result = result || new Float32Raster(field.grid);
-	TYPE_CHECK_ARRAY(field, Uint8Array)
-	TYPE_CHECK_ARRAY(result, Float32Array)
+	ASSERT_IS_ARRAY(field, Uint8Array)
+	ASSERT_IS_ARRAY(result, Float32Array)
 	for (var i=0, li=field.length; i<li; ++i) {
 	    result[i] = (field[i]===1)? 1:0;
 	}
@@ -29,8 +29,8 @@ BinaryMorphology.to_float = function(field, result) {
 }
 BinaryMorphology.copy = function(field, result) {
 	result = result || Uint8Raster(field.grid);
-	TYPE_CHECK_ARRAY(field, Uint8Array);
-	TYPE_CHECK_ARRAY(result, Uint8Array);
+	ASSERT_IS_ARRAY(field, Uint8Array);
+	ASSERT_IS_ARRAY(result, Uint8Array);
 	for (var i=0, li=field.length; i<li; ++i) {
 	    result[i] = field[i];
 	}
@@ -38,13 +38,13 @@ BinaryMorphology.copy = function(field, result) {
 }
 
 BinaryMorphology.universal = function(field) {
-	TYPE_CHECK_ARRAY(field, Uint8Array);
+	ASSERT_IS_ARRAY(field, Uint8Array);
 	for (var i=0, li=field.length; i<li; ++i) {
 	    field[i] = 1;
 	}
 }
 BinaryMorphology.empty = function(field) {
-	TYPE_CHECK_ARRAY(field, Uint8Array);
+	ASSERT_IS_ARRAY(field, Uint8Array);
 	for (var i=0, li=field.length; i<li; ++i) {
 	    field[i] = 0;
 	}
@@ -53,9 +53,9 @@ BinaryMorphology.empty = function(field) {
 BinaryMorphology.union = function(field1, field2, result) {
 
 	result = result || Uint8Raster(field1.grid);
-	TYPE_CHECK_ARRAY(field1, Uint8Array);
-	TYPE_CHECK_ARRAY(field2, Uint8Array);
-	TYPE_CHECK_ARRAY(result, Uint8Array);
+	ASSERT_IS_ARRAY(field1, Uint8Array);
+	ASSERT_IS_ARRAY(field2, Uint8Array);
+	ASSERT_IS_ARRAY(result, Uint8Array);
 	for (var i=0, li=field1.length; i<li; ++i) {
 	    result[i] = (field1[i]===1 || field2[i]===1)? 1:0;
 	}
@@ -65,9 +65,9 @@ BinaryMorphology.union = function(field1, field2, result) {
 
 BinaryMorphology.intersection = function(field1, field2, result) {
 	result = result || Uint8Raster(field1.grid);
-	TYPE_CHECK_ARRAY(field1, Uint8Array);
-	TYPE_CHECK_ARRAY(field2, Uint8Array);
-	TYPE_CHECK_ARRAY(result, Uint8Array);
+	ASSERT_IS_ARRAY(field1, Uint8Array);
+	ASSERT_IS_ARRAY(field2, Uint8Array);
+	ASSERT_IS_ARRAY(result, Uint8Array);
 
 	for (var i=0, li=field1.length; i<li; ++i) {
 	    result[i] = (field1[i]===1 && field2[i]===1)? 1:0;
@@ -78,9 +78,9 @@ BinaryMorphology.intersection = function(field1, field2, result) {
 
 BinaryMorphology.difference = function(field1, field2, result) {
 	result = result || Uint8Raster(field1.grid);
-	TYPE_CHECK_ARRAY(field1, Uint8Array);
-	TYPE_CHECK_ARRAY(field2, Uint8Array);
-	TYPE_CHECK_ARRAY(result, Uint8Array);
+	ASSERT_IS_ARRAY(field1, Uint8Array);
+	ASSERT_IS_ARRAY(field2, Uint8Array);
+	ASSERT_IS_ARRAY(result, Uint8Array);
 
 
 	for (var i=0, li=field1.length; i<li; ++i) {
@@ -92,8 +92,8 @@ BinaryMorphology.difference = function(field1, field2, result) {
 
 BinaryMorphology.negation = function(field, result) {
 	result = result || Uint8Raster(field.grid);
-	TYPE_CHECK_ARRAY(field, Uint8Array);
-	TYPE_CHECK_ARRAY(result, Uint8Array);
+	ASSERT_IS_ARRAY(field, Uint8Array);
+	ASSERT_IS_ARRAY(result, Uint8Array);
 
 
 	for (var i=0, li=field.length; i<li; ++i) {
@@ -106,8 +106,8 @@ BinaryMorphology.negation = function(field, result) {
 BinaryMorphology.dilation = function(field, radius, result) {
 	radius = radius || 1;
 	result = result || Uint8Raster(field.grid);
-	TYPE_CHECK_ARRAY(field, Uint8Array);
-	TYPE_CHECK_ARRAY(result, Uint8Array);
+	ASSERT_IS_ARRAY(field, Uint8Array);
+	ASSERT_IS_ARRAY(result, Uint8Array);
 	var buffer1 = radius % 2 == 1? result: 				Uint8Raster(field.grid);
 	var buffer2 = radius % 2 == 0? result: 				BinaryMorphology.copy(field);
 	var temp = buffer1;
@@ -135,8 +135,8 @@ BinaryMorphology.dilation = function(field, radius, result) {
 BinaryMorphology.erosion = function(field, radius, result) {
 	radius = radius || 1;
 	result = result || Uint8Raster(field.grid);
-	TYPE_CHECK_ARRAY(field, Uint8Array);
-	TYPE_CHECK_ARRAY(result, Uint8Array);
+	ASSERT_IS_ARRAY(field, Uint8Array);
+	ASSERT_IS_ARRAY(result, Uint8Array);
 	var buffer1 = radius % 2 == 1? result: 				Uint8Raster(field.grid);
 	var buffer2 = radius % 2 == 0? result: 				BinaryMorphology.copy(field);
 	var temp = buffer1;
@@ -185,8 +185,8 @@ BinaryMorphology.black_top_hat = function(field, radius) {
 // Its name eludes to the "margin" concept within the html box model
 BinaryMorphology.margin = function(field, radius, result) {
 	result = result || Uint8Raster(field.grid);
-	TYPE_CHECK_ARRAY(field, Uint8Array);
-	TYPE_CHECK_ARRAY(result, Uint8Array);
+	ASSERT_IS_ARRAY(field, Uint8Array);
+	ASSERT_IS_ARRAY(result, Uint8Array);
 	if(field === result) throw ("cannot use same input for 'field' and 'result' - margin() is not an in-place function")
 	var dilation = result; // reuse result raster for performance reasons
 	BinaryMorphology.dilation(field, radius, dilation);
@@ -197,8 +197,8 @@ BinaryMorphology.margin = function(field, radius, result) {
 // Its name eludes to the "padding" concept within the html box model
 BinaryMorphology.padding = function(field, radius, result) {
 	result = result || Uint8Raster(field.grid);
-	TYPE_CHECK_ARRAY(field, Uint8Array);
-	TYPE_CHECK_ARRAY(result, Uint8Array);
+	ASSERT_IS_ARRAY(field, Uint8Array);
+	ASSERT_IS_ARRAY(result, Uint8Array);
 	if(field === result) throw ("cannot use same input for 'field' and 'result' - padding() is not an in-place function")
 	var erosion = result; // reuse result raster for performance reasons
 	BinaryMorphology.erosion(field, radius, erosion);

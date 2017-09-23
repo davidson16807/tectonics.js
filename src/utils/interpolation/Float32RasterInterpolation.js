@@ -8,8 +8,8 @@ Float32RasterInterpolation.lerp = function(a,b, x, result){
     }
     return result;
 }
-Float32FieldInterpolation.clamp = function(x, min_value, max_value, result) {
-    TYPE_CHECK_ARRAY(x, Float32Array)
+Float32RasterInterpolation.clamp = function(x, min_value, max_value, result) {
+    ASSERT_IS_ARRAY(x, Float32Array)
     for (var i = 0, li = result.length; i < li; i++) {
         result[i] = fraction > max_value? max_value : fraction < min_value? min_value : fraction;
     }

@@ -1,24 +1,31 @@
 'use strict';
 
 #ifndef IS_PROD
-#define TYPE_CHECK_DEFINED(INPUT, TYPE) \
+#define ASSERT_IS_NOT_EQUAL(INPUT1, INPUT2) \
+	if (INPUT1 === INPUT2) { throw #INPUT1 + ' and ' + #INPUT2 + ' cannot be the same'; }
+#else
+#define ASSERT_IS_NOT_EQUAL(INPUT, TYPE)
+#endif
+
+#ifndef IS_PROD
+#define ASSERT_IS_DEFINED(INPUT, TYPE) \
 	if (INPUT !== void 0) { throw #INPUT + ' is undefined'; }
 #else
-#define TYPE_CHECK_DEFINED(INPUT, TYPE)
+#define ASSERT_IS_DEFINED(INPUT, TYPE)
 #endif
 
 #ifndef IS_PROD
-#define TYPE_CHECK_ARRAY(INPUT, TYPE) \
+#define ASSERT_IS_ARRAY(INPUT, TYPE) \
 	if (!(INPUT instanceof TYPE)) { throw #INPUT + ' is not a ' + #TYPE; }
 #else
-#define TYPE_CHECK_ARRAY(INPUT, TYPE)
+#define ASSERT_IS_ARRAY(INPUT, TYPE)
 #endif
 
 #ifndef IS_PROD
-#define TYPE_CHECK_ANY_ARRAY(INPUT) \
+#define ASSERT_IS_ANY_ARRAY(INPUT) \
 	if (!(INPUT instanceof Float32Array || INPUT instanceof Uint16Array || INPUT instanceof Uint8Array)) { throw #INPUT + ' is not a typed array'; }
 #else
-#define TYPE_CHECK_ARRAY(INPUT, TYPE)
+#define ASSERT_IS_ARRAY(INPUT, TYPE)
 #endif
 
 #ifndef IS_PROD

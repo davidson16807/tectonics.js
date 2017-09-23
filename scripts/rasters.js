@@ -551,6 +551,7 @@ ScalarField.gradient = function (field, result) {
 };
 ScalarField.average_difference = function (field, result) {
   result = result || Float32Raster(field.grid);
+  if (field === result) { throw "field" + ' and ' + "result" + ' cannot be the same'; }
   var arrows = field.grid.arrows;
   var arrow
   for (var i=0, li=arrows.length; i<li; ++i) {
@@ -586,6 +587,7 @@ ScalarField.average_difference = function (field, result) {
 // we find the average difference and multiply it by 4. 
 ScalarField.laplacian = function (field, result) {
   result = result || Float32Raster(field.grid);
+  if (field === result) { throw "field" + ' and ' + "result" + ' cannot be the same'; }
   for (var i = 0; i < result.length; i++) {
     result[i] = -4*field[i];
   }
@@ -625,7 +627,7 @@ ScalarField.diffusion_by_constant = function (input, constant, output, scratch) 
   return output;
 };
 // iterates through time using the diffusion equation
-ScalarField.diffusion_by_field = function (input, field, output) {
+ScalarField.diffusion_by_field = function (input, field, output, scratch) {
   output = output || Float32Raster(input.grid);
   var laplacian = scratch || Float32Raster(input.grid);
   var arrows = input.grid.arrows;
@@ -2031,10 +2033,19 @@ VectorRaster.get_nearest_values = function(value_field, pos_field, result) {
  }
  return result;
 }
+// The FieldInterpolation namespaces provide operations commonly used in interpolation for computer graphics
+// All input are raster objects, e.g. VectorRaster or Float32Raster
 var Float32RasterInterpolation = {};
 Float32RasterInterpolation.lerp = function(a,b, x, result){
     for (var i = 0, li = result.length; i < li; i++) {
   result[i] = a + x[i]*(b-a);
+    }
+    return result;
+}
+Float32RasterInterpolation.clamp = function(x, min_value, max_value, result) {
+    TYPE_CHECK_ARRAY(x, Float32Array)
+    for (var i = 0, li = result.length; i < li; i++) {
+        result[i] = fraction > max_value? max_value : fraction < min_value? min_value : fraction;
     }
     return result;
 }
@@ -2047,7 +2058,7 @@ Float32RasterInterpolation.smoothstep = function(edge0, edge1, x, result) {
  }
  return result;
 }
-//Float32RasterInterpolation.heaviside_approximation = function(x, k) {
+//Float32RasterInterpolation.smooth_heaviside = function(x, k) {
 //	return 2 / (1 + Math.exp(-k*x)) - 1;
 //	return x>0? 1: 0; 
 //}
