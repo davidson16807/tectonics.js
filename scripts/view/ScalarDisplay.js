@@ -118,6 +118,11 @@ ScalarHeatDisplay.prototype.updateAttributes = function(geometry, plate) {
 		geometry.attributes.scalar.needsUpdate = true;
 	}
 }
+scalarDisplays.debug 	= new ScalarHeatDisplay( { min: '0.', max: '7.', 
+		getField: function (crust) {
+			return crust.plate_masks;
+		} 	
+	} );
 scalarDisplays.temp 	= new ScalarHeatDisplay( { min: '-25.', max: '30.', scalar: 'temp', } );
 scalarDisplays.precip = new ScalarHeatDisplay( { min: '2000.', max: '0.', scalar: 'precip', } );
 scalarDisplays.age 	= new ScalarHeatDisplay( { min: '250.', max: '0.',  
@@ -210,29 +215,3 @@ scalarDisplays.satellite = new RealisticDisplay('canopy');
 scalarDisplays.soil = new RealisticDisplay('soil');
 scalarDisplays.bedrock = new RealisticDisplay('bedrock');
 
-
-function DebugDisplay(shader_return_value) {
-	this._fragmentShader = fragmentShaders.debug;
-}
-DebugDisplay.prototype.addTo = function(mesh) {
-	mesh.material.fragmentShader = this._fragmentShader; 
-	mesh.material.needsUpdate = true;
-	mesh.material.uniforms.color.value =  new THREE.Color(Math.random() * 0xffffff);
-	mesh.material.uniforms.color.needsUpdate = true;
-};
-DebugDisplay.prototype.removeFrom = function(mesh) {
-	
-};
-DebugDisplay.prototype.updateAttributes = function(geometry, plate) {
-	var geometry, displacement, scalar;
-	displacement = geometry.attributes.displacement.array;
-	var buffer_array_to_cell = view.grid.buffer_array_to_cell;
-	var buffer_array_index; 
-	var displacement_model = plate.displacement; 
-	for(var j=0, lj = displacement.length; j<lj; j++){ 
-		buffer_array_index = buffer_array_to_cell[j];
-		displacement[j] = displacement_model[buffer_array_index]; 
-	}
-	geometry.attributes.displacement.needsUpdate = true;
-}
-scalarDisplays.debug = new DebugDisplay();
