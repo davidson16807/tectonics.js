@@ -73,7 +73,7 @@ ScalarField.lte_field = function (field1, field2, result) {
 ScalarField.min_scalar = function (field1, scalar, result) {
   result = result || Float32Raster(field1.grid);
   ASSERT_IS_ARRAY(field1, Float32Array)
-  TYPE_CHECK(scalar, number)
+  ASSERT_IS_TYPE(scalar, number)
   ASSERT_IS_ARRAY(result, Float32Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] < scalar? field1[i] : scalar;
@@ -83,7 +83,7 @@ ScalarField.min_scalar = function (field1, scalar, result) {
 ScalarField.max_scalar = function (field1, scalar, result) {
   result = result || Float32Raster(field1.grid);
   ASSERT_IS_ARRAY(field1, Float32Array)
-  TYPE_CHECK(scalar, number)
+  ASSERT_IS_TYPE(scalar, number)
   ASSERT_IS_ARRAY(result, Float32Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] > scalar? field1[i] : scalar;
@@ -93,7 +93,7 @@ ScalarField.max_scalar = function (field1, scalar, result) {
 ScalarField.gt_scalar = function (field1, scalar, result) {
   result = result || Uint8Raster(field1.grid);
   ASSERT_IS_ARRAY(field1, Float32Array)
-  TYPE_CHECK(scalar, number)
+  ASSERT_IS_TYPE(scalar, number)
   ASSERT_IS_ARRAY(result, Uint8Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] > scalar? 1:0;
@@ -103,7 +103,7 @@ ScalarField.gt_scalar = function (field1, scalar, result) {
 ScalarField.gte_scalar = function (field1, scalar, result) {
   result = result || Uint8Raster(field1.grid);
   ASSERT_IS_ARRAY(field1, Float32Array)
-  TYPE_CHECK(scalar, number)
+  ASSERT_IS_TYPE(scalar, number)
   ASSERT_IS_ARRAY(result, Uint8Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] >= scalar? 1:0;
@@ -113,7 +113,7 @@ ScalarField.gte_scalar = function (field1, scalar, result) {
 ScalarField.lt_scalar = function (field1, scalar, result) {
   result = result || Uint8Raster(field1.grid);
   ASSERT_IS_ARRAY(field1, Float32Array)
-  TYPE_CHECK(scalar, number)
+  ASSERT_IS_TYPE(scalar, number)
   ASSERT_IS_ARRAY(result, Uint8Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] < scalar? 1:0;
@@ -123,7 +123,7 @@ ScalarField.lt_scalar = function (field1, scalar, result) {
 ScalarField.lte_scalar = function (field1, scalar, result) {
   result = result || Uint8Raster(field1.grid);
   ASSERT_IS_ARRAY(field1, Float32Array)
-  TYPE_CHECK(scalar, number)
+  ASSERT_IS_TYPE(scalar, number)
   ASSERT_IS_ARRAY(result, Uint8Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] <= scalar? 1:0;
@@ -146,7 +146,7 @@ ScalarField.add_scalar_term = function (field1, field2, scalar, result) {
   result = result || Float32Raster(field1.grid);
   ASSERT_IS_ARRAY(field1, Float32Array)
   ASSERT_IS_ANY_ARRAY(field2) 
-  TYPE_CHECK(scalar, number)
+  ASSERT_IS_TYPE(scalar, number)
   ASSERT_IS_ARRAY(result, Float32Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] + scalar * field2[i];
@@ -188,7 +188,7 @@ ScalarField.sub_scalar_term = function (field1, field2, scalar, result) {
   result = result || Float32Raster(field1.grid);
   ASSERT_IS_ARRAY(field1, Float32Array)
   ASSERT_IS_ANY_ARRAY(field2) 
-  TYPE_CHECK(scalar, number)
+  ASSERT_IS_TYPE(scalar, number)
   ASSERT_IS_ARRAY(result, Float32Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field1[i] - scalar * field2[i];
@@ -218,7 +218,7 @@ ScalarField.div_field = function (field1, field2, result) {
 ScalarField.add_scalar = function (field, scalar, result) {
   result = result || Float32Raster(field.grid);
   ASSERT_IS_ARRAY(field, Float32Array)
-  TYPE_CHECK(scalar, number)
+  ASSERT_IS_TYPE(scalar, number)
   ASSERT_IS_ARRAY(result, Float32Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field[i] + scalar;
@@ -228,7 +228,7 @@ ScalarField.add_scalar = function (field, scalar, result) {
 ScalarField.sub_scalar = function (field, scalar, result) {
   result = result || Float32Raster(field.grid);
   ASSERT_IS_ARRAY(field, Float32Array)
-  TYPE_CHECK(scalar, number)
+  ASSERT_IS_TYPE(scalar, number)
   ASSERT_IS_ARRAY(result, Float32Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field[i] - scalar;
@@ -238,7 +238,7 @@ ScalarField.sub_scalar = function (field, scalar, result) {
 ScalarField.mult_scalar = function (field, scalar, result) {
   result = result || Float32Raster(field.grid);
   ASSERT_IS_ARRAY(field, Float32Array)
-  TYPE_CHECK(scalar, number)
+  ASSERT_IS_TYPE(scalar, number)
   ASSERT_IS_ARRAY(result, Float32Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = field[i] * scalar;
@@ -247,6 +247,8 @@ ScalarField.mult_scalar = function (field, scalar, result) {
 };
 ScalarField.mult_vector = function (scalar, vector, result) {
   result = result || VectorRaster(scalar.grid);
+
+  ASSERT_IS_ARRAY(field, Float32Array)
 
   var ix = vector.x;
   var iy = vector.y;
@@ -263,15 +265,23 @@ ScalarField.mult_vector = function (scalar, vector, result) {
   }
   return result;
 };
-ScalarField.div_scalar = function (field, scalar, result) {
+ScalarField.div_scalar = function (field, constant, result) {
   result = result || Float32Raster(field.grid);
+
+  ASSERT_IS_ARRAY(field, Float32Array)
+  ASSERT_IS_TYPE(constant, number)
+  ASSERT_IS_ARRAY(result, Float32Array)
+  
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field[i] / scalar;
+    result[i] = field[i] / constant;
   }
   return result;
 };
 ScalarField.differential = function (field, result) {
   result = result || VectorRaster(field.grid);
+
+  ASSERT_IS_ARRAY(field, Float32Array)
+  
   var arrows = field.grid.arrows;
   var arrow = [];
   var from = 0, to = 0;
@@ -298,6 +308,9 @@ ScalarField.differential = function (field, result) {
 };
 ScalarField.gradient = function (field, result) {
   result = result || VectorRaster(field.grid);
+
+  ASSERT_IS_ARRAY(field, Float32Array)
+
   var dfield = 0;
   var dpos = field.grid.pos_arrow_differential;
   var dx = dpos.x;
@@ -329,6 +342,8 @@ ScalarField.gradient = function (field, result) {
 ScalarField.average_difference = function (field, result) {
   result = result || Float32Raster(field.grid);
 
+  ASSERT_IS_ARRAY(field, Float32Array)
+  ASSERT_IS_ARRAY(result, Float32Array)
   ASSERT_IS_NOT_EQUAL(field, result)
 
   var arrows = field.grid.arrows;
@@ -368,6 +383,8 @@ ScalarField.average_difference = function (field, result) {
 ScalarField.laplacian = function (field, result) { 
   result = result || Float32Raster(field.grid);
 
+  ASSERT_IS_ARRAY(field, Float32Array)
+  ASSERT_IS_ARRAY(result, Float32Array)
   ASSERT_IS_NOT_EQUAL(field, result)
 
   for (var i = 0; i < result.length; i++) { 
@@ -390,7 +407,14 @@ ScalarField.laplacian = function (field, result) {
 // iterates through time using the diffusion equation
 ScalarField.diffusion_by_constant = function (input, constant, output, scratch) {
   output = output || Float32Raster(input.grid);
-  var laplacian = scratch || Float32Raster(input.grid);
+  scratch = scratch || Float32Raster(input.grid);
+
+  ASSERT_IS_ARRAY(input, Float32Array)
+  ASSERT_IS_ARRAY(output, Float32Array)
+  ASSERT_IS_ARRAY(scratch, Float32Array)
+  ASSERT_IS_TYPE(constant, number)
+
+  var laplacian = scratch;
   var arrows = input.grid.arrows;
   var arrow
   for (var i=0, li=arrows.length; i<li; ++i) {
@@ -411,7 +435,14 @@ ScalarField.diffusion_by_constant = function (input, constant, output, scratch) 
 // iterates through time using the diffusion equation
 ScalarField.diffusion_by_field = function (input, field, output, scratch) {
   output = output || Float32Raster(input.grid);
-  var laplacian = scratch || Float32Raster(input.grid);
+  scratch = scratch || Float32Raster(input.grid);
+
+  ASSERT_IS_ARRAY(input, Float32Array)
+  ASSERT_IS_ARRAY(field, Float32Array)
+  ASSERT_IS_ARRAY(output, Float32Array)
+  ASSERT_IS_ARRAY(scratch, Float32Array)
+
+  var laplacian = scratch;
   var arrows = input.grid.arrows;
   var arrow
   for (var i=0, li=arrows.length; i<li; ++i) {

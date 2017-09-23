@@ -474,6 +474,7 @@ ScalarField.mult_scalar = function (field, scalar, result) {
 };
 ScalarField.mult_vector = function (scalar, vector, result) {
   result = result || VectorRaster(scalar.grid);
+  if (!(field instanceof Float32Array)) { throw "field" + ' is not a ' + "Float32Array"; }
   var ix = vector.x;
   var iy = vector.y;
   var iz = vector.z;
@@ -487,15 +488,19 @@ ScalarField.mult_vector = function (scalar, vector, result) {
   }
   return result;
 };
-ScalarField.div_scalar = function (field, scalar, result) {
+ScalarField.div_scalar = function (field, constant, result) {
   result = result || Float32Raster(field.grid);
+  if (!(field instanceof Float32Array)) { throw "field" + ' is not a ' + "Float32Array"; }
+  if (!(typeof constant == "number")) { throw "constant" + ' is not a ' + "number"; }
+  if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field[i] / scalar;
+    result[i] = field[i] / constant;
   }
   return result;
 };
 ScalarField.differential = function (field, result) {
   result = result || VectorRaster(field.grid);
+  if (!(field instanceof Float32Array)) { throw "field" + ' is not a ' + "Float32Array"; }
   var arrows = field.grid.arrows;
   var arrow = [];
   var from = 0, to = 0;
@@ -522,6 +527,7 @@ ScalarField.differential = function (field, result) {
 };
 ScalarField.gradient = function (field, result) {
   result = result || VectorRaster(field.grid);
+  if (!(field instanceof Float32Array)) { throw "field" + ' is not a ' + "Float32Array"; }
   var dfield = 0;
   var dpos = field.grid.pos_arrow_differential;
   var dx = dpos.x;
@@ -551,6 +557,8 @@ ScalarField.gradient = function (field, result) {
 };
 ScalarField.average_difference = function (field, result) {
   result = result || Float32Raster(field.grid);
+  if (!(field instanceof Float32Array)) { throw "field" + ' is not a ' + "Float32Array"; }
+  if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   if (field === result) { throw "field" + ' and ' + "result" + ' cannot be the same'; }
   var arrows = field.grid.arrows;
   var arrow
@@ -587,6 +595,8 @@ ScalarField.average_difference = function (field, result) {
 // we find the average difference and multiply it by 4. 
 ScalarField.laplacian = function (field, result) {
   result = result || Float32Raster(field.grid);
+  if (!(field instanceof Float32Array)) { throw "field" + ' is not a ' + "Float32Array"; }
+  if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   if (field === result) { throw "field" + ' and ' + "result" + ' cannot be the same'; }
   for (var i = 0; i < result.length; i++) {
     result[i] = -4*field[i];
@@ -608,7 +618,12 @@ ScalarField.laplacian = function (field, result) {
 // iterates through time using the diffusion equation
 ScalarField.diffusion_by_constant = function (input, constant, output, scratch) {
   output = output || Float32Raster(input.grid);
-  var laplacian = scratch || Float32Raster(input.grid);
+  scratch = scratch || Float32Raster(input.grid);
+  if (!(input instanceof Float32Array)) { throw "input" + ' is not a ' + "Float32Array"; }
+  if (!(output instanceof Float32Array)) { throw "output" + ' is not a ' + "Float32Array"; }
+  if (!(scratch instanceof Float32Array)) { throw "scratch" + ' is not a ' + "Float32Array"; }
+  if (!(typeof constant == "number")) { throw "constant" + ' is not a ' + "number"; }
+  var laplacian = scratch;
   var arrows = input.grid.arrows;
   var arrow
   for (var i=0, li=arrows.length; i<li; ++i) {
@@ -629,7 +644,12 @@ ScalarField.diffusion_by_constant = function (input, constant, output, scratch) 
 // iterates through time using the diffusion equation
 ScalarField.diffusion_by_field = function (input, field, output, scratch) {
   output = output || Float32Raster(input.grid);
-  var laplacian = scratch || Float32Raster(input.grid);
+  scratch = scratch || Float32Raster(input.grid);
+  if (!(input instanceof Float32Array)) { throw "input" + ' is not a ' + "Float32Array"; }
+  if (!(field instanceof Float32Array)) { throw "field" + ' is not a ' + "Float32Array"; }
+  if (!(output instanceof Float32Array)) { throw "output" + ' is not a ' + "Float32Array"; }
+  if (!(scratch instanceof Float32Array)) { throw "scratch" + ' is not a ' + "Float32Array"; }
+  var laplacian = scratch;
   var arrows = input.grid.arrows;
   var arrow
   for (var i=0, li=arrows.length; i<li; ++i) {
@@ -2043,7 +2063,7 @@ Float32RasterInterpolation.lerp = function(a,b, x, result){
     return result;
 }
 Float32RasterInterpolation.clamp = function(x, min_value, max_value, result) {
-    TYPE_CHECK_ARRAY(x, Float32Array)
+    if (!(x instanceof Float32Array)) { throw "x" + ' is not a ' + "Float32Array"; }
     for (var i = 0, li = result.length; i < li; i++) {
         result[i] = fraction > max_value? max_value : fraction < min_value? min_value : fraction;
     }

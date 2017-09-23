@@ -29,10 +29,10 @@
 #endif
 
 #ifndef IS_PROD
-#define TYPE_CHECK(INPUT, TYPE) \
+#define ASSERT_IS_TYPE(INPUT, TYPE) \
 	if (!(typeof INPUT == #TYPE)) { throw #INPUT + ' is not a ' + #TYPE; }
 #else
-#define TYPE_CHECK(INPUT, TYPE)
+#define ASSERT_IS_TYPE(INPUT, TYPE)
 #endif
 
 #include "src/utils/datasets/Float32Dataset.js"
