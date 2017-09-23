@@ -324,7 +324,8 @@ var World = (function() {
 
 	World.prototype.resetPlates = function() {
 		// get plate masks from image segmentation of asthenosphere velocity
-		TectonicsModeling.get_asthenosphere_velocity(this.subductability, this.asthenosphere_velocity);
+		var pressure = TectonicsModeling.get_asthenosphere_pressure(this.subductability);
+		TectonicsModeling.get_asthenosphere_velocity(pressure, this.asthenosphere_velocity);
 		var angular_velocity = VectorField.cross_vector_field(this.asthenosphere_velocity, this.grid.pos);
 		var plate_masks = VectorImageAnalysis.image_segmentation(angular_velocity, this.grid);
 		this.plates = [];

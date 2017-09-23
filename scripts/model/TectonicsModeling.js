@@ -29,28 +29,31 @@ TectonicsModeling.get_subductability = function(density, subductability) {
 	return subductability;
 }
 
-TectonicsModeling.get_asthenosphere_velocity = function(subductability, output, scratch1, scratch2) {
-	output = output || Float32Raster(subductability.grid);
-	scratch1 = scratch1 || Float32Raster(subductability.grid);
-	scratch2 = scratch2 || Float32Raster(subductability.grid);
+// gets surface pressure of the asthenosphere by smoothing a field representing subductability
+TectonicsModeling.get_asthenosphere_pressure = function(subductability, pressure, scratch) {
+	pressure = pressure || Float32Raster(subductability.grid);
+	scratch = scratch || Float32Raster(subductability.grid);
 
-	var diffused_subductability = scratch1;
-	var scratch = scratch2;
+	var diffuse = ScalarField.diffusion_by_constant;
+
 	var smoothing_iterations =  15;
-	Float32Raster.copy(subductability, diffused_subductability);
-	var diffuse = ScalarField.diffusion_by_constant
+	Float32Raster.copy(subductability, pressure);
 	for (var i=0; i<smoothing_iterations; ++i) {
-		diffuse(diffused_subductability, 1, diffused_subductability, scratch);
-		// ScalarField.laplacian(diffused_subductability, laplacian);
-		// ScalarField.add_field(diffused_subductability, laplacian, diffused_subductability);
+		diffuse(pressure, 1, pressure, scratch);
 	}
-
-	ScalarField.gradient(diffused_subductability, output);
-
-	return output;
+	return pressure;
 }
-TectonicsModeling.get_angular_velocity = function(velocity, pos, output) {
-	return VectorField.cross_vector_field(velocity, pos, output);
+
+// gets surface velocity of the asthenosphere as the gradient of pressure
+TectonicsModeling.get_asthenosphere_velocity = function(pressure, velocity) {
+	velocity = velocity || VectorRaster(subductability.grid);
+	ScalarField.gradient(pressure, velocity);
+	return velocity;
+}
+
+// gets angular velocity of the asthenosphere as the cross product of velocity and position
+TectonicsModeling.get_angular_velocity = function(velocity, pos, angular_velocity) {
+	return VectorField.cross_vector_field(velocity, pos, angular_velocity);
 }
 // gets displacement using an isostatic model
 TectonicsModeling.get_displacement = function(thickness, density, mantleDensity, displacement) {
