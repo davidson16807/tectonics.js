@@ -161,8 +161,8 @@ ScalarHeatDisplay.prototype.updateAttributes = function(geometry, plate) {
 	}
 }
 scalarDisplays.plates 	= new ScalarHeatDisplay( { min: '0.', max: '7.', 
-		getField: function (crust) {
-			return crust.plate_masks;
+		getField: function (world) {
+			return world.plate_masks;
 		} 	
 	} );
 scalarDisplays.plate_count 	= new ScalarHeatDisplay( { min: '0.', max: '3.',  
@@ -174,33 +174,33 @@ scalarDisplays.plate_count 	= new ScalarHeatDisplay( { min: '0.', max: '3.',
 scalarDisplays.temp 	= new ScalarHeatDisplay( { min: '-25.', max: '30.', scalar: 'temp', } );
 scalarDisplays.precip = new ScalarHeatDisplay( { min: '2000.', max: '0.', scalar: 'precip', } );
 scalarDisplays.age 	= new ScalarHeatDisplay( { min: '250.', max: '0.',  
-		getField: function (plate) {
-			return plate.age;
+		getField: function (crust) {
+			return crust.age;
 		} 
 	} );
 scalarDisplays.sima 	= new ScalarHeatDisplay( { min: '6000.', max: '70000.',  
-		getField: function (plate) {
-			return plate.sima;
+		getField: function (crust) {
+			return crust.sima;
 		} 
 	} );
 scalarDisplays.sial 	= new ScalarHeatDisplay( { min: '6000.', max: '70000.',  
-		getField: function (plate) {
-			return plate.sial;
+		getField: function (crust) {
+			return crust.sial;
 		} 
 	} );
 scalarDisplays.thickness 	= new ScalarHeatDisplay( { min: '6000.', max: '70000.',  
-		getField: function (plate) {
-			return plate.thickness;
+		getField: function (crust) {
+			return crust.thickness;
 		} 
 	} );
 scalarDisplays.density 	= new ScalarHeatDisplay( { min: '2700.', max: '3300.',  
-		getField: function (plate) {
-			return plate.density;
+		getField: function (crust) {
+			return crust.density;
 		} 
 	} );
 scalarDisplays.displacement 	= new ScalarHeatDisplay( { min: '3682.', max: '12000.',  
-		getField: function (plate) {
-			return plate.displacement;
+		getField: function (crust) {
+			return crust.displacement;
 		}
 	} );
 scalarDisplays.subductability = new ScalarHeatDisplay(  { 
@@ -211,7 +211,7 @@ scalarDisplays.subductability = new ScalarHeatDisplay(  {
 	} );
 scalarDisplays.pressure = new ScalarHeatDisplay(  { 
 		min: '1.', max: '0.',
-		getField: function (plate, output, scratch, iterations) {
-			return TectonicsModeling.get_asthenosphere_pressure(plate.subductability, output, scratch);
+		getField: function (crust, output, scratch, iterations) {
+			return TectonicsModeling.get_asthenosphere_pressure(crust.subductability, output, scratch);
 		}
 	} );
