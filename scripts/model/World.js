@@ -28,31 +28,6 @@ var World = (function() {
 	World.prototype = Object.create(Crust);
 	World.prototype.constructor = World;
 
-
-	var subduction_min_age_threshold = 150;
-	var subduction_max_age_threshold = 200;
-	var subductability_transition_factor = 1/100;
-
-	function lerp(a,b, x, result){
-	    for (var i = 0, li = result.length; i < li; i++) {
-			result[i] = a + x[i]*(b-a);
-	    }
-	    return result;
-	}
-	function smoothstep (edge0, edge1, x, result) {
-		var fraction;
-		var inverse_edge_distance = 1 / (edge1 - edge0);
-	    for (var i = 0, li = result.length; i < li; i++) {
-			fraction = (x[i] - edge0) * inverse_edge_distance;
-			result[i] = fraction > 1.0? 1.0 : fraction < 0.0? 0.0 : fraction;
-		}
-		return result;
-	}
-	function heaviside_approximation(x, k) {
-		return 2 / (1 + Math.exp(-k*x)) - 1;
-		return x>0? 1: 0; 
-	}
-
 	function get_thickness(sima, sial, thickness) {
 		return ScalarField.add_field(sima, sial, thickness);
 	}
@@ -63,8 +38,8 @@ var World = (function() {
 		var fraction_of_lifetime = density;
 		var sima_density = density;
 
-		smoothstep	(0, 250, age, 						fraction_of_lifetime);
-		lerp		(2890, 3300, fraction_of_lifetime, 	density);
+		Float32RasterInterpolation.smoothstep	(0, 250, age, 						fraction_of_lifetime);
+		Float32RasterInterpolation.lerp			(2890, 3300, fraction_of_lifetime, 	density);
 
 	    for (var i = 0, li = density.length; i < li; i++) {
 	    	density[i] = sima[i] + sial[i] > 0? (sima[i] * sima_density[i] + sial[i] * 2700) / (sima[i] + sial[i]) : 2890;
@@ -73,6 +48,7 @@ var World = (function() {
 	}
 
 	function get_subductability(density, subductability) {
+		var subductability_transition_factor = 1/100;
 		var exp = Math.exp;
 		for (var i=0, li=subductability.length; i<li; ++i) {
 			subductability[i] = 2 / (1 + exp( -(density[i] - 3000) * subductability_transition_factor )) - 1;

@@ -48,5 +48,6 @@
 #include "src/utils/rasters/Uint8Raster.js"
 #include "src/utils/rasters/VectorRaster.js"
 
+#include "src/utils/interpolation/Float32RasterInterpolation.js"
 #include "src/utils/image-analysis/VectorImageAnalysis.js"
 #include "src/utils/morphology/BinaryMorphology.js"
