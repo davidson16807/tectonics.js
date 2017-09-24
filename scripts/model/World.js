@@ -15,8 +15,6 @@ var World = (function() {
 		this.subductability = Float32Raster(this.grid);
 		this.plate_masks = Uint8Raster(this.grid);
 		this.plate_count = Uint8Raster(this.grid);
-		this.is_rifting = Uint8Raster(this.grid);
-		this.is_detaching = Uint8Raster(this.grid);
 		this.asthenosphere_velocity = VectorRaster(this.grid);
 
 		// this.radius = parameters['radius'] || 6367;
@@ -40,8 +38,6 @@ var World = (function() {
 		Crust.fill(master, new RockColumn({ density: master.ocean.density }));
 		fill_ui8(master.plate_masks, UINT8_NULL);
 		fill_ui8(master.plate_count, 0);
-		fill_ui8(master.is_rifting, 0);
-		fill_ui8(master.is_detaching, 0);
 
 	  	var plate; 
 		
