@@ -47,12 +47,12 @@ VectorRaster.FromVectors = function(vectors, grid) {
 	return result;
 }
 
-VectorRaster.copy = function(input, output) {
-  var output = output || VectorRaster(input.grid);
+VectorRaster.copy = function(vector_raster, output) {
+  var output = output || VectorRaster(vector_raster.grid);
 
-  var ix = input.x;
-  var iy = input.y;
-  var iz = input.z;
+  var ix = vector_raster.x;
+  var iy = vector_raster.y;
+  var iz = vector_raster.z;
 
   var ox = output.x;
   var oy = output.y;
@@ -83,13 +83,13 @@ VectorRaster.fill = function (value, output) {
   return output;
 };
 
-VectorRaster.min_id = function (input) {
+VectorRaster.min_id = function (vector_raster) {
   var max = Infinity;
   var max_id = 0;
   var mag = 0;
-  var ix = input.x;
-  var iy = input.y;
-  var iz = input.z;
+  var ix = vector_raster.x;
+  var iy = vector_raster.y;
+  var iz = vector_raster.z;
   for (var i = 0, li = ix.length; i < li; i++) {
     mag = ix[i] * ix[i] + iy[i] * iy[i] + iz[i] * iz[i];
     if (mag < max) {
@@ -100,13 +100,13 @@ VectorRaster.min_id = function (input) {
   return max_id;
 };
 
-VectorRaster.max_id = function (input) {
+VectorRaster.max_id = function (vector_raster) {
   var max = -Infinity;
   var max_id = 0;
   var mag = 0;
-  var ix = input.x;
-  var iy = input.y;
-  var iz = input.z;
+  var ix = vector_raster.x;
+  var iy = vector_raster.y;
+  var iz = vector_raster.z;
   for (var i = 0, li = ix.length; i < li; i++) {
     mag = ix[i] * ix[i] + iy[i] * iy[i] + iz[i] * iz[i];
     if (mag > max) {

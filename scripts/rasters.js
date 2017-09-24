@@ -298,6 +298,16 @@ ScalarField.lte_field = function (scalar_field1, scalar_field2, result) {
   }
   return result;
 };
+ScalarField.eq_field = function (scalar_field1, scalar_field2, result) {
+  result = result || Uint8Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Float32Array)) { throw "scalar_field1" + ' is not a ' + "Float32Array"; }
+  if (!(scalar_field2 instanceof Float32Array)) { throw "scalar_field2" + ' is not a ' + "Float32Array"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = scalar_field1[i] == scalar_field2[i]? 1:0;
+  }
+  return result;
+};
 ScalarField.min_scalar = function (scalar_field1, scalar, result) {
   result = result || Float32Raster(scalar_field1.grid);
   if (!(scalar_field1 instanceof Float32Array)) { throw "scalar_field1" + ' is not a ' + "Float32Array"; }
@@ -355,6 +365,16 @@ ScalarField.lte_scalar = function (scalar_field1, scalar, result) {
   if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] <= scalar? 1:0;
+  }
+  return result;
+};
+ScalarField.eq_scalar = function (scalar_field1, scalar, result) {
+  result = result || Uint8Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Float32Array)) { throw "scalar_field1" + ' is not a ' + "Float32Array"; }
+  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = scalar_field1[i] == scalar? 1:0;
   }
   return result;
 };
@@ -673,400 +693,568 @@ ScalarField.diffusion_by_field = function (scalar_field1, scalar_field2, result,
 // The Uint16Field namespace provides operations over mathematical scalar fields.
 // All fields are represented by raster objects, e.g. VectorRaster or Uint16Raster
 var Uint16Field = {};
-Uint16Field.min_field = function (field1, field2, result) {
-  result = result || Uint16Raster(field1.grid);
+Uint16Field.min_field = function (scalar_field1, scalar_field2, result) {
+  result = result || Uint16Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint16Array)) { throw "scalar_field1" + ' is not a ' + "Uint16Array"; }
+  if (!(scalar_field2 instanceof Uint16Array)) { throw "scalar_field2" + ' is not a ' + "Uint16Array"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] < field2[i]? field1[i] : field2[i];
+    result[i] = scalar_field1[i] < scalar_field2[i]? scalar_field1[i] : scalar_field2[i];
   }
   return result;
 };
-Uint16Field.max_field = function (field1, field2, result) {
-  result = result || Uint16Raster(field1.grid);
+Uint16Field.max_field = function (scalar_field1, scalar_field2, result) {
+  result = result || Uint16Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint16Array)) { throw "scalar_field1" + ' is not a ' + "Uint16Array"; }
+  if (!(scalar_field2 instanceof Uint16Array)) { throw "scalar_field2" + ' is not a ' + "Uint16Array"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] > field2[i]? field1[i] : field2[i];
+    result[i] = scalar_field1[i] > scalar_field2[i]? scalar_field1[i] : scalar_field2[i];
   }
   return result;
 };
-Uint16Field.gt_field = function (field1, field2, result) {
-  result = result || Uint8Raster(field1.grid);
+Uint16Field.gt_field = function (scalar_field1, scalar_field2, result) {
+  result = result || Uint8Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint16Array)) { throw "scalar_field1" + ' is not a ' + "Uint16Array"; }
+  if (!(scalar_field2 instanceof Uint16Array)) { throw "scalar_field2" + ' is not a ' + "Uint16Array"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] > field2[i]? 1:0;
+    result[i] = scalar_field1[i] > scalar_field2[i]? 1:0;
   }
   return result;
 };
-Uint16Field.gte_field = function (field1, field2, result) {
-  result = result || Uint8Raster(field1.grid);
+Uint16Field.gte_field = function (scalar_field1, scalar_field2, result) {
+  result = result || Uint8Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint16Array)) { throw "scalar_field1" + ' is not a ' + "Uint16Array"; }
+  if (!(scalar_field2 instanceof Uint16Array)) { throw "scalar_field2" + ' is not a ' + "Uint16Array"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] >= field2[i]? 1:0;
+    result[i] = scalar_field1[i] >= scalar_field2[i]? 1:0;
   }
   return result;
 };
-Uint16Field.lt_field = function (field1, field2, result) {
-  result = result || Uint8Raster(field1.grid);
+Uint16Field.lt_field = function (scalar_field1, scalar_field2, result) {
+  result = result || Uint8Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint16Array)) { throw "scalar_field1" + ' is not a ' + "Uint16Array"; }
+  if (!(scalar_field2 instanceof Uint16Array)) { throw "scalar_field2" + ' is not a ' + "Uint16Array"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] < field2[i]? 1:0;
+    result[i] = scalar_field1[i] < scalar_field2[i]? 1:0;
   }
   return result;
 };
-Uint16Field.lte_field = function (field1, field2, result) {
-  result = result || Uint8Raster(field1.grid);
+Uint16Field.lte_field = function (scalar_field1, scalar_field2, result) {
+  result = result || Uint8Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint16Array)) { throw "scalar_field1" + ' is not a ' + "Uint16Array"; }
+  if (!(scalar_field2 instanceof Uint16Array)) { throw "scalar_field2" + ' is not a ' + "Uint16Array"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] <= field2[i]? 1:0;
+    result[i] = scalar_field1[i] <= scalar_field2[i]? 1:0;
   }
   return result;
 };
-Uint16Field.eq_field = function (field1, field2, result) {
-  result = result || Uint8Raster(field1.grid);
+Uint16Field.eq_field = function (scalar_field1, scalar_field2, result) {
+  result = result || Uint8Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint16Array)) { throw "scalar_field1" + ' is not a ' + "Uint16Array"; }
+  if (!(scalar_field2 instanceof Uint16Array)) { throw "scalar_field2" + ' is not a ' + "Uint16Array"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] == field2[i]? 1:0;
+    result[i] = scalar_field1[i] == scalar_field2[i]? 1:0;
   }
   return result;
 };
-Uint16Field.ne_field = function (field1, field2, result) {
-  result = result || Uint8Raster(field1.grid);
+Uint16Field.min_scalar = function (scalar_field1, scalar, result) {
+  result = result || Uint16Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint16Array)) { throw "scalar_field1" + ' is not a ' + "Uint16Array"; }
+  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (!(result instanceof Uint16Array)) { throw "result" + ' is not a ' + "Uint16Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] != field2[i]? 1:0;
+    result[i] = scalar_field1[i] < scalar? scalar_field1[i] : scalar;
   }
   return result;
 };
-Uint16Field.min_scalar = function (field1, scalar, result) {
-  result = result || Uint16Raster(field1.grid);
+Uint16Field.max_scalar = function (scalar_field1, scalar, result) {
+  result = result || Uint16Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint16Array)) { throw "scalar_field1" + ' is not a ' + "Uint16Array"; }
+  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (!(result instanceof Uint16Array)) { throw "result" + ' is not a ' + "Uint16Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] < scalar? field1[i] : scalar;
+    result[i] = scalar_field1[i] > scalar? scalar_field1[i] : scalar;
   }
   return result;
 };
-Uint16Field.max_scalar = function (field1, scalar, result) {
-  result = result || Uint16Raster(field1.grid);
+Uint16Field.gt_scalar = function (scalar_field1, scalar, result) {
+  result = result || Uint8Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint16Array)) { throw "scalar_field1" + ' is not a ' + "Uint16Array"; }
+  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] > scalar? field1[i] : scalar;
+    result[i] = scalar_field1[i] > scalar? 1:0;
   }
   return result;
 };
-Uint16Field.gt_scalar = function (field1, scalar, result) {
-  result = result || Uint8Raster(field1.grid);
+Uint16Field.gte_scalar = function (scalar_field1, scalar, result) {
+  result = result || Uint8Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint16Array)) { throw "scalar_field1" + ' is not a ' + "Uint16Array"; }
+  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] > scalar? 1:0;
+    result[i] = scalar_field1[i] >= scalar? 1:0;
   }
   return result;
 };
-Uint16Field.gte_scalar = function (field1, scalar, result) {
-  result = result || Uint8Raster(field1.grid);
+Uint16Field.lt_scalar = function (scalar_field1, scalar, result) {
+  result = result || Uint8Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint16Array)) { throw "scalar_field1" + ' is not a ' + "Uint16Array"; }
+  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] >= scalar? 1:0;
+    result[i] = scalar_field1[i] < scalar? 1:0;
   }
   return result;
 };
-Uint16Field.lt_scalar = function (field1, scalar, result) {
-  result = result || Uint8Raster(field1.grid);
+Uint16Field.lte_scalar = function (scalar_field1, scalar, result) {
+  result = result || Uint8Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint16Array)) { throw "scalar_field1" + ' is not a ' + "Uint16Array"; }
+  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] < scalar? 1:0;
+    result[i] = scalar_field1[i] <= scalar? 1:0;
   }
   return result;
 };
-Uint16Field.lte_scalar = function (field1, scalar, result) {
-  result = result || Uint8Raster(field1.grid);
+Uint16Field.eq_scalar = function (scalar_field1, scalar, result) {
+  result = result || Uint8Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint16Array)) { throw "scalar_field1" + ' is not a ' + "Uint16Array"; }
+  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] <= scalar? 1:0;
+    result[i] = scalar_field1[i] == scalar? 1:0;
   }
   return result;
 };
-Uint16Field.eq_scalar = function (field1, scalar, result) {
-  result = result || Uint16Field(field1.grid);
+Uint16Field.add_field_term = function (scalar_field1, scalar_field2, field3, result) {
+  result = result || Uint16Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint16Array)) { throw "scalar_field1" + ' is not a ' + "Uint16Array"; }
+  if (!(scalar_field2 instanceof Float32Array || scalar_field2 instanceof Uint16Array || scalar_field2 instanceof Uint8Array)) { throw "scalar_field2" + ' is not a typed array'; }
+  if (!(field3 instanceof Float32Array || field3 instanceof Uint16Array || field3 instanceof Uint8Array)) { throw "field3" + ' is not a typed array'; }
+  if (!(result instanceof Uint16Array)) { throw "result" + ' is not a ' + "Uint16Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] == scalar? 1:0;
+    result[i] = scalar_field1[i] + field3[i] * scalar_field2[i];
   }
   return result;
 };
-Uint16Field.ne_scalar = function (field1, scalar, result) {
-  result = result || Uint16Field(field1.grid);
+Uint16Field.add_scalar_term = function (scalar_field1, scalar_field2, scalar, result) {
+  result = result || Uint16Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint16Array)) { throw "scalar_field1" + ' is not a ' + "Uint16Array"; }
+  if (!(scalar_field2 instanceof Float32Array || scalar_field2 instanceof Uint16Array || scalar_field2 instanceof Uint8Array)) { throw "scalar_field2" + ' is not a typed array'; }
+  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (!(result instanceof Uint16Array)) { throw "result" + ' is not a ' + "Uint16Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] != scalar? 1:0;
+    result[i] = scalar_field1[i] + scalar * scalar_field2[i];
   }
   return result;
 };
-Uint16Field.add_field_term = function (field1, field2, field3, result) {
-  result = result || Uint16Raster(field1.grid);
+Uint16Field.add_field = function (scalar_field1, scalar_field2, result) {
+  result = result || Uint16Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint16Array)) { throw "scalar_field1" + ' is not a ' + "Uint16Array"; }
+  if (!(scalar_field2 instanceof Float32Array || scalar_field2 instanceof Uint16Array || scalar_field2 instanceof Uint8Array)) { throw "scalar_field2" + ' is not a typed array'; }
+  if (!(result instanceof Uint16Array)) { throw "result" + ' is not a ' + "Uint16Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] + field3[i] * field2[i];
+    result[i] = scalar_field1[i] + scalar_field2[i];
   }
   return result;
 };
-Uint16Field.add_scalar_term = function (field1, field2, scalar, result) {
-  result = result || Uint16Raster(field1.grid);
+Uint16Field.sub_field = function (scalar_field1, scalar_field2, result) {
+  result = result || Uint16Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint16Array)) { throw "scalar_field1" + ' is not a ' + "Uint16Array"; }
+  if (!(scalar_field2 instanceof Float32Array || scalar_field2 instanceof Uint16Array || scalar_field2 instanceof Uint8Array)) { throw "scalar_field2" + ' is not a typed array'; }
+  if (!(result instanceof Uint16Array)) { throw "result" + ' is not a ' + "Uint16Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] + scalar * field2[i];
+    result[i] = scalar_field1[i] - scalar_field2[i];
   }
   return result;
 };
-Uint16Field.add_field = function (field1, field2, result) {
-  result = result || Uint16Raster(field1.grid);
+Uint16Field.sub_field_term = function (scalar_field1, scalar_field2, field3, result) {
+  result = result || Uint16Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint16Array)) { throw "scalar_field1" + ' is not a ' + "Uint16Array"; }
+  if (!(scalar_field2 instanceof Float32Array || scalar_field2 instanceof Uint16Array || scalar_field2 instanceof Uint8Array)) { throw "scalar_field2" + ' is not a typed array'; }
+  if (!(field3 instanceof Float32Array || field3 instanceof Uint16Array || field3 instanceof Uint8Array)) { throw "field3" + ' is not a typed array'; }
+  if (!(result instanceof Uint16Array)) { throw "result" + ' is not a ' + "Uint16Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] + field2[i];
+    result[i] = scalar_field1[i] - field3[i] * scalar_field2[i];
   }
   return result;
 };
-Uint16Field.sub_field = function (field1, field2, result) {
-  result = result || Uint16Raster(field1.grid);
+Uint16Field.sub_scalar_term = function (scalar_field1, scalar_field2, scalar, result) {
+  result = result || Uint16Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint16Array)) { throw "scalar_field1" + ' is not a ' + "Uint16Array"; }
+  if (!(scalar_field2 instanceof Float32Array || scalar_field2 instanceof Uint16Array || scalar_field2 instanceof Uint8Array)) { throw "scalar_field2" + ' is not a typed array'; }
+  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (!(result instanceof Uint16Array)) { throw "result" + ' is not a ' + "Uint16Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] - field2[i];
+    result[i] = scalar_field1[i] - scalar * scalar_field2[i];
   }
   return result;
 };
-Uint16Field.mult_field = function (field1, field2, result) {
-  result = result || Uint16Raster(field1.grid);
+Uint16Field.mult_field = function (scalar_field1, scalar_field2, result) {
+  result = result || Uint16Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint16Array)) { throw "scalar_field1" + ' is not a ' + "Uint16Array"; }
+  if (!(scalar_field2 instanceof Float32Array || scalar_field2 instanceof Uint16Array || scalar_field2 instanceof Uint8Array)) { throw "scalar_field2" + ' is not a typed array'; }
+  if (!(result instanceof Uint16Array)) { throw "result" + ' is not a ' + "Uint16Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] * field2[i];
+    result[i] = scalar_field1[i] * scalar_field2[i];
   }
   return result;
 };
-Uint16Field.div_field = function (field1, field2, result) {
-  result = result || Uint16Raster(field1.grid);
+Uint16Field.div_field = function (scalar_field1, scalar_field2, result) {
+  result = result || Uint16Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint16Array)) { throw "scalar_field1" + ' is not a ' + "Uint16Array"; }
+  if (!(scalar_field2 instanceof Float32Array || scalar_field2 instanceof Uint16Array || scalar_field2 instanceof Uint8Array)) { throw "scalar_field2" + ' is not a typed array'; }
+  if (!(result instanceof Uint16Array)) { throw "result" + ' is not a ' + "Uint16Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] / field2[i];
+    result[i] = scalar_field1[i] / scalar_field2[i];
   }
   return result;
 };
-Uint16Field.add_scalar = function (field, scalar, result) {
-  result = result || Uint16Raster(field.grid);
+Uint16Field.add_scalar = function (scalar_field, scalar, result) {
+  result = result || Uint16Raster(scalar_field.grid);
+  if (!(scalar_field instanceof Uint16Array)) { throw "scalar_field" + ' is not a ' + "Uint16Array"; }
+  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (!(result instanceof Uint16Array)) { throw "result" + ' is not a ' + "Uint16Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field[i] + scalar;
+    result[i] = scalar_field[i] + scalar;
   }
   return result;
 };
-Uint16Field.sub_scalar = function (field, scalar, result) {
-  result = result || Uint16Raster(field.grid);
+Uint16Field.sub_scalar = function (scalar_field, scalar, result) {
+  result = result || Uint16Raster(scalar_field.grid);
+  if (!(scalar_field instanceof Uint16Array)) { throw "scalar_field" + ' is not a ' + "Uint16Array"; }
+  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (!(result instanceof Uint16Array)) { throw "result" + ' is not a ' + "Uint16Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field[i] - scalar;
+    result[i] = scalar_field[i] - scalar;
   }
   return result;
 };
-Uint16Field.mult_scalar = function (field, scalar, result) {
-  result = result || Uint16Raster(field.grid);
+Uint16Field.mult_scalar = function (scalar_field, scalar, result) {
+  result = result || Uint16Raster(scalar_field.grid);
+  if (!(scalar_field instanceof Uint16Array)) { throw "scalar_field" + ' is not a ' + "Uint16Array"; }
+  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (!(result instanceof Uint16Array)) { throw "result" + ' is not a ' + "Uint16Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field[i] * scalar;
+    result[i] = scalar_field[i] * scalar;
   }
   return result;
 };
-Uint16Field.mult_vector = function (scalar, vector, result) {
-  result = result || VectorRaster(scalar.grid);
+Uint16Field.div_scalar = function (scalar_field, scalar, result) {
+  result = result || Uint16Raster(scalar_field.grid);
+  if (!(scalar_field instanceof Uint16Array)) { throw "scalar_field" + ' is not a ' + "Uint16Array"; }
+  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (!(result instanceof Uint16Array)) { throw "result" + ' is not a ' + "Uint16Array"; }
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = scalar_field[i] / scalar;
+  }
+  return result;
+};
+Uint16Field.mult_vector = function (scalar_field, vector, result) {
+  result = result || VectorRaster(scalar_field.grid);
+  if (!(scalar_field instanceof Uint16Array)) { throw "scalar_field" + ' is not a ' + "Uint16Array"; }
+  if (!(result.x !== void 0) && !(result.x instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
   var ix = vector.x;
   var iy = vector.y;
   var iz = vector.z;
   var ox = result.x;
   var oy = result.y;
   var oz = result.z;
-  for (var i = 0, li = scalar.length; i < li; i++) {
-    ox[i] = scalar[i] * ix;
-    oy[i] = scalar[i] * iy;
-    oz[i] = scalar[i] * iz;
-  }
-  return result;
-};
-Uint16Field.div_scalar = function (field, scalar, result) {
-  result = result || Uint16Raster(field.grid);
-  for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field[i] / scalar;
+  for (var i = 0, li = scalar_field.length; i < li; i++) {
+    ox[i] = scalar_field[i] * ix;
+    oy[i] = scalar_field[i] * iy;
+    oz[i] = scalar_field[i] * iz;
   }
   return result;
 };
 // The Uint8Field namespace provides operations over mathematical scalar fields.
 // All fields are represented by raster objects, e.g. VectorRaster or Uint8Raster
 var Uint8Field = {};
-Uint8Field.min_field = function (field1, field2, result) {
-  result = result || Uint8Raster(field1.grid);
+Uint8Field.min_field = function (scalar_field1, scalar_field2, result) {
+  result = result || Uint8Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint8Array)) { throw "scalar_field1" + ' is not a ' + "Uint8Array"; }
+  if (!(scalar_field2 instanceof Uint8Array)) { throw "scalar_field2" + ' is not a ' + "Uint8Array"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] < field2[i]? field1[i] : field2[i];
+    result[i] = scalar_field1[i] < scalar_field2[i]? scalar_field1[i] : scalar_field2[i];
   }
   return result;
 };
-Uint8Field.max_field = function (field1, field2, result) {
-  result = result || Uint8Raster(field1.grid);
+Uint8Field.max_field = function (scalar_field1, scalar_field2, result) {
+  result = result || Uint8Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint8Array)) { throw "scalar_field1" + ' is not a ' + "Uint8Array"; }
+  if (!(scalar_field2 instanceof Uint8Array)) { throw "scalar_field2" + ' is not a ' + "Uint8Array"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] > field2[i]? field1[i] : field2[i];
+    result[i] = scalar_field1[i] > scalar_field2[i]? scalar_field1[i] : scalar_field2[i];
   }
   return result;
 };
-Uint8Field.gt_field = function (field1, field2, result) {
-  result = result || Uint8Raster(field1.grid);
+Uint8Field.gt_field = function (scalar_field1, scalar_field2, result) {
+  result = result || Uint8Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint8Array)) { throw "scalar_field1" + ' is not a ' + "Uint8Array"; }
+  if (!(scalar_field2 instanceof Uint8Array)) { throw "scalar_field2" + ' is not a ' + "Uint8Array"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] > field2[i]? 1:0;
+    result[i] = scalar_field1[i] > scalar_field2[i]? 1:0;
   }
   return result;
 };
-Uint8Field.gte_field = function (field1, field2, result) {
-  result = result || Uint8Raster(field1.grid);
+Uint8Field.gte_field = function (scalar_field1, scalar_field2, result) {
+  result = result || Uint8Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint8Array)) { throw "scalar_field1" + ' is not a ' + "Uint8Array"; }
+  if (!(scalar_field2 instanceof Uint8Array)) { throw "scalar_field2" + ' is not a ' + "Uint8Array"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] >= field2[i]? 1:0;
+    result[i] = scalar_field1[i] >= scalar_field2[i]? 1:0;
   }
   return result;
 };
-Uint8Field.lt_field = function (field1, field2, result) {
-  result = result || Uint8Raster(field1.grid);
+Uint8Field.lt_field = function (scalar_field1, scalar_field2, result) {
+  result = result || Uint8Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint8Array)) { throw "scalar_field1" + ' is not a ' + "Uint8Array"; }
+  if (!(scalar_field2 instanceof Uint8Array)) { throw "scalar_field2" + ' is not a ' + "Uint8Array"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] < field2[i]? 1:0;
+    result[i] = scalar_field1[i] < scalar_field2[i]? 1:0;
   }
   return result;
 };
-Uint8Field.lte_field = function (field1, field2, result) {
-  result = result || Uint8Raster(field1.grid);
+Uint8Field.lte_field = function (scalar_field1, scalar_field2, result) {
+  result = result || Uint8Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint8Array)) { throw "scalar_field1" + ' is not a ' + "Uint8Array"; }
+  if (!(scalar_field2 instanceof Uint8Array)) { throw "scalar_field2" + ' is not a ' + "Uint8Array"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] <= field2[i]? 1:0;
+    result[i] = scalar_field1[i] <= scalar_field2[i]? 1:0;
   }
   return result;
 };
-Uint8Field.eq_field = function (field1, field2, result) {
-  result = result || Uint8Raster(field1.grid);
+Uint8Field.eq_field = function (scalar_field1, scalar_field2, result) {
+  result = result || Uint8Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint8Array)) { throw "scalar_field1" + ' is not a ' + "Uint8Array"; }
+  if (!(scalar_field2 instanceof Uint8Array)) { throw "scalar_field2" + ' is not a ' + "Uint8Array"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] == field2[i]? 1:0;
+    result[i] = scalar_field1[i] == scalar_field2[i]? 1:0;
   }
   return result;
 };
-Uint8Field.ne_field = function (field1, field2, result) {
-  result = result || Uint8Raster(field1.grid);
+Uint8Field.min_scalar = function (scalar_field1, scalar, result) {
+  result = result || Uint8Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint8Array)) { throw "scalar_field1" + ' is not a ' + "Uint8Array"; }
+  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] != field2[i]? 1:0;
+    result[i] = scalar_field1[i] < scalar? scalar_field1[i] : scalar;
   }
   return result;
 };
-Uint8Field.min_scalar = function (field1, scalar, result) {
-  result = result || Uint8Raster(field1.grid);
+Uint8Field.max_scalar = function (scalar_field1, scalar, result) {
+  result = result || Uint8Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint8Array)) { throw "scalar_field1" + ' is not a ' + "Uint8Array"; }
+  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] < scalar? field1[i] : scalar;
+    result[i] = scalar_field1[i] > scalar? scalar_field1[i] : scalar;
   }
   return result;
 };
-Uint8Field.max_scalar = function (field1, scalar, result) {
-  result = result || Uint8Raster(field1.grid);
+Uint8Field.gt_scalar = function (scalar_field1, scalar, result) {
+  result = result || Uint8Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint8Array)) { throw "scalar_field1" + ' is not a ' + "Uint8Array"; }
+  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] > scalar? field1[i] : scalar;
+    result[i] = scalar_field1[i] > scalar? 1:0;
   }
   return result;
 };
-Uint8Field.gt_scalar = function (field1, scalar, result) {
-  result = result || Uint8Raster(field1.grid);
+Uint8Field.gte_scalar = function (scalar_field1, scalar, result) {
+  result = result || Uint8Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint8Array)) { throw "scalar_field1" + ' is not a ' + "Uint8Array"; }
+  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] > scalar? 1:0;
+    result[i] = scalar_field1[i] >= scalar? 1:0;
   }
   return result;
 };
-Uint8Field.gte_scalar = function (field1, scalar, result) {
-  result = result || Uint8Raster(field1.grid);
+Uint8Field.lt_scalar = function (scalar_field1, scalar, result) {
+  result = result || Uint8Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint8Array)) { throw "scalar_field1" + ' is not a ' + "Uint8Array"; }
+  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] >= scalar? 1:0;
+    result[i] = scalar_field1[i] < scalar? 1:0;
   }
   return result;
 };
-Uint8Field.lt_scalar = function (field1, scalar, result) {
-  result = result || Uint8Raster(field1.grid);
+Uint8Field.lte_scalar = function (scalar_field1, scalar, result) {
+  result = result || Uint8Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint8Array)) { throw "scalar_field1" + ' is not a ' + "Uint8Array"; }
+  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] < scalar? 1:0;
+    result[i] = scalar_field1[i] <= scalar? 1:0;
   }
   return result;
 };
-Uint8Field.lte_scalar = function (field1, scalar, result) {
-  result = result || Uint8Raster(field1.grid);
+Uint8Field.eq_scalar = function (scalar_field1, scalar, result) {
+  result = result || Uint8Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint8Array)) { throw "scalar_field1" + ' is not a ' + "Uint8Array"; }
+  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] <= scalar? 1:0;
+    result[i] = scalar_field1[i] == scalar? 1:0;
   }
   return result;
 };
-Uint8Field.eq_scalar = function (field1, scalar, result) {
-  result = result || Uint8Raster(field1.grid);
+Uint8Field.add_field_term = function (scalar_field1, scalar_field2, field3, result) {
+  result = result || Uint8Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint8Array)) { throw "scalar_field1" + ' is not a ' + "Uint8Array"; }
+  if (!(scalar_field2 instanceof Float32Array || scalar_field2 instanceof Uint16Array || scalar_field2 instanceof Uint8Array)) { throw "scalar_field2" + ' is not a typed array'; }
+  if (!(field3 instanceof Float32Array || field3 instanceof Uint16Array || field3 instanceof Uint8Array)) { throw "field3" + ' is not a typed array'; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] == scalar? 1:0;
+    result[i] = scalar_field1[i] + field3[i] * scalar_field2[i];
   }
   return result;
 };
-Uint8Field.ne_scalar = function (field1, scalar, result) {
-  result = result || Uint8Raster(field1.grid);
+Uint8Field.add_scalar_term = function (scalar_field1, scalar_field2, scalar, result) {
+  result = result || Uint8Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint8Array)) { throw "scalar_field1" + ' is not a ' + "Uint8Array"; }
+  if (!(scalar_field2 instanceof Float32Array || scalar_field2 instanceof Uint16Array || scalar_field2 instanceof Uint8Array)) { throw "scalar_field2" + ' is not a typed array'; }
+  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] != scalar? 1:0;
+    result[i] = scalar_field1[i] + scalar * scalar_field2[i];
   }
   return result;
 };
-Uint8Field.add_field_term = function (field1, field2, field3, result) {
-  result = result || Uint8Raster(field1.grid);
+Uint8Field.add_field = function (scalar_field1, scalar_field2, result) {
+  result = result || Uint8Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint8Array)) { throw "scalar_field1" + ' is not a ' + "Uint8Array"; }
+  if (!(scalar_field2 instanceof Float32Array || scalar_field2 instanceof Uint16Array || scalar_field2 instanceof Uint8Array)) { throw "scalar_field2" + ' is not a typed array'; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] + field3[i] * field2[i];
+    result[i] = scalar_field1[i] + scalar_field2[i];
   }
   return result;
 };
-Uint8Field.add_scalar_term = function (field1, field2, scalar, result) {
-  result = result || Uint8Raster(field1.grid);
+Uint8Field.sub_field = function (scalar_field1, scalar_field2, result) {
+  result = result || Uint8Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint8Array)) { throw "scalar_field1" + ' is not a ' + "Uint8Array"; }
+  if (!(scalar_field2 instanceof Float32Array || scalar_field2 instanceof Uint16Array || scalar_field2 instanceof Uint8Array)) { throw "scalar_field2" + ' is not a typed array'; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] + scalar * field2[i];
+    result[i] = scalar_field1[i] - scalar_field2[i];
   }
   return result;
 };
-Uint8Field.add_field = function (field1, field2, result) {
-  result = result || Uint8Raster(field1.grid);
+Uint8Field.sub_field_term = function (scalar_field1, scalar_field2, field3, result) {
+  result = result || Uint8Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint8Array)) { throw "scalar_field1" + ' is not a ' + "Uint8Array"; }
+  if (!(scalar_field2 instanceof Float32Array || scalar_field2 instanceof Uint16Array || scalar_field2 instanceof Uint8Array)) { throw "scalar_field2" + ' is not a typed array'; }
+  if (!(field3 instanceof Float32Array || field3 instanceof Uint16Array || field3 instanceof Uint8Array)) { throw "field3" + ' is not a typed array'; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] + field2[i];
+    result[i] = scalar_field1[i] - field3[i] * scalar_field2[i];
   }
   return result;
 };
-Uint8Field.sub_field = function (field1, field2, result) {
-  result = result || Uint8Raster(field1.grid);
+Uint8Field.sub_scalar_term = function (scalar_field1, scalar_field2, scalar, result) {
+  result = result || Uint8Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint8Array)) { throw "scalar_field1" + ' is not a ' + "Uint8Array"; }
+  if (!(scalar_field2 instanceof Float32Array || scalar_field2 instanceof Uint16Array || scalar_field2 instanceof Uint8Array)) { throw "scalar_field2" + ' is not a typed array'; }
+  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] - field2[i];
+    result[i] = scalar_field1[i] - scalar * scalar_field2[i];
   }
   return result;
 };
-Uint8Field.mult_field = function (field1, field2, result) {
-  result = result || Uint8Raster(field1.grid);
+Uint8Field.mult_field = function (scalar_field1, scalar_field2, result) {
+  result = result || Uint8Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint8Array)) { throw "scalar_field1" + ' is not a ' + "Uint8Array"; }
+  if (!(scalar_field2 instanceof Float32Array || scalar_field2 instanceof Uint16Array || scalar_field2 instanceof Uint8Array)) { throw "scalar_field2" + ' is not a typed array'; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] * field2[i];
+    result[i] = scalar_field1[i] * scalar_field2[i];
   }
   return result;
 };
-Uint8Field.div_field = function (field1, field2, result) {
-  result = result || Uint8Raster(field1.grid);
+Uint8Field.div_field = function (scalar_field1, scalar_field2, result) {
+  result = result || Uint8Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint8Array)) { throw "scalar_field1" + ' is not a ' + "Uint8Array"; }
+  if (!(scalar_field2 instanceof Float32Array || scalar_field2 instanceof Uint16Array || scalar_field2 instanceof Uint8Array)) { throw "scalar_field2" + ' is not a typed array'; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field1[i] / field2[i];
+    result[i] = scalar_field1[i] / scalar_field2[i];
   }
   return result;
 };
-Uint8Field.add_scalar = function (field, scalar, result) {
-  result = result || Uint8Raster(field.grid);
+Uint8Field.add_scalar = function (scalar_field, scalar, result) {
+  result = result || Uint8Raster(scalar_field.grid);
+  if (!(scalar_field instanceof Uint8Array)) { throw "scalar_field" + ' is not a ' + "Uint8Array"; }
+  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field[i] + scalar;
+    result[i] = scalar_field[i] + scalar;
   }
   return result;
 };
-Uint8Field.sub_scalar = function (field, scalar, result) {
-  result = result || Uint8Raster(field.grid);
+Uint8Field.sub_scalar = function (scalar_field, scalar, result) {
+  result = result || Uint8Raster(scalar_field.grid);
+  if (!(scalar_field instanceof Uint8Array)) { throw "scalar_field" + ' is not a ' + "Uint8Array"; }
+  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field[i] - scalar;
+    result[i] = scalar_field[i] - scalar;
   }
   return result;
 };
-Uint8Field.mult_scalar = function (field, scalar, result) {
-  result = result || Uint8Raster(field.grid);
+Uint8Field.mult_scalar = function (scalar_field, scalar, result) {
+  result = result || Uint8Raster(scalar_field.grid);
+  if (!(scalar_field instanceof Uint8Array)) { throw "scalar_field" + ' is not a ' + "Uint8Array"; }
+  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field[i] * scalar;
+    result[i] = scalar_field[i] * scalar;
   }
   return result;
 };
-Uint8Field.mult_vector = function (scalar, vector, result) {
-  result = result || VectorRaster(scalar.grid);
+Uint8Field.div_scalar = function (scalar_field, scalar, result) {
+  result = result || Uint8Raster(scalar_field.grid);
+  if (!(scalar_field instanceof Uint8Array)) { throw "scalar_field" + ' is not a ' + "Uint8Array"; }
+  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = scalar_field[i] / scalar;
+  }
+  return result;
+};
+Uint8Field.mult_vector = function (scalar_field, vector, result) {
+  result = result || VectorRaster(scalar_field.grid);
+  if (!(scalar_field instanceof Uint8Array)) { throw "scalar_field" + ' is not a ' + "Uint8Array"; }
+  if (!(result.x !== void 0) && !(result.x instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
   var ix = vector.x;
   var iy = vector.y;
   var iz = vector.z;
   var ox = result.x;
   var oy = result.y;
   var oz = result.z;
-  for (var i = 0, li = scalar.length; i < li; i++) {
-    ox[i] = scalar[i] * ix;
-    oy[i] = scalar[i] * iy;
-    oz[i] = scalar[i] * iz;
-  }
-  return result;
-};
-Uint8Field.div_scalar = function (field, scalar, result) {
-  result = result || Uint8Raster(field.grid);
-  for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field[i] / scalar;
+  for (var i = 0, li = scalar_field.length; i < li; i++) {
+    ox[i] = scalar_field[i] * ix;
+    oy[i] = scalar_field[i] * iy;
+    oz[i] = scalar_field[i] * iz;
   }
   return result;
 };
@@ -2038,11 +2226,11 @@ VectorRaster.FromVectors = function(vectors, grid) {
  }
  return result;
 }
-VectorRaster.copy = function(input, output) {
-  var output = output || VectorRaster(input.grid);
-  var ix = input.x;
-  var iy = input.y;
-  var iz = input.z;
+VectorRaster.copy = function(vector_raster, output) {
+  var output = output || VectorRaster(vector_raster.grid);
+  var ix = vector_raster.x;
+  var iy = vector_raster.y;
+  var iz = vector_raster.z;
   var ox = output.x;
   var oy = output.y;
   var oz = output.z;
@@ -2067,13 +2255,13 @@ VectorRaster.fill = function (value, output) {
   }
   return output;
 };
-VectorRaster.min_id = function (input) {
+VectorRaster.min_id = function (vector_raster) {
   var max = Infinity;
   var max_id = 0;
   var mag = 0;
-  var ix = input.x;
-  var iy = input.y;
-  var iz = input.z;
+  var ix = vector_raster.x;
+  var iy = vector_raster.y;
+  var iz = vector_raster.z;
   for (var i = 0, li = ix.length; i < li; i++) {
     mag = ix[i] * ix[i] + iy[i] * iy[i] + iz[i] * iz[i];
     if (mag < max) {
@@ -2083,13 +2271,13 @@ VectorRaster.min_id = function (input) {
   }
   return max_id;
 };
-VectorRaster.max_id = function (input) {
+VectorRaster.max_id = function (vector_raster) {
   var max = -Infinity;
   var max_id = 0;
   var mag = 0;
-  var ix = input.x;
-  var iy = input.y;
-  var iz = input.z;
+  var ix = vector_raster.x;
+  var iy = vector_raster.y;
+  var iz = vector_raster.z;
   for (var i = 0, li = ix.length; i < li; i++) {
     mag = ix[i] * ix[i] + iy[i] * iy[i] + iz[i] * iz[i];
     if (mag > max) {
