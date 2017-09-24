@@ -245,10 +245,23 @@ ScalarField.mult_scalar = function (field, scalar, result) {
   }
   return result;
 };
+ScalarField.div_scalar = function (field, constant, result) {
+  result = result || Float32Raster(field.grid);
+
+  ASSERT_IS_ARRAY(field, Float32Array)
+  ASSERT_IS_TYPE(constant, number)
+  ASSERT_IS_ARRAY(result, Float32Array)
+  
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = field[i] / constant;
+  }
+  return result;
+};
 ScalarField.mult_vector = function (scalar, vector, result) {
   result = result || VectorRaster(scalar.grid);
 
   ASSERT_IS_ARRAY(field, Float32Array)
+  ASSERT_IS_VECTOR_RASTER(result)
 
   var ix = vector.x;
   var iy = vector.y;
@@ -265,22 +278,11 @@ ScalarField.mult_vector = function (scalar, vector, result) {
   }
   return result;
 };
-ScalarField.div_scalar = function (field, constant, result) {
-  result = result || Float32Raster(field.grid);
-
-  ASSERT_IS_ARRAY(field, Float32Array)
-  ASSERT_IS_TYPE(constant, number)
-  ASSERT_IS_ARRAY(result, Float32Array)
-  
-  for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field[i] / constant;
-  }
-  return result;
-};
 ScalarField.differential = function (field, result) {
   result = result || VectorRaster(field.grid);
 
   ASSERT_IS_ARRAY(field, Float32Array)
+  ASSERT_IS_VECTOR_RASTER(result)
   
   var arrows = field.grid.arrows;
   var arrow = [];
@@ -310,6 +312,7 @@ ScalarField.gradient = function (field, result) {
   result = result || VectorRaster(field.grid);
 
   ASSERT_IS_ARRAY(field, Float32Array)
+  ASSERT_IS_VECTOR_RASTER(result)
 
   var dfield = 0;
   var dpos = field.grid.pos_arrow_differential;

@@ -25,7 +25,7 @@
 #define ASSERT_IS_ANY_ARRAY(INPUT) \
 	if (!(INPUT instanceof Float32Array || INPUT instanceof Uint16Array || INPUT instanceof Uint8Array)) { throw #INPUT + ' is not a typed array'; }
 #else
-#define ASSERT_IS_ARRAY(INPUT, TYPE)
+#define ASSERT_IS_ANY_ARRAY(INPUT)
 #endif
 
 #ifndef IS_PROD
@@ -33,6 +33,13 @@
 	if (!(typeof INPUT == #TYPE)) { throw #INPUT + ' is not a ' + #TYPE; }
 #else
 #define ASSERT_IS_TYPE(INPUT, TYPE)
+#endif
+
+#ifndef IS_PROD
+#define ASSERT_IS_VECTOR_RASTER(INPUT) \
+	if (!(INPUT.x !== void 0) && !(INPUT.x instanceof Float32Array)) { throw #INPUT + ' is not a vector raster'; }
+#else
+#define ASSERT_IS_VECTOR_RASTER(INPUT)
 #endif
 
 #include "src/utils/datasets/Float32Dataset.js"

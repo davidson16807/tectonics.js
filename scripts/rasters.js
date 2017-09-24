@@ -472,9 +472,20 @@ ScalarField.mult_scalar = function (field, scalar, result) {
   }
   return result;
 };
+ScalarField.div_scalar = function (field, constant, result) {
+  result = result || Float32Raster(field.grid);
+  if (!(field instanceof Float32Array)) { throw "field" + ' is not a ' + "Float32Array"; }
+  if (!(typeof constant == "number")) { throw "constant" + ' is not a ' + "number"; }
+  if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = field[i] / constant;
+  }
+  return result;
+};
 ScalarField.mult_vector = function (scalar, vector, result) {
   result = result || VectorRaster(scalar.grid);
   if (!(field instanceof Float32Array)) { throw "field" + ' is not a ' + "Float32Array"; }
+  if (!(result.x !== void 0) && !(result.x instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
   var ix = vector.x;
   var iy = vector.y;
   var iz = vector.z;
@@ -488,19 +499,10 @@ ScalarField.mult_vector = function (scalar, vector, result) {
   }
   return result;
 };
-ScalarField.div_scalar = function (field, constant, result) {
-  result = result || Float32Raster(field.grid);
-  if (!(field instanceof Float32Array)) { throw "field" + ' is not a ' + "Float32Array"; }
-  if (!(typeof constant == "number")) { throw "constant" + ' is not a ' + "number"; }
-  if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
-  for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = field[i] / constant;
-  }
-  return result;
-};
 ScalarField.differential = function (field, result) {
   result = result || VectorRaster(field.grid);
   if (!(field instanceof Float32Array)) { throw "field" + ' is not a ' + "Float32Array"; }
+  if (!(result.x !== void 0) && !(result.x instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
   var arrows = field.grid.arrows;
   var arrow = [];
   var from = 0, to = 0;
@@ -528,6 +530,7 @@ ScalarField.differential = function (field, result) {
 ScalarField.gradient = function (field, result) {
   result = result || VectorRaster(field.grid);
   if (!(field instanceof Float32Array)) { throw "field" + ' is not a ' + "Float32Array"; }
+  if (!(result.x !== void 0) && !(result.x instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
   var dfield = 0;
   var dpos = field.grid.pos_arrow_differential;
   var dx = dpos.x;
@@ -1072,6 +1075,10 @@ Uint8Field.div_scalar = function (field, scalar, result) {
 var VectorField = {};
 VectorField.add_vector_field_term = function(field1, field2, scalar, result) {
  result = result || VectorRaster(field1.grid);
+ if (!(field1.x !== void 0) && !(field1.x instanceof Float32Array)) { throw "field1" + ' is not a vector raster'; }
+ if (!(field2.x !== void 0) && !(field2.x instanceof Float32Array)) { throw "field2" + ' is not a vector raster'; }
+ if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+ if (!(result.x !== void 0) && !(result.x instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
  var x1 = field1.x;
  var y1 = field1.y;
  var z1 = field1.z;
@@ -1090,6 +1097,9 @@ VectorField.add_vector_field_term = function(field1, field2, scalar, result) {
 };
 VectorField.add_vector_field = function(field1, field2, result) {
  result = result || VectorRaster(field1.grid);
+ if (!(field1.x !== void 0) && !(field1.x instanceof Float32Array)) { throw "field1" + ' is not a vector raster'; }
+ if (!(field2.x !== void 0) && !(field2.x instanceof Float32Array)) { throw "field2" + ' is not a vector raster'; }
+ if (!(result.x !== void 0) && !(result.x instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
  var x1 = field1.x;
  var y1 = field1.y;
  var z1 = field1.z;
@@ -1108,6 +1118,9 @@ VectorField.add_vector_field = function(field1, field2, result) {
 };
 VectorField.sub_vector_field = function(field1, field2, result) {
  result = result || VectorRaster(field1.grid);
+ if (!(field1.x !== void 0) && !(field1.x instanceof Float32Array)) { throw "field1" + ' is not a vector raster'; }
+ if (!(field2.x !== void 0) && !(field2.x instanceof Float32Array)) { throw "field2" + ' is not a vector raster'; }
+ if (!(result.x !== void 0) && !(result.x instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
  var x1 = field1.x;
  var y1 = field1.y;
  var z1 = field1.z;
@@ -1126,6 +1139,9 @@ VectorField.sub_vector_field = function(field1, field2, result) {
 };
 VectorField.dot_vector_field = function(field1, field2, result) {
  result = result || Float32Raster(field1.grid);
+ if (!(field1.x !== void 0) && !(field1.x instanceof Float32Array)) { throw "field1" + ' is not a vector raster'; }
+ if (!(field2.x !== void 0) && !(field2.x instanceof Float32Array)) { throw "field2" + ' is not a vector raster'; }
+ if (!(result.x !== void 0) && !(result.x instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
  var x1 = field1.x;
  var y1 = field1.y;
  var z1 = field1.z;
@@ -1141,6 +1157,9 @@ VectorField.dot_vector_field = function(field1, field2, result) {
 };
 VectorField.hadamard_vector_field = function(field1, field2, result) {
  result = result || VectorRaster(field1.grid);
+ if (!(field1.x !== void 0) && !(field1.x instanceof Float32Array)) { throw "field1" + ' is not a vector raster'; }
+ if (!(field2.x !== void 0) && !(field2.x instanceof Float32Array)) { throw "field2" + ' is not a vector raster'; }
+ if (!(result.x !== void 0) && !(result.x instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
  var x1 = field1.x;
  var y1 = field1.y;
  var z1 = field1.z;
@@ -1159,6 +1178,9 @@ VectorField.hadamard_vector_field = function(field1, field2, result) {
 };
 VectorField.cross_vector_field = function (field1, field2, result) {
  result = result || VectorRaster(field1.grid);
+ if (!(field1.x !== void 0) && !(field1.x instanceof Float32Array)) { throw "field1" + ' is not a vector raster'; }
+ if (!(field2.x !== void 0) && !(field2.x instanceof Float32Array)) { throw "field2" + ' is not a vector raster'; }
+ if (!(result.x !== void 0) && !(result.x instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
  var ax = field1.x;
  var ay = field1.y;
  var az = field1.z;
@@ -1187,11 +1209,13 @@ VectorField.cross_vector_field = function (field1, field2, result) {
  }
  return result;
 }
-VectorField.add_vector = function(field1, vector, result) {
- result = result || VectorRaster(field1.grid);
- var x1 = field1.x;
- var y1 = field1.y;
- var z1 = field1.z;
+VectorField.add_vector = function(field, vector, result) {
+ result = result || VectorRaster(field.grid);
+ if (!(field.x !== void 0) && !(field.x instanceof Float32Array)) { throw "field" + ' is not a vector raster'; }
+ if (!(result.x !== void 0) && !(result.x instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
+ var x1 = field.x;
+ var y1 = field.y;
+ var z1 = field.z;
  var x2 = vector.x;
  var y2 = vector.y;
  var z2 = vector.z;
@@ -1205,11 +1229,13 @@ VectorField.add_vector = function(field1, vector, result) {
  }
  return result;
 };
-VectorField.sub_vector = function(field1, vector, result) {
- result = result || VectorRaster(field1.grid);
- var x1 = field1.x;
- var y1 = field1.y;
- var z1 = field1.z;
+VectorField.sub_vector = function(field, vector, result) {
+ result = result || VectorRaster(field.grid);
+ if (!(field.x !== void 0) && !(field.x instanceof Float32Array)) { throw "field" + ' is not a vector raster'; }
+ if (!(result.x !== void 0) && !(result.x instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
+ var x1 = field.x;
+ var y1 = field.y;
+ var z1 = field.z;
  var x2 = vector.x;
  var y2 = vector.y;
  var z2 = vector.z;
@@ -1223,11 +1249,13 @@ VectorField.sub_vector = function(field1, vector, result) {
  }
  return result;
 };
-VectorField.dot_vector = function(field1, vector, result) {
- result = result || Float32Raster(field1.grid);
- var x1 = field1.x;
- var y1 = field1.y;
- var z1 = field1.z;
+VectorField.dot_vector = function(field, vector, result) {
+ result = result || Float32Raster(field.grid);
+ if (!(field.x !== void 0) && !(field.x instanceof Float32Array)) { throw "field" + ' is not a vector raster'; }
+ if (!(result.x !== void 0) && !(result.x instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
+ var x1 = field.x;
+ var y1 = field.y;
+ var z1 = field.z;
  var x2 = vector.x;
  var y2 = vector.y;
  var z2 = vector.z;
@@ -1238,11 +1266,13 @@ VectorField.dot_vector = function(field1, vector, result) {
  }
  return result;
 };
-VectorField.hadamard_vector = function(field1, vector, result) {
- result = result || VectorRaster(field1.grid);
- var x1 = field1.x;
- var y1 = field1.y;
- var z1 = field1.z;
+VectorField.hadamard_vector = function(field, vector, result) {
+ result = result || VectorRaster(field.grid);
+ if (!(field.x !== void 0) && !(field.x instanceof Float32Array)) { throw "field" + ' is not a vector raster'; }
+ if (!(result.x !== void 0) && !(result.x instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
+ var x1 = field.x;
+ var y1 = field.y;
+ var z1 = field.z;
  var x2 = vector.x;
  var y2 = vector.y;
  var z2 = vector.z;
@@ -1258,6 +1288,8 @@ VectorField.hadamard_vector = function(field1, vector, result) {
 };
 VectorField.cross_vector = function (field, constant, result) {
  result = result || VectorRaster(field.grid);
+ if (!(field.x !== void 0) && !(field.x instanceof Float32Array)) { throw "field" + ' is not a vector raster'; }
+ if (!(result.x !== void 0) && !(result.x instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
  var ax = field.x;
  var ay = field.y;
  var az = field.z;
@@ -1284,6 +1316,8 @@ VectorField.cross_vector = function (field, constant, result) {
 // i.e single array in column-major format
 VectorField.mult_matrix = function (field, matrix, result) {
  result = result || VectorRaster(field.grid);
+ if (!(field.x !== void 0) && !(field.x instanceof Float32Array)) { throw "field" + ' is not a vector raster'; }
+ if (!(result.x !== void 0) && !(result.x instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
  var ax = field.x;
  var ay = field.y;
  var az = field.z;
@@ -1308,6 +1342,9 @@ VectorField.mult_matrix = function (field, matrix, result) {
 }
 VectorField.add_scalar_field = function(vector, scalar, result) {
  result = result || VectorRaster(vector.grid);
+ if (!(vector.x !== void 0) && !(vector.x instanceof Float32Array)) { throw "vector" + ' is not a vector raster'; }
+ if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+ if (!(result.x !== void 0) && !(result.x instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
  var x1 = vector.x;
  var y1 = vector.y;
  var z1 = vector.z;
@@ -1323,6 +1360,9 @@ VectorField.add_scalar_field = function(vector, scalar, result) {
 };
 VectorField.sub_scalar_field = function(vector, scalar, result) {
  result = result || VectorRaster(vector.grid);
+ if (!(vector.x !== void 0) && !(vector.x instanceof Float32Array)) { throw "vector" + ' is not a vector raster'; }
+ if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+ if (!(result.x !== void 0) && !(result.x instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
  var x1 = vector.x;
  var y1 = vector.y;
  var z1 = vector.z;
@@ -1338,6 +1378,9 @@ VectorField.sub_scalar_field = function(vector, scalar, result) {
 };
 VectorField.mult_scalar_field = function(vector, scalar, result) {
  result = result || VectorRaster(vector.grid);
+ if (!(vector.x !== void 0) && !(vector.x instanceof Float32Array)) { throw "vector" + ' is not a vector raster'; }
+ if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+ if (!(result.x !== void 0) && !(result.x instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
  var x1 = vector.x;
  var y1 = vector.y;
  var z1 = vector.z;
@@ -1353,6 +1396,9 @@ VectorField.mult_scalar_field = function(vector, scalar, result) {
 };
 VectorField.div_scalar_field = function(vector, scalar, result) {
  result = result || VectorRaster(vector.grid);
+ if (!(vector.x !== void 0) && !(vector.x instanceof Float32Array)) { throw "vector" + ' is not a vector raster'; }
+ if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+ if (!(result.x !== void 0) && !(result.x instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
  var x1 = vector.x;
  var y1 = vector.y;
  var z1 = vector.z;
@@ -1368,6 +1414,9 @@ VectorField.div_scalar_field = function(vector, scalar, result) {
 };
 VectorField.add_scalar = function(vector, scalar, result) {
  result = result || VectorRaster(vector.grid);
+ if (!(vector.x !== void 0) && !(vector.x instanceof Float32Array)) { throw "vector" + ' is not a vector raster'; }
+ if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+ if (!(result.x !== void 0) && !(result.x instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
  var x1 = vector.x;
  var y1 = vector.y;
  var z1 = vector.z;
@@ -1383,6 +1432,9 @@ VectorField.add_scalar = function(vector, scalar, result) {
 };
 VectorField.sub_scalar = function(vector, scalar, result) {
  result = result || VectorRaster(vector.grid);
+ if (!(vector.x !== void 0) && !(vector.x instanceof Float32Array)) { throw "vector" + ' is not a vector raster'; }
+ if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+ if (!(result.x !== void 0) && !(result.x instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
  var x1 = vector.x;
  var y1 = vector.y;
  var z1 = vector.z;
@@ -1398,6 +1450,9 @@ VectorField.sub_scalar = function(vector, scalar, result) {
 };
 VectorField.mult_scalar = function(vector, scalar, result) {
  result = result || VectorRaster(vector.grid);
+ if (!(vector.x !== void 0) && !(vector.x instanceof Float32Array)) { throw "vector" + ' is not a vector raster'; }
+ if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+ if (!(result.x !== void 0) && !(result.x instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
  var x1 = vector.x;
  var y1 = vector.y;
  var z1 = vector.z;
@@ -1413,6 +1468,9 @@ VectorField.mult_scalar = function(vector, scalar, result) {
 };
 VectorField.div_scalar = function(vector, scalar, result) {
  result = result || VectorRaster(vector.grid);
+ if (!(vector.x !== void 0) && !(vector.x instanceof Float32Array)) { throw "vector" + ' is not a vector raster'; }
+ if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+ if (!(result.x !== void 0) && !(result.x instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
  var x1 = vector.x;
  var y1 = vector.y;
  var z1 = vector.z;
@@ -1427,11 +1485,13 @@ VectorField.div_scalar = function(vector, scalar, result) {
  }
  return result;
 };
-VectorField.map = function(field, fn, result) {
- result = result || Float32Raster(field.grid)
- var x = field.x;
- var y = field.y;
- var z = field.z;
+VectorField.map = function(vector_field, fn, result) {
+ result = result || Float32Raster(vector_field.grid)
+ if (!(vector_field.x !== void 0) && !(vector_field.x instanceof Float32Array)) { throw "vector_field" + ' is not a vector raster'; }
+ if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
+ var x = vector_field.x;
+ var y = vector_field.y;
+ var z = vector_field.z;
  for (var i = field_value.length - 1; i >= 0; i--) {
   this_value[i] = fn(x[i], y[i], z[i]);
  }
@@ -1439,6 +1499,8 @@ VectorField.map = function(field, fn, result) {
 };
 VectorField.magnitude = function(field, result) {
  result = result || Float32Raster(field.grid);
+ if (!(field.x !== void 0) && !(field.x instanceof Float32Array)) { throw "field" + ' is not a vector raster'; }
+ if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
  var x = field.x;
  var y = field.y;
  var z = field.z;
@@ -1457,6 +1519,8 @@ VectorField.magnitude = function(field, result) {
 // ∂X
 VectorField.arrow_differential = function(field, result) {
  result = result || VectorRaster.OfLength(field.grid.arrows.length, field.grid);
+ if (!(field.x !== void 0) && !(field.x instanceof Float32Array)) { throw "field" + ' is not a vector raster'; }
+ if (!(result.x !== void 0) && !(result.x instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
  var x1 = field.x;
  var y1 = field.y;
  var z1 = field.z;
@@ -1477,6 +1541,8 @@ VectorField.arrow_differential = function(field, result) {
 }
 VectorField.divergence = function(field, result) {
  result = result || Float32Raster(field.grid);
+ if (!(field.x !== void 0) && !(field.x instanceof Float32Array)) { throw "field" + ' is not a vector raster'; }
+ if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
  var dpos = field.grid.pos_arrow_differential;
  var dx = dpos.x;
  var dy = dpos.y;
