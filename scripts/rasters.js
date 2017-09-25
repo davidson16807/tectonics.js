@@ -122,6 +122,14 @@ Uint8Dataset.average = function (dataset) {
   }
   return result / dataset.length;
 };
+Uint8Dataset.unique = function (dataset) {
+  if (!(dataset instanceof Uint8Array)) { throw "dataset" + ' is not a ' + "Uint8Array"; }
+  var unique = {};
+  for (var i=0, li=dataset.length; i<li; ++i) {
+    unique[dataset[i]] = dataset[i];
+  }
+  return Object.values(unique);
+};
 // The VectorDataset namespace provides operations over raster objects
 // treating them as if each cell were an entry in a statistical dataset
 var VectorDataset = {};
@@ -1062,6 +1070,16 @@ Uint8Field.eq_field = function (scalar_field1, scalar_field2, result) {
   }
   return result;
 };
+Uint8Field.ne_field = function (scalar_field1, scalar_field2, result) {
+  result = result || Uint8Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint8Array)) { throw "scalar_field1" + ' is not a ' + "Uint8Array"; }
+  if (!(scalar_field2 instanceof Uint8Array)) { throw "scalar_field2" + ' is not a ' + "Uint8Array"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = scalar_field1[i] != scalar_field2[i]? 1:0;
+  }
+  return result;
+};
 Uint8Field.min_scalar = function (scalar_field1, scalar, result) {
   result = result || Uint8Raster(scalar_field1.grid);
   if (!(scalar_field1 instanceof Uint8Array)) { throw "scalar_field1" + ' is not a ' + "Uint8Array"; }
@@ -1129,6 +1147,16 @@ Uint8Field.eq_scalar = function (scalar_field1, scalar, result) {
   if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] == scalar? 1:0;
+  }
+  return result;
+};
+Uint8Field.ne_scalar = function (scalar_field1, scalar, result) {
+  result = result || Uint8Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint8Array)) { throw "scalar_field1" + ' is not a ' + "Uint8Array"; }
+  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = scalar_field1[i] != scalar? 1:0;
   }
   return result;
 };
@@ -2527,50 +2555,44 @@ var VectorImageAnalysis = {};
 // This function repeatedly uses the flood fill algorithm from VectorRasterGraphics,
 // then uses mathematical morphology to ensure there are no overlapping regions between segments
 VectorImageAnalysis.image_segmentation = function(vector_field, grid) {
- //TODO: holy shit, this needs perf improvement
- var magnitude = VectorField.magnitude(vector_field);
- var mask = Uint8Raster(grid);
- Uint8Raster.fill(mask, 1);
- // step 1: run flood fill algorithm several times
- var min_plate_size = 200;
- var flood_fills = [];
- var flood_fill;
- for (var i=1; i<7; ) {
-  flood_fill = VectorRasterGraphics.magic_wand_select(vector_field, Float32Raster.max_id(magnitude), mask);
-  ScalarField.sub_field_term(magnitude, flood_fill, magnitude, magnitude);
-  Uint8Field.sub_field(mask, flood_fill, mask);
-     if (Uint8Dataset.sum(flood_fill) > min_plate_size) {
-   flood_fills.push(flood_fill);
-   i++;
+  //TODO: holy shit, this still needs perf improvement
+  var magnitude = VectorField.magnitude(vector_field);
+  var mask = Uint8Raster(vector_field.grid);
+  Uint8Raster.fill(mask, 1);
+  var UINT8_NULL = 255;
+  // step 1: run flood fill algorithm several times
+  var min_plate_size = 200;
+  var flood_fill;
+  var plate_masks = Uint8Raster(vector_field.grid);
+  Uint8Raster.fill(plate_masks, UINT8_NULL);
+  for (var i=1; i<7; ) {
+    flood_fill = VectorRasterGraphics.magic_wand_select(vector_field, Float32Raster.max_id(magnitude), mask);
+    ScalarField.sub_field_term(magnitude, flood_fill, magnitude, magnitude);
+    Uint8Field.sub_field(mask, flood_fill, mask);
+      if (Uint8Dataset.sum(flood_fill) > min_plate_size) {
+        Uint8RasterGraphics.fill_into_selection(plate_masks, i, flood_fill, plate_masks);
+        // TODO: do something about infinite loop
+        i++;
+    }
   }
- }
- // step 2: expand boundaries so all regions of globe map to exactly one plate
- var original_mask;
- var original_masks = [];
- var edited_masks = flood_fills;
- for (var i=0, li=edited_masks.length; i<li; ++i) {
-     original_masks.push(BinaryMorphology.copy(edited_masks[i]));
- }
- for (var i=0, li=original_masks.length; i<li; ++i) {
-     original_mask = original_masks[i];
-     original_mask = BinaryMorphology.dilation(original_mask, 5);
-     original_mask = BinaryMorphology.closing(original_mask, 5);
-     // original_mask = BinaryMorphology.opening(original_mask, 5);
-     for (var j=0, lj=edited_masks.length; j<lj; ++j) {
-      if (i != j) {
-          original_mask = BinaryMorphology.difference(original_mask, edited_masks[j]);
-      }
-     }
-     edited_masks[i] = original_mask;
- }
- // step 3: find the remaining region that is not mapped to a plate, and make a new plate just for it
- var masks = edited_masks;
- var is_not_mapped = Uint8Raster(grid, 1);
- for (var i=0, li=edited_masks.length; i<li; ++i) {
-     BinaryMorphology.difference(is_not_mapped, edited_masks[i], is_not_mapped);
- }
- masks.push(is_not_mapped);
- return masks;
+  // step 2: dilate and take difference with (plate_masks != i)
+  var plate_mask = Uint8Raster(vector_field.grid);
+  var is_empty = Uint8Raster(vector_field.grid);
+  var is_occupied = Uint8Raster(vector_field.grid);
+  for (var i=0; i<7; ++i) {
+    Uint8Field.eq_scalar (plate_masks, i, plate_mask);
+    Uint8Field.eq_scalar (plate_masks, UINT8_NULL, is_empty);
+    Uint8Field.ne_scalar (plate_masks, i, is_occupied);
+    BinaryMorphology.difference (is_occupied, is_empty, is_occupied);
+    BinaryMorphology.dilation (plate_mask, 5, plate_mask);
+    BinaryMorphology.closing (plate_mask, 5, plate_mask);
+    BinaryMorphology.difference (plate_mask, is_occupied, plate_mask);
+    Uint8RasterGraphics.fill_into_selection(plate_masks, i, plate_mask, plate_masks);
+  }
+  // step 3: find the remaining region that is not mapped to a plate, and make a new plate just for it
+  Uint8Field.eq_scalar (plate_masks, UINT8_NULL, is_empty);
+  Uint8RasterGraphics.fill_into_selection(plate_masks, 7, is_empty, plate_masks);
+  return plate_masks;
 }
 var BinaryMorphology = {};
 BinaryMorphology.VertexTypedArray = function(grid) {
