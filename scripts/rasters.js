@@ -2559,6 +2559,12 @@ VectorImageAnalysis.image_segmentation = function(vector_field, grid) {
   var magnitude = VectorField.magnitude(vector_field);
   var mask = Uint8Raster(vector_field.grid);
   Uint8Raster.fill(mask, 1);
+  var equals = Uint8Field.eq_scalar;
+  var not_equals = Uint8Field.ne_scalar;
+  var dilation = BinaryMorphology.dilation;
+  var closing = BinaryMorphology.closing;
+  var difference = BinaryMorphology.difference;
+  var fill = Uint8RasterGraphics.fill_into_selection;
   var UINT8_NULL = 255;
   // step 1: run flood fill algorithm several times
   var min_plate_size = 200;
@@ -2570,7 +2576,7 @@ VectorImageAnalysis.image_segmentation = function(vector_field, grid) {
     ScalarField.sub_field_term(magnitude, flood_fill, magnitude, magnitude);
     Uint8Field.sub_field(mask, flood_fill, mask);
       if (Uint8Dataset.sum(flood_fill) > min_plate_size) {
-        Uint8RasterGraphics.fill_into_selection(plate_masks, i, flood_fill, plate_masks);
+        fill (plate_masks, i, flood_fill, plate_masks);
         // TODO: do something about infinite loop
         i++;
     }
@@ -2580,18 +2586,18 @@ VectorImageAnalysis.image_segmentation = function(vector_field, grid) {
   var is_empty = Uint8Raster(vector_field.grid);
   var is_occupied = Uint8Raster(vector_field.grid);
   for (var i=0; i<7; ++i) {
-    Uint8Field.eq_scalar (plate_masks, i, plate_mask);
-    Uint8Field.eq_scalar (plate_masks, UINT8_NULL, is_empty);
-    Uint8Field.ne_scalar (plate_masks, i, is_occupied);
-    BinaryMorphology.difference (is_occupied, is_empty, is_occupied);
-    BinaryMorphology.dilation (plate_mask, 5, plate_mask);
-    BinaryMorphology.closing (plate_mask, 5, plate_mask);
-    BinaryMorphology.difference (plate_mask, is_occupied, plate_mask);
-    Uint8RasterGraphics.fill_into_selection(plate_masks, i, plate_mask, plate_masks);
+    equals (plate_masks, i, plate_mask);
+    equals (plate_masks, UINT8_NULL, is_empty);
+    not_equals (plate_masks, i, is_occupied);
+    difference (is_occupied, is_empty, is_occupied);
+    dilation (plate_mask, 5, plate_mask);
+    closing (plate_mask, 5, plate_mask);
+    difference (plate_mask, is_occupied, plate_mask);
+    fill (plate_masks, i, plate_mask, plate_masks);
   }
   // step 3: find the remaining region that is not mapped to a plate, and make a new plate just for it
-  Uint8Field.eq_scalar (plate_masks, UINT8_NULL, is_empty);
-  Uint8RasterGraphics.fill_into_selection(plate_masks, 7, is_empty, plate_masks);
+  equals (plate_masks, UINT8_NULL, is_empty);
+  fill (plate_masks, 7, is_empty, plate_masks);
   return plate_masks;
 }
 var BinaryMorphology = {};
