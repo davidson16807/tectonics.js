@@ -44,25 +44,29 @@ Float32Raster.FromUint16Raster = function(raster) {
   }
   return result;
 }
-Float32Raster.copy = function(field, result) {
-  var result = result || Float32Raster(field.grid);
-  for (var i=0, li=field.length; i<li; ++i) {
-      result[i] = field[i];
+Float32Raster.copy = function(raster, result) {
+  var result = result || Float32Raster(raster.grid);
+  ASSERT_IS_ARRAY(raster, Float32Array)
+  ASSERT_IS_ARRAY(result, Float32Array)
+  for (var i=0, li=raster.length; i<li; ++i) {
+      result[i] = raster[i];
   }
   return result;
 }
-Float32Raster.fill = function (field, value) {
-  for (var i = 0, li = field.length; i < li; i++) {
-    field[i] = value;
+Float32Raster.fill = function (raster, value) {
+  ASSERT_IS_ARRAY(raster, Float32Array)
+  for (var i = 0, li = raster.length; i < li; i++) {
+    raster[i] = value;
   }
 };
 
-Float32Raster.min_id = function (field) {
+Float32Raster.min_id = function (raster) {
+  ASSERT_IS_ARRAY(raster, Float32Array)
   var max = Infinity;
   var max_id = 0;
   var value = 0;
-  for (var i = 0, li = field.length; i < li; i++) {
-    value = field[i];
+  for (var i = 0, li = raster.length; i < li; i++) {
+    value = raster[i];
     if (value < max) {
       max = value;
       max_id = i;
@@ -71,12 +75,13 @@ Float32Raster.min_id = function (field) {
   return max_id;
 };
 
-Float32Raster.max_id = function (field) {
+Float32Raster.max_id = function (raster) {
+  ASSERT_IS_ARRAY(raster, Float32Array)
   var max = -Infinity;
   var max_id = 0;
   var value = 0;
-  for (var i = 0, li = field.length; i < li; i++) {
-    value = field[i];
+  for (var i = 0, li = raster.length; i < li; i++) {
+    value = raster[i];
     if (value > max) {
       max = value;
       max_id = i;
@@ -85,25 +90,33 @@ Float32Raster.max_id = function (field) {
   return max_id;
 };
 
-Float32Raster.get_nearest_value = function(field, pos) {
-  return field[field.grid.getNearestId(pos)];
+Float32Raster.get_nearest_value = function(raster, pos) {
+  ASSERT_IS_ARRAY(raster, Float32Array)
+  return raster[raster.grid.getNearestId(pos)];
 }
-Float32Raster.get_nearest_values = function(value_field, pos_field, result) {
-  result = result || Float32Raster(pos_field.grid);
-  var ids = pos_field.grid.getNearestIds(pos_field);
+Float32Raster.get_nearest_values = function(value_raster, pos_raster, result) {
+  result = result || Float32Raster(pos_raster.grid);
+  ASSERT_IS_ARRAY(value_raster, Float32Array)
+  ASSERT_IS_VECTOR_RASTER(pos_raster)
+  ASSERT_IS_ARRAY(result, Float32Array)
+  var ids = pos_raster.grid.getNearestIds(pos_raster);
   for (var i=0, li=ids.length; i<li; ++i) {
-      result[i] = value_field[ids[i]];
+      result[i] = value_raster[ids[i]];
   }
   return result;
 }
-Float32Raster.get_ids = function(value_field, id_array, result) {
+Float32Raster.get_ids = function(value_raster, id_array, result) {
   result = result || (id_array.grid !== void 0? Float32Raster(id_array.grid) : Float32Array(id_array.length));
+  ASSERT_IS_ARRAY(value_raster, Float32Array)
+  ASSERT_IS_ARRAY(result, Float32Array)
   for (var i=0, li=id_array.length; i<li; ++i) {
-      result[i] = value_field[id_array[i]];
+      result[i] = value_raster[id_array[i]];
   }
   return result;
 }
 Float32Raster.get_mask = function(raster, mask) {
+  ASSERT_IS_ARRAY(raster, Float32Array)
+  ASSERT_IS_ARRAY(mask, Uint8Array)
   var result = new Float32Array(Uint8Dataset.sum(mask));
   for (var i = 0, j = 0, li = mask.length; i < li; i++) {
     if (mask[i] > 0) {
@@ -113,15 +126,17 @@ Float32Raster.get_mask = function(raster, mask) {
   }
   return result;
 }
-Float32Raster.set_ids_to_value = function(field, id_array, value) {
+Float32Raster.set_ids_to_value = function(raster, id_array, value) {
+  ASSERT_IS_ARRAY(raster, Float32Array)
   for (var i=0, li=id_array.length; i<li; ++i) {
-      field[id_array[i]] = value;
+      raster[id_array[i]] = value;
   }
-  return field;
+  return raster;
 }
-Float32Raster.set_ids_to_values = function(field, id_array, value_array) {
+Float32Raster.set_ids_to_values = function(raster, id_array, value_array) {
+  ASSERT_IS_ARRAY(raster, Float32Array)
   for (var i=0, li=id_array.length; i<li; ++i) {
-      field[id_array[i]] = value_array[i];
+      raster[id_array[i]] = value_array[i];
   }
-  return field;
+  return raster;
 }

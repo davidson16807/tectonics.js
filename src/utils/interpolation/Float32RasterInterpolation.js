@@ -3,6 +3,7 @@
 // All input are raster objects, e.g. VectorRaster or Float32Raster
 var Float32RasterInterpolation = {};
 Float32RasterInterpolation.lerp = function(a,b, x, result){
+    ASSERT_IS_ARRAY(x, Float32Array)
     for (var i = 0, li = result.length; i < li; i++) {
 		result[i] = a + x[i]*(b-a);
     }
@@ -16,6 +17,7 @@ Float32RasterInterpolation.clamp = function(x, min_value, max_value, result) {
     return result;
 }
 Float32RasterInterpolation.smoothstep = function(edge0, edge1, x, result) {
+    ASSERT_IS_ARRAY(x, Float32Array)
 	var fraction;
 	var inverse_edge_distance = 1 / (edge1 - edge0);
     for (var i = 0, li = result.length; i < li; i++) {

@@ -167,6 +167,7 @@ var World = (function() {
 		var fill_into_crust = Crust.fill_into_selection;
 		var copy = Uint8Raster.copy;
 		var resample = Uint8Raster.get_ids;
+		var resample_f32 = Float32Raster.get_ids;
 		var margin = BinaryMorphology.margin;
 		var padding = BinaryMorphology.padding;
 		var or = BinaryMorphology.union;
@@ -243,15 +244,15 @@ var World = (function() {
 		        //accrete, part 1
 		        if(ACCRETE) {
 		        	mult_field	(plate.sial, localized_is_detaching,						localized_accretion);
-	            	resample 	(localized_accretion, localized_ids,						globalized_scalar_field);
+	            	resample_f32(localized_accretion, localized_ids,						globalized_scalar_field);
 	            	add 		(globalized_accretion, globalized_scalar_field, 			globalized_accretion);
 		        }
 	        }
 	        //erode
 	        if(ERODE) {
-            	resample(globalized_erosion, globalized_ids,								localized_erosion);
-            	resample(globalized_is_on_top, globalized_ids,								localized_is_on_top);
-	        	add_term(plate.sial, localized_erosion, localized_is_on_top,				plate.sial);
+            	resample_f32(globalized_erosion, globalized_ids,								localized_erosion);
+            	resample 	(globalized_is_on_top, globalized_ids,								localized_is_on_top);
+	        	add_term 	(plate.sial, localized_erosion, localized_is_on_top,				plate.sial);
 	        }
 
 	        //aging
@@ -265,9 +266,9 @@ var World = (function() {
 
 	        //accrete, part 2
 	        if(ACCRETE) {
-            	resample(globalized_is_on_top, globalized_ids,								localized_is_on_top);
-            	resample(globalized_accretion, globalized_ids,								localized_accretion);
-	        	add_term(plate.sial, localized_accretion, localized_is_on_top,				plate.sial);
+            	resample 	(globalized_is_on_top, globalized_ids,								localized_is_on_top);
+            	resample_f32(globalized_accretion, globalized_ids,								localized_accretion);
+	        	add_term 	(plate.sial, localized_accretion, localized_is_on_top,				plate.sial);
 	        }
 		}
 	}

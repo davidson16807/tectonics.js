@@ -4,19 +4,23 @@
 
 var VectorRasterGraphics = {};
 
-VectorRasterGraphics.magic_wand_select = function function_name(field, start_id, mask, result) {
-	result = result || Uint8Raster(field.grid, 0);
+VectorRasterGraphics.magic_wand_select = function function_name(vector_raster, start_id, mask, result) {
+	result = result || Uint8Raster(vector_raster.grid, 0);
+	ASSERT_IS_VECTOR_RASTER(vector_raster)
+	ASSERT_IS_TYPE(start_id, number)
+	ASSERT_IS_ARRAY(mask, Uint8Array)
+	ASSERT_IS_ARRAY(result, Uint8Array)
 
-	var neighbor_lookup = field.grid.neighbor_lookup;
+	var neighbor_lookup = vector_raster.grid.neighbor_lookup;
 	var similarity = Vector.similarity;
 	var magnitude = Vector.magnitude;
 
-	var x = field.x;
-	var y = field.y;
-	var z = field.z;
+	var x = vector_raster.x;
+	var y = vector_raster.y;
+	var z = vector_raster.z;
 
 	var searching = [start_id];
-	var searched = Uint8Raster(field.grid, 0);
+	var searched = Uint8Raster(vector_raster.grid, 0);
 	var grouped  = result;
 
 	searched[start_id] = 1;
@@ -48,12 +52,16 @@ VectorRasterGraphics.magic_wand_select = function function_name(field, start_id,
 	return result;
 }
 
-VectorRasterGraphics.copy_into_selection = function(field, copied, selection, result) {
-	result = result || Float32Raster(field.grid);
+VectorRasterGraphics.copy_into_selection = function(vector_raster, copied, selection, result) {
+	result = result || Float32Raster(vector_raster.grid);
+	ASSERT_IS_VECTOR_RASTER(vector_raster)
+	ASSERT_IS_VECTOR_RASTER(copied)
+	ASSERT_IS_ARRAY(selection, Uint8Array)
+	ASSERT_IS_VECTOR_RASTER(result)
 
-	var ax = field.x;
-	var ay = field.y;
-	var az = field.z;
+	var ax = vector_raster.x;
+	var ay = vector_raster.y;
+	var az = vector_raster.z;
 
 	var bx = copied.x;
 	var by = copied.y;
@@ -63,7 +71,7 @@ VectorRasterGraphics.copy_into_selection = function(field, copied, selection, re
 	var cy = result.y;
 	var cz = result.z;
 
-	for (var i=0, li=field.length; i<li; ++i) {
+	for (var i=0, li=vector_raster.length; i<li; ++i) {
 	    cx[i] = selection[i] === 1? bx[i] : ax[i];
 	    cy[i] = selection[i] === 1? by[i] : ay[i];
 	    cz[i] = selection[i] === 1? bz[i] : az[i];
@@ -72,12 +80,15 @@ VectorRasterGraphics.copy_into_selection = function(field, copied, selection, re
 	return result;
 }
 
-VectorRasterGraphics.fill_into_selection = function(field, fill, selection, result) {
-	result = result || Float32Raster(field.grid);
+VectorRasterGraphics.fill_into_selection = function(vector_raster, fill, selection, result) {
+	result = result || Float32Raster(vector_raster.grid);
+	ASSERT_IS_VECTOR_RASTER(vector_raster)
+	ASSERT_IS_ARRAY(selection, Uint8Array)
+	ASSERT_IS_VECTOR_RASTER(result)
 
-	var ax = field.x;
-	var ay = field.y;
-	var az = field.z;
+	var ax = vector_raster.x;
+	var ay = vector_raster.y;
+	var az = vector_raster.z;
 
 	var bx = fill.x;
 	var by = fill.y;
@@ -87,7 +98,7 @@ VectorRasterGraphics.fill_into_selection = function(field, fill, selection, resu
 	var cy = result.y;
 	var cz = result.z;
 
-	for (var i=0, li=field.length; i<li; ++i) {
+	for (var i=0, li=vector_raster.length; i<li; ++i) {
 	    cx[i] = selection[i] === 1? bx : ax[i];
 	    cy[i] = selection[i] === 1? by : ay[i];
 	    cz[i] = selection[i] === 1? bz : az[i];

@@ -49,6 +49,8 @@ VectorRaster.FromVectors = function(vectors, grid) {
 
 VectorRaster.copy = function(vector_raster, output) {
   var output = output || VectorRaster(vector_raster.grid);
+  ASSERT_IS_VECTOR_RASTER(vector_raster)
+  ASSERT_IS_VECTOR_RASTER(output)
 
   var ix = vector_raster.x;
   var iy = vector_raster.y;
@@ -65,25 +67,27 @@ VectorRaster.copy = function(vector_raster, output) {
   }
   return output;
 }
-VectorRaster.fill = function (value, output) {
+VectorRaster.fill = function (vector_raster, value) {
+  ASSERT_IS_VECTOR_RASTER(vector_raster)
 
   var ix = value.x;
   var iy = value.y;
   var iz = value.z;
 
-  var ox = output.x;
-  var oy = output.y;
-  var oz = output.z;
+  var ox = vector_raster.x;
+  var oy = vector_raster.y;
+  var oz = vector_raster.z;
 
   for (var i=0, li=ox.length; i<li; ++i) {
       ox[i] = ix;
       oy[i] = iy;
       oz[i] = iz;
   }
-  return output;
+  return vector_raster;
 };
 
 VectorRaster.min_id = function (vector_raster) {
+  ASSERT_IS_VECTOR_RASTER(vector_raster)
   var max = Infinity;
   var max_id = 0;
   var mag = 0;
@@ -101,6 +105,7 @@ VectorRaster.min_id = function (vector_raster) {
 };
 
 VectorRaster.max_id = function (vector_raster) {
+  ASSERT_IS_VECTOR_RASTER(vector_raster)
   var max = -Infinity;
   var max_id = 0;
   var mag = 0;
@@ -117,17 +122,21 @@ VectorRaster.max_id = function (vector_raster) {
   return max_id;
 };
 
-VectorRaster.get_nearest_value = function(field, pos) {
-	var id = field.grid.getNearestId(pos);
-	return {x: field.x[id], y: field.y[id], z: field.z[id]};
+VectorRaster.get_nearest_value = function(value_raster, pos) {
+  ASSERT_IS_VECTOR_RASTER(value_raster)
+	var id = value_raster.grid.getNearestId(pos);
+	return {x: value_raster.x[id], y: value_raster.y[id], z: value_raster.z[id]};
 }
-VectorRaster.get_nearest_values = function(value_field, pos_field, result) {
-	result = result || VectorRaster(pos_field.grid);
-	var ids = pos_field.grid.getNearestIds(pos_field);
+VectorRaster.get_nearest_values = function(value_raster, pos_raster, result) {
+	result = result || VectorRaster(pos_raster.grid);
+  ASSERT_IS_VECTOR_RASTER(vector_raster)
+  ASSERT_IS_VECTOR_RASTER(pos_raster)
+  ASSERT_IS_VECTOR_RASTER(result)
+	var ids = pos_raster.grid.getNearestIds(pos_raster);
 
-  var ix = value_field.x; 
-  var iy = value_field.y; 
-  var iz = value_field.z; 
+  var ix = value_raster.x; 
+  var iy = value_raster.y; 
+  var iz = value_raster.z; 
 
 	var ox = result.x;
 	var oy = result.y;

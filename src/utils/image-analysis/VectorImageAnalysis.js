@@ -42,7 +42,7 @@ VectorImageAnalysis.image_segmentation = function(vector_field, grid) {
 		flood_fill = VectorRasterGraphics.magic_wand_select(vector_field, Float32Raster.max_id(magnitude), mask);   
 		ScalarField.sub_field_term(magnitude, flood_fill, magnitude, magnitude);
 		Uint8Field.sub_field(mask, flood_fill, mask);
-	    if (Float32Dataset.sum(flood_fill) > min_plate_size) { 
+	    if (Uint8Dataset.sum(flood_fill) > min_plate_size) { 
 			flood_fills.push(flood_fill);
 			i++;
 		}
