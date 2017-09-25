@@ -223,7 +223,7 @@ testDisplays.flood_fill_closing = new ScalarHeatDisplay(  {
 
 // test for image segmentation algorithm
 testDisplays.flood_fill8 = new ScalarHeatDisplay(  { 
-		min: '10.', max: '0.',
+		min: '8.', max: '0.',
 		getField: function (crust, flood_fill, scratch1) {
 			// scratch represents pressure
 			var pressure = scratch1;
@@ -233,13 +233,8 @@ testDisplays.flood_fill8 = new ScalarHeatDisplay(  {
 			var gradient = ScalarField.gradient(field);
 			var angular_velocity = VectorField.cross_vector_field(gradient, crust.grid.pos);
 			var gradient = angular_velocity;
-			var crust_fields = VectorImageAnalysis.image_segmentation(gradient, crust.grid);
-			
-			var crust_field_sum = Float32Raster(crust.grid, 0);
-			for (var i=0; i<crust_fields.length; ++i) {
-				ScalarField.add_scalar_term(crust_field_sum, crust_fields[i], i+1, crust_field_sum);
-			}
-			return crust_field_sum;
+			var plate_masks = VectorImageAnalysis.image_segmentation(gradient, crust.grid);
+			return plate_masks;
 		}
 	} );
 
