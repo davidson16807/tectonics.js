@@ -29,6 +29,4 @@ SupercontinentCycle.prototype.restart = function() {
 	this.duration = this.getRandomDuration();
 
 	world.resetPlates();
-
-	// TODO: nudge plates here by small fraction, for testing purposes
 }; 

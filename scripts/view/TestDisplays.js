@@ -65,8 +65,6 @@ testDisplays.single_plate = new ScalarHeatDisplay( { min: '0.', max: '1.',
 
 
 
-// TODO: get these to work without "getSubductabilitySmoothed"
-
 // test for the flood fill algorithm, AKA "magic wand select"
 testDisplays.flood_fill1 = new ScalarHeatDisplay(  { 
 		min: '1.', max: '0.',
