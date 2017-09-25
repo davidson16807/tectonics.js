@@ -30,7 +30,7 @@ Uint8Dataset.unique = function (dataset) {
   ASSERT_IS_ARRAY(dataset, Uint8Array)
   var unique = {};
   for (var i=0, li=dataset.length; i<li; ++i) {
-    unique[dataset[i]] = 0;
+    unique[dataset[i]] = dataset[i];
   }
-  return unique.keys();
+  return Object.values(unique);
 };
