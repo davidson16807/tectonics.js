@@ -325,17 +325,19 @@ var World = (function() {
 		TectonicsModeling.get_asthenosphere_velocity(pressure, this.asthenosphere_velocity);
 		var angular_velocity = VectorField.cross_vector_field(this.asthenosphere_velocity, this.grid.pos);
 		var plate_masks = VectorImageAnalysis.image_segmentation(angular_velocity, this.grid);
+		var plate_ids = Uint8Dataset.unique(plate_masks);
 		this.plates = [];
 
 		var plate;
 		// TODO: overwrite plates instead of creating new ones, create separate function for plate initialization
-		for (var i = 0, li = plate_masks.length; i < li; ++i) {
+		for (var i = 0, li = plate_ids.length; i < li; ++i) {
 			plate = new Plate({
 				world: 	this,
-				mask: 	plate_masks[i]
+				mask: 	Uint8Field.eq_scalar(plate_masks, plate_ids[i])
 			})
 			Crust.copy(this, plate);
 
+			// TODO: see if you can't get this to reflect relative magnitude of average surface asthenosphere velocity
 			plate.angularSpeed = this.getRandomPlateSpeed();
 
 			this.plates.push(plate);
