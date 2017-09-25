@@ -26,3 +26,11 @@ Uint8Dataset.average = function (dataset) {
   }
   return result / dataset.length;
 };
+Uint8Dataset.unique = function (dataset) {
+  ASSERT_IS_ARRAY(dataset, Uint8Array)
+  var unique = {};
+  for (var i=0, li=dataset.length; i<li; ++i) {
+    unique[dataset[i]] = 0;
+  }
+  return unique.keys();
+};
