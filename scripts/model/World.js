@@ -272,40 +272,6 @@ var World = (function() {
 	        }
 		}
 	}
-	function merge_master_to_plates(master, plates) {
-		return;
-		var plate;
-		var local_plate_mask_negation = Uint8Raster(master.grid);
-		var globalized_pos = VectorRaster(master.grid);
-		var localized_scalar_field = Float32Raster(master.grid);
-		var localized_vector_field = VectorRaster(master.grid); 
-		
-		var angular_velocity = VectorField.cross_vector_field(master.asthenosphere_velocity, master.grid.pos); 
-		for (var i = 0; i < plates.length; i++) {
-			plate = plates[i];
-			VectorField.mult_matrix(plate.grid.pos, plate.local_to_global_matrix.elements, globalized_pos);
-
-			//BinaryMorphology.negation(plate.mask, local_plate_mask_negation);
-//
-//			//Float32Raster.get_nearest_values(master.thickness, globalized_pos, localized_scalar_field);
-//			//Float32RasterGraphics.copy_into_selection(plate.thickness, localized_scalar_field, local_plate_mask_negation, plate.thickness);
-//
-//			//Float32Raster.get_nearest_values(master.density, globalized_pos, localized_scalar_field);
-//			//Float32RasterGraphics.copy_into_selection(plate.density, localized_scalar_field, local_plate_mask_negation, plate.density);
-//
-//			//Float32Raster.get_nearest_values(master.displacement, globalized_pos, localized_scalar_field);
-//			//Float32RasterGraphics.copy_into_selection(plate.displacement, localized_scalar_field, local_plate_mask_negation, plate.displacement);
-//
-			//Float32Raster.get_nearest_values(master.age, globalized_pos, localized_scalar_field);
-			//Float32RasterGraphics.copy_into_selection(plate.age, localized_scalar_field, local_plate_mask_negation, plate.age);
-
-			// VectorRaster.get_nearest_values(angular_velocity, globalized_pos, localized_vector_field); 
-			// var eulerPole = VectorDataset.weighted_average(localized_vector_field, plate.mask)
-			// //todo: fix it properly - no negation!
-			// plate.eulerPole = new THREE.Vector3(-eulerPole.x, -eulerPole.y, -eulerPole.z).normalize(); 
-		}
-	}
-
 
 	World.prototype.SEALEVEL = 3682;
 	World.prototype.mantleDensity=3300;
@@ -349,7 +315,13 @@ var World = (function() {
 		}
 	};
 
-
+	// update fields that are derived from others
+	function update_calculated_fields(crust) {
+		TectonicsModeling.get_thickness(crust.sima, crust.sial, crust.thickness);
+		TectonicsModeling.get_density(crust.sima, crust.sial, crust.age, crust.density);
+		TectonicsModeling.get_subductability(crust.density, crust.subductability);
+		TectonicsModeling.get_displacement(crust.thickness, crust.density, world.mantleDensity, crust.displacement);
+	}
 	World.prototype.fast_update = function (timestep) {
 	 	if (timestep === 0) {
 	 		return;
@@ -359,35 +331,17 @@ var World = (function() {
 	 		this.plates[i].move(timestep)
 	 	}
 	}
-	// update fields that are derived from others
-	function update_calculated_fields(crust) {
-		TectonicsModeling.get_thickness(crust.sima, crust.sial, crust.thickness);
-		TectonicsModeling.get_density(crust.sima, crust.sial, crust.age, crust.density);
-		TectonicsModeling.get_subductability(crust.density, crust.subductability);
-		TectonicsModeling.get_displacement(crust.thickness, crust.density, world.mantleDensity, crust.displacement);
-	}
 	World.prototype.slow_update = function(timestep){
 		if (timestep === 0) {
 			return;
 		};
 
 		update_calculated_fields(this);
-
-		//TectonicsModeling.get_asthenosphere_velocity(this.subductability, this.asthenosphere_velocity);
-		
 		this.supercontinentCycle.update(timestep);
-
-		merge_master_to_plates(this, this.plates);
-
 		merge_plates_to_master(this.plates, this);
 		update_plates(this, timestep, this.plates);
 
 		// World submodels go here: atmo model, hydro model, bio model, etc.
-
-		//FIRST ITERATION? 
-		// var new_pos = add_scalar_term(grid.pos, asthenosphere_velocity, -timestep);
-		// var ids = get_nearest_ids(new_pos);
-		// get_values(fields, ids); giving fields
 
 		Publisher.publish('crust', 'update', { 
 			value: this, 
