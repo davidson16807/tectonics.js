@@ -1,4 +1,11 @@
-TectonicsModeling = {};
+
+// "TectonicsModeling" is the distillation of all core geological sub models within tectonics.js
+// All functions are global and stateless. 
+// Only the raster data structures and namespaces are used. 
+// No other data structure is assumed to exist.
+// The idea is to create a core that remains static to changes across application architecture.
+
+var TectonicsModeling = {};
 
 TectonicsModeling.get_thickness = function(sima, sial, thickness) {
 	return ScalarField.add_field(sima, sial, thickness);
@@ -88,6 +95,7 @@ TectonicsModeling.get_erosion = function(displacement, sealevel, timestep, erosi
 	// console.log(Float32Dataset.average(erosion));
 	return erosion;
 }
+// get a map of plates using image segmentation and binary morphology
 TectonicsModeling.get_plate_map = function(vector_field, segment_num, min_segment_size, segments) {
   var segments = segments || Uint8Raster(vector_field.grid);
   
