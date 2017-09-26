@@ -1,9 +1,9 @@
 
-// "TectonicsModeling" is the distillation of all core geological sub models within tectonics.js
+// "TectonicsModeling" is the distillation of all raster-based geological sub models within tectonics.js
 // All functions are global and stateless. 
 // Only the raster data structures and namespaces are used. 
 // No other data structure is assumed to exist.
-// The idea is to create a core that remains static to changes across application architecture.
+// The idea is to create a core that's invariant to changes across application architecture.
 
 var TectonicsModeling = {};
 
