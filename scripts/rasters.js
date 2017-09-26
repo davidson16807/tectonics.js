@@ -1870,11 +1870,12 @@ Uint8RasterGraphics.fill_into_selection = function(raster, fill, selection, resu
 // you've come to expect from a standard image editor like Gimp or MS Paint
 var VectorRasterGraphics = {};
 VectorRasterGraphics.magic_wand_select = function function_name(vector_raster, start_id, mask, result) {
- result = result || Uint8Raster(vector_raster.grid, 0);
+ result = result || Uint8Raster(vector_raster.grid);
  if (!(vector_raster.x !== void 0) && !(vector_raster.x instanceof Float32Array)) { throw "vector_raster" + ' is not a vector raster'; }
  if (!(typeof start_id == "number")) { throw "start_id" + ' is not a ' + "number"; }
  if (!(mask instanceof Uint8Array)) { throw "mask" + ' is not a ' + "Uint8Array"; }
  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
+ Uint8Raster.fill(result, 0);
  var neighbor_lookup = vector_raster.grid.neighbor_lookup;
  var similarity = Vector.similarity;
  var magnitude = Vector.magnitude;
@@ -2568,11 +2569,11 @@ VectorImageAnalysis.image_segmentation = function(vector_field, grid) {
   var fill_f32 = Float32RasterGraphics.fill_into_selection;
   // step 1: run flood fill algorithm several times
   var min_plate_size = 200;
-  var flood_fill;
+  var flood_fill = Uint8Raster(vector_field.grid);
   var plate_masks = Uint8Raster(vector_field.grid);
   Uint8Raster.fill(plate_masks, 0);
   for (var i=1; i<7; ) {
-    flood_fill = VectorRasterGraphics.magic_wand_select(vector_field, Float32Raster.max_id(magnitude), mask);
+    VectorRasterGraphics.magic_wand_select(vector_field, Float32Raster.max_id(magnitude), mask, flood_fill);
     fill_f32(magnitude, 0, flood_fill, magnitude);
     fill_ui8(mask, 0, flood_fill, mask);
     if (Uint8Dataset.sum(flood_fill) > min_plate_size) {

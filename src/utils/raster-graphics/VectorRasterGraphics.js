@@ -5,12 +5,13 @@
 var VectorRasterGraphics = {};
 
 VectorRasterGraphics.magic_wand_select = function function_name(vector_raster, start_id, mask, result) {
-	result = result || Uint8Raster(vector_raster.grid, 0);
+	result = result || Uint8Raster(vector_raster.grid);
 	ASSERT_IS_VECTOR_RASTER(vector_raster)
 	ASSERT_IS_TYPE(start_id, number)
 	ASSERT_IS_ARRAY(mask, Uint8Array)
 	ASSERT_IS_ARRAY(result, Uint8Array)
 
+	Uint8Raster.fill(result, 0);
 	var neighbor_lookup = vector_raster.grid.neighbor_lookup;
 	var similarity = Vector.similarity;
 	var magnitude = Vector.magnitude;
