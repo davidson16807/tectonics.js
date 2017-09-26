@@ -108,10 +108,6 @@ TectonicsModeling.get_plate_map = function(vector_field, segment_num, min_segmen
   var closing     = BinaryMorphology.closing;
   var difference  = BinaryMorphology.difference;
   var fill_ui8    = Uint8RasterGraphics.fill_into_selection;
-  var fill_f32    = Float32RasterGraphics.fill_into_selection;
-  var magic_wand  = VectorRasterGraphics.magic_wand_select;
-  var sum         = Uint8Dataset.sum;
-  var max_id      = Float32Raster.max_id;
 
   // step 2: dilate and take difference with (segments != i)
   var segment = Uint8Raster(vector_field.grid);

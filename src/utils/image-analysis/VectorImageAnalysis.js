@@ -42,11 +42,6 @@ VectorImageAnalysis.image_segmentation = function(vector_field, segment_num, min
   var occupied = Uint8Raster(vector_field.grid);
   Uint8Raster.fill(occupied, 1);
 
-  var equals      = Uint8Field.eq_scalar;
-  var not_equals 	= Uint8Field.ne_scalar;
-  var dilation		= BinaryMorphology.dilation;
-  var closing     = BinaryMorphology.closing;
-  var difference	= BinaryMorphology.difference;
   var fill_ui8    = Uint8RasterGraphics.fill_into_selection;
   var fill_f32    = Float32RasterGraphics.fill_into_selection;
   var magic_wand 	= VectorRasterGraphics.magic_wand_select;
