@@ -88,3 +88,37 @@ TectonicsModeling.get_erosion = function(displacement, sealevel, timestep, erosi
 	// console.log(Float32Dataset.average(erosion));
 	return erosion;
 }
+TectonicsModeling.get_plate_map = function(vector_field, segment_num, min_segment_size, segments) {
+  var segments = segments || Uint8Raster(vector_field.grid);
+  
+  // step 1: run image segmentation algorithm
+  VectorImageAnalysis.image_segmentation(vector_field, segment_num, min_segment_size, segments);
+
+  var equals      = Uint8Field.eq_scalar;
+  var not_equals  = Uint8Field.ne_scalar;
+  var dilation    = BinaryMorphology.dilation;
+  var closing     = BinaryMorphology.closing;
+  var difference  = BinaryMorphology.difference;
+  var fill_ui8    = Uint8RasterGraphics.fill_into_selection;
+  var fill_f32    = Float32RasterGraphics.fill_into_selection;
+  var magic_wand  = VectorRasterGraphics.magic_wand_select;
+  var sum         = Uint8Dataset.sum;
+  var max_id      = Float32Raster.max_id;
+
+  // step 2: dilate and take difference with (segments != i)
+  var segment = Uint8Raster(vector_field.grid);
+  var is_empty = Uint8Raster(vector_field.grid);
+  var is_occupied = Uint8Raster(vector_field.grid);
+  for (var i=1; i<7; ++i) {
+    equals      (segments, i,      segment);
+    equals      (segments, 0,      is_empty);
+    not_equals  (segments, i,      is_occupied);
+    difference  (is_occupied, is_empty, is_occupied);
+    dilation    (segment, 5,        segment);
+    closing     (segment, 5,        segment);
+    difference  (segment, is_occupied, segment);
+    fill_ui8  (segments, i, segment, segments);
+  }
+
+  return segments;
+}

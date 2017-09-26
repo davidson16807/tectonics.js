@@ -2555,11 +2555,15 @@ var VectorImageAnalysis = {};
 // NOTE: this uses no particular algorithm, I wrote it before I started looking into the research
 // This function repeatedly uses the flood fill algorithm from VectorRasterGraphics,
 // then uses mathematical morphology to ensure there are no overlapping regions between segments
-VectorImageAnalysis.image_segmentation = function(vector_field, grid) {
-  //TODO: holy shit, this still needs perf improvement
+VectorImageAnalysis.image_segmentation = function(vector_field, segment_num, min_segment_size, result) {
+  var segment_num = segment_num;
+  var max_iterations = 2 * segment_num;
   var magnitude = VectorField.magnitude(vector_field);
-  var mask = Uint8Raster(vector_field.grid);
-  Uint8Raster.fill(mask, 1);
+  var segment = Uint8Raster(vector_field.grid);
+  var segments = result || Uint8Raster(vector_field.grid);
+  Uint8Raster.fill(segments, 0);
+  var occupied = Uint8Raster(vector_field.grid);
+  Uint8Raster.fill(occupied, 1);
   var equals = Uint8Field.eq_scalar;
   var not_equals = Uint8Field.ne_scalar;
   var dilation = BinaryMorphology.dilation;
@@ -2571,35 +2575,15 @@ VectorImageAnalysis.image_segmentation = function(vector_field, grid) {
   var sum = Uint8Dataset.sum;
   var max_id = Float32Raster.max_id;
   // step 1: run flood fill algorithm several times
-  var min_plate_size = 200;
-  var max_iterations = 20;
-  var flood_fill = Uint8Raster(vector_field.grid);
-  var plate_masks = Uint8Raster(vector_field.grid);
-  Uint8Raster.fill(plate_masks, 0);
   for (var i=1, j=0; i<7 && j<max_iterations; j++) {
-    magic_wand (vector_field, max_id(magnitude), mask, flood_fill);
-    fill_f32 (magnitude, 0, flood_fill, magnitude);
-    fill_ui8 (mask, 0, flood_fill, mask);
-    if (sum(flood_fill) > min_plate_size) {
-        fill_ui8 (plate_masks, i, flood_fill, plate_masks);
+    magic_wand(vector_field, max_id(magnitude), occupied, segment);
+    fill_f32 (magnitude, 0, segment, magnitude);
+    fill_ui8 (occupied, 0, segment, occupied);
+    if (sum(segment) > min_segment_size) {
+        fill_ui8 (segments, i, segment, segments);
         i++;
     }
   }
-  // step 2: dilate and take difference with (plate_masks != i)
-  var plate_mask = Uint8Raster(vector_field.grid);
-  var is_empty = Uint8Raster(vector_field.grid);
-  var is_occupied = Uint8Raster(vector_field.grid);
-  for (var i=1; i<7; ++i) {
-    equals (plate_masks, i, plate_mask);
-    equals (plate_masks, 0, is_empty);
-    not_equals (plate_masks, i, is_occupied);
-    difference (is_occupied, is_empty, is_occupied);
-    dilation (plate_mask, 5, plate_mask);
-    closing (plate_mask, 5, plate_mask);
-    difference (plate_mask, is_occupied, plate_mask);
-    fill_ui8 (plate_masks, i, plate_mask, plate_masks);
-  }
-  return plate_masks;
 }
 var BinaryMorphology = {};
 BinaryMorphology.VertexTypedArray = function(grid) {

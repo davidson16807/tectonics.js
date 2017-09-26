@@ -30,7 +30,6 @@ var VectorImageAnalysis = {};
 // then uses mathematical morphology to ensure there are no overlapping regions between segments
 VectorImageAnalysis.image_segmentation = function(vector_field, segment_num, min_segment_size, result) {
   var segment_num = segment_num;
-  var min_segment_size = min_segment_size;
   var max_iterations = 2 * segment_num;
 
   var magnitude = VectorField.magnitude(vector_field);
@@ -59,26 +58,10 @@ VectorImageAnalysis.image_segmentation = function(vector_field, segment_num, min
     magic_wand(vector_field, max_id(magnitude), occupied, segment);   
     fill_f32 	(magnitude, 0, segment, 		                magnitude);
     fill_ui8 	(occupied, 0, segment, 			                occupied);
-    if (sum(segment) > min_plate_size) { 
+    if (sum(segment) > min_segment_size) { 
         fill_ui8 (segments, i, segment, 	                segments);
         i++;
     }
   }
-  
-  // step 2: dilate and take difference with (segments != i)
-  var is_empty = Uint8Raster(vector_field.grid);
-  var is_occupied = Uint8Raster(vector_field.grid);
-  for (var i=1; i<7; ++i) {
-    equals    	(segments, i, 		 segment);
-    equals    	(segments, 0, 		 is_empty);
-    not_equals	(segments, i, 		 is_occupied);
-    difference 	(is_occupied, is_empty, is_occupied);
-    dilation 	  (segment, 5,			  segment);
-    closing  	  (segment, 5,			  segment);
-    difference	(segment, is_occupied, segment);
-    fill_ui8 	(segments, i, segment, segments);
-  }
-
-  return segments;
 }
 

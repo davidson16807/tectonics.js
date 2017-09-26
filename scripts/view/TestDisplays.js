@@ -233,7 +233,7 @@ testDisplays.flood_fill8 = new ScalarHeatDisplay(  {
 			var gradient = ScalarField.gradient(field);
 			var angular_velocity = VectorField.cross_vector_field(gradient, crust.grid.pos);
 			var gradient = angular_velocity;
-			var plate_masks = VectorImageAnalysis.image_segmentation(gradient, 7, 200);
+			var plate_masks = TectonicsModeling.get_plate_map(gradient, 7, 200);
 			return plate_masks;
 		}
 	} );

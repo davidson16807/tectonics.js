@@ -324,7 +324,7 @@ var World = (function() {
 		var pressure = TectonicsModeling.get_asthenosphere_pressure(this.subductability);
 		TectonicsModeling.get_asthenosphere_velocity(pressure, this.asthenosphere_velocity);
 		var angular_velocity = VectorField.cross_vector_field(this.asthenosphere_velocity, this.grid.pos);
-		var plate_masks = VectorImageAnalysis.image_segmentation(angular_velocity, 7, 200);
+		var plate_masks = TectonicsModeling.get_plate_map(angular_velocity, 7, 200);
 		var plate_ids = Uint8Dataset.unique(plate_masks);
 		this.plates = [];
 
