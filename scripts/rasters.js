@@ -2567,18 +2567,21 @@ VectorImageAnalysis.image_segmentation = function(vector_field, grid) {
   var difference = BinaryMorphology.difference;
   var fill_ui8 = Uint8RasterGraphics.fill_into_selection;
   var fill_f32 = Float32RasterGraphics.fill_into_selection;
+  var magic_wand = VectorRasterGraphics.magic_wand_select;
+  var sum = Uint8Dataset.sum;
+  var max_id = Float32Raster.max_id;
   // step 1: run flood fill algorithm several times
   var min_plate_size = 200;
+  var max_iterations = 20;
   var flood_fill = Uint8Raster(vector_field.grid);
   var plate_masks = Uint8Raster(vector_field.grid);
   Uint8Raster.fill(plate_masks, 0);
-  for (var i=1; i<7; ) {
-    VectorRasterGraphics.magic_wand_select(vector_field, Float32Raster.max_id(magnitude), mask, flood_fill);
-    fill_f32(magnitude, 0, flood_fill, magnitude);
-    fill_ui8(mask, 0, flood_fill, mask);
-    if (Uint8Dataset.sum(flood_fill) > min_plate_size) {
+  for (var i=1, j=0; i<7 && j<max_iterations; j++) {
+    magic_wand (vector_field, max_id(magnitude), mask, flood_fill);
+    fill_f32 (magnitude, 0, flood_fill, magnitude);
+    fill_ui8 (mask, 0, flood_fill, mask);
+    if (sum(flood_fill) > min_plate_size) {
         fill_ui8 (plate_masks, i, flood_fill, plate_masks);
-        // TODO: do something about infinite loop
         i++;
     }
   }
