@@ -11,7 +11,7 @@ Sphere.toCartesian = function(spherical){
 }
 
 Sphere.getRandomPoint = function() {
-	return _toCartesian({
+	return Sphere.toCartesian({
 		lat: Math.asin(2*random.random() - 1),
 		lon: 2*Math.PI * random.random()
 	});

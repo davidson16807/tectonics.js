@@ -1,19 +1,5 @@
 'use strict';
 
-function _toSpherical(cartesian){
-	return {lat: Math.asin(cartesian.y/cartesian.length()), lon: Math.atan2(-cartesian.z, cartesian.x)};
-}
-
-function _toCartesian (spherical){
-	return new THREE.Vector3(
-		Math.cos(spherical.lat)  * Math.cos(spherical.lon),
-	    Math.sin(spherical.lat),
-		-Math.cos(spherical.lat) * Math.sin(spherical.lon));
-}
-function _bound (value, min, max){
-	return Math.max(Math.min(value, max), min);
-}
-
 //Data structure mapping coordinates on a sphere to the nearest point in a kdtree
 //Retrievals from the map are of O(1) complexity. The result resembles a voronoi diagram, hence the name.
 function VoronoiSphere(pointsNum, kdtree){
@@ -63,6 +49,7 @@ function VoronoiSphere(pointsNum, kdtree){
 	var nearest_id = 0;
 	var component_order = component_orders[0];
 	var raster_components = [];
+	var sqrt = Math.sqrt;
 	for (var i = 0; i < li; ++i) {
 		raster = sides[i];
 		component_order = component_orders[i];
@@ -72,7 +59,7 @@ function VoronoiSphere(pointsNum, kdtree){
 				raster_x = j * cell_half_width - 1;
 				raster_y = k * cell_half_width - 1;
 				// reconstruct the dimension omitted from the grid using pythagorean theorem
-				raster_z = Math.sqrt(1 - (raster_x * raster_x) - (raster_y * raster_y)) || 0;
+				raster_z = sqrt(1 - (raster_x * raster_x) - (raster_y * raster_y)) || 0;
 				raster_z *= i > 2? -1 : 1;
 				// translate from raster coordinates to absolute coordinates
 				raster_components = [raster_x, raster_y, raster_z];
