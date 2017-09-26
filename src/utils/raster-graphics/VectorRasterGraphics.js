@@ -4,8 +4,10 @@
 
 var VectorRasterGraphics = {};
 
-VectorRasterGraphics.magic_wand_select = function function_name(vector_raster, start_id, mask, result) {
+VectorRasterGraphics.magic_wand_select = function function_name(vector_raster, start_id, mask, result, scratch_ui8) {
 	result = result || Uint8Raster(vector_raster.grid);
+	scratch_ui8 = scratch_ui8 || Uint8Raster(vector_raster.grid);
+	
 	ASSERT_IS_VECTOR_RASTER(vector_raster)
 	ASSERT_IS_TYPE(start_id, number)
 	ASSERT_IS_ARRAY(mask, Uint8Array)
@@ -21,7 +23,7 @@ VectorRasterGraphics.magic_wand_select = function function_name(vector_raster, s
 	var z = vector_raster.z;
 
 	var searching = [start_id];
-	var searched = Uint8Raster(vector_raster.grid, 0);
+	var searched = scratch_ui8;
 	var grouped  = result;
 
 	searched[start_id] = 1;
