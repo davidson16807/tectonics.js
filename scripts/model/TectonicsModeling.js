@@ -113,15 +113,18 @@ TectonicsModeling.get_plate_map = function(vector_field, segment_num, min_segmen
   var segment = Uint8Raster(vector_field.grid);
   var is_empty = Uint8Raster(vector_field.grid);
   var is_occupied = Uint8Raster(vector_field.grid);
-  for (var i=1; i<7; ++i) {
-    equals      (segments, i,      segment);
-    equals      (segments, 0,      is_empty);
-    not_equals  (segments, i,      is_occupied);
+  var plate_ids = Uint8Dataset.unique(segments);
+  var plate_id = 0;
+  for (var i = 0, li = plate_ids.length; i < li; ++i) {
+  	plate_id = plate_ids[i]
+    equals      (segments, plate_id,	segment);
+    equals      (segments, 0,      	is_empty);
+    not_equals  (segments, plate_id,	is_occupied);
     difference  (is_occupied, is_empty, is_occupied);
-    dilation    (segment, 5,        segment);
-    closing     (segment, 5,        segment);
-    difference  (segment, is_occupied, segment);
-    fill_ui8  (segments, i, segment, segments);
+    dilation    (segment, 5,        	segment);
+    closing     (segment, 5,        	segment);
+    difference  (segment, is_occupied,  segment);
+    fill_ui8    (segments, plate_id, segment, segments);
   }
 
   return segments;
