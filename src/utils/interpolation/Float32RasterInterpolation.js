@@ -26,7 +26,13 @@ Float32RasterInterpolation.smoothstep = function(edge0, edge1, x, result) {
 	}
 	return result;
 }
-//Float32RasterInterpolation.smooth_heaviside = function(x, k) {
-//	return 2 / (1 + Math.exp(-k*x)) - 1;
-//	return x>0? 1: 0; 
-//}
+Float32RasterInterpolation.smooth_heaviside = function(x, k, result) {
+    result = result || Float32Raster(x.grid);
+    ASSERT_IS_ARRAY(x, Float32Array)
+    ASSERT_IS_ARRAY(result, Float32Array)
+    var exp = Math.exp;
+    for (var i = 0, li = result.length; i < li; i++) {
+	   result[i] = 2 / (1 + exp(-k*x[i])) - 1;
+    }
+    return result;
+}
