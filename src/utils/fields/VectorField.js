@@ -94,7 +94,7 @@ VectorField.dot_vector_field = function(vector_field1, vector_field2, result) {
 	
 	ASSERT_IS_VECTOR_RASTER(vector_field1)
 	ASSERT_IS_VECTOR_RASTER(vector_field2)
-	ASSERT_IS_VECTOR_RASTER(result)
+	ASSERT_IS_ARRAY(result, Float32Array)
 
 	var x1 = vector_field1.x;
 	var y1 = vector_field1.y;
@@ -104,7 +104,7 @@ VectorField.dot_vector_field = function(vector_field1, vector_field2, result) {
 	var y2 = vector_field2.y;
 	var z2 = vector_field2.z;
 
-	for (var i=0, li=x.length; i<li; ++i) {
+	for (var i=0, li=x1.length; i<li; ++i) {
 	    result[i] = x1[i] * x2[i] + 
 	    			y1[i] * y2[i] + 
 	    			z1[i] * z2[i];
@@ -241,7 +241,7 @@ VectorField.dot_vector = function(vector_field, vector, result) {
 	result = result || Float32Raster(vector_field.grid);
 	
 	ASSERT_IS_VECTOR_RASTER(vector_field)
-	ASSERT_IS_VECTOR_RASTER(result)
+	ASSERT_IS_ARRAY(result, Float32Array)
 
 	var x1 = vector_field.x;
 	var y1 = vector_field.y;
@@ -251,10 +251,10 @@ VectorField.dot_vector = function(vector_field, vector, result) {
 	var y2 = vector.y;
 	var z2 = vector.z;
 
-	for (var i=0, li=x.length; i<li; ++i) {
-	    result[i] = x1[i] * x2[i] + 
-	    			y1[i] * y2[i] + 
-	    			z1[i] * z2[i];
+	for (var i=0, li=x1.length; i<li; ++i) {
+	    result[i] = x1[i] * x2 + 
+	    			y1[i] * y2 + 
+	    			z1[i] * z2;
 	}
 	return result;
 };

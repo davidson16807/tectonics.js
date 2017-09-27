@@ -1682,14 +1682,14 @@ VectorField.dot_vector_field = function(vector_field1, vector_field2, result) {
  result = result || Float32Raster(vector_field1.grid);
  if (!(vector_field1.x !== void 0) && !(vector_field1.x instanceof Float32Array)) { throw "vector_field1" + ' is not a vector raster'; }
  if (!(vector_field2.x !== void 0) && !(vector_field2.x instanceof Float32Array)) { throw "vector_field2" + ' is not a vector raster'; }
- if (!(result.x !== void 0) && !(result.x instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
+ if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
  var x1 = vector_field1.x;
  var y1 = vector_field1.y;
  var z1 = vector_field1.z;
  var x2 = vector_field2.x;
  var y2 = vector_field2.y;
  var z2 = vector_field2.z;
- for (var i=0, li=x.length; i<li; ++i) {
+ for (var i=0, li=x1.length; i<li; ++i) {
      result[i] = x1[i] * x2[i] +
         y1[i] * y2[i] +
         z1[i] * z2[i];
@@ -1793,17 +1793,17 @@ VectorField.sub_vector = function(vector_field, vector, result) {
 VectorField.dot_vector = function(vector_field, vector, result) {
  result = result || Float32Raster(vector_field.grid);
  if (!(vector_field.x !== void 0) && !(vector_field.x instanceof Float32Array)) { throw "vector_field" + ' is not a vector raster'; }
- if (!(result.x !== void 0) && !(result.x instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
+ if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
  var x1 = vector_field.x;
  var y1 = vector_field.y;
  var z1 = vector_field.z;
  var x2 = vector.x;
  var y2 = vector.y;
  var z2 = vector.z;
- for (var i=0, li=x.length; i<li; ++i) {
-     result[i] = x1[i] * x2[i] +
-        y1[i] * y2[i] +
-        z1[i] * z2[i];
+ for (var i=0, li=x1.length; i<li; ++i) {
+     result[i] = x1[i] * x2 +
+        y1[i] * y2 +
+        z1[i] * z2;
  }
  return result;
 };
@@ -2855,10 +2855,16 @@ Float32RasterInterpolation.smoothstep = function(edge0, edge1, x, result) {
  }
  return result;
 }
-//Float32RasterInterpolation.smooth_heaviside = function(x, k) {
-//	return 2 / (1 + Math.exp(-k*x)) - 1;
-//	return x>0? 1: 0; 
-//}
+Float32RasterInterpolation.smooth_heaviside = function(x, k, result) {
+    result = result || Float32Raster(x.grid);
+    if (!(x instanceof Float32Array)) { throw "x" + ' is not a ' + "Float32Array"; }
+    if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
+    var exp = Math.exp;
+    for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = 2 / (1 + exp(-k*x[i])) - 1;
+    }
+    return result;
+}
 // The VectorImageAnalysis namespace encompasses advanced functionality 
 // common to image analysis
 var VectorImageAnalysis = {};
