@@ -39,15 +39,14 @@ EliasHeightMapGenerator.generate = function (grid, optional) {
 	// It only represents how cells would rank if sorted by elevation.
 	// This is done so we can later derive elevations that are consistent with earth's.
 	var positions = grid.vertices;
+	var pos = grid.pos;
+	var z = Float32Raster(grid);
 	var height_ranks = Float32Raster(grid);
-	for(var i=0, length = height_ranks.length; i<length; i++) {
-		var height_rank = 0;
-		var pos = positions[i];
-		for (var j = 0, lj = zDotMultipliers.length; j < lj; j++) {
-			var z = pos.dot(zDotMultipliers[j]);
-			height_rank += heaviside_approximation(z, 300);
-		};
-		height_ranks[i] = height_rank;
+	Float32Raster.fill(height_ranks, 0);
+	for (var j = 0, lj = zDotMultipliers.length; j < lj; j++) {
+		VectorField.dot_vector(pos, zDotMultipliers[j], z);
+		Float32RasterInterpolation.smooth_heaviside(z, 300, z);
+		ScalarField.add_field(height_ranks, z, height_ranks);
 	}
 
 	return height_ranks;
