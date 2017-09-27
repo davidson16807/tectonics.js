@@ -1,5 +1,3 @@
-;'use strict';
-
 // The Grid class is the one stop shop for high performance grid cell operations
 // You can find grid cells by neighbor, by position, and by the index of a WebGL buffer array
 // It is the lowest level data structure in the app - all raster operations under utils/ depend on it
@@ -20,7 +18,7 @@ function Grid(template, options){
 	var vertices = this.template.vertices;
 	this.vertices = vertices;
 
-	vertex_ids = new Uint16Array(this.vertices.length);
+	var vertex_ids = new Uint16Array(this.vertices.length);
 	for (var i=0, li=vertex_ids.length; i<li; ++i) {
 	    vertex_ids[i] = i;
 	}

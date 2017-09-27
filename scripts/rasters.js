@@ -1,4 +1,270 @@
 'use strict';
+//Data structure mapping coordinates on a sphere to the nearest point in a kdtree
+//Retrievals from the map are of O(1) complexity. The result resembles a voronoi diagram, hence the name.
+function VoronoiSphere(pointsNum, kdtree){
+ var cells_per_point = 8;
+ var circumference = 2*Math.PI;
+ var raster_dim_size = (cells_per_point * Math.sqrt(pointsNum) / circumference) | 0;
+ var raster_size = raster_dim_size * raster_dim_size;
+ var cell_half_width = 2 / ((raster_dim_size - 1));
+ // names for Uint16Arrays follow naming conventions for 2-blades in geometric algebra
+ var xy = new Uint16Array(raster_size);
+ var yz = new Uint16Array(raster_size);
+ var zx = new Uint16Array(raster_size);
+ var yx = new Uint16Array(raster_size);
+ var zy = new Uint16Array(raster_size);
+ var xz = new Uint16Array(raster_size);
+ var sides = [
+  xy,
+  yz,
+  zx,
+  yx,
+  zy,
+  xz,
+ ];
+ // population
+ var component_orders = [
+  // 0 indicates first dimension in grid
+  // 1 indicates second dimension in grid
+  // 2 indicates the dimension omitted from grid
+  [0,1,2],
+  [2,0,1],
+  [1,2,0],
+  [1,0,2],
+  [2,1,0],
+  [0,2,1],
+ ];
+ var li = sides.length;
+ var lj = raster_dim_size;
+ var lk = raster_dim_size;
+ var pos = {x:0, y:0, z:0};
+ var raster = xy;
+ var raster_x = 0.0;
+ var raster_y = 0.0;
+ var raster_z = 0.0;
+ var raster_id = 0;
+ var nearest_id = 0;
+ var component_order = component_orders[0];
+ var raster_components = [];
+ var sqrt = Math.sqrt;
+ for (var i = 0; i < li; ++i) {
+  raster = sides[i];
+  component_order = component_orders[i];
+  for (var j = 0; j < lj; ++j) {
+   for (var k = 0; k < lk; ++k) {
+    // get position of the cell on the unit sphere
+    raster_x = j * cell_half_width - 1;
+    raster_y = k * cell_half_width - 1;
+    // reconstruct the dimension omitted from the grid using pythagorean theorem
+    raster_z = sqrt(1 - (raster_x * raster_x) - (raster_y * raster_y)) || 0;
+    raster_z *= i > 2? -1 : 1;
+    // translate from raster coordinates to absolute coordinates
+    raster_components = [raster_x, raster_y, raster_z];
+    pos = {x:0, y:0, z:0};
+    pos.x = raster_components[component_order[0]];
+    pos.y = raster_components[component_order[1]];
+    pos.z = raster_components[component_order[2]];
+    raster_id = j * raster_dim_size + k;
+    nearest_id = kdtree.nearest(pos,1)[0][0].i;
+    raster[raster_id] = nearest_id;
+   }
+  }
+ }
+ this.sides = sides;
+ this.xy = xy;
+ this.yz = yz;
+ this.zx = zx;
+ this.yx = yx;
+ this.zy = zy;
+ this.xz = xz;
+ this.cell_half_width = cell_half_width;
+ this.raster_dim_size = raster_dim_size;
+}
+VoronoiSphere.prototype.getNearestIds = function(pos_field, result) {
+ result = result || new Uint16Array(pos_field.x.length);
+ var x = pos_field.x;
+ var y = pos_field.y;
+ var z = pos_field.z;
+ var xy = this.xy;
+ var yz = this.yz;
+ var zx = this.zx;
+ var yx = this.yx;
+ var zy = this.zy;
+ var xz = this.xz;
+ var cell_half_width = this.cell_half_width;
+ var raster_dim_size = this.raster_dim_size;
+ var xi = 0.0;
+ var yi = 0.0;
+ var zi = 0.0;
+ var xi2 = 0.0;
+ var yi2 = 0.0;
+ var zi2 = 0.0;
+ var raster = xy;
+ var raster_x = 0.0;
+ var raster_y = 0.0;
+ var raster_i = 0;
+ var raster_j = 0;
+ var raster_id = 0;
+ for (var i = 0, li = x.length; i<li; ++i){
+  xi = x[i];
+  yi = y[i];
+  zi = z[i];
+  xi2 = xi * xi;
+  yi2 = yi * yi;
+  zi2 = zi * zi;
+  if (xi2 > yi2 && xi2 > zi2) { // x is greatest
+   if (xi > 0) {
+    raster = yz;
+    raster_x = yi;
+    raster_y = zi;
+   } else {
+    raster = zy;
+    raster_x = zi;
+    raster_y = yi;
+   }
+  } else if (yi2 > xi2 && yi2 > zi2) { // y is greatest
+   if (yi > 0) {
+    raster = zx;
+    raster_x = zi;
+    raster_y = xi;
+   } else {
+    raster = xz;
+    raster_x = xi;
+    raster_y = zi;
+   }
+  } else if (zi2 > xi2 && zi2 > yi2) { // z is greatest
+   if (zi > 0) {
+    raster = xy;
+    raster_x = xi;
+    raster_y = yi;
+   } else {
+    raster = yx;
+    raster_x = yi;
+    raster_y = xi;
+   }
+  }
+  raster_i = ((raster_x + 1) / cell_half_width) | 0;
+  raster_j = ((raster_y + 1) / cell_half_width) | 0;
+  raster_id = raster_i * raster_dim_size + raster_j;
+  result[i] = raster[raster_id];
+ }
+ return result;
+}
+// The Grid class is the one stop shop for high performance grid cell operations
+// You can find grid cells by neighbor, by position, and by the index of a WebGL buffer array
+// It is the lowest level data structure in the app - all raster operations under utils/ depend on it
+function Grid(template, options){
+ options = options || {};
+ var voronoi = options.voronoi;
+ var voronoiResolutionFactor = options.voronoiResolutionFactor || 2;
+ var voronoiPointNum, neighbor_lookup, face, points, vertex;
+ this.template = template;
+ // Precompute map between buffer array ids and grid cell ids
+ // This helps with mapping cells within the model to buffer arrays in three.js
+ // Map is created by flattening this.template.faces
+ var faces = this.template.faces;
+ this.faces = faces;
+ var vertices = this.template.vertices;
+ this.vertices = vertices;
+ var vertex_ids = new Uint16Array(this.vertices.length);
+ for (var i=0, li=vertex_ids.length; i<li; ++i) {
+     vertex_ids[i] = i;
+ }
+ this.vertex_ids = vertex_ids;
+ this.pos = VectorRaster.FromVectors(this.vertices, this);
+ var buffer_array_to_cell = new Uint16Array(faces.length * 3);
+ for (var i=0, i3=0, li = faces.length; i<li; i++, i3+=3) {
+  var face = faces[i];
+  buffer_array_to_cell[i3+0] = face.a;
+  buffer_array_to_cell[i3+1] = face.b;
+  buffer_array_to_cell[i3+2] = face.c;
+ };
+ this.buffer_array_to_cell = buffer_array_to_cell;
+ //Precompute neighbors for O(1) lookups
+ var neighbor_lookup = this.template.vertices.map(function(vertex) { return new buckets.Set()});
+ for(var i=0, il = this.template.faces.length, faces = this.template.faces; i<il; i++){
+  face = faces[i];
+  neighbor_lookup[face.a].add(face.b);
+  neighbor_lookup[face.a].add(face.c);
+  neighbor_lookup[face.b].add(face.a);
+  neighbor_lookup[face.b].add(face.c);
+  neighbor_lookup[face.c].add(face.a);
+  neighbor_lookup[face.c].add(face.b);
+ }
+ neighbor_lookup = neighbor_lookup.map(function(set) { return set.toArray(); });
+ this.neighbor_lookup = neighbor_lookup;
+ var neighbor_count = Uint8Raster(this);
+ for (var i = 0, li=neighbor_lookup.length; i<li; i++) {
+  neighbor_count[i] = neighbor_lookup[i].length;
+ }
+ this.neighbor_count = neighbor_count;
+ // an "edge" in graph theory is a unordered set of vertices 
+ // i.e. this.edges does not contain duplicate neighbor pairs 
+ // e.g. it includes [1,2] but not [2,1] 
+ var edges = [];
+ var edge_lookup = [];
+ // an "arrow" in graph theory is an ordered set of vertices 
+ // it is also known as a directed edge 
+ // i.e. this.arrows contains duplicate neighbor pairs 
+ // e.g. it includes [1,2] *and* [2,1] 
+ var arrows = [];
+ var arrow_lookup = [];
+ var neighbors = [];
+ var neighbor = 0;
+ //Precompute a list of neighboring vertex pairs for O(N) traversal 
+ for (var i = 0, li=neighbor_lookup.length; i<li; i++) {
+   neighbors = neighbor_lookup[i];
+   for (var j = 0, lj=neighbors.length; j<lj; j++) {
+     neighbor = neighbors[j];
+     arrows.push([i, neighbor]);
+     arrow_lookup[i] = arrow_lookup[i] || [];
+     arrow_lookup[i].push(arrows.length-1);
+     if (i < neighbor) {
+       edges.push([i, neighbor]);
+       edge_lookup[i] = edge_lookup[i] || [];
+       edge_lookup[i].push(edges.length-1);
+       edge_lookup[neighbor] = edge_lookup[neighbor] || [];
+       edge_lookup[neighbor].push(edges.length-1);
+     }
+   }
+ }
+ this.edges = edges;
+ this.edge_lookup = edge_lookup;
+ this.arrows = arrows;
+ this.arrow_lookup = arrow_lookup;
+ this.pos_arrow_differential = VectorField.arrow_differential(this.pos);
+ this.average_distance = Float32Dataset.average(VectorField.magnitude(this.pos_arrow_differential));
+ //Feed locations into a kdtree for O(logN) lookups
+ points = [];
+ for(var i=0, il = this.template.vertices.length; i<il; i++){
+  vertex = vertices[i];
+  points.push({x:vertex.x, y:vertex.y, z:vertex.z, i:i});
+ }
+ this.getDistance = function(a,b) {
+  return Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2) + Math.pow(a.z - b.z, 2);
+ };
+ this._kdtree = new kdTree(points, this.getDistance, ["x","y","z"]);
+ //Now feed that kdtree into a Voronoi diagram for O(1) lookups
+ //If cached voronoi is already provided, use that
+ //If this seems like overkill, trust me - it's not
+ if (voronoi){
+  this._voronoi = voronoi;
+ } else {
+  voronoiPointNum = Math.pow(voronoiResolutionFactor * Math.sqrt(this.template.vertices.length), 2);
+  this._voronoi = new VoronoiSphere(voronoiPointNum, this._kdtree);
+ }
+}
+Grid.prototype.getNearestId = function(vertex) {
+ return this._voronoi.getNearestId(vertex);
+ return this._kdtree.nearest({x:vertex.x, y:vertex.y, z: vertex.z}, 1)[0][0].i;
+}
+Grid.prototype.getNearestIds = function(pos_field, result) {
+ result = result || Uint16Raster(this);
+ return this._voronoi.getNearestIds(pos_field, result);
+}
+Grid.prototype.getNeighborIds = function(id) {
+ return this.neighbor_lookup[id];
+}
 // The Dataset namespaces provide operations over statistical datasets.
 // All datasets are represented by raster objects, e.g. VectorRaster or Float32Raster
 var Float32Dataset = {};

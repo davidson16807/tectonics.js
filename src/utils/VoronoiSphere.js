@@ -1,5 +1,3 @@
-'use strict';
-
 //Data structure mapping coordinates on a sphere to the nearest point in a kdtree
 //Retrievals from the map are of O(1) complexity. The result resembles a voronoi diagram, hence the name.
 function VoronoiSphere(pointsNum, kdtree){

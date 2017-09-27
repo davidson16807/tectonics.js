@@ -42,6 +42,9 @@
 #define ASSERT_IS_VECTOR_RASTER(INPUT)
 #endif
 
+#include "src/utils/VoronoiSphere.js"
+#include "src/utils/Grid.js"
+
 #include "src/utils/datasets/Float32Dataset.js"
 #include "src/utils/datasets/Uint16Dataset.js"
 #include "src/utils/datasets/Uint8Dataset.js"
