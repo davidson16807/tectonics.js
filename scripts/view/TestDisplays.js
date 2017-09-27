@@ -240,7 +240,7 @@ testDisplays.flood_fill8 = new ScalarHeatDisplay(  {
 
 
 // test for basic vector rendering
-vectorDisplays.test = new DataFrameVectorDisplay( { 
+vectorDisplays.test = new VectorFrameDisplay( { 
 		getField: function (crust) {
 			var vector = VectorRaster(crust.grid);
 			for(var i=0, li = vector.length; i<li; i++){
@@ -250,7 +250,7 @@ vectorDisplays.test = new DataFrameVectorDisplay( {
 		} 
 	} );
 
-vectorDisplays.asthenosphere_velocity = new DataFrameVectorDisplay( { 
+vectorDisplays.asthenosphere_velocity = new VectorFrameDisplay( { 
 		getField: function (world, flood_fill, scratch1) {
 			// scratch represents pressure
 			var pressure = scratch1;
@@ -262,7 +262,7 @@ vectorDisplays.asthenosphere_velocity = new DataFrameVectorDisplay( {
 		} 
 	} );
 
-vectorDisplays.asthenosphere_angular_velocity = new DataFrameVectorDisplay( { 
+vectorDisplays.asthenosphere_angular_velocity = new VectorFrameDisplay( { 
 		getField: function (crust, flood_fill, scratch1) {
 			// scratch represents pressure
 			var pressure = scratch1;
@@ -276,7 +276,7 @@ vectorDisplays.asthenosphere_angular_velocity = new DataFrameVectorDisplay( {
 		} 
 	} );
 
-vectorDisplays.averaged_angular_velocity = new DataFrameVectorDisplay( { 
+vectorDisplays.averaged_angular_velocity = new VectorFrameDisplay( { 
 		getField: function (world, flood_fill, scratch1) {
 			// scratch represents pressure
 			var pressure = scratch1;
@@ -301,7 +301,7 @@ vectorDisplays.averaged_angular_velocity = new DataFrameVectorDisplay( {
 		} 
 	} );
 
-vectorDisplays.averaged_velocity = new DataFrameVectorDisplay( { 
+vectorDisplays.averaged_velocity = new VectorFrameDisplay( { 
 		getField: function (world) {
 			var field = getSubductabilitySmoothed(world);
 			var gradient = ScalarField.gradient(field);

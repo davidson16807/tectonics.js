@@ -48,13 +48,13 @@ vectorDisplays.velocity	= new ThreeJsVectorDisplay( {
 } );
 
 
-function DataFrameVectorDisplay(options) {
+function VectorFieldDisplay(options) {
 	this.max = options['max'];
 	this.getField = options['getField'];
 }
-DataFrameVectorDisplay.prototype.addTo = function(mesh) {};
-DataFrameVectorDisplay.prototype.removeFrom = function(mesh) {};
-DataFrameVectorDisplay.prototype.updateAttributes = function(material, plate) {
+VectorFieldDisplay.prototype.addTo = function(mesh) {};
+VectorFieldDisplay.prototype.removeFrom = function(mesh) {};
+VectorFieldDisplay.prototype.updateAttributes = function(material, plate) {
 	var offset_length = 0.02; 	// offset of arrow from surface of sphere, in radii
 	var max_arrow_length = 0.1; // max arrow length, in radii
 
@@ -79,13 +79,13 @@ DataFrameVectorDisplay.prototype.updateAttributes = function(material, plate) {
 	}
 	material.attributes.vector.needsUpdate = true;
 }
-vectorDisplays.pos	= new DataFrameVectorDisplay( { 
+vectorDisplays.pos	= new VectorFieldDisplay( { 
 	getField: function (plate) {
 		var pos = plate.grid.pos;
 		return pos;
 	}
 } );
-vectorDisplays.pos2	= new DataFrameVectorDisplay( { 
+vectorDisplays.pos2	= new VectorFieldDisplay( { 
 	getField: function (plate) {
 		var rotationMatrix = new THREE.Matrix4();
 		rotationMatrix.makeRotationAxis( plate.eulerPole, 1 );
@@ -93,38 +93,38 @@ vectorDisplays.pos2	= new DataFrameVectorDisplay( {
 		return pos;
 	}
 } );
-vectorDisplays.displacement_gradient	= new DataFrameVectorDisplay( { 
+vectorDisplays.displacement_gradient	= new VectorFieldDisplay( { 
 	getField: function (plate) {
 		var displacement = plate.displacement;
 		var gradient = ScalarField.gradient(displacement);
 		return gradient;
 	}
 } );
-vectorDisplays.age_gradient	= new DataFrameVectorDisplay( { 
+vectorDisplays.age_gradient	= new VectorFieldDisplay( { 
 	getField: function (plate) {
 		return ScalarField.gradient(plate.age);
 	}
 } );
-vectorDisplays.pos_gradient	= new DataFrameVectorDisplay( { 
+vectorDisplays.pos_gradient	= new VectorFieldDisplay( { 
 	getField: function (plate) {
 		return ScalarField.gradient(plate.grid.pos);
 	}
 } );
-vectorDisplays.density_gradient	= new DataFrameVectorDisplay( { 
+vectorDisplays.density_gradient	= new VectorFieldDisplay( { 
 	getField: function (plate) {
 		var density = plate.density;
 		var gradient = ScalarField.gradient(density);
 		return gradient;
 	}
 } );
-vectorDisplays.subductability_gradient	= new DataFrameVectorDisplay( { 
+vectorDisplays.subductability_gradient	= new VectorFieldDisplay( { 
 	getField: function (plate) {
 		var subductability = plate.subductability;
 		var gradient = ScalarField.gradient(subductability);
 		return gradient;
 	}
 } );
-vectorDisplays.subductability_smoothed = new DataFrameVectorDisplay( { 
+vectorDisplays.subductability_smoothed = new VectorFieldDisplay( { 
 		getField: function (plate) {
 			var field = getSubductabilitySmoothed(plate);
 			var gradient = ScalarField.gradient(field);
@@ -132,7 +132,7 @@ vectorDisplays.subductability_smoothed = new DataFrameVectorDisplay( {
 		} 
 	} );
 
-vectorDisplays.aesthenosphere_velocity	= new DataFrameVectorDisplay( { 
+vectorDisplays.aesthenosphere_velocity	= new VectorFieldDisplay( { 
 		getField: function (crust) {
 			return crust.aesthenosphere_velocity;
 		}
