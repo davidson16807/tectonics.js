@@ -1,9 +1,9 @@
 CPP=/usr/bin/cpp -P -undef -Wundef -std=c99 -nostdinc -Wtrigraphs -fdollars-in-identifiers -C 
-OUT=scripts/rasters.js scripts/view/fragment/FragmentShaders.js scripts/view/vertex/VertexShaders.js
+OUT=scripts/Rasters.js scripts/view/fragment/FragmentShaders.js scripts/view/vertex/VertexShaders.js
 
 all: $(OUT)
 
-scripts/rasters.js : src/utils/rasters.js
+scripts/Rasters.js : src/rasters/Rasters.js
 	cat $< | $(CPP) > $@
 
 scripts/view/fragment/FragmentShaders.js : scripts/view/fragment/FragmentShaders.template.js

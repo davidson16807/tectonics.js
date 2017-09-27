@@ -1,6 +1,6 @@
 // The Grid class is the one stop shop for high performance grid cell operations
 // You can find grid cells by neighbor, by position, and by the index of a WebGL buffer array
-// It is the lowest level data structure in the app - all raster operations under utils/ depend on it
+// It is the lowest level data structure in the app - all raster operations under rasters/ depend on it
 
 function Grid(template, options){
 	options = options || {};
