@@ -54,6 +54,9 @@ View.prototype.setScalarDisplay = function(display) {
 	if(this._scalarDisplay === display){
 		return;
 	}
+	if(display === void 0){
+		throw "display is undefined";
+	}
 	var views = this.plateViews.values();
 
 	this._scalarDisplay = display;
@@ -65,6 +68,9 @@ View.prototype.setScalarDisplay = function(display) {
 View.prototype.setVectorDisplay = function(display) {
 	if(this._vectorDisplay === display){
 		return;
+	}
+	if(display === void 0){
+		throw "display is undefined";
 	}
 	var views = this.plateViews.values();
 
