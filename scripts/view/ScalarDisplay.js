@@ -88,7 +88,24 @@ ScalarDisplay.prototype.updateAttributes = function(geometry, plate) {
 	var displacement_model = plate.displacement; 
 	this.field = this.field || Float32Raster(plate.grid);
 	this.scratch = this.scratch || Float32Raster(plate.grid);
-	var scalar_model = this.getField !== void 0? this.getField(plate, this.field, this.scratch) : void 0;
+
+	// run getField()
+	if (this.getField === void 0) {
+		// TODO: log once
+		log_once("ScalarDisplay.getField is undefined.");
+		return;
+	}
+	try{
+		var scalar_model = this.getField(plate, this.field, this.scratch);
+	} catch(ex){
+		throw_once(ex);
+	}
+	if (scalar_model === void 0) {
+		log_once("ScalarDisplay.getField() returned undefined.");
+		// TODO: log once
+		return;
+	}
+
 	for(var j=0, lj = displacement.length; j<lj; j++){ 
 		buffer_array_index = buffer_array_to_cell[j];
 		displacement[j] = displacement_model[buffer_array_index]; 
@@ -146,7 +163,24 @@ ScalarHeatDisplay.prototype.updateAttributes = function(geometry, plate) {
 	var displacement_model = plate.displacement; 
 	this.field = this.field || Float32Raster(plate.grid);
 	this.scratch = this.scratch || Float32Raster(plate.grid);
-	var scalar_model = this.getField !== void 0? this.getField(plate, this.field, this.scratch) : void 0;
+	
+	// run getField()
+	if (this.getField === void 0) {
+		// TODO: log once
+		log_once("ScalarDisplay.getField is undefined.");
+		return;
+	}
+	try{
+		var scalar_model = this.getField(plate, this.field, this.scratch);
+	} catch(ex){
+		throw_once(ex);
+	}
+	if (scalar_model === void 0) {
+		log_once("ScalarDisplay.getField() returned undefined.");
+		// TODO: log once
+		return;
+	}
+	
 	var max = this.scaling? Math.max.apply(null, scalar_model) || 1 : 1;
 	if (scalar_model !== void 0) {
 		for(var j=0, lj = displacement.length; j<lj; j++){ 
