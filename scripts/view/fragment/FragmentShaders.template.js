@@ -15,7 +15,7 @@ fragmentShaders.debug = _multiline(function() {/**
 
 **/});
 
-fragmentShaders.debug = _multiline(function() {/**   
+fragmentShaders.vectorField = _multiline(function() {/**   
 //VECTOR_FIELD.GLSL.C GOES HERE
 
 **/});

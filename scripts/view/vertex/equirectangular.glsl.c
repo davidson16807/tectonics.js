@@ -17,7 +17,7 @@ void main() {
 	float index_offset = INDEX_SPACING * index;
 	float focus = lon(cameraPosition) + index_offset;
 	float lon_focused = mod(lon(modelPos.xyz) - focus, 2.*PI) - PI + index_offset;
-	float lat_focused = lat(modelPos.xyz); //+ (index*PI)
+	float lat_focused = lat(modelPos.xyz); //+ (index*PI);
 
 	vec4 displaced = vec4(
 		lon_focused,

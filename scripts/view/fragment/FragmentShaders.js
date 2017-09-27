@@ -12,7 +12,6 @@ varying float vDisplacement;
 varying float vScalar;
 varying vec4 vPosition;
 
-uniform vec3 color;
 uniform float sealevel;
 uniform float sealevel_mod;
 
@@ -129,7 +128,8 @@ void main() {
 
 **/});
 
-fragmentShaders.vectorField = _multiline(function() {/**
+fragmentShaders.vectorField = _multiline(function() {/**   
+//VECTOR_FIELD.GLSL.C GOES HERE
 void main() {
 	gl_FragColor = vec4(1);
 }

@@ -16,7 +16,3 @@ vertexShaders.orthographic = _multiline(function() {/**
 //TEMPLATE.GLSL.C GOES HERE
 //ORTHOGRAPHIC.GLSL.C GOES HERE
 **/});
-
-vertexShaders.vectorField = _multiline(function() {/**
-//VECTOR_FIELD.GLSL.C GOES HERE
-**/})
