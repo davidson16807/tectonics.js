@@ -1,4 +1,23 @@
 
+var Vector = {};
+Vector.similarity = function(ax, ay, az, bx, by, bz) {
+  var sqrt = Math.sqrt;
+  return (ax*bx + 
+      ay*by + 
+      az*bz)   /   ( sqrt(ax*ax+
+                ay*ay+
+                az*az)   *   sqrt(bx*bx+
+                            by*by+
+                            bz*bz) );
+}
+Vector.dot = function(ax, ay, az, bx, by, bz) {
+  var sqrt = Math.sqrt;
+  return (ax*bx + ay*by + az*bz);
+}
+Vector.magnitude = function(x, y, z) {
+  return Math.sqrt(x*x + y*y + z*z);
+}
+
 // VectorRaster represents a grid where each cell contains a vector value. It is a specific kind of a multibanded raster.
 // A VectorRaster is composed of two parts
 // 		The first is a object of type Grid, representing a collection of vertices that are connected by edges

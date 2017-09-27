@@ -321,13 +321,25 @@ ScalarField.lte_field = function (scalar_field1, scalar_field2, result) {
   }
   return result;
 };
-ScalarField.eq_field = function (scalar_field1, scalar_field2, result) {
+ScalarField.eq_field = function (scalar_field1, scalar_field2, threshold, result) {
   result = result || Uint8Raster(scalar_field1.grid);
   if (!(scalar_field1 instanceof Float32Array)) { throw "scalar_field1" + ' is not a ' + "Float32Array"; }
   if (!(scalar_field2 instanceof Float32Array)) { throw "scalar_field2" + ' is not a ' + "Float32Array"; }
+  if (!(typeof threshold == "number")) { throw "threshold" + ' is not a ' + "number"; }
   if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = scalar_field1[i] == scalar_field2[i]? 1:0;
+    result[i] = scalar_field1[i] < scalar_field2[i] + threshold || scalar_field1[i] > scalar_field2[i] - threshold ? 1:0;
+  }
+  return result;
+};
+ScalarField.ne_field = function (scalar_field1, scalar_field2, threshold, result) {
+  result = result || Uint8Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Float32Array)) { throw "scalar_field1" + ' is not a ' + "Float32Array"; }
+  if (!(scalar_field2 instanceof Float32Array)) { throw "scalar_field2" + ' is not a ' + "Float32Array"; }
+  if (!(typeof threshold == "number")) { throw "threshold" + ' is not a ' + "number"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = scalar_field1[i] > scalar_field2[i] + threshold || scalar_field1[i] < scalar_field2[i] - threshold ? 1:0;
   }
   return result;
 };
@@ -391,13 +403,25 @@ ScalarField.lte_scalar = function (scalar_field1, scalar, result) {
   }
   return result;
 };
-ScalarField.eq_scalar = function (scalar_field1, scalar, result) {
+ScalarField.eq_scalar = function (scalar_field1, scalar, threshold, result) {
   result = result || Uint8Raster(scalar_field1.grid);
   if (!(scalar_field1 instanceof Float32Array)) { throw "scalar_field1" + ' is not a ' + "Float32Array"; }
   if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (!(typeof threshold == "number")) { throw "threshold" + ' is not a ' + "number"; }
   if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = scalar_field1[i] == scalar? 1:0;
+    result[i] = scalar_field1[i] < scalar + threshold || scalar_field1[i] > scalar - threshold ? 1:0;
+  }
+  return result;
+};
+ScalarField.ne_scalar = function (scalar_field1, scalar, threshold, result) {
+  result = result || Uint8Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Float32Array)) { throw "scalar_field1" + ' is not a ' + "Float32Array"; }
+  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (!(typeof threshold == "number")) { throw "threshold" + ' is not a ' + "number"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = scalar_field1[i] > scalar + threshold || scalar_field1[i] < scalar - threshold ? 1:0;
   }
   return result;
 };
@@ -786,6 +810,16 @@ Uint16Field.eq_field = function (scalar_field1, scalar_field2, result) {
   }
   return result;
 };
+Uint16Field.ne_field = function (scalar_field1, scalar_field2, result) {
+  result = result || Uint16Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint16Array)) { throw "scalar_field1" + ' is not a ' + "Uint16Array"; }
+  if (!(scalar_field2 instanceof Uint16Array)) { throw "scalar_field2" + ' is not a ' + "Uint16Array"; }
+  if (!(result instanceof Uint16Array)) { throw "result" + ' is not a ' + "Uint16Array"; }
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = scalar_field1[i] != scalar_field2[i]? 1:0;
+  }
+  return result;
+};
 Uint16Field.min_scalar = function (scalar_field1, scalar, result) {
   result = result || Uint16Raster(scalar_field1.grid);
   if (!(scalar_field1 instanceof Uint16Array)) { throw "scalar_field1" + ' is not a ' + "Uint16Array"; }
@@ -853,6 +887,16 @@ Uint16Field.eq_scalar = function (scalar_field1, scalar, result) {
   if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] == scalar? 1:0;
+  }
+  return result;
+};
+Uint16Field.ne_scalar = function (scalar_field1, scalar, result) {
+  result = result || Uint16Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Uint16Array)) { throw "scalar_field1" + ' is not a ' + "Uint16Array"; }
+  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (!(result instanceof Uint16Array)) { throw "result" + ' is not a ' + "Uint16Array"; }
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = scalar_field1[i] != scalar? 1:0;
   }
   return result;
 };
@@ -1869,8 +1913,9 @@ Uint8RasterGraphics.fill_into_selection = function(raster, fill, selection, resu
 // The VectorRasterGraphics namespace encompasses functionality 
 // you've come to expect from a standard image editor like Gimp or MS Paint
 var VectorRasterGraphics = {};
-VectorRasterGraphics.magic_wand_select = function function_name(vector_raster, start_id, mask, result) {
+VectorRasterGraphics.magic_wand_select = function function_name(vector_raster, start_id, mask, result, scratch_ui8) {
  result = result || Uint8Raster(vector_raster.grid);
+ scratch_ui8 = scratch_ui8 || Uint8Raster(vector_raster.grid);
  if (!(vector_raster.x !== void 0) && !(vector_raster.x instanceof Float32Array)) { throw "vector_raster" + ' is not a vector raster'; }
  if (!(typeof start_id == "number")) { throw "start_id" + ' is not a ' + "number"; }
  if (!(mask instanceof Uint8Array)) { throw "mask" + ' is not a ' + "Uint8Array"; }
@@ -1883,7 +1928,7 @@ VectorRasterGraphics.magic_wand_select = function function_name(vector_raster, s
  var y = vector_raster.y;
  var z = vector_raster.z;
  var searching = [start_id];
- var searched = Uint8Raster(vector_raster.grid, 0);
+ var searched = scratch_ui8;
  var grouped = result;
  searched[start_id] = 1;
  var id = 0;
@@ -2363,6 +2408,24 @@ Uint8Raster.set_ids_to_values = function(raster, id_array, value_array) {
   }
   return raster;
 }
+var Vector = {};
+Vector.similarity = function(ax, ay, az, bx, by, bz) {
+  var sqrt = Math.sqrt;
+  return (ax*bx +
+      ay*by +
+      az*bz) / ( sqrt(ax*ax+
+                ay*ay+
+                az*az) * sqrt(bx*bx+
+                            by*by+
+                            bz*bz) );
+}
+Vector.dot = function(ax, ay, az, bx, by, bz) {
+  var sqrt = Math.sqrt;
+  return (ax*bx + ay*by + az*bz);
+}
+Vector.magnitude = function(x, y, z) {
+  return Math.sqrt(x*x + y*y + z*z);
+}
 // VectorRaster represents a grid where each cell contains a vector value. It is a specific kind of a multibanded raster.
 // A VectorRaster is composed of two parts
 // 		The first is a object of type Grid, representing a collection of vertices that are connected by edges
@@ -2530,45 +2593,24 @@ Float32RasterInterpolation.smoothstep = function(edge0, edge1, x, result) {
 //	return 2 / (1 + Math.exp(-k*x)) - 1;
 //	return x>0? 1: 0; 
 //}
-var Vector = {};
-Vector.similarity = function(ax, ay, az, bx, by, bz) {
- var sqrt = Math.sqrt;
- return (ax*bx +
-   ay*by +
-   az*bz) / ( sqrt(ax*ax+
-        ay*ay+
-        az*az) * sqrt(bx*bx+
-                by*by+
-                bz*bz) );
-}
-Vector.dot = function(ax, ay, az, bx, by, bz) {
- var sqrt = Math.sqrt;
- return (ax*bx + ay*by + az*bz);
-}
-Vector.magnitude = function(x, y, z) {
- return Math.sqrt(x*x + y*y + z*z);
-}
 // The VectorImageAnalysis namespace encompasses advanced functionality 
 // common to image analysis
 var VectorImageAnalysis = {};
 // performs image segmentation
 // NOTE: this uses no particular algorithm, I wrote it before I started looking into the research
-// This function repeatedly uses the flood fill algorithm from VectorRasterGraphics,
-// then uses mathematical morphology to ensure there are no overlapping regions between segments
-VectorImageAnalysis.image_segmentation = function(vector_field, segment_num, min_segment_size, result) {
+// This function repeatedly uses the flood fill algorithm from VectorRasterGraphics
+VectorImageAnalysis.image_segmentation = function(vector_field, segment_num, min_segment_size, result, scratch_ui8_1, scratch_ui8_2, scratch_ui8_3) {
+  var scratch_ui8_1 = scratch_ui8_1 || Uint8Raster(vector_field.grid);
+  var scratch_ui8_2 = scratch_ui8_2 || Uint8Raster(vector_field.grid);
+  var scratch_ui8_3 = scratch_ui8_3 || Uint8Raster(vector_field.grid);
   var segment_num = segment_num;
   var max_iterations = 2 * segment_num;
   var magnitude = VectorField.magnitude(vector_field);
-  var segment = Uint8Raster(vector_field.grid);
   var segments = result || Uint8Raster(vector_field.grid);
   Uint8Raster.fill(segments, 0);
-  var occupied = Uint8Raster(vector_field.grid);
+  var segment = scratch_ui8_1;
+  var occupied = scratch_ui8_2;
   Uint8Raster.fill(occupied, 1);
-  var equals = Uint8Field.eq_scalar;
-  var not_equals = Uint8Field.ne_scalar;
-  var dilation = BinaryMorphology.dilation;
-  var closing = BinaryMorphology.closing;
-  var difference = BinaryMorphology.difference;
   var fill_ui8 = Uint8RasterGraphics.fill_into_selection;
   var fill_f32 = Float32RasterGraphics.fill_into_selection;
   var magic_wand = VectorRasterGraphics.magic_wand_select;
@@ -2576,7 +2618,7 @@ VectorImageAnalysis.image_segmentation = function(vector_field, segment_num, min
   var max_id = Float32Raster.max_id;
   // step 1: run flood fill algorithm several times
   for (var i=1, j=0; i<7 && j<max_iterations; j++) {
-    magic_wand(vector_field, max_id(magnitude), occupied, segment);
+    magic_wand(vector_field, max_id(magnitude), occupied, segment, scratch_ui8_3);
     fill_f32 (magnitude, 0, segment, magnitude);
     fill_ui8 (occupied, 0, segment, occupied);
     if (sum(segment) > min_segment_size) {
@@ -2584,6 +2626,7 @@ VectorImageAnalysis.image_segmentation = function(vector_field, segment_num, min
         i++;
     }
   }
+  return segments;
 }
 var BinaryMorphology = {};
 BinaryMorphology.VertexTypedArray = function(grid) {
