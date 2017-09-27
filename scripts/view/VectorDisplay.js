@@ -61,7 +61,23 @@ VectorFieldDisplay.prototype.updateAttributes = function(material, plate) {
 	var material, displacement;
 	var vector = material.attributes.vector.value;
 
-	var vector_model = this.getField(plate);
+	// run getField()
+	if (this.getField === void 0) {
+		// TODO: log once
+		log_once("VectorDisplay.getField is undefined.");
+		return;
+	}
+	try{
+		var vector_model = this.getField(plate);
+	} catch(ex){
+		throw_once(ex);
+	}
+	if (vector_model === void 0) {
+		log_once("VectorDisplay.getField() returned undefined.");
+		// TODO: log once
+		return;
+	}
+
 	var max = this.max ||  Math.max.apply(null, VectorField.magnitude(vector_model));
 		log_once(vector)
 	var scaling = max_arrow_length / max;
