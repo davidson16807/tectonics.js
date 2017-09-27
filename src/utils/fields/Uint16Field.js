@@ -80,6 +80,17 @@ Uint16Field.eq_field = function (scalar_field1, scalar_field2, result) {
   }
   return result;
 };
+Uint16Field.ne_field = function (scalar_field1, scalar_field2, result) {
+  result = result || Uint16Raster(scalar_field1.grid);
+  ASSERT_IS_ARRAY(scalar_field1, Uint16Array)
+  ASSERT_IS_ARRAY(scalar_field2, Uint16Array)
+  ASSERT_IS_ARRAY(result, Uint16Array)
+
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = scalar_field1[i] != scalar_field2[i]? 1:0;
+  }
+  return result;
+};
 
 
 Uint16Field.min_scalar = function (scalar_field1, scalar, result) {
@@ -149,6 +160,16 @@ Uint16Field.eq_scalar = function (scalar_field1, scalar, result) {
   ASSERT_IS_ARRAY(result, Uint8Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] == scalar? 1:0;
+  }
+  return result;
+};
+Uint16Field.ne_scalar = function (scalar_field1, scalar, result) {
+  result = result || Uint16Raster(scalar_field1.grid);
+  ASSERT_IS_ARRAY(scalar_field1, Uint16Array)
+  ASSERT_IS_TYPE(scalar, number)
+  ASSERT_IS_ARRAY(result, Uint16Array)
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = scalar_field1[i] != scalar? 1:0;
   }
   return result;
 };
