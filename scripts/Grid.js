@@ -124,11 +124,6 @@ function Grid(template, options){
 	}
 }
 
-Grid.prototype.getVoronoi = function() {
-	//Now feed that kdtree into a Voronoi diagram for O(1) lookups
-	return new VoronoiSphere(this._kdtree, this.template.vertices.length);
-}
-
 Grid.prototype.getNearestId = function(vertex) { 
 	return this._voronoi.getNearestId(vertex); 
 	return this._kdtree.nearest({x:vertex.x, y:vertex.y, z: vertex.z}, 1)[0][0].i;
