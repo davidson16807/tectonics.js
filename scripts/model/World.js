@@ -45,8 +45,8 @@ var World = (function() {
 		fill_f32(master_subductability, 9999);
 
 		//local variables
-		var localized_pos = VectorRaster(master.grid); 
-		var localized_ids; 
+		var local_pos_of_global_cells = VectorRaster(master.grid); 
+		var local_ids_of_global_cells; 
 
 		//global variables
 		var globalized_is_on_top = Uint8Raster(master.grid);
@@ -72,23 +72,23 @@ var World = (function() {
 		for (var i=0, li=plates.length; i<li; ++i) {
 		    plate = plates[i]; 
 
-		    // find localized_ids
+		    // find local_ids_of_global_cells
 		    // for each cell in the master's grid, this raster indicates the id of the corresponding cell in the plate's grid
 		    // this is used to convert between global and local coordinate systems
-		    mult_matrix(master.grid.pos, plate.global_to_local_matrix.elements, 				localized_pos); 
-	    	localized_ids = master.grid.getNearestIds(localized_pos);
+		    mult_matrix(master.grid.pos, plate.global_to_local_matrix.elements, 				local_pos_of_global_cells); 
+	    	local_ids_of_global_cells = master.grid.getNearestIds(local_pos_of_global_cells);
 
 	    	// generate globalized_plate_mask
 	    	// this raster indicates whether the plate exists in a region of the planet
 	    	// this raster will be used when merging other rasters
-		    resample_ui8(plate.mask, localized_ids, 											globalized_plate_mask); 
+		    resample_ui8(plate.mask, local_ids_of_global_cells, 								globalized_plate_mask); 
 
 		    // generate globalized_is_on_top
 		    // this raster indicates whether the plate is viewable from space
 		    // this raster will be used when merging other fields
 		    update_calculated_fields(plate);
 
-		    resample 	(plate.subductability,		 localized_ids, 							globalized_scalar_field);
+		    resample 	(plate.subductability,		 local_ids_of_global_cells, 				globalized_scalar_field);
 		    lt 			(globalized_scalar_field,	 master_subductability,						globalized_is_on_top);
 		    and 		(globalized_is_on_top,		 globalized_plate_mask, 					globalized_is_on_top);
 		    copy_into 	(master_subductability,	 globalized_scalar_field, globalized_is_on_top, master_subductability);
@@ -101,15 +101,15 @@ var World = (function() {
 		    add_ui8 	(master.plate_count, globalized_plate_mask, 							master.plate_count);
 
 		    // add current plate thickness to master thickness wherever current plate exists
-		    resample 	(plate.sial, localized_ids, 											globalized_scalar_field);
+		    resample 	(plate.sial, local_ids_of_global_cells, 								globalized_scalar_field);
 		    add_term 	(master.sial, globalized_scalar_field, globalized_plate_mask, 			master.sial);
 
 		    // overwrite master wherever current plate is on top
-		    resample 	(plate.sima, localized_ids, 											globalized_scalar_field);
+		    resample 	(plate.sima, local_ids_of_global_cells, 								globalized_scalar_field);
 		    copy_into 	(master.sima, globalized_scalar_field, globalized_is_on_top, 			master.sima);
 
 		    // overwrite master wherever current plate is on top
-		    resample 	(plate.age, localized_ids, 												globalized_scalar_field);
+		    resample 	(plate.age, local_ids_of_global_cells, 									globalized_scalar_field);
 		    copy_into 	(master.age, globalized_scalar_field, globalized_is_on_top, 			master.age);
 		}
 		update_calculated_fields(master);
@@ -138,7 +138,7 @@ var World = (function() {
 		var localized_is_just_inside_border = Uint8Raster(grid);
 		var localized_is_detaching = Uint8Raster(grid);
 
-		var localized_pos = VectorRaster(grid); 
+		var local_pos_of_global_cells = VectorRaster(grid); 
 		var localized_subductability = Float32Raster(grid); 
 		var localized_erosion = Float32Raster(grid); 
 		var localized_accretion = Float32Raster(grid); 
@@ -157,7 +157,7 @@ var World = (function() {
 		var globalized_is_detaching = Uint8Raster(grid); 
 
 		var globalized_plate_mask = Uint8Raster(grid); 
-		var globalized_pos = VectorRaster(grid);
+		var global_pos_of_local_cells = VectorRaster(grid);
 		var globalized_scalar_field = Float32Raster(grid); 
 		
 
@@ -177,7 +177,7 @@ var World = (function() {
 		var equals = Uint8Field.eq_scalar;
 		var gt_f32 = ScalarField.gt_scalar;
 		var gt_ui8 = Uint8Field.gt_scalar;
-		var globalized_ids, localized_ids;
+		var global_ids_of_local_cells, local_ids_of_global_cells;
 		var add_term = ScalarField.add_field_term;
 		var add = ScalarField.add_field;
 
@@ -199,76 +199,76 @@ var World = (function() {
 		for (var i=0, li=plates.length; i<li; ++i) {
 		    plate = plates[i];
 
-		    mult_matrix(grid.pos, plate.global_to_local_matrix.elements, localized_pos); 
-	    	localized_ids = plate.grid.getNearestIds(localized_pos);
+		    mult_matrix(grid.pos, plate.global_to_local_matrix.elements, local_pos_of_global_cells); 
+	    	local_ids_of_global_cells = plate.grid.getNearestIds(local_pos_of_global_cells);
 
-	        mult_matrix(plate.grid.pos, plate.local_to_global_matrix.elements, globalized_pos);
-	    	globalized_ids = plate.grid.getNearestIds(globalized_pos);
+	        mult_matrix(plate.grid.pos, plate.local_to_global_matrix.elements, global_pos_of_local_cells);
+	    	global_ids_of_local_cells = plate.grid.getNearestIds(global_pos_of_local_cells);
 
 	 		localized_subductability = plate.subductability;
 
 		    //shared variables for detaching and rifting
-			// op 	operands																result
+			// op 	operands															result
 			equals 	(plate_map, i, 														globalized_is_on_top);
-		    not 	(globalized_is_on_top, 													globalized_is_not_on_top);
+		    not 	(globalized_is_on_top, 												globalized_is_not_on_top);
 
 		    //detect rifting
 		    // is_riftable: count == 0 or (count = 1 and top_plate = i)
-			and 	(globalized_is_alone, globalized_is_on_top, 							globalized_is_riftable);
-			or 		(globalized_is_riftable, globalized_is_empty, 							globalized_is_riftable);
+			and 	(globalized_is_alone, globalized_is_on_top, 						globalized_is_riftable);
+			or 		(globalized_is_riftable, globalized_is_empty, 						globalized_is_riftable);
 
-            resample(globalized_is_riftable, globalized_ids, 								localized_is_riftable);
-		    erode	(localized_is_riftable, 1, 												localized_will_stay_riftable);
-		    margin	(plate.mask, 1, 														localized_is_just_outside_border);
-		    and 	(localized_will_stay_riftable, localized_is_just_outside_border,		localized_is_rifting);
+            resample(globalized_is_riftable, global_ids_of_local_cells, 				localized_is_riftable);
+		    erode	(localized_is_riftable, 1, 											localized_will_stay_riftable);
+		    margin	(plate.mask, 1, 													localized_is_just_outside_border);
+		    and 	(localized_will_stay_riftable, localized_is_just_outside_border,	localized_is_rifting);
 
 		    //detect detachment
 			// is_detachable: count > 1 and top_plate != i
-		    and 	(globalized_is_not_alone, globalized_is_not_on_top,						globalized_is_detachable);
+		    and 	(globalized_is_not_alone, globalized_is_not_on_top,					globalized_is_detachable);
 
-            resample(globalized_is_detachable, globalized_ids, 								localized_is_detachable);
-            erode	(localized_is_detachable, 1,											localized_will_stay_detachable);
-		    padding (plate.mask, 1, 														localized_is_just_inside_border);
-        	gt_f32	(localized_subductability, 0.5, 										localized_is_detachable);//todo: set this to higher threshold
-		    and 	(localized_will_stay_detachable, localized_is_just_inside_border, 		localized_is_detaching);
-		    and 	(localized_is_detaching, localized_is_detachable, 						localized_is_detaching);
+            resample(globalized_is_detachable, global_ids_of_local_cells, 				localized_is_detachable);
+            erode	(localized_is_detachable, 1,										localized_will_stay_detachable);
+		    padding (plate.mask, 1, 													localized_is_just_inside_border);
+        	gt_f32	(localized_subductability, 0.5, 									localized_is_detachable);//todo: set this to higher threshold
+		    and 	(localized_will_stay_detachable, localized_is_just_inside_border, 	localized_is_detaching);
+		    and 	(localized_is_detaching, localized_is_detachable, 					localized_is_detaching);
 
 	        //rift 
 	        if(RIFT){
-		        fill_into(plate.mask, 1, localized_is_rifting,                 				plate.mask); 
+		        fill_into(plate.mask, 1, localized_is_rifting,                 			plate.mask); 
 		        fill_into_crust(plate, ocean, localized_is_rifting, plate);
 	        }
 	        //detach
 	        if(DETACH){
-		        fill_into(plate.mask, 1, localized_is_detaching,                 			plate.mask); 
+		        fill_into(plate.mask, 1, localized_is_detaching,                 		plate.mask); 
 		        //accrete, part 1
 		        if(ACCRETE) {
-		        	mult_field	(plate.sial, localized_is_detaching,						localized_accretion);
-	            	resample_f32(localized_accretion, localized_ids,						globalized_scalar_field);
-	            	add 		(globalized_accretion, globalized_scalar_field, 			globalized_accretion);
+		        	mult_field	(plate.sial, localized_is_detaching,					localized_accretion);
+	            	resample_f32(localized_accretion, local_ids_of_global_cells,		globalized_scalar_field);
+	            	add 		(globalized_accretion, globalized_scalar_field, 		globalized_accretion);
 		        }
 	        }
 	        //erode
 	        if(ERODE) {
-            	resample_f32(globalized_erosion, globalized_ids,								localized_erosion);
-            	resample 	(globalized_is_on_top, globalized_ids,								localized_is_on_top);
-	        	add_term 	(plate.sial, localized_erosion, localized_is_on_top,				plate.sial);
+            	resample_f32(globalized_erosion, global_ids_of_local_cells,				localized_erosion);
+            	resample 	(globalized_is_on_top, global_ids_of_local_cells,			localized_is_on_top);
+	        	add_term 	(plate.sial, localized_erosion, localized_is_on_top,		plate.sial);
 	        }
 
 	        //aging
-			ScalarField.add_scalar(plate.age, timestep, plate.age);
+			ScalarField.add_scalar(plate.age, timestep, 								plate.age);
 		}
 		for (var i=0, li=plates.length; i<li; ++i) {
 		    plate = plates[i];
 
-	        mult_matrix(plate.grid.pos, plate.local_to_global_matrix.elements, globalized_pos);
-	    	globalized_ids = plate.grid.getNearestIds(globalized_pos);
+	        mult_matrix(plate.grid.pos, plate.local_to_global_matrix.elements, 			global_pos_of_local_cells);
+	    	global_ids_of_local_cells = plate.grid.getNearestIds(global_pos_of_local_cells);
 
 	        //accrete, part 2
 	        if(ACCRETE) {
-            	resample 	(globalized_is_on_top, globalized_ids,								localized_is_on_top);
-            	resample_f32(globalized_accretion, globalized_ids,								localized_accretion);
-	        	add_term 	(plate.sial, localized_accretion, localized_is_on_top,				plate.sial);
+            	resample 	(globalized_is_on_top, global_ids_of_local_cells,			localized_is_on_top);
+            	resample_f32(globalized_accretion, global_ids_of_local_cells,			localized_accretion);
+	        	add_term 	(plate.sial, localized_accretion, localized_is_on_top,		plate.sial);
 	        }
 		}
 	}
