@@ -11,6 +11,27 @@ function VoronoiSphere(sides, cell_half_width, raster_dim_size){
 	this.cell_half_width = cell_half_width;
 	this.raster_dim_size = raster_dim_size;
 }
+VoronoiSphere.FromPos = function (pos) {
+	//Feed locations into a kdtree for O(logN) lookups
+	points = [];
+	var x = pos.x;
+	var y = pos.y;
+	var z = pos.z;
+	for(var i=0, il = x.length; i<il; i++){
+		points.push({x:x[i], y:y[i], z:z[i], i:i});
+	}
+	var voronoiResolutionFactor = 2;
+	var getDistance = function(a,b) { 
+		return Math.pow(a.x - b.x, 2) +  Math.pow(a.y - b.y, 2) + Math.pow(a.z - b.z, 2); 
+	};
+	var kdtree = new kdTree(points, getDistance, ["x","y","z"]);
+	var voronoiPointNum = Math.pow(voronoiResolutionFactor * Math.sqrt(points.length), 2);
+	
+	//Now feed that kdtree into a Voronoi diagram for O(1) lookups
+	//If cached voronoi is already provided, use that
+	//If this seems like overkill, trust me - it's not
+	return VoronoiSphere.FromKDTree(voronoiPointNum, kdtree);
+}
 VoronoiSphere.FromKDTree = function(pointsNum, kdtree) {
 	var cells_per_point = 8;
 	var circumference = 2*Math.PI;
@@ -103,7 +124,7 @@ VoronoiSphere.FromJson = function (json) {
 
 	return new VoronoiSphere(sides, json.cell_half_width, json.raster_dim_size);
 }
-VoronoiSphere.prototype.to_json = function() {
+VoronoiSphere.prototype.toJson = function() {
 	var json = {};
 	json.xy	= Base64.encode(this.xy.buffer);
 	json.yz	= Base64.encode(this.yz.buffer);
