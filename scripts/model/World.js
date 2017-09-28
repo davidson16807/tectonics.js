@@ -72,11 +72,8 @@ var World = (function() {
 		for (var i=0, li=plates.length; i<li; ++i) {
 		    plate = plates[i]; 
 
-		    // find local_ids_of_global_cells
-		    // for each cell in the master's grid, this raster indicates the id of the corresponding cell in the plate's grid
-		    // this is used to convert between global and local coordinate systems
-		    mult_matrix(master.grid.pos, plate.global_to_local_matrix.elements, 				local_pos_of_global_cells); 
-	    	local_ids_of_global_cells = master.grid.getNearestIds(local_pos_of_global_cells);
+	    	local_ids_of_global_cells = plate.local_ids_of_global_cells;
+	    	global_ids_of_local_cells = plate.global_ids_of_local_cells;
 
 	    	// generate globalized_plate_mask
 	    	// this raster indicates whether the plate exists in a region of the planet
@@ -199,11 +196,8 @@ var World = (function() {
 		for (var i=0, li=plates.length; i<li; ++i) {
 		    plate = plates[i];
 
-		    mult_matrix(grid.pos, plate.global_to_local_matrix.elements, local_pos_of_global_cells); 
-	    	local_ids_of_global_cells = plate.grid.getNearestIds(local_pos_of_global_cells);
-
-	        mult_matrix(plate.grid.pos, plate.local_to_global_matrix.elements, global_pos_of_local_cells);
-	    	global_ids_of_local_cells = plate.grid.getNearestIds(global_pos_of_local_cells);
+		    local_ids_of_global_cells = plate.local_ids_of_global_cells;
+		    global_ids_of_local_cells = plate.global_ids_of_local_cells;
 
 	 		localized_subductability = plate.subductability;
 
@@ -261,8 +255,8 @@ var World = (function() {
 		for (var i=0, li=plates.length; i<li; ++i) {
 		    plate = plates[i];
 
-	        mult_matrix(plate.grid.pos, plate.local_to_global_matrix.elements, 			global_pos_of_local_cells);
-	    	global_ids_of_local_cells = plate.grid.getNearestIds(global_pos_of_local_cells);
+		    local_ids_of_global_cells = plate.local_ids_of_global_cells;
+		    global_ids_of_local_cells = plate.global_ids_of_local_cells;
 
 	        //accrete, part 2
 	        if(ACCRETE) {
