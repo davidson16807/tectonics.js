@@ -5,7 +5,6 @@
 function Grid(template, options){
  options = options || {};
  var voronoi = options.voronoi;
- var voronoiResolutionFactor = options.voronoiResolutionFactor || 2;
  var voronoiPointNum, neighbor_lookup, face, points, vertex;
  this.template = template;
  // Precompute map between buffer array ids and grid cell ids
@@ -83,29 +82,33 @@ function Grid(template, options){
  this.arrow_lookup = arrow_lookup;
  this.pos_arrow_differential = VectorField.arrow_differential(this.pos);
  this.average_distance = Float32Dataset.average(VectorField.magnitude(this.pos_arrow_differential));
- //Feed locations into a kdtree for O(logN) lookups
- points = [];
- for(var i=0, il = this.template.vertices.length; i<il; i++){
-  vertex = vertices[i];
-  points.push({x:vertex.x, y:vertex.y, z:vertex.z, i:i});
- }
- this.getDistance = function(a,b) {
-  return Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2) + Math.pow(a.z - b.z, 2);
- };
- this._kdtree = new kdTree(points, this.getDistance, ["x","y","z"]);
  //Now feed that kdtree into a Voronoi diagram for O(1) lookups
  //If cached voronoi is already provided, use that
  //If this seems like overkill, trust me - it's not
  if (voronoi){
   this._voronoi = voronoi;
  } else {
-  voronoiPointNum = Math.pow(voronoiResolutionFactor * Math.sqrt(this.template.vertices.length), 2);
-  this._voronoi = VoronoiSphere.FromKDTree(voronoiPointNum, this._kdtree);
+  //Feed locations into a kdtree for O(logN) lookups
+  console.log('hi');
+  var pos = this.pos;
+  points = [];
+  var x = pos.x;
+  var y = pos.y;
+  var z = pos.z;
+  for(var i=0, il = x.length; i<il; i++){
+   points.push({x:x[i], y:y[i], z:z[i], i:i});
+  }
+  var voronoiResolutionFactor = 2;
+  this.getDistance = function(a,b) {
+   return Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2) + Math.pow(a.z - b.z, 2);
+  };
+  var _kdtree = new kdTree(points, this.getDistance, ["x","y","z"]);
+  voronoiPointNum = Math.pow(voronoiResolutionFactor * Math.sqrt(points.length), 2);
+  this._voronoi = VoronoiSphere.FromKDTree(voronoiPointNum, _kdtree);
  }
 }
 Grid.prototype.getNearestId = function(vertex) {
  return this._voronoi.getNearestId(vertex);
- return this._kdtree.nearest({x:vertex.x, y:vertex.y, z: vertex.z}, 1)[0][0].i;
 }
 Grid.prototype.getNearestIds = function(pos_field, result) {
  result = result || Uint16Raster(this);

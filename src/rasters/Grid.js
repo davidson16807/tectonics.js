@@ -4,9 +4,8 @@
 
 function Grid(template, options){
 	options = options || {};
-	var voronoi = options.voronoi;
-	var voronoiResolutionFactor = options.voronoiResolutionFactor || 2;
-	var voronoiPointNum, neighbor_lookup, face, points, vertex;
+	var voronoi_generator = options.voronoi_generator;
+	var neighbor_lookup, face, points, vertex;
 
 	this.template = template;
 	
@@ -100,25 +99,8 @@ function Grid(template, options){
 	this.pos_arrow_differential = VectorField.arrow_differential(this.pos); 
 	this.average_distance = Float32Dataset.average(VectorField.magnitude(this.pos_arrow_differential));
 
-	//Feed locations into a kdtree for O(logN) lookups
-	points = [];
-	for(var i=0, il = this.template.vertices.length; i<il; i++){
-		vertex = vertices[i];
-		points.push({x:vertex.x, y:vertex.y, z:vertex.z, i:i});
-	}
-	this.getDistance = function(a,b) { 
-		return Math.pow(a.x - b.x, 2) +  Math.pow(a.y - b.y, 2) + Math.pow(a.z - b.z, 2); 
-	};
-	
-	//Now feed that kdtree into a Voronoi diagram for O(1) lookups
-	//If cached voronoi is already provided, use that
-	//If this seems like overkill, trust me - it's not
-	if (voronoi){
-		this._voronoi = voronoi;
-	} else {
-		_kdtree = new kdTree(points, this.getDistance, ["x","y","z"]);
-		voronoiPointNum = Math.pow(voronoiResolutionFactor * Math.sqrt(this.template.vertices.length), 2);
-		this._voronoi = VoronoiSphere.FromKDTree(voronoiPointNum, _kdtree);
+	if (voronoi_generator){
+		this._voronoi = voronoi_generator(this.pos);
 	}
 }
 
