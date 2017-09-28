@@ -4,8 +4,8 @@
 // It is the lowest level data structure in the app - all raster operations under rasters/ depend on it
 function Grid(template, options){
  options = options || {};
- var voronoi = options.voronoi;
- var voronoiPointNum, neighbor_lookup, face, points, vertex;
+ var voronoi_generator = options.voronoi_generator;
+ var neighbor_lookup, face, points, vertex;
  this.template = template;
  // Precompute map between buffer array ids and grid cell ids
  // This helps with mapping cells within the model to buffer arrays in three.js
@@ -82,29 +82,8 @@ function Grid(template, options){
  this.arrow_lookup = arrow_lookup;
  this.pos_arrow_differential = VectorField.arrow_differential(this.pos);
  this.average_distance = Float32Dataset.average(VectorField.magnitude(this.pos_arrow_differential));
- //Now feed that kdtree into a Voronoi diagram for O(1) lookups
- //If cached voronoi is already provided, use that
- //If this seems like overkill, trust me - it's not
- if (voronoi){
-  this._voronoi = voronoi;
- } else {
-  //Feed locations into a kdtree for O(logN) lookups
-  console.log('hi');
-  var pos = this.pos;
-  points = [];
-  var x = pos.x;
-  var y = pos.y;
-  var z = pos.z;
-  for(var i=0, il = x.length; i<il; i++){
-   points.push({x:x[i], y:y[i], z:z[i], i:i});
-  }
-  var voronoiResolutionFactor = 2;
-  this.getDistance = function(a,b) {
-   return Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2) + Math.pow(a.z - b.z, 2);
-  };
-  var _kdtree = new kdTree(points, this.getDistance, ["x","y","z"]);
-  voronoiPointNum = Math.pow(voronoiResolutionFactor * Math.sqrt(points.length), 2);
-  this._voronoi = VoronoiSphere.FromKDTree(voronoiPointNum, _kdtree);
+ if (voronoi_generator){
+  this._voronoi = voronoi_generator(this.pos);
  }
 }
 Grid.prototype.getNearestId = function(vertex) {
