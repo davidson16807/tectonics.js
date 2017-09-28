@@ -1,6 +1,17 @@
 //Data structure mapping coordinates on a sphere to the nearest point in a kdtree
 //Retrievals from the map are of O(1) complexity. The result resembles a voronoi diagram, hence the name.
-function VoronoiSphere(pointsNum, kdtree){
+function VoronoiSphere(sides, cell_half_width, raster_dim_size){
+	this.sides = sides;
+	this.xy = sides[0];
+	this.yz = sides[1];
+	this.zx = sides[2];
+	this.yx = sides[3];
+	this.zy = sides[4];
+	this.xz = sides[5];
+	this.cell_half_width = cell_half_width;
+	this.raster_dim_size = raster_dim_size;
+}
+VoronoiSphere.FromKDTree = function(pointsNum, kdtree) {
 	var cells_per_point = 8;
 	var circumference = 2*Math.PI;
 	var raster_dim_size = (cells_per_point * Math.sqrt(pointsNum) / circumference) | 0;
@@ -71,17 +82,39 @@ function VoronoiSphere(pointsNum, kdtree){
 			}
 		}
 	}
-	this.sides = sides;
-	this.xy = xy;
-	this.yz = yz;
-	this.zx = zx;
-	this.yx = yx;
-	this.zy = zy;
-	this.xz = xz;
-	this.cell_half_width = cell_half_width;
-	this.raster_dim_size = raster_dim_size;
+	return new VoronoiSphere(sides, cell_half_width, raster_dim_size);
 }
+VoronoiSphere.FromJson = function (json) {
+	var xy = new Uint16Array(Base64.decode(json.xy));
+	var yz = new Uint16Array(Base64.decode(json.yz));
+	var zx = new Uint16Array(Base64.decode(json.zx));
+	var yx = new Uint16Array(Base64.decode(json.yx));
+	var zy = new Uint16Array(Base64.decode(json.zy));
+	var xz = new Uint16Array(Base64.decode(json.xz));
+	
+	var sides = [
+		xy,
+		yz,
+		zx,
+		yx,
+		zy,
+		xz,
+	];
 
+	return new VoronoiSphere(sides, json.cell_half_width, json.raster_dim_size);
+}
+VoronoiSphere.prototype.to_json = function() {
+	var json = {};
+	json.xy	= Base64.encode(this.xy.buffer);
+	json.yz	= Base64.encode(this.yz.buffer);
+	json.zx	= Base64.encode(this.zx.buffer);
+	json.yx	= Base64.encode(this.yx.buffer);
+	json.zy	= Base64.encode(this.zy.buffer);
+	json.xz	= Base64.encode(this.xz.buffer);
+	json.cell_half_width = this.cell_half_width;
+	json.raster_dim_size = this.raster_dim_size;
+	return json;
+}
 VoronoiSphere.prototype.getNearestIds = function(pos_field, result) {
 	result = result || new Uint16Array(pos_field.x.length);
 

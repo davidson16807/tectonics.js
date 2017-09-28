@@ -100,7 +100,7 @@ function Grid(template, options){
   this._voronoi = voronoi;
  } else {
   voronoiPointNum = Math.pow(voronoiResolutionFactor * Math.sqrt(this.template.vertices.length), 2);
-  this._voronoi = new VoronoiSphere(voronoiPointNum, this._kdtree);
+  this._voronoi = VoronoiSphere.FromKDTree(voronoiPointNum, this._kdtree);
  }
 }
 Grid.prototype.getNearestId = function(vertex) {
