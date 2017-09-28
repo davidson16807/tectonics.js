@@ -109,7 +109,6 @@ function Grid(template, options){
 	this.getDistance = function(a,b) { 
 		return Math.pow(a.x - b.x, 2) +  Math.pow(a.y - b.y, 2) + Math.pow(a.z - b.z, 2); 
 	};
-	this._kdtree = new kdTree(points, this.getDistance, ["x","y","z"]);
 	
 	//Now feed that kdtree into a Voronoi diagram for O(1) lookups
 	//If cached voronoi is already provided, use that
@@ -117,14 +116,14 @@ function Grid(template, options){
 	if (voronoi){
 		this._voronoi = voronoi;
 	} else {
+		_kdtree = new kdTree(points, this.getDistance, ["x","y","z"]);
 		voronoiPointNum = Math.pow(voronoiResolutionFactor * Math.sqrt(this.template.vertices.length), 2);
-		this._voronoi = VoronoiSphere.FromKDTree(voronoiPointNum, this._kdtree);
+		this._voronoi = VoronoiSphere.FromKDTree(voronoiPointNum, _kdtree);
 	}
 }
 
 Grid.prototype.getNearestId = function(vertex) { 
 	return this._voronoi.getNearestId(vertex); 
-	return this._kdtree.nearest({x:vertex.x, y:vertex.y, z: vertex.z}, 1)[0][0].i;
 }
 
 Grid.prototype.getNearestIds = function(pos_field, result) {
