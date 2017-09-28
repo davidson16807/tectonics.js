@@ -305,7 +305,10 @@
 	var IsProd = true;
 
 	var view = new View(
-		new Grid( new THREEx.FibonacciSphereGeometry(1, 10000, fibGridFaceCache)),
+		new Grid( 
+			new THREEx.FibonacciSphereGeometry(1, 10000, fibGridFaceCache), 
+			{ voronoi: VoronoiSphere.FromJson(voronoiCache) }
+		),
 		scalarDisplays.satellite, 
 		vectorDisplays.disabled, 
 		vertexShaders['orthographic']
