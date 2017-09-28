@@ -63,7 +63,6 @@ VectorFieldDisplay.prototype.updateAttributes = function(material, plate) {
 
 	// run getField()
 	if (this.getField === void 0) {
-		// TODO: log once
 		log_once("VectorDisplay.getField is undefined.");
 		return;
 	}
@@ -74,7 +73,10 @@ VectorFieldDisplay.prototype.updateAttributes = function(material, plate) {
 	}
 	if (vector_model === void 0) {
 		log_once("VectorDisplay.getField() returned undefined.");
-		// TODO: log once
+		return;
+	}
+	if (!(INPUT.x !== void 0) && !(INPUT.x instanceof Float32Array)) { 
+		log_once("VectorDisplay.getField() did not return a VectorRaster.");
 		return;
 	}
 
