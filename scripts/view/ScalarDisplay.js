@@ -196,7 +196,7 @@ ScalarHeatDisplay.prototype.updateAttributes = function(geometry, plate) {
 }
 scalarDisplays.plates 	= new ScalarHeatDisplay( { min: '0.', max: '7.', 
 		getField: function (world) {
-			return world.plate_masks;
+			return world.plate_map;
 		} 	
 	} );
 scalarDisplays.plate_count 	= new ScalarHeatDisplay( { min: '0.', max: '3.',  

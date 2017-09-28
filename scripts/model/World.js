@@ -13,7 +13,7 @@ var World = (function() {
 		this.supercontinentCycle = parameters['supercontinentCycle'] || new SupercontinentCycle(this, parameters);
 
 		this.subductability = Float32Raster(this.grid);
-		this.plate_masks = Uint8Raster(this.grid);
+		this.plate_map = Uint8Raster(this.grid);
 		this.plate_count = Uint8Raster(this.grid);
 		this.asthenosphere_velocity = VectorRaster(this.grid);
 
@@ -36,7 +36,7 @@ var World = (function() {
 
 		//WIPE MASTER RASTERS CLEAN
 		Crust.fill(master, new RockColumn({ density: master.ocean.density }));
-		fill_ui8(master.plate_masks, UINT8_NULL);
+		fill_ui8(master.plate_map, UINT8_NULL);
 		fill_ui8(master.plate_count, 0);
 
 	  	var plate; 
@@ -95,7 +95,7 @@ var World = (function() {
 
 		    // merge plates with master
 		    // set plate_mask to current plate's index where current plate is on top
-		    fill_into 	(master.plate_masks, i, globalized_is_on_top, 							master.plate_masks);
+		    fill_into 	(master.plate_map, i, globalized_is_on_top, 							master.plate_map);
 		    
 		    // add 1 to master.plate_count where current plate exists
 		    add_ui8 	(master.plate_count, globalized_plate_mask, 							master.plate_count);
@@ -117,7 +117,7 @@ var World = (function() {
 	function update_plates(world, timestep, plates) { 
 	  	var plate; 
 	  	var plate_count = world.plate_count;
-	  	var plate_masks = world.plate_masks;
+	  	var plate_map = world.plate_map;
 	  	var displacement = world.displacement;
 	  	var ocean = world.ocean;
 
@@ -209,7 +209,7 @@ var World = (function() {
 
 		    //shared variables for detaching and rifting
 			// op 	operands																result
-			equals 	(plate_masks, i, 														globalized_is_on_top);
+			equals 	(plate_map, i, 														globalized_is_on_top);
 		    not 	(globalized_is_on_top, 													globalized_is_not_on_top);
 
 		    //detect rifting
@@ -290,8 +290,8 @@ var World = (function() {
 		var pressure = TectonicsModeling.get_asthenosphere_pressure(this.subductability);
 		TectonicsModeling.get_asthenosphere_velocity(pressure, this.asthenosphere_velocity);
 		var angular_velocity = VectorField.cross_vector_field(this.asthenosphere_velocity, this.grid.pos);
-		var plate_masks = TectonicsModeling.get_plate_map(angular_velocity, 7, 200);
-		var plate_ids = Uint8Dataset.unique(plate_masks);
+		var plate_map = TectonicsModeling.get_plate_map(angular_velocity, 7, 200);
+		var plate_ids = Uint8Dataset.unique(plate_map);
 		this.plates = [];
 
 		var plate;
@@ -299,7 +299,7 @@ var World = (function() {
 		for (var i = 0, li = plate_ids.length; i < li; ++i) {
 			plate = new Plate({
 				world: 	this,
-				mask: 	Uint8Field.eq_scalar(plate_masks, plate_ids[i])
+				mask: 	Uint8Field.eq_scalar(plate_map, plate_ids[i])
 			})
 			Crust.copy(this, plate);
 
