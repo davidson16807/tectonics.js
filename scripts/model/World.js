@@ -51,6 +51,7 @@ var World = (function() {
 		//global variables
 		var globalized_is_on_top = Uint8Raster(master.grid);
 		var globalized_plate_mask = Uint8Raster(master.grid); 
+		var global_ids_of_local_cells; 
 
 		// float32array used for temporary storage of globalized scalar fields
 		// this is used for performance reasons
