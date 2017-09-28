@@ -103,7 +103,7 @@ ScalarDisplay.prototype.updateAttributes = function(geometry, plate) {
 		log_once("ScalarDisplay.getField() returned undefined.");
 		return;
 	}
-	if (!(INPUT instanceof Float32Array || INPUT instanceof Uint16Array || INPUT instanceof Uint8Array)) { 
+	if (!(scalar_model instanceof Float32Array || scalar_model instanceof Uint16Array || scalar_model instanceof Uint8Array)) { 
 		log_once("ScalarDisplay.getField() did not return a TypedArray.");
 		return;
 	}
@@ -180,7 +180,7 @@ ScalarHeatDisplay.prototype.updateAttributes = function(geometry, plate) {
 		log_once("ScalarDisplay.getField() returned undefined.");
 		return;
 	}
-	if (!(INPUT instanceof Float32Array || INPUT instanceof Uint16Array || INPUT instanceof Uint8Array)) { 
+	if (!(scalar_model instanceof Float32Array || scalar_model instanceof Uint16Array || scalar_model instanceof Uint8Array)) { 
 		log_once("ScalarDisplay.getField() did not return a TypedArray.");
 		return;
 	}
