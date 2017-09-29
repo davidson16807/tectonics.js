@@ -88,6 +88,12 @@ ScalarDisplay.prototype.updateAttributes = function(geometry, plate) {
 	var displacement_model = plate.displacement; 
 	this.field = this.field || Float32Raster(plate.grid);
 	this.scratch = this.scratch || Float32Raster(plate.grid);
+	
+	for(var j=0, lj = displacement.length; j<lj; j++){ 
+		buffer_array_index = buffer_array_to_cell[j];
+		displacement[j] = displacement_model[buffer_array_index]; 
+	}
+	geometry.attributes.displacement.needsUpdate = true;
 
 	// run getField()
 	if (this.getField === void 0) {
@@ -110,15 +116,9 @@ ScalarDisplay.prototype.updateAttributes = function(geometry, plate) {
 
 	for(var j=0, lj = displacement.length; j<lj; j++){ 
 		buffer_array_index = buffer_array_to_cell[j];
-		displacement[j] = displacement_model[buffer_array_index]; 
-		if (scalar_model !== void 0) {
-			scalar[j] = scalar_model[buffer_array_index]; 
-		}
+		scalar[j] = scalar_model[buffer_array_index]; 
 	}
-	geometry.attributes.displacement.needsUpdate = true;
-	if (scalar_model !== void 0) {
-		geometry.attributes.scalar.needsUpdate = true;
-	}
+	geometry.attributes.scalar.needsUpdate = true;
 }
 scalarDisplays.npp 	= new ScalarDisplay( {color: 0x00ff00, scalar: 'npp'} );
 scalarDisplays.alt 	= new ScalarDisplay( {color: 0x000000, min:'sealevel', max:'maxheight', scalar: 'alt'} );
