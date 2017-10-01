@@ -101,11 +101,11 @@ Grid.prototype.getNeighborIds = function(id) {
 var Float32Dataset = {};
 Float32Dataset.min = function (dataset) {
   if (!(dataset instanceof Float32Array)) { throw "dataset" + ' is not a ' + "Float32Array"; }
-  dataset[Float32Raster.min_id(dataset)];
+  return dataset[Float32Raster.min_id(dataset)];
 };
 Float32Dataset.max = function (dataset) {
   if (!(dataset instanceof Float32Array)) { throw "dataset" + ' is not a ' + "Float32Array"; }
-  dataset[Float32Raster.max_id(dataset)];
+  return dataset[Float32Raster.max_id(dataset)];
 };
 Float32Dataset.sum = function (dataset) {
   if (!(dataset instanceof Float32Array)) { throw "dataset" + ' is not a ' + "Float32Array"; }
@@ -170,11 +170,11 @@ Float32Dataset.rescale = function(dataset, result, max_new) {
 var Uint16Dataset = {};
 Uint16Dataset.min = function (dataset) {
   if (!(dataset instanceof Uint16Array)) { throw "dataset" + ' is not a ' + "Uint16Array"; }
-  dataset[Uint16Raster.min_id(dataset)];
+  return dataset[Uint16Raster.min_id(dataset)];
 };
 Uint16Dataset.max = function (dataset) {
   if (!(dataset instanceof Uint16Array)) { throw "dataset" + ' is not a ' + "Uint16Array"; }
-  dataset[Uint16Raster.max_id(dataset)];
+  return dataset[Uint16Raster.max_id(dataset)];
 };
 Uint16Dataset.sum = function (dataset) {
   if (!(dataset instanceof Uint16Array)) { throw "dataset" + ' is not a ' + "Uint16Array"; }
@@ -197,11 +197,11 @@ Uint16Dataset.average = function (dataset) {
 var Uint8Dataset = {};
 Uint8Dataset.min = function (dataset) {
   if (!(dataset instanceof Uint8Array)) { throw "dataset" + ' is not a ' + "Uint8Array"; }
-  dataset[Uint8Raster.min_id(dataset)];
+  return dataset[Uint8Raster.min_id(dataset)];
 };
 Uint8Dataset.max = function (dataset) {
   if (!(dataset instanceof Uint8Array)) { throw "dataset" + ' is not a ' + "Uint8Array"; }
-  dataset[Uint8Raster.max_id(dataset)];
+  return dataset[Uint8Raster.max_id(dataset)];
 };
 Uint8Dataset.sum = function (dataset) {
   if (!(dataset instanceof Uint8Array)) { throw "dataset" + ' is not a ' + "Uint8Array"; }
@@ -1730,7 +1730,7 @@ VectorField.add_scalar_field = function(vector_field, scalar_field, result) {
  }
  return result;
 };
-VectorField.sub_scalar_field_field = function(vector_field, scalar_field, result) {
+VectorField.sub_scalar_field = function(vector_field, scalar_field, result) {
  result = result || VectorRaster(vector_field.grid);
  if (!(vector_field.x !== void 0) && !(vector_field.x instanceof Float32Array)) { throw "vector_field" + ' is not a vector raster'; }
  if (!(scalar_field instanceof Float32Array)) { throw "scalar_field" + ' is not a ' + "Float32Array"; }
@@ -1742,13 +1742,13 @@ VectorField.sub_scalar_field_field = function(vector_field, scalar_field, result
  var y = result.y;
  var z = result.z;
  for (var i=0, li=x.length; i<li; ++i) {
-     x[i] = x1[i] + scalar_field[i];
-     y[i] = y1[i] + scalar_field[i];
-     z[i] = z1[i] + scalar_field[i];
+     x[i] = x1[i] - scalar_field[i];
+     y[i] = y1[i] - scalar_field[i];
+     z[i] = z1[i] - scalar_field[i];
  }
  return result;
 };
-VectorField.mult_scalar_field_field = function(vector_field, scalar_field, result) {
+VectorField.mult_scalar_field = function(vector_field, scalar_field, result) {
  result = result || VectorRaster(vector_field.grid);
  if (!(vector_field.x !== void 0) && !(vector_field.x instanceof Float32Array)) { throw "vector_field" + ' is not a vector raster'; }
  if (!(scalar_field instanceof Float32Array)) { throw "scalar_field" + ' is not a ' + "Float32Array"; }
@@ -1760,13 +1760,13 @@ VectorField.mult_scalar_field_field = function(vector_field, scalar_field, resul
  var y = result.y;
  var z = result.z;
  for (var i=0, li=x.length; i<li; ++i) {
-     x[i] = x1[i] + scalar_field[i];
-     y[i] = y1[i] + scalar_field[i];
-     z[i] = z1[i] + scalar_field[i];
+     x[i] = x1[i] * scalar_field[i];
+     y[i] = y1[i] * scalar_field[i];
+     z[i] = z1[i] * scalar_field[i];
  }
  return result;
 };
-VectorField.div_scalar_field_field = function(vector_field, scalar_field, result) {
+VectorField.div_scalar_field = function(vector_field, scalar_field, result) {
  result = result || VectorRaster(vector_field.grid);
  if (!(vector_field.x !== void 0) && !(vector_field.x instanceof Float32Array)) { throw "vector_field" + ' is not a vector raster'; }
  if (!(scalar_field instanceof Float32Array)) { throw "scalar_field" + ' is not a ' + "Float32Array"; }
@@ -2124,15 +2124,19 @@ Float32Raster.OfLength = function(length, grid) {
  result.grid = grid;
  return result;
 }
-Float32Raster.FromUint8Raster = function(raster) {
-  var result = Float32Raster(raster.grid);
+Float32Raster.FromUint8Raster = function(raster, result) {
+  var result = result || Float32Raster(raster.grid);
+  if (!(raster instanceof Uint8Array)) { throw "raster" + ' is not a ' + "Uint8Array"; }
+  if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   for (var i=0, li=result.length; i<li; ++i) {
       result[i] = raster[i];
   }
   return result;
 }
-Float32Raster.FromUint16Raster = function(raster) {
-  var result = Float32Raster(raster.grid);
+Float32Raster.FromUint16Raster = function(raster, result) {
+  var result = result || Float32Raster(raster.grid);
+  if (!(raster instanceof Uint16Array)) { throw "raster" + ' is not a ' + "Uint16Array"; }
+  if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   for (var i=0, li=result.length; i<li; ++i) {
       result[i] = raster[i];
   }
@@ -2671,8 +2675,10 @@ Float32RasterInterpolation.lerp = function(a,b, x, result){
 }
 Float32RasterInterpolation.clamp = function(x, min_value, max_value, result) {
     if (!(x instanceof Float32Array)) { throw "x" + ' is not a ' + "Float32Array"; }
-    for (var i = 0, li = result.length; i < li; i++) {
-        result[i] = fraction > max_value? max_value : fraction < min_value? min_value : fraction;
+    var x_i = 0.0;
+    for (var i = 0, li = x.length; i < li; i++) {
+        x_i = x[i];
+        result[i] = x_i > max_value? max_value : x_i < min_value? min_value : x_i;
     }
     return result;
 }

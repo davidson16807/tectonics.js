@@ -30,15 +30,19 @@ Float32Raster.OfLength = function(length, grid) {
 	result.grid = grid;
 	return result;
 }
-Float32Raster.FromUint8Raster = function(raster) {
-  var result = Float32Raster(raster.grid);
+Float32Raster.FromUint8Raster = function(raster, result) {
+  var result = result || Float32Raster(raster.grid);
+  ASSERT_IS_ARRAY(raster, Uint8Array)
+  ASSERT_IS_ARRAY(result, Float32Array)
   for (var i=0, li=result.length; i<li; ++i) {
       result[i] = raster[i];
   }
   return result;
 }
-Float32Raster.FromUint16Raster = function(raster) {
-  var result = Float32Raster(raster.grid);
+Float32Raster.FromUint16Raster = function(raster, result) {
+  var result = result || Float32Raster(raster.grid);
+  ASSERT_IS_ARRAY(raster, Uint16Array)
+  ASSERT_IS_ARRAY(result, Float32Array)
   for (var i=0, li=result.length; i<li; ++i) {
       result[i] = raster[i];
   }

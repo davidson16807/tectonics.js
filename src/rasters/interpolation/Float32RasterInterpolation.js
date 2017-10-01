@@ -11,8 +11,10 @@ Float32RasterInterpolation.lerp = function(a,b, x, result){
 }
 Float32RasterInterpolation.clamp = function(x, min_value, max_value, result) {
     ASSERT_IS_ARRAY(x, Float32Array)
-    for (var i = 0, li = result.length; i < li; i++) {
-        result[i] = fraction > max_value? max_value : fraction < min_value? min_value : fraction;
+    var x_i = 0.0;
+    for (var i = 0, li = x.length; i < li; i++) {
+        x_i = x[i];
+        result[i] = x_i > max_value? max_value : x_i < min_value? min_value : x_i;
     }
     return result;
 }

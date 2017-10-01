@@ -4,11 +4,11 @@
 var Float32Dataset = {};
 Float32Dataset.min = function (dataset) {
   ASSERT_IS_ARRAY(dataset, Float32Array)
-  dataset[Float32Raster.min_id(dataset)];
+  return dataset[Float32Raster.min_id(dataset)];
 };
 Float32Dataset.max = function (dataset) {
   ASSERT_IS_ARRAY(dataset, Float32Array)
-  dataset[Float32Raster.max_id(dataset)];
+  return dataset[Float32Raster.max_id(dataset)];
 };
 Float32Dataset.sum = function (dataset) {
   ASSERT_IS_ARRAY(dataset, Float32Array)

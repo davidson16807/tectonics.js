@@ -4,11 +4,11 @@
 var Uint8Dataset = {};
 Uint8Dataset.min = function (dataset) {
   ASSERT_IS_ARRAY(dataset, Uint8Array)
-  dataset[Uint8Raster.min_id(dataset)];
+  return dataset[Uint8Raster.min_id(dataset)];
 };
 Uint8Dataset.max = function (dataset) {
   ASSERT_IS_ARRAY(dataset, Uint8Array)
-  dataset[Uint8Raster.max_id(dataset)];
+  return dataset[Uint8Raster.max_id(dataset)];
 };
 Uint8Dataset.sum = function (dataset) {
   ASSERT_IS_ARRAY(dataset, Uint8Array)

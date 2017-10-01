@@ -378,7 +378,7 @@ VectorField.add_scalar_field = function(vector_field, scalar_field, result) {
 
 	return result;
 };
-VectorField.sub_scalar_field_field = function(vector_field, scalar_field, result) {
+VectorField.sub_scalar_field = function(vector_field, scalar_field, result) {
 	result = result || VectorRaster(vector_field.grid);
 	
 	ASSERT_IS_VECTOR_RASTER(vector_field)
@@ -394,14 +394,14 @@ VectorField.sub_scalar_field_field = function(vector_field, scalar_field, result
 	var z = result.z;
 
 	for (var i=0, li=x.length; i<li; ++i) {
-	    x[i] = x1[i] + scalar_field[i];
-	    y[i] = y1[i] + scalar_field[i];
-	    z[i] = z1[i] + scalar_field[i];
+	    x[i] = x1[i] - scalar_field[i];
+	    y[i] = y1[i] - scalar_field[i];
+	    z[i] = z1[i] - scalar_field[i];
 	}
 
 	return result;
 };
-VectorField.mult_scalar_field_field = function(vector_field, scalar_field, result) {
+VectorField.mult_scalar_field = function(vector_field, scalar_field, result) {
 	result = result || VectorRaster(vector_field.grid);
 	
 	ASSERT_IS_VECTOR_RASTER(vector_field)
@@ -417,14 +417,14 @@ VectorField.mult_scalar_field_field = function(vector_field, scalar_field, resul
 	var z = result.z;
 
 	for (var i=0, li=x.length; i<li; ++i) {
-	    x[i] = x1[i] + scalar_field[i];
-	    y[i] = y1[i] + scalar_field[i];
-	    z[i] = z1[i] + scalar_field[i];
+	    x[i] = x1[i] * scalar_field[i];
+	    y[i] = y1[i] * scalar_field[i];
+	    z[i] = z1[i] * scalar_field[i];
 	}
 
 	return result;
 };
-VectorField.div_scalar_field_field = function(vector_field, scalar_field, result) {
+VectorField.div_scalar_field = function(vector_field, scalar_field, result) {
 	result = result || VectorRaster(vector_field.grid);
 	
 	ASSERT_IS_VECTOR_RASTER(vector_field)
