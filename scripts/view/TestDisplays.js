@@ -75,11 +75,18 @@ testDisplays.surface_air_pressure_land_effect = new ScalarHeatDisplay( { min: '-
 testDisplays.winter_surface_air_pressure = new ScalarHeatDisplay( { min: '-1.', max: '1.', 
 		getField: function (world, pressure, scratch) {
 			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
-			AtmosphericModeling.seasonal_surface_air_pressure(world.displacement, lat, world.SEALEVEL, Math.PI*23.5/180, pressure, scratch);
+			AtmosphericModeling.surface_air_pressure(world.displacement, lat, world.SEALEVEL, 1, Math.PI*23.5/180, pressure, scratch);
 			return pressure;
 		}
 	} );
-ANGULAR_SPEED = 1.e1;
+testDisplays.summer_surface_air_pressure = new ScalarHeatDisplay( { min: '-1.', max: '1.', 
+		getField: function (world, pressure, scratch) {
+			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
+			AtmosphericModeling.surface_air_pressure(world.displacement, lat, world.SEALEVEL, -1, Math.PI*23.5/180, pressure, scratch);
+			return pressure;
+		}
+	} );
+ANGULAR_SPEED = 1.e0;
 testDisplays.coriolis_effect = new VectorFieldDisplay( {
 		getField: function (world) {
 			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
@@ -88,45 +95,21 @@ testDisplays.coriolis_effect = new VectorFieldDisplay( {
 			var velocity = ScalarField.gradient(pressure);
 			var coriolis_effect = AtmosphericModeling.surface_air_velocity_coriolis_effect(world.grid.pos, velocity, ANGULAR_SPEED)
 			return coriolis_effect;
-			VectorField.add_vector_field(velocity, coriolis_effect, velocity);
-			return velocity;
 		} 
 	} );
 testDisplays.winter_surface_air_velocity = new VectorFieldDisplay( {
 		getField: function (world) {
 			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
-			var scratch = Float32Raster(world.grid);
-			var pressure = Float32Raster(world.grid);
-			AtmosphericModeling.seasonal_surface_air_pressure(world.displacement, lat, world.SEALEVEL, Math.PI*23.5/180, pressure, scratch);
-			var velocity = ScalarField.gradient(pressure);
-			var coriolis_effect = AtmosphericModeling.surface_air_velocity_coriolis_effect(world.grid.pos, velocity, ANGULAR_SPEED)
-			VectorField.add_vector_field(velocity, coriolis_effect, velocity);
+			var pressure = AtmosphericModeling.surface_air_pressure(world.displacement, lat, world.SEALEVEL, 1, Math.PI*23.5/180);
+			var velocity = AtmosphericModeling.surface_air_velocity(world.grid.pos, pressure, ANGULAR_SPEED);
 			return velocity;
 		} 
 	} );
 testDisplays.summer_surface_air_velocity = new VectorFieldDisplay( {
 		getField: function (world) {
 			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
-			var scratch = Float32Raster(world.grid);
-			var pressure = Float32Raster(world.grid);
-			AtmosphericModeling.seasonal_surface_air_pressure(world.displacement, lat, world.SEALEVEL, -Math.PI*23.5/180, pressure, scratch);
-			var velocity = ScalarField.gradient(pressure);
-			var coriolis_effect = AtmosphericModeling.surface_air_velocity_coriolis_effect(world.grid.pos, velocity, ANGULAR_SPEED)
-			VectorField.add_vector_field(velocity, coriolis_effect, velocity);
-			return velocity;
-		} 
-	} );
-
-testDisplays.surface_air_velocity = new VectorFieldDisplay( {
-		getField: function (world) {
-			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
-			var scratch = Float32Raster(world.grid);
-			var pressure = AtmosphericModeling.surface_air_pressure_lat_effect(lat);
-			var velocity = ScalarField.gradient(pressure);
-			// return velocity;
-			var coriolis_effect = AtmosphericModeling.surface_air_velocity_coriolis_effect(world.grid.pos, velocity, AXIAL_TILT)
-			// return coriolis_effect;
-			VectorField.add_vector_field(velocity, coriolis_effect, velocity);
+			var pressure = AtmosphericModeling.surface_air_pressure(world.displacement, lat, world.SEALEVEL, -1, Math.PI*23.5/180);
+			var velocity = AtmosphericModeling.surface_air_velocity(world.grid.pos, pressure, ANGULAR_SPEED);
 			return velocity;
 		} 
 	} );
