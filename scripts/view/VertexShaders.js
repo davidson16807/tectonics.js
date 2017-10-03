@@ -35,7 +35,7 @@ void main() {
 	vScalar = scalar;
 	vPosition = modelMatrix * vec4( position, 1.0 );
 	
-	vec4 modelPos = modelMatrix * vec4( ( position + vector ), 1.0 );
+	vec4 modelPos = modelMatrix * vec4( ( position ), 1.0 );
 	float height = displacement > sealevel? LAND : displacement > 1.0? OCEAN : NONE;
 	
 	float index_offset = INDEX_SPACING * index;
@@ -84,7 +84,7 @@ void main() {
 	vScalar = scalar;
 	vPosition = modelMatrix * vec4( position, 1.0 );
 	
-	vec4 modelPos = modelMatrix * vec4( ( position + vector ), 1.0 );
+	vec4 modelPos = modelMatrix * vec4( ( position ), 1.0 );
 	
 	float index_offset = INDEX_SPACING * index;
 	float focus = lon(cameraPosition) + index_offset;
@@ -124,7 +124,7 @@ void main() {
 	vPosition = modelMatrix * vec4( position, 1.0 );
 	
 	float height = displacement > sealevel? LAND : displacement > 1.0? OCEAN : NONE;
-	vec4 displaced = vec4( ( position + vector ) * (1.+height), 1.0 );
+	vec4 displaced = vec4( ( position ) * (1.+height), 1.0 );
 	gl_Position = projectionMatrix * modelViewMatrix * displaced;
 }
 //this line left intentionally empty**/});
