@@ -9,16 +9,16 @@ function ThreeJsVectorDisplay(options) {
 }
 ThreeJsVectorDisplay.prototype.addTo = function(mesh) {};
 ThreeJsVectorDisplay.prototype.removeFrom = function(mesh) {};
-ThreeJsVectorDisplay.prototype.updateAttributes = function(material, plate) {
-	var material, displacement;
-	var vector = material.attributes.vector.value;
+ThreeJsVectorDisplay.prototype.updateAttributes = function(geometry, plate) {
+	var geometry, displacement;
+	var vector = geometry.vertices;
 
 	var vector_model = this.getField(plate);
 	for(var i=0, li = vector_model.length; i<li; i++){
 		var vector_i = 2*i+1;
 		vector[vector_i] = vector_model[i]; 
 	}
-	material.attributes.vector.needsUpdate = true;
+	geometry.verticesNeedUpdate = true;
 }
 vectorDisplays.angularVelocity	= new ThreeJsVectorDisplay( { 
 	getField: function (plate) {
@@ -54,12 +54,12 @@ function VectorFieldDisplay(options) {
 }
 VectorFieldDisplay.prototype.addTo = function(mesh) {};
 VectorFieldDisplay.prototype.removeFrom = function(mesh) {};
-VectorFieldDisplay.prototype.updateAttributes = function(material, plate) {
-	var offset_length = 0.02; 	// offset of arrow from surface of sphere, in radii
+VectorFieldDisplay.prototype.updateAttributes = function(geometry, plate) {
+	var offset_length = 1.02; 	// offset of arrow from surface of sphere, in radii
 	var max_arrow_length = 0.1; // max arrow length, in radii
 
-	var material, displacement;
-	var vector = material.attributes.vector.value;
+	var geometry, displacement;
+	var vector = geometry.vertices;
 
 	// run getField()
 	if (this.getField === void 0) {
@@ -95,7 +95,8 @@ VectorFieldDisplay.prototype.updateAttributes = function(material, plate) {
 		end.y = vector_model.y[i] * scaling + start.y;
 		end.z = vector_model.z[i] * scaling + start.z;
 	}
-	material.attributes.vector.needsUpdate = true;
+	// geometry.vertices.needsUpdate = true;
+	geometry.verticesNeedUpdate = true;
 }
 vectorDisplays.pos	= new VectorFieldDisplay( { 
 	getField: function (plate) {
