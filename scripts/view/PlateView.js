@@ -62,26 +62,43 @@ function PlateView(scene, plate, uniforms, vertexShader, scalarDisplay, vectorDi
 	this.scalar_field_mesh2 = scalar_field_mesh;
 
 
-	var vector_field_material = new THREE.ShaderMaterial({
+	var vector_field_geometry = new THREE.Geometry();
+	for (var i=0, li=plate.grid.vertices.length; i<li; ++i) {
+	    vector_field_geometry.vertices.push( plate.grid.vertices[i].clone() );
+	    vector_field_geometry.vertices.push( plate.grid.vertices[i].clone() );
+	    // vector_field_material.attributes.vector.value.push( new THREE.Vector3() );
+	    // vector_field_material.attributes.vector.value.push( new THREE.Vector3() );
+	}
+	this.vector_field_geometry = vector_field_geometry;
+
+	var vector_field_material, vector_field_mesh;
+	var positions = plate.grid.pos;
+
+	vector_field_material = new THREE.ShaderMaterial({
 	        vertexShader: 	this._vertexShader,
 	        fragmentShader: fragmentShaders.vectorField,
 	        attributes: {
-	        	vector: { type: 'v3', value: [] }
 	        },
-	        uniforms: {  }
+	        uniforms: { 
+		  		index: 		{ type: 'f', value: -1 }
+	        }
 	    });
-	var vector_field_geometry = new THREE.Geometry();
-	this.vector_field_material = vector_field_material;
-	var positions = plate.grid.pos;
-	for (var i=0, li=plate.grid.vertices.length; i<li; ++i) {
-	    vector_field_geometry.vertices.push( plate.grid.vertices[i] );
-	    vector_field_geometry.vertices.push( plate.grid.vertices[i] );
-	    vector_field_material.attributes.vector.value.push( new THREE.Vector3() );
-	    vector_field_material.attributes.vector.value.push( new THREE.Vector3() );
-	}
-	var vector_field_mesh = new THREE.Line( vector_field_geometry, vector_field_material, THREE.LinePieces);
+	vector_field_mesh = new THREE.Line( vector_field_geometry, vector_field_material, THREE.LinePieces);
 	scene.add(vector_field_mesh);
-	this.vector_field_mesh = vector_field_mesh;
+	this.vector_field_mesh1 = vector_field_mesh;
+
+	vector_field_material = new THREE.ShaderMaterial({
+	        vertexShader: 	this._vertexShader,
+	        fragmentShader: fragmentShaders.vectorField,
+	        attributes: {
+	        },
+	        uniforms: { 
+		  		index: 		{ type: 'f', value: 1 }
+	        }
+	    });
+	vector_field_mesh = new THREE.Line( vector_field_geometry, vector_field_material, THREE.LinePieces);
+	scene.add(vector_field_mesh);
+	this.vector_field_mesh2 = vector_field_mesh;
 }
 
 PlateView.prototype.setScalarDisplay = function(display) {
@@ -101,11 +118,13 @@ PlateView.prototype.setVectorDisplay = function(display) {
 	if(this._vectorDisplay === display){
 		return;
 	}
-	this._vectorDisplay.removeFrom(this.vector_field_mesh);
+	this._vectorDisplay.removeFrom(this.vector_field_mesh1);
+	this._vectorDisplay.removeFrom(this.vector_field_mesh2);
 
 	this._vectorDisplay = display;
 
-	this._vectorDisplay.addTo(this.vector_field_mesh);
+	this._vectorDisplay.addTo(this.vector_field_mesh1);
+	this._vectorDisplay.addTo(this.vector_field_mesh2);
 };
 
 PlateView.prototype.matrix_update = function(matrix) {
@@ -119,14 +138,18 @@ PlateView.prototype.matrix_update = function(matrix) {
 	mesh.matrix = matrix;
 	mesh.rotation.setFromRotationMatrix(mesh.matrix);
 
-	mesh = this.vector_field_mesh;
+	mesh = this.vector_field_mesh1;
+	mesh.matrix = matrix;
+	mesh.rotation.setFromRotationMatrix(mesh.matrix);
+
+	mesh = this.vector_field_mesh2;
 	mesh.matrix = matrix;
 	mesh.rotation.setFromRotationMatrix(mesh.matrix);
 };
 
 PlateView.prototype.cell_update = function(plate){
 	this._scalarDisplay.updateAttributes(this.scalar_field_geometry, plate);
-	this._vectorDisplay.updateAttributes(this.vector_field_material, plate);
+	this._vectorDisplay.updateAttributes(this.vector_field_geometry, plate);
 }
 
 PlateView.prototype.vertexShader = function(vertexShader){
@@ -145,7 +168,11 @@ PlateView.prototype.vertexShader = function(vertexShader){
 	mesh.material.vertexShader = vertexShader;
 	mesh.material.needsUpdate = true;
 
-	mesh = this.vector_field_mesh;
+	mesh = this.vector_field_mesh1;
+	mesh.material.vertexShader = vertexShader;
+	mesh.material.needsUpdate = true;
+
+	mesh = this.vector_field_mesh2;
 	mesh.material.vertexShader = vertexShader;
 	mesh.material.needsUpdate = true;
 }
@@ -167,7 +194,11 @@ PlateView.prototype.uniform = function(key, value){
  	mesh.material.uniforms[key].value = value;
  	mesh.material.uniforms[key].needsUpdate = true;
 
- 	mesh = this.vector_field_mesh;
+ 	mesh = this.vector_field_mesh1;
+ 	mesh.material.uniforms[key].value = value;
+ 	mesh.material.uniforms[key].needsUpdate = true;
+
+ 	mesh = this.vector_field_mesh2;
  	mesh.material.uniforms[key].value = value;
  	mesh.material.uniforms[key].needsUpdate = true;
 }
@@ -177,7 +208,8 @@ PlateView.prototype.destroy = function() {
 
 	this.scene.remove(this.scalar_field_mesh1);
 	this.scene.remove(this.scalar_field_mesh2);
-	this.scene.remove(this.vector_field_mesh);
+	this.scene.remove(this.vector_field_mesh1);
+	this.scene.remove(this.vector_field_mesh2);
 
 	mesh = this.scalar_field_mesh1;
 	mesh.material.dispose();
@@ -187,7 +219,11 @@ PlateView.prototype.destroy = function() {
 	mesh.material.dispose();
 	mesh.geometry.dispose();
 
-	mesh = this.vector_field_mesh;
+	mesh = this.vector_field_mesh1;
+	mesh.material.dispose();
+	mesh.geometry.dispose();
+
+	mesh = this.vector_field_mesh2;
 	mesh.material.dispose();
 	mesh.geometry.dispose();
 };
