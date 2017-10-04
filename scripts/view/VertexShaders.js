@@ -1,10 +1,5 @@
-
-function _multiline(f) {
-  return f.toString().split('\n').slice(1, -1).join('\n');
-}
-
 var vertexShaders = {};
-vertexShaders.equirectangular = _multiline(function() {/**   
+vertexShaders.equirectangular = `   
 //TEMPLATE.GLSL.C GOES HERE
 const float PI = 3.14;
 const float OCEAN = 0.0;
@@ -20,8 +15,7 @@ varying float vScalar;
 varying vec4 vPosition;
 uniform float sealevel;
 uniform float index;
-
-//this line left intentionally empty//EQUIRECTANGULAR.GLSL.C GOES HERE
+//EQUIRECTANGULAR.GLSL.C GOES HERE
 
 float lon(vec3 pos) {
 	return atan(-pos.z, pos.x) + PI;
@@ -52,9 +46,8 @@ void main() {
 	mat4 scaleMatrix = mat4(1);
 	scaleMatrix[3] = viewMatrix[3];
 	gl_Position = projectionMatrix * scaleMatrix * displaced;
-}
-//this line left intentionally empty**/});
-vertexShaders.texture = _multiline(function() {/**
+}`;
+vertexShaders.texture = `
 //TEMPLATE.GLSL.C GOES HERE
 const float PI = 3.14;
 const float OCEAN = 0.0;
@@ -70,8 +63,7 @@ varying float vScalar;
 varying vec4 vPosition;
 uniform float sealevel;
 uniform float index;
-
-//this line left intentionally empty//TEXTURE.GLSL.C GOES HERE
+//TEXTURE.GLSL.C GOES HERE
 
 float lon(vec3 pos) {
 	return atan(-pos.z, pos.x) + PI;
@@ -98,9 +90,8 @@ void main() {
 		lat_focused / (PI/2.), 
 		-height, 
 		1);
-}
-//this line left intentionally empty**/})
-vertexShaders.orthographic = _multiline(function() {/**   
+}`;
+vertexShaders.orthographic = `   
 //TEMPLATE.GLSL.C GOES HERE
 const float PI = 3.14;
 const float OCEAN = 0.0;
@@ -116,8 +107,7 @@ varying float vScalar;
 varying vec4 vPosition;
 uniform float sealevel;
 uniform float index;
-
-//this line left intentionally empty//ORTHOGRAPHIC.GLSL.C GOES HERE
+//ORTHOGRAPHIC.GLSL.C GOES HERE
 
 void main() {
 	vDisplacement = displacement;
@@ -127,5 +117,4 @@ void main() {
 	float height = displacement > sealevel? LAND : displacement > 1.0? OCEAN : NONE;
 	vec4 displaced = vec4( ( position ) * (1.+height), 1.0 );
 	gl_Position = projectionMatrix * modelViewMatrix * displaced;
-}
-//this line left intentionally empty**/});
+}`;

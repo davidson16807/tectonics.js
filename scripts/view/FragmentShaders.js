@@ -5,7 +5,7 @@ function _multiline(f) {
 
 var fragmentShaders = {};
 
-fragmentShaders.template = _multiline(function() {/**   
+fragmentShaders.template = `
 //TEMPLATE.GLSL.C GOES HERE
 
 varying float vDisplacement;
@@ -98,10 +98,9 @@ void main() {
 
 	@OUTPUT
 }
-//this line left intentionally empty
-**/});
+`;
 
-fragmentShaders.debug = _multiline(function() {/**   
+fragmentShaders.debug = `
 //DEBUG.GLSL.C GOES HERE
 varying float vDisplacement;
 varying vec4 vPosition;
@@ -125,14 +124,11 @@ void main() {
 		gl_FragColor =  vec4(0,0,0,1);
 	}
 }
-//this line left intentionally empty
+`;
 
-**/});
-
-fragmentShaders.vectorField = _multiline(function() {/**   
+fragmentShaders.vectorField = `
 //VECTOR_FIELD.GLSL.C GOES HERE
 void main() {
 	gl_FragColor = vec4(1);
 }
-//this line left intentionally empty
-**/});
+`;
