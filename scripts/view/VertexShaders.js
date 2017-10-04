@@ -40,13 +40,14 @@ void main() {
 	
 	float index_offset = INDEX_SPACING * index;
 	float focus = lon(cameraPosition) + index_offset;
-	float lon_focused = mod(lon(modelPos.xyz) - focus, 2.*PI) - PI + index_offset;
+	float lon_focused = mod(lon(modelPos.xyz) - focus, 2.*PI) - PI;
 	float lat_focused = lat(modelPos.xyz); //+ (index*PI);
-
+	bool is_on_edge = lon_focused >  PI*0.9 || lon_focused < -PI*0.9;
+	
 	vec4 displaced = vec4(
-		lon_focused,
+		lon_focused + index_offset,
 		lat(modelPos.xyz), //+ (index*PI), 
-		length(position), 
+		is_on_edge? 0. : length(position), 
 		1);
 	mat4 scaleMatrix = mat4(1);
 	scaleMatrix[3] = viewMatrix[3];
