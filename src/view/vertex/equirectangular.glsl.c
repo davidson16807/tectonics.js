@@ -22,7 +22,7 @@ void main() {
 	vec4 displaced = vec4(
 		lon_focused,
 		lat(modelPos.xyz), //+ (index*PI), 
-		height, 
+		length(position), 
 		1);
 	mat4 scaleMatrix = mat4(1);
 	scaleMatrix[3] = viewMatrix[3];
