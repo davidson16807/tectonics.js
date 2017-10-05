@@ -196,6 +196,15 @@
 						Plates
 					</button>
 				</li>
+
+				<li role="separator" class="divider"></li>
+
+				<li>
+					<button type="button" class="btn btn-default btn-xs vector-display" data-value="asthenosphere_velocity">
+						<img src="icons/fire-flow.svg" height="16em" width="16em"/>
+						Mantle Flow
+					</button>
+				</li>
 			</ul>
 		</div>
 
@@ -576,6 +585,10 @@
 	$('.vertex-shader').click(function(e){
 		console.log('vertex-shader');
 		view.vertexShader(vertexShaders[$(this).data('value')]);
+	});
+	$('.vector-display').click(function(e){
+		console.log('vector-display');
+		view.setVectorDisplay(vectorDisplays[$(this).data('value')]);
 	});
 	$('.ocean').click(function(e){
 		var checked = $(this).hasClass('active');
