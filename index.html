@@ -17,6 +17,7 @@
 	<link rel="stylesheet" href="styles/app.css"/>
 
 	<script src="http://code.jquery.com/jquery.min.js"></script>
+	<script src="https://unpkg.com/vue"></script>
 	<script src="libraries/bootstrap.js"></script>
 	<script src="libraries/three.js/Three.js"></script>
 	<script src="libraries/three.js/Detector.js"></script>
@@ -120,89 +121,17 @@
 				</li>
 			</ul>
 		</div>
-		<div class="btn-group">
+		<div id="view-menu" class="btn-group">
 			<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 				<img src="icons/eye.svg" height="16em" width="16em"/>
 				Display 
 				<span class="caret"></span>
 			</button>
 			<ul class="dropdown-menu btn-default btn-xs">
-				<li>
-					<button type="button" class="btn btn-default btn-xs active ocean" data-toggle="button" aria-pressed="true">
-						<img src="icons/water.svg" height="16em" width="16em"/>
-						Ocean
-					</button>
-				</li>
-				<li>
-					<button type="button" class="btn btn-default btn-xs active vegetation" data-toggle="button" aria-pressed="true">
-						<img src="icons/tree.svg" height="16em" width="16em"/>
-						Vegetation
-					</button>
-				</li>
-				<li>
-					<button type="button" class="btn btn-default btn-xs active soil" data-toggle="button" aria-pressed="true">
-						<img src="icons/stone-pile.svg" height="16em" width="16em"/>
-						Soil
-					</button>
-				</li>
-
-				<li role="separator" class="divider"></li>
-
-				<li>
-					<button type="button" class="btn btn-default btn-xs fragment-shader" data-value="alt">
-						<img src="icons/terrain.svg" height="16em" width="16em"/>
-						Elevation
-					</button>
-				</li>
-				<li>
-					<button type="button" class="btn btn-default btn-xs fragment-shader" data-value="npp">
-						<img src="icons/leaf.svg" height="16em" width="16em"/>
-						Plant Productivity
-					</button>
-				</li>
-				<li>
-					<button type="button" class="btn btn-default btn-xs fragment-shader" data-value="temp">
-						<img src="icons/thermometer.svg" height="16em" width="16em"/>
-						Temperature
-					</button>
-				</li>
-				<li>
-					<button type="button" class="btn btn-default btn-xs fragment-shader" data-value="precip">
-						<img src="icons/weather-raining.svg" height="16em" width="16em"/>
-						Precipitation
-					</button>
-				</li>
-				<li>
-					<button type="button" class="btn btn-default btn-xs fragment-shader" data-value="age">
-						<img src="icons/clock.svg" height="16em" width="16em"/>
-						Age
-					</button>
-				</li>
-				<li>
-					<button type="button" class="btn btn-default btn-xs fragment-shader" data-value="density">
-						<img src="icons/scale.svg" height="16em" width="16em"/>
-						Density
-					</button>
-				</li>
-				<li>
-					<button type="button" class="btn btn-default btn-xs fragment-shader" data-value="thickness">
-						<img src="icons/ruler.svg" height="16em" width="16em"/>
-						Thickness
-					</button>
-				</li>
-				<li>
-					<button type="button" class="btn btn-default btn-xs fragment-shader" data-value="plates">
-						<img src="icons/puzzle.svg" height="16em" width="16em"/>
-						Plates
-					</button>
-				</li>
-
-				<li role="separator" class="divider"></li>
-
-				<li>
-					<button type="button" class="btn btn-default btn-xs vector-display" data-value="asthenosphere_velocity">
-						<img src="icons/fire-flow.svg" height="16em" width="16em"/>
-						Mantle Flow
+				<li v-for="option in scalarDisplayOptions">
+					<button type="button" class="btn btn-default btn-xs" v-bind:class="getClass(option.value, scalarDisplay)" v-bind:data-value="option.value" v-on:click="setScalarDisplay(option.value)">
+						<img v-bind:src="option.icon" height="16em" width="16em"/>
+						{{option.name}}
 					</button>
 				</li>
 			</ul>
@@ -613,6 +542,38 @@
 				view.setScalarDisplay(scalarDisplays.bedrock);
 			}	
 		}, 0);
+	})
+	var view_menu = new Vue({
+		el: '#view-menu',
+		data: {
+			ocean: true,
+			scalarDisplay: 'satellite',
+			vectorDisplay: 'disabled',
+			scalarDisplayOptions: [
+				{name: 'Satellite', value: 'satellite', icon: 'icons/tree.svg'},
+				{name: 'Sediment', value: 'soil', icon: 'icons/powder.svg'},
+				{name: 'Bedrock', value: 'bedrock', icon: 'icons/stone-pile.svg'},
+				{name: 'Elevation', value: 'alt', icon: 'icons/terrain.svg'},
+				{name: 'Plant Productivity', value: 'npp', icon: 'icons/leaf.svg'},
+				{name: 'Air Temperature', value: 'temp', icon: 'icons/thermometer.svg'},
+				{name: 'Precipitation', value: 'precip', icon: 'icons/weather-raining.svg'},
+				{name: 'Crust Age', value: 'age', icon: 'icons/clock.svg'},
+				{name: 'Crust Density', value: 'density', icon: 'icons/scale.svg'},
+				{name: 'Crust Thickness', value: 'thickness', icon: 'icons/ruler.svg'},
+				{name: 'Plates', value: 'plates', icon: 'icons/puzzle.svg'},
+			],
+			vectorDisplayOptions: []
+		},
+		methods: {
+			setScalarDisplay: function(value) {
+				this.scalarDisplay = value;
+				console.log(value);
+				view.setScalarDisplay(scalarDisplays[value]);
+			},
+			getClass: function(value, selected) {
+				return value == selected? 'active' : '';
+			}
+		}
 	})
 </script>
 </body>
