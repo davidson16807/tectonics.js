@@ -111,8 +111,23 @@
 		</div>
 		<div id="scalar-display" class="btn-group">
 			<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-				<img src="icons/eye.svg" height="16em" width="16em"/>
+				<img src="icons/blur.svg" height="16em" width="16em"/>
 				Display 
+				<span class="caret"></span>
+			</button>
+			<ul class="dropdown-menu btn-default btn-xs">
+				<li v-for="option in options">
+					<button type="button" class="btn btn-default btn-xs" v-bind:class="getClass(option.value, selected)" v-bind:data-value="option.value" v-on:click="setSelected(option.value)">
+						<img v-bind:src="option.icon" height="16em" width="16em"/>
+						{{option.name}}
+					</button>
+				</li>
+			</ul>
+		</div>
+		<div id="vector-display" class="btn-group">
+			<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				<img src="icons/arrow-move-all.svg" height="16em" width="16em"/>
+				Arrows
 				<span class="caret"></span>
 			</button>
 			<ul class="dropdown-menu btn-default btn-xs">
@@ -496,9 +511,6 @@
 			loadFile(e.dataTransfer.files[0]);
 	    }
 	);
-	$('.vector-display').click(function(e){
-		view.setVectorDisplay(vectorDisplays[$(this).data('value')]);
-	});
 	$('.ocean').click(function(e){
 		var checked = $(this).hasClass('active');
 
@@ -510,57 +522,78 @@
 			}
 		  });
 	});
-	var view_menu = new Vue({
-		el: '#projection',
-		data: {
-			selected: 'orthographic',
-			options: [
-				{ name: "Globe", value: "orthographic", icon: "icons/earth.svg" },
-				{ name: "Map", value: "equirectangular", icon: "icons/map.svg" },
-				{ name: "Texture", value: "texture", icon: "icons/texture.svg" },
-			],
-		},
-		methods: {
-			setSelected: function(value) {
-				this.selected = value;
-				view.vertexShader(vertexShaders[value]);
-			},
-			getClass: function(value, selected) {
-				return value == selected? 'active' : '';
-			}
-		}
-	})
 
-	var view_menu = new Vue({
-		el: '#scalar-display',
-		data: {
-			ocean: true,
-			selected: 'satellite',
-			vectorDisplay: 'disabled',
-			options: [
-				{name: 'Satellite', value: 'satellite', icon: 'icons/tree.svg'},
-				{name: 'Sediment', value: 'soil', icon: 'icons/powder.svg'},
-				{name: 'Bedrock', value: 'bedrock', icon: 'icons/stone-pile.svg'},
-				{name: 'Elevation', value: 'alt', icon: 'icons/terrain.svg'},
-				{name: 'Plant Productivity', value: 'npp', icon: 'icons/leaf.svg'},
-				{name: 'Air Temperature', value: 'temp', icon: 'icons/thermometer.svg'},
-				{name: 'Precipitation', value: 'precip', icon: 'icons/weather-raining.svg'},
-				{name: 'Crust Age', value: 'age', icon: 'icons/clock.svg'},
-				{name: 'Crust Density', value: 'density', icon: 'icons/scale.svg'},
-				{name: 'Crust Thickness', value: 'thickness', icon: 'icons/ruler.svg'},
-				{name: 'Plates', value: 'plates', icon: 'icons/puzzle.svg'},
-			],
-		},
-		methods: {
-			setSelected: function(value) {
-				this.selected = value;
-				view.setScalarDisplay(scalarDisplays[value]);
-			},
-			getClass: function(value, selected) {
-				return value == selected? 'active' : '';
-			}
-		}
-	})
+	new Vue({
+	  el: '#projection',
+	  data: {
+	    selected: 'orthographic',
+	    options: [
+	      { name: "Globe", value: "orthographic", icon: "icons/earth.svg" },
+	      { name: "Map", value: "equirectangular", icon: "icons/map.svg" },
+	      { name: "Texture", value: "texture", icon: "icons/texture.svg" },
+	    ],
+	  },
+	  methods: {
+	    setSelected: function(value) {
+	      this.selected = value;
+	      view.vertexShader(vertexShaders[value]);
+	    },
+	    getClass: function(value, selected) {
+	      return value == selected? 'active' : '';
+	    }
+	  }
+	});
+
+	new Vue({
+	  el: '#vector-display',
+	  data: {
+	    selected: 'disabled',
+	    options: [
+	      { name: "None", value: "disabled", icon: "" },
+	      { name: "Mantle Flow", value: "asthenosphere_velocity", icon: "icons/fire-flow.svg" },
+	    ],
+	  },
+	  methods: {
+	  	setSelected: function(value) {
+	  		this.selected = value;
+	  		view.setVectorDisplay(vectorDisplays[value]);
+	  	},
+	  	getClass: function(value, selected) {
+	  		return value == selected? 'active' : '';
+	  	}
+	  }
+	});
+
+	new Vue({
+	  el: '#scalar-display',
+	  data: {
+	    ocean: true,
+	    selected: 'satellite',
+	    vectorDisplay: 'disabled',
+	    options: [
+	      {name: 'Satellite', value: 'satellite', icon: 'icons/satellite-variant.svg'},
+	      {name: 'Sediment', value: 'soil', icon: 'icons/powder.svg'},
+	      {name: 'Bedrock', value: 'bedrock', icon: 'icons/stone-pile.svg'},
+	      {name: 'Elevation', value: 'alt', icon: 'icons/terrain.svg'},
+	      {name: 'Plant Productivity', value: 'npp', icon: 'icons/leaf.svg'},
+	      {name: 'Air Temperature', value: 'temp', icon: 'icons/thermometer.svg'},
+	      {name: 'Precipitation', value: 'precip', icon: 'icons/weather-raining.svg'},
+	      {name: 'Crust Age', value: 'age', icon: 'icons/clock.svg'},
+	      {name: 'Crust Density', value: 'density', icon: 'icons/scale.svg'},
+	      {name: 'Crust Thickness', value: 'thickness', icon: 'icons/ruler.svg'},
+	      {name: 'Plates', value: 'plates', icon: 'icons/puzzle.svg'},
+	    ],
+	  },
+	  methods: {
+	    setSelected: function(value) {
+	    	this.selected = value;
+	    	view.setScalarDisplay(scalarDisplays[value]);
+	    },
+	    getClass: function(value, selected) {
+	    	return value == selected? 'active' : '';
+	    }
+	  }
+	});
 </script>
 </body>
 </html>

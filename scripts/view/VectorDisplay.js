@@ -157,21 +157,13 @@ vectorDisplays.aesthenosphere_velocity	= new VectorFieldDisplay( {
 		}
 	} );
 
-var last_x = void 0;
-function log_unique(x) {
-	if(x !== last_x){
-		console.log(x);
-	}
-}
-function log_once(x) {
-	console.log(x);
-	log_once = function(x){};
-}
 function DisabledVectorDisplay(options) {}
 DisabledVectorDisplay.prototype.addTo = function(mesh) {
-	var vector = mesh.material.attributes.vector.value;
+	var vector = mesh.geometry.vertices;
 	for(var i=0, li = vector.length; i<li; i++){
-		vector[i] = new THREE.Vector3(); 
+		vector[i].x = 0;
+		vector[i].y = 0;
+		vector[i].z = 0;
 	}
 };
 DisabledVectorDisplay.prototype.removeFrom = function(mesh) {};
