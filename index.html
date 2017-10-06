@@ -94,42 +94,30 @@
 		</div>
 	</div>
 	<div class="view-menu btn-group-vertical">
-	 	<div class="btn-group">
+	 	<div id="projection" class="btn-group">
 			<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 				<img src="icons/projector-screen.svg" height="16em" width="16em"/>
 				Projection 
 				<span class="caret"></span>
 			</button>
 			<ul class="dropdown-menu btn-default btn-xs">
-				<li>
-					<button type="button" class="btn btn-default btn-xs vertex-shader" data-value="orthographic">
-						<img src="icons/earth.svg" height="16em" width="16em"/>
-						Globe
-					</button>
-				</li>
-				<li>
-					<button type="button" class="btn btn-default btn-xs vertex-shader" data-value="equirectangular">
-						<img src="icons/map.svg" height="16em" width="16em"/>
-						Map
-					</button>
-				</li>
-				<li>
-					<button type="button" class="btn btn-default btn-xs vertex-shader" data-value="texture">
-						<img src="icons/texture.svg" height="16em" width="16em"/>
-						Texture
+				<li v-for="option in options">
+					<button type="button" class="btn btn-default btn-xs" v-bind:class="getClass(option.value, selected)" v-bind:data-value="option.value" v-on:click="setSelected(option.value)">
+						<img v-bind:src="option.icon" height="16em" width="16em"/>
+						{{option.name}}
 					</button>
 				</li>
 			</ul>
 		</div>
-		<div id="view-menu" class="btn-group">
+		<div id="scalar-display" class="btn-group">
 			<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 				<img src="icons/eye.svg" height="16em" width="16em"/>
 				Display 
 				<span class="caret"></span>
 			</button>
 			<ul class="dropdown-menu btn-default btn-xs">
-				<li v-for="option in scalarDisplayOptions">
-					<button type="button" class="btn btn-default btn-xs" v-bind:class="getClass(option.value, scalarDisplay)" v-bind:data-value="option.value" v-on:click="setScalarDisplay(option.value)">
+				<li v-for="option in options">
+					<button type="button" class="btn btn-default btn-xs" v-bind:class="getClass(option.value, selected)" v-bind:data-value="option.value" v-on:click="setSelected(option.value)">
 						<img v-bind:src="option.icon" height="16em" width="16em"/>
 						{{option.name}}
 					</button>
@@ -508,15 +496,7 @@
 			loadFile(e.dataTransfer.files[0]);
 	    }
 	);
-	$('.fragment-shader').click(function(e){
-		view.setScalarDisplay(scalarDisplays[$(this).data('value')]);
-	});
-	$('.vertex-shader').click(function(e){
-		console.log('vertex-shader');
-		view.vertexShader(vertexShaders[$(this).data('value')]);
-	});
 	$('.vector-display').click(function(e){
-		console.log('vector-display');
 		view.setVectorDisplay(vectorDisplays[$(this).data('value')]);
 	});
 	$('.ocean').click(function(e){
@@ -530,26 +510,34 @@
 			}
 		  });
 	});
-	$('.vegetation,.soil').click(function(e) {
-		setTimeout(function() {
-			var soil = $('.soil').hasClass('active');
-			var vegetation = $('.vegetation').hasClass('active');
-			if (vegetation) {
-				view.setScalarDisplay(scalarDisplays.satellite);
-			} else if (soil) {
-				view.setScalarDisplay(scalarDisplays.soil);
-			} else {
-				view.setScalarDisplay(scalarDisplays.bedrock);
-			}	
-		}, 0);
-	})
 	var view_menu = new Vue({
-		el: '#view-menu',
+		el: '#projection',
+		data: {
+			selected: 'orthographic',
+			options: [
+				{ name: "Globe", value: "orthographic", icon: "icons/earth.svg" },
+				{ name: "Map", value: "equirectangular", icon: "icons/map.svg" },
+				{ name: "Texture", value: "texture", icon: "icons/texture.svg" },
+			],
+		},
+		methods: {
+			setSelected: function(value) {
+				this.selected = value;
+				view.vertexShader(vertexShaders[value]);
+			},
+			getClass: function(value, selected) {
+				return value == selected? 'active' : '';
+			}
+		}
+	})
+
+	var view_menu = new Vue({
+		el: '#scalar-display',
 		data: {
 			ocean: true,
-			scalarDisplay: 'satellite',
+			selected: 'satellite',
 			vectorDisplay: 'disabled',
-			scalarDisplayOptions: [
+			options: [
 				{name: 'Satellite', value: 'satellite', icon: 'icons/tree.svg'},
 				{name: 'Sediment', value: 'soil', icon: 'icons/powder.svg'},
 				{name: 'Bedrock', value: 'bedrock', icon: 'icons/stone-pile.svg'},
@@ -562,12 +550,10 @@
 				{name: 'Crust Thickness', value: 'thickness', icon: 'icons/ruler.svg'},
 				{name: 'Plates', value: 'plates', icon: 'icons/puzzle.svg'},
 			],
-			vectorDisplayOptions: []
 		},
 		methods: {
-			setScalarDisplay: function(value) {
-				this.scalarDisplay = value;
-				console.log(value);
+			setSelected: function(value) {
+				this.selected = value;
 				view.setScalarDisplay(scalarDisplays[value]);
 			},
 			getClass: function(value, selected) {
