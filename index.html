@@ -84,8 +84,8 @@
 		</div>
 		<div class="input-group speed-group">
 			<span class="input-group-addon play">
-					<img src="icons/play.svg" height="12em" width="12em"class="collapse">
-					<img src="icons/pause.svg" height="12em" width="12em">
+				<img src="icons/play.svg" height="12em" width="12em"class="collapse">
+				<img src="icons/pause.svg" height="12em" width="12em">
 			</span>
 
 			<input class="form-control input-sm" id="speedControl" type="number" value="5" min="0" max="10" step="1"/> 
@@ -102,7 +102,11 @@
 			</button>
 			<ul class="dropdown-menu btn-default btn-xs">
 				<li v-for="option in options">
-					<button type="button" class="btn btn-default btn-xs" v-bind:class="getClass(option.value, selected)" v-bind:data-value="option.value" v-on:click="setSelected(option.value)">
+					<button type="button" 
+						class="btn btn-default btn-xs" 
+						v-bind:class="getClass(option.value, selected)" 
+						v-bind:data-value="option.value" 
+						v-on:click="setSelected(option.value)">
 						<img v-bind:src="option.icon" height="16em" width="16em"/>
 						{{option.name}}
 					</button>
@@ -116,8 +120,21 @@
 				<span class="caret"></span>
 			</button>
 			<ul class="dropdown-menu btn-default btn-xs">
+				<li>
+					<button type="button" 
+						class="btn btn-default btn-xs" 
+						v-bind:class="{active: ocean}" 
+						v-on:click="setOcean(!ocean? 1:0)">
+						<img src="icons/water.svg" height="16em" width="16em"/>
+						Ocean
+					</button>
+				</li>
 				<li v-for="option in options">
-					<button type="button" class="btn btn-default btn-xs" v-bind:class="getClass(option.value, selected)" v-bind:data-value="option.value" v-on:click="setSelected(option.value)">
+					<button type="button" 
+						class="btn btn-default btn-xs" 
+						v-bind:class="getClass(option.value, selected)" 
+						v-bind:data-value="option.value" 
+						v-on:click="setSelected(option.value)">
 						<img v-bind:src="option.icon" height="16em" width="16em"/>
 						{{option.name}}
 					</button>
@@ -132,7 +149,13 @@
 			</button>
 			<ul class="dropdown-menu btn-default btn-xs">
 				<li v-for="option in options">
-					<button type="button" class="btn btn-default btn-xs" v-bind:class="getClass(option.value, selected)" v-bind:data-value="option.value" v-on:click="setSelected(option.value)">
+					<button type="button" 
+						class="btn btn-default btn-xs" 
+						data-toggle="tooltip"
+						v-bind:title="option.tip" 
+						v-bind:class="getClass(option.value, selected)" 
+						v-bind:data-value="option.value" 
+						v-on:click="setSelected(option.value)">
 						<img v-bind:src="option.icon" height="16em" width="16em"/>
 						{{option.name}}
 					</button>
@@ -511,17 +534,6 @@
 			loadFile(e.dataTransfer.files[0]);
 	    }
 	);
-	$('.ocean').click(function(e){
-		var checked = $(this).hasClass('active');
-
-		$({value: checked? 1:0}).animate(
-		  {value: checked? 0:1},
-		  {
-			step: function(value){
-				view.uniform('sealevel_mod', value);
-			}
-		  });
-	});
 
 	new Vue({
 	  el: '#projection',
@@ -567,7 +579,8 @@
 	new Vue({
 	  el: '#scalar-display',
 	  data: {
-	    ocean: true,
+	    ocean: 1,
+	    ocean_target: 1,
 	    selected: 'satellite',
 	    vectorDisplay: 'disabled',
 	    options: [
@@ -588,6 +601,22 @@
 	    setSelected: function(value) {
 	    	this.selected = value;
 	    	view.setScalarDisplay(scalarDisplays[value]);
+	    },
+	    setOcean: function(value) {
+	    	this.ocean_target = value;
+	    	var v = this;
+	    	var fps = 30
+	    	var timestep = 1000/fps; 	//milliseconds
+	    	var duration = 500; 		//milliseconds
+	    	var increment = timestep/duration;
+	    	var timer = setInterval(function() {
+	    		v.ocean += Math.sign(v.ocean_target - v.ocean) * increment
+	    		if (Math.abs(v.ocean_target - v.ocean) < 2*increment) {
+	    		  clearInterval(timer); 
+	    		  v.ocean = v.ocean_target;
+	    		}
+	    		view.uniform('sealevel_mod', v.ocean);
+	    	}, timestep);
 	    },
 	    getClass: function(value, selected) {
 	    	return value == selected? 'active' : '';
