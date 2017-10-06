@@ -129,6 +129,7 @@
 						Ocean
 					</button>
 				</li>
+				<li role="separator" class="divider"></li> 
 				<li v-for="option in options">
 					<button type="button" 
 						class="btn btn-default btn-xs" 
@@ -173,7 +174,6 @@
 			<a class="collapse screenshot" download>
 				<img src="icons/camera.svg" height="16em">
 				Screenshot
-				<span class="instructions">P</span>
 			</a>
 		</button>
 	</div>
@@ -332,8 +332,6 @@
 
 		// transparently support window resize
 		THREEx.WindowResize.bind(renderer, view.camera);
-		// allow 'p' to make screenshot
-		THREEx.Screenshot.bindKey(renderer);
 		// allow 'f' to go fullscreen where this feature is supported
 		if( THREEx.FullScreen.available() ){
 			THREEx.FullScreen.bindKey();
