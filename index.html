@@ -547,11 +547,12 @@
 	  },
 	  methods: {
 	    setSelected: function(value) {
-	      this.selected = value;
-	      view.vertexShader(vertexShaders[value]);
+	    	if (this.selected == value) { value = this.options[0].value; }
+	    	this.selected = value;
+	    	view.vertexShader(vertexShaders[value]);
 	    },
 	    getClass: function(value, selected) {
-	      return value == selected? 'active' : '';
+	    	return value == selected? 'active' : '';
 	    }
 	  }
 	});
@@ -567,6 +568,7 @@
 	  },
 	  methods: {
 	  	setSelected: function(value) {
+	    	if (this.selected == value) { value = this.options[0].value; }
 	  		this.selected = value;
 	  		view.setVectorDisplay(vectorDisplays[value]);
 	  	},
@@ -599,6 +601,7 @@
 	  },
 	  methods: {
 	    setSelected: function(value) {
+	    	if (this.selected == value) { value = this.options[0].value; }
 	    	this.selected = value;
 	    	view.setScalarDisplay(scalarDisplays[value]);
 	    },
