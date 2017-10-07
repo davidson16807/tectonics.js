@@ -79,8 +79,8 @@
 	<!-- <a href="#" class="summary">&#9660;</a> -->
 	<div id="time-menu" class="time-menu">
 		<div class="input-group age-group">
-			<span class="form-control input-sm age">{{ age }}</span>
-			<span class="input-group-addon age-units">{{ age }}</span>
+			<span class="form-control input-sm age">{{ format(age, 1000, 3).quantity }}</span>
+			<span class="input-group-addon age-units">{{ format(age, 1000, 3).unit }}</span>
 		</div>
 		<div class="input-group speed-group">
 			<span class="input-group-addon play" v-on:click="togglePause()">
@@ -501,31 +501,14 @@
 	);
 	
 
-	new Vue({
+	var timeMenuVue = new Vue({
 	  el: '#time-menu',
 	  data: {
 	  	paused: false,
 	  	speed: 5,
-	  },
-	  watch: {
-	  		age: function() {
-	  			return model.age;
-	  	  	}
+	  	age: 0,
 	  },
 	  methods: (function(){
-	  	function format(My, rollover, precision){
-	  		var quantity = My * 1000000;
-	  		var units = ['ky', 'My', 'By']
-	  		var unit = 'yr';
-	  		while(quantity > rollover) {
-	  			unit = units.shift();
-	  			quantity /= 1000;
-	  		}
-	  		return {
-	  			quantity: 	quantity.toPrecision(precision).toString(), 
-	  			unit: 		unit,
-	  		};
-	  	}
 	  	return {
 	  		togglePause: function() {
 	  			this.paused = !this.paused;
@@ -534,15 +517,25 @@
 			setSpeed: function() {
 				model.MegaYearPerSecond = this.speed;
 			},
-			getAge: function() {
-				return format(model.age, 1000, 3).quantity;
-		  	},
-			getAgeUnits: function() {
-				return format(model.age, 1000, 3).units;
-		  	}
+			format: function(My, rollover, precision){
+				var quantity = My * 1000000;
+				var units = ['ky', 'My', 'By']
+				var unit = 'yr';
+				while(quantity > rollover) {
+					unit = units.shift();
+					quantity /= 1000;
+				}
+				return {
+					quantity: 	quantity.toPrecision(precision).toString(), 
+					unit: 		unit,
+				};
+			}
 		}
 	  })()
 	});
+	setInterval(function() {
+		timeMenuVue.$data.age = model.age;
+	}, 1000/15);
 
 	new Vue({
 	  el: '#projection',
