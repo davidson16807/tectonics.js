@@ -508,6 +508,12 @@
 	  	speed: 5,
 	  	age: 0,
 	  },
+	  created: function() {
+	  	var _this = this;
+	  	setInterval(function() {
+	  		_this.$data.age = model.age;
+	  	}, 1000/10);
+	  },
 	  methods: (function(){
 	  	return {
 	  		togglePause: function() {
@@ -533,9 +539,6 @@
 		}
 	  })()
 	});
-	setInterval(function() {
-		timeMenuVue.$data.age = model.age;
-	}, 1000/15);
 
 	new Vue({
 	  el: '#projection',
