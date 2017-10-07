@@ -76,7 +76,6 @@
 </div>
 <!-- info on screen display -->
 <div class="topright collapse collapsible controls" >
-	<!-- <a href="#" class="summary">&#9660;</a> -->
 	<div id="time-menu" class="time-menu">
 		<div class="input-group age-group">
 			<span class="form-control input-sm age">{{ format(age, 1000, 3).quantity }}</span>
@@ -88,7 +87,7 @@
 				<img src="icons/pause.svg" height="12em" width="12em" v-if="!paused">
 			</span>
 
-			<input class="form-control input-sm" id="speedControl" type="number" value="5" min="0" max="10" step="1" v-model="speed" v-on:change="setSpeed()"/> 
+			<input class="form-control input-sm" type="number" value="5" min="0" max="10" step="1" v-model="speed" v-on:change="setSpeed()"/> 
 
 			<span class="input-group-addon">My/s</span>
 		</div>
@@ -267,7 +266,7 @@
 
 	var renderStats, updateStats, renderer, controls;
 	var BlockUpdate = false;
-	var IsProd = true;
+	var IsProd = false;
 
 	var view = new View(
 		new Grid( 
@@ -416,14 +415,6 @@
 		var formatted = format(My, rollover, precision);
 		return formatted.quantity + ' ' + formatted.unit;
 	}
-	$('#speedControl').change(function(e){
-		if($('.pause').is(':visible')){
-			model.MegaYearPerSecond = $('#speedControl').val();
-		}
-	});
-	$('.summary').click(function() {
-		$(this).parents('.collapsible').children().toggle();
-	});
 	$('.save').click(function() {
 		var serialized = JsonSerializer.world(world);
 		var stringified = JSON.stringify(serialized);
