@@ -369,14 +369,6 @@
 		}
 	}
 	
-	function toggleFullscreen () {
-		$('.fullscreen img').toggle();
-		if( THREEx.FullScreen.activated() ){
-			THREEx.FullScreen.cancel();
-		}else{
-			THREEx.FullScreen.request(document.body);
-		}
-	}
 	function loadUrl (url) {
 		BlockUpdate = true;
 		$('#loadingSave').show();
@@ -441,7 +433,6 @@
 			.attr('href', dataurl)
 			.attr('download', filename);
 	});
-	$('.fullscreen').click(toggleFullscreen);
 
     var last_drag_entered;
     $('body').on(

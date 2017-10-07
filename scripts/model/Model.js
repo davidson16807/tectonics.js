@@ -59,8 +59,5 @@ Model.prototype.slow_update = function(timestep) {
 	};
 };
 Model.prototype.toggle_pause = function () {
-	if(this.paused){
-		this.MegaYearPerSecond = parseInt($('#speedControl').val());
-	} 
 	this.paused = !this.paused;
 }
