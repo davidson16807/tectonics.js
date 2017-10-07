@@ -77,18 +77,18 @@
 <!-- info on screen display -->
 <div class="topright collapse collapsible controls" >
 	<!-- <a href="#" class="summary">&#9660;</a> -->
-	<div class="time-menu">
+	<div id="time-menu" class="time-menu">
 		<div class="input-group age-group">
-			<span class="form-control input-sm age">initializing...</span>
-			<span class="input-group-addon age-units"></span>
+			<span class="form-control input-sm age">{{ age }}</span>
+			<span class="input-group-addon age-units">{{ age }}</span>
 		</div>
 		<div class="input-group speed-group">
-			<span class="input-group-addon play">
-				<img src="icons/play.svg" height="12em" width="12em"class="collapse">
-				<img src="icons/pause.svg" height="12em" width="12em">
+			<span class="input-group-addon play" v-on:click="togglePause()">
+				<img src="icons/play.svg" height="12em" width="12em" v-if="paused">
+				<img src="icons/pause.svg" height="12em" width="12em" v-if="!paused">
 			</span>
 
-			<input class="form-control input-sm" id="speedControl" type="number" value="5" min="0" max="10" step="1"/> 
+			<input class="form-control input-sm" id="speedControl" type="number" value="5" min="0" max="10" step="1" v-model="speed" v-on:change="setSpeed()"/> 
 
 			<span class="input-group-addon">My/s</span>
 		</div>
@@ -370,37 +370,11 @@
 		
 		model.slow_update();
 
-		if ((world) !== void 0) {
-			$(".age").html(format(model.age, 1000, 3).quantity);
-			$(".age-units").html(format(model.age, 1000, 3).unit);
-		};
-		
 		if(!IsProd){
 			updateStats.update();
 		}
 	}
 	
-	function format_text (My, rollover, precision) {
-		var formatted = format(My, rollover, precision);
-		return formatted.quantity + ' ' + formatted.unit;
-	}
-	function format(My, rollover, precision){
-		var quantity = My * 1000000;
-		var units = ['ky', 'My', 'By']
-		var unit = 'yr';
-		while(quantity > rollover) {
-			unit = units.shift();
-			quantity /= 1000;
-		}
-		return {
-			quantity: 	quantity.toPrecision(precision).toString(), 
-			unit: 		unit,
-		};
-	}
-	function togglePause(){
-		model.toggle_pause();
-		$('.play img').toggle();
-	}
 	function toggleFullscreen () {
 		$('.fullscreen img').toggle();
 		if( THREEx.FullScreen.activated() ){
@@ -438,12 +412,15 @@
 	    reader.readAsText(file);
 	}
 
+	function format_text (My, rollover, precision) {
+		var formatted = format(My, rollover, precision);
+		return formatted.quantity + ' ' + formatted.unit;
+	}
 	$('#speedControl').change(function(e){
 		if($('.pause').is(':visible')){
 			model.MegaYearPerSecond = $('#speedControl').val();
 		}
 	});
-	$('.play').click(togglePause);
 	$('.summary').click(function() {
 		$(this).parents('.collapsible').children().toggle();
 	});
@@ -479,16 +456,6 @@
 			.attr('download', filename);
 	});
 	$('.fullscreen').click(toggleFullscreen);
-
-    $('body').keyup(function(e){
-    	var key = String
-    		.fromCharCode(e.keyCode)
-    		.toLowerCase();
-
-        if(key == ' '){
-            togglePause();
-        }
-    });
 
     var last_drag_entered;
     $('body').on(
@@ -532,6 +499,50 @@
 			loadFile(e.dataTransfer.files[0]);
 	    }
 	);
+	
+
+	new Vue({
+	  el: '#time-menu',
+	  data: {
+	  	paused: false,
+	  	speed: 5,
+	  },
+	  watch: {
+	  		age: function() {
+	  			return model.age;
+	  	  	}
+	  },
+	  methods: (function(){
+	  	function format(My, rollover, precision){
+	  		var quantity = My * 1000000;
+	  		var units = ['ky', 'My', 'By']
+	  		var unit = 'yr';
+	  		while(quantity > rollover) {
+	  			unit = units.shift();
+	  			quantity /= 1000;
+	  		}
+	  		return {
+	  			quantity: 	quantity.toPrecision(precision).toString(), 
+	  			unit: 		unit,
+	  		};
+	  	}
+	  	return {
+	  		togglePause: function() {
+	  			this.paused = !this.paused;
+				model.toggle_pause();
+	  		},
+			setSpeed: function() {
+				model.MegaYearPerSecond = this.speed;
+			},
+			getAge: function() {
+				return format(model.age, 1000, 3).quantity;
+		  	},
+			getAgeUnits: function() {
+				return format(model.age, 1000, 3).units;
+		  	}
+		}
+	  })()
+	});
 
 	new Vue({
 	  el: '#projection',
