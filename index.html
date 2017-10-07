@@ -163,10 +163,10 @@
 			</ul>
 		</div>
 
-		<button type="button" class="btn btn-default btn-xs fullscreen" data-toggle="button" aria-pressed="true">
-			<img src="icons/fullscreen.svg" height="16em">
-			<img src="icons/fullscreen-exit.svg" height="16em" class="collapse">
-			Fullscreen
+		<button id="fullscreen" v-if="isVisible" type="button" class="btn btn-default btn-xs fullscreen" data-toggle="button" aria-pressed="true" v-on:click="toggleFullscreen()">
+			<img v-if="!isFullscreen" src="icons/fullscreen.svg" height="16em">
+			<img v-if="isFullscreen"  src="icons/fullscreen-exit.svg" height="16em">
+			{{isFullscreen? 'Exit Fullscreen' : 'Fullscreen'}}
 			<span class="instructions">F11</span>
 		</button>
 		<button type="button" class="btn btn-default btn-xs">
@@ -331,11 +331,6 @@
 
 		// transparently support window resize
 		THREEx.WindowResize.bind(renderer, view.camera);
-		// allow 'f' to go fullscreen where this feature is supported
-		if( THREEx.FullScreen.available() ){
-			THREEx.FullScreen.bindKey();
-			$('.fullscreen.enter').show();
-		} 
 	}
 
 	// animation loop
@@ -491,8 +486,33 @@
 	    }
 	);
 	
+	new Vue({
+	  el: '#fullscreen',
+	  data: {
+	  	isFullscreen: false,
+	  	isVisible: false,
+	  },
+	  created: function() {
+	  	if( THREEx.FullScreen.available() ){
+		  	// allow 'f' to go fullscreen where this feature is supported
+	  		THREEx.FullScreen.bindKey();
+	  		this.isVisible = true;
+	  	} 
+	  },
+	  methods: {
+		toggleFullscreen: function() {
+			this.isFullscreen = THREEx.FullScreen.activated();
+			if( this.isFullscreen ){
+				THREEx.FullScreen.cancel();
+			}else{
+				THREEx.FullScreen.request(document.body);
+			}
+			this.isFullscreen = !this.isFullscreen;
+		},
+	  }
+	});
 
-	var timeMenuVue = new Vue({
+	new Vue({
 	  el: '#time-menu',
 	  data: {
 	  	paused: false,
@@ -505,30 +525,28 @@
 	  		_this.$data.age = model.age;
 	  	}, 1000/10);
 	  },
-	  methods: (function(){
-	  	return {
-	  		togglePause: function() {
-	  			this.paused = !this.paused;
-				model.toggle_pause();
-	  		},
-			setSpeed: function() {
-				model.MegaYearPerSecond = this.speed;
-			},
-			format: function(My, rollover, precision){
-				var quantity = My * 1000000;
-				var units = ['ky', 'My', 'By']
-				var unit = 'yr';
-				while(quantity > rollover) {
-					unit = units.shift();
-					quantity /= 1000;
-				}
-				return {
-					quantity: 	quantity.toPrecision(precision).toString(), 
-					unit: 		unit,
-				};
+	  methods: {
+		togglePause: function() {
+			this.paused = !this.paused;
+		model.toggle_pause();
+		},
+		setSpeed: function() {
+			model.MegaYearPerSecond = this.speed;
+		},
+		format: function(My, rollover, precision){
+			var quantity = My * 1000000;
+			var units = ['ky', 'My', 'By']
+			var unit = 'yr';
+			while(quantity > rollover) {
+				unit = units.shift();
+				quantity /= 1000;
 			}
+			return {
+				quantity: 	quantity.toPrecision(precision).toString(), 
+				unit: 		unit,
+			};
 		}
-	  })()
+	}
 	});
 
 	new Vue({
