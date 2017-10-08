@@ -179,8 +179,8 @@
 
 
 	<div class="file-menu btn-group-vertical">
-		<button type="button" class="btn btn-default btn-xs">
-			<a class="save" download>
+		<button id="save" type="button" class="btn btn-default btn-xs">
+			<a class="save" v-bind:href="dataUrl" v-bind:download="filename" v-on:click="save()" >
 				<img src="icons/download.svg" height="16em">
 				Save
 			</a>
@@ -410,27 +410,6 @@
 		var formatted = format(My, rollover, precision);
 		return formatted.quantity + ' ' + formatted.unit;
 	}
-	$('.save').click(function() {
-		var serialized = JsonSerializer.world(world);
-		var stringified = JSON.stringify(serialized);
-		var dataUrl = 
-			"data:application/json;"+
-			"charset=utf-8," + 
-			stringified;
-		var filename = 
-			seed+'-'+
-			format_text(world.age, 1000, 3).replace(/\s/,'')+
-			'.sim';
-		$('.save').attr('href', dataUrl);
-		$('.save').attr('download', filename);
-	});
-	$('.load').click(function(e) {
-		$('#load-input').click();
-	});
-	$('#load-input').on('change', function(e) {
-		loadFile(e.target.files[0]);
-		$('#load-input').val('');
-	});
 
     var last_drag_entered;
     $('body').on(
@@ -474,7 +453,7 @@
 			loadFile(e.dataTransfer.files[0]);
 	    }
 	);
-	
+
 	var dialogVue = new Vue({
 	  el: '#dialogs',
 	  data: {
@@ -485,6 +464,36 @@
 	  created: function() {
 	  	this.isNoWebGl = Detector.webgl;
 	  },
+	});
+
+	$('.load').click(function(e) {
+		$('#load-input').click();
+	});
+	$('#load-input').on('change', function(e) {
+		loadFile(e.target.files[0]);
+		$('#load-input').val('');
+	});
+	
+	var saveVue = new Vue({
+	  el: '#save',
+	  data: {
+	  	dataUrl: '',
+	  	filename: '',
+	  },
+	  methods: {
+	  	save: function() {
+  			var serialized = JsonSerializer.world(world);
+  			var stringified = JSON.stringify(serialized);
+  			this.dataUrl = 
+  				"data:application/json;"+
+  				"charset=utf-8," + 
+  				stringified;
+  			this.filename = 
+  				seed+'-'+
+  				format_text(model.age, 1000, 3).replace(/\s/,'')+
+  				'.sim';
+  		}
+	  }
 	});
 
 	var screenshotVue = new Vue({
