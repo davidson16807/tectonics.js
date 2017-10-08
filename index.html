@@ -169,8 +169,8 @@
 			{{isFullscreen? 'Exit Fullscreen' : 'Fullscreen'}}
 			<span class="instructions">F11</span>
 		</button>
-		<button type="button" class="btn btn-default btn-xs">
-			<a class="collapse screenshot" download>
+		<button id="screenshot" v-if="isEnabled" type="button" class="btn btn-default btn-xs">
+			<a class="screenshot" v-bind:href="dataUrl" v-bind:download="filename"  v-on:click="capture()">
 				<img src="icons/camera.svg" height="16em">
 				Screenshot
 			</a>
@@ -226,12 +226,11 @@
 		<p>We're loading up the save game, this shouldn't take more than a few seconds.</p>
 		<p>If things are taking too long, you might consider checking the save game url. Make sure the url exists and can be easily loaded.</p>
 	</div>
-</div> 
+</div>
 
 <script type="text/javascript">
 	'use strict';
 	
-	$('#noJs').hide();
 	//standards:
 	// all points are vectors
 	// all angles are in radians
@@ -298,10 +297,7 @@
 		init();
 		animate();
 		update();
-		$('.screenshot').show();
-	} else {
-		$('#noWebGl').show();
-	}
+	} 
 
 	// init the scene
 	function init(){
@@ -397,6 +393,19 @@
 	    reader.readAsText(file);
 	}
 
+	function format (My, rollover, precision){
+				var quantity = My * 1000000;
+				var units = ['ky', 'My', 'By']
+				var unit = 'yr';
+				while(quantity > rollover) {
+					unit = units.shift();
+					quantity /= 1000;
+				}
+				return {
+					quantity: 	quantity.toPrecision(precision).toString(), 
+					unit: 		unit,
+				};
+			}
 	function format_text (My, rollover, precision) {
 		var formatted = format(My, rollover, precision);
 		return formatted.quantity + ' ' + formatted.unit;
@@ -421,16 +430,6 @@
 	$('#load-input').on('change', function(e) {
 		loadFile(e.target.files[0]);
 		$('#load-input').val('');
-	});
-	$('.screenshot').click(function() {
-		var dataurl = THREEx.Screenshot.toDataURL(renderer);
-		var filename = 
-			seed+'-'+
-			format_text(world.age, 1000, 3).replace(/\s/,'')+
-			'.png';
-		$(this)
-			.attr('href', dataurl)
-			.attr('download', filename);
 	});
 
     var last_drag_entered;
@@ -486,7 +485,26 @@
 	  created: function() {
 	  	this.isNoWebGl = Detector.webgl;
 	  },
+	});
+
+	var screenshotVue = new Vue({
+	  el: '#screenshot',
+	  data: {
+	  	isEnabled: false,
+	  	dataUrl: '',
+	  	filename: ''
+	  },
+	  created: function() {
+	  	this.isEnabled = Detector.webgl;
+	  },
 	  methods: {
+	  	capture: function() {
+  			this.dataUrl = THREEx.Screenshot.toDataURL(renderer);
+  			this.filename = 
+  				seed+'-'+
+  				format_text(model.age, 1000, 3).replace(/\s/,'')+
+  				'.png';
+  		}
 	  }
 	});
 
@@ -537,19 +555,7 @@
 		setSpeed: function() {
 			model.MegaYearPerSecond = this.speed;
 		},
-		format: function(My, rollover, precision){
-			var quantity = My * 1000000;
-			var units = ['ky', 'My', 'By']
-			var unit = 'yr';
-			while(quantity > rollover) {
-				unit = units.shift();
-				quantity /= 1000;
-			}
-			return {
-				quantity: 	quantity.toPrecision(precision).toString(), 
-				unit: 		unit,
-			};
-		}
+		format: format
 	}
 	});
 
