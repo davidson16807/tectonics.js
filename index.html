@@ -202,8 +202,8 @@
 <div id="drop-dialog" class="collapse">
 	<h2>DRAG HERE</h2>
 </div>
-<div class="vcenter">
-	<div id="noWebGl" class="collapse hcenter dialog">
+<div id="dialogs" class="vcenter">
+	<div v-if="isNoWebGl" class="collapse hcenter dialog">
 		<h2>Well, darn</h2>
 		<p>It looks like your using a web browser without WebGL.</p>
 		<p>WebGL is a technology that allows users to run high-end 3d graphics from their web-browser. Other technologies exist that can display simple 3d graphics to the user (canvas, svg, flash, etc.), but at present WebGL is the only web technology that allows developers to send their own code to a GPU.
@@ -216,12 +216,12 @@
 		</p>
 		<iframe width="420" height="315" src="//www.youtube.com/embed/VE67RgnLdKw" frameborder="0" allowfullscreen></iframe>
 	</div>
-	<div id="noJs" class="hcenter dialog">
+	<div v-if="isNoJs" class="hcenter dialog">
 		<h2>Hang Tight</h2>
 		<p>We're loading up the model, this shouldn't take more than a second.</p>
 		<p>If things are taking too long, you might consider checking your settings to make sure javascript is enabled. For instructions on how to enable javascript, check <a href="http://www.enable-javascript.com/">here</a>.</p>
 	</div>
-	<div id="loadingSave" class="collapse hcenter dialog">
+	<div v-if="isLoadingSave" class="collapse hcenter dialog">
 		<h2>Hang Tight</h2>
 		<p>We're loading up the save game, this shouldn't take more than a few seconds.</p>
 		<p>If things are taking too long, you might consider checking the save game url. Make sure the url exists and can be easily loaded.</p>
@@ -291,7 +291,6 @@
 			WorldGenerator.modern_earth_control_points
 		);
 		model.world(world);
-		$('#loadingSave').hide();
 		$('.controls').show();
 	}
 	
@@ -371,13 +370,13 @@
 	
 	function loadUrl (url) {
 		BlockUpdate = true;
-		$('#loadingSave').show();
+		dialogVue.$data.isLoadingSave = true;
 		$('.controls').hide();
 		$.getJSON( url, function( json ) {
 			BlockUpdate = false;
 	    	world = JsonDeserializer.world(json);
 			model.world(world);
-			$('#loadingSave').hide();
+			dialogVue.$data.isLoadingSave = false;
 			$('.controls').show();
 		});
 	}
@@ -477,7 +476,21 @@
 	    }
 	);
 	
-	new Vue({
+	var dialogVue = new Vue({
+	  el: '#dialogs',
+	  data: {
+	  	isNoWebGl: false,
+	  	isNoJs: false,
+	  	isLoadingSave: false
+	  },
+	  created: function() {
+	  	this.isNoWebGl = Detector.webgl;
+	  },
+	  methods: {
+	  }
+	});
+
+	var fullscreenVue = new Vue({
 	  el: '#fullscreen',
 	  data: {
 	  	isFullscreen: false,
@@ -503,7 +516,7 @@
 	  }
 	});
 
-	new Vue({
+	var timeMenuVue = new Vue({
 	  el: '#time-menu',
 	  data: {
 	  	paused: false,
@@ -540,7 +553,7 @@
 	}
 	});
 
-	new Vue({
+	var projectionVue = new Vue({
 	  el: '#projection',
 	  data: {
 	    selected: 'orthographic',
@@ -562,7 +575,7 @@
 	  }
 	});
 
-	new Vue({
+	var vectorDisplayVue = new Vue({
 	  el: '#vector-display',
 	  data: {
 	    selected: 'disabled',
@@ -583,7 +596,7 @@
 	  }
 	});
 
-	new Vue({
+	var scalarDisplayVue = new Vue({
 	  el: '#scalar-display',
 	  data: {
 	    ocean: 1,
