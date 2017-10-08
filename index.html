@@ -185,15 +185,15 @@
 				Save
 			</a>
 		</button>
-		<button type="button" class="btn btn-default btn-xs load">
+		<button id="load" type="button" class="btn btn-default btn-xs load" v-on:click="load()">
 			<img src="icons/upload.svg" height="16em">
 			Load
 			<span class="instructions">drag</span>
+			<input id="load-input" ref="loadInput" type="file" v-on:change="loadPart2($event.target.files[0])" class="hidden" />
 		</button>
 	</div>
 </div>
 
-<input id="load-input" type="file" class="hidden"/>
 
 <div class="bottomleft">
 	<div id="renderStats"></div>
@@ -465,15 +465,19 @@
 	  	this.isNoWebGl = Detector.webgl;
 	  },
 	});
-
-	$('.load').click(function(e) {
-		$('#load-input').click();
-	});
-	$('#load-input').on('change', function(e) {
-		loadFile(e.target.files[0]);
-		$('#load-input').val('');
-	});
 	
+	var loadVue = new Vue({
+	  el: '#load',
+	  methods: {
+	  	load: function() {
+	  		this.$refs.loadInput.click();
+  		},
+  		loadPart2: function(file) {
+  			loadFile(file);
+  		}
+	  }
+	});
+
 	var saveVue = new Vue({
 	  el: '#save',
 	  data: {
