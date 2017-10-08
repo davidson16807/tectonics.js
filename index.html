@@ -470,6 +470,10 @@
 	  el: '#load',
 	  methods: {
 	  	load: function() {
+	  		// HACK: only <input> is capable of loading a file, 
+	  		// but we need to use a button for bootstrap styling.
+	  		// The solution is for the button to trigger click event
+	  		// on a hidden file input element.
 	  		this.$refs.loadInput.click();
   		},
   		loadPart2: function(file) {
