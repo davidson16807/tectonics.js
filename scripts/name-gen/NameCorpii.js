@@ -1152,9 +1152,6 @@ NameCorpii.latin_place_names=[
 " victoria ",
 " volhynia ",
 " wermelandia ",
-" westmannia ",
-" westrobothnia ",
-" westrogothia ",
 " zelandia ",
 ];
 NameCorpii.mesopotamian_mythological_names = [
