@@ -51,7 +51,7 @@ NameCorpii.celestials = [
 " actaea ",
 " dysnomia ",
 ];
-NameCorpii.arabic_stars=[
+NameCorpii.arabic_star_names=[
 ' acamar ',
 ' achernar ',
 ' acrab ',
@@ -233,7 +233,7 @@ NameCorpii.arabic_stars=[
 ' zubenelgenubi ',
 ' zubeneshamali ',
 ];
-NameCorpii.roman = [
+NameCorpii.roman_mythological_names = [
 " apollo ",
 " bacchus ",
 " ceres ",
@@ -457,7 +457,7 @@ NameCorpii.roman = [
 " voluptas ",
 " volturnus ",
 ];
-NameCorpii.greek = [
+NameCorpii.greek_mythological_names = [
 " aphrodite ",
 " apollo ",
 " ares ",
@@ -977,7 +977,7 @@ NameCorpii.greek = [
 " tiresias ",
 " hippolyta ",
 ];
-NameCorpii.latin_countries=[
+NameCorpii.latin_place_names=[
 " asia ",
 " africa ",
 " america ",
@@ -1157,8 +1157,8 @@ NameCorpii.latin_countries=[
 " westrogothia ",
 " zelandia ",
 ];
-NameCorpii.mesopotamian = [
-" shakazaramesh ",
+NameCorpii.mesopotamian_mythological_names = [
+" shakazaramesh ",// will you ever learn?
 " adad ",
 " hadad ",
 " ashur ",
