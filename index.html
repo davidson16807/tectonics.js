@@ -253,7 +253,8 @@
 
     function parseSeed(text) {
 		var parsed = parseInt(text);
-		if(!parsed) {
+		if(isNaN(parsed)) {
+			parsed = 0;
 			for (var i = 0; i < Math.min(8, text.length); i++) {
 				parsed = (parsed * 256) + text.charCodeAt(i);
 			}
