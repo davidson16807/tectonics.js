@@ -178,7 +178,6 @@ PlateView.prototype.vertexShader = function(vertexShader){
 }
 
 PlateView.prototype.uniform = function(key, value){
-	console.log(this._uniforms[key], value)
 	if(this._uniforms[key] === value){
 		return;
 	}
@@ -187,20 +186,28 @@ PlateView.prototype.uniform = function(key, value){
  	var meshes, mesh;
 
  	mesh = this.scalar_field_mesh1;
- 	mesh.material.uniforms[key].value = value;
- 	mesh.material.uniforms[key].needsUpdate = true;
+ 	if (mesh.material.uniforms[key] !== void 0) {
+	 	mesh.material.uniforms[key].value = value;
+	 	mesh.material.uniforms[key].needsUpdate = true;
+ 	}
 
  	mesh = this.scalar_field_mesh2;
- 	mesh.material.uniforms[key].value = value;
- 	mesh.material.uniforms[key].needsUpdate = true;
+ 	if (mesh.material.uniforms[key] !== void 0) {
+	 	mesh.material.uniforms[key].value = value;
+	 	mesh.material.uniforms[key].needsUpdate = true;
+ 	}
 
  	mesh = this.vector_field_mesh1;
- 	mesh.material.uniforms[key].value = value;
- 	mesh.material.uniforms[key].needsUpdate = true;
+ 	if (mesh.material.uniforms[key] !== void 0) {
+ 		mesh.material.uniforms[key].value = value;
+ 		mesh.material.uniforms[key].needsUpdate = true;
+ 	}
 
  	mesh = this.vector_field_mesh2;
- 	mesh.material.uniforms[key].value = value;
- 	mesh.material.uniforms[key].needsUpdate = true;
+ 	if (mesh.material.uniforms[key] !== void 0) {
+	 	mesh.material.uniforms[key].value = value;
+	 	mesh.material.uniforms[key].needsUpdate = true;
+ 	}
 }
 
 PlateView.prototype.destroy = function() {

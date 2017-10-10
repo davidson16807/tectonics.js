@@ -5,17 +5,17 @@ function _multiline(f) {
 
 var fragmentShaders = {};
 
-fragmentShaders.template = _multiline(function() {/**   
+fragmentShaders.template = `
 //TEMPLATE.GLSL.C GOES HERE
 
-**/});
+`;
 
-fragmentShaders.debug = _multiline(function() {/**   
+fragmentShaders.debug = `
 //DEBUG.GLSL.C GOES HERE
 
-**/});
+`;
 
-fragmentShaders.vectorField = _multiline(function() {/**   
+fragmentShaders.vectorField = `
 //VECTOR_FIELD.GLSL.C GOES HERE
 
-**/});
+`;

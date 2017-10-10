@@ -12,5 +12,3 @@ varying float vScalar;
 varying vec4 vPosition;
 uniform float sealevel;
 uniform float index;
-
-//this line left intentionally empty
