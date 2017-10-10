@@ -136,7 +136,7 @@ var NameGenerator = (function() {
 	get_generator = function(corpus, tries, cost_fn) {
 		var markov_model = get_markov_model(corpus);
 		return function() {
-			return best_of(markov_model, tries, cost_fn);
+			return run_markov_model_best_of(markov_model, tries, cost_fn);
 		}
 	}
 
@@ -148,7 +148,7 @@ var NameGenerator = (function() {
 		var markov_model = get_markov_model(corpus);
 		return function() {
 			var length = parseInt(get_random_length());
-			return best_of(markov_model, tries, get_near_length_cost_fn(length));
+			return run_markov_model_best_of(markov_model, tries, get_near_length_cost_fn(length));
 		}
 	}
 
