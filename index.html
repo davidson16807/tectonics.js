@@ -58,6 +58,8 @@
 	<script src="scripts/view/TestDisplays.js"></script>
 	<script src="scripts/view/PlateView.js"></script>
 	<script src="scripts/view/View.js"></script>
+	<script src="scripts/name-gen/NameGenerator.js"></script>
+	<script src="scripts/name-gen/NameCorpii.js"></script>
 	<script src="scripts/Cached.js"></script>
 	<script src="scripts/JsonSerializer.js"></script>
 </head>
@@ -261,7 +263,12 @@
 		}
 		return parsed;
     }
-	var seed = querystring['seed'] || (new Date).getTime().toString();
+	var seed = querystring['seed']  //|| (new Date).getTime().toString();
+	if (!seed) {
+		var corpus = NameGenerator.tokenize_corpus(NameCorpii.greek_mythological_names);
+		var gen = NameGenerator.get_length_distribution_generator(corpus, 25, {5:1,6:3,7:11,8:3,9:1}, 100);
+		seed = gen();
+	}
 	var random = new Random(parseSeed(seed));
 
 	var renderStats, updateStats, renderer, controls;
