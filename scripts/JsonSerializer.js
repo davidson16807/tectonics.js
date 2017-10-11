@@ -1,18 +1,3 @@
-function _abTostr(buf) {
-  return String.fromCharCode.apply(null, new Uint16Array(buf));
-}
-
-function _strToab(str) {
-  var buf = new ArrayBuffer(str.length*2); // 2 bytes for each char
-  var bufView = new Uint16Array(buf);
-  for (var i=0, strLen=str.length; i<strLen; i++) {
-    bufView[i] = str.charCodeAt(i);
-  }
-  return buf;
-}
-
-
-
 var JsonSerializer 	= {};
 JsonSerializer.world = function (world, options) {
 	options = options || {};
@@ -55,7 +40,7 @@ JsonSerializer.plate = function (plate, options) {
 	};
 
 	// encode in base64
-	plate_json.ids 	= Base64.encode(Uint16Array.from( Float32Raster.get_mask(plate.grid.vertex_ids,	plate.mask) ).buffer);
+	plate_json.ids 	= Base64.encode(Uint16Array.from( Uint16Raster .get_mask(plate.grid.vertex_ids,	plate.mask) ).buffer);
 	plate_json.sima = Base64.encode(Uint16Array.from( Float32Raster.get_mask(plate.sima, 			plate.mask) ).buffer);
 	plate_json.sial = Base64.encode(Uint16Array.from( Float32Raster.get_mask(plate.sial, 			plate.mask) ).buffer);
 	plate_json.age 	= Base64.encode(Uint16Array.from( Float32Raster.get_mask(plate.age, 			plate.mask) ).buffer);
@@ -76,7 +61,7 @@ JsonDeserializer.plate = function (plate_json, _world, options) {
 	plate.local_to_global_matrix.fromArray(plate_json.local_to_global_matrix);
 
 	var file_ids = new Uint16Array(Base64.decode(plate_json.ids));
-	Float32Raster.set_ids_to_value	(plate.mask, 	file_ids, 1);
+	Uint8Raster.set_ids_to_value	(plate.mask, 	file_ids, 1);
 	Float32Raster.set_ids_to_values	(plate.sima, 	file_ids, new Uint16Array(Base64.decode(plate_json.sima)) );
 	Float32Raster.set_ids_to_values	(plate.sial, 	file_ids, new Uint16Array(Base64.decode(plate_json.sial)) );
 	Float32Raster.set_ids_to_values	(plate.age, 	file_ids, new Uint16Array(Base64.decode(plate_json.age))  );

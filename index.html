@@ -9,6 +9,7 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 
+	<link rel="icon" type="text/css" href="blog/icon4.png">
 	<link rel="stylesheet" href="styles/bootstrap.min.css">
 	<link rel="stylesheet" href="styles/bootstrap.custom.css">
 	<link rel="stylesheet" href="styles/main.css"/>
@@ -16,6 +17,7 @@
 	<link rel="stylesheet" href="styles/app.css"/>
 
 	<script src="http://code.jquery.com/jquery.min.js"></script>
+	<script src="https://unpkg.com/vue"></script>
 	<script src="libraries/bootstrap.js"></script>
 	<script src="libraries/three.js/Three.js"></script>
 	<script src="libraries/three.js/Detector.js"></script>
@@ -35,26 +37,29 @@
 	<script src="libraries/base64-arraybuffer.js"></script>
 	<script src="libraries/kdTree-min.js"></script>
 	<script src="libraries/uuid.js"></script>
-	<script src="scripts/Grid.js"></script>
+	<script src="scripts/Rasters.js"></script>
 	<script src="scripts/Utils.js"></script>
-	<script src="scripts/rasters.js"></script>
-	<script src="scripts/Sphere.js"></script>
 	<script src="scripts/VoronoiSphere.js"></script>
+	<script src="scripts/Sphere.js"></script>
 	<script src="scripts/Publisher.js"></script>
+	<script src="scripts/model/TectonicsModeling.js"></script>
 	<script src="scripts/model/Crust.js"></script>
 	<script src="scripts/model/RockColumn.js"></script>
 	<script src="scripts/model/Plate.js"></script>
 	<script src="scripts/model/SupercontinentCycle.js"></script>
 	<script src="scripts/model/World.js"></script>
+	<script src="scripts/model/EliasHeightMapGenerator.js"></script>
 	<script src="scripts/model/WorldGenerator.js"></script>
 	<script src="scripts/model/Model.js"></script>
-	<script src="scripts/view/fragment/FragmentShaders.js"></script>
-	<script src="scripts/view/vertex/VertexShaders.js"></script>
+	<script src="scripts/view/FragmentShaders.js"></script>
+	<script src="scripts/view/VertexShaders.js"></script>
 	<script src="scripts/view/ScalarDisplay.js"></script>
 	<script src="scripts/view/VectorDisplay.js"></script>
 	<script src="scripts/view/TestDisplays.js"></script>
 	<script src="scripts/view/PlateView.js"></script>
 	<script src="scripts/view/View.js"></script>
+	<script src="scripts/name-gen/NameGenerator.js"></script>
+	<script src="scripts/name-gen/NameCorpii.js"></script>
 	<script src="scripts/Cached.js"></script>
 	<script src="scripts/JsonSerializer.js"></script>
 </head>
@@ -73,162 +78,124 @@
 </div>
 <!-- info on screen display -->
 <div class="topright collapse collapsible controls" >
-	<!-- <a href="#" class="summary">&#9660;</a> -->
-	<div class="time-menu">
+	<div id="time-menu" class="time-menu">
 		<div class="input-group age-group">
-			<span class="form-control input-sm age">initializing...</span>
-			<span class="input-group-addon age-units"></span>
+			<span class="form-control input-sm age">{{ format(age, 1000, 3).quantity }}</span>
+			<span class="input-group-addon age-units">{{ format(age, 1000, 3).unit }}</span>
 		</div>
 		<div class="input-group speed-group">
-			<span class="input-group-addon play">
-					<img src="icons/play.svg" height="12em" width="12em"class="collapse">
-					<img src="icons/pause.svg" height="12em" width="12em">
+			<span class="input-group-addon play" v-on:click="togglePause()">
+				<img src="icons/play.svg" height="12em" width="12em" v-if="paused">
+				<img src="icons/pause.svg" height="12em" width="12em" v-if="!paused">
 			</span>
 
-			<input class="form-control input-sm" id="speedControl" type="number" value="5" min="0" max="10" step="1"/> 
+			<input class="form-control input-sm" type="number" value="5" min="0" max="10" step="1" v-model="speed" v-on:change="setSpeed()"/> 
 
 			<span class="input-group-addon">My/s</span>
 		</div>
 	</div>
 	<div class="view-menu btn-group-vertical">
-	 	<div class="btn-group">
+	 	<div id="projection" class="btn-group">
 			<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 				<img src="icons/projector-screen.svg" height="16em" width="16em"/>
 				Projection 
 				<span class="caret"></span>
 			</button>
 			<ul class="dropdown-menu btn-default btn-xs">
-				<li>
-					<button type="button" class="btn btn-default btn-xs vertex-shader" data-value="orthographic">
-						<img src="icons/earth.svg" height="16em" width="16em"/>
-						Globe
-					</button>
-				</li>
-				<li>
-					<button type="button" class="btn btn-default btn-xs vertex-shader" data-value="equirectangular">
-						<img src="icons/map.svg" height="16em" width="16em"/>
-						Map
-					</button>
-				</li>
-				<li>
-					<button type="button" class="btn btn-default btn-xs vertex-shader" data-value="texture">
-						<img src="icons/texture.svg" height="16em" width="16em"/>
-						Texture
+				<li v-for="option in options">
+					<button type="button" 
+						class="btn btn-default btn-xs" 
+						v-bind:class="getClass(option.value, selected)" 
+						v-bind:data-value="option.value" 
+						v-on:click="setSelected(option.value)">
+						<img v-bind:src="option.icon" height="16em" width="16em"/>
+						{{option.name}}
 					</button>
 				</li>
 			</ul>
 		</div>
-		<div class="btn-group">
+		<div id="scalar-display" class="btn-group">
 			<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-				<img src="icons/eye.svg" height="16em" width="16em"/>
+				<img src="icons/blur.svg" height="16em" width="16em"/>
 				Display 
 				<span class="caret"></span>
 			</button>
 			<ul class="dropdown-menu btn-default btn-xs">
 				<li>
-					<button type="button" class="btn btn-default btn-xs active ocean" data-toggle="button" aria-pressed="true">
+					<button type="button" 
+						class="btn btn-default btn-xs" 
+						v-bind:class="{active: ocean}" 
+						v-on:click="setOcean(!ocean? 1:0)">
 						<img src="icons/water.svg" height="16em" width="16em"/>
 						Ocean
 					</button>
 				</li>
-				<li>
-					<button type="button" class="btn btn-default btn-xs active vegetation" data-toggle="button" aria-pressed="true">
-						<img src="icons/tree.svg" height="16em" width="16em"/>
-						Vegetation
+				<li role="separator" class="divider"></li> 
+				<li v-for="option in options">
+					<button type="button" 
+						class="btn btn-default btn-xs" 
+						v-bind:class="getClass(option.value, selected)" 
+						v-bind:data-value="option.value" 
+						v-on:click="setSelected(option.value)">
+						<img v-bind:src="option.icon" height="16em" width="16em"/>
+						{{option.name}}
 					</button>
 				</li>
-				<li>
-					<button type="button" class="btn btn-default btn-xs active soil" data-toggle="button" aria-pressed="true">
-						<img src="icons/stone-pile.svg" height="16em" width="16em"/>
-						Soil
-					</button>
-				</li>
-
-				<li role="separator" class="divider"></li>
-
-				<li>
-					<button type="button" class="btn btn-default btn-xs fragment-shader" data-value="alt">
-						<img src="icons/terrain.svg" height="16em" width="16em"/>
-						Elevation
-					</button>
-				</li>
-				<li>
-					<button type="button" class="btn btn-default btn-xs fragment-shader" data-value="npp">
-						<img src="icons/leaf.svg" height="16em" width="16em"/>
-						Plant Productivity
-					</button>
-				</li>
-				<li>
-					<button type="button" class="btn btn-default btn-xs fragment-shader" data-value="temp">
-						<img src="icons/thermometer.svg" height="16em" width="16em"/>
-						Temperature
-					</button>
-				</li>
-				<li>
-					<button type="button" class="btn btn-default btn-xs fragment-shader" data-value="precip">
-						<img src="icons/weather-raining.svg" height="16em" width="16em"/>
-						Precipitation
-					</button>
-				</li>
-				<li>
-					<button type="button" class="btn btn-default btn-xs fragment-shader" data-value="age">
-						<img src="icons/clock.svg" height="16em" width="16em"/>
-						Age
-					</button>
-				</li>
-				<li>
-					<button type="button" class="btn btn-default btn-xs fragment-shader" data-value="density">
-						<img src="icons/scale.svg" height="16em" width="16em"/>
-						Density
-					</button>
-				</li>
-				<li>
-					<button type="button" class="btn btn-default btn-xs fragment-shader" data-value="density">
-						<img src="icons/ruler.svg" height="16em" width="16em"/>
-						Thickness
-					</button>
-				</li>
-				<li>
-					<button type="button" class="btn btn-default btn-xs fragment-shader" data-value="debug">
-						<img src="icons/puzzle.svg" height="16em" width="16em"/>
-						Plates
+			</ul>
+		</div>
+		<div id="vector-display" class="btn-group">
+			<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				<img src="icons/arrow-move-all.svg" height="16em" width="16em"/>
+				Arrows
+				<span class="caret"></span>
+			</button>
+			<ul class="dropdown-menu btn-default btn-xs">
+				<li v-for="option in options">
+					<button type="button" 
+						class="btn btn-default btn-xs" 
+						data-toggle="tooltip"
+						v-bind:title="option.tip" 
+						v-bind:class="getClass(option.value, selected)" 
+						v-bind:data-value="option.value" 
+						v-on:click="setSelected(option.value)">
+						<img v-bind:src="option.icon" height="16em" width="16em"/>
+						{{option.name}}
 					</button>
 				</li>
 			</ul>
 		</div>
 
-		<button type="button" class="btn btn-default btn-xs fullscreen" data-toggle="button" aria-pressed="true">
-			<img src="icons/fullscreen.svg" height="16em">
-			<img src="icons/fullscreen-exit.svg" height="16em" class="collapse">
-			Fullscreen
+		<button id="fullscreen" v-if="isVisible" type="button" class="btn btn-default btn-xs fullscreen" data-toggle="button" aria-pressed="true" v-on:click="toggleFullscreen()">
+			<img v-if="!isFullscreen" src="icons/fullscreen.svg" height="16em">
+			<img v-if="isFullscreen"  src="icons/fullscreen-exit.svg" height="16em">
+			{{isFullscreen? 'Exit Fullscreen' : 'Fullscreen'}}
 			<span class="instructions">F11</span>
 		</button>
-		<button type="button" class="btn btn-default btn-xs">
-			<a class="collapse screenshot" download>
+		<button id="screenshot" v-if="isEnabled" type="button" class="btn btn-default btn-xs">
+			<a class="screenshot" v-bind:href="dataUrl" v-bind:download="filename"  v-on:click="capture()">
 				<img src="icons/camera.svg" height="16em">
 				Screenshot
-				<span class="instructions">P</span>
 			</a>
 		</button>
 	</div>
 
 
 	<div class="file-menu btn-group-vertical">
-		<button type="button" class="btn btn-default btn-xs">
-			<a class="save" download>
+		<button id="save" type="button" class="btn btn-default btn-xs">
+			<a class="save" v-bind:href="dataUrl" v-bind:download="filename" v-on:click="save()" >
 				<img src="icons/download.svg" height="16em">
 				Save
 			</a>
 		</button>
-		<button type="button" class="btn btn-default btn-xs load">
+		<button id="load" type="button" class="btn btn-default btn-xs load" v-on:click="load()">
 			<img src="icons/upload.svg" height="16em">
 			Load
 			<span class="instructions">drag</span>
+			<input id="load-input" ref="loadInput" type="file" v-on:change="loadPart2($event.target.files[0])" class="hidden" />
 		</button>
 	</div>
 </div>
 
-<input id="load-input" type="file" class="hidden"/>
 
 <div class="bottomleft">
 	<div id="renderStats"></div>
@@ -237,8 +204,8 @@
 <div id="drop-dialog" class="collapse">
 	<h2>DRAG HERE</h2>
 </div>
-<div class="vcenter">
-	<div id="noWebGl" class="collapse hcenter dialog">
+<div id="dialogs" class="vcenter">
+	<div v-if="isNoWebGl" class="collapse hcenter dialog">
 		<h2>Well, darn</h2>
 		<p>It looks like your using a web browser without WebGL.</p>
 		<p>WebGL is a technology that allows users to run high-end 3d graphics from their web-browser. Other technologies exist that can display simple 3d graphics to the user (canvas, svg, flash, etc.), but at present WebGL is the only web technology that allows developers to send their own code to a GPU.
@@ -251,22 +218,21 @@
 		</p>
 		<iframe width="420" height="315" src="//www.youtube.com/embed/VE67RgnLdKw" frameborder="0" allowfullscreen></iframe>
 	</div>
-	<div id="noJs" class="hcenter dialog">
+	<div v-if="isNoJs" class="hcenter dialog">
 		<h2>Hang Tight</h2>
 		<p>We're loading up the model, this shouldn't take more than a second.</p>
 		<p>If things are taking too long, you might consider checking your settings to make sure javascript is enabled. For instructions on how to enable javascript, check <a href="http://www.enable-javascript.com/">here</a>.</p>
 	</div>
-	<div id="loadingSave" class="collapse hcenter dialog">
+	<div v-if="isLoadingSave" class="collapse hcenter dialog">
 		<h2>Hang Tight</h2>
 		<p>We're loading up the save game, this shouldn't take more than a few seconds.</p>
 		<p>If things are taking too long, you might consider checking the save game url. Make sure the url exists and can be easily loaded.</p>
 	</div>
-</div> 
+</div>
 
 <script type="text/javascript">
 	'use strict';
 	
-	$('#noJs').hide();
 	//standards:
 	// all points are vectors
 	// all angles are in radians
@@ -289,22 +255,32 @@
 
     function parseSeed(text) {
 		var parsed = parseInt(text);
-		if(!parsed) {
+		if(isNaN(parsed)) {
+			parsed = 0;
 			for (var i = 0; i < Math.min(8, text.length); i++) {
 				parsed = (parsed * 256) + text.charCodeAt(i);
 			}
 		}
 		return parsed;
     }
-	var seed = querystring['seed'] || (new Date).getTime().toString();
+	var seed = querystring['seed']  //|| (new Date).getTime().toString();
+	if (!seed) {
+		var corpus = NameGenerator.tokenize_corpus(NameCorpii.greek_mythological_names);
+		var gen = NameGenerator.get_length_distribution_generator(corpus, 25, {5:1,6:3,7:11,8:3,9:1}, 100);
+		seed = gen();
+	}
 	var random = new Random(parseSeed(seed));
 
 	var renderStats, updateStats, renderer, controls;
 	var BlockUpdate = false;
-	var IsProd = true;
+	var IsProd = false;
 
 	var view = new View(
-		new Grid( new THREEx.FibonacciSphereGeometry(1, 10000, fibGridFaceCache)),
+		new Grid( 
+			new THREEx.FibonacciSphereGeometry(1, 10000, fibGridFaceCache), 
+			{ voronoi_generator: function(points) {	return VoronoiSphere.FromJson(voronoiCache)	} }
+			// { voronoi_generator: VoronoiSphere.FromPos }
+		),
 		scalarDisplays.satellite, 
 		vectorDisplays.disabled, 
 		vertexShaders['orthographic']
@@ -322,7 +298,6 @@
 			WorldGenerator.modern_earth_control_points
 		);
 		model.world(world);
-		$('#loadingSave').hide();
 		$('.controls').show();
 	}
 	
@@ -330,10 +305,7 @@
 		init();
 		animate();
 		update();
-		$('.screenshot').show();
-	} else {
-		$('#noWebGl').show();
-	}
+	} 
 
 	// init the scene
 	function init(){
@@ -362,13 +334,6 @@
 
 		// transparently support window resize
 		THREEx.WindowResize.bind(renderer, view.camera);
-		// allow 'p' to make screenshot
-		THREEx.Screenshot.bindKey(renderer);
-		// allow 'f' to go fullscreen where this feature is supported
-		if( THREEx.FullScreen.available() ){
-			THREEx.FullScreen.bindKey();
-			$('.fullscreen.enter').show();
-		} 
 	}
 
 	// animation loop
@@ -402,54 +367,20 @@
 		
 		model.slow_update();
 
-		if ((world) !== void 0) {
-			$(".age").html(format(model.age, 1000, 3).quantity);
-			$(".age-units").html(format(model.age, 1000, 3).unit);
-		};
-		
 		if(!IsProd){
 			updateStats.update();
 		}
 	}
 	
-	function format_text (My, rollover, precision) {
-		var formatted = format(My, rollover, precision);
-		return formatted.quantity + ' ' + formatted.unit;
-	}
-	function format(My, rollover, precision){
-		var quantity = My * 1000000;
-		var units = ['ky', 'My', 'By']
-		var unit = 'yr';
-		while(quantity > rollover) {
-			unit = units.shift();
-			quantity /= 1000;
-		}
-		return {
-			quantity: 	quantity.toPrecision(precision).toString(), 
-			unit: 		unit,
-		};
-	}
-	function togglePause(){
-		model.toggle_pause();
-		$('.play img').toggle();
-	}
-	function toggleFullscreen () {
-		$('.fullscreen img').toggle();
-		if( THREEx.FullScreen.activated() ){
-			THREEx.FullScreen.cancel();
-		}else{
-			THREEx.FullScreen.request(document.body);
-		}
-	}
 	function loadUrl (url) {
 		BlockUpdate = true;
-		$('#loadingSave').show();
+		dialogVue.$data.isLoadingSave = true;
 		$('.controls').hide();
 		$.getJSON( url, function( json ) {
 			BlockUpdate = false;
 	    	world = JsonDeserializer.world(json);
 			model.world(world);
-			$('#loadingSave').hide();
+			dialogVue.$data.isLoadingSave = false;
 			$('.controls').show();
 		});
 	}
@@ -470,57 +401,23 @@
 	    reader.readAsText(file);
 	}
 
-	$('#speedControl').change(function(e){
-		if($('.pause').is(':visible')){
-			model.MegaYearPerSecond = $('#speedControl').val();
-		}
-	});
-	$('.play').click(togglePause);
-	$('.summary').click(function() {
-		$(this).parents('.collapsible').children().toggle();
-	});
-	$('.save').click(function() {
-		var serialized = JsonSerializer.world(world);
-		var stringified = JSON.stringify(serialized);
-		var dataUrl = 
-			"data:application/json;"+
-			"charset=utf-8," + 
-			stringified;
-		var filename = 
-			seed+'-'+
-			format_text(world.age, 1000, 3).replace(/\s/,'')+
-			'.sim';
-		$('.save').attr('href', dataUrl);
-		$('.save').attr('download', filename);
-	});
-	$('.load').click(function(e) {
-		$('#load-input').click();
-	});
-	$('#load-input').on('change', function(e) {
-		loadFile(e.target.files[0]);
-		$('#load-input').val('');
-	});
-	$('.screenshot').click(function() {
-		var dataurl = THREEx.Screenshot.toDataURL(renderer);
-		var filename = 
-			seed+'-'+
-			format_text(world.age, 1000, 3).replace(/\s/,'')+
-			'.png';
-		$(this)
-			.attr('href', dataurl)
-			.attr('download', filename);
-	});
-	$('.fullscreen').click(toggleFullscreen);
-
-    $('body').keyup(function(e){
-    	var key = String
-    		.fromCharCode(e.keyCode)
-    		.toLowerCase();
-
-        if(key == ' '){
-            togglePause();
-        }
-    });
+	function format (My, rollover, precision){
+				var quantity = My * 1000000;
+				var units = ['ky', 'My', 'By']
+				var unit = 'yr';
+				while(quantity > rollover) {
+					unit = units.shift();
+					quantity /= 1000;
+				}
+				return {
+					quantity: 	quantity.toPrecision(precision).toString(), 
+					unit: 		unit,
+				};
+			}
+	function format_text (My, rollover, precision) {
+		var formatted = format(My, rollover, precision);
+		return formatted.quantity + ' ' + formatted.unit;
+	}
 
     var last_drag_entered;
     $('body').on(
@@ -564,37 +461,221 @@
 			loadFile(e.dataTransfer.files[0]);
 	    }
 	);
-	$('.fragment-shader').click(function(e){
-		view.setScalarDisplay(scalarDisplays[$(this).data('value')]);
-	});
-	$('.vertex-shader').click(function(e){
-		console.log('vertex-shader');
-		view.vertexShader(vertexShaders[$(this).data('value')]);
-	});
-	$('.ocean').click(function(e){
-		var checked = $(this).hasClass('active');
 
-		$({value: checked? 1:0}).animate(
-		  {value: checked? 0:1},
-		  {
-			step: function(value){
-				view.uniform('sealevel_mod', value);
-			}
-		  });
+	var dialogVue = new Vue({
+	  el: '#dialogs',
+	  data: {
+	  	isNoWebGl: false,
+	  	isNoJs: false,
+	  	isLoadingSave: false
+	  },
+	  created: function() {
+	  	this.isNoWebGl = Detector.webgl;
+	  },
 	});
-	$('.vegetation,.soil').click(function(e) {
-		setTimeout(function() {
-			var soil = $('.soil').hasClass('active');
-			var vegetation = $('.vegetation').hasClass('active');
-			if (vegetation) {
-				view.setScalarDisplay(scalarDisplays.satellite);
-			} else if (soil) {
-				view.setScalarDisplay(scalarDisplays.soil);
-			} else {
-				view.setScalarDisplay(scalarDisplays.bedrock);
-			}	
-		}, 0);
-	})
+	
+	var loadVue = new Vue({
+	  el: '#load',
+	  methods: {
+	  	load: function() {
+	  		// HACK: only <input> is capable of loading a file, 
+	  		// but we need to use a button for bootstrap styling.
+	  		// The solution is for the button to trigger click event
+	  		// on a hidden file input element.
+	  		this.$refs.loadInput.click();
+  		},
+  		loadPart2: function(file) {
+  			loadFile(file);
+  		}
+	  }
+	});
+
+	var saveVue = new Vue({
+	  el: '#save',
+	  data: {
+	  	dataUrl: '',
+	  	filename: '',
+	  },
+	  methods: {
+	  	save: function() {
+  			var serialized = JsonSerializer.world(world);
+  			var stringified = JSON.stringify(serialized);
+  			this.dataUrl = 
+  				"data:application/json;"+
+  				"charset=utf-8," + 
+  				stringified;
+  			this.filename = 
+  				seed+'-'+
+  				format_text(model.age, 1000, 3).replace(/\s/,'')+
+  				'.sim';
+  		}
+	  }
+	});
+
+	var screenshotVue = new Vue({
+	  el: '#screenshot',
+	  data: {
+	  	isEnabled: false,
+	  	dataUrl: '',
+	  	filename: ''
+	  },
+	  created: function() {
+	  	this.isEnabled = Detector.webgl;
+	  },
+	  methods: {
+	  	capture: function() {
+  			this.dataUrl = THREEx.Screenshot.toDataURL(renderer);
+  			this.filename = 
+  				seed+'-'+
+  				format_text(model.age, 1000, 3).replace(/\s/,'')+
+  				'.png';
+  		}
+	  }
+	});
+
+	var fullscreenVue = new Vue({
+	  el: '#fullscreen',
+	  data: {
+	  	isFullscreen: false,
+	  	isVisible: false,
+	  },
+	  created: function() {
+	  	if( THREEx.FullScreen.available() ){
+		  	// allow 'f' to go fullscreen where this feature is supported
+	  		THREEx.FullScreen.bindKey();
+	  		this.isVisible = true;
+	  	} 
+	  },
+	  methods: {
+		toggleFullscreen: function() {
+			this.isFullscreen = THREEx.FullScreen.activated();
+			if( this.isFullscreen ){
+				THREEx.FullScreen.cancel();
+			}else{
+				THREEx.FullScreen.request(document.body);
+			}
+			this.isFullscreen = !this.isFullscreen;
+		},
+	  }
+	});
+
+	var timeMenuVue = new Vue({
+	  el: '#time-menu',
+	  data: {
+	  	paused: false,
+	  	speed: 5,
+	  	age: 0,
+	  },
+	  created: function() {
+	  	var _this = this;
+	  	setInterval(function() {
+	  		_this.$data.age = model.age;
+	  	}, 1000/10);
+	  },
+	  methods: {
+		togglePause: function() {
+			this.paused = !this.paused;
+		model.toggle_pause();
+		},
+		setSpeed: function() {
+			model.MegaYearPerSecond = this.speed;
+		},
+		format: format
+	}
+	});
+
+	var projectionVue = new Vue({
+	  el: '#projection',
+	  data: {
+	    selected: 'orthographic',
+	    options: [
+	      { name: "Globe", value: "orthographic", icon: "icons/earth.svg" },
+	      { name: "Map", value: "equirectangular", icon: "icons/map.svg" },
+	      { name: "Texture", value: "texture", icon: "icons/texture.svg" },
+	    ],
+	  },
+	  methods: {
+	    setSelected: function(value) {
+	    	if (this.selected == value) { value = this.options[0].value; }
+	    	this.selected = value;
+	    	view.vertexShader(vertexShaders[value]);
+	    },
+	    getClass: function(value, selected) {
+	    	return value == selected? 'active' : '';
+	    }
+	  }
+	});
+
+	var vectorDisplayVue = new Vue({
+	  el: '#vector-display',
+	  data: {
+	    selected: 'disabled',
+	    options: [
+	      { name: "None", value: "disabled", icon: "" },
+	      { name: "Mantle Flow", value: "asthenosphere_velocity", icon: "icons/fire-flow.svg" },
+	      { name: "Plate Motion", value: "averaged_velocity", icon: "icons/plate-motion.svg" },
+	    ],
+	  },
+	  methods: {
+	  	setSelected: function(value) {
+	    	if (this.selected == value) { value = this.options[0].value; }
+	  		this.selected = value;
+	  		view.setVectorDisplay(vectorDisplays[value]);
+	  	},
+	  	getClass: function(value, selected) {
+	  		return value == selected? 'active' : '';
+	  	}
+	  }
+	});
+
+	var scalarDisplayVue = new Vue({
+	  el: '#scalar-display',
+	  data: {
+	    ocean: 1,
+	    ocean_target: 1,
+	    selected: 'satellite',
+	    vectorDisplay: 'disabled',
+	    options: [
+	      {name: 'Satellite', value: 'satellite', icon: 'icons/satellite-variant.svg'},
+	      {name: 'Sediment', value: 'soil', icon: 'icons/dirt.svg'},
+	      {name: 'Bedrock', value: 'bedrock', icon: 'icons/rock.svg'},
+	      {name: 'Elevation', value: 'alt', icon: 'icons/terrain.svg'},
+	      {name: 'Plant Productivity', value: 'npp', icon: 'icons/leaf.svg'},
+	      {name: 'Air Temperature', value: 'temp', icon: 'icons/thermometer.svg'},
+	      {name: 'Precipitation', value: 'precip', icon: 'icons/weather-raining.svg'},
+	      {name: 'Crust Age', value: 'age', icon: 'icons/clock.svg'},
+	      {name: 'Crust Density', value: 'density', icon: 'icons/scale.svg'},
+	      {name: 'Crust Thickness', value: 'thickness', icon: 'icons/ruler.svg'},
+	      {name: 'Plates', value: 'plates', icon: 'icons/puzzle.svg'},
+	    ],
+	  },
+	  methods: {
+	    setSelected: function(value) {
+	    	if (this.selected == value) { value = this.options[0].value; }
+	    	this.selected = value;
+	    	view.setScalarDisplay(scalarDisplays[value]);
+	    },
+	    setOcean: function(value) {
+	    	this.ocean_target = value;
+	    	var v = this;
+	    	var fps = 30
+	    	var timestep = 1000/fps; 	//milliseconds
+	    	var duration = 500; 		//milliseconds
+	    	var increment = timestep/duration;
+	    	var timer = setInterval(function() {
+	    		v.ocean += Math.sign(v.ocean_target - v.ocean) * increment
+	    		if (Math.abs(v.ocean_target - v.ocean) < 2*increment) {
+	    		  clearInterval(timer); 
+	    		  v.ocean = v.ocean_target;
+	    		}
+	    		view.uniform('sealevel_mod', v.ocean);
+	    	}, timestep);
+	    },
+	    getClass: function(value, selected) {
+	    	return value == selected? 'active' : '';
+	    }
+	  }
+	});
 </script>
 </body>
 </html>

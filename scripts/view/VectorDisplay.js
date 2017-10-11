@@ -9,16 +9,16 @@ function ThreeJsVectorDisplay(options) {
 }
 ThreeJsVectorDisplay.prototype.addTo = function(mesh) {};
 ThreeJsVectorDisplay.prototype.removeFrom = function(mesh) {};
-ThreeJsVectorDisplay.prototype.updateAttributes = function(material, plate) {
-	var material, displacement;
-	var vector = material.attributes.vector.value;
+ThreeJsVectorDisplay.prototype.updateAttributes = function(geometry, plate) {
+	var geometry, displacement;
+	var vector = geometry.vertices;
 
 	var vector_model = this.getField(plate);
 	for(var i=0, li = vector_model.length; i<li; i++){
 		var vector_i = 2*i+1;
 		vector[vector_i] = vector_model[i]; 
 	}
-	material.attributes.vector.needsUpdate = true;
+	geometry.verticesNeedUpdate = true;
 }
 vectorDisplays.angularVelocity	= new ThreeJsVectorDisplay( { 
 	getField: function (plate) {
@@ -48,20 +48,38 @@ vectorDisplays.velocity	= new ThreeJsVectorDisplay( {
 } );
 
 
-function DataFrameVectorDisplay(options) {
+function VectorFieldDisplay(options) {
 	this.max = options['max'];
 	this.getField = options['getField'];
 }
-DataFrameVectorDisplay.prototype.addTo = function(mesh) {};
-DataFrameVectorDisplay.prototype.removeFrom = function(mesh) {};
-DataFrameVectorDisplay.prototype.updateAttributes = function(material, plate) {
-	var offset_length = 0.02; 	// offset of arrow from surface of sphere, in radii
+VectorFieldDisplay.prototype.addTo = function(mesh) {};
+VectorFieldDisplay.prototype.removeFrom = function(mesh) {};
+VectorFieldDisplay.prototype.updateAttributes = function(geometry, plate) {
+	var offset_length = 1.02; 	// offset of arrow from surface of sphere, in radii
 	var max_arrow_length = 0.1; // max arrow length, in radii
 
-	var material, displacement;
-	var vector = material.attributes.vector.value;
+	var geometry, displacement;
+	var vector = geometry.vertices;
 
-	var vector_model = this.getField(plate);
+	// run getField()
+	if (this.getField === void 0) {
+		log_once("VectorDisplay.getField is undefined.");
+		return;
+	}
+	try{
+		var vector_model = this.getField(plate);
+	} catch(ex){
+		throw_once(ex);
+	}
+	if (vector_model === void 0) {
+		log_once("VectorDisplay.getField() returned undefined.");
+		return;
+	}
+	if (!(vector_model.x !== void 0) && !(vector_model.x instanceof Float32Array)) { 
+		log_once("VectorDisplay.getField() did not return a VectorRaster.");
+		return;
+	}
+
 	var max = this.max ||  Math.max.apply(null, VectorField.magnitude(vector_model));
 		log_once(vector)
 	var scaling = max_arrow_length / max;
@@ -77,15 +95,16 @@ DataFrameVectorDisplay.prototype.updateAttributes = function(material, plate) {
 		end.y = vector_model.y[i] * scaling + start.y;
 		end.z = vector_model.z[i] * scaling + start.z;
 	}
-	material.attributes.vector.needsUpdate = true;
+	// geometry.vertices.needsUpdate = true;
+	geometry.verticesNeedUpdate = true;
 }
-vectorDisplays.pos	= new DataFrameVectorDisplay( { 
+vectorDisplays.pos	= new VectorFieldDisplay( { 
 	getField: function (plate) {
 		var pos = plate.grid.pos;
 		return pos;
 	}
 } );
-vectorDisplays.pos2	= new DataFrameVectorDisplay( { 
+vectorDisplays.pos2	= new VectorFieldDisplay( { 
 	getField: function (plate) {
 		var rotationMatrix = new THREE.Matrix4();
 		rotationMatrix.makeRotationAxis( plate.eulerPole, 1 );
@@ -93,38 +112,38 @@ vectorDisplays.pos2	= new DataFrameVectorDisplay( {
 		return pos;
 	}
 } );
-vectorDisplays.displacement_gradient	= new DataFrameVectorDisplay( { 
+vectorDisplays.displacement_gradient	= new VectorFieldDisplay( { 
 	getField: function (plate) {
 		var displacement = plate.displacement;
 		var gradient = ScalarField.gradient(displacement);
 		return gradient;
 	}
 } );
-vectorDisplays.age_gradient	= new DataFrameVectorDisplay( { 
+vectorDisplays.age_gradient	= new VectorFieldDisplay( { 
 	getField: function (plate) {
 		return ScalarField.gradient(plate.age);
 	}
 } );
-vectorDisplays.pos_gradient	= new DataFrameVectorDisplay( { 
+vectorDisplays.pos_gradient	= new VectorFieldDisplay( { 
 	getField: function (plate) {
 		return ScalarField.gradient(plate.grid.pos);
 	}
 } );
-vectorDisplays.density_gradient	= new DataFrameVectorDisplay( { 
+vectorDisplays.density_gradient	= new VectorFieldDisplay( { 
 	getField: function (plate) {
 		var density = plate.density;
 		var gradient = ScalarField.gradient(density);
 		return gradient;
 	}
 } );
-vectorDisplays.subductability_gradient	= new DataFrameVectorDisplay( { 
+vectorDisplays.subductability_gradient	= new VectorFieldDisplay( { 
 	getField: function (plate) {
 		var subductability = plate.subductability;
 		var gradient = ScalarField.gradient(subductability);
 		return gradient;
 	}
 } );
-vectorDisplays.subductability_smoothed = new DataFrameVectorDisplay( { 
+vectorDisplays.subductability_smoothed = new VectorFieldDisplay( { 
 		getField: function (plate) {
 			var field = getSubductabilitySmoothed(plate);
 			var gradient = ScalarField.gradient(field);
@@ -132,27 +151,19 @@ vectorDisplays.subductability_smoothed = new DataFrameVectorDisplay( {
 		} 
 	} );
 
-vectorDisplays.aesthenosphere_velocity	= new DataFrameVectorDisplay( { 
+vectorDisplays.aesthenosphere_velocity	= new VectorFieldDisplay( { 
 		getField: function (crust) {
 			return crust.aesthenosphere_velocity;
 		}
 	} );
 
-var last_x = void 0;
-function log_unique(x) {
-	if(x !== last_x){
-		console.log(x);
-	}
-}
-function log_once(x) {
-	console.log(x);
-	log_once = function(x){};
-}
 function DisabledVectorDisplay(options) {}
 DisabledVectorDisplay.prototype.addTo = function(mesh) {
-	var vector = mesh.material.attributes.vector.value;
+	var vector = mesh.geometry.vertices;
 	for(var i=0, li = vector.length; i<li; i++){
-		vector[i] = new THREE.Vector3(); 
+		vector[i].x = 0;
+		vector[i].y = 0;
+		vector[i].z = 0;
 	}
 };
 DisabledVectorDisplay.prototype.removeFrom = function(mesh) {};
