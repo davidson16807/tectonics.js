@@ -17,7 +17,7 @@
 	<link rel="stylesheet" href="styles/app.css"/>
 
 	<script src="http://code.jquery.com/jquery.min.js"></script>
-	<script src="https://unpkg.com/vue"></script>
+	<script src="https://unpkg.com/vue@2.4.4/dist/vue.min.js"></script>
 	<script src="libraries/bootstrap.js"></script>
 	<script src="libraries/three.js/Three.js"></script>
 	<script src="libraries/three.js/Detector.js"></script>
@@ -273,7 +273,7 @@
 
 	var renderStats, updateStats, renderer, controls;
 	var BlockUpdate = false;
-	var IsProd = false;
+	var IsProd = true;
 
 	var view = new View(
 		new Grid( 
