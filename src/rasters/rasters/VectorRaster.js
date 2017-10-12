@@ -17,7 +17,12 @@ Vector.dot = function(ax, ay, az, bx, by, bz) {
 Vector.magnitude = function(x, y, z) {
   return Math.sqrt(x*x + y*y + z*z);
 }
-
+Vector.cross = function(ax, ay, az, bx, by, bz) { 
+  var x = ay*bz   -   az*by; 
+  var y = az*bx   -   ax*bz; 
+  var z = ax*by   -   ay*bx; 
+  return {x:x,y:y,z:z}; 
+} 
 // VectorRaster represents a grid where each cell contains a vector value. It is a specific kind of a multibanded raster.
 // A VectorRaster is composed of two parts
 // 		The first is a object of type Grid, representing a collection of vertices that are connected by edges
