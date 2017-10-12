@@ -66,11 +66,7 @@ VectorFieldDisplay.prototype.updateAttributes = function(geometry, plate) {
 		log_once("VectorDisplay.getField is undefined.");
 		return;
 	}
-	try{
-		var vector_model = this.getField(plate);
-	} catch(ex){
-		throw_once(ex);
-	}
+	var vector_model = this.getField(plate);
 	if (vector_model === void 0) {
 		log_once("VectorDisplay.getField() returned undefined.");
 		return;
@@ -156,6 +152,29 @@ vectorDisplays.aesthenosphere_velocity	= new VectorFieldDisplay( {
 			return crust.aesthenosphere_velocity;
 		}
 	} );
+
+vectorDisplays.plate_velocity = new VectorFieldDisplay( {  
+    getField: function (world) { 
+      var grid = world.grid; 
+      var plates = world.plates; 
+      var plate_map = world.plate_map; 
+      var plate_velocity = VectorRaster(grid); 
+      var all_velocities = VectorRaster(grid); 
+      var add_term = VectorField.add_vector_field_term; 
+      var cross = VectorField.cross_vector; 
+      var eq = Uint8Field.eq_scalar;
+      var pos = grid.pos; 
+      var is_plate = Uint8Raster(grid); 
+      var plate; 
+      for (var i=0, li=plates.length; i<li; ++i) { 
+        plate = plates[i]; 
+        cross(pos, plate.eulerPole, plate_velocity); 
+        eq(plate_map, i, is_plate); 
+        add_term(all_velocities, plate_velocity, is_plate, all_velocities); 
+      } 
+      return all_velocities; 
+    }  
+  } ); 
 
 function DisabledVectorDisplay(options) {}
 DisabledVectorDisplay.prototype.addTo = function(mesh) {
