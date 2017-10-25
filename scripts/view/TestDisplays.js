@@ -7,7 +7,7 @@ var testDisplays = {};
 testDisplays.ids 	= new ScalarHeatDisplay( { 
 		scaling: true,
 		getField: function (crust) {
-			return ids.grid.vertex_ids;
+			return crust.grid.vertex_ids;
 		} 
 	} );
 
@@ -25,16 +25,12 @@ testDisplays.voronoi_ids	= new ScalarHeatDisplay( {
 testDisplays.id_rotated 	= new ScalarHeatDisplay( {
 		scaling: true,
 		getField: function (crust) {
-			var ids = new Float32Array(crust.age.length);
-			for (var i=0, li=ids.length; i<li; ++i) {
-			    ids[i] = i;
-			}
-			var rotationMatrix = new THREE.Matrix4();
-			rotationMatrix.makeRotationAxis( new THREE.Vector3(1,0,0), 0.5 );
-			var pos = VectorField.mult_matrix(crust.grid.pos, rotationMatrix.toArray());
-			// test = (crust.grid.getNearestIds(pos));
+			var ids = Float32Raster(crust.grid);
+			Float32Raster.FromUint16Raster(crust.grid.vertex_ids, ids);
+			var rotationMatrix = Matrix.rotation_about_axis(1,0,0, 0.5);
+			var pos = VectorField.mult_matrix3(crust.grid.pos, rotationMatrix);
 			return Float32Raster.get_nearest_values(ids, pos);
-		} 
+		}
  	} );
 
 // test for Float32Raster.get_nearest_values()
@@ -42,10 +38,8 @@ testDisplays.id_rotated 	= new ScalarHeatDisplay( {
 testDisplays.age_rotated 	= new ScalarHeatDisplay( { min: '250.', max: '0.',  
 		// scaling: true,
 		getField: function (crust, result) {
-			var rotationMatrix = new THREE.Matrix4();
-			rotationMatrix.makeRotationAxis( new THREE.Vector3(1,0,0), 0.5 );
-			var pos = VectorField.mult_matrix(crust.grid.pos, rotationMatrix.toArray());
-			// test = (crust.grid.getNearestIds(pos));
+			var rotationMatrix = Matrix.rotation_about_axis(1,0,0, 0.5);
+			var pos = VectorField.mult_matrix3(crust.grid.pos, rotationMatrix);
 			test = Float32Raster.get_nearest_values(crust.age, pos, result);
 			return test;
 		} 
