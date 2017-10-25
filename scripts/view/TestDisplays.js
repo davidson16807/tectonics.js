@@ -45,6 +45,20 @@ testDisplays.age_rotated 	= new ScalarHeatDisplay( { min: '250.', max: '0.',
 		} 
 	} );
 
+testDisplays.eliptic_ids = new ScalarHeatDisplay( {
+		scaling: true,
+		getField: function (crust) {
+			var ids = Float32Raster(crust.grid);
+			Float32Raster.FromUint16Raster(crust.grid.vertex_ids, ids);
+			var pos = OrbitalMechanics.get_ecliptic_coordinates_raster_from_equatorial_coordinates_raster(
+				crust.grid.pos,
+				23.5/180*Math.PI,
+				23.5/180*Math.PI
+			);
+			return Float32Raster.get_nearest_values(ids, pos);
+		}
+ 	} );
+
 // test for individual plate mask
 testDisplays.single_plate = new ScalarHeatDisplay( { min: '0.', max: '1.',  
 		getField: function (world) {
