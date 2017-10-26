@@ -53,3 +53,17 @@ AtmosphericModeling.surface_air_velocity = function(pos, pressure, angular_speed
 	VectorField.add_vector_field(velocity, coriolis_effect, velocity);
 	return velocity;
 }
+AtmosphericModeling.surface_air_temp = function(pos) {
+	var temp = Float32Raster(pos.grid);
+	var sqrt = Math.sqrt;
+	var x = 0.;
+	var y = 0.;
+	var z = 0.;
+	for (var i = 0; i < pos.x.length; i++) {
+		x = pos.x[i];
+		y = pos.z[i];
+		z = sqrt(x*x+y*y);
+		temp[i] = -25*(1-z) + 30*(z);
+	}
+	return temp;
+}
