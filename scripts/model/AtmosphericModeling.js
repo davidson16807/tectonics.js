@@ -55,15 +55,11 @@ AtmosphericModeling.surface_air_velocity = function(pos, pressure, angular_speed
 }
 AtmosphericModeling.surface_air_temp = function(pos) {
 	var temp = Float32Raster(pos.grid);
-	var sqrt = Math.sqrt;
-	var x = 0.;
-	var y = 0.;
-	var z = 0.;
-	for (var i = 0; i < pos.x.length; i++) {
-		x = pos.x[i];
-		y = pos.z[i];
-		z = sqrt(x*x+y*y);
-		temp[i] = -25*(1-z) + 30*(z);
+	var cos_lat = Float32SphereRaster.cos_lat(pos);
+	var cos_lat_i = 0.
+	for (var i = 0; i < cos_lat.length; i++) {
+		cos_lat_i = cos_lat[i];
+		temp[i] = -25*(1-cos_lat_i) + 30*(cos_lat_i);
 	}
 	return temp;
 }
