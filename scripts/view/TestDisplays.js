@@ -86,6 +86,13 @@ testDisplays.summer_surface_air_pressure = new ScalarHeatDisplay( { min: '-1.', 
 			return pressure;
 		}
 	} );
+testDisplays.precip = new ScalarHeatDisplay( { min: '-1.', max: '1.', 
+		getField: function (world, precip, scratch) {
+			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
+			AtmosphericModeling.precip(lat, precip);
+			return precip;
+		}
+	} );
 ANGULAR_SPEED = 1.e0;
 testDisplays.coriolis_effect = new VectorFieldDisplay( {
 		getField: function (world) {

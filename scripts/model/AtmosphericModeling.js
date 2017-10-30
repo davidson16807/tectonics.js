@@ -63,3 +63,23 @@ AtmosphericModeling.surface_air_temp = function(pos) {
 	}
 	return temp;
 }
+AtmosphericModeling.precip = function(lat, result) {
+    result = result || Float32Raster(grid);
+	//Mean annual precipitation over land, mm yr-1
+	//credits for original model go to /u/astrographer, 
+	//some modifications made to improve goodness of fit and conceptual integrity 
+	//parameters fit to data from 
+	precip_intercept = 2000;
+	precip_min = 60;
+	cell_effect = 0.;
+	lat_effect = 0.;
+	for (var i = 0; i < lat.length; i++) {
+		//amplitude of circulation cell decreases with latitude, and precip inherently must be positive
+		//for these reasons, we multiply the lat effect with the circulation effect
+		lat_effect = precip_intercept *
+			(1-lat[i] / (Math.PI/2))
+		cell_effect = (cell_effect * cos(6.*lat + radians(30.)) + 1.) +	precip_min;	//circulation cell effect
+		result[i] = cell_effect + lat_effect;
+	}
+	return result;
+}
