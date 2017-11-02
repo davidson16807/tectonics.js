@@ -213,8 +213,11 @@ scalarDisplays.temp 	= new ScalarHeatDisplay( { min: '-25.', max: '30.',
 			return AtmosphericModeling.surface_air_temp(crust.grid.pos);
 		} 
 	} );
-// scalarDisplays.temp 	= new ScalarHeatDisplay( { min: '-25.', max: '30.', scalar: 'temp', } );
-scalarDisplays.precip = new ScalarHeatDisplay( { min: '2000.', max: '0.', scalar: 'precip', } );
+scalarDisplays.precip 	= new ScalarHeatDisplay( { min: '-25.', max: '30.',  
+		getField: function (crust) {
+			return AtmosphericModeling.precip(crust.grid.pos);
+		} 
+	} );
 scalarDisplays.age 	= new ScalarHeatDisplay( { min: '250.', max: '0.',  
 		getField: function (crust) {
 			return crust.age;
