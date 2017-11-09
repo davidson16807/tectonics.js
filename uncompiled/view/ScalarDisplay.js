@@ -88,7 +88,7 @@ ScalarDisplay.prototype.updateAttributes = function(geometry, plate) {
 	var displacement_model = plate.displacement; 
 	this.field = this.field || Float32Raster(plate.grid);
 	this.scratch = this.scratch || Float32Raster(plate.grid);
-	
+
 	for(var j=0, lj = displacement.length; j<lj; j++){ 
 		buffer_array_index = buffer_array_to_cell[j];
 		displacement[j] = displacement_model[buffer_array_index]; 
@@ -239,7 +239,7 @@ scalarDisplays.subductability = new ScalarHeatDisplay(  {
 			return crust.subductability;
 		}
 	} );
-scalarDisplays.pressure = new ScalarHeatDisplay(  { 
+scalarDisplays.asthenosphere_pressure = new ScalarHeatDisplay(  { 
 		min: '1.', max: '0.',
 		getField: function (crust, output, scratch, iterations) {
 			return TectonicsModeling.get_asthenosphere_pressure(crust.subductability, output, scratch);
