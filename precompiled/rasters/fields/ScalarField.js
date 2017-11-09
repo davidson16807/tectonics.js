@@ -361,30 +361,47 @@ ScalarField.gradient = function (scalar_field, result) {
   ASSERT_IS_ARRAY(scalar_field, Float32Array)
   ASSERT_IS_VECTOR_RASTER(result)
 
-  var d_scalar_field = 0;
+  var scalar_field_derivative = 0;
   var dpos = scalar_field.grid.pos_arrow_differential;
   var dx = dpos.x;
   var dy = dpos.y;
   var dz = dpos.z;
   var arrows = scalar_field.grid.arrows;
   var arrow = [];
+  var arrow_distances = scalar_field.grid.pos_arrow_distances;
   var x = result.x;
   var y = result.y;
   var z = result.z;
+  // NOTE: 
+  // The naive implementation is to estimate the gradient based on each individual neighbor,
+  //  then take the average between the estimates.
+  // This is wrong! If dx, dy, or dz is very small, 
+  //  then the gradient estimate along that dimension will be very big.
+  // This will result in very strange behavior.
+  //
+  // The correct implementation is to take a weighted sum of the position differentials across neighbors.
+  // The "weights" are estimates for the derivative along that axis - 
+  //  that is, the change in scalar_field across neighbors divided by the distance that separates neighbors.
+  // Take the weighted sum and scale it as if there were 3 neighbors instead of however many there are. 
+  // This is effectively what you do when you find the gradient using normal methods:
+  //  each component of the cartesian coordinate basis corresponds to a "neighbor" in our approach.
+  // We create a weighted sum between them, weighting by the derivative for each. 
+  //  There are already 3 "neighbors", one for each coordinate basis, so we don't do anything.
+
   for (var i = 0, li = arrows.length; i < li; i++) {
     arrow = arrows[i];
-    d_scalar_field = scalar_field[arrow[1]] - scalar_field[arrow[0]];
-    x[arrow[0]] += (d_scalar_field * dx[i]);
-    y[arrow[0]] += (d_scalar_field * dy[i]);
-    z[arrow[0]] += (d_scalar_field * dz[i]);
+    scalar_field_derivative = (scalar_field[arrow[1]] - scalar_field[arrow[0]]) / arrow_distances[i];
+    x[arrow[0]] += (dx[i] * scalar_field_derivative);
+    y[arrow[0]] += (dy[i] * scalar_field_derivative);
+    z[arrow[0]] += (dz[i] * scalar_field_derivative);
   }
-  var neighbor_lookup = scalar_field.grid.neighbor_lookup;
-  var neighbor_count = 0;
-  for (var i = 0, li = neighbor_lookup.length; i < li; i++) {
-    neighbor_count = neighbor_lookup[i].length;
-    x[i] /= neighbor_count || 1;
-    y[i] /= neighbor_count || 1;
-    z[i] /= neighbor_count || 1;
+  var neighbor_count = scalar_field.grid.neighbor_count;
+  var neighbor_count_i = 0;
+  for (var i = 0, li = neighbor_count.length; i < li; i++) {
+    neighbor_count_i = neighbor_count[i];
+    x[i] *= 3/neighbor_count_i;
+    y[i] *= 3/neighbor_count_i;
+    z[i] *= 3/neighbor_count_i;
   }
   return result;
 };

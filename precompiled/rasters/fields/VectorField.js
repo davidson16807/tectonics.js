@@ -647,8 +647,10 @@ VectorField.magnitude = function(vector_field, result) {
 }
 
 // ∂X
+// NOTE: should arrow_differential exist at all? 
+// Consider moving its code to grid
 VectorField.arrow_differential = function(vector_field, result) {
-	result = result || VectorRaster.OfLength(vector_field.grid.arrows.length, vector_field.grid);
+	result = result || VectorRaster.OfLength(vector_field.grid.arrows.length, undefined);
 	
 	ASSERT_IS_VECTOR_RASTER(vector_field)
 	ASSERT_IS_VECTOR_RASTER(result)
