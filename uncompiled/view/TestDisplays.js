@@ -66,14 +66,14 @@ testDisplays.surface_air_pressure_land_effect = new ScalarHeatDisplay( { min: '-
 			return effect;
 		}
 	} );
-testDisplays.winter_surface_air_pressure = new ScalarHeatDisplay( { min: '-1.', max: '1.', 
+testDisplays.winter_surface_air_pressure = new ScalarHeatDisplay( { min: '980000.', max: '1030000.', 
 		getField: function (world, pressure, scratch) {
 			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
 			AtmosphericModeling.surface_air_pressure(world.displacement, lat, world.SEALEVEL, 1, Math.PI*23.5/180, pressure, scratch);
 			return pressure;
 		}
 	} );
-testDisplays.summer_surface_air_pressure = new ScalarHeatDisplay( { min: '-1.', max: '1.', 
+testDisplays.summer_surface_air_pressure = new ScalarHeatDisplay( { min: '980000.', max: '1030000.', 
 		getField: function (world, pressure, scratch) {
 			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
 			AtmosphericModeling.surface_air_pressure(world.displacement, lat, world.SEALEVEL, -1, Math.PI*23.5/180, pressure, scratch);

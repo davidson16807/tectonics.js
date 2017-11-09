@@ -36,6 +36,7 @@ AtmosphericModeling.surface_air_pressure = function(displacement, lat, sealevel,
 	var scratch2 = Float32Raster(lat.grid);
 	AtmosphericModeling.surface_air_pressure_land_effect(displacement, effective_lat, sealevel, season, land_effect, scratch2);
 	ScalarField.add_scalar_term(pressure, land_effect, 1, pressure);
+	Float32Dataset.normalize(pressure, pressure, 980e3, 1030e3);
 
 	return pressure;
 }
