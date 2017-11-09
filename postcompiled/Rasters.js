@@ -1467,6 +1467,28 @@ VectorField.add_vector_field_term = function(vector_field1, vector_field2, scala
  }
  return result;
 };
+VectorField.add_vector_field_term = function(vector_field1, vector_field2, scalar_field, result) {
+ result = result || VectorRaster(vector_field1.grid);
+ if (!(vector_field1.x !== void 0) && !(vector_field1.x instanceof Float32Array)) { throw "vector_field1" + ' is not a vector raster'; }
+ if (!(vector_field2.x !== void 0) && !(vector_field2.x instanceof Float32Array)) { throw "vector_field2" + ' is not a vector raster'; }
+ if (!(scalar_field instanceof Float32Array || scalar_field instanceof Uint16Array || scalar_field instanceof Uint8Array)) { throw "scalar_field" + ' is not a typed array'; }
+ if (!(result.x !== void 0) && !(result.x instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
+ var x1 = vector_field1.x;
+ var y1 = vector_field1.y;
+ var z1 = vector_field1.z;
+ var x2 = vector_field2.x;
+ var y2 = vector_field2.y;
+ var z2 = vector_field2.z;
+ var x = result.x;
+ var y = result.y;
+ var z = result.z;
+ for (var i=0, li=x.length; i<li; ++i) {
+     x[i] = x1[i] + scalar_field[i] * x2[i];
+     y[i] = y1[i] + scalar_field[i] * y2[i];
+     z[i] = z1[i] + scalar_field[i] * z2[i];
+ }
+ return result;
+};
 VectorField.add_vector_field = function(vector_field1, vector_field2, result) {
  result = result || VectorRaster(vector_field1.grid);
  if (!(vector_field1.x !== void 0) && !(vector_field1.x instanceof Float32Array)) { throw "vector_field1" + ' is not a vector raster'; }
@@ -2526,6 +2548,12 @@ Vector.dot = function(ax, ay, az, bx, by, bz) {
 }
 Vector.magnitude = function(x, y, z) {
   return Math.sqrt(x*x + y*y + z*z);
+}
+Vector.cross = function(ax, ay, az, bx, by, bz) {
+  var x = ay*bz - az*by;
+  var y = az*bx - ax*bz;
+  var z = ax*by - ay*bx;
+  return {x:x,y:y,z:z};
 }
 // VectorRaster represents a grid where each cell contains a vector value. It is a specific kind of a multibanded raster.
 // A VectorRaster is composed of two parts

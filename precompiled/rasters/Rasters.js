@@ -42,28 +42,28 @@
 #define ASSERT_IS_VECTOR_RASTER(INPUT)
 #endif
 
-#include "src/rasters/Grid.js"
+#include "precompiled/rasters/Grid.js"
 
-#include "src/rasters/datasets/Float32Dataset.js"
-#include "src/rasters/datasets/Uint16Dataset.js"
-#include "src/rasters/datasets/Uint8Dataset.js"
-#include "src/rasters/datasets/VectorDataset.js"
+#include "precompiled/rasters/datasets/Float32Dataset.js"
+#include "precompiled/rasters/datasets/Uint16Dataset.js"
+#include "precompiled/rasters/datasets/Uint8Dataset.js"
+#include "precompiled/rasters/datasets/VectorDataset.js"
 
-#include "src/rasters/fields/ScalarField.js"
-#include "src/rasters/fields/Uint16Field.js"
-#include "src/rasters/fields/Uint8Field.js"
-#include "src/rasters/fields/VectorField.js"
+#include "precompiled/rasters/fields/ScalarField.js"
+#include "precompiled/rasters/fields/Uint16Field.js"
+#include "precompiled/rasters/fields/Uint8Field.js"
+#include "precompiled/rasters/fields/VectorField.js"
 
-#include "src/rasters/raster-graphics/Float32RasterGraphics.js"
-#include "src/rasters/raster-graphics/Uint16RasterGraphics.js"
-#include "src/rasters/raster-graphics/Uint8RasterGraphics.js"
-#include "src/rasters/raster-graphics/VectorRasterGraphics.js"
+#include "precompiled/rasters/raster-graphics/Float32RasterGraphics.js"
+#include "precompiled/rasters/raster-graphics/Uint16RasterGraphics.js"
+#include "precompiled/rasters/raster-graphics/Uint8RasterGraphics.js"
+#include "precompiled/rasters/raster-graphics/VectorRasterGraphics.js"
 
-#include "src/rasters/rasters/Float32Raster.js"
-#include "src/rasters/rasters/Uint16Raster.js"
-#include "src/rasters/rasters/Uint8Raster.js"
-#include "src/rasters/rasters/VectorRaster.js"
+#include "precompiled/rasters/rasters/Float32Raster.js"
+#include "precompiled/rasters/rasters/Uint16Raster.js"
+#include "precompiled/rasters/rasters/Uint8Raster.js"
+#include "precompiled/rasters/rasters/VectorRaster.js"
 
-#include "src/rasters/interpolation/Float32RasterInterpolation.js"
-#include "src/rasters/image-analysis/VectorImageAnalysis.js"
-#include "src/rasters/morphology/BinaryMorphology.js"
+#include "precompiled/rasters/interpolation/Float32RasterInterpolation.js"
+#include "precompiled/rasters/image-analysis/VectorImageAnalysis.js"
+#include "precompiled/rasters/morphology/BinaryMorphology.js"

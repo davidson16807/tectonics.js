@@ -100,11 +100,7 @@ ScalarDisplay.prototype.updateAttributes = function(geometry, plate) {
 		log_once("ScalarDisplay.getField is undefined.");
 		return;
 	}
-	try{
-		var scalar_model = this.getField(plate, this.field, this.scratch);
-	} catch(ex){
-		throw_once(ex);
-	}
+	var scalar_model = this.getField(plate, this.field, this.scratch);
 	if (scalar_model === void 0) {
 		log_once("ScalarDisplay.getField() returned undefined.");
 		return;
@@ -171,11 +167,7 @@ ScalarHeatDisplay.prototype.updateAttributes = function(geometry, plate) {
 		log_once("ScalarDisplay.getField is undefined.");
 		return;
 	}
-	try{
-		var scalar_model = this.getField(plate, this.field, this.scratch);
-	} catch(ex){
-		throw_once(ex);
-	}
+	var scalar_model = this.getField(plate, this.field, this.scratch);
 	if (scalar_model === void 0) {
 		log_once("ScalarDisplay.getField() returned undefined.");
 		return;

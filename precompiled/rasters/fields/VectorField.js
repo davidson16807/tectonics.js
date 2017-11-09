@@ -34,6 +34,35 @@ VectorField.add_vector_field_term = function(vector_field1, vector_field2, scala
 	return result;
 };
 
+VectorField.add_vector_field_term = function(vector_field1, vector_field2, scalar_field, result) {
+	result = result || VectorRaster(vector_field1.grid);
+
+	ASSERT_IS_VECTOR_RASTER(vector_field1)
+	ASSERT_IS_VECTOR_RASTER(vector_field2)
+	ASSERT_IS_ANY_ARRAY(scalar_field)
+	ASSERT_IS_VECTOR_RASTER(result)
+
+	var x1 = vector_field1.x;
+	var y1 = vector_field1.y;
+	var z1 = vector_field1.z;
+
+	var x2 = vector_field2.x;
+	var y2 = vector_field2.y;
+	var z2 = vector_field2.z;
+
+	var x = result.x;
+	var y = result.y;
+	var z = result.z;
+
+	for (var i=0, li=x.length; i<li; ++i) {
+	    x[i] = x1[i] + scalar_field[i] * x2[i];
+	    y[i] = y1[i] + scalar_field[i] * y2[i];
+	    z[i] = z1[i] + scalar_field[i] * z2[i];
+	}
+
+	return result;
+};
+
 VectorField.add_vector_field = function(vector_field1, vector_field2, result) {
 	result = result || VectorRaster(vector_field1.grid);
 

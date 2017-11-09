@@ -37,30 +37,32 @@
 	<script src="libraries/base64-arraybuffer.js"></script>
 	<script src="libraries/kdTree-min.js"></script>
 	<script src="libraries/uuid.js"></script>
-	<script src="scripts/Rasters.js"></script>
-	<script src="scripts/Utils.js"></script>
-	<script src="scripts/VoronoiSphere.js"></script>
-	<script src="scripts/Sphere.js"></script>
-	<script src="scripts/Publisher.js"></script>
-	<script src="scripts/model/TectonicsModeling.js"></script>
-	<script src="scripts/model/AtmosphericModeling.js"></script>
-	<script src="scripts/model/Crust.js"></script>
-	<script src="scripts/model/RockColumn.js"></script>
-	<script src="scripts/model/Plate.js"></script>
-	<script src="scripts/model/SupercontinentCycle.js"></script>
-	<script src="scripts/model/World.js"></script>
-	<script src="scripts/model/EliasHeightMapGenerator.js"></script>
-	<script src="scripts/model/WorldGenerator.js"></script>
-	<script src="scripts/model/Model.js"></script>
-	<script src="scripts/view/FragmentShaders.js"></script>
-	<script src="scripts/view/VertexShaders.js"></script>
-	<script src="scripts/view/ScalarDisplay.js"></script>
-	<script src="scripts/view/VectorDisplay.js"></script>
-	<script src="scripts/view/TestDisplays.js"></script>
-	<script src="scripts/view/PlateView.js"></script>
-	<script src="scripts/view/View.js"></script>
-	<script src="scripts/Cached.js"></script>
-	<script src="scripts/JsonSerializer.js"></script>
+	<script src="postcompiled/Rasters.js"></script>
+	<script src="postcompiled/view/FragmentShaders.js"></script>
+	<script src="postcompiled/view/VertexShaders.js"></script>
+	<script src="uncompiled/academics/TectonicsModeling.js"></script>
+	<script src="uncompiled/academics/AtmosphericModeling.js"></script>
+	<script src="uncompiled/Utils.js"></script>
+	<script src="uncompiled/VoronoiSphere.js"></script>
+	<script src="uncompiled/Sphere.js"></script>
+	<script src="uncompiled/Publisher.js"></script>
+	<script src="uncompiled/model/Crust.js"></script>
+	<script src="uncompiled/model/RockColumn.js"></script>
+	<script src="uncompiled/model/Plate.js"></script>
+	<script src="uncompiled/model/SupercontinentCycle.js"></script>
+	<script src="uncompiled/model/World.js"></script>
+	<script src="uncompiled/model/EliasHeightMapGenerator.js"></script>
+	<script src="uncompiled/model/WorldGenerator.js"></script>
+	<script src="uncompiled/model/Model.js"></script>
+	<script src="uncompiled/view/ScalarDisplay.js"></script>
+	<script src="uncompiled/view/VectorDisplay.js"></script>
+	<script src="uncompiled/view/TestDisplays.js"></script>
+	<script src="uncompiled/view/PlateView.js"></script>
+	<script src="uncompiled/view/View.js"></script>
+	<script src="uncompiled/name-gen/NameGenerator.js"></script>
+	<script src="uncompiled/name-gen/NameCorpii.js"></script>
+	<script src="uncompiled/Cached.js"></script>
+	<script src="uncompiled/JsonSerializer.js"></script>
 </head>
 <body>
 <!-- three.js container -->
@@ -254,14 +256,20 @@
 
     function parseSeed(text) {
 		var parsed = parseInt(text);
-		if(!parsed) {
+		if(isNaN(parsed)) {
+			parsed = 0;
 			for (var i = 0; i < Math.min(8, text.length); i++) {
 				parsed = (parsed * 256) + text.charCodeAt(i);
 			}
 		}
 		return parsed;
     }
-	var seed = querystring['seed'] || (new Date).getTime().toString();
+	var seed = querystring['seed']  //|| (new Date).getTime().toString();
+	if (!seed) {
+		var corpus = NameGenerator.tokenize_corpus(NameCorpii.greek_mythological_names);
+		var gen = NameGenerator.get_length_distribution_generator(corpus, 25, {5:1,6:3,7:11,8:3,9:1}, 100);
+		seed = gen();
+	}
 	var random = new Random(parseSeed(seed));
 
 	var renderStats, updateStats, renderer, controls;
@@ -606,6 +614,7 @@
 	    options: [
 	      { name: "None", value: "disabled", icon: "" },
 	      { name: "Mantle Flow", value: "asthenosphere_velocity", icon: "icons/fire-flow.svg" },
+	      { name: "Plate Motion", value: "plate_velocity", icon: "icons/plate-motion.svg" },
 	    ],
 	  },
 	  methods: {
