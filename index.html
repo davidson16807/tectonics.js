@@ -171,21 +171,17 @@
 			{{isFullscreen? 'Exit Fullscreen' : 'Fullscreen'}}
 			<span class="instructions">F11</span>
 		</button>
-		<button id="screenshot" v-if="isEnabled" type="button" class="btn btn-default btn-xs">
-			<a class="screenshot" v-bind:href="dataUrl" v-bind:download="filename"  v-on:click="capture()">
-				<img src="icons/camera.svg" height="16em">
-				Screenshot
-			</a>
+		<button id="screenshot" v-if="isEnabled" type="button" class="btn btn-default btn-xs" v-on:click="capture">
+			<img src="icons/camera.svg" height="16em">
+			Screenshot
 		</button>
 	</div>
 
 
 	<div class="file-menu btn-group-vertical">
-		<button id="save" type="button" class="btn btn-default btn-xs">
-			<a class="save" v-bind:href="dataUrl" v-bind:download="filename" v-on:click="save()" >
-				<img src="icons/download.svg" height="16em">
-				Save
-			</a>
+		<button id="save" type="button" class="btn btn-default btn-xs"  v-on:click="save">
+			<img src="icons/download.svg" height="16em">
+			Save
 		</button>
 		<button id="load" type="button" class="btn btn-default btn-xs load" v-on:click="load()">
 			<img src="icons/upload.svg" height="16em">
@@ -196,6 +192,7 @@
 	</div>
 </div>
 
+<a id="hidden-downloader" href="dataUrl" download="filename"></a>
 
 <div class="bottomleft">
 	<div id="renderStats"></div>
@@ -419,6 +416,13 @@
 		return formatted.quantity + ' ' + formatted.unit;
 	}
 
+	function download(dataUrl, filename) {
+		$('#hidden-downloader')
+			.attr('href', dataUrl)
+			.attr('download', filename)
+			[0].click();
+	}
+
     var last_drag_entered;
     $('body').on(
 	    'dragover',
@@ -492,22 +496,19 @@
 
 	var saveVue = new Vue({
 	  el: '#save',
-	  data: {
-	  	dataUrl: '',
-	  	filename: '',
-	  },
 	  methods: {
-	  	save: function() {
+	  	save(event) {
   			var serialized = JsonSerializer.world(world);
   			var stringified = JSON.stringify(serialized);
-  			this.dataUrl = 
+  			var dataUrl = 
   				"data:application/json;"+
   				"charset=utf-8," + 
   				stringified;
-  			this.filename = 
+  			var filename = 
   				seed+'-'+
   				format_text(model.age, 1000, 3).replace(/\s/,'')+
-  				'.sim';
+  				'.sim'
+  			download(dataUrl, filename);
   		}
 	  }
 	});
@@ -516,19 +517,18 @@
 	  el: '#screenshot',
 	  data: {
 	  	isEnabled: false,
-	  	dataUrl: '',
-	  	filename: ''
 	  },
 	  created: function() {
 	  	this.isEnabled = Detector.webgl;
 	  },
 	  methods: {
-	  	capture: function() {
-  			this.dataUrl = THREEx.Screenshot.toDataURL(renderer);
-  			this.filename = 
+	  	capture(event) {
+  			var dataUrl = THREEx.Screenshot.toDataURL(renderer);
+  			var filename = 
   				seed+'-'+
   				format_text(model.age, 1000, 3).replace(/\s/,'')+
   				'.png';
+  			download(dataUrl, filename);
   		}
 	  }
 	});

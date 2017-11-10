@@ -30,6 +30,9 @@ body {
 	padding-left:1em;
 }
 
+#hidden-downloader{
+	display: none;
+}
 #drop-dialog {
 	position	: absolute;
 	top		    : 23%;
