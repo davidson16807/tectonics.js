@@ -7,7 +7,7 @@ var testDisplays = {};
 testDisplays.ids 	= new ScalarHeatDisplay( { 
 		scaling: true,
 		getField: function (crust) {
-			return ids.grid.vertex_ids;
+			return crust.grid.vertex_ids;
 		} 
 	} );
 
@@ -25,16 +25,12 @@ testDisplays.voronoi_ids	= new ScalarHeatDisplay( {
 testDisplays.id_rotated 	= new ScalarHeatDisplay( {
 		scaling: true,
 		getField: function (crust) {
-			var ids = new Float32Array(crust.age.length);
-			for (var i=0, li=ids.length; i<li; ++i) {
-			    ids[i] = i;
-			}
-			var rotationMatrix = new THREE.Matrix4();
-			rotationMatrix.makeRotationAxis( new THREE.Vector3(1,0,0), 0.5 );
-			var pos = VectorField.mult_matrix(crust.grid.pos, rotationMatrix.toArray());
-			// test = (crust.grid.getNearestIds(pos));
+			var ids = Float32Raster(crust.grid);
+			Float32Raster.FromUint16Raster(crust.grid.vertex_ids, ids);
+			var rotationMatrix = Matrix.rotation_about_axis(1,0,0, 0.5);
+			var pos = VectorField.mult_matrix3(crust.grid.pos, rotationMatrix);
 			return Float32Raster.get_nearest_values(ids, pos);
-		} 
+		}
  	} );
 
 // test for Float32Raster.get_nearest_values()
@@ -42,10 +38,8 @@ testDisplays.id_rotated 	= new ScalarHeatDisplay( {
 testDisplays.age_rotated 	= new ScalarHeatDisplay( { min: '250.', max: '0.',  
 		// scaling: true,
 		getField: function (crust, result) {
-			var rotationMatrix = new THREE.Matrix4();
-			rotationMatrix.makeRotationAxis( new THREE.Vector3(1,0,0), 0.5 );
-			var pos = VectorField.mult_matrix(crust.grid.pos, rotationMatrix.toArray());
-			// test = (crust.grid.getNearestIds(pos));
+			var rotationMatrix = Matrix.rotation_about_axis(1,0,0, 0.5);
+			var pos = VectorField.mult_matrix3(crust.grid.pos, rotationMatrix);
 			test = Float32Raster.get_nearest_values(crust.age, pos, result);
 			return test;
 		} 
@@ -58,7 +52,61 @@ testDisplays.single_plate = new ScalarHeatDisplay( { min: '0.', max: '1.',
 		} 
 	} );
 
-
+testDisplays.surface_air_pressure_lat_effect = new ScalarHeatDisplay( { min: '-1.', max: '1.', 
+		getField: function (world, effect, scratch) {
+			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
+			AtmosphericModeling.surface_air_pressure_lat_effect(lat, effect);
+			return effect;
+		} 
+	} );
+testDisplays.surface_air_pressure_land_effect = new ScalarHeatDisplay( { min: '-1.', max: '1.', 
+		getField: function (world, effect, scratch) {
+			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
+			AtmosphericModeling.surface_air_pressure_land_effect(world.displacement, lat, world.SEALEVEL, effect, scratch);
+			return effect;
+		}
+	} );
+testDisplays.winter_surface_air_pressure = new ScalarHeatDisplay( { min: '-1.', max: '1.', 
+		getField: function (world, pressure, scratch) {
+			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
+			AtmosphericModeling.surface_air_pressure(world.displacement, lat, world.SEALEVEL, 1, Math.PI*23.5/180, pressure, scratch);
+			return pressure;
+		}
+	} );
+testDisplays.summer_surface_air_pressure = new ScalarHeatDisplay( { min: '-1.', max: '1.', 
+		getField: function (world, pressure, scratch) {
+			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
+			AtmosphericModeling.surface_air_pressure(world.displacement, lat, world.SEALEVEL, -1, Math.PI*23.5/180, pressure, scratch);
+			return pressure;
+		}
+	} );
+ANGULAR_SPEED = 1.e0;
+testDisplays.coriolis_effect = new VectorFieldDisplay( {
+		getField: function (world) {
+			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
+			var scratch = Float32Raster(world.grid);
+			var pressure = AtmosphericModeling.surface_air_pressure_lat_effect(lat);
+			var velocity = ScalarField.gradient(pressure);
+			var coriolis_effect = AtmosphericModeling.surface_air_velocity_coriolis_effect(world.grid.pos, velocity, ANGULAR_SPEED)
+			return coriolis_effect;
+		} 
+	} );
+testDisplays.winter_surface_air_velocity = new VectorFieldDisplay( {
+		getField: function (world) {
+			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
+			var pressure = AtmosphericModeling.surface_air_pressure(world.displacement, lat, world.SEALEVEL, 1, Math.PI*23.5/180);
+			var velocity = AtmosphericModeling.surface_air_velocity(world.grid.pos, pressure, ANGULAR_SPEED);
+			return velocity;
+		} 
+	} );
+testDisplays.summer_surface_air_velocity = new VectorFieldDisplay( {
+		getField: function (world) {
+			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
+			var pressure = AtmosphericModeling.surface_air_pressure(world.displacement, lat, world.SEALEVEL, -1, Math.PI*23.5/180);
+			var velocity = AtmosphericModeling.surface_air_velocity(world.grid.pos, pressure, ANGULAR_SPEED);
+			return velocity;
+		} 
+	} );
 
 
 

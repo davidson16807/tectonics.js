@@ -88,7 +88,7 @@ ScalarDisplay.prototype.updateAttributes = function(geometry, plate) {
 	var displacement_model = plate.displacement; 
 	this.field = this.field || Float32Raster(plate.grid);
 	this.scratch = this.scratch || Float32Raster(plate.grid);
-	
+
 	for(var j=0, lj = displacement.length; j<lj; j++){ 
 		buffer_array_index = buffer_array_to_cell[j];
 		displacement[j] = displacement_model[buffer_array_index]; 
@@ -100,11 +100,7 @@ ScalarDisplay.prototype.updateAttributes = function(geometry, plate) {
 		log_once("ScalarDisplay.getField is undefined.");
 		return;
 	}
-	try{
-		var scalar_model = this.getField(plate, this.field, this.scratch);
-	} catch(ex){
-		throw_once(ex);
-	}
+	var scalar_model = this.getField(plate, this.field, this.scratch);
 	if (scalar_model === void 0) {
 		log_once("ScalarDisplay.getField() returned undefined.");
 		return;
@@ -171,11 +167,7 @@ ScalarHeatDisplay.prototype.updateAttributes = function(geometry, plate) {
 		log_once("ScalarDisplay.getField is undefined.");
 		return;
 	}
-	try{
-		var scalar_model = this.getField(plate, this.field, this.scratch);
-	} catch(ex){
-		throw_once(ex);
-	}
+	var scalar_model = this.getField(plate, this.field, this.scratch);
 	if (scalar_model === void 0) {
 		log_once("ScalarDisplay.getField() returned undefined.");
 		return;
@@ -247,7 +239,7 @@ scalarDisplays.subductability = new ScalarHeatDisplay(  {
 			return crust.subductability;
 		}
 	} );
-scalarDisplays.pressure = new ScalarHeatDisplay(  { 
+scalarDisplays.asthenosphere_pressure = new ScalarHeatDisplay(  { 
 		min: '1.', max: '0.',
 		getField: function (crust, output, scratch, iterations) {
 			return TectonicsModeling.get_asthenosphere_pressure(crust.subductability, output, scratch);
