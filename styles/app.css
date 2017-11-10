@@ -26,10 +26,12 @@ body {
 	color: grey;
 	font-style: italic;
 	font-size: 61%;
-	float:right;
 	padding-left:1em;
 }
 
+#hidden-downloader{
+	display: none;
+}
 #drop-dialog {
 	position	: absolute;
 	top		    : 23%;
