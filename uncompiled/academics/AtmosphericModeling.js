@@ -50,6 +50,8 @@ AtmosphericModeling.surface_air_velocity_coriolis_effect = function(pos, velocit
 AtmosphericModeling.surface_air_velocity = function(pos, pressure, angular_speed, velocity) {
 	velocity = velocity || VectorRaster(pos.grid);
 	ScalarField.gradient(pressure, velocity);
+	EARTH_RADIUS = 6.3e6; // meters
+	VectorField.div_scalar(velocity, EARTH_RADIUS, velocity); // need to adjust gradient because grid.pos is on a unit sphere
 	var coriolis_effect = AtmosphericModeling.surface_air_velocity_coriolis_effect(pos, velocity, angular_speed);
 	VectorField.add_vector_field(velocity, coriolis_effect, velocity);
 	return velocity;
