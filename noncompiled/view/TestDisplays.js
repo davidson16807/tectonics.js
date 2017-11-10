@@ -66,27 +66,6 @@ testDisplays.surface_air_pressure_land_effect = new ScalarHeatDisplay( { min: '-
 			return effect;
 		}
 	} );
-testDisplays.winter_surface_air_pressure = new ScalarHeatDisplay( { min: '980000.', max: '1030000.', 
-		getField: function (world, pressure, scratch) {
-			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
-			AtmosphericModeling.surface_air_pressure(world.displacement, lat, world.SEALEVEL, 1, Math.PI*23.5/180, pressure, scratch);
-			return pressure;
-		}
-	} );
-testDisplays.summer_surface_air_pressure = new ScalarHeatDisplay( { min: '980000.', max: '1030000.', 
-		getField: function (world, pressure, scratch) {
-			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
-			AtmosphericModeling.surface_air_pressure(world.displacement, lat, world.SEALEVEL, -1, Math.PI*23.5/180, pressure, scratch);
-			return pressure;
-		}
-	} );
-testDisplays.precip = new ScalarHeatDisplay( { min: '-1.', max: '1.', 
-		getField: function (world, precip, scratch) {
-			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
-			AtmosphericModeling.precip(lat, precip);
-			return precip;
-		}
-	} );
 ANGULAR_SPEED = 1.e0;
 testDisplays.coriolis_effect = new VectorFieldDisplay( {
 		getField: function (world) {
@@ -98,23 +77,6 @@ testDisplays.coriolis_effect = new VectorFieldDisplay( {
 			return coriolis_effect;
 		} 
 	} );
-testDisplays.winter_surface_air_velocity = new VectorFieldDisplay( {
-		getField: function (world) {
-			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
-			var pressure = AtmosphericModeling.surface_air_pressure(world.displacement, lat, world.SEALEVEL, 1, Math.PI*23.5/180);
-			var velocity = AtmosphericModeling.surface_air_velocity(world.grid.pos, pressure, ANGULAR_SPEED);
-			return velocity;
-		} 
-	} );
-testDisplays.summer_surface_air_velocity = new VectorFieldDisplay( {
-		getField: function (world) {
-			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
-			var pressure = AtmosphericModeling.surface_air_pressure(world.displacement, lat, world.SEALEVEL, -1, Math.PI*23.5/180);
-			var velocity = AtmosphericModeling.surface_air_velocity(world.grid.pos, pressure, ANGULAR_SPEED);
-			return velocity;
-		} 
-	} );
-
 
 
 

@@ -205,7 +205,7 @@ scalarDisplays.temp 	= new ScalarHeatDisplay( { min: '-25.', max: '30.',
 			return AtmosphericModeling.surface_air_temp(crust.grid.pos);
 		} 
 	} );
-scalarDisplays.precip 	= new ScalarHeatDisplay( { min: '-25.', max: '30.',  
+scalarDisplays.precip 	= new ScalarHeatDisplay( { min: '-1.', max: '1.',  
 		getField: function (crust) {
 			return AtmosphericModeling.precip(crust.grid.pos);
 		} 
@@ -250,5 +250,20 @@ scalarDisplays.asthenosphere_pressure = new ScalarHeatDisplay(  {
 		min: '1.', max: '0.',
 		getField: function (crust, output, scratch, iterations) {
 			return TectonicsModeling.get_asthenosphere_pressure(crust.subductability, output, scratch);
+		}
+	} );
+
+scalarDisplays.winter_surface_air_pressure = new ScalarHeatDisplay( { min: '980000.', max: '1030000.', 
+		getField: function (world, pressure, scratch) {
+			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
+			AtmosphericModeling.surface_air_pressure(world.displacement, lat, world.SEALEVEL, 1, Math.PI*23.5/180, pressure, scratch);
+			return pressure;
+		}
+	} );
+scalarDisplays.summer_surface_air_pressure = new ScalarHeatDisplay( { min: '980000.', max: '1030000.', 
+		getField: function (world, pressure, scratch) {
+			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
+			AtmosphericModeling.surface_air_pressure(world.displacement, lat, world.SEALEVEL, -1, Math.PI*23.5/180, pressure, scratch);
+			return pressure;
 		}
 	} );
