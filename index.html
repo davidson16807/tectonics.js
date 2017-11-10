@@ -171,9 +171,10 @@
 			{{isFullscreen? 'Exit Fullscreen' : 'Fullscreen'}}
 			<span class="instructions">F11</span>
 		</button>
-		<button id="screenshot" v-if="isEnabled" type="button" class="btn btn-default btn-xs" v-on:click="capture">
+		<button id="screenshot" v-if="isEnabled" type="button" class="btn btn-default btn-xs" v-on:click="capture" v-on:keyup.p="capture">
 			<img src="icons/camera.svg" height="16em">
 			Screenshot
+			<span class="instructions">p</span>
 		</button>
 	</div>
 
@@ -182,6 +183,7 @@
 		<button id="save" type="button" class="btn btn-default btn-xs"  v-on:click="save">
 			<img src="icons/download.svg" height="16em">
 			Save
+			<span class="instructions">s</span>
 		</button>
 		<button id="load" type="button" class="btn btn-default btn-xs load" v-on:click="load()">
 			<img src="icons/upload.svg" height="16em">
@@ -422,6 +424,16 @@
 			.attr('download', filename)
 			[0].click();
 	}
+
+
+    window.addEventListener('keyup', function(event) {
+      if (event.keyCode == 80) { //p
+        screenshotVue.capture();
+      }
+      if (event.keyCode == 83) { //s
+      	saveVue.save();
+      }
+    });
 
     var last_drag_entered;
     $('body').on(
