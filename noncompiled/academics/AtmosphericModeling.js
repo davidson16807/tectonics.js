@@ -54,6 +54,7 @@ AtmosphericModeling.surface_air_velocity = function(pos, pressure, angular_speed
 	VectorField.div_scalar(velocity, EARTH_RADIUS, velocity); // need to adjust gradient because grid.pos is on a unit sphere
 	var coriolis_effect = AtmosphericModeling.surface_air_velocity_coriolis_effect(pos, velocity, angular_speed);
 	VectorField.add_vector_field(velocity, coriolis_effect, velocity);
+	VectorDataset.rescale(velocity, velocity, 15.65); //15.65 m/s is the fastest average wind speed on Earth, recorded at Mt. Washington
 	return velocity;
 }
 AtmosphericModeling.surface_air_temp = function(pos) {
