@@ -1,22 +1,22 @@
 Sphere = {}
 
-Sphere.toSpherical = function(x,y,z){
+Sphere.cartesian_to_spherical = function(x,y,z){
 	return {lat: Math.asin(y/Math.sqrt(x*x+y*y+z*z)), lon: Math.atan2(-z, x)};
 }
-Sphere.toCartesian = function(lat, lon){
+Sphere.spherical_to_cartesian = function(lat, lon){
 	return Vector(
 		Math.cos(lat) * Math.cos(lon),
 	    Math.sin(lat),
 	   -Math.cos(lat) * Math.sin(lon)
 	);
 }
-Sphere.getRandomPoint = function() {
-	return Sphere.toCartesian(
+Sphere.random_point = function() {
+	return Sphere.spherical_to_cartesian(
 		Math.asin(2*random.random() - 1),
 		2*Math.PI * random.random()
 	);
 };
-Sphere.getRandomPointAlongGreatCircle = function(eulerPole) {
+Sphere.random_point_along_great_circle = function(eulerPole) {
     var a = eulerPole;
     var b = Vector(0,0,1); 
     var c = Vector()
@@ -29,11 +29,11 @@ Sphere.getRandomPointAlongGreatCircle = function(eulerPole) {
 	var random_rotation_matrix = Matrix.RotationAboutAxis(a.x, a.y, a.z, 2*Math.PI * random.random());
 	return Vector.mult_matrix(c.x, c.y, c.z,  random_rotation_matrix)
 };
-Sphere.getRandomBasis = function () {
+Sphere.random_basis = function () {
     var up = Vector(0,0,1); 
     var a = Vector(); 
     var b = Vector(); 
-    var c = Sphere.getRandomPoint(); 
+    var c = Sphere.random_point(); 
     Vector.cross(c.x, c.y, c.z, up.x, up.y, up.z, a); 
     Vector.normalize(a.x, a.y, a.z, a); 
     Vector.cross(c.x, c.y, c.z, a.x, a.y, a.z, b); 
