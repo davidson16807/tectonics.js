@@ -27,22 +27,6 @@ Model.prototype.world = function(world) {
 	);
 };
 
-Model.prototype.fast_update = function(timestep) {
-	var seconds = this.fast_update_clock.getDelta();
-	
-	// //minimum refresh rate of 15fps
-	// if (seconds > 1/15){
-	// 	return;
-	// }
-
-	if (this.paused){
-		return;
-	}
-	if (world !== void 0) {
-		this.age += this.MegaYearPerSecond * seconds;
-		world.fast_update(this.MegaYearPerSecond * seconds);
-	};
-};
 Model.prototype.slow_update = function(timestep) {
 	var seconds = this.slow_update_clock.getDelta();
 
@@ -55,6 +39,7 @@ Model.prototype.slow_update = function(timestep) {
 		return;
 	}
 	if (world !== void 0) {
+		this.age += this.MegaYearPerSecond * seconds;
 		world.slow_update(this.MegaYearPerSecond * seconds);
 	};
 };
