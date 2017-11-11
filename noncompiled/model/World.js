@@ -317,31 +317,21 @@ var World = (function() {
 		TectonicsModeling.get_subductability(crust.density, crust.subductability);
 		TectonicsModeling.get_displacement(crust.thickness, crust.density, world.mantleDensity, crust.displacement);
 	}
-	World.prototype.fast_update = function (timestep) {
-	 	if (timestep === 0) {
-	 		return;
-	 	};
-
-	 	for (var i = 0; i < this.plates.length; i++) {
-	 		this.plates[i].move(timestep)
-	 	}
-	}
 	World.prototype.slow_update = function(timestep){
 		if (timestep === 0) {
 			return;
 		};
 
+
+	 	for (var i = 0; i < this.plates.length; i++) {
+	 		this.plates[i].move(timestep)
+	 	}
 		update_calculated_fields(this);
 		this.supercontinentCycle.update(timestep);
 		merge_plates_to_master(this.plates, this);
 		update_plates(this, timestep, this.plates);
 
 		// World submodels go here: atmo model, hydro model, bio model, etc.
-
-		Publisher.publish('crust', 'update', { 
-			value: this, 
-			uuid: this.uuid } 
-		);
 	};
 	return World;
 })();

@@ -347,7 +347,6 @@
 
 		// actually render the scene
 		renderer.render( view.scene, view.camera );
-		model.fast_update();
 
 		if(!IsProd){
 			renderStats.update();
@@ -365,6 +364,7 @@
 		};
 		
 		model.slow_update();
+		view.cell_update(world.uuid, world); 
 
 		if(!IsProd){
 			updateStats.update();

@@ -24,19 +24,6 @@ function View(grid, scalarDisplay, vectorDisplay, vertexShader){
 	this._vertexShader = vertexShader;
 
 	var this_ = this;
-	Publisher.subscribe('plate.matrix', 'update', function (content){
-		this_.matrix_update(content.uuid, content.value)
-	});
-	// Publisher.subscribe('plate.cells', 'update', function (content) {
-	// 	this_.cell_update(content.uuid, content.value);
-	// });
-	Publisher.subscribe('crust', 'update', function (content) {
-		var plate = world;
-		this_.cell_update(plate.uuid, plate); 
-		// HACK: ideally should not make reference to "world",
-		//  but pass the values relevant to the subscriber function
-		//  This is so we will be eventually able to implement parallel processing
-	});
 	Publisher.subscribe('crust', 'add', function (content) {
 		console.log('world.plates.add')
 		this_.add(content.value);
@@ -45,9 +32,6 @@ function View(grid, scalarDisplay, vectorDisplay, vertexShader){
 		console.log('world.plates.remove')
 		this_.remove(content.value);
 	});
-	// Publisher.subscribe('model.world', 'update;', function (content) {
-	// 	var world = content.value;
-	// });
 }
 
 View.prototype.setScalarDisplay = function(display) {
