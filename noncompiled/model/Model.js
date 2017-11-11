@@ -3,8 +3,7 @@ function Model () {
 	this.MegaYearPerSecond = 5;
 	this.age = 0;
 	this._world = void 0;
-	this.fast_update_clock = new THREE.Clock();
-	this.slow_update_clock = new THREE.Clock();
+	this._last_update_timestamp = 0;
 }
 
 Model.prototype.world = function(world) {
@@ -14,8 +13,10 @@ Model.prototype.world = function(world) {
 	this._world = world;
 };
 
-Model.prototype.update = function(timestep) {
-	var seconds = this.slow_update_clock.getDelta();
+Model.prototype.update = function() {
+	var now = performance.now();
+	var seconds = (now - this._last_update_timestamp)/1000;
+	this._last_update_timestamp = now;
 
 	//minimum refresh rate of 5fps
 	if (seconds > 1/5){
