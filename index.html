@@ -56,7 +56,6 @@
 	<script src="noncompiled/view/ScalarDisplay.js"></script>
 	<script src="noncompiled/view/VectorDisplay.js"></script>
 	<script src="noncompiled/view/TestDisplays.js"></script>
-	<script src="noncompiled/view/PlateView.js"></script>
 	<script src="noncompiled/view/View.js"></script>
 	<script src="noncompiled/name-gen/NameGenerator.js"></script>
 	<script src="noncompiled/name-gen/NameCorpii.js"></script>
@@ -364,7 +363,7 @@
 		};
 		
 		model.slow_update();
-		view.cell_update(world.uuid, world); 
+		view.cellUpdate(world); 
 
 		if(!IsProd){
 			updateStats.update();
