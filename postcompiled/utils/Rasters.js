@@ -134,9 +134,9 @@ Matrix.ColumnMajorOrder = function(list) {
   return list; //matrices are standardized to column major order, already
 }
 Matrix.BasisVectors = function(a, b, c) {
-  return [a.x, b.x, c.x,
-          a.y, b.y, c.y,
-          a.z, b.z, c.z];
+  return [a.x, a.y, a.z,
+          b.x, b.y, b.z,
+          c.x, c.y, c.z ];
 }
 Matrix.RotationAboutAxis = function(axis_x, axis_y, axis_z, angle) {
   var θ = angle,
@@ -2924,6 +2924,15 @@ Float32RasterInterpolation.smooth_heaviside = function(x, k, result) {
     result[i] = 2 / (1 + exp(-k*x[i])) - 1;
     }
     return result;
+}
+var Float32RasterTrigonometry = {};
+Float32RasterTrigonometry.cos = function(radians, result) {
+  var result = result || Float32Raster(radians.grid);
+  var cos = Math.cos;
+  for (var i = 0; i < radians.length; i++) {
+    result[i] = cos(radians[i]);
+  }
+  return result;
 }
 // The VectorImageAnalysis namespace encompasses advanced functionality 
 // common to image analysis

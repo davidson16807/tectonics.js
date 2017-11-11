@@ -58,9 +58,13 @@ AtmosphericModeling.surface_air_velocity = function(pos, pressure, angular_speed
 	VectorDataset.rescale(velocity, velocity, 15.65); //15.65 m/s is the fastest average wind speed on Earth, recorded at Mt. Washington
 	return velocity;
 }
-AtmosphericModeling.surface_air_temp = function(pos) {
+AtmosphericModeling.surface_air_temp = function(pos, meanAnomaly, axial_tilt) {
+	var season = meanAnomaly / Math.PI;
 	var temp = Float32Raster(pos.grid);
-	var cos_lat = Float32SphereRaster.cos_lat(pos);
+	var lat = Float32SphereRaster.latitude(pos.y);
+	var effective_lat = ScalarField.add_scalar(lat, season*axial_tilt);
+	Float32RasterInterpolation.clamp(effective_lat, -Math.PI/2, Math.PI/2, effective_lat);
+	var cos_lat = Float32RasterTrigonometry.cos(effective_lat);
 	var cos_lat_i = 0.
 	for (var i = 0; i < cos_lat.length; i++) {
 		cos_lat_i = cos_lat[i];

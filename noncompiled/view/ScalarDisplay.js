@@ -202,7 +202,7 @@ scalarDisplays.plate_count 	= new ScalarHeatDisplay( { min: '0.', max: '3.',
 	} );
 scalarDisplays.temp 	= new ScalarHeatDisplay( { min: '-25.', max: '30.',  
 		getField: function (crust) {
-			return AtmosphericModeling.surface_air_temp(crust.grid.pos);
+			return AtmosphericModeling.surface_air_temp(crust.grid.pos, crust.meanAnomaly, Math.PI*23.5/180);
 		} 
 	} );
 scalarDisplays.precip 	= new ScalarHeatDisplay( { min: '-1.', max: '1.',  
