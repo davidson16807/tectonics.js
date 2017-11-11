@@ -93,7 +93,7 @@
 
 			<span class="input-group-addon">My/s</span>
 		</div>
-		<div class="input-group season-group">
+		<div class="input-group season-group" v-if="isSeasonVisible">
   			<span class="input-group-addon">
 				<img src="icons/weather-sunny.svg" height="12em" width="12em">
   			</span>
@@ -590,6 +590,7 @@
 	  	speed: 5,
 	  	age: 0,
 	  	season: 0,
+	  	isSeasonVisible: false,
 	  },
 	  created: function() {
 	  	var _this = this;
@@ -607,6 +608,9 @@
 		},
 		setSeason: function() {
 			model.world().meanAnomaly = 2*Math.asin(this.season);
+		},
+		setSeasonVisibility: function(visibility) {
+			this.isSeasonVisible = visibility || false;
 		},
 		format: format
 	}
@@ -642,14 +646,16 @@
 	      { name: "None", value: "disabled", icon: "" },
 	      { name: "Mantle Flow", value: "asthenosphere_velocity", icon: "icons/fire-flow.svg" },
 	      { name: "Plate Motion", value: "plate_velocity", icon: "icons/plate-motion.svg" },
-	      { name: "Wind Speed", value: "surface_air_velocity", icon: "icons/air-flow.svg" },
+	      { name: "Wind Speed", value: "surface_air_velocity", icon: "icons/air-flow.svg", season: true },
 	    ],
 	  },
 	  methods: {
 	  	setSelected: function(value) {
 	    	if (this.selected == value) { value = this.options[0].value; }
+	  		var option = this.options.filter(x => x.value == value)[0];
 	  		this.selected = value;
 	  		view.setVectorDisplay(vectorDisplays[value]);
+	  		timeMenuVue.setSeasonVisibility(option.season || false);
 	  	},
 	  	getClass: function(value, selected) {
 	  		return value == selected? 'active' : '';
@@ -670,8 +676,8 @@
 	      {name: 'Bedrock', value: 'bedrock', icon: 'icons/rock.svg'},
 	      {name: 'Elevation', value: 'alt', icon: 'icons/terrain.svg'},
 	      {name: 'Plant Productivity', value: 'npp', icon: 'icons/leaf.svg'},
-	      {name: 'Air Temperature', value: 'temp', icon: 'icons/thermometer.svg'},
-	      {name: 'Air Pressure', value: 'surface_air_pressure', icon: 'icons/air-pressure.svg'},
+	      {name: 'Air Temperature', value: 'temp', icon: 'icons/thermometer.svg', season: true},
+	      {name: 'Air Pressure', value: 'surface_air_pressure', icon: 'icons/air-pressure.svg', season: true},
 	      {name: 'Precipitation', value: 'precip', icon: 'icons/weather-raining.svg'},
 	      {name: 'Crust Age', value: 'age', icon: 'icons/clock.svg'},
 	      {name: 'Crust Density', value: 'density', icon: 'icons/scale.svg'},
@@ -682,8 +688,10 @@
 	  methods: {
 	    setSelected: function(value) {
 	    	if (this.selected == value) { value = this.options[0].value; }
+	  		var option = this.options.filter(x => x.value == value)[0];
 	    	this.selected = value;
 	    	view.setScalarDisplay(scalarDisplays[value]);
+	  		timeMenuVue.setSeasonVisibility(option.season || false);
 	    },
 	    setOcean: function(value) {
 	    	this.ocean_target = value;
