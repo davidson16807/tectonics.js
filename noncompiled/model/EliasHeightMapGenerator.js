@@ -27,11 +27,7 @@ EliasHeightMapGenerator.generate = function (grid, optional) {
 	// to find the z axis relative to the continent center 
 	var zDotMultipliers = [];
 	for (var i = 0; i < 1000; i++) {
-		var basis = Sphere.getRandomBasis();
-		var zDotMultiplier = new THREE.Vector3()
-			.fromArray(basis.toArray().slice(8,11))
-			.multiplyScalar(random.random());
-		zDotMultipliers.push(zDotMultiplier);
+		zDotMultipliers.push(Sphere.random_point());
 	};
 
 	// Now, we iterate through the cells and find their "height rank".

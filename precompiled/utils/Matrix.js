@@ -1,33 +1,54 @@
-
-
+// Tectonics.js rolls its own Vector and Matrix libraries for two reasons:
+//   1.) performance
+//   2.) separation from volatile 3rd part libraries (Three.js)
+// 
 // NOTE: matrices are always represented as column-major order list
-// Lists are used instead of params because performance gain is negligible for our purposes
 // This is done to match standards with Three.js
-var Matrix = {};
-Matrix.row_major_order = function(list) {
+// 
+// Lists are used instead of params because performance gain over 
+// independant params is negligible for our purposes.
+
+function Matrix(){
+  return [0,0,0,
+          0,0,0,
+          0,0,0];
+}
+Matrix.Identity = function() {
+  return [1,0,0,
+          0,1,0,
+          0,0,1]; 
+}
+Matrix.RowMajorOrder = function(list) {
+  ASSERT_IS_3X3_MATRIX(list)
 
   var xx = list[0]; var xy = list[1]; var xz = list[2];
   var yx = list[3]; var yy = list[4]; var yz = list[5];
   var zx = list[6]; var zy = list[7]; var zz = list[8];
 
-  result = [];
+  var result = Matrix();
   result[0] = xx; result[4] = xy; result[8] = xz;
   result[1] = yx; result[5] = yy; result[9] = yz;
   result[2] = zx; result[6] = zy; result[10]= zz;
 
   return result;
 }
-Matrix.column_major_order = function(list) {
+Matrix.ColumnMajorOrder = function(list) {
+  ASSERT_IS_3X3_MATRIX(list)
   return list; //matrices are standardized to column major order, already
 }
-Matrix.rotation_about_axis = function(axis_x, axis_y, axis_z, angle) {
+Matrix.BasisVectors = function(a, b, c) { 
+  return [a.x, a.y, a.z, 
+          b.x, b.y, b.z, 
+          c.x, c.y, c.z ]; 
+} 
+Matrix.RotationAboutAxis = function(axis_x, axis_y, axis_z, angle) {
   var θ = angle,
-      cθ = Math.cos(θ),
-      sθ = Math.sin(θ),
-      vθ = 1 - cθ,      // aka versine of θ
       x = axis_x,
       y = axis_y,
       z = axis_z,
+      cθ = Math.cos(θ),
+      sθ = Math.sin(θ),
+      vθ = 1 - cθ,      // aka versine of θ
       vθx = vθ*x,
       vθy = vθ*y;
   return [
@@ -36,28 +57,91 @@ Matrix.rotation_about_axis = function(axis_x, axis_y, axis_z, angle) {
     vθx*z+sθ*y, vθy*z-sθ*x, vθ*z*z+cθ
   ];
 }
-Matrix.mult_matrix = function(ae, be, te) {
-  te = te || [];
+Matrix.invert = function(matrix, result) {
+    result = result || Matrix();
 
-  var a11 = ae[ 0 ], a12 = ae[ 3 ], a13 = ae[ 6 ];
-  var a21 = ae[ 1 ], a22 = ae[ 4 ], a23 = ae[ 7 ];
-  var a31 = ae[ 2 ], a32 = ae[ 5 ], a33 = ae[ 8 ];
+    ASSERT_IS_3X3_MATRIX(matrix)
+    ASSERT_IS_3X3_MATRIX(result)
 
-  var b11 = be[ 0 ], b12 = be[ 3 ], b13 = be[ 6 ];
-  var b21 = be[ 1 ], b22 = be[ 4 ], b23 = be[ 7 ];
-  var b31 = be[ 2 ], b32 = be[ 5 ], b33 = be[ 8 ];
+    var A = matrix;
+    var B = result;
 
-  te[ 0 ] = a11 * b11 + a12 * b21 + a13 * b31;
-  te[ 3 ] = a11 * b12 + a12 * b22 + a13 * b32;
-  te[ 6 ] = a11 * b13 + a12 * b23 + a13 * b33;
+    var a11 = A[ 0 ], a12 = A[ 3 ], a13 = A[ 6 ];
+    var a21 = A[ 1 ], a22 = A[ 4 ], a23 = A[ 7 ];
+    var a31 = A[ 2 ], a32 = A[ 5 ], a33 = A[ 8 ];
 
-  te[ 1 ] = a21 * b11 + a22 * b21 + a23 * b31;
-  te[ 4 ] = a21 * b12 + a22 * b22 + a23 * b32;
-  te[ 7 ] = a21 * b13 + a22 * b23 + a23 * b33;
+    var det = a11 * (a22 * a33 - a32 * a23) -
+              a12 * (a21 * a33 - a23 * a31) +
+              a13 * (a21 * a32 - a22 * a31);
 
-  te[ 2 ] = a31 * b11 + a32 * b21 + a33 * b31;
-  te[ 5 ] = a31 * b12 + a32 * b22 + a33 * b32;
-  te[ 8 ] = a31 * b13 + a32 * b23 + a33 * b33;
+    var invdet = 1 / det;
 
-  return te;
+    var b11 = (a22 * a33 - a32 * a23) * invdet;
+    var b12 = (a13 * a32 - a12 * a33) * invdet;
+    var b13 = (a12 * a23 - a13 * a22) * invdet;
+    var b21 = (a23 * a31 - a21 * a33) * invdet;
+    var b22 = (a11 * a33 - a13 * a31) * invdet;
+    var b23 = (a21 * a13 - a11 * a23) * invdet;
+    var b31 = (a21 * a32 - a31 * a22) * invdet;
+    var b32 = (a31 * a12 - a11 * a32) * invdet;
+    var b33 = (a11 * a22 - a21 * a12) * invdet;
+
+
+    B[ 0 ] = b11, B[ 3 ] = b12, B[ 6 ] = b13;
+    B[ 1 ] = b21, B[ 4 ] = b22, B[ 7 ] = b23;
+    B[ 2 ] = b31, B[ 5 ] = b32, B[ 8 ] = b33;
+
+    return B;
+}
+Matrix.mult_scalar = function(matrix, scalar, result) {
+  var result = result || Matrix();
+  var A = matrix;
+  var b = scalar;
+  var C = result;
+
+  ASSERT_IS_3X3_MATRIX(matrix)
+  ASSERT_IS_TYPE(scalar, 'number')
+  ASSERT_IS_3X3_MATRIX(result)
+
+  C[0] = A[0]*b;
+  C[1] = A[1]*b;
+  C[2] = A[2]*b;
+  C[3] = A[3]*b;
+  C[4] = A[4]*b;
+  C[5] = A[5]*b;
+  C[6] = A[6]*b;
+  C[7] = A[7]*b;
+  C[8] = A[8]*b;
+  
+  return C;
+}
+Matrix.mult_matrix = function(A, B, result) {
+  var result = result || Matrix();
+  var C = result;
+
+  ASSERT_IS_3X3_MATRIX(A)
+  ASSERT_IS_3X3_MATRIX(B)
+  ASSERT_IS_3X3_MATRIX(C)
+
+  var a11 = A[ 0 ], a12 = A[ 3 ], a13 = A[ 6 ];
+  var a21 = A[ 1 ], a22 = A[ 4 ], a23 = A[ 7 ];
+  var a31 = A[ 2 ], a32 = A[ 5 ], a33 = A[ 8 ];
+
+  var b11 = B[ 0 ], b12 = B[ 3 ], b13 = B[ 6 ];
+  var b21 = B[ 1 ], b22 = B[ 4 ], b23 = B[ 7 ];
+  var b31 = B[ 2 ], b32 = B[ 5 ], b33 = B[ 8 ];
+
+  C[ 0 ] = a11 * b11 + a12 * b21 + a13 * b31;
+  C[ 3 ] = a11 * b12 + a12 * b22 + a13 * b32;
+  C[ 6 ] = a11 * b13 + a12 * b23 + a13 * b33;
+
+  C[ 1 ] = a21 * b11 + a22 * b21 + a23 * b31;
+  C[ 4 ] = a21 * b12 + a22 * b22 + a23 * b32;
+  C[ 7 ] = a21 * b13 + a22 * b23 + a23 * b33;
+
+  C[ 2 ] = a31 * b11 + a32 * b21 + a33 * b31;
+  C[ 5 ] = a31 * b12 + a32 * b22 + a33 * b32;
+  C[ 8 ] = a31 * b13 + a32 * b23 + a33 * b33;
+
+  return C;
 }

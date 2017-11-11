@@ -1,44 +1,42 @@
 Sphere = {}
 
-Sphere.toSpherical = function(cartesian){
-	return {lat: Math.asin(cartesian.y/cartesian.length()), lon: Math.atan2(-cartesian.z, cartesian.x)};
+Sphere.cartesian_to_spherical = function(x,y,z){
+	return {lat: Math.asin(y/Math.sqrt(x*x+y*y+z*z)), lon: Math.atan2(-z, x)};
 }
-Sphere.toCartesian = function(spherical){
-	return new THREE.Vector3(
-		Math.cos(spherical.lat)  * Math.cos(spherical.lon),
-	    Math.sin(spherical.lat),
-		-Math.cos(spherical.lat) * Math.sin(spherical.lon));
+Sphere.spherical_to_cartesian = function(lat, lon){
+	return Vector(
+		Math.cos(lat) * Math.cos(lon),
+	    Math.sin(lat),
+	   -Math.cos(lat) * Math.sin(lon)
+	);
 }
-
-Sphere.getRandomPoint = function() {
-	return Sphere.toCartesian({
-		lat: Math.asin(2*random.random() - 1),
-		lon: 2*Math.PI * random.random()
-	});
+Sphere.random_point = function() {
+	return Sphere.spherical_to_cartesian(
+		Math.asin(2*random.random() - 1),
+		2*Math.PI * random.random()
+	);
 };
+Sphere.random_point_along_great_circle = function(eulerPole) {
+    var a = eulerPole;
+    var b = Vector(0,0,1); 
+    var c = Vector()
 
-Sphere.getRandomPointAlongGreatCircle = function(eulerPole) {
-	// start with eulerPole as z
-	var matrix1 = new THREE.Matrix4();
-	matrix1.lookAt(new THREE.Vector3(0,0,0), eulerPole, new THREE.Vector3(0,0,1));
+    // First, cross eulerPole with another vector to give a nonrandom point along great circle
+    Vector.cross	(a.x, a.y, a.z,  	b.x, b.y, b.z, 	c); 
+    Vector.normalize(c.x, c.y, c.z, 					c); 
 	
-	// rotate 90 degrees about an axis orthogonal to eulerPole
-	// here, we find one possible x axis where z = eulerPole
-	var randomPoint = new THREE.Vector3(1,0,0);
-	randomPoint.applyMatrix4(matrix1);
-	
-	// rotate by some random amount 
-	var matrix2 = new THREE.Matrix4();
-	matrix2.makeRotationAxis( eulerPole, random.uniform(0, 2*Math.PI) );
-	randomPoint.applyMatrix4(matrix2);
-	
-	return randomPoint;
+	// then rotate by some random amount around the eulerPole
+	var random_rotation_matrix = Matrix.RotationAboutAxis(a.x, a.y, a.z, 2*Math.PI * random.random());
+	return Vector.mult_matrix(c.x, c.y, c.z,  random_rotation_matrix)
 };
-Sphere.getRandomBasis = function () {
-	var center = Sphere.getRandomPoint();
-	return new THREE.Matrix4().lookAt(
-		new THREE.Vector3(0,0,0), 
-		center.multiplyScalar(-1) , 
-		new THREE.Vector3(0,0,1));
+Sphere.random_basis = function () {
+    var up = Vector(0,0,1); 
+    var a = Vector(); 
+    var b = Vector(); 
+    var c = Sphere.random_point(); 
+    Vector.cross(c.x, c.y, c.z, up.x, up.y, up.z, a); 
+    Vector.normalize(a.x, a.y, a.z, a); 
+    Vector.cross(c.x, c.y, c.z, a.x, a.y, a.z, b); 
+    return Matrix.BasisVectors(a,b,c); 
 }
 
