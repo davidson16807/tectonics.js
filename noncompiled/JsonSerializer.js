@@ -34,9 +34,9 @@ JsonSerializer.plate = function (plate, options) {
 	// serialize non-field values to json
 	var plate_json = {
 		uuid: 					plate.uuid,
-		eulerPole: 				plate.eulerPole.toArray(),
+		eulerPole: 				plate.eulerPole,
 		angularSpeed: 			plate.angularSpeed,
-		local_to_global_matrix: plate.local_to_global_matrix.toArray(),
+		local_to_global_matrix: plate.local_to_global_matrix,
 	};
 
 	// encode in base64
@@ -56,9 +56,9 @@ JsonDeserializer.plate = function (plate_json, _world, options) {
 		world: _world,
 		angularSpeed: plate_json.angularSpeed,
 		uuid: plate_json.uuid,
+		eulerPole: plate_json.eulerPole,
+		local_to_global_matrix: plate_json.local_to_global_matrix,
 	});
-	plate.eulerPole.fromArray(plate_json.eulerPole);
-	plate.local_to_global_matrix.fromArray(plate_json.local_to_global_matrix);
 
 	var file_ids = new Uint16Array(Base64.decode(plate_json.ids));
 	Uint8Raster.set_ids_to_value	(plate.mask, 	file_ids, 1);

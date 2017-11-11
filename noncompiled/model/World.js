@@ -58,7 +58,6 @@ var World = (function() {
 		var globalized_scalar_field = Float32Raster(master.grid); 
 
 
-		var mult_matrix = VectorField.mult_matrix;
 		var fill = Uint8Raster.fill;
 		var fill_into = Uint8RasterGraphics.fill_into_selection;
 		var copy_into = Float32RasterGraphics.copy_into_selection;
@@ -159,7 +158,6 @@ var World = (function() {
 		var globalized_scalar_field = Float32Raster(grid); 
 		
 
-		var mult_matrix = VectorField.mult_matrix;
 		var mult_field = ScalarField.mult_field;
 		var fill_into = Uint8RasterGraphics.fill_into_selection;
 		var fill_into_crust = Crust.fill_into_selection;
@@ -292,9 +290,17 @@ var World = (function() {
 		var plate;
 		// TODO: overwrite plates instead of creating new ones, create separate function for plate initialization
 		for (var i = 0, li = plate_ids.length; i < li; ++i) {
+			var mask = Uint8Field.eq_scalar(plate_map, plate_ids[i]);
+
+			//TODO: comment this out when you're done
+			var eulerPole = VectorDataset.weighted_average(angular_velocity, mask)
+			//TODO: fix it properly - no negation!
+			Vector.normalize(-eulerPole.x, -eulerPole.y, -eulerPole.z, eulerPole); 
+
 			plate = new Plate({
 				world: 	this,
-				mask: 	Uint8Field.eq_scalar(plate_map, plate_ids[i])
+				mask: 	mask,
+				eulerPole: eulerPole
 			})
 			Crust.copy(this, plate);
 
@@ -302,11 +308,6 @@ var World = (function() {
 			plate.angularSpeed = this.getRandomPlateSpeed();
 
 			this.plates.push(plate);
-
-			//TODO: comment this out when you're done
-			var eulerPole = VectorDataset.weighted_average(angular_velocity, plate.mask)
-			//TODO: fix it properly - no negation!
-			plate.eulerPole = new THREE.Vector3(-eulerPole.x, -eulerPole.y, -eulerPole.z).normalize(); 
 		}
 	};
 

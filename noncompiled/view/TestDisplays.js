@@ -28,7 +28,7 @@ testDisplays.id_rotated 	= new ScalarHeatDisplay( {
 			var ids = Float32Raster(crust.grid);
 			Float32Raster.FromUint16Raster(crust.grid.vertex_ids, ids);
 			var rotationMatrix = Matrix.rotation_about_axis(1,0,0, 0.5);
-			var pos = VectorField.mult_matrix3(crust.grid.pos, rotationMatrix);
+			var pos = VectorField.mult_matrix(crust.grid.pos, rotationMatrix);
 			return Float32Raster.get_nearest_values(ids, pos);
 		}
  	} );
@@ -39,7 +39,7 @@ testDisplays.age_rotated 	= new ScalarHeatDisplay( { min: '250.', max: '0.',
 		// scaling: true,
 		getField: function (crust, result) {
 			var rotationMatrix = Matrix.rotation_about_axis(1,0,0, 0.5);
-			var pos = VectorField.mult_matrix3(crust.grid.pos, rotationMatrix);
+			var pos = VectorField.mult_matrix(crust.grid.pos, rotationMatrix);
 			test = Float32Raster.get_nearest_values(crust.age, pos, result);
 			return test;
 		} 

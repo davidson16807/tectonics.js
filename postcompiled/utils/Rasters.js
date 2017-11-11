@@ -96,31 +96,48 @@ Grid.prototype.getNearestIds = function(pos_field, result) {
 Grid.prototype.getNeighborIds = function(id) {
  return this.neighbor_lookup[id];
 }
+// Tectonics.js rolls its own Vector and Matrix libraries for two reasons:
+//   1.) performance
+//   2.) separation from volatile 3rd part libraries (Three.js)
+// 
 // NOTE: matrices are always represented as column-major order list
-// Lists are used instead of params because performance gain is negligible for our purposes
 // This is done to match standards with Three.js
-var Matrix = {};
-Matrix.row_major_order = function(list) {
+// 
+// Lists are used instead of params because performance gain over 
+// independant params is negligible for our purposes.
+function Matrix(){
+  return [0,0,0,
+          0,0,0,
+          0,0,0];
+}
+Matrix.Identity = function() {
+  return [1,0,0,
+          0,1,0,
+          0,0,1];
+}
+Matrix.RowMajorOrder = function(list) {
+  if (list.length !== 9) { throw "list" + ' is not a 3x3 matrix'; }
   var xx = list[0]; var xy = list[1]; var xz = list[2];
   var yx = list[3]; var yy = list[4]; var yz = list[5];
   var zx = list[6]; var zy = list[7]; var zz = list[8];
-  result = [];
+  var result = Matrix();
   result[0] = xx; result[4] = xy; result[8] = xz;
   result[1] = yx; result[5] = yy; result[9] = yz;
   result[2] = zx; result[6] = zy; result[10]= zz;
   return result;
 }
-Matrix.column_major_order = function(list) {
+Matrix.ColumnMajorOrder = function(list) {
+  if (list.length !== 9) { throw "list" + ' is not a 3x3 matrix'; }
   return list; //matrices are standardized to column major order, already
 }
-Matrix.rotation_about_axis = function(axis_x, axis_y, axis_z, angle) {
+Matrix.RotationAboutAxis = function(axis_x, axis_y, axis_z, angle) {
   var θ = angle,
-      cθ = Math.cos(θ),
-      sθ = Math.sin(θ),
-      vθ = 1 - cθ, // aka versine of θ
       x = axis_x,
       y = axis_y,
       z = axis_z,
+      cθ = Math.cos(θ),
+      sθ = Math.sin(θ),
+      vθ = 1 - cθ, // aka versine of θ
       vθx = vθ*x,
       vθy = vθ*y;
   return [
@@ -129,30 +146,93 @@ Matrix.rotation_about_axis = function(axis_x, axis_y, axis_z, angle) {
     vθx*z+sθ*y, vθy*z-sθ*x, vθ*z*z+cθ
   ];
 }
-Matrix.mult_matrix = function(ae, be, te) {
-  te = te || [];
-  var a11 = ae[ 0 ], a12 = ae[ 3 ], a13 = ae[ 6 ];
-  var a21 = ae[ 1 ], a22 = ae[ 4 ], a23 = ae[ 7 ];
-  var a31 = ae[ 2 ], a32 = ae[ 5 ], a33 = ae[ 8 ];
-  var b11 = be[ 0 ], b12 = be[ 3 ], b13 = be[ 6 ];
-  var b21 = be[ 1 ], b22 = be[ 4 ], b23 = be[ 7 ];
-  var b31 = be[ 2 ], b32 = be[ 5 ], b33 = be[ 8 ];
-  te[ 0 ] = a11 * b11 + a12 * b21 + a13 * b31;
-  te[ 3 ] = a11 * b12 + a12 * b22 + a13 * b32;
-  te[ 6 ] = a11 * b13 + a12 * b23 + a13 * b33;
-  te[ 1 ] = a21 * b11 + a22 * b21 + a23 * b31;
-  te[ 4 ] = a21 * b12 + a22 * b22 + a23 * b32;
-  te[ 7 ] = a21 * b13 + a22 * b23 + a23 * b33;
-  te[ 2 ] = a31 * b11 + a32 * b21 + a33 * b31;
-  te[ 5 ] = a31 * b12 + a32 * b22 + a33 * b32;
-  te[ 8 ] = a31 * b13 + a32 * b23 + a33 * b33;
-  return te;
+Matrix.invert = function(matrix, result) {
+    result = result || Matrix();
+    if (matrix.length !== 9) { throw "matrix" + ' is not a 3x3 matrix'; }
+    if (result.length !== 9) { throw "result" + ' is not a 3x3 matrix'; }
+    var A = matrix;
+    var B = result;
+    var a11 = A[ 0 ], a12 = A[ 3 ], a13 = A[ 6 ];
+    var a21 = A[ 1 ], a22 = A[ 4 ], a23 = A[ 7 ];
+    var a31 = A[ 2 ], a32 = A[ 5 ], a33 = A[ 8 ];
+    var det = a11 * (a22 * a33 - a32 * a23) -
+              a12 * (a21 * a33 - a23 * a31) +
+              a13 * (a21 * a32 - a22 * a31);
+    var invdet = 1 / det;
+    var b11 = (a22 * a33 - a32 * a23) * invdet;
+    var b12 = (a13 * a32 - a12 * a33) * invdet;
+    var b13 = (a12 * a23 - a13 * a22) * invdet;
+    var b21 = (a23 * a31 - a21 * a33) * invdet;
+    var b22 = (a11 * a33 - a13 * a31) * invdet;
+    var b23 = (a21 * a13 - a11 * a23) * invdet;
+    var b31 = (a21 * a32 - a31 * a22) * invdet;
+    var b32 = (a31 * a12 - a11 * a32) * invdet;
+    var b33 = (a11 * a22 - a21 * a12) * invdet;
+    B[ 0 ] = b11, B[ 3 ] = b12, B[ 6 ] = b13;
+    B[ 1 ] = b21, B[ 4 ] = b22, B[ 7 ] = b23;
+    B[ 2 ] = b31, B[ 5 ] = b32, B[ 8 ] = b33;
+    return B;
 }
+Matrix.mult_scalar = function(matrix, scalar, result) {
+  var result = result || Matrix();
+  var A = matrix;
+  var b = scalar;
+  var C = result;
+  if (matrix.length !== 9) { throw "matrix" + ' is not a 3x3 matrix'; }
+  if (!(typeof scalar == "'number'")) { throw "scalar" + ' is not a ' + "'number'"; }
+  if (result.length !== 9) { throw "result" + ' is not a 3x3 matrix'; }
+  C[0] = A[0]*b;
+  C[1] = A[1]*b;
+  C[2] = A[2]*b;
+  C[3] = A[3]*b;
+  C[4] = A[4]*b;
+  C[5] = A[5]*b;
+  C[6] = A[6]*b;
+  C[7] = A[7]*b;
+  C[8] = A[8]*b;
+  return C;
+}
+Matrix.mult_matrix = function(A, B, result) {
+  var result = result || Matrix();
+  var C = result;
+  if (A.length !== 9) { throw "A" + ' is not a 3x3 matrix'; }
+  if (B.length !== 9) { throw "B" + ' is not a 3x3 matrix'; }
+  if (C.length !== 9) { throw "C" + ' is not a 3x3 matrix'; }
+  var a11 = A[ 0 ], a12 = A[ 3 ], a13 = A[ 6 ];
+  var a21 = A[ 1 ], a22 = A[ 4 ], a23 = A[ 7 ];
+  var a31 = A[ 2 ], a32 = A[ 5 ], a33 = A[ 8 ];
+  var b11 = B[ 0 ], b12 = B[ 3 ], b13 = B[ 6 ];
+  var b21 = B[ 1 ], b22 = B[ 4 ], b23 = B[ 7 ];
+  var b31 = B[ 2 ], b32 = B[ 5 ], b33 = B[ 8 ];
+  C[ 0 ] = a11 * b11 + a12 * b21 + a13 * b31;
+  C[ 3 ] = a11 * b12 + a12 * b22 + a13 * b32;
+  C[ 6 ] = a11 * b13 + a12 * b23 + a13 * b33;
+  C[ 1 ] = a21 * b11 + a22 * b21 + a23 * b31;
+  C[ 4 ] = a21 * b12 + a22 * b22 + a23 * b32;
+  C[ 7 ] = a21 * b13 + a22 * b23 + a23 * b33;
+  C[ 2 ] = a31 * b11 + a32 * b21 + a33 * b31;
+  C[ 5 ] = a31 * b12 + a32 * b22 + a33 * b32;
+  C[ 8 ] = a31 * b13 + a32 * b23 + a33 * b33;
+  return C;
+}
+// Tectonics.js rolls its own Vector and Matrix libraries for two reasons:
+//   1.) performance
+//   2.) separation from volatile 3rd part libraries (Three.js)
+// 
 // NOTE: vectors are always represented using independant xyz params where possible,
-// This is done for performance reasons.
-// Vectors are represented as object when returned from functions, instead of lists.
-// This is done for clarity.
-var Vector = {};
+// This is done for two reasons:
+//   1.) performance
+//   2.) integration into fast raster operations
+// 
+// Vectors are represented as objects when returned from functions, instead of lists.
+// This is done for clarity
+function Vector(x,y,z) {
+  return {
+    x: x || 0,
+    y: y || 0,
+    z: z || 0,
+  };
+}
 Vector.similarity = function(ax, ay, az, bx, by, bz) {
   var sqrt = Math.sqrt;
   return (ax*bx +
@@ -170,11 +250,30 @@ Vector.dot = function(ax, ay, az, bx, by, bz) {
 Vector.magnitude = function(x, y, z) {
   return Math.sqrt(x*x + y*y + z*z);
 }
-Vector.cross = function(ax, ay, az, bx, by, bz) {
-  var x = ay*bz - az*by;
-  var y = az*bx - ax*bz;
-  var z = ax*by - ay*bx;
-  return {x:x,y:y,z:z};
+Vector.normalize = function(x, y, z, result) {
+  result = result || Vector()
+  var magnitude = Math.sqrt(x*x + y*y + z*z);
+  result.x = x/magnitude;
+  result.y = y/magnitude;
+  result.z = z/magnitude;
+  return result;
+}
+Vector.cross = function(ax, ay, az, bx, by, bz, result) {
+  result = result || Vector()
+  result.x = ay*bz - az*by;
+  result.y = az*bx - ax*bz;
+  result.z = ax*by - ay*bx;
+  return result;
+}
+Vector.mult_matrix = function(x, y, z, matrix, result) {
+  result = result || Vector()
+  var xx = matrix[0]; var xy = matrix[4]; var xz = matrix[8];
+  var yx = matrix[1]; var yy = matrix[5]; var yz = matrix[9];
+  var zx = matrix[2]; var zy = matrix[6]; var zz = matrix[10];
+  result.x = x * xx + y * xy + z * xz;
+  result.y = x * yx + y * yy + z * yz;
+  result.z = x * zx + y * zy + z * zz;
+  return result;
 }
 // The Dataset namespaces provide operations over statistical datasets.
 // All datasets are represented by raster objects, e.g. VectorRaster or Float32Raster
@@ -1789,32 +1888,6 @@ VectorField.cross_vector = function (vector_field, vector, result) {
 // NOTE: matrix is structured to match the output of THREE.Matrix3.toArray()
 // i.e single array in column-major format
 VectorField.mult_matrix = function (vector_field, matrix, result) {
- result = result || VectorRaster(vector_field.grid);
- if (!(vector_field.x !== void 0) && !(vector_field.x instanceof Float32Array)) { throw "vector_field" + ' is not a vector raster'; }
- if (!(result.x !== void 0) && !(result.x instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
- var ax = vector_field.x;
- var ay = vector_field.y;
- var az = vector_field.z;
- var xx = matrix[0]; var xy = matrix[4]; var xz = matrix[8];
- var yx = matrix[1]; var yy = matrix[5]; var yz = matrix[9];
- var zx = matrix[2]; var zy = matrix[6]; var zz = matrix[10];
- var x = result.x;
- var y = result.y;
- var z = result.z;
- var axi = 0;
- var ayi = 0;
- var azi = 0;
- for (var i = 0, li=x.length; i < li; ++i) {
-  axi = ax[i];
-  ayi = ay[i];
-  azi = az[i];
-  x[i] = axi * xx + ayi * xy + azi * xz ;
-  y[i] = axi * yx + ayi * yy + azi * yz ;
-  z[i] = axi * zx + ayi * zy + azi * zz ;
- }
- return result;
-}
-VectorField.mult_matrix3 = function (vector_field, matrix, result) {
  result = result || VectorRaster(vector_field.grid);
  if (!(vector_field.x !== void 0) && !(vector_field.x instanceof Float32Array)) { throw "vector_field" + ' is not a vector raster'; }
  if (!(result.x !== void 0) && !(result.x instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }

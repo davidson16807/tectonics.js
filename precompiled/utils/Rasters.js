@@ -42,6 +42,13 @@
 #define ASSERT_IS_VECTOR_RASTER(INPUT)
 #endif
 
+#ifndef IS_PROD
+#define ASSERT_IS_3X3_MATRIX(INPUT) \
+	if (INPUT.length !== 9) { throw #INPUT + ' is not a 3x3 matrix'; }
+#else
+#define ASSERT_IS_3X3_MATRIX(INPUT)
+#endif
+
 #include "precompiled/utils/Grid.js"
 #include "precompiled/utils/Matrix.js"
 #include "precompiled/utils/Vector.js"

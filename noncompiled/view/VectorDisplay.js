@@ -102,9 +102,8 @@ vectorDisplays.pos	= new VectorFieldDisplay( {
 } );
 vectorDisplays.pos2	= new VectorFieldDisplay( { 
 	getField: function (plate) {
-		var rotationMatrix = new THREE.Matrix4();
-		rotationMatrix.makeRotationAxis( plate.eulerPole, 1 );
-		var pos = VectorField.mult_matrix(plate.grid.pos, rotationMatrix.toArray());
+		var rotationMatrix = Matrix.RotationAboutAxis(plate.eulerPole.x, plate.eulerPole.y, plate.eulerPole.z, 1);
+		var pos = VectorField.mult_matrix(plate.grid.pos, rotationMatrix);
 		return pos;
 	}
 } );
