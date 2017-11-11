@@ -1,15 +1,6 @@
 'use strict';
 
-var _hashPlate = function(plate){
-	return plate.uuid;
-}
-
-function View(grid, scalarDisplay, vectorDisplay, vertexShader){
-	this.grid = grid;
-	this._uniforms = {
-		sealevel_mod: 1.0
-	};
-	this.plateViews = new buckets.Dictionary();
+function View(grid, scalarDisplay, vectorDisplay, vertexShader) {
 
 	// create a scene
 	this.scene = new THREE.Scene();
@@ -19,66 +10,157 @@ function View(grid, scalarDisplay, vectorDisplay, vertexShader){
 	this.camera.position.set(0, 0, 5);
 	this.scene.add(this.camera);
 
-	this.setScalarDisplay(scalarDisplay);
-	this.setVectorDisplay(vectorDisplay);
+	this.grid = grid;
 	this._vertexShader = vertexShader;
+	this._scalarDisplay = scalarDisplay;
+	this._vectorDisplay = vectorDisplay;
+	this._uniforms = {
+		sealevel_mod: 1.0
+	};
 
-	var this_ = this;
-	Publisher.subscribe('plate.matrix', 'update', function (content){
-		this_.matrix_update(content.uuid, content.value)
+	var faces, scalar_field_geometry, scalar_field_mesh, scalar_field_material;
+	var faces = this.grid.template.faces;
+	var scalar_field_geometry = THREE.BufferGeometryUtils.fromGeometry(this.grid.template);
+
+	scalar_field_geometry.addAttribute('displacement', Float32Array, faces.length*3, 1);
+	scalar_field_geometry.addAttribute('scalar', Float32Array, faces.length*3, 1);
+	this.scalar_field_geometry = scalar_field_geometry;
+
+	var color = new THREE.Color();
+	var sealevel_mod = this._uniforms.sealevel_mod;
+
+
+	scalar_field_material = new THREE.ShaderMaterial({
+		attributes: {
+		  displacement: { type: 'f', value: null },
+		  scalar: { type: 'f', value: null }
+		},
+		uniforms: {
+		  sealevel:     { type: 'f', value: 0 },
+		  sealevel_mod: { type: 'f', value: sealevel_mod },
+		  color: 	    { type: 'c', value: color },
+		  index: 		{ type: 'f', value: -1 },
+		},
+		blending: THREE.NoBlending,
+		vertexShader: this._vertexShader,
+		fragmentShader: this._scalarDisplay._fragmentShader
 	});
-	// Publisher.subscribe('plate.cells', 'update', function (content) {
-	// 	this_.cell_update(content.uuid, content.value);
-	// });
-	Publisher.subscribe('crust', 'update', function (content) {
-		var plate = world;
-		this_.cell_update(plate.uuid, plate); 
-		// HACK: ideally should not make reference to "world",
-		//  but pass the values relevant to the subscriber function
-		//  This is so we will be eventually able to implement parallel processing
+	scalar_field_mesh = new THREE.Mesh( scalar_field_geometry, scalar_field_material);
+	this.scene.add(scalar_field_mesh);
+	this.scalar_field_mesh1 = scalar_field_mesh;
+
+
+	scalar_field_material = new THREE.ShaderMaterial({
+		attributes: {
+		  displacement: { type: 'f', value: null },
+		  scalar: { type: 'f', value: null }
+		},
+		uniforms: {
+		  sealevel:     { type: 'f', value: 0 },
+		  sealevel_mod: { type: 'f', value: sealevel_mod },
+		  color: 	    { type: 'c', value: color },
+		  index: 		{ type: 'f', value: 1 }
+		},
+		blending: THREE.NoBlending,
+		vertexShader: this._vertexShader,
+		fragmentShader: this._scalarDisplay._fragmentShader
 	});
-	Publisher.subscribe('crust', 'add', function (content) {
-		console.log('world.plates.add')
-		this_.add(content.value);
-	});
-	Publisher.subscribe('crust', 'remove', function (content) {
-		console.log('world.plates.remove')
-		this_.remove(content.value);
-	});
-	// Publisher.subscribe('model.world', 'update;', function (content) {
-	// 	var world = content.value;
-	// });
+	scalar_field_mesh = new THREE.Mesh( scalar_field_geometry, scalar_field_material);
+	this.scene.add(scalar_field_mesh);
+	this.scalar_field_mesh2 = scalar_field_mesh;
+
+
+	var vector_field_geometry = new THREE.Geometry();
+	for (var i=0, li=grid.vertices.length; i<li; ++i) {
+	    vector_field_geometry.vertices.push( grid.vertices[i].clone() );
+	    vector_field_geometry.vertices.push( grid.vertices[i].clone() );
+	    // vector_field_material.attributes.vector.value.push( new THREE.Vector3() );
+	    // vector_field_material.attributes.vector.value.push( new THREE.Vector3() );
+	}
+	this.vector_field_geometry = vector_field_geometry;
+
+	var vector_field_material, vector_field_mesh;
+	var positions = grid.pos;
+
+	vector_field_material = new THREE.ShaderMaterial({
+	        vertexShader: 	this._vertexShader,
+	        fragmentShader: fragmentShaders.vectorField,
+	        attributes: {
+	        },
+	        uniforms: { 
+		  		index: 		{ type: 'f', value: -1 }
+	        }
+	    });
+	vector_field_mesh = new THREE.Line( vector_field_geometry, vector_field_material, THREE.LinePieces);
+	this.scene.add(vector_field_mesh);
+	this.vector_field_mesh1 = vector_field_mesh;
+
+	vector_field_material = new THREE.ShaderMaterial({
+	        vertexShader: 	this._vertexShader,
+	        fragmentShader: fragmentShaders.vectorField,
+	        attributes: {
+	        },
+	        uniforms: { 
+		  		index: 		{ type: 'f', value: 1 }
+	        }
+	    });
+	vector_field_mesh = new THREE.Line( vector_field_geometry, vector_field_material, THREE.LinePieces);
+	this.scene.add(vector_field_mesh);
+	this.vector_field_mesh2 = vector_field_mesh;
 }
 
 View.prototype.setScalarDisplay = function(display) {
 	if(this._scalarDisplay === display){
 		return;
 	}
-	if(display === void 0){
-		throw "display is undefined";
-	}
-	var views = this.plateViews.values();
+	this._scalarDisplay.removeFrom(this.scalar_field_mesh1);
+	this._scalarDisplay.removeFrom(this.scalar_field_mesh2);
 
 	this._scalarDisplay = display;
-	for (var i = 0, li = views.length; i < li; i++) {
-		views[i].setScalarDisplay(this._scalarDisplay);
-	};
+
+	this._scalarDisplay.addTo(this.scalar_field_mesh1);
+	this._scalarDisplay.addTo(this.scalar_field_mesh2);
 };
 
 View.prototype.setVectorDisplay = function(display) {
 	if(this._vectorDisplay === display){
 		return;
 	}
-	if(display === void 0){
-		throw "display is undefined";
-	}
-	var views = this.plateViews.values();
+	this._vectorDisplay.removeFrom(this.vector_field_mesh1);
+	this._vectorDisplay.removeFrom(this.vector_field_mesh2);
 
 	this._vectorDisplay = display;
-	for (var i = 0, li = views.length; i < li; i++) {
-		views[i].setVectorDisplay(this._vectorDisplay);
-	};
+
+	this._vectorDisplay.addTo(this.vector_field_mesh1);
+	this._vectorDisplay.addTo(this.vector_field_mesh2);
 };
+
+View.prototype.matrixUpdate = function(matrix) {
+	var mesh;
+
+	mesh = this.scalar_field_mesh1;
+	mesh.matrix = matrix;
+	mesh.rotation.setFromRotationMatrix(mesh.matrix);
+
+	mesh = this.scalar_field_mesh2;
+	mesh.matrix = matrix;
+	mesh.rotation.setFromRotationMatrix(mesh.matrix);
+
+	mesh = this.vector_field_mesh1;
+	mesh.matrix = matrix;
+	mesh.rotation.setFromRotationMatrix(mesh.matrix);
+
+	mesh = this.vector_field_mesh2;
+	mesh.matrix = matrix;
+	mesh.rotation.setFromRotationMatrix(mesh.matrix);
+};
+
+View.prototype.cellUpdate = function(crust){
+	this.uniform('sealevel', crust.SEALEVEL);
+
+	this._scalarDisplay.updateAttributes(this.scalar_field_geometry, crust);
+	this._vectorDisplay.updateAttributes(this.vector_field_geometry, crust);
+}
 
 View.prototype.vertexShader = function(vertexShader){
 	if(this._vertexShader === vertexShader){
@@ -86,10 +168,23 @@ View.prototype.vertexShader = function(vertexShader){
 	}
 	this._vertexShader = vertexShader;
 
-	var views = this.plateViews.values();
-	for (var i = 0, li = views.length; i < li; i++) {
-		views[i].vertexShader(vertexShader);
-	};
+	var meshes, mesh;
+
+	mesh = this.scalar_field_mesh1
+	mesh.material.vertexShader = vertexShader;
+	mesh.material.needsUpdate = true;
+
+	mesh = this.scalar_field_mesh2;
+	mesh.material.vertexShader = vertexShader;
+	mesh.material.needsUpdate = true;
+
+	mesh = this.vector_field_mesh1;
+	mesh.material.vertexShader = vertexShader;
+	mesh.material.needsUpdate = true;
+
+	mesh = this.vector_field_mesh2;
+	mesh.material.vertexShader = vertexShader;
+	mesh.material.needsUpdate = true;
 }
 
 View.prototype.uniform = function(key, value){
@@ -97,42 +192,55 @@ View.prototype.uniform = function(key, value){
 		return;
 	}
 	this._uniforms[key] = value;
-	
-	var views = this.plateViews.values();
-	for (var i = 0, li = views.length; i < li; i++) {
-		views[i].uniform(key, value);
-	};
+
+ 	var meshes, mesh;
+
+ 	mesh = this.scalar_field_mesh1;
+ 	if (mesh.material.uniforms[key] !== void 0) {
+	 	mesh.material.uniforms[key].value = value;
+	 	mesh.material.uniforms[key].needsUpdate = true;
+ 	}
+
+ 	mesh = this.scalar_field_mesh2;
+ 	if (mesh.material.uniforms[key] !== void 0) {
+	 	mesh.material.uniforms[key].value = value;
+	 	mesh.material.uniforms[key].needsUpdate = true;
+ 	}
+
+ 	mesh = this.vector_field_mesh1;
+ 	if (mesh.material.uniforms[key] !== void 0) {
+ 		mesh.material.uniforms[key].value = value;
+ 		mesh.material.uniforms[key].needsUpdate = true;
+ 	}
+
+ 	mesh = this.vector_field_mesh2;
+ 	if (mesh.material.uniforms[key] !== void 0) {
+	 	mesh.material.uniforms[key].value = value;
+	 	mesh.material.uniforms[key].needsUpdate = true;
+ 	}
 }
-View.prototype.matrix_update = function(uuid, matrix) {
-	var view = this.plateViews.get(uuid);
-	if (view.length < 1) {
-		console.log('warning: nothing in view matches this plate!')
-		return;
-	};
-	view.matrix_update(matrix);
+
+View.prototype.destroy = function() {
+	var mesh;
+
+	this.scene.remove(this.scalar_field_mesh1);
+	this.scene.remove(this.scalar_field_mesh2);
+	this.scene.remove(this.vector_field_mesh1);
+	this.scene.remove(this.vector_field_mesh2);
+
+	mesh = this.scalar_field_mesh1;
+	mesh.material.dispose();
+	mesh.geometry.dispose();
+
+	mesh = this.scalar_field_mesh2;
+	mesh.material.dispose();
+	mesh.geometry.dispose();
+
+	mesh = this.vector_field_mesh1;
+	mesh.material.dispose();
+	mesh.geometry.dispose();
+
+	mesh = this.vector_field_mesh2;
+	mesh.material.dispose();
+	mesh.geometry.dispose();
 };
-
-View.prototype.cell_update = function(uuid, plate){
-	var view = this.plateViews.get(uuid);
-	if (view.length < 1) {
-		console.log('warning: nothing in view matches this plate!')
-		return;
-	};
-	view.cell_update(plate);
-}
-
-View.prototype.add = function(plate){
-	var view = new PlateView(this.scene, plate, 
-		this._uniforms, this._vertexShader, this._scalarDisplay, this._vectorDisplay);
-	this.plateViews.set(_hashPlate(plate), view);
-}
-
-View.prototype.remove = function(plate){
-	var view = this.plateViews.get(_hashPlate(plate));
-	if (view.length < 1) {
-		console.log('warning: nothing in view matches this plate!')
-		return;
-	};
-	view.destroy();
-	this.plateViews.remove(_hashPlate(plate));
-}

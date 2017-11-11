@@ -1,9 +1,9 @@
 CPP=/usr/bin/cpp -P -undef -Wundef -std=c99 -nostdinc -Wtrigraphs -fdollars-in-identifiers -C 
-OUT=postcompiled/Rasters.js postcompiled/view/FragmentShaders.js postcompiled/view/VertexShaders.js
+OUT=postcompiled/utils/Rasters.js postcompiled/view/FragmentShaders.js postcompiled/view/VertexShaders.js
 
 all: $(OUT)
 
-postcompiled/Rasters.js : precompiled/rasters/Rasters.js
+postcompiled/utils/Rasters.js : precompiled/utils/Rasters.js
 	cat $< | $(CPP) > $@
 
 postcompiled/view/FragmentShaders.js : precompiled/view/fragment/FragmentShaders.template.js
