@@ -205,7 +205,7 @@ scalarDisplays.temp 	= new ScalarHeatDisplay( { min: '-25.', max: '30.',
 			return AtmosphericModeling.surface_air_temp(crust.grid.pos, crust.meanAnomaly, Math.PI*23.5/180);
 		} 
 	} );
-scalarDisplays.precip 	= new ScalarHeatDisplay( { min: '-1.', max: '1.',  
+scalarDisplays.precip 	= new ScalarHeatDisplay( { min: '0.', max: '2000.',  
 		getField: function (crust) {
 			return AtmosphericModeling.precip(crust.grid.pos);
 		} 
