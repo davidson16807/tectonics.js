@@ -17,6 +17,13 @@ function Vector(x,y,z) {
     z: z || 0,
   };
 }
+Vector.FromArray = function(array) {
+  return {
+    x: array[0] || 0,
+    y: array[1] || 0,
+    z: array[2] || 0,
+  };
+}
 Vector.similarity = function(ax, ay, az, bx, by, bz) {
   var sqrt = Math.sqrt;
   return (ax*bx + 
@@ -51,6 +58,15 @@ Vector.cross = function(ax, ay, az, bx, by, bz, result) {
 
   return result;
 } 
+Vector.mult_scalar = function(x, y, z, scalar, result) {
+  result = result || Vector()
+
+  result.x = x * scalar;
+  result.y = y * scalar;
+  result.z = z * scalar;
+
+  return result;
+}
 Vector.mult_matrix = function(x, y, z, matrix, result) {
   result = result || Vector()
 
