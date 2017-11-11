@@ -253,17 +253,11 @@ scalarDisplays.asthenosphere_pressure = new ScalarHeatDisplay(  {
 		}
 	} );
 
-scalarDisplays.winter_surface_air_pressure = new ScalarHeatDisplay( { min: '980000.', max: '1030000.', 
+scalarDisplays.surface_air_pressure = new ScalarHeatDisplay( { min: '980000.', max: '1030000.', 
 		getField: function (world, pressure, scratch) {
+			console.log(world.meanAnomaly);
 			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
-			AtmosphericModeling.surface_air_pressure(world.displacement, lat, world.SEALEVEL, 1, Math.PI*23.5/180, pressure, scratch);
-			return pressure;
-		}
-	} );
-scalarDisplays.summer_surface_air_pressure = new ScalarHeatDisplay( { min: '980000.', max: '1030000.', 
-		getField: function (world, pressure, scratch) {
-			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
-			AtmosphericModeling.surface_air_pressure(world.displacement, lat, world.SEALEVEL, -1, Math.PI*23.5/180, pressure, scratch);
+			AtmosphericModeling.surface_air_pressure(world.displacement, lat, world.SEALEVEL, world.meanAnomaly, Math.PI*23.5/180, pressure, scratch);
 			return pressure;
 		}
 	} );

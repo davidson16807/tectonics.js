@@ -22,9 +22,10 @@ AtmosphericModeling.surface_air_pressure_lat_effect = function (lat, pressure) {
 	}
 	return pressure
 }
-AtmosphericModeling.surface_air_pressure = function(displacement, lat, sealevel, season, axial_tilt, pressure, scratch) {
+AtmosphericModeling.surface_air_pressure = function(displacement, lat, sealevel, meanAnomaly, axial_tilt, pressure, scratch) {
 	pressure = pressure || Float32Raster(lat.grid);
 	scratch = scratch || Float32Raster(lat.grid);
+	var season = meanAnomaly / Math.PI;
 	// "effective latitude" is what the latitude is like weather-wise, when taking axial tilt into account
 	var effective_lat = scratch; 
 	ScalarField.add_scalar(lat, season*axial_tilt, effective_lat);

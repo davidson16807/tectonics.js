@@ -16,6 +16,7 @@ var World = (function() {
 		this.plate_map = Uint8Raster(this.grid);
 		this.plate_count = Uint8Raster(this.grid);
 		this.asthenosphere_velocity = VectorRaster(this.grid);
+		this.meanAnomaly = parameters['meanAnomaly'] || 0;
 
 		// this.radius = parameters['radius'] || 6367;
 		// this.age = parameters['age'] || 0;

@@ -95,10 +95,14 @@
 		</div>
 		<div class="input-group season-group">
   			<span class="input-group-addon">
-  				Season
+				<img src="icons/weather-sunny.svg" height="12em" width="12em">
   			</span>
   			<span class="form-control input-sm age">
-  				<input type="range" min="0" max="1" step="0.01">
+  				<input type="range" min="-1" max="1" step="0.01" 
+  					v-model="season" v-on:input="setSeason()"/>
+  			</span>
+  			<span class="input-group-addon">
+				<img src="icons/snowflake.svg" height="12em" width="12em">
   			</span>
 		</div>
 	</div>
@@ -585,6 +589,7 @@
 	  	paused: false,
 	  	speed: 5,
 	  	age: 0,
+	  	season: 0,
 	  },
 	  created: function() {
 	  	var _this = this;
@@ -599,6 +604,9 @@
 		},
 		setSpeed: function() {
 			model.MegaYearPerSecond = this.speed;
+		},
+		setSeason: function() {
+			model.world().meanAnomaly = 2*Math.asin(this.season);
 		},
 		format: format
 	}
@@ -634,7 +642,7 @@
 	      { name: "None", value: "disabled", icon: "" },
 	      { name: "Mantle Flow", value: "asthenosphere_velocity", icon: "icons/fire-flow.svg" },
 	      { name: "Plate Motion", value: "plate_velocity", icon: "icons/plate-motion.svg" },
-	      { name: "Wind Speed", value: "summer_surface_air_velocity", icon: "icons/air-flow.svg" },
+	      { name: "Wind Speed", value: "surface_air_velocity", icon: "icons/air-flow.svg" },
 	    ],
 	  },
 	  methods: {
@@ -663,7 +671,7 @@
 	      {name: 'Elevation', value: 'alt', icon: 'icons/terrain.svg'},
 	      {name: 'Plant Productivity', value: 'npp', icon: 'icons/leaf.svg'},
 	      {name: 'Air Temperature', value: 'temp', icon: 'icons/thermometer.svg'},
-	      {name: 'Air Pressure', value: 'summer_surface_air_pressure', icon: 'icons/air-pressure.svg'},
+	      {name: 'Air Pressure', value: 'surface_air_pressure', icon: 'icons/air-pressure.svg'},
 	      {name: 'Precipitation', value: 'precip', icon: 'icons/weather-raining.svg'},
 	      {name: 'Crust Age', value: 'age', icon: 'icons/clock.svg'},
 	      {name: 'Crust Density', value: 'density', icon: 'icons/scale.svg'},
