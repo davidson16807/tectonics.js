@@ -11,3 +11,17 @@ Float32SphereRaster.latitude = function(height, lat) {
 	}
 	return lat;
 }
+Float32SphereRaster.cos_lat = function(pos, cos_lat) { 
+  var cos_lat = cos_lat || Float32Raster(pos.grid); 
+  var sqrt = Math.sqrt; 
+  var x = pos.x; 
+  var z = pos.z; 
+  var xi = 0.; 
+  var zi = 0.; 
+  for (var i = 0; i < pos.x.length; i++) { 
+    xi = x[i]; 
+    zi = z[i]; 
+    cos_lat[i] = sqrt(xi*xi+zi*zi); 
+  } 
+  return cos_lat; 
+}
