@@ -27,7 +27,7 @@ Model.prototype.world = function(world) {
 	);
 };
 
-Model.prototype.slow_update = function(timestep) {
+Model.prototype.update = function(timestep) {
 	var seconds = this.slow_update_clock.getDelta();
 
 	//minimum refresh rate of 5fps
@@ -40,7 +40,7 @@ Model.prototype.slow_update = function(timestep) {
 	}
 	if (world !== void 0) {
 		this.age += this.MegaYearPerSecond * seconds;
-		world.slow_update(this.MegaYearPerSecond * seconds);
+		world.update(this.MegaYearPerSecond * seconds);
 	};
 };
 Model.prototype.toggle_pause = function () {

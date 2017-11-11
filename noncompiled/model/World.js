@@ -317,7 +317,7 @@ var World = (function() {
 		TectonicsModeling.get_subductability(crust.density, crust.subductability);
 		TectonicsModeling.get_displacement(crust.thickness, crust.density, world.mantleDensity, crust.displacement);
 	}
-	World.prototype.slow_update = function(timestep){
+	World.prototype.update = function(timestep){
 		if (timestep === 0) {
 			return;
 		};
