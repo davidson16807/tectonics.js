@@ -27,12 +27,12 @@ Vector.FromArray = function(array) {
 Vector.similarity = function(ax, ay, az, bx, by, bz) {
   var sqrt = Math.sqrt;
   return (ax*bx + 
-      ay*by + 
-      az*bz)   /   ( sqrt(ax*ax+
-                ay*ay+
-                az*az)   *   sqrt(bx*bx+
-                            by*by+
-                            bz*bz) );
+          ay*by + 
+          az*bz)   /   ( sqrt(ax*ax+
+                              ay*ay+
+                              az*az)   *   sqrt(bx*bx+
+                                          by*by+
+                                          bz*bz) );
 }
 Vector.dot = function(ax, ay, az, bx, by, bz) {
   var sqrt = Math.sqrt;
@@ -59,7 +59,7 @@ Vector.cross = function(ax, ay, az, bx, by, bz, result) {
   return result;
 } 
 Vector.mult_scalar = function(x, y, z, scalar, result) {
-  result = result || Vector()
+  result = result || Vector();
 
   result.x = x * scalar;
   result.y = y * scalar;
@@ -68,11 +68,11 @@ Vector.mult_scalar = function(x, y, z, scalar, result) {
   return result;
 }
 Vector.mult_matrix = function(x, y, z, matrix, result) {
-  result = result || Vector()
+  result = result || Vector();
 
-  var xx = matrix[0]; var xy = matrix[4]; var xz = matrix[8];
-  var yx = matrix[1]; var yy = matrix[5]; var yz = matrix[9];
-  var zx = matrix[2]; var zy = matrix[6]; var zz = matrix[10];
+  var xx = matrix[0]; var xy = matrix[3]; var xz = matrix[6];
+  var yx = matrix[1]; var yy = matrix[4]; var yz = matrix[7];
+  var zx = matrix[2]; var zy = matrix[5]; var zz = matrix[8];
 
   result.x = x * xx    + y * xy     + z * xz;
   result.y = x * yx    + y * yy     + z * yz;

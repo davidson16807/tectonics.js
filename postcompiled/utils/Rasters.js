@@ -130,6 +130,11 @@ Matrix.ColumnMajorOrder = function(list) {
   if (list.length !== 9) { throw "list" + ' is not a 3x3 matrix'; }
   return list; //matrices are standardized to column major order, already
 }
+Matrix.BasisVectors = function(a, b, c) {
+  return [a.x, b.x, c.x,
+          a.y, b.y, c.y,
+          a.z, b.z, c.z];
+}
 Matrix.RotationAboutAxis = function(axis_x, axis_y, axis_z, angle) {
   var θ = angle,
       x = axis_x,
@@ -233,15 +238,22 @@ function Vector(x,y,z) {
     z: z || 0,
   };
 }
+Vector.FromArray = function(array) {
+  return {
+    x: array[0] || 0,
+    y: array[1] || 0,
+    z: array[2] || 0,
+  };
+}
 Vector.similarity = function(ax, ay, az, bx, by, bz) {
   var sqrt = Math.sqrt;
   return (ax*bx +
-      ay*by +
-      az*bz) / ( sqrt(ax*ax+
-                ay*ay+
-                az*az) * sqrt(bx*bx+
-                            by*by+
-                            bz*bz) );
+          ay*by +
+          az*bz) / ( sqrt(ax*ax+
+                              ay*ay+
+                              az*az) * sqrt(bx*bx+
+                                          by*by+
+                                          bz*bz) );
 }
 Vector.dot = function(ax, ay, az, bx, by, bz) {
   var sqrt = Math.sqrt;
@@ -265,11 +277,18 @@ Vector.cross = function(ax, ay, az, bx, by, bz, result) {
   result.z = ax*by - ay*bx;
   return result;
 }
+Vector.mult_scalar = function(x, y, z, scalar, result) {
+  result = result || Vector();
+  result.x = x * scalar;
+  result.y = y * scalar;
+  result.z = z * scalar;
+  return result;
+}
 Vector.mult_matrix = function(x, y, z, matrix, result) {
-  result = result || Vector()
-  var xx = matrix[0]; var xy = matrix[4]; var xz = matrix[8];
-  var yx = matrix[1]; var yy = matrix[5]; var yz = matrix[9];
-  var zx = matrix[2]; var zy = matrix[6]; var zz = matrix[10];
+  result = result || Vector();
+  var xx = matrix[0]; var xy = matrix[3]; var xz = matrix[6];
+  var yx = matrix[1]; var yy = matrix[4]; var yz = matrix[7];
+  var zx = matrix[2]; var zy = matrix[5]; var zz = matrix[8];
   result.x = x * xx + y * xy + z * xz;
   result.y = x * yx + y * yy + z * yz;
   result.z = x * zx + y * zy + z * zz;

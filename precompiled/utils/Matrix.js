@@ -36,6 +36,11 @@ Matrix.ColumnMajorOrder = function(list) {
   ASSERT_IS_3X3_MATRIX(list)
   return list; //matrices are standardized to column major order, already
 }
+Matrix.BasisVectors = function(a, b, c) { 
+  return [a.x, b.x, c.x, 
+          a.y, b.y, c.y, 
+          a.z, b.z, c.z]; 
+} 
 Matrix.RotationAboutAxis = function(axis_x, axis_y, axis_z, angle) {
   var θ = angle,
       x = axis_x,
