@@ -359,40 +359,6 @@ VectorField.mult_matrix = function (vector_field, matrix, result)  {
 	var ay = vector_field.y;
 	var az = vector_field.z;
 
-	var xx = matrix[0];	var xy = matrix[4];	var xz = matrix[8];
-	var yx = matrix[1];	var yy = matrix[5];	var yz = matrix[9];
-	var zx = matrix[2];	var zy = matrix[6];	var zz = matrix[10];
-
-	var x = result.x;
-	var y = result.y;
-	var z = result.z;
-
-	var axi = 0;
-	var ayi = 0;
-	var azi = 0;
-
-	for (var i = 0, li=x.length; i < li; ++i) {
-		axi = ax[i];
-		ayi = ay[i];
-		azi = az[i];
-
-		x[i] = axi * xx    + ayi * xy     + azi * xz     ;
-		y[i] = axi * yx    + ayi * yy     + azi * yz     ;
-		z[i] = axi * zx    + ayi * zy     + azi * zz     ;
-	}
-
-	return result;
-}
-VectorField.mult_matrix3 = function (vector_field, matrix, result)  {
-	result = result || VectorRaster(vector_field.grid);
-	
-	ASSERT_IS_VECTOR_RASTER(vector_field)
-	ASSERT_IS_VECTOR_RASTER(result)
-
-	var ax = vector_field.x;
-	var ay = vector_field.y;
-	var az = vector_field.z;
-
 	var xx = matrix[0];	var xy = matrix[3];	var xz = matrix[6];
 	var yx = matrix[1];	var yy = matrix[4];	var yz = matrix[7];
 	var zx = matrix[2];	var zy = matrix[5];	var zz = matrix[8];
@@ -647,8 +613,10 @@ VectorField.magnitude = function(vector_field, result) {
 }
 
 // ∂X
+// NOTE: should arrow_differential exist at all? 
+// Consider moving its code to grid
 VectorField.arrow_differential = function(vector_field, result) {
-	result = result || VectorRaster.OfLength(vector_field.grid.arrows.length, vector_field.grid);
+	result = result || VectorRaster.OfLength(vector_field.grid.arrows.length, undefined);
 	
 	ASSERT_IS_VECTOR_RASTER(vector_field)
 	ASSERT_IS_VECTOR_RASTER(result)

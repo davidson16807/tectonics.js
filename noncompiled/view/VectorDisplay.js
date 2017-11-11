@@ -102,9 +102,8 @@ vectorDisplays.pos	= new VectorFieldDisplay( {
 } );
 vectorDisplays.pos2	= new VectorFieldDisplay( { 
 	getField: function (plate) {
-		var rotationMatrix = new THREE.Matrix4();
-		rotationMatrix.makeRotationAxis( plate.eulerPole, 1 );
-		var pos = VectorField.mult_matrix(plate.grid.pos, rotationMatrix.toArray());
+		var rotationMatrix = Matrix.RotationAboutAxis(plate.eulerPole.x, plate.eulerPole.y, plate.eulerPole.z, 1);
+		var pos = VectorField.mult_matrix(plate.grid.pos, rotationMatrix);
 		return pos;
 	}
 } );
@@ -152,6 +151,16 @@ vectorDisplays.aesthenosphere_velocity	= new VectorFieldDisplay( {
 			return crust.aesthenosphere_velocity;
 		}
 	} );
+
+vectorDisplays.surface_air_velocity = new VectorFieldDisplay( {
+		getField: function (world) {
+			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
+			var pressure = AtmosphericModeling.surface_air_pressure(world.displacement, lat, world.SEALEVEL, world.meanAnomaly, Math.PI*23.5/180);
+			var velocity = AtmosphericModeling.surface_air_velocity(world.grid.pos, pressure, ANGULAR_SPEED);
+			return velocity;
+		} 
+	} );
+
 
 vectorDisplays.plate_velocity = new VectorFieldDisplay( {  
     getField: function (world) { 

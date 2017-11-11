@@ -16,6 +16,7 @@ var World = (function() {
 		this.plate_map = Uint8Raster(this.grid);
 		this.plate_count = Uint8Raster(this.grid);
 		this.asthenosphere_velocity = VectorRaster(this.grid);
+		this.meanAnomaly = parameters['meanAnomaly'] || 0;
 
 		// this.radius = parameters['radius'] || 6367;
 		// this.age = parameters['age'] || 0;
@@ -58,7 +59,6 @@ var World = (function() {
 		var globalized_scalar_field = Float32Raster(master.grid); 
 
 
-		var mult_matrix = VectorField.mult_matrix;
 		var fill = Uint8Raster.fill;
 		var fill_into = Uint8RasterGraphics.fill_into_selection;
 		var copy_into = Float32RasterGraphics.copy_into_selection;
@@ -159,7 +159,6 @@ var World = (function() {
 		var globalized_scalar_field = Float32Raster(grid); 
 		
 
-		var mult_matrix = VectorField.mult_matrix;
 		var mult_field = ScalarField.mult_field;
 		var fill_into = Uint8RasterGraphics.fill_into_selection;
 		var fill_into_crust = Crust.fill_into_selection;
@@ -292,9 +291,17 @@ var World = (function() {
 		var plate;
 		// TODO: overwrite plates instead of creating new ones, create separate function for plate initialization
 		for (var i = 0, li = plate_ids.length; i < li; ++i) {
+			var mask = Uint8Field.eq_scalar(plate_map, plate_ids[i]);
+
+			//TODO: comment this out when you're done
+			var eulerPole = VectorDataset.weighted_average(angular_velocity, mask)
+			//TODO: fix it properly - no negation!
+			Vector.normalize(-eulerPole.x, -eulerPole.y, -eulerPole.z, eulerPole); 
+
 			plate = new Plate({
 				world: 	this,
-				mask: 	Uint8Field.eq_scalar(plate_map, plate_ids[i])
+				mask: 	mask,
+				eulerPole: eulerPole
 			})
 			Crust.copy(this, plate);
 
@@ -302,11 +309,6 @@ var World = (function() {
 			plate.angularSpeed = this.getRandomPlateSpeed();
 
 			this.plates.push(plate);
-
-			//TODO: comment this out when you're done
-			var eulerPole = VectorDataset.weighted_average(angular_velocity, plate.mask)
-			//TODO: fix it properly - no negation!
-			plate.eulerPole = new THREE.Vector3(-eulerPole.x, -eulerPole.y, -eulerPole.z).normalize(); 
 		}
 	};
 
@@ -317,7 +319,7 @@ var World = (function() {
 		TectonicsModeling.get_subductability(crust.density, crust.subductability);
 		TectonicsModeling.get_displacement(crust.thickness, crust.density, world.mantleDensity, crust.displacement);
 	}
-	World.prototype.slow_update = function(timestep){
+	World.prototype.update = function(timestep){
 		if (timestep === 0) {
 			return;
 		};
