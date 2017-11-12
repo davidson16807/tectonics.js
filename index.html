@@ -37,31 +37,32 @@
 	<script src="libraries/base64-arraybuffer.js"></script>
 	<script src="libraries/kdTree-min.js"></script>
 	<script src="libraries/uuid.js"></script>
-	<script src="scripts/Rasters.js"></script>
-	<script src="scripts/Utils.js"></script>
-	<script src="scripts/VoronoiSphere.js"></script>
-	<script src="scripts/Sphere.js"></script>
-	<script src="scripts/Publisher.js"></script>
-	<script src="scripts/model/TectonicsModeling.js"></script>
-	<script src="scripts/model/AtmosphericModeling.js"></script>
-	<script src="scripts/model/OrbitalMechanics.js"></script>
-	<script src="scripts/model/Crust.js"></script>
-	<script src="scripts/model/RockColumn.js"></script>
-	<script src="scripts/model/Plate.js"></script>
-	<script src="scripts/model/SupercontinentCycle.js"></script>
-	<script src="scripts/model/World.js"></script>
-	<script src="scripts/model/EliasHeightMapGenerator.js"></script>
-	<script src="scripts/model/WorldGenerator.js"></script>
-	<script src="scripts/model/Model.js"></script>
-	<script src="scripts/view/FragmentShaders.js"></script>
-	<script src="scripts/view/VertexShaders.js"></script>
-	<script src="scripts/view/ScalarDisplay.js"></script>
-	<script src="scripts/view/VectorDisplay.js"></script>
-	<script src="scripts/view/TestDisplays.js"></script>
-	<script src="scripts/view/PlateView.js"></script>
-	<script src="scripts/view/View.js"></script>
-	<script src="scripts/Cached.js"></script>
-	<script src="scripts/JsonSerializer.js"></script>
+	<script src="postcompiled/utils/Rasters.js"></script>
+	<script src="postcompiled/view/FragmentShaders.js"></script>
+	<script src="postcompiled/view/VertexShaders.js"></script>
+	<script src="noncompiled/utils/Float32SphereRaster.js"></script>
+	<script src="noncompiled/academics/TectonicsModeling.js"></script>
+	<script src="noncompiled/academics/AtmosphericModeling.js"></script>
+	<script src="noncompiled/academics/OrbitalMechanics.js"></script>
+	<script src="noncompiled/Logging.js"></script>
+	<script src="noncompiled/VoronoiSphere.js"></script>
+	<script src="noncompiled/Sphere.js"></script>
+	<script src="noncompiled/model/Crust.js"></script>
+	<script src="noncompiled/model/RockColumn.js"></script>
+	<script src="noncompiled/model/Plate.js"></script>
+	<script src="noncompiled/model/SupercontinentCycle.js"></script>
+	<script src="noncompiled/model/World.js"></script>
+	<script src="noncompiled/model/EliasHeightMapGenerator.js"></script>
+	<script src="noncompiled/model/WorldGenerator.js"></script>
+	<script src="noncompiled/model/Model.js"></script>
+	<script src="noncompiled/view/ScalarDisplay.js"></script>
+	<script src="noncompiled/view/VectorDisplay.js"></script>
+	<script src="noncompiled/view/TestDisplays.js"></script>
+	<script src="noncompiled/view/View.js"></script>
+	<script src="noncompiled/name-gen/NameGenerator.js"></script>
+	<script src="noncompiled/name-gen/NameCorpii.js"></script>
+	<script src="noncompiled/Cached.js"></script>
+	<script src="noncompiled/JsonSerializer.js"></script>
 </head>
 <body>
 <!-- three.js container -->
@@ -92,6 +93,18 @@
 			<input class="form-control input-sm" type="number" value="5" min="0" max="10" step="1" v-model="speed" v-on:change="setSpeed()"/> 
 
 			<span class="input-group-addon">My/s</span>
+		</div>
+		<div class="input-group season-group" v-if="isSeasonVisible">
+  			<span class="input-group-addon">
+				<img src="icons/weather-sunny.svg" height="12em" width="12em">
+  			</span>
+  			<span class="form-control input-sm age">
+  				<input type="range" min="-1" max="1" step="0.01" 
+  					v-model="season" v-on:input="setSeason()"/>
+  			</span>
+  			<span class="input-group-addon">
+				<img src="icons/snowflake.svg" height="12em" width="12em">
+  			</span>
 		</div>
 	</div>
 	<div class="view-menu btn-group-vertical">
@@ -171,21 +184,19 @@
 			{{isFullscreen? 'Exit Fullscreen' : 'Fullscreen'}}
 			<span class="instructions">F11</span>
 		</button>
-		<button id="screenshot" v-if="isEnabled" type="button" class="btn btn-default btn-xs">
-			<a class="screenshot" v-bind:href="dataUrl" v-bind:download="filename"  v-on:click="capture()">
-				<img src="icons/camera.svg" height="16em">
-				Screenshot
-			</a>
+		<button id="screenshot" v-if="isEnabled" type="button" class="btn btn-default btn-xs" v-on:click="capture" v-on:keyup.p="capture">
+			<img src="icons/camera.svg" height="16em">
+			Screenshot
+			<span class="instructions">p</span>
 		</button>
 	</div>
 
 
 	<div class="file-menu btn-group-vertical">
-		<button id="save" type="button" class="btn btn-default btn-xs">
-			<a class="save" v-bind:href="dataUrl" v-bind:download="filename" v-on:click="save()" >
-				<img src="icons/download.svg" height="16em">
-				Save
-			</a>
+		<button id="save" type="button" class="btn btn-default btn-xs"  v-on:click="save">
+			<img src="icons/download.svg" height="16em">
+			Save
+			<span class="instructions">s</span>
 		</button>
 		<button id="load" type="button" class="btn btn-default btn-xs load" v-on:click="load()">
 			<img src="icons/upload.svg" height="16em">
@@ -196,6 +207,7 @@
 	</div>
 </div>
 
+<a id="hidden-downloader" href="dataUrl" download="filename"></a>
 
 <div class="bottomleft">
 	<div id="renderStats"></div>
@@ -255,14 +267,20 @@
 
     function parseSeed(text) {
 		var parsed = parseInt(text);
-		if(!parsed) {
+		if(isNaN(parsed)) {
+			parsed = 0;
 			for (var i = 0; i < Math.min(8, text.length); i++) {
 				parsed = (parsed * 256) + text.charCodeAt(i);
 			}
 		}
 		return parsed;
     }
-	var seed = querystring['seed'] || (new Date).getTime().toString();
+	var seed = querystring['seed']  //|| (new Date).getTime().toString();
+	if (!seed) {
+		var corpus = NameGenerator.tokenize_corpus(NameCorpii.greek_mythological_names);
+		var gen = NameGenerator.get_length_distribution_generator(corpus, 25, {5:1,6:3,7:11,8:3,9:1}, 100);
+		seed = gen();
+	}
 	var random = new Random(parseSeed(seed));
 
 	var renderStats, updateStats, renderer, controls;
@@ -342,7 +360,6 @@
 
 		// actually render the scene
 		renderer.render( view.scene, view.camera );
-		model.fast_update();
 
 		if(!IsProd){
 			renderStats.update();
@@ -359,7 +376,8 @@
 			return;
 		};
 		
-		model.slow_update();
+		model.update();
+		view.cellUpdate(world); 
 
 		if(!IsProd){
 			updateStats.update();
@@ -412,6 +430,23 @@
 		var formatted = format(My, rollover, precision);
 		return formatted.quantity + ' ' + formatted.unit;
 	}
+
+	function download(dataUrl, filename) {
+		$('#hidden-downloader')
+			.attr('href', dataUrl)
+			.attr('download', filename)
+			[0].click();
+	}
+
+
+    window.addEventListener('keyup', function(event) {
+      if (event.keyCode == 80) { //p
+        screenshotVue.capture();
+      }
+      if (event.keyCode == 83) { //s
+      	saveVue.save();
+      }
+    });
 
     var last_drag_entered;
     $('body').on(
@@ -486,22 +521,19 @@
 
 	var saveVue = new Vue({
 	  el: '#save',
-	  data: {
-	  	dataUrl: '',
-	  	filename: '',
-	  },
 	  methods: {
-	  	save: function() {
+	  	save(event) {
   			var serialized = JsonSerializer.world(world);
   			var stringified = JSON.stringify(serialized);
-  			this.dataUrl = 
+  			var dataUrl = 
   				"data:application/json;"+
   				"charset=utf-8," + 
   				stringified;
-  			this.filename = 
+  			var filename = 
   				seed+'-'+
   				format_text(model.age, 1000, 3).replace(/\s/,'')+
-  				'.sim';
+  				'.sim'
+  			download(dataUrl, filename);
   		}
 	  }
 	});
@@ -510,19 +542,18 @@
 	  el: '#screenshot',
 	  data: {
 	  	isEnabled: false,
-	  	dataUrl: '',
-	  	filename: ''
 	  },
 	  created: function() {
 	  	this.isEnabled = Detector.webgl;
 	  },
 	  methods: {
-	  	capture: function() {
-  			this.dataUrl = THREEx.Screenshot.toDataURL(renderer);
-  			this.filename = 
+	  	capture(event) {
+  			var dataUrl = THREEx.Screenshot.toDataURL(renderer);
+  			var filename = 
   				seed+'-'+
   				format_text(model.age, 1000, 3).replace(/\s/,'')+
   				'.png';
+  			download(dataUrl, filename);
   		}
 	  }
 	});
@@ -559,6 +590,8 @@
 	  	paused: false,
 	  	speed: 5,
 	  	age: 0,
+	  	season: 0,
+	  	isSeasonVisible: false,
 	  },
 	  created: function() {
 	  	var _this = this;
@@ -573,6 +606,12 @@
 		},
 		setSpeed: function() {
 			model.MegaYearPerSecond = this.speed;
+		},
+		setSeason: function() {
+			model.world().meanAnomaly = 2*Math.asin(this.season);
+		},
+		setSeasonVisibility: function(visibility) {
+			this.isSeasonVisible = visibility || false;
 		},
 		format: format
 	}
@@ -607,13 +646,17 @@
 	    options: [
 	      { name: "None", value: "disabled", icon: "" },
 	      { name: "Mantle Flow", value: "asthenosphere_velocity", icon: "icons/fire-flow.svg" },
+	      { name: "Plate Motion", value: "plate_velocity", icon: "icons/plate-motion.svg" },
+	      { name: "Wind Speed", value: "surface_air_velocity", icon: "icons/air-flow.svg", season: true },
 	    ],
 	  },
 	  methods: {
 	  	setSelected: function(value) {
 	    	if (this.selected == value) { value = this.options[0].value; }
+	  		var option = this.options.filter(x => x.value == value)[0];
 	  		this.selected = value;
 	  		view.setVectorDisplay(vectorDisplays[value]);
+	  		timeMenuVue.setSeasonVisibility(option.season || false);
 	  	},
 	  	getClass: function(value, selected) {
 	  		return value == selected? 'active' : '';
@@ -634,7 +677,8 @@
 	      {name: 'Bedrock', value: 'bedrock', icon: 'icons/rock.svg'},
 	      {name: 'Elevation', value: 'alt', icon: 'icons/terrain.svg'},
 	      {name: 'Plant Productivity', value: 'npp', icon: 'icons/leaf.svg'},
-	      {name: 'Air Temperature', value: 'temp', icon: 'icons/thermometer.svg'},
+	      {name: 'Air Temperature', value: 'temp', icon: 'icons/thermometer.svg', season: true},
+	      {name: 'Air Pressure', value: 'surface_air_pressure', icon: 'icons/air-pressure.svg', season: true},
 	      {name: 'Precipitation', value: 'precip', icon: 'icons/weather-raining.svg'},
 	      {name: 'Crust Age', value: 'age', icon: 'icons/clock.svg'},
 	      {name: 'Crust Density', value: 'density', icon: 'icons/scale.svg'},
@@ -645,8 +689,10 @@
 	  methods: {
 	    setSelected: function(value) {
 	    	if (this.selected == value) { value = this.options[0].value; }
+	  		var option = this.options.filter(x => x.value == value)[0];
 	    	this.selected = value;
 	    	view.setScalarDisplay(scalarDisplays[value]);
+	  		timeMenuVue.setSeasonVisibility(option.season || false);
 	    },
 	    setOcean: function(value) {
 	    	this.ocean_target = value;
