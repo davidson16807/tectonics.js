@@ -94,16 +94,16 @@ AtmosphericModeling.precip = function(lat, result) {
 }
 
 
-// Calculates the daily average ratio between incident radiation and the global solar constant
-//     This is the cosine of solar zenith angle, as seen in Lambert's law
+// This calculates the fraction of the global solar constant that's felt by the surface of a planet.
+// This fraction is the cosine of solar zenith angle, as seen in Lambert's law.
+// The fraction is calculated as a daily average for every region on the globe
 //
-// Q: Why calculate the ratio in a separate function? Why not just calculate incident radiation?
-// A:  Incident radiation is the global solar constant times the ratio defined here.
-//     The ratio stays constant over time because we assume the planet's orbit is stable,
+// Q: Why calculate the fraction in a separate function? Why not just calculate incident radiation?
+// A:  The fraction stays constant over time because we assume the planet's orbit is stable,
 //     but the global solar constant changes over time due to stellar aging.
-//     It takes much longer to recompute the ratio than it does the global solar constant.
-//     We calculate the ratio in a separate function so we can store the result for later.
-AtmosphericModeling.daily_average_incident_radiation_ratio = function(
+//     It takes much longer to recompute the fraction than it does the global solar constant.
+//     We calculate the fraction in a separate function so we can store the result for later.
+AtmosphericModeling.daily_average_incident_radiation_fraction = function(
 		// This is a vector raster of each grid cell's position in geocentric equatorial coordinates (just like "pos" in other functions) 
 		pos, 
 		// this is a single vector of the planet's position in heliocentric eliptic coordinates (not to be confused with "pos")
@@ -155,4 +155,17 @@ AtmosphericModeling.daily_average_incident_radiation_ratio = function(
 	}
 	ScalarField.div_scalar(incident_radiation_sum, sample_num, result);
 	return result;
+}
+
+AtmosphericModeling.STEPHAN_BOLTZMANN_CONSTANT = 5.670373e-8; // W/m^2 per K^4
+AtmosphericModeling.black_body_equilibrium_temperature = function(
+		// intensity of sunlight on a panel that's directly facing the sun, number in W/m^2
+		global_solar_constant,
+		// fraction of global solar constant that's felt by the surface of a planet, Float32Raster in W/m^2
+		daily_average_incident_radiation_ratio
+	) {
+	var incident_radiation = ScalarField.mult_scalar(daily_average_incident_radiation_ratio, global_solar_constant);
+	var temperature_4 = ScalarField.div_scalar(incident_radiation, AtmosphericModeling.STEPHAN_BOLTZMANN_CONSTANT);
+	var temperature = ScalarField.pow_scalar(temperature_4, 1/4);
+	return temperature;
 }

@@ -269,19 +269,50 @@ testDisplays.flood_fill8 = new ScalarHeatDisplay(  {
 		}
 	} );
 
-
 // test for image segmentation algorithm
-testDisplays.daily_average_incident_radiation_ratio = new ScalarHeatDisplay(  { 
+testDisplays.flood_fill8 = new ScalarHeatDisplay(  { 
+		min: '0.', max: '1.',
+		getField: function (crust, flood_fill, scratch1) {
+			// scratch represents pressure
+			var pressure = scratch1;
+			// flood_fill does double duty for performance reasons
+			var scratch2 = flood_fill;
+			var field = TectonicsModeling.get_asthenosphere_pressure(crust.subductability, pressure, scratch2);
+			var gradient = ScalarField.gradient(field);
+			var angular_velocity = VectorField.cross_vector_field(gradient, crust.grid.pos);
+			var gradient = angular_velocity;
+			var plate_map = TectonicsModeling.get_plate_map(gradient, 7, 200);
+			return plate_map;
+		}
+	} );
+
+testDisplays.daily_average_incident_radiation_fraction = new ScalarHeatDisplay(  { 
 		min: '0.', max: '0.5',
 		getField: function (crust) {
 			var orbital_pos = OrbitalMechanics.get_eliptic_coordinate_sample(1, 0, world.meanAnomaly);
-			var result = AtmosphericModeling.daily_average_incident_radiation_ratio(
+			var result = AtmosphericModeling.daily_average_incident_radiation_fraction(
 				world.grid.pos,
 				orbital_pos,
 				Math.PI * 23.5/180,
 			);
-			log_once(Float32Dataset.range(result));
 			return result;
+		}
+	} );
+
+testDisplays.temp2 = new ScalarHeatDisplay(  { 
+		min: '-60.', max: '30.',
+		getField: function (crust) {
+			var orbital_pos = OrbitalMechanics.get_eliptic_coordinate_sample(1, 0, world.meanAnomaly);
+			var incident_radiation_fraction = AtmosphericModeling.daily_average_incident_radiation_fraction(
+				world.grid.pos,
+				orbital_pos,
+				Math.PI * 23.5/180,
+			);
+			var temperature = AtmosphericModeling.black_body_equilibrium_temperature(1361, incident_radiation_fraction);
+
+			//convert to celcius
+			ScalarField.sub_scalar(temperature, 273.15, temperature);
+			return temperature;
 		}
 	} );
 
@@ -345,6 +376,28 @@ vectorDisplays.averaged_angular_velocity = new VectorFieldDisplay( {
 			}
 
 			return averaged_angular_velocity_field_sum;
+		} 
+	} );
+
+vectorDisplays.averaged_velocity = new VectorFieldDisplay( { 
+		getField: function (world) {
+			var field = getSubductabilitySmoothed(world);
+			var gradient = ScalarField.gradient(field);
+			var angular_velocity = VectorField.cross_vector_field(gradient, world.grid.pos);
+			var gradient = angular_velocity;
+			var plates = split(gradient, world.grid);
+
+			var averaged_angular_velocity_field_sum = VectorField.DataFrame(world.grid, {x:0,y:0,z:0});
+			for (var i=0, li=plates.length; i<li; ++i) {
+			    var flood_fill = plates[i];
+				var averaged_angular_velocity = VectorDataset.weighted_average(angular_velocity, flood_fill);
+				var averaged_angular_velocity_field = ScalarField.mult_vector(flood_fill, averaged_angular_velocity);
+				VectorField.add_vector_field(averaged_angular_velocity_field_sum, averaged_angular_velocity_field, 
+					averaged_angular_velocity_field_sum);
+			}
+
+			var averaged_velocity = VectorField.cross_vector_field(world.grid.pos, averaged_angular_velocity_field_sum);
+			return averaged_velocity;
 		} 
 	} );
 
