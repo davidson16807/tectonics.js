@@ -92,3 +92,67 @@ AtmosphericModeling.precip = function(lat, result) {
 	}
 	return result;
 }
+
+
+// Calculates the daily average ratio between incident radiation and the global solar constant
+//     This is the cosine of solar zenith angle, as seen in Lambert's law
+//
+// Q: Why calculate the ratio in a separate function? Why not just calculate incident radiation?
+// A:  Incident radiation is the global solar constant times the ratio defined here.
+//     The ratio stays constant over time because we assume the planet's orbit is stable,
+//     but the global solar constant changes over time due to stellar aging.
+//     It takes much longer to recompute the ratio than it does the global solar constant.
+//     We calculate the ratio in a separate function so we can store the result for later.
+AtmosphericModeling.daily_average_incident_radiation_ratio = function(
+		// This is a vector raster of each grid cell's position in geocentric equatorial coordinates (just like "pos" in other functions) 
+		pos, 
+		// this is a single vector of the planet's position in heliocentric eliptic coordinates (not to be confused with "pos")
+		orbital_pos, 
+		// tilt of the planet's axis, in radians
+		axial_tilt, 
+		// number of samples used to calculate average, default is 12
+		sample_num,
+		// Float32Raster that stores results
+		result
+	) {
+	result = result || Float32Raster(pos.grid);
+	sample_num = sample_num || 12;
+
+	// this is a vector of the sun's geocentric position 
+	var sun_coordinates = Vector(-orbital_pos.x, -orbital_pos.y, -orbital_pos.z);
+
+	var grid = pos.grid;
+
+	// TODO: need scratch for these
+	var surface_normal = VectorRaster(grid);
+	var cos_solar_zenith_angle = Float32Raster(grid);
+	var incident_radiation_sum  = Float32Raster(grid);
+
+	var get_surface_normal = OrbitalMechanics.get_eliptic_coordinates_raster_from_equatorial_coordinates_raster;
+	var similarity = VectorField.vector_similarity;
+	var add = ScalarField.add_field;
+	var clamp = Float32RasterInterpolation.clamp;
+
+	var PI = Math.PI;
+	var rotation_angle = 0.; 
+	for (var i=0; i<sample_num; ++i) {
+		rotation_angle = i * 2*PI/sample_num;
+
+		// find surface normal, i.e. vector that points straight up from the ground
+		get_surface_normal(
+			pos,
+			rotation_angle, 
+			axial_tilt, 
+			surface_normal);
+
+		// use cosine similarity to find cosine of solar zenith angle 
+		similarity 	(surface_normal, sun_coordinates, 					cos_solar_zenith_angle);
+
+		// disregard solar angle at night
+		clamp		(cos_solar_zenith_angle, 0, 1, 						cos_solar_zenith_angle);
+
+		add  		(incident_radiation_sum, cos_solar_zenith_angle, 	incident_radiation_sum);
+	}
+	ScalarField.div_scalar(incident_radiation_sum, sample_num, result);
+	return result;
+}

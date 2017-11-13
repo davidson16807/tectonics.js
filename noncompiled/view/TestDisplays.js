@@ -270,6 +270,22 @@ testDisplays.flood_fill8 = new ScalarHeatDisplay(  {
 	} );
 
 
+// test for image segmentation algorithm
+testDisplays.daily_average_incident_radiation_ratio = new ScalarHeatDisplay(  { 
+		min: '0.', max: '0.5',
+		getField: function (crust) {
+			var orbital_pos = OrbitalMechanics.get_eliptic_coordinate_sample(1, 0, world.meanAnomaly);
+			var result = AtmosphericModeling.daily_average_incident_radiation_ratio(
+				world.grid.pos,
+				orbital_pos,
+				Math.PI * 23.5/180,
+			);
+			log_once(Float32Dataset.range(result));
+			return result;
+		}
+	} );
+
+
 // test for basic vector rendering
 vectorDisplays.test = new VectorFieldDisplay( { 
 		getField: function (crust) {

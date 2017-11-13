@@ -6,19 +6,21 @@
 var OrbitalMechanics = {};
 
 // Converts a raster of geocentric equatorial cartesian coordinates to geocentric ecliptic cartesian coordinates
-OrbitalMechanics.get_ecliptic_coordinates_raster_from_equatorial_coordinates_raster = function(
+OrbitalMechanics.get_eliptic_coordinates_raster_from_equatorial_coordinates_raster = function(
 		equatorial_coordinates,
 		rotation_angle, //rotation around axis
 		axial_tilt, //tilt of the planet's axis, in radians
 		result) {
-	var rotation_matrix   = Matrix.rotation_about_axis(0,1,0, rotation_angle);
-	var tilt_matrix 	  = Matrix.rotation_about_axis(1,0,0, axial_tilt);
-	var conversion_matrix = Matrix.mult_matrix(rotation_matrix, tilt_matrix);
-	return VectorField.mult_matrix3(equatorial_coordinates, conversion_matrix, result);
+	var rotation_matrix   = Matrix.RotationAboutAxis(0,1,0, rotation_angle);
+	var tilt_matrix 	  = Matrix.RotationAboutAxis(1,0,0, axial_tilt);
+	var conversion_matrix = Matrix.mult_matrix(tilt_matrix, rotation_matrix);
+	return VectorField.mult_matrix(equatorial_coordinates, conversion_matrix, result);
 }
 // gets a list of 2d positions that are sampled evenly over one revolution of an orbit
-OrbitalMechanics.get_eliptic_coordinate_samples = function(semi_major_axis, eccentricity, sample_num) {
-	//TODO: find mean_anomaly
+OrbitalMechanics.get_eliptic_coordinate_samples = function(
+		semi_major_axis, 
+		eccentricity, 
+		sample_num) {
 	var samples = []	
 	var sample;
 	var mean_anomaly = 0.;
@@ -34,9 +36,9 @@ OrbitalMechanics.get_eliptic_coordinate_samples = function(semi_major_axis, ecce
 	return samples;
 }
 OrbitalMechanics.get_eliptic_coordinate_sample = function(
-	semi_major_axis, 
-	eccentricity, 
-	mean_anomaly) {
+		semi_major_axis, 
+		eccentricity, 
+		mean_anomaly) {
 	var a = semi_major_axis;
 	var e = eccentricity;
 	var E = OrbitalMechanics.solve_eccentric_anomaly(mean_anomaly, eccentricity, 5);
