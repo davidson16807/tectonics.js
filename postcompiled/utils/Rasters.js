@@ -2891,13 +2891,37 @@ VectorRaster.get_nearest_values = function(value_raster, pos_raster, result) {
 var Float32RasterInterpolation = {};
 Float32RasterInterpolation.lerp = function(a,b, x, result){
     if (!(x instanceof Float32Array)) { throw "x" + ' is not a ' + "Float32Array"; }
+    result = result || Float32Raster(x.grid);
+    if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
     for (var i = 0, li = result.length; i < li; i++) {
-  result[i] = a + x[i]*(b-a);
+        result[i] = a + x[i]*(b-a);
+    }
+    return result;
+}
+Float32RasterInterpolation.lerp_fsf = function(a,b, x, result){
+    if (!(a instanceof Float32Array)) { throw "a" + ' is not a ' + "Float32Array"; }
+    if (!(x instanceof Float32Array)) { throw "x" + ' is not a ' + "Float32Array"; }
+    result = result || Float32Raster(x.grid);
+    if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
+    for (var i = 0, li = result.length; i < li; i++) {
+        result[i] = a[i] + x[i] * (b-a[i]);
+    }
+    return result;
+}
+Float32RasterInterpolation.lerp_sff = function(a,b, x, result){
+    if (!(b instanceof Float32Array)) { throw "b" + ' is not a ' + "Float32Array"; }
+    if (!(x instanceof Float32Array)) { throw "x" + ' is not a ' + "Float32Array"; }
+    result = result || Float32Raster(x.grid);
+    if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
+    for (var i = 0, li = result.length; i < li; i++) {
+        result[i] = a + x[i] * (b[i]-a);
     }
     return result;
 }
 Float32RasterInterpolation.clamp = function(x, min_value, max_value, result) {
     if (!(x instanceof Float32Array)) { throw "x" + ' is not a ' + "Float32Array"; }
+    result = result || Float32Raster(x.grid);
+    if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
     var x_i = 0.0;
     for (var i = 0, li = x.length; i < li; i++) {
         x_i = x[i];
@@ -2907,6 +2931,8 @@ Float32RasterInterpolation.clamp = function(x, min_value, max_value, result) {
 }
 Float32RasterInterpolation.smoothstep = function(edge0, edge1, x, result) {
     if (!(x instanceof Float32Array)) { throw "x" + ' is not a ' + "Float32Array"; }
+    result = result || Float32Raster(x.grid);
+    if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
  var fraction;
  var inverse_edge_distance = 1 / (edge1 - edge0);
     for (var i = 0, li = result.length; i < li; i++) {
