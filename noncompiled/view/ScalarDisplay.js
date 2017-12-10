@@ -202,12 +202,16 @@ scalarDisplays.plate_count 	= new ScalarHeatDisplay( { min: '0.', max: '3.',
 	} );
 scalarDisplays.temp 	= new ScalarHeatDisplay( { min: '-25.', max: '30.',  
 		getField: function (crust) {
-			return AtmosphericModeling.surface_air_temp(crust.grid.pos, crust.meanAnomaly, Math.PI*23.5/180);
+			var temp = AtmosphericModeling.surface_air_temp(crust.grid.pos, crust.meanAnomaly, Math.PI*23.5/180);
+			// convert to Celcius
+			ScalarField.add_scalar(temp, -273.15, temp);
+			return temp;
 		} 
 	} );
-scalarDisplays.precip 	= new ScalarHeatDisplay( { min: '-1.', max: '1.',  
+scalarDisplays.precip 	= new ScalarHeatDisplay( { min: '2000.', max: '1.',  
 		getField: function (crust) {
-			return AtmosphericModeling.precip(crust.grid.pos);
+			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
+			return AtmosphericModeling.precip(lat);
 		} 
 	} );
 scalarDisplays.age 	= new ScalarHeatDisplay( { min: '250.', max: '0.',  
