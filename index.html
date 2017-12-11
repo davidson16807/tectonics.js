@@ -18,6 +18,8 @@
 
 	<script src="http://code.jquery.com/jquery.min.js"></script>
 	<script src="https://unpkg.com/vue"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.3.0/Chart.js"></script>
+	<script src="libraries/vue-charts.js"></script>
 	<script src="libraries/bootstrap.js"></script>
 	<script src="libraries/three.js/Three.js"></script>
 	<script src="libraries/three.js/Detector.js"></script>
@@ -211,6 +213,17 @@
 <div class="bottomleft">
 	<div id="renderStats"></div>
 	<div id="updateStats"></div>
+</div>
+<div class="bottomright">
+	<div id="chart" v-if="enabled">
+
+		<chartjs-line :width="200" :height="100" 
+			:data="x" 
+			:labels="y" 
+			:bind="true"
+			:option="{legend: {display: false}, animation : false}">
+		</chartjs-line>
+	</div>
 </div>
 <div id="drop-dialog" class="collapse">
 	<h2>DRAG HERE</h2>
@@ -714,6 +727,45 @@
 	    }
 	  }
 	});
+
+	Vue.use(VueCharts);
+    const app = new Vue({
+        el: '#chart',
+        data:{
+        	enabled: false,
+            x: [],
+            y: []
+        },
+		created: function() {
+			var _this = this;
+			setInterval(function() {
+				var field = view._scalarDisplay.field;
+				if (field === void 0) {
+					_this.enabled = false;
+					return;
+				}
+				var max = Float32Dataset.max(field);
+				var min = Float32Dataset.min(field);
+				var range = Math.pow(10, Math.round(Math.log10(max - min)));
+				var bin_num = 10;
+				var bin_size = range/bin_num;
+				var bin_min = 0;
+				var bin_max = 0;
+				var bin_mag = 0;
+				var x = [];
+				var y = [];
+				for (var i = 0; i < bin_num; i++) {
+					bin_min = Math.round(min+i*bin_size);
+					bin_max = Math.round(max+i*bin_size);
+					x[i] = Uint8Dataset.sum(ScalarField.between_scalars(field, bin_min, bin_max))
+					y[i] = bin_min;
+				}
+				_this.enabled = true;
+				_this.$data.x = x;
+				_this.$data.y = y;
+			}, 1000/2);
+		},
+    });
 </script>
 </body>
 </html>

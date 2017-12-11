@@ -701,6 +701,17 @@ ScalarField.lte_scalar = function (scalar_field1, scalar, result) {
   }
   return result;
 };
+ScalarField.between_scalars = function (scalar_field1, scalar1, scalar2, result) {
+  result = result || Uint8Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Float32Array)) { throw "scalar_field1" + ' is not a ' + "Float32Array"; }
+  if (!(typeof scalar1 == "number")) { throw "scalar1" + ' is not a ' + "number"; }
+  if (!(typeof scalar2 == "number")) { throw "scalar2" + ' is not a ' + "number"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = scalar1 < scalar_field1[i] && scalar_field1[i] < scalar2? 1:0;
+  }
+  return result;
+};
 ScalarField.eq_scalar = function (scalar_field1, scalar, threshold, result) {
   result = result || Uint8Raster(scalar_field1.grid);
   if (!(scalar_field1 instanceof Float32Array)) { throw "scalar_field1" + ' is not a ' + "Float32Array"; }
