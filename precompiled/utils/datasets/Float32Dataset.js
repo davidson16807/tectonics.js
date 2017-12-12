@@ -10,6 +10,10 @@ Float32Dataset.max = function (dataset) {
   ASSERT_IS_ARRAY(dataset, Float32Array)
   return dataset[Float32Raster.max_id(dataset)];
 };
+Float32Dataset.range = function (dataset) {
+  ASSERT_IS_ARRAY(dataset, Float32Array)
+  return [Float32Dataset.min(dataset), Float32Dataset.max(dataset)];
+};
 Float32Dataset.sum = function (dataset) {
   ASSERT_IS_ARRAY(dataset, Float32Array)
   var result = 0;

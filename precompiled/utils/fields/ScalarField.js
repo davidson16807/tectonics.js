@@ -310,8 +310,22 @@ ScalarField.div_scalar = function (scalar_field, scalar, result) {
   ASSERT_IS_TYPE(scalar, number)
   ASSERT_IS_ARRAY(result, Float32Array)
   
+  var inv_scalar = 1/scalar;
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = scalar_field[i] / scalar;
+    result[i] = scalar_field[i] * inv_scalar;
+  }
+  return result;
+};
+ScalarField.pow_scalar = function (scalar_field, scalar, result) {
+  result = result || Float32Raster(scalar_field.grid);
+
+  ASSERT_IS_ARRAY(scalar_field, Float32Array)
+  ASSERT_IS_TYPE(scalar, number)
+  ASSERT_IS_ARRAY(result, Float32Array)
+  
+  var pow = Math.pow;
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = pow(scalar_field[i], scalar);
   }
   return result;
 };
