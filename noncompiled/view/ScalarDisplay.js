@@ -114,10 +114,30 @@ ScalarDisplay.prototype.updateAttributes = function(geometry, plate) {
 		buffer_array_index = buffer_array_to_cell[j];
 		scalar[j] = scalar_model[buffer_array_index]; 
 	}
-	geometry.attributes.scalar.needsUpdate = true;
+	if (scalar_model !== void 0) {
+		geometry.attributes.scalar.needsUpdate = true;
+		if (scalar_model !== this.field) {
+			Float32Raster.copy(scalar_model, this.field);
+		}
+	} else {
+		this.field = void 0;
+	}
 }
-scalarDisplays.npp 	= new ScalarDisplay( {color: 0x00ff00, scalar: 'npp'} );
-scalarDisplays.alt 	= new ScalarDisplay( {color: 0x000000, min:'sealevel', max:'maxheight', scalar: 'alt'} );
+scalarDisplays.npp 	= new ScalarDisplay( { color: 0x00ff00, min: '0.', max: '1.',  
+		getField: function (world, result) {
+			var temp = AtmosphericModeling.surface_air_temp(world.grid.pos, world.meanAnomaly, Math.PI*23.5/180);
+			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
+			var precip = AtmosphericModeling.precip(lat);
+			var npp = BiosphereModeling.net_primary_productivity(temp, precip, 1, result);
+			return npp;
+		} 
+	} );
+scalarDisplays.alt 	= new ScalarDisplay( {color: 0x000000, min:'sealevel', max:'maxheight', 
+		getField: function (world, result) {
+			ScalarField.sub_scalar(world.displacement, world.SEALEVEL, result);
+			return result
+		} 
+	} );
 
 
 
@@ -188,6 +208,11 @@ ScalarHeatDisplay.prototype.updateAttributes = function(geometry, plate) {
 	geometry.attributes.displacement.needsUpdate = true;
 	if (scalar_model !== void 0) {
 		geometry.attributes.scalar.needsUpdate = true;
+		if (scalar_model !== this.field) {
+			Float32Raster.copy(scalar_model, this.field);
+		}
+	} else {
+		this.field = void 0;
 	}
 }
 scalarDisplays.plates 	= new ScalarHeatDisplay( { min: '0.', max: '7.', 
