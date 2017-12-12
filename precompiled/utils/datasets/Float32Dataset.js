@@ -26,6 +26,32 @@ Float32Dataset.average = function (dataset) {
   }
   return result / dataset.length;
 };
+Float32Dataset.median = function (dataset, scratch) {
+  scratch = scratch || new Float32Array();
+  ASSERT_IS_ARRAY(dataset, Float32Array)
+  ASSERT_IS_ARRAY(scratch, Float32Array)
+  scratch.set(dataset);
+  scratch.sort();
+  return scratch[Math.floor(scratch.length)];
+};
+Float32Dataset.standard_deviation = function (dataset) {
+  ASSERT_IS_ARRAY(dataset, Float32Array)
+  var sum = 0;
+  var li=dataset.length
+
+  for (var i=0; i<li; ++i) {
+      sum += dataset[i];
+  }
+  var average = sum / dataset.length;
+
+  var difference = 0;
+  var sum_of_squared_differences = 0;
+  for (var i=0; i<li; ++i) {
+      difference = (dataset[i] - average);
+      sum_of_squared_differences += difference * difference;
+  }
+  return sum_of_squared_differences / (li-1);
+};
 Float32Dataset.weighted_average = function (dataset, weights) {
   ASSERT_IS_ARRAY(dataset, Float32Array)
   ASSERT_IS_ARRAY(weights, Float32Array)
