@@ -29,6 +29,12 @@ body {
 	padding-left:1em;
 }
 
+#chart{
+	width: 300px;
+}
+#chart canvas{
+	padding: 1em;
+}
 #hidden-downloader{
 	display: none;
 }

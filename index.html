@@ -84,8 +84,8 @@
 <div class="topright collapse collapsible controls" >
 	<div id="time-menu" class="time-menu">
 		<div class="input-group age-group">
-			<span class="form-control input-sm age">{{ format(age, 1000, 3).quantity }}</span>
-			<span class="input-group-addon age-units">{{ format(age, 1000, 3).unit }}</span>
+			<span class="form-control input-sm age">{{ format(age * 1e6, 1000, 3).quantity }}</span>
+			<span class="input-group-addon age-units">{{ format(age * 1e6, 1000, 3).unit }}y</span>
 		</div>
 		<div class="input-group speed-group">
 			<span class="input-group-addon play" v-on:click="togglePause()">
@@ -219,10 +219,21 @@
 <div class="bottomright">
 	<div id="chart" v-if="enabled">
 
+		<div class="input-group ">
+			<span class="form-control input-sm">min</span>
+			<span class="input-group-addon">{{round(min)}}</span>
+			<span class="form-control input-sm">max</span>
+			<span class="input-group-addon">{{round(max)}}</span>
+			<span class="form-control input-sm">mean</span>
+			<span class="input-group-addon">{{round(mean)}}</span>
+		</div>
 		<chartjs-line :width="200" :height="100" 
 			:data="x" 
 			:labels="y" 
 			:bind="true"
+			:bordercolor="'#FFFFFF'"
+			:backgroundcolor="'rgba(256,256,256,0.2)'" 
+			:fill="true"
 			:option="{legend: {display: false}, animation : false}">
 		</chartjs-line>
 	</div>
@@ -427,10 +438,10 @@
 	    reader.readAsText(file);
 	}
 
-	function format (My, rollover, precision){
-				var quantity = My * 1000000;
-				var units = ['ky', 'My', 'By']
-				var unit = 'yr';
+	function format (num, rollover, precision){
+				var quantity = num;
+				var units = ['', 'k', 'M', 'G']
+				var unit = units.shift();
 				while(quantity > rollover) {
 					unit = units.shift();
 					quantity /= 1000;
@@ -441,8 +452,8 @@
 				};
 			}
 	function format_text (My, rollover, precision) {
-		var formatted = format(My, rollover, precision);
-		return formatted.quantity + ' ' + formatted.unit;
+		var formatted = format(My * 1e6, rollover, precision);
+		return formatted.quantity + ' ' + formatted.unit + 'y';
 	}
 
 	function download(dataUrl, filename) {
@@ -735,6 +746,9 @@
         el: '#chart',
         data:{
         	enabled: false,
+        	min: 0,
+        	max: 0,
+        	mean: 0,
             x: [],
             y: []
         },
@@ -762,11 +776,19 @@
 					x[i] = Uint8Dataset.sum(ScalarField.between_scalars(field, bin_min, bin_max))
 					y[i] = bin_min;
 				}
+				_this.min = min;
+				_this.max = max;
+				_this.mean = Float32Dataset.average(field);
 				_this.enabled = true;
 				_this.$data.x = x;
 				_this.$data.y = y;
 			}, 1000/2);
 		},
+		methods: {
+			round(x) {
+				return Math.round(x);
+			}
+		}
     });
 </script>
 </body>
