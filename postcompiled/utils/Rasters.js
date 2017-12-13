@@ -324,6 +324,30 @@ Float32Dataset.average = function (dataset) {
   }
   return result / dataset.length;
 };
+Float32Dataset.median = function (dataset, scratch) {
+  scratch = scratch || Float32Raster(dataset.grid);
+  if (!(dataset instanceof Float32Array)) { throw "dataset" + ' is not a ' + "Float32Array"; }
+  if (!(scratch instanceof Float32Array)) { throw "scratch" + ' is not a ' + "Float32Array"; }
+  Float32Raster.copy(dataset, scratch);
+  scratch.sort();
+  return scratch[Math.floor(scratch.length/2)];
+};
+Float32Dataset.standard_deviation = function (dataset) {
+  if (!(dataset instanceof Float32Array)) { throw "dataset" + ' is not a ' + "Float32Array"; }
+  var sum = 0;
+  var li=dataset.length
+  for (var i=0; i<li; ++i) {
+      sum += dataset[i];
+  }
+  var average = sum / dataset.length;
+  var difference = 0;
+  var sum_of_squared_differences = 0;
+  for (var i=0; i<li; ++i) {
+      difference = (dataset[i] - average);
+      sum_of_squared_differences += difference * difference;
+  }
+  return Math.sqrt(sum_of_squared_differences / (li-1));
+};
 Float32Dataset.weighted_average = function (dataset, weights) {
   if (!(dataset instanceof Float32Array)) { throw "dataset" + ' is not a ' + "Float32Array"; }
   if (!(weights instanceof Float32Array)) { throw "weights" + ' is not a ' + "Float32Array"; }

@@ -217,24 +217,42 @@
 	<div id="updateStats"></div>
 </div>
 <div class="bottomright">
-	<div id="chart" v-if="enabled">
+	<div id="chart" v-if="isEnabled">
+		<table class="stat">
+			<tr>
+				<td class="name">min</td>
+				<td class="value">{{round(min)}}</td>
+			</tr>
+			<tr>
+				<td class="name">max</td>
+				<td class="value">{{round(max)}}</td>
+			</tr>
+		</table>
 
-		<div class="input-group ">
-			<span class="form-control input-sm">min</span>
-			<span class="input-group-addon">{{round(min)}}</span>
-			<span class="form-control input-sm">max</span>
-			<span class="input-group-addon">{{round(max)}}</span>
-			<span class="form-control input-sm">mean</span>
-			<span class="input-group-addon">{{round(mean)}}</span>
-		</div>
+		<table class="stat">
+			<tr>
+				<td class="name">mean</td>
+				<td class="value">{{round(mean)}}</td>
+			</tr>
+			<tr>
+				<td class="name">median</td>
+				<td class="value">{{round(median)}}</td>
+			</tr>
+		</table>
+		<table class="stat">
+			<tr>
+				<td class="name">S.D.</td>
+				<td class="value">{{round(stddev)}}</td>
+			</tr>
+		</table>
 		<chartjs-line :width="200" :height="100" 
 			:data="x" 
 			:labels="y" 
 			:bind="true"
-			:bordercolor="'#FFFFFF'"
+			:bordercolor="'#FFF'"
 			:backgroundcolor="'rgba(256,256,256,0.2)'" 
 			:fill="true"
-			:option="{legend: {display: false}, animation : false}">
+			:option="options">
 		</chartjs-line>
 	</div>
 </div>
@@ -745,19 +763,37 @@
     const app = new Vue({
         el: '#chart',
         data:{
-        	enabled: false,
+        	isEnabled: false,
         	min: 0,
         	max: 0,
         	mean: 0,
+        	median: 0,
+        	stddev: 0,
             x: [],
-            y: []
+            y: [],
+            options: {
+            	legend: {display: false}, 
+            	animation : false,
+            	scales: {
+					xAxes: [{
+						ticks: {
+						  fontColor: '#FFFFFF'
+						}
+					}],
+					yAxes: [{
+						ticks: {
+						  fontColor: '#FFFFFF'
+						},
+					}]
+				}
+            }
         },
 		created: function() {
 			var _this = this;
 			setInterval(function() {
 				var field = view._scalarDisplay.field;
 				if (field === void 0) {
-					_this.enabled = false;
+					_this.isEnabled = false;
 					return;
 				}
 				var max = Float32Dataset.max(field);
@@ -779,7 +815,9 @@
 				_this.min = min;
 				_this.max = max;
 				_this.mean = Float32Dataset.average(field);
-				_this.enabled = true;
+				_this.median = Float32Dataset.median(field);
+				_this.stddev = Float32Dataset.standard_deviation(field);
+				_this.isEnabled = true;
 				_this.$data.x = x;
 				_this.$data.y = y;
 			}, 1000/2);

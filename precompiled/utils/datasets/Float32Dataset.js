@@ -27,12 +27,12 @@ Float32Dataset.average = function (dataset) {
   return result / dataset.length;
 };
 Float32Dataset.median = function (dataset, scratch) {
-  scratch = scratch || new Float32Array();
+  scratch = scratch || Float32Raster(dataset.grid);
   ASSERT_IS_ARRAY(dataset, Float32Array)
   ASSERT_IS_ARRAY(scratch, Float32Array)
-  scratch.set(dataset);
+  Float32Raster.copy(dataset, scratch);
   scratch.sort();
-  return scratch[Math.floor(scratch.length)];
+  return scratch[Math.floor(scratch.length/2)];
 };
 Float32Dataset.standard_deviation = function (dataset) {
   ASSERT_IS_ARRAY(dataset, Float32Array)
@@ -50,7 +50,7 @@ Float32Dataset.standard_deviation = function (dataset) {
       difference = (dataset[i] - average);
       sum_of_squared_differences += difference * difference;
   }
-  return sum_of_squared_differences / (li-1);
+  return Math.sqrt(sum_of_squared_differences / (li-1));
 };
 Float32Dataset.weighted_average = function (dataset, weights) {
   ASSERT_IS_ARRAY(dataset, Float32Array)
