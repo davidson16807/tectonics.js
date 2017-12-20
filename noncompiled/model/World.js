@@ -99,12 +99,12 @@ var World = (function() {
 		    add_ui8 	(master.plate_count, globalized_plate_mask, 							master.plate_count);
 
 		    // add current plate thickness to master thickness wherever current plate exists
-		    resample 	(plate.sial, local_ids_of_global_cells, 								globalized_scalar_field);
-		    add_term 	(master.sial, globalized_scalar_field, globalized_plate_mask, 			master.sial);
+		    resample 	(plate.unsubductable, local_ids_of_global_cells, 								globalized_scalar_field);
+		    add_term 	(master.unsubductable, globalized_scalar_field, globalized_plate_mask, 			master.unsubductable);
 
 		    // overwrite master wherever current plate is on top
-		    resample 	(plate.sima, local_ids_of_global_cells, 								globalized_scalar_field);
-		    copy_into 	(master.sima, globalized_scalar_field, globalized_is_on_top, 			master.sima);
+		    resample 	(plate.subductable, local_ids_of_global_cells, 								globalized_scalar_field);
+		    copy_into 	(master.subductable, globalized_scalar_field, globalized_is_on_top, 			master.subductable);
 
 		    // overwrite master wherever current plate is on top
 		    resample 	(plate.age, local_ids_of_global_cells, 									globalized_scalar_field);
@@ -237,7 +237,7 @@ var World = (function() {
 		        fill_into(plate.mask, 1, localized_is_detaching,                 		plate.mask); 
 		        //accrete, part 1
 		        if(ACCRETE) {
-		        	mult_field	(plate.sial, localized_is_detaching,					localized_accretion);
+		        	mult_field	(plate.unsubductable, localized_is_detaching,					localized_accretion);
 	            	resample_f32(localized_accretion, local_ids_of_global_cells,		globalized_scalar_field);
 	            	add 		(globalized_accretion, globalized_scalar_field, 		globalized_accretion);
 		        }
@@ -246,7 +246,7 @@ var World = (function() {
 	        if(ERODE) {
             	resample_f32(globalized_erosion, global_ids_of_local_cells,				localized_erosion);
             	resample 	(globalized_is_on_top, global_ids_of_local_cells,			localized_is_on_top);
-	        	add_term 	(plate.sial, localized_erosion, localized_is_on_top,		plate.sial);
+	        	add_term 	(plate.unsubductable, localized_erosion, localized_is_on_top,		plate.unsubductable);
 	        }
 
 	        //aging
@@ -262,7 +262,7 @@ var World = (function() {
 	        if(ACCRETE) {
             	resample 	(globalized_is_on_top, global_ids_of_local_cells,			localized_is_on_top);
             	resample_f32(globalized_accretion, global_ids_of_local_cells,			localized_accretion);
-	        	add_term 	(plate.sial, localized_accretion, localized_is_on_top,		plate.sial);
+	        	add_term 	(plate.unsubductable, localized_accretion, localized_is_on_top,		plate.unsubductable);
 	        }
 		}
 	}
@@ -273,8 +273,8 @@ var World = (function() {
 	World.prototype.ocean = 
 	 new RockColumn({
 		elevation: 	-3682,	// Charette & Smith 2010
-		sima: 		7100, 	// +/- 800, White McKenzie and O'nions 1992
-		// sial: 		100, // This can be set above zero to "cheat" on sial mass conservation
+		subductable: 		7100, 	// +/- 800, White McKenzie and O'nions 1992
+		// unsubductable: 		100, // This can be set above zero to "cheat" on unsubductable mass conservation
 		// thickness: 	7100, 	// +/- 800, White McKenzie and O'nions 1992
 		density: 	2890	// Carlson & Raskin 1984
 	 });
@@ -314,8 +314,8 @@ var World = (function() {
 
 	// update fields that are derived from others
 	function update_calculated_fields(crust) {
-		TectonicsModeling.get_thickness(crust.sima, crust.sial, crust.thickness);
-		TectonicsModeling.get_density(crust.sima, crust.sial, crust.age, crust.density);
+		TectonicsModeling.get_thickness(crust.subductable, crust.unsubductable, crust.thickness);
+		TectonicsModeling.get_density(crust.subductable, crust.unsubductable, crust.age, crust.density);
 		TectonicsModeling.get_subductability(crust.density, crust.subductability);
 		TectonicsModeling.get_displacement(crust.thickness, crust.density, world.mantleDensity, crust.displacement);
 	}

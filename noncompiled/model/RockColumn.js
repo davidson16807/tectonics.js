@@ -10,8 +10,8 @@ var RockColumn = (function() {
 		this.displacement = optional['displacement'] || 0;
 		this.thickness = optional['thickness'] || 0;
 		this.density = optional['density'] || 0;
-		this.sima = optional['sima'] || 0;
-		this.sial = optional['sial'] || 0;
+		this.subductable = optional['subductable'] || 0;
+		this.unsubductable = optional['unsubductable'] || 0;
 		this.age = optional['age'] || 0;
 	}
 	RockColumn.lerp = function(lower, upper, fraction) {
@@ -19,8 +19,8 @@ var RockColumn = (function() {
 			displacement	:lerp(lower.displacement, upper.displacement, fraction),
 			thickness		:lerp(lower.thickness, upper.thickness, fraction),
 			density			:lerp(lower.density, upper.density, fraction),
-			sima			:lerp(lower.sima, upper.sima, fraction),
-			sial			:lerp(lower.sial, upper.sial, fraction),
+			subductable		:lerp(lower.subductable, upper.subductable, fraction),
+			unsubductable	:lerp(lower.unsubductable, upper.unsubductable, fraction),
 			age				:lerp(lower.age, upper.age, fraction),
 		});
 	}

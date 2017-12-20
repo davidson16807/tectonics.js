@@ -244,14 +244,14 @@ scalarDisplays.age 	= new ScalarHeatDisplay( { min: '250.', max: '0.',
 			return crust.age;
 		} 
 	} );
-scalarDisplays.sima 	= new ScalarHeatDisplay( { min: '0.', max: '7900.',  
+scalarDisplays.subductable 	= new ScalarHeatDisplay( { min: '0.', max: '7900.',  
 		getField: function (crust) {
-			return crust.sima;
+			return crust.subductable;
 		} 
 	} );
-scalarDisplays.sial 	= new ScalarHeatDisplay( { min: '6000.', max: '70000.',  
+scalarDisplays.unsubductable 	= new ScalarHeatDisplay( { min: '6000.', max: '70000.',  
 		getField: function (crust) {
-			return crust.sial;
+			return crust.unsubductable;
 		} 
 	} );
 scalarDisplays.thickness 	= new ScalarHeatDisplay( { min: '6000.', max: '70000.',  

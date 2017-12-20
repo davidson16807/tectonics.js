@@ -8,24 +8,24 @@ function Crust(params) {
 	this.grid = params['grid'] || stop('missing parameter: "grid"');
 
 	// TODO:
-	// * rename sima/sial to subductable/unsubductable
-	// * record sima/sial in metric tons, not meters thickness
+	// * rename subductable/unsubductable to subductable/unsubductable
+	// * record subductable/unsubductable in metric tons, not meters thickness
 	// * switch densities to T/m^3
 
 	// The following are the most fundamental fields to the tectonics model:
 
-	this.sial = Float32Raster(this.grid);
-	// "sial" is the thickness of the buoyant, unsubductable component of the crust
-	// AKA "sial", "felsic", or "continental" crust
+	this.unsubductable = Float32Raster(this.grid);
+	// "unsubductable" is the thickness of the buoyant, unsubductable component of the crust
+	// AKA "unsubductable", "felsic", or "continental" crust
 	// Why don't we call it "continental" or some other name? Two reasons:
 	//  1.) programmers will immediately understand what it does
 	//  2.) we may want this model to simulate planets where alternate names don't apply, e.g. Pluto
-	// sial is a conserved quantity - it is never created or destroyed without our explicit say-so
+	// unsubductable is a conserved quantity - it is never created or destroyed without our explicit say-so
 	// This is to provide our model with a way to check for errors
 
-	this.sima = Float32Raster(this.grid);
-	// "sima" is the thickness of the denser, subductable component of the crust
-	// AKA "sima", "mafsic", or "oceanic" crust
+	this.subductable = Float32Raster(this.grid);
+	// "subductable" is the thickness of the denser, subductable component of the crust
+	// AKA "subductable", "mafsic", or "oceanic" crust
 	// Why don't we call it "oceanic" or some other name? Two reasons:
 	//  1.) programmers will immediately understand what it does
 	//  2.) we may want this model to simulate planets where alternate names don't apply, e.g. Pluto
@@ -49,8 +49,8 @@ Crust.get_value = function(crust, i) {
 		displacement 	:crust.displacement[i],
 		thickness 		:crust.thickness[i],
 		density 		:crust.density[i],
-		sima 			:crust.sima[i],
-		sial 			:crust.sial[i],
+		subductable 			:crust.subductable[i],
+		unsubductable 			:crust.unsubductable[i],
 		age 			:crust.age[i],
 	});
 }
@@ -58,8 +58,8 @@ Crust.set_value = function(crust, i, rock_column) {
 	crust.displacement[i]	= rock_column.displacement;
 	crust.thickness[i] 		= rock_column.thickness;
 	crust.density[i] 		= rock_column.density;
-	crust.sima[i] 			= rock_column.sima;
-	crust.sial[i] 			= rock_column.sial;
+	crust.subductable[i] 			= rock_column.subductable;
+	crust.unsubductable[i] 			= rock_column.unsubductable;
 	crust.age[i] 			= rock_column.age;
 }
 Crust.copy = function(source, destination) {
@@ -67,8 +67,8 @@ Crust.copy = function(source, destination) {
 	copy(source.displacement, destination.displacement);
 	copy(source.thickness, destination.thickness);
 	copy(source.density, destination.density);
-	copy(source.sima, destination.sima);
-	copy(source.sial, destination.sial);
+	copy(source.subductable, destination.subductable);
+	copy(source.unsubductable, destination.unsubductable);
 	copy(source.age, destination.age);
 }
 Crust.fill = function(crust, rock_column) {
@@ -76,8 +76,8 @@ Crust.fill = function(crust, rock_column) {
 	fill(crust.displacement, rock_column.displacement);
 	fill(crust.thickness, rock_column.thickness);
 	fill(crust.density, rock_column.density);
-	fill(crust.sima, rock_column.sima);
-	fill(crust.sial, rock_column.sial);
+	fill(crust.subductable, rock_column.subductable);
+	fill(crust.unsubductable, rock_column.unsubductable);
 	fill(crust.age, rock_column.age);
 }
 Crust.copy_into_selection = function(crust, copied_crust, selection_raster, result_crust) {
@@ -85,8 +85,8 @@ Crust.copy_into_selection = function(crust, copied_crust, selection_raster, resu
 	copy(source.displacement, copied_crust.displacement, selection_raster, result_crust.displacement);
 	copy(source.thickness, copied_crust.thickness, selection_raster, result_crust.thickness);
 	copy(source.density, copied_crust.density, selection_raster, result_crust.density);
-	copy(source.sima, copied_crust.sima, selection_raster, result_crust.sima);
-	copy(source.sial, copied_crust.sial, selection_raster, result_crust.sial);
+	copy(source.subductable, copied_crust.subductable, selection_raster, result_crust.subductable);
+	copy(source.unsubductable, copied_crust.unsubductable, selection_raster, result_crust.unsubductable);
 	copy(source.age, copied_crust.age, selection_raster, result_crust.age);
 }
 Crust.fill_into_selection = function(crust, rock_column, selection_raster, result_crust) {
@@ -95,7 +95,7 @@ Crust.fill_into_selection = function(crust, rock_column, selection_raster, resul
 	fill(crust.displacement, rock_column.displacement, selection_raster, result_crust.displacement);
 	fill(crust.thickness, rock_column.thickness, selection_raster, result_crust.thickness);
 	fill(crust.density, rock_column.density, selection_raster, result_crust.density);
-	fill(crust.sima, rock_column.sima, selection_raster, result_crust.sima);
-	fill(crust.sial, rock_column.sial, selection_raster, result_crust.sial);
+	fill(crust.subductable, rock_column.subductable, selection_raster, result_crust.subductable);
+	fill(crust.unsubductable, rock_column.unsubductable, selection_raster, result_crust.unsubductable);
 	fill(crust.age, rock_column.age, selection_raster, result_crust.age);
 }
