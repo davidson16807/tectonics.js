@@ -273,9 +273,9 @@ var World = (function() {
 	World.prototype.ocean = 
 	 new RockColumn({
 		elevation: 	-3682,	// Charette & Smith 2010
-		subductable: 		7100, 	// +/- 800, White McKenzie and O'nions 1992
+		subductable: 7100*2890, 	
+		// thickness +/- 800, from White McKenzie and O'nions 1992
 		// unsubductable: 		100, // This can be set above zero to "cheat" on unsubductable mass conservation
-		// thickness: 	7100, 	// +/- 800, White McKenzie and O'nions 1992
 		density: 	2890	// Carlson & Raskin 1984
 	 });
 
@@ -314,7 +314,7 @@ var World = (function() {
 
 	// update fields that are derived from others
 	function update_calculated_fields(crust) {
-		TectonicsModeling.get_thickness(crust.subductable, crust.unsubductable, crust.thickness);
+		TectonicsModeling.get_thickness(crust.subductable, crust.unsubductable, crust.subductable_age, crust.thickness);
 		TectonicsModeling.get_density(crust.subductable, crust.unsubductable, crust.subductable_age, crust.density);
 		TectonicsModeling.get_subductability(crust.density, crust.subductability);
 		TectonicsModeling.get_displacement(crust.thickness, crust.density, world.mantleDensity, crust.displacement);

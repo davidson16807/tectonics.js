@@ -68,43 +68,58 @@ WorldGenerator.modern_earth_control_points = [
 	//abyss
 	new RockColumn({
 		displacement: 	-11000,
-		subductable: 	4000, 
+		subductable: 	7100*2890, 
+			// thickness +/- 800, from White McKenzie and O'nions 1992
+			// density from Carlson and Raskin 1984
 		subductable_age:250,
 	}),
 	//deep_ocean
 	new RockColumn({
 		displacement: 	-6000,  
-		subductable: 	7100-800, // +/- 800, White McKenzie and O'nions 1992
+		subductable: 	7100*2890, 
+			// thickness +/- 800, from White McKenzie and O'nions 1992
+			// density from Carlson and Raskin 1984
 		subductable_age:200,
 	}),
 	//shallow_ocean
 	new RockColumn({
-		displacement: 	-3682,	 // Charette & Smith 2010
-		subductable: 	7100+800, // +/- 800, White McKenzie and O'nions 1992
+		displacement: 	-3682,	 
+			// Charette & Smith 2010
+		subductable: 	7100*2890, 
+			// thickness +/- 800, from White McKenzie and O'nions 1992
+			// density from Carlson and Raskin 1984
 		subductable_age:0,
 	}),
 	//shelf_bottom
 	new RockColumn({
-		displacement: 	-2000,    //Sverdrup & Fleming 1942
-		subductable: 	7100+800,  // +/- 2900, estimate for shields, Zandt & Ammon 1995
+		displacement: 	-2000,    
+			//Sverdrup & Fleming 1942
+		subductable: 	7100*2890, 
+			// thickness +/- 800, from White McKenzie and O'nions 1992
+			// density from Carlson and Raskin 1984
 		subductable_age:100,
 	}),
 	//shelf_top
 	new RockColumn({
-		displacement: 	-200,    //Sverdrup & Fleming 1942
-		unsubductable: 	17000,  // +/- 2900, estimate for shields, Zandt & Ammon 1995
+		displacement: 	-200,    
+			//Sverdrup & Fleming 1942
+		unsubductable: 	17000*2700,  
+			// +/- 2900, estimate for shields, Zandt & Ammon 1995
 		subductable_age:1000,
 	}),
 	//land
 	new RockColumn({
-		displacement: 	840,    //Sverdrup & Fleming 1942
-		unsubductable: 	36900,  // +/- 2900, estimate for shields, Zandt & Ammon 1995
+		displacement: 	840,    
+			//Sverdrup & Fleming 1942
+		unsubductable: 	36900*2700,  
+			// +/- 2900, estimate for shields, Zandt & Ammon 1995
 		subductable_age:1000,
 	}),
 	//mountain
 	new RockColumn({
 		displacement: 	8848,
-		unsubductable: 	70000,  // +/- 2900, estimate for shields, Zandt & Ammon 1995
+		unsubductable: 	70000*2700,  
+			// +/- 2900, estimate for shields, Zandt & Ammon 1995
 		subductable_age:1000,
 	})
 ];

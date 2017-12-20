@@ -7,22 +7,43 @@
 
 var TectonicsModeling = {};
 
-TectonicsModeling.get_thickness = function(sima, sial, thickness) {
-	return ScalarField.add_field(sima, sial, thickness);
+TectonicsModeling.get_thickness = function(sima, sial, age, thickness, scratch) {
+	thickness = thickness || Float32Raster(age.grid);
+	scratch = scratch || Float32Raster(age.grid);
+
+	var sima_density = scratch;
+	TectonicsModeling.get_subductable_density(age, sima_density);
+	var sima_thickness = thickness;
+	ScalarField.div_field(sima, sima_density, sima_thickness);
+	var sial_thickness = scratch;
+	ScalarField.div_scalar(sial, 2700, sial_thickness);
+
+	return ScalarField.add_field(sima_thickness, sial_thickness, thickness);
+}
+
+TectonicsModeling.get_subductable_density = function(age, density) {
+	density = density || Float32Raster(age.grid);
+
+	// NOTE: density does double duty for performance reasons
+	var fraction_of_lifetime = density;
+	Float32RasterInterpolation.smoothstep	(0, 250, age, 						fraction_of_lifetime);
+	Float32RasterInterpolation.lerp			(2890, 3300, fraction_of_lifetime, 	density);
+    return density;
 }
 
 TectonicsModeling.get_density = function(sima, sial, age, density) {
 	density = density || Float32Raster(sima.grid);
 
 	// NOTE: density does double duty for performance reasons
-	var fraction_of_lifetime = density;
 	var sima_density = density;
 
-	Float32RasterInterpolation.smoothstep	(0, 250, age, 						fraction_of_lifetime);
-	Float32RasterInterpolation.lerp			(2890, 3300, fraction_of_lifetime, 	density);
+	TectonicsModeling.get_subductable_density(age, sima_density);
 
     for (var i = 0, li = density.length; i < li; i++) {
-    	density[i] = sima[i] + sial[i] > 0? (sima[i] * sima_density[i] + sial[i] * 2700) / (sima[i] + sial[i]) : 2890;
+    	density[i] = sima[i] + sial[i] > 0? 
+    		(sima[i] * sima_density[i] + sial[i] * 2700) / (sima[i] + sial[i]) 
+		: 
+			2890;
     }
     return density;
 }

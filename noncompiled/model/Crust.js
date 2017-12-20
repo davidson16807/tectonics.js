@@ -8,14 +8,13 @@ function Crust(params) {
 	this.grid = params['grid'] || stop('missing parameter: "grid"');
 
 	// TODO:
-	// * rename subductable/unsubductable to subductable/unsubductable
-	// * record subductable/unsubductable in metric tons, not meters thickness
 	// * switch densities to T/m^3
+	// * switch mass to T/m^2
 
 	// The following are the most fundamental fields to the tectonics model:
 
 	this.unsubductable = Float32Raster(this.grid);
-	// "unsubductable" is the thickness of the buoyant, unsubductable component of the crust
+	// "unsubductable" is the mass of the buoyant, unsubductable component of the crust
 	// AKA "unsubductable", "felsic", or "continental" crust
 	// Why don't we call it "continental" or some other name? Two reasons:
 	//  1.) programmers will immediately understand what it does
@@ -24,7 +23,7 @@ function Crust(params) {
 	// This is to provide our model with a way to check for errors
 
 	this.subductable = Float32Raster(this.grid);
-	// "subductable" is the thickness of the denser, subductable component of the crust
+	// "subductable" is the mass of the denser, subductable component of the crust
 	// AKA "subductable", "mafsic", or "oceanic" crust
 	// Why don't we call it "oceanic" or some other name? Two reasons:
 	//  1.) programmers will immediately understand what it does
