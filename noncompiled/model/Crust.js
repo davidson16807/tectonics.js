@@ -30,9 +30,9 @@ function Crust(params) {
 	//  1.) programmers will immediately understand what it does
 	//  2.) we may want this model to simulate planets where alternate names don't apply, e.g. Pluto
 
-	this.age = Float32Raster(this.grid);
-	// the age of the subductable component of the crust
-	// we don't track the age of unsubductable crust because it doesn't affect model behavior
+	this.subductable_age = Float32Raster(this.grid);
+	// the subductable_age of the subductable component of the crust
+	// we don't track the subductable_age of unsubductable crust because it doesn't affect model behavior
 
 
 	// The following are fields that are derived from other fields:
@@ -51,7 +51,7 @@ Crust.get_value = function(crust, i) {
 		density 		:crust.density[i],
 		subductable 			:crust.subductable[i],
 		unsubductable 			:crust.unsubductable[i],
-		age 			:crust.age[i],
+		subductable_age 			:crust.subductable_age[i],
 	});
 }
 Crust.set_value = function(crust, i, rock_column) {
@@ -60,7 +60,7 @@ Crust.set_value = function(crust, i, rock_column) {
 	crust.density[i] 		= rock_column.density;
 	crust.subductable[i] 			= rock_column.subductable;
 	crust.unsubductable[i] 			= rock_column.unsubductable;
-	crust.age[i] 			= rock_column.age;
+	crust.subductable_age[i] 			= rock_column.subductable_age;
 }
 Crust.copy = function(source, destination) {
 	var copy = Float32Raster.copy;
@@ -69,7 +69,7 @@ Crust.copy = function(source, destination) {
 	copy(source.density, destination.density);
 	copy(source.subductable, destination.subductable);
 	copy(source.unsubductable, destination.unsubductable);
-	copy(source.age, destination.age);
+	copy(source.subductable_age, destination.subductable_age);
 }
 Crust.fill = function(crust, rock_column) {
 	var fill = Float32Raster.fill;
@@ -78,7 +78,7 @@ Crust.fill = function(crust, rock_column) {
 	fill(crust.density, rock_column.density);
 	fill(crust.subductable, rock_column.subductable);
 	fill(crust.unsubductable, rock_column.unsubductable);
-	fill(crust.age, rock_column.age);
+	fill(crust.subductable_age, rock_column.subductable_age);
 }
 Crust.copy_into_selection = function(crust, copied_crust, selection_raster, result_crust) {
 	var copy = Float32RasterGraphics.copy_into_selection;
@@ -87,7 +87,7 @@ Crust.copy_into_selection = function(crust, copied_crust, selection_raster, resu
 	copy(source.density, copied_crust.density, selection_raster, result_crust.density);
 	copy(source.subductable, copied_crust.subductable, selection_raster, result_crust.subductable);
 	copy(source.unsubductable, copied_crust.unsubductable, selection_raster, result_crust.unsubductable);
-	copy(source.age, copied_crust.age, selection_raster, result_crust.age);
+	copy(source.subductable_age, copied_crust.subductable_age, selection_raster, result_crust.subductable_age);
 }
 Crust.fill_into_selection = function(crust, rock_column, selection_raster, result_crust) {
 	var fill = Float32RasterGraphics.fill_into_selection;
@@ -97,5 +97,5 @@ Crust.fill_into_selection = function(crust, rock_column, selection_raster, resul
 	fill(crust.density, rock_column.density, selection_raster, result_crust.density);
 	fill(crust.subductable, rock_column.subductable, selection_raster, result_crust.subductable);
 	fill(crust.unsubductable, rock_column.unsubductable, selection_raster, result_crust.unsubductable);
-	fill(crust.age, rock_column.age, selection_raster, result_crust.age);
+	fill(crust.subductable_age, rock_column.subductable_age, selection_raster, result_crust.subductable_age);
 }

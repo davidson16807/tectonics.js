@@ -12,7 +12,7 @@ var RockColumn = (function() {
 		this.density = optional['density'] || 0;
 		this.subductable = optional['subductable'] || 0;
 		this.unsubductable = optional['unsubductable'] || 0;
-		this.age = optional['age'] || 0;
+		this.subductable_age = optional['subductable_age'] || 0;
 	}
 	RockColumn.lerp = function(lower, upper, fraction) {
 		return new RockColumn({
@@ -21,7 +21,7 @@ var RockColumn = (function() {
 			density			:lerp(lower.density, upper.density, fraction),
 			subductable		:lerp(lower.subductable, upper.subductable, fraction),
 			unsubductable	:lerp(lower.unsubductable, upper.unsubductable, fraction),
-			age				:lerp(lower.age, upper.age, fraction),
+			subductable_age				:lerp(lower.subductable_age, upper.subductable_age, fraction),
 		});
 	}
 	return RockColumn;

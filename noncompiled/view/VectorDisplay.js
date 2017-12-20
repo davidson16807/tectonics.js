@@ -116,7 +116,7 @@ vectorDisplays.displacement_gradient	= new VectorFieldDisplay( {
 } );
 vectorDisplays.age_gradient	= new VectorFieldDisplay( { 
 	getField: function (plate) {
-		return ScalarField.gradient(plate.age);
+		return ScalarField.gradient(plate.subductable_age);
 	}
 } );
 vectorDisplays.pos_gradient	= new VectorFieldDisplay( { 

@@ -107,8 +107,8 @@ var World = (function() {
 		    copy_into 	(master.subductable, globalized_scalar_field, globalized_is_on_top, 			master.subductable);
 
 		    // overwrite master wherever current plate is on top
-		    resample 	(plate.age, local_ids_of_global_cells, 									globalized_scalar_field);
-		    copy_into 	(master.age, globalized_scalar_field, globalized_is_on_top, 			master.age);
+		    resample 	(plate.subductable_age, local_ids_of_global_cells, 									globalized_scalar_field);
+		    copy_into 	(master.subductable_age, globalized_scalar_field, globalized_is_on_top, 			master.subductable_age);
 		}
 		update_calculated_fields(master);
 	}
@@ -250,7 +250,7 @@ var World = (function() {
 	        }
 
 	        //aging
-			ScalarField.add_scalar(plate.age, timestep, 								plate.age);
+			ScalarField.add_scalar(plate.subductable_age, timestep, 								plate.subductable_age);
 		}
 		for (var i=0, li=plates.length; i<li; ++i) {
 		    plate = plates[i];
@@ -315,7 +315,7 @@ var World = (function() {
 	// update fields that are derived from others
 	function update_calculated_fields(crust) {
 		TectonicsModeling.get_thickness(crust.subductable, crust.unsubductable, crust.thickness);
-		TectonicsModeling.get_density(crust.subductable, crust.unsubductable, crust.age, crust.density);
+		TectonicsModeling.get_density(crust.subductable, crust.unsubductable, crust.subductable_age, crust.density);
 		TectonicsModeling.get_subductability(crust.density, crust.subductability);
 		TectonicsModeling.get_displacement(crust.thickness, crust.density, world.mantleDensity, crust.displacement);
 	}

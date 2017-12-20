@@ -241,7 +241,7 @@ scalarDisplays.precip 	= new ScalarHeatDisplay( { min: '2000.', max: '1.',
 	} );
 scalarDisplays.age 	= new ScalarHeatDisplay( { min: '250.', max: '0.',  
 		getField: function (crust) {
-			return crust.age;
+			return crust.subductable_age;
 		} 
 	} );
 scalarDisplays.subductable 	= new ScalarHeatDisplay( { min: '0.', max: '7900.',  

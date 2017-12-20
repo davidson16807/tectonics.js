@@ -43,7 +43,7 @@ JsonSerializer.plate = function (plate, options) {
 	plate_json.ids 	= Base64.encode(Uint16Array.from( Uint16Raster .get_mask(plate.grid.vertex_ids,	plate.mask) ).buffer);
 	plate_json.subductable = Base64.encode(Uint16Array.from( Float32Raster.get_mask(plate.subductable, 			plate.mask) ).buffer);
 	plate_json.unsubductable = Base64.encode(Uint16Array.from( Float32Raster.get_mask(plate.unsubductable, 			plate.mask) ).buffer);
-	plate_json.age 	= Base64.encode(Uint16Array.from( Float32Raster.get_mask(plate.age, 			plate.mask) ).buffer);
+	plate_json.subductable_age 	= Base64.encode(Uint16Array.from( Float32Raster.get_mask(plate.subductable_age, 			plate.mask) ).buffer);
 
 	return plate_json;
 }
@@ -64,7 +64,7 @@ JsonDeserializer.plate = function (plate_json, _world, options) {
 	Uint8Raster.set_ids_to_value	(plate.mask, 	file_ids, 1);
 	Float32Raster.set_ids_to_values	(plate.subductable, 	file_ids, new Uint16Array(Base64.decode(plate_json.subductable)) );
 	Float32Raster.set_ids_to_values	(plate.unsubductable, 	file_ids, new Uint16Array(Base64.decode(plate_json.unsubductable)) );
-	Float32Raster.set_ids_to_values	(plate.age, 	file_ids, new Uint16Array(Base64.decode(plate_json.age))  );
+	Float32Raster.set_ids_to_values	(plate.subductable_age, 	file_ids, new Uint16Array(Base64.decode(plate_json.subductable_age))  );
 
 	return plate;
 }

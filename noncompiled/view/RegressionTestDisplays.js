@@ -40,7 +40,7 @@ regressionTestDisplays.age_rotated 	= new ScalarHeatDisplay( { min: '250.', max:
 		getField: function (crust, result) {
 			var rotationMatrix = Matrix.rotation_about_axis(1,0,0, 0.5);
 			var pos = VectorField.mult_matrix(crust.grid.pos, rotationMatrix);
-			test = Float32Raster.get_nearest_values(crust.age, pos, result);
+			test = Float32Raster.get_nearest_values(crust.subductable_age, pos, result);
 			return test;
 		} 
 	} );
