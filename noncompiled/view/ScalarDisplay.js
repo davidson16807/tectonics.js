@@ -244,7 +244,7 @@ scalarDisplays.age 	= new ScalarHeatDisplay( { min: '250.', max: '0.',
 			return crust.age;
 		} 
 	} );
-scalarDisplays.sima 	= new ScalarHeatDisplay( { min: '6000.', max: '70000.',  
+scalarDisplays.sima 	= new ScalarHeatDisplay( { min: '0.', max: '7900.',  
 		getField: function (crust) {
 			return crust.sima;
 		} 
