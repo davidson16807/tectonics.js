@@ -31,21 +31,28 @@ TectonicsModeling.get_subductable_density = function(age, density) {
     return density;
 }
 
-TectonicsModeling.get_density = function(sima, sial, age, density) {
-	density = density || Float32Raster(sima.grid);
+TectonicsModeling.get_density = function(sima, sial, age, result, scratch) {
+	result = result || Float32Raster(sima.grid);
+	scratch = scratch || Float32Raster(sima.grid);
 
-	// NOTE: density does double duty for performance reasons
-	var sima_density = density;
-
+	// NOTE: result does double duty for performance reasons
+	var sima_density = result;
 	TectonicsModeling.get_subductable_density(age, sima_density);
+	var sima_thickness = result;
+	ScalarField.div_field(sima, sima_density, sima_thickness);
+	var sial_thickness = scratch;
+	ScalarField.div_scalar(sial, 2700, sial_thickness);
+	var total_thickness = scratch;
+	ScalarField.add_field(sial_thickness, sima_thickness, total_thickness);
+	var total_mass = result;
+	ScalarField.add_field(sima, sial, total_mass);
+	var total_density = result;
+	ScalarField.div_field(total_mass, total_thickness, total_density);
 
-    for (var i = 0, li = density.length; i < li; i++) {
-    	density[i] = sima[i] + sial[i] > 0? 
-    		(sima[i] * sima_density[i] + sial[i] * 2700) / (sima[i] + sial[i]) 
-		: 
-			2890;
-    }
-    return density;
+	for (var i = 0, li = total_density.length; i < li; i++) { 
+		total_density[i] = total_density[i] > 1e-5? total_density[i] : 2890; 
+	} 
+	return total_density;
 }
 
 TectonicsModeling.get_subductability = function(density, subductability) {
@@ -107,12 +114,14 @@ TectonicsModeling.get_erosion = function(displacement, sealevel, timestep, erosi
 	// ^^^ the rate of erosion per the rate of rainfall in that place
 	// measured in fraction of height difference per meters of rain per million years
 
+	var sial_density = 2700;
+	
 	// NOTE: erosion array does double duty for performance reasons
 	var height_difference = erosion;
 	var water_height = scratch;
 	ScalarField.max_scalar(displacement, sealevel, water_height);
 	ScalarField.average_difference(water_height, height_difference);
-	ScalarField.mult_scalar(height_difference, precipitation * timestep * erosiveFactor, erosion)
+	ScalarField.mult_scalar(height_difference, precipitation * timestep * erosiveFactor * sial_density, erosion)
 	// console.log(Float32Dataset.average(erosion));
 	return erosion;
 }
