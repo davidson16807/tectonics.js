@@ -51,9 +51,9 @@ TectonicsModeling.get_density = function(sima, sial, age, result, scratch) {
 
 	for (var i = 0, li = total_density.length; i < li; i++) { 
 		total_density[i] = total_density[i] > 1e-5? total_density[i] : 2890; 
-	} 
+	}
 	return total_density;
-}
+};
 
 TectonicsModeling.get_subductability = function(density, subductability) {
 	var subductability_transition_factor = 1/100;
@@ -103,7 +103,7 @@ TectonicsModeling.get_displacement = function(thickness, density, mantleDensity,
  	}
  	return displacement;
 }
-TectonicsModeling.get_erosion = function(displacement, sealevel, timestep, erosion, scratch){
+TectonicsModeling.get_erosion = function(sial, sediment, displacement, sealevel, timestep, erosion, scratch){
 	erosion = erosion || Float32Raster(displacement.grid);
 	scratch = scratch || Float32Raster(displacement.grid);
 
@@ -115,7 +115,7 @@ TectonicsModeling.get_erosion = function(displacement, sealevel, timestep, erosi
 	// measured in fraction of height difference per meters of rain per million years
 
 	var sial_density = 2700;
-	
+
 	// NOTE: erosion array does double duty for performance reasons
 	var height_difference = erosion;
 	var water_height = scratch;

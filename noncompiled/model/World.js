@@ -160,6 +160,7 @@ var World = (function() {
 		
 
 		var mult_field = ScalarField.mult_field;
+		var fill = Float32Raster.fill;
 		var fill_into = Uint8RasterGraphics.fill_into_selection;
 		var fill_into_crust = Crust.fill_into_selection;
 		var copy = Uint8Raster.copy;
@@ -179,9 +180,17 @@ var World = (function() {
 		var add = ScalarField.add_field;
 
 		var globalized_accretion = Float32Raster(grid); 
-		Float32Raster.fill(globalized_accretion, 0);
+		fill(globalized_accretion, 0);
 		var globalized_erosion = Float32Raster(grid);
-		TectonicsModeling.get_erosion(displacement, world.SEALEVEL, timestep, globalized_erosion, globalized_scalar_field);
+		TectonicsModeling.get_erosion(
+			world.unsubductable, 
+			world.unsubductable_sediment, 
+			displacement, 
+			world.SEALEVEL, 
+			timestep, 
+			globalized_erosion, 
+			globalized_scalar_field
+		);
 
 		var RIFT = true;
 		var DETACH = true;
@@ -237,7 +246,9 @@ var World = (function() {
 		        fill_into(plate.mask, 1, localized_is_detaching,                 		plate.mask); 
 		        //accrete, part 1
 		        if(ACCRETE) {
-		        	mult_field	(plate.unsubductable, localized_is_detaching,					localized_accretion);
+		        	fill(localized_accretion, 0);
+		        	add_term	(localized_accretion, plate.unsubductable, localized_is_detaching,			localized_accretion);
+		        	add_term	(localized_accretion, plate.unsubductable_sediment, localized_is_detaching,	localized_accretion);
 	            	resample_f32(localized_accretion, local_ids_of_global_cells,		globalized_scalar_field);
 	            	add 		(globalized_accretion, globalized_scalar_field, 		globalized_accretion);
 		        }

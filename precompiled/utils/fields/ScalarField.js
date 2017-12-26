@@ -189,14 +189,14 @@ ScalarField.ne_scalar = function (scalar_field1, scalar, threshold, result) {
   return result;
 };
 
-ScalarField.add_field_term = function (scalar_field1, scalar_field2, field3, result) {
+ScalarField.add_field_term = function (scalar_field1, scalar_field2, scalar_field3, result) {
   result = result || Float32Raster(scalar_field1.grid);
   ASSERT_IS_ARRAY(scalar_field1, Float32Array)
   ASSERT_IS_ANY_ARRAY(scalar_field2) 
-  ASSERT_IS_ANY_ARRAY(field3) 
+  ASSERT_IS_ANY_ARRAY(scalar_field3) 
   ASSERT_IS_ARRAY(result, Float32Array)
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = scalar_field1[i] + field3[i] * scalar_field2[i];
+    result[i] = scalar_field1[i] + scalar_field3[i] * scalar_field2[i];
   }
   return result;
 };
