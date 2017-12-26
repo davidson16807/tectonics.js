@@ -985,31 +985,31 @@ ScalarField.average_difference = function (scalar_field, result) {
       arrow = arrows[i];
       result[arrow[0]] += scalar_field[arrow[1]] - scalar_field[arrow[0]];
   }
-  var neighbor_lookup = scalar_field.grid.neighbor_lookup;
-  var neighbor_count = 0;
-  for (var i = 0, li = neighbor_lookup.length; i < li; i++) {
-      neighbor_count = neighbor_lookup[i].length;
-      result[i] /= neighbor_count;
+  var neighbor_count = scalar_field.grid.neighbor_count;
+  for (var i = 0, li = neighbor_count.length; i < li; i++) {
+      result[i] /= neighbor_count[i];
   }
   return result;
 };
 // This function computes the laplacian of a surface. 
-// The laplacian can be thought of as a metric for the average difference across space. 
+// The laplacian can be thought of as the average difference across space, per unit area. 
 // By applying it to a surface, we mean it's only done for the 2d surface of a 3d object. 
 // We assume all vertices in scalar_field.grid are equidistant on a surface. 
 // 
-// Let ε be a small number and eᵢ be a component of the basis (e.g. [1,0] or [0,1]) 
-// ∇²f = ∇ (     f(x+εeᵢ)     -     f(x-εeᵢ))      /  2ε 
-// ∇²f =   ((f(x+2εeᵢ) -f(x)) - (f(x) -f(x-2εeᵢ))) / (2ε)² 
-// ∇²f =   ( f(x+2εeᵢ) -f(x) 
-//           f(x-2εeᵢ) -f(x)) ) / (2ε)² 
-//   So for 2d: 
-// ∇²f =   ( f(x+2ε, y) - f(x,y) 
-//           f(x, y+2ε) - f(x,y) 
-//           f(x-2ε, y) - f(x,y) 
-//           f(x, y-2ε) - f(x,y) ) / (2ε)² 
+// So for 2d: 
+//
+// ∇⋅∇f = ∇⋅[ (f(x+dx) - f(x-dx)) / 2dx,  
+//            (f(x+dy) - f(x-dy)) / 2dy  ]
+//
+// ∇⋅∇f = d/dx (f(x+dx) - f(x-dx)) / 2dx  
+//      + d/dy (f(x+dy) - f(x-dy)) / 2dy
+//
+// ∇⋅∇f =  1/4 (f(x+2dx) - f(x)) / dxdx  
+//      +  1/4 (f(x-2dx) - f(x)) / dxdx  
+//      +  1/4 (f(x+2dy) - f(x)) / dydy
+//      +  1/4 (f(x-2dy) - f(x)) / dydy
 //  
-// Think of it as taking the sum of differences between the center point and four neighbors. 
+// Think of it as taking the average slope between four neighbors. 
 // That means if we have an arbitrary number of neighbors,  
 // we find the average difference and multiply it by 4. 
 ScalarField.laplacian = function (scalar_field, result) {
@@ -1017,20 +1017,17 @@ ScalarField.laplacian = function (scalar_field, result) {
   if (!(scalar_field instanceof Float32Array)) { throw "scalar_field" + ' is not a ' + "Float32Array"; }
   if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   if (scalar_field === result) { throw "scalar_field" + ' and ' + "result" + ' cannot be the same'; }
-  for (var i = 0; i < result.length; i++) {
-    result[i] = -4*scalar_field[i];
-  }
   var arrows = scalar_field.grid.arrows;
-  var arrow;
+  var arrow
   for (var i=0, li=arrows.length; i<li; ++i) {
       arrow = arrows[i];
-      result[arrow[0]] += scalar_field[arrow[1]];
+      result[arrow[0]] += scalar_field[arrow[1]] - scalar_field[arrow[0]];
   }
   var neighbor_count = scalar_field.grid.neighbor_count;
-  var average_distance = scalar_field.grid.average_distance * scalar_field.grid.average_distance;
+  var average_distance = scalar_field.grid.average_distance;
+  var average_area = average_distance * average_distance;
   for (var i = 0, li = neighbor_count.length; i < li; i++) {
-      result[i] *= 4;
-      result[i] /= neighbor_count[i] * average_distance;
+      result[i] /= average_area * neighbor_count[i];
   }
   return result;
 };
@@ -1049,11 +1046,9 @@ ScalarField.diffusion_by_constant = function (scalar_field, constant, result, sc
       arrow = arrows[i];
       laplacian[arrow[0]] += scalar_field[arrow[1]] - scalar_field[arrow[0]];
   }
-  var neighbor_lookup = scalar_field.grid.neighbor_lookup;
-  var neighbor_count = 0;
-  for (var i = 0, li = neighbor_lookup.length; i < li; i++) {
-      neighbor_count = neighbor_lookup[i].length;
-      laplacian[i] /= neighbor_count;
+  var neighbor_count = scalar_field.grid.neighbor_count;
+  for (var i = 0, li = neighbor_count.length; i < li; i++) {
+      laplacian[i] /= neighbor_count[i];
   }
   for (var i=0, li=laplacian.length; i<li; ++i) {
       result[i] = scalar_field[i] + constant * laplacian[i];
@@ -1075,11 +1070,9 @@ ScalarField.diffusion_by_field = function (scalar_field1, scalar_field2, result,
       arrow = arrows[i];
       laplacian[arrow[0]] += scalar_field1[arrow[1]] - scalar_field1[arrow[0]];
   }
-  var neighbor_lookup = scalar_field1.grid.neighbor_lookup;
-  var neighbor_count = 0;
-  for (var i = 0, li = neighbor_lookup.length; i < li; i++) {
-      neighbor_count = neighbor_lookup[i].length;
-      laplacian[i] /= neighbor_count;
+  var neighbor_count = scalar_field1.grid.neighbor_count;
+  for (var i = 0, li = neighbor_count.length; i < li; i++) {
+      laplacian[i] /= neighbor_count[i];
   }
   for (var i=0, li=laplacian.length; i<li; ++i) {
       result[i] = scalar_field1[i] + scalar_field2[i] * laplacian[i];
