@@ -22,6 +22,12 @@ function Crust(params) {
 	// unsubductable is a conserved quantity - it is never created or destroyed without our explicit say-so
 	// This is to provide our model with a way to check for errors
 
+	this.unsubductable_sediment = Float32Raster(this.grid);
+	// "unsubductable" crust is far more likely rise out of the ocean and become exposed to weathering
+	// so it is far more likely to convert to sediment
+	// this is why there is no "subductable_sediment" raster, 
+	// though we may still implement it in the future
+
 	this.subductable = Float32Raster(this.grid);
 	// "subductable" is the mass of the denser, subductable component of the crust
 	// AKA "subductable", "mafsic", or "oceanic" crust
@@ -50,7 +56,8 @@ Crust.get_value = function(crust, i) {
 		density 		:crust.density[i],
 		subductable 			:crust.subductable[i],
 		unsubductable 			:crust.unsubductable[i],
-		subductable_age 			:crust.subductable_age[i],
+		unsubductable_sediment 	:crust.unsubductable_sediment[i],
+		subductable_age 		:crust.subductable_age[i],
 	});
 }
 Crust.set_value = function(crust, i, rock_column) {
@@ -59,7 +66,8 @@ Crust.set_value = function(crust, i, rock_column) {
 	crust.density[i] 		= rock_column.density;
 	crust.subductable[i] 			= rock_column.subductable;
 	crust.unsubductable[i] 			= rock_column.unsubductable;
-	crust.subductable_age[i] 			= rock_column.subductable_age;
+	crust.unsubductable_sediment[i] 	= rock_column.unsubductable_sediment;
+	crust.subductable_age[i] 		= rock_column.subductable_age;
 }
 Crust.copy = function(source, destination) {
 	var copy = Float32Raster.copy;
@@ -68,6 +76,7 @@ Crust.copy = function(source, destination) {
 	copy(source.density, destination.density);
 	copy(source.subductable, destination.subductable);
 	copy(source.unsubductable, destination.unsubductable);
+	copy(source.unsubductable_sediment, destination.unsubductable_sediment);
 	copy(source.subductable_age, destination.subductable_age);
 }
 Crust.fill = function(crust, rock_column) {
@@ -77,6 +86,7 @@ Crust.fill = function(crust, rock_column) {
 	fill(crust.density, rock_column.density);
 	fill(crust.subductable, rock_column.subductable);
 	fill(crust.unsubductable, rock_column.unsubductable);
+	fill(crust.unsubductable_sediment, rock_column.unsubductable_sediment);
 	fill(crust.subductable_age, rock_column.subductable_age);
 }
 Crust.copy_into_selection = function(crust, copied_crust, selection_raster, result_crust) {
@@ -86,6 +96,7 @@ Crust.copy_into_selection = function(crust, copied_crust, selection_raster, resu
 	copy(source.density, copied_crust.density, selection_raster, result_crust.density);
 	copy(source.subductable, copied_crust.subductable, selection_raster, result_crust.subductable);
 	copy(source.unsubductable, copied_crust.unsubductable, selection_raster, result_crust.unsubductable);
+	copy(source.unsubductable_sediment, copied_crust.unsubductable_sediment, selection_raster, result_crust.unsubductable_sediment);
 	copy(source.subductable_age, copied_crust.subductable_age, selection_raster, result_crust.subductable_age);
 }
 Crust.fill_into_selection = function(crust, rock_column, selection_raster, result_crust) {
@@ -96,5 +107,6 @@ Crust.fill_into_selection = function(crust, rock_column, selection_raster, resul
 	fill(crust.density, rock_column.density, selection_raster, result_crust.density);
 	fill(crust.subductable, rock_column.subductable, selection_raster, result_crust.subductable);
 	fill(crust.unsubductable, rock_column.unsubductable, selection_raster, result_crust.unsubductable);
+	fill(crust.unsubductable_sediment, rock_column.unsubductable_sediment, selection_raster, result_crust.unsubductable_sediment);
 	fill(crust.subductable_age, rock_column.subductable_age, selection_raster, result_crust.subductable_age);
 }
