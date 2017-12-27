@@ -101,6 +101,7 @@ function Grid(template, options){
 	this.pos_arrow_distances = Float32Raster.OfLength(arrows.length, undefined)
 	VectorField.magnitude(this.pos_arrow_differential, this.pos_arrow_distances);
 	this.average_distance = Float32Dataset.average(this.pos_arrow_distances);
+	this.average_area = this.average_distance * this.average_distance;
 
 	if (voronoi_generator){
 		this._voronoi = voronoi_generator(this.pos);

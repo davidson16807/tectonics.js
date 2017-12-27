@@ -37,3 +37,36 @@ experimentalDisplays.albedo 	= new ScalarHeatDisplay( { min: '0.', max: '1.',
 		return albedo;
 	}
 } );
+experimentalDisplays.weathering = new ScalarHeatDisplay( { min: '0.', max: '30.*2700.',  
+	getField: function (world, result, scratch) {
+		return TectonicsModeling.get_weathering_rate(
+			world.unsubductable,
+			world.unsubductable_sediment, 
+			world.displacement, 
+			world.SEALEVEL, 
+			result, 
+			scratch
+		);
+	}
+} );
+experimentalDisplays.erosion = new ScalarHeatDisplay( { min: '-150000.', max: '150000.',  
+	getField: function (world, result, scratch) {
+		return TectonicsModeling.get_erosion_rate(
+			world.unsubductable_sediment, 
+			world.displacement, 
+			world.SEALEVEL, 
+			result, 
+			scratch
+		);
+	}
+} );
+experimentalDisplays.sediment 	= new ScalarHeatDisplay( { min: '0.', max: '3.',  
+		getField: function (crust, result) {
+			return ScalarField.div_scalar(crust.unsubductable_sediment, 2500, result);
+		} 
+	} );
+experimentalDisplays.water_height = new ScalarHeatDisplay( { min: '0.', max: '20000.',  
+	getField: function (world, result, scratch) {
+		return ScalarField.max_scalar(world.displacement, world.SEALEVEL, result);
+	}
+} );
