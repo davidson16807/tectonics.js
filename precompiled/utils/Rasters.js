@@ -29,6 +29,13 @@
 #endif
 
 #ifndef IS_PROD
+#define ASSERT_IS_SCALAR(INPUT) \
+	if (typeof INPUT != "number" || isNaN(INPUT) || !isFinite(INPUT)) { throw #INPUT + ' is not a real number'; }
+#else
+#define ASSERT_IS_TYPE(INPUT, TYPE)
+#endif
+
+#ifndef IS_PROD
 #define ASSERT_IS_TYPE(INPUT, TYPE) \
 	if (!(typeof INPUT == #TYPE)) { throw #INPUT + ' is not a ' + #TYPE; }
 #else

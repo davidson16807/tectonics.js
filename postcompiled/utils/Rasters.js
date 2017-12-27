@@ -85,6 +85,7 @@ function Grid(template, options){
  this.pos_arrow_distances = Float32Raster.OfLength(arrows.length, undefined)
  VectorField.magnitude(this.pos_arrow_differential, this.pos_arrow_distances);
  this.average_distance = Float32Dataset.average(this.pos_arrow_distances);
+ this.average_area = this.average_distance * this.average_distance;
  if (voronoi_generator){
   this._voronoi = voronoi_generator(this.pos);
  }
@@ -597,7 +598,7 @@ ScalarField.max_field = function (scalar_field1, scalar_field2, result) {
   result = result || Float32Raster(scalar_field1.grid);
   if (!(scalar_field1 instanceof Float32Array)) { throw "scalar_field1" + ' is not a ' + "Float32Array"; }
   if (!(scalar_field2 instanceof Float32Array)) { throw "scalar_field2" + ' is not a ' + "Float32Array"; }
-  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
+  if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] > scalar_field2[i]? scalar_field1[i] : scalar_field2[i];
   }
@@ -647,7 +648,7 @@ ScalarField.eq_field = function (scalar_field1, scalar_field2, threshold, result
   result = result || Uint8Raster(scalar_field1.grid);
   if (!(scalar_field1 instanceof Float32Array)) { throw "scalar_field1" + ' is not a ' + "Float32Array"; }
   if (!(scalar_field2 instanceof Float32Array)) { throw "scalar_field2" + ' is not a ' + "Float32Array"; }
-  if (!(typeof threshold == "number")) { throw "threshold" + ' is not a ' + "number"; }
+  if (typeof threshold != "number" || isNaN(threshold) || !isFinite(threshold)) { throw "threshold" + ' is not a real number'; }
   if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] < scalar_field2[i] + threshold || scalar_field1[i] > scalar_field2[i] - threshold ? 1:0;
@@ -658,7 +659,7 @@ ScalarField.ne_field = function (scalar_field1, scalar_field2, threshold, result
   result = result || Uint8Raster(scalar_field1.grid);
   if (!(scalar_field1 instanceof Float32Array)) { throw "scalar_field1" + ' is not a ' + "Float32Array"; }
   if (!(scalar_field2 instanceof Float32Array)) { throw "scalar_field2" + ' is not a ' + "Float32Array"; }
-  if (!(typeof threshold == "number")) { throw "threshold" + ' is not a ' + "number"; }
+  if (typeof threshold != "number" || isNaN(threshold) || !isFinite(threshold)) { throw "threshold" + ' is not a real number'; }
   if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] > scalar_field2[i] + threshold || scalar_field1[i] < scalar_field2[i] - threshold ? 1:0;
@@ -668,7 +669,7 @@ ScalarField.ne_field = function (scalar_field1, scalar_field2, threshold, result
 ScalarField.min_scalar = function (scalar_field1, scalar, result) {
   result = result || Float32Raster(scalar_field1.grid);
   if (!(scalar_field1 instanceof Float32Array)) { throw "scalar_field1" + ' is not a ' + "Float32Array"; }
-  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (typeof scalar != "number" || isNaN(scalar) || !isFinite(scalar)) { throw "scalar" + ' is not a real number'; }
   if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] < scalar? scalar_field1[i] : scalar;
@@ -678,7 +679,7 @@ ScalarField.min_scalar = function (scalar_field1, scalar, result) {
 ScalarField.max_scalar = function (scalar_field1, scalar, result) {
   result = result || Float32Raster(scalar_field1.grid);
   if (!(scalar_field1 instanceof Float32Array)) { throw "scalar_field1" + ' is not a ' + "Float32Array"; }
-  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (typeof scalar != "number" || isNaN(scalar) || !isFinite(scalar)) { throw "scalar" + ' is not a real number'; }
   if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] > scalar? scalar_field1[i] : scalar;
@@ -688,7 +689,7 @@ ScalarField.max_scalar = function (scalar_field1, scalar, result) {
 ScalarField.gt_scalar = function (scalar_field1, scalar, result) {
   result = result || Uint8Raster(scalar_field1.grid);
   if (!(scalar_field1 instanceof Float32Array)) { throw "scalar_field1" + ' is not a ' + "Float32Array"; }
-  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (typeof scalar != "number" || isNaN(scalar) || !isFinite(scalar)) { throw "scalar" + ' is not a real number'; }
   if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] > scalar? 1:0;
@@ -698,7 +699,7 @@ ScalarField.gt_scalar = function (scalar_field1, scalar, result) {
 ScalarField.gte_scalar = function (scalar_field1, scalar, result) {
   result = result || Uint8Raster(scalar_field1.grid);
   if (!(scalar_field1 instanceof Float32Array)) { throw "scalar_field1" + ' is not a ' + "Float32Array"; }
-  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (typeof scalar != "number" || isNaN(scalar) || !isFinite(scalar)) { throw "scalar" + ' is not a real number'; }
   if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] >= scalar? 1:0;
@@ -708,7 +709,7 @@ ScalarField.gte_scalar = function (scalar_field1, scalar, result) {
 ScalarField.lt_scalar = function (scalar_field1, scalar, result) {
   result = result || Uint8Raster(scalar_field1.grid);
   if (!(scalar_field1 instanceof Float32Array)) { throw "scalar_field1" + ' is not a ' + "Float32Array"; }
-  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (typeof scalar != "number" || isNaN(scalar) || !isFinite(scalar)) { throw "scalar" + ' is not a real number'; }
   if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] < scalar? 1:0;
@@ -718,7 +719,7 @@ ScalarField.lt_scalar = function (scalar_field1, scalar, result) {
 ScalarField.lte_scalar = function (scalar_field1, scalar, result) {
   result = result || Uint8Raster(scalar_field1.grid);
   if (!(scalar_field1 instanceof Float32Array)) { throw "scalar_field1" + ' is not a ' + "Float32Array"; }
-  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (typeof scalar != "number" || isNaN(scalar) || !isFinite(scalar)) { throw "scalar" + ' is not a real number'; }
   if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] <= scalar? 1:0;
@@ -728,8 +729,8 @@ ScalarField.lte_scalar = function (scalar_field1, scalar, result) {
 ScalarField.between_scalars = function (scalar_field1, scalar1, scalar2, result) {
   result = result || Uint8Raster(scalar_field1.grid);
   if (!(scalar_field1 instanceof Float32Array)) { throw "scalar_field1" + ' is not a ' + "Float32Array"; }
-  if (!(typeof scalar1 == "number")) { throw "scalar1" + ' is not a ' + "number"; }
-  if (!(typeof scalar2 == "number")) { throw "scalar2" + ' is not a ' + "number"; }
+  if (typeof scalar1 != "number" || isNaN(scalar1) || !isFinite(scalar1)) { throw "scalar1" + ' is not a real number'; }
+  if (typeof scalar2 != "number" || isNaN(scalar2) || !isFinite(scalar2)) { throw "scalar2" + ' is not a real number'; }
   if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar1 < scalar_field1[i] && scalar_field1[i] < scalar2? 1:0;
@@ -739,8 +740,8 @@ ScalarField.between_scalars = function (scalar_field1, scalar1, scalar2, result)
 ScalarField.eq_scalar = function (scalar_field1, scalar, threshold, result) {
   result = result || Uint8Raster(scalar_field1.grid);
   if (!(scalar_field1 instanceof Float32Array)) { throw "scalar_field1" + ' is not a ' + "Float32Array"; }
-  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
-  if (!(typeof threshold == "number")) { throw "threshold" + ' is not a ' + "number"; }
+  if (typeof scalar != "number" || isNaN(scalar) || !isFinite(scalar)) { throw "scalar" + ' is not a real number'; }
+  if (typeof threshold != "number" || isNaN(threshold) || !isFinite(threshold)) { throw "threshold" + ' is not a real number'; }
   if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] < scalar + threshold || scalar_field1[i] > scalar - threshold ? 1:0;
@@ -750,22 +751,22 @@ ScalarField.eq_scalar = function (scalar_field1, scalar, threshold, result) {
 ScalarField.ne_scalar = function (scalar_field1, scalar, threshold, result) {
   result = result || Uint8Raster(scalar_field1.grid);
   if (!(scalar_field1 instanceof Float32Array)) { throw "scalar_field1" + ' is not a ' + "Float32Array"; }
-  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
-  if (!(typeof threshold == "number")) { throw "threshold" + ' is not a ' + "number"; }
+  if (typeof scalar != "number" || isNaN(scalar) || !isFinite(scalar)) { throw "scalar" + ' is not a real number'; }
+  if (typeof threshold != "number" || isNaN(threshold) || !isFinite(threshold)) { throw "threshold" + ' is not a real number'; }
   if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] > scalar + threshold || scalar_field1[i] < scalar - threshold ? 1:0;
   }
   return result;
 };
-ScalarField.add_field_term = function (scalar_field1, scalar_field2, field3, result) {
+ScalarField.add_field_term = function (scalar_field1, scalar_field2, scalar_field3, result) {
   result = result || Float32Raster(scalar_field1.grid);
   if (!(scalar_field1 instanceof Float32Array)) { throw "scalar_field1" + ' is not a ' + "Float32Array"; }
   if (!(scalar_field2 instanceof Float32Array || scalar_field2 instanceof Uint16Array || scalar_field2 instanceof Uint8Array)) { throw "scalar_field2" + ' is not a typed array'; }
-  if (!(field3 instanceof Float32Array || field3 instanceof Uint16Array || field3 instanceof Uint8Array)) { throw "field3" + ' is not a typed array'; }
+  if (!(scalar_field3 instanceof Float32Array || scalar_field3 instanceof Uint16Array || scalar_field3 instanceof Uint8Array)) { throw "scalar_field3" + ' is not a typed array'; }
   if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = scalar_field1[i] + field3[i] * scalar_field2[i];
+    result[i] = scalar_field1[i] + scalar_field3[i] * scalar_field2[i];
   }
   return result;
 };
@@ -773,7 +774,7 @@ ScalarField.add_scalar_term = function (scalar_field1, scalar_field2, scalar, re
   result = result || Float32Raster(scalar_field1.grid);
   if (!(scalar_field1 instanceof Float32Array)) { throw "scalar_field1" + ' is not a ' + "Float32Array"; }
   if (!(scalar_field2 instanceof Float32Array || scalar_field2 instanceof Uint16Array || scalar_field2 instanceof Uint8Array)) { throw "scalar_field2" + ' is not a typed array'; }
-  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (typeof scalar != "number" || isNaN(scalar) || !isFinite(scalar)) { throw "scalar" + ' is not a real number'; }
   if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] + scalar * scalar_field2[i];
@@ -815,7 +816,7 @@ ScalarField.sub_scalar_term = function (scalar_field1, scalar_field2, scalar, re
   result = result || Float32Raster(scalar_field1.grid);
   if (!(scalar_field1 instanceof Float32Array)) { throw "scalar_field1" + ' is not a ' + "Float32Array"; }
   if (!(scalar_field2 instanceof Float32Array || scalar_field2 instanceof Uint16Array || scalar_field2 instanceof Uint8Array)) { throw "scalar_field2" + ' is not a typed array'; }
-  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (typeof scalar != "number" || isNaN(scalar) || !isFinite(scalar)) { throw "scalar" + ' is not a real number'; }
   if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] - scalar * scalar_field2[i];
@@ -845,7 +846,7 @@ ScalarField.div_field = function (scalar_field1, scalar_field2, result) {
 ScalarField.add_scalar = function (scalar_field, scalar, result) {
   result = result || Float32Raster(scalar_field.grid);
   if (!(scalar_field instanceof Float32Array)) { throw "scalar_field" + ' is not a ' + "Float32Array"; }
-  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (typeof scalar != "number" || isNaN(scalar) || !isFinite(scalar)) { throw "scalar" + ' is not a real number'; }
   if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field[i] + scalar;
@@ -855,7 +856,7 @@ ScalarField.add_scalar = function (scalar_field, scalar, result) {
 ScalarField.sub_scalar = function (scalar_field, scalar, result) {
   result = result || Float32Raster(scalar_field.grid);
   if (!(scalar_field instanceof Float32Array)) { throw "scalar_field" + ' is not a ' + "Float32Array"; }
-  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (typeof scalar != "number" || isNaN(scalar) || !isFinite(scalar)) { throw "scalar" + ' is not a real number'; }
   if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field[i] - scalar;
@@ -865,7 +866,7 @@ ScalarField.sub_scalar = function (scalar_field, scalar, result) {
 ScalarField.mult_scalar = function (scalar_field, scalar, result) {
   result = result || Float32Raster(scalar_field.grid);
   if (!(scalar_field instanceof Float32Array)) { throw "scalar_field" + ' is not a ' + "Float32Array"; }
-  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (typeof scalar != "number" || isNaN(scalar) || !isFinite(scalar)) { throw "scalar" + ' is not a real number'; }
   if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field[i] * scalar;
@@ -875,7 +876,7 @@ ScalarField.mult_scalar = function (scalar_field, scalar, result) {
 ScalarField.div_scalar = function (scalar_field, scalar, result) {
   result = result || Float32Raster(scalar_field.grid);
   if (!(scalar_field instanceof Float32Array)) { throw "scalar_field" + ' is not a ' + "Float32Array"; }
-  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (typeof scalar != "number" || isNaN(scalar) || !isFinite(scalar)) { throw "scalar" + ' is not a real number'; }
   if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field[i] / scalar;
@@ -1038,7 +1039,7 @@ ScalarField.diffusion_by_constant = function (scalar_field, constant, result, sc
   if (!(scalar_field instanceof Float32Array)) { throw "scalar_field" + ' is not a ' + "Float32Array"; }
   if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   if (!(scratch instanceof Float32Array)) { throw "scratch" + ' is not a ' + "Float32Array"; }
-  if (!(typeof constant == "number")) { throw "constant" + ' is not a ' + "number"; }
+  if (typeof constant != "number" || isNaN(constant) || !isFinite(constant)) { throw "constant" + ' is not a real number'; }
   var laplacian = scratch;
   var arrows = scalar_field.grid.arrows;
   var arrow
