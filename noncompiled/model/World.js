@@ -18,7 +18,7 @@ var World = (function() {
 		this.asthenosphere_velocity = VectorRaster(this.grid);
 		this.meanAnomaly = parameters['meanAnomaly'] || 0;
 
-		// this.radius = parameters['radius'] || 6367;
+		this.radius = parameters['radius'] || 6.367e6; // meters
 		// this.age = parameters['age'] || 0;
 		// this.maxPlatesNum = parameters['platesNum'] || 8;
 
@@ -214,7 +214,7 @@ var World = (function() {
 
 		var RIFT = true;
 		var DETACH = true;
-		var WEATHER = false;
+		var WEATHER = true;
 		var ERODE = false;
 		var ACCRETE = true;
 

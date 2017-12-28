@@ -49,7 +49,7 @@ experimentalDisplays.weathering = new ScalarHeatDisplay( { min: '0.', max: '30.*
 		);
 	}
 } );
-experimentalDisplays.erosion = new ScalarHeatDisplay( { min: '-0.', max: '4000.',  
+experimentalDisplays.erosion = new ScalarHeatDisplay( { min: '0.', max: '3.',  
 	getField: function (world, result, scratch) {
 		sediment = world.unsubductable_sediment
 		displacement = world.displacement
@@ -59,6 +59,7 @@ experimentalDisplays.erosion = new ScalarHeatDisplay( { min: '-0.', max: '4000.'
 		result = result || Float32Raster(displacement.grid);
 		scratch = scratch || Float32Raster(displacement.grid);
 
+		var grid = displacement.grid;
 
 		var erosive_factor = 3.9e-3; // measured as fraction of volumetric water discharge
 
@@ -69,8 +70,8 @@ experimentalDisplays.erosion = new ScalarHeatDisplay( { min: '-0.', max: '4000.'
 
 		// TODO: this should be the volumetric quantity of water that flows downhill through a point, not precip
 		// to find the correct value, take precip times area and repeatedly apply height-governed convection (∇⋅(p g∇h/ζ))
-		// measured in m^3/My
-		var water_discharge = 7.8e5 * sediment.grid.average_area * 1e6;
+		// measured in m/My
+		var water_discharge = 7.8e5;
 
 		var water_height = scratch;
 		ScalarField.max_scalar(displacement, sealevel, water_height);
@@ -79,11 +80,13 @@ experimentalDisplays.erosion = new ScalarHeatDisplay( { min: '-0.', max: '4000.'
 
 		var greatest_slope = scratch;
 		VectorField.magnitude(gradient, greatest_slope);
-		return greatest_slope;
+		// divide by radius of planet (in meters)
+		ScalarField.div_scalar(greatest_slope, world.radius, greatest_slope);
 
 		// "force" does double duty for performance reasons
 		var greatest_slope_direction = gradient;
-		VectorField.div_scalar_field(gradient, greatest_slope, greatest_slope_direction);
+		VectorField.normalize(gradient, greatest_slope_direction);
+		
 
 		// Great Scott! It's the flux capacity, Marty!
 		// "flux capacity" is the maximum rate at which sediment can be transported
@@ -99,19 +102,23 @@ experimentalDisplays.erosion = new ScalarHeatDisplay( { min: '-0.', max: '4000.'
 		// "flux magnitude" is the actual quantity at which sediment is transported
 		// i.e. you can't transport more sediment than what exists in a cell
 		var sediment_flux_magnitude = scratch;
-		ScalarField.max_field(sediment_flux_capacity, sediment, sediment_flux_magnitude);
+		ScalarField.min_field(sediment_flux_capacity, sediment, sediment_flux_magnitude);
 
 		// "force" does double duty for performance reasons
 		var sediment_flux = greatest_slope_direction;
 		VectorField.mult_scalar_field(greatest_slope_direction, sediment_flux_magnitude, sediment_flux);
+		VectorField.magnitude(greatest_slope_direction, greatest_slope);
 
 		var erosion_rate = result;
 		VectorField.divergence(sediment_flux, erosion_rate);
-
+		ScalarField.div_scalar(erosion_rate, world.radius, erosion_rate);
+		console.log(erosion_rate);
+		return erosion_rate;
 	}
 } );
 experimentalDisplays.sediment 	= new ScalarHeatDisplay( { min: '0.', max: '3.',  
 		getField: function (crust, result) {
+			return crust.unsubductable_sediment;
 			return ScalarField.div_scalar(crust.unsubductable_sediment, 2500, result);
 		} 
 	} );

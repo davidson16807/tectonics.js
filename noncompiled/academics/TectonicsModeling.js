@@ -136,24 +136,25 @@ TectonicsModeling.get_weathering_rate = function(sial, sediment, displacement, s
 		greatest_height_difference, 
 		weathering_factor * 			// apply weathering factor to get height change per unit precip 
 		precipitation * 				// apply precip to get height change
-		// sial_density * 					// apply density to get mass converted to sediment
+		sial_density * 					// apply density to get mass converted to sediment
 		surface_gravity/earth_surface_gravity, //correct for planet's gravity
 		result) 
 	
 	var bedrock_coverage = scratch;
 	ScalarField.mult_scalar(sediment, -1/(sediment_density * critical_sediment_thickness), bedrock_coverage);
 	ScalarField.add_scalar(bedrock_coverage, 1, bedrock_coverage);
-	ScalarField.max_scalar(bedrock_coverage, 0, bedrock_coverage)
+	ScalarField.max_scalar(bedrock_coverage, 0, bedrock_coverage);
 
 	ScalarField.mult_field(result, bedrock_coverage, result);
 	
-	ScalarField.mult_scalar(result, sial_density, result);
 	return result;
 }
 // "erosion" is the process by which sediment is transported
 TectonicsModeling.get_erosion_rate = function(sediment, displacement, sealevel, result, scratch){
 	result = result || Float32Raster(displacement.grid);
 	scratch = scratch || Float32Raster(displacement.grid);
+
+	var grid = displacement.grid;
 
 	var erosive_factor = 3.9e-3; // measured as fraction of volumetric water discharge
 
@@ -164,40 +165,49 @@ TectonicsModeling.get_erosion_rate = function(sediment, displacement, sealevel, 
 
 	// TODO: this should be the volumetric quantity of water that flows downhill through a point, not precip
 	// to find the correct value, take precip times area and repeatedly apply height-governed convection (∇⋅(p g∇h/ζ))
-	// measured in m^3/My
-	var water_discharge = 7.8e5 * sediment.grid.average_area * 1e6;
+	// measured in m/My
+	var water_discharge = 7.8e5;
 
 	var water_height = scratch;
 	ScalarField.max_scalar(displacement, sealevel, water_height);
-	var gravity_potential = scratch;
-	ScalarField.mult_scalar(water_height, surface_gravity, gravity_potential);
-	var force = ScalarField.gradient(gravity_potential);
 
-	var force_magnitude = scratch;
-	VectorField.magnitude(force, force_magnitude);
+	var gradient = ScalarField.gradient(water_height);
+
+	var greatest_slope = scratch;
+	VectorField.magnitude(gradient, greatest_slope);
+	// divide by radius of planet (in meters)
+	ScalarField.div_scalar(greatest_slope, world.radius, greatest_slope);
 
 	// "force" does double duty for performance reasons
-	var force_direction = force;
-	VectorField.div_scalar_field(force, force_magnitude, force_direction);
+	var greatest_slope_direction = gradient;
+	VectorField.normalize(gradient, greatest_slope_direction);
+	
 
 	// Great Scott! It's the flux capacity, Marty!
 	// "flux capacity" is the maximum rate at which sediment can be transported
 	var sediment_flux_capacity = scratch;
-	ScalarField.mult_scalar(force_magnitude, sediment_density * erosive_factor * water_discharge / earth_surface_gravity);
+	ScalarField.mult_scalar(
+		greatest_slope, 
+		erosive_factor * 	// apply erosive factor to get volume flux of sediment per volume flux of water
+		water_discharge * 	// apply volume flux of water to get volume flux of sediment
+		sediment_density *  // apply sediment density to get mass flux of sediment
+		surface_gravity/earth_surface_gravity, // correct for planet's gravity
+		sediment_flux_capacity);
 
 	// "flux magnitude" is the actual quantity at which sediment is transported
 	// i.e. you can't transport more sediment than what exists in a cell
 	var sediment_flux_magnitude = scratch;
-	ScalarField.max_field(sediment_flux_capacity, sediment, sediment_flux_magnitude);
+	ScalarField.min_field(sediment_flux_capacity, sediment, sediment_flux_magnitude);
+	return sediment_flux_magnitude;
 
 	// "force" does double duty for performance reasons
-	var sediment_flux = force;
-	VectorField.mult_scalar_field(force_direction, sediment_flux_magnitude, sediment_flux);
+	var sediment_flux = greatest_slope_direction;
+	VectorField.mult_scalar_field(greatest_slope_direction, sediment_flux_magnitude, sediment_flux);
 
 	var erosion_rate = result;
 	VectorField.divergence(sediment_flux, erosion_rate);
 
-	return result;
+	return erosion_rate;
 }
 // get a map of plates using image segmentation and binary morphology
 TectonicsModeling.get_plate_map = function(vector_field, segment_num, min_segment_size, segments) {
