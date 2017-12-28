@@ -80,8 +80,7 @@ function Grid(template, options){
  this.edge_lookup = edge_lookup;
  this.arrows = arrows;
  this.arrow_lookup = arrow_lookup;
- this.pos_arrow_distances = VectorRaster.OfLength(arrows.length, undefined)
- this.pos_arrow_differential = VectorField.arrow_differential(this.pos, this.pos_arrow_distances);
+ this.pos_arrow_differential = VectorField.arrow_differential(this.pos);
  this.pos_arrow_distances = Float32Raster.OfLength(arrows.length, undefined)
  VectorField.magnitude(this.pos_arrow_differential, this.pos_arrow_distances);
  this.average_distance = Float32Dataset.average(this.pos_arrow_distances);
@@ -588,7 +587,7 @@ ScalarField.min_field = function (scalar_field1, scalar_field2, result) {
   result = result || Float32Raster(scalar_field1.grid);
   if (!(scalar_field1 instanceof Float32Array)) { throw "scalar_field1" + ' is not a ' + "Float32Array"; }
   if (!(scalar_field2 instanceof Float32Array)) { throw "scalar_field2" + ' is not a ' + "Float32Array"; }
-  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
+  if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] < scalar_field2[i]? scalar_field1[i] : scalar_field2[i];
   }
@@ -2156,6 +2155,32 @@ VectorField.magnitude = function(vector_field, result) {
  }
  return result;
 }
+VectorField.normalize = function(vector_field, result) {
+ result = result || VectorRaster(vector_field.grid);
+ if (!(vector_field.x !== void 0) && !(vector_field.x instanceof Float32Array)) { throw "vector_field" + ' is not a vector raster'; }
+ if (!(result.x !== void 0) && !(result.x instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
+ var x = vector_field.x;
+ var y = vector_field.y;
+ var z = vector_field.z;
+ var ox = result.x;
+ var oy = result.y;
+ var oz = result.z;
+ var xi=0., yi=0., zi=0.;
+ var sqrt = Math.sqrt;
+ var mag = 0.;
+ for (var i = 0, li = x.length; i<li; i++) {
+  var xi = x[i];
+  var yi = y[i];
+  var zi = z[i];
+  mag = sqrt( xi * xi +
+     yi * yi +
+     zi * zi );
+  ox[i] = xi/(mag||1);
+  oy[i] = yi/(mag||1);
+  oz[i] = zi/(mag||1);
+ }
+ return result;
+}
 // ∂X
 // NOTE: should arrow_differential exist at all? 
 // Consider moving its code to grid
@@ -2202,9 +2227,9 @@ VectorField.divergence = function(vector_field, result) {
          ( y[arrow_i_to] - y[arrow_i_from] ) / dy[i] +
          ( z[arrow_i_to] - z[arrow_i_from] ) / dz[i] ;
  }
- var neighbor_lookup = vector_field.grid.neighbor_lookup;
- for (var i = 0, li = neighbor_lookup.length; i < li; i++) {
-  result[i] /= neighbor_lookup[i].length || 1;
+ var neighbor_count = vector_field.grid.neighbor_count;
+ for (var i = 0, li = neighbor_count.length; i < li; i++) {
+  result[i] /= neighbor_count[i] || 1;
  }
  return result;
 }

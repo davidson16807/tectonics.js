@@ -612,6 +612,37 @@ VectorField.magnitude = function(vector_field, result) {
 	return result;
 }
 
+VectorField.normalize = function(vector_field, result) {
+	result = result || VectorRaster(vector_field.grid);
+
+	ASSERT_IS_VECTOR_RASTER(vector_field)
+	ASSERT_IS_VECTOR_RASTER(result)
+
+	var x = vector_field.x;
+	var y = vector_field.y;
+	var z = vector_field.z;
+
+	var ox = result.x;
+	var oy = result.y;
+	var oz = result.z;
+
+	var xi=0., yi=0., zi=0.;
+	var sqrt = Math.sqrt;
+	var mag = 0.;
+	for (var i = 0, li = x.length; i<li; i++) {
+		var xi = x[i];
+		var yi = y[i];
+		var zi = z[i];
+		mag = sqrt(	xi * xi + 
+					yi * yi + 
+					zi * zi	  );
+		ox[i] = xi/(mag||1);
+		oy[i] = yi/(mag||1);
+		oz[i] = zi/(mag||1);
+	}
+	return result;
+}
+
 // ∂X
 // NOTE: should arrow_differential exist at all? 
 // Consider moving its code to grid
@@ -669,9 +700,9 @@ VectorField.divergence = function(vector_field, result) {
 					 			( z[arrow_i_to] - z[arrow_i_from] ) / dz[i] ;
 	}
 
-	var neighbor_lookup = vector_field.grid.neighbor_lookup;
-	for (var i = 0, li = neighbor_lookup.length; i < li; i++) {
-		result[i] /= neighbor_lookup[i].length || 1;
+	var neighbor_count = vector_field.grid.neighbor_count;
+	for (var i = 0, li = neighbor_count.length; i < li; i++) {
+		result[i] /= neighbor_count[i] || 1;
 	}
 
 	return result;

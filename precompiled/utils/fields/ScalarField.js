@@ -7,7 +7,7 @@ ScalarField.min_field = function (scalar_field1, scalar_field2, result) {
   result = result || Float32Raster(scalar_field1.grid);
   ASSERT_IS_ARRAY(scalar_field1, Float32Array)
   ASSERT_IS_ARRAY(scalar_field2, Float32Array)
-  ASSERT_IS_ARRAY(result, Uint8Array)
+  ASSERT_IS_ARRAY(result, Float32Array)
 
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] < scalar_field2[i]? scalar_field1[i] : scalar_field2[i];
