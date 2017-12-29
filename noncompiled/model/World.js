@@ -206,7 +206,7 @@ var World = (function() {
 			world.unsubductable_sediment, 
 			displacement, 
 			world.SEALEVEL, 
-			globalized_erosion, 
+			globalized_erosion_rate, 
 			globalized_scalar_field
 		);
 		var globalized_erosion = globalized_erosion_rate;
@@ -303,7 +303,7 @@ var World = (function() {
 			//erode
 			if(ERODE) {
 				resample_f32(globalized_erosion, global_ids_of_local_cells,				localized_erosion);
-				sub_term 	(plate.unsubductable, localized_erosion, localized_is_on_top,		plate.unsubductable);
+				sub_term 	(plate.unsubductable_sediment, localized_erosion, localized_is_on_top,		plate.unsubductable_sediment);
 			}
 	        //accrete, part 2
 	        if(ACCRETE) {
@@ -360,7 +360,7 @@ var World = (function() {
 
 	// update fields that are derived from others
 	function update_calculated_fields(crust) {
-		TectonicsModeling.get_thickness(crust.subductable, crust.unsubductable, crust.subductable_age, crust.thickness);
+		TectonicsModeling.get_thickness(crust.subductable, crust.unsubductable, crust.unsubductable_sediment, crust.subductable_age, crust.thickness);
 		TectonicsModeling.get_density(crust.subductable, crust.unsubductable, crust.subductable_age, crust.density);
 		TectonicsModeling.get_subductability(crust.density, crust.subductability);
 		TectonicsModeling.get_displacement(crust.thickness, crust.density, world.mantleDensity, crust.displacement);
