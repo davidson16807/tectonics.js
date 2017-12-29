@@ -1011,7 +1011,7 @@ ScalarField.average_difference = function (scalar_field, result) {
 //  
 // Think of it as taking the average slope between four neighbors. 
 // That means if we have an arbitrary number of neighbors,  
-// we find the average difference and multiply it by 4. 
+// we find the average difference and divide by the average area covered by a point.
 ScalarField.laplacian = function (scalar_field, result) {
   result = result || Float32Raster(scalar_field.grid);
   if (!(scalar_field instanceof Float32Array)) { throw "scalar_field" + ' is not a ' + "Float32Array"; }
@@ -2206,14 +2206,26 @@ VectorField.arrow_differential = function(vector_field, result) {
  }
  return result;
 }
+// This function computes the divergence of a 3d mesh. 
+// The divergence can be thought of as the amount by which vectors diverge around a point
+// By applying it to a surface, we mean it's only done for the 2d surface of a 3d object. 
+// This implementation does not have to assume all vertices are equidistant. 
+// 
+// So for 2d: 
+//  ∇⋅f = (fx(x+dx) - fx(x-dx)) / 2dx + 
+//        (fy(x+dy) - fy(x-dy)) / 2dy  
+//
+//  ∇⋅f =  1/2 (fx(x+dx) - fx(x-dx)) / dx + 
+//         1/2 (fy(x+dy) - fy(x-dy)) / dy  
+//
+// Think of it as taking the average difference between two pairs of vertices. 
+// That means if we have an arbitrary number of neighbors,  
+// we find the average difference per unit distance. 
 VectorField.divergence = function(vector_field, result) {
  result = result || Float32Raster(vector_field.grid);
  if (!(vector_field.x !== void 0) && !(vector_field.x instanceof Float32Array)) { throw "vector_field" + ' is not a vector raster'; }
  if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
- var dpos = vector_field.grid.pos_arrow_differential;
- var dx = dpos.x;
- var dy = dpos.y;
- var dz = dpos.z;
+ var dpos = vector_field.grid.pos_arrow_distances;
  var arrows = vector_field.grid.arrows;
  var arrow_i_from = 0;
  var arrow_i_to = 0;
@@ -2223,13 +2235,14 @@ VectorField.divergence = function(vector_field, result) {
  for (var i = 0, li = arrows.length; i<li; i++) {
   arrow_i_from = arrows[i][0];
   arrow_i_to = arrows[i][1];
-  result[arrow_i_from] += ( x[arrow_i_to] - x[arrow_i_from] ) / dx[i] +
-         ( y[arrow_i_to] - y[arrow_i_from] ) / dy[i] +
-         ( z[arrow_i_to] - z[arrow_i_from] ) / dz[i] ;
+  result[arrow_i_from] += ( x[arrow_i_to] - x[arrow_i_from] +
+           y[arrow_i_to] - y[arrow_i_from] +
+           z[arrow_i_to] - z[arrow_i_from] ) / dpos[i] ;
  }
  var neighbor_count = vector_field.grid.neighbor_count;
+ var average_distance = vector_field.grid.average_distance;
  for (var i = 0, li = neighbor_count.length; i < li; i++) {
-  result[i] /= neighbor_count[i] || 1;
+  result[i] /= (neighbor_count[i] || 1);
  }
  return result;
 }

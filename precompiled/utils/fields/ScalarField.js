@@ -457,7 +457,7 @@ ScalarField.average_difference = function (scalar_field, result) {
 //  
 // Think of it as taking the average slope between four neighbors. 
 // That means if we have an arbitrary number of neighbors,  
-// we find the average difference and multiply it by 4. 
+// we find the average difference and divide by the average area covered by a point.
 ScalarField.laplacian = function (scalar_field, result) { 
   result = result || Float32Raster(scalar_field.grid);
 
