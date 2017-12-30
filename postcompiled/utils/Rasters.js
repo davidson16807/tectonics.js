@@ -297,6 +297,649 @@ Vector.mult_matrix = function(x, y, z, matrix, result) {
   result.z = x * zx + y * zy + z * zz;
   return result;
 }
+// Raster based methods often need to create temporary rasters that the calling function never sees
+// Creating new rasters is very costly, so often several "scratch" rasters would be created once then reused multiple times
+// This often led to bugs, because it was hard to track what these scratch rasters represented at any point in time
+// To solve the problem, RasterStackBuffer was created.
+// You can request new rasters without fear of performance penalties or referencing issues
+// Additionally, you can push and pop method names to the stack so the stack knows when to deallocate rasters
+// Think of it as a dedicated stack based memory for Javascript TypedArrays
+function RasterStackBuffer(byte_length){
+ this.buffer = new ArrayBuffer(byte_length);
+ this.pos = 0;
+ this.stack = [];
+ this.method_names = [];
+}
+// allocate memory to a method
+RasterStackBuffer.prototype.allocate = function(name) {
+ this.stack.push(this.pos);
+ this.method_names.push(name);
+}
+// deallocate memory reserved for a method
+RasterStackBuffer.prototype.deallocate = function(name) {
+ this.pos = this.stack.pop();
+ var method = this.method_names.pop();
+ if (method !== name) {
+  throw `memory was deallocated for the method, ${name} but memory wasn't allocated. This indicates improper memory management.`;
+ }
+}
+RasterStackBuffer.prototype.getFloat32Raster = function(grid) {
+ var BYTES_PER_CELL = 4;
+ var length = grid.vertices.length;
+ var new_pos = this.pos + length * BYTES_PER_CELL;
+ if (new_pos > this.buffer.length) {
+  throw `The raster stack buffer is overflowing! Either check for memory leaks, or initialize with more memory`;
+ }
+ var raster = new Float32Array(this.buffer, new_pos, length);
+ raster.grid = grid;
+ // round to nearest 4 bytes
+ this.pos = 4*Math.ceil(new_pos/4);
+ return raster;
+};
+RasterStackBuffer.prototype.getUint8Raster = function(grid) {
+ var BYTES_PER_CELL = 1;
+ var length = grid.vertices.length;
+ var new_pos = this.pos + length * BYTES_PER_CELL;
+ if (new_pos > this.buffer.length) {
+  throw `The raster stack buffer is overflowing! Either check for memory leaks, or initialize with more memory`;
+ }
+ var raster = new Uint8Array(this.buffer, new_pos, length);
+ raster.grid = grid;
+ // round to nearest 4 bytes
+ this.pos = 4*Math.ceil(new_pos/4);
+ return raster;
+};
+RasterStackBuffer.prototype.getUint16Raster = function(grid) {
+ var BYTES_PER_CELL = 2;
+ var length = grid.vertices.length;
+ var new_pos = this.pos + length * BYTES_PER_CELL;
+ if (new_pos > this.buffer.length) {
+  throw `The raster stack buffer is overflowing! Either check for memory leaks, or initialize with more memory`;
+ }
+ var raster = new Uint16Array(this.buffer, new_pos, length);
+ raster.grid = grid;
+ // round to nearest 4 bytes
+ this.pos = 4*Math.ceil(new_pos/4);
+ return raster;
+};
+RasterStackBuffer.prototype.getVectorRaster = function(grid) {
+ var length = grid.vertices.length;
+ var byte_length_per_index = length * 4;
+ var new_pos = this.pos + byte_length_per_index * 3;
+ if (new_pos > this.buffer.length) {
+  throw `The raster stack buffer is overflowing! Either check for memory leaks, or initialize with more memory`;
+ }
+ var raster = {
+  x: new Float32Array(this.buffer, this.pos + byte_length_per_index * 0, length),
+  y: new Float32Array(this.buffer, this.pos + byte_length_per_index * 1, length),
+  z: new Float32Array(this.buffer, this.pos + byte_length_per_index * 2, length),
+  grid: grid
+ };;
+ raster.grid = grid;
+ // round to nearest 4 bytes
+ this.pos = 4*Math.ceil(new_pos/4);
+ return raster;
+};
+var scratchpad = new RasterStackBuffer(1e6);
+// Test code:
+// 
+// buffer = new RasterStackBuffer(1e6)
+// buffer.allocate('1')
+// a = buffer.getUint8Raster({vertices:{length:1}})
+// b = buffer.getUint8Raster({vertices:{length:1}})
+// v = buffer.getVectorRaster({vertices:{length:1}})
+// buffer.deallocate('1')
+// Float32Raster represents a grid where each cell contains a 32 bit floating point value
+// A Float32Raster is composed of two parts:
+// 		The first is a object of type Grid, representing a collection of vertices that are connected by edges
+//  	The second is a typed array, representing a value for each vertex within the grid
+// 
+// Float32Raster should theoretically work for any graph of vertices given the appropriate grid object,
+// However tectonics.js only uses them with spherical grids.
+// 
+// Float32Rasters can be viewed through several paradigms: vector calculus, math morphology, image editing, etc.
+// Each paradigm has its own unique set of operations that it can perform on rasters objects.
+// A developer needs to switch between paradigms effortlessly and efficiently, without type conversion.
+// Rather than clutter the Float32Raster class, operations on Float32Rasters 
+// are spread out as friend functions across several namespaces. Each namespace corresponds to a paradigm. 
+// This design is meant to promote separation of concerns at the expense of encapsulation.
+// I want raster objects to be as bare as possible, functioning more like primitive datatypes.
+function Float32Raster(grid, fill) {
+ var result = new Float32Array(grid.vertices.length);
+ result.grid = grid;
+ if (fill !== void 0) {
+ for (var i=0, li=result.length; i<li; ++i) {
+     result[i] = fill;
+ }
+ }
+ return result;
+};
+Float32Raster.OfLength = function(length, grid) {
+ var result = new Float32Array(length);
+ result.grid = grid;
+ return result;
+}
+Float32Raster.FromUint8Raster = function(raster, result) {
+  var result = result || Float32Raster(raster.grid);
+  if (!(raster instanceof Uint8Array)) { throw "raster" + ' is not a ' + "Uint8Array"; }
+  if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
+  for (var i=0, li=result.length; i<li; ++i) {
+      result[i] = raster[i];
+  }
+  return result;
+}
+Float32Raster.FromUint16Raster = function(raster, result) {
+  var result = result || Float32Raster(raster.grid);
+  if (!(raster instanceof Uint16Array)) { throw "raster" + ' is not a ' + "Uint16Array"; }
+  if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
+  for (var i=0, li=result.length; i<li; ++i) {
+      result[i] = raster[i];
+  }
+  return result;
+}
+Float32Raster.copy = function(raster, result) {
+  var result = result || Float32Raster(raster.grid);
+  if (!(raster instanceof Float32Array)) { throw "raster" + ' is not a ' + "Float32Array"; }
+  if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
+  for (var i=0, li=raster.length; i<li; ++i) {
+      result[i] = raster[i];
+  }
+  return result;
+}
+Float32Raster.fill = function (raster, value) {
+  if (!(raster instanceof Float32Array)) { throw "raster" + ' is not a ' + "Float32Array"; }
+  for (var i = 0, li = raster.length; i < li; i++) {
+    raster[i] = value;
+  }
+};
+Float32Raster.min_id = function (raster) {
+  if (!(raster instanceof Float32Array)) { throw "raster" + ' is not a ' + "Float32Array"; }
+  var max = Infinity;
+  var max_id = 0;
+  var value = 0;
+  for (var i = 0, li = raster.length; i < li; i++) {
+    value = raster[i];
+    if (value < max) {
+      max = value;
+      max_id = i;
+    };
+  }
+  return max_id;
+};
+Float32Raster.max_id = function (raster) {
+  if (!(raster instanceof Float32Array)) { throw "raster" + ' is not a ' + "Float32Array"; }
+  var max = -Infinity;
+  var max_id = 0;
+  var value = 0;
+  for (var i = 0, li = raster.length; i < li; i++) {
+    value = raster[i];
+    if (value > max) {
+      max = value;
+      max_id = i;
+    };
+  }
+  return max_id;
+};
+Float32Raster.get_nearest_value = function(raster, pos) {
+  if (!(raster instanceof Float32Array)) { throw "raster" + ' is not a ' + "Float32Array"; }
+  return raster[raster.grid.getNearestId(pos)];
+}
+Float32Raster.get_nearest_values = function(value_raster, pos_raster, result) {
+  result = result || Float32Raster(pos_raster.grid);
+  if (!(value_raster instanceof Float32Array)) { throw "value_raster" + ' is not a ' + "Float32Array"; }
+  if (!(pos_raster.x !== void 0) && !(pos_raster.x instanceof Float32Array)) { throw "pos_raster" + ' is not a vector raster'; }
+  if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
+  var ids = pos_raster.grid.getNearestIds(pos_raster);
+  for (var i=0, li=ids.length; i<li; ++i) {
+      result[i] = value_raster[ids[i]];
+  }
+  return result;
+}
+Float32Raster.get_ids = function(value_raster, id_array, result) {
+  result = result || (id_array.grid !== void 0? Float32Raster(id_array.grid) : Float32Array(id_array.length));
+  if (!(value_raster instanceof Float32Array)) { throw "value_raster" + ' is not a ' + "Float32Array"; }
+  if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
+  for (var i=0, li=id_array.length; i<li; ++i) {
+      result[i] = value_raster[id_array[i]];
+  }
+  return result;
+}
+Float32Raster.get_mask = function(raster, mask) {
+  if (!(raster instanceof Float32Array)) { throw "raster" + ' is not a ' + "Float32Array"; }
+  if (!(mask instanceof Uint8Array)) { throw "mask" + ' is not a ' + "Uint8Array"; }
+  var result = new Float32Array(Uint8Dataset.sum(mask));
+  for (var i = 0, j = 0, li = mask.length; i < li; i++) {
+    if (mask[i] > 0) {
+      result[j] = raster[i];
+      j++;
+    }
+  }
+  return result;
+}
+Float32Raster.set_ids_to_value = function(raster, id_array, value) {
+  if (!(raster instanceof Float32Array)) { throw "raster" + ' is not a ' + "Float32Array"; }
+  for (var i=0, li=id_array.length; i<li; ++i) {
+      raster[id_array[i]] = value;
+  }
+  return raster;
+}
+Float32Raster.set_ids_to_values = function(raster, id_array, value_array) {
+  if (!(raster instanceof Float32Array)) { throw "raster" + ' is not a ' + "Float32Array"; }
+  for (var i=0, li=id_array.length; i<li; ++i) {
+      raster[id_array[i]] = value_array[i];
+  }
+  return raster;
+}
+// Uint16Raster represents a grid where each cell contains a 32 bit floating point value
+// A Uint16Raster is composed of two parts:
+//    The first is a object of type Grid, representing a collection of vertices that are connected by edges
+//    The second is a typed array, representing a value for each vertex within the grid
+// 
+// Uint16Raster should theoretically work for any graph of vertices given the appropriate grid object,
+// However tectonics.js only uses them with spherical grids.
+// 
+// Uint16Rasters can be viewed through several paradigms: vector calculus, math morphology, image editing, etc.
+// Each paradigm has its own unique set of operations that it can perform on rasters objects.
+// A developer needs to switch between paradigms effortlessly and efficiently, without type conversion.
+// Rather than clutter the Uint16Raster class, operations on Uint16Rasters 
+// are spread out as friend functions across several namespaces. Each namespace corresponds to a paradigm. 
+// This design is meant to promote separation of concerns at the expense of encapsulation.
+// I want raster objects to be as bare as possible, functioning more like primitive datatypes.
+function Uint16Raster(grid, fill) {
+  var result = new Uint16Array(grid.vertices.length);
+  result.grid = grid;
+  if (fill !== void 0) {
+  for (var i=0, li=result.length; i<li; ++i) {
+      result[i] = fill;
+  }
+  }
+  return result;
+};
+Uint16Raster.OfLength = function(length, grid) {
+  var result = new Uint16Array(length);
+  result.grid = grid;
+  return result;
+}
+Uint16Raster.FromUint8Raster = function(raster) {
+  var result = Uint16Raster(raster.grid);
+  for (var i=0, li=result.length; i<li; ++i) {
+      result[i] = raster[i];
+  }
+  return result;
+}
+Uint16Raster.FromUint16Raster = function(raster) {
+  var result = Uint16Raster(raster.grid);
+  for (var i=0, li=result.length; i<li; ++i) {
+      result[i] = raster[i];
+  }
+  return result;
+}
+Uint16Raster.copy = function(raster, result) {
+  var result = result || Uint16Raster(raster.grid);
+  if (!(raster instanceof Uint16Array)) { throw "raster" + ' is not a ' + "Uint16Array"; }
+  if (!(result instanceof Uint16Array)) { throw "result" + ' is not a ' + "Uint16Array"; }
+  for (var i=0, li=raster.length; i<li; ++i) {
+      result[i] = raster[i];
+  }
+  return result;
+}
+Uint16Raster.fill = function (raster, value) {
+  if (!(raster instanceof Uint16Array)) { throw "raster" + ' is not a ' + "Uint16Array"; }
+  for (var i = 0, li = raster.length; i < li; i++) {
+    raster[i] = value;
+  }
+};
+Uint16Raster.min_id = function (raster) {
+  if (!(raster instanceof Uint16Array)) { throw "raster" + ' is not a ' + "Uint16Array"; }
+  var max = Infinity;
+  var max_id = 0;
+  var value = 0;
+  for (var i = 0, li = raster.length; i < li; i++) {
+    value = raster[i];
+    if (value < max) {
+      max = value;
+      max_id = i;
+    };
+  }
+  return max_id;
+};
+Uint16Raster.max_id = function (raster) {
+  if (!(raster instanceof Uint16Array)) { throw "raster" + ' is not a ' + "Uint16Array"; }
+  var max = -Infinity;
+  var max_id = 0;
+  var value = 0;
+  for (var i = 0, li = raster.length; i < li; i++) {
+    value = raster[i];
+    if (value > max) {
+      max = value;
+      max_id = i;
+    };
+  }
+  return max_id;
+};
+Uint16Raster.get_nearest_value = function(raster, pos) {
+  if (!(raster instanceof Uint16Array)) { throw "raster" + ' is not a ' + "Uint16Array"; }
+  return raster[raster.grid.getNearestId(pos)];
+}
+Uint16Raster.get_nearest_values = function(value_raster, pos_raster, result) {
+  result = result || Uint16Raster(pos_raster.grid);
+  if (!(value_raster instanceof Uint16Array)) { throw "value_raster" + ' is not a ' + "Uint16Array"; }
+  if (!(pos_raster.x !== void 0) && !(pos_raster.x instanceof Float32Array)) { throw "pos_raster" + ' is not a vector raster'; }
+  if (!(result instanceof Uint16Array)) { throw "result" + ' is not a ' + "Uint16Array"; }
+  var ids = pos_raster.grid.getNearestIds(pos_raster);
+  for (var i=0, li=ids.length; i<li; ++i) {
+      result[i] = value_raster[ids[i]];
+  }
+  return result;
+}
+Uint16Raster.get_ids = function(value_raster, id_array, result) {
+  result = result || (id_array.grid !== void 0? Uint16Raster(id_array.grid) : Uint16Array(id_array.length));
+  if (!(value_raster instanceof Uint16Array)) { throw "value_raster" + ' is not a ' + "Uint16Array"; }
+  if (!(result instanceof Uint16Array)) { throw "result" + ' is not a ' + "Uint16Array"; }
+  for (var i=0, li=id_array.length; i<li; ++i) {
+      result[i] = value_raster[id_array[i]];
+  }
+  return result;
+}
+Uint16Raster.get_mask = function(raster, mask) {
+  if (!(raster instanceof Uint16Array)) { throw "raster" + ' is not a ' + "Uint16Array"; }
+  if (!(mask instanceof Uint8Array)) { throw "mask" + ' is not a ' + "Uint8Array"; }
+  var result = new Uint16Array(Uint8Dataset.sum(mask));
+  for (var i = 0, j = 0, li = mask.length; i < li; i++) {
+    if (mask[i] > 0) {
+      result[j] = raster[i];
+      j++;
+    }
+  }
+  return result;
+}
+Uint16Raster.set_ids_to_value = function(raster, id_array, value) {
+  if (!(raster instanceof Uint16Array)) { throw "raster" + ' is not a ' + "Uint16Array"; }
+  for (var i=0, li=id_array.length; i<li; ++i) {
+      raster[id_array[i]] = value;
+  }
+  return raster;
+}
+Uint16Raster.set_ids_to_values = function(raster, id_array, value_array) {
+  if (!(raster instanceof Uint16Array)) { throw "raster" + ' is not a ' + "Uint16Array"; }
+  for (var i=0, li=id_array.length; i<li; ++i) {
+      raster[id_array[i]] = value_array[i];
+  }
+  return raster;
+}
+// Uint8Raster represents a grid where each cell contains a 32 bit floating point value
+// A Uint8Raster is composed of two parts:
+//    The first is a object of type Grid, representing a collection of vertices that are connected by edges
+//    The second is a typed array, representing a value for each vertex within the grid
+// 
+// Uint8Raster should theoretically work for any graph of vertices given the appropriate grid object,
+// However tectonics.js only uses them with spherical grids.
+// 
+// Uint8Rasters can be viewed through several paradigms: vector calculus, math morphology, image editing, etc.
+// Each paradigm has its own unique set of operations that it can perform on rasters objects.
+// A developer needs to switch between paradigms effortlessly and efficiently, without type conversion.
+// Rather than clutter the Uint8Raster class, operations on Uint8Rasters 
+// are spread out as friend functions across several namespaces. Each namespace corresponds to a paradigm. 
+// This design is meant to promote separation of concerns at the expense of encapsulation.
+// I want raster objects to be as bare as possible, functioning more like primitive datatypes.
+function Uint8Raster(grid, fill) {
+  var result = new Uint8Array(grid.vertices.length);
+  result.grid = grid;
+  if (fill !== void 0) {
+  for (var i=0, li=result.length; i<li; ++i) {
+      result[i] = fill;
+  }
+  }
+  return result;
+};
+Uint8Raster.OfLength = function(length, grid) {
+  var result = new Uint8Array(length);
+  result.grid = grid;
+  return result;
+}
+Uint8Raster.FromUint8Raster = function(raster) {
+  var result = Uint8Raster(raster.grid);
+  for (var i=0, li=result.length; i<li; ++i) {
+      result[i] = raster[i];
+  }
+  return result;
+}
+Uint8Raster.FromUint16Raster = function(raster) {
+  var result = Uint8Raster(raster.grid);
+  for (var i=0, li=result.length; i<li; ++i) {
+      result[i] = raster[i];
+  }
+  return result;
+}
+Uint8Raster.copy = function(raster, result) {
+  var result = result || Uint8Raster(raster.grid);
+  if (!(raster instanceof Uint8Array)) { throw "raster" + ' is not a ' + "Uint8Array"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
+  for (var i=0, li=raster.length; i<li; ++i) {
+      result[i] = raster[i];
+  }
+  return result;
+}
+Uint8Raster.fill = function (raster, value) {
+  if (!(raster instanceof Uint8Array)) { throw "raster" + ' is not a ' + "Uint8Array"; }
+  for (var i = 0, li = raster.length; i < li; i++) {
+    raster[i] = value;
+  }
+};
+Uint8Raster.min_id = function (raster) {
+  if (!(raster instanceof Uint8Array)) { throw "raster" + ' is not a ' + "Uint8Array"; }
+  var max = Infinity;
+  var max_id = 0;
+  var value = 0;
+  for (var i = 0, li = raster.length; i < li; i++) {
+    value = raster[i];
+    if (value < max) {
+      max = value;
+      max_id = i;
+    };
+  }
+  return max_id;
+};
+Uint8Raster.max_id = function (raster) {
+  if (!(raster instanceof Uint8Array)) { throw "raster" + ' is not a ' + "Uint8Array"; }
+  var max = -Infinity;
+  var max_id = 0;
+  var value = 0;
+  for (var i = 0, li = raster.length; i < li; i++) {
+    value = raster[i];
+    if (value > max) {
+      max = value;
+      max_id = i;
+    };
+  }
+  return max_id;
+};
+Uint8Raster.get_nearest_value = function(raster, pos) {
+  if (!(raster instanceof Uint8Array)) { throw "raster" + ' is not a ' + "Uint8Array"; }
+  return raster[raster.grid.getNearestId(pos)];
+}
+Uint8Raster.get_nearest_values = function(value_raster, pos_raster, result) {
+  result = result || Uint8Raster(pos_raster.grid);
+  if (!(value_raster instanceof Uint8Array)) { throw "value_raster" + ' is not a ' + "Uint8Array"; }
+  if (!(pos_raster.x !== void 0) && !(pos_raster.x instanceof Float32Array)) { throw "pos_raster" + ' is not a vector raster'; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
+  var ids = pos_raster.grid.getNearestIds(pos_raster);
+  for (var i=0, li=ids.length; i<li; ++i) {
+      result[i] = value_raster[ids[i]];
+  }
+  return result;
+}
+Uint8Raster.get_ids = function(value_raster, id_array, result) {
+  result = result || (id_array.grid !== void 0? Uint8Raster(id_array.grid) : Uint8Array(id_array.length));
+  if (!(value_raster instanceof Uint8Array)) { throw "value_raster" + ' is not a ' + "Uint8Array"; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
+  for (var i=0, li=id_array.length; i<li; ++i) {
+      result[i] = value_raster[id_array[i]];
+  }
+  return result;
+}
+Uint8Raster.get_mask = function(raster, mask) {
+  if (!(raster instanceof Uint8Array)) { throw "raster" + ' is not a ' + "Uint8Array"; }
+  if (!(mask instanceof Uint8Array)) { throw "mask" + ' is not a ' + "Uint8Array"; }
+  var result = new Uint8Array(Uint8Dataset.sum(mask));
+  for (var i = 0, j = 0, li = mask.length; i < li; i++) {
+    if (mask[i] > 0) {
+      result[j] = raster[i];
+      j++;
+    }
+  }
+  return result;
+}
+Uint8Raster.set_ids_to_value = function(raster, id_array, value) {
+  if (!(raster instanceof Uint8Array)) { throw "raster" + ' is not a ' + "Uint8Array"; }
+  for (var i=0, li=id_array.length; i<li; ++i) {
+      raster[id_array[i]] = value;
+  }
+  return raster;
+}
+Uint8Raster.set_ids_to_values = function(raster, id_array, value_array) {
+  if (!(raster instanceof Uint8Array)) { throw "raster" + ' is not a ' + "Uint8Array"; }
+  for (var i=0, li=id_array.length; i<li; ++i) {
+      raster[id_array[i]] = value_array[i];
+  }
+  return raster;
+}
+// VectorRaster represents a grid where each cell contains a vector value. It is a specific kind of a multibanded raster.
+// A VectorRaster is composed of two parts
+// 		The first is a object of type Grid, representing a collection of vertices that are connected by edges
+//  	The second is a structure of arrays (SoA), representing a vector for each vertex within the grid. 
+// 
+// VectorRaster should theoretically work for any graph of vertices given the appropriate grid object,
+// However tectonics.js only uses them with spherical grids.
+// 
+// VectorRasters can be viewed through several paradigms: vector calculus, math morphology, image editing, etc.
+// Each paradigm has its own unique set of operations that can be performed on rasters objects.
+// A developer needs to switch between paradigms effortlessly and efficiently, without type conversion.
+// Rather than clutter the VectorRaster class, operations on VectorRasters 
+// are spread out as friend functions across several namespaces. Each namespace corresponds to a paradigm. 
+// This design is meant to promote separation of concerns at the expense of encapsulation.
+// I want raster objects to be as bare as possible, functioning more like primitive datatypes.
+function VectorRaster(grid) {
+ var length = grid.vertices.length;
+ var result = {
+  x: new Float32Array(length),
+  y: new Float32Array(length),
+  z: new Float32Array(length),
+  grid: grid
+ };
+ return result;
+}
+VectorRaster.OfLength = function(length, grid) {
+ var result = {
+  x: new Float32Array(length),
+  y: new Float32Array(length),
+  z: new Float32Array(length),
+  grid: grid
+ };
+ return result;
+}
+VectorRaster.FromVectors = function(vectors, grid) {
+ var result = VectorRaster.OfLength(vectors.length, grid);
+ var x = result.x;
+ var y = result.y;
+ var z = result.z;
+ for (var i=0, li=vectors.length; i<li; ++i) {
+     x[i] = vectors[i].x;
+     y[i] = vectors[i].y;
+     z[i] = vectors[i].z;
+ }
+ return result;
+}
+VectorRaster.copy = function(vector_raster, output) {
+  var output = output || VectorRaster(vector_raster.grid);
+  if (!(vector_raster.x !== void 0) && !(vector_raster.x instanceof Float32Array)) { throw "vector_raster" + ' is not a vector raster'; }
+  if (!(output.x !== void 0) && !(output.x instanceof Float32Array)) { throw "output" + ' is not a vector raster'; }
+  var ix = vector_raster.x;
+  var iy = vector_raster.y;
+  var iz = vector_raster.z;
+  var ox = output.x;
+  var oy = output.y;
+  var oz = output.z;
+  for (var i=0, li=ix.length; i<li; ++i) {
+      ox[i] = ix[i];
+      oy[i] = iy[i];
+      oz[i] = iz[i];
+  }
+  return output;
+}
+VectorRaster.fill = function (vector_raster, value) {
+  if (!(vector_raster.x !== void 0) && !(vector_raster.x instanceof Float32Array)) { throw "vector_raster" + ' is not a vector raster'; }
+  var ix = value.x;
+  var iy = value.y;
+  var iz = value.z;
+  var ox = vector_raster.x;
+  var oy = vector_raster.y;
+  var oz = vector_raster.z;
+  for (var i=0, li=ox.length; i<li; ++i) {
+      ox[i] = ix;
+      oy[i] = iy;
+      oz[i] = iz;
+  }
+  return vector_raster;
+};
+VectorRaster.min_id = function (vector_raster) {
+  if (!(vector_raster.x !== void 0) && !(vector_raster.x instanceof Float32Array)) { throw "vector_raster" + ' is not a vector raster'; }
+  var max = Infinity;
+  var max_id = 0;
+  var mag = 0;
+  var ix = vector_raster.x;
+  var iy = vector_raster.y;
+  var iz = vector_raster.z;
+  for (var i = 0, li = ix.length; i < li; i++) {
+    mag = ix[i] * ix[i] + iy[i] * iy[i] + iz[i] * iz[i];
+    if (mag < max) {
+      max = mag;
+      max_id = i;
+    };
+  }
+  return max_id;
+};
+VectorRaster.max_id = function (vector_raster) {
+  if (!(vector_raster.x !== void 0) && !(vector_raster.x instanceof Float32Array)) { throw "vector_raster" + ' is not a vector raster'; }
+  var max = -Infinity;
+  var max_id = 0;
+  var mag = 0;
+  var ix = vector_raster.x;
+  var iy = vector_raster.y;
+  var iz = vector_raster.z;
+  for (var i = 0, li = ix.length; i < li; i++) {
+    mag = ix[i] * ix[i] + iy[i] * iy[i] + iz[i] * iz[i];
+    if (mag > max) {
+      max = mag;
+      max_id = i;
+    };
+  }
+  return max_id;
+};
+VectorRaster.get_nearest_value = function(value_raster, pos) {
+  if (!(value_raster.x !== void 0) && !(value_raster.x instanceof Float32Array)) { throw "value_raster" + ' is not a vector raster'; }
+ var id = value_raster.grid.getNearestId(pos);
+ return {x: value_raster.x[id], y: value_raster.y[id], z: value_raster.z[id]};
+}
+VectorRaster.get_nearest_values = function(value_raster, pos_raster, result) {
+ result = result || VectorRaster(pos_raster.grid);
+  if (!(vector_raster.x !== void 0) && !(vector_raster.x instanceof Float32Array)) { throw "vector_raster" + ' is not a vector raster'; }
+  if (!(pos_raster.x !== void 0) && !(pos_raster.x instanceof Float32Array)) { throw "pos_raster" + ' is not a vector raster'; }
+  if (!(result.x !== void 0) && !(result.x instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
+ var ids = pos_raster.grid.getNearestIds(pos_raster);
+  var ix = value_raster.x;
+  var iy = value_raster.y;
+  var iz = value_raster.z;
+ var ox = result.x;
+ var oy = result.y;
+ var oz = result.z;
+ for (var i=0, li=ids.length; i<li; ++i) {
+  ox[i] = ix[ids[i]];
+  oy[i] = iy[ids[i]];
+  oz[i] = iz[ids[i]];
+ }
+ return result;
+}
 // The Dataset namespaces provide operations over statistical datasets.
 // All datasets are represented by raster objects, e.g. VectorRaster or Float32Raster
 var Float32Dataset = {};
@@ -2399,557 +3042,6 @@ VectorRasterGraphics.fill_into_selection = function(vector_raster, fill, selecti
      cx[i] = selection[i] === 1? bx : ax[i];
      cy[i] = selection[i] === 1? by : ay[i];
      cz[i] = selection[i] === 1? bz : az[i];
- }
- return result;
-}
-// Float32Raster represents a grid where each cell contains a 32 bit floating point value
-// A Float32Raster is composed of two parts:
-// 		The first is a object of type Grid, representing a collection of vertices that are connected by edges
-//  	The second is a typed array, representing a value for each vertex within the grid
-// 
-// Float32Raster should theoretically work for any graph of vertices given the appropriate grid object,
-// However tectonics.js only uses them with spherical grids.
-// 
-// Float32Rasters can be viewed through several paradigms: vector calculus, math morphology, image editing, etc.
-// Each paradigm has its own unique set of operations that it can perform on rasters objects.
-// A developer needs to switch between paradigms effortlessly and efficiently, without type conversion.
-// Rather than clutter the Float32Raster class, operations on Float32Rasters 
-// are spread out as friend functions across several namespaces. Each namespace corresponds to a paradigm. 
-// This design is meant to promote separation of concerns at the expense of encapsulation.
-// I want raster objects to be as bare as possible, functioning more like primitive datatypes.
-function Float32Raster(grid, fill) {
- var result = new Float32Array(grid.vertices.length);
- result.grid = grid;
- if (fill !== void 0) {
- for (var i=0, li=result.length; i<li; ++i) {
-     result[i] = fill;
- }
- }
- return result;
-};
-Float32Raster.OfLength = function(length, grid) {
- var result = new Float32Array(length);
- result.grid = grid;
- return result;
-}
-Float32Raster.FromUint8Raster = function(raster, result) {
-  var result = result || Float32Raster(raster.grid);
-  if (!(raster instanceof Uint8Array)) { throw "raster" + ' is not a ' + "Uint8Array"; }
-  if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
-  for (var i=0, li=result.length; i<li; ++i) {
-      result[i] = raster[i];
-  }
-  return result;
-}
-Float32Raster.FromUint16Raster = function(raster, result) {
-  var result = result || Float32Raster(raster.grid);
-  if (!(raster instanceof Uint16Array)) { throw "raster" + ' is not a ' + "Uint16Array"; }
-  if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
-  for (var i=0, li=result.length; i<li; ++i) {
-      result[i] = raster[i];
-  }
-  return result;
-}
-Float32Raster.copy = function(raster, result) {
-  var result = result || Float32Raster(raster.grid);
-  if (!(raster instanceof Float32Array)) { throw "raster" + ' is not a ' + "Float32Array"; }
-  if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
-  for (var i=0, li=raster.length; i<li; ++i) {
-      result[i] = raster[i];
-  }
-  return result;
-}
-Float32Raster.fill = function (raster, value) {
-  if (!(raster instanceof Float32Array)) { throw "raster" + ' is not a ' + "Float32Array"; }
-  for (var i = 0, li = raster.length; i < li; i++) {
-    raster[i] = value;
-  }
-};
-Float32Raster.min_id = function (raster) {
-  if (!(raster instanceof Float32Array)) { throw "raster" + ' is not a ' + "Float32Array"; }
-  var max = Infinity;
-  var max_id = 0;
-  var value = 0;
-  for (var i = 0, li = raster.length; i < li; i++) {
-    value = raster[i];
-    if (value < max) {
-      max = value;
-      max_id = i;
-    };
-  }
-  return max_id;
-};
-Float32Raster.max_id = function (raster) {
-  if (!(raster instanceof Float32Array)) { throw "raster" + ' is not a ' + "Float32Array"; }
-  var max = -Infinity;
-  var max_id = 0;
-  var value = 0;
-  for (var i = 0, li = raster.length; i < li; i++) {
-    value = raster[i];
-    if (value > max) {
-      max = value;
-      max_id = i;
-    };
-  }
-  return max_id;
-};
-Float32Raster.get_nearest_value = function(raster, pos) {
-  if (!(raster instanceof Float32Array)) { throw "raster" + ' is not a ' + "Float32Array"; }
-  return raster[raster.grid.getNearestId(pos)];
-}
-Float32Raster.get_nearest_values = function(value_raster, pos_raster, result) {
-  result = result || Float32Raster(pos_raster.grid);
-  if (!(value_raster instanceof Float32Array)) { throw "value_raster" + ' is not a ' + "Float32Array"; }
-  if (!(pos_raster.x !== void 0) && !(pos_raster.x instanceof Float32Array)) { throw "pos_raster" + ' is not a vector raster'; }
-  if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
-  var ids = pos_raster.grid.getNearestIds(pos_raster);
-  for (var i=0, li=ids.length; i<li; ++i) {
-      result[i] = value_raster[ids[i]];
-  }
-  return result;
-}
-Float32Raster.get_ids = function(value_raster, id_array, result) {
-  result = result || (id_array.grid !== void 0? Float32Raster(id_array.grid) : Float32Array(id_array.length));
-  if (!(value_raster instanceof Float32Array)) { throw "value_raster" + ' is not a ' + "Float32Array"; }
-  if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
-  for (var i=0, li=id_array.length; i<li; ++i) {
-      result[i] = value_raster[id_array[i]];
-  }
-  return result;
-}
-Float32Raster.get_mask = function(raster, mask) {
-  if (!(raster instanceof Float32Array)) { throw "raster" + ' is not a ' + "Float32Array"; }
-  if (!(mask instanceof Uint8Array)) { throw "mask" + ' is not a ' + "Uint8Array"; }
-  var result = new Float32Array(Uint8Dataset.sum(mask));
-  for (var i = 0, j = 0, li = mask.length; i < li; i++) {
-    if (mask[i] > 0) {
-      result[j] = raster[i];
-      j++;
-    }
-  }
-  return result;
-}
-Float32Raster.set_ids_to_value = function(raster, id_array, value) {
-  if (!(raster instanceof Float32Array)) { throw "raster" + ' is not a ' + "Float32Array"; }
-  for (var i=0, li=id_array.length; i<li; ++i) {
-      raster[id_array[i]] = value;
-  }
-  return raster;
-}
-Float32Raster.set_ids_to_values = function(raster, id_array, value_array) {
-  if (!(raster instanceof Float32Array)) { throw "raster" + ' is not a ' + "Float32Array"; }
-  for (var i=0, li=id_array.length; i<li; ++i) {
-      raster[id_array[i]] = value_array[i];
-  }
-  return raster;
-}
-// Uint16Raster represents a grid where each cell contains a 32 bit floating point value
-// A Uint16Raster is composed of two parts:
-//    The first is a object of type Grid, representing a collection of vertices that are connected by edges
-//    The second is a typed array, representing a value for each vertex within the grid
-// 
-// Uint16Raster should theoretically work for any graph of vertices given the appropriate grid object,
-// However tectonics.js only uses them with spherical grids.
-// 
-// Uint16Rasters can be viewed through several paradigms: vector calculus, math morphology, image editing, etc.
-// Each paradigm has its own unique set of operations that it can perform on rasters objects.
-// A developer needs to switch between paradigms effortlessly and efficiently, without type conversion.
-// Rather than clutter the Uint16Raster class, operations on Uint16Rasters 
-// are spread out as friend functions across several namespaces. Each namespace corresponds to a paradigm. 
-// This design is meant to promote separation of concerns at the expense of encapsulation.
-// I want raster objects to be as bare as possible, functioning more like primitive datatypes.
-function Uint16Raster(grid, fill) {
-  var result = new Uint16Array(grid.vertices.length);
-  result.grid = grid;
-  if (fill !== void 0) {
-  for (var i=0, li=result.length; i<li; ++i) {
-      result[i] = fill;
-  }
-  }
-  return result;
-};
-Uint16Raster.OfLength = function(length, grid) {
-  var result = new Uint16Array(length);
-  result.grid = grid;
-  return result;
-}
-Uint16Raster.FromUint8Raster = function(raster) {
-  var result = Uint16Raster(raster.grid);
-  for (var i=0, li=result.length; i<li; ++i) {
-      result[i] = raster[i];
-  }
-  return result;
-}
-Uint16Raster.FromUint16Raster = function(raster) {
-  var result = Uint16Raster(raster.grid);
-  for (var i=0, li=result.length; i<li; ++i) {
-      result[i] = raster[i];
-  }
-  return result;
-}
-Uint16Raster.copy = function(raster, result) {
-  var result = result || Uint16Raster(raster.grid);
-  if (!(raster instanceof Uint16Array)) { throw "raster" + ' is not a ' + "Uint16Array"; }
-  if (!(result instanceof Uint16Array)) { throw "result" + ' is not a ' + "Uint16Array"; }
-  for (var i=0, li=raster.length; i<li; ++i) {
-      result[i] = raster[i];
-  }
-  return result;
-}
-Uint16Raster.fill = function (raster, value) {
-  if (!(raster instanceof Uint16Array)) { throw "raster" + ' is not a ' + "Uint16Array"; }
-  for (var i = 0, li = raster.length; i < li; i++) {
-    raster[i] = value;
-  }
-};
-Uint16Raster.min_id = function (raster) {
-  if (!(raster instanceof Uint16Array)) { throw "raster" + ' is not a ' + "Uint16Array"; }
-  var max = Infinity;
-  var max_id = 0;
-  var value = 0;
-  for (var i = 0, li = raster.length; i < li; i++) {
-    value = raster[i];
-    if (value < max) {
-      max = value;
-      max_id = i;
-    };
-  }
-  return max_id;
-};
-Uint16Raster.max_id = function (raster) {
-  if (!(raster instanceof Uint16Array)) { throw "raster" + ' is not a ' + "Uint16Array"; }
-  var max = -Infinity;
-  var max_id = 0;
-  var value = 0;
-  for (var i = 0, li = raster.length; i < li; i++) {
-    value = raster[i];
-    if (value > max) {
-      max = value;
-      max_id = i;
-    };
-  }
-  return max_id;
-};
-Uint16Raster.get_nearest_value = function(raster, pos) {
-  if (!(raster instanceof Uint16Array)) { throw "raster" + ' is not a ' + "Uint16Array"; }
-  return raster[raster.grid.getNearestId(pos)];
-}
-Uint16Raster.get_nearest_values = function(value_raster, pos_raster, result) {
-  result = result || Uint16Raster(pos_raster.grid);
-  if (!(value_raster instanceof Uint16Array)) { throw "value_raster" + ' is not a ' + "Uint16Array"; }
-  if (!(pos_raster.x !== void 0) && !(pos_raster.x instanceof Float32Array)) { throw "pos_raster" + ' is not a vector raster'; }
-  if (!(result instanceof Uint16Array)) { throw "result" + ' is not a ' + "Uint16Array"; }
-  var ids = pos_raster.grid.getNearestIds(pos_raster);
-  for (var i=0, li=ids.length; i<li; ++i) {
-      result[i] = value_raster[ids[i]];
-  }
-  return result;
-}
-Uint16Raster.get_ids = function(value_raster, id_array, result) {
-  result = result || (id_array.grid !== void 0? Uint16Raster(id_array.grid) : Uint16Array(id_array.length));
-  if (!(value_raster instanceof Uint16Array)) { throw "value_raster" + ' is not a ' + "Uint16Array"; }
-  if (!(result instanceof Uint16Array)) { throw "result" + ' is not a ' + "Uint16Array"; }
-  for (var i=0, li=id_array.length; i<li; ++i) {
-      result[i] = value_raster[id_array[i]];
-  }
-  return result;
-}
-Uint16Raster.get_mask = function(raster, mask) {
-  if (!(raster instanceof Uint16Array)) { throw "raster" + ' is not a ' + "Uint16Array"; }
-  if (!(mask instanceof Uint8Array)) { throw "mask" + ' is not a ' + "Uint8Array"; }
-  var result = new Uint16Array(Uint8Dataset.sum(mask));
-  for (var i = 0, j = 0, li = mask.length; i < li; i++) {
-    if (mask[i] > 0) {
-      result[j] = raster[i];
-      j++;
-    }
-  }
-  return result;
-}
-Uint16Raster.set_ids_to_value = function(raster, id_array, value) {
-  if (!(raster instanceof Uint16Array)) { throw "raster" + ' is not a ' + "Uint16Array"; }
-  for (var i=0, li=id_array.length; i<li; ++i) {
-      raster[id_array[i]] = value;
-  }
-  return raster;
-}
-Uint16Raster.set_ids_to_values = function(raster, id_array, value_array) {
-  if (!(raster instanceof Uint16Array)) { throw "raster" + ' is not a ' + "Uint16Array"; }
-  for (var i=0, li=id_array.length; i<li; ++i) {
-      raster[id_array[i]] = value_array[i];
-  }
-  return raster;
-}
-// Uint8Raster represents a grid where each cell contains a 32 bit floating point value
-// A Uint8Raster is composed of two parts:
-//    The first is a object of type Grid, representing a collection of vertices that are connected by edges
-//    The second is a typed array, representing a value for each vertex within the grid
-// 
-// Uint8Raster should theoretically work for any graph of vertices given the appropriate grid object,
-// However tectonics.js only uses them with spherical grids.
-// 
-// Uint8Rasters can be viewed through several paradigms: vector calculus, math morphology, image editing, etc.
-// Each paradigm has its own unique set of operations that it can perform on rasters objects.
-// A developer needs to switch between paradigms effortlessly and efficiently, without type conversion.
-// Rather than clutter the Uint8Raster class, operations on Uint8Rasters 
-// are spread out as friend functions across several namespaces. Each namespace corresponds to a paradigm. 
-// This design is meant to promote separation of concerns at the expense of encapsulation.
-// I want raster objects to be as bare as possible, functioning more like primitive datatypes.
-function Uint8Raster(grid, fill) {
-  var result = new Uint8Array(grid.vertices.length);
-  result.grid = grid;
-  if (fill !== void 0) {
-  for (var i=0, li=result.length; i<li; ++i) {
-      result[i] = fill;
-  }
-  }
-  return result;
-};
-Uint8Raster.OfLength = function(length, grid) {
-  var result = new Uint8Array(length);
-  result.grid = grid;
-  return result;
-}
-Uint8Raster.FromUint8Raster = function(raster) {
-  var result = Uint8Raster(raster.grid);
-  for (var i=0, li=result.length; i<li; ++i) {
-      result[i] = raster[i];
-  }
-  return result;
-}
-Uint8Raster.FromUint16Raster = function(raster) {
-  var result = Uint8Raster(raster.grid);
-  for (var i=0, li=result.length; i<li; ++i) {
-      result[i] = raster[i];
-  }
-  return result;
-}
-Uint8Raster.copy = function(raster, result) {
-  var result = result || Uint8Raster(raster.grid);
-  if (!(raster instanceof Uint8Array)) { throw "raster" + ' is not a ' + "Uint8Array"; }
-  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
-  for (var i=0, li=raster.length; i<li; ++i) {
-      result[i] = raster[i];
-  }
-  return result;
-}
-Uint8Raster.fill = function (raster, value) {
-  if (!(raster instanceof Uint8Array)) { throw "raster" + ' is not a ' + "Uint8Array"; }
-  for (var i = 0, li = raster.length; i < li; i++) {
-    raster[i] = value;
-  }
-};
-Uint8Raster.min_id = function (raster) {
-  if (!(raster instanceof Uint8Array)) { throw "raster" + ' is not a ' + "Uint8Array"; }
-  var max = Infinity;
-  var max_id = 0;
-  var value = 0;
-  for (var i = 0, li = raster.length; i < li; i++) {
-    value = raster[i];
-    if (value < max) {
-      max = value;
-      max_id = i;
-    };
-  }
-  return max_id;
-};
-Uint8Raster.max_id = function (raster) {
-  if (!(raster instanceof Uint8Array)) { throw "raster" + ' is not a ' + "Uint8Array"; }
-  var max = -Infinity;
-  var max_id = 0;
-  var value = 0;
-  for (var i = 0, li = raster.length; i < li; i++) {
-    value = raster[i];
-    if (value > max) {
-      max = value;
-      max_id = i;
-    };
-  }
-  return max_id;
-};
-Uint8Raster.get_nearest_value = function(raster, pos) {
-  if (!(raster instanceof Uint8Array)) { throw "raster" + ' is not a ' + "Uint8Array"; }
-  return raster[raster.grid.getNearestId(pos)];
-}
-Uint8Raster.get_nearest_values = function(value_raster, pos_raster, result) {
-  result = result || Uint8Raster(pos_raster.grid);
-  if (!(value_raster instanceof Uint8Array)) { throw "value_raster" + ' is not a ' + "Uint8Array"; }
-  if (!(pos_raster.x !== void 0) && !(pos_raster.x instanceof Float32Array)) { throw "pos_raster" + ' is not a vector raster'; }
-  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
-  var ids = pos_raster.grid.getNearestIds(pos_raster);
-  for (var i=0, li=ids.length; i<li; ++i) {
-      result[i] = value_raster[ids[i]];
-  }
-  return result;
-}
-Uint8Raster.get_ids = function(value_raster, id_array, result) {
-  result = result || (id_array.grid !== void 0? Uint8Raster(id_array.grid) : Uint8Array(id_array.length));
-  if (!(value_raster instanceof Uint8Array)) { throw "value_raster" + ' is not a ' + "Uint8Array"; }
-  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
-  for (var i=0, li=id_array.length; i<li; ++i) {
-      result[i] = value_raster[id_array[i]];
-  }
-  return result;
-}
-Uint8Raster.get_mask = function(raster, mask) {
-  if (!(raster instanceof Uint8Array)) { throw "raster" + ' is not a ' + "Uint8Array"; }
-  if (!(mask instanceof Uint8Array)) { throw "mask" + ' is not a ' + "Uint8Array"; }
-  var result = new Uint8Array(Uint8Dataset.sum(mask));
-  for (var i = 0, j = 0, li = mask.length; i < li; i++) {
-    if (mask[i] > 0) {
-      result[j] = raster[i];
-      j++;
-    }
-  }
-  return result;
-}
-Uint8Raster.set_ids_to_value = function(raster, id_array, value) {
-  if (!(raster instanceof Uint8Array)) { throw "raster" + ' is not a ' + "Uint8Array"; }
-  for (var i=0, li=id_array.length; i<li; ++i) {
-      raster[id_array[i]] = value;
-  }
-  return raster;
-}
-Uint8Raster.set_ids_to_values = function(raster, id_array, value_array) {
-  if (!(raster instanceof Uint8Array)) { throw "raster" + ' is not a ' + "Uint8Array"; }
-  for (var i=0, li=id_array.length; i<li; ++i) {
-      raster[id_array[i]] = value_array[i];
-  }
-  return raster;
-}
-// VectorRaster represents a grid where each cell contains a vector value. It is a specific kind of a multibanded raster.
-// A VectorRaster is composed of two parts
-// 		The first is a object of type Grid, representing a collection of vertices that are connected by edges
-//  	The second is a structure of arrays (SoA), representing a vector for each vertex within the grid. 
-// 
-// VectorRaster should theoretically work for any graph of vertices given the appropriate grid object,
-// However tectonics.js only uses them with spherical grids.
-// 
-// VectorRasters can be viewed through several paradigms: vector calculus, math morphology, image editing, etc.
-// Each paradigm has its own unique set of operations that can be performed on rasters objects.
-// A developer needs to switch between paradigms effortlessly and efficiently, without type conversion.
-// Rather than clutter the VectorRaster class, operations on VectorRasters 
-// are spread out as friend functions across several namespaces. Each namespace corresponds to a paradigm. 
-// This design is meant to promote separation of concerns at the expense of encapsulation.
-// I want raster objects to be as bare as possible, functioning more like primitive datatypes.
-function VectorRaster(grid) {
- var length = grid.vertices.length;
- var result = {
-  x: new Float32Array(length),
-  y: new Float32Array(length),
-  z: new Float32Array(length),
-  grid: grid
- };
- return result;
-}
-VectorRaster.OfLength = function(length, grid) {
- var result = {
-  x: new Float32Array(length),
-  y: new Float32Array(length),
-  z: new Float32Array(length),
-  grid: grid
- };
- return result;
-}
-VectorRaster.FromVectors = function(vectors, grid) {
- var result = VectorRaster.OfLength(vectors.length, grid);
- var x = result.x;
- var y = result.y;
- var z = result.z;
- for (var i=0, li=vectors.length; i<li; ++i) {
-     x[i] = vectors[i].x;
-     y[i] = vectors[i].y;
-     z[i] = vectors[i].z;
- }
- return result;
-}
-VectorRaster.copy = function(vector_raster, output) {
-  var output = output || VectorRaster(vector_raster.grid);
-  if (!(vector_raster.x !== void 0) && !(vector_raster.x instanceof Float32Array)) { throw "vector_raster" + ' is not a vector raster'; }
-  if (!(output.x !== void 0) && !(output.x instanceof Float32Array)) { throw "output" + ' is not a vector raster'; }
-  var ix = vector_raster.x;
-  var iy = vector_raster.y;
-  var iz = vector_raster.z;
-  var ox = output.x;
-  var oy = output.y;
-  var oz = output.z;
-  for (var i=0, li=ix.length; i<li; ++i) {
-      ox[i] = ix[i];
-      oy[i] = iy[i];
-      oz[i] = iz[i];
-  }
-  return output;
-}
-VectorRaster.fill = function (vector_raster, value) {
-  if (!(vector_raster.x !== void 0) && !(vector_raster.x instanceof Float32Array)) { throw "vector_raster" + ' is not a vector raster'; }
-  var ix = value.x;
-  var iy = value.y;
-  var iz = value.z;
-  var ox = vector_raster.x;
-  var oy = vector_raster.y;
-  var oz = vector_raster.z;
-  for (var i=0, li=ox.length; i<li; ++i) {
-      ox[i] = ix;
-      oy[i] = iy;
-      oz[i] = iz;
-  }
-  return vector_raster;
-};
-VectorRaster.min_id = function (vector_raster) {
-  if (!(vector_raster.x !== void 0) && !(vector_raster.x instanceof Float32Array)) { throw "vector_raster" + ' is not a vector raster'; }
-  var max = Infinity;
-  var max_id = 0;
-  var mag = 0;
-  var ix = vector_raster.x;
-  var iy = vector_raster.y;
-  var iz = vector_raster.z;
-  for (var i = 0, li = ix.length; i < li; i++) {
-    mag = ix[i] * ix[i] + iy[i] * iy[i] + iz[i] * iz[i];
-    if (mag < max) {
-      max = mag;
-      max_id = i;
-    };
-  }
-  return max_id;
-};
-VectorRaster.max_id = function (vector_raster) {
-  if (!(vector_raster.x !== void 0) && !(vector_raster.x instanceof Float32Array)) { throw "vector_raster" + ' is not a vector raster'; }
-  var max = -Infinity;
-  var max_id = 0;
-  var mag = 0;
-  var ix = vector_raster.x;
-  var iy = vector_raster.y;
-  var iz = vector_raster.z;
-  for (var i = 0, li = ix.length; i < li; i++) {
-    mag = ix[i] * ix[i] + iy[i] * iy[i] + iz[i] * iz[i];
-    if (mag > max) {
-      max = mag;
-      max_id = i;
-    };
-  }
-  return max_id;
-};
-VectorRaster.get_nearest_value = function(value_raster, pos) {
-  if (!(value_raster.x !== void 0) && !(value_raster.x instanceof Float32Array)) { throw "value_raster" + ' is not a vector raster'; }
- var id = value_raster.grid.getNearestId(pos);
- return {x: value_raster.x[id], y: value_raster.y[id], z: value_raster.z[id]};
-}
-VectorRaster.get_nearest_values = function(value_raster, pos_raster, result) {
- result = result || VectorRaster(pos_raster.grid);
-  if (!(vector_raster.x !== void 0) && !(vector_raster.x instanceof Float32Array)) { throw "vector_raster" + ' is not a vector raster'; }
-  if (!(pos_raster.x !== void 0) && !(pos_raster.x instanceof Float32Array)) { throw "pos_raster" + ' is not a vector raster'; }
-  if (!(result.x !== void 0) && !(result.x instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
- var ids = pos_raster.grid.getNearestIds(pos_raster);
-  var ix = value_raster.x;
-  var iy = value_raster.y;
-  var iz = value_raster.z;
- var ox = result.x;
- var oy = result.y;
- var oz = result.z;
- for (var i=0, li=ids.length; i<li; ++i) {
-  ox[i] = ix[ids[i]];
-  oy[i] = iy[ids[i]];
-  oz[i] = iz[ids[i]];
  }
  return result;
 }

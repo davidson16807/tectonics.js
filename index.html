@@ -409,6 +409,8 @@
 	}
 
 	function update(){
+		scratchpad.allocate('update');
+
 		// push to task queue and loop
 		// - it has to be at the begining of the function
 		//maximum refresh rate of 20fps
@@ -424,6 +426,8 @@
 		if(!IsProd){
 			updateStats.update();
 		}
+		
+		scratchpad.deallocate('update');
 	}
 	
 	function loadUrl (url) {
