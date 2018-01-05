@@ -7,7 +7,7 @@ ScalarField.min_field = function (scalar_field1, scalar_field2, result) {
   result = result || Float32Raster(scalar_field1.grid);
   ASSERT_IS_ARRAY(scalar_field1, Float32Array)
   ASSERT_IS_ARRAY(scalar_field2, Float32Array)
-  ASSERT_IS_ARRAY(result, Uint8Array)
+  ASSERT_IS_ARRAY(result, Float32Array)
 
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] < scalar_field2[i]? scalar_field1[i] : scalar_field2[i];
@@ -18,7 +18,7 @@ ScalarField.max_field = function (scalar_field1, scalar_field2, result) {
   result = result || Float32Raster(scalar_field1.grid);
   ASSERT_IS_ARRAY(scalar_field1, Float32Array)
   ASSERT_IS_ARRAY(scalar_field2, Float32Array)
-  ASSERT_IS_ARRAY(result, Uint8Array)
+  ASSERT_IS_ARRAY(result, Float32Array)
 
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] > scalar_field2[i]? scalar_field1[i] : scalar_field2[i];
@@ -73,7 +73,7 @@ ScalarField.eq_field = function (scalar_field1, scalar_field2, threshold, result
   result = result || Uint8Raster(scalar_field1.grid);
   ASSERT_IS_ARRAY(scalar_field1, Float32Array)
   ASSERT_IS_ARRAY(scalar_field2, Float32Array)
-  ASSERT_IS_TYPE(threshold, number)
+  ASSERT_IS_SCALAR(threshold)
   ASSERT_IS_ARRAY(result, Uint8Array)
 
   for (var i = 0, li = result.length; i < li; i++) {
@@ -85,7 +85,7 @@ ScalarField.ne_field = function (scalar_field1, scalar_field2, threshold, result
   result = result || Uint8Raster(scalar_field1.grid);
   ASSERT_IS_ARRAY(scalar_field1, Float32Array)
   ASSERT_IS_ARRAY(scalar_field2, Float32Array)
-  ASSERT_IS_TYPE(threshold, number)
+  ASSERT_IS_SCALAR(threshold)
   ASSERT_IS_ARRAY(result, Uint8Array)
 
   for (var i = 0, li = result.length; i < li; i++) {
@@ -98,7 +98,7 @@ ScalarField.ne_field = function (scalar_field1, scalar_field2, threshold, result
 ScalarField.min_scalar = function (scalar_field1, scalar, result) {
   result = result || Float32Raster(scalar_field1.grid);
   ASSERT_IS_ARRAY(scalar_field1, Float32Array)
-  ASSERT_IS_TYPE(scalar, number)
+  ASSERT_IS_SCALAR(scalar)
   ASSERT_IS_ARRAY(result, Float32Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] < scalar? scalar_field1[i] : scalar;
@@ -108,7 +108,7 @@ ScalarField.min_scalar = function (scalar_field1, scalar, result) {
 ScalarField.max_scalar = function (scalar_field1, scalar, result) {
   result = result || Float32Raster(scalar_field1.grid);
   ASSERT_IS_ARRAY(scalar_field1, Float32Array)
-  ASSERT_IS_TYPE(scalar, number)
+  ASSERT_IS_SCALAR(scalar)
   ASSERT_IS_ARRAY(result, Float32Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] > scalar? scalar_field1[i] : scalar;
@@ -118,7 +118,7 @@ ScalarField.max_scalar = function (scalar_field1, scalar, result) {
 ScalarField.gt_scalar = function (scalar_field1, scalar, result) {
   result = result || Uint8Raster(scalar_field1.grid);
   ASSERT_IS_ARRAY(scalar_field1, Float32Array)
-  ASSERT_IS_TYPE(scalar, number)
+  ASSERT_IS_SCALAR(scalar)
   ASSERT_IS_ARRAY(result, Uint8Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] > scalar? 1:0;
@@ -128,7 +128,7 @@ ScalarField.gt_scalar = function (scalar_field1, scalar, result) {
 ScalarField.gte_scalar = function (scalar_field1, scalar, result) {
   result = result || Uint8Raster(scalar_field1.grid);
   ASSERT_IS_ARRAY(scalar_field1, Float32Array)
-  ASSERT_IS_TYPE(scalar, number)
+  ASSERT_IS_SCALAR(scalar)
   ASSERT_IS_ARRAY(result, Uint8Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] >= scalar? 1:0;
@@ -138,7 +138,7 @@ ScalarField.gte_scalar = function (scalar_field1, scalar, result) {
 ScalarField.lt_scalar = function (scalar_field1, scalar, result) {
   result = result || Uint8Raster(scalar_field1.grid);
   ASSERT_IS_ARRAY(scalar_field1, Float32Array)
-  ASSERT_IS_TYPE(scalar, number)
+  ASSERT_IS_SCALAR(scalar)
   ASSERT_IS_ARRAY(result, Uint8Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] < scalar? 1:0;
@@ -148,7 +148,7 @@ ScalarField.lt_scalar = function (scalar_field1, scalar, result) {
 ScalarField.lte_scalar = function (scalar_field1, scalar, result) {
   result = result || Uint8Raster(scalar_field1.grid);
   ASSERT_IS_ARRAY(scalar_field1, Float32Array)
-  ASSERT_IS_TYPE(scalar, number)
+  ASSERT_IS_SCALAR(scalar)
   ASSERT_IS_ARRAY(result, Uint8Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] <= scalar? 1:0;
@@ -158,8 +158,8 @@ ScalarField.lte_scalar = function (scalar_field1, scalar, result) {
 ScalarField.between_scalars = function (scalar_field1, scalar1, scalar2, result) {
   result = result || Uint8Raster(scalar_field1.grid);
   ASSERT_IS_ARRAY(scalar_field1, Float32Array)
-  ASSERT_IS_TYPE(scalar1, number)
-  ASSERT_IS_TYPE(scalar2, number)
+  ASSERT_IS_SCALAR(scalar1)
+  ASSERT_IS_SCALAR(scalar2)
   ASSERT_IS_ARRAY(result, Uint8Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar1 < scalar_field1[i] && scalar_field1[i] < scalar2? 1:0;
@@ -169,8 +169,8 @@ ScalarField.between_scalars = function (scalar_field1, scalar1, scalar2, result)
 ScalarField.eq_scalar = function (scalar_field1, scalar, threshold, result) {
   result = result || Uint8Raster(scalar_field1.grid);
   ASSERT_IS_ARRAY(scalar_field1, Float32Array)
-  ASSERT_IS_TYPE(scalar, number)
-  ASSERT_IS_TYPE(threshold, number)
+  ASSERT_IS_SCALAR(scalar)
+  ASSERT_IS_SCALAR(threshold)
   ASSERT_IS_ARRAY(result, Uint8Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] < scalar + threshold || scalar_field1[i] > scalar - threshold ? 1:0;
@@ -180,8 +180,8 @@ ScalarField.eq_scalar = function (scalar_field1, scalar, threshold, result) {
 ScalarField.ne_scalar = function (scalar_field1, scalar, threshold, result) {
   result = result || Uint8Raster(scalar_field1.grid);
   ASSERT_IS_ARRAY(scalar_field1, Float32Array)
-  ASSERT_IS_TYPE(scalar, number)
-  ASSERT_IS_TYPE(threshold, number)
+  ASSERT_IS_SCALAR(scalar)
+  ASSERT_IS_SCALAR(threshold)
   ASSERT_IS_ARRAY(result, Uint8Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] > scalar + threshold || scalar_field1[i] < scalar - threshold ? 1:0;
@@ -189,14 +189,14 @@ ScalarField.ne_scalar = function (scalar_field1, scalar, threshold, result) {
   return result;
 };
 
-ScalarField.add_field_term = function (scalar_field1, scalar_field2, field3, result) {
+ScalarField.add_field_term = function (scalar_field1, scalar_field2, scalar_field3, result) {
   result = result || Float32Raster(scalar_field1.grid);
   ASSERT_IS_ARRAY(scalar_field1, Float32Array)
   ASSERT_IS_ANY_ARRAY(scalar_field2) 
-  ASSERT_IS_ANY_ARRAY(field3) 
+  ASSERT_IS_ANY_ARRAY(scalar_field3) 
   ASSERT_IS_ARRAY(result, Float32Array)
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = scalar_field1[i] + field3[i] * scalar_field2[i];
+    result[i] = scalar_field1[i] + scalar_field3[i] * scalar_field2[i];
   }
   return result;
 };
@@ -204,7 +204,7 @@ ScalarField.add_scalar_term = function (scalar_field1, scalar_field2, scalar, re
   result = result || Float32Raster(scalar_field1.grid);
   ASSERT_IS_ARRAY(scalar_field1, Float32Array)
   ASSERT_IS_ANY_ARRAY(scalar_field2) 
-  ASSERT_IS_TYPE(scalar, number)
+  ASSERT_IS_SCALAR(scalar)
   ASSERT_IS_ARRAY(result, Float32Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] + scalar * scalar_field2[i];
@@ -246,7 +246,7 @@ ScalarField.sub_scalar_term = function (scalar_field1, scalar_field2, scalar, re
   result = result || Float32Raster(scalar_field1.grid);
   ASSERT_IS_ARRAY(scalar_field1, Float32Array)
   ASSERT_IS_ANY_ARRAY(scalar_field2) 
-  ASSERT_IS_TYPE(scalar, number)
+  ASSERT_IS_SCALAR(scalar)
   ASSERT_IS_ARRAY(result, Float32Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] - scalar * scalar_field2[i];
@@ -276,7 +276,7 @@ ScalarField.div_field = function (scalar_field1, scalar_field2, result) {
 ScalarField.add_scalar = function (scalar_field, scalar, result) {
   result = result || Float32Raster(scalar_field.grid);
   ASSERT_IS_ARRAY(scalar_field, Float32Array)
-  ASSERT_IS_TYPE(scalar, number)
+  ASSERT_IS_SCALAR(scalar)
   ASSERT_IS_ARRAY(result, Float32Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field[i] + scalar;
@@ -286,7 +286,7 @@ ScalarField.add_scalar = function (scalar_field, scalar, result) {
 ScalarField.sub_scalar = function (scalar_field, scalar, result) {
   result = result || Float32Raster(scalar_field.grid);
   ASSERT_IS_ARRAY(scalar_field, Float32Array)
-  ASSERT_IS_TYPE(scalar, number)
+  ASSERT_IS_SCALAR(scalar)
   ASSERT_IS_ARRAY(result, Float32Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field[i] - scalar;
@@ -296,7 +296,7 @@ ScalarField.sub_scalar = function (scalar_field, scalar, result) {
 ScalarField.mult_scalar = function (scalar_field, scalar, result) {
   result = result || Float32Raster(scalar_field.grid);
   ASSERT_IS_ARRAY(scalar_field, Float32Array)
-  ASSERT_IS_TYPE(scalar, number)
+  ASSERT_IS_SCALAR(scalar)
   ASSERT_IS_ARRAY(result, Float32Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field[i] * scalar;
@@ -307,7 +307,7 @@ ScalarField.div_scalar = function (scalar_field, scalar, result) {
   result = result || Float32Raster(scalar_field.grid);
 
   ASSERT_IS_ARRAY(scalar_field, Float32Array)
-  ASSERT_IS_TYPE(scalar, number)
+  ASSERT_IS_SCALAR(scalar)
   ASSERT_IS_ARRAY(result, Float32Array)
   
   for (var i = 0, li = result.length; i < li; i++) {
@@ -348,6 +348,9 @@ ScalarField.differential = function (scalar_field, result) {
   var x = result.x;
   var y = result.y;
   var z = result.z;
+  Float32Raster.fill(x, 0);
+  Float32Raster.fill(y, 0);
+  Float32Raster.fill(z, 0);
   for (var i = 0, li = arrows.length; i < li; i++) {
     arrow = arrows[i];
     from = arrow[0];
@@ -368,11 +371,11 @@ ScalarField.differential = function (scalar_field, result) {
 };
 ScalarField.gradient = function (scalar_field, result) {
   result = result || VectorRaster(scalar_field.grid);
+  scratch = scratch || VectorRaster(scalar_field.grid);
 
   ASSERT_IS_ARRAY(scalar_field, Float32Array)
   ASSERT_IS_VECTOR_RASTER(result)
 
-  var scalar_field_derivative = 0;
   var dpos = scalar_field.grid.pos_arrow_differential;
   var dx = dpos.x;
   var dy = dpos.y;
@@ -380,9 +383,18 @@ ScalarField.gradient = function (scalar_field, result) {
   var arrows = scalar_field.grid.arrows;
   var arrow = [];
   var arrow_distances = scalar_field.grid.pos_arrow_distances;
+  var max_slope = scratch;
   var x = result.x;
   var y = result.y;
   var z = result.z;
+  var abs = Math.abs;
+  var arrow_distance = 0;
+  var slope = 0;
+  var slope_magnitude = 0;
+  var slope_adjust = 0;
+  var from = 0;
+  var to = 0;
+  //
   // NOTE: 
   // The naive implementation is to estimate the gradient based on each individual neighbor,
   //  then take the average between the estimates.
@@ -398,21 +410,24 @@ ScalarField.gradient = function (scalar_field, result) {
   //  each component of the cartesian coordinate basis corresponds to a "neighbor" in our approach.
   // We create a weighted sum between them, weighting by the derivative for each. 
   //  There are already 3 "neighbors", one for each coordinate basis, so we don't do anything.
-
+  Float32Raster.fill(max_slope, 0);
+  Float32Raster.fill(x, 0);
+  Float32Raster.fill(y, 0);
+  Float32Raster.fill(z, 0);
   for (var i = 0, li = arrows.length; i < li; i++) {
     arrow = arrows[i];
-    scalar_field_derivative = (scalar_field[arrow[1]] - scalar_field[arrow[0]]) / arrow_distances[i];
-    x[arrow[0]] += (dx[i] * scalar_field_derivative);
-    y[arrow[0]] += (dy[i] * scalar_field_derivative);
-    z[arrow[0]] += (dz[i] * scalar_field_derivative);
-  }
-  var neighbor_count = scalar_field.grid.neighbor_count;
-  var neighbor_count_i = 0;
-  for (var i = 0, li = neighbor_count.length; i < li; i++) {
-    neighbor_count_i = neighbor_count[i];
-    x[i] *= 3/neighbor_count_i;
-    y[i] *= 3/neighbor_count_i;
-    z[i] *= 3/neighbor_count_i;
+    from = arrow[0];
+    to = arrow[1];
+    arrow_distance = arrow_distances[i];
+    slope = (scalar_field[to] - scalar_field[from]) / arrow_distance;
+    slope_magnitude = abs(slope);
+    if (slope_magnitude > max_slope[from]) {
+      max_slope[from] = slope_magnitude;
+      slope_adjust = slope/arrow_distance;
+      x[from] = dx[i] * slope_adjust;
+      y[from] = dy[i] * slope_adjust;
+      z[from] = dz[i] * slope_adjust;
+    }
   }
   return result;
 };
@@ -426,38 +441,39 @@ ScalarField.average_difference = function (scalar_field, result) {
 
   var arrows = scalar_field.grid.arrows;
   var arrow
+  Float32Raster.fill(result, 0);
   for (var i=0, li=arrows.length; i<li; ++i) {
       arrow = arrows[i];
       result[arrow[0]] += scalar_field[arrow[1]] - scalar_field[arrow[0]];
   }
-  var neighbor_lookup = scalar_field.grid.neighbor_lookup;
-  var neighbor_count = 0;
-  for (var i = 0, li = neighbor_lookup.length; i < li; i++) {
-      neighbor_count = neighbor_lookup[i].length;
-      result[i] /= neighbor_count;
+  var neighbor_count = scalar_field.grid.neighbor_count;
+  for (var i = 0, li = neighbor_count.length; i < li; i++) {
+      result[i] /= neighbor_count[i];
   }
   return result;
 };
  
 // This function computes the laplacian of a surface. 
-// The laplacian can be thought of as a metric for the average difference across space. 
+// The laplacian can be thought of as the average difference across space, per unit area. 
 // By applying it to a surface, we mean it's only done for the 2d surface of a 3d object. 
 // We assume all vertices in scalar_field.grid are equidistant on a surface. 
 // 
-// Let ε be a small number and eᵢ be a component of the basis (e.g. [1,0] or [0,1]) 
-// ∇²f = ∇ (     f(x+εeᵢ)     -     f(x-εeᵢ))      /  2ε 
-// ∇²f =   ((f(x+2εeᵢ) -f(x)) - (f(x) -f(x-2εeᵢ))) / (2ε)² 
-// ∇²f =   ( f(x+2εeᵢ) -f(x) 
-//           f(x-2εeᵢ) -f(x)) ) / (2ε)² 
-//   So for 2d: 
-// ∇²f =   ( f(x+2ε, y) - f(x,y) 
-//           f(x, y+2ε) - f(x,y) 
-//           f(x-2ε, y) - f(x,y) 
-//           f(x, y-2ε) - f(x,y) ) / (2ε)² 
+// So for 2d: 
+//
+// ∇⋅∇f = ∇⋅[ (f(x+dx) - f(x-dx)) / 2dx,  
+//            (f(x+dy) - f(x-dy)) / 2dy  ]
+//
+// ∇⋅∇f = d/dx (f(x+dx) - f(x-dx)) / 2dx  
+//      + d/dy (f(x+dy) - f(x-dy)) / 2dy
+//
+// ∇⋅∇f =  1/4 (f(x+2dx) - f(x)) / dxdx  
+//      +  1/4 (f(x-2dx) - f(x)) / dxdx  
+//      +  1/4 (f(x+2dy) - f(x)) / dydy
+//      +  1/4 (f(x-2dy) - f(x)) / dydy
 //  
-// Think of it as taking the sum of differences between the center point and four neighbors. 
+// Think of it as taking the average slope between four neighbors. 
 // That means if we have an arbitrary number of neighbors,  
-// we find the average difference and multiply it by 4. 
+// we find the average difference and divide by the average area covered by a point.
 ScalarField.laplacian = function (scalar_field, result) { 
   result = result || Float32Raster(scalar_field.grid);
 
@@ -465,20 +481,19 @@ ScalarField.laplacian = function (scalar_field, result) {
   ASSERT_IS_ARRAY(result, Float32Array)
   ASSERT_IS_NOT_EQUAL(scalar_field, result)
 
-  for (var i = 0; i < result.length; i++) { 
-    result[i] = -4*scalar_field[i]; 
-  } 
   var arrows = scalar_field.grid.arrows;
-  var arrow;
+  var arrow
+
+  Float32Raster.fill(result, 0);
   for (var i=0, li=arrows.length; i<li; ++i) {
       arrow = arrows[i];
-      result[arrow[0]] += scalar_field[arrow[1]]; 
+      result[arrow[0]] += scalar_field[arrow[1]] - scalar_field[arrow[0]];
   }
-  var neighbor_count = scalar_field.grid.neighbor_count; 
-  var average_distance = scalar_field.grid.average_distance * scalar_field.grid.average_distance; 
-  for (var i = 0, li = neighbor_count.length; i < li; i++) { 
-      result[i] *= 4; 
-      result[i] /= neighbor_count[i] * average_distance; 
+  var neighbor_count = scalar_field.grid.neighbor_count;
+  var average_distance = scalar_field.grid.average_distance;
+  var average_area = average_distance * average_distance;
+  for (var i = 0, li = neighbor_count.length; i < li; i++) {
+      result[i] /= average_area * neighbor_count[i];
   }
   return result;
 };
@@ -490,20 +505,19 @@ ScalarField.diffusion_by_constant = function (scalar_field, constant, result, sc
   ASSERT_IS_ARRAY(scalar_field, Float32Array)
   ASSERT_IS_ARRAY(result, Float32Array)
   ASSERT_IS_ARRAY(scratch, Float32Array)
-  ASSERT_IS_TYPE(constant, number)
+  ASSERT_IS_SCALAR(constant)
 
   var laplacian = scratch;
   var arrows = scalar_field.grid.arrows;
   var arrow
+  Float32Raster.fill(laplacian, 0);
   for (var i=0, li=arrows.length; i<li; ++i) {
       arrow = arrows[i];
       laplacian[arrow[0]] += scalar_field[arrow[1]] - scalar_field[arrow[0]];
   }
-  var neighbor_lookup = scalar_field.grid.neighbor_lookup;
-  var neighbor_count = 0;
-  for (var i = 0, li = neighbor_lookup.length; i < li; i++) {
-      neighbor_count = neighbor_lookup[i].length;
-      laplacian[i] /= neighbor_count;
+  var neighbor_count = scalar_field.grid.neighbor_count;
+  for (var i = 0, li = neighbor_count.length; i < li; i++) {
+      laplacian[i] /= neighbor_count[i];
   }
   for (var i=0, li=laplacian.length; i<li; ++i) {
       result[i] = scalar_field[i] + constant * laplacian[i];
@@ -523,15 +537,14 @@ ScalarField.diffusion_by_field = function (scalar_field1, scalar_field2, result,
   var laplacian = scratch;
   var arrows = scalar_field1.grid.arrows;
   var arrow
+  Float32Raster.fill(laplacian, 0);
   for (var i=0, li=arrows.length; i<li; ++i) {
       arrow = arrows[i];
       laplacian[arrow[0]] += scalar_field1[arrow[1]] - scalar_field1[arrow[0]];
   }
-  var neighbor_lookup = scalar_field1.grid.neighbor_lookup;
-  var neighbor_count = 0;
-  for (var i = 0, li = neighbor_lookup.length; i < li; i++) {
-      neighbor_count = neighbor_lookup[i].length;
-      laplacian[i] /= neighbor_count;
+  var neighbor_count = scalar_field1.grid.neighbor_count;
+  for (var i = 0, li = neighbor_count.length; i < li; i++) {
+      laplacian[i] /= neighbor_count[i];
   }
   for (var i=0, li=laplacian.length; i<li; ++i) {
       result[i] = scalar_field1[i] + scalar_field2[i] * laplacian[i];
