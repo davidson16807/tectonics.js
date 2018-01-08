@@ -96,11 +96,12 @@ function Grid(template, options){
 	this.arrows = arrows; 
 	this.arrow_lookup = arrow_lookup; 
 	
-	this.pos_arrow_distances = VectorRaster.OfLength(arrows.length, undefined)
-	this.pos_arrow_differential = VectorField.arrow_differential(this.pos, this.pos_arrow_distances); 
+	this.pos_arrow_differential = VectorField.arrow_differential(this.pos); 
+	this.pos_arrow_differential_normalized = VectorField.normalize(this.pos); 
 	this.pos_arrow_distances = Float32Raster.OfLength(arrows.length, undefined)
 	VectorField.magnitude(this.pos_arrow_differential, this.pos_arrow_distances);
 	this.average_distance = Float32Dataset.average(this.pos_arrow_distances);
+	this.average_area = this.average_distance * this.average_distance;
 
 	if (voronoi_generator){
 		this._voronoi = voronoi_generator(this.pos);
