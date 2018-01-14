@@ -180,6 +180,24 @@
 				</li>
 			</ul>
 		</div>
+		<div id="settings" class="btn-group">
+			<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				<img src="icons/settings.svg" height="16em" width="16em"/>
+				Settings 
+				<span class="caret"></span>
+			</button>
+			<ul class="dropdown-menu btn-default btn-xs">
+				<li>
+					<button type="button" 
+						class="btn btn-default btn-xs" 
+						v-bind:class="{active: supercontinentBreakup}" 
+						v-on:click="setSupercontinentBreakup(!supercontinentBreakup? 1:0)">
+						<img src="icons/clock.svg" height="16em" width="16em"/>
+						Supercontinent Breakup
+					</button>
+				</li>
+			</ul>
+		</div>
 
 		<button id="fullscreen" v-if="isVisible" type="button" class="btn btn-default btn-xs fullscreen" data-toggle="button" aria-pressed="true" v-on:click="toggleFullscreen()">
 			<img v-if="!isFullscreen" src="icons/fullscreen.svg" height="16em">
@@ -756,6 +774,23 @@
 	    getClass: function(value, selected) {
 	    	return value == selected? 'active' : '';
 	    }
+	  }
+	});
+
+	var settingsVue = new Vue({
+	  el: '#settings',
+	  data: {
+	    supercontinentBreakup: 1,
+	  },
+	  methods: {
+	    setSupercontinentBreakup: function(value) {
+	    	this.supercontinentBreakup = value;
+	    	if (!this.supercontinentBreakup) {
+		    	model.world().supercontinentCycle.duration = Infinity;
+	    	} else {
+	    		model.world().supercontinentCycle.duration = 0;
+	    	}
+	    },
 	  }
 	});
 
