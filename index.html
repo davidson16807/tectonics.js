@@ -176,6 +176,24 @@
 				</li>
 			</ul>
 		</div>
+		<div id="settings" class="btn-group">
+			<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				<img src="icons/settings.svg" height="16em" width="16em"/>
+				Settings 
+				<span class="caret"></span>
+			</button>
+			<ul class="dropdown-menu btn-default btn-xs">
+				<li>
+					<button type="button" 
+						class="btn btn-default btn-xs" 
+						v-bind:class="{active: supercontinentBreakup}" 
+						v-on:click="setSupercontinentBreakup(!supercontinentBreakup? 1:0)">
+						<img src="icons/clock.svg" height="16em" width="16em"/>
+						Supercontinent Breakup
+					</button>
+				</li>
+			</ul>
+		</div>
 
 		<button id="fullscreen" v-if="isVisible" type="button" class="btn btn-default btn-xs fullscreen" data-toggle="button" aria-pressed="true" v-on:click="toggleFullscreen()">
 			<img v-if="!isFullscreen" src="icons/fullscreen.svg" height="16em">
@@ -714,6 +732,93 @@
 	    }
 	  }
 	});
+
+	var settingsVue = new Vue({
+	  el: '#settings',
+	  data: {
+	    supercontinentBreakup: 1,
+	  },
+	  methods: {
+	    setSupercontinentBreakup: function(value) {
+	    	this.supercontinentBreakup = value;
+	    	if (!this.supercontinentBreakup) {
+		    	model.world().supercontinentCycle.duration = Infinity;
+	    	} else {
+	    		model.world().supercontinentCycle.duration = 0;
+	    	}
+	    },
+	  }
+	});
+
+	Vue.use(VueCharts);
+    const app = new Vue({
+        el: '#chart',
+        data:{
+        	isEnabled: false,
+        	min: 0,
+        	max: 0,
+        	mean: 0,
+        	median: 0,
+        	stddev: 0,
+            x: [],
+            y: [],
+            options: {
+            	legend: {display: false}, 
+            	animation : false,
+            	scales: {
+					xAxes: [{
+						ticks: {
+						  fontColor: '#FFFFFF'
+						}
+					}],
+					yAxes: [{
+						ticks: {
+						  fontColor: '#FFFFFF'
+						},
+					}]
+				}
+            }
+        },
+		created: function() {
+			var _this = this;
+			setInterval(function() {
+				var field = view._scalarDisplay.field;
+				if (field === void 0) {
+					_this.isEnabled = false;
+					return;
+				}
+				var max = Float32Dataset.max(field);
+				var min = Float32Dataset.min(field);
+				var range = Math.pow(10, Math.round(Math.log10(max - min)));
+				var bin_num = 10;
+				var bin_size = range/bin_num;
+				var bin_min = 0;
+				var bin_max = 0;
+				var bin_mag = 0;
+				var x = [];
+				var y = [];
+				for (var i = 0; i < bin_num; i++) {
+					bin_min = Math.round(min+i*bin_size);
+					bin_max = Math.round(max+i*bin_size);
+					x[i] = Uint8Dataset.sum(ScalarField.between_scalars(field, bin_min, bin_max))
+					y[i] = bin_min;
+				}
+				_this.min = min;
+				_this.max = max;
+				_this.mean = Float32Dataset.average(field);
+				_this.median = Float32Dataset.median(field);
+				_this.stddev = Float32Dataset.standard_deviation(field);
+				_this.isEnabled = true;
+				_this.$data.x = x;
+				_this.$data.y = y;
+			}, 1000/2);
+		},
+		methods: {
+			round(x) {
+				return Math.round(x);
+			}
+		}
+    });
 </script>
 </body>
 </html>
