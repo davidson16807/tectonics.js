@@ -1,10 +1,15 @@
-CPP=/usr/bin/cpp -P -undef -Wundef -std=c99 -nostdinc -Wtrigraphs -fdollars-in-identifiers -C 
+KNAME := $(shell uname)
+ifeq (Darwin,$(findstring Darwin,$(KNAME)))
+    CPP=g++-7
+else
+    CPP=/usr/bin/cpp
+endif
 OUT=postcompiled/utils/Rasters.js postcompiled/view/FragmentShaders.js postcompiled/view/VertexShaders.js
 
 all: $(OUT)
 
 postcompiled/utils/Rasters.js : precompiled/utils/Rasters.js
-	cat $< | $(CPP) > $@
+	$(CPP) -E -P -I. -xc -Wundef -std=c99 -nostdinc -Wtrigraphs -fdollars-in-identifiers -C $< > $@
 
 postcompiled/view/FragmentShaders.js : precompiled/view/fragment/FragmentShaders.template.js
 	cat $< | \
