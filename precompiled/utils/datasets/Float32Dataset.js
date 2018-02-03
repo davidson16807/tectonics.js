@@ -91,8 +91,8 @@ Float32Dataset.normalize = function(dataset, result, min_new, max_new) {
 Float32Dataset.rescale = function(dataset, result, max_new) {
   result = result || Float32Raster(dataset.grid);
 
-  var max = Float32Dataset.max(dataset);
   var max_new = max_new || 1;
+  var max = Float32Dataset.max(dataset) || max_new;
   var scaling_factor = max_new / max;
 
   ASSERT_IS_ARRAY(dataset, Float32Array)
