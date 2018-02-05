@@ -181,7 +181,13 @@ var World = (function() {
 		var globalized_accretion = Float32Raster(grid); 
 		Float32Raster.fill(globalized_accretion, 0);
 		var globalized_erosion = Float32Raster(grid);
-		TectonicsModeling.get_erosion(displacement, world.SEALEVEL, timestep, globalized_erosion, globalized_scalar_field);
+		// TectonicsModeling.get_erosion(displacement, world.SEALEVEL, timestep, globalized_erosion, globalized_scalar_field);
+		TectonicsModeling.get_erosion(
+			displacement, 		world.SEALEVEL, 	timestep,
+			Float32Raster(grid), 	world.sial, 			world.sima, 
+			Float32Raster(grid), 	globalized_erosion, 	Float32Raster(grid), 
+			globalized_scalar_field
+		);
 
 		var RIFT = true;
 		var DETACH = true;
