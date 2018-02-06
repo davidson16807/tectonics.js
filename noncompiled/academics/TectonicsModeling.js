@@ -230,6 +230,13 @@ TectonicsModeling.get_erosion = function(
 	var water_height = scratch;
 	ScalarField.max_scalar(displacement, sealevel, water_height);
 
+	var outbound_height_transfer = Float32Raster(displacement.grid);
+	Float32Raster.fill(outbound_height_transfer, 0);
+
+	var outbound_sediment_fraction = Float32Raster(displacement.grid);
+	var outbound_sial_fraction = Float32Raster(displacement.grid);
+	var outbound_sima_fraction = Float32Raster(displacement.grid);
+
 	var arrows = displacement.grid.arrows;
 	var arrow;
 	var from = 0;
@@ -243,7 +250,17 @@ TectonicsModeling.get_erosion = function(
 	    from = arrow[0];
 	    to = arrow[1];
 	    height_difference = water_height[from] - water_height[to];
-	    outbound_height_transfer_i = height_difference > 0? height_difference * precipitation * timestep * erosiveFactor / neighbor_count[from] : 0;
+	    outbound_height_transfer[from] += height_difference > 0? height_difference * precipitation * timestep * erosiveFactor / neighbor_count[from] : 0;
+	}
+	for (var i=0, li=outbound_height_transfer.length; i<li; ++i) {
+		outbound_sial_fraction[i] = outbound_height_transfer[i] > sial[i]?  sial[i] / outbound_height_transfer[i] : 1.0;
+	}
+	for (var i=0, li=arrows.length; i<li; ++i) {
+	    arrow = arrows[i];
+	    from = arrow[0];
+	    to = arrow[1];
+	    height_difference = water_height[from] - water_height[to];
+	    outbound_height_transfer_i = height_difference > 0? height_difference * precipitation * timestep * erosiveFactor * outbound_sial_fraction[from] / neighbor_count[from] : 0;
 	    sial_delta[from] -= outbound_height_transfer_i;
 	    sial_delta[to] += outbound_height_transfer_i;
 	}
