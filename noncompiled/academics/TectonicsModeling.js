@@ -243,8 +243,9 @@ TectonicsModeling.get_erosion = function(
 	    from = arrow[0];
 	    to = arrow[1];
 	    height_difference = water_height[from] - water_height[to];
-	    outbound_height_transfer_i = height_difference * precipitation * timestep * erosiveFactor;
-	    sial_delta[from] -= outbound_height_transfer_i / neighbor_count[from];
+	    outbound_height_transfer_i = height_difference > 0? height_difference * precipitation * timestep * erosiveFactor / neighbor_count[from] : 0;
+	    sial_delta[from] -= outbound_height_transfer_i;
+	    sial_delta[to] += outbound_height_transfer_i;
 	}
 }
 // get a map of plates using image segmentation and binary morphology
