@@ -177,6 +177,10 @@ var World = (function() {
 		var global_ids_of_local_cells, local_ids_of_global_cells;
 		var add_term = ScalarField.add_field_term;
 		var add = ScalarField.add_field;
+		var min = ScalarField.min_field;
+		var max = ScalarField.max_scalar;
+		var fix_nonnegative_quantity_delta = Float32Raster.fix_nonnegative_quantity_delta;
+		var assert_nonnegative_quantity = Float32Raster.assert_nonnegative_quantity;
 
 		var globalized_accretion = Float32Raster(grid); 
 		Float32Raster.fill(globalized_accretion, 0);
@@ -252,8 +256,17 @@ var World = (function() {
 	        if(ERODE) {
             	resample_f32(globalized_erosion, global_ids_of_local_cells,				localized_erosion);
             	resample 	(globalized_is_on_top, global_ids_of_local_cells,			localized_is_on_top);
+
+		        // enforce constraint: erosion should never exceed amount of rock available
+		        // get_erosion() guarantees against this, but plate motion sometimes causes violations to this constraint
+		        // violations to constraint are usually small, so we just modify erosion after the fact to preserve the constraint
+		        fix_nonnegative_quantity_delta 
+		        			(localized_erosion, plate.sial, 							localized_erosion);
+		        // assert_nonnegative_quantity(plate.sial);
 	        	add_term 	(plate.sial, localized_erosion, localized_is_on_top,		plate.sial);
+		        // assert_nonnegative_quantity(plate.sial);
 	        }
+
 
 	        //aging
 			ScalarField.add_scalar(plate.age, timestep, 								plate.age);
