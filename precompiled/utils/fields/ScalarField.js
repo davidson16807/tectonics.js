@@ -369,31 +369,45 @@ ScalarField.differential = function (scalar_field, result) {
   }
   return result;
 };
-ScalarField.gradient = function (scalar_field, result) {
+ScalarField.gradient = function (scalar_field, result, scratch, scratch2) {
   result = result || VectorRaster(scalar_field.grid);
-  scratch = scratch || VectorRaster(scalar_field.grid);
+  scratch = scratch || Float32Raster(scalar_field.grid);
+  scratch2 = scratch2 || Float32Raster(scalar_field.grid);
 
+  ASSERT_IS_ARRAY(scalar_field, Float32Array)
+  ASSERT_IS_ARRAY(scratch, Float32Array)
+  ASSERT_IS_ARRAY(scratch2, Float32Array)
   ASSERT_IS_ARRAY(scalar_field, Float32Array)
   ASSERT_IS_VECTOR_RASTER(result)
 
-  var dpos = scalar_field.grid.pos_arrow_differential;
-  var dx = dpos.x;
-  var dy = dpos.y;
-  var dz = dpos.z;
-  var arrows = scalar_field.grid.arrows;
-  var arrow = [];
-  var arrow_distances = scalar_field.grid.pos_arrow_distances;
-  var max_slope = scratch;
-  var x = result.x;
-  var y = result.y;
-  var z = result.z;
-  var abs = Math.abs;
-  var arrow_distance = 0;
-  var slope = 0;
-  var slope_magnitude = 0;
-  var slope_adjust = 0;
-  var from = 0;
-  var to = 0;
+  var pos = scalar_field.grid.pos; 
+  var ix = pos.x; 
+  var iy = pos.y; 
+  var iz = pos.z; 
+  var dpos_hat = scalar_field.grid.pos_arrow_differential_normalized; 
+  var dxhat = dpos_hat.x; 
+  var dyhat = dpos_hat.y; 
+  var dzhat = dpos_hat.z; 
+  var dpos = scalar_field.grid.pos_arrow_differential; 
+  var dx = dpos.x; 
+  var dy = dpos.y; 
+  var dz = dpos.z; 
+  var arrows = scalar_field.grid.arrows; 
+  var arrow = []; 
+  var dlength = scalar_field.grid.pos_arrow_distances; 
+  var neighbor_count = scalar_field.grid.neighbor_count; 
+  var average = scratch; 
+  var x = result.x; 
+  var y = result.y; 
+  var z = result.z; 
+  var arrow_distance = 0; 
+  var average_distance = scalar_field.grid.average_distance; 
+  var slope = 0; 
+  var slope_magnitude = 0; 
+  var from = 0; 
+  var to = 0; 
+  var max_slope_from = 0; 
+  var PI = Math.PI; 
   //
   // NOTE: 
   // The naive implementation is to estimate the gradient based on each individual neighbor,
@@ -402,33 +416,32 @@ ScalarField.gradient = function (scalar_field, result) {
   //  then the gradient estimate along that dimension will be very big.
   // This will result in very strange behavior.
   //
-  // The correct implementation is to take a weighted sum of the position differentials across neighbors.
-  // The "weights" are estimates for the derivative along that axis - 
-  //  that is, the change in scalar_field across neighbors divided by the distance that separates neighbors.
-  // Take the weighted sum and scale it as if there were 3 neighbors instead of however many there are. 
-  // This is effectively what you do when you find the gradient using normal methods:
-  //  each component of the cartesian coordinate basis corresponds to a "neighbor" in our approach.
-  // We create a weighted sum between them, weighting by the derivative for each. 
-  //  There are already 3 "neighbors", one for each coordinate basis, so we don't do anything.
-  Float32Raster.fill(max_slope, 0);
+  // The correct implementation is to use the Gauss-Green theorem: 
+  //   ∫∫∫ᵥ ∇ϕ dV = ∫∫ₐ ϕn̂ da
+  // so:
+  //   ∇ϕ = 1/V ∫∫ₐ ϕn̂ da
+  // so find flux out of an area, then divide by volume
+  // the area/volume is calculated for a circle that reaches halfway to neighboring vertices
   Float32Raster.fill(x, 0);
   Float32Raster.fill(y, 0);
   Float32Raster.fill(z, 0);
-  for (var i = 0, li = arrows.length; i < li; i++) {
-    arrow = arrows[i];
-    from = arrow[0];
-    to = arrow[1];
-    arrow_distance = arrow_distances[i];
-    slope = (scalar_field[to] - scalar_field[from]) / arrow_distance;
-    slope_magnitude = abs(slope);
-    if (slope_magnitude > max_slope[from]) {
-      max_slope[from] = slope_magnitude;
-      slope_adjust = slope/arrow_distance;
-      x[from] = dx[i] * slope_adjust;
-      y[from] = dy[i] * slope_adjust;
-      z[from] = dz[i] * slope_adjust;
-    }
-  }
+  var average_value = 0;
+  for (var i = 0, li = arrows.length; i < li; i++) { 
+    arrow = arrows[i]; 
+    from = arrow[0]; 
+    to = arrow[1]; 
+    average_value = (scalar_field[to] - scalar_field[from]); 
+    x[from] += average_value * dxhat[i] * PI * dlength[i]/neighbor_count[from]; 
+    y[from] += average_value * dyhat[i] * PI * dlength[i]/neighbor_count[from]; 
+    z[from] += average_value * dzhat[i] * PI * dlength[i]/neighbor_count[from]; 
+  } 
+  var inverse_volume = 1 / (PI * (average_distance/2) * (average_distance/2)); 
+  for (var i = 0, li = scalar_field.length; i < li; i++) { 
+    x[i] *= inverse_volume; 
+    y[i] *= inverse_volume; 
+    z[i] *= inverse_volume; 
+  } 
+
   return result;
 };
 
