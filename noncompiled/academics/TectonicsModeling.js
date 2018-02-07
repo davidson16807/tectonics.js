@@ -253,7 +253,7 @@ TectonicsModeling.get_erosion = function(
 	    outbound_height_transfer[from] += height_difference > 0? height_difference * precipitation * timestep * erosiveFactor / neighbor_count[from] : 0;
 	}
 	for (var i=0, li=outbound_height_transfer.length; i<li; ++i) {
-		outbound_sial_fraction[i] = outbound_height_transfer[i] > sial[i]?  sial[i] / outbound_height_transfer[i] : 1.0;
+		outbound_sial_fraction[i] = outbound_height_transfer[i] > sial[i]? (sial[i] > 0.0? sial[i] / outbound_height_transfer[i] : 0.0) : 1.0;
 	}
 	for (var i=0, li=arrows.length; i<li; ++i) {
 	    arrow = arrows[i];
