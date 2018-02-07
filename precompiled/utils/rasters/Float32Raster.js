@@ -144,3 +144,66 @@ Float32Raster.set_ids_to_values = function(raster, id_array, value_array) {
   }
   return raster;
 }
+
+
+
+
+
+//TODO: move this to its own namespace: Float32ScalarTransport
+Float32Raster.assert_nonnegative_quantity = function(quantity) {
+  ASSERT_IS_ARRAY(quantity, Float32Array)
+
+#ifndef IS_PROD
+  var quantity_i = 0.0;
+  for (var i=0, li=quantity.length; i<li; ++i) {
+    if (quantity[i] < 0) {
+      debugger;
+    }
+  }
+#endif
+}
+Float32Raster.assert_conserved_quantity_delta = function(delta, threshold) {
+  ASSERT_IS_ARRAY(delta, Float32Array)
+
+#ifndef IS_PROD
+  var average = Float32Dataset.average(delta);
+  if (average * average > threshold * threshold) {
+    debugger;
+  }
+#endif
+}
+Float32Raster.assert_nonnegative_quantity_delta = function(delta, quantity) {
+  ASSERT_IS_ARRAY(delta, Float32Array)
+  ASSERT_IS_ARRAY(quantity, Float32Array)
+  
+#ifndef IS_PROD
+  for (var i=0, li=delta.length; i<li; ++i) {
+    if (-delta[i] > quantity[i]) {
+      debugger;
+    }
+  }
+#endif
+}
+Float32Raster.fix_nonnegative_quantity = function(quantity) {
+  ASSERT_IS_ARRAY(quantity, Float32Array)
+  
+  ScalarField.min_scalar(quantity, 0);
+}
+Float32Raster.fix_conserved_quantity_delta = function(delta, threshold) {
+  ASSERT_IS_ARRAY(delta, Float32Array)
+
+  var average = Float32Dataset.average(delta);
+  if (average * average > threshold * threshold) {
+    ScalarField.sub_scalar(delta, average, delta);
+  }
+}
+Float32Raster.fix_nonnegative_quantity_delta = function(delta, quantity) {
+  ASSERT_IS_ARRAY(delta, Float32Array)
+  ASSERT_IS_ARRAY(quantity, Float32Array)
+
+  for (var i=0, li=delta.length; i<li; ++i) {
+    if (-delta[i] > quantity[i]) {
+      delta[i] = -quantity[i];
+    }
+  }
+}
