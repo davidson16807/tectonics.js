@@ -81,8 +81,6 @@ function Grid(template, options){
  this.arrows = arrows;
  this.arrow_lookup = arrow_lookup;
  this.pos_arrow_differential = VectorField.arrow_differential(this.pos);
-    this.pos_arrow_differential_normalized = VectorRaster.OfLength(arrows.length, undefined)
-    this.pos_arrow_differential_normalized = VectorField.normalize(this.pos_arrow_differential, this.pos_arrow_differential_normalized);
  this.pos_arrow_distances = Float32Raster.OfLength(arrows.length, undefined)
  VectorField.magnitude(this.pos_arrow_differential, this.pos_arrow_distances);
  this.average_distance = Float32Dataset.average(this.pos_arrow_distances);
@@ -2283,9 +2281,8 @@ VectorField.divergence = function(vector_field, result) {
      +(z[to] - z[from]) * dzhat[i]) / dlength[i];
  }
  var neighbor_count = vector_field.grid.neighbor_count;
- var average_distance = vector_field.grid.average_distance;
  for (var i = 0, li = neighbor_count.length; i < li; i++) {
-  result[i] /= (neighbor_count[i] || 1);
+  result[i] /= neighbor_count[i] || 1;
  }
  return result;
 }

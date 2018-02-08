@@ -723,9 +723,8 @@ VectorField.divergence = function(vector_field, result) {
 	}
 
 	var neighbor_count = vector_field.grid.neighbor_count;
-	var average_distance = vector_field.grid.average_distance;
 	for (var i = 0, li = neighbor_count.length; i < li; i++) {
-		result[i] /= (neighbor_count[i] || 1);
+		result[i] /= neighbor_count[i] || 1;
 	}
 
 	return result;
