@@ -12,6 +12,7 @@ var RockColumn = (function() {
 		this.density = optional['density'] || 0;
 		this.sima = optional['sima'] || 0;
 		this.sial = optional['sial'] || 0;
+		this.sediment = optional['sediment'] || 0;
 		this.age = optional['age'] || 0;
 	}
 	RockColumn.lerp = function(lower, upper, fraction) {
@@ -21,6 +22,7 @@ var RockColumn = (function() {
 			density			:lerp(lower.density, upper.density, fraction),
 			sima			:lerp(lower.sima, upper.sima, fraction),
 			sial			:lerp(lower.sial, upper.sial, fraction),
+			sediment		:lerp(lower.sediment, upper.sediment, fraction),
 			age				:lerp(lower.age, upper.age, fraction),
 		});
 	}

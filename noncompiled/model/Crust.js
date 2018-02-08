@@ -15,27 +15,28 @@ function Crust(params) {
 	// The following are the most fundamental fields to the tectonics model:
 
 	this.sial = Float32Raster(this.grid);
-	// "sial" is the thickness of the buoyant, unsubductable component of the crust
+	// "sial" is the thickness (in meters) of the buoyant, unsubductable component of the crust
 	// AKA "sial", "felsic", or "continental" crust
-	// Why don't we call it "continental" or some other name? Two reasons:
-	//  1.) programmers will immediately understand what it does
-	//  2.) we may want this model to simulate planets where alternate names don't apply, e.g. Pluto
-	// sial is a conserved quantity - it is never created or destroyed without our explicit say-so
+	// sial+sediment is a conserved quantity - it is never created or destroyed without our explicit say-so
+	// This is to provide our model with a way to check for errors
+
+	this.sediment = Float32Raster(this.grid);
+	// "sediment" is the thickness (in meters) of sial that has converted to sial
+	// it behaves like sial in every way, except it has a lighter density
+	// sial+sediment is a conserved quantity - it is never created or destroyed without our explicit say-so
 	// This is to provide our model with a way to check for errors
 
 	this.sima = Float32Raster(this.grid);
-	// "sima" is the thickness of the denser, subductable component of the crust
+	// "sima" is the thickness (in meters) of the denser, subductable component of the crust
 	// AKA "sima", "mafsic", or "oceanic" crust
-	// Why don't we call it "oceanic" or some other name? Two reasons:
-	//  1.) programmers will immediately understand what it does
-	//  2.) we may want this model to simulate planets where alternate names don't apply, e.g. Pluto
 
 	this.age = Float32Raster(this.grid);
-	// the age of the subductable component of the crust
+	// "age" is the age (in millions of years) of the subductable component of the crust
 	// we don't track the age of unsubductable crust because it doesn't affect model behavior
 
 
 	// The following are fields that are derived from other fields:
+	//TODO: these should no longer be stored in Crust objects!
 	this.displacement = Float32Raster(this.grid);
 	// "displacement is the height of the crust relative to an arbitrary datum level
 	// It is not called "elevation" to emphasize that it is not relative to sea level
@@ -51,6 +52,7 @@ Crust.get_value = function(crust, i) {
 		density 		:crust.density[i],
 		sima 			:crust.sima[i],
 		sial 			:crust.sial[i],
+		sediment 		:crust.sediment[i],
 		age 			:crust.age[i],
 	});
 }
@@ -60,6 +62,7 @@ Crust.set_value = function(crust, i, rock_column) {
 	crust.density[i] 		= rock_column.density;
 	crust.sima[i] 			= rock_column.sima;
 	crust.sial[i] 			= rock_column.sial;
+	crust.sediment[i] 		= rock_column.sediment;
 	crust.age[i] 			= rock_column.age;
 }
 Crust.copy = function(source, destination) {
@@ -69,6 +72,7 @@ Crust.copy = function(source, destination) {
 	copy(source.density, destination.density);
 	copy(source.sima, destination.sima);
 	copy(source.sial, destination.sial);
+	copy(source.sediment, destination.sediment);
 	copy(source.age, destination.age);
 }
 Crust.fill = function(crust, rock_column) {
@@ -78,6 +82,7 @@ Crust.fill = function(crust, rock_column) {
 	fill(crust.density, rock_column.density);
 	fill(crust.sima, rock_column.sima);
 	fill(crust.sial, rock_column.sial);
+	fill(crust.sediment, rock_column.sediment);
 	fill(crust.age, rock_column.age);
 }
 Crust.copy_into_selection = function(crust, copied_crust, selection_raster, result_crust) {
@@ -87,6 +92,7 @@ Crust.copy_into_selection = function(crust, copied_crust, selection_raster, resu
 	copy(source.density, copied_crust.density, selection_raster, result_crust.density);
 	copy(source.sima, copied_crust.sima, selection_raster, result_crust.sima);
 	copy(source.sial, copied_crust.sial, selection_raster, result_crust.sial);
+	copy(source.sediment, copied_crust.sediment, selection_raster, result_crust.sediment);
 	copy(source.age, copied_crust.age, selection_raster, result_crust.age);
 }
 Crust.fill_into_selection = function(crust, rock_column, selection_raster, result_crust) {
@@ -97,5 +103,6 @@ Crust.fill_into_selection = function(crust, rock_column, selection_raster, resul
 	fill(crust.density, rock_column.density, selection_raster, result_crust.density);
 	fill(crust.sima, rock_column.sima, selection_raster, result_crust.sima);
 	fill(crust.sial, rock_column.sial, selection_raster, result_crust.sial);
+	fill(crust.sediment, rock_column.sediment, selection_raster, result_crust.sediment);
 	fill(crust.age, rock_column.age, selection_raster, result_crust.age);
 }
