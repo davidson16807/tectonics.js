@@ -7,11 +7,12 @@
 
 var TectonicsModeling = {};
 
-TectonicsModeling.get_thickness = function(sima, sial, thickness) {
-	return ScalarField.add_field(sima, sial, thickness);
+TectonicsModeling.get_thickness = function(sima, sial, sediment, thickness) {
+	ScalarField.add_field(sial, sediment, thickness);
+	return ScalarField.add_field(thickness, sima, thickness);
 }
 
-TectonicsModeling.get_density = function(sima, sial, age, density) {
+TectonicsModeling.get_density = function(sima, sial, sediment, age, density) {
 	density = density || Float32Raster(sima.grid);
 
 	// NOTE: density does double duty for performance reasons
@@ -21,8 +22,10 @@ TectonicsModeling.get_density = function(sima, sial, age, density) {
 	Float32RasterInterpolation.smoothstep	(0, 250, age, 						fraction_of_lifetime);
 	Float32RasterInterpolation.lerp			(2890, 3300, fraction_of_lifetime, 	density);
 
+	var thickness_i = 0.0
     for (var i = 0, li = density.length; i < li; i++) {
-    	density[i] = sima[i] + sial[i] > 0? (sima[i] * sima_density[i] + sial[i] * 2700) / (sima[i] + sial[i]) : 2890;
+    	thickness_i = sima[i] + sial[i] + sediment[i];
+    	density[i] = thickness_i > 0? (sima[i] * sima_density[i] + sial[i] * 2700 + sediment[i] * 2500) / thickness_i : 2890;
     }
     return density;
 }
