@@ -263,10 +263,21 @@ var World = (function() {
 		        }
 	        }
 	        //erode
+	        // TODO: put this in with the rest of delta integration!
 	        if(ERODE) {
+            	resample_f32(sediment_erosion, global_ids_of_local_cells,				localized_erosion);
+            	resample 	(globalized_is_on_top, global_ids_of_local_cells,			localized_is_on_top);
+		        // enforce constraint: erosion should never exceed amount of rock available
+		        // get_erosion() guarantees against this, but plate motion sometimes causes violations to this constraint
+		        // violations to constraint are usually small, so we just modify erosion after the fact to preserve the constraint
+		        fix_nonnegative_quantity_delta 
+		        			(localized_erosion, plate.sediment, 						localized_erosion);
+		        // assert_nonnegative_quantity(plate.sediment);
+	        	add_term 	(plate.sediment, localized_erosion, localized_is_on_top,	plate.sediment);
+		        // assert_nonnegative_quantity(plate.sediment);
+
             	resample_f32(sial_erosion, global_ids_of_local_cells,				localized_erosion);
             	resample 	(globalized_is_on_top, global_ids_of_local_cells,			localized_is_on_top);
-
 		        // enforce constraint: erosion should never exceed amount of rock available
 		        // get_erosion() guarantees against this, but plate motion sometimes causes violations to this constraint
 		        // violations to constraint are usually small, so we just modify erosion after the fact to preserve the constraint
