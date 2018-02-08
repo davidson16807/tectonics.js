@@ -184,12 +184,14 @@ var World = (function() {
 
 		var globalized_accretion = Float32Raster(grid); 
 		Float32Raster.fill(globalized_accretion, 0);
-		var globalized_erosion = Float32Raster(grid);
-		// TectonicsModeling.get_erosion(displacement, world.SEALEVEL, timestep, globalized_erosion, globalized_scalar_field);
+		var sial_erosion = Float32Raster(grid);
+		var sima_erosion = Float32Raster(grid);
+		var sediment_erosion = Float32Raster(grid);
+		// TectonicsModeling.get_erosion(displacement, world.SEALEVEL, timestep, sial_erosion, globalized_scalar_field);
 		TectonicsModeling.get_erosion(
 			displacement, 		world.SEALEVEL, 	timestep,
-			Float32Raster(grid), 	world.sial, 			world.sima, 
-			Float32Raster(grid), 	globalized_erosion, 	Float32Raster(grid), 
+			world.sediment, 	world.sial, 	world.sima, 
+			sediment_erosion, 	sial_erosion, 	sima_erosion, 
 			globalized_scalar_field
 		);
 
@@ -254,7 +256,7 @@ var World = (function() {
 	        }
 	        //erode
 	        if(ERODE) {
-            	resample_f32(globalized_erosion, global_ids_of_local_cells,				localized_erosion);
+            	resample_f32(sial_erosion, global_ids_of_local_cells,				localized_erosion);
             	resample 	(globalized_is_on_top, global_ids_of_local_cells,			localized_is_on_top);
 
 		        // enforce constraint: erosion should never exceed amount of rock available
