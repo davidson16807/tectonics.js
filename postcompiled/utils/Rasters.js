@@ -81,6 +81,8 @@ function Grid(template, options){
  this.arrows = arrows;
  this.arrow_lookup = arrow_lookup;
  this.pos_arrow_differential = VectorField.arrow_differential(this.pos);
+    this.pos_arrow_differential_normalized = VectorRaster.OfLength(arrows.length, undefined)
+    this.pos_arrow_differential_normalized = VectorField.normalize(this.pos_arrow_differential, this.pos_arrow_differential_normalized);
  this.pos_arrow_distances = Float32Raster.OfLength(arrows.length, undefined)
  VectorField.magnitude(this.pos_arrow_differential, this.pos_arrow_distances);
  this.average_distance = Float32Dataset.average(this.pos_arrow_distances);
@@ -379,8 +381,8 @@ Float32Dataset.normalize = function(dataset, result, min_new, max_new) {
 }
 Float32Dataset.rescale = function(dataset, result, max_new) {
   result = result || Float32Raster(dataset.grid);
-  var max = Float32Dataset.max(dataset);
   var max_new = max_new || 1;
+  var max = Float32Dataset.max(dataset) || max_new;
   var scaling_factor = max_new / max;
   if (!(dataset instanceof Float32Array)) { throw "dataset" + ' is not a ' + "Float32Array"; }
   if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
