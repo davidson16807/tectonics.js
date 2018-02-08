@@ -25,7 +25,7 @@ TectonicsModeling.get_density = function(sima, sial, sediment, age, density) {
 	var thickness_i = 0.0
     for (var i = 0, li = density.length; i < li; i++) {
     	thickness_i = sima[i] + sial[i] + sediment[i];
-    	density[i] = thickness_i > 0? (sima[i] * sima_density[i] + sial[i] * 2700 + sediment[i] * 2500) / thickness_i : 2890;
+    	density[i] = thickness_i > 0? (sima[i] * sima_density[i] + sial[i] * 2700 + sediment[i] * 2700) / thickness_i : 2890;
     }
     return density;
 }

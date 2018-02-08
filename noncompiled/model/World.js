@@ -98,9 +98,13 @@ var World = (function() {
 		    // add 1 to master.plate_count where current plate exists
 		    add_ui8 	(master.plate_count, globalized_plate_mask, 							master.plate_count);
 
-		    // add current plate thickness to master thickness wherever current plate exists
+		    // add current plate sial to master sial wherever current plate exists
 		    resample 	(plate.sial, local_ids_of_global_cells, 								globalized_scalar_field);
 		    add_term 	(master.sial, globalized_scalar_field, globalized_plate_mask, 			master.sial);
+
+		    // add current plate sediment to master sediment wherever current plate exists
+		    resample 	(plate.sediment, local_ids_of_global_cells, 							globalized_scalar_field);
+		    add_term 	(master.sediment, globalized_scalar_field, globalized_plate_mask, 		master.sediment);
 
 		    // overwrite master wherever current plate is on top
 		    resample 	(plate.sima, local_ids_of_global_cells, 								globalized_scalar_field);
@@ -250,6 +254,10 @@ var World = (function() {
 		        //accrete, part 1
 		        if(ACCRETE) {
 		        	mult_field	(plate.sial, localized_is_detaching,					localized_accretion);
+	            	resample_f32(localized_accretion, local_ids_of_global_cells,		globalized_scalar_field);
+	            	add 		(globalized_accretion, globalized_scalar_field, 		globalized_accretion);
+
+		        	mult_field	(plate.sediment, localized_is_detaching,				localized_accretion);
 	            	resample_f32(localized_accretion, local_ids_of_global_cells,		globalized_scalar_field);
 	            	add 		(globalized_accretion, globalized_scalar_field, 		globalized_accretion);
 		        }
