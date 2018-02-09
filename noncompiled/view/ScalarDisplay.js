@@ -254,7 +254,7 @@ scalarDisplays.sial 	= new ScalarHeatDisplay( { min: '6000.', max: '70000.',
 			return crust.sial;
 		} 
 	} );
-scalarDisplays.sediment 	= new ScalarHeatDisplay( { min: '0.', max: '50.',  
+scalarDisplays.sediment 	= new ScalarHeatDisplay( { min: '0.', max: '5000.',  // basins of sedimentary rock can commonly reach 5km in depth
 		getField: function (crust) {
 			return crust.sediment;
 		} 
