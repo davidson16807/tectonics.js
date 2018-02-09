@@ -132,7 +132,7 @@ scalarDisplays.npp 	= new ScalarDisplay( { color: 0x00ff00, min: '0.', max: '1.'
 			return npp;
 		} 
 	} );
-scalarDisplays.alt 	= new ScalarDisplay( {color: 0x000000, min:'sealevel', max:'maxheight', 
+scalarDisplays.alt 	= new ScalarDisplay( {color: 0x000000, min:'sealevel', max:'10000.', 
 		getField: function (world, result) {
 			ScalarField.sub_scalar(world.displacement, world.SEALEVEL, result);
 			return result
@@ -252,6 +252,11 @@ scalarDisplays.sima 	= new ScalarHeatDisplay( { min: '6000.', max: '70000.',
 scalarDisplays.sial 	= new ScalarHeatDisplay( { min: '6000.', max: '70000.',  
 		getField: function (crust) {
 			return crust.sial;
+		} 
+	} );
+scalarDisplays.sediment 	= new ScalarHeatDisplay( { min: '0.', max: '50.',  
+		getField: function (crust) {
+			return crust.sediment;
 		} 
 	} );
 scalarDisplays.thickness 	= new ScalarHeatDisplay( { min: '6000.', max: '70000.',  
