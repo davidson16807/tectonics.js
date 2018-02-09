@@ -53,14 +53,14 @@ WorldGenerator.generate = function (world, height_ranks, hypsography, control_po
 };
 
 WorldGenerator.early_earth_hypsography = function() {
-	var water_fraction = 0.05; // Earth = 0.71
-	return random.uniform(0,1) > water_fraction? 
+	var water_fraction = 0.95; // Earth = 0.71
+	return random.uniform(0,1) < water_fraction? 
 		random.normal(-4019,1113) :
 		random.normal(797,1169);
 };
 WorldGenerator.modern_earth_hypsography = function() {
-	var water_fraction = 0.29; 
-	return random.uniform(0,1) > water_fraction? 
+	var water_fraction = 0.6; // 60% of earth's crust is oceanic
+	return random.uniform(0,1) < water_fraction? 
 		random.normal(-4019,1113) :
 		random.normal(797,1169);
 };
@@ -85,20 +85,23 @@ WorldGenerator.modern_earth_control_points = [
 	}),
 	//shelf_bottom
 	new RockColumn({
-		displacement: -2000,    //Sverdrup & Fleming 1942
+		displacement: -3200,    // encyclopedia britannica, "continental slope"
 		sima: 		7100,  // +/- 2900, estimate for shields, Zandt & Ammon 1995
+		sediment: 	5,
 		age: 		100,
 	}),
 	//shelf_top
 	new RockColumn({
-		displacement: -200,    //Sverdrup & Fleming 1942
+		displacement: -200,    //wikipedia
 		sial: 		28300,  // back-calculated using isostatic model and estimates from control point for land
-		age: 		1000,
+		sediment: 	5,
+		age: 		100,
 	}),
 	//land
 	new RockColumn({
 		displacement: 840,    //Sverdrup & Fleming 1942
 		sial: 		36900,  // +/- 2900, estimate for shields, Zandt & Ammon 1995
+		sediment: 	5,
 		age: 		1000,
 	}),
 	//mountain
