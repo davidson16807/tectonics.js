@@ -287,7 +287,7 @@ var World = (function() {
 	}
 
 	World.prototype.SEALEVEL = 3682;
-	World.prototype.mantleDensity=3300;
+	World.prototype.mantleDensity=3075; // derived empirically using isostatic model
 	World.prototype.waterDensity=1026;
 	World.prototype.ocean = 
 	 new RockColumn({

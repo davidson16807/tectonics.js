@@ -68,31 +68,31 @@ WorldGenerator.modern_earth_control_points = [
 	//abyss
 	new RockColumn({
 		displacement: -11000,
-		sima: 		4000, 
+		sima: 		7100, 
 		age: 		250,
 	}),
 	//deep_ocean
 	new RockColumn({
 		displacement: -6000,  
-		sima: 	 7100-800, // +/- 800, White McKenzie and O'nions 1992
+		sima: 	 7100, // +/- 800, White McKenzie and O'nions 1992
 		age: 		200,
 	}),
 	//shallow_ocean
 	new RockColumn({
 		displacement: -3682,	 // Charette & Smith 2010
-		sima: 		7100+800, // +/- 800, White McKenzie and O'nions 1992
+		sima: 		7100, // +/- 800, White McKenzie and O'nions 1992
 		age: 		0,
 	}),
 	//shelf_bottom
 	new RockColumn({
 		displacement: -2000,    //Sverdrup & Fleming 1942
-		sima: 		7100+800,  // +/- 2900, estimate for shields, Zandt & Ammon 1995
+		sima: 		7100,  // +/- 2900, estimate for shields, Zandt & Ammon 1995
 		age: 		100,
 	}),
 	//shelf_top
 	new RockColumn({
 		displacement: -200,    //Sverdrup & Fleming 1942
-		sial: 		17000,  // +/- 2900, estimate for shields, Zandt & Ammon 1995
+		sial: 		28300,  // back-calculated using isostatic model and estimates from control point for land
 		age: 		1000,
 	}),
 	//land
