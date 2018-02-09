@@ -283,32 +283,25 @@ TectonicsModeling.get_erosion = function(
 
 
 
-	var precipitation = 7.8e5;
-	// ^^^ measured in meters of rain per million years
-	// global land average from wikipedia
-	var weathering_factor = 1.8e-7; 
+	var weathering_factor = 1e-12; 
 	// ^^^ the rate of weathering per the rate of rainfall in that place
 	// measured in fraction of height difference per meters of rain per million years
-	var critical_sediment_thickness = 10;
+	var critical_sediment_thickness = 1;
 	// ^^^ the sediment thickness (in meters) at which bedrock weathering no longer occurs
 
-	var sial_density = 2700; // kg/m^3
-	var sediment_density = 2500 // kg/m^2, from Simoes et al. 2010
 	var earth_surface_gravity = 9.8; // m/s^2
 	var surface_gravity = 9.8; // m/s^2
 	
-	var height_gradient = ScalarField.gradient(water_height);
 	// NOTE: result array does double duty for performance reasons
 	weathering = Float32Raster(displacement.grid);
-	var greatest_slope = weathering;
-	VectorField.magnitude(height_gradient, greatest_slope);
-	var greatest_height_difference = weathering;
-	ScalarField.mult_scalar(greatest_slope, greatest_slope.grid.average_distance, greatest_height_difference);
+	height_difference = Float32Raster(displacement.grid);
+	ScalarField.average_difference(water_height, height_difference);
 
 	ScalarField.mult_scalar(
-		greatest_height_difference, 
+		height_difference, 
 		weathering_factor * 			// apply weathering factor to get height change per unit precip 
 		precipitation * 				// apply precip to get height change
+		timestep *
 		// sial_density * 					// apply density to get mass converted to sediment
 		surface_gravity/earth_surface_gravity, //correct for planet's gravity
 		weathering)
