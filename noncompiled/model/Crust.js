@@ -4,7 +4,6 @@
 // The Crust namespace provides methods that extend the functionality of rasters.js to Crust objects
 // It also provides functions for modeling properties of Crust
 function Crust(params) {
-	this.uuid = params['uuid'] || Uuid.create();
 	this.grid = params['grid'] || stop('missing parameter: "grid"');
 
 	// TODO:
@@ -57,9 +56,6 @@ Crust.get_value = function(crust, i) {
 	});
 }
 Crust.set_value = function(crust, i, rock_column) {
-	crust.displacement[i]	= rock_column.displacement;
-	crust.thickness[i] 		= rock_column.thickness;
-	crust.density[i] 		= rock_column.density;
 	crust.sima[i] 			= rock_column.sima;
 	crust.sial[i] 			= rock_column.sial;
 	crust.sediment[i] 		= rock_column.sediment;
@@ -67,9 +63,6 @@ Crust.set_value = function(crust, i, rock_column) {
 }
 Crust.copy = function(source, destination) {
 	var copy = Float32Raster.copy;
-	copy(source.displacement, destination.displacement);
-	copy(source.thickness, destination.thickness);
-	copy(source.density, destination.density);
 	copy(source.sima, destination.sima);
 	copy(source.sial, destination.sial);
 	copy(source.sediment, destination.sediment);
@@ -77,9 +70,6 @@ Crust.copy = function(source, destination) {
 }
 Crust.fill = function(crust, rock_column) {
 	var fill = Float32Raster.fill;
-	fill(crust.displacement, rock_column.displacement);
-	fill(crust.thickness, rock_column.thickness);
-	fill(crust.density, rock_column.density);
 	fill(crust.sima, rock_column.sima);
 	fill(crust.sial, rock_column.sial);
 	fill(crust.sediment, rock_column.sediment);
@@ -87,9 +77,6 @@ Crust.fill = function(crust, rock_column) {
 }
 Crust.copy_into_selection = function(crust, copied_crust, selection_raster, result_crust) {
 	var copy = Float32RasterGraphics.copy_into_selection;
-	copy(source.displacement, copied_crust.displacement, selection_raster, result_crust.displacement);
-	copy(source.thickness, copied_crust.thickness, selection_raster, result_crust.thickness);
-	copy(source.density, copied_crust.density, selection_raster, result_crust.density);
 	copy(source.sima, copied_crust.sima, selection_raster, result_crust.sima);
 	copy(source.sial, copied_crust.sial, selection_raster, result_crust.sial);
 	copy(source.sediment, copied_crust.sediment, selection_raster, result_crust.sediment);
@@ -98,11 +85,38 @@ Crust.copy_into_selection = function(crust, copied_crust, selection_raster, resu
 Crust.fill_into_selection = function(crust, rock_column, selection_raster, result_crust) {
 	var fill = Float32RasterGraphics.fill_into_selection;
 	var fill_ui8 = Uint8Raster.fill;
-	fill(crust.displacement, rock_column.displacement, selection_raster, result_crust.displacement);
-	fill(crust.thickness, rock_column.thickness, selection_raster, result_crust.thickness);
-	fill(crust.density, rock_column.density, selection_raster, result_crust.density);
 	fill(crust.sima, rock_column.sima, selection_raster, result_crust.sima);
 	fill(crust.sial, rock_column.sial, selection_raster, result_crust.sial);
 	fill(crust.sediment, rock_column.sediment, selection_raster, result_crust.sediment);
 	fill(crust.age, rock_column.age, selection_raster, result_crust.age);
+}
+Crust.get_ids = function(crust, ids_raster, result_crust) {
+	var resample = Float32Raster.get_ids;
+	resample(crust.sima, 	ids_raster,	result_crust.sima	);
+	resample(crust.sial, 	ids_raster,	result_crust.sial	);
+	resample(crust.sediment,ids_raster,	result_crust.sediment);
+	resample(crust.age, 	ids_raster,	result_crust.age	);
+}
+
+
+// WARNING: be careful when creating math functions - 
+//  it does not make sense to perform math operations on properties like "age"
+Crust.add = function(crust, crust_delta, result_crust) {
+	var add = ScalarField.add_field;
+	add(crust.sima, 	crust_delta.sima, 	result_crust.sima);
+	add(crust.sial, 	crust_delta.sial, 	result_crust.sial);
+	add(crust.sediment, crust_delta.sediment, result_crust.sediment);
+}
+Crust.add_field_term = function(crust, crust_delta, scalar_field, result_crust) {
+	var add = ScalarField.add_field_term;
+	add(crust.sima, 	crust_delta.sima, 		scalar_field, result_crust.sima);
+	add(crust.sial, 	crust_delta.sial, 		scalar_field, result_crust.sial);
+	add(crust.sediment, crust_delta.sediment, 	scalar_field, result_crust.sediment);
+}
+
+Crust.fix_nonnegative_quantity_delta = function(crust_delta, crust) {
+	var fix = Float32Raster.fix_nonnegative_quantity_delta;
+	fix(crust_delta.sima, 	crust.sima 		);
+	fix(crust_delta.sial, 	crust.sial 		);
+	fix(crust_delta.sediment,	crust.sediment 	);
 }

@@ -2,25 +2,26 @@
 
 
 var World = (function() {
-	function World(parameters) {
-		Crust.call(this, parameters);
+	function World(params) {
+		Crust.call(this, params);
+		this.uuid = params['uuid'] || Uuid.create();
 
-		this.getRandomPlateSpeed = parameters['getRandomPlateSpeed'] ||
+		this.getRandomPlateSpeed = params['getRandomPlateSpeed'] ||
 			//function() { return Math.exp(random.normal(-5.13, 0.548)); }
 			function() { return random.normal(0.00687, 0.00380); }
 			//^^^ log normal and normal distribution fit to angular velocities from Larson et al. 1997
 
-		this.supercontinentCycle = parameters['supercontinentCycle'] || new SupercontinentCycle(this, parameters);
+		this.supercontinentCycle = params['supercontinentCycle'] || new SupercontinentCycle(this, params);
 
 		this.subductability = Float32Raster(this.grid);
 		this.plate_map = Uint8Raster(this.grid);
 		this.plate_count = Uint8Raster(this.grid);
 		this.asthenosphere_velocity = VectorRaster(this.grid);
-		this.meanAnomaly = parameters['meanAnomaly'] || 0;
+		this.meanAnomaly = params['meanAnomaly'] || 0;
 
-		// this.radius = parameters['radius'] || 6367;
-		// this.age = parameters['age'] || 0;
-		// this.maxPlatesNum = parameters['platesNum'] || 8;
+		// this.radius = params['radius'] || 6367;
+		// this.age = params['age'] || 0;
+		// this.maxPlatesNum = params['platesNum'] || 8;
 
 		this.plates = [];
 	}
@@ -191,13 +192,16 @@ var World = (function() {
 		var sial_erosion = Float32Raster(grid);
 		var sima_erosion = Float32Raster(grid);
 		var sediment_erosion = Float32Raster(grid);
+
+		var resample_crust = Crust.get_ids;
+		var fix_crust_delta = Crust.fix_nonnegative_quantity_delta;
+		var add_term_crust = Crust.add_field_term;
+
 		// TectonicsModeling.get_erosion(displacement, world.SEALEVEL, timestep, sial_erosion, globalized_scalar_field);
-		TectonicsModeling.get_erosion(
-			displacement, 		world.SEALEVEL, 	timestep,
-			world.sediment, 	world.sial, 	world.sima, 
-			sediment_erosion, 	sial_erosion, 	sima_erosion, 
-			globalized_scalar_field
+		var global_erosion_deltas = TectonicsModeling.get_erosion(
+			displacement, 		world.SEALEVEL, 	timestep, 	world
 		);
+		var scratch_crust = new Crust({grid: grid});
 
 		var RIFT = true;
 		var DETACH = true;
@@ -265,27 +269,16 @@ var World = (function() {
 	        //erode
 	        // TODO: put this in with the rest of delta integration!
 	        if(ERODE) {
-            	resample_f32(sediment_erosion, global_ids_of_local_cells,				localized_erosion);
             	resample 	(globalized_is_on_top, global_ids_of_local_cells,			localized_is_on_top);
-		        // enforce constraint: erosion should never exceed amount of rock available
-		        // get_erosion() guarantees against this, but plate motion sometimes causes violations to this constraint
-		        // violations to constraint are usually small, so we just modify erosion after the fact to preserve the constraint
-		        fix_nonnegative_quantity_delta 
-		        			(localized_erosion, plate.sediment, 						localized_erosion);
-		        // assert_nonnegative_quantity(plate.sediment);
-	        	add_term 	(plate.sediment, localized_erosion, localized_is_on_top,	plate.sediment);
-		        // assert_nonnegative_quantity(plate.sediment);
 
-            	resample_f32(sial_erosion, global_ids_of_local_cells,				localized_erosion);
-            	resample 	(globalized_is_on_top, global_ids_of_local_cells,			localized_is_on_top);
+            	resample_crust	(global_erosion_deltas, global_ids_of_local_cells,		scratch_crust);
 		        // enforce constraint: erosion should never exceed amount of rock available
 		        // get_erosion() guarantees against this, but plate motion sometimes causes violations to this constraint
 		        // violations to constraint are usually small, so we just modify erosion after the fact to preserve the constraint
-		        fix_nonnegative_quantity_delta 
-		        			(localized_erosion, plate.sial, 							localized_erosion);
-		        // assert_nonnegative_quantity(plate.sial);
-	        	add_term 	(plate.sial, localized_erosion, localized_is_on_top,		plate.sial);
-		        // assert_nonnegative_quantity(plate.sial);
+		        fix_crust_delta	(scratch_crust, plate, 									scratch_crust);
+		        // assert_nonnegative_quantity(plate.sediment);
+	        	add_term_crust	(plate, scratch_crust, localized_is_on_top,				plate);
+		        // assert_nonnegative_quantity(plate.sediment);
 	        }
 
 
