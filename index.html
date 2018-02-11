@@ -451,7 +451,11 @@
 		$('.controls').hide();
 		$.getJSON( url, function( json ) {
 			BlockUpdate = false;
-	    	world = JsonDeserializer.world(json);
+			var results = JsonDeserializer.model(json, view.grid);
+			model = results.model;
+			world = results.world;
+			seed = results.seed;
+			random = results.random;
 			model.world(world);
 			dialogVue.$data.isLoadingSave = false;
 			$('.controls').show();
@@ -466,8 +470,12 @@
 	    //reader.onloadstart = function(e) {};
 	    reader.onload = function(e) {
 			BlockUpdate = false;
-	    	var json = JSON.parse(e.target.result);
-	    	world = JsonDeserializer.world(json);
+			var json = JSON.parse(e.target.result);
+			var results = JsonDeserializer.model(json, view.grid);
+			model = results.model;
+			world = results.world;
+			seed = results.seed;
+			random = results.random;
 			model.world(world);
 	    }
 
@@ -584,8 +592,8 @@
 	  el: '#save',
 	  methods: {
 	  	save(event) {
-  			var serialized = JsonSerializer.world(world);
-  			var stringified = JSON.stringify(serialized);
+			var serialized = JsonSerializer.model(model,{seed: seed, random: random});
+			var stringified = JSON.stringify(serialized);
   			var dataUrl = 
   				"data:application/json;"+
   				"charset=utf-8," + 

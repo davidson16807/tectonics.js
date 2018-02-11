@@ -1,4 +1,24 @@
 var JsonSerializer 	= {};
+JsonSerializer.model = function (model, options) {
+	options = options || {};
+	var _seed = options['seed'] || '';
+	var _random = options['random'] || new Random(parseSeed(_seed));
+
+	var world_json = JsonSerializer.world(model._world, options);
+
+	var model_json = {
+		version: '2.0',
+		random: {
+		    seed: _seed,
+			mt: _random.mt,
+			mti: _random.mti
+		},
+		age: model.age,
+		world: world_json,
+	};
+
+	return model_json;
+}
 JsonSerializer.world = function (world, options) {
 	options = options || {};
 
@@ -11,10 +31,6 @@ JsonSerializer.world = function (world, options) {
 			duration: supercontinentCycle.duration,
 			age: supercontinentCycle.age,
 		},
-		random: {
-			mt: random.mt,
-			mti: random.mti
-		},
 	};
 
 	for (var i = 0, li = world.plates.length; i < li; i++) {
@@ -22,11 +38,7 @@ JsonSerializer.world = function (world, options) {
 		var plate_json = JsonSerializer.plate(plate, options);
 		world_json.plates.push(plate_json);
 	};
-	return {
-		version: '1.0',
-		seed: seed, // TODO: don't use global variable!
-		world: world_json
-	};
+	return world_json;
 }
 JsonSerializer.plate = function (plate, options) {
 	options = options || {};
@@ -68,30 +80,41 @@ JsonDeserializer.plate = function (plate_json, _world, options) {
 
 	return plate;
 }
-JsonDeserializer.world = function (world_json, options) {
+JsonDeserializer.world = function (world_json, grid, options) {
 	options = options || {};
 
 	var _world = new World(
 	{
-		grid: view.grid,
+		grid: grid,
 		supercontinentCycle: undefined,
 		plates: [],
 	});
 
-	for (var i = 0; i < world_json.world.plates.length; i++) {
-		var plate_json = world_json.world.plates[i];
+	for (var i = 0; i < world_json.plates.length; i++) {
+		var plate_json = world_json.plates[i];
 		var plate = JsonDeserializer.plate(plate_json, _world, options);
 		_world.plates.push(plate);
 	};
 
-	_world.supercontinentCycle = new SupercontinentCycle(_world, world_json.world.supercontinentCycle);
-	
-	seed = world_json.seed;
-	random = new Random(parseSeed(seed));
-
-	var random_json = world_json.world.random;
-	random.mt  = random_json.mt;
-	random.mti  = random_json.mti;
+	_world.supercontinentCycle = new SupercontinentCycle(_world, world_json.supercontinentCycle);
 
 	return _world;
+}
+JsonDeserializer.model = function (model_json, grid, options) {
+	options = options || {};
+
+	var _model = new Model();
+	_model._world = JsonDeserializer.world(model_json.world, grid, options);
+	_model.age = model_json.age;
+
+	var _seed = model_json.random.seed;
+	var _random = new Random(parseSeed(seed));
+	_random.mt  = model_json.random.mt;
+	_random.mti  = model_json.random.mti;
+	return {
+		model: _model,
+		world: _model._world,
+		seed: _seed,
+		random: _random
+	};
 }
