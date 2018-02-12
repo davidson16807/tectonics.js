@@ -462,11 +462,14 @@
 		$.getJSON( url, function( json ) {
 			BlockUpdate = false;
 			var results = JsonDeserializer.model(json, view.grid);
-			model = results.model;
-			world = results.world;
+			world = results.model._world;
 			seed = results.seed;
 			random = results.random;
+			model.age = results.model.age;
 			model.world(world);
+			if (model.paused) {
+				model.worldLoaded()
+			}
 			dialogVue.$data.isLoadingSave = false;
 			$('.controls').show();
 		});
@@ -482,11 +485,14 @@
 			BlockUpdate = false;
 			var json = JSON.parse(e.target.result);
 			var results = JsonDeserializer.model(json, view.grid);
-			model = results.model;
-			world = results.world;
+			world = results.model._world;
 			seed = results.seed;
 			random = results.random;
+			model.age = results.model.age;
 			model.world(world);
+			if (model.paused) {
+				model.worldLoaded()
+			}
 	    }
 
 	    reader.readAsText(file);

@@ -113,7 +113,6 @@ JsonDeserializer.model = function (model_json, grid, options) {
 	_random.mti  = model_json.random.mti;
 	return {
 		model: _model,
-		world: _model._world,
 		seed: _seed,
 		random: _random
 	};

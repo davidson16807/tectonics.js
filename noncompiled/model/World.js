@@ -354,5 +354,13 @@ var World = (function() {
 
 		// World submodels go here: atmo model, hydro model, bio model, etc.
 	};
+	World.prototype.worldLoaded = function(timestep){
+		for (var i = 0; i < this.plates.length; i++) {
+			this.plates[i].move(0.0000001)
+		}
+		update_calculated_fields(this);
+		merge_plates_to_master(this.plates, this);
+		update_plates(this, 0.0000001, this.plates);
+	};
 	return World;
 })();
