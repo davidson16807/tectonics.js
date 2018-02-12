@@ -769,6 +769,8 @@
 	      {name: 'Crust Density', value: 'density', icon: 'icons/scale.svg'},
 	      {name: 'Crust Thickness', value: 'thickness', icon: 'icons/ruler.svg'},
 	      {name: 'Plates', value: 'plates', icon: 'icons/puzzle.svg'},
+	      {name: 'Seafloor Heightmap', value: 'sfhm', icon: 'icons/terrain.svg'},
+	      {name: 'Sealevel Heightmap', value: 'slhm', icon: 'icons/terrain.svg'},
 	    ],
 	  },
 	  methods: {
@@ -792,7 +794,7 @@
 	    		  clearInterval(timer); 
 	    		  v.ocean = v.ocean_target;
 	    		}
-	    		view.uniform('sealevel_mod', v.ocean);
+	    		view.uniform('sealevel_mod', (v.ocean)?(1):(-1));
 	    	}, timestep);
 	    },
 	    getClass: function(value, selected) {
