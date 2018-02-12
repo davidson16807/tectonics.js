@@ -348,6 +348,9 @@
 	var BlockUpdate = false;
 	var IsProd = false;
 
+   var autosave_period = parseInt(querystring['autosave_period'] || '0');
+   var autosave_timestamp = 0;
+
 	var view = new View(
 		new Grid( 
 			new THREEx.FibonacciSphereGeometry(1, 10000, fibGridFaceCache), 
@@ -439,6 +442,13 @@
 		
 		model.update();
 		view.cellUpdate(world); 
+
+		if (autosave_period) {
+			if (model.age >= (autosave_timestamp + autosave_period)) {
+				saveView.save();
+				autosave_timestamp = autosave_timestamp + autosave_period;
+			}
+		}
 
 		if(!IsProd){
 			updateStats.update();
