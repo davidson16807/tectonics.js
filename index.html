@@ -348,6 +348,9 @@
 	var BlockUpdate = false;
 	var IsProd = false;
 
+   var autosave_period = parseInt(querystring['autosave_period'] || '0');
+   var autosave_timestamp = 0;
+
 	var view = new View(
 		new Grid( 
 			new THREEx.FibonacciSphereGeometry(1, 10000, fibGridFaceCache), 
@@ -440,6 +443,13 @@
 		model.update();
 		view.cellUpdate(world); 
 
+		if (autosave_period) {
+			if (model.age >= (autosave_timestamp + autosave_period)) {
+				saveVue.save();
+				autosave_timestamp = autosave_timestamp + autosave_period;
+			}
+		}
+
 		if(!IsProd){
 			updateStats.update();
 		}
@@ -451,8 +461,15 @@
 		$('.controls').hide();
 		$.getJSON( url, function( json ) {
 			BlockUpdate = false;
-	    	world = JsonDeserializer.world(json);
+			var results = JsonDeserializer.model(json, view.grid);
+			world = results.model._world;
+			seed = results.seed;
+			random = results.random;
+			model.age = results.model.age;
 			model.world(world);
+			if (model.paused) {
+				model.worldLoaded()
+			}
 			dialogVue.$data.isLoadingSave = false;
 			$('.controls').show();
 		});
@@ -466,9 +483,16 @@
 	    //reader.onloadstart = function(e) {};
 	    reader.onload = function(e) {
 			BlockUpdate = false;
-	    	var json = JSON.parse(e.target.result);
-	    	world = JsonDeserializer.world(json);
+			var json = JSON.parse(e.target.result);
+			var results = JsonDeserializer.model(json, view.grid);
+			world = results.model._world;
+			seed = results.seed;
+			random = results.random;
+			model.age = results.model.age;
 			model.world(world);
+			if (model.paused) {
+				model.worldLoaded()
+			}
 	    }
 
 	    reader.readAsText(file);
@@ -584,8 +608,8 @@
 	  el: '#save',
 	  methods: {
 	  	save(event) {
-  			var serialized = JsonSerializer.world(world);
-  			var stringified = JSON.stringify(serialized);
+			var serialized = JsonSerializer.model(model,{seed: seed, random: random});
+			var stringified = JSON.stringify(serialized);
   			var dataUrl = 
   				"data:application/json;"+
   				"charset=utf-8," + 
