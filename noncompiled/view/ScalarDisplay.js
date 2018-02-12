@@ -141,6 +141,98 @@ scalarDisplays.alt 	= new ScalarDisplay( {color: 0x000000, min:'sealevel', max:'
 
 
 
+function ScalarHeightDisplay(options) {
+	var color = options['color'] || 0xffffff;
+	var min = options['min'] || '0.';
+	var max = options['max'] || '30000.';
+	var scalar = options['scalar'] || 'vScalar';
+	this.field = void 0;
+	this.scratch = void 0;
+	this.getField = options['getField'];
+	this._fragmentShader = fragmentShaders.template
+		.replace('@OUTPUT',
+			_multiline(function() {/**
+			vec4 uncovered 		= @UNCOVERED;
+			gl_FragColor = uncovered;
+			**/}))
+		.replace('@UNCOVERED', 'mix( vec4(0), vec4(color,0.), smoothstep(@MIN, @MAX, @SCALAR) )')
+		.replace('@MIN', min)
+		.replace('@MAX', max)
+		.replace('@SCALAR', scalar);
+	this._color = new THREE.Color(color);
+}
+ScalarHeightDisplay.prototype.addTo = function(mesh) {
+	this.field = void 0;
+	this.scratch = void 0;
+
+	mesh.material.fragmentShader = this._fragmentShader;
+	mesh.material.needsUpdate = true;
+
+	mesh.material.uniforms.color.value = this._color;
+	mesh.material.uniforms.color.needsUpdate = true;
+};
+ScalarHeightDisplay.prototype.removeFrom = function(mesh) {
+
+};
+ScalarHeightDisplay.prototype.updateAttributes = function(geometry, plate) {
+	var geometry, displacement, scalar;
+	displacement = geometry.attributes.displacement.array;
+	scalar = geometry.attributes.scalar.array;
+	var buffer_array_to_cell = view.grid.buffer_array_to_cell;
+	var buffer_array_index;
+	var displacement_model = plate.displacement;
+	this.field = this.field || Float32Raster(plate.grid);
+	this.scratch = this.scratch || Float32Raster(plate.grid);
+
+	for(var j=0, lj = displacement.length; j<lj; j++){
+		buffer_array_index = buffer_array_to_cell[j];
+		displacement[j] = displacement_model[buffer_array_index];
+	}
+	geometry.attributes.displacement.needsUpdate = true;
+
+	// run getField()
+	if (this.getField === void 0) {
+		log_once("ScalarHeightDisplay.getField is undefined.");
+		return;
+	}
+	var scalar_model = this.getField(plate, this.field, this.scratch);
+	if (scalar_model === void 0) {
+		log_once("ScalarHeightDisplay.getField() returned undefined.");
+		return;
+	}
+	if (!(scalar_model instanceof Float32Array || scalar_model instanceof Uint16Array || scalar_model instanceof Uint8Array)) {
+		log_once("ScalarHeightDisplay.getField() did not return a TypedArray.");
+		return;
+	}
+
+	for(var j=0, lj = displacement.length; j<lj; j++){
+		buffer_array_index = buffer_array_to_cell[j];
+		scalar[j] = scalar_model[buffer_array_index];
+	}
+	if (scalar_model !== void 0) {
+		geometry.attributes.scalar.needsUpdate = true;
+		if (scalar_model !== this.field) {
+			Float32Raster.copy(scalar_model, this.field);
+		}
+	} else {
+		this.field = void 0;
+	}
+}
+scalarDisplays.sfhm 	= new ScalarHeightDisplay( {color: 0xffffff, min:'-1500.', max:'maxheight',
+		getField: function (world, result) {
+			//ScalarField.sub_scalar(world.displacement, 0, result);
+			return world.displacement
+		}
+	} );
+scalarDisplays.slhm 	= new ScalarHeightDisplay( {color: 0xffffff, min:'sealevel', max:'maxheight',
+		getField: function (world, result) {
+			ScalarField.sub_scalar(world.displacement, world.SEALEVEL, result);
+			return world.displacement
+		}
+	} );
+
+
+
 function ScalarHeatDisplay(options) {
 	var min = options['min'] || '0.';
 	var max = options['max'] || '1.';
