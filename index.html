@@ -445,7 +445,7 @@
 
 		if (autosave_period) {
 			if (model.age >= (autosave_timestamp + autosave_period)) {
-				saveView.save();
+				saveVue.save();
 				autosave_timestamp = autosave_timestamp + autosave_period;
 			}
 		}
