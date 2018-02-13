@@ -792,7 +792,7 @@
 	    		  clearInterval(timer); 
 	    		  v.ocean = v.ocean_target;
 	    		}
-	    		view.uniform('sealevel_mod', v.ocean);
+	    		view.uniform('sealevel_mod', (v.ocean)?(1.0):(-1.0));
 	    	}, timestep);
 	    },
 	    getClass: function(value, selected) {
