@@ -45,26 +45,41 @@ scalarDisplays.bedrock = new RealisticDisplay('bedrock');
 
 
 function ScalarDisplay(options) {
-	var color = options['color'] || 0x000000;
+	var minColor = options['minColor'] || 0x000000;
+	var maxColor = options['maxColor'] || 0xffffff;
 	var min = options['min'] || '0.';
 	var max = options['max'] || '1.';
 	var scalar = options['scalar'] || 'vScalar';
 	this.field = void 0;
 	this.scratch = void 0;
 	this.getField = options['getField'];
+	var minColor_str = '';
+	var maxColor_str = '';
+	{
+		var min_rIntValue = ((minColor / 256 / 256) % 256) / 255.0;
+		var min_gIntValue = ((minColor / 256      ) % 256) / 255.0;
+		var min_bIntValue = ((minColor            ) % 256) / 255.0;
+		var max_rIntValue = ((maxColor / 256 / 256) % 256) / 255.0;
+		var max_gIntValue = ((maxColor / 256      ) % 256) / 255.0;
+		var max_bIntValue = ((maxColor            ) % 256) / 255.0;
+		minColor_str = min_rIntValue.toString()+","+min_gIntValue.toString()+","+min_bIntValue.toString();
+		maxColor_str = max_rIntValue.toString()+","+max_gIntValue.toString()+","+max_bIntValue.toString();
+	}
 	this._fragmentShader = fragmentShaders.template
 		.replace('@OUTPUT',
 			_multiline(function() {/**   
 			vec4 uncovered 		= @UNCOVERED;
-			vec4 ocean 			= mix(OCEAN, uncovered, 0.5);
+			vec4 ocean 			= mix(NONE, uncovered, 0.5);
 			vec4 sea_covered 	= vDisplacement < sealevel * sealevel_mod? ocean : uncovered;
 			gl_FragColor = sea_covered;
 			**/}))
-		.replace('@UNCOVERED', 'mix( vec4(1), vec4(color,1.), smoothstep(@MIN, @MAX, @SCALAR) )')
+		.replace('@UNCOVERED', 'mix( vec4(@MINCOLOR,1.), vec4(@MAXCOLOR,1.), smoothstep(@MIN, @MAX, @SCALAR) )')
+		.replace('@MINCOLOR', minColor_str)
+		.replace('@MAXCOLOR', maxColor_str)
 		.replace('@MIN', min)
 		.replace('@MAX', max)
 		.replace('@SCALAR', scalar);
-	this._color = new THREE.Color(color);
+	this._color = new THREE.Color(maxColor);
 }
 ScalarDisplay.prototype.addTo = function(mesh) {
 	this.field = void 0;
@@ -123,7 +138,7 @@ ScalarDisplay.prototype.updateAttributes = function(geometry, plate) {
 		this.field = void 0;
 	}
 }
-scalarDisplays.npp 	= new ScalarDisplay( { color: 0x00ff00, min: '0.', max: '1.',  
+scalarDisplays.npp 	= new ScalarDisplay( { minColor: 0xffffff, maxColor: 0x00ff00, min: '0.', max: '1.',
 		getField: function (world, result) {
 			var temp = AtmosphericModeling.surface_air_temp(world.grid.pos, world.meanAnomaly, Math.PI*23.5/180);
 			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
@@ -132,11 +147,11 @@ scalarDisplays.npp 	= new ScalarDisplay( { color: 0x00ff00, min: '0.', max: '1.'
 			return npp;
 		} 
 	} );
-scalarDisplays.alt 	= new ScalarDisplay( {color: 0x000000, min:'sealevel', max:'maxheight', 
+scalarDisplays.alt 	= new ScalarDisplay( { minColor: 0x000000, maxColor: 0xffffff, min:'0.', max:'30000.', 
 		getField: function (world, result) {
-			ScalarField.sub_scalar(world.displacement, world.SEALEVEL, result);
-			return result
-		} 
+			return (scalarDisplayVue.ocean)?(ScalarField.max_scalar(world.displacement, world.SEALEVEL)):
+			                                (world.displacement);
+		}
 	} );
 
 
