@@ -5,7 +5,6 @@ varying vec4 vPosition;
 
 uniform float sealevel;
 uniform float sealevel_mod;
-uniform  vec3 color;
 
 const vec4 NONE = vec4(0.0,0.0,0.0,0.0);
 const vec4 OCEAN = vec4(0.04,0.04,0.2,1.0);

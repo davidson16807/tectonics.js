@@ -53,18 +53,14 @@ function ScalarDisplay(options) {
 	this.field = void 0;
 	this.scratch = void 0;
 	this.getField = options['getField'];
-	var minColor_str = '';
-	var maxColor_str = '';
-	{
-		var min_rIntValue = ((minColor / 256 / 256) % 256) / 255.0;
-		var min_gIntValue = ((minColor / 256      ) % 256) / 255.0;
-		var min_bIntValue = ((minColor            ) % 256) / 255.0;
-		var max_rIntValue = ((maxColor / 256 / 256) % 256) / 255.0;
-		var max_gIntValue = ((maxColor / 256      ) % 256) / 255.0;
-		var max_bIntValue = ((maxColor            ) % 256) / 255.0;
-		minColor_str = min_rIntValue.toString()+","+min_gIntValue.toString()+","+min_bIntValue.toString();
-		maxColor_str = max_rIntValue.toString()+","+max_gIntValue.toString()+","+max_bIntValue.toString();
+	function hex_color_to_glsl_string_color(color) {
+		var rIntValue = ((color / 256 / 256) % 256) / 255.0;
+		var gIntValue = ((color / 256      ) % 256) / 255.0;
+		var bIntValue = ((color            ) % 256) / 255.0;
+		return rIntValue.toString()+","+gIntValue.toString()+","+bIntValue.toString();
 	}
+	var minColor_str = hex_color_to_glsl_string_color(minColor);
+	var maxColor_str = hex_color_to_glsl_string_color(maxColor);
 	this._fragmentShader = fragmentShaders.template
 		.replace('@OUTPUT',
 			_multiline(function() {/**   
@@ -79,7 +75,6 @@ function ScalarDisplay(options) {
 		.replace('@MIN', min)
 		.replace('@MAX', max)
 		.replace('@SCALAR', scalar);
-	this._color = new THREE.Color(maxColor);
 }
 ScalarDisplay.prototype.addTo = function(mesh) {
 	this.field = void 0;
@@ -87,9 +82,6 @@ ScalarDisplay.prototype.addTo = function(mesh) {
 
 	mesh.material.fragmentShader = this._fragmentShader;
 	mesh.material.needsUpdate = true;
-
-	mesh.material.uniforms.color.value = this._color;
-	mesh.material.uniforms.color.needsUpdate = true;
 };
 ScalarDisplay.prototype.removeFrom = function(mesh) {
 	
@@ -147,7 +139,7 @@ scalarDisplays.npp 	= new ScalarDisplay( { minColor: 0xffffff, maxColor: 0x00ff0
 			return npp;
 		} 
 	} );
-scalarDisplays.alt 	= new ScalarDisplay( { minColor: 0x000000, maxColor: 0xffffff, min:'0.', max:'30000.', 
+scalarDisplays.alt 	= new ScalarDisplay( { minColor: 0x000000, maxColor: 0xffffff, min:'0.', max:'10000.', 
 		getField: function (world, result) {
 			return (scalarDisplayVue.ocean)?(ScalarField.max_scalar(world.displacement, world.SEALEVEL)):
 			                                (world.displacement);
