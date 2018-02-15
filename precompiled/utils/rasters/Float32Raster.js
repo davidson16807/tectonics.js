@@ -207,3 +207,37 @@ Float32Raster.fix_nonnegative_quantity_delta = function(delta, quantity) {
     }
   }
 }
+// NOTE: if anyone can find a shorter more intuitive name for this, I'm all ears
+Float32Raster.fix_nonnegative_conserved_quantity_delta = function(delta, quantity, scratch) {
+  var scratch = scratch || Float32Raster(delta.grid);
+
+  ASSERT_IS_ARRAY(delta, Float32Array)
+  ASSERT_IS_ARRAY(quantity, Float32Array)
+  ASSERT_IS_ARRAY(scratch, Float32Array)
+  
+  var total_excess = 0.0;
+  var total_remaining = 0.0;
+  var remaining = scratch;
+  // clamp delta to quantity available
+  // keep tabs on excess where delta exceeds quantity
+  // also keep tabs on which cells still have quantity remaining after delta is applied
+  for (var i=0, li=delta.length; i<li; ++i) {
+    if (-delta[i] > quantity[i]) {
+      delta[i] = -quantity[i];
+      total_excess += -delta[i] - quantity[i];
+      remaining[i] = 0;
+    }
+    else {
+      remaining[i] = quantity[i] + delta[i];
+      total_remaining += quantity[i] + delta[i];
+    }
+  }
+  // go back and correct the excess by taxing from the remaining quantity
+  // the more remaining a cell has, the more it gets taxed
+  var remaining_tax = total_excess / total_remaining;
+  if (remaining_tax) {
+    for (var i=0, li=delta.length; i<li; ++i) {
+      delta[i] -= remaining[i] * remaining_tax;
+    }
+  }
+}

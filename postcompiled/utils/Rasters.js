@@ -2631,6 +2631,38 @@ Float32Raster.fix_nonnegative_quantity_delta = function(delta, quantity) {
     }
   }
 }
+// NOTE: if anyone can find a shorter more intuitive name for this, I'm all ears
+Float32Raster.fix_nonnegative_conserved_quantity_delta = function(delta, quantity, scratch) {
+  var scratch = scratch || Float32Raster(delta.grid);
+  if (!(delta instanceof Float32Array)) { throw "delta" + ' is not a ' + "Float32Array"; }
+  if (!(quantity instanceof Float32Array)) { throw "quantity" + ' is not a ' + "Float32Array"; }
+  if (!(scratch instanceof Float32Array)) { throw "scratch" + ' is not a ' + "Float32Array"; }
+  var total_excess = 0.0;
+  var total_remaining = 0.0;
+  var remaining = scratch;
+  // clamp delta to quantity available
+  // keep tabs on excess where delta exceeds quantity
+  // also keep tabs on which cells still have quantity remaining after delta is applied
+  for (var i=0, li=delta.length; i<li; ++i) {
+    if (-delta[i] > quantity[i]) {
+      delta[i] = -quantity[i];
+      total_excess += -delta[i] - quantity[i];
+      remaining[i] = 0;
+    }
+    else {
+      remaining[i] = quantity[i] + delta[i];
+      total_remaining += quantity[i] + delta[i];
+    }
+  }
+  // go back and correct the excess by taxing from the remaining quantity
+  // the more remaining a cell has, the more it gets taxed
+  var remaining_tax = total_excess / total_remaining;
+  if (remaining_tax) {
+    for (var i=0, li=delta.length; i<li; ++i) {
+      delta[i] -= remaining[i] * remaining_tax;
+    }
+  }
+}
 // Uint16Raster represents a grid where each cell contains a 32 bit floating point value
 // A Uint16Raster is composed of two parts:
 //    The first is a object of type Grid, representing a collection of vertices that are connected by edges
