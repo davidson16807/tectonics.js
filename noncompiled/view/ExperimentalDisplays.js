@@ -37,3 +37,8 @@ experimentalDisplays.albedo 	= new ScalarHeatDisplay( { min: '0.', max: '1.',
 		return albedo;
 	}
 } );
+experimentalDisplays.erosion_deltas 	= new ScalarHeatDisplay( { min: '0.', max: '1.',  
+	getField: function (world) {
+		return erosion_delta_negatives;
+	}
+} );

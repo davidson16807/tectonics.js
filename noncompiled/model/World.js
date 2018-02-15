@@ -1,6 +1,30 @@
 'use strict';
 
+var erosion_delta_negatives;
+var erosion_delta_negatives_average = 0.0;
+var globalized_erosion_average = 0.0;
+var localized_erosion_average = 0.0;
 
+Float32Raster.is_broken_nonnegative_quantity_delta = function(delta, quantity, result) {
+  var result = result || Float32Raster(delta.grid);
+
+  for (var i=0, li=delta.length; i<li; ++i) {
+    if (-delta[i] > quantity[i]) {
+      result[i] = 1;
+    }
+  }
+  return result;
+}
+Float32Raster.error_nonnegative_quantity_delta = function(delta, quantity, result) {
+  var result = result || Float32Raster(delta.grid);
+
+  for (var i=0, li=delta.length; i<li; ++i) {
+    if (-delta[i] > quantity[i]) {
+      result[i] = -quantity[i] - delta[i];
+    }
+  }
+  return result;
+}
 var World = (function() {
 	function World(parameters) {
 		Crust.call(this, parameters);
@@ -180,6 +204,7 @@ var World = (function() {
 		var min = ScalarField.min_field;
 		var max = ScalarField.max_scalar;
 		var fix_nonnegative_quantity_delta = Float32Raster.fix_nonnegative_quantity_delta;
+		var fix_conserved_quantity_delta = Float32Raster.fix_conserved_quantity_delta;
 		var assert_nonnegative_quantity = Float32Raster.assert_nonnegative_quantity;
 
 		var globalized_accretion = Float32Raster(grid); 
@@ -203,6 +228,10 @@ var World = (function() {
 		equals 	(plate_count, 0, 														globalized_is_empty);
 		equals 	(plate_count, 1, 														globalized_is_alone);
 		not		(globalized_is_alone, 													globalized_is_not_alone);
+
+		erosion_delta_negatives = Float32Raster(grid);
+		localized_erosion_average = 0.0;
+		erosion_delta_negatives_average = 0.0;
 		for (var i=0, li=plates.length; i<li; ++i) {
 		    plate = plates[i];
 
@@ -254,16 +283,25 @@ var World = (function() {
 	        }
 	        //erode
 	        if(ERODE) {
+	        	globalized_erosion_average = Float32Dataset.average(globalized_erosion);
+
+
             	resample_f32(globalized_erosion, global_ids_of_local_cells,				localized_erosion);
             	resample 	(globalized_is_on_top, global_ids_of_local_cells,			localized_is_on_top);
+            	ScalarField.mult_field(localized_erosion, localized_is_on_top, 			localized_erosion);
+	        	localized_erosion_average += Float32Dataset.average(localized_erosion);
+
+	        	// ScalarField.mult_field(localized_erosion, localized_is_on_top)
+	        	add(erosion_delta_negatives, Float32Raster.error_nonnegative_quantity_delta(localized_erosion, plate.sial), erosion_delta_negatives);
+	        	erosion_delta_negatives_average += Float32Dataset.average(Float32Raster.error_nonnegative_quantity_delta(localized_erosion, plate.sial));
 
 		        // enforce constraint: erosion should never exceed amount of rock available
 		        // get_erosion() guarantees against this, but plate motion sometimes causes violations to this constraint
 		        // violations to constraint are usually small, so we just modify erosion after the fact to preserve the constraint
-		        fix_nonnegative_quantity_delta 
-		        			(localized_erosion, plate.sial, 							localized_erosion);
+		        fix_nonnegative_quantity_delta (localized_erosion, plate.sial);
+		        // fix_conserved_quantity_delta  (localized_erosion);
 		        // assert_nonnegative_quantity(plate.sial);
-	        	add_term 	(plate.sial, localized_erosion, localized_is_on_top,		plate.sial);
+	        	add 	(plate.sial, localized_erosion,		plate.sial);
 		        // assert_nonnegative_quantity(plate.sial);
 	        }
 
@@ -353,14 +391,6 @@ var World = (function() {
 		update_plates(this, timestep, this.plates);
 
 		// World submodels go here: atmo model, hydro model, bio model, etc.
-	};
-	World.prototype.worldLoaded = function(timestep){
-		for (var i = 0; i < this.plates.length; i++) {
-			this.plates[i].move(0.0000000001)
-		}
-		update_calculated_fields(this);
-		merge_plates_to_master(this.plates, this);
-		update_plates(this, 0.0000000001, this.plates);
 	};
 	return World;
 })();
