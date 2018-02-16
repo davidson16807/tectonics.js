@@ -14,7 +14,6 @@ varying vec4 vPosition;
 
 uniform float sealevel;
 uniform float sealevel_mod;
-uniform  vec3 color;
 
 const vec4 NONE = vec4(0.0,0.0,0.0,0.0);
 const vec4 OCEAN = vec4(0.04,0.04,0.2,1.0);
@@ -76,20 +75,12 @@ void main() {
 					(cell_effect * cos(6.*lat + radians(30.)) + 1.) +		//circulation cell effect
 					precip_min;
 
-	//Mean annual evaporation over land, mm yr-1
-	float evap_intercept	= 1166.;
-	float evap 	 = evap_intercept / cosh(3.*lat);
-
 	//Net Primary Productivity (NPP), expressed as the fraction of an modeled maximum (3 kg m-2 yr-1)
 	//Derived using the Miami model (Lieth et al. 1972). A summary is provided by Grieser et al. 2006
 	float npp_temp 		= 1./(1. + exp(1.315 - (0.5/4.) * temp)); 				//temperature limited npp
 	float npp_precip 	= (1. - exp(-(precip)/800.)); 							//drought limited npp
 	float npp = vDisplacement > sealevel? min(npp_temp, npp_precip) : 0.; 		//realized npp, the most conservative of the two estimates
 
-	//Atmospheric pressure, kPa
-	//Equation from the engineering toolbox
-	float pressure		= 101.325 * pow(1.- 2.25e-5 * alt, 5.25);
-	
 	float felsic_fraction = smoothstep(abyssopelagic, maxheight, vDisplacement);
 	float mineral_fraction = vDisplacement > sealevel? smoothstep(maxheight, sealevel, vDisplacement) : 0.;
 	float organic_fraction 	= degrees(lat)/90.; // smoothstep(30., -30., temp); 

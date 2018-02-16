@@ -26,7 +26,6 @@ function View(grid, scalarDisplay, vectorDisplay, vertexShader) {
 	scalar_field_geometry.addAttribute('scalar', Float32Array, faces.length*3, 1);
 	this.scalar_field_geometry = scalar_field_geometry;
 
-	var color = new THREE.Color();
 	var sealevel_mod = this._uniforms.sealevel_mod;
 
 
@@ -38,7 +37,6 @@ function View(grid, scalarDisplay, vectorDisplay, vertexShader) {
 		uniforms: {
 		  sealevel:     { type: 'f', value: 0 },
 		  sealevel_mod: { type: 'f', value: sealevel_mod },
-		  color: 	    { type: 'c', value: color },
 		  index: 		{ type: 'f', value: -1 },
 		},
 		blending: THREE.NoBlending,
@@ -58,7 +56,6 @@ function View(grid, scalarDisplay, vectorDisplay, vertexShader) {
 		uniforms: {
 		  sealevel:     { type: 'f', value: 0 },
 		  sealevel_mod: { type: 'f', value: sealevel_mod },
-		  color: 	    { type: 'c', value: color },
 		  index: 		{ type: 'f', value: 1 }
 		},
 		blending: THREE.NoBlending,

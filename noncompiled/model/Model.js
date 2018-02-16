@@ -31,6 +31,16 @@ Model.prototype.update = function() {
 		world.update(this.MegaYearPerSecond * seconds);
 	};
 };
+
+Model.prototype.worldLoaded = function() {
+	var now = performance.now();
+	this._last_update_timestamp = now;
+
+	if (world !== void 0) {
+		world.worldLoaded();
+	};
+};
+
 Model.prototype.toggle_pause = function () {
 	this.paused = !this.paused;
 }

@@ -26,6 +26,32 @@ Float32Dataset.average = function (dataset) {
   }
   return result / dataset.length;
 };
+Float32Dataset.median = function (dataset, scratch) {
+  scratch = scratch || Float32Raster(dataset.grid);
+  ASSERT_IS_ARRAY(dataset, Float32Array)
+  ASSERT_IS_ARRAY(scratch, Float32Array)
+  Float32Raster.copy(dataset, scratch);
+  scratch.sort();
+  return scratch[Math.floor(scratch.length/2)];
+};
+Float32Dataset.standard_deviation = function (dataset) {
+  ASSERT_IS_ARRAY(dataset, Float32Array)
+  var sum = 0;
+  var li=dataset.length
+
+  for (var i=0; i<li; ++i) {
+      sum += dataset[i];
+  }
+  var average = sum / dataset.length;
+
+  var difference = 0;
+  var sum_of_squared_differences = 0;
+  for (var i=0; i<li; ++i) {
+      difference = (dataset[i] - average);
+      sum_of_squared_differences += difference * difference;
+  }
+  return Math.sqrt(sum_of_squared_differences / (li-1));
+};
 Float32Dataset.weighted_average = function (dataset, weights) {
   ASSERT_IS_ARRAY(dataset, Float32Array)
   ASSERT_IS_ARRAY(weights, Float32Array)
@@ -65,8 +91,8 @@ Float32Dataset.normalize = function(dataset, result, min_new, max_new) {
 Float32Dataset.rescale = function(dataset, result, max_new) {
   result = result || Float32Raster(dataset.grid);
 
-  var max = Float32Dataset.max(dataset);
   var max_new = max_new || 1;
+  var max = Float32Dataset.max(dataset) || max_new;
   var scaling_factor = max_new / max;
 
   ASSERT_IS_ARRAY(dataset, Float32Array)

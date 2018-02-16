@@ -45,26 +45,36 @@ scalarDisplays.bedrock = new RealisticDisplay('bedrock');
 
 
 function ScalarDisplay(options) {
-	var color = options['color'] || 0x000000;
+	var minColor = options['minColor'] || 0x000000;
+	var maxColor = options['maxColor'] || 0xffffff;
 	var min = options['min'] || '0.';
 	var max = options['max'] || '1.';
 	var scalar = options['scalar'] || 'vScalar';
 	this.field = void 0;
 	this.scratch = void 0;
 	this.getField = options['getField'];
+	function hex_color_to_glsl_string_color(color) {
+		var rIntValue = ((color / 256 / 256) % 256) / 255.0;
+		var gIntValue = ((color / 256      ) % 256) / 255.0;
+		var bIntValue = ((color            ) % 256) / 255.0;
+		return rIntValue.toString()+","+gIntValue.toString()+","+bIntValue.toString();
+	}
+	var minColor_str = hex_color_to_glsl_string_color(minColor);
+	var maxColor_str = hex_color_to_glsl_string_color(maxColor);
 	this._fragmentShader = fragmentShaders.template
 		.replace('@OUTPUT',
 			_multiline(function() {/**   
 			vec4 uncovered 		= @UNCOVERED;
-			vec4 ocean 			= mix(OCEAN, uncovered, 0.5);
+			vec4 ocean 			= mix(NONE, uncovered, 0.5);
 			vec4 sea_covered 	= vDisplacement < sealevel * sealevel_mod? ocean : uncovered;
 			gl_FragColor = sea_covered;
 			**/}))
-		.replace('@UNCOVERED', 'mix( vec4(1), vec4(color,1.), smoothstep(@MIN, @MAX, @SCALAR) )')
+		.replace('@UNCOVERED', 'mix( vec4(@MINCOLOR,1.), vec4(@MAXCOLOR,1.), smoothstep(@MIN, @MAX, @SCALAR) )')
+		.replace('@MINCOLOR', minColor_str)
+		.replace('@MAXCOLOR', maxColor_str)
 		.replace('@MIN', min)
 		.replace('@MAX', max)
 		.replace('@SCALAR', scalar);
-	this._color = new THREE.Color(color);
 }
 ScalarDisplay.prototype.addTo = function(mesh) {
 	this.field = void 0;
@@ -72,9 +82,6 @@ ScalarDisplay.prototype.addTo = function(mesh) {
 
 	mesh.material.fragmentShader = this._fragmentShader;
 	mesh.material.needsUpdate = true;
-
-	mesh.material.uniforms.color.value = this._color;
-	mesh.material.uniforms.color.needsUpdate = true;
 };
 ScalarDisplay.prototype.removeFrom = function(mesh) {
 	
@@ -114,10 +121,30 @@ ScalarDisplay.prototype.updateAttributes = function(geometry, plate) {
 		buffer_array_index = buffer_array_to_cell[j];
 		scalar[j] = scalar_model[buffer_array_index]; 
 	}
-	geometry.attributes.scalar.needsUpdate = true;
+	if (scalar_model !== void 0) {
+		geometry.attributes.scalar.needsUpdate = true;
+		if (scalar_model !== this.field) {
+			Float32Raster.copy(scalar_model, this.field);
+		}
+	} else {
+		this.field = void 0;
+	}
 }
-scalarDisplays.npp 	= new ScalarDisplay( {color: 0x00ff00, scalar: 'npp'} );
-scalarDisplays.alt 	= new ScalarDisplay( {color: 0x000000, min:'sealevel', max:'maxheight', scalar: 'alt'} );
+scalarDisplays.npp 	= new ScalarDisplay( { minColor: 0xffffff, maxColor: 0x00ff00, min: '0.', max: '1.',
+		getField: function (world, result) {
+			var temp = AtmosphericModeling.surface_air_temp(world.grid.pos, world.meanAnomaly, Math.PI*23.5/180);
+			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
+			var precip = AtmosphericModeling.precip(lat);
+			var npp = BiosphereModeling.net_primary_productivity(temp, precip, 1, result);
+			return npp;
+		} 
+	} );
+scalarDisplays.alt 	= new ScalarDisplay( { minColor: 0x000000, maxColor: 0xffffff, min:'0.', max:'10000.', 
+		getField: function (world, result) {
+			return (scalarDisplayVue.ocean)?(ScalarField.max_scalar(world.displacement, world.SEALEVEL)):
+			                                (world.displacement);
+		}
+	} );
 
 
 
@@ -188,6 +215,11 @@ ScalarHeatDisplay.prototype.updateAttributes = function(geometry, plate) {
 	geometry.attributes.displacement.needsUpdate = true;
 	if (scalar_model !== void 0) {
 		geometry.attributes.scalar.needsUpdate = true;
+		if (scalar_model !== this.field) {
+			Float32Raster.copy(scalar_model, this.field);
+		}
+	} else {
+		this.field = void 0;
 	}
 }
 scalarDisplays.plates 	= new ScalarHeatDisplay( { min: '0.', max: '7.', 
@@ -202,12 +234,16 @@ scalarDisplays.plate_count 	= new ScalarHeatDisplay( { min: '0.', max: '3.',
 	} );
 scalarDisplays.temp 	= new ScalarHeatDisplay( { min: '-25.', max: '30.',  
 		getField: function (crust) {
-			return AtmosphericModeling.surface_air_temp(crust.grid.pos, crust.meanAnomaly, Math.PI*23.5/180);
+			var temp = AtmosphericModeling.surface_air_temp(crust.grid.pos, crust.meanAnomaly, Math.PI*23.5/180);
+			// convert to Celcius
+			ScalarField.add_scalar(temp, -273.15, temp);
+			return temp;
 		} 
 	} );
-scalarDisplays.precip 	= new ScalarHeatDisplay( { min: '0.', max: '2000.',  
+scalarDisplays.precip 	= new ScalarHeatDisplay( { min: '2000.', max: '1.',  
 		getField: function (crust) {
-			return AtmosphericModeling.precip(crust.grid.pos);
+			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
+			return AtmosphericModeling.precip(lat);
 		} 
 	} );
 scalarDisplays.age 	= new ScalarHeatDisplay( { min: '250.', max: '0.',  

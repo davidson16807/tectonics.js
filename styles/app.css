@@ -29,6 +29,24 @@ body {
 	padding-left:1em;
 }
 
+#chart{
+	width: 300px;
+}
+#chart canvas{
+	padding: 1em;
+}
+#chart .stat {
+	float: right;
+	margin: 1em;
+}
+#chart .stat .name{
+	margin: 1em;
+	text-align: left;
+}
+#chart .stat .value{
+	margin: 1em;
+	text-align: right;
+}
 #hidden-downloader{
 	display: none;
 }

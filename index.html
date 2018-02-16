@@ -17,7 +17,9 @@
 	<link rel="stylesheet" href="styles/app.css"/>
 
 	<script src="http://code.jquery.com/jquery.min.js"></script>
-	<script src="https://unpkg.com/vue@2.4.4/dist/vue.min.js"></script>
+	<script src="https://unpkg.com/vue"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.3.0/Chart.js"></script>
+	<script src="libraries/vue-charts.js"></script>
 	<script src="libraries/bootstrap.js"></script>
 	<script src="libraries/three.js/Three.js"></script>
 	<script src="libraries/three.js/Detector.js"></script>
@@ -43,6 +45,7 @@
 	<script src="noncompiled/utils/Float32SphereRaster.js"></script>
 	<script src="noncompiled/academics/TectonicsModeling.js"></script>
 	<script src="noncompiled/academics/AtmosphericModeling.js"></script>
+	<script src="noncompiled/academics/BiosphereModeling.js"></script>
 	<script src="noncompiled/Logging.js"></script>
 	<script src="noncompiled/VoronoiSphere.js"></script>
 	<script src="noncompiled/Sphere.js"></script>
@@ -56,7 +59,8 @@
 	<script src="noncompiled/model/Model.js"></script>
 	<script src="noncompiled/view/ScalarDisplay.js"></script>
 	<script src="noncompiled/view/VectorDisplay.js"></script>
-	<script src="noncompiled/view/TestDisplays.js"></script>
+	<script src="noncompiled/view/RegressionTestDisplays.js"></script>
+	<script src="noncompiled/view/ExperimentalDisplays.js"></script>
 	<script src="noncompiled/view/View.js"></script>
 	<script src="noncompiled/name-gen/NameGenerator.js"></script>
 	<script src="noncompiled/name-gen/NameCorpii.js"></script>
@@ -80,8 +84,8 @@
 <div class="topright collapse collapsible controls" >
 	<div id="time-menu" class="time-menu">
 		<div class="input-group age-group">
-			<span class="form-control input-sm age">{{ format(age, 1000, 3).quantity }}</span>
-			<span class="input-group-addon age-units">{{ format(age, 1000, 3).unit }}</span>
+			<span class="form-control input-sm age">{{ format(age * 1e6, 1000, 3).quantity }}</span>
+			<span class="input-group-addon age-units">{{ format(age * 1e6, 1000, 3).unit }}y</span>
 		</div>
 		<div class="input-group speed-group">
 			<span class="input-group-addon play" v-on:click="togglePause()">
@@ -230,6 +234,46 @@
 	<div id="renderStats"></div>
 	<div id="updateStats"></div>
 </div>
+<div class="bottomright">
+	<div id="chart" v-if="isEnabled">
+		<table class="stat">
+			<tr>
+				<td class="name">min</td>
+				<td class="value">{{round(min)}}</td>
+			</tr>
+			<tr>
+				<td class="name">max</td>
+				<td class="value">{{round(max)}}</td>
+			</tr>
+		</table>
+
+		<table class="stat">
+			<tr>
+				<td class="name">mean</td>
+				<td class="value">{{round(mean)}}</td>
+			</tr>
+			<tr>
+				<td class="name">median</td>
+				<td class="value">{{round(median)}}</td>
+			</tr>
+		</table>
+		<table class="stat">
+			<tr>
+				<td class="name">S.D.</td>
+				<td class="value">{{round(stddev)}}</td>
+			</tr>
+		</table>
+		<chartjs-line :width="200" :height="100" 
+			:data="x" 
+			:labels="y" 
+			:bind="true"
+			:bordercolor="'#FFF'"
+			:backgroundcolor="'rgba(256,256,256,0.2)'" 
+			:fill="true"
+			:option="options">
+		</chartjs-line>
+	</div>
+</div>
 <div id="drop-dialog" class="collapse">
 	<h2>DRAG HERE</h2>
 </div>
@@ -303,6 +347,9 @@
 	var renderStats, updateStats, renderer, controls;
 	var BlockUpdate = false;
 	var IsProd = true;
+
+   var autosave_period = parseInt(querystring['autosave_period'] || '0');
+   var autosave_timestamp = 0;
 
 	var view = new View(
 		new Grid( 
@@ -396,6 +443,13 @@
 		model.update();
 		view.cellUpdate(world); 
 
+		if (autosave_period) {
+			if (model.age >= (autosave_timestamp + autosave_period)) {
+				saveVue.save();
+				autosave_timestamp = autosave_timestamp + autosave_period;
+			}
+		}
+
 		if(!IsProd){
 			updateStats.update();
 		}
@@ -407,8 +461,15 @@
 		$('.controls').hide();
 		$.getJSON( url, function( json ) {
 			BlockUpdate = false;
-	    	world = JsonDeserializer.world(json);
+			var results = JsonDeserializer.model(json, view.grid);
+			world = results.model._world;
+			seed = results.seed;
+			random = results.random;
+			model.age = results.model.age;
 			model.world(world);
+			if (model.paused) {
+				model.worldLoaded()
+			}
 			dialogVue.$data.isLoadingSave = false;
 			$('.controls').show();
 		});
@@ -422,18 +483,25 @@
 	    //reader.onloadstart = function(e) {};
 	    reader.onload = function(e) {
 			BlockUpdate = false;
-	    	var json = JSON.parse(e.target.result);
-	    	world = JsonDeserializer.world(json);
+			var json = JSON.parse(e.target.result);
+			var results = JsonDeserializer.model(json, view.grid);
+			world = results.model._world;
+			seed = results.seed;
+			random = results.random;
+			model.age = results.model.age;
 			model.world(world);
+			if (model.paused) {
+				model.worldLoaded()
+			}
 	    }
 
 	    reader.readAsText(file);
 	}
 
-	function format (My, rollover, precision){
-				var quantity = My * 1000000;
-				var units = ['ky', 'My', 'By']
-				var unit = 'yr';
+	function format (num, rollover, precision){
+				var quantity = num;
+				var units = ['', 'k', 'M', 'G']
+				var unit = units.shift();
 				while(quantity > rollover) {
 					unit = units.shift();
 					quantity /= 1000;
@@ -444,8 +512,8 @@
 				};
 			}
 	function format_text (My, rollover, precision) {
-		var formatted = format(My, rollover, precision);
-		return formatted.quantity + ' ' + formatted.unit;
+		var formatted = format(My * 1e6, rollover, precision);
+		return formatted.quantity + ' ' + formatted.unit + 'y';
 	}
 
 	function download(dataUrl, filename) {
@@ -540,8 +608,8 @@
 	  el: '#save',
 	  methods: {
 	  	save(event) {
-  			var serialized = JsonSerializer.world(world);
-  			var stringified = JSON.stringify(serialized);
+			var serialized = JsonSerializer.model(model,{seed: seed, random: random});
+			var stringified = JSON.stringify(serialized);
   			var dataUrl = 
   				"data:application/json;"+
   				"charset=utf-8," + 
@@ -724,7 +792,7 @@
 	    		  clearInterval(timer); 
 	    		  v.ocean = v.ocean_target;
 	    		}
-	    		view.uniform('sealevel_mod', v.ocean);
+	    		view.uniform('sealevel_mod', (v.ocean)?(1.0):(-1.0));
 	    	}, timestep);
 	    },
 	    getClass: function(value, selected) {

@@ -177,11 +177,21 @@ var World = (function() {
 		var global_ids_of_local_cells, local_ids_of_global_cells;
 		var add_term = ScalarField.add_field_term;
 		var add = ScalarField.add_field;
+		var min = ScalarField.min_field;
+		var max = ScalarField.max_scalar;
+		var fix_nonnegative_conserved_quantity_delta = Float32Raster.fix_nonnegative_conserved_quantity_delta;
+		var assert_nonnegative_quantity = Float32Raster.assert_nonnegative_quantity;
 
 		var globalized_accretion = Float32Raster(grid); 
 		Float32Raster.fill(globalized_accretion, 0);
 		var globalized_erosion = Float32Raster(grid);
-		TectonicsModeling.get_erosion(displacement, world.SEALEVEL, timestep, globalized_erosion, globalized_scalar_field);
+		// TectonicsModeling.get_erosion(displacement, world.SEALEVEL, timestep, globalized_erosion, globalized_scalar_field);
+		TectonicsModeling.get_erosion(
+			displacement, 		world.SEALEVEL, 	timestep,
+			Float32Raster(grid), 	world.sial, 			world.sima, 
+			Float32Raster(grid), 	globalized_erosion, 	Float32Raster(grid), 
+			globalized_scalar_field
+		);
 
 		var RIFT = true;
 		var DETACH = true;
@@ -246,8 +256,18 @@ var World = (function() {
 	        if(ERODE) {
             	resample_f32(globalized_erosion, global_ids_of_local_cells,				localized_erosion);
             	resample 	(globalized_is_on_top, global_ids_of_local_cells,			localized_is_on_top);
-	        	add_term 	(plate.sial, localized_erosion, localized_is_on_top,		plate.sial);
+            	mult_field 	(localized_erosion, localized_is_on_top, 					localized_erosion);
+
+		        // enforce constraint: erosion should never exceed amount of rock available
+		        // get_erosion() guarantees against this, but plate motion sometimes causes violations to this constraint
+		        // violations to constraint are usually small, so we just modify erosion after the fact to preserve the constraint
+		        fix_nonnegative_conserved_quantity_delta 
+		        			(localized_erosion, plate.sial);
+		        // assert_nonnegative_quantity(plate.sial);
+	        	add 	 	(plate.sial, localized_erosion, 							plate.sial);
+		        // assert_nonnegative_quantity(plate.sial);
 	        }
+
 
 	        //aging
 			ScalarField.add_scalar(plate.age, timestep, 								plate.age);
@@ -268,7 +288,7 @@ var World = (function() {
 	}
 
 	World.prototype.SEALEVEL = 3682;
-	World.prototype.mantleDensity=3300;
+	World.prototype.mantleDensity=3075; // derived empirically using isostatic model
 	World.prototype.waterDensity=1026;
 	World.prototype.ocean = 
 	 new RockColumn({
@@ -334,6 +354,14 @@ var World = (function() {
 		update_plates(this, timestep, this.plates);
 
 		// World submodels go here: atmo model, hydro model, bio model, etc.
+	};
+	World.prototype.worldLoaded = function(timestep){
+		for (var i = 0; i < this.plates.length; i++) {
+			this.plates[i].move(0.0000000001)
+		}
+		update_calculated_fields(this);
+		merge_plates_to_master(this.plates, this);
+		update_plates(this, 0.0000000001, this.plates);
 	};
 	return World;
 })();

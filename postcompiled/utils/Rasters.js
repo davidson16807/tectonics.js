@@ -80,11 +80,13 @@ function Grid(template, options){
  this.edge_lookup = edge_lookup;
  this.arrows = arrows;
  this.arrow_lookup = arrow_lookup;
- this.pos_arrow_distances = VectorRaster.OfLength(arrows.length, undefined)
- this.pos_arrow_differential = VectorField.arrow_differential(this.pos, this.pos_arrow_distances);
+ this.pos_arrow_differential = VectorField.arrow_differential(this.pos);
+    this.pos_arrow_differential_normalized = VectorRaster.OfLength(arrows.length, undefined)
+    this.pos_arrow_differential_normalized = VectorField.normalize(this.pos_arrow_differential, this.pos_arrow_differential_normalized);
  this.pos_arrow_distances = Float32Raster.OfLength(arrows.length, undefined)
  VectorField.magnitude(this.pos_arrow_differential, this.pos_arrow_distances);
  this.average_distance = Float32Dataset.average(this.pos_arrow_distances);
+ this.average_area = this.average_distance * this.average_distance;
  if (voronoi_generator){
   this._voronoi = voronoi_generator(this.pos);
  }
@@ -324,6 +326,30 @@ Float32Dataset.average = function (dataset) {
   }
   return result / dataset.length;
 };
+Float32Dataset.median = function (dataset, scratch) {
+  scratch = scratch || Float32Raster(dataset.grid);
+  if (!(dataset instanceof Float32Array)) { throw "dataset" + ' is not a ' + "Float32Array"; }
+  if (!(scratch instanceof Float32Array)) { throw "scratch" + ' is not a ' + "Float32Array"; }
+  Float32Raster.copy(dataset, scratch);
+  scratch.sort();
+  return scratch[Math.floor(scratch.length/2)];
+};
+Float32Dataset.standard_deviation = function (dataset) {
+  if (!(dataset instanceof Float32Array)) { throw "dataset" + ' is not a ' + "Float32Array"; }
+  var sum = 0;
+  var li=dataset.length
+  for (var i=0; i<li; ++i) {
+      sum += dataset[i];
+  }
+  var average = sum / dataset.length;
+  var difference = 0;
+  var sum_of_squared_differences = 0;
+  for (var i=0; i<li; ++i) {
+      difference = (dataset[i] - average);
+      sum_of_squared_differences += difference * difference;
+  }
+  return Math.sqrt(sum_of_squared_differences / (li-1));
+};
 Float32Dataset.weighted_average = function (dataset, weights) {
   if (!(dataset instanceof Float32Array)) { throw "dataset" + ' is not a ' + "Float32Array"; }
   if (!(weights instanceof Float32Array)) { throw "weights" + ' is not a ' + "Float32Array"; }
@@ -355,8 +381,8 @@ Float32Dataset.normalize = function(dataset, result, min_new, max_new) {
 }
 Float32Dataset.rescale = function(dataset, result, max_new) {
   result = result || Float32Raster(dataset.grid);
-  var max = Float32Dataset.max(dataset);
   var max_new = max_new || 1;
+  var max = Float32Dataset.max(dataset) || max_new;
   var scaling_factor = max_new / max;
   if (!(dataset instanceof Float32Array)) { throw "dataset" + ' is not a ' + "Float32Array"; }
   if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
@@ -563,7 +589,7 @@ ScalarField.min_field = function (scalar_field1, scalar_field2, result) {
   result = result || Float32Raster(scalar_field1.grid);
   if (!(scalar_field1 instanceof Float32Array)) { throw "scalar_field1" + ' is not a ' + "Float32Array"; }
   if (!(scalar_field2 instanceof Float32Array)) { throw "scalar_field2" + ' is not a ' + "Float32Array"; }
-  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
+  if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] < scalar_field2[i]? scalar_field1[i] : scalar_field2[i];
   }
@@ -573,7 +599,7 @@ ScalarField.max_field = function (scalar_field1, scalar_field2, result) {
   result = result || Float32Raster(scalar_field1.grid);
   if (!(scalar_field1 instanceof Float32Array)) { throw "scalar_field1" + ' is not a ' + "Float32Array"; }
   if (!(scalar_field2 instanceof Float32Array)) { throw "scalar_field2" + ' is not a ' + "Float32Array"; }
-  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
+  if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] > scalar_field2[i]? scalar_field1[i] : scalar_field2[i];
   }
@@ -623,7 +649,7 @@ ScalarField.eq_field = function (scalar_field1, scalar_field2, threshold, result
   result = result || Uint8Raster(scalar_field1.grid);
   if (!(scalar_field1 instanceof Float32Array)) { throw "scalar_field1" + ' is not a ' + "Float32Array"; }
   if (!(scalar_field2 instanceof Float32Array)) { throw "scalar_field2" + ' is not a ' + "Float32Array"; }
-  if (!(typeof threshold == "number")) { throw "threshold" + ' is not a ' + "number"; }
+  if (typeof threshold != "number" || isNaN(threshold) || !isFinite(threshold)) { throw "threshold" + ' is not a real number'; }
   if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] < scalar_field2[i] + threshold || scalar_field1[i] > scalar_field2[i] - threshold ? 1:0;
@@ -634,7 +660,7 @@ ScalarField.ne_field = function (scalar_field1, scalar_field2, threshold, result
   result = result || Uint8Raster(scalar_field1.grid);
   if (!(scalar_field1 instanceof Float32Array)) { throw "scalar_field1" + ' is not a ' + "Float32Array"; }
   if (!(scalar_field2 instanceof Float32Array)) { throw "scalar_field2" + ' is not a ' + "Float32Array"; }
-  if (!(typeof threshold == "number")) { throw "threshold" + ' is not a ' + "number"; }
+  if (typeof threshold != "number" || isNaN(threshold) || !isFinite(threshold)) { throw "threshold" + ' is not a real number'; }
   if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] > scalar_field2[i] + threshold || scalar_field1[i] < scalar_field2[i] - threshold ? 1:0;
@@ -644,7 +670,7 @@ ScalarField.ne_field = function (scalar_field1, scalar_field2, threshold, result
 ScalarField.min_scalar = function (scalar_field1, scalar, result) {
   result = result || Float32Raster(scalar_field1.grid);
   if (!(scalar_field1 instanceof Float32Array)) { throw "scalar_field1" + ' is not a ' + "Float32Array"; }
-  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (typeof scalar != "number" || isNaN(scalar) || !isFinite(scalar)) { throw "scalar" + ' is not a real number'; }
   if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] < scalar? scalar_field1[i] : scalar;
@@ -654,7 +680,7 @@ ScalarField.min_scalar = function (scalar_field1, scalar, result) {
 ScalarField.max_scalar = function (scalar_field1, scalar, result) {
   result = result || Float32Raster(scalar_field1.grid);
   if (!(scalar_field1 instanceof Float32Array)) { throw "scalar_field1" + ' is not a ' + "Float32Array"; }
-  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (typeof scalar != "number" || isNaN(scalar) || !isFinite(scalar)) { throw "scalar" + ' is not a real number'; }
   if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] > scalar? scalar_field1[i] : scalar;
@@ -664,7 +690,7 @@ ScalarField.max_scalar = function (scalar_field1, scalar, result) {
 ScalarField.gt_scalar = function (scalar_field1, scalar, result) {
   result = result || Uint8Raster(scalar_field1.grid);
   if (!(scalar_field1 instanceof Float32Array)) { throw "scalar_field1" + ' is not a ' + "Float32Array"; }
-  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (typeof scalar != "number" || isNaN(scalar) || !isFinite(scalar)) { throw "scalar" + ' is not a real number'; }
   if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] > scalar? 1:0;
@@ -674,7 +700,7 @@ ScalarField.gt_scalar = function (scalar_field1, scalar, result) {
 ScalarField.gte_scalar = function (scalar_field1, scalar, result) {
   result = result || Uint8Raster(scalar_field1.grid);
   if (!(scalar_field1 instanceof Float32Array)) { throw "scalar_field1" + ' is not a ' + "Float32Array"; }
-  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (typeof scalar != "number" || isNaN(scalar) || !isFinite(scalar)) { throw "scalar" + ' is not a real number'; }
   if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] >= scalar? 1:0;
@@ -684,7 +710,7 @@ ScalarField.gte_scalar = function (scalar_field1, scalar, result) {
 ScalarField.lt_scalar = function (scalar_field1, scalar, result) {
   result = result || Uint8Raster(scalar_field1.grid);
   if (!(scalar_field1 instanceof Float32Array)) { throw "scalar_field1" + ' is not a ' + "Float32Array"; }
-  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (typeof scalar != "number" || isNaN(scalar) || !isFinite(scalar)) { throw "scalar" + ' is not a real number'; }
   if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] < scalar? 1:0;
@@ -694,18 +720,29 @@ ScalarField.lt_scalar = function (scalar_field1, scalar, result) {
 ScalarField.lte_scalar = function (scalar_field1, scalar, result) {
   result = result || Uint8Raster(scalar_field1.grid);
   if (!(scalar_field1 instanceof Float32Array)) { throw "scalar_field1" + ' is not a ' + "Float32Array"; }
-  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (typeof scalar != "number" || isNaN(scalar) || !isFinite(scalar)) { throw "scalar" + ' is not a real number'; }
   if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] <= scalar? 1:0;
   }
   return result;
 };
+ScalarField.between_scalars = function (scalar_field1, scalar1, scalar2, result) {
+  result = result || Uint8Raster(scalar_field1.grid);
+  if (!(scalar_field1 instanceof Float32Array)) { throw "scalar_field1" + ' is not a ' + "Float32Array"; }
+  if (typeof scalar1 != "number" || isNaN(scalar1) || !isFinite(scalar1)) { throw "scalar1" + ' is not a real number'; }
+  if (typeof scalar2 != "number" || isNaN(scalar2) || !isFinite(scalar2)) { throw "scalar2" + ' is not a real number'; }
+  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = scalar1 < scalar_field1[i] && scalar_field1[i] < scalar2? 1:0;
+  }
+  return result;
+};
 ScalarField.eq_scalar = function (scalar_field1, scalar, threshold, result) {
   result = result || Uint8Raster(scalar_field1.grid);
   if (!(scalar_field1 instanceof Float32Array)) { throw "scalar_field1" + ' is not a ' + "Float32Array"; }
-  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
-  if (!(typeof threshold == "number")) { throw "threshold" + ' is not a ' + "number"; }
+  if (typeof scalar != "number" || isNaN(scalar) || !isFinite(scalar)) { throw "scalar" + ' is not a real number'; }
+  if (typeof threshold != "number" || isNaN(threshold) || !isFinite(threshold)) { throw "threshold" + ' is not a real number'; }
   if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] < scalar + threshold || scalar_field1[i] > scalar - threshold ? 1:0;
@@ -715,22 +752,22 @@ ScalarField.eq_scalar = function (scalar_field1, scalar, threshold, result) {
 ScalarField.ne_scalar = function (scalar_field1, scalar, threshold, result) {
   result = result || Uint8Raster(scalar_field1.grid);
   if (!(scalar_field1 instanceof Float32Array)) { throw "scalar_field1" + ' is not a ' + "Float32Array"; }
-  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
-  if (!(typeof threshold == "number")) { throw "threshold" + ' is not a ' + "number"; }
+  if (typeof scalar != "number" || isNaN(scalar) || !isFinite(scalar)) { throw "scalar" + ' is not a real number'; }
+  if (typeof threshold != "number" || isNaN(threshold) || !isFinite(threshold)) { throw "threshold" + ' is not a real number'; }
   if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] > scalar + threshold || scalar_field1[i] < scalar - threshold ? 1:0;
   }
   return result;
 };
-ScalarField.add_field_term = function (scalar_field1, scalar_field2, field3, result) {
+ScalarField.add_field_term = function (scalar_field1, scalar_field2, scalar_field3, result) {
   result = result || Float32Raster(scalar_field1.grid);
   if (!(scalar_field1 instanceof Float32Array)) { throw "scalar_field1" + ' is not a ' + "Float32Array"; }
   if (!(scalar_field2 instanceof Float32Array || scalar_field2 instanceof Uint16Array || scalar_field2 instanceof Uint8Array)) { throw "scalar_field2" + ' is not a typed array'; }
-  if (!(field3 instanceof Float32Array || field3 instanceof Uint16Array || field3 instanceof Uint8Array)) { throw "field3" + ' is not a typed array'; }
+  if (!(scalar_field3 instanceof Float32Array || scalar_field3 instanceof Uint16Array || scalar_field3 instanceof Uint8Array)) { throw "scalar_field3" + ' is not a typed array'; }
   if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = scalar_field1[i] + field3[i] * scalar_field2[i];
+    result[i] = scalar_field1[i] + scalar_field3[i] * scalar_field2[i];
   }
   return result;
 };
@@ -738,7 +775,7 @@ ScalarField.add_scalar_term = function (scalar_field1, scalar_field2, scalar, re
   result = result || Float32Raster(scalar_field1.grid);
   if (!(scalar_field1 instanceof Float32Array)) { throw "scalar_field1" + ' is not a ' + "Float32Array"; }
   if (!(scalar_field2 instanceof Float32Array || scalar_field2 instanceof Uint16Array || scalar_field2 instanceof Uint8Array)) { throw "scalar_field2" + ' is not a typed array'; }
-  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (typeof scalar != "number" || isNaN(scalar) || !isFinite(scalar)) { throw "scalar" + ' is not a real number'; }
   if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] + scalar * scalar_field2[i];
@@ -780,7 +817,7 @@ ScalarField.sub_scalar_term = function (scalar_field1, scalar_field2, scalar, re
   result = result || Float32Raster(scalar_field1.grid);
   if (!(scalar_field1 instanceof Float32Array)) { throw "scalar_field1" + ' is not a ' + "Float32Array"; }
   if (!(scalar_field2 instanceof Float32Array || scalar_field2 instanceof Uint16Array || scalar_field2 instanceof Uint8Array)) { throw "scalar_field2" + ' is not a typed array'; }
-  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (typeof scalar != "number" || isNaN(scalar) || !isFinite(scalar)) { throw "scalar" + ' is not a real number'; }
   if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] - scalar * scalar_field2[i];
@@ -810,7 +847,7 @@ ScalarField.div_field = function (scalar_field1, scalar_field2, result) {
 ScalarField.add_scalar = function (scalar_field, scalar, result) {
   result = result || Float32Raster(scalar_field.grid);
   if (!(scalar_field instanceof Float32Array)) { throw "scalar_field" + ' is not a ' + "Float32Array"; }
-  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (typeof scalar != "number" || isNaN(scalar) || !isFinite(scalar)) { throw "scalar" + ' is not a real number'; }
   if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field[i] + scalar;
@@ -820,7 +857,7 @@ ScalarField.add_scalar = function (scalar_field, scalar, result) {
 ScalarField.sub_scalar = function (scalar_field, scalar, result) {
   result = result || Float32Raster(scalar_field.grid);
   if (!(scalar_field instanceof Float32Array)) { throw "scalar_field" + ' is not a ' + "Float32Array"; }
-  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (typeof scalar != "number" || isNaN(scalar) || !isFinite(scalar)) { throw "scalar" + ' is not a real number'; }
   if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field[i] - scalar;
@@ -830,7 +867,7 @@ ScalarField.sub_scalar = function (scalar_field, scalar, result) {
 ScalarField.mult_scalar = function (scalar_field, scalar, result) {
   result = result || Float32Raster(scalar_field.grid);
   if (!(scalar_field instanceof Float32Array)) { throw "scalar_field" + ' is not a ' + "Float32Array"; }
-  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (typeof scalar != "number" || isNaN(scalar) || !isFinite(scalar)) { throw "scalar" + ' is not a real number'; }
   if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field[i] * scalar;
@@ -840,7 +877,7 @@ ScalarField.mult_scalar = function (scalar_field, scalar, result) {
 ScalarField.div_scalar = function (scalar_field, scalar, result) {
   result = result || Float32Raster(scalar_field.grid);
   if (!(scalar_field instanceof Float32Array)) { throw "scalar_field" + ' is not a ' + "Float32Array"; }
-  if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
+  if (typeof scalar != "number" || isNaN(scalar) || !isFinite(scalar)) { throw "scalar" + ' is not a real number'; }
   if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field[i] / scalar;
@@ -874,6 +911,9 @@ ScalarField.differential = function (scalar_field, result) {
   var x = result.x;
   var y = result.y;
   var z = result.z;
+  Float32Raster.fill(x, 0);
+  Float32Raster.fill(y, 0);
+  Float32Raster.fill(z, 0);
   for (var i = 0, li = arrows.length; i < li; i++) {
     arrow = arrows[i];
     from = arrow[0];
@@ -892,21 +932,44 @@ ScalarField.differential = function (scalar_field, result) {
   }
   return result;
 };
-ScalarField.gradient = function (scalar_field, result) {
+ScalarField.gradient = function (scalar_field, result, scratch, scratch2) {
   result = result || VectorRaster(scalar_field.grid);
+  scratch = scratch || Float32Raster(scalar_field.grid);
+  scratch2 = scratch2 || Float32Raster(scalar_field.grid);
+  if (!(scalar_field instanceof Float32Array)) { throw "scalar_field" + ' is not a ' + "Float32Array"; }
+  if (!(scratch instanceof Float32Array)) { throw "scratch" + ' is not a ' + "Float32Array"; }
+  if (!(scratch2 instanceof Float32Array)) { throw "scratch2" + ' is not a ' + "Float32Array"; }
   if (!(scalar_field instanceof Float32Array)) { throw "scalar_field" + ' is not a ' + "Float32Array"; }
   if (!(result.x !== void 0) && !(result.x instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
-  var scalar_field_derivative = 0;
+  var pos = scalar_field.grid.pos;
+  var ix = pos.x;
+  var iy = pos.y;
+  var iz = pos.z;
+  var dpos_hat = scalar_field.grid.pos_arrow_differential_normalized;
+  var dxhat = dpos_hat.x;
+  var dyhat = dpos_hat.y;
+  var dzhat = dpos_hat.z;
   var dpos = scalar_field.grid.pos_arrow_differential;
   var dx = dpos.x;
   var dy = dpos.y;
   var dz = dpos.z;
   var arrows = scalar_field.grid.arrows;
   var arrow = [];
-  var arrow_distances = scalar_field.grid.pos_arrow_distances;
+  var dlength = scalar_field.grid.pos_arrow_distances;
+  var neighbor_count = scalar_field.grid.neighbor_count;
+  var average = scratch;
   var x = result.x;
   var y = result.y;
   var z = result.z;
+  var arrow_distance = 0;
+  var average_distance = scalar_field.grid.average_distance;
+  var slope = 0;
+  var slope_magnitude = 0;
+  var from = 0;
+  var to = 0;
+  var max_slope_from = 0;
+  var PI = Math.PI;
+  //
   // NOTE: 
   // The naive implementation is to estimate the gradient based on each individual neighbor,
   //  then take the average between the estimates.
@@ -914,28 +977,30 @@ ScalarField.gradient = function (scalar_field, result) {
   //  then the gradient estimate along that dimension will be very big.
   // This will result in very strange behavior.
   //
-  // The correct implementation is to take a weighted sum of the position differentials across neighbors.
-  // The "weights" are estimates for the derivative along that axis - 
-  //  that is, the change in scalar_field across neighbors divided by the distance that separates neighbors.
-  // Take the weighted sum and scale it as if there were 3 neighbors instead of however many there are. 
-  // This is effectively what you do when you find the gradient using normal methods:
-  //  each component of the cartesian coordinate basis corresponds to a "neighbor" in our approach.
-  // We create a weighted sum between them, weighting by the derivative for each. 
-  //  There are already 3 "neighbors", one for each coordinate basis, so we don't do anything.
+  // The correct implementation is to use the Gauss-Green theorem: 
+  //   ∫∫∫ᵥ ∇ϕ dV = ∫∫ₐ ϕn̂ da
+  // so:
+  //   ∇ϕ = 1/V ∫∫ₐ ϕn̂ da
+  // so find flux out of an area, then divide by volume
+  // the area/volume is calculated for a circle that reaches halfway to neighboring vertices
+  Float32Raster.fill(x, 0);
+  Float32Raster.fill(y, 0);
+  Float32Raster.fill(z, 0);
+  var average_value = 0;
   for (var i = 0, li = arrows.length; i < li; i++) {
     arrow = arrows[i];
-    scalar_field_derivative = (scalar_field[arrow[1]] - scalar_field[arrow[0]]) / arrow_distances[i];
-    x[arrow[0]] += (dx[i] * scalar_field_derivative);
-    y[arrow[0]] += (dy[i] * scalar_field_derivative);
-    z[arrow[0]] += (dz[i] * scalar_field_derivative);
+    from = arrow[0];
+    to = arrow[1];
+    average_value = (scalar_field[to] - scalar_field[from]);
+    x[from] += average_value * dxhat[i] * PI * dlength[i]/neighbor_count[from];
+    y[from] += average_value * dyhat[i] * PI * dlength[i]/neighbor_count[from];
+    z[from] += average_value * dzhat[i] * PI * dlength[i]/neighbor_count[from];
   }
-  var neighbor_count = scalar_field.grid.neighbor_count;
-  var neighbor_count_i = 0;
-  for (var i = 0, li = neighbor_count.length; i < li; i++) {
-    neighbor_count_i = neighbor_count[i];
-    x[i] *= 3/neighbor_count_i;
-    y[i] *= 3/neighbor_count_i;
-    z[i] *= 3/neighbor_count_i;
+  var inverse_volume = 1 / (PI * (average_distance/2) * (average_distance/2));
+  for (var i = 0, li = scalar_field.length; i < li; i++) {
+    x[i] *= inverse_volume;
+    y[i] *= inverse_volume;
+    z[i] *= inverse_volume;
   }
   return result;
 };
@@ -946,56 +1011,55 @@ ScalarField.average_difference = function (scalar_field, result) {
   if (scalar_field === result) { throw "scalar_field" + ' and ' + "result" + ' cannot be the same'; }
   var arrows = scalar_field.grid.arrows;
   var arrow
+  Float32Raster.fill(result, 0);
   for (var i=0, li=arrows.length; i<li; ++i) {
       arrow = arrows[i];
       result[arrow[0]] += scalar_field[arrow[1]] - scalar_field[arrow[0]];
   }
-  var neighbor_lookup = scalar_field.grid.neighbor_lookup;
-  var neighbor_count = 0;
-  for (var i = 0, li = neighbor_lookup.length; i < li; i++) {
-      neighbor_count = neighbor_lookup[i].length;
-      result[i] /= neighbor_count;
+  var neighbor_count = scalar_field.grid.neighbor_count;
+  for (var i = 0, li = neighbor_count.length; i < li; i++) {
+      result[i] /= neighbor_count[i];
   }
   return result;
 };
 // This function computes the laplacian of a surface. 
-// The laplacian can be thought of as a metric for the average difference across space. 
+// The laplacian can be thought of as the average difference across space, per unit area. 
 // By applying it to a surface, we mean it's only done for the 2d surface of a 3d object. 
 // We assume all vertices in scalar_field.grid are equidistant on a surface. 
 // 
-// Let ε be a small number and eᵢ be a component of the basis (e.g. [1,0] or [0,1]) 
-// ∇²f = ∇ (     f(x+εeᵢ)     -     f(x-εeᵢ))      /  2ε 
-// ∇²f =   ((f(x+2εeᵢ) -f(x)) - (f(x) -f(x-2εeᵢ))) / (2ε)² 
-// ∇²f =   ( f(x+2εeᵢ) -f(x) 
-//           f(x-2εeᵢ) -f(x)) ) / (2ε)² 
-//   So for 2d: 
-// ∇²f =   ( f(x+2ε, y) - f(x,y) 
-//           f(x, y+2ε) - f(x,y) 
-//           f(x-2ε, y) - f(x,y) 
-//           f(x, y-2ε) - f(x,y) ) / (2ε)² 
+// So for 2d: 
+//
+// ∇⋅∇f = ∇⋅[ (f(x+dx) - f(x-dx)) / 2dx,  
+//            (f(x+dy) - f(x-dy)) / 2dy  ]
+//
+// ∇⋅∇f = d/dx (f(x+dx) - f(x-dx)) / 2dx  
+//      + d/dy (f(x+dy) - f(x-dy)) / 2dy
+//
+// ∇⋅∇f =  1/4 (f(x+2dx) - f(x)) / dxdx  
+//      +  1/4 (f(x-2dx) - f(x)) / dxdx  
+//      +  1/4 (f(x+2dy) - f(x)) / dydy
+//      +  1/4 (f(x-2dy) - f(x)) / dydy
 //  
-// Think of it as taking the sum of differences between the center point and four neighbors. 
+// Think of it as taking the average slope between four neighbors. 
 // That means if we have an arbitrary number of neighbors,  
-// we find the average difference and multiply it by 4. 
+// we find the average difference and divide by the average area covered by a point.
 ScalarField.laplacian = function (scalar_field, result) {
   result = result || Float32Raster(scalar_field.grid);
   if (!(scalar_field instanceof Float32Array)) { throw "scalar_field" + ' is not a ' + "Float32Array"; }
   if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   if (scalar_field === result) { throw "scalar_field" + ' and ' + "result" + ' cannot be the same'; }
-  for (var i = 0; i < result.length; i++) {
-    result[i] = -4*scalar_field[i];
-  }
   var arrows = scalar_field.grid.arrows;
-  var arrow;
+  var arrow
+  Float32Raster.fill(result, 0);
   for (var i=0, li=arrows.length; i<li; ++i) {
       arrow = arrows[i];
-      result[arrow[0]] += scalar_field[arrow[1]];
+      result[arrow[0]] += scalar_field[arrow[1]] - scalar_field[arrow[0]];
   }
   var neighbor_count = scalar_field.grid.neighbor_count;
-  var average_distance = scalar_field.grid.average_distance * scalar_field.grid.average_distance;
+  var average_distance = scalar_field.grid.average_distance;
+  var average_area = average_distance * average_distance;
   for (var i = 0, li = neighbor_count.length; i < li; i++) {
-      result[i] *= 4;
-      result[i] /= neighbor_count[i] * average_distance;
+      result[i] /= average_area * neighbor_count[i];
   }
   return result;
 };
@@ -1006,19 +1070,18 @@ ScalarField.diffusion_by_constant = function (scalar_field, constant, result, sc
   if (!(scalar_field instanceof Float32Array)) { throw "scalar_field" + ' is not a ' + "Float32Array"; }
   if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   if (!(scratch instanceof Float32Array)) { throw "scratch" + ' is not a ' + "Float32Array"; }
-  if (!(typeof constant == "number")) { throw "constant" + ' is not a ' + "number"; }
+  if (typeof constant != "number" || isNaN(constant) || !isFinite(constant)) { throw "constant" + ' is not a real number'; }
   var laplacian = scratch;
   var arrows = scalar_field.grid.arrows;
   var arrow
+  Float32Raster.fill(laplacian, 0);
   for (var i=0, li=arrows.length; i<li; ++i) {
       arrow = arrows[i];
       laplacian[arrow[0]] += scalar_field[arrow[1]] - scalar_field[arrow[0]];
   }
-  var neighbor_lookup = scalar_field.grid.neighbor_lookup;
-  var neighbor_count = 0;
-  for (var i = 0, li = neighbor_lookup.length; i < li; i++) {
-      neighbor_count = neighbor_lookup[i].length;
-      laplacian[i] /= neighbor_count;
+  var neighbor_count = scalar_field.grid.neighbor_count;
+  for (var i = 0, li = neighbor_count.length; i < li; i++) {
+      laplacian[i] /= neighbor_count[i];
   }
   for (var i=0, li=laplacian.length; i<li; ++i) {
       result[i] = scalar_field[i] + constant * laplacian[i];
@@ -1036,15 +1099,14 @@ ScalarField.diffusion_by_field = function (scalar_field1, scalar_field2, result,
   var laplacian = scratch;
   var arrows = scalar_field1.grid.arrows;
   var arrow
+  Float32Raster.fill(laplacian, 0);
   for (var i=0, li=arrows.length; i<li; ++i) {
       arrow = arrows[i];
       laplacian[arrow[0]] += scalar_field1[arrow[1]] - scalar_field1[arrow[0]];
   }
-  var neighbor_lookup = scalar_field1.grid.neighbor_lookup;
-  var neighbor_count = 0;
-  for (var i = 0, li = neighbor_lookup.length; i < li; i++) {
-      neighbor_count = neighbor_lookup[i].length;
-      laplacian[i] /= neighbor_count;
+  var neighbor_count = scalar_field1.grid.neighbor_count;
+  for (var i = 0, li = neighbor_count.length; i < li; i++) {
+      laplacian[i] /= neighbor_count[i];
   }
   for (var i=0, li=laplacian.length; i<li; ++i) {
       result[i] = scalar_field1[i] + scalar_field2[i] * laplacian[i];
@@ -2127,6 +2189,32 @@ VectorField.magnitude = function(vector_field, result) {
  }
  return result;
 }
+VectorField.normalize = function(vector_field, result) {
+ result = result || VectorRaster(vector_field.grid);
+ if (!(vector_field.x !== void 0) && !(vector_field.x instanceof Float32Array)) { throw "vector_field" + ' is not a vector raster'; }
+ if (!(result.x !== void 0) && !(result.x instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
+ var x = vector_field.x;
+ var y = vector_field.y;
+ var z = vector_field.z;
+ var ox = result.x;
+ var oy = result.y;
+ var oz = result.z;
+ var xi=0., yi=0., zi=0.;
+ var sqrt = Math.sqrt;
+ var mag = 0.;
+ for (var i = 0, li = x.length; i<li; i++) {
+  var xi = x[i];
+  var yi = y[i];
+  var zi = z[i];
+  mag = sqrt( xi * xi +
+     yi * yi +
+     zi * zi );
+  ox[i] = xi/(mag||1);
+  oy[i] = yi/(mag||1);
+  oz[i] = zi/(mag||1);
+ }
+ return result;
+}
 // ∂X
 // NOTE: should arrow_differential exist at all? 
 // Consider moving its code to grid
@@ -2141,41 +2229,62 @@ VectorField.arrow_differential = function(vector_field, result) {
  var y = result.y;
  var z = result.z;
  var arrows = vector_field.grid.arrows;
- var arrow_i_from = 0;
- var arrow_i_to = 0;
+ var from = 0;
+ var to = 0;
  for (var i = 0, li = arrows.length; i<li; i++) {
-  arrow_i_from = arrows[i][0];
-  arrow_i_to = arrows[i][1];
-  x[i] = x1[arrow_i_to] - x1[arrow_i_from];
-  y[i] = y1[arrow_i_to] - y1[arrow_i_from];
-  z[i] = z1[arrow_i_to] - z1[arrow_i_from];
+  from = arrows[i][0];
+  to = arrows[i][1];
+  x[i] = x1[to] - x1[from];
+  y[i] = y1[to] - y1[from];
+  z[i] = z1[to] - z1[from];
  }
  return result;
 }
+// This function computes the divergence of a 3d mesh. 
+// The divergence can be thought of as the amount by which vectors diverge around a point
+// By applying it to a surface, we mean it's only done for the 2d surface of a 3d object. 
+// This implementation does not have to assume all vertices are equidistant. 
+// 
+// So for 2d: 
+//  ∇⋅f = (fx(x+dx) - fx(x-dx)) / 2dx + 
+//        (fy(x+dy) - fy(x-dy)) / 2dy  
+//
+//  ∇⋅f =  1/2 (fx(x+dx) - fx(x-dx)) / dx + 
+//         1/2 (fy(x+dy) - fy(x-dy)) / dy  
+//
+// Think of it as taking the average change in projection:
+// For each neighbor:
+//   draw a vector to the neighbor
+//   find the projection between that vector and the field, 
+//   find how the projection changes along that vector
+//   find the average change across all neighbors
 VectorField.divergence = function(vector_field, result) {
  result = result || Float32Raster(vector_field.grid);
  if (!(vector_field.x !== void 0) && !(vector_field.x instanceof Float32Array)) { throw "vector_field" + ' is not a vector raster'; }
  if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
- var dpos = vector_field.grid.pos_arrow_differential;
- var dx = dpos.x;
- var dy = dpos.y;
- var dz = dpos.z;
+ var dlength = vector_field.grid.pos_arrow_distances;
  var arrows = vector_field.grid.arrows;
- var arrow_i_from = 0;
- var arrow_i_to = 0;
  var x = vector_field.x;
  var y = vector_field.y;
  var z = vector_field.z;
+ var arrow_pos_diff_normalized = vector_field.grid.pos_arrow_differential_normalized;
+ var dxhat = arrow_pos_diff_normalized.x;
+ var dyhat = arrow_pos_diff_normalized.y;
+ var dzhat = arrow_pos_diff_normalized.z;
+ var from = 0;
+ var to = 0;
+ Float32Raster.fill(result, 0);
  for (var i = 0, li = arrows.length; i<li; i++) {
-  arrow_i_from = arrows[i][0];
-  arrow_i_to = arrows[i][1];
-  result[arrow_i_from] += ( x[arrow_i_to] - x[arrow_i_from] ) / dx[i] +
-         ( y[arrow_i_to] - y[arrow_i_from] ) / dy[i] +
-         ( z[arrow_i_to] - z[arrow_i_from] ) / dz[i] ;
+  from = arrows[i][0];
+  to = arrows[i][1];
+        result[from] +=
+    ( (x[to] - x[from]) * dxhat[i]
+     +(y[to] - y[from]) * dyhat[i]
+     +(z[to] - z[from]) * dzhat[i]) / dlength[i];
  }
- var neighbor_lookup = vector_field.grid.neighbor_lookup;
- for (var i = 0, li = neighbor_lookup.length; i < li; i++) {
-  result[i] /= neighbor_lookup[i].length || 1;
+ var neighbor_count = vector_field.grid.neighbor_count;
+ for (var i = 0, li = neighbor_count.length; i < li; i++) {
+  result[i] /= neighbor_count[i] || 1;
  }
  return result;
 }
@@ -2475,6 +2584,84 @@ Float32Raster.set_ids_to_values = function(raster, id_array, value_array) {
       raster[id_array[i]] = value_array[i];
   }
   return raster;
+}
+//TODO: move this to its own namespace: Float32ScalarTransport
+Float32Raster.assert_nonnegative_quantity = function(quantity) {
+  if (!(quantity instanceof Float32Array)) { throw "quantity" + ' is not a ' + "Float32Array"; }
+  var quantity_i = 0.0;
+  for (var i=0, li=quantity.length; i<li; ++i) {
+    if (quantity[i] < 0) {
+      debugger;
+    }
+  }
+}
+Float32Raster.assert_conserved_quantity_delta = function(delta, threshold) {
+  if (!(delta instanceof Float32Array)) { throw "delta" + ' is not a ' + "Float32Array"; }
+  var average = Float32Dataset.average(delta);
+  if (average * average > threshold * threshold) {
+    debugger;
+  }
+}
+Float32Raster.assert_nonnegative_quantity_delta = function(delta, quantity) {
+  if (!(delta instanceof Float32Array)) { throw "delta" + ' is not a ' + "Float32Array"; }
+  if (!(quantity instanceof Float32Array)) { throw "quantity" + ' is not a ' + "Float32Array"; }
+  for (var i=0, li=delta.length; i<li; ++i) {
+    if (-delta[i] > quantity[i]) {
+      debugger;
+    }
+  }
+}
+Float32Raster.fix_nonnegative_quantity = function(quantity) {
+  if (!(quantity instanceof Float32Array)) { throw "quantity" + ' is not a ' + "Float32Array"; }
+  ScalarField.min_scalar(quantity, 0);
+}
+Float32Raster.fix_conserved_quantity_delta = function(delta, threshold) {
+  if (!(delta instanceof Float32Array)) { throw "delta" + ' is not a ' + "Float32Array"; }
+  var average = Float32Dataset.average(delta);
+  if (average * average > threshold * threshold) {
+    ScalarField.sub_scalar(delta, average, delta);
+  }
+}
+Float32Raster.fix_nonnegative_quantity_delta = function(delta, quantity) {
+  if (!(delta instanceof Float32Array)) { throw "delta" + ' is not a ' + "Float32Array"; }
+  if (!(quantity instanceof Float32Array)) { throw "quantity" + ' is not a ' + "Float32Array"; }
+  for (var i=0, li=delta.length; i<li; ++i) {
+    if (-delta[i] > quantity[i]) {
+      delta[i] = -quantity[i];
+    }
+  }
+}
+// NOTE: if anyone can find a shorter more intuitive name for this, I'm all ears
+Float32Raster.fix_nonnegative_conserved_quantity_delta = function(delta, quantity, scratch) {
+  var scratch = scratch || Float32Raster(delta.grid);
+  if (!(delta instanceof Float32Array)) { throw "delta" + ' is not a ' + "Float32Array"; }
+  if (!(quantity instanceof Float32Array)) { throw "quantity" + ' is not a ' + "Float32Array"; }
+  if (!(scratch instanceof Float32Array)) { throw "scratch" + ' is not a ' + "Float32Array"; }
+  var total_excess = 0.0;
+  var total_remaining = 0.0;
+  var remaining = scratch;
+  // clamp delta to quantity available
+  // keep tabs on excess where delta exceeds quantity
+  // also keep tabs on which cells still have quantity remaining after delta is applied
+  for (var i=0, li=delta.length; i<li; ++i) {
+    if (-delta[i] > quantity[i]) {
+      delta[i] = -quantity[i];
+      total_excess += -delta[i] - quantity[i];
+      remaining[i] = 0;
+    }
+    else {
+      remaining[i] = quantity[i] + delta[i];
+      total_remaining += quantity[i] + delta[i];
+    }
+  }
+  // go back and correct the excess by taxing from the remaining quantity
+  // the more remaining a cell has, the more it gets taxed
+  var remaining_tax = total_excess / total_remaining;
+  if (remaining_tax) {
+    for (var i=0, li=delta.length; i<li; ++i) {
+      delta[i] -= remaining[i] * remaining_tax;
+    }
+  }
 }
 // Uint16Raster represents a grid where each cell contains a 32 bit floating point value
 // A Uint16Raster is composed of two parts:
@@ -2891,13 +3078,37 @@ VectorRaster.get_nearest_values = function(value_raster, pos_raster, result) {
 var Float32RasterInterpolation = {};
 Float32RasterInterpolation.lerp = function(a,b, x, result){
     if (!(x instanceof Float32Array)) { throw "x" + ' is not a ' + "Float32Array"; }
+    result = result || Float32Raster(x.grid);
+    if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
     for (var i = 0, li = result.length; i < li; i++) {
-  result[i] = a + x[i]*(b-a);
+        result[i] = a + x[i]*(b-a);
+    }
+    return result;
+}
+Float32RasterInterpolation.lerp_fsf = function(a,b, x, result){
+    if (!(a instanceof Float32Array)) { throw "a" + ' is not a ' + "Float32Array"; }
+    if (!(x instanceof Float32Array)) { throw "x" + ' is not a ' + "Float32Array"; }
+    result = result || Float32Raster(x.grid);
+    if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
+    for (var i = 0, li = result.length; i < li; i++) {
+        result[i] = a[i] + x[i] * (b-a[i]);
+    }
+    return result;
+}
+Float32RasterInterpolation.lerp_sff = function(a,b, x, result){
+    if (!(b instanceof Float32Array)) { throw "b" + ' is not a ' + "Float32Array"; }
+    if (!(x instanceof Float32Array)) { throw "x" + ' is not a ' + "Float32Array"; }
+    result = result || Float32Raster(x.grid);
+    if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
+    for (var i = 0, li = result.length; i < li; i++) {
+        result[i] = a + x[i] * (b[i]-a);
     }
     return result;
 }
 Float32RasterInterpolation.clamp = function(x, min_value, max_value, result) {
     if (!(x instanceof Float32Array)) { throw "x" + ' is not a ' + "Float32Array"; }
+    result = result || Float32Raster(x.grid);
+    if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
     var x_i = 0.0;
     for (var i = 0, li = x.length; i < li; i++) {
         x_i = x[i];
@@ -2907,6 +3118,8 @@ Float32RasterInterpolation.clamp = function(x, min_value, max_value, result) {
 }
 Float32RasterInterpolation.smoothstep = function(edge0, edge1, x, result) {
     if (!(x instanceof Float32Array)) { throw "x" + ' is not a ' + "Float32Array"; }
+    result = result || Float32Raster(x.grid);
+    if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
  var fraction;
  var inverse_edge_distance = 1 / (edge1 - edge0);
     for (var i = 0, li = result.length; i < li; i++) {
