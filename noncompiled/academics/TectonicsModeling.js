@@ -7,12 +7,15 @@
 
 var TectonicsModeling = {};
 
-TectonicsModeling.get_thickness = function(sima, sial, thickness) {
-	return ScalarField.add_field(sima, sial, thickness);
+TectonicsModeling.get_thickness = function(crust, thickness) {
+	return ScalarField.add_field(crust.sima, crust.sial, thickness);
 }
 
-TectonicsModeling.get_density = function(sima, sial, age, density) {
+TectonicsModeling.get_density = function(crust, age, density) {
 	density = density || Float32Raster(sima.grid);
+
+	var sima = crust.sima;
+	var sial = crust.sial;
 
 	// NOTE: density does double duty for performance reasons
 	var fraction_of_lifetime = density;

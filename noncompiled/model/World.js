@@ -334,8 +334,8 @@ var World = (function() {
 
 	// update fields that are derived from others
 	function update_calculated_fields(crust) {
-		TectonicsModeling.get_thickness(crust.sima, crust.sial, crust.thickness);
-		TectonicsModeling.get_density(crust.sima, crust.sial, crust.age, crust.density);
+		TectonicsModeling.get_thickness(crust, crust.thickness);
+		TectonicsModeling.get_density(crust, crust.age, crust.density);
 		TectonicsModeling.get_subductability(crust.density, crust.subductability);
 		TectonicsModeling.get_displacement(crust.thickness, crust.density, world.mantleDensity, crust.displacement);
 	}
