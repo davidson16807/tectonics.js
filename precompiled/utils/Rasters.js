@@ -1,5 +1,7 @@
 'use strict';
 
+#define IS_PROD
+
 #ifndef IS_PROD
 #define ASSERT_IS_NOT_EQUAL(INPUT1, INPUT2) \
 	if (INPUT1 === INPUT2) { throw #INPUT1 + ' and ' + #INPUT2 + ' cannot be the same'; }
