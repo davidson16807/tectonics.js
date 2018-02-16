@@ -78,149 +78,18 @@ TectonicsModeling.get_displacement = function(thickness, density, mantleDensity,
  	}
  	return displacement;
 }
+
 TectonicsModeling.get_erosion = function(
 		displacement, sealevel, timestep,
-		sediment, 		sial, 		sima, 
-		sediment_delta, sial_delta, sima_delta, 
+		crust, crust_delta,
 		scratch){
 	scratch = scratch || Float32Raster(displacement.grid);
 
-	var precipitation = 7.8e5;
-	// ^^^ measured in meters of rain per million years
-	// global land average from wikipedia
-	var erosiveFactor = 1.8e-7; 
-	// ^^^ the rate of erosion per the rate of rainfall in that place
-	// measured in fraction of height difference per meters of rain per million years
-
-	var sediment_density = 2500;
-	var sial_density = 2700;
-	var sima_density = 2900;
-
-	// NOTE: erosion array does double duty for performance reasons
-	var water_height = scratch;
-	ScalarField.max_scalar(displacement, sealevel, water_height);
-
-
-	var arrows = displacement.grid.arrows;
-	var arrow;
-	var from = 0;
-	var to = 0;
-	var height_difference = 0.0;
-	var outbound_height_transfer_i = 0.0;
-
-	var outbound_height_transfer = Float32Raster(displacement.grid);
-	Float32Raster.fill(outbound_height_transfer, 0);
-
-	var sediment_thickness = 0;
-	var sial_thickness = 0;
-	var sima_thickness = 0;
-
-	var outbound_sediment_thickness_i;
-	var outbound_sial_thickness_i;
-	var outbound_sima_thickness_i;
-
-	var outbound_sediment_fraction = Float32Raster(displacement.grid);
-	var outbound_sial_fraction = Float32Raster(displacement.grid);
-	var outbound_sima_fraction = Float32Raster(displacement.grid);
-
-	// arrow_height_difference = ScalarField.arrow_differential(water_height); 
-    // outbound_height_transfer = VectorRaster.OfLength(arrow_height_difference.length, undefined)
-    
-    // step 1: find outbound height transferred from each cell
-	for (var i=0, li=arrows.length; i<li; ++i) {
-	    arrow = arrows[i];
-	    from = arrow[0];
-	    to = arrow[1];
-	    height_difference = water_height[from] - water_height[to];
-	    outbound_height_transfer[from] += height_difference > 0? height_difference * erosiveFactor * precipitation * timestep : 0;
-	}
-	// step 2: figure out which pools (sediment/sial/sima) to draw from when we transfer outbound height
-	// we prefer to draw from pools that lie on top, e.g. we draw from sediment first, sial second, sima third
-	for (var i=0, li=outbound_height_transfer.length; i<li; ++i) {
-		sediment_thickness = sediment[i]//     / sediment_density;
-		sial_thickness = sial[i]//     / sial_density;
-		sima_thickness = sima[i]//     / sima_density;
-
-		outbound_height_transfer_i = outbound_height_transfer[i];
-		outbound_sediment_thickness_i = outbound_height_transfer_i > sediment_thickness? sediment_thickness : outbound_height_transfer_i;
-		outbound_height_transfer_i -= outbound_sediment_thickness_i;
-		outbound_sial_thickness_i = outbound_height_transfer_i > sial_thickness? sial_thickness : outbound_height_transfer_i;
-		outbound_height_transfer_i -= outbound_sial_thickness_i;
-		outbound_sima_thickness_i = outbound_height_transfer_i > sima_thickness? sima_thickness : outbound_height_transfer_i;
-		//TODO: assert outbound_height_transfer_i == 0
-
-		outbound_height_transfer_i = outbound_height_transfer[i];
-		outbound_sediment_fraction[i] = outbound_sediment_thickness_i / outbound_height_transfer_i;
-		outbound_sial_fraction[i] = outbound_sial_thickness_i / outbound_height_transfer_i;
-		outbound_sima_fraction[i] = outbound_sima_thickness_i / outbound_height_transfer_i;
-	}
-
-	Float32Raster.fill(sediment_delta, 0);
-	Float32Raster.fill(sima_delta, 0);
-	Float32Raster.fill(sial_delta, 0);
-
-	var transfer = 0.0;
-
-	// step 3: 
-	for (var i=0, li=arrows.length; i<li; ++i) {
-	    arrow = arrows[i];
-	    from = arrow[0];
-	    to = arrow[1];
-	    height_difference = water_height[from] - water_height[to];
-	    outbound_height_transfer_i = height_difference > 0? height_difference * erosiveFactor * precipitation * timestep : 0;
-
-	    if (!isNaN(outbound_sediment_fraction[from])) { 
-	    	transfer = outbound_height_transfer_i * outbound_sediment_fraction[from];
-		    sediment_delta[from] -= transfer;
-		    sediment_delta[to] += transfer;
-	    }
-
-	    if (!isNaN(outbound_sial_fraction[from])) { 
-	    	transfer = outbound_height_transfer_i * outbound_sial_fraction[from];
-		    sial_delta[from] -= transfer;
-		    sial_delta[to] += transfer; // NOTE: sial converts to sediment upon transfer
-	    }
-
-	    if (!isNaN(outbound_sima_fraction[from])) { 
-	    	transfer = outbound_height_transfer_i * outbound_sima_fraction[from];
-		    sima_delta[from] -= transfer;
-		    sima_delta[to] += transfer;
-	    }
-	}
-}
-TectonicsModeling.get_erosion = function(
-		displacement, sealevel, timestep,
-		sediment, 		sial, 		sima, 
-		sediment_delta, sial_delta, sima_delta, 
-		scratch){
-	sial_delta = sial_delta || Float32Raster(displacement.grid);
-	scratch = scratch || Float32Raster(displacement.grid);
-
-	var precipitation = 7.8e5;
-	// ^^^ measured in meters of rain per million years
-	// global land average from wikipedia
-	var erosiveFactor = 1.8e-7; 
-	// ^^^ the rate of erosion per the rate of rainfall in that place
-	// measured in fraction of height difference per meters of rain per million years
-	var sial_density = 2700;
-
-	// NOTE: erosion array does double duty for performance reasons
-	var height_difference = sial_delta;
-	var water_height = scratch;
-	ScalarField.max_scalar(displacement, sealevel, water_height);
-	ScalarField.average_difference(water_height, height_difference);
-	ScalarField.mult_scalar(height_difference, precipitation * timestep * erosiveFactor, sial_delta)
-	// console.log(Float32Dataset.average(erosion));
-	return sial_delta;
+	var sial 		 	= crust.sial;
+	var sima 			= crust.sima;
 	
-}
-TectonicsModeling.get_erosion = function(
-		displacement, sealevel, timestep,
-		sediment, 		sial, 		sima, 
-		sediment_delta, sial_delta, sima_delta, 
-		scratch){
-	sial_delta = sial_delta || Float32Raster(displacement.grid);
-	scratch = scratch || Float32Raster(displacement.grid);
+	var sial_delta  	= crust_delta.sial;
+	var sima_delta 		= crust_delta.sima;
 
 	var precipitation = 7.8e5;
 	// ^^^ measured in meters of rain per million years

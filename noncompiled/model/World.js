@@ -138,7 +138,6 @@ var World = (function() {
 
 		var local_pos_of_global_cells = VectorRaster(grid); 
 		var localized_subductability = Float32Raster(grid); 
-		var localized_erosion = Float32Raster(grid); 
 		var localized_accretion = Float32Raster(grid); 
 
 		//global rifting/detaching variables
@@ -182,14 +181,19 @@ var World = (function() {
 		var fix_nonnegative_conserved_quantity_delta = Float32Raster.fix_nonnegative_conserved_quantity_delta;
 		var assert_nonnegative_quantity = Float32Raster.assert_nonnegative_quantity;
 
+		var resample_crust 	= Crust.get_ids;
+		var mult_crust 		= Crust.mult_field;
+        var fix_crust_delta	= Crust.fix_delta;
+       	var add_crust_delta	= Crust.add_delta;
+
 		var globalized_accretion = Float32Raster(grid); 
 		Float32Raster.fill(globalized_accretion, 0);
-		var globalized_erosion = Float32Raster(grid);
+		var globalized_erosion = new Crust({grid: grid});
+		var localized_erosion = new Crust({grid: grid});
 		// TectonicsModeling.get_erosion(displacement, world.SEALEVEL, timestep, globalized_erosion, globalized_scalar_field);
 		TectonicsModeling.get_erosion(
 			displacement, 		world.SEALEVEL, 	timestep,
-			Float32Raster(grid), 	world.sial, 			world.sima, 
-			Float32Raster(grid), 	globalized_erosion, 	Float32Raster(grid), 
+			world, globalized_erosion,
 			globalized_scalar_field
 		);
 
@@ -254,17 +258,16 @@ var World = (function() {
 	        }
 	        //erode
 	        if(ERODE) {
-            	resample_f32(globalized_erosion, global_ids_of_local_cells,				localized_erosion);
-            	resample 	(globalized_is_on_top, global_ids_of_local_cells,			localized_is_on_top);
-            	mult_field 	(localized_erosion, localized_is_on_top, 					localized_erosion);
+            	resample 		(globalized_is_on_top, global_ids_of_local_cells,		localized_is_on_top);
+            	resample_crust	(globalized_erosion, global_ids_of_local_cells,			localized_erosion);
+            	mult_crust 		(localized_erosion, localized_is_on_top, 				localized_erosion);
 
 		        // enforce constraint: erosion should never exceed amount of rock available
 		        // get_erosion() guarantees against this, but plate motion sometimes causes violations to this constraint
 		        // violations to constraint are usually small, so we just modify erosion after the fact to preserve the constraint
-		        fix_nonnegative_conserved_quantity_delta 
-		        			(localized_erosion, plate.sial);
+		        fix_crust_delta	(localized_erosion, plate);
 		        // assert_nonnegative_quantity(plate.sial);
-	        	add 	 	(plate.sial, localized_erosion, 							plate.sial);
+	        	add_crust_delta	(plate, localized_erosion, 								plate);
 		        // assert_nonnegative_quantity(plate.sial);
 	        }
 

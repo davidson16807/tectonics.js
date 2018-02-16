@@ -99,3 +99,24 @@ Crust.fill_into_selection = function(crust, rock_column, selection_raster, resul
 	fill(crust.sial, rock_column.sial, selection_raster, result_crust.sial);
 	fill(crust.age, rock_column.age, selection_raster, result_crust.age);
 }
+
+Crust.get_ids = function(crust, id_raster, result_crust) {
+	var get_ids = Float32Raster.get_ids;
+	get_ids(crust.sima, id_raster, result_crust.sima);
+	get_ids(crust.sial, id_raster, result_crust.sial);
+}
+Crust.mult_field = function(crust, field, result_crust) {
+	var mult_field = ScalarField.mult_field;
+	mult_field(crust.sima, field, result_crust.sima);
+	mult_field(crust.sial, field, result_crust.sial);
+}
+Crust.add_delta = function(crust, crust_delta, result_crust) {
+	var add_field = ScalarField.add_field;
+	add_field(crust.sima, crust_delta.sima, result_crust.sima);
+	add_field(crust.sial, crust_delta.sial, result_crust.sial);
+}
+Crust.fix_delta = function(crust_delta, crust) {
+	var fix = Float32Raster.fix_nonnegative_conserved_quantity_delta;
+	fix(crust_delta.sima, crust.sima);
+	fix(crust_delta.sial, crust.sial);
+}
