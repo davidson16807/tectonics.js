@@ -353,8 +353,8 @@
 
 	var view = new View(
 		new Grid( 
-			new THREEx.FibonacciSphereGeometry(1, 10000, fibGridFaceCache), 
-			{ voronoi_generator: function(points) {	return VoronoiSphere.FromJson(voronoiCache)	} }
+			new THREE.IcosahedronGeometry(1, 5), 
+			{ voronoi_generator: function(points) {	return VoronoiSphere.FromPos(points)	} }
 			// { voronoi_generator: VoronoiSphere.FromPos }
 		),
 		scalarDisplays.satellite, 
