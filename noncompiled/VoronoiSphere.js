@@ -1,4 +1,4 @@
-//Data structure mapping coordinates on a sphere to the nearest point in a kdtree
+//Data structure mapping coordinates on a unit spheroid to the nearest neighboring point in a set
 //Retrievals from the map are of O(1) complexity. The result resembles a voronoi diagram, hence the name.
 function VoronoiSphere(sides, cell_half_width, raster_dim_size){
 	this.sides = sides;
@@ -12,93 +12,119 @@ function VoronoiSphere(sides, cell_half_width, raster_dim_size){
 	this.raster_dim_size = raster_dim_size;
 }
 VoronoiSphere.FromPos = function (pos) {
-	//Feed locations into a kdtree for O(logN) lookups
-	points = [];
+	//Feed locations into a kdtrees for O(logN) lookups
 	var x = pos.x;
 	var y = pos.y;
 	var z = pos.z;
-	for(var i=0, il = x.length; i<il; i++){
-		points.push({x:x[i], y:y[i], z:z[i], i:i});
+
+	var radius=1; // Assume unit sphere
+	var area = 4*Math.PI*radius*radius;
+	var area_per_vertex = area / x.length;
+
+	var overlap = Math.sqrt(3*area_per_vertex); 
+	// NOTE: "overlap" is the overlap in regions that are covered by kd trees
+
+	var overlap2 = overlap * overlap;
+
+	var xy = [];
+	var yz = [];
+	var zx = [];
+	var yx = [];
+	var zy = [];
+	var xz = [];
+
+	// step 1: sort vertices by the side they occupy on a cube sphere
+	for (var i = 0, li = x.length; i<li; ++i){
+		xi = x[i];
+		yi = y[i];
+		zi = z[i];
+		xi2 = xi * xi;
+		yi2 = yi * yi;
+		zi2 = zi * zi;
+		if (xi2 > yi2 - overlap2 && xi2 > zi2 - overlap2) { // x is greatest
+			if (xi > 0) {
+				yz.push({x:yi, y:zi, i:i});
+			} else {
+				zy.push({x:zi, y:yi, i:i});
+			}
+		} 
+		if (yi2 > xi2 - overlap2 && yi2 > zi2 - overlap2) { // y is greatest
+			if (yi > 0) {
+				zx.push({x:zi, y:xi, i:i});
+			} else {
+				xz.push({x:xi, y:zi, i:i});
+			}
+		}
+		if (zi2 > xi2 - overlap2 && zi2 > yi2 - overlap2) { // z is greatest
+			if (zi > 0) {
+				xy.push({x:xi, y:yi, i:i});
+			} else {
+				yx.push({x:yi, y:xi, i:i});
+			}
+		}
 	}
-	var voronoiResolutionFactor = 2;
-	var getDistance = function(a,b) { 
-		return Math.pow(a.x - b.x, 2) +  Math.pow(a.y - b.y, 2) + Math.pow(a.z - b.z, 2); 
+
+	var sqrt = Math.sqrt;
+	var get_distance = function(a,b) { 
+		var ax = a.x;
+		var ay = a.y;
+		var az2 = 1 - ax*ax - ay*ay;
+		var az = sqrt(az2 > 0? az2 : 0);
+		var bx = b.x;
+		var by = b.y;
+		var bz = sqrt(1 - bx*bx - by*by);
+		return (ax - bx)*(ax - bx) +  (ay - by)*(ay - by) + (az - bz)*(az - bz); 
 	};
-	var kdtree = new kdTree(points, getDistance, ["x","y","z"]);
-	var voronoiPointNum = Math.pow(voronoiResolutionFactor * Math.sqrt(points.length), 2);
-	
-	//Now feed that kdtree into a Voronoi diagram for O(1) lookups
-	//If cached voronoi is already provided, use that
-	//If this seems like overkill, trust me - it's not
-	return VoronoiSphere.FromKDTree(voronoiPointNum, kdtree);
+
+	// step 2: generate one kdtree for each side of the cube sphere,
+	// and feed those kdtrees into a Voronoi diagram for O(1) lookups
+	// If this seems like overkill, trust me - it's not
+	return VoronoiSphere.FromKDTrees(xy.length, [
+		new kdTree(xy, get_distance, ["x","y"]),
+		new kdTree(yz, get_distance, ["x","y"]),
+		new kdTree(zx, get_distance, ["x","y"]),
+		new kdTree(yx, get_distance, ["x","y"]),
+		new kdTree(zy, get_distance, ["x","y"]),
+		new kdTree(xz, get_distance, ["x","y"]),
+	]);
 }
-VoronoiSphere.FromKDTree = function(pointsNum, kdtree) {
-	var cells_per_point = 8;
-	var circumference = 2*Math.PI;
-	var raster_dim_size = (cells_per_point * Math.sqrt(pointsNum) / circumference) | 0;
-	var raster_size = raster_dim_size * raster_dim_size;
+VoronoiSphere.FromKDTrees = function(pointsNum, kdtrees) {
+	var cells_per_point = 30;
+	var raster_size = cells_per_point * pointsNum;
+	var raster_dim_size = Math.round(Math.sqrt(raster_size)) | 0;
 	var cell_half_width = 2 / ((raster_dim_size - 1));
 
 	// names for Uint16Arrays follow naming conventions for 2-blades in geometric algebra
-	var xy = new Uint16Array(raster_size);
-	var yz = new Uint16Array(raster_size);
-	var zx = new Uint16Array(raster_size);
-	var yx = new Uint16Array(raster_size);
-	var zy = new Uint16Array(raster_size);
-	var xz = new Uint16Array(raster_size);
 
 	var sides = [
-		xy,
-		yz,
-		zx,
-		yx,
-		zy,
-		xz,
+		new Uint16Array(raster_size),
+		new Uint16Array(raster_size),
+		new Uint16Array(raster_size),
+		new Uint16Array(raster_size),
+		new Uint16Array(raster_size),
+		new Uint16Array(raster_size),
 	];
-	// population
-	var component_orders = [
-		// 0 indicates first dimension in grid
-		// 1 indicates second dimension in grid
-		// 2 indicates the dimension omitted from grid
-		[0,1,2],
-		[2,0,1],
-		[1,2,0],
-		[1,0,2],
-		[2,1,0],
-		[0,2,1],
-	];
+
 	var li = sides.length;
 	var lj = raster_dim_size;
 	var lk = raster_dim_size;
-	var pos = {x:0, y:0, z:0};
-	var raster = xy;
+	var pos = {x:0, y:0};
+	var raster = sides[0];
 	var raster_x = 0.0;
 	var raster_y = 0.0;
-	var raster_z = 0.0;
 	var raster_id = 0;
 	var nearest_id = 0;
-	var component_order = component_orders[0];
-	var raster_components = [];
-	var sqrt = Math.sqrt;
 	for (var i = 0; i < li; ++i) {
 		raster = sides[i];
-		component_order = component_orders[i];
 		for (var j = 0; j < lj; ++j) {
 			for (var k = 0; k < lk; ++k) {
 				// get position of the cell on the unit sphere
 				raster_x = j * cell_half_width - 1;
 				raster_y = k * cell_half_width - 1;
-				// reconstruct the dimension omitted from the grid using pythagorean theorem
-				raster_z = sqrt(1 - (raster_x * raster_x) - (raster_y * raster_y)) || 0;
-				raster_z *= i > 2? -1 : 1;
-				// translate from raster coordinates to absolute coordinates
-				raster_components = [raster_x, raster_y, raster_z];
-				pos = {x:0, y:0, z:0};
-				pos.x = raster_components[component_order[0]];
-				pos.y = raster_components[component_order[1]];
-				pos.z = raster_components[component_order[2]];
+				pos.x = raster_x;
+				pos.y = raster_y;
 				raster_id = j * raster_dim_size + k;
-				nearest_id = kdtree.nearest(pos,1)[0][0].i;
+				nearest_id = kdtrees[i].nearest(pos,1)[0][0].i;
 				raster[raster_id] = nearest_id;
 			}
 		}
