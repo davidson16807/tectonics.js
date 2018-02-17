@@ -22,7 +22,13 @@ VoronoiSphere.FromPos = function (pos, farthest_distance) {
 	}
 	var voronoiResolutionFactor = 2;
 	var getDistance = function(a,b) { 
-		return Math.pow(a.x - b.x, 2) +  Math.pow(a.y - b.y, 2) + Math.pow(a.z - b.z, 2); 
+		var ax = a.x;
+		var ay = a.y;
+		var az = a.z;
+		var bx = b.x;
+		var by = b.y;
+		var bz = b.z;
+		return (ax - bx)*(ax - bx) +  (ay - by)*(ay - by) + (az - bz)*(az - bz); 
 	};
 
 	var kdtree = new IntegerLattice(points, getDistance, farthest_distance);

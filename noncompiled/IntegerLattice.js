@@ -65,22 +65,17 @@ function IntegerLattice(points, getDistance, farthest_nearest_neighbor_distance)
 		var yi = cell_.y;
 		var zi = cell_.z;
 
-		var neighbors = [];
-		Array.prototype.push.apply(neighbors, lattice[cell_id(xi, yi, zi)] || []);
-		Array.prototype.push.apply(neighbors, lattice[cell_id(xi+1, yi, zi)] || []);
-		Array.prototype.push.apply(neighbors, lattice[cell_id(xi-1, yi, zi)] || []);
-		Array.prototype.push.apply(neighbors, lattice[cell_id(xi, yi+1, zi)] || []);
-		Array.prototype.push.apply(neighbors, lattice[cell_id(xi, yi-1, zi)] || []);
-		Array.prototype.push.apply(neighbors, lattice[cell_id(xi, yi, zi+1)] || []);
-		Array.prototype.push.apply(neighbors, lattice[cell_id(xi, yi, zi-1)] || []);
+		var neighbors = lattice[cell_id(xi, yi, zi)] || [];
+		var lattice_ = lattice;
 
 		var neighbor = neighbors[0];
 		var nearest_ = neighbors[0] || {x:NaN,y:NaN,z:NaN,i:-1};
 		var nearest_distance = Infinity;
 		var distance = 0.0;
+		var getDistance_ = getDistance;
 		for(var i=0, il = neighbors.length; i<il; i++){
 			neighbor = neighbors[i];
-			var distance = getDistance(point, neighbor);
+			var distance = getDistance_(point, neighbor);
 			if (distance < nearest_distance) {
 				nearest_distance = distance;
 				nearest_ = neighbor;
