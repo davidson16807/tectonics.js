@@ -47,6 +47,7 @@
 	<script src="noncompiled/academics/AtmosphericModeling.js"></script>
 	<script src="noncompiled/academics/BiosphereModeling.js"></script>
 	<script src="noncompiled/Logging.js"></script>
+	<script src="noncompiled/IntegerLattice.js"></script>
 	<script src="noncompiled/VoronoiSphere.js"></script>
 	<script src="noncompiled/Sphere.js"></script>
 	<script src="noncompiled/model/Crust.js"></script>
@@ -353,8 +354,11 @@
 
 	var view = new View(
 		new Grid( 
-			new THREE.IcosahedronGeometry(1, 5), 
-			{ voronoi_generator: function(points) {	return VoronoiSphere.FromPos(points)	} }
+			new THREE.IcosahedronGeometry(1, 6), 
+			{ voronoi_generator: function(points, farthest_distance) {	
+					return VoronoiSphere.FromPos(points, farthest_distance)	
+				} 
+			}
 			// { voronoi_generator: VoronoiSphere.FromPos }
 		),
 		scalarDisplays.satellite, 

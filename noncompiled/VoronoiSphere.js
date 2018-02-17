@@ -11,7 +11,7 @@ function VoronoiSphere(sides, cell_half_width, raster_dim_size){
 	this.cell_half_width = cell_half_width;
 	this.raster_dim_size = raster_dim_size;
 }
-VoronoiSphere.FromPos = function (pos) {
+VoronoiSphere.FromPos = function (pos, farthest_distance) {
 	//Feed locations into a kdtree for O(logN) lookups
 	points = [];
 	var x = pos.x;
@@ -24,7 +24,8 @@ VoronoiSphere.FromPos = function (pos) {
 	var getDistance = function(a,b) { 
 		return Math.pow(a.x - b.x, 2) +  Math.pow(a.y - b.y, 2) + Math.pow(a.z - b.z, 2); 
 	};
-	var kdtree = new kdTree(points, getDistance, ["x","y","z"]);
+
+	var kdtree = new IntegerLattice(points, getDistance, farthest_distance);
 	var voronoiPointNum = Math.pow(voronoiResolutionFactor * Math.sqrt(points.length), 2);
 	
 	//Now feed that kdtree into a Voronoi diagram for O(1) lookups
@@ -98,7 +99,7 @@ VoronoiSphere.FromKDTree = function(pointsNum, kdtree) {
 				pos.y = raster_components[component_order[1]];
 				pos.z = raster_components[component_order[2]];
 				raster_id = j * raster_dim_size + k;
-				nearest_id = kdtree.nearest(pos,1)[0][0].i;
+				nearest_id = kdtree.nearest(pos).i;
 				raster[raster_id] = nearest_id;
 			}
 		}
