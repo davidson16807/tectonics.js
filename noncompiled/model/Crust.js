@@ -23,6 +23,9 @@ function Crust(params) {
 	// sial is a conserved quantity - it is never created or destroyed without our explicit say-so
 	// This is to provide our model with a way to check for errors
 
+	this.sediment = Float32Raster(this.grid);
+	// "sediment" is the thickness of the component of sial that has weathered down to sediment
+	
 	this.sima = Float32Raster(this.grid);
 	// "sima" is the thickness of the denser, subductable component of the crust
 	// AKA "sima", "mafsic", or "oceanic" crust
@@ -50,6 +53,7 @@ Crust.get_value = function(crust, i) {
 		thickness 		:crust.thickness[i],
 		density 		:crust.density[i],
 		sima 			:crust.sima[i],
+		sediment 			:crust.sediment[i],
 		sial 			:crust.sial[i],
 		age 			:crust.age[i],
 	});
@@ -59,6 +63,7 @@ Crust.set_value = function(crust, i, rock_column) {
 	crust.thickness[i] 		= rock_column.thickness;
 	crust.density[i] 		= rock_column.density;
 	crust.sima[i] 			= rock_column.sima;
+	crust.sediment[i] 			= rock_column.sediment;
 	crust.sial[i] 			= rock_column.sial;
 	crust.age[i] 			= rock_column.age;
 }
@@ -68,6 +73,7 @@ Crust.copy = function(source, destination) {
 	copy(source.thickness, destination.thickness);
 	copy(source.density, destination.density);
 	copy(source.sima, destination.sima);
+	copy(source.sediment, destination.sediment);
 	copy(source.sial, destination.sial);
 	copy(source.age, destination.age);
 }
@@ -77,6 +83,7 @@ Crust.fill = function(crust, rock_column) {
 	fill(crust.thickness, rock_column.thickness);
 	fill(crust.density, rock_column.density);
 	fill(crust.sima, rock_column.sima);
+	fill(crust.sediment, rock_column.sediment);
 	fill(crust.sial, rock_column.sial);
 	fill(crust.age, rock_column.age);
 }
@@ -86,6 +93,7 @@ Crust.copy_into_selection = function(crust, copied_crust, selection_raster, resu
 	copy(source.thickness, copied_crust.thickness, selection_raster, result_crust.thickness);
 	copy(source.density, copied_crust.density, selection_raster, result_crust.density);
 	copy(source.sima, copied_crust.sima, selection_raster, result_crust.sima);
+	copy(source.sediment, copied_crust.sediment, selection_raster, result_crust.sediment);
 	copy(source.sial, copied_crust.sial, selection_raster, result_crust.sial);
 	copy(source.age, copied_crust.age, selection_raster, result_crust.age);
 }
@@ -96,6 +104,7 @@ Crust.fill_into_selection = function(crust, rock_column, selection_raster, resul
 	fill(crust.thickness, rock_column.thickness, selection_raster, result_crust.thickness);
 	fill(crust.density, rock_column.density, selection_raster, result_crust.density);
 	fill(crust.sima, rock_column.sima, selection_raster, result_crust.sima);
+	fill(crust.sediment, rock_column.sediment, selection_raster, result_crust.sediment);
 	fill(crust.sial, rock_column.sial, selection_raster, result_crust.sial);
 	fill(crust.age, rock_column.age, selection_raster, result_crust.age);
 }
@@ -103,20 +112,24 @@ Crust.fill_into_selection = function(crust, rock_column, selection_raster, resul
 Crust.get_ids = function(crust, id_raster, result_crust) {
 	var get_ids = Float32Raster.get_ids;
 	get_ids(crust.sima, id_raster, result_crust.sima);
+	get_ids(crust.sediment, id_raster, result_crust.sediment);
 	get_ids(crust.sial, id_raster, result_crust.sial);
 }
 Crust.mult_field = function(crust, field, result_crust) {
 	var mult_field = ScalarField.mult_field;
 	mult_field(crust.sima, field, result_crust.sima);
+	mult_field(crust.sediment, field, result_crust.sediment);
 	mult_field(crust.sial, field, result_crust.sial);
 }
 Crust.add_delta = function(crust, crust_delta, result_crust) {
 	var add_field = ScalarField.add_field;
 	add_field(crust.sima, crust_delta.sima, result_crust.sima);
+	add_field(crust.sediment, crust_delta.sediment, result_crust.sediment);
 	add_field(crust.sial, crust_delta.sial, result_crust.sial);
 }
 Crust.fix_delta = function(crust_delta, crust) {
 	var fix = Float32Raster.fix_nonnegative_conserved_quantity_delta;
 	fix(crust_delta.sima, crust.sima);
+	fix(crust_delta.sediment, crust.sediment);
 	fix(crust_delta.sial, crust.sial);
 }
