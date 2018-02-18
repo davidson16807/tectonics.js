@@ -1,6 +1,5 @@
-//Data structure mapping 3d coordinates onto 
-//Retrievals from the map are of O(1) complexity. The result resembles a voronoi diagram, hence the name.
-
+//Data structure mapping 3d coordinates onto a lattice for fast lookups 
+// lattice assumes that max distance to nearest neighbors will never exceed farthest_nearest_neighbor_distance
 function IntegerLattice(points, getDistance, farthest_nearest_neighbor_distance){
 
 	var lattice = [];
