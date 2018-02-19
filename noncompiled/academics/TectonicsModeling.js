@@ -89,9 +89,11 @@ TectonicsModeling.get_erosion = function(
 
 	var sial 		 	= crust.sial;
 	var sima 			= crust.sima;
+	var sediment 		= crust.sediment;
 	
 	var sial_delta  	= crust_delta.sial;
 	var sima_delta 		= crust_delta.sima;
+	var sediment_delta 	= crust_delta.sediment;
 
 	var precipitation = 7.8e5;
 	// ^^^ measured in meters of rain per million years
@@ -118,6 +120,7 @@ TectonicsModeling.get_erosion = function(
 	var height_difference = 0.0;
 	var outbound_height_transfer_i = 0.0;
   	var neighbor_count = displacement.grid.neighbor_count;
+  	var transfer = 0.0;
 
 	for (var i=0, li=arrows.length; i<li; ++i) {
 	    arrow = arrows[i];
@@ -127,16 +130,25 @@ TectonicsModeling.get_erosion = function(
 	    outbound_height_transfer[from] += height_difference > 0? height_difference * precipitation * timestep * erosiveFactor / neighbor_count[from] : 0;
 	}
 	for (var i=0, li=outbound_height_transfer.length; i<li; ++i) {
-		outbound_sial_fraction[i] = outbound_height_transfer[i] > sial[i]? (sial[i] > 0.0? sial[i] / outbound_height_transfer[i] : 0.0) : 1.0;
+		outbound_height_transfer_i = outbound_height_transfer[i];
+		outbound_sial_fraction[i] = outbound_height_transfer_i > sial[i]? (sial[i] > 0.0? sial[i] / outbound_height_transfer_i : 0.0) : 1.0;
+		outbound_height_transfer_i *= 1 - outbound_sial_fraction[i];
+		outbound_sediment_fraction[i] = outbound_height_transfer_i > sediment[i]? (sediment[i] > 0.0? sediment[i] / outbound_height_transfer_i : 0.0) : 1.0;
 	}
 	for (var i=0, li=arrows.length; i<li; ++i) {
 	    arrow = arrows[i];
 	    from = arrow[0];
 	    to = arrow[1];
 	    height_difference = water_height[from] - water_height[to];
-	    outbound_height_transfer_i = height_difference > 0? height_difference * precipitation * timestep * erosiveFactor * outbound_sial_fraction[from] / neighbor_count[from] : 0;
-	    sial_delta[from] -= outbound_height_transfer_i;
-	    sial_delta[to] += outbound_height_transfer_i;
+	    outbound_height_transfer_i = height_difference > 0? height_difference * precipitation * timestep * erosiveFactor / neighbor_count[from] : 0;
+	    
+	    transfer = outbound_height_transfer_i * outbound_sial_fraction[from];
+	    sial_delta[from] -= transfer;
+	    sial_delta[to] += transfer;
+
+	    transfer = outbound_height_transfer_i * outbound_sial_fraction[from];
+	    sediment_delta[from] -= transfer;
+	    sediment_delta[to] += transfer;
 	}
 }
 // get a map of plates using image segmentation and binary morphology
