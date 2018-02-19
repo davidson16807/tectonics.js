@@ -8,8 +8,12 @@
 var TectonicsModeling = {};
 
 TectonicsModeling.get_thickness = function(crust, thickness) {
+	thickness = thickness || Float32Raster(sima.grid);
+
 	ScalarField.add_field(crust.sima, crust.sial, thickness);
 	ScalarField.add_field(thickness, crust.sediment, thickness);
+
+	return thickness;
 }
 
 TectonicsModeling.get_density = function(crust, age, density) {
@@ -80,7 +84,67 @@ TectonicsModeling.get_displacement = function(thickness, density, mantleDensity,
  	}
  	return displacement;
 }
+// "weathering" is the process by which rock is converted to sediment 
+TectonicsModeling.get_weathering = function(
+		displacement, sealevel, timestep,
+		crust, crust_delta,
+		scratch){
+  scratch = scratch || Float32Raster(displacement.grid);
 
+  var sial 		 	= crust.sial;
+  var sima 			= crust.sima;
+  var sediment 		= crust.sediment;
+  
+  var sial_delta  	= crust_delta.sial;
+  var sima_delta 		= crust_delta.sima;
+  var sediment_delta 	= crust_delta.sediment;
+
+  var precipitation = 7.8e5; 
+  // ^^^ measured in meters of rain per million years 
+  // global land average from wikipedia 
+  var weathering_factor = 1.8e-7;  
+  // ^^^ the rate of weathering per the rate of rainfall in that place 
+  // measured in fraction of height difference per meters of rain per million years 
+  var critical_sediment_thickness = 10; 
+  // ^^^ the sediment thickness (in meters) at which bedrock weathering no longer occurs 
+ 
+  var sial_density = 2700; // kg/m^3 
+  var sediment_density = 2500 // kg/m^2, from Simoes et al. 2010 
+  var earth_surface_gravity = 9.8; // m/s^2 
+  var surface_gravity = 9.8; // m/s^2 
+   
+  var water_height = scratch;
+  ScalarField.max_scalar(displacement, sealevel, water_height);
+
+  var average_difference = ScalarField.average_difference(water_height); 
+  var weathering = scratch;
+  // NOTE: result array does double duty for performance reasons 
+ 
+  ScalarField.mult_scalar( 
+    average_difference,  
+    weathering_factor *       	// apply weathering factor to get height change per unit precip  
+    precipitation *         	// apply precip to get height change 
+    timestep *         			// 
+    // sial_density *           // apply density to get mass converted to sediment 
+    surface_gravity/earth_surface_gravity, //correct for planet's gravity 
+    weathering) 
+   
+  var bedrock_exposure = Float32Raster(displacement.grid); 
+  ScalarField.div_scalar(sediment,  
+    -critical_sediment_thickness 
+    // * sediment_density 
+    , bedrock_exposure); 
+  ScalarField.add_scalar(bedrock_exposure, 1, bedrock_exposure); 
+  ScalarField.max_scalar(bedrock_exposure, 0, bedrock_exposure); 
+ 
+  ScalarField.mult_field(weathering, bedrock_exposure, weathering); 
+   
+  ScalarField.min_field(weathering, sial, weathering); 
+  ScalarField.max_scalar(weathering, 0, weathering); 
+ 
+  ScalarField.sub_field(sial_delta, weathering, sial_delta); 
+  ScalarField.add_field(sediment_delta, weathering, sediment_delta); 
+} 
 TectonicsModeling.get_erosion = function(
 		displacement, sealevel, timestep,
 		crust, crust_delta,

@@ -261,6 +261,11 @@ scalarDisplays.sial 	= new ScalarHeatDisplay( { min: '6000.', max: '70000.',
 			return crust.sial;
 		} 
 	} );
+scalarDisplays.sediment 	= new ScalarHeatDisplay( { min: '0.', max: '5000.',  
+		getField: function (crust) {
+			return crust.sediment;
+		} 
+	} );
 scalarDisplays.thickness 	= new ScalarHeatDisplay( { min: '6000.', max: '70000.',  
 		getField: function (crust) {
 			return crust.thickness;
