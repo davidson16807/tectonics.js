@@ -76,7 +76,7 @@ JsonDeserializer.plate = function (plate_json, _world, options) {
 	var file_ids = new Uint16Array(Base64.decode(plate_json.ids));
 	Uint8Raster.set_ids_to_value	(plate.mask, 	file_ids, 1);
 	Float32Raster.set_ids_to_values	(plate.sima, 	file_ids, new Float32Array(Base64.decode(plate_json.sima)) );
-	Float32Raster.set_ids_to_values	(plate.sediment,file_ids, new Float32Array(Base64.decode(plate_json.sediment) );
+	Float32Raster.set_ids_to_values	(plate.sediment,file_ids, new Float32Array(Base64.decode(plate_json.sediment)) );
 	Float32Raster.set_ids_to_values	(plate.sial, 	file_ids, new Float32Array(Base64.decode(plate_json.sial)) );
 	Float32Raster.set_ids_to_values	(plate.age, 	file_ids, new Float32Array(Base64.decode(plate_json.age))  );
 
