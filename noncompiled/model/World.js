@@ -102,6 +102,10 @@ var World = (function() {
 		    resample 	(plate.sial, local_ids_of_global_cells, 								globalized_scalar_field);
 		    add_term 	(master.sial, globalized_scalar_field, globalized_plate_mask, 			master.sial);
 
+		    // add current plate thickness to master thickness wherever current plate exists
+		    resample 	(plate.sediment, local_ids_of_global_cells, 							globalized_scalar_field);
+		    add_term 	(master.sediment, globalized_scalar_field, globalized_plate_mask, 		master.sediment);
+
 		    // overwrite master wherever current plate is on top
 		    resample 	(plate.sima, local_ids_of_global_cells, 								globalized_scalar_field);
 		    copy_into 	(master.sima, globalized_scalar_field, globalized_is_on_top, 			master.sima);
