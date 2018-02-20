@@ -266,7 +266,8 @@ var World = (function() {
 		        fill_into(plate.mask, 1, localized_is_detaching,                 		plate.mask); 
 		        //accrete, part 1
 		        if(ACCRETE) {
-		        	mult_field	(plate.sial, localized_is_detaching,					localized_accretion);
+		        	TectonicsModeling.get_sial_type(plate, localized_accretion);
+		        	mult_field	(localized_accretion, localized_is_detaching,			localized_accretion);
 	            	resample_f32(localized_accretion, local_ids_of_global_cells,		globalized_scalar_field);
 	            	add 		(globalized_accretion, globalized_scalar_field, 		globalized_accretion);
 		        }

@@ -8,13 +8,22 @@
 var TectonicsModeling = {};
 
 TectonicsModeling.get_thickness = function(crust, thickness) {
-	thickness = thickness || Float32Raster(sima.grid);
+	thickness = thickness || Float32Raster(crust.grid);
 
 	ScalarField.add_field(crust.sima, crust.sial, thickness);
 	ScalarField.add_field(thickness, crust.sediment, thickness);
 
 	return thickness;
 }
+
+TectonicsModeling.get_sial_type = function(crust, thickness) {
+	thickness = thickness || Float32Raster(crust.grid);
+
+	ScalarField.add_field(crust.sial, crust.sediment, thickness);
+
+	return thickness;
+}
+
 
 TectonicsModeling.get_density = function(crust, age, density) {
 	var sima = crust.sima;
