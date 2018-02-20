@@ -199,6 +199,7 @@ var World = (function() {
 			world, globalized_erosion,
 			globalized_scalar_field
 		);
+		Crust.assert_conserved_delta(globalized_erosion, 1e-2);
 
 		var globalized_weathering = new Crust({grid: grid});
 		TectonicsModeling.get_weathering(
@@ -206,8 +207,9 @@ var World = (function() {
 			world, globalized_weathering,
 			globalized_scalar_field
 		);
+		Crust.assert_conserved_delta(globalized_weathering, 1e-2);
 
-		var globalized_conservative_deltas = new Crust({grid: grid})
+		var globalized_conservative_deltas = new Crust({grid: grid});
 		var localized_conservative_deltas = new Crust({grid: grid});
 		add_crust_delta(globalized_conservative_deltas, globalized_erosion, 	globalized_conservative_deltas);
 		add_crust_delta(globalized_conservative_deltas, globalized_weathering, 	globalized_conservative_deltas);

@@ -133,3 +133,8 @@ Crust.fix_delta = function(crust_delta, crust) {
 	fix(crust_delta.sediment, crust.sediment);
 	fix(crust_delta.sial, crust.sial);
 }
+Crust.assert_conserved_delta = function(crust_delta, threshold) {
+	Float32Raster.assert_conserved_quantity_delta(
+		TectonicsModeling.get_sial_type(crust_delta), threshold
+	);
+}
