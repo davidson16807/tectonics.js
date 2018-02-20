@@ -114,7 +114,7 @@ TectonicsModeling.get_weathering = function(
   var weathering_factor = 1.8e-7;  
   // ^^^ the rate of weathering per the rate of rainfall in that place 
   // measured in fraction of height difference per meters of rain per million years 
-  var critical_sediment_thickness = 10; 
+  var critical_sediment_thickness = 1; 
   // ^^^ the sediment thickness (in meters) at which bedrock weathering no longer occurs 
  
   var sial_density = 2700; // kg/m^3 
@@ -204,9 +204,9 @@ TectonicsModeling.get_erosion = function(
 	}
 	for (var i=0, li=outbound_height_transfer.length; i<li; ++i) {
 		outbound_height_transfer_i = outbound_height_transfer[i];
-		outbound_sial_fraction[i] = outbound_height_transfer_i > sial[i]? (sial[i] > 0.0? sial[i] / outbound_height_transfer_i : 0.0) : 1.0;
-		outbound_height_transfer_i *= 1 - outbound_sial_fraction[i];
 		outbound_sediment_fraction[i] = outbound_height_transfer_i > sediment[i]? (sediment[i] > 0.0? sediment[i] / outbound_height_transfer_i : 0.0) : 1.0;
+		outbound_height_transfer_i *= 1 - outbound_sediment_fraction[i];
+		outbound_sial_fraction[i] = outbound_height_transfer_i > sial[i]? (sial[i] > 0.0? sial[i] / outbound_height_transfer_i : 0.0) : 1.0;
 	}
 	for (var i=0, li=arrows.length; i<li; ++i) {
 	    arrow = arrows[i];
