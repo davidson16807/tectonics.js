@@ -138,3 +138,29 @@ Crust.assert_conserved_delta = function(crust_delta, threshold) {
 		TectonicsModeling.get_sial_type(crust_delta), threshold
 	);
 }
+Crust.assert_conserved_transport_delta = function(crust_delta, threshold) {
+	var assert = Float32Raster.assert_conserved_quantity_delta;
+	assert(crust_delta.sima, crust.sima);
+	assert(crust_delta.sediment, crust.sediment);
+	assert(crust_delta.sial, crust.sial);
+}
+Crust.assert_conserved_reaction_delta = function(crust_delta, threshold, scratch) {
+	var sum = scratch || Float32Raster(crust_delta.grid);
+	Float32Raster.fill(sum, 0);
+	Float32Raster.add_field(crust_delta.sima, sum);
+	Float32Raster.add_field(crust_delta.sediment, sum);
+	Float32Raster.add_field(crust_delta.sial, sum);
+	Float32Raster.mult_field(sum, sum, sum);
+	var is_not_conserved = Uint8Array.sum(ScalarField.gt_scalar(sum, threshold * threshold));
+	if (is_not_conserved) {
+		debugger;
+	}
+}
+Crust.rescale_continental = function(crust, target_average_continental_thickness, result_crust) {
+	var current_average_continental_thickness = Float32Dataset.average(TectonicsModeling.get_sial_type(crust));
+	var scalar = target_average_continental_thickness / current_average_continental_thickness;
+	var mult_field = ScalarField.mult_field;
+	mult_field(crust.sima, scalar, result_crust.sima);
+	mult_field(crust.sediment, scalar, result_crust.sediment);
+	mult_field(crust.sial, scalar, result_crust.sial);
+}
