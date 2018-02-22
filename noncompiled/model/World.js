@@ -16,6 +16,7 @@ var World = (function() {
 		this.plate_map = Uint8Raster(this.grid);
 		this.plate_count = Uint8Raster(this.grid);
 		this.asthenosphere_velocity = VectorRaster(this.grid);
+		this.average_sial_thickness = parameters['average_sial_thickness'] || 0;
 		this.meanAnomaly = parameters['meanAnomaly'] || 0;
 
 		// this.radius = parameters['radius'] || 6367;
@@ -210,9 +211,12 @@ var World = (function() {
 		Crust.assert_conserved_reaction_delta(globalized_weathering, 1e-2);
 
 		var globalized_conservative_deltas = new Crust({grid: grid});
-		var localized_conservative_deltas = new Crust({grid: grid});
+		var localized_crust_deltas = new Crust({grid: grid});
 		add_crust_delta(globalized_conservative_deltas, globalized_erosion, 	globalized_conservative_deltas);
 		add_crust_delta(globalized_conservative_deltas, globalized_weathering, 	globalized_conservative_deltas);
+
+		var globalized_conservation_correction_delta = new Crust({grid: grid}); 
+		TectonicsModeling.get_conservation_correction_delta(world, world.average_sial_thickness, globalized_conservation_correction_delta);
 
 		var RIFT = true;
 		var DETACH = true;
@@ -274,21 +278,28 @@ var World = (function() {
 	            	add 		(globalized_accretion, globalized_scalar_field, 		globalized_accretion);
 		        }
 	        }
+        	resample 		(globalized_is_on_top, global_ids_of_local_cells,			localized_is_on_top);
+
 	        //erode
 	        if(ERODE) {
-            	resample 		(globalized_is_on_top, global_ids_of_local_cells,		localized_is_on_top);
-            	resample_crust	(globalized_conservative_deltas, global_ids_of_local_cells,			localized_conservative_deltas);
-            	mult_crust 		(localized_conservative_deltas, localized_is_on_top, 				localized_conservative_deltas);
+            	resample_crust	(globalized_conservative_deltas, global_ids_of_local_cells,	localized_crust_deltas);
+            	mult_crust 		(localized_crust_deltas, localized_is_on_top, 				localized_crust_deltas);
 
 		        // enforce constraint: erosion should never exceed amount of rock available
 		        // get_erosion() guarantees against this, but plate motion sometimes causes violations to this constraint
 		        // violations to constraint are usually small, so we just modify erosion after the fact to preserve the constraint
-		        fix_crust_delta	(localized_conservative_deltas, plate);
+		        fix_crust_delta	(localized_crust_deltas, plate);
 		        // assert_nonnegative_quantity(plate.sial);
-	        	add_crust_delta	(plate, localized_conservative_deltas, 								plate);
+	        	add_crust_delta	(plate, localized_crust_deltas, 								plate);
 		        // assert_nonnegative_quantity(plate.sial);
 	        }
 
+		    // conservative deltas should guarantee against conservation errors, and we do assert against this, but plate motion sometimes causes violations to the conservation constraint
+		    // so we apply another delta to guarantee there is always the same amount of sial
+        	resample_crust	(globalized_conservation_correction_delta, global_ids_of_local_cells,	localized_crust_deltas);
+        	mult_crust 		(localized_crust_deltas, localized_is_on_top, 							localized_crust_deltas);
+		    fix_crust_delta	(localized_crust_deltas, plate);
+	        add_crust_delta	(plate, localized_crust_deltas, 										plate);
 
 	        //aging
 			ScalarField.add_scalar(plate.age, timestep, 								plate.age);

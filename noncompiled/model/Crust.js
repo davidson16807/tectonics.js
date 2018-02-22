@@ -156,11 +156,3 @@ Crust.assert_conserved_reaction_delta = function(crust_delta, threshold, scratch
 		debugger;
 	}
 }
-Crust.rescale_continental = function(crust, target_average_continental_thickness, result_crust) {
-	var current_average_continental_thickness = Float32Dataset.average(TectonicsModeling.get_sial_type(crust));
-	var scalar = target_average_continental_thickness / current_average_continental_thickness;
-	var mult_field = ScalarField.mult_field;
-	mult_field(crust.sima, scalar, result_crust.sima);
-	mult_field(crust.sediment, scalar, result_crust.sediment);
-	mult_field(crust.sial, scalar, result_crust.sial);
-}
