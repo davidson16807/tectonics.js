@@ -29,7 +29,7 @@ WorldGenerator.generate = function (world, height_ranks, hypsography, control_po
 	heights.sort(function(a,b) { return a-b; });
  	
 	// Our model does not work directly with elevation.
-	// We must express elevation in terms of thickness/density
+	// We must express elevation in terms of age and sial/sima quantities
 	// To do this, we start off with a set of rock column templates expressing
 	// what thickness/density should look like at a given density.
 	// We then interpolate between these templated values.
@@ -50,6 +50,8 @@ WorldGenerator.generate = function (world, height_ranks, hypsography, control_po
 			}
 		};
 	};
+
+	world.average_sial_thickness = Float32Dataset.average(TectonicsModeling.get_sial_type(world));
 };
 
 WorldGenerator.early_earth_hypsography = function() {
