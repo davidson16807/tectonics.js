@@ -10,7 +10,11 @@ var TectonicsModeling = {};
 TectonicsModeling.get_thickness = function(crust, thickness) {
 	return ScalarField.add_field(crust.sima, crust.sial, thickness);
 }
-
+TectonicsModeling.get_sial_type = function(crust, thickness) { 
+  thickness = thickness || Float32Raster(crust.grid); 
+  Float32Raster.copy(crust.sial, thickness);
+  return thickness;
+} 
 TectonicsModeling.get_density = function(crust, age, density) {
 	density = density || Float32Raster(sima.grid);
 
@@ -174,12 +178,10 @@ TectonicsModeling.get_plate_map = function(vector_field, segment_num, min_segmen
 TectonicsModeling.get_conservation_correction_delta = function(crust, target_average_continental_thickness, result_crust) {
 	var current_average_continental_thickness = Float32Dataset.average(TectonicsModeling.get_sial_type(crust));
 	if (isNaN(current_average_continental_thickness - current_average_continental_thickness)) {
-		Float32Raster.fill(result_crust.sediment, 0);
 		Float32Raster.fill(result_crust.sial, 0);
 		return;
 	}
 	var scalar = target_average_continental_thickness / current_average_continental_thickness - 1.0;
 	var mult_scalar = ScalarField.mult_scalar;
-	mult_scalar(crust.sediment, scalar, result_crust.sediment);
 	mult_scalar(crust.sial, scalar, result_crust.sial);
 }

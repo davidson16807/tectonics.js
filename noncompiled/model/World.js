@@ -190,7 +190,7 @@ var World = (function() {
 		var globalized_accretion = Float32Raster(grid); 
 		Float32Raster.fill(globalized_accretion, 0);
 		var globalized_erosion = new Crust({grid: grid});
-		var localized_erosion = new Crust({grid: grid});
+		var localized_crust_deltas = new Crust({grid: grid});
 		// TectonicsModeling.get_erosion(displacement, world.SEALEVEL, timestep, globalized_erosion, globalized_scalar_field);
 		TectonicsModeling.get_erosion(
 			displacement, 		world.SEALEVEL, 	timestep,
@@ -266,15 +266,15 @@ var World = (function() {
 	        //erode
 	        if(ERODE) {
             	resample 		(globalized_is_on_top, global_ids_of_local_cells,		localized_is_on_top);
-            	resample_crust	(globalized_erosion, global_ids_of_local_cells,			localized_erosion);
-            	mult_crust 		(localized_erosion, localized_is_on_top, 				localized_erosion);
+            	resample_crust	(globalized_erosion, global_ids_of_local_cells,			localized_crust_deltas);
+            	mult_crust 		(localized_crust_deltas, localized_is_on_top, 				localized_crust_deltas);
 
 		        // enforce constraint: erosion should never exceed amount of rock available
 		        // get_erosion() guarantees against this, but plate motion sometimes causes violations to this constraint
 		        // violations to constraint are usually small, so we just modify erosion after the fact to preserve the constraint
-		        fix_crust_delta	(localized_erosion, plate);
+		        fix_crust_delta	(localized_crust_deltas, plate);
 		        // assert_nonnegative_quantity(plate.sial);
-	        	add_crust_delta	(plate, localized_erosion, 								plate);
+	        	add_crust_delta	(plate, localized_crust_deltas, 								plate);
 		        // assert_nonnegative_quantity(plate.sial);
 	        }
 
