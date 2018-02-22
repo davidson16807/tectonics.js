@@ -116,7 +116,7 @@ var World = (function() {
 		}
 		update_calculated_fields(master);
 	}
-	function update_plates(world, timestep, plates) { 
+	function update_plates(world, timestep, plates) {
 	  	var plate; 
 	  	var plate_count = world.plate_count;
 	  	var plate_map = world.plate_map;
@@ -199,7 +199,7 @@ var World = (function() {
 			world, globalized_erosion,
 			globalized_scalar_field
 		);
-		Crust.assert_conserved_delta(globalized_erosion, 1e-2);
+		Crust.assert_conserved_transport_delta(globalized_erosion, 1e-2);
 
 		var globalized_weathering = new Crust({grid: grid});
 		TectonicsModeling.get_weathering(
@@ -207,7 +207,7 @@ var World = (function() {
 			world, globalized_weathering,
 			globalized_scalar_field
 		);
-		Crust.assert_conserved_delta(globalized_weathering, 1e-2);
+		Crust.assert_conserved_reaction_delta(globalized_weathering, 1e-2);
 
 		var globalized_conservative_deltas = new Crust({grid: grid});
 		var localized_conservative_deltas = new Crust({grid: grid});
