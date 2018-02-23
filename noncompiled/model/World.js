@@ -196,7 +196,7 @@ var World = (function() {
 			world, globalized_erosion,
 			globalized_scalar_field
 		);
-		Crust.assert_conserved_delta(globalized_erosion, 1e-2);
+		Crust.assert_conserved_transport_delta(globalized_erosion, 1e-2); 
 
 		var RIFT = true;
 		var DETACH = true;
