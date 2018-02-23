@@ -187,6 +187,9 @@ var World = (function() {
        	var add_crust_delta	= Crust.add_delta;
 
 		var globalized_accretion = Float32Raster(grid); 
+
+		var old_quantity = Float32Dataset.average(TectonicsModeling.get_sial_type(world));
+
 		Float32Raster.fill(globalized_accretion, 0);
 		var globalized_erosion = new Crust({grid: grid});
 		var localized_erosion = new Crust({grid: grid});
@@ -197,10 +200,40 @@ var World = (function() {
 			globalized_scalar_field
 		);
 		Crust.assert_conserved_transport_delta(globalized_erosion, 1e-2); 
+		
+		for (var i=0, li=plates.length; i<li; ++i) {
+		    plate = plates[i];
+
+		    local_ids_of_global_cells = plate.local_ids_of_global_cells;
+		    global_ids_of_local_cells = plate.global_ids_of_local_cells;
+
+			equals 			(plate_map, i, 												globalized_is_on_top);
+        	resample 		(globalized_is_on_top, global_ids_of_local_cells,			localized_is_on_top);
+
+        	resample 		(globalized_is_on_top, global_ids_of_local_cells,		localized_is_on_top);
+        	resample_crust	(globalized_erosion, global_ids_of_local_cells,			localized_erosion);
+        	mult_crust 		(localized_erosion, localized_is_on_top, 				localized_erosion);
+
+	        // enforce constraint: erosion should never exceed amount of rock available
+	        // get_erosion() guarantees against this, but plate motion sometimes causes violations to this constraint
+	        // violations to constraint are usually small, so we just modify erosion after the fact to preserve the constraint
+	        fix_crust_delta	(localized_erosion, plate);
+	        // assert_nonnegative_quantity(plate.sial);
+        	add_crust_delta	(plate, localized_erosion, 								plate);
+	        // assert_nonnegative_quantity(plate.sial);
+
+	        //aging
+			ScalarField.add_scalar(plate.age, timestep, 								plate.age);
+
+		}
+
+		merge_plates_to_master(plates, world);
+		var new_quantity = Float32Dataset.average(TectonicsModeling.get_sial_type(world));
+
+		// console.log(new_quantity - old_quantity);
 
 		var RIFT = true;
 		var DETACH = true;
-		var ERODE = true;
 		var ACCRETE = true;
 
 	    //shared variables for detaching and rifting
@@ -257,25 +290,9 @@ var World = (function() {
 	            	add 		(globalized_accretion, globalized_scalar_field, 		globalized_accretion);
 		        }
 	        }
-	        //erode
-	        if(ERODE) {
-            	resample 		(globalized_is_on_top, global_ids_of_local_cells,		localized_is_on_top);
-            	resample_crust	(globalized_erosion, global_ids_of_local_cells,			localized_erosion);
-            	mult_crust 		(localized_erosion, localized_is_on_top, 				localized_erosion);
-
-		        // enforce constraint: erosion should never exceed amount of rock available
-		        // get_erosion() guarantees against this, but plate motion sometimes causes violations to this constraint
-		        // violations to constraint are usually small, so we just modify erosion after the fact to preserve the constraint
-		        fix_crust_delta	(localized_erosion, plate);
-		        // assert_nonnegative_quantity(plate.sial);
-	        	add_crust_delta	(plate, localized_erosion, 								plate);
-		        // assert_nonnegative_quantity(plate.sial);
-	        }
-
-
-	        //aging
-			ScalarField.add_scalar(plate.age, timestep, 								plate.age);
 		}
+
+		// apply accretion
 		for (var i=0, li=plates.length; i<li; ++i) {
 		    plate = plates[i];
 
@@ -291,6 +308,10 @@ var World = (function() {
 	        	add_term 	(plate.sial, localized_accretion, localized_is_on_top,		plate.sial);
 	        }
 		}
+
+		// merge_plates_to_master(plates, world);
+		// var new_quantity2 = Float32Dataset.average(TectonicsModeling.get_sial_type(world));
+		// console.log(new_quantity2-new_quantity);
 	}
 
 	World.prototype.SEALEVEL = 3682;
