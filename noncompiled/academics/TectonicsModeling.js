@@ -10,7 +10,11 @@ var TectonicsModeling = {};
 TectonicsModeling.get_thickness = function(crust, thickness) {
 	return ScalarField.add_field(crust.sima, crust.sial, thickness);
 }
-
+TectonicsModeling.get_sial_type = function(crust, thickness) {  
+  thickness = thickness || Float32Raster(crust.grid);  
+  Float32Raster.copy(crust.sial, thickness); 
+  return thickness; 
+}  
 TectonicsModeling.get_density = function(crust, age, density) {
 	density = density || Float32Raster(sima.grid);
 
