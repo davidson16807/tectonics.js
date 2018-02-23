@@ -145,11 +145,25 @@ Float32Raster.set_ids_to_values = function(raster, id_array, value_array) {
   return raster;
 }
 
+// example: Float32Raster.add_values_to_ids(local, local_ids_of_global_cells, global, local);
+// NOTE: this differs from set_ids_to_values - 
+//   in the event an id is mentioned twice in id_array, add_values_to_ids will add those values together
+Float32Raster.add_values_to_ids = function(raster1, id_array, raster2, result) {
+  if (raster1 !== result) {
+    Float32Raster.copy(raster1, result);
+  }
+  
+  var id_array_i = 0;
+  for (var i=0, li=raster2.length; i<li; ++i) {
+    id_array_i = id_array[i];
+    result[id_array_i] = result[id_array_i] + raster2[i];
+  }
+  return result;
+}
 
 
 
-
-//TODO: move this to its own namespace: Float32ScalarTransport
+//TODO: MOVE THIS TO ITS OWN NAMESPACE! "Float32ScalarTransport"
 Float32Raster.assert_nonnegative_quantity = function(quantity) {
   ASSERT_IS_ARRAY(quantity, Float32Array)
 
