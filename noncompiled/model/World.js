@@ -244,7 +244,7 @@ var World = (function() {
 	        }
 	        //detach
 	        if(DETACH){
-		        fill_into(plate.mask, 1, localized_is_detaching,                 		plate.mask); 
+		        fill_into(plate.mask, 0, localized_is_detaching,                 		plate.mask); 
 		        //accrete, part 1
 		        if(ACCRETE) {
 		        	mult_field	(plate.sial, localized_is_detaching,					localized_accretion);
