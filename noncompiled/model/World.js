@@ -1,6 +1,5 @@
 'use strict';
 
-
 var World = (function() {
 	function World(parameters) {
 		Crust.call(this, parameters);
@@ -187,13 +186,10 @@ var World = (function() {
        	var add_crust_delta	= Crust.add_delta;
 
 		var globalized_accretion = Float32Raster(grid); 
-
-		var old_quantity = Float32Dataset.average(TectonicsModeling.get_sial_type(world));
-
 		Float32Raster.fill(globalized_accretion, 0);
+		
 		var globalized_erosion = new Crust({grid: grid});
 		var localized_erosion = new Crust({grid: grid});
-		// TectonicsModeling.get_erosion(displacement, world.SEALEVEL, timestep, globalized_erosion, globalized_scalar_field);
 		TectonicsModeling.get_erosion(
 			displacement, 		world.SEALEVEL, 	timestep,
 			world, globalized_erosion,
@@ -226,11 +222,6 @@ var World = (function() {
 			ScalarField.add_scalar(plate.age, timestep, 								plate.age);
 
 		}
-
-		merge_plates_to_master(plates, world);
-		var new_quantity = Float32Dataset.average(TectonicsModeling.get_sial_type(world));
-
-		// console.log(new_quantity - old_quantity);
 
 		var RIFT = true;
 		var DETACH = true;
@@ -308,10 +299,6 @@ var World = (function() {
 	        	add_term 	(plate.sial, localized_accretion, localized_is_on_top,		plate.sial);
 	        }
 		}
-
-		// merge_plates_to_master(plates, world);
-		// var new_quantity2 = Float32Dataset.average(TectonicsModeling.get_sial_type(world));
-		// console.log(new_quantity2-new_quantity);
 	}
 
 	World.prototype.SEALEVEL = 3682;
