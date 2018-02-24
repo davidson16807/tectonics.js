@@ -64,7 +64,6 @@
 	<script src="noncompiled/view/View.js"></script>
 	<script src="noncompiled/name-gen/NameGenerator.js"></script>
 	<script src="noncompiled/name-gen/NameCorpii.js"></script>
-	<script src="noncompiled/Cached.js"></script>
 	<script src="noncompiled/JsonSerializer.js"></script>
 </head>
 <body>
@@ -348,12 +347,18 @@
 	var BlockUpdate = false;
 	var IsProd = false;
 
-   var autosave_period = parseInt(querystring['autosave_period'] || '0');
-   var autosave_timestamp = 0;
+	var resolution      = parseInt(querystring['resolution'] || '5');
+	var start_speed     = parseInt(querystring['speed']      || '5');
+	var autosave_period = parseInt(querystring['autosave']   || '0');
+	var autosave_timestamp = 0;
+
+	if (resolution > 6) {
+		resolution = 6;
+	};
 
 	var view = new View(
 		new Grid( 
-			new THREE.IcosahedronGeometry(1, 5), 
+			new THREE.IcosahedronGeometry(1, resolution),
 			{ voronoi_generator: function(points, farthest_distance) {	
 					return VoronoiSphere.FromPos(points, farthest_distance)	
 				} 
@@ -365,6 +370,7 @@
 		vertexShaders['orthographic']
 	);
 	var model = new Model();
+	model.MegaYearPerSecond = start_speed;
 
 	var world = void 0;
 	if (querystring['load']) {
@@ -676,7 +682,7 @@
 	  el: '#time-menu',
 	  data: {
 	  	paused: false,
-	  	speed: 5,
+		speed: start_speed,
 	  	age: 0,
 	  	season: 0,
 	  	isSeasonVisible: false,
