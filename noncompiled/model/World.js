@@ -1,6 +1,7 @@
 'use strict';
 
-
+var accrete_leak = 0.0;
+var erosion_leak = 0.0;
 var World = (function() {
 	function World(parameters) {
 		Crust.call(this, parameters);
@@ -188,7 +189,7 @@ var World = (function() {
 
 		var globalized_accretion = Float32Raster(grid); 
 
-		var old_quantity = Float32Dataset.average(TectonicsModeling.get_sial_type(world));
+		var pre_update = Float32Dataset.average(TectonicsModeling.get_sial_type(world));
 
 		Float32Raster.fill(globalized_accretion, 0);
 		var globalized_erosion = new Crust({grid: grid});
@@ -228,9 +229,8 @@ var World = (function() {
 		}
 
 		merge_plates_to_master(plates, world);
-		var new_quantity = Float32Dataset.average(TectonicsModeling.get_sial_type(world));
-
-		// console.log(new_quantity - old_quantity);
+		var post_erosion = Float32Dataset.average(TectonicsModeling.get_sial_type(world));
+		erosion_leak += post_erosion - pre_update;
 
 		var RIFT = true;
 		var DETACH = true;
@@ -309,9 +309,14 @@ var World = (function() {
 	        }
 		}
 
+		merge_plates_to_master(plates, world);
+		var post_accrete = Float32Dataset.average(TectonicsModeling.get_sial_type(world));
+		accrete_leak += post_accrete - post_erosion;
+
+
 		// merge_plates_to_master(plates, world);
-		// var new_quantity2 = Float32Dataset.average(TectonicsModeling.get_sial_type(world));
-		// console.log(new_quantity2-new_quantity);
+		// var post_accrete = Float32Dataset.average(TectonicsModeling.get_sial_type(world));
+		// console.log(post_accrete-post_erosion);
 	}
 
 	World.prototype.SEALEVEL = 3682;
