@@ -1,4 +1,4 @@
-//Data structure mapping coordinates on a sphere to the nearest point in a kdtree
+//Data structure mapping coordinates on a sphere to the nearest neighbor
 //Retrievals from the map are of O(1) complexity. The result resembles a voronoi diagram, hence the name.
 function VoronoiSphere(sides, cell_half_width, raster_dim_size){
 	this.sides = sides;
@@ -11,8 +11,8 @@ function VoronoiSphere(sides, cell_half_width, raster_dim_size){
 	this.cell_half_width = cell_half_width;
 	this.raster_dim_size = raster_dim_size;
 }
-VoronoiSphere.FromPos = function (pos) {
-	//Feed locations into a kdtree for O(logN) lookups
+VoronoiSphere.FromPos = function (pos, farthest_distance) {
+	//Feed locations into an integer lattice for fast lookups
 	points = [];
 	var x = pos.x;
 	var y = pos.y;
@@ -22,17 +22,18 @@ VoronoiSphere.FromPos = function (pos) {
 	}
 	var voronoiResolutionFactor = 2;
 	var getDistance = function(a,b) { 
-		return Math.pow(a.x - b.x, 2) +  Math.pow(a.y - b.y, 2) + Math.pow(a.z - b.z, 2); 
+		return (a.x - b.x)*(a.x - b.x) +  (a.y - b.y)*(a.y - b.y) + (a.z - b.z)*(a.z - b.z); 
 	};
-	var kdtree = new kdTree(points, getDistance, ["x","y","z"]);
+
+	var lattice = new IntegerLattice(points, getDistance, farthest_distance);
 	var voronoiPointNum = Math.pow(voronoiResolutionFactor * Math.sqrt(points.length), 2);
 	
-	//Now feed that kdtree into a Voronoi diagram for O(1) lookups
+	//Now feed that lattice into a Voronoi diagram for O(1) lookups
 	//If cached voronoi is already provided, use that
 	//If this seems like overkill, trust me - it's not
-	return VoronoiSphere.FromKDTree(voronoiPointNum, kdtree);
+	return VoronoiSphere.FromIntegerLattice(voronoiPointNum, lattice);
 }
-VoronoiSphere.FromKDTree = function(pointsNum, kdtree) {
+VoronoiSphere.FromIntegerLattice = function(pointsNum, lattice) {
 	var cells_per_point = 8;
 	var circumference = 2*Math.PI;
 	var raster_dim_size = (cells_per_point * Math.sqrt(pointsNum) / circumference) | 0;
@@ -98,7 +99,7 @@ VoronoiSphere.FromKDTree = function(pointsNum, kdtree) {
 				pos.y = raster_components[component_order[1]];
 				pos.z = raster_components[component_order[2]];
 				raster_id = j * raster_dim_size + k;
-				nearest_id = kdtree.nearest(pos,1)[0][0].i;
+				nearest_id = lattice.nearest(pos).i;
 				raster[raster_id] = nearest_id;
 			}
 		}

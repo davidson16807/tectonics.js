@@ -244,7 +244,7 @@ var World = (function() {
 	        }
 	        //detach
 	        if(DETACH){
-		        fill_into(plate.mask, 1, localized_is_detaching,                 		plate.mask); 
+		        fill_into(plate.mask, 0, localized_is_detaching,                 		plate.mask); 
 		        //accrete, part 1
 		        if(ACCRETE) {
 		        	mult_field	(plate.sial, localized_is_detaching,					localized_accretion);
@@ -278,9 +278,11 @@ var World = (function() {
 		    local_ids_of_global_cells = plate.local_ids_of_global_cells;
 		    global_ids_of_local_cells = plate.global_ids_of_local_cells;
 
+			equals 			(plate_map, i, 												globalized_is_on_top);
+        	resample 		(globalized_is_on_top, global_ids_of_local_cells,			localized_is_on_top);
+
 	        //accrete, part 2
 	        if(ACCRETE) {
-            	resample 	(globalized_is_on_top, global_ids_of_local_cells,			localized_is_on_top);
             	resample_f32(globalized_accretion, global_ids_of_local_cells,			localized_accretion);
 	        	add_term 	(plate.sial, localized_accretion, localized_is_on_top,		plate.sial);
 	        }
