@@ -119,6 +119,56 @@ var World = (function() {
 	  	scratchpad.deallocate('merge_plates_to_master');
 	}
 
+	function rift(world, plates, globalized_is_alone, globalized_is_empty) { 
+	  	var plate_map = world.plate_map;
+	  	var ocean = world.ocean;
+	  	var grid = world.grid;
+
+	  	var scratchpad = RasterStackBuffer.scratchpad;
+	  	scratchpad.allocate('is_rifting');
+
+	  	//rifting/detaching variables
+		var localized_is_riftable = scratchpad.getUint8Raster(grid);
+		var localized_will_stay_riftable = scratchpad.getUint8Raster(grid);
+		var localized_is_just_outside_border = scratchpad.getUint8Raster(grid);
+		var localized_is_rifting = scratchpad.getUint8Raster(grid);
+
+		//global rifting/detaching variables
+		var globalized_is_riftable = scratchpad.getUint8Raster(grid);
+		var globalized_is_on_top = scratchpad.getUint8Raster(grid);
+
+		var scratch_ui8 = scratchpad.getUint8Raster(grid);
+
+		var resample = Uint8Raster.get_ids;
+		var margin = BinaryMorphology.margin;
+		var or = BinaryMorphology.union;
+		var and = BinaryMorphology.intersection;
+		var erode = BinaryMorphology.erosion;
+		var equals = Uint8Field.eq_scalar;
+		var fill_into = Uint8RasterGraphics.fill_into_selection;
+		var fill_into_crust = Crust.fill_into_selection;
+
+		var plate;
+		for (var i=0, li=plates.length; i<li; ++i) { 
+			plate = plates[i]; 
+
+			// is_riftable: count == 0 or (count = 1 and top_plate = i) 
+			equals 	(plate_map, i,                             							globalized_is_on_top); 
+			and 	(globalized_is_alone, globalized_is_on_top,         				globalized_is_riftable); 
+			or 		(globalized_is_riftable, globalized_is_empty,       				globalized_is_riftable); 
+
+			resample(globalized_is_riftable, plate.global_ids_of_local_cells,       	localized_is_riftable); 
+			erode 	(localized_is_riftable, 1,                       					localized_will_stay_riftable,     scratch_ui8); 
+			margin 	(plate.mask, 1,                           							localized_is_just_outside_border); 
+			and 	(localized_will_stay_riftable, localized_is_just_outside_border,  	localized_is_rifting); 
+
+	        fill_into(plate.mask, 1, localized_is_rifting,                 				plate.mask); 
+	        fill_into_crust(plate, ocean, localized_is_rifting, 						plate);
+		}
+
+	  	scratchpad.deallocate('is_rifting');
+	} 
+
 	function update_plates(world, timestep, plates) { 
 	  	var plate; 
 	  	var plate_count = world.plate_count;
@@ -183,7 +233,6 @@ var World = (function() {
 		var globalized_accretion = world.accretion.sial;
 		Float32Raster.fill(globalized_accretion, 0);
 		
-		var RIFT = true;
 		var DETACH = true;
 		var ACCRETE = true;
 
@@ -192,6 +241,7 @@ var World = (function() {
 		equals 	(plate_count, 0, 														globalized_is_empty);
 		equals 	(plate_count, 1, 														globalized_is_alone);
 		not		(globalized_is_alone, 													globalized_is_not_alone);
+		rift(world, plates, globalized_is_alone, globalized_is_empty);
 		for (var i=0, li=plates.length; i<li; ++i) {
 		    plate = plates[i];
 
@@ -205,16 +255,6 @@ var World = (function() {
 			equals 		(plate_map, i, 														globalized_is_on_top);
 		    not 		(globalized_is_on_top, 												globalized_is_not_on_top);
 
-		    //detect rifting
-		    // is_riftable: count == 0 or (count = 1 and top_plate = i)
-			and 		(globalized_is_alone, globalized_is_on_top, 						globalized_is_riftable);
-			or 			(globalized_is_riftable, globalized_is_empty, 						globalized_is_riftable);
-
-            resample_ui8(globalized_is_riftable, global_ids_of_local_cells, 				localized_is_riftable);
-		    erode		(localized_is_riftable, 1, 											localized_will_stay_riftable, 		localized_scratch_ui8);
-		    margin		(plate.mask, 1, 													localized_is_just_outside_border);
-		    and 		(localized_will_stay_riftable, localized_is_just_outside_border,	localized_is_rifting);
-
 		    //detect detachment
 			// is_detachable: count > 1 and top_plate != i
 		    and 		(globalized_is_not_alone, globalized_is_not_on_top,					globalized_is_detachable);
@@ -226,11 +266,6 @@ var World = (function() {
 		    and 		(localized_will_stay_detachable, localized_is_just_inside_border, 	localized_is_detaching);
 		    and 		(localized_is_detaching, localized_is_detachable, 					localized_is_detaching);
 
-	        //rift 
-	        if(RIFT){
-		        fill_into 	(plate.mask, 1, localized_is_rifting,                 			plate.mask); 
-		        fill_into_crust(plate, ocean, localized_is_rifting, plate);
-	        }
 	        //detach
 	        if(DETACH){
 		        fill_into 	(plate.mask, 0, localized_is_detaching,                 		plate.mask); 
