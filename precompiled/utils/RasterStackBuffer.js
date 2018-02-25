@@ -82,7 +82,7 @@ RasterStackBuffer.prototype.getVectorRaster = function(grid) {
 	return raster;
 };
 
-var scratchpad = new RasterStackBuffer(1e6);
+RasterStackBuffer.scratchpad = new RasterStackBuffer(1e6);
 
 // Test code:
 // 

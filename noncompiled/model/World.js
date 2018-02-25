@@ -32,47 +32,45 @@ var World = (function() {
 	World.prototype.constructor = World;
 
 	function merge_plates_to_master(plates, master) {
+	  	var scratchpad = RasterStackBuffer.scratchpad;
+	  	scratchpad.allocate('merge_plates_to_master');
 
 		var UINT8_NULL = 255;
 		var UINT16_NULL = 65535;
 
-		var fill_f32 = Float32Raster.fill;
-		var fill_ui8 = Uint8Raster.fill;
-
 		//WIPE MASTER RASTERS CLEAN
 		Crust.fill(master, new RockColumn({ density: master.ocean.density }));
-		fill_ui8(master.plate_map, UINT8_NULL);
-		fill_ui8(master.plate_count, 0);
+		Uint8Raster.fill(master.plate_map, UINT8_NULL);
+		Uint8Raster.fill(master.plate_count, 0);
 
-	  	var plate; 
 		
-		var master_subductability = Float32Raster(master.grid); 
-		fill_f32(master_subductability, 9999);
+		var master_subductability = world.subductability; 
+		Float32Raster.fill(master_subductability, 9999);
 
 		//local variables
 		var local_ids_of_global_cells; 
 
 		//global variables
-		var globalized_is_on_top = Uint8Raster(master.grid);
-		var globalized_plate_mask = Uint8Raster(master.grid); 
+		var globalized_is_on_top = scratchpad.getUint8Raster(master.grid);
+		var globalized_plate_mask = scratchpad.getUint8Raster(master.grid); 
 		var global_ids_of_local_cells; 
 
 		// float32array used for temporary storage of globalized scalar fields
 		// this is used for performance reasons
-		var globalized_scalar_field = Float32Raster(master.grid); 
+		var globalized_scalar_field = scratchpad.getFloat32Raster(master.grid); 
 
 
-		var fill = Uint8Raster.fill;
 		var fill_into = Uint8RasterGraphics.fill_into_selection;
 		var copy_into = Float32RasterGraphics.copy_into_selection;
 		var add_term = ScalarField.add_field_term;
 		var add_ui8 = Uint8Field.add_field
-		var resample = Float32Raster.get_ids;
+		var resample_f32 = Float32Raster.get_ids;
 		var resample_ui8 = Uint8Raster.get_ids;
 		var and = BinaryMorphology.intersection;
 		var lt = ScalarField.lt_field;
 
-		fill(globalized_is_on_top, 1);
+	  	var plate; 
+		Uint8Raster.fill(globalized_is_on_top, 1);
 		for (var i=0, li=plates.length; i<li; ++i) {
 		    plate = plates[i]; 
 
@@ -89,7 +87,7 @@ var World = (function() {
 		    // this raster will be used when merging other fields
 		    update_calculated_fields(plate);
 
-		    resample 	(plate.subductability,		 local_ids_of_global_cells, 				globalized_scalar_field);
+		    resample_f32(plate.subductability,		 local_ids_of_global_cells, 				globalized_scalar_field);
 		    lt 			(globalized_scalar_field,	 master_subductability,						globalized_is_on_top);
 		    and 		(globalized_is_on_top,		 globalized_plate_mask, 					globalized_is_on_top);
 		    copy_into 	(master_subductability,	 globalized_scalar_field, globalized_is_on_top, master_subductability);
@@ -102,21 +100,21 @@ var World = (function() {
 		    add_ui8 	(master.plate_count, globalized_plate_mask, 							master.plate_count);
 
 		    // add current plate thickness to master thickness wherever current plate exists
-		    resample 	(plate.sial, local_ids_of_global_cells, 								globalized_scalar_field);
+		    resample_f32(plate.sial, local_ids_of_global_cells, 								globalized_scalar_field);
 		    add_term 	(master.sial, globalized_scalar_field, globalized_plate_mask, 			master.sial);
 
 		    // overwrite master wherever current plate is on top
-		    resample 	(plate.sima, local_ids_of_global_cells, 								globalized_scalar_field);
+		    resample_f32(plate.sima, local_ids_of_global_cells, 								globalized_scalar_field);
 		    copy_into 	(master.sima, globalized_scalar_field, globalized_is_on_top, 			master.sima);
 
 		    // overwrite master wherever current plate is on top
-		    resample 	(plate.age, local_ids_of_global_cells, 									globalized_scalar_field);
+		    resample_f32(plate.age, local_ids_of_global_cells, 									globalized_scalar_field);
 		    copy_into 	(master.age, globalized_scalar_field, globalized_is_on_top, 			master.age);
 		}
 		update_calculated_fields(master);
+	  	scratchpad.deallocate('merge_plates_to_master');
 	}
 
-	var _scratchpad = new RasterStackBuffer(1e6);
 	function update_plates(world, timestep, plates) { 
 	  	var plate; 
 	  	var plate_count = world.plate_count;
@@ -126,7 +124,7 @@ var World = (function() {
 
 	  	var grid = plate_count.grid;
 
-	  	var scratchpad = _scratchpad;
+	  	var scratchpad = RasterStackBuffer.scratchpad;
 	  	scratchpad.allocate('update_plates');
 
 	  	//rifting/detaching variables
@@ -160,7 +158,7 @@ var World = (function() {
 		var mult_field = ScalarField.mult_field;
 		var fill_into = Uint8RasterGraphics.fill_into_selection;
 		var fill_into_crust = Crust.fill_into_selection;
-		var resample = Uint8Raster.get_ids;
+		var resample_ui8 = Uint8Raster.get_ids;
 		var resample_f32 = Float32Raster.get_ids;
 		var margin = BinaryMorphology.margin;
 		var padding = BinaryMorphology.padding;
@@ -200,38 +198,38 @@ var World = (function() {
 
 		    //shared variables for detaching and rifting
 			// op 	operands															result
-			equals 	(plate_map, i, 														globalized_is_on_top);
-		    not 	(globalized_is_on_top, 												globalized_is_not_on_top);
+			equals 		(plate_map, i, 														globalized_is_on_top);
+		    not 		(globalized_is_on_top, 												globalized_is_not_on_top);
 
 		    //detect rifting
 		    // is_riftable: count == 0 or (count = 1 and top_plate = i)
-			and 	(globalized_is_alone, globalized_is_on_top, 						globalized_is_riftable);
-			or 		(globalized_is_riftable, globalized_is_empty, 						globalized_is_riftable);
+			and 		(globalized_is_alone, globalized_is_on_top, 						globalized_is_riftable);
+			or 			(globalized_is_riftable, globalized_is_empty, 						globalized_is_riftable);
 
-            resample(globalized_is_riftable, global_ids_of_local_cells, 				localized_is_riftable);
-		    erode	(localized_is_riftable, 1, 											localized_will_stay_riftable, 		localized_scratch_ui8);
-		    margin	(plate.mask, 1, 													localized_is_just_outside_border);
-		    and 	(localized_will_stay_riftable, localized_is_just_outside_border,	localized_is_rifting);
+            resample_ui8(globalized_is_riftable, global_ids_of_local_cells, 				localized_is_riftable);
+		    erode		(localized_is_riftable, 1, 											localized_will_stay_riftable, 		localized_scratch_ui8);
+		    margin		(plate.mask, 1, 													localized_is_just_outside_border);
+		    and 		(localized_will_stay_riftable, localized_is_just_outside_border,	localized_is_rifting);
 
 		    //detect detachment
 			// is_detachable: count > 1 and top_plate != i
-		    and 	(globalized_is_not_alone, globalized_is_not_on_top,					globalized_is_detachable);
+		    and 		(globalized_is_not_alone, globalized_is_not_on_top,					globalized_is_detachable);
 
-            resample(globalized_is_detachable, global_ids_of_local_cells, 				localized_is_detachable);
-            erode	(localized_is_detachable, 1,										localized_will_stay_detachable, 	localized_scratch_ui8);
-		    padding (plate.mask, 1, 													localized_is_just_inside_border, 	localized_scratch_ui8);
-        	gt_f32	(localized_subductability, 0.5, 									localized_is_detachable);//todo: set this to higher threshold
-		    and 	(localized_will_stay_detachable, localized_is_just_inside_border, 	localized_is_detaching);
-		    and 	(localized_is_detaching, localized_is_detachable, 					localized_is_detaching);
+            resample_ui8(globalized_is_detachable, global_ids_of_local_cells, 				localized_is_detachable);
+            erode		(localized_is_detachable, 1,										localized_will_stay_detachable, 	localized_scratch_ui8);
+		    padding 	(plate.mask, 1, 													localized_is_just_inside_border, 	localized_scratch_ui8);
+        	gt_f32		(localized_subductability, 0.5, 									localized_is_detachable);//todo: set this to higher threshold
+		    and 		(localized_will_stay_detachable, localized_is_just_inside_border, 	localized_is_detaching);
+		    and 		(localized_is_detaching, localized_is_detachable, 					localized_is_detaching);
 
 	        //rift 
 	        if(RIFT){
-		        fill_into(plate.mask, 1, localized_is_rifting,                 			plate.mask); 
+		        fill_into 	(plate.mask, 1, localized_is_rifting,                 			plate.mask); 
 		        fill_into_crust(plate, ocean, localized_is_rifting, plate);
 	        }
 	        //detach
 	        if(DETACH){
-		        fill_into(plate.mask, 0, localized_is_detaching,                 		plate.mask); 
+		        fill_into 	(plate.mask, 0, localized_is_detaching,                 		plate.mask); 
 		        
 		        // calculate accretion delta
 	        	mult_field	(plate.sial, localized_is_detaching,					localized_accretion);
@@ -244,8 +242,7 @@ var World = (function() {
 		var globalized_erosion = world.erosion;
 		TectonicsModeling.get_erosion(
 			displacement, 		world.SEALEVEL, 	timestep,
-			world, globalized_erosion,
-			globalized_scalar_field
+			world, globalized_erosion
 		);
 		Crust.assert_conserved_transport_delta(globalized_erosion, 1e-2); 
 

@@ -5,7 +5,10 @@
 // No other data structure is assumed to exist.
 // The idea is to create a core that's invariant to changes across application architecture.
 
+var TectonicsModeling = (function() {
+
 var TectonicsModeling = {};
+
 
 TectonicsModeling.get_thickness = function(crust, thickness) {
 	return ScalarField.add_field(crust.sima, crust.sial, thickness);
@@ -85,9 +88,9 @@ TectonicsModeling.get_displacement = function(thickness, density, mantleDensity,
 
 TectonicsModeling.get_erosion = function(
 		displacement, sealevel, timestep,
-		crust, crust_delta,
-		scratch){
-	scratch = scratch || Float32Raster(displacement.grid);
+		crust, crust_delta){
+  	var scratchpad = RasterStackBuffer.scratchpad;
+  	scratchpad.allocate('get_erosion');
 
 	var sial 		 	= crust.sial;
 	var sima 			= crust.sima;
@@ -105,15 +108,15 @@ TectonicsModeling.get_erosion = function(
 	// measured in fraction of height difference per meters of rain per million years
 	var sial_density = 2700;
 
-	var water_height = scratch;
+	var water_height = scratchpad.getFloat32Raster(displacement.grid);
 	ScalarField.max_scalar(displacement, sealevel, water_height);
 
-	var outbound_height_transfer = Float32Raster(displacement.grid);
+	var outbound_height_transfer = scratchpad.getFloat32Raster(displacement.grid);
 	Float32Raster.fill(outbound_height_transfer, 0);
 
-	var outbound_sediment_fraction = Float32Raster(displacement.grid);
-	var outbound_sial_fraction = Float32Raster(displacement.grid);
-	var outbound_sima_fraction = Float32Raster(displacement.grid);
+	var outbound_sediment_fraction = scratchpad.getFloat32Raster(displacement.grid);
+	var outbound_sial_fraction = scratchpad.getFloat32Raster(displacement.grid);
+	var outbound_sima_fraction = scratchpad.getFloat32Raster(displacement.grid);
 
 	var arrows = displacement.grid.arrows;
 	var arrow;
@@ -142,6 +145,7 @@ TectonicsModeling.get_erosion = function(
 	    sial_delta[from] -= outbound_height_transfer_i;
 	    sial_delta[to] += outbound_height_transfer_i;
 	}
+  	scratchpad.deallocate('get_erosion');
 }
 // get a map of plates using image segmentation and binary morphology
 TectonicsModeling.get_plate_map = function(vector_field, segment_num, min_segment_size, segments) {
@@ -177,3 +181,6 @@ TectonicsModeling.get_plate_map = function(vector_field, segment_num, min_segmen
 
   return segments;
 }
+
+return TectonicsModeling;
+})();
