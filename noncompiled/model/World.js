@@ -69,6 +69,9 @@ var World = (function() {
 		var and = BinaryMorphology.intersection;
 		var lt = ScalarField.lt_field;
 
+	    var get_density = TectonicsModeling.get_density; 
+	    var get_subductability = TectonicsModeling.get_subductability; 
+
 	  	var plate; 
 		Uint8Raster.fill(globalized_is_on_top, 1);
 		for (var i=0, li=plates.length; i<li; ++i) {
@@ -82,11 +85,12 @@ var World = (function() {
 	    	// this raster will be used when merging other rasters
 		    resample_ui8(plate.mask, local_ids_of_global_cells, 								globalized_plate_mask); 
 
+            get_density(plate, plate.age, plate.density); 
+      		get_subductability(plate.density, plate.subductability); 
+
 		    // generate globalized_is_on_top
 		    // this raster indicates whether the plate is viewable from space
 		    // this raster will be used when merging other fields
-		    update_calculated_fields(plate);
-
 		    resample_f32(plate.subductability,		 local_ids_of_global_cells, 				globalized_scalar_field);
 		    lt 			(globalized_scalar_field,	 master_subductability,						globalized_is_on_top);
 		    and 		(globalized_is_on_top,		 globalized_plate_mask, 					globalized_is_on_top);
@@ -263,7 +267,7 @@ var World = (function() {
 		    global_ids_of_local_cells = plate.global_ids_of_local_cells;
 
 			equals 			(plate_map, i, 												globalized_is_on_top);
-        	resample 		(globalized_is_on_top, global_ids_of_local_cells,			localized_is_on_top);
+        	resample_ui8	(globalized_is_on_top, global_ids_of_local_cells,			localized_is_on_top);
 
         	resample_crust	(globalized_deltas, global_ids_of_local_cells,				localized_deltas);
         	mult_crust 		(localized_deltas, localized_is_on_top, 					localized_deltas);

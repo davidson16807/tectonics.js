@@ -25,39 +25,36 @@ RasterStackBuffer.prototype.deallocate = function(name) {
 	}
 }
 RasterStackBuffer.prototype.getFloat32Raster = function(grid) {
-	var BYTES_PER_CELL = 4;
 	var length = grid.vertices.length;
-	var new_pos = this.pos + length * BYTES_PER_CELL;
+	var new_pos = this.pos + length * Float32Array.BYTES_PER_ELEMENT;
 	if (new_pos >= this.buffer.length) {
 		throw `The raster stack buffer is overflowing! Either check for memory leaks, or initialize with more memory`;
 	}
-	var raster = new Float32Array(this.buffer, new_pos, length);
+	var raster = new Float32Array(this.buffer, this.pos, length);
 	raster.grid = grid;
 	// round to nearest 4 bytes
 	this.pos = 4*Math.ceil(new_pos/4);
 	return raster;
 };
 RasterStackBuffer.prototype.getUint8Raster = function(grid) {
-	var BYTES_PER_CELL = 1;
 	var length = grid.vertices.length;
-	var new_pos = this.pos + length * BYTES_PER_CELL;
+	var new_pos = this.pos + length * Uint8Array.BYTES_PER_ELEMENT;
 	if (new_pos >= this.buffer.length) {
 		throw `The raster stack buffer is overflowing! Either check for memory leaks, or initialize with more memory`;
 	}
-	var raster = new Uint8Array(this.buffer, new_pos, length);
+	var raster = new Uint8Array(this.buffer, this.pos, length);
 	raster.grid = grid;
 	// round to nearest 4 bytes
 	this.pos = 4*Math.ceil(new_pos/4);
 	return raster;
 };
 RasterStackBuffer.prototype.getUint16Raster = function(grid) {
-	var BYTES_PER_CELL = 2;
 	var length = grid.vertices.length;
-	var new_pos = this.pos + length * BYTES_PER_CELL;
+	var new_pos = this.pos + length * Uint16Array.BYTES_PER_ELEMENT;
 	if (new_pos >= this.buffer.length) {
 		throw `The raster stack buffer is overflowing! Either check for memory leaks, or initialize with more memory`;
 	}
-	var raster = new Uint16Array(this.buffer, new_pos, length);
+	var raster = new Uint16Array(this.buffer, this.pos, length);
 	raster.grid = grid;
 	// round to nearest 4 bytes
 	this.pos = 4*Math.ceil(new_pos/4);
