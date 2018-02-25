@@ -3282,13 +3282,15 @@ BinaryMorphology.negation = function(field, result) {
  }
  return result;
 }
-BinaryMorphology.dilation = function(field, radius, result) {
+BinaryMorphology.dilation = function(field, radius, result, scratch) {
  radius = radius || 1;
  result = result || Uint8Raster(field.grid);
+ scratch = scratch || Uint8Raster(field.grid);
  if (!(field instanceof Uint8Array)) { throw "field" + ' is not a ' + "Uint8Array"; };
  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; };
- var buffer1 = radius % 2 == 1? result: Uint8Raster(field.grid);
- var buffer2 = radius % 2 == 0? result: BinaryMorphology.copy(field);
+ var buffer1 = radius % 2 == 1? result: scratch;
+ var buffer2 = radius % 2 == 0? result: scratch;
+ BinaryMorphology.copy(field, scratch);
  var temp = buffer1;
  var neighbor_lookup = field.grid.neighbor_lookup;
  var neighbors = [];
@@ -3308,13 +3310,15 @@ BinaryMorphology.dilation = function(field, radius, result) {
  }
  return buffer2;
 }
-BinaryMorphology.erosion = function(field, radius, result) {
+BinaryMorphology.erosion = function(field, radius, result, scratch) {
  radius = radius || 1;
  result = result || Uint8Raster(field.grid);
+ scratch = scratch || Uint8Raster(field.grid);
  if (!(field instanceof Uint8Array)) { throw "field" + ' is not a ' + "Uint8Array"; };
  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; };
- var buffer1 = radius % 2 == 1? result: Uint8Raster(field.grid);
- var buffer2 = radius % 2 == 0? result: BinaryMorphology.copy(field);
+ var buffer1 = radius % 2 == 1? result: scratch;
+ var buffer2 = radius % 2 == 0? result: scratch;
+ BinaryMorphology.copy(field, scratch);
  var temp = buffer1;
  var neighbor_lookup = field.grid.neighbor_lookup;
  var neighbors = [];
@@ -3365,12 +3369,12 @@ BinaryMorphology.margin = function(field, radius, result) {
 // NOTE: this is not a standard concept in math morphology
 // It is meant to represent the difference between a figure and its erosion
 // Its name eludes to the "padding" concept within the html box model
-BinaryMorphology.padding = function(field, radius, result) {
+BinaryMorphology.padding = function(field, radius, result, scratch) {
  result = result || Uint8Raster(field.grid);
  if (!(field instanceof Uint8Array)) { throw "field" + ' is not a ' + "Uint8Array"; };
  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; };
  if(field === result) throw ("cannot use same input for 'field' and 'result' - padding() is not an in-place function")
  var erosion = result; // reuse result raster for performance reasons
  BinaryMorphology.erosion(field, radius, erosion);
- return BinaryMorphology.difference(field, erosion, result);
+ return BinaryMorphology.difference(field, erosion, result, scratch);
 }

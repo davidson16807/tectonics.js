@@ -134,7 +134,7 @@ var World = (function() {
 		var localized_is_on_top = Uint8Raster(grid);
 		var localized_is_just_inside_border = Uint8Raster(grid);
 		var localized_is_detaching = Uint8Raster(grid);
-		
+		var localized_scratch_ui8 = Uint8Raster(grid);
 
 		var localized_subductability; 
 		var localized_accretion = Float32Raster(grid); 
@@ -204,7 +204,7 @@ var World = (function() {
 			or 		(globalized_is_riftable, globalized_is_empty, 						globalized_is_riftable);
 
             resample(globalized_is_riftable, global_ids_of_local_cells, 				localized_is_riftable);
-		    erode	(localized_is_riftable, 1, 											localized_will_stay_riftable);
+		    erode	(localized_is_riftable, 1, 											localized_will_stay_riftable, 		localized_scratch_ui8);
 		    margin	(plate.mask, 1, 													localized_is_just_outside_border);
 		    and 	(localized_will_stay_riftable, localized_is_just_outside_border,	localized_is_rifting);
 
@@ -213,8 +213,8 @@ var World = (function() {
 		    and 	(globalized_is_not_alone, globalized_is_not_on_top,					globalized_is_detachable);
 
             resample(globalized_is_detachable, global_ids_of_local_cells, 				localized_is_detachable);
-            erode	(localized_is_detachable, 1,										localized_will_stay_detachable);
-		    padding (plate.mask, 1, 													localized_is_just_inside_border);
+            erode	(localized_is_detachable, 1,										localized_will_stay_detachable, 	localized_scratch_ui8);
+		    padding (plate.mask, 1, 													localized_is_just_inside_border, 	localized_scratch_ui8);
         	gt_f32	(localized_subductability, 0.5, 									localized_is_detachable);//todo: set this to higher threshold
 		    and 	(localized_will_stay_detachable, localized_is_just_inside_border, 	localized_is_detaching);
 		    and 	(localized_is_detaching, localized_is_detachable, 					localized_is_detaching);
