@@ -185,17 +185,18 @@ var World = (function() {
         var fix_crust_delta	= Crust.fix_delta;
        	var add_crust_delta	= Crust.add_delta;
 
-		var globalized_accretion = Float32Raster(grid); 
-		Float32Raster.fill(globalized_accretion, 0);
-
+       	// CALCULATE DELTAS
 		var globalized_erosion = new Crust({grid: grid});
-		var localized_erosion = new Crust({grid: grid});
 		TectonicsModeling.get_erosion(
 			displacement, 		world.SEALEVEL, 	timestep,
 			world, globalized_erosion,
 			globalized_scalar_field
 		);
 		Crust.assert_conserved_transport_delta(globalized_erosion, 1e-2); 
+
+
+		var globalized_accretion = Float32Raster(grid); 
+		Float32Raster.fill(globalized_accretion, 0);
 		
 		var RIFT = true;
 		var DETACH = true;
@@ -248,16 +249,23 @@ var World = (function() {
 	        //detach
 	        if(DETACH){
 		        fill_into(plate.mask, 0, localized_is_detaching,                 		plate.mask); 
-		        //accrete, part 1
-		        if(ACCRETE) {
-		        	mult_field	(plate.sial, localized_is_detaching,					localized_accretion);
-	            	resample_f32(localized_accretion, local_ids_of_global_cells,		globalized_scalar_field);
-	            	add 		(globalized_accretion, globalized_scalar_field, 		globalized_accretion);
-		        }
+		        
+		        // calculate accretion delta
+	        	mult_field	(plate.sial, localized_is_detaching,					localized_accretion);
+            	resample_f32(localized_accretion, local_ids_of_global_cells,		globalized_scalar_field);
+            	add 		(globalized_accretion, globalized_scalar_field, 		globalized_accretion);
 	        }
 		}
 
-		// INTEGRATION OF DELTAS
+		// COMPILE DELTAS
+		var globalized_deltas = new Crust({grid: grid});
+		var localized_deltas = new Crust({grid: grid});
+		Crust.fill(globalized_deltas, RockColumn.EMPTY);
+		Crust.add_delta 	(globalized_deltas, globalized_erosion, 					globalized_deltas);
+		ScalarField.add_field(globalized_deltas.sial, globalized_accretion, 			globalized_deltas.sial);
+		ScalarField.add_scalar(globalized_deltas.age, timestep, 						globalized_deltas.age); // aging
+
+		// INTEGRATE DELTAS
 		for (var i=0, li=plates.length; i<li; ++i) {
 		    plate = plates[i];
 
@@ -267,24 +275,14 @@ var World = (function() {
 			equals 			(plate_map, i, 												globalized_is_on_top);
         	resample 		(globalized_is_on_top, global_ids_of_local_cells,			localized_is_on_top);
 
-        	resample 		(globalized_is_on_top, global_ids_of_local_cells,		localized_is_on_top);
-        	resample_crust	(globalized_erosion, global_ids_of_local_cells,			localized_erosion);
-        	mult_crust 		(localized_erosion, localized_is_on_top, 				localized_erosion);
+        	resample_crust	(globalized_deltas, global_ids_of_local_cells,				localized_deltas);
+        	mult_crust 		(localized_deltas, localized_is_on_top, 					localized_deltas);
 
 	        // enforce constraint: erosion should never exceed amount of rock available
 	        // get_erosion() guarantees against this, but plate motion sometimes causes violations to this constraint
 	        // violations to constraint are usually small, so we just modify erosion after the fact to preserve the constraint
-	        fix_crust_delta	(localized_erosion, plate);
-        	add_crust_delta	(plate, localized_erosion, 								plate);
-
-	        //aging
-			ScalarField.add_scalar(plate.age, timestep, 								plate.age);
-
-	        //accrete, part 2
-	        if(ACCRETE) {
-            	resample_f32(globalized_accretion, global_ids_of_local_cells,			localized_accretion);
-	        	add_term 	(plate.sial, localized_accretion, localized_is_on_top,		plate.sial);
-	        }
+	        fix_crust_delta	(localized_deltas, plate);
+        	add_crust_delta	(plate, localized_deltas, 									plate);
 		}
 	}
 

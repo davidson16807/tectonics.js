@@ -24,5 +24,6 @@ var RockColumn = (function() {
 			age				:lerp(lower.age, upper.age, fraction),
 		});
 	}
+	RockColumn.EMPTY = new RockColumn()
 	return RockColumn;
 })();
