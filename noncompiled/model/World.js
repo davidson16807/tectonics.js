@@ -198,7 +198,6 @@ var World = (function() {
 		//global rifting/detaching variables
 		var globalized_is_not_alone = scratchpad.getUint8Raster(grid);
 		var globalized_is_detachable = scratchpad.getUint8Raster(grid);
-		var globalized_is_on_top = scratchpad.getUint8Raster(grid);
 		var globalized_is_not_on_top = scratchpad.getUint8Raster(grid);
 
 		var globalized_scalar_field = scratchpad.getFloat32Raster(grid); 
@@ -245,32 +244,18 @@ var World = (function() {
 	  	scratchpad.deallocate('detach_and_accrete');
 	}
 	function update_plates(world, timestep, plates) { 
-	  	var plate; 
-	  	var plate_count = world.plate_count;
-	  	var plate_map = world.plate_map;
-	  	var displacement = world.displacement;
-	  	var ocean = world.ocean;
-
-	  	var grid = plate_count.grid;
+	  	var grid = world.grid;
 
 	  	var scratchpad = RasterStackBuffer.scratchpad;
 	  	scratchpad.allocate('update_plates');
 
-	  	//rifting/detaching variables
-		var localized_is_on_top = scratchpad.getUint8Raster(grid);
-
-		//global rifting/detaching variables
-		var globalized_is_on_top = scratchpad.getUint8Raster(grid);
-
-	    //shared variables for detaching and rifting
-		// op 	operands																result
 		rift 				(world, plates);
 		detach_and_accrete 	(world, plates);
 
        	// CALCULATE DELTAS
 		var globalized_erosion = world.erosion;
 		TectonicsModeling.get_erosion(
-			displacement, 		world.SEALEVEL, 	timestep,
+			world.displacement, world.SEALEVEL, timestep,
 			world, globalized_erosion
 		);
 		Crust.assert_conserved_transport_delta(globalized_erosion, 1e-2); 
@@ -284,19 +269,25 @@ var World = (function() {
 		ScalarField.add_field(globalized_deltas.sial, world.accretion.sial, 			globalized_deltas.sial);
 		ScalarField.add_scalar(globalized_deltas.age, timestep, 						globalized_deltas.age); // aging
 
+	  	var plate_map = world.plate_map;
+
+		var localized_is_on_top = scratchpad.getUint8Raster(grid);
+		var globalized_is_on_top = scratchpad.getUint8Raster(grid);
+
 		var resample_ui8 = Uint8Raster.get_ids;
 		var equals = Uint8Field.eq_scalar;
-		var global_ids_of_local_cells, local_ids_of_global_cells;
 		
 		var resample_crust 	= Crust.get_ids;
 		var mult_crust 		= Crust.mult_field;
         var fix_crust_delta	= Crust.fix_delta;
        	var add_crust_delta	= Crust.add_delta;
+
 		// INTEGRATE DELTAS
+	  	var plate; 
+		var global_ids_of_local_cells;
 		for (var i=0, li=plates.length; i<li; ++i) {
 		    plate = plates[i];
 
-		    local_ids_of_global_cells = plate.local_ids_of_global_cells;
 		    global_ids_of_local_cells = plate.global_ids_of_local_cells;
 
 			equals 			(plate_map, i, 												globalized_is_on_top);
