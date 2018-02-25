@@ -649,7 +649,7 @@ ScalarField.eq_field = function (scalar_field1, scalar_field2, threshold, result
   result = result || Uint8Raster(scalar_field1.grid);
  
  
-  ASSERT_IS_SCALAR(threshold)
+ 
  
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] < scalar_field2[i] + threshold || scalar_field1[i] > scalar_field2[i] - threshold ? 1:0;
@@ -660,7 +660,7 @@ ScalarField.ne_field = function (scalar_field1, scalar_field2, threshold, result
   result = result || Uint8Raster(scalar_field1.grid);
  
  
-  ASSERT_IS_SCALAR(threshold)
+ 
  
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] > scalar_field2[i] + threshold || scalar_field1[i] < scalar_field2[i] - threshold ? 1:0;
@@ -670,7 +670,7 @@ ScalarField.ne_field = function (scalar_field1, scalar_field2, threshold, result
 ScalarField.min_scalar = function (scalar_field1, scalar, result) {
   result = result || Float32Raster(scalar_field1.grid);
  
-  ASSERT_IS_SCALAR(scalar)
+ 
  
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] < scalar? scalar_field1[i] : scalar;
@@ -680,7 +680,7 @@ ScalarField.min_scalar = function (scalar_field1, scalar, result) {
 ScalarField.max_scalar = function (scalar_field1, scalar, result) {
   result = result || Float32Raster(scalar_field1.grid);
  
-  ASSERT_IS_SCALAR(scalar)
+ 
  
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] > scalar? scalar_field1[i] : scalar;
@@ -690,7 +690,7 @@ ScalarField.max_scalar = function (scalar_field1, scalar, result) {
 ScalarField.gt_scalar = function (scalar_field1, scalar, result) {
   result = result || Uint8Raster(scalar_field1.grid);
  
-  ASSERT_IS_SCALAR(scalar)
+ 
  
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] > scalar? 1:0;
@@ -700,7 +700,7 @@ ScalarField.gt_scalar = function (scalar_field1, scalar, result) {
 ScalarField.gte_scalar = function (scalar_field1, scalar, result) {
   result = result || Uint8Raster(scalar_field1.grid);
  
-  ASSERT_IS_SCALAR(scalar)
+ 
  
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] >= scalar? 1:0;
@@ -710,7 +710,7 @@ ScalarField.gte_scalar = function (scalar_field1, scalar, result) {
 ScalarField.lt_scalar = function (scalar_field1, scalar, result) {
   result = result || Uint8Raster(scalar_field1.grid);
  
-  ASSERT_IS_SCALAR(scalar)
+ 
  
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] < scalar? 1:0;
@@ -720,7 +720,7 @@ ScalarField.lt_scalar = function (scalar_field1, scalar, result) {
 ScalarField.lte_scalar = function (scalar_field1, scalar, result) {
   result = result || Uint8Raster(scalar_field1.grid);
  
-  ASSERT_IS_SCALAR(scalar)
+ 
  
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] <= scalar? 1:0;
@@ -730,8 +730,8 @@ ScalarField.lte_scalar = function (scalar_field1, scalar, result) {
 ScalarField.between_scalars = function (scalar_field1, scalar1, scalar2, result) {
   result = result || Uint8Raster(scalar_field1.grid);
  
-  ASSERT_IS_SCALAR(scalar1)
-  ASSERT_IS_SCALAR(scalar2)
+ 
+ 
  
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar1 < scalar_field1[i] && scalar_field1[i] < scalar2? 1:0;
@@ -741,8 +741,8 @@ ScalarField.between_scalars = function (scalar_field1, scalar1, scalar2, result)
 ScalarField.eq_scalar = function (scalar_field1, scalar, threshold, result) {
   result = result || Uint8Raster(scalar_field1.grid);
  
-  ASSERT_IS_SCALAR(scalar)
-  ASSERT_IS_SCALAR(threshold)
+ 
+ 
  
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] < scalar + threshold || scalar_field1[i] > scalar - threshold ? 1:0;
@@ -752,8 +752,8 @@ ScalarField.eq_scalar = function (scalar_field1, scalar, threshold, result) {
 ScalarField.ne_scalar = function (scalar_field1, scalar, threshold, result) {
   result = result || Uint8Raster(scalar_field1.grid);
  
-  ASSERT_IS_SCALAR(scalar)
-  ASSERT_IS_SCALAR(threshold)
+ 
+ 
  
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] > scalar + threshold || scalar_field1[i] < scalar - threshold ? 1:0;
@@ -775,7 +775,7 @@ ScalarField.add_scalar_term = function (scalar_field1, scalar_field2, scalar, re
   result = result || Float32Raster(scalar_field1.grid);
  
  
-  ASSERT_IS_SCALAR(scalar)
+ 
  
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] + scalar * scalar_field2[i];
@@ -817,7 +817,7 @@ ScalarField.sub_scalar_term = function (scalar_field1, scalar_field2, scalar, re
   result = result || Float32Raster(scalar_field1.grid);
  
  
-  ASSERT_IS_SCALAR(scalar)
+ 
  
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] - scalar * scalar_field2[i];
@@ -847,7 +847,7 @@ ScalarField.div_field = function (scalar_field1, scalar_field2, result) {
 ScalarField.add_scalar = function (scalar_field, scalar, result) {
   result = result || Float32Raster(scalar_field.grid);
  
-  ASSERT_IS_SCALAR(scalar)
+ 
  
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field[i] + scalar;
@@ -857,7 +857,7 @@ ScalarField.add_scalar = function (scalar_field, scalar, result) {
 ScalarField.sub_scalar = function (scalar_field, scalar, result) {
   result = result || Float32Raster(scalar_field.grid);
  
-  ASSERT_IS_SCALAR(scalar)
+ 
  
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field[i] - scalar;
@@ -867,7 +867,7 @@ ScalarField.sub_scalar = function (scalar_field, scalar, result) {
 ScalarField.mult_scalar = function (scalar_field, scalar, result) {
   result = result || Float32Raster(scalar_field.grid);
  
-  ASSERT_IS_SCALAR(scalar)
+ 
  
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field[i] * scalar;
@@ -877,7 +877,7 @@ ScalarField.mult_scalar = function (scalar_field, scalar, result) {
 ScalarField.div_scalar = function (scalar_field, scalar, result) {
   result = result || Float32Raster(scalar_field.grid);
  
-  ASSERT_IS_SCALAR(scalar)
+ 
  
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field[i] / scalar;
@@ -1070,7 +1070,7 @@ ScalarField.diffusion_by_constant = function (scalar_field, constant, result, sc
  
  
  
-  ASSERT_IS_SCALAR(constant)
+ 
   var laplacian = scratch;
   var arrows = scalar_field.grid.arrows;
   var arrow
