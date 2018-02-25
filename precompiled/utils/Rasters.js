@@ -32,7 +32,7 @@
 #define ASSERT_IS_SCALAR(INPUT) \
 	if (typeof INPUT != "number" || isNaN(INPUT) || !isFinite(INPUT)) { throw #INPUT + ' is not a real number'; }
 #else
-#define ASSERT_IS_TYPE(INPUT, TYPE)
+#define ASSERT_IS_SCALAR(INPUT)
 #endif
 
 #ifndef IS_PROD
