@@ -281,7 +281,7 @@ var World = (function() {
 		var localized_deltas = world.crust_scratch;
 		Crust.fill(globalized_deltas, RockColumn.EMPTY);
 		Crust.add_delta 	(globalized_deltas, globalized_erosion, 					globalized_deltas);
-		ScalarField.add_field(globalized_deltas.sial, globalized_accretion, 			globalized_deltas.sial);
+		ScalarField.add_field(globalized_deltas.sial, world.accretion.sial, 			globalized_deltas.sial);
 		ScalarField.add_scalar(globalized_deltas.age, timestep, 						globalized_deltas.age); // aging
 
 		var resample_ui8 = Uint8Raster.get_ids;
