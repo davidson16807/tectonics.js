@@ -115,6 +115,8 @@ var World = (function() {
 		}
 		update_calculated_fields(master);
 	}
+
+	var _scratchpad = new RasterStackBuffer(1e6);
 	function update_plates(world, timestep, plates) { 
 	  	var plate; 
 	  	var plate_count = world.plate_count;
@@ -124,30 +126,33 @@ var World = (function() {
 
 	  	var grid = plate_count.grid;
 
+	  	var scratchpad = _scratchpad;
+	  	scratchpad.allocate('update_plates');
+
 	  	//rifting/detaching variables
-		var localized_is_riftable = Uint8Raster(grid);
-		var localized_is_detachable = Uint8Raster(grid);
-		var localized_will_stay_riftable = Uint8Raster(grid);
-		var localized_will_stay_detachable = Uint8Raster(grid);
-		var localized_is_just_outside_border = Uint8Raster(grid);
-		var localized_is_rifting = Uint8Raster(grid);
-		var localized_is_on_top = Uint8Raster(grid);
-		var localized_is_just_inside_border = Uint8Raster(grid);
-		var localized_is_detaching = Uint8Raster(grid);
-		var localized_scratch_ui8 = Uint8Raster(grid);
+		var localized_is_riftable = scratchpad.getUint8Raster(grid);
+		var localized_is_detachable = scratchpad.getUint8Raster(grid);
+		var localized_will_stay_riftable = scratchpad.getUint8Raster(grid);
+		var localized_will_stay_detachable = scratchpad.getUint8Raster(grid);
+		var localized_is_just_outside_border = scratchpad.getUint8Raster(grid);
+		var localized_is_rifting = scratchpad.getUint8Raster(grid);
+		var localized_is_on_top = scratchpad.getUint8Raster(grid);
+		var localized_is_just_inside_border = scratchpad.getUint8Raster(grid);
+		var localized_is_detaching = scratchpad.getUint8Raster(grid);
+		var localized_scratch_ui8 = scratchpad.getUint8Raster(grid);
 
 		var localized_subductability; 
 		var localized_accretion = Float32Raster(grid); 
 		var localized_scalar_field = Float32Raster(grid); 
 
 		//global rifting/detaching variables
-		var globalized_is_empty = Uint8Raster(grid);
-		var globalized_is_alone = Uint8Raster(grid);
-		var globalized_is_not_alone = Uint8Raster(grid);
-		var globalized_is_riftable = Uint8Raster(grid);
-		var globalized_is_detachable = Uint8Raster(grid);
-		var globalized_is_on_top = Uint8Raster(grid);
-		var globalized_is_not_on_top = Uint8Raster(grid);
+		var globalized_is_empty = scratchpad.getUint8Raster(grid);
+		var globalized_is_alone = scratchpad.getUint8Raster(grid);
+		var globalized_is_not_alone = scratchpad.getUint8Raster(grid);
+		var globalized_is_riftable = scratchpad.getUint8Raster(grid);
+		var globalized_is_detachable = scratchpad.getUint8Raster(grid);
+		var globalized_is_on_top = scratchpad.getUint8Raster(grid);
+		var globalized_is_not_on_top = scratchpad.getUint8Raster(grid);
 
 		var globalized_scalar_field = Float32Raster(grid); 
 		
@@ -272,6 +277,9 @@ var World = (function() {
 	        fix_crust_delta	(localized_deltas, plate);
         	add_crust_delta	(plate, localized_deltas, 									plate);
 		}
+
+	  	scratchpad.deallocate('update_plates');
+
 	}
 
 	World.prototype.SEALEVEL = 3682;

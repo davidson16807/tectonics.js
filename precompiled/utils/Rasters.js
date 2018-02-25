@@ -59,6 +59,7 @@
 #include "precompiled/utils/Grid.js"
 #include "precompiled/utils/Matrix.js"
 #include "precompiled/utils/Vector.js"
+#include "precompiled/utils/RasterStackBuffer.js"
 
 #include "precompiled/utils/datasets/Float32Dataset.js"
 #include "precompiled/utils/datasets/Uint16Dataset.js"
