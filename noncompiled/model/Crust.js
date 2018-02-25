@@ -93,6 +93,9 @@ Crust.fill_into_selection = function(crust, rock_column, selection_raster, resul
   // NOTE: a naive implementation would repeatedly invoke Float32RasterGraphics.fill_into_selection 
   // However, this is much less performant because it reads from selection_raster multiple times. 
   // For performance reasons, we have to roll our own. 
+  if (result_crust !== crust) {
+  	Crust.copy(crust, result_crust);
+  }
  
   var crust_sima = crust.sima; 
   var crust_sial = crust.sial; 
@@ -109,9 +112,11 @@ Crust.fill_into_selection = function(crust, rock_column, selection_raster, resul
   var selection_i = 0; 
   for (var i=0, li=selection_raster.length; i<li; ++i) { 
     selection_i = selection_raster[i]; 
-    result_sima[i]      = selection_i === 1? column_sima : crust_sima[i];  
-    result_sial[i]      = selection_i === 1? column_sial : crust_sial[i];  
-    result_age[i]      = selection_i === 1? column_age : crust_age[i];  
+    if (selection_i === 1) {
+	    result_sima[i] = column_sima;
+	    result_sial[i] = column_sial;
+	    result_age[i]  = column_age ;
+    }
   } 
 }
 
