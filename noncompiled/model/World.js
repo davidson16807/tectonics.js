@@ -50,7 +50,6 @@ var World = (function() {
 		fill_f32(master_subductability, 9999);
 
 		//local variables
-		var local_pos_of_global_cells = VectorRaster(master.grid); 
 		var local_ids_of_global_cells; 
 
 		//global variables
@@ -125,24 +124,21 @@ var World = (function() {
 
 	  	var grid = plate_count.grid;
 
-	  	//rifting variables
+	  	//rifting/detaching variables
 		var localized_is_riftable = Uint8Raster(grid);
 		var localized_is_detachable = Uint8Raster(grid);
 		var localized_will_stay_riftable = Uint8Raster(grid);
 		var localized_will_stay_detachable = Uint8Raster(grid);
 		var localized_is_just_outside_border = Uint8Raster(grid);
 		var localized_is_rifting = Uint8Raster(grid);
-		
-		//detaching variables
 		var localized_is_on_top = Uint8Raster(grid);
-		var localized_is_on_bottom = Uint8Raster(grid);
-		var localized_will_stay_on_bottom = Uint8Raster(grid);
 		var localized_is_just_inside_border = Uint8Raster(grid);
 		var localized_is_detaching = Uint8Raster(grid);
+		
 
-		var local_pos_of_global_cells = VectorRaster(grid); 
-		var localized_subductability = Float32Raster(grid); 
+		var localized_subductability; 
 		var localized_accretion = Float32Raster(grid); 
+		var localized_scalar_field = Float32Raster(grid); 
 
 		//global rifting/detaching variables
 		var globalized_is_empty = Uint8Raster(grid);
@@ -152,20 +148,13 @@ var World = (function() {
 		var globalized_is_detachable = Uint8Raster(grid);
 		var globalized_is_on_top = Uint8Raster(grid);
 		var globalized_is_not_on_top = Uint8Raster(grid);
-		var globalized_is_on_top_or_empty = Uint8Raster(grid);
-		var globalized_is_on_bottom = Uint8Raster(grid);
-		var globalized_is_rifting = Uint8Raster(grid); 
-		var globalized_is_detaching = Uint8Raster(grid); 
 
-		var globalized_plate_mask = Uint8Raster(grid); 
-		var global_pos_of_local_cells = VectorRaster(grid);
 		var globalized_scalar_field = Float32Raster(grid); 
 		
 
 		var mult_field = ScalarField.mult_field;
 		var fill_into = Uint8RasterGraphics.fill_into_selection;
 		var fill_into_crust = Crust.fill_into_selection;
-		var copy = Uint8Raster.copy;
 		var resample = Uint8Raster.get_ids;
 		var resample_f32 = Float32Raster.get_ids;
 		var margin = BinaryMorphology.margin;
@@ -176,14 +165,8 @@ var World = (function() {
 		var not = BinaryMorphology.negation;
 		var equals = Uint8Field.eq_scalar;
 		var gt_f32 = ScalarField.gt_scalar;
-		var gt_ui8 = Uint8Field.gt_scalar;
 		var global_ids_of_local_cells, local_ids_of_global_cells;
-		var add_term = ScalarField.add_field_term;
 		var add = ScalarField.add_field;
-		var min = ScalarField.min_field;
-		var max = ScalarField.max_scalar;
-		var fix_nonnegative_conserved_quantity_delta = Float32Raster.fix_nonnegative_conserved_quantity_delta;
-		var assert_nonnegative_quantity = Float32Raster.assert_nonnegative_quantity;
 
 		var resample_crust 	= Crust.get_ids;
 		var mult_crust 		= Crust.mult_field;
@@ -268,6 +251,7 @@ var World = (function() {
 		Crust.add_delta 	(globalized_deltas, globalized_erosion, 					globalized_deltas);
 		ScalarField.add_field(globalized_deltas.sial, globalized_accretion, 			globalized_deltas.sial);
 		ScalarField.add_scalar(globalized_deltas.age, timestep, 						globalized_deltas.age); // aging
+
 
 		// INTEGRATE DELTAS
 		for (var i=0, li=plates.length; i<li; ++i) {
