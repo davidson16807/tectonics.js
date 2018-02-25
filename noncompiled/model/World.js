@@ -119,13 +119,13 @@ var World = (function() {
 	  	scratchpad.deallocate('merge_plates_to_master');
 	}
 
-	function rift(world, plates, globalized_is_alone, globalized_is_empty) { 
+	function rift(world, plates) { 
 	  	var plate_map = world.plate_map;
 	  	var ocean = world.ocean;
 	  	var grid = world.grid;
 
 	  	var scratchpad = RasterStackBuffer.scratchpad;
-	  	scratchpad.allocate('is_rifting');
+	  	scratchpad.allocate('rift');
 
 	  	//rifting/detaching variables
 		var localized_is_riftable = scratchpad.getUint8Raster(grid);
@@ -134,6 +134,8 @@ var World = (function() {
 		var localized_is_rifting = scratchpad.getUint8Raster(grid);
 
 		//global rifting/detaching variables
+		var globalized_is_empty = scratchpad.getUint8Raster(grid);
+		var globalized_is_alone = scratchpad.getUint8Raster(grid);
 		var globalized_is_riftable = scratchpad.getUint8Raster(grid);
 		var globalized_is_on_top = scratchpad.getUint8Raster(grid);
 
@@ -148,7 +150,11 @@ var World = (function() {
 		var fill_into = Uint8RasterGraphics.fill_into_selection;
 		var fill_into_crust = Crust.fill_into_selection;
 
-		var plate;
+		//		 op 	operands														result
+		equals 	(world.plate_count, 0, 													globalized_is_empty);
+		equals 	(world.plate_count, 1, 													globalized_is_alone);
+
+		var plate = plates[0];
 		for (var i=0, li=plates.length; i<li; ++i) { 
 			plate = plates[i]; 
 
@@ -166,9 +172,78 @@ var World = (function() {
 	        fill_into_crust(plate, ocean, localized_is_rifting, 						plate);
 		}
 
-	  	scratchpad.deallocate('is_rifting');
+	  	scratchpad.deallocate('rift');
 	} 
+	function detach_and_accrete(world, plates) {
+	  	var plate_map = world.plate_map;
+	  	var grid = world.grid;
 
+		// WARNING: unfortunate side effect!
+		// we calculate accretion delta during detachment for performance reasons
+		var globalized_accretion = world.accretion.sial;
+		Float32Raster.fill(globalized_accretion, 0);
+
+	  	var scratchpad = RasterStackBuffer.scratchpad;
+	  	scratchpad.allocate('detach_and_accrete');
+
+	  	//rifting/detaching variables
+		var localized_is_detachable = scratchpad.getUint8Raster(grid);
+		var localized_will_stay_detachable = scratchpad.getUint8Raster(grid);
+		var localized_is_just_inside_border = scratchpad.getUint8Raster(grid);
+		var localized_is_detaching = scratchpad.getUint8Raster(grid);
+
+		var localized_scratch_ui8 = scratchpad.getUint8Raster(grid); 
+		var localized_accretion = scratchpad.getFloat32Raster(grid); 
+
+		//global rifting/detaching variables
+		var globalized_is_not_alone = scratchpad.getUint8Raster(grid);
+		var globalized_is_detachable = scratchpad.getUint8Raster(grid);
+		var globalized_is_on_top = scratchpad.getUint8Raster(grid);
+		var globalized_is_not_on_top = scratchpad.getUint8Raster(grid);
+
+		var globalized_scalar_field = scratchpad.getFloat32Raster(grid); 
+
+		var mult_field = ScalarField.mult_field;
+		var fill_into = Uint8RasterGraphics.fill_into_selection;
+		var resample_ui8 = Uint8Raster.get_ids;
+		var resample_f32 = Float32Raster.get_ids;
+		var padding = BinaryMorphology.padding;
+		var and = BinaryMorphology.intersection;
+		var erode = BinaryMorphology.erosion;
+		var not_equals = Uint8Field.ne_scalar;
+		var gt_f32 = ScalarField.gt_scalar;
+		var add = ScalarField.add_field;
+
+		//				 op 	operands													result
+		not_equals 	(world.plate_count, 1, 													globalized_is_not_alone);
+
+		var plate = plates[0];
+		for (var i=0, li=plates.length; i<li; ++i) {
+		    plate = plates[i];
+
+			not_equals 	(plate_map, i, 														globalized_is_not_on_top);
+
+		    //detect detachment
+			// is_detachable: count > 1 and top_plate != i
+		    and 		(globalized_is_not_alone, globalized_is_not_on_top,					globalized_is_detachable);
+
+            resample_ui8(globalized_is_detachable, plate.global_ids_of_local_cells, 		localized_is_detachable);
+            erode		(localized_is_detachable, 1,										localized_will_stay_detachable, 	localized_scratch_ui8);
+		    padding 	(plate.mask, 1, 													localized_is_just_inside_border, 	localized_scratch_ui8);
+        	gt_f32		(plate.subductability, 0.5, 										localized_is_detachable);//todo: set this to higher threshold
+		    and 		(localized_will_stay_detachable, localized_is_just_inside_border, 	localized_is_detaching);
+		    and 		(localized_is_detaching, localized_is_detachable, 					localized_is_detaching);
+
+	        fill_into 	(plate.mask, 0, localized_is_detaching,                 			plate.mask); 
+	        
+	        // calculate accretion delta
+        	mult_field	(plate.sial, localized_is_detaching,								localized_accretion);
+        	resample_f32(localized_accretion, plate.local_ids_of_global_cells,				globalized_scalar_field);
+        	add 		(globalized_accretion, globalized_scalar_field, 					globalized_accretion);
+		}
+
+	  	scratchpad.deallocate('detach_and_accrete');
+	}
 	function update_plates(world, timestep, plates) { 
 	  	var plate; 
 	  	var plate_count = world.plate_count;
@@ -182,100 +257,15 @@ var World = (function() {
 	  	scratchpad.allocate('update_plates');
 
 	  	//rifting/detaching variables
-		var localized_is_riftable = scratchpad.getUint8Raster(grid);
-		var localized_is_detachable = scratchpad.getUint8Raster(grid);
-		var localized_will_stay_riftable = scratchpad.getUint8Raster(grid);
-		var localized_will_stay_detachable = scratchpad.getUint8Raster(grid);
-		var localized_is_just_outside_border = scratchpad.getUint8Raster(grid);
-		var localized_is_rifting = scratchpad.getUint8Raster(grid);
 		var localized_is_on_top = scratchpad.getUint8Raster(grid);
-		var localized_is_just_inside_border = scratchpad.getUint8Raster(grid);
-		var localized_is_detaching = scratchpad.getUint8Raster(grid);
-		var localized_scratch_ui8 = scratchpad.getUint8Raster(grid);
-
-		var localized_subductability; 
-		var localized_accretion = Float32Raster(grid); 
-		var localized_scalar_field = Float32Raster(grid); 
 
 		//global rifting/detaching variables
-		var globalized_is_empty = scratchpad.getUint8Raster(grid);
-		var globalized_is_alone = scratchpad.getUint8Raster(grid);
-		var globalized_is_not_alone = scratchpad.getUint8Raster(grid);
-		var globalized_is_riftable = scratchpad.getUint8Raster(grid);
-		var globalized_is_detachable = scratchpad.getUint8Raster(grid);
 		var globalized_is_on_top = scratchpad.getUint8Raster(grid);
-		var globalized_is_not_on_top = scratchpad.getUint8Raster(grid);
-
-		var globalized_scalar_field = Float32Raster(grid); 
-		
-
-		var mult_field = ScalarField.mult_field;
-		var fill_into = Uint8RasterGraphics.fill_into_selection;
-		var fill_into_crust = Crust.fill_into_selection;
-		var resample_ui8 = Uint8Raster.get_ids;
-		var resample_f32 = Float32Raster.get_ids;
-		var margin = BinaryMorphology.margin;
-		var padding = BinaryMorphology.padding;
-		var or = BinaryMorphology.union;
-		var and = BinaryMorphology.intersection;
-		var erode = BinaryMorphology.erosion;
-		var not = BinaryMorphology.negation;
-		var equals = Uint8Field.eq_scalar;
-		var gt_f32 = ScalarField.gt_scalar;
-		var global_ids_of_local_cells, local_ids_of_global_cells;
-		var add = ScalarField.add_field;
-
-		var resample_crust 	= Crust.get_ids;
-		var mult_crust 		= Crust.mult_field;
-        var fix_crust_delta	= Crust.fix_delta;
-       	var add_crust_delta	= Crust.add_delta;
-
-		var globalized_accretion = world.accretion.sial;
-		Float32Raster.fill(globalized_accretion, 0);
-		
-		var DETACH = true;
-		var ACCRETE = true;
 
 	    //shared variables for detaching and rifting
 		// op 	operands																result
-		equals 	(plate_count, 0, 														globalized_is_empty);
-		equals 	(plate_count, 1, 														globalized_is_alone);
-		not		(globalized_is_alone, 													globalized_is_not_alone);
-		rift(world, plates, globalized_is_alone, globalized_is_empty);
-		for (var i=0, li=plates.length; i<li; ++i) {
-		    plate = plates[i];
-
-		    local_ids_of_global_cells = plate.local_ids_of_global_cells;
-		    global_ids_of_local_cells = plate.global_ids_of_local_cells;
-
-	 		localized_subductability = plate.subductability;
-
-		    //shared variables for detaching and rifting
-			// op 	operands															result
-			equals 		(plate_map, i, 														globalized_is_on_top);
-		    not 		(globalized_is_on_top, 												globalized_is_not_on_top);
-
-		    //detect detachment
-			// is_detachable: count > 1 and top_plate != i
-		    and 		(globalized_is_not_alone, globalized_is_not_on_top,					globalized_is_detachable);
-
-            resample_ui8(globalized_is_detachable, global_ids_of_local_cells, 				localized_is_detachable);
-            erode		(localized_is_detachable, 1,										localized_will_stay_detachable, 	localized_scratch_ui8);
-		    padding 	(plate.mask, 1, 													localized_is_just_inside_border, 	localized_scratch_ui8);
-        	gt_f32		(localized_subductability, 0.5, 									localized_is_detachable);//todo: set this to higher threshold
-		    and 		(localized_will_stay_detachable, localized_is_just_inside_border, 	localized_is_detaching);
-		    and 		(localized_is_detaching, localized_is_detachable, 					localized_is_detaching);
-
-	        //detach
-	        if(DETACH){
-		        fill_into 	(plate.mask, 0, localized_is_detaching,                 		plate.mask); 
-		        
-		        // calculate accretion delta
-	        	mult_field	(plate.sial, localized_is_detaching,					localized_accretion);
-            	resample_f32(localized_accretion, local_ids_of_global_cells,		globalized_scalar_field);
-            	add 		(globalized_accretion, globalized_scalar_field, 		globalized_accretion);
-	        }
-		}
+		rift 				(world, plates);
+		detach_and_accrete 	(world, plates);
 
        	// CALCULATE DELTAS
 		var globalized_erosion = world.erosion;
@@ -285,6 +275,7 @@ var World = (function() {
 		);
 		Crust.assert_conserved_transport_delta(globalized_erosion, 1e-2); 
 
+
 		// COMPILE DELTAS
 		var globalized_deltas = world.crust_delta;
 		var localized_deltas = world.crust_scratch;
@@ -293,7 +284,14 @@ var World = (function() {
 		ScalarField.add_field(globalized_deltas.sial, globalized_accretion, 			globalized_deltas.sial);
 		ScalarField.add_scalar(globalized_deltas.age, timestep, 						globalized_deltas.age); // aging
 
-
+		var resample_ui8 = Uint8Raster.get_ids;
+		var equals = Uint8Field.eq_scalar;
+		var global_ids_of_local_cells, local_ids_of_global_cells;
+		
+		var resample_crust 	= Crust.get_ids;
+		var mult_crust 		= Crust.mult_field;
+        var fix_crust_delta	= Crust.fix_delta;
+       	var add_crust_delta	= Crust.add_delta;
 		// INTEGRATE DELTAS
 		for (var i=0, li=plates.length; i<li; ++i) {
 		    plate = plates[i];
