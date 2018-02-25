@@ -134,10 +134,10 @@ regressionTestDisplays.flood_fill_dilation = new ScalarHeatDisplay(  {
 			var gradient = angular_velocity;
 			
 			var max_id = VectorRaster.max_id(gradient);
-			var mask = Float32Raster(crust.grid, 1);
+			var mask = Uint8Raster(crust.grid, 1);
 			var flood_fill = VectorRasterGraphics.magic_wand_select(gradient, max_id, mask);
 
-			var dilation = BinaryMorphology.dilation(BinaryMorphology.to_binary(flood_fill), 5);
+			var dilation = BinaryMorphology.dilation(BinaryMorphology.to_binary(flood_fill), 1);
 
 			return BinaryMorphology.to_float(dilation);
 		}
@@ -156,10 +156,10 @@ regressionTestDisplays.flood_fill_erosion = new ScalarHeatDisplay(  {
 			var gradient = angular_velocity;
 			
 			var max_id = VectorRaster.max_id(gradient);
-			var mask = Float32Raster(crust.grid, 1);
+			var mask = Uint8Raster(crust.grid, 1);
 			var flood_fill = VectorRasterGraphics.magic_wand_select(gradient, max_id, mask);
 
-			var erosion = BinaryMorphology.erosion(BinaryMorphology.to_binary(flood_fill), crust.grid, 5);
+			var erosion = BinaryMorphology.erosion(BinaryMorphology.to_binary(flood_fill), 1);
 
 			return BinaryMorphology.to_float(erosion);
 		}
