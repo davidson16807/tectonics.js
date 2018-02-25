@@ -95,6 +95,8 @@ TectonicsModeling.get_erosion = function(
 	var sial_delta  	= crust_delta.sial;
 	var sima_delta 		= crust_delta.sima;
 
+	Float32Raster.fill(sial_delta, 0);
+
 	var precipitation = 7.8e5;
 	// ^^^ measured in meters of rain per million years
 	// global land average from wikipedia

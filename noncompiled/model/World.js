@@ -21,6 +21,11 @@ var World = (function() {
 		// this.age = parameters['age'] || 0;
 		// this.maxPlatesNum = parameters['platesNum'] || 8;
 
+		this.erosion = new Crust({grid: this.grid});
+		this.accretion = new Crust({grid: this.grid});
+		this.crust_delta = new Crust({grid: this.grid});
+		this.crust_scratch = new Crust({grid: this.grid});
+
 		this.plates = [];
 	}
 	World.prototype = Object.create(Crust);
@@ -185,17 +190,7 @@ var World = (function() {
         var fix_crust_delta	= Crust.fix_delta;
        	var add_crust_delta	= Crust.add_delta;
 
-       	// CALCULATE DELTAS
-		var globalized_erosion = new Crust({grid: grid});
-		TectonicsModeling.get_erosion(
-			displacement, 		world.SEALEVEL, 	timestep,
-			world, globalized_erosion,
-			globalized_scalar_field
-		);
-		Crust.assert_conserved_transport_delta(globalized_erosion, 1e-2); 
-
-
-		var globalized_accretion = Float32Raster(grid); 
+		var globalized_accretion = world.accretion.sial;
 		Float32Raster.fill(globalized_accretion, 0);
 		
 		var RIFT = true;
@@ -257,9 +252,18 @@ var World = (function() {
 	        }
 		}
 
+       	// CALCULATE DELTAS
+		var globalized_erosion = world.erosion;
+		TectonicsModeling.get_erosion(
+			displacement, 		world.SEALEVEL, 	timestep,
+			world, globalized_erosion,
+			globalized_scalar_field
+		);
+		Crust.assert_conserved_transport_delta(globalized_erosion, 1e-2); 
+
 		// COMPILE DELTAS
-		var globalized_deltas = new Crust({grid: grid});
-		var localized_deltas = new Crust({grid: grid});
+		var globalized_deltas = world.crust_delta;
+		var localized_deltas = world.crust_scratch;
 		Crust.fill(globalized_deltas, RockColumn.EMPTY);
 		Crust.add_delta 	(globalized_deltas, globalized_erosion, 					globalized_deltas);
 		ScalarField.add_field(globalized_deltas.sial, globalized_accretion, 			globalized_deltas.sial);
