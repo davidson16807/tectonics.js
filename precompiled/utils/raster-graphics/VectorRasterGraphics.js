@@ -101,10 +101,12 @@ VectorRasterGraphics.fill_into_selection = function(vector_raster, fill, selecti
 	var cy = result.y;
 	var cz = result.z;
 
+	var selection_i = 0;
 	for (var i=0, li=vector_raster.length; i<li; ++i) {
-	    cx[i] = selection[i] === 1? bx : ax[i];
-	    cy[i] = selection[i] === 1? by : ay[i];
-	    cz[i] = selection[i] === 1? bz : az[i];
+      selection_i = selection[i]; 
+      cx[i] = selection_i === 1? bx : ax[i]; 
+      cy[i] = selection_i === 1? by : ay[i]; 
+      cz[i] = selection_i === 1? bz : az[i]; 
 	}
 
 	return result;

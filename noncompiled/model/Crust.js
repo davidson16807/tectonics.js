@@ -90,14 +90,29 @@ Crust.copy_into_selection = function(crust, copied_crust, selection_raster, resu
 	copy(source.age, copied_crust.age, selection_raster, result_crust.age);
 }
 Crust.fill_into_selection = function(crust, rock_column, selection_raster, result_crust) {
-	var fill = Float32RasterGraphics.fill_into_selection;
-	var fill_ui8 = Uint8Raster.fill;
-	fill(crust.displacement, rock_column.displacement, selection_raster, result_crust.displacement);
-	fill(crust.thickness, rock_column.thickness, selection_raster, result_crust.thickness);
-	fill(crust.density, rock_column.density, selection_raster, result_crust.density);
-	fill(crust.sima, rock_column.sima, selection_raster, result_crust.sima);
-	fill(crust.sial, rock_column.sial, selection_raster, result_crust.sial);
-	fill(crust.age, rock_column.age, selection_raster, result_crust.age);
+  // NOTE: a naive implementation would repeatedly invoke Float32RasterGraphics.fill_into_selection 
+  // However, this is much less performant because it reads from selection_raster multiple times. 
+  // For performance reasons, we have to roll our own. 
+ 
+  var crust_sima = crust.sima; 
+  var crust_sial = crust.sial; 
+  var crust_age = crust.age; 
+ 
+  var column_sima = rock_column.sima; 
+  var column_sial = rock_column.sial; 
+  var column_age = rock_column.age; 
+ 
+  var result_sima = result_crust.sima; 
+  var result_sial = result_crust.sial; 
+  var result_age = result_crust.age; 
+ 
+  var selection_i = 0; 
+  for (var i=0, li=selection_raster.length; i<li; ++i) { 
+    selection_i = selection_raster[i]; 
+    result_sima[i]      = selection_i === 1? column_sima : crust_sima[i];  
+    result_sial[i]      = selection_i === 1? column_sial : crust_sial[i];  
+    result_age[i]      = selection_i === 1? column_age : crust_age[i];  
+  } 
 }
 
 Crust.get_ids = function(crust, id_raster, result_crust) {
