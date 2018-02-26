@@ -46,7 +46,7 @@ var World = (function() {
 	// update fields that are derived from others
 	function update_calculated_fields(world) {
 		TectonicsModeling.get_thickness		(world.crust, 											world.thickness);
-		TectonicsModeling.get_density 		(world.crust, world.crust.age, 							world.density);
+		TectonicsModeling.get_density 		(world.crust, 											world.density);
 		TectonicsModeling.get_displacement 	(world.thickness, world.density, world.mantleDensity, 	world.displacement);
 	}
 	function merge_plates_to_master(plates, master) {
@@ -107,7 +107,7 @@ var World = (function() {
 		    resample_ui8(plate.mask, local_ids_of_global_cells, 										globalized_plate_mask); 
 
 		    // calculate derived properties for plates
-            get_density(plate.crust, plate.crust.age, 																plate.density); 
+            get_density(plate.crust, 																	plate.density); 
 
 		    // generate globalized_is_on_top
 		    // this raster indicates whether the plate is viewable from space

@@ -18,11 +18,12 @@ TectonicsModeling.get_sial_type = function(crust, thickness) {
   Float32Raster.copy(crust.sial, thickness); 
   return thickness; 
 }  
-TectonicsModeling.get_density = function(crust, age, density) {
+TectonicsModeling.get_density = function(crust, density) {
 	density = density || Float32Raster(sima.grid);
 
 	var sima = crust.sima;
 	var sial = crust.sial;
+	var age = crust.age;
 
 	// NOTE: density does double duty for performance reasons
 	var fraction_of_lifetime = density;
