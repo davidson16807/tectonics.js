@@ -46,7 +46,7 @@ var World = (function() {
 	// update fields that are derived from others
 	function update_calculated_fields(world) {
 		TectonicsModeling.get_thickness		(world.crust, 											world.thickness);
-		TectonicsModeling.get_density 		(world.crust, 											world.density);
+		TectonicsModeling.get_density 		(world.crust, world.thickness,							world.density);
 		TectonicsModeling.get_displacement 	(world.thickness, world.density, world.mantleDensity, 	world.displacement);
 	}
 	function merge_plates_to_master(plates, master) {
@@ -76,6 +76,7 @@ var World = (function() {
 		// float32array used for temporary storage of globalized scalar fields
 		// this is used for performance reasons
 		var globalized_scalar_field = scratchpad.getFloat32Raster(master.grid); 
+		var plate_thickness = scratchpad.getFloat32Raster(master.grid); 
 
 		var globalized_crust = master.crust_scratch;
 
@@ -91,6 +92,7 @@ var World = (function() {
 		var resample_crust = Crust.get_ids;
 
 	    var get_density = TectonicsModeling.get_density; 
+	    var get_thickness = TectonicsModeling.get_thickness; 
 		var overlap_crust = TectonicsModeling.overlap_crust; 
 
 	  	var plate; 
@@ -107,7 +109,8 @@ var World = (function() {
 		    resample_ui8(plate.mask, local_ids_of_global_cells, 										globalized_plate_mask); 
 
 		    // calculate derived properties for plates
-            get_density(plate.crust, 																	plate.density); 
+            get_thickness(plate.crust, 																	plate_thickness); 
+            get_density(plate.crust, plate_thickness,													plate.density); 
 
 		    // generate globalized_is_on_top
 		    // this raster indicates whether the plate is viewable from space

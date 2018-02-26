@@ -18,7 +18,7 @@ TectonicsModeling.get_sial_type = function(crust, thickness) {
   Float32Raster.copy(crust.sial, thickness); 
   return thickness; 
 }  
-TectonicsModeling.get_density = function(crust, density) {
+TectonicsModeling.get_density = function(crust, thickness, density) {
 	density = density || Float32Raster(sima.grid);
 
 	var sima = crust.sima;
@@ -33,7 +33,7 @@ TectonicsModeling.get_density = function(crust, density) {
 	Float32RasterInterpolation.lerp			(2890, 3300, fraction_of_lifetime, 	density);
 
     for (var i = 0, li = density.length; i < li; i++) {
-    	density[i] = sima[i] + sial[i] > 0? (sima[i] * sima_density[i] + sial[i] * 2700) / (sima[i] + sial[i]) : 2890;
+    	density[i] = thickness[i] > 0? (sima[i] * sima_density[i] + sial[i] * 2700) / (thickness[i]) : 2890;
     }
     return density;
 }
