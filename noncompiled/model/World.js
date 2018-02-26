@@ -20,7 +20,6 @@ var World = (function() {
 		this.density = Float32Raster(this.grid);
 		// the average density of the crust, in kg/m^3
 
-		this.subductability = Float32Raster(this.grid);
 		this.plate_map = Uint8Raster(this.grid);
 		this.plate_count = Uint8Raster(this.grid);
 		this.asthenosphere_velocity = VectorRaster(this.grid);
@@ -49,7 +48,6 @@ var World = (function() {
 	function update_calculated_fields(crust) {
 		TectonicsModeling.get_thickness(crust, crust.thickness);
 		TectonicsModeling.get_density(crust, crust.age, crust.density);
-		TectonicsModeling.get_subductability(crust.density, crust.subductability);
 		TectonicsModeling.get_displacement(crust.thickness, crust.density, world.mantleDensity, crust.displacement);
 	}
 	function merge_plates_to_master(plates, master) {

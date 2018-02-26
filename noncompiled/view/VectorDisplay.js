@@ -131,16 +131,9 @@ vectorDisplays.density_gradient	= new VectorFieldDisplay( {
 		return gradient;
 	}
 } );
-vectorDisplays.subductability_gradient	= new VectorFieldDisplay( { 
-	getField: function (plate) {
-		var subductability = plate.subductability;
-		var gradient = ScalarField.gradient(subductability);
-		return gradient;
-	}
-} );
-vectorDisplays.subductability_smoothed = new VectorFieldDisplay( { 
+vectorDisplays.density_smoothed = new VectorFieldDisplay( { 
 		getField: function (plate) {
-			var field = getSubductabilitySmoothed(plate);
+			var field = getdensitySmoothed(plate);
 			var gradient = ScalarField.gradient(field);
 			return gradient;
 		} 

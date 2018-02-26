@@ -37,16 +37,8 @@ TectonicsModeling.get_density = function(crust, age, density) {
     return density;
 }
 
-TectonicsModeling.get_subductability = function(density, subductability) {
-	var subductability_transition_factor = 1/100;
-	var exp = Math.exp;
-	for (var i=0, li=subductability.length; i<li; ++i) {
-		subductability[i] = 2 / (1 + exp( -(density[i] - 3000) * subductability_transition_factor )) - 1;
-	}
-	return subductability;
-}
 
-// gets surface pressure of the asthenosphere by smoothing a field representing subductability
+// gets surface pressure of the asthenosphere by smoothing a field representing density/buoyancy
 TectonicsModeling.get_asthenosphere_pressure = function(density, pressure, scratch) {
 	pressure = pressure || Float32Raster(density.grid);
 	scratch = scratch || Float32Raster(density.grid);

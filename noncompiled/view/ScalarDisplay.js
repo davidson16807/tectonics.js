@@ -276,16 +276,10 @@ scalarDisplays.displacement 	= new ScalarHeatDisplay( { min: '3682.', max: '1200
 			return crust.displacement;
 		}
 	} );
-scalarDisplays.subductability = new ScalarHeatDisplay(  { 
-		min: '1.', max: '0.',
-		getField: function (crust) {
-			return crust.subductability;
-		}
-	} );
 scalarDisplays.asthenosphere_pressure = new ScalarHeatDisplay(  { 
 		min: '1.', max: '0.',
 		getField: function (crust, output, scratch, iterations) {
-			return TectonicsModeling.get_asthenosphere_pressure(crust.subductability, output, scratch);
+			return TectonicsModeling.get_asthenosphere_pressure(crust.density, output, scratch);
 		}
 	} );
 

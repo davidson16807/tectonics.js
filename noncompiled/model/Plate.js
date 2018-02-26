@@ -7,7 +7,6 @@ function Plate(params)
 	params.grid = world.grid;
 	Crust.call(this, params);
 	this.density = Float32Raster(this.grid);
-	this.subductability = Float32Raster(this.grid);
 
 	this.mask = params['mask'] || Uint8Raster(this.grid);
 

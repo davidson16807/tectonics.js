@@ -61,7 +61,7 @@ regressionTestDisplays.flood_fill1 = new ScalarHeatDisplay(  {
 			var pressure = scratch1;
 			// flood_fill does double duty for performance reasons
 			var scratch2 = flood_fill;
-			var field = TectonicsModeling.get_asthenosphere_pressure(crust.subductability, pressure, scratch2);
+			var field = TectonicsModeling.get_asthenosphere_pressure(crust.density, pressure, scratch2);
 
 			var gradient = ScalarField.gradient(pressure);
 			var angular_velocity = VectorField.cross_vector_field(gradient, crust.grid.pos);
@@ -83,7 +83,7 @@ regressionTestDisplays.flood_fill_white_top_hat = new ScalarHeatDisplay(  {
 			var pressure = scratch1;
 			// flood_fill does double duty for performance reasons
 			var scratch2 = flood_fill;
-			var field = TectonicsModeling.get_asthenosphere_pressure(crust.subductability, pressure, scratch2);
+			var field = TectonicsModeling.get_asthenosphere_pressure(crust.density, pressure, scratch2);
 
 			var gradient = ScalarField.gradient(field);
 			var angular_velocity = VectorField.cross_vector_field(gradient, crust.grid.pos);
@@ -106,7 +106,7 @@ regressionTestDisplays.flood_fill_black_top_hat = new ScalarHeatDisplay(  {
 			var pressure = scratch1;
 			// flood_fill does double duty for performance reasons
 			var scratch2 = flood_fill;
-			var field = TectonicsModeling.get_asthenosphere_pressure(crust.subductability, pressure, scratch2);
+			var field = TectonicsModeling.get_asthenosphere_pressure(crust.density, pressure, scratch2);
 			var gradient = ScalarField.gradient(field);
 			var angular_velocity = VectorField.cross_vector_field(gradient, crust.grid.pos);
 			var gradient = angular_velocity;
@@ -128,7 +128,7 @@ regressionTestDisplays.flood_fill_dilation = new ScalarHeatDisplay(  {
 			var pressure = scratch1;
 			// flood_fill does double duty for performance reasons
 			var scratch2 = flood_fill;
-			var field = TectonicsModeling.get_asthenosphere_pressure(crust.subductability, pressure, scratch2);
+			var field = TectonicsModeling.get_asthenosphere_pressure(crust.density, pressure, scratch2);
 			var gradient = ScalarField.gradient(field);
 			var angular_velocity = VectorField.cross_vector_field(gradient, crust.grid.pos);
 			var gradient = angular_velocity;
@@ -150,7 +150,7 @@ regressionTestDisplays.flood_fill_erosion = new ScalarHeatDisplay(  {
 			var pressure = scratch1;
 			// flood_fill does double duty for performance reasons
 			var scratch2 = flood_fill;
-			var field = TectonicsModeling.get_asthenosphere_pressure(crust.subductability, pressure, scratch2);
+			var field = TectonicsModeling.get_asthenosphere_pressure(crust.density, pressure, scratch2);
 			var gradient = ScalarField.gradient(field);
 			var angular_velocity = VectorField.cross_vector_field(gradient, crust.grid.pos);
 			var gradient = angular_velocity;
@@ -172,7 +172,7 @@ regressionTestDisplays.flood_fill_opening = new ScalarHeatDisplay(  {
 			var pressure = scratch1;
 			// flood_fill does double duty for performance reasons
 			var scratch2 = flood_fill;
-			var field = TectonicsModeling.get_asthenosphere_pressure(crust.subductability, pressure, scratch2);
+			var field = TectonicsModeling.get_asthenosphere_pressure(crust.density, pressure, scratch2);
 			var gradient = ScalarField.gradient(field);
 			var angular_velocity = VectorField.cross_vector_field(gradient, crust.grid.pos);
 			var gradient = angular_velocity;
@@ -194,7 +194,7 @@ regressionTestDisplays.flood_fill_closing = new ScalarHeatDisplay(  {
 			var pressure = scratch1;
 			// flood_fill does double duty for performance reasons
 			var scratch2 = flood_fill;
-			var field = TectonicsModeling.get_asthenosphere_pressure(crust.subductability, pressure, scratch2);
+			var field = TectonicsModeling.get_asthenosphere_pressure(crust.density, pressure, scratch2);
 			var gradient = ScalarField.gradient(field);
 			var angular_velocity = VectorField.cross_vector_field(gradient, crust.grid.pos);
 			var gradient = angular_velocity;
@@ -217,7 +217,7 @@ regressionTestDisplays.flood_fill8 = new ScalarHeatDisplay(  {
 			var pressure = scratch1;
 			// flood_fill does double duty for performance reasons
 			var scratch2 = flood_fill;
-			var field = TectonicsModeling.get_asthenosphere_pressure(crust.subductability, pressure, scratch2);
+			var field = TectonicsModeling.get_asthenosphere_pressure(crust.density, pressure, scratch2);
 			var gradient = ScalarField.gradient(field);
 			var angular_velocity = VectorField.cross_vector_field(gradient, crust.grid.pos);
 			var gradient = angular_velocity;
@@ -244,7 +244,7 @@ vectorDisplays.asthenosphere_velocity = new VectorFieldDisplay( {
 			var pressure = scratch1;
 			// flood_fill does double duty for performance reasons
 			var scratch2 = flood_fill;
-			var field = TectonicsModeling.get_asthenosphere_pressure(world.subductability, pressure, scratch2);
+			var field = TectonicsModeling.get_asthenosphere_pressure(world.density, pressure, scratch2);
 			var gradient = ScalarField.gradient(field);
 			return gradient;
 		} 
