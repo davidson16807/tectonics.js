@@ -261,6 +261,8 @@ var World = (function() {
 	}
 
 	function integrate_deltas(world, plates) { 
+		// INTEGRATE DELTAS
+
 	  	var grid = world.grid;
 
 	  	var scratchpad = RasterStackBuffer.scratchpad;
@@ -279,7 +281,6 @@ var World = (function() {
         var fix_crust_delta	= Crust.fix_delta;
        	var add_crust_delta	= Crust.add_delta;
 
-		// INTEGRATE DELTAS
 	  	var plate; 
 		var global_ids_of_local_cells;
 		var globalized_deltas = world.crust_delta;
@@ -304,14 +305,6 @@ var World = (function() {
 
 	  	scratchpad.deallocate('integrate_deltas');
 
-	}
-	function update_plates(world, timestep, plates) { 
-	  	var grid = world.grid;
-
-		rift 				(world, plates);
-		detach_and_accrete 	(world, plates);
-		calculate_deltas	(world, timestep);
-		integrate_deltas 	(world, plates);
 	}
 
 	World.prototype.SEALEVEL = 3682;
@@ -378,17 +371,15 @@ var World = (function() {
 		update_calculated_fields(this);
 		this.supercontinentCycle.update(timestep);
 		merge_plates_to_master(this.plates, this);
-		update_plates(this, timestep, this.plates);
 
-		// World submodels go here: atmo model, hydro model, bio model, etc.
+		rift 				(world, this.plates);
+		detach_and_accrete 	(world, this.plates);
+		calculate_deltas	(world, timestep);
+		integrate_deltas 	(world, this.plates);
 	};
 	World.prototype.worldLoaded = function(timestep){
-		for (var i = 0; i < this.plates.length; i++) {
-			this.plates[i].move(0.0000000001)
-		}
-		update_calculated_fields(this);
 		merge_plates_to_master(this.plates, this);
-		update_plates(this, 0.0000000001, this.plates);
+		// update_plates(this, 0.0000000001, this.plates);
 	};
 	return World;
 })();
