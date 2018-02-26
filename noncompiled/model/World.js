@@ -65,8 +65,8 @@ var World = (function() {
 		Uint8Raster.fill(master.plate_count, 0);
 
 		
-		var master_subductability = master.subductability; 
-		Float32Raster.fill(master_subductability, 9999);
+		var master_density = master.density; 
+		Float32Raster.fill(master_density, 9999);
 
 		//local variables
 		var local_ids_of_global_cells; 
@@ -94,8 +94,7 @@ var World = (function() {
 		var resample_crust = Crust.get_ids;
 
 	    var get_density = TectonicsModeling.get_density; 
-	    var get_subductability = TectonicsModeling.get_subductability; 
-		var overlap_crust = TectonicsModeling.overlap_crust;
+		var overlap_crust = TectonicsModeling.overlap_crust; 
 
 	  	var plate; 
 		Uint8Raster.fill(globalized_is_on_top, 1);
@@ -108,29 +107,28 @@ var World = (function() {
 	    	// generate globalized_plate_mask
 	    	// this raster indicates whether the plate exists in a region of the planet
 	    	// this raster will be used when merging other rasters
-		    resample_ui8(plate.mask, local_ids_of_global_cells, 								globalized_plate_mask); 
+		    resample_ui8(plate.mask, local_ids_of_global_cells, 									globalized_plate_mask); 
 
 		    // calculate derived properties for plates
-            get_density(plate, plate.age, plate.density); 
-      		get_subductability(plate.density, plate.subductability); 
+            get_density(plate, plate.age, 															plate.density); 
 
 		    // generate globalized_is_on_top
 		    // this raster indicates whether the plate is viewable from space
 		    // this raster will be used when merging other fields
-		    resample_f32(plate.subductability,		 local_ids_of_global_cells, 				globalized_scalar_field);
-		    lt 			(globalized_scalar_field,	 master_subductability,						globalized_is_on_top);
-		    and 		(globalized_is_on_top,		 globalized_plate_mask, 					globalized_is_on_top);
-		    copy_into 	(master_subductability,	 globalized_scalar_field, globalized_is_on_top, master_subductability);
+		    resample_f32(plate.density,		 		local_ids_of_global_cells, 						globalized_scalar_field);
+		    lt 			(globalized_scalar_field,	master_density,									globalized_is_on_top);
+		    and 		(globalized_is_on_top,		globalized_plate_mask,	 						globalized_is_on_top);
+		    copy_into 	(master_density,	 		globalized_scalar_field, globalized_is_on_top, 	master_density);
 
 		    // merge plates with master
 		    // set plate_mask to current plate's index where current plate is on top
-		    fill_into 	(master.plate_map, i, globalized_is_on_top, 							master.plate_map);
+		    fill_into 	(master.plate_map, i, globalized_is_on_top, 								master.plate_map);
 		    
 		    // add 1 to master.plate_count where current plate exists
-		    add_ui8 	(master.plate_count, globalized_plate_mask, 							master.plate_count);
+		    add_ui8 	(master.plate_count, globalized_plate_mask, 								master.plate_count);
 
-		    resample_crust(plate, local_ids_of_global_cells, 									globalized_crust);
-		    overlap_crust (master, globalized_crust, globalized_plate_mask, globalized_is_on_top, master);
+		    resample_crust(plate, local_ids_of_global_cells, 										globalized_crust);
+		    overlap_crust (master, globalized_crust, globalized_plate_mask, globalized_is_on_top, 	master);
 		}
 	  	scratchpad.deallocate('merge_plates_to_master');
 	}
@@ -245,7 +243,7 @@ var World = (function() {
             resample_ui8(globalized_is_detachable, plate.global_ids_of_local_cells, 		localized_is_detachable);
             erode		(localized_is_detachable, 1,										localized_will_stay_detachable, 	localized_scratch_ui8);
 		    padding 	(plate.mask, 1, 													localized_is_just_inside_border, 	localized_scratch_ui8);
-        	gt_f32		(plate.subductability, 0.5, 										localized_is_detachable);//todo: set this to higher threshold
+        	gt_f32		(plate.density, world.mantleDensity, 								localized_is_detachable);
 		    and 		(localized_will_stay_detachable, localized_is_just_inside_border, 	localized_is_detaching);
 		    and 		(localized_is_detaching, localized_is_detachable, 					localized_is_detaching);
 
