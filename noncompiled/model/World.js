@@ -59,6 +59,7 @@ var World = (function() {
 		// this is used for performance reasons
 		var globalized_scalar_field = scratchpad.getFloat32Raster(master.grid); 
 
+		var globalized_crust = master.crust_scratch;
 
 		var fill_into = Uint8RasterGraphics.fill_into_selection;
 		var copy_into = Float32RasterGraphics.copy_into_selection;
@@ -69,8 +70,11 @@ var World = (function() {
 		var and = BinaryMorphology.intersection;
 		var lt = ScalarField.lt_field;
 
+		var resample_crust = Crust.get_ids;
+
 	    var get_density = TectonicsModeling.get_density; 
 	    var get_subductability = TectonicsModeling.get_subductability; 
+		var overlap_crust = TectonicsModeling.overlap_crust;
 
 	  	var plate; 
 		Uint8Raster.fill(globalized_is_on_top, 1);
@@ -103,17 +107,8 @@ var World = (function() {
 		    // add 1 to master.plate_count where current plate exists
 		    add_ui8 	(master.plate_count, globalized_plate_mask, 							master.plate_count);
 
-		    // add current plate thickness to master thickness wherever current plate exists
-		    resample_f32(plate.sial, local_ids_of_global_cells, 								globalized_scalar_field);
-		    add_term 	(master.sial, globalized_scalar_field, globalized_plate_mask, 			master.sial);
-
-		    // overwrite master wherever current plate is on top
-		    resample_f32(plate.sima, local_ids_of_global_cells, 								globalized_scalar_field);
-		    copy_into 	(master.sima, globalized_scalar_field, globalized_is_on_top, 			master.sima);
-
-		    // overwrite master wherever current plate is on top
-		    resample_f32(plate.age, local_ids_of_global_cells, 									globalized_scalar_field);
-		    copy_into 	(master.age, globalized_scalar_field, globalized_is_on_top, 			master.age);
+		    resample_crust(plate, local_ids_of_global_cells, 									globalized_crust);
+		    overlap_crust (master, globalized_crust, globalized_plate_mask, globalized_is_on_top, master);
 		}
 		update_calculated_fields(master);
 	  	scratchpad.deallocate('merge_plates_to_master');

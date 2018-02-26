@@ -182,5 +182,14 @@ TectonicsModeling.get_plate_map = function(vector_field, segment_num, min_segmen
   return segments;
 }
 
+TectonicsModeling.overlap_crust = function(crust1, crust2, crust2_exists, crust2_on_top, result_crust) {
+	// add current plate thickness to crust1 thickness wherever current plate exists
+	ScalarField.add_field_term 					(crust1.sial, crust2.sial, crust2_exists, 		result_crust.sial);
+	// overwrite crust1 wherever current plate is on top
+	Float32RasterGraphics.copy_into_selection 	(crust1.sima, crust2.sima, crust2_on_top, 		result_crust.sima);
+	// overwrite crust1 wherever current plate is on top
+	Float32RasterGraphics.copy_into_selection 	(crust1.age, crust2.age, crust2_on_top, 		result_crust.age);
+}
+
 return TectonicsModeling;
 })();
