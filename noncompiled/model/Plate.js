@@ -4,8 +4,10 @@ function Plate(params)
 {
 	params = params || stop('missing parameter object')
 	this.world = params['world'] || stop('missing parameter: "world"');
-	params.grid = world.grid;
-	Crust.call(this, params);
+	this.grid = this.world.grid;
+
+	this.crust = new Crust({grid: this.grid});
+
 	this.density = Float32Raster(this.grid);
 
 	this.mask = params['mask'] || Uint8Raster(this.grid);

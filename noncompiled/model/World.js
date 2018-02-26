@@ -2,7 +2,7 @@
 
 var World = (function() {
 	function World(parameters) {
-		Crust.call(this, parameters);
+		this.grid = parameters['grid'] || stop('missing parameter: "grid"');
 
 		this.getRandomPlateSpeed = parameters['getRandomPlateSpeed'] ||
 			//function() { return Math.exp(random.normal(-5.13, 0.548)); }
@@ -29,6 +29,7 @@ var World = (function() {
 		// this.age = parameters['age'] || 0;
 		// this.maxPlatesNum = parameters['platesNum'] || 8;
 
+		this.crust = new Crust({grid: this.grid});
 		this.erosion = new Crust({grid: this.grid});
 		this.accretion = new Crust({grid: this.grid});
 		this.crust_delta = new Crust({grid: this.grid});
@@ -36,8 +37,6 @@ var World = (function() {
 
 		this.plates = [];
 	}
-	World.prototype = Object.create(Crust);
-	World.prototype.constructor = World;
 
 	function move_plates(plates, timestep) {
 		for (var i=0, li=plates.length; i<li; ++i) {
@@ -45,10 +44,10 @@ var World = (function() {
 	 	}
 	}
 	// update fields that are derived from others
-	function update_calculated_fields(crust) {
-		TectonicsModeling.get_thickness(crust, crust.thickness);
-		TectonicsModeling.get_density(crust, crust.age, crust.density);
-		TectonicsModeling.get_displacement(crust.thickness, crust.density, world.mantleDensity, crust.displacement);
+	function update_calculated_fields(world) {
+		TectonicsModeling.get_thickness		(world.crust, 											world.thickness);
+		TectonicsModeling.get_density 		(world.crust, world.crust.age, 							world.density);
+		TectonicsModeling.get_displacement 	(world.thickness, world.density, world.mantleDensity, 	world.displacement);
 	}
 	function merge_plates_to_master(plates, master) {
 	  	var scratchpad = RasterStackBuffer.scratchpad;
@@ -58,7 +57,7 @@ var World = (function() {
 		var UINT16_NULL = 65535;
 
 		//WIPE MASTER RASTERS CLEAN
-		Crust.fill(master, new RockColumn({ density: master.ocean.density }));
+		Crust.fill(master.crust, RockColumn.EMPTY);
 		Uint8Raster.fill(master.plate_map, UINT8_NULL);
 		Uint8Raster.fill(master.plate_count, 0);
 
@@ -105,28 +104,28 @@ var World = (function() {
 	    	// generate globalized_plate_mask
 	    	// this raster indicates whether the plate exists in a region of the planet
 	    	// this raster will be used when merging other rasters
-		    resample_ui8(plate.mask, local_ids_of_global_cells, 									globalized_plate_mask); 
+		    resample_ui8(plate.mask, local_ids_of_global_cells, 										globalized_plate_mask); 
 
 		    // calculate derived properties for plates
-            get_density(plate, plate.age, 															plate.density); 
+            get_density(plate.crust, plate.crust.age, 																plate.density); 
 
 		    // generate globalized_is_on_top
 		    // this raster indicates whether the plate is viewable from space
 		    // this raster will be used when merging other fields
-		    resample_f32(plate.density,		 		local_ids_of_global_cells, 						globalized_scalar_field);
-		    lt 			(globalized_scalar_field,	master_density,									globalized_is_on_top);
-		    and 		(globalized_is_on_top,		globalized_plate_mask,	 						globalized_is_on_top);
-		    copy_into 	(master_density,	 		globalized_scalar_field, globalized_is_on_top, 	master_density);
+		    resample_f32(plate.density,		 		local_ids_of_global_cells, 							globalized_scalar_field);
+		    lt 			(globalized_scalar_field,	master_density,										globalized_is_on_top);
+		    and 		(globalized_is_on_top,		globalized_plate_mask,	 							globalized_is_on_top);
+		    copy_into 	(master_density,	 		globalized_scalar_field, globalized_is_on_top, 		master_density);
 
 		    // merge plates with master
 		    // set plate_mask to current plate's index where current plate is on top
-		    fill_into 	(master.plate_map, i, globalized_is_on_top, 								master.plate_map);
+		    fill_into 	(master.plate_map, i, globalized_is_on_top, 									master.plate_map);
 		    
 		    // add 1 to master.plate_count where current plate exists
-		    add_ui8 	(master.plate_count, globalized_plate_mask, 								master.plate_count);
+		    add_ui8 	(master.plate_count, globalized_plate_mask, 									master.plate_count);
 
-		    resample_crust(plate, local_ids_of_global_cells, 										globalized_crust);
-		    overlap_crust (master, globalized_crust, globalized_plate_mask, globalized_is_on_top, 	master);
+		    resample_crust(plate.crust, local_ids_of_global_cells, 										globalized_crust);
+		    overlap_crust (master.crust, globalized_crust, globalized_plate_mask, globalized_is_on_top, master.crust);
 		}
 	  	scratchpad.deallocate('merge_plates_to_master');
 	}
@@ -181,7 +180,7 @@ var World = (function() {
 			and 	(localized_will_stay_riftable, localized_is_just_outside_border,  	localized_is_rifting); 
 
 	        fill_into(plate.mask, 1, localized_is_rifting,                 				plate.mask); 
-	        fill_into_crust(plate, ocean, localized_is_rifting, 						plate);
+	        fill_into_crust(plate.crust, ocean, localized_is_rifting, 					plate.crust);
 		}
 
 	  	scratchpad.deallocate('rift');
@@ -248,7 +247,7 @@ var World = (function() {
 	        fill_into 	(plate.mask, 0, localized_is_detaching,                 			plate.mask); 
 	        
 	        // calculate accretion delta
-        	mult_field	(plate.sial, localized_is_detaching,								localized_accretion);
+        	mult_field	(plate.crust.sial, localized_is_detaching,							localized_accretion);
         	resample_f32(localized_accretion, plate.local_ids_of_global_cells,				globalized_scalar_field);
         	add 		(globalized_accretion, globalized_scalar_field, 					globalized_accretion);
 		}
@@ -260,7 +259,7 @@ var World = (function() {
        	// CALCULATE DELTAS
 		TectonicsModeling.get_erosion(
 			world.displacement, world.SEALEVEL, timestep,
-			world, world.erosion
+			world.crust, world.erosion
 		);
 		Crust.assert_conserved_transport_delta(world.erosion, 1e-2); 
 
@@ -311,8 +310,8 @@ var World = (function() {
 	        // enforce constraint: erosion should never exceed amount of rock available
 	        // get_erosion() guarantees against this, but plate motion sometimes causes violations to this constraint
 	        // violations to constraint are usually small, so we just modify erosion after the fact to preserve the constraint
-	        fix_crust_delta	(localized_deltas, plate);
-        	add_crust_delta	(plate, localized_deltas, 									plate);
+	        fix_crust_delta	(localized_deltas, plate.crust);
+        	add_crust_delta	(plate.crust, localized_deltas, 							plate.crust);
 		}
 
 	  	scratchpad.deallocate('integrate_deltas');
@@ -356,7 +355,7 @@ var World = (function() {
 				mask: 	mask,
 				eulerPole: eulerPole
 			})
-			Crust.copy(this, plate);
+			Crust.copy(this.crust, plate.crust);
 
 			// TODO: see if you can't get this to reflect relative magnitude of average surface asthenosphere velocity
 			plate.angularSpeed = this.getRandomPlateSpeed();

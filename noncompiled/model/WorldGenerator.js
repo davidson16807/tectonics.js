@@ -44,7 +44,7 @@ WorldGenerator.generate = function (world, height_ranks, hypsography, control_po
 				upper.displacement == tallest.displacement){
 				var fraction = smoothstep(lower.displacement, upper.displacement, height);
 				
-				Crust.set_value( world, cell_ids[i], RockColumn.lerp(lower, upper, fraction) );
+				Crust.set_value( world.crust, cell_ids[i], RockColumn.lerp(lower, upper, fraction) );
 
 				break;
 			}
