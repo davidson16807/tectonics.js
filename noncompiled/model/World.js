@@ -260,16 +260,12 @@ var World = (function() {
 		ScalarField.add_scalar(globalized_deltas.age, timestep, 						globalized_deltas.age); // aging
 	}
 
-	function update_plates(world, timestep, plates) { 
+	function integrate_deltas(world, plates) { 
 	  	var grid = world.grid;
 
 	  	var scratchpad = RasterStackBuffer.scratchpad;
-	  	scratchpad.allocate('update_plates');
-
-		rift 				(world, plates);
-		detach_and_accrete 	(world, plates);
-		calculate_deltas	(world, timestep);
-		
+	  	scratchpad.allocate('integrate_deltas');
+	  	
 	  	var plate_map = world.plate_map;
 
 		var localized_is_on_top = scratchpad.getUint8Raster(grid);
@@ -306,8 +302,16 @@ var World = (function() {
         	add_crust_delta	(plate, localized_deltas, 									plate);
 		}
 
-	  	scratchpad.deallocate('update_plates');
+	  	scratchpad.deallocate('integrate_deltas');
 
+	}
+	function update_plates(world, timestep, plates) { 
+	  	var grid = world.grid;
+
+		rift 				(world, plates);
+		detach_and_accrete 	(world, plates);
+		calculate_deltas	(world, timestep);
+		integrate_deltas 	(world, plates);
 	}
 
 	World.prototype.SEALEVEL = 3682;
