@@ -11,6 +11,15 @@ var World = (function() {
 
 		this.supercontinentCycle = parameters['supercontinentCycle'] || new SupercontinentCycle(this, parameters);
 
+		// The following are fields that are derived from other fields:
+		this.displacement = Float32Raster(this.grid);
+		// "displacement is the height of the crust relative to an arbitrary datum level
+		// It is not called "elevation" to emphasize that it is not relative to sea level
+		this.thickness = Float32Raster(this.grid);
+		// the thickness of the crust in km
+		this.density = Float32Raster(this.grid);
+		// the average density of the crust, in kg/m^3
+		
 		this.subductability = Float32Raster(this.grid);
 		this.plate_map = Uint8Raster(this.grid);
 		this.plate_count = Uint8Raster(this.grid);
