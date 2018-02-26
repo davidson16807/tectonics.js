@@ -47,14 +47,14 @@ TectonicsModeling.get_subductability = function(density, subductability) {
 }
 
 // gets surface pressure of the asthenosphere by smoothing a field representing subductability
-TectonicsModeling.get_asthenosphere_pressure = function(subductability, pressure, scratch) {
-	pressure = pressure || Float32Raster(subductability.grid);
-	scratch = scratch || Float32Raster(subductability.grid);
+TectonicsModeling.get_asthenosphere_pressure = function(density, pressure, scratch) {
+	pressure = pressure || Float32Raster(density.grid);
+	scratch = scratch || Float32Raster(density.grid);
 
 	var diffuse = ScalarField.diffusion_by_constant;
 
 	var smoothing_iterations =  15;
-	Float32Raster.copy(subductability, pressure);
+	Float32Raster.copy(density, pressure);
 	for (var i=0; i<smoothing_iterations; ++i) {
 		diffuse(pressure, 1, pressure, scratch);
 	}
@@ -63,7 +63,7 @@ TectonicsModeling.get_asthenosphere_pressure = function(subductability, pressure
 
 // gets surface velocity of the asthenosphere as the gradient of pressure
 TectonicsModeling.get_asthenosphere_velocity = function(pressure, velocity) {
-	velocity = velocity || VectorRaster(subductability.grid);
+	velocity = velocity || VectorRaster(pressure.grid);
 	ScalarField.gradient(pressure, velocity);
 	return velocity;
 }
