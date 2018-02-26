@@ -110,10 +110,11 @@ Crust.add_delta = function(crust, crust_delta, result_crust) {
 	add_field(crust.sial, crust_delta.sial, result_crust.sial);
 	add_field(crust.age, crust_delta.age, result_crust.age);
 }
-Crust.fix_delta = function(crust_delta, crust) {
+Crust.fix_delta = function(crust_delta, crust, scratch) {
+	var scratch = scratch || Float32Raster(crust_delta.grid);
 	var fix = Float32Raster.fix_nonnegative_conserved_quantity_delta;
-	fix(crust_delta.sima, crust.sima);
-	fix(crust_delta.sial, crust.sial);
+	fix(crust_delta.sima, crust.sima, scratch);
+	fix(crust_delta.sial, crust.sial, scratch);
 }
 Crust.assert_conserved_delta = function(crust_delta, threshold) {
 	Float32Raster.assert_conserved_quantity_delta(
