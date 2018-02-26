@@ -4,7 +4,6 @@
 // The Crust namespace provides methods that extend the functionality of rasters.js to Crust objects
 // It also provides functions for modeling properties of Crust
 function Crust(params) {
-	this.uuid = params['uuid'] || Uuid.create();
 	this.grid = params['grid'] || stop('missing parameter: "grid"');
 
 	// TODO:

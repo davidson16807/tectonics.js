@@ -45,7 +45,6 @@ JsonSerializer.plate = function (plate, options) {
 	
 	// serialize non-field values to json
 	var plate_json = {
-		uuid: 					plate.uuid,
 		eulerPole: 				plate.eulerPole,
 		angularSpeed: 			plate.angularSpeed,
 		local_to_global_matrix: plate.local_to_global_matrix,
@@ -67,7 +66,6 @@ JsonDeserializer.plate = function (plate_json, _world, options) {
 	var plate = new Plate({
 		world: _world,
 		angularSpeed: plate_json.angularSpeed,
-		uuid: plate_json.uuid,
 		eulerPole: plate_json.eulerPole,
 		local_to_global_matrix: plate_json.local_to_global_matrix,
 	});

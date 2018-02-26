@@ -35,6 +35,7 @@ function Grid(template, options){
 	this.buffer_array_to_cell = buffer_array_to_cell;
 
 	//Precompute neighbors for O(1) lookups
+	// TODO: remove buckets library
 	var neighbor_lookup = this.template.vertices.map(function(vertex) { return new buckets.Set()});
 	for(var i=0, il = this.template.faces.length, faces = this.template.faces; i<il; i++){
 		face = faces[i];
