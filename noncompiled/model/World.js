@@ -43,6 +43,20 @@ var World = (function() {
 	 		plates[i].move(timestep);
 	 	}
 	}
+    // calculate derived properties for plates
+	function update_calculated_plate_fields(plates, scratch) { 
+		var plate_thickness = scratch || Float32Raster(plates[0].grid); 
+
+	    var get_density = TectonicsModeling.get_density; 
+	    var get_thickness = TectonicsModeling.get_thickness; 
+	    
+		var plate;
+		for (var i=0, li=plates.length; i<li; ++i) {
+		    plate = plates[i]; 
+            get_thickness	(plate.crust, 															plate_thickness); 
+            get_density		(plate.crust, plate_thickness,											plate.density); 
+	 	}
+	}
 	// update fields that are derived from others
 	function update_calculated_fields(world) {
 		TectonicsModeling.get_thickness		(world.crust, 											world.thickness);
@@ -91,8 +105,6 @@ var World = (function() {
 
 		var resample_crust = Crust.get_ids;
 
-	    var get_density = TectonicsModeling.get_density; 
-	    var get_thickness = TectonicsModeling.get_thickness; 
 		var overlap_crust = TectonicsModeling.overlap_crust; 
 
 	  	var plate; 
@@ -107,10 +119,6 @@ var World = (function() {
 	    	// this raster indicates whether the plate exists in a region of the planet
 	    	// this raster will be used when merging other rasters
 		    resample_ui8(plate.mask, local_ids_of_global_cells, 										globalized_plate_mask); 
-
-		    // calculate derived properties for plates
-            get_thickness(plate.crust, 																	plate_thickness); 
-            get_density(plate.crust, plate_thickness,													plate.density); 
 
 		    // generate globalized_is_on_top
 		    // this raster indicates whether the plate is viewable from space
@@ -286,6 +294,7 @@ var World = (function() {
 
 		var localized_is_on_top = scratchpad.getUint8Raster(grid);
 		var globalized_is_on_top = scratchpad.getUint8Raster(grid);
+		var scratch_f32 = scratchpad.getFloat32Raster(grid);
 
 		var resample_ui8 = Uint8Raster.get_ids;
 		var equals = Uint8Field.eq_scalar;
@@ -313,7 +322,7 @@ var World = (function() {
 	        // enforce constraint: erosion should never exceed amount of rock available
 	        // get_erosion() guarantees against this, but plate motion sometimes causes violations to this constraint
 	        // violations to constraint are usually small, so we just modify erosion after the fact to preserve the constraint
-	        fix_crust_delta	(localized_deltas, plate.crust);
+	        fix_crust_delta	(localized_deltas, plate.crust, scratch_f32);
         	add_crust_delta	(plate.crust, localized_deltas, 							plate.crust);
 		}
 
@@ -374,6 +383,7 @@ var World = (function() {
 
 		move_plates 			(this.plates, timestep); 	// this performs the actual plate movement
 		this.supercontinentCycle.update(timestep); 			// this periodically splits the world into plates
+		update_calculated_plate_fields(this.plates); 		// this calculates properties for each plate, like density
 		merge_plates_to_master	(this.plates, this); 		// this stitches plates together to create a world map
 		update_calculated_fields(this); 					// this creates world maps for things like density and elevation
 		rift 					(this, this.plates); 		// this identifies rifting regions on the world map and adds crust to plates where needed
