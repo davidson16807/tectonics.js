@@ -214,7 +214,7 @@ var World = (function() {
 		var add = ScalarField.add_field;
 
 		//				 op 	operands													result
-		not_equals 	(world.plate_count, 1, 													globalized_is_not_alone);
+		not_equals 		(world.plate_count, 1, 												globalized_is_not_alone);
 
 		var plate = plates[0];
 		for (var i=0, li=plates.length; i<li; ++i) {
@@ -243,6 +243,23 @@ var World = (function() {
 
 	  	scratchpad.deallocate('detach_and_accrete');
 	}
+	function calculate_deltas(world, timestep) {
+
+       	// CALCULATE DELTAS
+		TectonicsModeling.get_erosion(
+			world.displacement, world.SEALEVEL, timestep,
+			world, world.erosion
+		);
+		Crust.assert_conserved_transport_delta(world.erosion, 1e-2); 
+
+		// COMPILE DELTAS
+		var globalized_deltas = world.crust_delta;
+		Crust.fill(globalized_deltas, RockColumn.EMPTY);
+		Crust.add_delta 	(globalized_deltas, world.erosion, 							globalized_deltas);
+		ScalarField.add_field(globalized_deltas.sial, world.accretion.sial, 			globalized_deltas.sial);
+		ScalarField.add_scalar(globalized_deltas.age, timestep, 						globalized_deltas.age); // aging
+	}
+
 	function update_plates(world, timestep, plates) { 
 	  	var grid = world.grid;
 
@@ -251,24 +268,8 @@ var World = (function() {
 
 		rift 				(world, plates);
 		detach_and_accrete 	(world, plates);
-
-       	// CALCULATE DELTAS
-		var globalized_erosion = world.erosion;
-		TectonicsModeling.get_erosion(
-			world.displacement, world.SEALEVEL, timestep,
-			world, globalized_erosion
-		);
-		Crust.assert_conserved_transport_delta(globalized_erosion, 1e-2); 
-
-
-		// COMPILE DELTAS
-		var globalized_deltas = world.crust_delta;
-		var localized_deltas = world.crust_scratch;
-		Crust.fill(globalized_deltas, RockColumn.EMPTY);
-		Crust.add_delta 	(globalized_deltas, globalized_erosion, 					globalized_deltas);
-		ScalarField.add_field(globalized_deltas.sial, world.accretion.sial, 			globalized_deltas.sial);
-		ScalarField.add_scalar(globalized_deltas.age, timestep, 						globalized_deltas.age); // aging
-
+		calculate_deltas	(world, timestep);
+		
 	  	var plate_map = world.plate_map;
 
 		var localized_is_on_top = scratchpad.getUint8Raster(grid);
@@ -285,6 +286,8 @@ var World = (function() {
 		// INTEGRATE DELTAS
 	  	var plate; 
 		var global_ids_of_local_cells;
+		var globalized_deltas = world.crust_delta;
+		var localized_deltas = world.crust_scratch;
 		for (var i=0, li=plates.length; i<li; ++i) {
 		    plate = plates[i];
 
