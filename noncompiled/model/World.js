@@ -19,7 +19,7 @@ var World = (function() {
 		// the thickness of the crust in km
 		this.density = Float32Raster(this.grid);
 		// the average density of the crust, in kg/m^3
-		
+
 		this.subductability = Float32Raster(this.grid);
 		this.plate_map = Uint8Raster(this.grid);
 		this.plate_count = Uint8Raster(this.grid);
@@ -40,6 +40,18 @@ var World = (function() {
 	World.prototype = Object.create(Crust);
 	World.prototype.constructor = World;
 
+	function move_plates(plates, timestep) {
+		for (var i=0, li=plates.length; i<li; ++i) {
+	 		plates[i].move(timestep);
+	 	}
+	}
+	// update fields that are derived from others
+	function update_calculated_fields(crust) {
+		TectonicsModeling.get_thickness(crust, crust.thickness);
+		TectonicsModeling.get_density(crust, crust.age, crust.density);
+		TectonicsModeling.get_subductability(crust.density, crust.subductability);
+		TectonicsModeling.get_displacement(crust.thickness, crust.density, world.mantleDensity, crust.displacement);
+	}
 	function merge_plates_to_master(plates, master) {
 	  	var scratchpad = RasterStackBuffer.scratchpad;
 	  	scratchpad.allocate('merge_plates_to_master');
@@ -53,7 +65,7 @@ var World = (function() {
 		Uint8Raster.fill(master.plate_count, 0);
 
 		
-		var master_subductability = world.subductability; 
+		var master_subductability = master.subductability; 
 		Float32Raster.fill(master_subductability, 9999);
 
 		//local variables
@@ -98,6 +110,7 @@ var World = (function() {
 	    	// this raster will be used when merging other rasters
 		    resample_ui8(plate.mask, local_ids_of_global_cells, 								globalized_plate_mask); 
 
+		    // calculate derived properties for plates
             get_density(plate, plate.age, plate.density); 
       		get_subductability(plate.density, plate.subductability); 
 
@@ -119,7 +132,6 @@ var World = (function() {
 		    resample_crust(plate, local_ids_of_global_cells, 									globalized_crust);
 		    overlap_crust (master, globalized_crust, globalized_plate_mask, globalized_is_on_top, master);
 		}
-		update_calculated_fields(master);
 	  	scratchpad.deallocate('merge_plates_to_master');
 	}
 
@@ -325,6 +337,7 @@ var World = (function() {
 
 	World.prototype.resetPlates = function() {
 		// get plate masks from image segmentation of asthenosphere velocity
+		update_calculated_fields(this);
 		var pressure = TectonicsModeling.get_asthenosphere_pressure(this.subductability);
 		TectonicsModeling.get_asthenosphere_velocity(pressure, this.asthenosphere_velocity);
 		var angular_velocity = VectorField.cross_vector_field(this.asthenosphere_velocity, this.grid.pos);
@@ -356,34 +369,22 @@ var World = (function() {
 		}
 	};
 
-	// update fields that are derived from others
-	function update_calculated_fields(crust) {
-		TectonicsModeling.get_thickness(crust, crust.thickness);
-		TectonicsModeling.get_density(crust, crust.age, crust.density);
-		TectonicsModeling.get_subductability(crust.density, crust.subductability);
-		TectonicsModeling.get_displacement(crust.thickness, crust.density, world.mantleDensity, crust.displacement);
-	}
 	World.prototype.update = function(timestep){
 		if (timestep === 0) {
 			return;
 		};
 
-
-	 	for (var i = 0; i < this.plates.length; i++) {
-	 		this.plates[i].move(timestep)
-	 	}
-		update_calculated_fields(this);
-		this.supercontinentCycle.update(timestep);
-		merge_plates_to_master(this.plates, this);
-
-		rift 				(world, this.plates);
-		detach_and_accrete 	(world, this.plates);
-		calculate_deltas	(world, timestep);
-		integrate_deltas 	(world, this.plates);
+		move_plates 			(this.plates, timestep); 	// this performs the actual plate movement
+		this.supercontinentCycle.update(timestep); 			// this periodically splits the world into plates
+		merge_plates_to_master	(this.plates, this); 		// this stitches plates together to create a world map
+		update_calculated_fields(this); 					// this creates world maps for things like density and elevation
+		rift 					(this, this.plates); 		// this identifies rifting regions on the world map and adds crust to plates where needed
+		detach_and_accrete 		(this, this.plates); 		// this identifies detaching regions on the world map and then removes crust from plates where needed
+		calculate_deltas		(this, timestep); 			// this creates a world map of all additions and subtractions to crust (e.g. from erosion, accretion, etc.)
+		integrate_deltas 		(this, this.plates); 		// this uses the map above in order to add and subtract crust
 	};
 	World.prototype.worldLoaded = function(timestep){
 		merge_plates_to_master(this.plates, this);
-		// update_plates(this, 0.0000000001, this.plates);
 	};
 	return World;
 })();

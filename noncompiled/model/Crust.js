@@ -74,10 +74,6 @@ Crust.fill_into_selection = function(crust, rock_column, selection_raster, resul
   	Crust.copy(crust, result_crust);
   }
  
-  var crust_sima = crust.sima; 
-  var crust_sial = crust.sial; 
-  var crust_age = crust.age; 
- 
   var column_sima = rock_column.sima; 
   var column_sial = rock_column.sial; 
   var column_age = rock_column.age; 
