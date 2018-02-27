@@ -27,15 +27,7 @@ RealisticDisplay.prototype.removeFrom = function(mesh) {
 	
 };
 RealisticDisplay.prototype.updateAttributes = function(geometry, plate) {
-	var geometry, displacement, scalar;
-	displacement = geometry.attributes.displacement.array;
-	var buffer_array_to_cell = view.grid.buffer_array_to_cell;
-	var buffer_array_index; 
-	var displacement_model = plate.displacement; 
-	for(var j=0, lj = displacement.length; j<lj; j++){ 
-		buffer_array_index = buffer_array_to_cell[j];
-		displacement[j] = displacement_model[buffer_array_index]; 
-	}
+	Float32Raster.get_ids(plate.displacement, view.grid.buffer_array_to_cell, geometry.attributes.displacement.array); 
 	geometry.attributes.displacement.needsUpdate = true;
 }
 scalarDisplays.satellite = new RealisticDisplay('canopy');
@@ -87,19 +79,7 @@ ScalarDisplay.prototype.removeFrom = function(mesh) {
 	
 };
 ScalarDisplay.prototype.updateAttributes = function(geometry, plate) {
-	var geometry, displacement, scalar;
-	displacement = geometry.attributes.displacement.array;
-	scalar = geometry.attributes.scalar.array;
-	var buffer_array_to_cell = view.grid.buffer_array_to_cell;
-	var buffer_array_index; 
-	var displacement_model = plate.displacement; 
-	this.field = this.field || Float32Raster(plate.grid);
-	this.scratch = this.scratch || Float32Raster(plate.grid);
-
-	for(var j=0, lj = displacement.length; j<lj; j++){ 
-		buffer_array_index = buffer_array_to_cell[j];
-		displacement[j] = displacement_model[buffer_array_index]; 
-	}
+	Float32Raster.get_ids(plate.displacement, view.grid.buffer_array_to_cell, geometry.attributes.displacement.array); 
 	geometry.attributes.displacement.needsUpdate = true;
 
 	// run getField()
@@ -117,12 +97,11 @@ ScalarDisplay.prototype.updateAttributes = function(geometry, plate) {
 		return;
 	}
 
-	for(var j=0, lj = displacement.length; j<lj; j++){ 
-		buffer_array_index = buffer_array_to_cell[j];
-		scalar[j] = scalar_model[buffer_array_index]; 
-	}
+
 	if (scalar_model !== void 0) {
+		Float32Raster.get_ids(scalar_model, view.grid.buffer_array_to_cell, geometry.attributes.scalar.array); 
 		geometry.attributes.scalar.needsUpdate = true;
+
 		if (scalar_model !== this.field) {
 			Float32Raster.copy(scalar_model, this.field);
 		}
@@ -180,12 +159,16 @@ ScalarHeatDisplay.prototype.removeFrom = function(mesh) {
 	
 };
 ScalarHeatDisplay.prototype.updateAttributes = function(geometry, plate) {
-	var geometry, displacement, scalar;
-	displacement = geometry.attributes.displacement.array;
-	scalar = geometry.attributes.scalar.array;
-	var buffer_array_to_cell = view.grid.buffer_array_to_cell;
-	var buffer_array_index; 
-	var displacement_model = plate.displacement; 
+	Float32Raster.get_ids(plate.displacement, view.grid.buffer_array_to_cell, geometry.attributes.displacement.array); 
+	geometry.attributes.displacement.needsUpdate = true;
+
+	// run getField()
+	if (this.getField === void 0) {
+		log_once("ScalarDisplay.getField is undefined.");
+		return;
+	}
+
+
 	this.field = this.field || Float32Raster(plate.grid);
 	this.scratch = this.scratch || Float32Raster(plate.grid);
 	
@@ -203,18 +186,16 @@ ScalarHeatDisplay.prototype.updateAttributes = function(geometry, plate) {
 		log_once("ScalarDisplay.getField() did not return a TypedArray.");
 		return;
 	}
+	if (scalar_model instanceof Uint8Array) {
+		scalar_model = Float32Raster.FromUint8Raster(scalar_model);
+	}
 	
 	var max = this.scaling? Math.max.apply(null, scalar_model) || 1 : 1;
 	if (scalar_model !== void 0) {
-		for(var j=0, lj = displacement.length; j<lj; j++){ 
-			buffer_array_index = buffer_array_to_cell[j];
-			displacement[j] = displacement_model[buffer_array_index]; 
-				scalar[j] = scalar_model[buffer_array_index] / max; 
-		}
-	}
-	geometry.attributes.displacement.needsUpdate = true;
-	if (scalar_model !== void 0) {
+		ScalarField.div_scalar(scalar_model, max, scalar_model);
+		Float32Raster.get_ids(scalar_model, view.grid.buffer_array_to_cell, geometry.attributes.scalar.array); 
 		geometry.attributes.scalar.needsUpdate = true;
+
 		if (scalar_model !== this.field) {
 			Float32Raster.copy(scalar_model, this.field);
 		}
