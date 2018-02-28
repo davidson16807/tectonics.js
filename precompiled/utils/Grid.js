@@ -39,13 +39,13 @@ function Grid(template, options){
 	for(var i=0, il = this.template.faces.length, faces = this.template.faces; i<il; i++){
 		face = faces[i];
 		neighbor_lookup[face.a][face.b] = face.b;
-		neighbor_lookup[face.a][face.c] = face.b;
-		neighbor_lookup[face.b][face.a] = face.b;
-		neighbor_lookup[face.b][face.c] = face.b;
-		neighbor_lookup[face.c][face.a] = face.b;
+		neighbor_lookup[face.a][face.c] = face.c;
+		neighbor_lookup[face.b][face.a] = face.a;
+		neighbor_lookup[face.b][face.c] = face.c;
+		neighbor_lookup[face.c][face.a] = face.a;
 		neighbor_lookup[face.c][face.b] = face.b;
 	}
-	neighbor_lookup = neighbor_lookup.map(function(set) { return Object.keys(set); });
+	neighbor_lookup = neighbor_lookup.map(function(set) { return Object.values(set); });
 	this.neighbor_lookup = neighbor_lookup;
 
 	var neighbor_count = Uint8Raster(this);
