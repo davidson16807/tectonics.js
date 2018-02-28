@@ -2411,19 +2411,12 @@ VectorRasterGraphics.copy_into_selection = function(vector_raster, copied, selec
  if (!(copied.x !== void 0) && !(copied.x instanceof Float32Array)) { throw "copied" + ' is not a vector raster'; }
  if (!(selection instanceof Uint8Array)) { throw "selection" + ' is not a ' + "Uint8Array"; }
  if (!(result.x !== void 0) && !(result.x instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
- var ax = vector_raster.x;
- var ay = vector_raster.y;
- var az = vector_raster.z;
- var bx = copied.x;
- var by = copied.y;
- var bz = copied.z;
- var cx = result.x;
- var cy = result.y;
- var cz = result.z;
- for (var i=0, li=vector_raster.length; i<li; ++i) {
-     cx[i] = selection[i] === 1? bx[i] : ax[i];
-     cy[i] = selection[i] === 1? by[i] : ay[i];
-     cz[i] = selection[i] === 1? bz[i] : az[i];
+ var a = vector_raster.everything;
+ var b = copied.everything;
+ var c = result.everything;
+ var length = selection.length;
+ for (var i=0, li=everything.length; i<li; ++i) {
+  c[i] = selection[i%length] === 1? b[i] : a[i];
  }
  return result;
 }
@@ -2977,7 +2970,6 @@ function VectorRaster(grid) {
 }
 VectorRaster.OfLength = function(length, grid) {
   var buffer = new ArrayBuffer(3 * Float32Array.BYTES_PER_ELEMENT * length);
-  var everything = new Float32Array(buffer);
   return {
     x: new Float32Array(buffer, 0 * Float32Array.BYTES_PER_ELEMENT * length, length),
     y: new Float32Array(buffer, 1 * Float32Array.BYTES_PER_ELEMENT * length, length),
