@@ -5,7 +5,7 @@ var VectorField = {};
 
 
 
-VectorField.add_vector_field_term = function(vector_field1, vector_field2, scalar, result) {
+VectorField.add_vector_field_and_scalar_term = function(vector_field1, vector_field2, scalar, result) {
 	result = result || VectorRaster(vector_field1.grid);
 
 	ASSERT_IS_VECTOR_RASTER(vector_field1)
@@ -13,28 +13,20 @@ VectorField.add_vector_field_term = function(vector_field1, vector_field2, scala
 	ASSERT_IS_TYPE(scalar, number)
 	ASSERT_IS_VECTOR_RASTER(result)
 
-	var x1 = vector_field1.x;
-	var y1 = vector_field1.y;
-	var z1 = vector_field1.z;
 
-	var x2 = vector_field2.x;
-	var y2 = vector_field2.y;
-	var z2 = vector_field2.z;
+	var u = vector_field1.everything;
+	var v = vector_field2.everything;
+	var out = result.everything;
 
-	var x = result.x;
-	var y = result.y;
-	var z = result.z;
-
-	for (var i=0, li=x.length; i<li; ++i) {
-	    x[i] = x1[i] + scalar * x2[i];
-	    y[i] = y1[i] + scalar * y2[i];
-	    z[i] = z1[i] + scalar * z2[i];
+	var length = scalar_field.length;
+	for (var i=0, li=everything.length; i<li; ++i) {
+	    out[i] = u[i] + scalar_field[i%length] * v[i];
 	}
 
 	return result;
 };
 
-VectorField.add_vector_field_term = function(vector_field1, vector_field2, scalar_field, result) {
+VectorField.add_vector_field_and_scalar_field_term = function(vector_field1, vector_field2, scalar_field, result) {
 	result = result || VectorRaster(vector_field1.grid);
 
 	ASSERT_IS_VECTOR_RASTER(vector_field1)
@@ -42,22 +34,13 @@ VectorField.add_vector_field_term = function(vector_field1, vector_field2, scala
 	ASSERT_IS_ANY_ARRAY(scalar_field)
 	ASSERT_IS_VECTOR_RASTER(result)
 
-	var x1 = vector_field1.x;
-	var y1 = vector_field1.y;
-	var z1 = vector_field1.z;
+	var u = vector_field1.everything;
+	var v = vector_field2.everything;
+	var out = result.everything;
 
-	var x2 = vector_field2.x;
-	var y2 = vector_field2.y;
-	var z2 = vector_field2.z;
-
-	var x = result.x;
-	var y = result.y;
-	var z = result.z;
-
-	for (var i=0, li=x.length; i<li; ++i) {
-	    x[i] = x1[i] + scalar_field[i] * x2[i];
-	    y[i] = y1[i] + scalar_field[i] * y2[i];
-	    z[i] = z1[i] + scalar_field[i] * z2[i];
+	var length = scalar_field.length;
+	for (var i=0, li=everything.length; i<li; ++i) {
+	    out[i] = u[i] + scalar_field[i%length] * v[i];
 	}
 
 	return result;
@@ -70,22 +53,12 @@ VectorField.add_vector_field = function(vector_field1, vector_field2, result) {
 	ASSERT_IS_VECTOR_RASTER(vector_field2)
 	ASSERT_IS_VECTOR_RASTER(result)
 
-	var x1 = vector_field1.x;
-	var y1 = vector_field1.y;
-	var z1 = vector_field1.z;
+	var u = vector_field1.everything;
+	var v = vector_field2.everything;
+	var out = result.everything;
 
-	var x2 = vector_field2.x;
-	var y2 = vector_field2.y;
-	var z2 = vector_field2.z;
-
-	var x = result.x;
-	var y = result.y;
-	var z = result.z;
-
-	for (var i=0, li=x.length; i<li; ++i) {
-	    x[i] = x1[i] + x2[i];
-	    y[i] = y1[i] + y2[i];
-	    z[i] = z1[i] + z2[i];
+	for (var i=0, li=everything.length; i<li; ++i) {
+	    out[i] = u[i] + v[i];
 	}
 
 	return result;
@@ -98,22 +71,12 @@ VectorField.sub_vector_field = function(vector_field1, vector_field2, result) {
 	ASSERT_IS_VECTOR_RASTER(vector_field2)
 	ASSERT_IS_VECTOR_RASTER(result)
 
-	var x1 = vector_field1.x;
-	var y1 = vector_field1.y;
-	var z1 = vector_field1.z;
+	var u = vector_field1.everything;
+	var v = vector_field2.everything;
+	var out = result.everything;
 
-	var x2 = vector_field2.x;
-	var y2 = vector_field2.y;
-	var z2 = vector_field2.z;
-
-	var x = result.x;
-	var y = result.y;
-	var z = result.z;
-
-	for (var i=0, li=x.length; i<li; ++i) {
-	    x[i] = x1[i] - x2[i];
-	    y[i] = y1[i] - y2[i];
-	    z[i] = z1[i] - z2[i];
+	for (var i=0, li=everything.length; i<li; ++i) {
+	    out[i] = u[i] - v[i];
 	}
 
 	return result;
@@ -125,20 +88,16 @@ VectorField.dot_vector_field = function(vector_field1, vector_field2, result) {
 	ASSERT_IS_VECTOR_RASTER(vector_field2)
 	ASSERT_IS_ARRAY(result, Float32Array)
 
-	var x1 = vector_field1.x;
-	var y1 = vector_field1.y;
-	var z1 = vector_field1.z;
+	var u = vector_field1.everything;
+	var v = vector_field2.everything;
 
-	var x2 = vector_field2.x;
-	var y2 = vector_field2.y;
-	var z2 = vector_field2.z;
-
-	for (var i=0, li=x1.length; i<li; ++i) {
-	    result[i] = x1[i] * x2[i] + 
-	    			y1[i] * y2[i] + 
-	    			z1[i] * z2[i];
+	var length = result.length;
+	for (var i=0, li=result.length; i<li; ++i) {
+		result[i] = 0;
 	}
-
+	for (var i=0, li=everything.length; i<li; ++i) {
+	    result[i%length] += u[i] * v[i];
+	}
 	return result;
 };
 VectorField.hadamard_vector_field = function(vector_field1, vector_field2, result) {
@@ -148,22 +107,12 @@ VectorField.hadamard_vector_field = function(vector_field1, vector_field2, resul
 	ASSERT_IS_VECTOR_RASTER(vector_field2)
 	ASSERT_IS_VECTOR_RASTER(result)
 
-	var x1 = vector_field1.x;
-	var y1 = vector_field1.y;
-	var z1 = vector_field1.z;
+	var u = vector_field1.everything;
+	var v = vector_field2.everything;
+	var out = result.everything;
 
-	var x2 = vector_field2.x;
-	var y2 = vector_field2.y;
-	var z2 = vector_field2.z;
-
-	var x = result.x;
-	var y = result.y;
-	var z = result.z;
-
-	for (var i=0, li=x.length; i<li; ++i) {
-	    x[i] = x1[i] * x2[i];
-	    y[i] = y1[i] * y2[i];
-	    z[i] = z1[i] * z2[i];
+	for (var i=0, li=everything.length; i<li; ++i) {
+	    out[i] = u[i] * v[i];
 	}
 
 	return result;
@@ -391,18 +340,12 @@ VectorField.add_scalar_field = function(vector_field, scalar_field, result) {
 	ASSERT_IS_ARRAY(scalar_field, Float32Array)
 	ASSERT_IS_VECTOR_RASTER(result)
 
-	var x1 = vector_field.x;
-	var y1 = vector_field.y;
-	var z1 = vector_field.z;
+	var u = vector_field.everything;
+	var out = result.everything;
 
-	var x = result.x;
-	var y = result.y;
-	var z = result.z;
-
-	for (var i=0, li=x.length; i<li; ++i) {
-	    x[i] = x1[i] + scalar_field[i];
-	    y[i] = y1[i] + scalar_field[i];
-	    z[i] = z1[i] + scalar_field[i];
+	var length = scalar_field.length;
+	for (var i=0, li=everything.length; i<li; ++i) {
+	    out[i] = u[i] + scalar_field[i%length];
 	}
 
 	return result;
@@ -414,18 +357,12 @@ VectorField.sub_scalar_field = function(vector_field, scalar_field, result) {
 	ASSERT_IS_ARRAY(scalar_field, Float32Array)
 	ASSERT_IS_VECTOR_RASTER(result)
 
-	var x1 = vector_field.x;
-	var y1 = vector_field.y;
-	var z1 = vector_field.z;
+	var u = vector_field.everything;
+	var out = result.everything;
 
-	var x = result.x;
-	var y = result.y;
-	var z = result.z;
-
-	for (var i=0, li=x.length; i<li; ++i) {
-	    x[i] = x1[i] - scalar_field[i];
-	    y[i] = y1[i] - scalar_field[i];
-	    z[i] = z1[i] - scalar_field[i];
+	var length = scalar_field.length;
+	for (var i=0, li=everything.length; i<li; ++i) {
+	    out[i] = u[i] - scalar_field[i%length];
 	}
 
 	return result;
@@ -437,18 +374,12 @@ VectorField.mult_scalar_field = function(vector_field, scalar_field, result) {
 	ASSERT_IS_ARRAY(scalar_field, Float32Array)
 	ASSERT_IS_VECTOR_RASTER(result)
 
-	var x1 = vector_field.x;
-	var y1 = vector_field.y;
-	var z1 = vector_field.z;
+	var u = vector_field.everything;
+	var out = result.everything;
 
-	var x = result.x;
-	var y = result.y;
-	var z = result.z;
-
-	for (var i=0, li=x.length; i<li; ++i) {
-	    x[i] = x1[i] * scalar_field[i];
-	    y[i] = y1[i] * scalar_field[i];
-	    z[i] = z1[i] * scalar_field[i];
+	var length = scalar_field.length;
+	for (var i=0, li=everything.length; i<li; ++i) {
+	    out[i] = u[i] * scalar_field[i%length];
 	}
 
 	return result;
@@ -460,18 +391,12 @@ VectorField.div_scalar_field = function(vector_field, scalar_field, result) {
 	ASSERT_IS_ARRAY(scalar_field, Float32Array)
 	ASSERT_IS_VECTOR_RASTER(result)
 
-	var x1 = vector_field.x;
-	var y1 = vector_field.y;
-	var z1 = vector_field.z;
+	var u = vector_field.everything;
+	var out = result.everything;
 
-	var x = result.x;
-	var y = result.y;
-	var z = result.z;
-
-	for (var i=0, li=x.length; i<li; ++i) {
-	    x[i] = x1[i] / scalar_field[i];
-	    y[i] = y1[i] / scalar_field[i];
-	    z[i] = z1[i] / scalar_field[i];
+	var length = scalar_field.length;
+	for (var i=0, li=everything.length; i<li; ++i) {
+	    out[i] = u[i] / scalar_field[i%length];
 	}
 
 	return result;
@@ -485,18 +410,11 @@ VectorField.add_scalar = function(vector_field, scalar, result) {
 	ASSERT_IS_TYPE(scalar, number)
 	ASSERT_IS_VECTOR_RASTER(result)
 
-	var x1 = vector_field.x;
-	var y1 = vector_field.y;
-	var z1 = vector_field.z;
+	var u = vector_field.everything;
+	var out = result.everything;
 
-	var x = result.x;
-	var y = result.y;
-	var z = result.z;
-
-	for (var i=0, li=x.length; i<li; ++i) {
-	    x[i] = x1[i] + scalar;
-	    y[i] = y1[i] + scalar;
-	    z[i] = z1[i] + scalar;
+	for (var i=0, li=everything.length; i<li; ++i) {
+	    out[i] = u[i] + scalar;
 	}
 
 	return result;
@@ -508,18 +426,11 @@ VectorField.sub_scalar = function(vector_field, scalar, result) {
 	ASSERT_IS_TYPE(scalar, number)
 	ASSERT_IS_VECTOR_RASTER(result)
 
-	var x1 = vector_field.x;
-	var y1 = vector_field.y;
-	var z1 = vector_field.z;
+	var u = vector_field.everything;
+	var out = result.everything;
 
-	var x = result.x;
-	var y = result.y;
-	var z = result.z;
-
-	for (var i=0, li=x.length; i<li; ++i) {
-	    x[i] = x1[i] - scalar;
-	    y[i] = y1[i] - scalar;
-	    z[i] = z1[i] - scalar;
+	for (var i=0, li=everything.length; i<li; ++i) {
+	    out[i] = u[i] - scalar;
 	}
 
 	return result;
@@ -531,18 +442,11 @@ VectorField.mult_scalar = function(vector_field, scalar, result) {
 	ASSERT_IS_TYPE(scalar, number)
 	ASSERT_IS_VECTOR_RASTER(result)
 
-	var x1 = vector_field.x;
-	var y1 = vector_field.y;
-	var z1 = vector_field.z;
+	var u = vector_field.everything;
+	var out = result.everything;
 
-	var x = result.x;
-	var y = result.y;
-	var z = result.z;
-
-	for (var i=0, li=x.length; i<li; ++i) {
-	    x[i] = x1[i] * scalar;
-	    y[i] = y1[i] * scalar;
-	    z[i] = z1[i] * scalar;
+	for (var i=0, li=everything.length; i<li; ++i) {
+	    out[i] = u[i] * scalar;
 	}
 
 	return result;
@@ -554,19 +458,11 @@ VectorField.div_scalar = function(vector_field, scalar, result) {
 	ASSERT_IS_TYPE(scalar, number)
 	ASSERT_IS_VECTOR_RASTER(result)
 
-	var x1 = vector_field.x;
-	var y1 = vector_field.y;
-	var z1 = vector_field.z;
+	var u = vector_field.everything;
+	var out = result.everything;
 
-	var x = result.x;
-	var y = result.y;
-	var z = result.z;
-
-	var inv_scalar = 1/scalar;
-	for (var i=0, li=x.length; i<li; ++i) {
-	    x[i] = x1[i] * inv_scalar;
-	    y[i] = y1[i] * inv_scalar;
-	    z[i] = z1[i] * inv_scalar;
+	for (var i=0, li=everything.length; i<li; ++i) {
+	    out[i] = u[i] / scalar;
 	}
 
 	return result;

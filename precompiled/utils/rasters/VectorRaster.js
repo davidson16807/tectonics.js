@@ -16,23 +16,20 @@
 // I want raster objects to be as bare as possible, functioning more like primitive datatypes.
 
 function VectorRaster(grid) {
-	var length = grid.vertices.length;
-	var result = {
-		x: new Float32Array(length),
-		y: new Float32Array(length),
-		z: new Float32Array(length),
-		grid: grid
-	};
-	return result;
+  return VectorRaster.OfLength(grid.vertices.length, grid);
 }
 VectorRaster.OfLength = function(length, grid) {
-	var result = {
-		x: new Float32Array(length),
-		y: new Float32Array(length),
-		z: new Float32Array(length),
-		grid: grid
-	};	
-	return result;
+  var buffer = new ArrayBuffer(3 * Float32Array.BYTES_PER_ELEMENT * length);
+
+  var everything = new Float32Array(buffer);
+
+  return {
+    x: new Float32Array(buffer, 0 * Float32Array.BYTES_PER_ELEMENT * length, length),
+    y: new Float32Array(buffer, 1 * Float32Array.BYTES_PER_ELEMENT * length, length),
+    z: new Float32Array(buffer, 2 * Float32Array.BYTES_PER_ELEMENT * length, length),
+    everything: new Float32Array(buffer),
+    grid: grid
+  };
 }
 VectorRaster.FromVectors = function(vectors, grid) {
 	var result = VectorRaster.OfLength(vectors.length, grid);
@@ -52,18 +49,11 @@ VectorRaster.copy = function(vector_raster, output) {
   ASSERT_IS_VECTOR_RASTER(vector_raster)
   ASSERT_IS_VECTOR_RASTER(output)
 
-  var ix = vector_raster.x;
-  var iy = vector_raster.y;
-  var iz = vector_raster.z;
+  var input = vector_raster.everything;
+  var output = output.everything;
 
-  var ox = output.x;
-  var oy = output.y;
-  var oz = output.z;
-
-  for (var i=0, li=ix.length; i<li; ++i) {
-      ox[i] = ix[i];
-      oy[i] = iy[i];
-      oz[i] = iz[i];
+  for (var i=0, li=everything.length; i<li; ++i) {
+      output[i] = input[i];
   }
   return output;
 }
