@@ -3123,6 +3123,7 @@ ScalarTransport.fix_nonnegative_quantity_delta = function(delta, quantity) {
 }
 // NOTE: if anyone can find a shorter more intuitive name for this, I'm all ears
 ScalarTransport.fix_nonnegative_conserved_quantity_delta = function(delta, quantity, scratch) {
+  return;
   var scratch = scratch || Float32Raster(delta.grid);
   if (!(delta instanceof Float32Array)) { throw "delta" + ' is not a ' + "Float32Array"; }
   if (!(quantity instanceof Float32Array)) { throw "quantity" + ' is not a ' + "Float32Array"; }
@@ -3135,8 +3136,8 @@ ScalarTransport.fix_nonnegative_conserved_quantity_delta = function(delta, quant
   // also keep tabs on which cells still have quantity remaining after delta is applied
   for (var i=0, li=delta.length; i<li; ++i) {
     if (-delta[i] > quantity[i]) {
-      delta[i] = -quantity[i];
       total_excess += -delta[i] - quantity[i];
+      delta[i] = -quantity[i];
       remaining[i] = 0;
     }
     else {
