@@ -81,7 +81,7 @@ TectonicsModeling.get_displacement = function(thickness, density, mantleDensity,
 
 TectonicsModeling.get_erosion = function(
 		displacement, sealevel, timestep,
-		crust, crust_delta){
+		crust, crust_delta, crust_scratch){
   	var scratchpad = RasterStackBuffer.scratchpad;
   	scratchpad.allocate('get_erosion');
 
@@ -91,7 +91,7 @@ TectonicsModeling.get_erosion = function(
 	var sial_delta  	= crust_delta.sial;
 	var sima_delta 		= crust_delta.sima;
 
-	Float32Raster.fill(sial_delta, 0);
+	Crust.reset(crust_delta);
 
 	var precipitation = 7.8e5;
 	// ^^^ measured in meters of rain per million years
@@ -107,9 +107,8 @@ TectonicsModeling.get_erosion = function(
 	var outbound_height_transfer = scratchpad.getFloat32Raster(displacement.grid);
 	Float32Raster.fill(outbound_height_transfer, 0);
 
-	var outbound_sediment_fraction = scratchpad.getFloat32Raster(displacement.grid);
-	var outbound_sial_fraction = scratchpad.getFloat32Raster(displacement.grid);
-	var outbound_sima_fraction = scratchpad.getFloat32Raster(displacement.grid);
+	var outbound_sial_fraction = crust_scratch.sial;
+	var outbound_sima_fraction = crust_scratch.sima;
 
 	var arrows = displacement.grid.arrows;
 	var arrow;

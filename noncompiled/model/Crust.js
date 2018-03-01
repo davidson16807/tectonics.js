@@ -50,6 +50,9 @@ Crust.copy = function(source, destination) {
 Crust.copy_into_selection = function(crust, copied_crust, selection_raster, result_crust) {
 	VectorRasterGraphics.copy_into_selection(crust, copied_crust, selection_raster, result_crust);
 }
+Crust.reset = function(crust) {
+	crust.everything.fill(0);
+}
 Crust.mult_field = function(crust, field, result_crust) {
 	var input = crust.everything;
 	var output = result_crust.everything;

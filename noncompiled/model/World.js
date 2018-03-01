@@ -71,7 +71,7 @@ var World = (function() {
 		var UINT16_NULL = 65535;
 
 		//WIPE MASTER RASTERS CLEAN
-		Crust.fill(master.crust, RockColumn.EMPTY);
+		Crust.reset(master.crust);
 		Uint8Raster.fill(master.plate_map, UINT8_NULL);
 		Uint8Raster.fill(master.plate_count, 0);
 
@@ -270,13 +270,13 @@ var World = (function() {
        	// CALCULATE DELTAS
 		TectonicsModeling.get_erosion(
 			world.displacement, world.SEALEVEL, timestep,
-			world.crust, world.erosion
+			world.crust, world.erosion, world.crust_scratch
 		);
 		Crust.assert_conserved_transport_delta(world.erosion, 1e-2); 
 
 		// COMPILE DELTAS
 		var globalized_deltas = world.crust_delta;
-		Crust.fill(globalized_deltas, RockColumn.EMPTY);
+		Crust.reset(globalized_deltas);
 		Crust.add_delta 	(globalized_deltas, world.erosion, 							globalized_deltas);
 		ScalarField.add_field(globalized_deltas.sial, world.accretion.sial, 			globalized_deltas.sial);
 		ScalarField.add_scalar(globalized_deltas.age, timestep, 						globalized_deltas.age); // aging
