@@ -3265,7 +3265,7 @@ BinaryMorphology.dilation = function(field, radius, result, scratch) {
  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; };
  var buffer1 = radius % 2 == 1? result: scratch;
  var buffer2 = radius % 2 == 0? result: scratch;
- BinaryMorphology.copy(field, scratch);
+ scratch.set(field);
  var temp = buffer1;
  var neighbor_lookup = field.grid.neighbor_lookup;
  var neighbors = [];
@@ -3293,7 +3293,7 @@ BinaryMorphology.erosion = function(field, radius, result, scratch) {
  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; };
  var buffer1 = radius % 2 == 1? result: scratch;
  var buffer2 = radius % 2 == 0? result: scratch;
- BinaryMorphology.copy(field, scratch);
+ scratch.set(field);
  var temp = buffer1;
  var neighbor_lookup = field.grid.neighbor_lookup;
  var neighbors = [];
@@ -3301,9 +3301,12 @@ BinaryMorphology.erosion = function(field, radius, result, scratch) {
  for (var k=0; k<radius; ++k) {
   for (var i=0, li=neighbor_lookup.length; i<li; ++i) {
       neighbors = neighbor_lookup[i];
-      buffer_i = buffer2[i];
+      buffer_i = buffer2[i] === 1;
       for (var j=0, lj=neighbors.length; j<lj; ++j) {
-          buffer_i = buffer_i && buffer2[neighbors[j]];
+       if (buffer_i) {
+        continue;
+       }
+          buffer_i = buffer_i && buffer2[neighbors[j]] === 1;
       }
       buffer1[i] = buffer_i? 1:0;
   }
@@ -3332,13 +3335,15 @@ BinaryMorphology.black_top_hat = function(field, radius) {
 // NOTE: this is not a standard concept in math morphology
 // It is meant to represent the difference between a figure and its dilation
 // Its name eludes to the "margin" concept within the html box model
-BinaryMorphology.margin = function(field, radius, result) {
+BinaryMorphology.margin = function(field, radius, result, scratch) {
  result = result || Uint8Raster(field.grid);
+ scratch = scratch || Uint8Raster(field.grid);
  if (!(field instanceof Uint8Array)) { throw "field" + ' is not a ' + "Uint8Array"; };
  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; };
+ if (!(scratch instanceof Uint8Array)) { throw "scratch" + ' is not a ' + "Uint8Array"; };
  if(field === result) throw ("cannot use same input for 'field' and 'result' - margin() is not an in-place function")
  var dilation = result; // reuse result raster for performance reasons
- BinaryMorphology.dilation(field, radius, dilation);
+ BinaryMorphology.dilation(field, radius, dilation, scratch);
  return BinaryMorphology.difference(dilation, field, result);
 }
 // NOTE: this is not a standard concept in math morphology
@@ -3346,10 +3351,12 @@ BinaryMorphology.margin = function(field, radius, result) {
 // Its name eludes to the "padding" concept within the html box model
 BinaryMorphology.padding = function(field, radius, result, scratch) {
  result = result || Uint8Raster(field.grid);
+ scratch = scratch || Uint8Raster(field.grid);
  if (!(field instanceof Uint8Array)) { throw "field" + ' is not a ' + "Uint8Array"; };
  if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; };
+ if (!(scratch instanceof Uint8Array)) { throw "scratch" + ' is not a ' + "Uint8Array"; };
  if(field === result) throw ("cannot use same input for 'field' and 'result' - padding() is not an in-place function")
  var erosion = result; // reuse result raster for performance reasons
- BinaryMorphology.erosion(field, radius, erosion);
+ BinaryMorphology.erosion(field, radius, erosion, scratch);
  return BinaryMorphology.difference(field, erosion, result, scratch);
 }
