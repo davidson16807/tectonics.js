@@ -82,6 +82,9 @@ ScalarDisplay.prototype.updateAttributes = function(geometry, plate) {
 	Float32Raster.get_ids(plate.displacement, view.grid.buffer_array_to_cell, geometry.attributes.displacement.array); 
 	geometry.attributes.displacement.needsUpdate = true;
 
+	this.field = this.field || Float32Raster(plate.grid);
+	this.scratch = this.scratch || Float32Raster(plate.grid);
+
 	// run getField()
 	if (this.getField === void 0) {
 		log_once("ScalarDisplay.getField is undefined.");
@@ -99,12 +102,13 @@ ScalarDisplay.prototype.updateAttributes = function(geometry, plate) {
 
 
 	if (scalar_model !== void 0) {
-		Float32Raster.get_ids(scalar_model, view.grid.buffer_array_to_cell, geometry.attributes.scalar.array); 
-		geometry.attributes.scalar.needsUpdate = true;
-
 		if (scalar_model !== this.field) {
 			Float32Raster.copy(scalar_model, this.field);
 		}
+		
+		Float32Raster.get_ids(scalar_model, view.grid.buffer_array_to_cell, geometry.attributes.scalar.array); 
+		geometry.attributes.scalar.needsUpdate = true;
+
 	} else {
 		this.field = void 0;
 	}
@@ -168,7 +172,6 @@ ScalarHeatDisplay.prototype.updateAttributes = function(geometry, plate) {
 		return;
 	}
 
-
 	this.field = this.field || Float32Raster(plate.grid);
 	this.scratch = this.scratch || Float32Raster(plate.grid);
 	
@@ -192,13 +195,13 @@ ScalarHeatDisplay.prototype.updateAttributes = function(geometry, plate) {
 	
 	var max = this.scaling? Math.max.apply(null, scalar_model) || 1 : 1;
 	if (scalar_model !== void 0) {
-		ScalarField.div_scalar(scalar_model, max, scalar_model);
-		Float32Raster.get_ids(scalar_model, view.grid.buffer_array_to_cell, geometry.attributes.scalar.array); 
-		geometry.attributes.scalar.needsUpdate = true;
-
 		if (scalar_model !== this.field) {
 			Float32Raster.copy(scalar_model, this.field);
 		}
+
+		ScalarField.div_scalar(scalar_model, max, scalar_model);
+		Float32Raster.get_ids(scalar_model, view.grid.buffer_array_to_cell, geometry.attributes.scalar.array); 
+		geometry.attributes.scalar.needsUpdate = true;
 	} else {
 		this.field = void 0;
 	}
