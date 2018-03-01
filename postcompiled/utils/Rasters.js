@@ -2473,6 +2473,11 @@ Float32Raster.OfLength = function(length, grid) {
  result.grid = grid;
  return result;
 }
+Uint16Raster.FromBuffer = function(buffer, grid) {
+  var result = new Uint16Array(buffer, 0, grid.vertices.length);
+  result.grid = grid;
+  return result;
+}
 Float32Raster.FromUint8Raster = function(raster, result) {
   var result = result || Float32Raster(raster.grid);
   if (!(raster instanceof Uint8Array)) { throw "raster" + ' is not a ' + "Uint8Array"; }
@@ -2704,6 +2709,11 @@ Uint16Raster.OfLength = function(length, grid) {
   result.grid = grid;
   return result;
 }
+Uint16Raster.FromBuffer = function(buffer, grid) {
+  var result = new Uint16Array(buffer, 0, grid.vertices.length);
+  result.grid = grid;
+  return result;
+}
 Uint16Raster.FromUint8Raster = function(raster) {
   var result = Uint16Raster(raster.grid);
   for (var i=0, li=result.length; i<li; ++i) {
@@ -2836,6 +2846,11 @@ function Uint8Raster(grid, fill) {
 };
 Uint8Raster.OfLength = function(length, grid) {
   var result = new Uint8Array(length);
+  result.grid = grid;
+  return result;
+}
+Uint8Raster.FromBuffer = function(buffer, grid) {
+  var result = new Uint8Array(buffer, 0, grid.vertices.length);
   result.grid = grid;
   return result;
 }
@@ -3194,15 +3209,6 @@ BinaryMorphology.to_float = function(field, result) {
  if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
  for (var i=0, li=field.length; i<li; ++i) {
      result[i] = (field[i]===1)? 1:0;
- }
- return result;
-}
-BinaryMorphology.copy = function(field, result) {
- result = result || Uint8Raster(field.grid);
- if (!(field instanceof Uint8Array)) { throw "field" + ' is not a ' + "Uint8Array"; };
- if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; };
- for (var i=0, li=field.length; i<li; ++i) {
-     result[i] = field[i];
  }
  return result;
 }

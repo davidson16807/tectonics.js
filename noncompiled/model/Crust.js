@@ -8,7 +8,7 @@ function Crust(params) {
 
 	var length = this.grid.vertices.length;
 
-    var buffer = new ArrayBuffer(3 * Float32Array.BYTES_PER_ELEMENT * length);
+    var buffer = params['buffer'] || new ArrayBuffer(3 * Float32Array.BYTES_PER_ELEMENT * length);
     this.buffer = buffer;
 
     this.sial = new Float32Array(buffer, 0 * Float32Array.BYTES_PER_ELEMENT * length, length);

@@ -30,6 +30,11 @@ Uint16Raster.OfLength = function(length, grid) {
   result.grid = grid;
   return result;
 }
+Uint16Raster.FromBuffer = function(buffer, grid) {
+  var result = new Uint16Array(buffer, 0, grid.vertices.length);
+  result.grid = grid;
+  return result;
+}
 Uint16Raster.FromUint8Raster = function(raster) {
   var result = Uint16Raster(raster.grid);
   for (var i=0, li=result.length; i<li; ++i) {

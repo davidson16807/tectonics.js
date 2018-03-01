@@ -30,6 +30,11 @@ Float32Raster.OfLength = function(length, grid) {
 	result.grid = grid;
 	return result;
 }
+Uint16Raster.FromBuffer = function(buffer, grid) {
+  var result = new Uint16Array(buffer, 0, grid.vertices.length);
+  result.grid = grid;
+  return result;
+}
 Float32Raster.FromUint8Raster = function(raster, result) {
   var result = result || Float32Raster(raster.grid);
   ASSERT_IS_ARRAY(raster, Uint8Array)

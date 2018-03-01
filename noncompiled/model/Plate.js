@@ -6,7 +6,7 @@ function Plate(params)
 	this.world = params['world'] || stop('missing parameter: "world"');
 	this.grid = this.world.grid;
 
-	this.crust = new Crust({grid: this.grid});
+	this.crust = params['crust'] || new Crust({grid: this.grid});
 
 	this.density = Float32Raster(this.grid);
 
