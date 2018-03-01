@@ -187,7 +187,7 @@ var World = (function() {
 
 			resample(globalized_is_riftable, plate.global_ids_of_local_cells,       	localized_is_riftable); 
 			erode 	(localized_is_riftable, 1,                       					localized_will_stay_riftable,     scratch_ui8); 
-			margin 	(plate.mask, 1,                           							localized_is_just_outside_border); 
+			margin 	(plate.mask, 1,                           							localized_is_just_outside_border, scratch_ui8); 
 			and 	(localized_will_stay_riftable, localized_is_just_outside_border,  	localized_is_rifting); 
 
 	        fill_into(plate.mask, 1, localized_is_rifting,                 				plate.mask); 

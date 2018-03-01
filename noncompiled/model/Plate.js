@@ -36,10 +36,10 @@ Plate.prototype.move = function(timestep){
 	// for each cell in the master's grid, this raster indicates the id of the corresponding cell in the plate's grid
 	// this is used to convert between global and local coordinate systems
     VectorField.mult_matrix(grid.pos, this.global_to_local_matrix, this.local_pos_of_global_cells); 
-	this.local_ids_of_global_cells = grid.getNearestIds(this.local_pos_of_global_cells);
+	grid.getNearestIds(this.local_pos_of_global_cells, this.local_ids_of_global_cells);
 
 	// for each cell in the plate's grid, this raster indicates the id of the corresponding cell in the world's grid
 	// this is used to convert between global and local coordinate systems
     VectorField.mult_matrix(grid.pos, this.local_to_global_matrix, this.global_pos_of_local_cells);
-	this.global_ids_of_local_cells = grid.getNearestIds(this.global_pos_of_local_cells);
+	grid.getNearestIds(this.global_pos_of_local_cells, this.global_ids_of_local_cells);
 }
