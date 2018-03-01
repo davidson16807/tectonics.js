@@ -2601,84 +2601,6 @@ Float32Raster.add_values_to_ids = function(raster1, id_array, raster2, result) {
   }
   return result;
 }
-//TODO: MOVE THIS TO ITS OWN NAMESPACE! "Float32ScalarTransport"
-Float32Raster.assert_nonnegative_quantity = function(quantity) {
-  if (!(quantity instanceof Float32Array)) { throw "quantity" + ' is not a ' + "Float32Array"; }
-  var quantity_i = 0.0;
-  for (var i=0, li=quantity.length; i<li; ++i) {
-    if (quantity[i] < 0) {
-      debugger;
-    }
-  }
-}
-Float32Raster.assert_conserved_quantity_delta = function(delta, threshold) {
-  if (!(delta instanceof Float32Array)) { throw "delta" + ' is not a ' + "Float32Array"; }
-  var average = Float32Dataset.average(delta);
-  if (average * average > threshold * threshold) {
-    debugger;
-  }
-}
-Float32Raster.assert_nonnegative_quantity_delta = function(delta, quantity) {
-  if (!(delta instanceof Float32Array)) { throw "delta" + ' is not a ' + "Float32Array"; }
-  if (!(quantity instanceof Float32Array)) { throw "quantity" + ' is not a ' + "Float32Array"; }
-  for (var i=0, li=delta.length; i<li; ++i) {
-    if (-delta[i] > quantity[i]) {
-      debugger;
-    }
-  }
-}
-Float32Raster.fix_nonnegative_quantity = function(quantity) {
-  if (!(quantity instanceof Float32Array)) { throw "quantity" + ' is not a ' + "Float32Array"; }
-  ScalarField.min_scalar(quantity, 0);
-}
-Float32Raster.fix_conserved_quantity_delta = function(delta, threshold) {
-  if (!(delta instanceof Float32Array)) { throw "delta" + ' is not a ' + "Float32Array"; }
-  var average = Float32Dataset.average(delta);
-  if (average * average > threshold * threshold) {
-    ScalarField.sub_scalar(delta, average, delta);
-  }
-}
-Float32Raster.fix_nonnegative_quantity_delta = function(delta, quantity) {
-  if (!(delta instanceof Float32Array)) { throw "delta" + ' is not a ' + "Float32Array"; }
-  if (!(quantity instanceof Float32Array)) { throw "quantity" + ' is not a ' + "Float32Array"; }
-  for (var i=0, li=delta.length; i<li; ++i) {
-    if (-delta[i] > quantity[i]) {
-      delta[i] = -quantity[i];
-    }
-  }
-}
-// NOTE: if anyone can find a shorter more intuitive name for this, I'm all ears
-Float32Raster.fix_nonnegative_conserved_quantity_delta = function(delta, quantity, scratch) {
-  var scratch = scratch || Float32Raster(delta.grid);
-  if (!(delta instanceof Float32Array)) { throw "delta" + ' is not a ' + "Float32Array"; }
-  if (!(quantity instanceof Float32Array)) { throw "quantity" + ' is not a ' + "Float32Array"; }
-  if (!(scratch instanceof Float32Array)) { throw "scratch" + ' is not a ' + "Float32Array"; }
-  var total_excess = 0.0;
-  var total_remaining = 0.0;
-  var remaining = scratch;
-  // clamp delta to quantity available
-  // keep tabs on excess where delta exceeds quantity
-  // also keep tabs on which cells still have quantity remaining after delta is applied
-  for (var i=0, li=delta.length; i<li; ++i) {
-    if (-delta[i] > quantity[i]) {
-      delta[i] = -quantity[i];
-      total_excess += -delta[i] - quantity[i];
-      remaining[i] = 0;
-    }
-    else {
-      remaining[i] = quantity[i] + delta[i];
-      total_remaining += quantity[i] + delta[i];
-    }
-  }
-  // go back and correct the excess by taxing from the remaining quantity
-  // the more remaining a cell has, the more it gets taxed
-  var remaining_tax = total_excess / total_remaining;
-  if (remaining_tax) {
-    for (var i=0, li=delta.length; i<li; ++i) {
-      delta[i] -= remaining[i] * remaining_tax;
-    }
-  }
-}
 // Uint16Raster represents a grid where each cell contains a 32 bit floating point value
 // A Uint16Raster is composed of two parts:
 //    The first is a object of type Grid, representing a collection of vertices that are connected by edges
@@ -3152,6 +3074,84 @@ Float32RasterTrigonometry.cos = function(radians, result) {
     result[i] = cos(radians[i]);
   }
   return result;
+}
+var ScalarTransport = {};
+ScalarTransport.assert_nonnegative_quantity = function(quantity) {
+  if (!(quantity instanceof Float32Array)) { throw "quantity" + ' is not a ' + "Float32Array"; }
+  var quantity_i = 0.0;
+  for (var i=0, li=quantity.length; i<li; ++i) {
+    if (quantity[i] < 0) {
+      debugger;
+    }
+  }
+}
+ScalarTransport.assert_conserved_quantity_delta = function(delta, threshold) {
+  if (!(delta instanceof Float32Array)) { throw "delta" + ' is not a ' + "Float32Array"; }
+  var average = Float32Dataset.average(delta);
+  if (average * average > threshold * threshold) {
+    debugger;
+  }
+}
+ScalarTransport.assert_nonnegative_quantity_delta = function(delta, quantity) {
+  if (!(delta instanceof Float32Array)) { throw "delta" + ' is not a ' + "Float32Array"; }
+  if (!(quantity instanceof Float32Array)) { throw "quantity" + ' is not a ' + "Float32Array"; }
+  for (var i=0, li=delta.length; i<li; ++i) {
+    if (-delta[i] > quantity[i]) {
+      debugger;
+    }
+  }
+}
+ScalarTransport.fix_nonnegative_quantity = function(quantity) {
+  if (!(quantity instanceof Float32Array)) { throw "quantity" + ' is not a ' + "Float32Array"; }
+  ScalarField.min_scalar(quantity, 0);
+}
+ScalarTransport.fix_conserved_quantity_delta = function(delta, threshold) {
+  if (!(delta instanceof Float32Array)) { throw "delta" + ' is not a ' + "Float32Array"; }
+  var average = Float32Dataset.average(delta);
+  if (average * average > threshold * threshold) {
+    ScalarField.sub_scalar(delta, average, delta);
+  }
+}
+ScalarTransport.fix_nonnegative_quantity_delta = function(delta, quantity) {
+  if (!(delta instanceof Float32Array)) { throw "delta" + ' is not a ' + "Float32Array"; }
+  if (!(quantity instanceof Float32Array)) { throw "quantity" + ' is not a ' + "Float32Array"; }
+  for (var i=0, li=delta.length; i<li; ++i) {
+    if (-delta[i] > quantity[i]) {
+      delta[i] = -quantity[i];
+    }
+  }
+}
+// NOTE: if anyone can find a shorter more intuitive name for this, I'm all ears
+ScalarTransport.fix_nonnegative_conserved_quantity_delta = function(delta, quantity, scratch) {
+  var scratch = scratch || Float32Raster(delta.grid);
+  if (!(delta instanceof Float32Array)) { throw "delta" + ' is not a ' + "Float32Array"; }
+  if (!(quantity instanceof Float32Array)) { throw "quantity" + ' is not a ' + "Float32Array"; }
+  if (!(scratch instanceof Float32Array)) { throw "scratch" + ' is not a ' + "Float32Array"; }
+  var total_excess = 0.0;
+  var total_remaining = 0.0;
+  var remaining = scratch;
+  // clamp delta to quantity available
+  // keep tabs on excess where delta exceeds quantity
+  // also keep tabs on which cells still have quantity remaining after delta is applied
+  for (var i=0, li=delta.length; i<li; ++i) {
+    if (-delta[i] > quantity[i]) {
+      delta[i] = -quantity[i];
+      total_excess += -delta[i] - quantity[i];
+      remaining[i] = 0;
+    }
+    else {
+      remaining[i] = quantity[i] + delta[i];
+      total_remaining += quantity[i] + delta[i];
+    }
+  }
+  // go back and correct the excess by taxing from the remaining quantity
+  // the more remaining a cell has, the more it gets taxed
+  var remaining_tax = total_excess / total_remaining;
+  if (remaining_tax) {
+    for (var i=0, li=delta.length; i<li; ++i) {
+      delta[i] -= remaining[i] * remaining_tax;
+    }
+  }
 }
 // The VectorImageAnalysis namespace encompasses advanced functionality 
 // common to image analysis

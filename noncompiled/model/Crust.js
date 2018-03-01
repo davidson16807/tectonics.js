@@ -63,7 +63,7 @@ Crust.add_delta = function(crust, crust_delta, result_crust) {
 	ScalarField.add_field(crust.everything, crust_delta.everything, result_crust.everything);
 }
 Crust.assert_conserved_delta = function(crust_delta, threshold) {
-	Float32Raster.assert_conserved_quantity_delta(crust_delta.conserved, threshold);
+	ScalarTransport.assert_conserved_quantity_delta(crust_delta.conserved, threshold);
 }
 
 
@@ -106,12 +106,12 @@ Crust.get_ids = function(crust, id_raster, result_crust) {
 }
 Crust.fix_delta = function(crust_delta, crust, scratch) {
 	var scratch = scratch || Float32Raster(crust_delta.grid);
-	var fix = Float32Raster.fix_nonnegative_conserved_quantity_delta;
+	var fix = ScalarTransport.fix_nonnegative_conserved_quantity_delta;
 	fix(crust_delta.sima, crust.sima, scratch);
 	fix(crust_delta.sial, crust.sial, scratch);
 }
 Crust.assert_conserved_transport_delta = function(crust_delta, threshold) {
-	var assert = Float32Raster.assert_conserved_quantity_delta;
+	var assert = ScalarTransport.assert_conserved_quantity_delta;
 	assert(crust_delta.sima, threshold);
 	assert(crust_delta.sial, threshold);
 }

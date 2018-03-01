@@ -83,5 +83,6 @@
 
 #include "precompiled/utils/interpolation/Float32RasterInterpolation.js"
 #include "precompiled/utils/trigonometry/Float32RasterTrigonometry.js"
+#include "precompiled/utils/scalar-transport/ScalarTransport.js"
 #include "precompiled/utils/image-analysis/VectorImageAnalysis.js"
 #include "precompiled/utils/morphology/BinaryMorphology.js"
