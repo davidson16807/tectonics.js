@@ -302,6 +302,7 @@ VectorField.mult_matrix = function (vector_field, matrix, result)  {
 	result = result || VectorRaster(vector_field.grid);
 	
 	ASSERT_IS_VECTOR_RASTER(vector_field)
+	ASSERT_IS_3X3_MATRIX(matrix)
 	ASSERT_IS_VECTOR_RASTER(result)
 
 	var ax = vector_field.x;

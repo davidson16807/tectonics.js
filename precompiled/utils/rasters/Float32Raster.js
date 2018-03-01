@@ -19,9 +19,7 @@ function Float32Raster(grid, fill) {
 	var result = new Float32Array(grid.vertices.length);
 	result.grid = grid;
 	if (fill !== void 0) { 
-	for (var i=0, li=result.length; i<li; ++i) {
-	    result[i] = fill;
-	}
+    result.fill(fill);
 	}
 	return result;
 };
@@ -62,9 +60,7 @@ Float32Raster.copy = function(raster, result) {
 }
 Float32Raster.fill = function (raster, value) {
   ASSERT_IS_ARRAY(raster, Float32Array)
-  for (var i = 0, li = raster.length; i < li; i++) {
-    raster[i] = value;
-  }
+  raster.fill(value);
 };
 
 Float32Raster.min_id = function (raster) {

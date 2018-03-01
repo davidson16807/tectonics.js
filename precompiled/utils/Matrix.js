@@ -9,14 +9,14 @@
 // independant params is negligible for our purposes.
 
 function Matrix(){
-  return [0,0,0,
-          0,0,0,
-          0,0,0];
+  return new Float32Array([0,0,0,
+                           0,0,0,
+                           0,0,0]);
 }
 Matrix.Identity = function() {
-  return [1,0,0,
-          0,1,0,
-          0,0,1]; 
+  return new Float32Array([1,0,0,
+                           0,1,0,
+                           0,0,1]);
 }
 Matrix.RowMajorOrder = function(list) {
   ASSERT_IS_3X3_MATRIX(list)
@@ -34,12 +34,12 @@ Matrix.RowMajorOrder = function(list) {
 }
 Matrix.ColumnMajorOrder = function(list) {
   ASSERT_IS_3X3_MATRIX(list)
-  return list; //matrices are standardized to column major order, already
+  return new Float32Array(list); //matrices are standardized to column major order, already
 }
 Matrix.BasisVectors = function(a, b, c) { 
-  return [a.x, a.y, a.z, 
-          b.x, b.y, b.z, 
-          c.x, c.y, c.z ]; 
+  return new Float32Array([a.x, a.y, a.z, 
+                           b.x, b.y, b.z, 
+                           c.x, c.y, c.z ]); 
 } 
 Matrix.RotationAboutAxis = function(axis_x, axis_y, axis_z, angle) {
   var θ = angle,
@@ -51,11 +51,11 @@ Matrix.RotationAboutAxis = function(axis_x, axis_y, axis_z, angle) {
       vθ = 1 - cθ,      // aka versine of θ
       vθx = vθ*x,
       vθy = vθ*y;
-  return [
+  return new Float32Array([
     vθx*x+cθ,   vθx*y+sθ*z, vθx*z-sθ*y, 
     vθx*y-sθ*z, vθy*y+cθ,   vθy*z+sθ*x,  
     vθx*z+sθ*y, vθy*z-sθ*x, vθ*z*z+cθ
-  ];
+  ]);
 }
 Matrix.invert = function(matrix, result) {
     result = result || Matrix();

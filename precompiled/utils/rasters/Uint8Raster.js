@@ -58,9 +58,7 @@ Uint8Raster.copy = function(raster, result) {
 }
 Uint8Raster.fill = function (raster, value) {
   ASSERT_IS_ARRAY(raster, Uint8Array)
-  for (var i = 0, li = raster.length; i < li; i++) {
-    raster[i] = value;
-  }
+  raster.fill(value);
 };
 
 Uint8Raster.min_id = function (raster) {

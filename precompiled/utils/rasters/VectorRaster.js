@@ -52,19 +52,10 @@ VectorRaster.copy = function(vector_raster, output) {
 VectorRaster.fill = function (vector_raster, value) {
   ASSERT_IS_VECTOR_RASTER(vector_raster)
 
-  var ix = value.x;
-  var iy = value.y;
-  var iz = value.z;
-
-  var ox = vector_raster.x;
-  var oy = vector_raster.y;
-  var oz = vector_raster.z;
-
-  for (var i=0, li=ox.length; i<li; ++i) {
-      ox[i] = ix;
-      oy[i] = iy;
-      oz[i] = iz;
-  }
+  vector_raster.x.fill(value.x);
+  vector_raster.y.fill(value.y);
+  vector_raster.z.fill(value.z);
+  
   return vector_raster;
 };
 
