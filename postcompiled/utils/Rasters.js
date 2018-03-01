@@ -2495,9 +2495,7 @@ Float32Raster.copy = function(raster, result) {
   var result = result || Float32Raster(raster.grid);
   if (!(raster instanceof Float32Array)) { throw "raster" + ' is not a ' + "Float32Array"; }
   if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
-  for (var i=0, li=raster.length; i<li; ++i) {
-      result[i] = raster[i];
-  }
+  result.set(raster);
   return result;
 }
 Float32Raster.fill = function (raster, value) {
@@ -2724,9 +2722,7 @@ Uint16Raster.copy = function(raster, result) {
   var result = result || Uint16Raster(raster.grid);
   if (!(raster instanceof Uint16Array)) { throw "raster" + ' is not a ' + "Uint16Array"; }
   if (!(result instanceof Uint16Array)) { throw "result" + ' is not a ' + "Uint16Array"; }
-  for (var i=0, li=raster.length; i<li; ++i) {
-      result[i] = raster[i];
-  }
+  result.set(raster);
   return result;
 }
 Uint16Raster.fill = function (raster, value) {
@@ -2861,9 +2857,7 @@ Uint8Raster.copy = function(raster, result) {
   var result = result || Uint8Raster(raster.grid);
   if (!(raster instanceof Uint8Array)) { throw "raster" + ' is not a ' + "Uint8Array"; }
   if (!(result instanceof Uint8Array)) { throw "result" + ' is not a ' + "Uint8Array"; }
-  for (var i=0, li=raster.length; i<li; ++i) {
-      result[i] = raster[i];
-  }
+  result.set(raster);
   return result;
 }
 Uint8Raster.fill = function (raster, value) {
@@ -2994,11 +2988,7 @@ VectorRaster.copy = function(vector_raster, output) {
   var output = output || VectorRaster(vector_raster.grid);
   if (!(vector_raster.x !== void 0) && !(vector_raster.x instanceof Float32Array)) { throw "vector_raster" + ' is not a vector raster'; }
   if (!(output.x !== void 0) && !(output.x instanceof Float32Array)) { throw "output" + ' is not a vector raster'; }
-  var input = vector_raster.everything;
-  var output = output.everything;
-  for (var i=0, li=everything.length; i<li; ++i) {
-      output[i] = input[i];
-  }
+  output.everything.set(vector_raster.everything);
   return output;
 }
 VectorRaster.fill = function (vector_raster, value) {

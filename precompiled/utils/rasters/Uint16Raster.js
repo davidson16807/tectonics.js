@@ -48,9 +48,7 @@ Uint16Raster.copy = function(raster, result) {
   var result = result || Uint16Raster(raster.grid);
   ASSERT_IS_ARRAY(raster, Uint16Array)
   ASSERT_IS_ARRAY(result, Uint16Array)
-  for (var i=0, li=raster.length; i<li; ++i) {
-      result[i] = raster[i];
-  }
+  result.set(raster);
   return result;
 }
 Uint16Raster.fill = function (raster, value) {

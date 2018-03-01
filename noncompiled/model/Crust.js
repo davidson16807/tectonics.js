@@ -45,7 +45,7 @@ function Crust(params) {
 
 // HERE IS STUFF WE DON'T NEED TO CHANGE WHEN WE ADD RASTERS
 Crust.copy = function(source, destination) {
-	Float32Raster.copy(source.everything, destination.everything);
+	destination.everything.set(source.everything);
 }
 Crust.copy_into_selection = function(crust, copied_crust, selection_raster, result_crust) {
 	VectorRasterGraphics.copy_into_selection(crust, copied_crust, selection_raster, result_crust);

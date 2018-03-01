@@ -46,13 +46,7 @@ VectorRaster.copy = function(vector_raster, output) {
   var output = output || VectorRaster(vector_raster.grid);
   ASSERT_IS_VECTOR_RASTER(vector_raster)
   ASSERT_IS_VECTOR_RASTER(output)
-
-  var input = vector_raster.everything;
-  var output = output.everything;
-
-  for (var i=0, li=everything.length; i<li; ++i) {
-      output[i] = input[i];
-  }
+  output.everything.set(vector_raster.everything);
   return output;
 }
 VectorRaster.fill = function (vector_raster, value) {
