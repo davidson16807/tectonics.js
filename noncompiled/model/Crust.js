@@ -15,6 +15,7 @@ function Crust(params) {
     this.sima = new Float32Array(buffer, 1 * Float32Array.BYTES_PER_ELEMENT * length, length);
     this.age  = new Float32Array(buffer, 2 * Float32Array.BYTES_PER_ELEMENT * length, length);
     this.conserved = new Float32Array(buffer, 0, 1 * length);
+    this.mass = new Float32Array(buffer, 0, 2 * length);
     this.everything = new Float32Array(buffer);
 
 	// TODO:
@@ -40,6 +41,35 @@ function Crust(params) {
 	// "age" is the age of the subductable component of the crust
 	// we don't track the age of unsubductable crust because it doesn't affect model behavior
 }
+
+
+// HERE IS STUFF WE DON'T NEED TO CHANGE WHEN WE ADD RASTERS
+Crust.copy = function(source, destination) {
+	Float32Raster.copy(source.everything, destination.everything);
+}
+Crust.copy_into_selection = function(crust, copied_crust, selection_raster, result_crust) {
+	VectorRasterGraphics.copy_into_selection(crust, copied_crust, selection_raster, result_crust);
+}
+Crust.mult_field = function(crust, field, result_crust) {
+	var input = crust.everything;
+	var output = result_crust.everything;
+
+	var length = field.length;
+	for (var i=0, li=input.length; i<li; ++i) {
+	    output[i] = input[i] * field[i%length];
+	}
+}
+Crust.add_delta = function(crust, crust_delta, result_crust) {
+	ScalarField.add_field(crust.everything, crust_delta.everything, result_crust.everything);
+}
+Crust.assert_conserved_delta = function(crust_delta, threshold) {
+	Float32Raster.assert_conserved_quantity_delta(crust_delta.conserved, threshold);
+}
+
+
+
+
+// HERE IS STUFF WE *DO* NEED TO CHANGE WHEN WE ADD RASTERS
 Crust.get_value = function(crust, i) {
 	return new RockColumn({
 		sima 			:crust.sima[i],
@@ -52,43 +82,20 @@ Crust.set_value = function(crust, i, rock_column) {
 	crust.sial[i] 			= rock_column.sial;
 	crust.age[i] 			= rock_column.age;
 }
-Crust.copy = function(source, destination) {
-	Float32Raster.copy(source.everything, destination.everything);
-}
 Crust.fill = function(crust, rock_column) {
 	var fill = Float32Raster.fill;
 	fill(crust.sima, rock_column.sima);
 	fill(crust.sial, rock_column.sial);
 	fill(crust.age, rock_column.age);
 }
-Crust.copy_into_selection = function(crust, copied_crust, selection_raster, result_crust) {
-	VectorRasterGraphics.copy_into_selection(crust, copied_crust, selection_raster, result_crust);
-}
 Crust.fill_into_selection = function(crust, rock_column, selection_raster, result_crust) {
   // NOTE: a naive implementation would repeatedly invoke Float32RasterGraphics.fill_into_selection 
   // However, this is much less performant because it reads from selection_raster multiple times. 
   // For performance reasons, we have to roll our own. 
-  if (result_crust !== crust) {
-  	Float32Raster.copy(source.everything, destination.everything);
-  }
- 
-  var column_sima = rock_column.sima; 
-  var column_sial = rock_column.sial; 
-  var column_age = rock_column.age; 
- 
-  var result_sima = result_crust.sima; 
-  var result_sial = result_crust.sial; 
-  var result_age = result_crust.age; 
- 
-  var selection_i = 0; 
-  for (var i=0, li=selection_raster.length; i<li; ++i) { 
-    selection_i = selection_raster[i]; 
-    if (selection_i === 1) {
-	    result_sima[i] = column_sima;
-	    result_sial[i] = column_sial;
-	    result_age[i]  = column_age ;
-    }
-  } 
+  var fill_into = Float32RasterGraphics.fill_into_selection;
+  fill_into(crust.sima, rock_column.sima, selection_raster, result_crust.sima);
+  fill_into(crust.sial, rock_column.sial, selection_raster, result_crust.sial);
+  fill_into(crust.age,  rock_column.age,  selection_raster, result_crust.age) ;
 }
 
 Crust.get_ids = function(crust, id_raster, result_crust) {
@@ -97,26 +104,11 @@ Crust.get_ids = function(crust, id_raster, result_crust) {
 	get_ids(crust.sial, id_raster, result_crust.sial);
 	get_ids(crust.age, id_raster, result_crust.age);
 }
-Crust.mult_field = function(crust, field, result_crust) {
-	var mult_field = ScalarField.mult_field;
-	mult_field(crust.sima, field, result_crust.sima);
-	mult_field(crust.sial, field, result_crust.sial);
-	mult_field(crust.age, field, result_crust.age);
-}
-Crust.add_delta = function(crust, crust_delta, result_crust) {
-	var add_field = ScalarField.add_field;
-	add_field(crust.everything, crust_delta.everything, result_crust.everything);
-}
 Crust.fix_delta = function(crust_delta, crust, scratch) {
 	var scratch = scratch || Float32Raster(crust_delta.grid);
 	var fix = Float32Raster.fix_nonnegative_conserved_quantity_delta;
 	fix(crust_delta.sima, crust.sima, scratch);
 	fix(crust_delta.sial, crust.sial, scratch);
-}
-Crust.assert_conserved_delta = function(crust_delta, threshold) {
-	Float32Raster.assert_conserved_quantity_delta(
-		TectonicsModeling.get_sial_type(crust_delta), threshold
-	);
 }
 Crust.assert_conserved_transport_delta = function(crust_delta, threshold) {
 	var assert = Float32Raster.assert_conserved_quantity_delta;
