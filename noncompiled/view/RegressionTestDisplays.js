@@ -118,18 +118,6 @@ regressionTestDisplays.difference = new ScalarHeatDisplay(  {
 			);
 		}
 	} );
-regressionTestDisplays.white_top_hat = new ScalarHeatDisplay(  { 
-		min: '1.', max: '0.',
-		getField: function (crust, flood_fill, scratch1) {
-			return BinaryMorphology.white_top_hat(RasterUnitTests.circle(crust.grid.pos, {x:0,y:0,z:1}), 1);
-		}
-	} );
-regressionTestDisplays.black_top_hat = new ScalarHeatDisplay(  { 
-		min: '1.', max: '0.',
-		getField: function (crust, flood_fill, scratch1) {
-			return BinaryMorphology.black_top_hat(RasterUnitTests.circle(crust.grid.pos, {x:0,y:0,z:1}), 1);
-		}
-	} );
 regressionTestDisplays.dilation = new ScalarHeatDisplay(  { 
 		min: '1.', max: '0.',
 		getField: function (crust, flood_fill, scratch1) {
@@ -140,18 +128,6 @@ regressionTestDisplays.erosion = new ScalarHeatDisplay(  {
 		min: '1.', max: '0.',
 		getField: function (crust, flood_fill, scratch1) {
 			return BinaryMorphology.erosion(RasterUnitTests.circle(crust.grid.pos, {x:0,y:0,z:1}), 1);
-		}
-	} );
-regressionTestDisplays.opening = new ScalarHeatDisplay(  { 
-		min: '1.', max: '0.',
-		getField: function (crust, flood_fill, scratch1) {
-			return BinaryMorphology.opening(RasterUnitTests.circle(crust.grid.pos, {x:0,y:0,z:1}), 1);
-		}
-	} );
-regressionTestDisplays.closing = new ScalarHeatDisplay(  { 
-		min: '1.', max: '0.',
-		getField: function (crust, flood_fill, scratch1) {
-			return BinaryMorphology.closing(RasterUnitTests.circle(crust.grid.pos, {x:0,y:0,z:1}), 1);
 		}
 	} );
 
