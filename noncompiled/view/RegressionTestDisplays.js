@@ -1,6 +1,19 @@
 // TESTS FOR EXISTING FUNCTIONALITY 
 // NOT TO BE INCLUDED IN PRODUCTION
 
+var RasterUnitTests = (function() {
+	var RasterUnitTests = {};
+	RasterUnitTests.circle = function (pos, center, radius) {
+		center = center || {x:0,y:0,z:1};
+		radius = radius || 0.5;
+		var offset = VectorField.sub_vector(pos, center);
+		var distance = VectorField.magnitude(offset);
+		return ScalarField.gt_scalar(distance, radius);
+	}
+	return RasterUnitTests;
+})();
+
+
 var regressionTestDisplays = {};
 
 // test for raster id placement
@@ -27,23 +40,11 @@ regressionTestDisplays.id_rotated 	= new ScalarHeatDisplay( {
 		getField: function (crust) {
 			var ids = Float32Raster(crust.grid);
 			Float32Raster.FromUint16Raster(crust.grid.vertex_ids, ids);
-			var rotationMatrix = Matrix.rotation_about_axis(1,0,0, 0.5);
+			var rotationMatrix = Matrix.RotationAboutAxis(1,0,0, 0.5);
 			var pos = VectorField.mult_matrix(crust.grid.pos, rotationMatrix);
 			return Float32Raster.get_nearest_values(ids, pos);
 		}
  	} );
-
-// test for Float32Raster.get_nearest_values()
-// rotates the age field by a certain amount
-regressionTestDisplays.age_rotated 	= new ScalarHeatDisplay( { min: '250.', max: '0.',  
-		// scaling: true,
-		getField: function (crust, result) {
-			var rotationMatrix = Matrix.rotation_about_axis(1,0,0, 0.5);
-			var pos = VectorField.mult_matrix(crust.grid.pos, rotationMatrix);
-			test = Float32Raster.get_nearest_values(crust.age, pos, result);
-			return test;
-		} 
-	} );
 
 // test for individual plate mask
 regressionTestDisplays.single_plate = new ScalarHeatDisplay( { min: '0.', max: '1.',  
@@ -52,6 +53,78 @@ regressionTestDisplays.single_plate = new ScalarHeatDisplay( { min: '0.', max: '
 		} 
 	} );
 
+
+
+// test for binary morphology
+regressionTestDisplays.circle = new ScalarHeatDisplay(  { 
+		min: '1.', max: '0.',
+		getField: function (crust, result, scratch1) {
+			return RasterUnitTests.circle(crust.grid.pos, {x:0,y:0,z:1});
+		}
+	} );
+regressionTestDisplays.union = new ScalarHeatDisplay(  { 
+		min: '1.', max: '0.',
+		getField: function (crust, flood_fill, scratch1) {
+			return BinaryMorphology.union(
+				RasterUnitTests.circle(crust.grid.pos, {x:0,y:0,z:1}),
+				RasterUnitTests.circle(crust.grid.pos, {x:0.7,y:0,z:0.7})
+			);
+		}
+	} );
+regressionTestDisplays.intersection = new ScalarHeatDisplay(  { 
+		min: '1.', max: '0.',
+		getField: function (crust, flood_fill, scratch1) {
+			return BinaryMorphology.intersection(
+				RasterUnitTests.circle(crust.grid.pos, {x:0,y:0,z:1}),
+				RasterUnitTests.circle(crust.grid.pos, {x:0.7,y:0,z:0.7})
+			);
+		}
+	} );
+regressionTestDisplays.difference = new ScalarHeatDisplay(  { 
+		min: '1.', max: '0.',
+		getField: function (crust, flood_fill, scratch1) {
+			return BinaryMorphology.difference(
+				RasterUnitTests.circle(crust.grid.pos, {x:0,y:0,z:1}),
+				RasterUnitTests.circle(crust.grid.pos, {x:0.7,y:0,z:0.7})
+			);
+		}
+	} );
+regressionTestDisplays.white_top_hat = new ScalarHeatDisplay(  { 
+		min: '1.', max: '0.',
+		getField: function (crust, flood_fill, scratch1) {
+			return BinaryMorphology.white_top_hat(RasterUnitTests.circle(crust.grid.pos, {x:0,y:0,z:1}), 1);
+		}
+	} );
+regressionTestDisplays.black_top_hat = new ScalarHeatDisplay(  { 
+		min: '1.', max: '0.',
+		getField: function (crust, flood_fill, scratch1) {
+			return BinaryMorphology.black_top_hat(RasterUnitTests.circle(crust.grid.pos, {x:0,y:0,z:1}), 1);
+		}
+	} );
+regressionTestDisplays.dilation = new ScalarHeatDisplay(  { 
+		min: '1.', max: '0.',
+		getField: function (crust, flood_fill, scratch1) {
+			return BinaryMorphology.dilation(RasterUnitTests.circle(crust.grid.pos, {x:0,y:0,z:1}), 1);
+		}
+	} );
+regressionTestDisplays.erosion = new ScalarHeatDisplay(  { 
+		min: '1.', max: '0.',
+		getField: function (crust, flood_fill, scratch1) {
+			return BinaryMorphology.erosion(RasterUnitTests.circle(crust.grid.pos, {x:0,y:0,z:1}), 1);
+		}
+	} );
+regressionTestDisplays.opening = new ScalarHeatDisplay(  { 
+		min: '1.', max: '0.',
+		getField: function (crust, flood_fill, scratch1) {
+			return BinaryMorphology.opening(RasterUnitTests.circle(crust.grid.pos, {x:0,y:0,z:1}), 1);
+		}
+	} );
+regressionTestDisplays.closing = new ScalarHeatDisplay(  { 
+		min: '1.', max: '0.',
+		getField: function (crust, flood_fill, scratch1) {
+			return BinaryMorphology.closing(RasterUnitTests.circle(crust.grid.pos, {x:0,y:0,z:1}), 1);
+		}
+	} );
 
 // test for the flood fill algorithm, AKA "magic wand select"
 regressionTestDisplays.flood_fill1 = new ScalarHeatDisplay(  { 
@@ -68,147 +141,12 @@ regressionTestDisplays.flood_fill1 = new ScalarHeatDisplay(  {
 			var gradient = angular_velocity;
 			
 			var max_id = VectorRaster.max_id(gradient);
-			var mask = Float32Raster(crust.grid, 1);
+			var mask = Uint8Raster(crust.grid, 1);
 			var flood_fill = VectorRasterGraphics.magic_wand_select(gradient, max_id, mask);
 
 			return flood_fill;
 		}
 	} );
-
-// test for binary morphology
-regressionTestDisplays.flood_fill_white_top_hat = new ScalarHeatDisplay(  { 
-		min: '1.', max: '0.',
-		getField: function (crust, flood_fill, scratch1) {
-			// scratch represents pressure
-			var pressure = scratch1;
-			// flood_fill does double duty for performance reasons
-			var scratch2 = flood_fill;
-			var field = TectonicsModeling.get_asthenosphere_pressure(crust.density, pressure, scratch2);
-
-			var gradient = ScalarField.gradient(field);
-			var angular_velocity = VectorField.cross_vector_field(gradient, crust.grid.pos);
-			var gradient = angular_velocity;
-			
-			var max_id = VectorRaster.max_id(gradient);
-			var mask = Float32Raster(crust.grid, 1);
-			var flood_fill = VectorRasterGraphics.magic_wand_select(gradient, max_id, mask);
-
-			var white_top_hat = BinaryMorphology.white_top_hat(BinaryMorphology.to_binary(flood_fill), 5);
-			return white_top_hat;
-		}
-	} );
-
-// test for binary morphology
-regressionTestDisplays.flood_fill_black_top_hat = new ScalarHeatDisplay(  { 
-		min: '1.', max: '0.',
-		getField: function (crust, flood_fill, scratch1) {
-			// scratch represents pressure
-			var pressure = scratch1;
-			// flood_fill does double duty for performance reasons
-			var scratch2 = flood_fill;
-			var field = TectonicsModeling.get_asthenosphere_pressure(crust.density, pressure, scratch2);
-			var gradient = ScalarField.gradient(field);
-			var angular_velocity = VectorField.cross_vector_field(gradient, crust.grid.pos);
-			var gradient = angular_velocity;
-			
-			var max_id = VectorRaster.max_id(gradient);
-			var mask = Float32Raster(crust.grid, 1);
-			var flood_fill = VectorRasterGraphics.magic_wand_select(gradient, max_id, mask);
-
-			var white_top_hat = BinaryMorphology.white_top_hat(BinaryMorphology.to_binary(flood_fill), 5);
-			return white_top_hat;
-		}
-	} );
-
-// test for binary morphology
-regressionTestDisplays.flood_fill_dilation = new ScalarHeatDisplay(  { 
-		min: '1.', max: '0.',
-		getField: function (crust, flood_fill, scratch1) {
-			// scratch represents pressure
-			var pressure = scratch1;
-			// flood_fill does double duty for performance reasons
-			var scratch2 = flood_fill;
-			var field = TectonicsModeling.get_asthenosphere_pressure(crust.density, pressure, scratch2);
-			var gradient = ScalarField.gradient(field);
-			var angular_velocity = VectorField.cross_vector_field(gradient, crust.grid.pos);
-			var gradient = angular_velocity;
-			
-			var max_id = VectorRaster.max_id(gradient);
-			var mask = Uint8Raster(crust.grid, 1);
-			var flood_fill = VectorRasterGraphics.magic_wand_select(gradient, max_id, mask);
-
-			var dilation = BinaryMorphology.dilation(BinaryMorphology.to_binary(flood_fill), 1);
-
-			return BinaryMorphology.to_float(dilation);
-		}
-	} );
-// test for binary morphology
-regressionTestDisplays.flood_fill_erosion = new ScalarHeatDisplay(  { 
-		min: '1.', max: '0.',
-		getField: function (crust, flood_fill, scratch1) {
-			// scratch represents pressure
-			var pressure = scratch1;
-			// flood_fill does double duty for performance reasons
-			var scratch2 = flood_fill;
-			var field = TectonicsModeling.get_asthenosphere_pressure(crust.density, pressure, scratch2);
-			var gradient = ScalarField.gradient(field);
-			var angular_velocity = VectorField.cross_vector_field(gradient, crust.grid.pos);
-			var gradient = angular_velocity;
-			
-			var max_id = VectorRaster.max_id(gradient);
-			var mask = Uint8Raster(crust.grid, 1);
-			var flood_fill = VectorRasterGraphics.magic_wand_select(gradient, max_id, mask);
-
-			var erosion = BinaryMorphology.erosion(BinaryMorphology.to_binary(flood_fill), 1);
-
-			return BinaryMorphology.to_float(erosion);
-		}
-	} );
-// test for binary morphology
-regressionTestDisplays.flood_fill_opening = new ScalarHeatDisplay(  { 
-		min: '1.', max: '0.',
-		getField: function (crust, flood_fill, scratch1) {
-			// scratch represents pressure
-			var pressure = scratch1;
-			// flood_fill does double duty for performance reasons
-			var scratch2 = flood_fill;
-			var field = TectonicsModeling.get_asthenosphere_pressure(crust.density, pressure, scratch2);
-			var gradient = ScalarField.gradient(field);
-			var angular_velocity = VectorField.cross_vector_field(gradient, crust.grid.pos);
-			var gradient = angular_velocity;
-			
-			var max_id = VectorRaster.max_id(gradient);
-			var mask = Float32Raster(crust.grid, 1);
-			var flood_fill = VectorRasterGraphics.magic_wand_select(gradient, max_id, mask);
-
-			var opening = BinaryMorphology.opening(BinaryMorphology.to_binary(flood_fill), 5);
-
-			return BinaryMorphology.to_float(opening);
-		}
-	} );
-// test for binary morphology
-regressionTestDisplays.flood_fill_closing = new ScalarHeatDisplay(  { 
-		min: '1.', max: '0.',
-		getField: function (crust, flood_fill, scratch1) {
-			// scratch represents pressure
-			var pressure = scratch1;
-			// flood_fill does double duty for performance reasons
-			var scratch2 = flood_fill;
-			var field = TectonicsModeling.get_asthenosphere_pressure(crust.density, pressure, scratch2);
-			var gradient = ScalarField.gradient(field);
-			var angular_velocity = VectorField.cross_vector_field(gradient, crust.grid.pos);
-			var gradient = angular_velocity;
-			
-			var max_id = VectorRaster.max_id(gradient);
-			var mask = Float32Raster(crust.grid, 1);
-			var flood_fill = VectorRasterGraphics.magic_wand_select(gradient, max_id, mask);
-
-			var closing = BinaryMorphology.closing(BinaryMorphology.to_binary(flood_fill), 5);
-
-			return BinaryMorphology.to_float(closing);
-		}
-	} );
-
 // test for image segmentation algorithm
 regressionTestDisplays.flood_fill8 = new ScalarHeatDisplay(  { 
 		min: '8.', max: '0.',
