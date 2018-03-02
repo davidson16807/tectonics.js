@@ -101,25 +101,32 @@ VectorRaster.get_nearest_value = function(value_raster, pos) {
 	return {x: value_raster.x[id], y: value_raster.y[id], z: value_raster.z[id]};
 }
 VectorRaster.get_nearest_values = function(value_raster, pos_raster, result) {
-	result = result || VectorRaster(pos_raster.grid);
+  result = result || VectorRaster(pos_raster.grid);
   ASSERT_IS_VECTOR_RASTER(vector_raster)
   ASSERT_IS_VECTOR_RASTER(pos_raster)
   ASSERT_IS_VECTOR_RASTER(result)
-	var ids = pos_raster.grid.getNearestIds(pos_raster);
+  var ids = pos_raster.grid.getNearestIds(pos_raster);
+  return VectorRaster.get_ids(value_raster, ids, result);
+}
+VectorRaster.get_ids = function(value_raster, ids_raster, result) {
+  result = result || VectorRaster(pos_raster.grid);
+
+  ASSERT_IS_VECTOR_RASTER(vector_raster)
+  ASSERT_IS_VECTOR_RASTER(result)
 
   var ix = value_raster.x; 
   var iy = value_raster.y; 
   var iz = value_raster.z; 
 
-	var ox = result.x;
-	var oy = result.y;
-	var oz = result.z;
+  var ox = result.x;
+  var oy = result.y;
+  var oz = result.z;
 
-	for (var i=0, li=ids.length; i<li; ++i) {
-		ox[i] = ix[ids[i]];
-		oy[i] = iy[ids[i]];
-		oz[i] = iz[ids[i]];
-	}
-	
-	return result;
+  for (var i=0, li=ids_raster.length; i<li; ++i) {
+    ox[i] = ix[ids_raster[i]];
+    oy[i] = iy[ids_raster[i]];
+    oz[i] = iz[ids_raster[i]];
+  }
+  
+  return result;
 }

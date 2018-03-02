@@ -19,8 +19,8 @@ VectorField.add_vector_field_and_scalar_term = function(vector_field1, vector_fi
 	var out = result.everything;
 
 	var length = scalar_field.length;
-	for (var i=0, li=everything.length; i<li; ++i) {
-	    out[i] = u[i] + scalar_field[i%length] * v[i];
+	for (var i=0, li=u.length; i<li; ++i) {
+	    out[i] = u[i] + scalar * v[i];
 	}
 
 	return result;
@@ -39,7 +39,7 @@ VectorField.add_vector_field_and_scalar_field_term = function(vector_field1, vec
 	var out = result.everything;
 
 	var length = scalar_field.length;
-	for (var i=0, li=everything.length; i<li; ++i) {
+	for (var i=0, li=u.length; i<li; ++i) {
 	    out[i] = u[i] + scalar_field[i%length] * v[i];
 	}
 
@@ -57,7 +57,7 @@ VectorField.add_vector_field = function(vector_field1, vector_field2, result) {
 	var v = vector_field2.everything;
 	var out = result.everything;
 
-	for (var i=0, li=everything.length; i<li; ++i) {
+	for (var i=0, li=u.length; i<li; ++i) {
 	    out[i] = u[i] + v[i];
 	}
 
@@ -75,7 +75,7 @@ VectorField.sub_vector_field = function(vector_field1, vector_field2, result) {
 	var v = vector_field2.everything;
 	var out = result.everything;
 
-	for (var i=0, li=everything.length; i<li; ++i) {
+	for (var i=0, li=u.length; i<li; ++i) {
 	    out[i] = u[i] - v[i];
 	}
 
@@ -92,10 +92,7 @@ VectorField.dot_vector_field = function(vector_field1, vector_field2, result) {
 	var v = vector_field2.everything;
 
 	var length = result.length;
-	for (var i=0, li=result.length; i<li; ++i) {
-		result[i] = 0;
-	}
-	for (var i=0, li=everything.length; i<li; ++i) {
+	for (var i=0, li=u.length; i<li; ++i) {
 	    result[i%length] += u[i] * v[i];
 	}
 	return result;
@@ -111,7 +108,7 @@ VectorField.hadamard_vector_field = function(vector_field1, vector_field2, resul
 	var v = vector_field2.everything;
 	var out = result.everything;
 
-	for (var i=0, li=everything.length; i<li; ++i) {
+	for (var i=0, li=u.length; i<li; ++i) {
 	    out[i] = u[i] * v[i];
 	}
 
@@ -345,7 +342,7 @@ VectorField.add_scalar_field = function(vector_field, scalar_field, result) {
 	var out = result.everything;
 
 	var length = scalar_field.length;
-	for (var i=0, li=everything.length; i<li; ++i) {
+	for (var i=0, li=u.length; i<li; ++i) {
 	    out[i] = u[i] + scalar_field[i%length];
 	}
 
@@ -362,7 +359,7 @@ VectorField.sub_scalar_field = function(vector_field, scalar_field, result) {
 	var out = result.everything;
 
 	var length = scalar_field.length;
-	for (var i=0, li=everything.length; i<li; ++i) {
+	for (var i=0, li=u.length; i<li; ++i) {
 	    out[i] = u[i] - scalar_field[i%length];
 	}
 
@@ -379,7 +376,7 @@ VectorField.mult_scalar_field = function(vector_field, scalar_field, result) {
 	var out = result.everything;
 
 	var length = scalar_field.length;
-	for (var i=0, li=everything.length; i<li; ++i) {
+	for (var i=0, li=u.length; i<li; ++i) {
 	    out[i] = u[i] * scalar_field[i%length];
 	}
 
@@ -396,7 +393,7 @@ VectorField.div_scalar_field = function(vector_field, scalar_field, result) {
 	var out = result.everything;
 
 	var length = scalar_field.length;
-	for (var i=0, li=everything.length; i<li; ++i) {
+	for (var i=0, li=u.length; i<li; ++i) {
 	    out[i] = u[i] / scalar_field[i%length];
 	}
 
@@ -414,7 +411,7 @@ VectorField.add_scalar = function(vector_field, scalar, result) {
 	var u = vector_field.everything;
 	var out = result.everything;
 
-	for (var i=0, li=everything.length; i<li; ++i) {
+	for (var i=0, li=u.length; i<li; ++i) {
 	    out[i] = u[i] + scalar;
 	}
 
@@ -430,7 +427,7 @@ VectorField.sub_scalar = function(vector_field, scalar, result) {
 	var u = vector_field.everything;
 	var out = result.everything;
 
-	for (var i=0, li=everything.length; i<li; ++i) {
+	for (var i=0, li=u.length; i<li; ++i) {
 	    out[i] = u[i] - scalar;
 	}
 
@@ -446,7 +443,7 @@ VectorField.mult_scalar = function(vector_field, scalar, result) {
 	var u = vector_field.everything;
 	var out = result.everything;
 
-	for (var i=0, li=everything.length; i<li; ++i) {
+	for (var i=0, li=u.length; i<li; ++i) {
 	    out[i] = u[i] * scalar;
 	}
 
@@ -462,7 +459,7 @@ VectorField.div_scalar = function(vector_field, scalar, result) {
 	var u = vector_field.everything;
 	var out = result.everything;
 
-	for (var i=0, li=everything.length; i<li; ++i) {
+	for (var i=0, li=u.length; i<li; ++i) {
 	    out[i] = u[i] / scalar;
 	}
 

@@ -11,6 +11,12 @@ var RockColumn = (function() {
 		this.sima = optional['sima'] || 0;
 		this.sial = optional['sial'] || 0;
 		this.age = optional['age'] || 0;
+		
+		this.array = new Float32Array(
+			optional['sial'] || 0,
+			optional['sima'] || 0,
+			optional['age'] || 0,
+		);
 	}
 	RockColumn.lerp = function(lower, upper, fraction) {
 		return new RockColumn({

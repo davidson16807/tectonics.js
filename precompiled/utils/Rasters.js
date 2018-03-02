@@ -44,7 +44,7 @@
 
 #ifndef IS_PROD
 #define ASSERT_IS_VECTOR_RASTER(INPUT) \
-	if ((INPUT.x === void 0) || !(INPUT.x instanceof Float32Array)) { throw #INPUT + ' is not a vector raster'; }
+	if ((INPUT.everything === void 0) || !(INPUT.everything instanceof Float32Array)) { throw #INPUT + ' is not a vector raster'; }
 #else
 #define ASSERT_IS_VECTOR_RASTER(INPUT)
 #endif
