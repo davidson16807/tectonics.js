@@ -47,8 +47,8 @@ var World = (function() {
 	function update_calculated_plate_fields(plates, scratch) { 
 		var plate_thickness = scratch || Float32Raster(plates[0].grid); 
 
-	    var get_density = TectonicsModeling.get_density; 
-	    var get_thickness = TectonicsModeling.get_thickness; 
+	    var get_density = Crust.get_density; 
+	    var get_thickness = Crust.get_thickness; 
 	    
 		var plate;
 		for (var i=0, li=plates.length; i<li; ++i) {
@@ -59,8 +59,8 @@ var World = (function() {
 	}
 	// update fields that are derived from others
 	function update_calculated_fields(world) {
-		TectonicsModeling.get_thickness		(world.crust, 											world.thickness);
-		TectonicsModeling.get_density 		(world.crust, world.thickness,							world.density);
+		Crust.get_thickness					(world.crust, 											world.thickness);
+		Crust.get_density 					(world.crust, world.thickness,							world.density);
 		TectonicsModeling.get_displacement 	(world.thickness, world.density, world.mantleDensity, 	world.displacement);
 	}
 	function merge_plates_to_master(plates, master) {
@@ -105,7 +105,7 @@ var World = (function() {
 
 		var resample_crust = Crust.get_ids;
 
-		var overlap_crust = TectonicsModeling.overlap_crust; 
+		var overlap_crust = Crust.overlap; 
 
 	  	var plate; 
 		Uint8Raster.fill(globalized_is_on_top, 1);

@@ -11,11 +11,11 @@ function Crust(params) {
     var buffer = params['buffer'] || new ArrayBuffer(3 * Float32Array.BYTES_PER_ELEMENT * length);
     this.buffer = buffer;
 
-    this.sial = new Float32Array(buffer, 0 * Float32Array.BYTES_PER_ELEMENT * length, length);
-    this.sima = new Float32Array(buffer, 1 * Float32Array.BYTES_PER_ELEMENT * length, length);
-    this.age  = new Float32Array(buffer, 2 * Float32Array.BYTES_PER_ELEMENT * length, length);
-    this.conserved = new Float32Array(buffer, 0, 1 * length);
-    this.mass = new Float32Array(buffer, 0, 2 * length);
+    this.sial 		= new Float32Array(buffer, 0 * Float32Array.BYTES_PER_ELEMENT * length, length);
+    this.sima 		= new Float32Array(buffer, 1 * Float32Array.BYTES_PER_ELEMENT * length, length);
+    this.age  		= new Float32Array(buffer, 2 * Float32Array.BYTES_PER_ELEMENT * length, length);
+    this.conserved 	= new Float32Array(buffer, 0, 1 * length);
+    this.mass 		= new Float32Array(buffer, 0, 2 * length);
     this.everything = new Float32Array(buffer);
 
 	// TODO:
@@ -68,6 +68,35 @@ Crust.add_delta = function(crust, crust_delta, result_crust) {
 Crust.assert_conserved_delta = function(crust_delta, threshold) {
 	ScalarTransport.assert_conserved_quantity_delta(crust_delta.conserved, threshold);
 }
+
+Crust.get_thickness = function(crust, thickness) {
+	thickness = thickness || Float32Raster(crust.grid);
+	thickness.fill(0);
+
+	var mass = crust.mass;
+	var length = thickness.length;
+	for (var i=0, li=mass.length; i<li; ++i) {
+		thickness[i%length] += mass[i];
+	}
+	
+	return thickness; 
+}
+Crust.get_conserved = function(crust, thickness) {  
+	thickness = thickness || Float32Raster(crust.grid);
+	thickness.fill(0);
+
+	var conserved = crust.conserved;
+	var length = thickness.length;
+	for (var i=0, li=conserved.length; i<li; ++i) {
+		thickness[i%length] += conserved[i];
+	}
+	
+	return thickness; 
+}
+Crust.get_conserved_average = function(crust, thickness) {  
+	return Float32Dataset.sum(crust.conserved) / crust.grid.vertices.length
+}
+
 
 
 
@@ -129,3 +158,32 @@ Crust.assert_conserved_reaction_delta = function(crust_delta, threshold, scratch
 		debugger;
 	}
 }
+Crust.overlap = function(crust1, crust2, crust2_exists, crust2_on_top, result_crust) {
+	// add current plate thickness to crust1 thickness wherever current plate exists
+	ScalarField.add_field_term 					(crust1.sial, crust2.sial, crust2_exists, 		result_crust.sial);
+	// overwrite crust1 wherever current plate is on top
+	Float32RasterGraphics.copy_into_selection 	(crust1.sima, crust2.sima, crust2_on_top, 		result_crust.sima);
+	// overwrite crust1 wherever current plate is on top
+	Float32RasterGraphics.copy_into_selection 	(crust1.age, crust2.age, crust2_on_top, 		result_crust.age);
+}
+Crust.get_density = function(crust, thickness, density) {
+	density = density || Float32Raster(sima.grid);
+
+	var sima = crust.sima;
+	var sial = crust.sial;
+	var age = crust.age;
+
+	// NOTE: density does double duty for performance reasons
+	var fraction_of_lifetime = density;
+	var sima_density = density;
+
+	Float32RasterInterpolation.smoothstep	(0, 250, age, 						fraction_of_lifetime);
+	Float32RasterInterpolation.lerp			(2890, 3300, fraction_of_lifetime, 	density);
+
+    for (var i = 0, li = density.length; i < li; i++) {
+    	density[i] = thickness[i] > 0? (sima[i] * sima_density[i] + sial[i] * 2700) / (thickness[i]) : 2890;
+    }
+    return density;
+}
+
+

@@ -9,76 +9,6 @@ var TectonicsModeling = (function() {
 
 var TectonicsModeling = {};
 
-
-TectonicsModeling.get_thickness = function(crust, thickness) {
-	return ScalarField.add_field(crust.sima, crust.sial, thickness);
-}
-TectonicsModeling.get_sial_type = function(crust, thickness) {  
-  thickness = thickness || Float32Raster(crust.grid);  
-  Float32Raster.copy(crust.sial, thickness); 
-  return thickness; 
-}  
-TectonicsModeling.get_density = function(crust, thickness, density) {
-	density = density || Float32Raster(sima.grid);
-
-	var sima = crust.sima;
-	var sial = crust.sial;
-	var age = crust.age;
-
-	// NOTE: density does double duty for performance reasons
-	var fraction_of_lifetime = density;
-	var sima_density = density;
-
-	Float32RasterInterpolation.smoothstep	(0, 250, age, 						fraction_of_lifetime);
-	Float32RasterInterpolation.lerp			(2890, 3300, fraction_of_lifetime, 	density);
-
-    for (var i = 0, li = density.length; i < li; i++) {
-    	density[i] = thickness[i] > 0? (sima[i] * sima_density[i] + sial[i] * 2700) / (thickness[i]) : 2890;
-    }
-    return density;
-}
-
-
-// gets surface pressure of the asthenosphere by smoothing a field representing density/buoyancy
-TectonicsModeling.get_asthenosphere_pressure = function(density, pressure, scratch) {
-	pressure = pressure || Float32Raster(density.grid);
-	scratch = scratch || Float32Raster(density.grid);
-
-	var diffuse = ScalarField.diffusion_by_constant;
-
-	var smoothing_iterations =  15;
-	Float32Raster.copy(density, pressure);
-	for (var i=0; i<smoothing_iterations; ++i) {
-		diffuse(pressure, 1, pressure, scratch);
-	}
-	return pressure;
-}
-
-// gets surface velocity of the asthenosphere as the gradient of pressure
-TectonicsModeling.get_asthenosphere_velocity = function(pressure, velocity) {
-	velocity = velocity || VectorRaster(pressure.grid);
-	ScalarField.gradient(pressure, velocity);
-	return velocity;
-}
-
-// gets angular velocity of the asthenosphere as the cross product of velocity and position
-TectonicsModeling.get_angular_velocity = function(velocity, pos, angular_velocity) {
-	return VectorField.cross_vector_field(velocity, pos, angular_velocity);
-}
-// gets displacement using an isostatic model
-TectonicsModeling.get_displacement = function(thickness, density, mantleDensity, displacement) {
- 	var thickness_i, rootDepth;
- 	var inverse_mantle_density = 1 / mantleDensity;
- 	for(var i=0, li = displacement.length; i<li; i++){
- 		//Calculates elevation as a function of crust density. 
- 		//This was chosen as it only requires knowledge of crust density and thickness,  
- 		//which are relatively well known. 
- 		thickness_i = thickness[i]; 
- 		displacement[i] = thickness_i - thickness_i * density[i] * inverse_mantle_density;
- 	}
- 	return displacement;
-}
-
 TectonicsModeling.get_erosion = function(
 		displacement, sealevel, timestep,
 		crust, crust_delta, crust_scratch){
@@ -139,6 +69,48 @@ TectonicsModeling.get_erosion = function(
 	}
   	scratchpad.deallocate('get_erosion');
 }
+
+
+// gets surface pressure of the asthenosphere by smoothing a field representing density/buoyancy
+TectonicsModeling.get_asthenosphere_pressure = function(density, pressure, scratch) {
+	pressure = pressure || Float32Raster(density.grid);
+	scratch = scratch || Float32Raster(density.grid);
+
+	var diffuse = ScalarField.diffusion_by_constant;
+
+	var smoothing_iterations =  15;
+	Float32Raster.copy(density, pressure);
+	for (var i=0; i<smoothing_iterations; ++i) {
+		diffuse(pressure, 1, pressure, scratch);
+	}
+	return pressure;
+}
+
+// gets surface velocity of the asthenosphere as the gradient of pressure
+TectonicsModeling.get_asthenosphere_velocity = function(pressure, velocity) {
+	velocity = velocity || VectorRaster(pressure.grid);
+	ScalarField.gradient(pressure, velocity);
+	return velocity;
+}
+
+// gets angular velocity of the asthenosphere as the cross product of velocity and position
+TectonicsModeling.get_angular_velocity = function(velocity, pos, angular_velocity) {
+	return VectorField.cross_vector_field(velocity, pos, angular_velocity);
+}
+// gets displacement using an isostatic model
+TectonicsModeling.get_displacement = function(thickness, density, mantleDensity, displacement) {
+ 	var thickness_i, rootDepth;
+ 	var inverse_mantle_density = 1 / mantleDensity;
+ 	for(var i=0, li = displacement.length; i<li; i++){
+ 		//Calculates elevation as a function of crust density. 
+ 		//This was chosen as it only requires knowledge of crust density and thickness,  
+ 		//which are relatively well known. 
+ 		thickness_i = thickness[i]; 
+ 		displacement[i] = thickness_i - thickness_i * density[i] * inverse_mantle_density;
+ 	}
+ 	return displacement;
+}
+
 // get a map of plates using image segmentation and binary morphology
 TectonicsModeling.get_plate_map = function(vector_field, segment_num, min_segment_size, segments) {
   var segments = segments || Uint8Raster(vector_field.grid);
@@ -174,14 +146,6 @@ TectonicsModeling.get_plate_map = function(vector_field, segment_num, min_segmen
   return segments;
 }
 
-TectonicsModeling.overlap_crust = function(crust1, crust2, crust2_exists, crust2_on_top, result_crust) {
-	// add current plate thickness to crust1 thickness wherever current plate exists
-	ScalarField.add_field_term 					(crust1.sial, crust2.sial, crust2_exists, 		result_crust.sial);
-	// overwrite crust1 wherever current plate is on top
-	Float32RasterGraphics.copy_into_selection 	(crust1.sima, crust2.sima, crust2_on_top, 		result_crust.sima);
-	// overwrite crust1 wherever current plate is on top
-	Float32RasterGraphics.copy_into_selection 	(crust1.age, crust2.age, crust2_on_top, 		result_crust.age);
-}
 
 return TectonicsModeling;
 })();
