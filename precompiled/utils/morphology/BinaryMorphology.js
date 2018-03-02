@@ -6,38 +6,17 @@ BinaryMorphology.VertexTypedArray = function(grid) {
 	result.grid = grid;
 	return result;
 }
-BinaryMorphology.to_binary = function(field, threshold, result) {
-	result = result || Uint8Raster(field.grid);
-	threshold = threshold || 0;
 
-	ASSERT_IS_ARRAY(field, Uint8Array);
-	for (var i=0, li=field.length; i<li; ++i) {
-	    result[i] = (field[i] > threshold)? 1:0;
-	}
-
-	return result;
-}
-BinaryMorphology.to_float = function(field, result) {
-	result = result || new Float32Raster(field.grid);
-	ASSERT_IS_ARRAY(field, Uint8Array)
-	ASSERT_IS_ARRAY(result, Float32Array)
-	for (var i=0, li=field.length; i<li; ++i) {
-	    result[i] = (field[i]===1)? 1:0;
-	}
-
-	return result;
-}
-
-BinaryMorphology.universal = function(field) {
-	ASSERT_IS_ARRAY(field, Uint8Array);
-	for (var i=0, li=field.length; i<li; ++i) {
-	    field[i] = 1;
+BinaryMorphology.universal = function(result) {
+	ASSERT_IS_ARRAY(result, Uint8Array);
+	for (var i=0, li=result.length; i<li; ++i) {
+	    result[i] = 1;
 	}
 }
-BinaryMorphology.empty = function(field) {
-	ASSERT_IS_ARRAY(field, Uint8Array);
-	for (var i=0, li=field.length; i<li; ++i) {
-	    field[i] = 0;
+BinaryMorphology.empty = function(result) {
+	ASSERT_IS_ARRAY(result, Uint8Array);
+	for (var i=0, li=result.length; i<li; ++i) {
+	    result[i] = 0;
 	}
 }
 
@@ -112,9 +91,12 @@ BinaryMorphology.dilation = function(field, radius, result, scratch) {
 	for (var k=0; k<radius; ++k) {
 		for (var i=0, li=neighbor_lookup.length; i<li; ++i) {
 		    neighbors = neighbor_lookup[i];
-		    buffer_i = buffer2[i];
+		    buffer_i = buffer2[i] === 1;
 		    for (var j=0, lj=neighbors.length; j<lj; ++j) {
-		        buffer_i = buffer_i || buffer2[neighbors[j]];
+			    if (buffer_i) {
+			    	continue;
+			    }
+		        buffer_i = buffer_i || buffer2[neighbors[j]] === 1;
 		    }
 		    buffer1[i] = buffer_i? 1:0;
 		}
@@ -145,7 +127,7 @@ BinaryMorphology.erosion = function(field, radius, result, scratch) {
 		    neighbors = neighbor_lookup[i];
 		    buffer_i = buffer2[i] === 1;
 		    for (var j=0, lj=neighbors.length; j<lj; ++j) {
-			    if (buffer_i) {
+			    if (!buffer_i) {
 			    	continue;
 			    }
 		        buffer_i = buffer_i && buffer2[neighbors[j]] === 1;

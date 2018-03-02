@@ -8,7 +8,7 @@ var RasterUnitTests = (function() {
 		radius = radius || 0.5;
 		var offset = VectorField.sub_vector(pos, center);
 		var distance = VectorField.magnitude(offset);
-		return ScalarField.gt_scalar(distance, radius);
+		return ScalarField.lt_scalar(distance, radius);
 	}
 	return RasterUnitTests;
 })();
