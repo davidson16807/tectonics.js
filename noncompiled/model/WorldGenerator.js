@@ -1,5 +1,5 @@
 
-
+var original_sial_average = 0.0;
 var WorldGenerator = {};
 WorldGenerator.generate = function (world, height_ranks, hypsography, control_points) {
 	function clamp (x, minVal, maxVal) {
@@ -50,6 +50,7 @@ WorldGenerator.generate = function (world, height_ranks, hypsography, control_po
 			}
 		};
 	};
+	original_sial_average = Float32Dataset.average(world.crust.sial);
 };
 
 WorldGenerator.early_earth_hypsography = function() {
