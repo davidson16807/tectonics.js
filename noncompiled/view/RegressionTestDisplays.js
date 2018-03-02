@@ -3,12 +3,14 @@
 
 var RasterUnitTests = (function() {
 	var RasterUnitTests = {};
+	RasterUnitTests.distance = function (pos, vector) {
+		var offset = VectorField.sub_vector(pos, vector);
+		return ScalarField.max_scalar(VectorField.magnitude(offset), 0.2);
+	}
 	RasterUnitTests.circle = function (pos, center, radius) {
 		center = center || {x:0,y:0,z:1};
 		radius = radius || 0.5;
-		var offset = VectorField.sub_vector(pos, center);
-		var distance = VectorField.magnitude(offset);
-		return ScalarField.lt_scalar(distance, radius);
+		return ScalarField.lt_scalar(RasterUnitTests.distance(pos, center), radius);
 	}
 	return RasterUnitTests;
 })();
@@ -54,6 +56,33 @@ regressionTestDisplays.single_plate = new ScalarHeatDisplay( { min: '0.', max: '
 	} );
 
 
+
+regressionTestDisplays.add = new ScalarHeatDisplay(  { 
+		min: '4.', max: '0.',
+		getField: function (crust, result, scratch1) {
+			return ScalarField.add_field(
+				RasterUnitTests.distance(crust.grid.pos, {x:0,y:0,z:1}),
+				RasterUnitTests.distance(crust.grid.pos, {x:0.7,y:0,z:0.7})
+			);
+		}
+	} );
+
+regressionTestDisplays.mult = new ScalarHeatDisplay(  { 
+		min: '4.', max: '0.',
+		getField: function (crust, result, scratch1) {
+			return ScalarField.mult_field(
+				RasterUnitTests.distance(crust.grid.pos, {x:0,y:0,z:1}),
+				RasterUnitTests.distance(crust.grid.pos, {x:0.7,y:0,z:0.7})
+			);
+		}
+	} );
+
+regressionTestDisplays.distance = new ScalarHeatDisplay(  { 
+		min: '1.', max: '0.',
+		getField: function (crust, result, scratch1) {
+			return RasterUnitTests.distance(crust.grid.pos, {x:0,y:0,z:1});
+		}
+	} );
 
 // test for binary morphology
 regressionTestDisplays.circle = new ScalarHeatDisplay(  { 
