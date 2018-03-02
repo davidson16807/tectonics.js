@@ -99,7 +99,12 @@ ScalarDisplay.prototype.updateAttributes = function(geometry, plate) {
 		log_once("ScalarDisplay.getField() did not return a TypedArray.");
 		return;
 	}
-
+	if (scalar_model instanceof Uint8Array) {
+		scalar_model = Float32Raster.FromUint8Raster(scalar_model);
+	}
+	if (scalar_model instanceof Uint16Array) {
+		scalar_model = Float32Raster.FromUint16Raster(scalar_model);
+	}
 
 	if (scalar_model !== void 0) {
 		if (scalar_model !== this.field) {
@@ -191,6 +196,9 @@ ScalarHeatDisplay.prototype.updateAttributes = function(geometry, plate) {
 	}
 	if (scalar_model instanceof Uint8Array) {
 		scalar_model = Float32Raster.FromUint8Raster(scalar_model);
+	}
+	if (scalar_model instanceof Uint16Array) {
+		scalar_model = Float32Raster.FromUint16Raster(scalar_model);
 	}
 	
 	var max = this.scaling? Math.max.apply(null, scalar_model) || 1 : 1;
