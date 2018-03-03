@@ -14,7 +14,7 @@ function Crust(params) {
     this.sial 		= new Float32Array(buffer, 0 * Float32Array.BYTES_PER_ELEMENT * length, length);
     this.sima 		= new Float32Array(buffer, 1 * Float32Array.BYTES_PER_ELEMENT * length, length);
     this.age  		= new Float32Array(buffer, 2 * Float32Array.BYTES_PER_ELEMENT * length, length);
-    this.conserved 	= new Float32Array(buffer, 0, 1 * length);
+    this.conserved_pools 	= new Float32Array(buffer, 0, 1 * length);
     this.mass 		= new Float32Array(buffer, 0, 2 * length);
     this.everything = new Float32Array(buffer);
 
@@ -66,10 +66,10 @@ Crust.add_delta = function(crust, crust_delta, result_crust) {
 	ScalarField.add_field(crust.everything, crust_delta.everything, result_crust.everything);
 }
 Crust.assert_conserved_delta = function(crust_delta, threshold) {
-	ScalarTransport.assert_conserved_quantity_delta(crust_delta.conserved, threshold);
+	ScalarTransport.assert_conserved_quantity_delta(crust_delta.conserved_pools, threshold);
 }
 
-Crust.get_thickness = function(crust, thickness) {
+Crust.sum_mass_pools = function(crust, thickness) {
 	thickness = thickness || Float32Raster(crust.grid);
 	thickness.fill(0);
 
@@ -81,11 +81,11 @@ Crust.get_thickness = function(crust, thickness) {
 	
 	return thickness; 
 }
-Crust.get_conserved = function(crust, thickness) {  
+Crust.sum_conserved_pools = function(crust, thickness) {  
 	thickness = thickness || Float32Raster(crust.grid);
 	thickness.fill(0);
 
-	var conserved = crust.conserved;
+	var conserved = crust.conserved_pools;
 	var length = thickness.length;
 	for (var i=0, li=conserved.length; i<li; ++i) {
 		thickness[i%length] += conserved[i];
@@ -93,15 +93,15 @@ Crust.get_conserved = function(crust, thickness) {
 	
 	return thickness; 
 }
-Crust.get_conserved_average = function(crust, thickness) {  
-	return Float32Dataset.sum(crust.conserved) / crust.grid.vertices.length
+Crust.get_average_conserved_per_cell = function(crust, thickness) {  
+	return Float32Dataset.sum(crust.conserved_pools) / crust.grid.vertices.length
 }
 Crust.overlap = function(crust1, crust2, crust2_exists, crust2_on_top, result_crust) {
 
 	// add current plate thickness to crust1 thickness wherever current plate exists
-	var u = crust1.conserved;
-	var v = crust2.conserved;
-	var out = result_crust.conserved;
+	var u = crust1.conserved_pools;
+	var v = crust2.conserved_pools;
+	var out = result_crust.conserved_pools;
 
 	var length = crust2_exists.length;
 	for (var i=0, li=u.length; i<li; ++i) {

@@ -48,18 +48,18 @@ var World = (function() {
 		var plate_thickness = scratch || Float32Raster(plates[0].grid); 
 
 	    var get_density = Crust.get_density; 
-	    var get_thickness = Crust.get_thickness; 
+	    var sum_mass_pools = Crust.sum_mass_pools; 
 	    
 		var plate;
 		for (var i=0, li=plates.length; i<li; ++i) {
 		    plate = plates[i]; 
-            get_thickness	(plate.crust, 															plate_thickness); 
+            sum_mass_pools	(plate.crust, 															plate_thickness); 
             get_density		(plate.crust, plate_thickness,											plate.density); 
 	 	}
 	}
 	// update fields that are derived from others
 	function update_calculated_fields(world) {
-		Crust.get_thickness					(world.crust, 											world.thickness);
+		Crust.sum_mass_pools				(world.crust, 											world.thickness);
 		Crust.get_density 					(world.crust, world.thickness,							world.density);
 		TectonicsModeling.get_displacement 	(world.thickness, world.density, world.mantleDensity, 	world.displacement);
 	}
