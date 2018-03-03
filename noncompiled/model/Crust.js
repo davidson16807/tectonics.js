@@ -8,14 +8,17 @@ function Crust(params) {
 
 	var length = this.grid.vertices.length;
 
-    var buffer = params['buffer'] || new ArrayBuffer(3 * Float32Array.BYTES_PER_ELEMENT * length);
+    var buffer = params['buffer'] || new ArrayBuffer(6 * Float32Array.BYTES_PER_ELEMENT * length);
     this.buffer = buffer;
 
-    this.sial 		= new Float32Array(buffer, 0 * Float32Array.BYTES_PER_ELEMENT * length, length);
-    this.sima 		= new Float32Array(buffer, 1 * Float32Array.BYTES_PER_ELEMENT * length, length);
-    this.age  		= new Float32Array(buffer, 2 * Float32Array.BYTES_PER_ELEMENT * length, length);
-    this.conserved_pools 	= new Float32Array(buffer, 0, 1 * length);
-    this.mass_pools 		= new Float32Array(buffer, 0, 2 * length);
+    this.sediment 	= new Float32Array(buffer, 0 * Float32Array.BYTES_PER_ELEMENT * length, length);
+    this.sedimentary= new Float32Array(buffer, 1 * Float32Array.BYTES_PER_ELEMENT * length, length);
+    this.metamorphic= new Float32Array(buffer, 2 * Float32Array.BYTES_PER_ELEMENT * length, length);
+    this.sial 		= new Float32Array(buffer, 3 * Float32Array.BYTES_PER_ELEMENT * length, length);
+    this.sima 		= new Float32Array(buffer, 4 * Float32Array.BYTES_PER_ELEMENT * length, length);
+    this.age  		= new Float32Array(buffer, 5 * Float32Array.BYTES_PER_ELEMENT * length, length);
+    this.conserved_pools 	= new Float32Array(buffer, 0, 4 * length);
+    this.mass_pools 		= new Float32Array(buffer, 0, 5 * length);
     this.everything = new Float32Array(buffer);
 
 	// TODO:
@@ -112,52 +115,77 @@ Crust.overlap = function(crust1, crust2, crust2_exists, crust2_on_top, result_cr
 // HERE IS STUFF WE *DO* NEED TO CHANGE WHEN WE ADD RASTERS
 Crust.get_value = function(crust, i) {
 	return new RockColumn({
-		sima 			:crust.sima[i],
-		sial 			:crust.sial[i],
-		age 			:crust.age[i],
+		sediment 			:crust.sediment[i],
+		sedimentary 		:crust.sedimentary[i],
+		metamorphic 		:crust.metamorphic[i],
+		sial 				:crust.sial[i],
+		sima 				:crust.sima[i],
+		age 				:crust.age[i],
 	});
 }
 Crust.set_value = function(crust, i, rock_column) {
-	crust.sima[i] 			= rock_column.sima;
+	crust.sediment[i] 		= rock_column.sediment;
+	crust.sedimentary[i] 	= rock_column.sedimentary;
+	crust.metamorphic[i] 	= rock_column.metamorphic;
 	crust.sial[i] 			= rock_column.sial;
+	crust.sima[i] 			= rock_column.sima;
 	crust.age[i] 			= rock_column.age;
 }
 Crust.fill = function(crust, rock_column) {
 	var fill = Float32Raster.fill;
-	fill(crust.sima, rock_column.sima);
+	fill(crust.sediment, rock_column.sediment);
+	fill(crust.sedimentary, rock_column.sedimentary);
+	fill(crust.metamorphic, rock_column.metamorphic);
 	fill(crust.sial, rock_column.sial);
+	fill(crust.sima, rock_column.sima);
 	fill(crust.age, rock_column.age);
 }
 Crust.fill_into_selection = function(crust, rock_column, selection_raster, result_crust) {
-  // NOTE: a naive implementation would repeatedly invoke Float32RasterGraphics.fill_into_selection 
-  // However, this is much less performant because it reads from selection_raster multiple times. 
-  // For performance reasons, we have to roll our own. 
-  var fill_into = Float32RasterGraphics.fill_into_selection;
-  fill_into(crust.sima, rock_column.sima, selection_raster, result_crust.sima);
-  fill_into(crust.sial, rock_column.sial, selection_raster, result_crust.sial);
-  fill_into(crust.age,  rock_column.age,  selection_raster, result_crust.age) ;
+	// NOTE: a naive implementation would repeatedly invoke Float32RasterGraphics.fill_into_selection 
+	// However, this is much less performant because it reads from selection_raster multiple times. 
+	// For performance reasons, we have to roll our own. 
+	var fill_into = Float32RasterGraphics.fill_into_selection;
+	fill_into(crust.sediment, rock_column.sediment, selection_raster, result_crust.sediment);
+	fill_into(crust.sedimentary, rock_column.sedimentary, selection_raster, result_crust.sedimentary);
+	fill_into(crust.metamorphic, rock_column.metamorphic, selection_raster, result_crust.metamorphic);
+	fill_into(crust.sial, rock_column.sial, selection_raster, result_crust.sial);
+	fill_into(crust.sima, rock_column.sima, selection_raster, result_crust.sima);
+	fill_into(crust.age,  rock_column.age,  selection_raster, result_crust.age) ;
 }
 
 Crust.get_ids = function(crust, id_raster, result_crust) {
 	var get_ids = Float32Raster.get_ids;
-	get_ids(crust.sima, id_raster, result_crust.sima);
+	get_ids(crust.sediment, id_raster, result_crust.sediment);
+	get_ids(crust.sedimentary, id_raster, result_crust.sedimentary);
+	get_ids(crust.metamorphic, id_raster, result_crust.metamorphic);
 	get_ids(crust.sial, id_raster, result_crust.sial);
+	get_ids(crust.sima, id_raster, result_crust.sima);
 	get_ids(crust.age, id_raster, result_crust.age);
 }
 Crust.fix_delta = function(crust_delta, crust, scratch) {
 	var scratch = scratch || Float32Raster(crust_delta.grid);
 	var fix = ScalarTransport.fix_nonnegative_conserved_quantity_delta;
-	fix(crust_delta.sima, crust.sima, scratch);
+	fix(crust_delta.sediment, crust.sediment, scratch);
+	fix(crust_delta.sedimentary, crust.sedimentary, scratch);
+	fix(crust_delta.metamorphic, crust.metamorphic, scratch);
 	fix(crust_delta.sial, crust.sial, scratch);
+	fix(crust_delta.sima, crust.sima, scratch);
 }
 Crust.assert_conserved_transport_delta = function(crust_delta, threshold) {
 	var assert = ScalarTransport.assert_conserved_quantity_delta;
-	assert(crust_delta.sima, threshold);
+	assert(crust_delta.sediment, threshold);
+	assert(crust_delta.sedimentary, threshold);
+	assert(crust_delta.metamorphic, threshold);
 	assert(crust_delta.sial, threshold);
+	assert(crust_delta.sima, threshold);
 }
 Crust.assert_conserved_reaction_delta = function(crust_delta, threshold, scratch) {
 	var sum = scratch || Float32Raster(crust_delta.grid);
 	sum.fill(0);
+	ScalarField.add_field(crust_delta.sediment, sum);
+	ScalarField.add_field(crust_delta.sedimentary, sum);
+	ScalarField.add_field(crust_delta.metamorphic, sum);
+	ScalarField.add_field(crust_delta.sial, sum);
 	ScalarField.add_field(crust_delta.sima, sum);
 	ScalarField.mult_field(sum, sum, sum);
 	var is_not_conserved = Uint8Dataset.sum(ScalarField.gt_scalar(sum, threshold * threshold));
@@ -168,8 +196,11 @@ Crust.assert_conserved_reaction_delta = function(crust_delta, threshold, scratch
 Crust.get_density = function(crust, thickness, density) {
 	density = density || Float32Raster(sima.grid);
 
-	var sima = crust.sima;
+	var sediment = crust.sediment;
+	var sedimentary = crust.sedimentary;
+	var metamorphic = crust.metamorphic;
 	var sial = crust.sial;
+	var sima = crust.sima;
 	var age = crust.age;
 
 	// NOTE: density does double duty for performance reasons
@@ -180,7 +211,7 @@ Crust.get_density = function(crust, thickness, density) {
 	Float32RasterInterpolation.lerp			(2890, 3300, fraction_of_lifetime, 	sima_density);
 
     for (var i = 0, li = density.length; i < li; i++) {
-    	density[i] = thickness[i] > 0? (sima[i] * sima_density[i] + sial[i] * 2700) / (thickness[i]) : 2890;
+    	density[i] = thickness[i] > 0? (sima[i] * sima_density[i] + (sediment[i]+sedimentary[i]+metamorphic[i]+sial[i]) * 2700) / (thickness[i]) : 2890;
     }
     return density;
 }

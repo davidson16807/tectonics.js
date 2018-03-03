@@ -8,21 +8,21 @@ var RockColumn = (function() {
 	function RockColumn(optional){
 		optional = optional || {};
 		this.displacement = optional['displacement'] || 0;
-		this.sima = optional['sima'] || 0;
+		this.sediment = optional['sediment'] || 0;
+		this.sedimentary = optional['sedimentary'] || 0;
+		this.metamorphic = optional['metamorphic'] || 0;
 		this.sial = optional['sial'] || 0;
+		this.sima = optional['sima'] || 0;
 		this.age = optional['age'] || 0;
-		
-		this.array = new Float32Array(
-			optional['sial'] || 0,
-			optional['sima'] || 0,
-			optional['age'] || 0,
-		);
 	}
 	RockColumn.lerp = function(lower, upper, fraction) {
 		return new RockColumn({
-			sima			:lerp(lower.sima, upper.sima, fraction),
-			sial			:lerp(lower.sial, upper.sial, fraction),
-			age				:lerp(lower.age, upper.age, fraction),
+			sediment			:lerp(lower.sediment, upper.sediment, fraction),
+			sedimentary			:lerp(lower.sedimentary, upper.sedimentary, fraction),
+			metamorphic			:lerp(lower.metamorphic, upper.metamorphic, fraction),
+			sial				:lerp(lower.sial, upper.sial, fraction),
+			sima				:lerp(lower.sima, upper.sima, fraction),
+			age					:lerp(lower.age, upper.age, fraction),
 		});
 	}
 	RockColumn.EMPTY = new RockColumn()
