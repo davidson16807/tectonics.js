@@ -855,8 +855,9 @@ ScalarField.add_field_term = function (scalar_field1, scalar_field2, scalar_fiel
   if (!(scalar_field2 instanceof Float32Array || scalar_field2 instanceof Uint16Array || scalar_field2 instanceof Uint8Array)) { throw "scalar_field2" + ' is not a typed array'; }
   if (!(scalar_field3 instanceof Float32Array || scalar_field3 instanceof Uint16Array || scalar_field3 instanceof Uint8Array)) { throw "scalar_field3" + ' is not a typed array'; }
   if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
+  var length = scalar_field3.length;
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = scalar_field1[i] + scalar_field3[i] * scalar_field2[i];
+     result[i] = scalar_field1[i] + scalar_field3[i%length] * scalar_field2[i];
   }
   return result;
 };

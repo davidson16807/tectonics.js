@@ -195,8 +195,9 @@ ScalarField.add_field_term = function (scalar_field1, scalar_field2, scalar_fiel
   ASSERT_IS_ANY_ARRAY(scalar_field2) 
   ASSERT_IS_ANY_ARRAY(scalar_field3) 
   ASSERT_IS_ARRAY(result, Float32Array)
+  var length = scalar_field3.length;
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = scalar_field1[i] + scalar_field3[i] * scalar_field2[i];
+     result[i] = scalar_field1[i] + scalar_field3[i%length] * scalar_field2[i]; 
   }
   return result;
 };

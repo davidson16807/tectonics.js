@@ -15,7 +15,7 @@ function Crust(params) {
     this.sima 		= new Float32Array(buffer, 1 * Float32Array.BYTES_PER_ELEMENT * length, length);
     this.age  		= new Float32Array(buffer, 2 * Float32Array.BYTES_PER_ELEMENT * length, length);
     this.conserved_pools 	= new Float32Array(buffer, 0, 1 * length);
-    this.mass 		= new Float32Array(buffer, 0, 2 * length);
+    this.mass_pools 		= new Float32Array(buffer, 0, 2 * length);
     this.everything = new Float32Array(buffer);
 
 	// TODO:
@@ -73,10 +73,10 @@ Crust.sum_mass_pools = function(crust, thickness) {
 	thickness = thickness || Float32Raster(crust.grid);
 	thickness.fill(0);
 
-	var mass = crust.mass;
+	var mass_pools = crust.mass_pools;
 	var length = thickness.length;
-	for (var i=0, li=mass.length; i<li; ++i) {
-		thickness[i%length] += mass[i];
+	for (var i=0, li=mass_pools.length; i<li; ++i) {
+		thickness[i%length] += mass_pools[i];
 	}
 	
 	return thickness; 
@@ -99,19 +99,11 @@ Crust.get_average_conserved_per_cell = function(crust, thickness) {
 Crust.overlap = function(crust1, crust2, crust2_exists, crust2_on_top, result_crust) {
 
 	// add current plate thickness to crust1 thickness wherever current plate exists
-	var u = crust1.conserved_pools;
-	var v = crust2.conserved_pools;
-	var out = result_crust.conserved_pools;
-
-	var length = crust2_exists.length;
-	for (var i=0, li=u.length; i<li; ++i) {
-	    out[i] = u[i] + crust2_exists[i%length] * v[i];
-	}
-
+	ScalarField.add_field_term				 			(crust1.conserved_pools, crust2.conserved_pools, crust2_exists, result_crust.conserved_pools);
 	// overwrite crust1 wherever current plate is on top
-	Float32RasterGraphics.copy_into_selection 			(crust1.sima, crust2.sima, crust2_on_top, 		result_crust.sima);
+	Float32RasterGraphics.copy_into_selection 			(crust1.sima, crust2.sima, crust2_on_top, 						result_crust.sima);
 	// overwrite crust1 wherever current plate is on top
-	Float32RasterGraphics.copy_into_selection 			(crust1.age, crust2.age, crust2_on_top, 		result_crust.age);
+	Float32RasterGraphics.copy_into_selection 			(crust1.age, crust2.age, crust2_on_top, 						result_crust.age);
 }
 
 
@@ -173,7 +165,7 @@ Crust.assert_conserved_reaction_delta = function(crust_delta, threshold, scratch
 		debugger;
 	}
 }
-Crust.get_density = function(crust, thickness, density, crust_scratch) {
+Crust.get_density = function(crust, thickness, density) {
 	density = density || Float32Raster(sima.grid);
 
 	var sima = crust.sima;
