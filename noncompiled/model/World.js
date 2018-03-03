@@ -29,11 +29,12 @@ var World = (function() {
 		// this.age = parameters['age'] || 0;
 		// this.maxPlatesNum = parameters['platesNum'] || 8;
 
-		this.crust = new Crust({grid: this.grid});
-		this.erosion = new Crust({grid: this.grid});
-		this.accretion = new Crust({grid: this.grid});
-		this.crust_delta = new Crust({grid: this.grid});
-		this.crust_scratch = new Crust({grid: this.grid});
+		this.crust 			= new Crust({grid: this.grid});
+		this.erosion 		= new Crust({grid: this.grid});
+		this.weathering 	= new Crust({grid: this.grid});
+		this.accretion 		= new Crust({grid: this.grid});
+		this.crust_delta 	= new Crust({grid: this.grid});
+		this.crust_scratch 	= new Crust({grid: this.grid});
 
 		this.plates = [];
 	}
@@ -274,10 +275,18 @@ var World = (function() {
 		);
 		Crust.assert_conserved_transport_delta(world.erosion, 1e-2); 
 
+       	// CALCULATE DELTAS
+		TectonicsModeling.get_weathering(
+			world.displacement, world.SEALEVEL, timestep,
+			world.crust, world.weathering, world.crust_scratch
+		);
+		Crust.assert_conserved_reaction_delta(world.weathering, 1e-2); 
+
 		// COMPILE DELTAS
 		var globalized_deltas = world.crust_delta;
 		Crust.reset(globalized_deltas);
 		Crust.add_delta 	(globalized_deltas, world.erosion, 							globalized_deltas);
+		Crust.add_delta 	(globalized_deltas, world.weathering, 						globalized_deltas);
 		ScalarField.add_field(globalized_deltas.sial, world.accretion.sial, 			globalized_deltas.sial);
 		ScalarField.add_scalar(globalized_deltas.age, timestep, 						globalized_deltas.age); // aging
 	}

@@ -177,16 +177,14 @@ Crust.assert_conserved_transport_delta = function(crust_delta, threshold) {
 	assert(crust_delta.sedimentary, threshold);
 	assert(crust_delta.metamorphic, threshold);
 	assert(crust_delta.sial, threshold);
-	assert(crust_delta.sima, threshold);
 }
 Crust.assert_conserved_reaction_delta = function(crust_delta, threshold, scratch) {
 	var sum = scratch || Float32Raster(crust_delta.grid);
 	sum.fill(0);
-	ScalarField.add_field(crust_delta.sediment, sum);
-	ScalarField.add_field(crust_delta.sedimentary, sum);
-	ScalarField.add_field(crust_delta.metamorphic, sum);
-	ScalarField.add_field(crust_delta.sial, sum);
-	ScalarField.add_field(crust_delta.sima, sum);
+	ScalarField.add_field(sum, crust_delta.sediment, sum);
+	ScalarField.add_field(sum, crust_delta.sedimentary, sum);
+	ScalarField.add_field(sum, crust_delta.metamorphic, sum);
+	ScalarField.add_field(sum, crust_delta.sial, sum);
 	ScalarField.mult_field(sum, sum, sum);
 	var is_not_conserved = Uint8Dataset.sum(ScalarField.gt_scalar(sum, threshold * threshold));
 	if (is_not_conserved) {
