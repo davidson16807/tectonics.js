@@ -9,17 +9,98 @@ var TectonicsModeling = (function() {
 
 var TectonicsModeling = {};
 
+
+
+
+
+
+// "weathering" is the process by which rock is converted to sediment 
+TectonicsModeling.get_weathering = function(
+		displacement, sealevel, timestep,
+		crust, crust_delta, crust_scratch){
+  var scratch = crust_scratch.sial || Float32Raster(displacement.grid);
+
+  var sediment 		= crust.sediment;
+  var sedimentary 	= crust.sedimentary;
+  var metamorphic 	= crust.metamorphic;
+  var sial 		 	= crust.sial;
+  var sima 			= crust.sima;
+  
+  var sediment_delta 	= crust_delta.sediment;
+  var sedimentary_delta = crust_delta.sedimentary;
+  var metamorphic_delta = crust_delta.metamorphic;
+  var sial_delta  		= crust_delta.sial;
+  var sima_delta 		= crust_delta.sima;
+
+  var precipitation = 7.8e5; 
+  // ^^^ measured in meters of rain per million years 
+  // global land average from wikipedia 
+  var weathering_factor = 1.8e-7;  
+  // ^^^ the rate of weathering per the rate of rainfall in that place 
+  // measured in fraction of height difference per meters of rain per million years 
+  var critical_sediment_thickness = 1; 
+  // ^^^ the sediment thickness (in meters) at which bedrock weathering no longer occurs 
+ 
+  var sial_density = 2700; // kg/m^3 
+  var sediment_density = 2500 // kg/m^2, from Simoes et al. 2010 
+  var earth_surface_gravity = 9.8; // m/s^2 
+  var surface_gravity = 9.8; // m/s^2 
+   
+  var water_height = scratch;
+  ScalarField.max_scalar(displacement, sealevel, water_height);
+
+  var average_difference = ScalarField.average_difference(water_height); 
+  var weathering = scratch;
+  // NOTE: result array does double duty for performance reasons 
+ 
+  ScalarField.mult_scalar( 
+    average_difference,  
+    weathering_factor *       	// apply weathering factor to get height change per unit precip  
+    precipitation *         	// apply precip to get height change 
+    timestep *         			// 
+    // sial_density *           // apply density to get mass converted to sediment 
+    surface_gravity/earth_surface_gravity, //correct for planet's gravity 
+    weathering) 
+   
+  var bedrock_exposure = Float32Raster(displacement.grid); 
+  ScalarField.div_scalar(sediment,  
+    -critical_sediment_thickness 
+    // * sediment_density 
+    , bedrock_exposure); 
+  ScalarField.add_scalar(bedrock_exposure, 1, bedrock_exposure); 
+  ScalarField.max_scalar(bedrock_exposure, 0, bedrock_exposure); 
+ 
+  ScalarField.mult_field(weathering, bedrock_exposure, weathering); 
+   
+  ScalarField.min_field(weathering, sial, weathering); 
+  ScalarField.max_scalar(weathering, 0, weathering); 
+ 
+  ScalarField.sub_field(sial_delta, weathering, sial_delta); 
+  ScalarField.add_field(sediment_delta, weathering, sediment_delta); 
+} 
+
+
+
+
+
+
 TectonicsModeling.get_erosion = function(
 		displacement, sealevel, timestep,
 		crust, crust_delta, crust_scratch){
   	var scratchpad = RasterStackBuffer.scratchpad;
   	scratchpad.allocate('get_erosion');
 
+	var sediment 		= crust.sediment;
+	var sedimentary 	= crust.sedimentary;
+	var metamorphic 	= crust.metamorphic;
 	var sial 		 	= crust.sial;
 	var sima 			= crust.sima;
 	
-	var sial_delta  	= crust_delta.sial;
-	var sima_delta 		= crust_delta.sima;
+	var sediment_delta  	= crust_delta.sediment;
+	var sedimentary_delta  	= crust_delta.sedimentary;
+	var metamorphic_delta  	= crust_delta.metamorphic;
+	var sial_delta  		= crust_delta.sial;
+	var sima_delta 			= crust_delta.sima;
 
 	Crust.reset(crust_delta);
 
@@ -37,6 +118,9 @@ TectonicsModeling.get_erosion = function(
 	var outbound_height_transfer = scratchpad.getFloat32Raster(displacement.grid);
 	Float32Raster.fill(outbound_height_transfer, 0);
 
+	var outbound_sediment_fraction = crust_scratch.sediment;
+	var outbound_sedimentary_fraction = crust_scratch.sedimentary;
+	var outbound_metamorphic_fraction = crust_scratch.metamorphic;
 	var outbound_sial_fraction = crust_scratch.sial;
 	var outbound_sima_fraction = crust_scratch.sima;
 
@@ -56,16 +140,34 @@ TectonicsModeling.get_erosion = function(
 	    outbound_height_transfer[from] += height_difference > 0? height_difference * precipitation * timestep * erosiveFactor / neighbor_count[from] : 0;
 	}
 	for (var i=0, li=outbound_height_transfer.length; i<li; ++i) {
-		outbound_sial_fraction[i] = outbound_height_transfer[i] > sial[i]? (sial[i] > 0.0? sial[i] / outbound_height_transfer[i] : 0.0) : 1.0;
+		outbound_height_transfer_i = outbound_height_transfer[i];
+		outbound_sediment_fraction[i] = outbound_height_transfer_i > sediment[i]? (sediment[i] > 0.0? sediment[i] / outbound_height_transfer_i : 0.0) : 1.0;
+		outbound_height_transfer_i = outbound_height_transfer[i];
+		outbound_sedimentary_fraction[i] = outbound_height_transfer_i > sedimentary[i]? (sedimentary[i] > 0.0? sedimentary[i] / outbound_height_transfer_i : 0.0) : 1.0;
+		outbound_height_transfer_i *= 1 - outbound_sedimentary_fraction[i];
+		outbound_metamorphic_fraction[i] = outbound_height_transfer_i > metamorphic[i]? (metamorphic[i] > 0.0? metamorphic[i] / outbound_height_transfer_i : 0.0) : 1.0;
+		outbound_height_transfer_i *= 1 - outbound_metamorphic_fraction[i];
+		outbound_sial_fraction[i] = outbound_height_transfer_i > sial[i]? (sial[i] > 0.0? sial[i] / outbound_height_transfer_i : 0.0) : 1.0;
 	}
+	var transfer = 0.0;
 	for (var i=0, li=arrows.length; i<li; ++i) {
 	    arrow = arrows[i];
 	    from = arrow[0];
 	    to = arrow[1];
 	    height_difference = water_height[from] - water_height[to];
-	    outbound_height_transfer_i = height_difference > 0? height_difference * precipitation * timestep * erosiveFactor * outbound_sial_fraction[from] / neighbor_count[from] : 0;
-	    sial_delta[from] -= outbound_height_transfer_i;
-	    sial_delta[to] += outbound_height_transfer_i;
+	    outbound_height_transfer_i = height_difference > 0? height_difference * precipitation * timestep * erosiveFactor / neighbor_count[from] : 0;
+	    transfer = outbound_height_transfer_i * outbound_sediment_fraction[from];
+	    sediment_delta[from] -= transfer;
+	    sediment_delta[to] += transfer;
+	    transfer = outbound_height_transfer_i * outbound_sedimentary_fraction[from];
+	    sedimentary_delta[from] -= transfer;
+	    sedimentary_delta[to] += transfer;
+	    transfer = outbound_height_transfer_i * outbound_metamorphic_fraction[from];
+	    metamorphic_delta[from] -= transfer;
+	    metamorphic_delta[to] += transfer;
+	    transfer = outbound_height_transfer_i * outbound_sial_fraction[from];
+	    sial_delta[from] -= transfer;
+	    sial_delta[to] += transfer;
 	}
   	scratchpad.deallocate('get_erosion');
 }
