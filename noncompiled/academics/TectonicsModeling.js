@@ -18,19 +18,8 @@ var TectonicsModeling = {};
 TectonicsModeling.get_weathering = function(
 		displacement, sealevel, timestep,
 		crust, crust_delta, crust_scratch){
-  var scratch = crust_scratch.sial || Float32Raster(displacement.grid);
-
-  var sediment 		= crust.sediment;
-  var sedimentary 	= crust.sedimentary;
-  var metamorphic 	= crust.metamorphic;
-  var sial 		 	= crust.sial;
-  var sima 			= crust.sima;
-  
-  var sediment_delta 	= crust_delta.sediment;
-  var sedimentary_delta = crust_delta.sedimentary;
-  var metamorphic_delta = crust_delta.metamorphic;
-  var sial_delta  		= crust_delta.sial;
-  var sima_delta 		= crust_delta.sima;
+  var grid = displacement.grid;
+  var scratch = crust_scratch.sial || Float32Raster(grid);
 
   var precipitation = 7.8e5; 
   // ^^^ measured in meters of rain per million years 
@@ -62,8 +51,8 @@ TectonicsModeling.get_weathering = function(
     surface_gravity/earth_surface_gravity, //correct for planet's gravity 
     weathering) 
    
-  var bedrock_exposure = Float32Raster(displacement.grid); 
-  ScalarField.div_scalar(sediment,  
+  var bedrock_exposure = Float32Raster(grid); 
+  ScalarField.div_scalar(crust.sediment,  
     -critical_sediment_thickness 
     // * sediment_density 
     , bedrock_exposure); 
@@ -71,12 +60,21 @@ TectonicsModeling.get_weathering = function(
   ScalarField.max_scalar(bedrock_exposure, 0, bedrock_exposure); 
  
   ScalarField.mult_field(weathering, bedrock_exposure, weathering); 
-   
-  ScalarField.min_field(weathering, sial, weathering); 
+  
+  // NOTE: draw from all pools equally
+
+  var conserved = Float32Raster(grid);
+  ScalarField.add_field(conserved, crust.sedimentary, conserved);
+  ScalarField.add_field(conserved, crust.metamorphic, conserved);
+  ScalarField.add_field(conserved, crust.sial, 		conserved);
+
+  ScalarField.min_field(weathering, conserved, weathering); 
   ScalarField.max_scalar(weathering, 0, weathering); 
- 
-  ScalarField.sub_field(sial_delta, weathering, sial_delta); 
-  ScalarField.add_field(sediment_delta, weathering, sediment_delta); 
+
+  var ratio = ScalarField.div_field(weathering, conserved);
+
+  Crust.mult_field(crust, ratio, crust_delta);
+  ScalarField.mult_scalar(weathering, -1, crust_delta.sediment);
 } 
 
 
