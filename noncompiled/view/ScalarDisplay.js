@@ -225,53 +225,83 @@ scalarDisplays.plate_count 	= new ScalarHeatDisplay( { min: '0.', max: '3.',
 		} 
 	} );
 scalarDisplays.temp 	= new ScalarHeatDisplay( { min: '-25.', max: '30.',  
-		getField: function (crust) {
-			var temp = AtmosphericModeling.surface_air_temp(crust.grid.pos, crust.meanAnomaly, Math.PI*23.5/180);
+		getField: function (world) {
+			var temp = AtmosphericModeling.surface_air_temp(world.grid.pos, world.meanAnomaly, Math.PI*23.5/180);
 			// convert to Celcius
 			ScalarField.add_scalar(temp, -273.15, temp);
 			return temp;
 		} 
 	} );
 scalarDisplays.precip 	= new ScalarHeatDisplay( { min: '2000.', max: '1.',  
-		getField: function (crust) {
+		getField: function (world) {
 			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
 			return AtmosphericModeling.precip(lat);
 		} 
 	} );
 scalarDisplays.age 	= new ScalarHeatDisplay( { min: '250.', max: '0.',  
-		getField: function (crust) {
-			return crust.age;
+		getField: function (world) {
+			return world.crust.age;
 		} 
 	} );
-scalarDisplays.sima 	= new ScalarHeatDisplay( { min: '6000.', max: '70000.',  
-		getField: function (crust) {
-			return crust.sima;
+scalarDisplays.sima 	= new ScalarHeatDisplay( { min: '0.', max: '7000.',  
+		getField: function (world) {
+			return world.crust.sima;
 		} 
 	} );
-scalarDisplays.sial 	= new ScalarHeatDisplay( { min: '6000.', max: '70000.',  
-		getField: function (crust) {
-			return crust.sial;
+scalarDisplays.sial 	= new ScalarHeatDisplay( { min: '0.', max: '70000.',  
+		getField: function (world) {
+			return world.crust.sial;
 		} 
 	} );
-scalarDisplays.thickness 	= new ScalarHeatDisplay( { min: '6000.', max: '70000.',  
-		getField: function (crust) {
-			return crust.thickness;
+scalarDisplays.sial_erosion 	= new ScalarHeatDisplay( { min: '0.', max: '100.',  
+		getField: function (world) {
+			return world.erosion.sial;
+		} 
+	} );
+scalarDisplays.sediment 	= new ScalarHeatDisplay( { min: '0.', max: '5.',  
+		getField: function (world) {
+			return world.crust.sediment;
+		} 
+	} );
+scalarDisplays.sediment_erosion 	= new ScalarHeatDisplay( { min: '0.', max: '5.',  
+		getField: function (world) {
+			return world.erosion.sediment;
+		} 
+	} );
+scalarDisplays.sediment_weathering 	= new ScalarHeatDisplay( { min: '0.', max: '5.',  
+		getField: function (world) {
+			return world.weathering.sediment;
+		} 
+	} );
+scalarDisplays.sedimentary 	= new ScalarHeatDisplay( { min: '0.', max: '10000.',  
+		getField: function (world) {
+			return world.crust.sedimentary;
+		} 
+	} );
+scalarDisplays.metamorphic 	= new ScalarHeatDisplay( { min: '0.', max: '10000.',  
+		getField: function (world) {
+			return world.crust.metamorphic;
+		} 
+	} );
+scalarDisplays.thickness 	= new ScalarHeatDisplay( { min: '0.', max: '70000.',  
+		getField: function (world) {
+			return world.thickness;
 		} 
 	} );
 scalarDisplays.density 	= new ScalarHeatDisplay( { min: '2700.', max: '3300.',  
-		getField: function (crust) {
-			return crust.density;
+		getField: function (world) {
+			return world.density;
 		} 
 	} );
-scalarDisplays.displacement 	= new ScalarHeatDisplay( { min: '3682.', max: '12000.',  
-		getField: function (crust) {
-			return crust.displacement;
+scalarDisplays.elevation 	= new ScalarHeatDisplay( { min: '0.', max: '10000.',  
+		getField: function (world) {
+			return ScalarField.sub_scalar(world.displacement, -3682);
 		}
 	} );
 scalarDisplays.asthenosphere_pressure = new ScalarHeatDisplay(  { 
 		min: '1.', max: '0.',
-		getField: function (crust, output, scratch, iterations) {
-			return TectonicsModeling.get_asthenosphere_pressure(crust.density, output, scratch);
+		getField: function (world, output, scratch, iterations) {
+			return TectonicsModeling.get_asthenosphere_pressure(world.density, output, scratch);
 		}
 	} );
 
