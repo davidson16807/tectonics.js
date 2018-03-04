@@ -315,24 +315,54 @@ var World = (function() {
 
 	  	var plate; 
 		var global_ids_of_local_cells;
+		var local_ids_of_global_cells;
 		var globalized_deltas = world.crust_delta;
 		var localized_deltas = world.crust_scratch;
+
+		Crust.add_delta(world.crust, world.crust_delta, world.crust);
+
 		for (var i=0, li=plates.length; i<li; ++i) {
 		    plate = plates[i];
 
 		    global_ids_of_local_cells = plate.global_ids_of_local_cells;
+		    local_ids_of_global_cells = plate.local_ids_of_global_cells;
 
 			equals 			(plate_map, i, 												globalized_is_on_top);
-        	resample_ui8	(globalized_is_on_top, global_ids_of_local_cells,			localized_is_on_top);
 
-        	resample_crust	(globalized_deltas, global_ids_of_local_cells,				localized_deltas);
-        	mult_crust 		(localized_deltas, localized_is_on_top, 					localized_deltas);
+        	// resample_ui8	(globalized_is_on_top, global_ids_of_local_cells,			localized_is_on_top);
 
-	        // enforce constraint: erosion should never exceed amount of rock available
-	        // get_erosion() guarantees against this, but plate motion sometimes causes violations to this constraint
-	        // violations to constraint are usually small, so we just modify erosion after the fact to preserve the constraint
-	        fix_crust_delta	(localized_deltas, plate.crust, scratch_f32);
-        	add_crust_delta	(plate.crust, localized_deltas, 							plate.crust);
+        	Crust.reset(world.crust_scratch);
+			Float32Raster.set_ids_to_values(world.crust_delta.metamorphic, local_ids_of_global_cells, world.crust_scratch.metamorphic);
+			Float32Raster.set_ids_to_values(world.crust_delta.sedimentary, local_ids_of_global_cells, world.crust_scratch.sedimentary);
+			Float32Raster.set_ids_to_values(world.crust_delta.sediment, local_ids_of_global_cells, world.crust_scratch.sediment);
+			Float32Raster.set_ids_to_values(world.crust_delta.sima, local_ids_of_global_cells, world.crust_scratch.sima);
+			Float32Raster.set_ids_to_values(world.crust_delta.sial, local_ids_of_global_cells, world.crust_scratch.sial);
+			Float32Raster.set_ids_to_values(world.crust_delta.age, local_ids_of_global_cells, world.crust_scratch.age);
+			mult_crust 		(world.crust_scratch, localized_is_on_top, 					world.crust_scratch);
+        	add_crust_delta	(plate.crust, world.crust_scratch, 							plate.crust);
+
+
+
+			// // METHOD 1:
+			// mult_crust 		(globalized_deltas, globalized_is_on_top, 					world.crust_scratch);
+			// Float32Raster.add_values_to_ids(plate.crust.metamorphic, local_ids_of_global_cells, world.crust_scratch.metamorphic, plate.crust.metamorphic);
+			// Float32Raster.add_values_to_ids(plate.crust.sedimentary, local_ids_of_global_cells, world.crust_scratch.sedimentary, plate.crust.sedimentary);
+			// Float32Raster.add_values_to_ids(plate.crust.sediment, local_ids_of_global_cells, world.crust_scratch.sediment, plate.crust.sediment);
+			// Float32Raster.add_values_to_ids(plate.crust.sima, local_ids_of_global_cells, world.crust_scratch.sima, plate.crust.sima);
+			// Float32Raster.add_values_to_ids(plate.crust.sial, local_ids_of_global_cells, world.crust_scratch.sial, plate.crust.sial);
+			// Float32Raster.add_values_to_ids(plate.crust.age, local_ids_of_global_cells, world.crust_scratch.age, plate.crust.age);
+
+			// // METHOD 2:
+        	// resample_ui8	(globalized_is_on_top, global_ids_of_local_cells,			localized_is_on_top);
+
+        	// resample_crust	(globalized_deltas, global_ids_of_local_cells,				localized_deltas);
+        	// mult_crust 		(localized_deltas, localized_is_on_top, 					localized_deltas);
+
+	        // // enforce constraint: erosion should never exceed amount of rock available
+	        // // get_erosion() guarantees against this, but plate motion sometimes causes violations to this constraint
+	        // // violations to constraint are usually small, so we just modify erosion after the fact to preserve the constraint
+	        // fix_crust_delta	(localized_deltas, plate.crust, scratch_f32);
+        	// add_crust_delta	(plate.crust, localized_deltas, 							plate.crust);
 		}
 
 	  	scratchpad.deallocate('integrate_deltas');
