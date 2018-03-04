@@ -68,7 +68,7 @@ VectorRasterGraphics.copy_into_selection = function(vector_raster, copied, selec
 	var c = result.everything;
 
 	var length = selection.length;
-	for (var i=0, li=everything.length; i<li; ++i) { 
+	for (var i=0, li=a.length; i<li; ++i) { 
 		c[i] = selection[i%length] === 1? b[i] : a[i]; 
 	} 
 

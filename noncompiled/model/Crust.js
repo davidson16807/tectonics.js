@@ -50,9 +50,6 @@ function Crust(params) {
 Crust.copy = function(source, destination) {
 	destination.everything.set(source.everything);
 }
-Crust.copy_into_selection = function(crust, copied_crust, selection_raster, result_crust) {
-	VectorRasterGraphics.copy_into_selection(crust, copied_crust, selection_raster, result_crust);
-}
 Crust.reset = function(crust) {
 	crust.everything.fill(0);
 }
@@ -151,6 +148,18 @@ Crust.fill_into_selection = function(crust, rock_column, selection_raster, resul
 	fill_into(crust.sial, rock_column.sial, selection_raster, result_crust.sial);
 	fill_into(crust.sima, rock_column.sima, selection_raster, result_crust.sima);
 	fill_into(crust.age,  rock_column.age,  selection_raster, result_crust.age) ;
+}
+Crust.copy_into_selection = function(crust, crust2, selection_raster, result_crust) {
+	// NOTE: a naive implementation would repeatedly invoke Float32RasterGraphics.fill_into_selection 
+	// However, this is much less performant because it reads from selection_raster multiple times. 
+	// For performance reasons, we have to roll our own. 
+	var fill_into = Float32RasterGraphics.copy_into_selection;
+	fill_into(crust.sediment, crust2.sediment, selection_raster, result_crust.sediment);
+	fill_into(crust.sedimentary, crust2.sedimentary, selection_raster, result_crust.sedimentary);
+	fill_into(crust.metamorphic, crust2.metamorphic, selection_raster, result_crust.metamorphic);
+	fill_into(crust.sial, crust2.sial, selection_raster, result_crust.sial);
+	fill_into(crust.sima, crust2.sima, selection_raster, result_crust.sima);
+	fill_into(crust.age,  crust2.age,  selection_raster, result_crust.age) ;
 }
 
 Crust.get_ids = function(crust, id_raster, result_crust) {
