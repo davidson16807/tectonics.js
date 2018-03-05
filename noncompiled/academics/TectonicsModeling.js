@@ -11,6 +11,122 @@ var TectonicsModeling = {};
 
 
 
+// model summary:
+//    convert sedimentary at a given rate where it exceeds pressure/temperature equivalent of 300MPa/11km
+// requires:
+//    geothermal temperature model
+//    geostatic pressure
+TectonicsModeling.get_lithification = function(
+		displacement, sealevel, timestep,
+		top_crust, crust_delta, crust_scratch){
+
+  	var scratchpad = RasterStackBuffer.scratchpad;
+  	scratchpad.allocate('get_lithification');
+
+  	// TODO: maybe...
+    // Crust.mult_profile(top_crust, [2500, 2700, 2700, 2700, 2890, 0], crust_scratch);
+
+	var surface_gravity = 9.8; // m/s^2
+	var sediment_density = 2700;
+
+	// TODO: include overpressure from ocean water
+	var overpressure = scratchpad.getFloat32Raster(displacement.grid); // NOTE: in Pascals
+	Float32Raster.fill 			(overpressure, 0);
+	ScalarField.add_scalar_term	(overpressure, top_crust.sediment, sediment_density * surface_gravity, overpressure);
+
+	var excess_overpressure = scratchpad.getFloat32Raster(displacement.grid); 
+	ScalarField.sub_scalar(overpressure, 3.7e6, excess_overpressure); 
+	// NOTE: 3.7e6 Pascals is the pressure equivalent of 500ft of sediment @ 2500kg/m^3 density
+  	// 500ft from http://wiki.aapg.org/Sandstone_diagenetic_processes
+  	// TODO: rephrase in terms of lithostatic pressure + geothermal gradient
+
+	// convert excess_overpressure to meters
+	// this represents the number of meters of sediment that have lithified
+	var lithified_meters = scratchpad.getFloat32Raster(displacement.grid); 
+	ScalarField.div_scalar	(excess_overpressure, sediment_density * surface_gravity, 	lithified_meters);
+
+	// clamp lithified_meters to sensible values
+	ScalarField.min_field 	(lithified_meters, crust_delta.sediment, 					lithified_meters)
+	ScalarField.max_scalar 	(lithified_meters, 0, 										lithified_meters)
+
+	ScalarField.mult_scalar(lithified_meters, -1, 	crust_delta.sediment);
+	ScalarField.mult_scalar(lithified_meters,  1, 	crust_delta.sedimentary);
+
+  	scratchpad.deallocate('get_lithification');
+}
+
+
+
+TectonicsModeling.get_metamorphosis = function(
+		displacement, sealevel, timestep,
+		top_crust, crust_delta, crust_scratch){
+
+  	var scratchpad = RasterStackBuffer.scratchpad;
+  	scratchpad.allocate('get_metamorphosis');
+
+  	// TODO: maybe...
+    // Crust.mult_profile(top_crust, [2500, 2700, 2700, 2700, 2890, 0], crust_scratch);
+
+	var surface_gravity = 9.8; // m/s^2
+	var sediment_density = 2700; // kg/m^3
+	var sedimentary_density = 2700; // kg/m^3
+
+	// TODO: include overpressure from ocean water
+	var overpressure = scratchpad.getFloat32Raster(displacement.grid); // NOTE: in Pascals
+	Float32Raster.fill 			(overpressure, 0);
+	ScalarField.add_scalar_term	(overpressure, top_crust.sediment, 		sediment_density * surface_gravity, 	overpressure);
+	ScalarField.add_scalar_term	(overpressure, top_crust.sedimentary, 	sedimentary_density * surface_gravity, 	overpressure);
+
+	var excess_overpressure = scratchpad.getFloat32Raster(displacement.grid); // pressure at bottom of the layer that's beyond which is necessary to metamorphose 
+	ScalarField.sub_scalar(overpressure, 300e6, excess_overpressure); 
+	// NOTE: 300e6 Pascals is the pressure equivalent of 500ft of sediment @ 2500kg/m^3 density
+  	// 300 MPa from https://www.tulane.edu/~sanelson/eens212/typesmetamorph.htm
+  	// TODO: rephrase in terms of lithostatic pressure + geothermal gradient
+
+	// convert excess_overpressure to meters
+	// this represents the number of meters of sediment that have lithified
+	var metamorphosed_meters = scratchpad.getFloat32Raster(displacement.grid); 
+	ScalarField.div_scalar	(excess_overpressure, sedimentary_density * surface_gravity, metamorphosed_meters);
+
+	// clamp metamorphosed_meters to sensible values
+	ScalarField.min_field 	(metamorphosed_meters, crust_delta.sediment, 				metamorphosed_meters)
+	ScalarField.max_scalar 	(metamorphosed_meters, 0, 									metamorphosed_meters)
+
+	ScalarField.mult_scalar(metamorphosed_meters, -1, 	crust_delta.sedimentary);
+	ScalarField.mult_scalar(metamorphosed_meters,  1, 	crust_delta.metamorphic);
+
+  	scratchpad.deallocate('get_metamorphosis');
+}
+
+
+// FOR REFERENCE:
+// ideal Tectonics.js rock taxonomy:
+//
+// sediment		sedimentary		metamorphic		high grade metamorphic
+// 	humus			coal			anthracite	graphite?	
+// 	reef			limestone		marble			
+// 	clay			shale			slate		hornfel/schist/gneiss
+// 	sand			sandstone		quartzite		
+
+// 						+temperature
+// 				slate	hornfel
+// +pressure	schist	gneiss
+
+
+// igneous
+// 						felsic				intermediate	mafic					ultramafic
+// plutonic				granite				diorite			gabbro					peridotite
+// volcanic				rhyolite			andesite		basalt					komatiite
+// plutonic metamorphic	granitic gneiss		intermediate	amphibiole schist		serpentinite
+// volcanic metamorphic	rhyolitic schist 	intermediate	greenschist/blueschist	metakomatiite
+
+// coarse/fine
+// sediment/sedimentary/metamorphic/igneous
+// organic/chalky/mineral
+// high/low temp metamorphism
+// high/low pressure metamorphism
+// mafic/felsic
+
 
 
 
