@@ -374,6 +374,7 @@ var World = (function() {
 			// // map cells many-to-many from global delta map to local delta map
 			// // then filter the local delta map where plate is on top,
 			// // then apply the local delta map
+			// // fails to retain positive mass at all times, also 
         	// resample_ui8	(globalized_is_on_top, global_ids_of_local_cells,			localized_is_on_top);
         	// resample_crust	(globalized_deltas, global_ids_of_local_cells,				localized_deltas);
         	// mult_crust 		(localized_deltas, localized_is_on_top, 					localized_deltas);

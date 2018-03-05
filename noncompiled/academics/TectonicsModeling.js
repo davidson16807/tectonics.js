@@ -17,7 +17,7 @@ var TectonicsModeling = {};
 // "weathering" is the process by which rock is converted to sediment 
 TectonicsModeling.get_weathering = function(
 		displacement, sealevel, timestep,
-		crust, crust_delta, crust_scratch){
+		top_crust, crust_delta, crust_scratch){
   var grid = displacement.grid;
   var scratch = Float32Raster(grid);
 
@@ -53,7 +53,7 @@ TectonicsModeling.get_weathering = function(
     weathering) 
    
   var bedrock_exposure = Float32Raster(grid); 
-  ScalarField.div_scalar(crust.sediment,  
+  ScalarField.div_scalar(top_crust.sediment,  
     -critical_sediment_thickness 
     // * sediment_density 
     , bedrock_exposure); 
@@ -66,9 +66,9 @@ TectonicsModeling.get_weathering = function(
   // NOTE: this draws from all pools equally
   // TODO: draw from topmost pools, first, borrowing code from bedrock_exposure
   var conserved = Float32Raster(grid);
-  ScalarField.add_field(conserved, crust.sedimentary, conserved);
-  ScalarField.add_field(conserved, crust.metamorphic, conserved);
-  ScalarField.add_field(conserved, crust.sial, 		conserved);
+  ScalarField.add_field(conserved, top_crust.sedimentary, conserved);
+  ScalarField.add_field(conserved, top_crust.metamorphic, conserved);
+  ScalarField.add_field(conserved, top_crust.sial, 		conserved);
 
   ScalarField.min_field(weathering, conserved, weathering); 
   ScalarField.max_scalar(weathering, 0, weathering); 
@@ -80,9 +80,9 @@ TectonicsModeling.get_weathering = function(
   Float32RasterGraphics.fill_into_selection(ratio, 0, is_div_by_zero, ratio);
 
   ScalarField.mult_scalar(weathering, -1, crust_delta.sediment);
-  ScalarField.mult_field(crust.sedimentary, ratio, crust_delta.sedimentary);
-  ScalarField.mult_field(crust.metamorphic, ratio, crust_delta.metamorphic);
-  ScalarField.mult_field(crust.sial, 		ratio, crust_delta.sial);
+  ScalarField.mult_field(top_crust.sedimentary, ratio, crust_delta.sedimentary);
+  ScalarField.mult_field(top_crust.metamorphic, ratio, crust_delta.metamorphic);
+  ScalarField.mult_field(top_crust.sial, 		ratio, crust_delta.sial);
   Float32Raster.fill(crust_delta.sima, 0);
 
   ScalarField.mult_scalar(crust_delta.everything, -1, crust_delta.everything);
@@ -90,19 +90,37 @@ TectonicsModeling.get_weathering = function(
 
 
 
+TectonicsModeling.get_lithification = function(
+		displacement, sealevel, timestep,
+		top_crust, crust_delta, crust_scratch){
+
+
+
+} 
+
+
+
+
+TectonicsModeling.get_metamorphosis = function(
+		displacement, sealevel, timestep,
+		top_crust, crust_delta, crust_scratch){
+
+
+
+} 
 
 
 
 TectonicsModeling.get_erosion = function(
 		displacement, sealevel, timestep,
-		crust, crust_delta, crust_scratch){
+		top_crust, crust_delta, crust_scratch){
   	var scratchpad = RasterStackBuffer.scratchpad;
   	scratchpad.allocate('get_erosion');
 
-	var sediment 		= crust.sediment;
-	var sedimentary 	= crust.sedimentary;
-	var metamorphic 	= crust.metamorphic;
-	var sial 		 	= crust.sial;
+	var sediment 		= top_crust.sediment;
+	var sedimentary 	= top_crust.sedimentary;
+	var metamorphic 	= top_crust.metamorphic;
+	var sial 		 	= top_crust.sial;
 	
 	Crust.reset(crust_delta);
 
