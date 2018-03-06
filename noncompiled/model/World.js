@@ -265,7 +265,8 @@ var World = (function() {
 	        fill_into 	(plate.mask, 0, localized_is_detaching,                 			plate.mask); 
 	        
 	        // calculate accretion delta
-        	mult_field	(plate.crust.sial, localized_is_detaching,							localized_accretion);
+	        Crust.sum_conserved_pools(plate.crust, localized_accretion);
+        	mult_field	(localized_accretion, localized_is_detaching,						localized_accretion);
         	resample_f32(localized_accretion, plate.local_ids_of_global_cells,				globalized_scalar_field);
         	add 		(globalized_accretion, globalized_scalar_field, 					globalized_accretion);
 		}
