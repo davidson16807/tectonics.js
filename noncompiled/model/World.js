@@ -33,6 +33,8 @@ var World = (function() {
 		this.crust 			= new Crust({grid: this.grid});
 		this.erosion 		= new Crust({grid: this.grid});
 		this.weathering 	= new Crust({grid: this.grid});
+		this.lithification 	= new Crust({grid: this.grid});
+		this.metamorphosis 	= new Crust({grid: this.grid});
 		this.accretion 		= new Crust({grid: this.grid});
 		this.crust_delta 	= new Crust({grid: this.grid});
 		this.crust_scratch 	= new Crust({grid: this.grid});
@@ -286,13 +288,29 @@ var World = (function() {
 		);
 		Crust.assert_conserved_reaction_delta(world.weathering, 1e-2); 
 
+       	// CALCULATE DELTAS
+		TectonicsModeling.get_lithification(
+			world.displacement, world.SEALEVEL, timestep,
+			world.top_crust, world.lithification, world.crust_scratch
+		);
+		Crust.assert_conserved_reaction_delta(world.lithification, 1e-2); 
+
+       	// CALCULATE DELTAS
+		TectonicsModeling.get_metamorphosis(
+			world.displacement, world.SEALEVEL, timestep,
+			world.top_crust, world.metamorphosis, world.crust_scratch
+		);
+		Crust.assert_conserved_reaction_delta(world.metamorphosis, 1e-2); 
+
 		// COMPILE DELTAS
 		var globalized_deltas = world.crust_delta;
-		Crust.reset(globalized_deltas);
-		Crust.add_delta 	(globalized_deltas, world.erosion, 							globalized_deltas);
-		Crust.add_delta 	(globalized_deltas, world.weathering, 						globalized_deltas);
-		ScalarField.add_field(globalized_deltas.sial, world.accretion.sial, 			globalized_deltas.sial);
-		ScalarField.add_scalar(globalized_deltas.age, timestep, 						globalized_deltas.age); // aging
+		Crust.reset 			(globalized_deltas);
+		Crust.add_delta 		(globalized_deltas, world.erosion, 						globalized_deltas);
+		Crust.add_delta 		(globalized_deltas, world.weathering, 					globalized_deltas);
+		Crust.add_delta 		(globalized_deltas, world.lithification,				globalized_deltas);
+		Crust.add_delta 		(globalized_deltas, world.metamorphosis,				globalized_deltas);
+		ScalarField.add_field 	(globalized_deltas.sial, world.accretion.sial, 			globalized_deltas.sial);
+		ScalarField.add_scalar 	(globalized_deltas.age, timestep, 						globalized_deltas.age); // aging
 	}
 
 	function integrate_deltas(world, plates) { 
