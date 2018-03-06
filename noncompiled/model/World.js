@@ -380,12 +380,7 @@ var World = (function() {
 			// then apply the local delta map
         	// // retains positive mass, and appears to give the best results of any method attempted so far
 			mult_crust 		(globalized_deltas, globalized_is_on_top, 					world.crust_scratch);
-			Float32Raster.add_values_to_ids(plate.crust.metamorphic, local_ids_of_global_cells, world.crust_scratch.metamorphic, plate.crust.metamorphic);
-			Float32Raster.add_values_to_ids(plate.crust.sedimentary, local_ids_of_global_cells, world.crust_scratch.sedimentary, plate.crust.sedimentary);
-			Float32Raster.add_values_to_ids(plate.crust.sediment, local_ids_of_global_cells, world.crust_scratch.sediment, plate.crust.sediment);
-			Float32Raster.add_values_to_ids(plate.crust.sima, local_ids_of_global_cells, world.crust_scratch.sima, plate.crust.sima);
-			Float32Raster.add_values_to_ids(plate.crust.sial, local_ids_of_global_cells, world.crust_scratch.sial, plate.crust.sial);
-			Float32Raster.add_values_to_ids(plate.crust.age, local_ids_of_global_cells, world.crust_scratch.age, plate.crust.age);
+			Crust.add_values_to_ids(plate.crust, local_ids_of_global_cells, world.crust_scratch, plate.crust);
 
 
 

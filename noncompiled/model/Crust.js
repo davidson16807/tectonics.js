@@ -171,6 +171,15 @@ Crust.get_ids = function(crust, id_raster, result_crust) {
 	get_ids(crust.sima, id_raster, result_crust.sima);
 	get_ids(crust.age, id_raster, result_crust.age);
 }
+Crust.add_values_to_ids = function(crust, id_raster, value_crust, result_crust) {
+	var add_values_to_ids = Float32Raster.add_values_to_ids;
+	add_values_to_ids(crust.sediment, id_raster, value_crust.sediment, 	 result_crust.sediment);
+	add_values_to_ids(crust.sedimentary, id_raster, value_crust.sedimentary, result_crust.sedimentary);
+	add_values_to_ids(crust.metamorphic, id_raster, value_crust.metamorphic, result_crust.metamorphic);
+	add_values_to_ids(crust.sial, id_raster, value_crust.sial, 		 result_crust.sial);
+	add_values_to_ids(crust.sima, id_raster, value_crust.sima, 		 result_crust.sima);
+	add_values_to_ids(crust.age, id_raster, value_crust.age, 		 result_crust.age);
+}
 Crust.fix_delta = function(crust_delta, crust, scratch) {
 	var scratch = scratch || Float32Raster(crust_delta.grid);
 	var fix = ScalarTransport.fix_nonnegative_conserved_quantity_delta;
