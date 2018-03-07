@@ -20,7 +20,7 @@ var World = (function() {
 		this.density = Float32Raster(this.grid);
 		// the average density of the crust, in kg/m^3
 
-		this.plate_map 		= Uint8Raster(this.grid);
+		this.top_plate_map 			= Uint8Raster(this.grid);
 		this.bottom_plate_map 	= Uint8Raster(this.grid);
 		this.plate_count 		= Uint8Raster(this.grid);
 		this.asthenosphere_velocity = VectorRaster(this.grid);
@@ -80,7 +80,7 @@ var World = (function() {
 		Crust.reset(master.total_crust);
 		Crust.reset(master.top_crust);
 		Crust.reset(master.bottom_crust);
-		Uint8Raster.fill(master.plate_map, UINT8_NULL);
+		Uint8Raster.fill(master.top_plate_map, UINT8_NULL);
 		Uint8Raster.fill(master.bottom_plate_map, UINT8_NULL);
 		Uint8Raster.fill(master.plate_count, 0);
 
@@ -139,7 +139,7 @@ var World = (function() {
 
 		    // merge plates with master
 		    // set plate_mask to current plate's index where current plate is on top
-		    fill_into 	(master.plate_map, i, globalized_is_on_top, 									master.plate_map);
+		    fill_into 	(master.top_plate_map, i, globalized_is_on_top, 									master.top_plate_map);
 		    
 		    // add 1 to master.plate_count where current plate exists
 		    add_ui8 	(master.plate_count, globalized_plate_mask, 									master.plate_count);
@@ -153,7 +153,7 @@ var World = (function() {
 	}
 
 	function rift(world, plates) { 
-	  	var plate_map = world.plate_map;
+	  	var top_plate_map = world.top_plate_map;
 	  	var ocean = world.ocean;
 	  	var grid = world.grid;
 
@@ -192,7 +192,7 @@ var World = (function() {
 			plate = plates[i]; 
 
 			// is_riftable: count == 0 or (count = 1 and top_plate = i) 
-			equals 	(plate_map, i,                             							globalized_is_on_top); 
+			equals 	(top_plate_map, i,                             							globalized_is_on_top); 
 			and 	(globalized_is_alone, globalized_is_on_top,         				globalized_is_riftable); 
 			or 		(globalized_is_riftable, globalized_is_empty,       				globalized_is_riftable); 
 
@@ -208,7 +208,7 @@ var World = (function() {
 	  	scratchpad.deallocate('rift');
 	} 
 	function detach_and_accrete(world, plates) {
-	  	var plate_map = world.plate_map;
+	  	var top_plate_map = world.top_plate_map;
 	  	var grid = world.grid;
 
 		// WARNING: unfortunate side effect!
@@ -253,7 +253,7 @@ var World = (function() {
 		for (var i=0, li=plates.length; i<li; ++i) {
 		    plate = plates[i];
 
-			not_equals 	(plate_map, i, 														globalized_is_not_on_top);
+			not_equals 	(top_plate_map, i, 														globalized_is_not_on_top);
 
 		    //detect detachment
 			// is_detachable: count > 1 and top_plate != i
@@ -326,7 +326,7 @@ var World = (function() {
 	  	var scratchpad = RasterStackBuffer.scratchpad;
 	  	scratchpad.allocate('integrate_deltas');
 	  	
-	  	var plate_map = world.plate_map;
+	  	var top_plate_map = world.top_plate_map;
 
 		var localized_is_on_top = scratchpad.getUint8Raster(grid);
 		var globalized_is_on_top = scratchpad.getUint8Raster(grid);
@@ -354,7 +354,7 @@ var World = (function() {
 		    global_ids_of_local_cells = plate.global_ids_of_local_cells;
 		    local_ids_of_global_cells = plate.local_ids_of_global_cells;
 
-			equals 			(plate_map, i, 												globalized_is_on_top);
+			equals 			(top_plate_map, i, 												globalized_is_on_top);
 
         	// resample_ui8	(globalized_is_on_top, global_ids_of_local_cells,			localized_is_on_top);
 
@@ -427,14 +427,14 @@ var World = (function() {
 		var pressure = TectonicsModeling.get_asthenosphere_pressure(this.density);
 		TectonicsModeling.get_asthenosphere_velocity(pressure, this.asthenosphere_velocity);
 		var angular_velocity = VectorField.cross_vector_field(this.asthenosphere_velocity, this.grid.pos);
-		var plate_map = TectonicsModeling.get_plate_map(angular_velocity, 7, 200);
-		var plate_ids = Uint8Dataset.unique(plate_map);
+		var top_plate_map = TectonicsModeling.get_plate_map(angular_velocity, 7, 200);
+		var plate_ids = Uint8Dataset.unique(top_plate_map);
 		this.plates = [];
 
 		var plate;
 		// TODO: overwrite plates instead of creating new ones, create separate function for plate initialization
 		for (var i = 0, li = plate_ids.length; i < li; ++i) {
-			var mask = Uint8Field.eq_scalar(plate_map, plate_ids[i]);
+			var mask = Uint8Field.eq_scalar(top_plate_map, plate_ids[i]);
 
 			//TODO: comment this out when you're done
 			var eulerPole = VectorDataset.weighted_average(angular_velocity, mask)
