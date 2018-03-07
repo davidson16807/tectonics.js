@@ -25,6 +25,7 @@ function Uint16Raster(grid, fill) {
   }
   return result;
 };
+Uint16Raster.UINT16_NULL = 65535;
 Uint16Raster.OfLength = function(length, grid) {
   var result = new Uint16Array(length);
   result.grid = grid;

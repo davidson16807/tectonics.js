@@ -11,35 +11,42 @@ var World = (function() {
 
 		this.supercontinentCycle = parameters['supercontinentCycle'] || new SupercontinentCycle(this, parameters);
 
-		// The following are fields that are derived from other fields:
-		this.displacement = Float32Raster(this.grid);
-		// "displacement is the height of the crust relative to an arbitrary datum level
-		// It is not called "elevation" to emphasize that it is not relative to sea level
-		this.thickness = Float32Raster(this.grid);
-		// the thickness of the crust in km
-		this.density = Float32Raster(this.grid);
-		// the average density of the crust, in kg/m^3
-
-		this.top_plate_map 			= Uint8Raster(this.grid);
-		this.bottom_plate_map 	= Uint8Raster(this.grid);
-		this.plate_count 		= Uint8Raster(this.grid);
-		this.asthenosphere_velocity = VectorRaster(this.grid);
 		this.meanAnomaly 		= parameters['meanAnomaly'] || 0;
 
 		// this.radius = parameters['radius'] || 6367;
 		// this.age = parameters['age'] || 0;
 		// this.maxPlatesNum = parameters['platesNum'] || 8;
 
-		this.top_crust 		= new Crust({grid: this.grid});
-		this.bottom_crust 	= new Crust({grid: this.grid});
-		this.total_crust 	= new Crust({grid: this.grid});
-		this.erosion 		= new Crust({grid: this.grid});
-		this.weathering 	= new Crust({grid: this.grid});
-		this.lithification 	= new Crust({grid: this.grid});
-		this.metamorphosis 	= new Crust({grid: this.grid});
-		this.accretion 		= new Crust({grid: this.grid});
-		this.crust_delta 	= new Crust({grid: this.grid});
-		this.crust_scratch 	= new Crust({grid: this.grid});
+		// The following are fields that are derived from other fields:
+		this.displacement 		= Float32Raster(this.grid);
+		// "displacement is the height of the crust relative to an arbitrary datum level
+		// It is not called "elevation" to emphasize that it is not relative to sea level
+		this.thickness 			= Float32Raster(this.grid);
+		// the thickness of the crust in km
+		this.density 			= Float32Raster(this.grid);
+		// the average density of the crust, in kg/m^3
+		this.plate_count 		= Uint8Raster(this.grid);
+		// the number of plates occupying a cell
+		this.asthenosphere_velocity = VectorRaster(this.grid);
+		// the velocity of the asthenosphere
+
+		this.top_plate_map 		= Uint8Raster(this.grid);
+		this.top_crust 			= new Crust({grid: this.grid});
+		this.top_crust_delta 	= new Crust({grid: this.grid});
+		this.metamorphosis 		= new Crust({grid: this.grid});
+		this.erosion 			= new Crust({grid: this.grid});
+		this.weathering 		= new Crust({grid: this.grid});
+		this.lithification 		= new Crust({grid: this.grid});
+		this.accretion 			= new Crust({grid: this.grid});
+
+		this.bottom_plate_map 	= Uint8Raster(this.grid);
+		this.bottom_crust 		= new Crust({grid: this.grid});
+		this.bottom_crust_delta = new Crust({grid: this.grid});
+
+		this.total_crust 		= new Crust({grid: this.grid});
+		
+
+		this.crust_scratch 		= new Crust({grid: this.grid});
 
 		this.plates = [];
 	}
@@ -86,22 +93,23 @@ var World = (function() {
 
 		
 		var master_density = master.density; 
-		Float32Raster.fill(master_density, 9999);
+		Float32Raster.fill(master_density, Infinity);
 
 		//local variables
 		var local_ids_of_global_cells; 
 
 		//global variables
-		var globalized_is_on_top = scratchpad.getUint8Raster(master.grid);
-		var globalized_plate_mask = scratchpad.getUint8Raster(master.grid); 
+		var globalized_is_on_top 	= scratchpad.getUint8Raster(master.grid);
+		var globalized_is_not_on_top = scratchpad.getUint8Raster(master.grid);
+		var globalized_plate_mask 	= scratchpad.getUint8Raster(master.grid); 
 		var global_ids_of_local_cells; 
 
 		// float32array used for temporary storage of globalized scalar fields
 		// this is used for performance reasons
-		var globalized_scalar_field = scratchpad.getFloat32Raster(master.grid); 
+		var globalized_plate_density = scratchpad.getFloat32Raster(master.grid); 
 		var plate_thickness = scratchpad.getFloat32Raster(master.grid); 
 
-		var globalized_crust = master.crust_scratch;
+		var globalized_plate_crust = master.crust_scratch;
 
 		var fill_into = Uint8RasterGraphics.fill_into_selection;
 		var copy_into = Float32RasterGraphics.copy_into_selection;
@@ -132,22 +140,41 @@ var World = (function() {
 		    // generate globalized_is_on_top
 		    // this raster indicates whether the plate is viewable from space
 		    // this raster will be used when merging other fields
-		    resample_f32(plate.density,		 		local_ids_of_global_cells, 							globalized_scalar_field);
-		    lt 			(globalized_scalar_field,	master_density,										globalized_is_on_top);
+		    resample_f32(plate.density,		 		local_ids_of_global_cells, 							globalized_plate_density);
+		    lt 			(globalized_plate_density,	master_density,										globalized_is_on_top);
 		    and 		(globalized_is_on_top,		globalized_plate_mask,	 							globalized_is_on_top);
-		    copy_into 	(master_density,	 		globalized_scalar_field, globalized_is_on_top, 		master_density);
+
+		    // update master density 
+		    copy_into 	(master_density,	 		globalized_plate_density, globalized_is_on_top, 	master_density);
 
 		    // merge plates with master
 		    // set plate_mask to current plate's index where current plate is on top
-		    fill_into 	(master.top_plate_map, i, globalized_is_on_top, 									master.top_plate_map);
+		    fill_into 	(master.top_plate_map, i, globalized_is_on_top, 								master.top_plate_map);
 		    
 		    // add 1 to master.plate_count where current plate exists
 		    add_ui8 	(master.plate_count, globalized_plate_mask, 									master.plate_count);
 
-		    resample_crust(plate.crust, local_ids_of_global_cells, 										globalized_crust);
-		    overlap_crust (master.total_crust, globalized_crust, globalized_plate_mask, globalized_is_on_top, master.total_crust);
+		    resample_crust(plate.crust, local_ids_of_global_cells, 										globalized_plate_crust);
+		    overlap_crust (master.total_crust, globalized_plate_crust, globalized_plate_mask, globalized_is_on_top, master.total_crust);
 
-			Crust.copy_into_selection(master.top_crust, globalized_crust, globalized_is_on_top, 		master.top_crust);
+			Crust.copy_into_selection(master.top_crust, globalized_plate_crust, globalized_is_on_top, 	master.top_crust);
+		}
+	  	
+		// now that top plate is determined, we can figure out which plate(s) are on the bottom
+		// NOTE: 3-way plate collision results in undefined behavior - it is not certain which plate will wind up in bottom_plate_map
+		var not_equals = Uint8Field.ne_scalar;
+		for (var i=0, li=plates.length; i<li; ++i) {
+
+			// find places where plate is not on top
+		    resample_ui8(plate.mask, local_ids_of_global_cells, 										globalized_plate_mask); 	
+			not_equals 	(master.top_plate_map, i,                             							globalized_is_not_on_top);	
+		    and 		(globalized_is_not_on_top,	globalized_plate_mask,	 							globalized_is_not_on_top);	
+
+		    resample_crust(plate.crust, local_ids_of_global_cells, 										globalized_plate_crust);	
+
+		    // set master.bottom_crust and master.bottom_plate_map
+			Crust.copy_into_selection(master.bottom_crust, globalized_plate_crust, globalized_is_not_on_top, master.bottom_crust);	
+		    fill_into 	(master.bottom_plate_map, i, globalized_is_not_on_top, 							master.bottom_plate_map);
 		}
 	  	scratchpad.deallocate('merge_plates_to_master');
 	}
@@ -192,7 +219,7 @@ var World = (function() {
 			plate = plates[i]; 
 
 			// is_riftable: count == 0 or (count = 1 and top_plate = i) 
-			equals 	(top_plate_map, i,                             							globalized_is_on_top); 
+			equals 	(top_plate_map, i,                             						globalized_is_on_top); 
 			and 	(globalized_is_alone, globalized_is_on_top,         				globalized_is_riftable); 
 			or 		(globalized_is_riftable, globalized_is_empty,       				globalized_is_riftable); 
 
@@ -308,7 +335,7 @@ var World = (function() {
 		Crust.assert_conserved_reaction_delta(world.metamorphosis, 1e-2); 
 
 		// COMPILE DELTAS
-		var globalized_deltas = world.crust_delta;
+		var globalized_deltas = world.top_crust_delta;
 		Crust.reset 			(globalized_deltas);
 		Crust.add_delta 		(globalized_deltas, world.erosion, 						globalized_deltas);
 		Crust.add_delta 		(globalized_deltas, world.weathering, 					globalized_deltas);
@@ -343,10 +370,10 @@ var World = (function() {
 	  	var plate; 
 		var global_ids_of_local_cells;
 		var local_ids_of_global_cells;
-		var globalized_deltas = world.crust_delta;
+		var globalized_deltas = world.top_crust_delta;
 		var localized_deltas = world.crust_scratch;
 
-		Crust.add_delta(world.total_crust, world.crust_delta, world.total_crust);
+		// Crust.add_delta(world.total_crust, world.top_crust_delta, world.total_crust);
 
 		for (var i=0, li=plates.length; i<li; ++i) {
 		    plate = plates[i];
@@ -367,12 +394,12 @@ var World = (function() {
         	// // retains positive mass, but doesn't seem to erode landscapes well, 
         	// // planet looks really rocky after >1Gy
         	// Crust.reset(world.crust_scratch);
-			// Float32Raster.set_ids_to_values(world.crust_delta.metamorphic, local_ids_of_global_cells, world.crust_scratch.metamorphic);
-			// Float32Raster.set_ids_to_values(world.crust_delta.sedimentary, local_ids_of_global_cells, world.crust_scratch.sedimentary);
-			// Float32Raster.set_ids_to_values(world.crust_delta.sediment, local_ids_of_global_cells, world.crust_scratch.sediment);
-			// Float32Raster.set_ids_to_values(world.crust_delta.sima, local_ids_of_global_cells, world.crust_scratch.sima);
-			// Float32Raster.set_ids_to_values(world.crust_delta.sial, local_ids_of_global_cells, world.crust_scratch.sial);
-			// Float32Raster.set_ids_to_values(world.crust_delta.age, local_ids_of_global_cells, world.crust_scratch.age);
+			// Float32Raster.set_ids_to_values(world.top_crust_delta.metamorphic, local_ids_of_global_cells, world.crust_scratch.metamorphic);
+			// Float32Raster.set_ids_to_values(world.top_crust_delta.sedimentary, local_ids_of_global_cells, world.crust_scratch.sedimentary);
+			// Float32Raster.set_ids_to_values(world.top_crust_delta.sediment, local_ids_of_global_cells, world.crust_scratch.sediment);
+			// Float32Raster.set_ids_to_values(world.top_crust_delta.sima, local_ids_of_global_cells, world.crust_scratch.sima);
+			// Float32Raster.set_ids_to_values(world.top_crust_delta.sial, local_ids_of_global_cells, world.crust_scratch.sial);
+			// Float32Raster.set_ids_to_values(world.top_crust_delta.age, local_ids_of_global_cells, world.crust_scratch.age);
 			// mult_crust 		(world.crust_scratch, localized_is_on_top, 					world.crust_scratch);
         	// add_crust_delta	(plate.crust, world.crust_scratch, 							plate.crust);
 
