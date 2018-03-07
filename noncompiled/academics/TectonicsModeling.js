@@ -21,6 +21,8 @@ TectonicsModeling.get_lithification = function(
 		top_crust, crust_delta, crust_scratch){
 	var grid = top_crust.grid;
 
+	Crust.reset(crust_delta);
+
   	var scratchpad = RasterStackBuffer.scratchpad;
   	scratchpad.allocate('get_lithification');
 
@@ -64,6 +66,8 @@ TectonicsModeling.get_metamorphosis = function(
 
 	var grid = top_crust.grid;
 
+	Crust.reset(crust_delta);
+	
   	var scratchpad = RasterStackBuffer.scratchpad;
   	scratchpad.allocate('get_metamorphosis');
 
@@ -82,7 +86,7 @@ TectonicsModeling.get_metamorphosis = function(
 
 	var excess_overpressure = scratchpad.getFloat32Raster(grid); // pressure at bottom of the layer that's beyond which is necessary to metamorphose 
 	ScalarField.sub_scalar(overpressure, 300e6, excess_overpressure); 
-	// NOTE: 300e6 Pascals is the pressure equivalent of 500ft of sediment @ 2500kg/m^3 density
+	// NOTE: 300e6 Pascals is the pressure equivalent of 11km of rock at 2700 kg/m^3
   	// 300 MPa from https://www.tulane.edu/~sanelson/eens212/typesmetamorph.htm
   	// TODO: rephrase in terms of lithostatic pressure + geothermal gradient
 

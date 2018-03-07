@@ -2621,6 +2621,7 @@ function Uint16Raster(grid, fill) {
   }
   return result;
 };
+Uint16Raster.NULL = 65535;
 Uint16Raster.OfLength = function(length, grid) {
   var result = new Uint16Array(length);
   result.grid = grid;
@@ -2759,6 +2760,7 @@ function Uint8Raster(grid, fill) {
   }
   return result;
 };
+Uint8Raster.NULL = 255;
 Uint8Raster.OfLength = function(length, grid) {
   var result = new Uint8Array(length);
   result.grid = grid;

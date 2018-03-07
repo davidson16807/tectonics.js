@@ -25,7 +25,7 @@ function Uint8Raster(grid, fill) {
   }
   return result;
 };
-Uint8Raster.UINT8_NULL = 255;
+Uint8Raster.NULL = 255;
 Uint8Raster.OfLength = function(length, grid) {
   var result = new Uint8Array(length);
   result.grid = grid;
