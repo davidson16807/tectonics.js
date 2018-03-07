@@ -20,17 +20,19 @@ var World = (function() {
 		this.density = Float32Raster(this.grid);
 		// the average density of the crust, in kg/m^3
 
-		this.plate_map = Uint8Raster(this.grid);
-		this.plate_count = Uint8Raster(this.grid);
+		this.plate_map 		= Uint8Raster(this.grid);
+		this.bottom_plate_map 	= Uint8Raster(this.grid);
+		this.plate_count 		= Uint8Raster(this.grid);
 		this.asthenosphere_velocity = VectorRaster(this.grid);
-		this.meanAnomaly = parameters['meanAnomaly'] || 0;
+		this.meanAnomaly 		= parameters['meanAnomaly'] || 0;
 
 		// this.radius = parameters['radius'] || 6367;
 		// this.age = parameters['age'] || 0;
 		// this.maxPlatesNum = parameters['platesNum'] || 8;
 
 		this.top_crust 		= new Crust({grid: this.grid});
-		this.crust 			= new Crust({grid: this.grid});
+		this.bottom_crust 	= new Crust({grid: this.grid});
+		this.total_crust 	= new Crust({grid: this.grid});
 		this.erosion 		= new Crust({grid: this.grid});
 		this.weathering 	= new Crust({grid: this.grid});
 		this.lithification 	= new Crust({grid: this.grid});
@@ -63,8 +65,8 @@ var World = (function() {
 	}
 	// update fields that are derived from others
 	function update_calculated_fields(world) {
-		Crust.sum_mass_pools				(world.crust, 											world.thickness);
-		Crust.get_density 					(world.crust, world.thickness,							world.density);
+		Crust.sum_mass_pools				(world.total_crust, 									world.thickness);
+		Crust.get_density 					(world.total_crust, world.thickness,					world.density);
 		TectonicsModeling.get_displacement 	(world.thickness, world.density, world.mantleDensity, 	world.displacement);
 	}
 	function merge_plates_to_master(plates, master) {
@@ -75,9 +77,11 @@ var World = (function() {
 		var UINT16_NULL = 65535;
 
 		//WIPE MASTER RASTERS CLEAN
-		Crust.reset(master.crust);
+		Crust.reset(master.total_crust);
 		Crust.reset(master.top_crust);
+		Crust.reset(master.bottom_crust);
 		Uint8Raster.fill(master.plate_map, UINT8_NULL);
+		Uint8Raster.fill(master.bottom_plate_map, UINT8_NULL);
 		Uint8Raster.fill(master.plate_count, 0);
 
 		
@@ -141,7 +145,7 @@ var World = (function() {
 		    add_ui8 	(master.plate_count, globalized_plate_mask, 									master.plate_count);
 
 		    resample_crust(plate.crust, local_ids_of_global_cells, 										globalized_crust);
-		    overlap_crust (master.crust, globalized_crust, globalized_plate_mask, globalized_is_on_top, master.crust);
+		    overlap_crust (master.total_crust, globalized_crust, globalized_plate_mask, globalized_is_on_top, master.total_crust);
 
 			Crust.copy_into_selection(master.top_crust, globalized_crust, globalized_is_on_top, 		master.top_crust);
 		}
@@ -342,7 +346,7 @@ var World = (function() {
 		var globalized_deltas = world.crust_delta;
 		var localized_deltas = world.crust_scratch;
 
-		Crust.add_delta(world.crust, world.crust_delta, world.crust);
+		Crust.add_delta(world.total_crust, world.crust_delta, world.total_crust);
 
 		for (var i=0, li=plates.length; i<li; ++i) {
 		    plate = plates[i];
@@ -442,7 +446,7 @@ var World = (function() {
 				mask: 	mask,
 				eulerPole: eulerPole
 			})
-			Crust.copy(this.crust, plate.crust);
+			Crust.copy(this.total_crust, plate.crust);
 
 			// TODO: see if you can't get this to reflect relative magnitude of average surface asthenosphere velocity
 			plate.angularSpeed = this.getRandomPlateSpeed();

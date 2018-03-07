@@ -44,13 +44,13 @@ WorldGenerator.generate = function (world, height_ranks, hypsography, control_po
 				upper.displacement == tallest.displacement){
 				var fraction = smoothstep(lower.displacement, upper.displacement, height);
 				
-				Crust.set_value( world.crust, cell_ids[i], RockColumn.lerp(lower, upper, fraction) );
+				Crust.set_value( world.total_crust, cell_ids[i], RockColumn.lerp(lower, upper, fraction) );
 
 				break;
 			}
 		};
 	};
-	average_conserved_per_cell = Crust.get_average_conserved_per_cell(world.crust);
+	average_conserved_per_cell = Crust.get_average_conserved_per_cell(world.total_crust);
 };
 
 WorldGenerator.early_earth_hypsography = function() {
