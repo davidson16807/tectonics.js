@@ -216,7 +216,7 @@ ScalarHeatDisplay.prototype.updateAttributes = function(geometry, plate) {
 }
 scalarDisplays.plates 	= new ScalarHeatDisplay( { min: '0.', max: '7.', 
 		getField: function (world) {
-			return world.plate_map;
+			return world.bottom_plate_map;
 		} 	
 	} );
 scalarDisplays.plate_count 	= new ScalarHeatDisplay( { min: '0.', max: '3.',  
@@ -240,17 +240,17 @@ scalarDisplays.precip 	= new ScalarHeatDisplay( { min: '2000.', max: '1.',
 	} );
 scalarDisplays.age 	= new ScalarHeatDisplay( { min: '250.', max: '0.',  
 		getField: function (world) {
-			return world.crust.age;
+			return world.top_crust.age;
 		} 
 	} );
 scalarDisplays.sima 	= new ScalarHeatDisplay( { min: '0.', max: '7000.',  
 		getField: function (world) {
-			return world.crust.sima;
+			return world.top_crust.sima;
 		} 
 	} );
 scalarDisplays.sial 	= new ScalarHeatDisplay( { min: '0.', max: '70000.',  
 		getField: function (world) {
-			return world.crust.sial;
+			return world.top_crust.sial;
 		} 
 	} );
 scalarDisplays.sial_erosion 	= new ScalarHeatDisplay( { min: '0.', max: '100.',  
@@ -260,7 +260,7 @@ scalarDisplays.sial_erosion 	= new ScalarHeatDisplay( { min: '0.', max: '100.',
 	} );
 scalarDisplays.sediment 	= new ScalarHeatDisplay( { min: '0.', max: '5.',  
 		getField: function (world) {
-			return world.crust.sediment;
+			return world.top_crust.sediment;
 		} 
 	} );
 scalarDisplays.sediment_erosion 	= new ScalarHeatDisplay( { min: '0.', max: '5.',  
@@ -275,12 +275,12 @@ scalarDisplays.sediment_weathering 	= new ScalarHeatDisplay( { min: '0.', max: '
 	} );
 scalarDisplays.sedimentary 	= new ScalarHeatDisplay( { min: '0.', max: '10000.',  
 		getField: function (world) {
-			return world.crust.sedimentary;
+			return world.top_crust.sedimentary;
 		} 
 	} );
 scalarDisplays.metamorphic 	= new ScalarHeatDisplay( { min: '0.', max: '10000.',  
 		getField: function (world) {
-			return world.crust.metamorphic;
+			return world.top_crust.metamorphic;
 		} 
 	} );
 scalarDisplays.thickness 	= new ScalarHeatDisplay( { min: '0.', max: '70000.',  
