@@ -47,7 +47,7 @@ JsonSerializer.plate = function (plate, options) {
 	var plate_json = {
 		eulerPole: 				plate.eulerPole,
 		angularSpeed: 			plate.angularSpeed,
-		local_to_global_matrix: plate.local_to_global_matrix,
+		local_to_global_matrix: Base64.encode(plate.local_to_global_matrix.buffer),
 	};
 
 	// encode in base64
@@ -65,7 +65,7 @@ JsonDeserializer.plate = function (plate_json, world, options) {
 		world: world,
 		angularSpeed: plate_json.angularSpeed,
 		eulerPole: plate_json.eulerPole,
-		local_to_global_matrix: plate_json.local_to_global_matrix,
+		local_to_global_matrix: new Float32Array(Base64.decode(plate_json.local_to_global_matrix)),
 		mask: Uint8Raster.FromBuffer(Base64.decode(plate_json.mask), world.grid),
 		crust: new Crust({
 			grid: world.grid, 
