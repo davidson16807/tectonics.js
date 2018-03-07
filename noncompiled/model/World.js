@@ -192,9 +192,18 @@ var World = (function() {
 		var localized_is_rifting = scratchpad.getUint8Raster(grid);
 
 		//global rifting/detaching variables
+		var globalized_plate_mask = scratchpad.getUint8Raster(grid);
 		var globalized_is_empty = scratchpad.getUint8Raster(grid);
+		var globalized_is_not_empty = scratchpad.getUint8Raster(grid);
+		var globalized_is_one = scratchpad.getUint8Raster(grid);
 		var globalized_is_alone = scratchpad.getUint8Raster(grid);
+		var globalized_is_another = scratchpad.getUint8Raster(grid);
+		var globalized_is_near_another = scratchpad.getUint8Raster(grid);
+		var globalized_is_alone = scratchpad.getUint8Raster(grid);
+		var globalized_is_an_owner = scratchpad.getUint8Raster(grid);
+		var globalized_is_sole_owner = scratchpad.getUint8Raster(grid);
 		var globalized_is_riftable = scratchpad.getUint8Raster(grid);
+		var globalized_is_riftable2 = scratchpad.getUint8Raster(grid);
 		var globalized_is_on_top = scratchpad.getUint8Raster(grid);
 
 		var scratch_ui8 = scratchpad.getUint8Raster(grid);
@@ -204,30 +213,43 @@ var World = (function() {
 		var or = BinaryMorphology.union;
 		var and = BinaryMorphology.intersection;
 		var erode = BinaryMorphology.erosion;
+		var dilate = BinaryMorphology.dilation;
+		var diff = BinaryMorphology.difference;
 		var equals = Uint8Field.eq_scalar;
 		var fill_into = Uint8RasterGraphics.fill_into_selection;
 		var fill_into_crust = Crust.fill_into_selection;
 
 		//		 op 	operands														result
-		equals 	(world.plate_count, 0, 													globalized_is_empty);
-		equals 	(world.plate_count, 1, 													globalized_is_alone);
+		Uint8Field.eq_scalar 	(world.plate_count, 0, 													globalized_is_empty);
+		Uint8Field.eq_scalar 	(world.plate_count, 1, 													globalized_is_one);
+		Uint8Field.gt_scalar 	(world.plate_count, 0, 													globalized_is_not_empty);
+		// fill all empty cells that only have one clear owner
 
+		var local_ids_of_global_cells; 
 		var plate = plates[0];
 		for (var i=0, li=plates.length; i<li; ++i) { 
 			plate = plates[i]; 
 
-			// is_riftable: count == 0 or (count = 1 and top_plate = i) 
-			equals 	(top_plate_map, i,                             						globalized_is_on_top); 
-			and 	(globalized_is_alone, globalized_is_on_top,         				globalized_is_riftable); 
-			or 		(globalized_is_riftable, globalized_is_empty,       				globalized_is_riftable); 
+	    	local_ids_of_global_cells = plate.local_ids_of_global_cells;
+
+			// is_riftable: count = 0 and margin(count = 1 and mask = 1) and not dilate(is_another)
+			// in other words, if there's an adjacent empty cell, it clearly belongs to this plate
+		    resample(plate.mask, local_ids_of_global_cells, 							globalized_plate_mask); 	
+		    diff 	(globalized_is_not_empty, globalized_plate_mask, 					globalized_is_another); 	
+			dilate 	(globalized_is_riftable, 1,                           				globalized_is_near_another, scratch_ui8); 
+
+			and 	(globalized_is_one, globalized_plate_mask,         					globalized_is_alone); 
+			margin 	(globalized_is_alone, 1,                           					globalized_is_an_owner, scratch_ui8); 
+			diff 	(globalized_is_an_owner, globalized_is_near_another, 				globalized_is_sole_owner);
+			and		(globalized_is_sole_owner, globalized_is_empty,       				globalized_is_riftable); 
 
 			resample(globalized_is_riftable, plate.global_ids_of_local_cells,       	localized_is_riftable); 
-			erode 	(localized_is_riftable, 1,                       					localized_will_stay_riftable,     scratch_ui8); 
-			margin 	(plate.mask, 1,                           							localized_is_just_outside_border, scratch_ui8); 
-			and 	(localized_will_stay_riftable, localized_is_just_outside_border,  	localized_is_rifting); 
+			// erode 	(localized_is_riftable, 1,                       				localized_will_stay_riftable,     scratch_ui8); 
+			// and 	(localized_will_stay_riftable, localized_is_just_outside_border,  	localized_is_rifting); 
 
-	        fill_into(plate.mask, 1, localized_is_rifting,                 				plate.mask); 
-	        fill_into_crust(plate.crust, ocean, localized_is_rifting, 					plate.crust);
+
+	        fill_into(plate.mask, 1, localized_is_riftable,                				plate.mask); 
+	        fill_into_crust(plate.crust, ocean, localized_is_riftable, 					plate.crust);
 		}
 
 	  	scratchpad.deallocate('rift');
