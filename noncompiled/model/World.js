@@ -287,9 +287,11 @@ var World = (function() {
 			add_term	(plate.crust.metamorphic, plate.crust.sediment, 	localized_is_subducted,	plate.crust.metamorphic);
 			add_term	(plate.crust.metamorphic, plate.crust.sedimentary, 	localized_is_subducted,	plate.crust.metamorphic);
 			add_term	(plate.crust.metamorphic, plate.crust.felsic_plutonic, 		localized_is_subducted,	plate.crust.metamorphic);
+			add_term	(plate.crust.metamorphic, plate.crust.felsic_volcanic, 		localized_is_subducted,	plate.crust.metamorphic);
 			fill_into_f32(plate.crust.sediment, 	0, localized_is_subducted, 				plate.crust.sediment);
 			fill_into_f32(plate.crust.sedimentary, 	0, localized_is_subducted, 				plate.crust.sedimentary);
 			fill_into_f32(plate.crust.felsic_plutonic, 		0, localized_is_subducted, 				plate.crust.felsic_plutonic);
+			fill_into_f32(plate.crust.felsic_volcanic, 		0, localized_is_subducted, 				plate.crust.felsic_volcanic);
 
             erode		(localized_is_subducted, 1,											localized_will_stay_detachable, 	localized_scratch_ui8);
 		    padding 	(plate.mask, 1, 													localized_is_just_inside_border, 	localized_scratch_ui8);

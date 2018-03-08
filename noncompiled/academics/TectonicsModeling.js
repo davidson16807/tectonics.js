@@ -76,7 +76,7 @@ TectonicsModeling.get_metamorphosis = function(
 	// TODO: simply math now that we're using mass, not thickness
 	ScalarField.add_scalar_term	(overpressure, top_crust.sediment, 		surface_gravity, 	overpressure);
 	ScalarField.add_scalar_term	(overpressure, top_crust.sedimentary, 	surface_gravity, 	overpressure);
-
+	//TODO: convert igneous to metamorphic
 	var excess_overpressure = scratchpad.getFloat32Raster(grid); // pressure at bottom of the layer that's beyond which is necessary to metamorphose 
 	ScalarField.sub_scalar(overpressure, 300e3, excess_overpressure); 
 	// NOTE: 300e3 Pascals is the pressure equivalent of 11km of sedimentary rock @ 2700kg/m^3 density
@@ -183,6 +183,7 @@ TectonicsModeling.get_weathering = function(
   ScalarField.add_field(conserved, top_crust.sedimentary, conserved);
   ScalarField.add_field(conserved, top_crust.metamorphic, conserved);
   ScalarField.add_field(conserved, top_crust.felsic_plutonic, 		conserved);
+  ScalarField.add_field(conserved, top_crust.felsic_volcanic, 		conserved);
 
   ScalarField.min_field(weathering, conserved, weathering); 
   ScalarField.max_scalar(weathering, 0, weathering); 
@@ -197,6 +198,7 @@ TectonicsModeling.get_weathering = function(
   ScalarField.mult_field(top_crust.sedimentary, ratio, crust_delta.sedimentary);
   ScalarField.mult_field(top_crust.metamorphic, ratio, crust_delta.metamorphic);
   ScalarField.mult_field(top_crust.felsic_plutonic, 		ratio, crust_delta.felsic_plutonic);
+  ScalarField.mult_field(top_crust.felsic_volcanic, 		ratio, crust_delta.felsic_volcanic);
   Float32Raster.fill(crust_delta.mafic_volcanic, 0);
 
   ScalarField.mult_scalar(crust_delta.everything, -1, crust_delta.everything);
@@ -216,6 +218,7 @@ TectonicsModeling.get_erosion = function(
 	var sedimentary 	= top_crust.sedimentary;
 	var metamorphic 	= top_crust.metamorphic;
 	var felsic_plutonic 		 	= top_crust.felsic_plutonic;
+	var felsic_volcanic 		 	= top_crust.felsic_volcanic;
 	
 	Crust.reset(crust_delta);
 
@@ -254,6 +257,7 @@ TectonicsModeling.get_erosion = function(
 	var outbound_sedimentary_fraction = crust_scratch.sedimentary;
 	var outbound_metamorphic_fraction = crust_scratch.metamorphic;
 	var outbound_felsic_plutonic_fraction = crust_scratch.felsic_plutonic;
+	var outbound_felsic_volcanic_fraction = crust_scratch.felsic_volcanic;
 
 	var fraction = 0.0;
 	for (var i=0, li=outbound_height_transfer.length; i<li; ++i) {
@@ -279,12 +283,18 @@ TectonicsModeling.get_erosion = function(
 		outbound_felsic_plutonic_fraction[i] = (fraction / neighbor_count[i]) || 0;
 		outbound_height_transfer_i *= 1.0 - fraction;
 
+		fraction = felsic_volcanic[i] / outbound_height_transfer_i
+		fraction = fraction > 1? 1 : fraction < 0? 0 : fraction;
+		outbound_felsic_volcanic_fraction[i] = (fraction / neighbor_count[i]) || 0;
+		outbound_height_transfer_i *= 1.0 - fraction;
+
 	}
 
 	var sediment_delta  	= crust_delta.sediment;
 	var sedimentary_delta  	= crust_delta.sedimentary;
 	var metamorphic_delta  	= crust_delta.metamorphic;
 	var felsic_plutonic_delta  		= crust_delta.felsic_plutonic;
+	var felsic_volcanic_delta  		= crust_delta.felsic_volcanic;
 
 	var transfer = 0.0;
 	for (var i=0, li=arrows.length; i<li; ++i) {
@@ -309,6 +319,10 @@ TectonicsModeling.get_erosion = function(
 	    transfer = outbound_height_transfer_i * outbound_felsic_plutonic_fraction[from];
 	    felsic_plutonic_delta[from] -= transfer;
 	    felsic_plutonic_delta[to] += transfer;
+
+	    transfer = outbound_height_transfer_i * outbound_felsic_volcanic_fraction[from];
+	    felsic_volcanic_delta[from] -= transfer;
+	    felsic_volcanic_delta[to] += transfer;
 	}
   	scratchpad.deallocate('get_erosion');
 }
