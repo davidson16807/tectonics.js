@@ -220,7 +220,7 @@ var World = (function() {
 	  	scratchpad.allocate('update_subducted');
 
 	  	//rifting/detaching variables
-		var localized_is_detachable = scratchpad.getUint8Raster(grid);
+		var localized_is_subducted = scratchpad.getUint8Raster(grid);
 		var localized_will_stay_detachable = scratchpad.getUint8Raster(grid);
 		var localized_is_just_inside_border = scratchpad.getUint8Raster(grid);
 		var localized_is_detaching = scratchpad.getUint8Raster(grid);
@@ -230,13 +230,14 @@ var World = (function() {
 
 		//global rifting/detaching variables
 		var globalized_is_not_alone = scratchpad.getUint8Raster(grid);
-		var globalized_is_detachable = scratchpad.getUint8Raster(grid);
+		var globalized_is_subducted = scratchpad.getUint8Raster(grid);
 		var globalized_is_not_on_top = scratchpad.getUint8Raster(grid);
 
 		var globalized_scalar_field = scratchpad.getFloat32Raster(grid); 
 
 		var mult_field = ScalarField.mult_field;
 		var fill_into = Uint8RasterGraphics.fill_into_selection;
+		var fill_into_f32 = Float32RasterGraphics.fill_into_selection;
 		var resample_ui8 = Uint8Raster.get_ids;
 		var resample_f32 = Float32Raster.get_ids;
 		var padding = BinaryMorphology.padding;
@@ -245,6 +246,7 @@ var World = (function() {
 		var not_equals = Uint8Field.ne_scalar;
 		var gt_f32 = ScalarField.gt_scalar;
 		var add = ScalarField.add_field;
+		var add_term = ScalarField.add_field_term;
 
 		//				 op 	operands													result
 		not_equals 		(world.plate_count, 1, 												globalized_is_not_alone);
@@ -253,18 +255,27 @@ var World = (function() {
 		for (var i=0, li=plates.length; i<li; ++i) {
 		    plate = plates[i];
 
-			not_equals 	(top_plate_map, i, 														globalized_is_not_on_top);
+			not_equals 	(top_plate_map, i, 													globalized_is_not_on_top);
 
 		    //detect detachment
 			// is_detachable: count > 1 and top_plate != i
-		    and 		(globalized_is_not_alone, globalized_is_not_on_top,					globalized_is_detachable);
+		    and 		(globalized_is_not_alone, globalized_is_not_on_top,					globalized_is_subducted);
+            resample_ui8(globalized_is_subducted, plate.global_ids_of_local_cells, 			localized_is_subducted);
 
-            resample_ui8(globalized_is_detachable, plate.global_ids_of_local_cells, 		localized_is_detachable);
-            erode		(localized_is_detachable, 1,										localized_will_stay_detachable, 	localized_scratch_ui8);
+			// WARNING: unfortunate side effect!
+			// we metamorphose stuff here because trying to do it using deltas was causing problems with conservation
+			add_term	(plate.crust.metamorphic, plate.crust.sediment, 	localized_is_subducted,	plate.crust.metamorphic);
+			add_term	(plate.crust.metamorphic, plate.crust.sedimentary, 	localized_is_subducted,	plate.crust.metamorphic);
+			add_term	(plate.crust.metamorphic, plate.crust.sial, 		localized_is_subducted,	plate.crust.metamorphic);
+			fill_into_f32(plate.crust.sediment, 	0, localized_is_subducted, 				plate.crust.sediment);
+			fill_into_f32(plate.crust.sedimentary, 	0, localized_is_subducted, 				plate.crust.sedimentary);
+			fill_into_f32(plate.crust.sial, 		0, localized_is_subducted, 				plate.crust.sial);
+
+            erode		(localized_is_subducted, 1,											localized_will_stay_detachable, 	localized_scratch_ui8);
 		    padding 	(plate.mask, 1, 													localized_is_just_inside_border, 	localized_scratch_ui8);
-        	gt_f32		(plate.density, world.mantleDensity, 								localized_is_detachable);
+        	gt_f32		(plate.density, world.mantleDensity, 								localized_is_subducted);
 		    and 		(localized_will_stay_detachable, localized_is_just_inside_border, 	localized_is_detaching);
-		    and 		(localized_is_detaching, localized_is_detachable, 					localized_is_detaching);
+		    and 		(localized_is_detaching, localized_is_subducted, 					localized_is_detaching);
 
 	        fill_into 	(plate.mask, 0, localized_is_detaching,                 			plate.mask); 
 	        
