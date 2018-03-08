@@ -4,16 +4,16 @@ var World = (function() {
 	function World(parameters) {
 		this.grid = parameters['grid'] || stop('missing parameter: "grid"');
 
-		// all densities in kg/m^3
+		// all densities in T/m^3
 		this.rock_density = parameters['material_properties'] || {
-			sediment: 2700,
-			sedimentary: 2700,
-			metamorphic: 2700,
-			sial: 2700,
-			sima_min: 2890, // Carlson & Raskin 1984
-			sima_max: 3300,
-			mantle: 3075, // derived empirically using isostatic model
-			ocean: 1026 
+			sediment: 2.700,
+			sedimentary: 2.700,
+			metamorphic: 2.700,
+			sial: 2.700,
+			sima_min: 2.890, // Carlson & Raskin 1984
+			sima_max: 3.300,
+			mantle: 3.075, // derived empirically using isostatic model
+			ocean: 1.026 
 		};
 
 		this.surface_gravity = parameters['surface_gravity'] || 9.8; // m/s^2
@@ -32,9 +32,9 @@ var World = (function() {
 		this.thickness = Float32Raster(this.grid);
 		// the thickness of the crust in km
 		this.total_mass = Float32Raster(this.grid);
-		// total mass of the crust in kg
+		// total mass of the crust in tons
 		this.density = Float32Raster(this.grid);
-		// the average density of the crust, in kg/m^3
+		// the average density of the crust, in T/m^3
 
 		this.top_plate_map 			= Uint8Raster(this.grid);
 		this.plate_count 		= Uint8Raster(this.grid);

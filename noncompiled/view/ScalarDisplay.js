@@ -288,7 +288,7 @@ scalarDisplays.thickness 	= new ScalarHeatDisplay( { min: '0.', max: '70000.',
 			return world.thickness;
 		} 
 	} );
-scalarDisplays.density 	= new ScalarHeatDisplay( { min: '2700.', max: '3300.',  
+scalarDisplays.density 	= new ScalarHeatDisplay( { min: '2.700', max: '3.300',  
 		getField: function (world) {
 			return world.density;
 		} 
