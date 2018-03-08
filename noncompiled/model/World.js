@@ -29,11 +29,14 @@ var World = (function() {
 		// the number of plates occupying a cell
 		this.asthenosphere_velocity = VectorRaster(this.grid);
 		// the velocity of the asthenosphere
+		this.is_detaching 		= Uint8Raster(this.grid);
+		// indicates whether detachment is occuring 
+
+		this.debug 				= Float32Raster(this.grid);
 
 		this.top_plate_map 		= Uint8Raster(this.grid);
 		this.top_crust 			= new Crust({grid: this.grid});
 		this.top_crust_delta 	= new Crust({grid: this.grid});
-		this.top_crust_accretion= new Crust({grid: this.grid});
 		this.top_crust_scratch 	= new Crust({grid: this.grid});
 
 		this.bottom_plate_map 	= Uint8Raster(this.grid);
@@ -43,7 +46,7 @@ var World = (function() {
 
 		this.total_crust 		= new Crust({grid: this.grid});
 
-		this.misc_crust_scratch 		= new Crust({grid: this.grid});
+		this.misc_crust_scratch = new Crust({grid: this.grid});
 
 		this.plates = [];
 	}
@@ -238,10 +241,7 @@ var World = (function() {
 	  	var top_plate_map = world.top_plate_map;
 	  	var grid = world.grid;
 
-		// WARNING: unfortunate side effect!
-		// we calculate accretion delta during detachment for performance reasons
-		var globalized_accretion = world.top_crust_accretion.sial;
-		Float32Raster.fill(globalized_accretion, 0);
+		Uint8Raster.fill(world.is_detaching, 0);
 
 	  	var scratchpad = RasterStackBuffer.scratchpad;
 	  	scratchpad.allocate('detach_and_accrete');
@@ -253,11 +253,11 @@ var World = (function() {
 		var localized_is_detaching = scratchpad.getUint8Raster(grid);
 
 		var localized_scratch_ui8 = scratchpad.getUint8Raster(grid); 
-		var localized_accretion = scratchpad.getFloat32Raster(grid); 
 
 		//global rifting/detaching variables
 		var globalized_is_not_alone = scratchpad.getUint8Raster(grid);
 		var globalized_is_detachable = scratchpad.getUint8Raster(grid);
+		var globalized_is_detaching = scratchpad.getUint8Raster(grid);
 		var globalized_is_not_on_top = scratchpad.getUint8Raster(grid);
 
 		var globalized_scalar_field = scratchpad.getFloat32Raster(grid); 
@@ -273,6 +273,7 @@ var World = (function() {
 		var not_equals = Uint8Field.ne_scalar;
 		var gt_f32 = ScalarField.gt_scalar;
 		var add = ScalarField.add_field;
+
 
 		//				 op 	operands													result
 		not_equals 		(world.plate_count, 1, 												globalized_is_not_alone);
@@ -295,12 +296,8 @@ var World = (function() {
 		    and 		(localized_is_detaching, localized_is_detachable, 					localized_is_detaching);
 
 	        fill_into 	(plate.mask, 0, localized_is_detaching,                 			plate.mask); 
-	        
-	        // calculate accretion delta
-	        Crust.sum_conserved_pools(plate.crust, localized_accretion);
-        	mult_field	(localized_accretion, localized_is_detaching,						localized_accretion);
-        	resample_f32(localized_accretion, plate.local_ids_of_global_cells,				globalized_scalar_field);
-        	add 		(globalized_accretion, globalized_scalar_field, 					globalized_accretion);
+        	resample_ui8(localized_is_detaching, plate.local_ids_of_global_cells,			globalized_is_detaching);
+        	or 			(world.is_detaching, globalized_is_detaching,  						world.is_detaching);
 		}
 
 	  	scratchpad.deallocate('detach_and_accrete');
@@ -309,6 +306,7 @@ var World = (function() {
 		Crust.reset 			(world.top_crust_delta);
 
        	// CALCULATE DELTAS
+       	// erosion
 		var globalized_deltas = world.top_crust_delta;
 		TectonicsModeling.get_erosion(
 			world.displacement, world.SEALEVEL, timestep,
@@ -317,6 +315,7 @@ var World = (function() {
 		Crust.assert_conserved_transport_delta(world.top_crust_scratch, 1e-2); 
 		Crust.add_delta (world.top_crust_delta, world.top_crust_scratch, 				world.top_crust_delta);
 
+       	// weathering
 		TectonicsModeling.get_weathering(
 			world.displacement, world.SEALEVEL, timestep,
 			world.top_crust, world.top_crust_scratch, world.misc_crust_scratch
@@ -324,6 +323,7 @@ var World = (function() {
 		Crust.assert_conserved_reaction_delta(world.top_crust_scratch, 1e-2); 
 		Crust.add_delta (world.top_crust_delta, world.top_crust_scratch, 				world.top_crust_delta);
 
+       	// lithification
 		TectonicsModeling.get_lithification(
 			world.displacement, world.SEALEVEL, timestep,
 			world.top_crust, world.top_crust_scratch, world.misc_crust_scratch
@@ -331,6 +331,7 @@ var World = (function() {
 		Crust.assert_conserved_reaction_delta(world.top_crust_scratch, 1e-2); 
 		Crust.add_delta (world.top_crust_delta, world.top_crust_scratch, 				world.top_crust_delta);
 
+       	// metamorphosis
 		TectonicsModeling.get_metamorphosis(
 			world.displacement, world.SEALEVEL, timestep,
 			world.top_crust, world.top_crust_scratch, world.misc_crust_scratch
@@ -338,8 +339,16 @@ var World = (function() {
 		Crust.assert_conserved_reaction_delta(world.top_crust_scratch, 1e-2); 
 		Crust.add_delta (world.top_crust_delta, world.top_crust_scratch, 				world.top_crust_delta);
 
-		ScalarField.add_field 	(world.top_crust_delta.sial, world.top_crust_accretion.sial,world.top_crust_delta.sial);
-		ScalarField.add_scalar 	(world.top_crust_delta.age, timestep, 						world.top_crust_delta.age); // aging
+	    // NOTE: calculate nonconserved deltas last! Doing so will allow us to call assertions on the sum of conserved deltas!
+
+        // accretion
+        Crust.reset 				(world.top_crust_scratch);
+        Crust.sum_conserved_pools	(world.bottom_crust, 									world.top_crust_scratch.sial);
+    	ScalarField.mult_field		(world.top_crust_scratch.sial, world.is_detaching,		world.top_crust_scratch.sial);
+		Crust.add_delta 			(world.top_crust_delta, world.top_crust_scratch, 		world.top_crust_delta);
+
+		// aging
+		ScalarField.add_scalar 		(world.top_crust_delta.age, timestep, 					world.top_crust_delta.age); 
 	}
 
 	function integrate_deltas(world, plates) { 
