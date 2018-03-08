@@ -18,6 +18,7 @@ var TectonicsModeling = {};
 //    geostatic pressure
 TectonicsModeling.get_lithification = function(
 		displacement, sealevel, timestep,
+		rock_density, surface_gravity,
 		top_crust, crust_delta, crust_scratch){
 	var grid = top_crust.grid;
 
@@ -27,13 +28,10 @@ TectonicsModeling.get_lithification = function(
   	// TODO: maybe...
     // Crust.mult_profile(top_crust, [2500, 2700, 2700, 2700, 2890, 0], crust_scratch);
 
-	var surface_gravity = 9.8; // m/s^2
-	var sediment_density = 2700;
-
 	// TODO: include overpressure from ocean water
 	var overpressure = scratchpad.getFloat32Raster(grid); // NOTE: in Pascals
 	Float32Raster.fill 			(overpressure, 0);
-	ScalarField.add_scalar_term	(overpressure, top_crust.sediment, sediment_density * surface_gravity, overpressure);
+	ScalarField.add_scalar_term	(overpressure, top_crust.sediment, rock_density.sediment * surface_gravity, overpressure);
 
 	var excess_overpressure = scratchpad.getFloat32Raster(grid); 
 	ScalarField.sub_scalar(overpressure, 3.7e6, excess_overpressure); 
@@ -44,7 +42,7 @@ TectonicsModeling.get_lithification = function(
 	// convert excess_overpressure to meters
 	// this represents the number of meters of sediment that have lithified
 	var lithified_meters = scratchpad.getFloat32Raster(grid); 
-	ScalarField.div_scalar	(excess_overpressure, sediment_density * surface_gravity, 	lithified_meters);
+	ScalarField.div_scalar	(excess_overpressure, rock_density.sediment * surface_gravity, 	lithified_meters);
 
 	// clamp lithified_meters to sensible values
 	ScalarField.min_field 	(lithified_meters, top_crust.sediment,	 					lithified_meters)
@@ -60,6 +58,7 @@ TectonicsModeling.get_lithification = function(
 
 TectonicsModeling.get_metamorphosis = function(
 		displacement, sealevel, timestep,
+		rock_density, surface_gravity,
 		top_crust, crust_delta, crust_scratch){
 
 	var grid = top_crust.grid;
@@ -70,15 +69,11 @@ TectonicsModeling.get_metamorphosis = function(
   	// TODO: maybe...
     // Crust.mult_profile(top_crust, [2500, 2700, 2700, 2700, 2890, 0], crust_scratch);
 
-	var surface_gravity = 9.8; // m/s^2
-	var sediment_density = 2700; // kg/m^3
-	var sedimentary_density = 2700; // kg/m^3
-
 	// TODO: include overpressure from ocean water
 	var overpressure = scratchpad.getFloat32Raster(grid); // NOTE: in Pascals
 	Float32Raster.fill 			(overpressure, 0);
-	ScalarField.add_scalar_term	(overpressure, top_crust.sediment, 		sediment_density * surface_gravity, 	overpressure);
-	ScalarField.add_scalar_term	(overpressure, top_crust.sedimentary, 	sedimentary_density * surface_gravity, 	overpressure);
+	ScalarField.add_scalar_term	(overpressure, top_crust.sediment, 		rock_density.sediment * surface_gravity, 	overpressure);
+	ScalarField.add_scalar_term	(overpressure, top_crust.sedimentary, 	rock_density.sedimentary * surface_gravity, 	overpressure);
 
 	var excess_overpressure = scratchpad.getFloat32Raster(grid); // pressure at bottom of the layer that's beyond which is necessary to metamorphose 
 	ScalarField.sub_scalar(overpressure, 300e6, excess_overpressure); 
@@ -89,7 +84,7 @@ TectonicsModeling.get_metamorphosis = function(
 	// convert excess_overpressure to meters
 	// this represents the number of meters of sediment that have lithified
 	var metamorphosed_meters = scratchpad.getFloat32Raster(grid);  
-	ScalarField.div_scalar	(excess_overpressure, sedimentary_density * surface_gravity, metamorphosed_meters);
+	ScalarField.div_scalar	(excess_overpressure, rock_density.sedimentary * surface_gravity, metamorphosed_meters);
 
 	// clamp metamorphosed_meters to sensible values
 	ScalarField.min_field 	(metamorphosed_meters, top_crust.sediment,	 				metamorphosed_meters)
@@ -136,6 +131,7 @@ TectonicsModeling.get_metamorphosis = function(
 // "weathering" is the process by which rock is converted to sediment 
 TectonicsModeling.get_weathering = function(
 		displacement, sealevel, timestep,
+		rock_density, surface_gravity,
 		top_crust, crust_delta, crust_scratch){
   var grid = displacement.grid;
   var scratch = Float32Raster(grid);
@@ -149,10 +145,7 @@ TectonicsModeling.get_weathering = function(
   var critical_sediment_thickness = 1; 
   // ^^^ the sediment thickness (in meters) at which bedrock weathering no longer occurs 
  
-  var sial_density = 2700; // kg/m^3 
-  var sediment_density = 2500 // kg/m^2, from Simoes et al. 2010 
   var earth_surface_gravity = 9.8; // m/s^2 
-  var surface_gravity = 9.8; // m/s^2 
    
   var water_height = scratch;
   ScalarField.sub_scalar(displacement, sealevel, 	water_height);
@@ -167,14 +160,14 @@ TectonicsModeling.get_weathering = function(
     weathering_factor *       	// apply weathering factor to get height change per unit precip  
     precipitation *         	// apply precip to get height change 
     timestep *         			// 
-    // sial_density *           // apply density to get mass converted to sediment 
+    // rock_density.sial *      // apply density to get mass converted to sediment 
     surface_gravity/earth_surface_gravity, //correct for planet's gravity 
     weathering) 
    
   var bedrock_exposure = Float32Raster(grid); 
   ScalarField.div_scalar(top_crust.sediment,  
     -critical_sediment_thickness 
-    // * sediment_density 
+    // * rock_density.sediment 
     , bedrock_exposure); 
   ScalarField.add_scalar(bedrock_exposure, 1, bedrock_exposure); 
   ScalarField.max_scalar(bedrock_exposure, 0, bedrock_exposure); 
@@ -212,6 +205,7 @@ TectonicsModeling.get_weathering = function(
 
 TectonicsModeling.get_erosion = function(
 		displacement, sealevel, timestep,
+		rock_density, surface_gravity,
 		top_crust, crust_delta, crust_scratch){
   	var scratchpad = RasterStackBuffer.scratchpad;
   	scratchpad.allocate('get_erosion');
@@ -223,13 +217,13 @@ TectonicsModeling.get_erosion = function(
 	
 	Crust.reset(crust_delta);
 
+	// TODO: add consideration for surface_gravity
 	var precipitation = 7.8e5;
 	// ^^^ measured in meters of rain per million years
 	// global land average from wikipedia
 	var erosiveFactor = 1.8e-7; 
 	// ^^^ the rate of erosion per the rate of rainfall in that place
 	// measured in fraction of height difference per meters of rain per million years
-	var sial_density = 2700;
 
 	var water_height = scratchpad.getFloat32Raster(displacement.grid);
 	ScalarField.sub_scalar(displacement, sealevel, 	water_height);

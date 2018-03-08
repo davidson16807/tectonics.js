@@ -4,6 +4,17 @@ var World = (function() {
 	function World(parameters) {
 		this.grid = parameters['grid'] || stop('missing parameter: "grid"');
 
+		// all densities in kg/m^3
+		this.rock_density = parameters['material_properties'] || new RockColumn({
+			sediment: 2700,
+			sedimentary: 2700,
+			metamorphic: 2700,
+			sial: 2700,
+			sima: 2890
+		});
+
+		this.surface_gravity = parameters['surface_gravity'] || 9.8; // m/s^2
+
 		this.getRandomPlateSpeed = parameters['getRandomPlateSpeed'] ||
 			//function() { return Math.exp(random.normal(-5.13, 0.548)); }
 			function() { return random.normal(0.00687, 0.00380); }
@@ -21,7 +32,6 @@ var World = (function() {
 		// the average density of the crust, in kg/m^3
 
 		this.top_plate_map 			= Uint8Raster(this.grid);
-		this.bottom_plate_map 	= Uint8Raster(this.grid);
 		this.plate_count 		= Uint8Raster(this.grid);
 		this.asthenosphere_velocity = VectorRaster(this.grid);
 		this.meanAnomaly 		= parameters['meanAnomaly'] || 0;
@@ -31,7 +41,6 @@ var World = (function() {
 		// this.maxPlatesNum = parameters['platesNum'] || 8;
 
 		this.top_crust 		= new Crust({grid: this.grid});
-		this.bottom_crust 	= new Crust({grid: this.grid});
 		this.total_crust 	= new Crust({grid: this.grid});
 		this.erosion 		= new Crust({grid: this.grid});
 		this.weathering 	= new Crust({grid: this.grid});
@@ -79,9 +88,7 @@ var World = (function() {
 		//WIPE MASTER RASTERS CLEAN
 		Crust.reset(master.total_crust);
 		Crust.reset(master.top_crust);
-		Crust.reset(master.bottom_crust);
 		Uint8Raster.fill(master.top_plate_map, UINT8_NULL);
-		Uint8Raster.fill(master.bottom_plate_map, UINT8_NULL);
 		Uint8Raster.fill(master.plate_count, 0);
 
 		
@@ -293,6 +300,7 @@ var World = (function() {
        	// CALCULATE DELTAS
 		TectonicsModeling.get_erosion(
 			world.displacement, world.SEALEVEL, timestep,
+			world.rock_density, world.surface_gravity,
 			world.top_crust, world.erosion, world.crust_scratch
 		);
 		Crust.assert_conserved_transport_delta(world.erosion, 1e-2); 
@@ -300,6 +308,7 @@ var World = (function() {
        	// CALCULATE DELTAS
 		TectonicsModeling.get_weathering(
 			world.displacement, world.SEALEVEL, timestep,
+			world.rock_density, world.surface_gravity,
 			world.top_crust, world.weathering, world.crust_scratch
 		);
 		Crust.assert_conserved_reaction_delta(world.weathering, 1e-2); 
@@ -307,6 +316,7 @@ var World = (function() {
        	// CALCULATE DELTAS
 		TectonicsModeling.get_lithification(
 			world.displacement, world.SEALEVEL, timestep,
+			world.rock_density, world.surface_gravity,
 			world.top_crust, world.lithification, world.crust_scratch
 		);
 		Crust.assert_conserved_reaction_delta(world.lithification, 1e-2); 
@@ -314,6 +324,7 @@ var World = (function() {
        	// CALCULATE DELTAS
 		TectonicsModeling.get_metamorphosis(
 			world.displacement, world.SEALEVEL, timestep,
+			world.rock_density, world.surface_gravity,
 			world.top_crust, world.metamorphosis, world.crust_scratch
 		);
 		Crust.assert_conserved_reaction_delta(world.metamorphosis, 1e-2); 
