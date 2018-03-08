@@ -233,8 +233,7 @@ var World = (function() {
 
 		// WARNING: unfortunate side effect!
 		// we calculate accretion delta during detachment for performance reasons
-		var globalized_accretion = world.accretion.felsic_plutonic;
-		Float32Raster.fill(globalized_accretion, 0);
+		Crust.reset(world.accretion);
 
 	  	var scratchpad = RasterStackBuffer.scratchpad;
 	  	scratchpad.allocate('update_subducted');
@@ -267,6 +266,7 @@ var World = (function() {
 		var gt_f32 = ScalarField.gt_scalar;
 		var add = ScalarField.add_field;
 		var add_term = ScalarField.add_field_term;
+		var add_scalar_term = ScalarField.add_scalar_term;
 
 		//				 op 	operands													result
 		not_equals 		(world.plate_count, 1, 												globalized_is_not_alone);
@@ -302,10 +302,11 @@ var World = (function() {
 	        fill_into 	(plate.mask, 0, localized_is_detaching,                 			plate.mask); 
 	        
 	        // calculate accretion delta
-	        Crust.get_conserved_mass(plate.crust, localized_accretion);
+	        Crust.get_conserved_mass(plate.crust, 											localized_accretion);
         	mult_field	(localized_accretion, localized_is_detaching,						localized_accretion);
         	resample_f32(localized_accretion, plate.local_ids_of_global_cells,				globalized_scalar_field);
-        	add 		(globalized_accretion, globalized_scalar_field, 					globalized_accretion);
+        	add_scalar_term (world.accretion.felsic_plutonic, globalized_scalar_field, 0.85,world.accretion.felsic_plutonic);
+        	add_scalar_term (world.accretion.felsic_volcanic, globalized_scalar_field, 0.15,world.accretion.felsic_volcanic);
 		}
 
 	  	scratchpad.deallocate('update_subducted');
@@ -351,7 +352,7 @@ var World = (function() {
 		Crust.add_delta 		(globalized_deltas, world.weathering, 					globalized_deltas);
 		Crust.add_delta 		(globalized_deltas, world.lithification,				globalized_deltas);
 		Crust.add_delta 		(globalized_deltas, world.metamorphosis,				globalized_deltas);
-		ScalarField.add_field 	(globalized_deltas.felsic_plutonic, world.accretion.felsic_plutonic, 			globalized_deltas.felsic_plutonic);
+		Crust.add_delta 		(globalized_deltas, world.accretion,					globalized_deltas);
 		ScalarField.add_scalar 	(globalized_deltas.age, timestep, 						globalized_deltas.age); // aging
 	}
 
