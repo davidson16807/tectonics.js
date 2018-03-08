@@ -394,9 +394,9 @@ var World = (function() {
 
 			equals 			(bottom_plate_map, i, 											globalized_is_on_bottom);
 			mult_crust 		(globalized_bottom_deltas, globalized_is_on_bottom, 			world.misc_crust_scratch);
-			Crust.add_values_to_ids(plate.crust, local_ids_of_global_cells, world.misc_crust_scratch, plate.crust);
+			// Crust.add_values_to_ids(plate.crust, local_ids_of_global_cells, world.misc_crust_scratch, plate.crust);
 
-			Crust.fix_negatives (plate.crust);
+			// Crust.fix_negatives (plate.crust);
 
 		}
 
