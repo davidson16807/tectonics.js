@@ -159,14 +159,16 @@ var World = (function() {
 	  	
 		// now that top plate is determined, we can figure out which plate(s) are on the bottom
 		// NOTE: 3-way plate collision results in undefined behavior - it is not certain which plate will wind up in bottom_plate_map
-		var not_equals = Uint8Field.ne_scalar;
+		var equals = Uint8Field.eq_scalar;
+		var diff = BinaryMorphology.difference;
 		for (var i=0, li=plates.length; i<li; ++i) {
 		    plate = plates[i]; 
+	    	local_ids_of_global_cells = plate.local_ids_of_global_cells;
 
 			// find places where plate is not on top
 		    resample_ui8(plate.mask, local_ids_of_global_cells, 										globalized_plate_mask); 	
-			not_equals 	(master.top_plate_map, i,                             							globalized_is_not_on_top);	
-		    and 		(globalized_is_not_on_top,	globalized_plate_mask,	 							globalized_is_not_on_top);	
+			equals 		(master.top_plate_map, i,                             							globalized_is_on_top);	
+		    diff 		(globalized_plate_mask, globalized_is_on_top,	 								globalized_is_not_on_top);	
 
 		    resample_crust(plate.crust, local_ids_of_global_cells, 										globalized_plate_crust);	
 
