@@ -12,6 +12,7 @@ var RockColumn = (function() {
 		this.sedimentary = optional['sedimentary'] || 0;
 		this.metamorphic = optional['metamorphic'] || 0;
 		this.felsic_plutonic = optional['felsic_plutonic'] || 0;
+		this.felsic_volcanic = optional['felsic_volcanic'] || 0;
 		this.mafic_volcanic = optional['mafic_volcanic'] || 0;
 		this.age = optional['age'] || 0;
 	}
@@ -21,6 +22,7 @@ var RockColumn = (function() {
 			sedimentary			:lerp(lower.sedimentary, upper.sedimentary, fraction),
 			metamorphic			:lerp(lower.metamorphic, upper.metamorphic, fraction),
 			felsic_plutonic				:lerp(lower.felsic_plutonic, upper.felsic_plutonic, fraction),
+			felsic_volcanic				:lerp(lower.felsic_volcanic, upper.felsic_volcanic, fraction),
 			mafic_volcanic				:lerp(lower.mafic_volcanic, upper.mafic_volcanic, fraction),
 			age					:lerp(lower.age, upper.age, fraction),
 		});

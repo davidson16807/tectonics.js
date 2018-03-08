@@ -8,17 +8,19 @@ function Crust(params) {
 
 	var length = this.grid.vertices.length;
 
-    var buffer = params['buffer'] || new ArrayBuffer(6 * Float32Array.BYTES_PER_ELEMENT * length);
+    var buffer = params['buffer'] || new ArrayBuffer(8 * Float32Array.BYTES_PER_ELEMENT * length);
     this.buffer = buffer;
 
     this.sediment 			= new Float32Array(buffer, 0 * Float32Array.BYTES_PER_ELEMENT * length, length);
     this.sedimentary		= new Float32Array(buffer, 1 * Float32Array.BYTES_PER_ELEMENT * length, length);
     this.metamorphic		= new Float32Array(buffer, 2 * Float32Array.BYTES_PER_ELEMENT * length, length);
     this.felsic_plutonic 	= new Float32Array(buffer, 3 * Float32Array.BYTES_PER_ELEMENT * length, length);
-    this.mafic_volcanic 	= new Float32Array(buffer, 4 * Float32Array.BYTES_PER_ELEMENT * length, length);
-    this.age  				= new Float32Array(buffer, 5 * Float32Array.BYTES_PER_ELEMENT * length, length);
-    this.conserved_pools 	= new Float32Array(buffer, 0, 4 * length);
-    this.mass_pools 		= new Float32Array(buffer, 0, 5 * length);
+    this.felsic_volcanic 	= new Float32Array(buffer, 4 * Float32Array.BYTES_PER_ELEMENT * length, length);
+    this.mafic_volcanic 	= new Float32Array(buffer, 5 * Float32Array.BYTES_PER_ELEMENT * length, length);
+    this.mafic_plutonic 	= new Float32Array(buffer, 6 * Float32Array.BYTES_PER_ELEMENT * length, length);
+    this.age  				= new Float32Array(buffer, 7 * Float32Array.BYTES_PER_ELEMENT * length, length);
+    this.conserved_pools 	= new Float32Array(buffer, 0, 5 * length);
+    this.mass_pools 		= new Float32Array(buffer, 0, 7 * length);
     this.everything 		= new Float32Array(buffer);
 
 	// The following are the most fundamental fields to the tectonics model:
@@ -126,8 +128,9 @@ Crust.get_value = function(crust, i) {
 		sediment 			:crust.sediment[i],
 		sedimentary 		:crust.sedimentary[i],
 		metamorphic 		:crust.metamorphic[i],
-		felsic_plutonic 				:crust.felsic_plutonic[i],
-		mafic_volcanic 				:crust.mafic_volcanic[i],
+		felsic_plutonic 	:crust.felsic_plutonic[i],
+		felsic_volcanic 	:crust.felsic_volcanic[i],
+		mafic_volcanic 		:crust.mafic_volcanic[i],
 		age 				:crust.age[i],
 	});
 }
@@ -135,8 +138,9 @@ Crust.set_value = function(crust, i, rock_column) {
 	crust.sediment[i] 		= rock_column.sediment;
 	crust.sedimentary[i] 	= rock_column.sedimentary;
 	crust.metamorphic[i] 	= rock_column.metamorphic;
-	crust.felsic_plutonic[i] 			= rock_column.felsic_plutonic;
-	crust.mafic_volcanic[i] 			= rock_column.mafic_volcanic;
+	crust.felsic_plutonic[i]= rock_column.felsic_plutonic;
+	crust.felsic_volcanic[i]= rock_column.felsic_volcanic;
+	crust.mafic_volcanic[i] = rock_column.mafic_volcanic;
 	crust.age[i] 			= rock_column.age;
 }
 Crust.fill = function(crust, rock_column) {
@@ -145,6 +149,7 @@ Crust.fill = function(crust, rock_column) {
 	fill(crust.sedimentary, rock_column.sedimentary);
 	fill(crust.metamorphic, rock_column.metamorphic);
 	fill(crust.felsic_plutonic, rock_column.felsic_plutonic);
+	fill(crust.felsic_volcanic, rock_column.felsic_volcanic);
 	fill(crust.mafic_volcanic, rock_column.mafic_volcanic);
 	fill(crust.age, rock_column.age);
 }
@@ -157,6 +162,7 @@ Crust.fill_into_selection = function(crust, rock_column, selection_raster, resul
 	fill_into(crust.sedimentary, rock_column.sedimentary, selection_raster, result_crust.sedimentary);
 	fill_into(crust.metamorphic, rock_column.metamorphic, selection_raster, result_crust.metamorphic);
 	fill_into(crust.felsic_plutonic, rock_column.felsic_plutonic, selection_raster, result_crust.felsic_plutonic);
+	fill_into(crust.felsic_volcanic, rock_column.felsic_volcanic, selection_raster, result_crust.felsic_volcanic);
 	fill_into(crust.mafic_volcanic, rock_column.mafic_volcanic, selection_raster, result_crust.mafic_volcanic);
 	fill_into(crust.age,  rock_column.age,  selection_raster, result_crust.age) ;
 }
@@ -169,6 +175,7 @@ Crust.copy_into_selection = function(crust, crust2, selection_raster, result_cru
 	fill_into(crust.sedimentary, crust2.sedimentary, selection_raster, result_crust.sedimentary);
 	fill_into(crust.metamorphic, crust2.metamorphic, selection_raster, result_crust.metamorphic);
 	fill_into(crust.felsic_plutonic, crust2.felsic_plutonic, selection_raster, result_crust.felsic_plutonic);
+	fill_into(crust.felsic_volcanic, crust2.felsic_volcanic, selection_raster, result_crust.felsic_volcanic);
 	fill_into(crust.mafic_volcanic, crust2.mafic_volcanic, selection_raster, result_crust.mafic_volcanic);
 	fill_into(crust.age,  crust2.age,  selection_raster, result_crust.age) ;
 }
@@ -179,6 +186,7 @@ Crust.get_ids = function(crust, id_raster, result_crust) {
 	get_ids(crust.sedimentary, id_raster, result_crust.sedimentary);
 	get_ids(crust.metamorphic, id_raster, result_crust.metamorphic);
 	get_ids(crust.felsic_plutonic, id_raster, result_crust.felsic_plutonic);
+	get_ids(crust.felsic_volcanic, id_raster, result_crust.felsic_volcanic);
 	get_ids(crust.mafic_volcanic, id_raster, result_crust.mafic_volcanic);
 	get_ids(crust.age, id_raster, result_crust.age);
 }
@@ -188,6 +196,7 @@ Crust.add_values_to_ids = function(crust, id_raster, value_crust, result_crust) 
 	add_values_to_ids(crust.sedimentary, id_raster, value_crust.sedimentary, result_crust.sedimentary);
 	add_values_to_ids(crust.metamorphic, id_raster, value_crust.metamorphic, result_crust.metamorphic);
 	add_values_to_ids(crust.felsic_plutonic, id_raster, value_crust.felsic_plutonic, 		 result_crust.felsic_plutonic);
+	add_values_to_ids(crust.felsic_volcanic, id_raster, value_crust.felsic_volcanic, 		 result_crust.felsic_volcanic);
 	add_values_to_ids(crust.mafic_volcanic, id_raster, value_crust.mafic_volcanic, 		 result_crust.mafic_volcanic);
 	add_values_to_ids(crust.age, id_raster, value_crust.age, 		 result_crust.age);
 }
@@ -198,6 +207,7 @@ Crust.fix_delta = function(crust_delta, crust, scratch) {
 	fix(crust_delta.sedimentary, crust.sedimentary, scratch);
 	fix(crust_delta.metamorphic, crust.metamorphic, scratch);
 	fix(crust_delta.felsic_plutonic, crust.felsic_plutonic, scratch);
+	fix(crust_delta.felsic_volcanic, crust.felsic_volcanic, scratch);
 	fix(crust_delta.mafic_volcanic, crust.mafic_volcanic, scratch);
 }
 Crust.assert_conserved_transport_delta = function(crust_delta, threshold) {
@@ -206,6 +216,7 @@ Crust.assert_conserved_transport_delta = function(crust_delta, threshold) {
 	assert(crust_delta.sedimentary, threshold);
 	assert(crust_delta.metamorphic, threshold);
 	assert(crust_delta.felsic_plutonic, threshold);
+	assert(crust_delta.felsic_volcanic, threshold);
 }
 Crust.assert_conserved_reaction_delta = function(crust_delta, threshold, scratch) {
 	var sum = scratch || Float32Raster(crust_delta.grid);
@@ -214,6 +225,7 @@ Crust.assert_conserved_reaction_delta = function(crust_delta, threshold, scratch
 	ScalarField.add_field(sum, crust_delta.sedimentary, sum);
 	ScalarField.add_field(sum, crust_delta.metamorphic, sum);
 	ScalarField.add_field(sum, crust_delta.felsic_plutonic, sum);
+	ScalarField.add_field(sum, crust_delta.felsic_volcanic, sum);
 	ScalarField.mult_field(sum, sum, sum);
 	var is_not_conserved = Uint8Dataset.sum(ScalarField.gt_scalar(sum, threshold * threshold));
 	if (is_not_conserved) {
@@ -229,12 +241,14 @@ Crust.get_thickness = function(crust, rock_density, thickness) {
 	var sedimentary = crust.sedimentary;
 	var metamorphic = crust.metamorphic;
 	var felsic_plutonic = crust.felsic_plutonic;
+	var felsic_volcanic = crust.felsic_volcanic;
 	var mafic_volcanic = crust.mafic_volcanic;
 
 	var sediment_density = rock_density.sediment;
 	var sedimentary_density = rock_density.sedimentary;
 	var metamorphic_density = rock_density.metamorphic;
 	var felsic_plutonic_density = rock_density.felsic_plutonic;
+	var felsic_volcanic_density = rock_density.felsic_volcanic;
 
 	// NOTE: thickness does double duty for performance reasons
 	var fraction_of_lifetime = thickness;
@@ -248,6 +262,7 @@ Crust.get_thickness = function(crust, rock_density, thickness) {
     		sedimentary[i]	/ sedimentary_density +
     		metamorphic[i]	/ metamorphic_density +
     		felsic_plutonic[i] 		/ felsic_plutonic_density + 
+    		felsic_volcanic[i] 		/ felsic_volcanic_density + 
     		mafic_volcanic[i] 		/ mafic_volcanic_density[i];
     }
 }

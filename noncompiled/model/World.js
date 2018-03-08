@@ -13,6 +13,7 @@ var World = (function() {
 			sedimentary: 2.600,
 			metamorphic: 2.800,
 			felsic_plutonic: 2.600,
+			felsic_volcanic: 2.600,
 			mafic_volcanic_min: 2.890, // Carlson & Raskin 1984
 			mafic_volcanic_max: 3.300,
 			mantle: 3.075, // derived empirically using isostatic model
