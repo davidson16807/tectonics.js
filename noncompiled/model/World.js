@@ -5,13 +5,14 @@ var World = (function() {
 		this.grid = parameters['grid'] || stop('missing parameter: "grid"');
 
 		// all densities in kg/m^3
-		this.rock_density = parameters['material_properties'] || new RockColumn({
+		this.rock_density = parameters['material_properties'] || {
 			sediment: 2700,
 			sedimentary: 2700,
 			metamorphic: 2700,
 			sial: 2700,
-			sima: 2890
-		});
+			sima_min: 2890,
+			sima_max: 3300
+		};
 
 		this.surface_gravity = parameters['surface_gravity'] || 9.8; // m/s^2
 
@@ -28,6 +29,8 @@ var World = (function() {
 		// It is not called "elevation" to emphasize that it is not relative to sea level
 		this.thickness = Float32Raster(this.grid);
 		// the thickness of the crust in km
+		this.total_mass = Float32Raster(this.grid);
+		// total mass of the crust in kg
 		this.density = Float32Raster(this.grid);
 		// the average density of the crust, in kg/m^3
 
@@ -59,23 +62,27 @@ var World = (function() {
 	 	}
 	}
     // calculate derived properties for plates
-	function update_calculated_plate_fields(plates, scratch) { 
-		var plate_thickness = scratch || Float32Raster(plates[0].grid); 
+	function update_calculated_plate_fields(world, plates) { 
+		var plate_thickness = Float32Raster(plates[0].grid); 
+		var plate_mass = Float32Raster(plates[0].grid); 
 
+	    var get_thickness = Crust.get_thickness; 
+	    var get_total_mass = Crust.get_total_mass; 
 	    var get_density = Crust.get_density; 
-	    var sum_mass_pools = Crust.sum_mass_pools; 
 	    
 		var plate;
 		for (var i=0, li=plates.length; i<li; ++i) {
 		    plate = plates[i]; 
-            sum_mass_pools	(plate.crust, 															plate_thickness); 
-            get_density		(plate.crust, plate_thickness,											plate.density); 
+            get_thickness		(plate.crust, 							plate_thickness); 
+            get_total_mass 		(plate.crust, world.rock_density,		plate_mass); 
+            get_density			(plate_mass, plate_thickness,			plate.density); 
 	 	}
 	}
 	// update fields that are derived from others
 	function update_calculated_fields(world) {
-		Crust.sum_mass_pools				(world.total_crust, 									world.thickness);
-		Crust.get_density 					(world.total_crust, world.thickness,					world.density);
+		Crust.get_thickness					(world.total_crust, 									world.thickness);
+		Crust.get_total_mass				(world.total_crust, world.rock_density,					world.total_mass);
+		Crust.get_density 					(world.total_mass, world.thickness,						world.density);
 		TectonicsModeling.get_displacement 	(world.thickness, world.density, world.mantleDensity, 	world.displacement);
 	}
 	function merge_plates_to_master(plates, master) {
@@ -287,7 +294,7 @@ var World = (function() {
 	        fill_into 	(plate.mask, 0, localized_is_detaching,                 			plate.mask); 
 	        
 	        // calculate accretion delta
-	        Crust.sum_conserved_pools(plate.crust, localized_accretion);
+	        Crust.get_conserved_mass(plate.crust, localized_accretion);
         	mult_field	(localized_accretion, localized_is_detaching,						localized_accretion);
         	resample_f32(localized_accretion, plate.local_ids_of_global_cells,				globalized_scalar_field);
         	add 		(globalized_accretion, globalized_scalar_field, 					globalized_accretion);
@@ -484,7 +491,7 @@ var World = (function() {
 
 		move_plates 			(this.plates, timestep); 	// this performs the actual plate movement
 		this.supercontinentCycle.update(timestep); 			// this periodically splits the world into plates
-		update_calculated_plate_fields(this.plates); 		// this calculates properties for each plate, like density
+		update_calculated_plate_fields(this, this.plates); 	// this calculates properties for each plate, like density
 		merge_plates_to_master	(this.plates, this); 		// this stitches plates together to create a world map
 		update_calculated_fields(this); 					// this creates world maps for things like density and elevation
 		update_rifting			(this, this.plates); 		// this identifies rifting regions on the world map and adds crust to plates where needed
