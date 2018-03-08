@@ -268,6 +268,7 @@ var World = (function() {
 		var resample_f32 = Float32Raster.get_ids;
 		var padding = BinaryMorphology.padding;
 		var and = BinaryMorphology.intersection;
+		var or = BinaryMorphology.union;
 		var erode = BinaryMorphology.erosion;
 		var not_equals = Uint8Field.ne_scalar;
 		var gt_f32 = ScalarField.gt_scalar;
@@ -280,16 +281,16 @@ var World = (function() {
 		for (var i=0, li=plates.length; i<li; ++i) {
 		    plate = plates[i];
 
-			not_equals 	(top_plate_map, i, 														globalized_is_not_on_top);
+			not_equals 	(top_plate_map, i, 													globalized_is_not_on_top);
 
 		    //detect detachment
 			// is_detachable: count > 1 and top_plate != i
-		    and 		(globalized_is_not_alone, globalized_is_not_on_top,					globalized_is_detachable);
+		    or 	 		(globalized_is_not_alone, globalized_is_not_on_top,					globalized_is_detachable);
 
             resample_ui8(globalized_is_detachable, plate.global_ids_of_local_cells, 		localized_is_detachable);
             erode		(localized_is_detachable, 1,										localized_will_stay_detachable, 	localized_scratch_ui8);
 		    padding 	(plate.mask, 1, 													localized_is_just_inside_border, 	localized_scratch_ui8);
-        	gt_f32		(plate.density, world.mantleDensity, 								localized_is_detachable);
+        	gt_f32		(plate.density, 2890, 												localized_is_detachable);
 		    and 		(localized_will_stay_detachable, localized_is_just_inside_border, 	localized_is_detaching);
 		    and 		(localized_is_detaching, localized_is_detachable, 					localized_is_detaching);
 
