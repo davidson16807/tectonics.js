@@ -17,8 +17,8 @@ function Crust(params) {
     this.sial 		= new Float32Array(buffer, 3 * Float32Array.BYTES_PER_ELEMENT * length, length);
     this.sima 		= new Float32Array(buffer, 4 * Float32Array.BYTES_PER_ELEMENT * length, length);
     this.age  		= new Float32Array(buffer, 5 * Float32Array.BYTES_PER_ELEMENT * length, length);
-    this.conserved_pools 	= new Float32Array(buffer, 0, 4 * length);
-    this.mass_pools 		= new Float32Array(buffer, 0, 5 * length);
+    this.conserved_pools = new Float32Array(buffer, 0, 4 * length);
+    this.mass_pools 	= new Float32Array(buffer, 0, 5 * length);
     this.everything = new Float32Array(buffer);
 
 	// TODO:
@@ -69,30 +69,6 @@ Crust.assert_conserved_delta = function(crust_delta, threshold) {
 	ScalarTransport.assert_conserved_quantity_delta(crust_delta.conserved_pools, threshold);
 }
 
-Crust.get_thickness = function(crust, thickness) {
-	thickness = thickness || Float32Raster(crust.grid);
-	thickness.fill(0);
-
-	var mass_pools = crust.mass_pools;
-	var length = thickness.length;
-	for (var i=0, li=mass_pools.length; i<li; ++i) {
-		thickness[i%length] += mass_pools[i];
-	}
-	
-	return thickness; 
-}
-Crust.get_conserved_mass = function(crust, thickness) {  
-	thickness = thickness || Float32Raster(crust.grid);
-	thickness.fill(0);
-
-	var conserved = crust.conserved_pools;
-	var length = thickness.length;
-	for (var i=0, li=conserved.length; i<li; ++i) {
-		thickness[i%length] += conserved[i];
-	}
-	
-	return thickness; 
-}
 Crust.get_average_conserved_per_cell = function(crust, thickness) {  
 	return Float32Dataset.sum(crust.conserved_pools) / crust.grid.vertices.length
 }
@@ -104,6 +80,35 @@ Crust.overlap = function(crust1, crust2, crust2_exists, crust2_on_top, result_cr
 	Float32RasterGraphics.copy_into_selection 			(crust1.sima, crust2.sima, crust2_on_top, 						result_crust.sima);
 	// overwrite crust1 wherever current plate is on top
 	Float32RasterGraphics.copy_into_selection 			(crust1.age, crust2.age, crust2_on_top, 						result_crust.age);
+}
+Crust.get_conserved_mass = function(crust, mass) {  
+	mass = mass || Float32Raster(crust.grid);
+	mass.fill(0);
+
+	var pools = crust.conserved_pools;
+	var length = mass.length;
+	for (var i=0, li=pools.length; i<li; ++i) {
+		mass[i%length] += pools[i];
+	}
+	
+	return mass; 
+}
+Crust.get_total_mass = function(crust, rock_density, mass) {  
+	mass = mass || Float32Raster(crust.grid);
+	mass.fill(0);
+
+	var pools = crust.mass_pools;
+	var length = mass.length;
+	for (var i=0, li=pools.length; i<li; ++i) {
+		mass[i%length] += pools[i];
+	}
+	
+	return mass; 
+}
+Crust.get_density = function(mass, thickness, default_density, density) {
+	for (var i = 0, li = density.length; i < li; i++) { 
+        density[i] = thickness[i] > 0? mass[i] / thickness[i] : default_density; 
+    }
 }
 
 
@@ -209,8 +214,10 @@ Crust.assert_conserved_reaction_delta = function(crust_delta, threshold, scratch
 		debugger;
 	}
 }
-Crust.get_total_mass = function(crust, rock_density, mass) {
-	mass = mass || Float32Raster(crust.grid);
+
+
+Crust.get_thickness = function(crust, rock_density, thickness) {
+	thickness = thickness || Float32Raster(crust.grid);
 
 	var sediment = crust.sediment;
 	var sedimentary = crust.sedimentary;
@@ -223,25 +230,18 @@ Crust.get_total_mass = function(crust, rock_density, mass) {
 	var metamorphic_density = rock_density.metamorphic;
 	var sial_density = rock_density.sial;
 
-	// NOTE: mass does double duty for performance reasons
-	var fraction_of_lifetime = mass;
-	var sima_density = mass;
+	// NOTE: thickness does double duty for performance reasons
+	var fraction_of_lifetime = thickness;
+	var sima_density = thickness;
 	Float32RasterInterpolation.smoothstep	(0, 250, crust.age, fraction_of_lifetime);
 	Float32RasterInterpolation.lerp			(rock_density.sima_min, rock_density.sima_max, fraction_of_lifetime, sima_density);
 
-    for (var i = 0, li = mass.length; i < li; i++) {
-    	mass[i] = 
-    		sediment[i] * sediment_density +
-    		sedimentary[i] * sedimentary_density +
-    		metamorphic[i] * metamorphic_density+
-    		sima[i] 	* sima_density[i] + 
-    		sial[i] 	* sial_density;
+    for (var i = 0, li = thickness.length; i < li; i++) {
+    	thickness[i] = 
+    		sediment[i]		/ sediment_density +
+    		sedimentary[i]	/ sedimentary_density +
+    		metamorphic[i]	/ metamorphic_density +
+    		sial[i] 		/ sial_density + 
+    		sima[i] 		/ sima_density[i];
     }
 }
-Crust.get_density = function(mass, thickness, default_density, density) {
-	for (var i = 0, li = density.length; i < li; i++) { 
-        density[i] = thickness[i] > 0? mass[i] / thickness[i] : default_density; 
-    }
-}
-
-

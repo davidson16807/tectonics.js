@@ -75,14 +75,14 @@ var World = (function() {
 		var plate;
 		for (var i=0, li=plates.length; i<li; ++i) {
 		    plate = plates[i]; 
-            get_thickness		(plate.crust, 														plate_thickness); 
+            get_thickness		(plate.crust, world.rock_density,									plate_thickness); 
             get_total_mass 		(plate.crust, world.rock_density,									plate_mass); 
             get_density			(plate_mass, plate_thickness, world.rock_density.sima_min,			plate.density); 
 	 	}
 	}
 	// update fields that are derived from others
 	function update_calculated_fields(world) {
-		Crust.get_thickness					(world.total_crust, 												world.thickness);
+		Crust.get_thickness					(world.total_crust, world.rock_density,								world.thickness);
 		Crust.get_total_mass				(world.total_crust, world.rock_density,								world.total_mass);
 		Crust.get_density 					(world.total_mass, world.thickness,	world.rock_density.sima_min, 	world.density);
 		TectonicsModeling.get_displacement 	(world.thickness, world.density, world.rock_density, 				world.displacement);
