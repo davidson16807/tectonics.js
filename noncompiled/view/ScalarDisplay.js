@@ -243,19 +243,19 @@ scalarDisplays.age 	= new ScalarHeatDisplay( { min: '250.', max: '0.',
 			return world.crust.age;
 		} 
 	} );
-scalarDisplays.sima 	= new ScalarHeatDisplay( { min: '0.', max: '7000.',  
+scalarDisplays.mafic_volcanic 	= new ScalarHeatDisplay( { min: '0.', max: '7000.',  
 		getField: function (world) {
-			return world.crust.sima;
+			return world.crust.mafic_volcanic;
 		} 
 	} );
-scalarDisplays.sial 	= new ScalarHeatDisplay( { min: '0.', max: '70000.',  
+scalarDisplays.felsic_plutonic 	= new ScalarHeatDisplay( { min: '0.', max: '70000.',  
 		getField: function (world) {
-			return world.crust.sial;
+			return world.crust.felsic_plutonic;
 		} 
 	} );
-scalarDisplays.sial_erosion 	= new ScalarHeatDisplay( { min: '0.', max: '100.',  
+scalarDisplays.felsic_plutonic_erosion 	= new ScalarHeatDisplay( { min: '0.', max: '100.',  
 		getField: function (world) {
-			return world.erosion.sial;
+			return world.erosion.felsic_plutonic;
 		} 
 	} );
 scalarDisplays.sediment 	= new ScalarHeatDisplay( { min: '0.', max: '5.',  

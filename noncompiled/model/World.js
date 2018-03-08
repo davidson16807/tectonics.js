@@ -12,9 +12,9 @@ var World = (function() {
 			sediment: 1.500,
 			sedimentary: 2.600,
 			metamorphic: 2.800,
-			sial: 2.600,
-			sima_min: 2.890, // Carlson & Raskin 1984
-			sima_max: 3.300,
+			felsic_plutonic: 2.600,
+			mafic_volcanic_min: 2.890, // Carlson & Raskin 1984
+			mafic_volcanic_max: 3.300,
 			mantle: 3.075, // derived empirically using isostatic model
 			ocean: 1.026 
 		};
@@ -80,14 +80,14 @@ var World = (function() {
 		    plate = plates[i]; 
             get_thickness		(plate.crust, world.rock_density,									plate_thickness); 
             get_total_mass 		(plate.crust, world.rock_density,									plate_mass); 
-            get_density			(plate_mass, plate_thickness, world.rock_density.sima_min,			plate.density); 
+            get_density			(plate_mass, plate_thickness, world.rock_density.mafic_volcanic_min,			plate.density); 
 	 	}
 	}
 	// update fields that are derived from others
 	function update_calculated_fields(world) {
 		Crust.get_thickness					(world.total_crust, world.rock_density,								world.thickness);
 		Crust.get_total_mass				(world.total_crust, world.rock_density,								world.total_mass);
-		Crust.get_density 					(world.total_mass, world.thickness,	world.rock_density.sima_min, 	world.density);
+		Crust.get_density 					(world.total_mass, world.thickness,	world.rock_density.mafic_volcanic_min, 	world.density);
 		TectonicsModeling.get_displacement 	(world.thickness, world.density, world.rock_density, 				world.displacement);
 	}
 	function merge_plates_to_master(plates, master) {
@@ -232,7 +232,7 @@ var World = (function() {
 
 		// WARNING: unfortunate side effect!
 		// we calculate accretion delta during detachment for performance reasons
-		var globalized_accretion = world.accretion.sial;
+		var globalized_accretion = world.accretion.felsic_plutonic;
 		Float32Raster.fill(globalized_accretion, 0);
 
 	  	var scratchpad = RasterStackBuffer.scratchpad;
@@ -285,10 +285,10 @@ var World = (function() {
 			// we metamorphose stuff here because trying to do it using deltas was causing problems with conservation
 			add_term	(plate.crust.metamorphic, plate.crust.sediment, 	localized_is_subducted,	plate.crust.metamorphic);
 			add_term	(plate.crust.metamorphic, plate.crust.sedimentary, 	localized_is_subducted,	plate.crust.metamorphic);
-			add_term	(plate.crust.metamorphic, plate.crust.sial, 		localized_is_subducted,	plate.crust.metamorphic);
+			add_term	(plate.crust.metamorphic, plate.crust.felsic_plutonic, 		localized_is_subducted,	plate.crust.metamorphic);
 			fill_into_f32(plate.crust.sediment, 	0, localized_is_subducted, 				plate.crust.sediment);
 			fill_into_f32(plate.crust.sedimentary, 	0, localized_is_subducted, 				plate.crust.sedimentary);
-			fill_into_f32(plate.crust.sial, 		0, localized_is_subducted, 				plate.crust.sial);
+			fill_into_f32(plate.crust.felsic_plutonic, 		0, localized_is_subducted, 				plate.crust.felsic_plutonic);
 
             erode		(localized_is_subducted, 1,											localized_will_stay_detachable, 	localized_scratch_ui8);
 		    padding 	(plate.mask, 1, 													localized_is_just_inside_border, 	localized_scratch_ui8);
@@ -348,7 +348,7 @@ var World = (function() {
 		Crust.add_delta 		(globalized_deltas, world.weathering, 					globalized_deltas);
 		Crust.add_delta 		(globalized_deltas, world.lithification,				globalized_deltas);
 		Crust.add_delta 		(globalized_deltas, world.metamorphosis,				globalized_deltas);
-		ScalarField.add_field 	(globalized_deltas.sial, world.accretion.sial, 			globalized_deltas.sial);
+		ScalarField.add_field 	(globalized_deltas.felsic_plutonic, world.accretion.felsic_plutonic, 			globalized_deltas.felsic_plutonic);
 		ScalarField.add_scalar 	(globalized_deltas.age, timestep, 						globalized_deltas.age); // aging
 	}
 
@@ -404,8 +404,8 @@ var World = (function() {
 			// Float32Raster.set_ids_to_values(world.crust_delta.metamorphic, local_ids_of_global_cells, world.crust_scratch.metamorphic);
 			// Float32Raster.set_ids_to_values(world.crust_delta.sedimentary, local_ids_of_global_cells, world.crust_scratch.sedimentary);
 			// Float32Raster.set_ids_to_values(world.crust_delta.sediment, local_ids_of_global_cells, world.crust_scratch.sediment);
-			// Float32Raster.set_ids_to_values(world.crust_delta.sima, local_ids_of_global_cells, world.crust_scratch.sima);
-			// Float32Raster.set_ids_to_values(world.crust_delta.sial, local_ids_of_global_cells, world.crust_scratch.sial);
+			// Float32Raster.set_ids_to_values(world.crust_delta.mafic_volcanic, local_ids_of_global_cells, world.crust_scratch.mafic_volcanic);
+			// Float32Raster.set_ids_to_values(world.crust_delta.felsic_plutonic, local_ids_of_global_cells, world.crust_scratch.felsic_plutonic);
 			// Float32Raster.set_ids_to_values(world.crust_delta.age, local_ids_of_global_cells, world.crust_scratch.age);
 			// mult_crust 		(world.crust_scratch, localized_is_on_top, 					world.crust_scratch);
         	// add_crust_delta	(plate.crust, world.crust_scratch, 							plate.crust);
@@ -446,8 +446,8 @@ var World = (function() {
 	World.prototype.SEALEVEL = 3682;
 	World.prototype.ocean = 
 	 new RockColumn({
-		sima: 		7100, 	// +/- 800, White McKenzie and O'nions 1992
-		// sial: 		100, // This can be set above zero to "cheat" on sial mass conservation
+		mafic_volcanic: 		7100, 	// +/- 800, White McKenzie and O'nions 1992
+		// felsic_plutonic: 	100, // This can be set above zero to "cheat" on felsic mass conservation
 	 });
 
 	World.prototype.resetPlates = function() {

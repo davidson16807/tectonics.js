@@ -162,7 +162,7 @@ TectonicsModeling.get_weathering = function(
     weathering_factor *       	// apply weathering factor to get height change per unit precip  
     precipitation *         	// apply precip to get height change 
     timestep *         			// 
-    rock_density.sial *      	// apply density to get mass converted to sediment 
+    rock_density.felsic_plutonic *      	// apply density to get mass converted to sediment 
     surface_gravity/earth_surface_gravity, //correct for planet's gravity 
     weathering) 
    
@@ -182,7 +182,7 @@ TectonicsModeling.get_weathering = function(
   var conserved = Float32Raster(grid);
   ScalarField.add_field(conserved, top_crust.sedimentary, conserved);
   ScalarField.add_field(conserved, top_crust.metamorphic, conserved);
-  ScalarField.add_field(conserved, top_crust.sial, 		conserved);
+  ScalarField.add_field(conserved, top_crust.felsic_plutonic, 		conserved);
 
   ScalarField.min_field(weathering, conserved, weathering); 
   ScalarField.max_scalar(weathering, 0, weathering); 
@@ -196,8 +196,8 @@ TectonicsModeling.get_weathering = function(
   ScalarField.mult_scalar(weathering, -1, crust_delta.sediment);
   ScalarField.mult_field(top_crust.sedimentary, ratio, crust_delta.sedimentary);
   ScalarField.mult_field(top_crust.metamorphic, ratio, crust_delta.metamorphic);
-  ScalarField.mult_field(top_crust.sial, 		ratio, crust_delta.sial);
-  Float32Raster.fill(crust_delta.sima, 0);
+  ScalarField.mult_field(top_crust.felsic_plutonic, 		ratio, crust_delta.felsic_plutonic);
+  Float32Raster.fill(crust_delta.mafic_volcanic, 0);
 
   ScalarField.mult_scalar(crust_delta.everything, -1, crust_delta.everything);
 } 
@@ -215,7 +215,7 @@ TectonicsModeling.get_erosion = function(
 	var sediment 		= top_crust.sediment;
 	var sedimentary 	= top_crust.sedimentary;
 	var metamorphic 	= top_crust.metamorphic;
-	var sial 		 	= top_crust.sial;
+	var felsic_plutonic 		 	= top_crust.felsic_plutonic;
 	
 	Crust.reset(crust_delta);
 
@@ -247,13 +247,13 @@ TectonicsModeling.get_erosion = function(
 	    from = arrow[0];
 	    to = arrow[1];
 	    height_difference = water_height[from] - water_height[to];
-	    outbound_height_transfer[from] += height_difference > 0? height_difference * precipitation * timestep * erosiveFactor * rock_density.sial : 0;
+	    outbound_height_transfer[from] += height_difference > 0? height_difference * precipitation * timestep * erosiveFactor * rock_density.felsic_plutonic : 0;
 	}
 
 	var outbound_sediment_fraction = crust_scratch.sediment;
 	var outbound_sedimentary_fraction = crust_scratch.sedimentary;
 	var outbound_metamorphic_fraction = crust_scratch.metamorphic;
-	var outbound_sial_fraction = crust_scratch.sial;
+	var outbound_felsic_plutonic_fraction = crust_scratch.felsic_plutonic;
 
 	var fraction = 0.0;
 	for (var i=0, li=outbound_height_transfer.length; i<li; ++i) {
@@ -274,9 +274,9 @@ TectonicsModeling.get_erosion = function(
 		outbound_metamorphic_fraction[i] = (fraction / neighbor_count[i]) || 0;
 		outbound_height_transfer_i *= 1.0 - fraction;
 
-		fraction = sial[i] / outbound_height_transfer_i
+		fraction = felsic_plutonic[i] / outbound_height_transfer_i
 		fraction = fraction > 1? 1 : fraction < 0? 0 : fraction;
-		outbound_sial_fraction[i] = (fraction / neighbor_count[i]) || 0;
+		outbound_felsic_plutonic_fraction[i] = (fraction / neighbor_count[i]) || 0;
 		outbound_height_transfer_i *= 1.0 - fraction;
 
 	}
@@ -284,7 +284,7 @@ TectonicsModeling.get_erosion = function(
 	var sediment_delta  	= crust_delta.sediment;
 	var sedimentary_delta  	= crust_delta.sedimentary;
 	var metamorphic_delta  	= crust_delta.metamorphic;
-	var sial_delta  		= crust_delta.sial;
+	var felsic_plutonic_delta  		= crust_delta.felsic_plutonic;
 
 	var transfer = 0.0;
 	for (var i=0, li=arrows.length; i<li; ++i) {
@@ -292,7 +292,7 @@ TectonicsModeling.get_erosion = function(
 	    from = arrow[0];
 	    to = arrow[1];
 	    height_difference = water_height[from] - water_height[to];
-	    outbound_height_transfer_i = height_difference > 0? height_difference * precipitation * timestep * erosiveFactor * rock_density.sial : 0;
+	    outbound_height_transfer_i = height_difference > 0? height_difference * precipitation * timestep * erosiveFactor * rock_density.felsic_plutonic : 0;
 
 	    transfer = outbound_height_transfer_i * outbound_sediment_fraction[from];
 	    sediment_delta[from] -= transfer;
@@ -306,9 +306,9 @@ TectonicsModeling.get_erosion = function(
 	    metamorphic_delta[from] -= transfer;
 	    metamorphic_delta[to] += transfer;
 
-	    transfer = outbound_height_transfer_i * outbound_sial_fraction[from];
-	    sial_delta[from] -= transfer;
-	    sial_delta[to] += transfer;
+	    transfer = outbound_height_transfer_i * outbound_felsic_plutonic_fraction[from];
+	    felsic_plutonic_delta[from] -= transfer;
+	    felsic_plutonic_delta[to] += transfer;
 	}
   	scratchpad.deallocate('get_erosion');
 }
