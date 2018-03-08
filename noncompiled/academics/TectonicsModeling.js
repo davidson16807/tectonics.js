@@ -339,9 +339,9 @@ TectonicsModeling.get_angular_velocity = function(velocity, pos, angular_velocit
 	return VectorField.cross_vector_field(velocity, pos, angular_velocity);
 }
 // gets displacement using an isostatic model
-TectonicsModeling.get_displacement = function(thickness, density, mantleDensity, displacement) {
+TectonicsModeling.get_displacement = function(thickness, density, rock_density, displacement) {
  	var thickness_i, rootDepth;
- 	var inverse_mantle_density = 1 / mantleDensity;
+ 	var inverse_mantle_density = 1 / rock_density.mantle;
  	for(var i=0, li = displacement.length; i<li; i++){
  		//Calculates elevation as a function of crust density. 
  		//This was chosen as it only requires knowledge of crust density and thickness,  

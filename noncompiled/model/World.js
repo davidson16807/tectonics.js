@@ -10,8 +10,10 @@ var World = (function() {
 			sedimentary: 2700,
 			metamorphic: 2700,
 			sial: 2700,
-			sima_min: 2890,
-			sima_max: 3300
+			sima_min: 2890, // Carlson & Raskin 1984
+			sima_max: 3300,
+			mantle: 3075, // derived empirically using isostatic model
+			ocean: 1026 
 		};
 
 		this.surface_gravity = parameters['surface_gravity'] || 9.8; // m/s^2
@@ -73,17 +75,17 @@ var World = (function() {
 		var plate;
 		for (var i=0, li=plates.length; i<li; ++i) {
 		    plate = plates[i]; 
-            get_thickness		(plate.crust, 							plate_thickness); 
-            get_total_mass 		(plate.crust, world.rock_density,		plate_mass); 
-            get_density			(plate_mass, plate_thickness,			plate.density); 
+            get_thickness		(plate.crust, 														plate_thickness); 
+            get_total_mass 		(plate.crust, world.rock_density,									plate_mass); 
+            get_density			(plate_mass, plate_thickness, world.rock_density.sima_min,			plate.density); 
 	 	}
 	}
 	// update fields that are derived from others
 	function update_calculated_fields(world) {
-		Crust.get_thickness					(world.total_crust, 									world.thickness);
-		Crust.get_total_mass				(world.total_crust, world.rock_density,					world.total_mass);
-		Crust.get_density 					(world.total_mass, world.thickness,						world.density);
-		TectonicsModeling.get_displacement 	(world.thickness, world.density, world.mantleDensity, 	world.displacement);
+		Crust.get_thickness					(world.total_crust, 												world.thickness);
+		Crust.get_total_mass				(world.total_crust, world.rock_density,								world.total_mass);
+		Crust.get_density 					(world.total_mass, world.thickness,	world.rock_density.sima_min, 	world.density);
+		TectonicsModeling.get_displacement 	(world.thickness, world.density, world.rock_density, 				world.displacement);
 	}
 	function merge_plates_to_master(plates, master) {
 	  	var scratchpad = RasterStackBuffer.scratchpad;
@@ -287,7 +289,7 @@ var World = (function() {
 
             erode		(localized_is_subducted, 1,											localized_will_stay_detachable, 	localized_scratch_ui8);
 		    padding 	(plate.mask, 1, 													localized_is_just_inside_border, 	localized_scratch_ui8);
-        	gt_f32		(plate.density, world.mantleDensity, 								localized_is_subducted);
+        	gt_f32		(plate.density, world.rock_density.mantle,							localized_is_subducted);
 		    and 		(localized_will_stay_detachable, localized_is_just_inside_border, 	localized_is_detaching);
 		    and 		(localized_is_detaching, localized_is_subducted, 					localized_is_detaching);
 
@@ -439,15 +441,10 @@ var World = (function() {
 	}
 
 	World.prototype.SEALEVEL = 3682;
-	World.prototype.mantleDensity=3075; // derived empirically using isostatic model
-	World.prototype.waterDensity=1026;
 	World.prototype.ocean = 
 	 new RockColumn({
-		elevation: 	-3682,	// Charette & Smith 2010
 		sima: 		7100, 	// +/- 800, White McKenzie and O'nions 1992
 		// sial: 		100, // This can be set above zero to "cheat" on sial mass conservation
-		// thickness: 	7100, 	// +/- 800, White McKenzie and O'nions 1992
-		density: 	2890	// Carlson & Raskin 1984
 	 });
 
 	World.prototype.resetPlates = function() {

@@ -238,9 +238,9 @@ Crust.get_total_mass = function(crust, rock_density, mass) {
     		sial[i] 	* sial_density;
     }
 }
-Crust.get_density = function(mass, thickness, density) {
+Crust.get_density = function(mass, thickness, default_density, density) {
 	for (var i = 0, li = density.length; i < li; i++) { 
-        density[i] = thickness[i] > 0? mass[i] / thickness[i] : 2890; 
+        density[i] = thickness[i] > 0? mass[i] / thickness[i] : default_density; 
     }
 }
 
