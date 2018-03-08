@@ -62,6 +62,14 @@ Crust.mult_field = function(crust, field, result_crust) {
 	    output[i] = input[i] * field[i%length];
 	}
 }
+Crust.mult_scalar = function(crust, scalar, result_crust) {
+	var input = crust.everything;
+	var output = result_crust.everything;
+
+	for (var i=0, li=input.length; i<li; ++i) {
+	    output[i] = input[i] * scalar;
+	}
+}
 Crust.add_delta = function(crust, crust_delta, result_crust) {
 	ScalarField.add_field(crust.everything, crust_delta.everything, result_crust.everything);
 }
@@ -204,8 +212,9 @@ Crust.assert_conserved_reaction_delta = function(crust_delta, threshold, scratch
 	ScalarField.add_field(sum, crust_delta.metamorphic, sum);
 	ScalarField.add_field(sum, crust_delta.sial, sum);
 	ScalarField.mult_field(sum, sum, sum);
-	var is_not_conserved = Uint8Dataset.sum(ScalarField.gt_scalar(sum, threshold * threshold));
-	if (is_not_conserved) {
+	var is_not_conserved = ScalarField.gt_scalar(sum, threshold * threshold)
+	var is_not_conserved_count = Uint8Dataset.sum(is_not_conserved);
+	if (is_not_conserved_count) {
 		debugger;
 	}
 }

@@ -62,12 +62,15 @@ TectonicsModeling.get_lithification = function(
 
 TectonicsModeling.get_metamorphosis = function(
 		displacement, sealevel, timestep,
-		top_crust, crust_delta, crust_scratch){
+		top_crust, top_crust_delta, 
+		bottom_crust, bottom_crust_delta, 
+		crust_scratch){
 
 	var grid = top_crust.grid;
 
-	Crust.reset(crust_delta);
-	
+	Crust.reset(top_crust_delta);
+	Crust.reset(bottom_crust_delta);
+
   	var scratchpad = RasterStackBuffer.scratchpad;
   	scratchpad.allocate('get_metamorphosis');
 
@@ -99,8 +102,16 @@ TectonicsModeling.get_metamorphosis = function(
 	ScalarField.min_field 	(metamorphosed_meters, top_crust.sediment,	 				metamorphosed_meters)
 	ScalarField.max_scalar 	(metamorphosed_meters, 0, 									metamorphosed_meters)
 
-	ScalarField.mult_scalar(metamorphosed_meters, -1, 	crust_delta.sedimentary);
-	ScalarField.mult_scalar(metamorphosed_meters,  1, 	crust_delta.metamorphic);
+	ScalarField.mult_scalar(metamorphosed_meters, -1, 	top_crust_delta.sedimentary);
+	ScalarField.mult_scalar(metamorphosed_meters,  1, 	top_crust_delta.metamorphic);
+
+	// Now do bottom crust - convert everything to metamorphic
+	ScalarField.add_field(bottom_crust_delta.metamorphic,  bottom_crust.sediment, 	bottom_crust_delta.metamorphic);
+	ScalarField.add_field(bottom_crust_delta.metamorphic,  bottom_crust.sedimentary,bottom_crust_delta.metamorphic);
+	ScalarField.add_field(bottom_crust_delta.metamorphic,  bottom_crust.sial, 		bottom_crust_delta.metamorphic);
+	ScalarField.mult_scalar(bottom_crust.sediment, -1, 		bottom_crust_delta.sediment);
+	ScalarField.mult_scalar(bottom_crust.sedimentary, -1, 	bottom_crust_delta.sedimentary);
+	ScalarField.mult_scalar(bottom_crust.sial, -1, 			bottom_crust_delta.sial);
 
   	scratchpad.deallocate('get_metamorphosis');
 }

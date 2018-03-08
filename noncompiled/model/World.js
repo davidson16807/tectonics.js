@@ -291,7 +291,7 @@ var World = (function() {
             resample_ui8(globalized_is_detachable, plate.global_ids_of_local_cells, 		localized_is_detachable);
             erode		(localized_is_detachable, 1,										localized_will_stay_detachable, 	localized_scratch_ui8);
 		    padding 	(plate.mask, 1, 													localized_is_just_inside_border, 	localized_scratch_ui8);
-        	gt_f32		(plate.density, 2890, 												localized_is_detachable);
+        	gt_f32		(plate.density, world.mantleDensity,								localized_is_detachable);
 		    and 		(localized_will_stay_detachable, localized_is_just_inside_border, 	localized_is_detaching);
 		    and 		(localized_is_detaching, localized_is_detachable, 					localized_is_detaching);
 
@@ -304,10 +304,10 @@ var World = (function() {
 	}
 	function calculate_deltas(world, timestep) {
 		Crust.reset 			(world.top_crust_delta);
+		Crust.reset 			(world.bottom_crust_delta);
 
        	// CALCULATE DELTAS
        	// erosion
-		var globalized_deltas = world.top_crust_delta;
 		TectonicsModeling.get_erosion(
 			world.displacement, world.SEALEVEL, timestep,
 			world.top_crust, world.top_crust_scratch, world.misc_crust_scratch
@@ -334,10 +334,14 @@ var World = (function() {
        	// metamorphosis
 		TectonicsModeling.get_metamorphosis(
 			world.displacement, world.SEALEVEL, timestep,
-			world.top_crust, world.top_crust_scratch, world.misc_crust_scratch
+			world.top_crust, world.top_crust_scratch, 
+			world.bottom_crust, world.bottom_crust_scratch, 
+			world.misc_crust_scratch
 		);
 		Crust.assert_conserved_reaction_delta(world.top_crust_scratch, 1e-2); 
 		Crust.add_delta (world.top_crust_delta, world.top_crust_scratch, 				world.top_crust_delta);
+		Crust.assert_conserved_reaction_delta(world.bottom_crust_scratch, 1e-2); 
+		Crust.add_delta (world.bottom_crust_delta, world.bottom_crust_scratch,			world.bottom_crust_delta);
 
 	    // NOTE: calculate nonconserved deltas last! Doing so will allow us to call assertions on the sum of conserved deltas!
 
@@ -345,10 +349,12 @@ var World = (function() {
         Crust.reset 				(world.top_crust_scratch);
         Crust.sum_conserved_pools	(world.bottom_crust, 									world.top_crust_scratch.sial);
     	ScalarField.mult_field		(world.top_crust_scratch.sial, world.is_detaching,		world.top_crust_scratch.sial);
+    	ScalarField.min_scalar		(world.top_crust_scratch.sial, 0,						world.top_crust_scratch.sial);
 		Crust.add_delta 			(world.top_crust_delta, world.top_crust_scratch, 		world.top_crust_delta);
 
 		// aging
 		ScalarField.add_scalar 		(world.top_crust_delta.age, timestep, 					world.top_crust_delta.age); 
+		ScalarField.add_scalar 		(world.bottom_crust_delta.age, timestep, 				world.bottom_crust_delta.age); 
 	}
 
 	function integrate_deltas(world, plates) { 
@@ -360,82 +366,35 @@ var World = (function() {
 	  	scratchpad.allocate('integrate_deltas');
 	  	
 	  	var top_plate_map = world.top_plate_map;
+	  	var bottom_plate_map = world.top_plate_map;
 
-		var localized_is_on_top = scratchpad.getUint8Raster(grid);
 		var globalized_is_on_top = scratchpad.getUint8Raster(grid);
-		var scratch_f32 = scratchpad.getFloat32Raster(grid);
+		var globalized_is_on_bottom = scratchpad.getUint8Raster(grid);
 
-		var resample_ui8 = Uint8Raster.get_ids;
 		var equals = Uint8Field.eq_scalar;
-		
-		var resample_crust 	= Crust.get_ids;
 		var mult_crust 		= Crust.mult_field;
-        var fix_crust_delta	= Crust.fix_delta;
-       	var add_crust_delta	= Crust.add_delta;
 
 	  	var plate; 
-		var global_ids_of_local_cells;
 		var local_ids_of_global_cells;
-		var globalized_deltas = world.top_crust_delta;
-		var localized_deltas = world.misc_crust_scratch;
-
-		// Crust.add_delta(world.total_crust, world.top_crust_delta, world.total_crust);
+		var globalized_top_deltas = world.top_crust_delta;
+		var globalized_bottom_deltas = world.bottom_crust_delta;
 
 		for (var i=0, li=plates.length; i<li; ++i) {
 		    plate = plates[i];
 
-		    global_ids_of_local_cells = plate.global_ids_of_local_cells;
 		    local_ids_of_global_cells = plate.local_ids_of_global_cells;
 
-			equals 			(top_plate_map, i, 												globalized_is_on_top);
-
-        	// resample_ui8	(globalized_is_on_top, global_ids_of_local_cells,			localized_is_on_top);
-
-
-        	// // METHOD 3: 
-        	// // map cells 1-to-1 from global delta map to local delta map (when cell is mentioned twice, the last one in wins), 
-        	// // then filter the local delta map where plate is on top, 
-        	// // then apply the local delta map.
-        	// // 
-        	// // retains positive mass, but doesn't seem to erode landscapes well, 
-        	// // planet looks really rocky after >1Gy
-        	// Crust.reset(world.misc_crust_scratch);
-			// Float32Raster.set_ids_to_values(world.top_crust_delta.metamorphic, local_ids_of_global_cells, world.misc_crust_scratch.metamorphic);
-			// Float32Raster.set_ids_to_values(world.top_crust_delta.sedimentary, local_ids_of_global_cells, world.misc_crust_scratch.sedimentary);
-			// Float32Raster.set_ids_to_values(world.top_crust_delta.sediment, local_ids_of_global_cells, world.misc_crust_scratch.sediment);
-			// Float32Raster.set_ids_to_values(world.top_crust_delta.sima, local_ids_of_global_cells, world.misc_crust_scratch.sima);
-			// Float32Raster.set_ids_to_values(world.top_crust_delta.sial, local_ids_of_global_cells, world.misc_crust_scratch.sial);
-			// Float32Raster.set_ids_to_values(world.top_crust_delta.age, local_ids_of_global_cells, world.misc_crust_scratch.age);
-			// mult_crust 		(world.misc_crust_scratch, localized_is_on_top, 					world.misc_crust_scratch);
-        	// add_crust_delta	(plate.crust, world.misc_crust_scratch, 							plate.crust);
-
-
-
-			// METHOD 1:
 			// filter the global delta map where plate is on top, 
 			// then map cells 1-to-many from global delta map to local delta map (adding together effects when cell is mentioned twice)
 			// then apply the local delta map
         	// // retains positive mass, and appears to give the best results of any method attempted so far
-			mult_crust 		(globalized_deltas, globalized_is_on_top, 					world.misc_crust_scratch);
+			equals 			(top_plate_map, i, 												globalized_is_on_top);
+			mult_crust 		(globalized_top_deltas, globalized_is_on_top, 					world.misc_crust_scratch);
 			Crust.add_values_to_ids(plate.crust, local_ids_of_global_cells, world.misc_crust_scratch, plate.crust);
 
-
-
-			// // METHOD 2:
-			// // map cells many-to-many from global delta map to local delta map
-			// // then filter the local delta map where plate is on top,
-			// // then apply the local delta map
-			// // fails to retain positive mass at all times, also 
-        	// resample_ui8	(globalized_is_on_top, global_ids_of_local_cells,			localized_is_on_top);
-        	// resample_crust	(globalized_deltas, global_ids_of_local_cells,				localized_deltas);
-        	// mult_crust 		(localized_deltas, localized_is_on_top, 					localized_deltas);
-	        // // enforce constraint: erosion should never exceed amount of rock available
-	        // // get_erosion() guarantees against this, but plate motion sometimes causes violations to this constraint
-	        // // violations to constraint are usually small, so we just modify erosion after the fact to preserve the constraint
-        	// add_crust_delta	(plate.crust, localized_deltas, 							plate.crust);
-
-        	// NOTE: use this before calling add_crust_delta in case negative mass crops up and you can't help it
-	        // fix_crust_delta	(localized_deltas, plate.crust, scratch_f32);
+			equals 			(bottom_plate_map, i, 											globalized_is_on_bottom);
+			mult_crust 		(globalized_bottom_deltas, globalized_is_on_bottom, 			world.misc_crust_scratch);
+			Crust.add_values_to_ids(plate.crust, local_ids_of_global_cells, world.misc_crust_scratch, plate.crust);
 		}
 
 	  	scratchpad.deallocate('integrate_deltas');
