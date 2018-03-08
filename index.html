@@ -304,14 +304,15 @@
 	'use strict';
 	
 	//standards:
-	// all points are vectors
+	// all spatial coordinates are xyz vectors on a unit sphere
 	// all angles are in radians
 	// all distance is in km
 	// all thickness is in meters
 	// all time in Million years (My)
 	// all speeds are in km/My (goes along with distance)
-	// all densities are in kg/m^3 (goes along with thickness)
-	// planets are rendered as unit spheres
+	// all densities are in tons/m^3 (goes along with mass/thickness)
+	// all mass is in tons (goes along with density)
+	// all pressure is in kiloPascals (goes along with tons)
 	
     var querystring = [];
     for(var i = 0, 

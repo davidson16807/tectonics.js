@@ -1,6 +1,6 @@
 'use strict';
 
-// A "Crust" is defined as a set of rasters that represent a planet's crust
+// A "Crust" is defined as a tuple of rasters that represent a planet's crust
 // The Crust namespace provides methods that extend the functionality of rasters.js to Crust objects
 // It also provides functions for modeling properties of Crust
 function Crust(params) {
@@ -17,30 +17,27 @@ function Crust(params) {
     this.sial 		= new Float32Array(buffer, 3 * Float32Array.BYTES_PER_ELEMENT * length, length);
     this.sima 		= new Float32Array(buffer, 4 * Float32Array.BYTES_PER_ELEMENT * length, length);
     this.age  		= new Float32Array(buffer, 5 * Float32Array.BYTES_PER_ELEMENT * length, length);
-    this.conserved_pools = new Float32Array(buffer, 0, 4 * length);
-    this.mass_pools 	= new Float32Array(buffer, 0, 5 * length);
+    this.conserved_pools 	= new Float32Array(buffer, 0, 4 * length);
+    this.mass_pools 		= new Float32Array(buffer, 0, 5 * length);
     this.everything = new Float32Array(buffer);
 
-	// TODO:
-	// * record sima/sial in metric tons, not meters thickness
-	// * switch densities to T/m^3
-
 	// The following are the most fundamental fields to the tectonics model:
-
-	// "sial" is the thickness of the buoyant, unsubductable component of the crust
+	//
+	// "sial" is the mass of the buoyant, unsubductable igneous component of the crust
 	// AKA "sial", "felsic", or "continental" crust
-	// Why don't we call it "continental" or some other name? Two reasons:
-	//  1.) programmers will immediately understand what it does
-	//  2.) we may want this model to simulate planets where alternate names don't apply, e.g. Pluto
-	// sial is a conserved quantity - it is never created or destroyed without our explicit say-so
-	// This is to provide our model with a way to check for errors
-
-	// "sima" is the thickness of the denser, subductable component of the crust
+	// 
+	// "sediment", "sedimentary", and "metamorphic" are forms of sial rock that have been converted by weathering, lithification, or metamorphosis
+	// together with sial, they form a conserved quantity - sial type rock is never created or destroyed without our explicit say-so
+	// This is done to provide our model with a way to check for errors
+	//
+	// "sima" is the mass of the denser, subductable igneous component of the crust
 	// AKA "sima", "mafsic", or "oceanic" crust
-	// Why don't we call it "oceanic" or some other name? Two reasons:
-	//  1.) programmers will immediately understand what it does
-	//  2.) we may want this model to simulate planets where alternate names don't apply, e.g. Pluto
-
+	// sima never undergoes conversion to the other rock types (sediment, sedimentary, or metamorphic)
+	// this is due to a few reasons:
+	//    1.) it's not performant
+	//    2.) sima is not conserved, so it's not as important to get right
+	//    3.) sima remains underwater most of the time so it isn't very noticeable
+	//
 	// "age" is the age of the subductable component of the crust
 	// we don't track the age of unsubductable crust because it doesn't affect model behavior
 }
