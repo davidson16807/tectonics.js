@@ -197,6 +197,15 @@ Crust.fix_delta = function(crust_delta, crust, scratch) {
 	fix(crust_delta.sial, crust.sial, scratch);
 	fix(crust_delta.sima, crust.sima, scratch);
 }
+
+Crust.fix_negatives = function(crust) {
+	var max = ScalarField.max_scalar;
+	max(crust.sediment, 0, crust.sediment);
+	max(crust.sedimentary, 0, crust.sedimentary);
+	max(crust.metamorphic, 0, crust.metamorphic);
+	max(crust.sial, 0, crust.sial);
+	max(crust.sima, 0, crust.sima);
+}
 Crust.assert_conserved_transport_delta = function(crust_delta, threshold) {
 	var assert = ScalarTransport.assert_conserved_quantity_delta;
 	assert(crust_delta.sediment, threshold);
