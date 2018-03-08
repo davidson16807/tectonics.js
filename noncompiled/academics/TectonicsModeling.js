@@ -168,7 +168,7 @@ TectonicsModeling.get_weathering = function(
    
   var bedrock_exposure = Float32Raster(grid); 
   ScalarField.div_scalar(top_crust.sediment,  
-    -critical_sediment_thickness 
+    -critical_sediment_thickness * rock_density.sediment
     // * rock_density.sediment 
     , bedrock_exposure); 
   ScalarField.add_scalar(bedrock_exposure, 1, bedrock_exposure); 
