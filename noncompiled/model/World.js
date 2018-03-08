@@ -152,13 +152,13 @@ var World = (function() {
 	  	scratchpad.deallocate('merge_plates_to_master');
 	}
 
-	function rift(world, plates) { 
+	function update_rifting(world, plates) { 
 	  	var top_plate_map = world.top_plate_map;
 	  	var ocean = world.ocean;
 	  	var grid = world.grid;
 
 	  	var scratchpad = RasterStackBuffer.scratchpad;
-	  	scratchpad.allocate('rift');
+	  	scratchpad.allocate('update_rifting');
 
 	  	//rifting/detaching variables
 		var localized_is_riftable = scratchpad.getUint8Raster(grid);
@@ -205,9 +205,9 @@ var World = (function() {
 	        fill_into_crust(plate.crust, ocean, localized_is_rifting, 					plate.crust);
 		}
 
-	  	scratchpad.deallocate('rift');
+	  	scratchpad.deallocate('update_rifting');
 	} 
-	function detach_and_accrete(world, plates) {
+	function update_subducted(world, plates) {
 	  	var top_plate_map = world.top_plate_map;
 	  	var grid = world.grid;
 
@@ -217,7 +217,7 @@ var World = (function() {
 		Float32Raster.fill(globalized_accretion, 0);
 
 	  	var scratchpad = RasterStackBuffer.scratchpad;
-	  	scratchpad.allocate('detach_and_accrete');
+	  	scratchpad.allocate('update_subducted');
 
 	  	//rifting/detaching variables
 		var localized_is_detachable = scratchpad.getUint8Raster(grid);
@@ -275,7 +275,7 @@ var World = (function() {
         	add 		(globalized_accretion, globalized_scalar_field, 					globalized_accretion);
 		}
 
-	  	scratchpad.deallocate('detach_and_accrete');
+	  	scratchpad.deallocate('update_subducted');
 	}
 	function calculate_deltas(world, timestep) {
 
@@ -465,8 +465,8 @@ var World = (function() {
 		update_calculated_plate_fields(this.plates); 		// this calculates properties for each plate, like density
 		merge_plates_to_master	(this.plates, this); 		// this stitches plates together to create a world map
 		update_calculated_fields(this); 					// this creates world maps for things like density and elevation
-		rift 					(this, this.plates); 		// this identifies rifting regions on the world map and adds crust to plates where needed
-		detach_and_accrete 		(this, this.plates); 		// this identifies detaching regions on the world map and then removes crust from plates where needed
+		update_rifting			(this, this.plates); 		// this identifies rifting regions on the world map and adds crust to plates where needed
+		update_subducted 		(this, this.plates); 		// this identifies detaching regions on the world map and then removes crust from plates where needed
 		calculate_deltas		(this, timestep); 			// this creates a world map of all additions and subtractions to crust (e.g. from erosion, accretion, etc.)
 		integrate_deltas 		(this, this.plates); 		// this uses the map above in order to add and subtract crust
 	};
