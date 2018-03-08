@@ -5,11 +5,14 @@ var World = (function() {
 		this.grid = parameters['grid'] || stop('missing parameter: "grid"');
 
 		// all densities in T/m^3
-		this.rock_density = parameters['material_properties'] || {
-			sediment: 2.700,
-			sedimentary: 2.700,
-			metamorphic: 2.700,
-			sial: 2.700,
+		this.rock_density = parameters['material_density'] || {
+			// most values are estimates from looking around wolfram alpha
+			fine_sediment: 1.500,
+			coarse_sediment: 1.500,
+			sediment: 1.500,
+			sedimentary: 2.600,
+			metamorphic: 2.800,
+			sial: 2.600,
 			sima_min: 2.890, // Carlson & Raskin 1984
 			sima_max: 3.300,
 			mantle: 3.075, // derived empirically using isostatic model

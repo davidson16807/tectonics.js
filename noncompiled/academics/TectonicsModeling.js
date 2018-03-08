@@ -35,8 +35,8 @@ TectonicsModeling.get_lithification = function(
 	ScalarField.add_scalar_term	(overpressure, top_crust.sediment, surface_gravity, overpressure);
 
 	var excess_overpressure = scratchpad.getFloat32Raster(grid); 
-	ScalarField.sub_scalar(overpressure, 3.7e3, excess_overpressure); 
-	// NOTE: 3.7e3 kiloPascals is the pressure equivalent of 500ft of sediment @ 2500kg/m^3 density
+	ScalarField.sub_scalar(overpressure, 2.2e3, excess_overpressure); 
+	// NOTE: 2.2e3 kiloPascals is the pressure equivalent of 500ft of sediment @ 1500T/m^3 density
   	// 500ft from http://wiki.aapg.org/Sandstone_diagenetic_processes
   	// TODO: rephrase in terms of lithostatic pressure + geothermal gradient
 
