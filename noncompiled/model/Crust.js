@@ -19,9 +19,45 @@ function Crust(params) {
     this.mafic_volcanic 	= new Float32Array(buffer, 5 * Float32Array.BYTES_PER_ELEMENT * length, length);
     this.mafic_plutonic 	= new Float32Array(buffer, 6 * Float32Array.BYTES_PER_ELEMENT * length, length);
     this.age  				= new Float32Array(buffer, 7 * Float32Array.BYTES_PER_ELEMENT * length, length);
-    this.conserved_pools 	= new Float32Array(buffer, 0, 5 * length);
-    this.mass_pools 		= new Float32Array(buffer, 0, 7 * length);
+
+    this.conserved_array 	= new Float32Array(buffer, 0, 5 * length);
+    this.mass_array 		= new Float32Array(buffer, 0, 7 * length);
     this.everything 		= new Float32Array(buffer);
+
+    this.all_pools = [ 
+    	this.sediment,
+		this.sedimentary,
+		this.metamorphic,
+		this.felsic_plutonic,
+		this.felsic_volcanic,
+		this.mafic_volcanic,
+		this.mafic_plutonic,
+		this.age,
+	];
+
+	this.mass_pools = [ 
+    	this.sediment,
+		this.sedimentary,
+		this.metamorphic,
+		this.felsic_plutonic,
+		this.felsic_volcanic,
+		this.mafic_volcanic,
+		this.mafic_plutonic,
+	];
+
+	this.conserved_pools = [ 
+    	this.sediment,
+		this.sedimentary,
+		this.metamorphic,
+		this.felsic_plutonic,
+		this.felsic_volcanic,
+	];
+
+	this.nonconserved_pools = [ 
+		this.mafic_volcanic,
+		this.mafic_plutonic,
+		this.age,
+	];
 
 	// The following are the most fundamental fields to the tectonics model:
 	//
@@ -54,7 +90,6 @@ function Crust(params) {
 }
 
 
-// HERE IS STUFF WE DON'T NEED TO CHANGE WHEN WE ADD RASTERS
 Crust.copy = function(source, destination) {
 	destination.everything.set(source.everything);
 }
@@ -74,26 +109,17 @@ Crust.add_delta = function(crust, crust_delta, result_crust) {
 	ScalarField.add_field(crust.everything, crust_delta.everything, result_crust.everything);
 }
 Crust.assert_conserved_delta = function(crust_delta, threshold) {
-	ScalarTransport.assert_conserved_quantity_delta(crust_delta.conserved_pools, threshold);
+	ScalarTransport.assert_conserved_quantity_delta(crust_delta.conserved_array, threshold);
 }
 
 Crust.get_average_conserved_per_cell = function(crust, thickness) {  
-	return Float32Dataset.sum(crust.conserved_pools) / crust.grid.vertices.length
-}
-Crust.overlap = function(crust1, crust2, crust2_exists, crust2_on_top, result_crust) {
-
-	// add current plate thickness to crust1 thickness wherever current plate exists
-	ScalarField.add_field_term				 			(crust1.conserved_pools, crust2.conserved_pools, crust2_exists, result_crust.conserved_pools);
-	// overwrite crust1 wherever current plate is on top
-	Float32RasterGraphics.copy_into_selection 			(crust1.mafic_volcanic, crust2.mafic_volcanic, crust2_on_top, 						result_crust.mafic_volcanic);
-	// overwrite crust1 wherever current plate is on top
-	Float32RasterGraphics.copy_into_selection 			(crust1.age, crust2.age, crust2_on_top, 						result_crust.age);
+	return Float32Dataset.sum(crust.conserved_array) / crust.grid.vertices.length
 }
 Crust.get_conserved_mass = function(crust, mass) {  
 	mass = mass || Float32Raster(crust.grid);
 	mass.fill(0);
 
-	var pools = crust.conserved_pools;
+	var pools = crust.conserved_array;
 	var length = mass.length;
 	for (var i=0, li=pools.length; i<li; ++i) {
 		mass[i%length] += pools[i];
@@ -105,7 +131,7 @@ Crust.get_total_mass = function(crust, rock_density, mass) {
 	mass = mass || Float32Raster(crust.grid);
 	mass.fill(0);
 
-	var pools = crust.mass_pools;
+	var pools = crust.mass_array;
 	var length = mass.length;
 	for (var i=0, li=pools.length; i<li; ++i) {
 		mass[i%length] += pools[i];
@@ -121,111 +147,90 @@ Crust.get_density = function(mass, thickness, default_density, density) {
 
 
 
-
-// HERE IS STUFF WE *DO* NEED TO CHANGE WHEN WE ADD RASTERS
 Crust.get_value = function(crust, i) {
-	return new RockColumn({
-		sediment 			:crust.sediment[i],
-		sedimentary 		:crust.sedimentary[i],
-		metamorphic 		:crust.metamorphic[i],
-		felsic_plutonic 	:crust.felsic_plutonic[i],
-		felsic_volcanic 	:crust.felsic_volcanic[i],
-		mafic_volcanic 		:crust.mafic_volcanic[i],
-		age 				:crust.age[i],
-	});
+	var column = new RockColumn();
+	var crust_pools = crust.all_pools;
+	var column_pools = column.all_pools;
+	for (var j = 0, lj = crust_pools.length; j < lj; ++j) {
+		column_pools[j] = crust_pools[j][i];
+	}
+	return column;
 }
 Crust.set_value = function(crust, i, rock_column) {
-	crust.sediment[i] 		= rock_column.sediment;
-	crust.sedimentary[i] 	= rock_column.sedimentary;
-	crust.metamorphic[i] 	= rock_column.metamorphic;
-	crust.felsic_plutonic[i]= rock_column.felsic_plutonic;
-	crust.felsic_volcanic[i]= rock_column.felsic_volcanic;
-	crust.mafic_volcanic[i] = rock_column.mafic_volcanic;
-	crust.age[i] 			= rock_column.age;
+	var crust_pools = crust.all_pools;
+	var column_pools = rock_column.all_pools;
+	for (var j = 0, lj = crust_pools.length; j < lj; ++j) {
+		crust_pools[j][i] = column_pools[j];
+	}
 }
 Crust.fill = function(crust, rock_column) {
-	var fill = Float32Raster.fill;
-	fill(crust.sediment, rock_column.sediment);
-	fill(crust.sedimentary, rock_column.sedimentary);
-	fill(crust.metamorphic, rock_column.metamorphic);
-	fill(crust.felsic_plutonic, rock_column.felsic_plutonic);
-	fill(crust.felsic_volcanic, rock_column.felsic_volcanic);
-	fill(crust.mafic_volcanic, rock_column.mafic_volcanic);
-	fill(crust.age, rock_column.age);
+	var f = Float32Raster.fill;
+	var crust_pools = crust.all_pools;
+	var column_pools = rock_column.all_pools;
+	for (var i = 0, li = crust_pools.length; i < li; ++i) {
+		f(crust_pools[i], column_pools[i]);
+	}
 }
 Crust.fill_into_selection = function(crust, rock_column, selection_raster, result_crust) {
-	// NOTE: a naive implementation would repeatedly invoke Float32RasterGraphics.fill_into_selection 
-	// However, this is much less performant because it reads from selection_raster multiple times. 
-	// For performance reasons, we have to roll our own. 
-	var fill_into = Float32RasterGraphics.fill_into_selection;
-	fill_into(crust.sediment, rock_column.sediment, selection_raster, result_crust.sediment);
-	fill_into(crust.sedimentary, rock_column.sedimentary, selection_raster, result_crust.sedimentary);
-	fill_into(crust.metamorphic, rock_column.metamorphic, selection_raster, result_crust.metamorphic);
-	fill_into(crust.felsic_plutonic, rock_column.felsic_plutonic, selection_raster, result_crust.felsic_plutonic);
-	fill_into(crust.felsic_volcanic, rock_column.felsic_volcanic, selection_raster, result_crust.felsic_volcanic);
-	fill_into(crust.mafic_volcanic, rock_column.mafic_volcanic, selection_raster, result_crust.mafic_volcanic);
-	fill_into(crust.age,  rock_column.age,  selection_raster, result_crust.age) ;
+	var f = Float32RasterGraphics.fill_into_selection;
+	var crust_pools = crust.all_pools;
+	var column_pools = rock_column.all_pools;
+	var result_pools = result_crust.all_pools;
+	for (var i = 0, li = crust_pools.length; i < li; ++i) {
+		f(crust_pools[i], column_pools[i], selection_raster, result_pools[i]);
+	}
 }
-Crust.copy_into_selection = function(crust, crust2, selection_raster, result_crust) {
-	// NOTE: a naive implementation would repeatedly invoke Float32RasterGraphics.fill_into_selection 
-	// However, this is much less performant because it reads from selection_raster multiple times. 
-	// For performance reasons, we have to roll our own. 
-	var fill_into = Float32RasterGraphics.copy_into_selection;
-	fill_into(crust.sediment, crust2.sediment, selection_raster, result_crust.sediment);
-	fill_into(crust.sedimentary, crust2.sedimentary, selection_raster, result_crust.sedimentary);
-	fill_into(crust.metamorphic, crust2.metamorphic, selection_raster, result_crust.metamorphic);
-	fill_into(crust.felsic_plutonic, crust2.felsic_plutonic, selection_raster, result_crust.felsic_plutonic);
-	fill_into(crust.felsic_volcanic, crust2.felsic_volcanic, selection_raster, result_crust.felsic_volcanic);
-	fill_into(crust.mafic_volcanic, crust2.mafic_volcanic, selection_raster, result_crust.mafic_volcanic);
-	fill_into(crust.age,  crust2.age,  selection_raster, result_crust.age) ;
+Crust.copy_into_selection = function(crust1, crust2, selection_raster, result_crust) {
+	var f = Float32RasterGraphics.copy_into_selection;
+	var crust1_pools = crust1.all_pools;
+	var crust2_pools = crust2.all_pools;
+	var result_pools = result_crust.all_pools;
+	for (var i = 0, li = crust1_pools.length; i < li; ++i) {
+		f(crust1_pools[i], crust2_pools[i], selection_raster, result_pools[i]);
+	}
 }
 
 Crust.get_ids = function(crust, id_raster, result_crust) {
-	var get_ids = Float32Raster.get_ids;
-	get_ids(crust.sediment, id_raster, result_crust.sediment);
-	get_ids(crust.sedimentary, id_raster, result_crust.sedimentary);
-	get_ids(crust.metamorphic, id_raster, result_crust.metamorphic);
-	get_ids(crust.felsic_plutonic, id_raster, result_crust.felsic_plutonic);
-	get_ids(crust.felsic_volcanic, id_raster, result_crust.felsic_volcanic);
-	get_ids(crust.mafic_volcanic, id_raster, result_crust.mafic_volcanic);
-	get_ids(crust.age, id_raster, result_crust.age);
+	var f = Float32Raster.get_ids;
+	var crust_pools = crust.all_pools;
+	var result_pools = result_crust.all_pools;
+	for (var i = 0, li = crust_pools.length; i < li; ++i) {
+		f(crust_pools[i], id_raster, result_pools[i]);
+	}
 }
 Crust.add_values_to_ids = function(crust, id_raster, value_crust, result_crust) {
-	var add_values_to_ids = Float32Raster.add_values_to_ids;
-	add_values_to_ids(crust.sediment, id_raster, value_crust.sediment, 	 result_crust.sediment);
-	add_values_to_ids(crust.sedimentary, id_raster, value_crust.sedimentary, result_crust.sedimentary);
-	add_values_to_ids(crust.metamorphic, id_raster, value_crust.metamorphic, result_crust.metamorphic);
-	add_values_to_ids(crust.felsic_plutonic, id_raster, value_crust.felsic_plutonic, 		 result_crust.felsic_plutonic);
-	add_values_to_ids(crust.felsic_volcanic, id_raster, value_crust.felsic_volcanic, 		 result_crust.felsic_volcanic);
-	add_values_to_ids(crust.mafic_volcanic, id_raster, value_crust.mafic_volcanic, 		 result_crust.mafic_volcanic);
-	add_values_to_ids(crust.age, id_raster, value_crust.age, 		 result_crust.age);
+	var f = Float32Raster.add_values_to_ids;
+	var crust_pools = crust.all_pools;
+	var value_pools = value_crust.all_pools;
+	var result_pools = result_crust.all_pools;
+	for (var i = 0, li = crust_pools.length; i < li; ++i) {
+		f(crust_pools[i], id_raster, value_pools[i], result_pools[i]);
+	}
 }
 Crust.fix_delta = function(crust_delta, crust, scratch) {
 	var scratch = scratch || Float32Raster(crust_delta.grid);
-	var fix = ScalarTransport.fix_nonnegative_conserved_quantity_delta;
-	fix(crust_delta.sediment, crust.sediment, scratch);
-	fix(crust_delta.sedimentary, crust.sedimentary, scratch);
-	fix(crust_delta.metamorphic, crust.metamorphic, scratch);
-	fix(crust_delta.felsic_plutonic, crust.felsic_plutonic, scratch);
-	fix(crust_delta.felsic_volcanic, crust.felsic_volcanic, scratch);
-	fix(crust_delta.mafic_volcanic, crust.mafic_volcanic, scratch);
+	var f = ScalarTransport.fix_nonnegative_conserved_quantity_delta;
+	var delta_pools = crust_delta.conserved_pools;
+	var crust_pools = crust.conserved_pools;
+	for (var i = 0, li = crust_pools.length; i < li; ++i) {
+		f(delta_pools[i], crust_pools[i], scratch);
+	}
 }
 Crust.assert_conserved_transport_delta = function(crust_delta, threshold) {
-	var assert = ScalarTransport.assert_conserved_quantity_delta;
-	assert(crust_delta.sediment, threshold);
-	assert(crust_delta.sedimentary, threshold);
-	assert(crust_delta.metamorphic, threshold);
-	assert(crust_delta.felsic_plutonic, threshold);
-	assert(crust_delta.felsic_volcanic, threshold);
+	var f = ScalarTransport.assert_conserved_quantity_delta;
+	var delta_pools = crust_delta.conserved_pools;
+	for (var i = 0, li = delta_pools.length; i < li; ++i) {
+		f(delta_pools[i], threshold);
+	}
 }
 Crust.assert_conserved_reaction_delta = function(crust_delta, threshold, scratch) {
 	var sum = scratch || Float32Raster(crust_delta.grid);
 	sum.fill(0);
-	ScalarField.add_field(sum, crust_delta.sediment, sum);
-	ScalarField.add_field(sum, crust_delta.sedimentary, sum);
-	ScalarField.add_field(sum, crust_delta.metamorphic, sum);
-	ScalarField.add_field(sum, crust_delta.felsic_plutonic, sum);
-	ScalarField.add_field(sum, crust_delta.felsic_volcanic, sum);
+	var f = ScalarField.add_field;
+	var delta_pools = crust_delta.conserved_pools;
+	for (var i = 0, li = delta_pools.length; i < li; ++i) {
+		f(sum, delta_pools[i], sum);
+	}
 	ScalarField.mult_field(sum, sum, sum);
 	var is_not_conserved = Uint8Dataset.sum(ScalarField.gt_scalar(sum, threshold * threshold));
 	if (is_not_conserved) {
@@ -234,35 +239,41 @@ Crust.assert_conserved_reaction_delta = function(crust_delta, threshold, scratch
 }
 
 
+
+// WARNING: 
+// The following functions require special attention when adding new mass pools!
+
+Crust.overlap = function(crust1, crust2, crust2_exists, crust2_on_top, result_crust) {
+	// add current plate thickness to crust1 thickness wherever current plate exists
+	ScalarField.add_field_term				 			(crust1.conserved_array, crust2.conserved_array, crust2_exists, result_crust.conserved_array);
+	// overwrite crust1 wherever current plate is on top
+	Float32RasterGraphics.copy_into_selection 			(crust1.mafic_volcanic, crust2.mafic_volcanic, crust2_on_top, 	result_crust.mafic_volcanic);
+	Float32RasterGraphics.copy_into_selection 			(crust1.mafic_plutonic, crust2.mafic_plutonic, crust2_on_top, 	result_crust.mafic_plutonic);
+	Float32RasterGraphics.copy_into_selection 			(crust1.age, crust2.age, crust2_on_top, 						result_crust.age);
+}
+
 Crust.get_thickness = function(crust, rock_density, thickness) {
 	thickness = thickness || Float32Raster(crust.grid);
 
-	var sediment = crust.sediment;
-	var sedimentary = crust.sedimentary;
-	var metamorphic = crust.metamorphic;
-	var felsic_plutonic = crust.felsic_plutonic;
-	var felsic_volcanic = crust.felsic_volcanic;
-	var mafic_volcanic = crust.mafic_volcanic;
+	var scratch = Float32Raster(crust.grid);
 
-	var sediment_density = rock_density.sediment;
-	var sedimentary_density = rock_density.sedimentary;
-	var metamorphic_density = rock_density.metamorphic;
-	var felsic_plutonic_density = rock_density.felsic_plutonic;
-	var felsic_volcanic_density = rock_density.felsic_volcanic;
-
-	// NOTE: thickness does double duty for performance reasons
-	var fraction_of_lifetime = thickness;
-	var mafic_volcanic_density = thickness;
+	var fraction_of_lifetime = scratch;
 	Float32RasterInterpolation.smoothstep	(0, 250, crust.age, fraction_of_lifetime);
-	Float32RasterInterpolation.lerp			(rock_density.mafic_volcanic_min, rock_density.mafic_volcanic_max, fraction_of_lifetime, mafic_volcanic_density);
+	var mafic_density = scratch;
+	Float32RasterInterpolation.lerp			(rock_density.mafic_volcanic_min, rock_density.mafic_volcanic_max, fraction_of_lifetime, mafic_density);
+	var mafic_specific_volume = scratch;
+	ScalarField.inv_field 					(mafic_density, mafic_specific_volume);
 
-    for (var i = 0, li = thickness.length; i < li; i++) {
-    	thickness[i] = 
-    		sediment[i]		/ sediment_density +
-    		sedimentary[i]	/ sedimentary_density +
-    		metamorphic[i]	/ metamorphic_density +
-    		felsic_plutonic[i] 		/ felsic_plutonic_density + 
-    		felsic_volcanic[i] 		/ felsic_volcanic_density + 
-    		mafic_volcanic[i] 		/ mafic_volcanic_density[i];
-    }
+	Float32Raster.fill 				(thickness, 0);
+	ScalarField.add_field_term 		(thickness, crust.mafic_plutonic, mafic_specific_volume, thickness);
+	ScalarField.add_field_term 		(thickness, crust.mafic_volcanic, mafic_specific_volume, thickness);
+
+	var f = ScalarField.add_scalar_term;
+	var crust_pools = crust.conserved_pools;
+	var pool_densities = new RockColumn(rock_density).conserved_pools;
+	for (var i = 0, li = crust_pools.length; i < li; ++i) {
+		f(thickness, crust_pools[i], 1/pool_densities[i],  thickness);
+	}
+
+	return thickness;
 }

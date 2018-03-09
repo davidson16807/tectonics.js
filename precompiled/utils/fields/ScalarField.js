@@ -274,6 +274,15 @@ ScalarField.div_field = function (scalar_field1, scalar_field2, result) {
   }
   return result;
 };
+ScalarField.inv_field = function (scalar_field, result) {
+  result = result || Float32Raster(scalar_field1.grid);
+  ASSERT_IS_ARRAY(scalar_field, Float32Array)
+  ASSERT_IS_ARRAY(result, Float32Array)
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = 1 / scalar_field[i];
+  }
+  return result;
+};
 ScalarField.add_scalar = function (scalar_field, scalar, result) {
   result = result || Float32Raster(scalar_field.grid);
   ASSERT_IS_ARRAY(scalar_field, Float32Array)

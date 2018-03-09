@@ -22,6 +22,12 @@ var World = (function() {
 
 		this.surface_gravity = parameters['surface_gravity'] || 9.8; // m/s^2
 
+		this.ocean =
+		 new RockColumn({
+			mafic_volcanic: 		7100, 	// +/- 800, White McKenzie and O'nions 1992
+			// felsic_plutonic: 	100, // This can be set above zero to "cheat" on felsic mass conservation
+		 });
+
 		this.getRandomPlateSpeed = parameters['getRandomPlateSpeed'] ||
 			//function() { return Math.exp(random.normal(-5.13, 0.548)); }
 			function() { return random.normal(0.00687, 0.00380); }
@@ -448,11 +454,6 @@ var World = (function() {
 	}
 
 	World.prototype.SEALEVEL = 3682;
-	World.prototype.ocean = 
-	 new RockColumn({
-		mafic_volcanic: 		7100, 	// +/- 800, White McKenzie and O'nions 1992
-		// felsic_plutonic: 	100, // This can be set above zero to "cheat" on felsic mass conservation
-	 });
 
 	World.prototype.resetPlates = function() {
 		// get plate masks from image segmentation of asthenosphere velocity

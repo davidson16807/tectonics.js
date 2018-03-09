@@ -934,6 +934,15 @@ ScalarField.div_field = function (scalar_field1, scalar_field2, result) {
   }
   return result;
 };
+ScalarField.inv_field = function (scalar_field, result) {
+  result = result || Float32Raster(scalar_field1.grid);
+  if (!(scalar_field instanceof Float32Array)) { throw "scalar_field" + ' is not a ' + "Float32Array"; }
+  if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = 1 / scalar_field[i];
+  }
+  return result;
+};
 ScalarField.add_scalar = function (scalar_field, scalar, result) {
   result = result || Float32Raster(scalar_field.grid);
   if (!(scalar_field instanceof Float32Array)) { throw "scalar_field" + ' is not a ' + "Float32Array"; }
