@@ -45,6 +45,7 @@ var World = (function() {
 		// total mass of the crust in tons
 		this.density = Float32Raster(this.grid);
 		// the average density of the crust, in T/m^3
+		this.buoyancy = Float32Raster(this.grid);
 
 		this.top_plate_map 			= Uint8Raster(this.grid);
 		this.plate_count 		= Uint8Raster(this.grid);
@@ -95,6 +96,7 @@ var World = (function() {
 		Crust.get_thickness					(world.total_crust, world.material_density,								world.thickness);
 		Crust.get_total_mass				(world.total_crust, world.material_density,								world.total_mass);
 		Crust.get_density 					(world.total_mass, world.thickness,	world.material_density.mafic_volcanic_min, 	world.density);
+		Crust.get_buoyancy 					(world.density, world.material_density, world.surface_gravity, 		 	world.buoyancy);
 		TectonicsModeling.get_displacement 	(world.thickness, world.density, world.material_density, 				world.displacement);
 	}
 	function merge_plates_to_master(plates, master) {
@@ -458,7 +460,8 @@ var World = (function() {
 	World.prototype.resetPlates = function() {
 		// get plate masks from image segmentation of asthenosphere velocity
 		update_calculated_fields(this);
-		var pressure = TectonicsModeling.get_asthenosphere_pressure(this.density);
+
+		var pressure = TectonicsModeling.get_asthenosphere_pressure(this.buoyancy);
 		TectonicsModeling.get_asthenosphere_velocity(pressure, this.asthenosphere_velocity);
 		var angular_velocity = VectorField.cross_vector_field(this.asthenosphere_velocity, this.grid.pos);
 		var top_plate_map = TectonicsModeling.get_plate_map(angular_velocity, 7, 200);

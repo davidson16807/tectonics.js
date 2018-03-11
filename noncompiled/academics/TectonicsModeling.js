@@ -328,15 +328,15 @@ TectonicsModeling.get_erosion = function(
 }
 
 
-// gets surface pressure of the asthenosphere by smoothing a field representing density/buoyancy
-TectonicsModeling.get_asthenosphere_pressure = function(density, pressure, scratch) {
-	pressure = pressure || Float32Raster(density.grid);
-	scratch = scratch || Float32Raster(density.grid);
+// gets surface pressure of the asthenosphere by smoothing a field representing buoyancy
+TectonicsModeling.get_asthenosphere_pressure = function(buoyancy, pressure, scratch) {
+	pressure = pressure || Float32Raster(buoyancy.grid);
+	scratch = scratch || Float32Raster(buoyancy.grid);
 
 	var diffuse = ScalarField.diffusion_by_constant;
 
 	var smoothing_iterations =  15;
-	Float32Raster.copy(density, pressure);
+	Float32Raster.copy(buoyancy, pressure);
 	for (var i=0; i<smoothing_iterations; ++i) {
 		diffuse(pressure, 1, pressure, scratch);
 	}
