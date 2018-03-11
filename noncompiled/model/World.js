@@ -5,7 +5,7 @@ var World = (function() {
 		this.grid = parameters['grid'] || stop('missing parameter: "grid"');
 
 		// all densities in T/m^3
-		this.rock_density = parameters['material_density'] || {
+		this.material_density = parameters['material_density'] || {
 			// most values are estimates from looking around wolfram alpha
 			fine_sediment: 1.500,
 			coarse_sediment: 1.500,
@@ -85,17 +85,17 @@ var World = (function() {
 		var plate;
 		for (var i=0, li=plates.length; i<li; ++i) {
 		    plate = plates[i]; 
-            get_thickness		(plate.crust, world.rock_density,									plate_thickness); 
-            get_total_mass 		(plate.crust, world.rock_density,									plate_mass); 
-            get_density			(plate_mass, plate_thickness, world.rock_density.mafic_volcanic_min,			plate.density); 
+            get_thickness		(plate.crust, world.material_density,									plate_thickness); 
+            get_total_mass 		(plate.crust, world.material_density,									plate_mass); 
+            get_density			(plate_mass, plate_thickness, world.material_density.mafic_volcanic_min,			plate.density); 
 	 	}
 	}
 	// update fields that are derived from others
 	function update_calculated_fields(world) {
-		Crust.get_thickness					(world.total_crust, world.rock_density,								world.thickness);
-		Crust.get_total_mass				(world.total_crust, world.rock_density,								world.total_mass);
-		Crust.get_density 					(world.total_mass, world.thickness,	world.rock_density.mafic_volcanic_min, 	world.density);
-		TectonicsModeling.get_displacement 	(world.thickness, world.density, world.rock_density, 				world.displacement);
+		Crust.get_thickness					(world.total_crust, world.material_density,								world.thickness);
+		Crust.get_total_mass				(world.total_crust, world.material_density,								world.total_mass);
+		Crust.get_density 					(world.total_mass, world.thickness,	world.material_density.mafic_volcanic_min, 	world.density);
+		TectonicsModeling.get_displacement 	(world.thickness, world.density, world.material_density, 				world.displacement);
 	}
 	function merge_plates_to_master(plates, master) {
 	  	var scratchpad = RasterStackBuffer.scratchpad;
@@ -301,7 +301,7 @@ var World = (function() {
 
             erode		(localized_is_subducted, 1,											localized_will_stay_detachable, 	localized_scratch_ui8);
 		    padding 	(plate.mask, 1, 													localized_is_just_inside_border, 	localized_scratch_ui8);
-        	gt_f32		(plate.density, world.rock_density.mantle,							localized_is_subducted);
+        	gt_f32		(plate.density, world.material_density.mantle,							localized_is_subducted);
 		    and 		(localized_will_stay_detachable, localized_is_just_inside_border, 	localized_is_detaching);
 		    and 		(localized_is_detaching, localized_is_subducted, 					localized_is_detaching);
 
@@ -322,7 +322,7 @@ var World = (function() {
        	// CALCULATE DELTAS
 		TectonicsModeling.get_erosion(
 			world.displacement, world.SEALEVEL, timestep,
-			world.rock_density, world.surface_gravity,
+			world.material_density, world.surface_gravity,
 			world.top_crust, world.erosion, world.crust_scratch
 		);
 		Crust.assert_conserved_transport_delta(world.erosion, 1e-2); 
@@ -330,7 +330,7 @@ var World = (function() {
        	// CALCULATE DELTAS
 		TectonicsModeling.get_weathering(
 			world.displacement, world.SEALEVEL, timestep,
-			world.rock_density, world.surface_gravity,
+			world.material_density, world.surface_gravity,
 			world.top_crust, world.weathering, world.crust_scratch
 		);
 		Crust.assert_conserved_reaction_delta(world.weathering, 1e-2); 
@@ -338,7 +338,7 @@ var World = (function() {
        	// CALCULATE DELTAS
 		TectonicsModeling.get_lithification(
 			world.displacement, world.SEALEVEL, timestep,
-			world.rock_density, world.surface_gravity,
+			world.material_density, world.surface_gravity,
 			world.top_crust, world.lithification, world.crust_scratch
 		);
 		Crust.assert_conserved_reaction_delta(world.lithification, 1e-2); 
@@ -346,7 +346,7 @@ var World = (function() {
        	// CALCULATE DELTAS
 		TectonicsModeling.get_metamorphosis(
 			world.displacement, world.SEALEVEL, timestep,
-			world.rock_density, world.surface_gravity,
+			world.material_density, world.surface_gravity,
 			world.top_crust, world.metamorphosis, world.crust_scratch
 		);
 		Crust.assert_conserved_reaction_delta(world.metamorphosis, 1e-2); 

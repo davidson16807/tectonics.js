@@ -18,7 +18,7 @@ var TectonicsModeling = {};
 //    geostatic pressure
 TectonicsModeling.get_lithification = function(
 		displacement, sealevel, timestep,
-		rock_density, surface_gravity,
+		material_density, surface_gravity,
 		top_crust, crust_delta, crust_scratch){
 	var grid = top_crust.grid;
 
@@ -59,7 +59,7 @@ TectonicsModeling.get_lithification = function(
 
 TectonicsModeling.get_metamorphosis = function(
 		displacement, sealevel, timestep,
-		rock_density, surface_gravity,
+		material_density, surface_gravity,
 		top_crust, crust_delta, crust_scratch){
 
 	var grid = top_crust.grid;
@@ -133,7 +133,7 @@ TectonicsModeling.get_metamorphosis = function(
 // "weathering" is the process by which rock is converted to sediment 
 TectonicsModeling.get_weathering = function(
 		displacement, sealevel, timestep,
-		rock_density, surface_gravity,
+		material_density, surface_gravity,
 		top_crust, crust_delta, crust_scratch){
   var grid = displacement.grid;
   var scratch = Float32Raster(grid);
@@ -162,14 +162,14 @@ TectonicsModeling.get_weathering = function(
     weathering_factor *       	// apply weathering factor to get height change per unit precip  
     precipitation *         	// apply precip to get height change 
     timestep *         			// 
-    rock_density.felsic_plutonic *      	// apply density to get mass converted to sediment 
+    material_density.felsic_plutonic *      	// apply density to get mass converted to sediment 
     surface_gravity/earth_surface_gravity, //correct for planet's gravity 
     weathering) 
    
   var bedrock_exposure = Float32Raster(grid); 
   ScalarField.div_scalar(top_crust.sediment,  
-    -critical_sediment_thickness * rock_density.sediment
-    // * rock_density.sediment 
+    -critical_sediment_thickness * material_density.sediment
+    // * material_density.sediment 
     , bedrock_exposure); 
   ScalarField.add_scalar(bedrock_exposure, 1, bedrock_exposure); 
   ScalarField.max_scalar(bedrock_exposure, 0, bedrock_exposure); 
@@ -209,7 +209,7 @@ TectonicsModeling.get_weathering = function(
 
 TectonicsModeling.get_erosion = function(
 		displacement, sealevel, timestep,
-		rock_density, surface_gravity,
+		material_density, surface_gravity,
 		top_crust, crust_delta, crust_scratch){
   	var scratchpad = RasterStackBuffer.scratchpad;
   	scratchpad.allocate('get_erosion');
@@ -250,7 +250,7 @@ TectonicsModeling.get_erosion = function(
 	    from = arrow[0];
 	    to = arrow[1];
 	    height_difference = water_height[from] - water_height[to];
-	    outbound_height_transfer[from] += height_difference > 0? height_difference * precipitation * timestep * erosiveFactor * rock_density.felsic_plutonic : 0;
+	    outbound_height_transfer[from] += height_difference > 0? height_difference * precipitation * timestep * erosiveFactor * material_density.felsic_plutonic : 0;
 	}
 
 	var outbound_sediment_fraction = crust_scratch.sediment;
@@ -302,7 +302,7 @@ TectonicsModeling.get_erosion = function(
 	    from = arrow[0];
 	    to = arrow[1];
 	    height_difference = water_height[from] - water_height[to];
-	    outbound_height_transfer_i = height_difference > 0? height_difference * precipitation * timestep * erosiveFactor * rock_density.felsic_plutonic : 0;
+	    outbound_height_transfer_i = height_difference > 0? height_difference * precipitation * timestep * erosiveFactor * material_density.felsic_plutonic : 0;
 
 	    transfer = outbound_height_transfer_i * outbound_sediment_fraction[from];
 	    sediment_delta[from] -= transfer;
@@ -355,9 +355,9 @@ TectonicsModeling.get_angular_velocity = function(velocity, pos, angular_velocit
 	return VectorField.cross_vector_field(velocity, pos, angular_velocity);
 }
 // gets displacement using an isostatic model
-TectonicsModeling.get_displacement = function(thickness, density, rock_density, displacement) {
+TectonicsModeling.get_displacement = function(thickness, density, material_density, displacement) {
  	var thickness_i, rootDepth;
- 	var inverse_mantle_density = 1 / rock_density.mantle;
+ 	var inverse_mantle_density = 1 / material_density.mantle;
  	for(var i=0, li = displacement.length; i<li; i++){
  		//Calculates elevation as a function of crust density. 
  		//This was chosen as it only requires knowledge of crust density and thickness,  

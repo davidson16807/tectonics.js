@@ -127,7 +127,7 @@ Crust.get_conserved_mass = function(crust, mass) {
 	
 	return mass; 
 }
-Crust.get_total_mass = function(crust, rock_density, mass) {  
+Crust.get_total_mass = function(crust, material_density, mass) {  
 	mass = mass || Float32Raster(crust.grid);
 	mass.fill(0);
 
@@ -252,7 +252,7 @@ Crust.overlap = function(crust1, crust2, crust2_exists, crust2_on_top, result_cr
 	Float32RasterGraphics.copy_into_selection 			(crust1.age, crust2.age, crust2_on_top, 						result_crust.age);
 }
 
-Crust.get_thickness = function(crust, rock_density, thickness) {
+Crust.get_thickness = function(crust, material_density, thickness) {
 	thickness = thickness || Float32Raster(crust.grid);
 
 	var scratch = Float32Raster(crust.grid);
@@ -260,7 +260,7 @@ Crust.get_thickness = function(crust, rock_density, thickness) {
 	var fraction_of_lifetime = scratch;
 	Float32RasterInterpolation.smoothstep	(0, 250, crust.age, fraction_of_lifetime);
 	var mafic_density = scratch;
-	Float32RasterInterpolation.lerp			(rock_density.mafic_volcanic_min, rock_density.mafic_volcanic_max, fraction_of_lifetime, mafic_density);
+	Float32RasterInterpolation.lerp			(material_density.mafic_volcanic_min, material_density.mafic_volcanic_max, fraction_of_lifetime, mafic_density);
 	var mafic_specific_volume = scratch;
 	ScalarField.inv_field 					(mafic_density, mafic_specific_volume);
 
@@ -270,7 +270,7 @@ Crust.get_thickness = function(crust, rock_density, thickness) {
 
 	var f = ScalarField.add_scalar_term;
 	var crust_pools = crust.conserved_pools;
-	var pool_densities = new RockColumn(rock_density).conserved_pools;
+	var pool_densities = new RockColumn(material_density).conserved_pools;
 	for (var i = 0, li = crust_pools.length; i < li; ++i) {
 		f(thickness, crust_pools[i], 1/pool_densities[i],  thickness);
 	}
