@@ -216,7 +216,7 @@ ScalarHeatDisplay.prototype.updateAttributes = function(geometry, plate) {
 }
 scalarDisplays.plates 	= new ScalarHeatDisplay( { min: '0.', max: '7.', 
 		getField: function (world) {
-			return world.plate_map;
+			return world.top_plate_map;
 		} 	
 	} );
 scalarDisplays.plate_count 	= new ScalarHeatDisplay( { min: '0.', max: '3.',  
@@ -240,17 +240,17 @@ scalarDisplays.precip 	= new ScalarHeatDisplay( { min: '2000.', max: '1.',
 	} );
 scalarDisplays.age 	= new ScalarHeatDisplay( { min: '250.', max: '0.',  
 		getField: function (world) {
-			return world.crust.age;
+			return world.top_crust.age;
 		} 
 	} );
 scalarDisplays.mafic_volcanic 	= new ScalarHeatDisplay( { min: '0.', max: '7000.',  
 		getField: function (world) {
-			return world.crust.mafic_volcanic;
+			return world.top_crust.mafic_volcanic;
 		} 
 	} );
 scalarDisplays.felsic_plutonic 	= new ScalarHeatDisplay( { min: '0.', max: '70000.',  
 		getField: function (world) {
-			return world.crust.felsic_plutonic;
+			return world.top_crust.felsic_plutonic;
 		} 
 	} );
 scalarDisplays.felsic_plutonic_erosion 	= new ScalarHeatDisplay( { min: '0.', max: '100.',  
@@ -260,7 +260,7 @@ scalarDisplays.felsic_plutonic_erosion 	= new ScalarHeatDisplay( { min: '0.', ma
 	} );
 scalarDisplays.sediment 	= new ScalarHeatDisplay( { min: '0.', max: '5.',  
 		getField: function (world) {
-			return world.crust.sediment;
+			return world.top_crust.sediment;
 		} 
 	} );
 scalarDisplays.sediment_erosion 	= new ScalarHeatDisplay( { min: '0.', max: '5.',  
@@ -275,12 +275,12 @@ scalarDisplays.sediment_weathering 	= new ScalarHeatDisplay( { min: '0.', max: '
 	} );
 scalarDisplays.sedimentary 	= new ScalarHeatDisplay( { min: '0.', max: '10000.',  
 		getField: function (world) {
-			return world.crust.sedimentary;
+			return world.top_crust.sedimentary;
 		} 
 	} );
 scalarDisplays.metamorphic 	= new ScalarHeatDisplay( { min: '0.', max: '10000.',  
 		getField: function (world) {
-			return world.crust.metamorphic;
+			return world.top_crust.metamorphic;
 		} 
 	} );
 scalarDisplays.thickness 	= new ScalarHeatDisplay( { min: '0.', max: '70000.',  

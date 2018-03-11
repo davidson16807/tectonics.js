@@ -159,7 +159,7 @@ vectorDisplays.plate_velocity = new VectorFieldDisplay( {
     getField: function (world) { 
       var grid = world.grid; 
       var plates = world.plates; 
-      var plate_map = world.plate_map; 
+      var plate_map = world.top_plate_map; 
       var plate_velocity = VectorRaster(grid); 
       var all_velocities = VectorRaster(grid); 
       var add_term = VectorField.add_vector_field_and_scalar_field_term; 
@@ -177,6 +177,7 @@ vectorDisplays.plate_velocity = new VectorFieldDisplay( {
       return all_velocities; 
     }  
   } ); 
+
 
 function DisabledVectorDisplay(options) {}
 DisabledVectorDisplay.prototype.addTo = function(mesh) {
