@@ -4,6 +4,10 @@ var World = (function() {
 	function World(parameters) {
 		this.grid = parameters['grid'] || stop('missing parameter: "grid"');
 
+		this.material_viscosity = parameters['material_viscosity'] || {
+			mantle: 1.57e17
+		};
+
 		// all densities in T/m^3
 		this.material_density = parameters['material_density'] || {
 			// most values are estimates from looking around wolfram alpha
@@ -69,6 +73,10 @@ var World = (function() {
 		this.plates = [];
 	}
 
+	function update_plate_velocity(world, plates) {
+		// body...
+	}
+
 	function move_plates(plates, timestep) {
 		for (var i=0, li=plates.length; i<li; ++i) {
 	 		plates[i].move(timestep);
@@ -88,7 +96,7 @@ var World = (function() {
 		    plate = plates[i]; 
             get_thickness		(plate.crust, world.material_density,									plate_thickness); 
             get_total_mass 		(plate.crust, world.material_density,									plate_mass); 
-            get_density			(plate_mass, plate_thickness, world.material_density.mafic_volcanic_min,			plate.density); 
+            get_density			(plate_mass, plate_thickness, world.material_density.mafic_volcanic_min, plate.density); 
 	 	}
 	}
 	// update fields that are derived from others
@@ -474,9 +482,9 @@ var World = (function() {
 			var mask = Uint8Field.eq_scalar(top_plate_map, plate_ids[i]);
 
 			//TODO: comment this out when you're done
-			var eulerPole = VectorDataset.weighted_average(angular_velocity, mask)
+			var eulerPole = VectorDataset.weighted_average(angular_velocity, mask);
 			//TODO: fix it properly - no negation!
-			Vector.normalize(-eulerPole.x, -eulerPole.y, -eulerPole.z, eulerPole); 
+			Vector.normalize(-eulerPole.x, -eulerPole.y, -eulerPole.z, eulerPole);
 
 			plate = new Plate({
 				world: 	this,

@@ -372,12 +372,19 @@ VectorField.mult_scalar_field = function(vector_field, scalar_field, result) {
 	ASSERT_IS_ARRAY(scalar_field, Float32Array)
 	ASSERT_IS_VECTOR_RASTER(result)
 
-	var u = vector_field.everything;
-	var out = result.everything;
 
-	var length = scalar_field.length;
-	for (var i=0, li=u.length; i<li; ++i) {
-	    out[i] = u[i] * scalar_field[i%length];
+	var x1 = vector_field.x;
+	var y1 = vector_field.y;
+	var z1 = vector_field.z;
+
+	var x = result.x;
+	var y = result.y;
+	var z = result.z;
+
+	for (var i=0, li=x.length; i<li; ++i) {
+	    x[i] = x1[i] * scalar_field[i];
+	    y[i] = y1[i] * scalar_field[i];
+	    z[i] = z1[i] * scalar_field[i];
 	}
 
 	return result;

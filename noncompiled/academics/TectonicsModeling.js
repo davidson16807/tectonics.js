@@ -104,7 +104,7 @@ TectonicsModeling.get_metamorphosis = function(
 //
 // sediment		sedimentary		metamorphic		high grade metamorphic
 // 	humus			coal			anthracite	graphite?	
-// 	reef			limestone		marble			
+// 	reef/lime		limestone		marble			
 // 	clay			shale			slate		hornfel/schist/gneiss
 // 	sand			sandstone		quartzite		
 
@@ -348,6 +348,145 @@ TectonicsModeling.get_asthenosphere_velocity = function(pressure, velocity) {
 	velocity = velocity || VectorRaster(pressure.grid);
 	ScalarField.gradient(pressure, velocity);
 	return velocity;
+}
+
+TectonicsModeling.get_plate_velocity = function(plate_mask, buoyancy, material_viscosity, result) {
+	result = result || VectorRaster(plate_mask.grid);
+
+  	var scratchpad = RasterStackBuffer.scratchpad;
+  	scratchpad.allocate('get_plate_velocity');
+
+	var grid = buoyancy.grid;
+
+
+	// NOTE: 
+	// Here, we calculate plate velocity as the terminal velocity of a subducting slab as it falls through the mantle.
+	// 
+	// Imagine a cloth with lead weights strapped to one side as it slides down into a vat of honey - it's kind of like that.
+	// 
+	// WARNING:
+	// most of this is wrong! Here, we try calculating terminal velocity for each grid cell in isolation,
+	//  then try to average them to approximate the velocity of the rigid body. 
+	// 
+	// If we wanted to do it the correct way, this is how we'd do it:
+	//  * find drag force, subtract it from slab pull force, and use that to update velocity via netwonian integration
+	//  * repeat simulation for several iterations every time step 
+	// the reason we don't do it the correct way is 1.) it's slow, 2.) it's complicated, and 3.) it's not super important
+	// 
+	// from Schellart 2010
+	// particularly http://rockdef.wustl.edu/seminar/Schellart%20et%20al%20(2010)%20Supp%20Material.pdf
+	// TODO: modify to linearize the width parameter ("W") 
+	// originally: 
+	// 		v = S F (WLT)^2/3 /18 cμ
+	// modify to:
+	// 		v = S F W(LT)^1/2 /18 cμ
+	// 
+	// TODO: commit Schellart 2010 to the research folder!
+	// TODO: REMOVE HARDCODED CONSTANTS!
+	// TODO: make width dependant on the size of subducting region!
+	var width = 5000e3; // meters 
+	var length = 600e3; // meters
+	var thickness = 100e3; // meters
+	var effective_area = Math.pow(thickness * length * width, 2/3); // m^2
+	var shape_parameter = 0.725; // unitless
+	var slab_dip_angle_constant = 4.025; // unitless
+	var material_viscosity = { mantle: 1.57e17 }; // kiloPascal*seconds, AKA kiloNewton * seconds per m^2
+	var SECONDS_PER_MILLION_EARTH_YEARS = 60*60*365.25*1e6; // seconds/My
+	var world_radius = 6367e3; // meters
+
+	var lateral_speed = scratchpad.getFloat32Raster(grid); 				
+	var lateral_speed_per_force  = 1;
+	lateral_speed_per_force *= effective_area; 						// start with m^2
+	lateral_speed_per_force /= material_viscosity.mantle; 			// convert to m/s per kiloNewton
+	lateral_speed_per_force /= 18; 									// apply various unitless constants
+	lateral_speed_per_force *= shape_parameter; 					
+	lateral_speed_per_force /= slab_dip_angle_constant; 			
+	lateral_speed_per_force *= SECONDS_PER_MILLION_EARTH_YEARS; 	// convert to m/My per kiloNewton
+	lateral_speed_per_force /= world_radius;						// convert to radians/My per kiloNewton
+
+	ScalarField.mult_scalar 		(buoyancy, lateral_speed_per_force, lateral_speed); // radians/My
+ 	// 	scratchpad.deallocate('get_plate_velocity');
+	// return lateral_speed;
+
+	// find slab pull force field (kiloNewtons/m^3)
+	// buoyancy = slab_pull * normalize(gradient(mask))
+	// lateral_velocity = buoyancy * normalize(gradient(mask))
+	// NOTE: result does double duty for performance reasons
+	var boundary_normal = result;
+	Uint8Field.gradient				(plate_mask, 						boundary_normal);
+	VectorField.normalize			(boundary_normal,					boundary_normal);
+
+  	//scratchpad.deallocate('get_plate_velocity');
+	//return boundary_normal;
+
+	var lateral_velocity = result;	
+	VectorField.mult_scalar_field	(boundary_normal, lateral_speed, 	lateral_velocity);
+
+  	scratchpad.deallocate('get_plate_velocity');
+	
+	return lateral_velocity;
+
+}
+
+TectonicsModeling.get_plate_center_of_mass = function(mass, plate_mask, scratch) {
+	scratch = scratch || Float32Raster(mass.grid);
+
+	// find plate's center of mass
+	var plate_mass = scratch;
+	ScalarField.mult_field 			(mass, plate_mask, 					plate_mass);
+	var center_of_plate = VectorDataset.weighted_average (plate_mass.grid.pos, plate_mass);
+	// Vector.normalize(center_of_plate.x, center_of_plate.y, center_of_plate.z, center_of_plate);
+	return center_of_plate;
+}
+
+TectonicsModeling.get_plate_rotation_matrix = function(plate_velocity, center_of_plate, timestep) {
+
+  	var scratchpad = RasterStackBuffer.scratchpad;
+  	scratchpad.allocate('get_plate_rotation_matrix');
+
+	var grid = plate_velocity.grid;
+
+	// plates are rigid bodies
+	// as with any rigid body, there are two ways that forces can manifest themselves:
+	//    1.) linear acceleration 	translates a body 
+	//    2.) angular acceleration 	rotates a body around its center of mass (CoM)
+	// but on a sphere, linear acceleration just winds up rotating a plate around the world's center
+	// this contrasts with angular acceleration, which rotates a plate around its center of mass
+	// so we track both rotations
+
+	// find distance to center of plate
+	var center_of_plate_offset = scratchpad.getVectorRaster(grid);
+	VectorField.sub_vector 			(grid.pos, center_of_plate,			center_of_plate_offset);
+	var center_of_plate_distance2 = scratchpad.getFloat32Raster(grid);
+	VectorField.dot_vector_field 	(center_of_plate_offset, center_of_plate_offset, center_of_plate_distance2);
+
+	var center_of_plate_angular_velocity = scratchpad.getVectorRaster(grid);
+	VectorField.cross_vector_field 	(plate_velocity, center_of_plate_offset, 	center_of_plate_angular_velocity);
+	VectorField.div_scalar_field 	(center_of_plate_angular_velocity, center_of_plate_distance2, center_of_plate_angular_velocity);
+	var center_of_world_angular_velocity = scratchpad.getVectorRaster(grid);
+	VectorField.cross_vector_field 	(plate_velocity, grid.pos, 				center_of_world_angular_velocity);
+	VectorField.div_scalar_field 	(center_of_world_angular_velocity, center_of_plate_distance2, center_of_world_angular_velocity);
+
+	var plate_velocity_magnitude = scratchpad.getFloat32Raster(grid);
+	VectorField.magnitude 			(plate_velocity, 					plate_velocity_magnitude);
+	var is_pulled = scratchpad.getUint8Raster(grid);
+	ScalarField.gt_scalar 			(plate_velocity_magnitude, 0.01,	is_pulled);
+
+	var center_of_plate_angular_velocity_average = VectorDataset.weighted_average(center_of_plate_angular_velocity, is_pulled);
+	var center_of_world_angular_velocity_average = VectorDataset.weighted_average(center_of_world_angular_velocity, is_pulled);
+
+	var center_of_plate_rotation_vector = Vector.mult_scalar(center_of_plate_angular_velocity_average, timestep);
+	var center_of_world_rotation_vector = Vector.mult_scalar(center_of_world_angular_velocity_average, timestep);
+
+	// TODO: combine rotations into a single matrix
+	var center_of_plate_rotation_matrix = Matrix.FromRotationVector(center_of_plate_rotation_vector);
+	var center_of_world_rotation_matrix = Matrix.FromRotationVector(center_of_world_rotation_vector);
+
+	var rotation_matrix = Matrix.mult_matrix(center_of_plate_rotation_matrix, center_of_world_rotation_matrix);
+
+  	scratchpad.deallocate('get_plate_rotation_matrix');
+
+	return rotation_matrix;
 }
 
 // gets angular velocity of the asthenosphere as the cross product of velocity and position

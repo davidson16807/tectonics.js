@@ -57,6 +57,23 @@ Matrix.RotationAboutAxis = function(axis_x, axis_y, axis_z, angle) {
     vθx*z+sθ*y, vθy*z-sθ*x, vθ*z*z+cθ
   ]);
 }
+Matrix.FromRotationVector = function(ωx, ωy, ωz) {
+  var axis = Vector.normalize(ωx, ωy, ωz);
+  var θ = Vector.magnitude(ωx, ωy, ωz),
+      x = axis.x,
+      y = axis.y,
+      z = axis.z,
+      cθ = Math.cos(θ),
+      sθ = Math.sin(θ),
+      vθ = 1 - cθ,      // aka versine of θ
+      vθx = vθ*x,
+      vθy = vθ*y;
+  return new Float32Array([
+    vθx*x+cθ,   vθx*y+sθ*z, vθx*z-sθ*y, 
+    vθx*y-sθ*z, vθy*y+cθ,   vθy*z+sθ*x,  
+    vθx*z+sθ*y, vθy*z-sθ*x, vθ*z*z+cθ
+  ]);
+}
 Matrix.invert = function(matrix, result) {
     result = result || Matrix();
 

@@ -281,12 +281,12 @@ Crust.get_thickness = function(crust, material_density, thickness) {
 Crust.get_buoyancy = function (density, material_density, surface_gravity, buoyancy) {
 	buoyancy = buoyancy || Float32Raster(density.grid);
 
-	// min( g ( crust_density - mantle_density ), 0 )
+	// buoyancy = min( g ( crust_density - mantle_density ), 0 )
 
 	// NOTE: buoyancy does double duty for performance reasons
 	var density_difference = buoyancy
 	ScalarField.sub_scalar( density, material_density.mantle, density_difference );
-	ScalarField.mult_scalar(density_difference, surface_gravity, buoyancy);
+	ScalarField.mult_scalar(density_difference, -surface_gravity, buoyancy);
 	ScalarField.min_scalar(buoyancy, 0, buoyancy);
 
 	return buoyancy;

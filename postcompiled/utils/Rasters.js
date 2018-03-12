@@ -156,6 +156,23 @@ Matrix.RotationAboutAxis = function(axis_x, axis_y, axis_z, angle) {
     vθx*z+sθ*y, vθy*z-sθ*x, vθ*z*z+cθ
   ]);
 }
+Matrix.FromRotationVector = function(ωx, ωy, ωz) {
+  var axis = Vector.normalize(ωx, ωy, ωz);
+  var θ = Vector.magnitude(ωx, ωy, ωz),
+      x = axis.x,
+      y = axis.y,
+      z = axis.z,
+      cθ = Math.cos(θ),
+      sθ = Math.sin(θ),
+      vθ = 1 - cθ, // aka versine of θ
+      vθx = vθ*x,
+      vθy = vθ*y;
+  return new Float32Array([
+    vθx*x+cθ, vθx*y+sθ*z, vθx*z-sθ*y,
+    vθx*y-sθ*z, vθy*y+cθ, vθy*z+sθ*x,
+    vθx*z+sθ*y, vθy*z-sθ*x, vθ*z*z+cθ
+  ]);
+}
 Matrix.invert = function(matrix, result) {
     result = result || Matrix();
     if ((matrix.length !== 9) || !(matrix instanceof Float32Array)) { throw "matrix" + ' is not a 3x3 matrix'; }
@@ -372,6 +389,7 @@ RasterStackBuffer.prototype.getVectorRaster = function(grid) {
   x: new Float32Array(this.buffer, this.pos + byte_length_per_index * 0, length),
   y: new Float32Array(this.buffer, this.pos + byte_length_per_index * 1, length),
   z: new Float32Array(this.buffer, this.pos + byte_length_per_index * 2, length),
+  everything: new Float32Array(this.buffer, this.pos + byte_length_per_index * 0, 3*length),
   grid: grid
  };;
  raster.grid = grid;
@@ -943,6 +961,16 @@ ScalarField.inv_field = function (scalar_field, result) {
   }
   return result;
 };
+ScalarField.sqrt_field = function (scalar_field, result) {
+  result = result || Float32Raster(scalar_field1.grid);
+  var sqrt = Math.sqrt;
+  if (!(scalar_field instanceof Float32Array)) { throw "scalar_field" + ' is not a ' + "Float32Array"; }
+  if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = sqrt(scalar_field[i]);
+  }
+  return result;
+};
 ScalarField.add_scalar = function (scalar_field, scalar, result) {
   result = result || Float32Raster(scalar_field.grid);
   if (!(scalar_field instanceof Float32Array)) { throw "scalar_field" + ' is not a ' + "Float32Array"; }
@@ -1038,7 +1066,6 @@ ScalarField.gradient = function (scalar_field, result, scratch, scratch2) {
   if (!(scalar_field instanceof Float32Array)) { throw "scalar_field" + ' is not a ' + "Float32Array"; }
   if (!(scratch instanceof Float32Array)) { throw "scratch" + ' is not a ' + "Float32Array"; }
   if (!(scratch2 instanceof Float32Array)) { throw "scratch2" + ' is not a ' + "Float32Array"; }
-  if (!(scalar_field instanceof Float32Array)) { throw "scalar_field" + ' is not a ' + "Float32Array"; }
   if ((result.everything === void 0) || !(result.everything instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
   var pos = scalar_field.grid.pos;
   var ix = pos.x;
@@ -1820,6 +1847,73 @@ Uint8Field.mult_vector = function (scalar_field, vector, result) {
   }
   return result;
 };
+Uint8Field.gradient = function (scalar_field, result) {
+  result = result || VectorRaster(scalar_field.grid);
+  if (!(scalar_field instanceof Uint8Array)) { throw "scalar_field" + ' is not a ' + "Uint8Array"; }
+  if ((result.everything === void 0) || !(result.everything instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
+  var grid = scalar_field.grid;
+  var pos = grid.pos;
+  var ix = pos.x;
+  var iy = pos.y;
+  var iz = pos.z;
+  var dpos_hat = grid.pos_arrow_differential_normalized;
+  var dxhat = dpos_hat.x;
+  var dyhat = dpos_hat.y;
+  var dzhat = dpos_hat.z;
+  var dpos = grid.pos_arrow_differential;
+  var dx = dpos.x;
+  var dy = dpos.y;
+  var dz = dpos.z;
+  var arrows = grid.arrows;
+  var arrow = [];
+  var dlength = grid.pos_arrow_distances;
+  var neighbor_count = grid.neighbor_count;
+  var x = result.x;
+  var y = result.y;
+  var z = result.z;
+  var arrow_distance = 0;
+  var average_distance = grid.average_distance;
+  var slope = 0;
+  var slope_magnitude = 0;
+  var from = 0;
+  var to = 0;
+  var max_slope_from = 0;
+  var PI = Math.PI;
+  //
+  // NOTE: 
+  // The naive implementation is to estimate the gradient based on each individual neighbor,
+  //  then take the average between the estimates.
+  // This is wrong! If dx, dy, or dz is very small, 
+  //  then the gradient estimate along that dimension will be very big.
+  // This will result in very strange behavior.
+  //
+  // The correct implementation is to use the Gauss-Green theorem: 
+  //   ∫∫∫ᵥ ∇ϕ dV = ∫∫ₐ ϕn̂ da
+  // so:
+  //   ∇ϕ = 1/V ∫∫ₐ ϕn̂ da
+  // so find flux out of an area, then divide by volume
+  // the area/volume is calculated for a circle that reaches halfway to neighboring vertices
+  x.fill(0);
+  y.fill(0);
+  z.fill(0);
+  var average_value = 0;
+  for (var i = 0, li = arrows.length; i < li; i++) {
+    arrow = arrows[i];
+    from = arrow[0];
+    to = arrow[1];
+    average_value = (scalar_field[to] - scalar_field[from]);
+    x[from] += average_value * dxhat[i] * PI * dlength[i]/neighbor_count[from];
+    y[from] += average_value * dyhat[i] * PI * dlength[i]/neighbor_count[from];
+    z[from] += average_value * dzhat[i] * PI * dlength[i]/neighbor_count[from];
+  }
+  var inverse_volume = 1 / (PI * (average_distance/2) * (average_distance/2));
+  for (var i = 0, li = scalar_field.length; i < li; i++) {
+    x[i] *= inverse_volume;
+    y[i] *= inverse_volume;
+    z[i] *= inverse_volume;
+  }
+  return result;
+};
 // The VectorField namespace provides operations over mathematical vector fields.
 // All fields are represented on raster objects, e.g. VectorRaster or Float32Raster
 var VectorField = {};
@@ -2101,11 +2195,16 @@ VectorField.mult_scalar_field = function(vector_field, scalar_field, result) {
  if ((vector_field.everything === void 0) || !(vector_field.everything instanceof Float32Array)) { throw "vector_field" + ' is not a vector raster'; }
  if (!(scalar_field instanceof Float32Array)) { throw "scalar_field" + ' is not a ' + "Float32Array"; }
  if ((result.everything === void 0) || !(result.everything instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
- var u = vector_field.everything;
- var out = result.everything;
- var length = scalar_field.length;
- for (var i=0, li=u.length; i<li; ++i) {
-     out[i] = u[i] * scalar_field[i%length];
+ var x1 = vector_field.x;
+ var y1 = vector_field.y;
+ var z1 = vector_field.z;
+ var x = result.x;
+ var y = result.y;
+ var z = result.z;
+ for (var i=0, li=x.length; i<li; ++i) {
+     x[i] = x1[i] * scalar_field[i];
+     y[i] = y1[i] * scalar_field[i];
+     z[i] = z1[i] * scalar_field[i];
  }
  return result;
 };

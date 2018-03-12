@@ -283,6 +283,16 @@ ScalarField.inv_field = function (scalar_field, result) {
   }
   return result;
 };
+ScalarField.sqrt_field = function (scalar_field, result) {
+  result = result || Float32Raster(scalar_field1.grid);
+  var sqrt = Math.sqrt;
+  ASSERT_IS_ARRAY(scalar_field, Float32Array)
+  ASSERT_IS_ARRAY(result, Float32Array)
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = sqrt(scalar_field[i]);
+  }
+  return result;
+};
 ScalarField.add_scalar = function (scalar_field, scalar, result) {
   result = result || Float32Raster(scalar_field.grid);
   ASSERT_IS_ARRAY(scalar_field, Float32Array)
@@ -387,7 +397,6 @@ ScalarField.gradient = function (scalar_field, result, scratch, scratch2) {
   ASSERT_IS_ARRAY(scalar_field, Float32Array)
   ASSERT_IS_ARRAY(scratch, Float32Array)
   ASSERT_IS_ARRAY(scratch2, Float32Array)
-  ASSERT_IS_ARRAY(scalar_field, Float32Array)
   ASSERT_IS_VECTOR_RASTER(result)
 
   var pos = scalar_field.grid.pos; 

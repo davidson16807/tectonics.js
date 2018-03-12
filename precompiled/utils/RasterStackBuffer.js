@@ -71,6 +71,7 @@ RasterStackBuffer.prototype.getVectorRaster = function(grid) {
 		x: new Float32Array(this.buffer, this.pos + byte_length_per_index * 0, length),
 		y: new Float32Array(this.buffer, this.pos + byte_length_per_index * 1, length),
 		z: new Float32Array(this.buffer, this.pos + byte_length_per_index * 2, length),
+		everything: new Float32Array(this.buffer, this.pos + byte_length_per_index * 0, 3*length),
 		grid: grid
 	};;
 	raster.grid = grid;
