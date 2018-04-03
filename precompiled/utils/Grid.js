@@ -114,7 +114,7 @@ Grid.prototype.getNearestId = function(vertex) {
 }
 
 Grid.prototype.getNearestIds = function(pos_field, result) {
-	result = result || Uint16Raster(this);
+	result = result || Uint16Raster(pos_field.grid);
 	return this._voronoi.getNearestIds(pos_field, result);
 }
 

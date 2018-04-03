@@ -328,19 +328,54 @@ TectonicsModeling.get_erosion = function(
 }
 
 
+var coarse_grid = new Grid( 
+	new THREE.IcosahedronGeometry(1, 2),
+	{ voronoi_generator: function(points, farthest_distance) {	
+			return VoronoiSphere.FromPos(points, farthest_distance)	
+		}
+	}
+	// { voronoi_generator: VoronoiSphere.FromPos }
+);
 // gets surface pressure of the asthenosphere by smoothing a field representing buoyancy
 TectonicsModeling.get_asthenosphere_pressure = function(buoyancy, pressure, scratch) {
-	pressure = pressure || Float32Raster(buoyancy.grid);
-	scratch = scratch || Float32Raster(buoyancy.grid);
+	var fine_grid = buoyancy.grid;
+	var fine_buoyancy = buoyancy;
+	var fine_pressure = pressure;
+
+	fine_pressure = fine_pressure || Float32Raster(fine_grid);
+	scratch = scratch || Float32Raster(fine_grid);
 
 	var diffuse = ScalarField.diffusion_by_constant;
+	
+	// NOTE: smoothing the field is done by iteratively subtracting the laplacian
+	// This is a very costly operation, and it's output is dependant on grid resolution,
+	// so we resample buoyancy onto to a constantly defined, coarse grid 
+	// This way, we guarantee performant behavior that's invariant to resolution.
 
-	var smoothing_iterations =  15;
-	Float32Raster.copy(buoyancy, pressure);
-	for (var i=0; i<smoothing_iterations; ++i) {
-		diffuse(pressure, 1, pressure, scratch);
+	// convert to coarse resolution
+	var coarse_ids = fine_grid.getNearestIds(coarse_grid.pos);
+    var coarse_buoyancy = Float32Raster.get_ids(fine_buoyancy, coarse_ids);
+
+    var coarse_pressure = coarse_buoyancy;
+
+	// smooth at coarse resolution
+	for (var i=0; i<15; ++i) {
+		diffuse(coarse_pressure, 1, coarse_pressure, scratch);
 	}
-	return pressure;
+
+	// convert back to fine resolution
+	var fine_ids = coarse_grid.getNearestIds(fine_grid.pos);
+    Float32Raster.get_ids (coarse_pressure, fine_ids, fine_pressure);
+
+	// NOTE: rescaling back to fine_grid resolution causes "stair step" looking results
+	// It's important that the field be smooth because we eventually want its laplacian,
+	// so we smooth it a second time, this time using the fine_grid resolution
+
+	// smooth at fine resolution
+	for (var i=0; i<5; ++i) {
+		diffuse(fine_pressure, 1, fine_pressure, scratch);
+	}
+	return fine_pressure;
 }
 
 // gets surface velocity of the asthenosphere as the gradient of pressure

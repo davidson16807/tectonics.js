@@ -78,6 +78,21 @@ experimentalDisplays.buoyancy 	= new ScalarHeatDisplay( { min: '-2.', max: '0.',
 			return buoyancy;
 		}
 	} );
+experimentalDisplays.buoyancy_smoothed 	= new ScalarHeatDisplay( { min: '-2.', max: '0.', 
+		getField: function (world, buoyancy) {
+			Crust.get_buoyancy(world.density, world.material_density, world.surface_gravity, buoyancy);
+			var pressure = TectonicsModeling.get_asthenosphere_pressure(buoyancy);
+			return pressure;
+		}
+	} );
+experimentalDisplays.buoyancy_smoothed_laplacian = new VectorFieldDisplay( {  
+    getField: function (world) { 
+			var buoyancy = Crust.get_buoyancy(world.density, world.material_density, world.surface_gravity);
+			var pressure = TectonicsModeling.get_asthenosphere_pressure(buoyancy);
+			var velocity = TectonicsModeling.get_asthenosphere_velocity(pressure);
+			return velocity;
+    }
+  } ); 
 experimentalDisplays.speed 	= new ScalarHeatDisplay( { min: '0.', max: '1.', 
 		getField: function (world, result) {
 			var plate = world.plates[0];
