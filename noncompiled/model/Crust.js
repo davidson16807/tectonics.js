@@ -278,6 +278,9 @@ Crust.get_thickness = function(crust, material_density, thickness) {
 	return thickness;
 }
 
+// returns net buoyancy force, in kiloNewtons
+// buoyancy is a scalar indicating force applied along the height axis
+// positive buoyancy indicates floating, negative buoyancy indicates sinking
 Crust.get_buoyancy = function (density, material_density, surface_gravity, buoyancy) {
 	buoyancy = buoyancy || Float32Raster(density.grid);
 

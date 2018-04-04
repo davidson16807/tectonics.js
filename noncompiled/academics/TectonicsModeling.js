@@ -425,7 +425,6 @@ TectonicsModeling.get_plate_velocity = function(plate_mask, buoyancy, material_v
 	var effective_area = Math.pow(thickness * length * width, 2/3); // m^2
 	var shape_parameter = 0.725; // unitless
 	var slab_dip_angle_constant = 4.025; // unitless
-	var material_viscosity = { mantle: 1.57e17 }; // kiloPascal*seconds, AKA kiloNewton * seconds per m^2
 	var SECONDS_PER_MILLION_EARTH_YEARS = 60*60*365.25*1e6; // seconds/My
 	var world_radius = 6367e3; // meters
 

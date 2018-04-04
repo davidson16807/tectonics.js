@@ -3264,7 +3264,6 @@ VectorImageAnalysis.image_segmentation = function(vector_field, segment_num, min
   var scratch_ui8_1 = scratch_ui8_1 || Uint8Raster(vector_field.grid);
   var scratch_ui8_2 = scratch_ui8_2 || Uint8Raster(vector_field.grid);
   var scratch_ui8_3 = scratch_ui8_3 || Uint8Raster(vector_field.grid);
-  var segment_num = segment_num;
   var max_iterations = 2 * segment_num;
   var magnitude = VectorField.magnitude(vector_field);
   var segments = result || Uint8Raster(vector_field.grid);
@@ -3278,7 +3277,7 @@ VectorImageAnalysis.image_segmentation = function(vector_field, segment_num, min
   var sum = Uint8Dataset.sum;
   var max_id = Float32Raster.max_id;
   // step 1: run flood fill algorithm several times
-  for (var i=1, j=0; i<7 && j<max_iterations; j++) {
+  for (var i=1, j=0; i<segment_num && j<max_iterations; j++) {
     magic_wand(vector_field, max_id(magnitude), occupied, segment, scratch_ui8_3);
     fill_f32 (magnitude, 0, segment, magnitude);
     fill_ui8 (occupied, 0, segment, occupied);
