@@ -108,6 +108,8 @@ experimentalDisplays.plates = new ScalarHeatDisplay( { min: '0.', max: '7.',
 var PLATE_ID = 0;
 experimentalDisplays.velocity = new VectorFieldDisplay( {  
     getField: function (world) { 
+    		return world.plates[PLATE_ID].velocity;
+    		
 			var velocity = TectonicsModeling.get_plate_velocity(world.plates[PLATE_ID].mask, world.plates[PLATE_ID].buoyancy, world.material_viscosity);
 			var speed = VectorField.magnitude(velocity);
 			return velocity

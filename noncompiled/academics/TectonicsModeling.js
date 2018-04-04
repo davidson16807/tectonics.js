@@ -497,8 +497,10 @@ TectonicsModeling.get_plate_rotation_matrix = function(plate_velocity, center_of
 	var center_of_plate_angular_velocity = scratchpad.getVectorRaster(grid);
 	VectorField.cross_vector_field 	(plate_velocity, center_of_plate_offset, 	center_of_plate_angular_velocity);
 	VectorField.div_scalar_field 	(center_of_plate_angular_velocity, center_of_plate_distance2, center_of_plate_angular_velocity);
+
+	var center_of_world_offset = grid.pos;
 	var center_of_world_angular_velocity = scratchpad.getVectorRaster(grid);
-	VectorField.cross_vector_field 	(plate_velocity, grid.pos, 				center_of_world_angular_velocity);
+	VectorField.cross_vector_field 	(plate_velocity, center_of_world_offset, 	center_of_world_angular_velocity);
 	VectorField.div_scalar_field 	(center_of_world_angular_velocity, center_of_plate_distance2, center_of_world_angular_velocity);
 
 	var plate_velocity_magnitude = scratchpad.getFloat32Raster(grid);
