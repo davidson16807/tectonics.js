@@ -341,12 +341,13 @@ TectonicsModeling.get_asthenosphere_pressure = function(buoyancy, pressure, scra
 	fine_pressure = fine_pressure || Float32Raster(fine_grid);
 	scratch = scratch || Float32Raster(fine_grid);
 
-	var diffuse = ScalarField.diffusion_by_constant;
+	ScalarField.mult_scalar(fine_buoyancy, -1, fine_pressure);
 
 	// NOTE: smoothing the field is done by iteratively subtracting the laplacian
 	// This is a very costly operation, and it's output is dependant on grid resolution,
 	// so we resample buoyancy onto to a constantly defined, coarse grid 
 	// This way, we guarantee performant behavior that's invariant to resolution.
+	var diffuse = ScalarField.diffusion_by_constant;
 
 	// smooth at fine resolution a few times so that coarse resolution does not capture random details
 	for (var i=0; i<3; ++i) {
@@ -355,9 +356,7 @@ TectonicsModeling.get_asthenosphere_pressure = function(buoyancy, pressure, scra
 
 	// convert to coarse resolution
 	var coarse_ids = fine_grid.getNearestIds(coarse_grid.pos);
-    var coarse_buoyancy = Float32Raster.get_ids(fine_buoyancy, coarse_ids);
-
-    var coarse_pressure = coarse_buoyancy;
+    var coarse_pressure = Float32Raster.get_ids(fine_pressure, coarse_ids);
 
 	// smooth at coarse resolution
 	for (var i=0; i<30; ++i) {

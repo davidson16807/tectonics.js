@@ -78,7 +78,7 @@ experimentalDisplays.buoyancy 	= new ScalarHeatDisplay( { min: '-2.', max: '0.',
 			return buoyancy;
 		}
 	} );
-experimentalDisplays.buoyancy_smoothed 	= new ScalarHeatDisplay( { min: '-2.', max: '0.', 
+experimentalDisplays.buoyancy_smoothed 	= new ScalarHeatDisplay( { min: '2.', max: '0.', 
 		getField: function (world, buoyancy) {
 			Crust.get_buoyancy(world.density, world.material_density, world.surface_gravity, buoyancy);
 			var pressure = TectonicsModeling.get_asthenosphere_pressure(buoyancy);
