@@ -59,13 +59,6 @@ experimentalDisplays.motion_test = new VectorFieldDisplay( {
     }  
   } ); 
 
-experimentalDisplays.velocity = new VectorFieldDisplay( {  
-    getField: function (world) { 
-		var velocity = TectonicsModeling.get_plate_velocity(world.plates[0].mask, world.plates[0].buoyancy, world.material_viscosity);
-		var speed = VectorField.magnitude(velocity);
-
-    }  
-  } ); 
 
 experimentalDisplays.plate0 	= new ScalarHeatDisplay( { min: '0.', max: '1.', 
 		getField: function (world) {
@@ -78,7 +71,7 @@ experimentalDisplays.buoyancy 	= new ScalarHeatDisplay( { min: '-2.', max: '0.',
 			return buoyancy;
 		}
 	} );
-experimentalDisplays.buoyancy_smoothed 	= new ScalarHeatDisplay( { min: '2.', max: '0.', 
+experimentalDisplays.buoyancy_smoothed 	= new ScalarHeatDisplay( { min: '-2.', max: '0.', 
 		getField: function (world, buoyancy) {
 			Crust.get_buoyancy(world.density, world.material_density, world.surface_gravity, buoyancy);
 			var pressure = TectonicsModeling.get_asthenosphere_pressure(buoyancy);
@@ -112,6 +105,14 @@ experimentalDisplays.plates = new ScalarHeatDisplay( { min: '0.', max: '7.',
 			return top_plate_map;
 		}
 	} );
+var PLATE_ID = 0;
+experimentalDisplays.velocity = new VectorFieldDisplay( {  
+    getField: function (world) { 
+			var velocity = TectonicsModeling.get_plate_velocity(world.plates[PLATE_ID].mask, world.plates[PLATE_ID].buoyancy, world.material_viscosity);
+			var speed = VectorField.magnitude(velocity);
+			return velocity
+    }
+  } ); 
 experimentalDisplays.speed 	= new ScalarHeatDisplay( { min: '0.', max: '1.', 
 		getField: function (world, result) {
 			var plate = world.plates[0];
