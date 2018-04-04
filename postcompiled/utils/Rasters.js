@@ -2494,10 +2494,13 @@ VectorRasterGraphics.magic_wand_select = function function_name(vector_raster, s
  var neighbors = [];
  var is_similar = 0;
  var threshold = Math.cos(Math.PI * 60/180);
+ var start_x = x[start_id];
+ var start_y = y[start_id];
+ var start_z = z[start_id];
  while(searching.length > 0){
   id = searching.shift();
   is_similar = similarity (x[id], y[id], z[id],
-         x[start_id], y[start_id], z[start_id]) > threshold;
+         start_x, start_y, start_z) > threshold;
   if (is_similar) {
    grouped[id] = 1;
    neighbors = neighbor_lookup[id];

@@ -329,12 +329,8 @@ TectonicsModeling.get_erosion = function(
 
 
 var coarse_grid = new Grid( 
-	new THREE.IcosahedronGeometry(1, 2),
-	{ voronoi_generator: function(points, farthest_distance) {	
-			return VoronoiSphere.FromPos(points, farthest_distance)	
-		}
-	}
-	// { voronoi_generator: VoronoiSphere.FromPos }
+	new THREE.IcosahedronGeometry(1, 4),
+	{ voronoi_generator: VoronoiSphere.FromPos }
 );
 // gets surface pressure of the asthenosphere by smoothing a field representing buoyancy
 TectonicsModeling.get_asthenosphere_pressure = function(buoyancy, pressure, scratch) {
@@ -346,11 +342,16 @@ TectonicsModeling.get_asthenosphere_pressure = function(buoyancy, pressure, scra
 	scratch = scratch || Float32Raster(fine_grid);
 
 	var diffuse = ScalarField.diffusion_by_constant;
-	
+
 	// NOTE: smoothing the field is done by iteratively subtracting the laplacian
 	// This is a very costly operation, and it's output is dependant on grid resolution,
 	// so we resample buoyancy onto to a constantly defined, coarse grid 
 	// This way, we guarantee performant behavior that's invariant to resolution.
+
+	// smooth at fine resolution a few times so that coarse resolution does not capture random details
+	for (var i=0; i<3; ++i) {
+		diffuse(fine_pressure, 1, fine_pressure, scratch);
+	}
 
 	// convert to coarse resolution
 	var coarse_ids = fine_grid.getNearestIds(coarse_grid.pos);
@@ -359,7 +360,7 @@ TectonicsModeling.get_asthenosphere_pressure = function(buoyancy, pressure, scra
     var coarse_pressure = coarse_buoyancy;
 
 	// smooth at coarse resolution
-	for (var i=0; i<15; ++i) {
+	for (var i=0; i<30; ++i) {
 		diffuse(coarse_pressure, 1, coarse_pressure, scratch);
 	}
 
@@ -372,7 +373,7 @@ TectonicsModeling.get_asthenosphere_pressure = function(buoyancy, pressure, scra
 	// so we smooth it a second time, this time using the fine_grid resolution
 
 	// smooth at fine resolution
-	for (var i=0; i<5; ++i) {
+	for (var i=0; i<3; ++i) {
 		diffuse(fine_pressure, 1, fine_pressure, scratch);
 	}
 	return fine_pressure;
