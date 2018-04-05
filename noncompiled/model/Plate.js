@@ -41,8 +41,8 @@ Plate.prototype.move = function(timestep){
 	var center_of_mass = TectonicsModeling.get_plate_center_of_mass	(this.total_mass, this.mask);
 	var rotation_matrix = TectonicsModeling.get_plate_rotation_matrix(this.velocity, center_of_mass, timestep);
 
-    this.increment = this.angularSpeed * timestep; 
-    var rotation_matrix = Matrix.RotationAboutAxis( this.eulerPole.x, this.eulerPole.y, this.eulerPole.z, this.angularSpeed * timestep ); 
+    // this.increment = this.angularSpeed * timestep; 
+    // var rotation_matrix = Matrix.RotationAboutAxis( this.eulerPole.x, this.eulerPole.y, this.eulerPole.z, this.angularSpeed * timestep ); 
 
 	Matrix.mult_matrix(this.local_to_global_matrix, rotation_matrix, this.local_to_global_matrix);
 	Matrix.invert(this.local_to_global_matrix, this.global_to_local_matrix);

@@ -287,9 +287,9 @@ Vector.magnitude = function(x, y, z) {
 Vector.normalize = function(x, y, z, result) {
   result = result || Vector()
   var magnitude = Math.sqrt(x*x + y*y + z*z);
-  result.x = x/magnitude;
-  result.y = y/magnitude;
-  result.z = z/magnitude;
+  result.x = x/(magnitude||1);
+  result.y = y/(magnitude||1);
+  result.z = z/(magnitude||1);
   return result;
 }
 Vector.cross = function(ax, ay, az, bx, by, bz, result) {

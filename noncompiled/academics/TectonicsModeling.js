@@ -489,34 +489,40 @@ TectonicsModeling.get_plate_rotation_matrix = function(plate_velocity, center_of
 	// so we track both rotations
 
 	// find distance to center of plate
+	var center_of_world_offset = grid.pos;
+	var center_of_world_distance2 = scratchpad.getFloat32Raster(grid);
+	VectorField.dot_vector_field 	(center_of_world_offset, center_of_world_offset, center_of_world_distance2);
+
 	var center_of_plate_offset = scratchpad.getVectorRaster(grid);
-	VectorField.sub_vector 			(grid.pos, center_of_plate,			center_of_plate_offset);
 	var center_of_plate_distance2 = scratchpad.getFloat32Raster(grid);
 	VectorField.dot_vector_field 	(center_of_plate_offset, center_of_plate_offset, center_of_plate_distance2);
+
+	VectorField.sub_vector 			(grid.pos, center_of_plate,			center_of_plate_offset);
 
 	var center_of_plate_angular_velocity = scratchpad.getVectorRaster(grid);
 	VectorField.cross_vector_field 	(plate_velocity, center_of_plate_offset, 	center_of_plate_angular_velocity);
 	VectorField.div_scalar_field 	(center_of_plate_angular_velocity, center_of_plate_distance2, center_of_plate_angular_velocity);
 
-	var center_of_world_offset = grid.pos;
 	var center_of_world_angular_velocity = scratchpad.getVectorRaster(grid);
 	VectorField.cross_vector_field 	(plate_velocity, center_of_world_offset, 	center_of_world_angular_velocity);
-	VectorField.div_scalar_field 	(center_of_world_angular_velocity, center_of_plate_distance2, center_of_world_angular_velocity);
+	VectorField.div_scalar_field 	(center_of_world_angular_velocity, center_of_world_distance2, center_of_world_angular_velocity);
 
 	var plate_velocity_magnitude = scratchpad.getFloat32Raster(grid);
 	VectorField.magnitude 			(plate_velocity, 					plate_velocity_magnitude);
 	var is_pulled = scratchpad.getUint8Raster(grid);
-	ScalarField.gt_scalar 			(plate_velocity_magnitude, 0.01,	is_pulled);
+	ScalarField.gt_scalar 			(plate_velocity_magnitude, 1e-4,	is_pulled);
+// console.log(Uint8Dataset.sum(is_pulled))
 
 	var center_of_plate_angular_velocity_average = VectorDataset.weighted_average(center_of_plate_angular_velocity, is_pulled);
 	var center_of_world_angular_velocity_average = VectorDataset.weighted_average(center_of_world_angular_velocity, is_pulled);
 
-	var center_of_plate_rotation_vector = Vector.mult_scalar(center_of_plate_angular_velocity_average, timestep);
-	var center_of_world_rotation_vector = Vector.mult_scalar(center_of_world_angular_velocity_average, timestep);
+	var center_of_plate_rotation_vector = Vector.mult_scalar(center_of_plate_angular_velocity_average.x, center_of_plate_angular_velocity_average.y, center_of_plate_angular_velocity_average.z, timestep);
+	var center_of_world_rotation_vector = Vector.mult_scalar(center_of_world_angular_velocity_average.x, center_of_world_angular_velocity_average.y, center_of_world_angular_velocity_average.z, timestep);
+// debugger;
 
-	// TODO: combine rotations into a single matrix
-	var center_of_plate_rotation_matrix = Matrix.FromRotationVector(center_of_plate_rotation_vector);
-	var center_of_world_rotation_matrix = Matrix.FromRotationVector(center_of_world_rotation_vector);
+	// TODO: negation shouldn't theoretically be needed! find out where the discrepancy lies and fix it the proper way! 
+	var center_of_plate_rotation_matrix = Matrix.FromRotationVector(-center_of_plate_rotation_vector.x, -center_of_plate_rotation_vector.y, -center_of_plate_rotation_vector.z);
+	var center_of_world_rotation_matrix = Matrix.FromRotationVector(-center_of_world_rotation_vector.x, -center_of_world_rotation_vector.y, -center_of_world_rotation_vector.z);
 
 	var rotation_matrix = Matrix.mult_matrix(center_of_plate_rotation_matrix, center_of_world_rotation_matrix);
 
