@@ -397,7 +397,7 @@ RasterStackBuffer.prototype.getVectorRaster = function(grid) {
  this.pos = 4*Math.ceil(new_pos/4);
  return raster;
 };
-RasterStackBuffer.scratchpad = new RasterStackBuffer(1e6);
+RasterStackBuffer.scratchpad = new RasterStackBuffer(1e7);
 // Test code:
 // 
 // buffer = new RasterStackBuffer(1e6)
