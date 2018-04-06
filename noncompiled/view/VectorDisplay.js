@@ -131,16 +131,9 @@ vectorDisplays.density_gradient	= new VectorFieldDisplay( {
 		return gradient;
 	}
 } );
-vectorDisplays.subductability_gradient	= new VectorFieldDisplay( { 
-	getField: function (plate) {
-		var subductability = plate.subductability;
-		var gradient = ScalarField.gradient(subductability);
-		return gradient;
-	}
-} );
-vectorDisplays.subductability_smoothed = new VectorFieldDisplay( { 
+vectorDisplays.density_smoothed = new VectorFieldDisplay( { 
 		getField: function (plate) {
-			var field = getSubductabilitySmoothed(plate);
+			var field = getdensitySmoothed(plate);
 			var gradient = ScalarField.gradient(field);
 			return gradient;
 		} 
@@ -166,10 +159,10 @@ vectorDisplays.plate_velocity = new VectorFieldDisplay( {
     getField: function (world) { 
       var grid = world.grid; 
       var plates = world.plates; 
-      var plate_map = world.plate_map; 
+      var plate_map = world.top_plate_map; 
       var plate_velocity = VectorRaster(grid); 
       var all_velocities = VectorRaster(grid); 
-      var add_term = VectorField.add_vector_field_term; 
+      var add_term = VectorField.add_vector_field_and_scalar_field_term; 
       var cross = VectorField.cross_vector; 
       var eq = Uint8Field.eq_scalar;
       var pos = grid.pos; 
@@ -184,6 +177,7 @@ vectorDisplays.plate_velocity = new VectorFieldDisplay( {
       return all_velocities; 
     }  
   } ); 
+
 
 function DisabledVectorDisplay(options) {}
 DisabledVectorDisplay.prototype.addTo = function(mesh) {

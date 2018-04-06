@@ -195,8 +195,9 @@ ScalarField.add_field_term = function (scalar_field1, scalar_field2, scalar_fiel
   ASSERT_IS_ANY_ARRAY(scalar_field2) 
   ASSERT_IS_ANY_ARRAY(scalar_field3) 
   ASSERT_IS_ARRAY(result, Float32Array)
+  var length = scalar_field3.length;
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = scalar_field1[i] + scalar_field3[i] * scalar_field2[i];
+     result[i] = scalar_field1[i] + scalar_field3[i%length] * scalar_field2[i]; 
   }
   return result;
 };
@@ -270,6 +271,25 @@ ScalarField.div_field = function (scalar_field1, scalar_field2, result) {
   ASSERT_IS_ARRAY(result, Float32Array)
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] / scalar_field2[i];
+  }
+  return result;
+};
+ScalarField.inv_field = function (scalar_field, result) {
+  result = result || Float32Raster(scalar_field1.grid);
+  ASSERT_IS_ARRAY(scalar_field, Float32Array)
+  ASSERT_IS_ARRAY(result, Float32Array)
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = 1 / scalar_field[i];
+  }
+  return result;
+};
+ScalarField.sqrt_field = function (scalar_field, result) {
+  result = result || Float32Raster(scalar_field1.grid);
+  var sqrt = Math.sqrt;
+  ASSERT_IS_ARRAY(scalar_field, Float32Array)
+  ASSERT_IS_ARRAY(result, Float32Array)
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = sqrt(scalar_field[i]);
   }
   return result;
 };
@@ -377,7 +397,6 @@ ScalarField.gradient = function (scalar_field, result, scratch, scratch2) {
   ASSERT_IS_ARRAY(scalar_field, Float32Array)
   ASSERT_IS_ARRAY(scratch, Float32Array)
   ASSERT_IS_ARRAY(scratch2, Float32Array)
-  ASSERT_IS_ARRAY(scalar_field, Float32Array)
   ASSERT_IS_VECTOR_RASTER(result)
 
   var pos = scalar_field.grid.pos; 

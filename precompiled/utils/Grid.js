@@ -35,17 +35,17 @@ function Grid(template, options){
 	this.buffer_array_to_cell = buffer_array_to_cell;
 
 	//Precompute neighbors for O(1) lookups
-	var neighbor_lookup = this.template.vertices.map(function(vertex) { return new buckets.Set()});
+	var neighbor_lookup = this.template.vertices.map(function(vertex) { return {}});
 	for(var i=0, il = this.template.faces.length, faces = this.template.faces; i<il; i++){
 		face = faces[i];
-		neighbor_lookup[face.a].add(face.b);
-		neighbor_lookup[face.a].add(face.c);
-		neighbor_lookup[face.b].add(face.a);
-		neighbor_lookup[face.b].add(face.c);
-		neighbor_lookup[face.c].add(face.a);
-		neighbor_lookup[face.c].add(face.b);
+		neighbor_lookup[face.a][face.b] = face.b;
+		neighbor_lookup[face.a][face.c] = face.c;
+		neighbor_lookup[face.b][face.a] = face.a;
+		neighbor_lookup[face.b][face.c] = face.c;
+		neighbor_lookup[face.c][face.a] = face.a;
+		neighbor_lookup[face.c][face.b] = face.b;
 	}
-	neighbor_lookup = neighbor_lookup.map(function(set) { return set.toArray(); });
+	neighbor_lookup = neighbor_lookup.map(function(set) { return Object.values(set); });
 	this.neighbor_lookup = neighbor_lookup;
 
 	var neighbor_count = Uint8Raster(this);
@@ -114,7 +114,7 @@ Grid.prototype.getNearestId = function(vertex) {
 }
 
 Grid.prototype.getNearestIds = function(pos_field, result) {
-	result = result || Uint16Raster(this);
+	result = result || Uint16Raster(pos_field.grid);
 	return this._voronoi.getNearestIds(pos_field, result);
 }
 

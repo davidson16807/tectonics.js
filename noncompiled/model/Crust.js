@@ -1,101 +1,296 @@
 'use strict';
 
-// A "Crust" is defined as a set of rasters that represent a planet's crust
+// A "Crust" is defined as a tuple of rasters that represent a planet's crust
 // The Crust namespace provides methods that extend the functionality of rasters.js to Crust objects
 // It also provides functions for modeling properties of Crust
 function Crust(params) {
-	this.uuid = params['uuid'] || Uuid.create();
 	this.grid = params['grid'] || stop('missing parameter: "grid"');
 
-	// TODO:
-	// * rename sima/sial to subductable/unsubductable
-	// * record sima/sial in metric tons, not meters thickness
-	// * switch densities to T/m^3
+	var length = this.grid.vertices.length;
+
+    var buffer = params['buffer'] || new ArrayBuffer(8 * Float32Array.BYTES_PER_ELEMENT * length);
+    this.buffer = buffer;
+
+    this.sediment 			= new Float32Array(buffer, 0 * Float32Array.BYTES_PER_ELEMENT * length, length);
+    this.sedimentary		= new Float32Array(buffer, 1 * Float32Array.BYTES_PER_ELEMENT * length, length);
+    this.metamorphic		= new Float32Array(buffer, 2 * Float32Array.BYTES_PER_ELEMENT * length, length);
+    this.felsic_plutonic 	= new Float32Array(buffer, 3 * Float32Array.BYTES_PER_ELEMENT * length, length);
+    this.felsic_volcanic 	= new Float32Array(buffer, 4 * Float32Array.BYTES_PER_ELEMENT * length, length);
+    this.mafic_volcanic 	= new Float32Array(buffer, 5 * Float32Array.BYTES_PER_ELEMENT * length, length);
+    this.mafic_plutonic 	= new Float32Array(buffer, 6 * Float32Array.BYTES_PER_ELEMENT * length, length);
+    this.age  				= new Float32Array(buffer, 7 * Float32Array.BYTES_PER_ELEMENT * length, length);
+
+    this.conserved_array 	= new Float32Array(buffer, 0, 5 * length);
+    this.mass_array 		= new Float32Array(buffer, 0, 7 * length);
+    this.everything 		= new Float32Array(buffer);
+
+    this.all_pools = [ 
+    	this.sediment,
+		this.sedimentary,
+		this.metamorphic,
+		this.felsic_plutonic,
+		this.felsic_volcanic,
+		this.mafic_volcanic,
+		this.mafic_plutonic,
+		this.age,
+	];
+
+	this.mass_pools = [ 
+    	this.sediment,
+		this.sedimentary,
+		this.metamorphic,
+		this.felsic_plutonic,
+		this.felsic_volcanic,
+		this.mafic_volcanic,
+		this.mafic_plutonic,
+	];
+
+	this.conserved_pools = [ 
+    	this.sediment,
+		this.sedimentary,
+		this.metamorphic,
+		this.felsic_plutonic,
+		this.felsic_volcanic,
+	];
+
+	this.nonconserved_pools = [ 
+		this.mafic_volcanic,
+		this.mafic_plutonic,
+		this.age,
+	];
 
 	// The following are the most fundamental fields to the tectonics model:
-
-	this.sial = Float32Raster(this.grid);
-	// "sial" is the thickness of the buoyant, unsubductable component of the crust
-	// AKA "sial", "felsic", or "continental" crust
-	// Why don't we call it "continental" or some other name? Two reasons:
-	//  1.) programmers will immediately understand what it does
-	//  2.) we may want this model to simulate planets where alternate names don't apply, e.g. Pluto
-	// sial is a conserved quantity - it is never created or destroyed without our explicit say-so
-	// This is to provide our model with a way to check for errors
-
-	this.sima = Float32Raster(this.grid);
-	// "sima" is the thickness of the denser, subductable component of the crust
-	// AKA "sima", "mafsic", or "oceanic" crust
-	// Why don't we call it "oceanic" or some other name? Two reasons:
-	//  1.) programmers will immediately understand what it does
-	//  2.) we may want this model to simulate planets where alternate names don't apply, e.g. Pluto
-
-	this.age = Float32Raster(this.grid);
-	// the age of the subductable component of the crust
+	//
+	// "felsic" is the mass of the buoyant, unsubductable igneous component of the crust
+	// AKA "sial", or "continental" crust
+	// 
+	// "sediment", "sedimentary", and "metamorphic" are forms of felsic rock that have been converted by weathering, lithification, or metamorphosis
+	// together with felsic, they form a conserved quantity - felsic type rock is never created or destroyed without our explicit say-so
+	// This is done to provide our model with a way to check for errors
+	//
+	// "mafic" is the mass of the denser, subductable igneous component of the crust
+	// AKA "sima", or "oceanic" crust
+	// mafic never undergoes conversion to the other rock types (sediment, sedimentary, or metamorphic)
+	// this is due to a few reasons:
+	//    1.) it's not performant
+	//    2.) mafic is not conserved, so it's not as important to get right
+	//    3.) mafic remains underwater most of the time so it isn't very noticeable
+	//
+	// "volcanic" rock is rock that was created by volcanic resurfacing
+	// "plutonic" rock is rock that has 
+	// by tracking plutonic/volcanic rock, we can identify the specific kind of rock that's in a region:
+	// 
+	// 			volcanic 	plutonic
+	// 	felsic 	rhyolite 	granite
+	// 	mafic 	basalt 		gabbro
+	// 
+	//
+	// "age" is the age of the subductable, mafic component of the crust
 	// we don't track the age of unsubductable crust because it doesn't affect model behavior
-
-
-	// The following are fields that are derived from other fields:
-	this.displacement = Float32Raster(this.grid);
-	// "displacement is the height of the crust relative to an arbitrary datum level
-	// It is not called "elevation" to emphasize that it is not relative to sea level
-	this.thickness = Float32Raster(this.grid);
-	// the thickness of the crust in km
-	this.density = Float32Raster(this.grid);
-	// the average density of the crust, in kg/m^3
 }
+
+
+Crust.copy = function(source, destination) {
+	destination.everything.set(source.everything);
+}
+Crust.reset = function(crust) {
+	crust.everything.fill(0);
+}
+Crust.mult_field = function(crust, field, result_crust) {
+	var input = crust.everything;
+	var output = result_crust.everything;
+
+	var length = field.length;
+	for (var i=0, li=input.length; i<li; ++i) {
+	    output[i] = input[i] * field[i%length];
+	}
+}
+Crust.add_delta = function(crust, crust_delta, result_crust) {
+	ScalarField.add_field(crust.everything, crust_delta.everything, result_crust.everything);
+}
+Crust.assert_conserved_delta = function(crust_delta, threshold) {
+	ScalarTransport.assert_conserved_quantity_delta(crust_delta.conserved_array, threshold);
+}
+
+Crust.get_average_conserved_per_cell = function(crust, thickness) {  
+	return Float32Dataset.sum(crust.conserved_array) / crust.grid.vertices.length
+}
+Crust.get_conserved_mass = function(crust, mass) {  
+	mass = mass || Float32Raster(crust.grid);
+	mass.fill(0);
+
+	var pools = crust.conserved_array;
+	var length = mass.length;
+	for (var i=0, li=pools.length; i<li; ++i) {
+		mass[i%length] += pools[i];
+	}
+	
+	return mass; 
+}
+Crust.get_total_mass = function(crust, material_density, mass) {  
+	mass = mass || Float32Raster(crust.grid);
+	mass.fill(0);
+
+	var pools = crust.mass_array;
+	var length = mass.length;
+	for (var i=0, li=pools.length; i<li; ++i) {
+		mass[i%length] += pools[i];
+	}
+	
+	return mass; 
+}
+Crust.get_density = function(mass, thickness, default_density, density) {
+	for (var i = 0, li = density.length; i < li; i++) { 
+        density[i] = thickness[i] > 0? mass[i] / thickness[i] : default_density; 
+    }
+}
+
+
+
 Crust.get_value = function(crust, i) {
-	return new RockColumn({
-		displacement 	:crust.displacement[i],
-		thickness 		:crust.thickness[i],
-		density 		:crust.density[i],
-		sima 			:crust.sima[i],
-		sial 			:crust.sial[i],
-		age 			:crust.age[i],
-	});
+	var column = new RockColumn();
+	var crust_pools = crust.all_pools;
+	var column_pools = column.all_pools;
+	for (var j = 0, lj = crust_pools.length; j < lj; ++j) {
+		column_pools[j] = crust_pools[j][i];
+	}
+	return column;
 }
 Crust.set_value = function(crust, i, rock_column) {
-	crust.displacement[i]	= rock_column.displacement;
-	crust.thickness[i] 		= rock_column.thickness;
-	crust.density[i] 		= rock_column.density;
-	crust.sima[i] 			= rock_column.sima;
-	crust.sial[i] 			= rock_column.sial;
-	crust.age[i] 			= rock_column.age;
-}
-Crust.copy = function(source, destination) {
-	var copy = Float32Raster.copy;
-	copy(source.displacement, destination.displacement);
-	copy(source.thickness, destination.thickness);
-	copy(source.density, destination.density);
-	copy(source.sima, destination.sima);
-	copy(source.sial, destination.sial);
-	copy(source.age, destination.age);
+	var crust_pools = crust.all_pools;
+	var column_pools = rock_column.all_pools;
+	for (var j = 0, lj = crust_pools.length; j < lj; ++j) {
+		crust_pools[j][i] = column_pools[j];
+	}
 }
 Crust.fill = function(crust, rock_column) {
-	var fill = Float32Raster.fill;
-	fill(crust.displacement, rock_column.displacement);
-	fill(crust.thickness, rock_column.thickness);
-	fill(crust.density, rock_column.density);
-	fill(crust.sima, rock_column.sima);
-	fill(crust.sial, rock_column.sial);
-	fill(crust.age, rock_column.age);
-}
-Crust.copy_into_selection = function(crust, copied_crust, selection_raster, result_crust) {
-	var copy = Float32RasterGraphics.copy_into_selection;
-	copy(source.displacement, copied_crust.displacement, selection_raster, result_crust.displacement);
-	copy(source.thickness, copied_crust.thickness, selection_raster, result_crust.thickness);
-	copy(source.density, copied_crust.density, selection_raster, result_crust.density);
-	copy(source.sima, copied_crust.sima, selection_raster, result_crust.sima);
-	copy(source.sial, copied_crust.sial, selection_raster, result_crust.sial);
-	copy(source.age, copied_crust.age, selection_raster, result_crust.age);
+	var f = Float32Raster.fill;
+	var crust_pools = crust.all_pools;
+	var column_pools = rock_column.all_pools;
+	for (var i = 0, li = crust_pools.length; i < li; ++i) {
+		f(crust_pools[i], column_pools[i]);
+	}
 }
 Crust.fill_into_selection = function(crust, rock_column, selection_raster, result_crust) {
-	var fill = Float32RasterGraphics.fill_into_selection;
-	var fill_ui8 = Uint8Raster.fill;
-	fill(crust.displacement, rock_column.displacement, selection_raster, result_crust.displacement);
-	fill(crust.thickness, rock_column.thickness, selection_raster, result_crust.thickness);
-	fill(crust.density, rock_column.density, selection_raster, result_crust.density);
-	fill(crust.sima, rock_column.sima, selection_raster, result_crust.sima);
-	fill(crust.sial, rock_column.sial, selection_raster, result_crust.sial);
-	fill(crust.age, rock_column.age, selection_raster, result_crust.age);
+	var f = Float32RasterGraphics.fill_into_selection;
+	var crust_pools = crust.all_pools;
+	var column_pools = rock_column.all_pools;
+	var result_pools = result_crust.all_pools;
+	for (var i = 0, li = crust_pools.length; i < li; ++i) {
+		f(crust_pools[i], column_pools[i], selection_raster, result_pools[i]);
+	}
+}
+Crust.copy_into_selection = function(crust1, crust2, selection_raster, result_crust) {
+	var f = Float32RasterGraphics.copy_into_selection;
+	var crust1_pools = crust1.all_pools;
+	var crust2_pools = crust2.all_pools;
+	var result_pools = result_crust.all_pools;
+	for (var i = 0, li = crust1_pools.length; i < li; ++i) {
+		f(crust1_pools[i], crust2_pools[i], selection_raster, result_pools[i]);
+	}
+}
+
+Crust.get_ids = function(crust, id_raster, result_crust) {
+	var f = Float32Raster.get_ids;
+	var crust_pools = crust.all_pools;
+	var result_pools = result_crust.all_pools;
+	for (var i = 0, li = crust_pools.length; i < li; ++i) {
+		f(crust_pools[i], id_raster, result_pools[i]);
+	}
+}
+Crust.add_values_to_ids = function(crust, id_raster, value_crust, result_crust) {
+	var f = Float32Raster.add_values_to_ids;
+	var crust_pools = crust.all_pools;
+	var value_pools = value_crust.all_pools;
+	var result_pools = result_crust.all_pools;
+	for (var i = 0, li = crust_pools.length; i < li; ++i) {
+		f(crust_pools[i], id_raster, value_pools[i], result_pools[i]);
+	}
+}
+Crust.fix_delta = function(crust_delta, crust, scratch) {
+	var scratch = scratch || Float32Raster(crust_delta.grid);
+	var f = ScalarTransport.fix_nonnegative_conserved_quantity_delta;
+	var delta_pools = crust_delta.conserved_pools;
+	var crust_pools = crust.conserved_pools;
+	for (var i = 0, li = crust_pools.length; i < li; ++i) {
+		f(delta_pools[i], crust_pools[i], scratch);
+	}
+}
+Crust.assert_conserved_transport_delta = function(crust_delta, threshold) {
+	var f = ScalarTransport.assert_conserved_quantity_delta;
+	var delta_pools = crust_delta.conserved_pools;
+	for (var i = 0, li = delta_pools.length; i < li; ++i) {
+		f(delta_pools[i], threshold);
+	}
+}
+Crust.assert_conserved_reaction_delta = function(crust_delta, threshold, scratch) {
+	var sum = scratch || Float32Raster(crust_delta.grid);
+	sum.fill(0);
+	var f = ScalarField.add_field;
+	var delta_pools = crust_delta.conserved_pools;
+	for (var i = 0, li = delta_pools.length; i < li; ++i) {
+		f(sum, delta_pools[i], sum);
+	}
+	ScalarField.mult_field(sum, sum, sum);
+	var is_not_conserved = Uint8Dataset.sum(ScalarField.gt_scalar(sum, threshold * threshold));
+	if (is_not_conserved) {
+		debugger;
+	}
+}
+
+
+
+// WARNING: 
+// The following functions require special attention when adding new mass pools!
+
+Crust.overlap = function(crust1, crust2, crust2_exists, crust2_on_top, result_crust) {
+	// add current plate thickness to crust1 thickness wherever current plate exists
+	ScalarField.add_field_term				 			(crust1.conserved_array, crust2.conserved_array, crust2_exists, result_crust.conserved_array);
+	// overwrite crust1 wherever current plate is on top
+	Float32RasterGraphics.copy_into_selection 			(crust1.mafic_volcanic, crust2.mafic_volcanic, crust2_on_top, 	result_crust.mafic_volcanic);
+	Float32RasterGraphics.copy_into_selection 			(crust1.mafic_plutonic, crust2.mafic_plutonic, crust2_on_top, 	result_crust.mafic_plutonic);
+	Float32RasterGraphics.copy_into_selection 			(crust1.age, crust2.age, crust2_on_top, 						result_crust.age);
+}
+
+Crust.get_thickness = function(crust, material_density, thickness) {
+	thickness = thickness || Float32Raster(crust.grid);
+
+	var scratch = Float32Raster(crust.grid);
+
+	var fraction_of_lifetime = scratch;
+	Float32RasterInterpolation.smoothstep	(0, 250, crust.age, fraction_of_lifetime);
+	var mafic_density = scratch;
+	Float32RasterInterpolation.lerp			(material_density.mafic_volcanic_min, material_density.mafic_volcanic_max, fraction_of_lifetime, mafic_density);
+	var mafic_specific_volume = scratch;
+	ScalarField.inv_field 					(mafic_density, mafic_specific_volume);
+
+	Float32Raster.fill 				(thickness, 0);
+	ScalarField.add_field_term 		(thickness, crust.mafic_plutonic, mafic_specific_volume, thickness);
+	ScalarField.add_field_term 		(thickness, crust.mafic_volcanic, mafic_specific_volume, thickness);
+
+	var f = ScalarField.add_scalar_term;
+	var crust_pools = crust.conserved_pools;
+	var pool_densities = new RockColumn(material_density).conserved_pools;
+	for (var i = 0, li = crust_pools.length; i < li; ++i) {
+		f(thickness, crust_pools[i], 1/pool_densities[i],  thickness);
+	}
+
+	return thickness;
+}
+
+// returns net buoyancy force, in kiloNewtons
+// buoyancy is a scalar indicating force applied along the height axis
+// positive buoyancy indicates floating, negative buoyancy indicates sinking
+Crust.get_buoyancy = function (density, material_density, surface_gravity, buoyancy) {
+	buoyancy = buoyancy || Float32Raster(density.grid);
+
+	// buoyancy = min( g ( crust_density - mantle_density ), 0 )
+
+	// NOTE: buoyancy does double duty for performance reasons
+	var density_difference = buoyancy
+	ScalarField.sub_scalar( density, material_density.mantle, density_difference );
+	ScalarField.mult_scalar(density_difference, -surface_gravity, buoyancy);
+	ScalarField.min_scalar(buoyancy, 0, buoyancy);
+
+	return buoyancy;
 }

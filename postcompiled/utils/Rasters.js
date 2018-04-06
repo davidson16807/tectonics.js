@@ -29,17 +29,17 @@ function Grid(template, options){
  };
  this.buffer_array_to_cell = buffer_array_to_cell;
  //Precompute neighbors for O(1) lookups
- var neighbor_lookup = this.template.vertices.map(function(vertex) { return new buckets.Set()});
+ var neighbor_lookup = this.template.vertices.map(function(vertex) { return {}});
  for(var i=0, il = this.template.faces.length, faces = this.template.faces; i<il; i++){
   face = faces[i];
-  neighbor_lookup[face.a].add(face.b);
-  neighbor_lookup[face.a].add(face.c);
-  neighbor_lookup[face.b].add(face.a);
-  neighbor_lookup[face.b].add(face.c);
-  neighbor_lookup[face.c].add(face.a);
-  neighbor_lookup[face.c].add(face.b);
+  neighbor_lookup[face.a][face.b] = face.b;
+  neighbor_lookup[face.a][face.c] = face.c;
+  neighbor_lookup[face.b][face.a] = face.a;
+  neighbor_lookup[face.b][face.c] = face.c;
+  neighbor_lookup[face.c][face.a] = face.a;
+  neighbor_lookup[face.c][face.b] = face.b;
  }
- neighbor_lookup = neighbor_lookup.map(function(set) { return set.toArray(); });
+ neighbor_lookup = neighbor_lookup.map(function(set) { return Object.values(set); });
  this.neighbor_lookup = neighbor_lookup;
  var neighbor_count = Uint8Raster(this);
  for (var i = 0, li=neighbor_lookup.length; i<li; i++) {
@@ -95,7 +95,7 @@ Grid.prototype.getNearestId = function(vertex) {
  return this._voronoi.getNearestId(vertex);
 }
 Grid.prototype.getNearestIds = function(pos_field, result) {
- result = result || Uint16Raster(this);
+ result = result || Uint16Raster(pos_field.grid);
  return this._voronoi.getNearestIds(pos_field, result);
 }
 Grid.prototype.getNeighborIds = function(id) {
@@ -111,14 +111,14 @@ Grid.prototype.getNeighborIds = function(id) {
 // Lists are used instead of params because performance gain over 
 // independant params is negligible for our purposes.
 function Matrix(){
-  return [0,0,0,
-          0,0,0,
-          0,0,0];
+  return new Float32Array([0,0,0,
+                           0,0,0,
+                           0,0,0]);
 }
 Matrix.Identity = function() {
-  return [1,0,0,
-          0,1,0,
-          0,0,1];
+  return new Float32Array([1,0,0,
+                           0,1,0,
+                           0,0,1]);
 }
 Matrix.RowMajorOrder = function(list) {
  
@@ -133,12 +133,12 @@ Matrix.RowMajorOrder = function(list) {
 }
 Matrix.ColumnMajorOrder = function(list) {
  
-  return list; //matrices are standardized to column major order, already
+  return new Float32Array(list); //matrices are standardized to column major order, already
 }
 Matrix.BasisVectors = function(a, b, c) {
-  return [a.x, a.y, a.z,
-          b.x, b.y, b.z,
-          c.x, c.y, c.z ];
+  return new Float32Array([a.x, a.y, a.z,
+                           b.x, b.y, b.z,
+                           c.x, c.y, c.z ]);
 }
 Matrix.RotationAboutAxis = function(axis_x, axis_y, axis_z, angle) {
   var θ = angle,
@@ -150,11 +150,28 @@ Matrix.RotationAboutAxis = function(axis_x, axis_y, axis_z, angle) {
       vθ = 1 - cθ, // aka versine of θ
       vθx = vθ*x,
       vθy = vθ*y;
-  return [
+  return new Float32Array([
     vθx*x+cθ, vθx*y+sθ*z, vθx*z-sθ*y,
     vθx*y-sθ*z, vθy*y+cθ, vθy*z+sθ*x,
     vθx*z+sθ*y, vθy*z-sθ*x, vθ*z*z+cθ
-  ];
+  ]);
+}
+Matrix.FromRotationVector = function(ωx, ωy, ωz) {
+  var axis = Vector.normalize(ωx, ωy, ωz);
+  var θ = Vector.magnitude(ωx, ωy, ωz),
+      x = axis.x,
+      y = axis.y,
+      z = axis.z,
+      cθ = Math.cos(θ),
+      sθ = Math.sin(θ),
+      vθ = 1 - cθ, // aka versine of θ
+      vθx = vθ*x,
+      vθy = vθ*y;
+  return new Float32Array([
+    vθx*x+cθ, vθx*y+sθ*z, vθx*z-sθ*y,
+    vθx*y-sθ*z, vθy*y+cθ, vθy*z+sθ*x,
+    vθx*z+sθ*y, vθy*z-sθ*x, vθ*z*z+cθ
+  ]);
 }
 Matrix.invert = function(matrix, result) {
     result = result || Matrix();
@@ -270,9 +287,9 @@ Vector.magnitude = function(x, y, z) {
 Vector.normalize = function(x, y, z, result) {
   result = result || Vector()
   var magnitude = Math.sqrt(x*x + y*y + z*z);
-  result.x = x/magnitude;
-  result.y = y/magnitude;
-  result.z = z/magnitude;
+  result.x = x/(magnitude||1);
+  result.y = y/(magnitude||1);
+  result.z = z/(magnitude||1);
   return result;
 }
 Vector.cross = function(ax, ay, az, bx, by, bz, result) {
@@ -299,6 +316,96 @@ Vector.mult_matrix = function(x, y, z, matrix, result) {
   result.z = x * zx + y * zy + z * zz;
   return result;
 }
+// Raster based methods often need to create temporary rasters that the calling function never sees
+// Creating new rasters is very costly, so often several "scratch" rasters would be created once then reused multiple times
+// This often led to bugs, because it was hard to track what these scratch rasters represented at any point in time
+// To solve the problem, RasterStackBuffer was created.
+// You can request new rasters without fear of performance penalties or referencing issues
+// Additionally, you can push and pop method names to the stack so the stack knows when to deallocate rasters
+// Think of it as a dedicated stack based memory for Javascript TypedArrays
+function RasterStackBuffer(byte_length){
+ this.buffer = new ArrayBuffer(byte_length);
+ this.pos = 0;
+ this.stack = [];
+ this.method_names = [];
+}
+// allocate memory to a method
+RasterStackBuffer.prototype.allocate = function(name) {
+ this.stack.push(this.pos);
+ this.method_names.push(name);
+}
+// deallocate memory reserved for a method
+RasterStackBuffer.prototype.deallocate = function(name) {
+ this.pos = this.stack.pop();
+ var method = this.method_names.pop();
+ if (method !== name) {
+  throw `memory was deallocated for the method, ${name} but memory wasn't allocated. This indicates improper memory management.`;
+ }
+}
+RasterStackBuffer.prototype.getFloat32Raster = function(grid) {
+ var length = grid.vertices.length;
+ var new_pos = this.pos + length * Float32Array.BYTES_PER_ELEMENT;
+ if (new_pos >= this.buffer.length) {
+  throw `The raster stack buffer is overflowing! Either check for memory leaks, or initialize with more memory`;
+ }
+ var raster = new Float32Array(this.buffer, this.pos, length);
+ raster.grid = grid;
+ // round to nearest 4 bytes
+ this.pos = 4*Math.ceil(new_pos/4);
+ return raster;
+};
+RasterStackBuffer.prototype.getUint8Raster = function(grid) {
+ var length = grid.vertices.length;
+ var new_pos = this.pos + length * Uint8Array.BYTES_PER_ELEMENT;
+ if (new_pos >= this.buffer.length) {
+  throw `The raster stack buffer is overflowing! Either check for memory leaks, or initialize with more memory`;
+ }
+ var raster = new Uint8Array(this.buffer, this.pos, length);
+ raster.grid = grid;
+ // round to nearest 4 bytes
+ this.pos = 4*Math.ceil(new_pos/4);
+ return raster;
+};
+RasterStackBuffer.prototype.getUint16Raster = function(grid) {
+ var length = grid.vertices.length;
+ var new_pos = this.pos + length * Uint16Array.BYTES_PER_ELEMENT;
+ if (new_pos >= this.buffer.length) {
+  throw `The raster stack buffer is overflowing! Either check for memory leaks, or initialize with more memory`;
+ }
+ var raster = new Uint16Array(this.buffer, this.pos, length);
+ raster.grid = grid;
+ // round to nearest 4 bytes
+ this.pos = 4*Math.ceil(new_pos/4);
+ return raster;
+};
+RasterStackBuffer.prototype.getVectorRaster = function(grid) {
+ var length = grid.vertices.length;
+ var byte_length_per_index = length * 4;
+ var new_pos = this.pos + byte_length_per_index * 3;
+ if (new_pos >= this.buffer.length) {
+  throw `The raster stack buffer is overflowing! Either check for memory leaks, or initialize with more memory`;
+ }
+ var raster = {
+  x: new Float32Array(this.buffer, this.pos + byte_length_per_index * 0, length),
+  y: new Float32Array(this.buffer, this.pos + byte_length_per_index * 1, length),
+  z: new Float32Array(this.buffer, this.pos + byte_length_per_index * 2, length),
+  everything: new Float32Array(this.buffer, this.pos + byte_length_per_index * 0, 3*length),
+  grid: grid
+ };;
+ raster.grid = grid;
+ // round to nearest 4 bytes
+ this.pos = 4*Math.ceil(new_pos/4);
+ return raster;
+};
+RasterStackBuffer.scratchpad = new RasterStackBuffer(1e6);
+// Test code:
+// 
+// buffer = new RasterStackBuffer(1e6)
+// buffer.allocate('1')
+// a = buffer.getUint8Raster({vertices:{length:1}})
+// b = buffer.getUint8Raster({vertices:{length:1}})
+// v = buffer.getVectorRaster({vertices:{length:1}})
+// buffer.deallocate('1')
 // The Dataset namespaces provide operations over statistical datasets.
 // All datasets are represented by raster objects, e.g. VectorRaster or Float32Raster
 var Float32Dataset = {};
@@ -766,8 +873,9 @@ ScalarField.add_field_term = function (scalar_field1, scalar_field2, scalar_fiel
  
  
  
+  var length = scalar_field3.length;
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = scalar_field1[i] + scalar_field3[i] * scalar_field2[i];
+     result[i] = scalar_field1[i] + scalar_field3[i%length] * scalar_field2[i];
   }
   return result;
 };
@@ -841,6 +949,25 @@ ScalarField.div_field = function (scalar_field1, scalar_field2, result) {
  
   for (var i = 0, li = result.length; i < li; i++) {
     result[i] = scalar_field1[i] / scalar_field2[i];
+  }
+  return result;
+};
+ScalarField.inv_field = function (scalar_field, result) {
+  result = result || Float32Raster(scalar_field1.grid);
+ 
+ 
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = 1 / scalar_field[i];
+  }
+  return result;
+};
+ScalarField.sqrt_field = function (scalar_field, result) {
+  result = result || Float32Raster(scalar_field1.grid);
+  var sqrt = Math.sqrt;
+ 
+ 
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = sqrt(scalar_field[i]);
   }
   return result;
 };
@@ -936,7 +1063,6 @@ ScalarField.gradient = function (scalar_field, result, scratch, scratch2) {
   result = result || VectorRaster(scalar_field.grid);
   scratch = scratch || Float32Raster(scalar_field.grid);
   scratch2 = scratch2 || Float32Raster(scalar_field.grid);
- 
  
  
  
@@ -1721,50 +1847,103 @@ Uint8Field.mult_vector = function (scalar_field, vector, result) {
   }
   return result;
 };
+Uint8Field.gradient = function (scalar_field, result) {
+  result = result || VectorRaster(scalar_field.grid);
+ 
+ 
+  var grid = scalar_field.grid;
+  var pos = grid.pos;
+  var ix = pos.x;
+  var iy = pos.y;
+  var iz = pos.z;
+  var dpos_hat = grid.pos_arrow_differential_normalized;
+  var dxhat = dpos_hat.x;
+  var dyhat = dpos_hat.y;
+  var dzhat = dpos_hat.z;
+  var dpos = grid.pos_arrow_differential;
+  var dx = dpos.x;
+  var dy = dpos.y;
+  var dz = dpos.z;
+  var arrows = grid.arrows;
+  var arrow = [];
+  var dlength = grid.pos_arrow_distances;
+  var neighbor_count = grid.neighbor_count;
+  var x = result.x;
+  var y = result.y;
+  var z = result.z;
+  var arrow_distance = 0;
+  var average_distance = grid.average_distance;
+  var slope = 0;
+  var slope_magnitude = 0;
+  var from = 0;
+  var to = 0;
+  var max_slope_from = 0;
+  var PI = Math.PI;
+  //
+  // NOTE: 
+  // The naive implementation is to estimate the gradient based on each individual neighbor,
+  //  then take the average between the estimates.
+  // This is wrong! If dx, dy, or dz is very small, 
+  //  then the gradient estimate along that dimension will be very big.
+  // This will result in very strange behavior.
+  //
+  // The correct implementation is to use the Gauss-Green theorem: 
+  //   ∫∫∫ᵥ ∇ϕ dV = ∫∫ₐ ϕn̂ da
+  // so:
+  //   ∇ϕ = 1/V ∫∫ₐ ϕn̂ da
+  // so find flux out of an area, then divide by volume
+  // the area/volume is calculated for a circle that reaches halfway to neighboring vertices
+  x.fill(0);
+  y.fill(0);
+  z.fill(0);
+  var average_value = 0;
+  for (var i = 0, li = arrows.length; i < li; i++) {
+    arrow = arrows[i];
+    from = arrow[0];
+    to = arrow[1];
+    average_value = (scalar_field[to] - scalar_field[from]);
+    x[from] += average_value * dxhat[i] * PI * dlength[i]/neighbor_count[from];
+    y[from] += average_value * dyhat[i] * PI * dlength[i]/neighbor_count[from];
+    z[from] += average_value * dzhat[i] * PI * dlength[i]/neighbor_count[from];
+  }
+  var inverse_volume = 1 / (PI * (average_distance/2) * (average_distance/2));
+  for (var i = 0, li = scalar_field.length; i < li; i++) {
+    x[i] *= inverse_volume;
+    y[i] *= inverse_volume;
+    z[i] *= inverse_volume;
+  }
+  return result;
+};
 // The VectorField namespace provides operations over mathematical vector fields.
 // All fields are represented on raster objects, e.g. VectorRaster or Float32Raster
 var VectorField = {};
-VectorField.add_vector_field_term = function(vector_field1, vector_field2, scalar, result) {
+VectorField.add_vector_field_and_scalar_term = function(vector_field1, vector_field2, scalar, result) {
  result = result || VectorRaster(vector_field1.grid);
 
 
 
 
- var x1 = vector_field1.x;
- var y1 = vector_field1.y;
- var z1 = vector_field1.z;
- var x2 = vector_field2.x;
- var y2 = vector_field2.y;
- var z2 = vector_field2.z;
- var x = result.x;
- var y = result.y;
- var z = result.z;
- for (var i=0, li=x.length; i<li; ++i) {
-     x[i] = x1[i] + scalar * x2[i];
-     y[i] = y1[i] + scalar * y2[i];
-     z[i] = z1[i] + scalar * z2[i];
+ var u = vector_field1.everything;
+ var v = vector_field2.everything;
+ var out = result.everything;
+ var length = scalar_field.length;
+ for (var i=0, li=u.length; i<li; ++i) {
+     out[i] = u[i] + scalar * v[i];
  }
  return result;
 };
-VectorField.add_vector_field_term = function(vector_field1, vector_field2, scalar_field, result) {
+VectorField.add_vector_field_and_scalar_field_term = function(vector_field1, vector_field2, scalar_field, result) {
  result = result || VectorRaster(vector_field1.grid);
 
 
 
 
- var x1 = vector_field1.x;
- var y1 = vector_field1.y;
- var z1 = vector_field1.z;
- var x2 = vector_field2.x;
- var y2 = vector_field2.y;
- var z2 = vector_field2.z;
- var x = result.x;
- var y = result.y;
- var z = result.z;
- for (var i=0, li=x.length; i<li; ++i) {
-     x[i] = x1[i] + scalar_field[i] * x2[i];
-     y[i] = y1[i] + scalar_field[i] * y2[i];
-     z[i] = z1[i] + scalar_field[i] * z2[i];
+ var u = vector_field1.everything;
+ var v = vector_field2.everything;
+ var out = result.everything;
+ var length = scalar_field.length;
+ for (var i=0, li=u.length; i<li; ++i) {
+     out[i] = u[i] + scalar_field[i%length] * v[i];
  }
  return result;
 };
@@ -1773,19 +1952,11 @@ VectorField.add_vector_field = function(vector_field1, vector_field2, result) {
 
 
 
- var x1 = vector_field1.x;
- var y1 = vector_field1.y;
- var z1 = vector_field1.z;
- var x2 = vector_field2.x;
- var y2 = vector_field2.y;
- var z2 = vector_field2.z;
- var x = result.x;
- var y = result.y;
- var z = result.z;
- for (var i=0, li=x.length; i<li; ++i) {
-     x[i] = x1[i] + x2[i];
-     y[i] = y1[i] + y2[i];
-     z[i] = z1[i] + z2[i];
+ var u = vector_field1.everything;
+ var v = vector_field2.everything;
+ var out = result.everything;
+ for (var i=0, li=u.length; i<li; ++i) {
+     out[i] = u[i] + v[i];
  }
  return result;
 };
@@ -1794,19 +1965,11 @@ VectorField.sub_vector_field = function(vector_field1, vector_field2, result) {
 
 
 
- var x1 = vector_field1.x;
- var y1 = vector_field1.y;
- var z1 = vector_field1.z;
- var x2 = vector_field2.x;
- var y2 = vector_field2.y;
- var z2 = vector_field2.z;
- var x = result.x;
- var y = result.y;
- var z = result.z;
- for (var i=0, li=x.length; i<li; ++i) {
-     x[i] = x1[i] - x2[i];
-     y[i] = y1[i] - y2[i];
-     z[i] = z1[i] - z2[i];
+ var u = vector_field1.everything;
+ var v = vector_field2.everything;
+ var out = result.everything;
+ for (var i=0, li=u.length; i<li; ++i) {
+     out[i] = u[i] - v[i];
  }
  return result;
 };
@@ -1815,16 +1978,11 @@ VectorField.dot_vector_field = function(vector_field1, vector_field2, result) {
 
 
 
- var x1 = vector_field1.x;
- var y1 = vector_field1.y;
- var z1 = vector_field1.z;
- var x2 = vector_field2.x;
- var y2 = vector_field2.y;
- var z2 = vector_field2.z;
- for (var i=0, li=x1.length; i<li; ++i) {
-     result[i] = x1[i] * x2[i] +
-        y1[i] * y2[i] +
-        z1[i] * z2[i];
+ var u = vector_field1.everything;
+ var v = vector_field2.everything;
+ var length = result.length;
+ for (var i=0, li=u.length; i<li; ++i) {
+     result[i%length] += u[i] * v[i];
  }
  return result;
 };
@@ -1833,19 +1991,11 @@ VectorField.hadamard_vector_field = function(vector_field1, vector_field2, resul
 
 
 
- var x1 = vector_field1.x;
- var y1 = vector_field1.y;
- var z1 = vector_field1.z;
- var x2 = vector_field2.x;
- var y2 = vector_field2.y;
- var z2 = vector_field2.z;
- var x = result.x;
- var y = result.y;
- var z = result.z;
- for (var i=0, li=x.length; i<li; ++i) {
-     x[i] = x1[i] * x2[i];
-     y[i] = y1[i] * y2[i];
-     z[i] = z1[i] * z2[i];
+ var u = vector_field1.everything;
+ var v = vector_field2.everything;
+ var out = result.everything;
+ for (var i=0, li=u.length; i<li; ++i) {
+     out[i] = u[i] * v[i];
  }
  return result;
 };
@@ -1991,6 +2141,7 @@ VectorField.mult_matrix = function (vector_field, matrix, result) {
  result = result || VectorRaster(vector_field.grid);
 
 
+
  var ax = vector_field.x;
  var ay = vector_field.y;
  var az = vector_field.z;
@@ -2018,16 +2169,11 @@ VectorField.add_scalar_field = function(vector_field, scalar_field, result) {
 
 
 
- var x1 = vector_field.x;
- var y1 = vector_field.y;
- var z1 = vector_field.z;
- var x = result.x;
- var y = result.y;
- var z = result.z;
- for (var i=0, li=x.length; i<li; ++i) {
-     x[i] = x1[i] + scalar_field[i];
-     y[i] = y1[i] + scalar_field[i];
-     z[i] = z1[i] + scalar_field[i];
+ var u = vector_field.everything;
+ var out = result.everything;
+ var length = scalar_field.length;
+ for (var i=0, li=u.length; i<li; ++i) {
+     out[i] = u[i] + scalar_field[i%length];
  }
  return result;
 };
@@ -2036,16 +2182,11 @@ VectorField.sub_scalar_field = function(vector_field, scalar_field, result) {
 
 
 
- var x1 = vector_field.x;
- var y1 = vector_field.y;
- var z1 = vector_field.z;
- var x = result.x;
- var y = result.y;
- var z = result.z;
- for (var i=0, li=x.length; i<li; ++i) {
-     x[i] = x1[i] - scalar_field[i];
-     y[i] = y1[i] - scalar_field[i];
-     z[i] = z1[i] - scalar_field[i];
+ var u = vector_field.everything;
+ var out = result.everything;
+ var length = scalar_field.length;
+ for (var i=0, li=u.length; i<li; ++i) {
+     out[i] = u[i] - scalar_field[i%length];
  }
  return result;
 };
@@ -2072,16 +2213,11 @@ VectorField.div_scalar_field = function(vector_field, scalar_field, result) {
 
 
 
- var x1 = vector_field.x;
- var y1 = vector_field.y;
- var z1 = vector_field.z;
- var x = result.x;
- var y = result.y;
- var z = result.z;
- for (var i=0, li=x.length; i<li; ++i) {
-     x[i] = x1[i] / scalar_field[i];
-     y[i] = y1[i] / scalar_field[i];
-     z[i] = z1[i] / scalar_field[i];
+ var u = vector_field.everything;
+ var out = result.everything;
+ var length = scalar_field.length;
+ for (var i=0, li=u.length; i<li; ++i) {
+     out[i] = u[i] / scalar_field[i%length];
  }
  return result;
 };
@@ -2090,16 +2226,10 @@ VectorField.add_scalar = function(vector_field, scalar, result) {
 
 
 
- var x1 = vector_field.x;
- var y1 = vector_field.y;
- var z1 = vector_field.z;
- var x = result.x;
- var y = result.y;
- var z = result.z;
- for (var i=0, li=x.length; i<li; ++i) {
-     x[i] = x1[i] + scalar;
-     y[i] = y1[i] + scalar;
-     z[i] = z1[i] + scalar;
+ var u = vector_field.everything;
+ var out = result.everything;
+ for (var i=0, li=u.length; i<li; ++i) {
+     out[i] = u[i] + scalar;
  }
  return result;
 };
@@ -2108,16 +2238,10 @@ VectorField.sub_scalar = function(vector_field, scalar, result) {
 
 
 
- var x1 = vector_field.x;
- var y1 = vector_field.y;
- var z1 = vector_field.z;
- var x = result.x;
- var y = result.y;
- var z = result.z;
- for (var i=0, li=x.length; i<li; ++i) {
-     x[i] = x1[i] - scalar;
-     y[i] = y1[i] - scalar;
-     z[i] = z1[i] - scalar;
+ var u = vector_field.everything;
+ var out = result.everything;
+ for (var i=0, li=u.length; i<li; ++i) {
+     out[i] = u[i] - scalar;
  }
  return result;
 };
@@ -2126,16 +2250,10 @@ VectorField.mult_scalar = function(vector_field, scalar, result) {
 
 
 
- var x1 = vector_field.x;
- var y1 = vector_field.y;
- var z1 = vector_field.z;
- var x = result.x;
- var y = result.y;
- var z = result.z;
- for (var i=0, li=x.length; i<li; ++i) {
-     x[i] = x1[i] * scalar;
-     y[i] = y1[i] * scalar;
-     z[i] = z1[i] * scalar;
+ var u = vector_field.everything;
+ var out = result.everything;
+ for (var i=0, li=u.length; i<li; ++i) {
+     out[i] = u[i] * scalar;
  }
  return result;
 };
@@ -2144,17 +2262,10 @@ VectorField.div_scalar = function(vector_field, scalar, result) {
 
 
 
- var x1 = vector_field.x;
- var y1 = vector_field.y;
- var z1 = vector_field.z;
- var x = result.x;
- var y = result.y;
- var z = result.z;
- var inv_scalar = 1/scalar;
- for (var i=0, li=x.length; i<li; ++i) {
-     x[i] = x1[i] * inv_scalar;
-     y[i] = y1[i] * inv_scalar;
-     z[i] = z1[i] * inv_scalar;
+ var u = vector_field.everything;
+ var out = result.everything;
+ for (var i=0, li=u.length; i<li; ++i) {
+     out[i] = u[i] / scalar;
  }
  return result;
 };
@@ -2383,10 +2494,13 @@ VectorRasterGraphics.magic_wand_select = function function_name(vector_raster, s
  var neighbors = [];
  var is_similar = 0;
  var threshold = Math.cos(Math.PI * 60/180);
+ var start_x = x[start_id];
+ var start_y = y[start_id];
+ var start_z = z[start_id];
  while(searching.length > 0){
   id = searching.shift();
   is_similar = similarity (x[id], y[id], z[id],
-         x[start_id], y[start_id], z[start_id]) > threshold;
+         start_x, start_y, start_z) > threshold;
   if (is_similar) {
    grouped[id] = 1;
    neighbors = neighbor_lookup[id];
@@ -2407,19 +2521,12 @@ VectorRasterGraphics.copy_into_selection = function(vector_raster, copied, selec
 
 
 
- var ax = vector_raster.x;
- var ay = vector_raster.y;
- var az = vector_raster.z;
- var bx = copied.x;
- var by = copied.y;
- var bz = copied.z;
- var cx = result.x;
- var cy = result.y;
- var cz = result.z;
- for (var i=0, li=vector_raster.length; i<li; ++i) {
-     cx[i] = selection[i] === 1? bx[i] : ax[i];
-     cy[i] = selection[i] === 1? by[i] : ay[i];
-     cz[i] = selection[i] === 1? bz[i] : az[i];
+ var a = vector_raster.everything;
+ var b = copied.everything;
+ var c = result.everything;
+ var length = selection.length;
+ for (var i=0, li=a.length; i<li; ++i) {
+  c[i] = selection[i%length] === 1? b[i] : a[i];
  }
  return result;
 }
@@ -2437,10 +2544,12 @@ VectorRasterGraphics.fill_into_selection = function(vector_raster, fill, selecti
  var cx = result.x;
  var cy = result.y;
  var cz = result.z;
+ var selection_i = 0;
  for (var i=0, li=vector_raster.length; i<li; ++i) {
-     cx[i] = selection[i] === 1? bx : ax[i];
-     cy[i] = selection[i] === 1? by : ay[i];
-     cz[i] = selection[i] === 1? bz : az[i];
+      selection_i = selection[i];
+      cx[i] = selection_i === 1? bx : ax[i];
+      cy[i] = selection_i === 1? by : ay[i];
+      cz[i] = selection_i === 1? bz : az[i];
  }
  return result;
 }
@@ -2463,9 +2572,7 @@ function Float32Raster(grid, fill) {
  var result = new Float32Array(grid.vertices.length);
  result.grid = grid;
  if (fill !== void 0) {
- for (var i=0, li=result.length; i<li; ++i) {
-     result[i] = fill;
- }
+    result.fill(fill);
  }
  return result;
 };
@@ -2473,6 +2580,11 @@ Float32Raster.OfLength = function(length, grid) {
  var result = new Float32Array(length);
  result.grid = grid;
  return result;
+}
+Uint16Raster.FromBuffer = function(buffer, grid) {
+  var result = new Uint16Array(buffer, 0, grid.vertices.length);
+  result.grid = grid;
+  return result;
 }
 Float32Raster.FromUint8Raster = function(raster, result) {
   var result = result || Float32Raster(raster.grid);
@@ -2496,16 +2608,12 @@ Float32Raster.copy = function(raster, result) {
   var result = result || Float32Raster(raster.grid);
  
  
-  for (var i=0, li=raster.length; i<li; ++i) {
-      result[i] = raster[i];
-  }
+  result.set(raster);
   return result;
 }
 Float32Raster.fill = function (raster, value) {
  
-  for (var i = 0, li = raster.length; i < li; i++) {
-    raster[i] = value;
-  }
+  raster.fill(value);
 };
 Float32Raster.min_id = function (raster) {
  
@@ -2585,68 +2693,19 @@ Float32Raster.set_ids_to_values = function(raster, id_array, value_array) {
   }
   return raster;
 }
-//TODO: move this to its own namespace: Float32ScalarTransport
-Float32Raster.assert_nonnegative_quantity = function(quantity) {
- 
-}
-Float32Raster.assert_conserved_quantity_delta = function(delta, threshold) {
- 
-}
-Float32Raster.assert_nonnegative_quantity_delta = function(delta, quantity) {
- 
- 
-}
-Float32Raster.fix_nonnegative_quantity = function(quantity) {
- 
-  ScalarField.min_scalar(quantity, 0);
-}
-Float32Raster.fix_conserved_quantity_delta = function(delta, threshold) {
- 
-  var average = Float32Dataset.average(delta);
-  if (average * average > threshold * threshold) {
-    ScalarField.sub_scalar(delta, average, delta);
+// example: Float32Raster.add_values_to_ids(local, local_ids_of_global_cells, global, local);
+// NOTE: this differs from set_ids_to_values - 
+//   in the event an id is mentioned twice in id_array, add_values_to_ids will add those values together
+Float32Raster.add_values_to_ids = function(raster1, id_array, raster2, result) {
+  if (raster1 !== result) {
+    Float32Raster.copy(raster1, result);
   }
-}
-Float32Raster.fix_nonnegative_quantity_delta = function(delta, quantity) {
- 
- 
-  for (var i=0, li=delta.length; i<li; ++i) {
-    if (-delta[i] > quantity[i]) {
-      delta[i] = -quantity[i];
-    }
+  var id_array_i = 0;
+  for (var i=0, li=raster2.length; i<li; ++i) {
+    id_array_i = id_array[i];
+    result[id_array_i] = result[id_array_i] + raster2[i];
   }
-}
-// NOTE: if anyone can find a shorter more intuitive name for this, I'm all ears
-Float32Raster.fix_nonnegative_conserved_quantity_delta = function(delta, quantity, scratch) {
-  var scratch = scratch || Float32Raster(delta.grid);
- 
- 
- 
-  var total_excess = 0.0;
-  var total_remaining = 0.0;
-  var remaining = scratch;
-  // clamp delta to quantity available
-  // keep tabs on excess where delta exceeds quantity
-  // also keep tabs on which cells still have quantity remaining after delta is applied
-  for (var i=0, li=delta.length; i<li; ++i) {
-    if (-delta[i] > quantity[i]) {
-      delta[i] = -quantity[i];
-      total_excess += -delta[i] - quantity[i];
-      remaining[i] = 0;
-    }
-    else {
-      remaining[i] = quantity[i] + delta[i];
-      total_remaining += quantity[i] + delta[i];
-    }
-  }
-  // go back and correct the excess by taxing from the remaining quantity
-  // the more remaining a cell has, the more it gets taxed
-  var remaining_tax = total_excess / total_remaining;
-  if (remaining_tax) {
-    for (var i=0, li=delta.length; i<li; ++i) {
-      delta[i] -= remaining[i] * remaining_tax;
-    }
-  }
+  return result;
 }
 // Uint16Raster represents a grid where each cell contains a 32 bit floating point value
 // A Uint16Raster is composed of two parts:
@@ -2678,6 +2737,11 @@ Uint16Raster.OfLength = function(length, grid) {
   result.grid = grid;
   return result;
 }
+Uint16Raster.FromBuffer = function(buffer, grid) {
+  var result = new Uint16Array(buffer, 0, grid.vertices.length);
+  result.grid = grid;
+  return result;
+}
 Uint16Raster.FromUint8Raster = function(raster) {
   var result = Uint16Raster(raster.grid);
   for (var i=0, li=result.length; i<li; ++i) {
@@ -2696,16 +2760,12 @@ Uint16Raster.copy = function(raster, result) {
   var result = result || Uint16Raster(raster.grid);
  
  
-  for (var i=0, li=raster.length; i<li; ++i) {
-      result[i] = raster[i];
-  }
+  result.set(raster);
   return result;
 }
 Uint16Raster.fill = function (raster, value) {
  
-  for (var i = 0, li = raster.length; i < li; i++) {
-    raster[i] = value;
-  }
+  raster.fill(value);
 };
 Uint16Raster.min_id = function (raster) {
  
@@ -2815,6 +2875,11 @@ Uint8Raster.OfLength = function(length, grid) {
   result.grid = grid;
   return result;
 }
+Uint8Raster.FromBuffer = function(buffer, grid) {
+  var result = new Uint8Array(buffer, 0, grid.vertices.length);
+  result.grid = grid;
+  return result;
+}
 Uint8Raster.FromUint8Raster = function(raster) {
   var result = Uint8Raster(raster.grid);
   for (var i=0, li=result.length; i<li; ++i) {
@@ -2833,16 +2898,12 @@ Uint8Raster.copy = function(raster, result) {
   var result = result || Uint8Raster(raster.grid);
  
  
-  for (var i=0, li=raster.length; i<li; ++i) {
-      result[i] = raster[i];
-  }
+  result.set(raster);
   return result;
 }
 Uint8Raster.fill = function (raster, value) {
  
-  for (var i = 0, li = raster.length; i < li; i++) {
-    raster[i] = value;
-  }
+  raster.fill(value);
 };
 Uint8Raster.min_id = function (raster) {
  
@@ -2938,23 +2999,17 @@ Uint8Raster.set_ids_to_values = function(raster, id_array, value_array) {
 // This design is meant to promote separation of concerns at the expense of encapsulation.
 // I want raster objects to be as bare as possible, functioning more like primitive datatypes.
 function VectorRaster(grid) {
- var length = grid.vertices.length;
- var result = {
-  x: new Float32Array(length),
-  y: new Float32Array(length),
-  z: new Float32Array(length),
-  grid: grid
- };
- return result;
+  return VectorRaster.OfLength(grid.vertices.length, grid);
 }
 VectorRaster.OfLength = function(length, grid) {
- var result = {
-  x: new Float32Array(length),
-  y: new Float32Array(length),
-  z: new Float32Array(length),
-  grid: grid
- };
- return result;
+  var buffer = new ArrayBuffer(3 * Float32Array.BYTES_PER_ELEMENT * length);
+  return {
+    x: new Float32Array(buffer, 0 * Float32Array.BYTES_PER_ELEMENT * length, length),
+    y: new Float32Array(buffer, 1 * Float32Array.BYTES_PER_ELEMENT * length, length),
+    z: new Float32Array(buffer, 2 * Float32Array.BYTES_PER_ELEMENT * length, length),
+    everything: new Float32Array(buffer),
+    grid: grid
+  };
 }
 VectorRaster.FromVectors = function(vectors, grid) {
  var result = VectorRaster.OfLength(vectors.length, grid);
@@ -2972,32 +3027,14 @@ VectorRaster.copy = function(vector_raster, output) {
   var output = output || VectorRaster(vector_raster.grid);
  
  
-  var ix = vector_raster.x;
-  var iy = vector_raster.y;
-  var iz = vector_raster.z;
-  var ox = output.x;
-  var oy = output.y;
-  var oz = output.z;
-  for (var i=0, li=ix.length; i<li; ++i) {
-      ox[i] = ix[i];
-      oy[i] = iy[i];
-      oz[i] = iz[i];
-  }
+  output.everything.set(vector_raster.everything);
   return output;
 }
 VectorRaster.fill = function (vector_raster, value) {
  
-  var ix = value.x;
-  var iy = value.y;
-  var iz = value.z;
-  var ox = vector_raster.x;
-  var oy = vector_raster.y;
-  var oz = vector_raster.z;
-  for (var i=0, li=ox.length; i<li; ++i) {
-      ox[i] = ix;
-      oy[i] = iy;
-      oz[i] = iz;
-  }
+  vector_raster.x.fill(value.x);
+  vector_raster.y.fill(value.y);
+  vector_raster.z.fill(value.z);
   return vector_raster;
 };
 VectorRaster.min_id = function (vector_raster) {
@@ -3040,23 +3077,29 @@ VectorRaster.get_nearest_value = function(value_raster, pos) {
  return {x: value_raster.x[id], y: value_raster.y[id], z: value_raster.z[id]};
 }
 VectorRaster.get_nearest_values = function(value_raster, pos_raster, result) {
- result = result || VectorRaster(pos_raster.grid);
+  result = result || VectorRaster(pos_raster.grid);
  
  
  
- var ids = pos_raster.grid.getNearestIds(pos_raster);
+  var ids = pos_raster.grid.getNearestIds(pos_raster);
+  return VectorRaster.get_ids(value_raster, ids, result);
+}
+VectorRaster.get_ids = function(value_raster, ids_raster, result) {
+  result = result || VectorRaster(pos_raster.grid);
+ 
+ 
   var ix = value_raster.x;
   var iy = value_raster.y;
   var iz = value_raster.z;
- var ox = result.x;
- var oy = result.y;
- var oz = result.z;
- for (var i=0, li=ids.length; i<li; ++i) {
-  ox[i] = ix[ids[i]];
-  oy[i] = iy[ids[i]];
-  oz[i] = iz[ids[i]];
- }
- return result;
+  var ox = result.x;
+  var oy = result.y;
+  var oz = result.z;
+  for (var i=0, li=ids_raster.length; i<li; ++i) {
+    ox[i] = ix[ids_raster[i]];
+    oy[i] = iy[ids_raster[i]];
+    oz[i] = iz[ids_raster[i]];
+  }
+  return result;
 }
 // The FieldInterpolation namespaces provide operations commonly used in interpolation for computer graphics
 // All input are raster objects, e.g. VectorRaster or Float32Raster
@@ -3132,6 +3175,70 @@ Float32RasterTrigonometry.cos = function(radians, result) {
   }
   return result;
 }
+var ScalarTransport = {};
+ScalarTransport.assert_nonnegative_quantity = function(quantity) {
+ 
+}
+ScalarTransport.assert_conserved_quantity_delta = function(delta, threshold) {
+ 
+}
+ScalarTransport.assert_nonnegative_quantity_delta = function(delta, quantity) {
+ 
+ 
+}
+ScalarTransport.fix_nonnegative_quantity = function(quantity) {
+ 
+  ScalarField.min_scalar(quantity, 0);
+}
+ScalarTransport.fix_conserved_quantity_delta = function(delta, threshold) {
+ 
+  var average = Float32Dataset.average(delta);
+  if (average * average > threshold * threshold) {
+    ScalarField.sub_scalar(delta, average, delta);
+  }
+}
+ScalarTransport.fix_nonnegative_quantity_delta = function(delta, quantity) {
+ 
+ 
+  for (var i=0, li=delta.length; i<li; ++i) {
+    if (-delta[i] > quantity[i]) {
+      delta[i] = -quantity[i];
+    }
+  }
+}
+// NOTE: if anyone can find a shorter more intuitive name for this, I'm all ears
+ScalarTransport.fix_nonnegative_conserved_quantity_delta = function(delta, quantity, scratch) {
+  return;
+  var scratch = scratch || Float32Raster(delta.grid);
+ 
+ 
+ 
+  var total_excess = 0.0;
+  var total_remaining = 0.0;
+  var remaining = scratch;
+  // clamp delta to quantity available
+  // keep tabs on excess where delta exceeds quantity
+  // also keep tabs on which cells still have quantity remaining after delta is applied
+  for (var i=0, li=delta.length; i<li; ++i) {
+    if (-delta[i] > quantity[i]) {
+      total_excess += -delta[i] - quantity[i];
+      delta[i] = -quantity[i];
+      remaining[i] = 0;
+    }
+    else {
+      remaining[i] = quantity[i] + delta[i];
+      total_remaining += quantity[i] + delta[i];
+    }
+  }
+  // go back and correct the excess by taxing from the remaining quantity
+  // the more remaining a cell has, the more it gets taxed
+  var remaining_tax = total_excess / total_remaining;
+  if (remaining_tax) {
+    for (var i=0, li=delta.length; i<li; ++i) {
+      delta[i] -= remaining[i] * remaining_tax;
+    }
+  }
+}
 // The VectorImageAnalysis namespace encompasses advanced functionality 
 // common to image analysis
 var VectorImageAnalysis = {};
@@ -3142,7 +3249,6 @@ VectorImageAnalysis.image_segmentation = function(vector_field, segment_num, min
   var scratch_ui8_1 = scratch_ui8_1 || Uint8Raster(vector_field.grid);
   var scratch_ui8_2 = scratch_ui8_2 || Uint8Raster(vector_field.grid);
   var scratch_ui8_3 = scratch_ui8_3 || Uint8Raster(vector_field.grid);
-  var segment_num = segment_num;
   var max_iterations = 2 * segment_num;
   var magnitude = VectorField.magnitude(vector_field);
   var segments = result || Uint8Raster(vector_field.grid);
@@ -3156,7 +3262,7 @@ VectorImageAnalysis.image_segmentation = function(vector_field, segment_num, min
   var sum = Uint8Dataset.sum;
   var max_id = Float32Raster.max_id;
   // step 1: run flood fill algorithm several times
-  for (var i=1, j=0; i<7 && j<max_iterations; j++) {
+  for (var i=1, j=0; i<segment_num && j<max_iterations; j++) {
     magic_wand(vector_field, max_id(magnitude), occupied, segment, scratch_ui8_3);
     fill_f32 (magnitude, 0, segment, magnitude);
     fill_ui8 (occupied, 0, segment, occupied);
@@ -3173,43 +3279,16 @@ BinaryMorphology.VertexTypedArray = function(grid) {
  result.grid = grid;
  return result;
 }
-BinaryMorphology.to_binary = function(field, threshold, result) {
- result = result || Uint8Raster(field.grid);
- threshold = threshold || 0;
+BinaryMorphology.universal = function(result) {
  ;
- for (var i=0, li=field.length; i<li; ++i) {
-     result[i] = (field[i] > threshold)? 1:0;
- }
- return result;
-}
-BinaryMorphology.to_float = function(field, result) {
- result = result || new Float32Raster(field.grid);
-
-
- for (var i=0, li=field.length; i<li; ++i) {
-     result[i] = (field[i]===1)? 1:0;
- }
- return result;
-}
-BinaryMorphology.copy = function(field, result) {
- result = result || Uint8Raster(field.grid);
- ;
- ;
- for (var i=0, li=field.length; i<li; ++i) {
-     result[i] = field[i];
- }
- return result;
-}
-BinaryMorphology.universal = function(field) {
- ;
- for (var i=0, li=field.length; i<li; ++i) {
-     field[i] = 1;
+ for (var i=0, li=result.length; i<li; ++i) {
+     result[i] = 1;
  }
 }
-BinaryMorphology.empty = function(field) {
+BinaryMorphology.empty = function(result) {
  ;
- for (var i=0, li=field.length; i<li; ++i) {
-     field[i] = 0;
+ for (var i=0, li=result.length; i<li; ++i) {
+     result[i] = 0;
  }
 }
 BinaryMorphology.union = function(field1, field2, result) {
@@ -3251,13 +3330,15 @@ BinaryMorphology.negation = function(field, result) {
  }
  return result;
 }
-BinaryMorphology.dilation = function(field, radius, result) {
+BinaryMorphology.dilation = function(field, radius, result, scratch) {
  radius = radius || 1;
  result = result || Uint8Raster(field.grid);
+ scratch = scratch || Uint8Raster(field.grid);
  ;
  ;
- var buffer1 = radius % 2 == 1? result: Uint8Raster(field.grid);
- var buffer2 = radius % 2 == 0? result: BinaryMorphology.copy(field);
+ var buffer1 = radius % 2 == 1? result: scratch;
+ var buffer2 = radius % 2 == 0? result: scratch;
+ scratch.set(field);
  var temp = buffer1;
  var neighbor_lookup = field.grid.neighbor_lookup;
  var neighbors = [];
@@ -3265,9 +3346,12 @@ BinaryMorphology.dilation = function(field, radius, result) {
  for (var k=0; k<radius; ++k) {
   for (var i=0, li=neighbor_lookup.length; i<li; ++i) {
       neighbors = neighbor_lookup[i];
-      buffer_i = buffer2[i];
+      buffer_i = buffer2[i] === 1;
       for (var j=0, lj=neighbors.length; j<lj; ++j) {
-          buffer_i = buffer_i || buffer2[neighbors[j]];
+       if (buffer_i) {
+        continue;
+       }
+          buffer_i = buffer_i || buffer2[neighbors[j]] === 1;
       }
       buffer1[i] = buffer_i? 1:0;
   }
@@ -3277,13 +3361,15 @@ BinaryMorphology.dilation = function(field, radius, result) {
  }
  return buffer2;
 }
-BinaryMorphology.erosion = function(field, radius, result) {
+BinaryMorphology.erosion = function(field, radius, result, scratch) {
  radius = radius || 1;
  result = result || Uint8Raster(field.grid);
+ scratch = scratch || Uint8Raster(field.grid);
  ;
  ;
- var buffer1 = radius % 2 == 1? result: Uint8Raster(field.grid);
- var buffer2 = radius % 2 == 0? result: BinaryMorphology.copy(field);
+ var buffer1 = radius % 2 == 1? result: scratch;
+ var buffer2 = radius % 2 == 0? result: scratch;
+ scratch.set(field);
  var temp = buffer1;
  var neighbor_lookup = field.grid.neighbor_lookup;
  var neighbors = [];
@@ -3291,9 +3377,12 @@ BinaryMorphology.erosion = function(field, radius, result) {
  for (var k=0; k<radius; ++k) {
   for (var i=0, li=neighbor_lookup.length; i<li; ++i) {
       neighbors = neighbor_lookup[i];
-      buffer_i = buffer2[i];
+      buffer_i = buffer2[i] === 1;
       for (var j=0, lj=neighbors.length; j<lj; ++j) {
-          buffer_i = buffer_i && buffer2[neighbors[j]];
+       if (!buffer_i) {
+        continue;
+       }
+          buffer_i = buffer_i && buffer2[neighbors[j]] === 1;
       }
       buffer1[i] = buffer_i? 1:0;
   }
@@ -3322,24 +3411,28 @@ BinaryMorphology.black_top_hat = function(field, radius) {
 // NOTE: this is not a standard concept in math morphology
 // It is meant to represent the difference between a figure and its dilation
 // Its name eludes to the "margin" concept within the html box model
-BinaryMorphology.margin = function(field, radius, result) {
+BinaryMorphology.margin = function(field, radius, result, scratch) {
  result = result || Uint8Raster(field.grid);
+ scratch = scratch || Uint8Raster(field.grid);
+ ;
  ;
  ;
  if(field === result) throw ("cannot use same input for 'field' and 'result' - margin() is not an in-place function")
  var dilation = result; // reuse result raster for performance reasons
- BinaryMorphology.dilation(field, radius, dilation);
+ BinaryMorphology.dilation(field, radius, dilation, scratch);
  return BinaryMorphology.difference(dilation, field, result);
 }
 // NOTE: this is not a standard concept in math morphology
 // It is meant to represent the difference between a figure and its erosion
 // Its name eludes to the "padding" concept within the html box model
-BinaryMorphology.padding = function(field, radius, result) {
+BinaryMorphology.padding = function(field, radius, result, scratch) {
  result = result || Uint8Raster(field.grid);
+ scratch = scratch || Uint8Raster(field.grid);
+ ;
  ;
  ;
  if(field === result) throw ("cannot use same input for 'field' and 'result' - padding() is not an in-place function")
  var erosion = result; // reuse result raster for performance reasons
- BinaryMorphology.erosion(field, radius, erosion);
- return BinaryMorphology.difference(field, erosion, result);
+ BinaryMorphology.erosion(field, radius, erosion, scratch);
+ return BinaryMorphology.difference(field, erosion, result, scratch);
 }

@@ -6,47 +6,17 @@ BinaryMorphology.VertexTypedArray = function(grid) {
 	result.grid = grid;
 	return result;
 }
-BinaryMorphology.to_binary = function(field, threshold, result) {
-	result = result || Uint8Raster(field.grid);
-	threshold = threshold || 0;
 
-	ASSERT_IS_ARRAY(field, Uint8Array);
-	for (var i=0, li=field.length; i<li; ++i) {
-	    result[i] = (field[i] > threshold)? 1:0;
-	}
-
-	return result;
-}
-BinaryMorphology.to_float = function(field, result) {
-	result = result || new Float32Raster(field.grid);
-	ASSERT_IS_ARRAY(field, Uint8Array)
-	ASSERT_IS_ARRAY(result, Float32Array)
-	for (var i=0, li=field.length; i<li; ++i) {
-	    result[i] = (field[i]===1)? 1:0;
-	}
-
-	return result;
-}
-BinaryMorphology.copy = function(field, result) {
-	result = result || Uint8Raster(field.grid);
-	ASSERT_IS_ARRAY(field, Uint8Array);
+BinaryMorphology.universal = function(result) {
 	ASSERT_IS_ARRAY(result, Uint8Array);
-	for (var i=0, li=field.length; i<li; ++i) {
-	    result[i] = field[i];
-	}
-	return result;
-}
-
-BinaryMorphology.universal = function(field) {
-	ASSERT_IS_ARRAY(field, Uint8Array);
-	for (var i=0, li=field.length; i<li; ++i) {
-	    field[i] = 1;
+	for (var i=0, li=result.length; i<li; ++i) {
+	    result[i] = 1;
 	}
 }
-BinaryMorphology.empty = function(field) {
-	ASSERT_IS_ARRAY(field, Uint8Array);
-	for (var i=0, li=field.length; i<li; ++i) {
-	    field[i] = 0;
+BinaryMorphology.empty = function(result) {
+	ASSERT_IS_ARRAY(result, Uint8Array);
+	for (var i=0, li=result.length; i<li; ++i) {
+	    result[i] = 0;
 	}
 }
 
@@ -103,13 +73,15 @@ BinaryMorphology.negation = function(field, result) {
 	return result;
 }
 
-BinaryMorphology.dilation = function(field, radius, result) {
+BinaryMorphology.dilation = function(field, radius, result, scratch) {
 	radius = radius || 1;
 	result = result || Uint8Raster(field.grid);
+	scratch = scratch || Uint8Raster(field.grid);
 	ASSERT_IS_ARRAY(field, Uint8Array);
 	ASSERT_IS_ARRAY(result, Uint8Array);
-	var buffer1 = radius % 2 == 1? result: 				Uint8Raster(field.grid);
-	var buffer2 = radius % 2 == 0? result: 				BinaryMorphology.copy(field);
+	var buffer1 = radius % 2 == 1? result: 				scratch;
+	var buffer2 = radius % 2 == 0? result: 				scratch;
+	scratch.set(field);
 	var temp = buffer1;
 
 	var neighbor_lookup = field.grid.neighbor_lookup;
@@ -119,9 +91,12 @@ BinaryMorphology.dilation = function(field, radius, result) {
 	for (var k=0; k<radius; ++k) {
 		for (var i=0, li=neighbor_lookup.length; i<li; ++i) {
 		    neighbors = neighbor_lookup[i];
-		    buffer_i = buffer2[i];
+		    buffer_i = buffer2[i] === 1;
 		    for (var j=0, lj=neighbors.length; j<lj; ++j) {
-		        buffer_i = buffer_i || buffer2[neighbors[j]];
+			    if (buffer_i) {
+			    	continue;
+			    }
+		        buffer_i = buffer_i || buffer2[neighbors[j]] === 1;
 		    }
 		    buffer1[i] = buffer_i? 1:0;
 		}
@@ -132,13 +107,15 @@ BinaryMorphology.dilation = function(field, radius, result) {
 
 	return buffer2;
 }
-BinaryMorphology.erosion = function(field, radius, result) {
+BinaryMorphology.erosion = function(field, radius, result, scratch) {
 	radius = radius || 1;
 	result = result || Uint8Raster(field.grid);
+	scratch = scratch || Uint8Raster(field.grid);
 	ASSERT_IS_ARRAY(field, Uint8Array);
 	ASSERT_IS_ARRAY(result, Uint8Array);
-	var buffer1 = radius % 2 == 1? result: 				Uint8Raster(field.grid);
-	var buffer2 = radius % 2 == 0? result: 				BinaryMorphology.copy(field);
+	var buffer1 = radius % 2 == 1? result: 				scratch;
+	var buffer2 = radius % 2 == 0? result: 				scratch;
+	scratch.set(field);
 	var temp = buffer1;
 
 	var neighbor_lookup = field.grid.neighbor_lookup;
@@ -148,9 +125,12 @@ BinaryMorphology.erosion = function(field, radius, result) {
 	for (var k=0; k<radius; ++k) {
 		for (var i=0, li=neighbor_lookup.length; i<li; ++i) {
 		    neighbors = neighbor_lookup[i];
-		    buffer_i = buffer2[i];
+		    buffer_i = buffer2[i] === 1;
 		    for (var j=0, lj=neighbors.length; j<lj; ++j) {
-		        buffer_i = buffer_i && buffer2[neighbors[j]];
+			    if (!buffer_i) {
+			    	continue;
+			    }
+		        buffer_i = buffer_i && buffer2[neighbors[j]] === 1;
 		    }
 		    buffer1[i] = buffer_i? 1:0;
 		}
@@ -183,24 +163,28 @@ BinaryMorphology.black_top_hat = function(field, radius) {
 // NOTE: this is not a standard concept in math morphology
 // It is meant to represent the difference between a figure and its dilation
 // Its name eludes to the "margin" concept within the html box model
-BinaryMorphology.margin = function(field, radius, result) {
+BinaryMorphology.margin = function(field, radius, result, scratch) {
 	result = result || Uint8Raster(field.grid);
+	scratch = scratch || Uint8Raster(field.grid);
 	ASSERT_IS_ARRAY(field, Uint8Array);
 	ASSERT_IS_ARRAY(result, Uint8Array);
+	ASSERT_IS_ARRAY(scratch, Uint8Array);
 	if(field === result) throw ("cannot use same input for 'field' and 'result' - margin() is not an in-place function")
 	var dilation = result; // reuse result raster for performance reasons
-	BinaryMorphology.dilation(field, radius, dilation);
+	BinaryMorphology.dilation(field, radius, dilation, scratch);
 	return BinaryMorphology.difference(dilation, field, result);
 }
 // NOTE: this is not a standard concept in math morphology
 // It is meant to represent the difference between a figure and its erosion
 // Its name eludes to the "padding" concept within the html box model
-BinaryMorphology.padding = function(field, radius, result) {
+BinaryMorphology.padding = function(field, radius, result, scratch) {
 	result = result || Uint8Raster(field.grid);
+	scratch = scratch || Uint8Raster(field.grid);
 	ASSERT_IS_ARRAY(field, Uint8Array);
 	ASSERT_IS_ARRAY(result, Uint8Array);
+	ASSERT_IS_ARRAY(scratch, Uint8Array);
 	if(field === result) throw ("cannot use same input for 'field' and 'result' - padding() is not an in-place function")
 	var erosion = result; // reuse result raster for performance reasons
-	BinaryMorphology.erosion(field, radius, erosion);
-	return BinaryMorphology.difference(field, erosion, result);
+	BinaryMorphology.erosion(field, radius, erosion, scratch);
+	return BinaryMorphology.difference(field, erosion, result, scratch);
 }

@@ -4,7 +4,7 @@ function IntegerLattice(points, getDistance, farthest_nearest_neighbor_distance)
 
 	var lattice = [];
 	var N = 3;
-	var cell_width = farthest_nearest_neighbor_distance;
+	var cell_width = 2*farthest_nearest_neighbor_distance;
 
 	var max_x = Math.max.apply(null, points.map(point => point.x));
 	var min_x = Math.min.apply(null, points.map(point => point.x));
@@ -21,6 +21,7 @@ function IntegerLattice(points, getDistance, farthest_nearest_neighbor_distance)
 	var range_z = max_z - min_z;
 	var cell_num_z = range_z / cell_width;
 
+	var ceil = Math.ceil;
 	var round = Math.round;
 
 	function cell_id(xi, yi, zi) {
@@ -42,19 +43,19 @@ function IntegerLattice(points, getDistance, farthest_nearest_neighbor_distance)
 		xi = round((point.x - min_x) / cell_width);
 		yi = round((point.y - min_y) / cell_width);
 		zi = round((point.z - min_z) / cell_width);
-		add(cell_id(xi, yi, zi), 	point);
-		add(cell_id(xi+1, yi, zi), 	point);
-		add(cell_id(xi-1, yi, zi), 	point);
-		add(cell_id(xi, yi+1, zi), 	point);
-		add(cell_id(xi, yi-1, zi), 	point);
-		add(cell_id(xi, yi, zi+1), 	point);
-		add(cell_id(xi, yi, zi-1), 	point);
+		add(cell_id(xi, yi, zi), 		point);
+		add(cell_id(xi+1, yi, zi), 		point);
+		add(cell_id(xi, yi+1, zi), 		point);
+		add(cell_id(xi, yi, zi+1), 		point);
+		add(cell_id(xi+1, yi+1, zi), 	point);
+		add(cell_id(xi, yi+1, zi+1), 	point);
+		add(cell_id(xi+1, yi+1, zi+1), 	point);
 	} 
 
 	function nearest(point){
-		var xi = round((point.x - min_x) / cell_width);
-		var yi = round((point.y - min_y) / cell_width);
-		var zi = round((point.z - min_z) / cell_width);
+		var xi = ceil((point.x - min_x) / cell_width);
+		var yi = ceil((point.y - min_y) / cell_width);
+		var zi = ceil((point.z - min_z) / cell_width);
 
 		var neighbors = lattice[cell_id(xi, yi, zi)] || [];
 

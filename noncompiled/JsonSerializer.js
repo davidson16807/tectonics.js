@@ -45,38 +45,33 @@ JsonSerializer.plate = function (plate, options) {
 	
 	// serialize non-field values to json
 	var plate_json = {
-		uuid: 					plate.uuid,
 		eulerPole: 				plate.eulerPole,
 		angularSpeed: 			plate.angularSpeed,
-		local_to_global_matrix: plate.local_to_global_matrix,
+		local_to_global_matrix: Base64.encode(plate.local_to_global_matrix.buffer),
 	};
 
 	// encode in base64
-	plate_json.ids 	= Base64.encode(Uint16Array.from( Uint16Raster .get_mask(plate.grid.vertex_ids,	plate.mask) ).buffer);
-	plate_json.sima = Base64.encode(                  Float32Raster.get_mask(plate.sima,            plate.mask)  .buffer);
-	plate_json.sial = Base64.encode(                  Float32Raster.get_mask(plate.sial,            plate.mask)  .buffer);
-	plate_json.age 	= Base64.encode(                  Float32Raster.get_mask(plate.age,             plate.mask)  .buffer);
+	plate_json.mask = Base64.encode(plate.mask.buffer);
+	plate_json.crust = Base64.encode(plate.crust.buffer);
 
 	return plate_json;
 }
 
 var JsonDeserializer = {};
-JsonDeserializer.plate = function (plate_json, _world, options) {
+JsonDeserializer.plate = function (plate_json, world, options) {
 	options = options || {};
 
 	var plate = new Plate({
-		world: _world,
+		world: world,
 		angularSpeed: plate_json.angularSpeed,
-		uuid: plate_json.uuid,
 		eulerPole: plate_json.eulerPole,
-		local_to_global_matrix: plate_json.local_to_global_matrix,
+		local_to_global_matrix: new Float32Array(Base64.decode(plate_json.local_to_global_matrix)),
+		mask: Uint8Raster.FromBuffer(Base64.decode(plate_json.mask), world.grid),
+		crust: new Crust({
+			grid: world.grid, 
+			buffer: Base64.decode(plate_json.crust)
+		})
 	});
-
-	var file_ids = new Uint16Array(Base64.decode(plate_json.ids));
-	Uint8Raster.set_ids_to_value	(plate.mask, 	file_ids, 1);
-	Float32Raster.set_ids_to_values	(plate.sima, 	file_ids, new Float32Array(Base64.decode(plate_json.sima)) );
-	Float32Raster.set_ids_to_values	(plate.sial, 	file_ids, new Float32Array(Base64.decode(plate_json.sial)) );
-	Float32Raster.set_ids_to_values	(plate.age, 	file_ids, new Float32Array(Base64.decode(plate_json.age))  );
 
 	return plate;
 }

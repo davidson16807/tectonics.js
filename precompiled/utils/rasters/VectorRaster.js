@@ -16,23 +16,18 @@
 // I want raster objects to be as bare as possible, functioning more like primitive datatypes.
 
 function VectorRaster(grid) {
-	var length = grid.vertices.length;
-	var result = {
-		x: new Float32Array(length),
-		y: new Float32Array(length),
-		z: new Float32Array(length),
-		grid: grid
-	};
-	return result;
+  return VectorRaster.OfLength(grid.vertices.length, grid);
 }
 VectorRaster.OfLength = function(length, grid) {
-	var result = {
-		x: new Float32Array(length),
-		y: new Float32Array(length),
-		z: new Float32Array(length),
-		grid: grid
-	};	
-	return result;
+  var buffer = new ArrayBuffer(3 * Float32Array.BYTES_PER_ELEMENT * length);
+
+  return {
+    x: new Float32Array(buffer, 0 * Float32Array.BYTES_PER_ELEMENT * length, length),
+    y: new Float32Array(buffer, 1 * Float32Array.BYTES_PER_ELEMENT * length, length),
+    z: new Float32Array(buffer, 2 * Float32Array.BYTES_PER_ELEMENT * length, length),
+    everything: new Float32Array(buffer),
+    grid: grid
+  };
 }
 VectorRaster.FromVectors = function(vectors, grid) {
 	var result = VectorRaster.OfLength(vectors.length, grid);
@@ -51,38 +46,16 @@ VectorRaster.copy = function(vector_raster, output) {
   var output = output || VectorRaster(vector_raster.grid);
   ASSERT_IS_VECTOR_RASTER(vector_raster)
   ASSERT_IS_VECTOR_RASTER(output)
-
-  var ix = vector_raster.x;
-  var iy = vector_raster.y;
-  var iz = vector_raster.z;
-
-  var ox = output.x;
-  var oy = output.y;
-  var oz = output.z;
-
-  for (var i=0, li=ix.length; i<li; ++i) {
-      ox[i] = ix[i];
-      oy[i] = iy[i];
-      oz[i] = iz[i];
-  }
+  output.everything.set(vector_raster.everything);
   return output;
 }
 VectorRaster.fill = function (vector_raster, value) {
   ASSERT_IS_VECTOR_RASTER(vector_raster)
 
-  var ix = value.x;
-  var iy = value.y;
-  var iz = value.z;
-
-  var ox = vector_raster.x;
-  var oy = vector_raster.y;
-  var oz = vector_raster.z;
-
-  for (var i=0, li=ox.length; i<li; ++i) {
-      ox[i] = ix;
-      oy[i] = iy;
-      oz[i] = iz;
-  }
+  vector_raster.x.fill(value.x);
+  vector_raster.y.fill(value.y);
+  vector_raster.z.fill(value.z);
+  
   return vector_raster;
 };
 
@@ -128,25 +101,32 @@ VectorRaster.get_nearest_value = function(value_raster, pos) {
 	return {x: value_raster.x[id], y: value_raster.y[id], z: value_raster.z[id]};
 }
 VectorRaster.get_nearest_values = function(value_raster, pos_raster, result) {
-	result = result || VectorRaster(pos_raster.grid);
+  result = result || VectorRaster(pos_raster.grid);
   ASSERT_IS_VECTOR_RASTER(vector_raster)
   ASSERT_IS_VECTOR_RASTER(pos_raster)
   ASSERT_IS_VECTOR_RASTER(result)
-	var ids = pos_raster.grid.getNearestIds(pos_raster);
+  var ids = pos_raster.grid.getNearestIds(pos_raster);
+  return VectorRaster.get_ids(value_raster, ids, result);
+}
+VectorRaster.get_ids = function(value_raster, ids_raster, result) {
+  result = result || VectorRaster(pos_raster.grid);
+
+  ASSERT_IS_VECTOR_RASTER(vector_raster)
+  ASSERT_IS_VECTOR_RASTER(result)
 
   var ix = value_raster.x; 
   var iy = value_raster.y; 
   var iz = value_raster.z; 
 
-	var ox = result.x;
-	var oy = result.y;
-	var oz = result.z;
+  var ox = result.x;
+  var oy = result.y;
+  var oz = result.z;
 
-	for (var i=0, li=ids.length; i<li; ++i) {
-		ox[i] = ix[ids[i]];
-		oy[i] = iy[ids[i]];
-		oz[i] = iz[ids[i]];
-	}
-	
-	return result;
+  for (var i=0, li=ids_raster.length; i<li; ++i) {
+    ox[i] = ix[ids_raster[i]];
+    oy[i] = iy[ids_raster[i]];
+    oz[i] = iz[ids_raster[i]];
+  }
+  
+  return result;
 }

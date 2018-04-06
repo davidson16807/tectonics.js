@@ -321,3 +321,73 @@ Uint8Field.mult_vector = function (scalar_field, vector, result) {
   }
   return result;
 };
+Uint8Field.gradient = function (scalar_field, result) {
+  result = result || VectorRaster(scalar_field.grid);
+
+  ASSERT_IS_ARRAY(scalar_field, Uint8Array)
+  ASSERT_IS_VECTOR_RASTER(result)
+
+  var grid = scalar_field.grid;
+  var pos = grid.pos; 
+  var ix = pos.x; 
+  var iy = pos.y; 
+  var iz = pos.z; 
+  var dpos_hat = grid.pos_arrow_differential_normalized; 
+  var dxhat = dpos_hat.x; 
+  var dyhat = dpos_hat.y; 
+  var dzhat = dpos_hat.z; 
+  var dpos = grid.pos_arrow_differential; 
+  var dx = dpos.x; 
+  var dy = dpos.y; 
+  var dz = dpos.z; 
+  var arrows = grid.arrows; 
+  var arrow = []; 
+  var dlength = grid.pos_arrow_distances; 
+  var neighbor_count = grid.neighbor_count; 
+  var x = result.x; 
+  var y = result.y; 
+  var z = result.z; 
+  var arrow_distance = 0; 
+  var average_distance = grid.average_distance; 
+  var slope = 0; 
+  var slope_magnitude = 0; 
+  var from = 0; 
+  var to = 0; 
+  var max_slope_from = 0; 
+  var PI = Math.PI; 
+  //
+  // NOTE: 
+  // The naive implementation is to estimate the gradient based on each individual neighbor,
+  //  then take the average between the estimates.
+  // This is wrong! If dx, dy, or dz is very small, 
+  //  then the gradient estimate along that dimension will be very big.
+  // This will result in very strange behavior.
+  //
+  // The correct implementation is to use the Gauss-Green theorem: 
+  //   ∫∫∫ᵥ ∇ϕ dV = ∫∫ₐ ϕn̂ da
+  // so:
+  //   ∇ϕ = 1/V ∫∫ₐ ϕn̂ da
+  // so find flux out of an area, then divide by volume
+  // the area/volume is calculated for a circle that reaches halfway to neighboring vertices
+  x.fill(0);
+  y.fill(0);
+  z.fill(0);
+  var average_value = 0;
+  for (var i = 0, li = arrows.length; i < li; i++) { 
+    arrow = arrows[i]; 
+    from = arrow[0]; 
+    to = arrow[1]; 
+    average_value = (scalar_field[to] - scalar_field[from]); 
+    x[from] += average_value * dxhat[i] * PI * dlength[i]/neighbor_count[from]; 
+    y[from] += average_value * dyhat[i] * PI * dlength[i]/neighbor_count[from]; 
+    z[from] += average_value * dzhat[i] * PI * dlength[i]/neighbor_count[from]; 
+  } 
+  var inverse_volume = 1 / (PI * (average_distance/2) * (average_distance/2)); 
+  for (var i = 0, li = scalar_field.length; i < li; i++) { 
+    x[i] *= inverse_volume; 
+    y[i] *= inverse_volume; 
+    z[i] *= inverse_volume; 
+  } 
+
+  return result;
+};

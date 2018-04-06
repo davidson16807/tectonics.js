@@ -157,53 +157,44 @@ VoronoiSphere.prototype.getNearestIds = function(pos_field, result) {
 	var xi = 0.0;
 	var yi = 0.0;
 	var zi = 0.0;
-	var xi2 = 0.0;
-	var yi2 = 0.0;
-	var zi2 = 0.0;
 	var raster = xy;
 	var raster_x = 0.0;
 	var raster_y = 0.0;
 	var raster_i = 0;
 	var raster_j = 0;
 	var raster_id = 0;
+	var threshold = Math.sqrt(1/3); // NOTE: on a unit sphere, the largest coordinate will always exceed this threshold
 	for (var i = 0, li = x.length; i<li; ++i){
 		xi = x[i];
 		yi = y[i];
 		zi = z[i];
-		xi2 = xi * xi;
-		yi2 = yi * yi;
-		zi2 = zi * zi;
-		if (xi2 > yi2 && xi2 > zi2) { // x is greatest
-			if (xi > 0) {
-				raster = yz;
-				raster_x = yi;
-				raster_y = zi;
-			} else {
-				raster = zy;
-				raster_x = zi;
-				raster_y = yi;
-			}
-		} else if (yi2 > xi2 && yi2 > zi2) { // y is greatest
-			if (yi > 0) {
-				raster = zx;
-				raster_x = zi;
-				raster_y = xi;
-			} else {
-				raster = xz;
-				raster_x = xi;
-				raster_y = zi;
-			}
-		} else if (zi2 > xi2 && zi2 > yi2) { // z is greatest
-			if (zi > 0) {
-				raster = xy;
-				raster_x = xi;
-				raster_y = yi;
-			} else {
-				raster = yx;
-				raster_x = yi;
-				raster_y = xi;
-			}
+
+		if (xi > threshold) {
+			raster = yz;
+			raster_x = yi;
+			raster_y = zi;
+		} else if (-xi > threshold) {
+			raster = zy;
+			raster_x = zi;
+			raster_y = yi;
+		} else if (yi > threshold) { 
+			raster = zx;
+			raster_x = zi;
+			raster_y = xi;
+		} else if (-yi > threshold)  {
+			raster = xz;
+			raster_x = xi;
+			raster_y = zi;
+		} else if (zi > threshold) { 
+			raster = xy;
+			raster_x = xi;
+			raster_y = yi;
+		} else { // if (-zi > threshold)
+			raster = yx;
+			raster_x = yi;
+			raster_y = xi;
 		}
+
 		raster_i = ((raster_x + 1) / cell_half_width) | 0;
 		raster_j = ((raster_y + 1) / cell_half_width) | 0;
 		raster_id = raster_i * raster_dim_size + raster_j;
