@@ -30,6 +30,11 @@ Uint8Raster.OfLength = function(length, grid) {
   result.grid = grid;
   return result;
 }
+Uint8Raster.FromBuffer = function(buffer, grid) {
+  var result = new Uint8Array(buffer, 0, grid.vertices.length);
+  result.grid = grid;
+  return result;
+}
 Uint8Raster.FromUint8Raster = function(raster) {
   var result = Uint8Raster(raster.grid);
   for (var i=0, li=result.length; i<li; ++i) {
@@ -48,16 +53,12 @@ Uint8Raster.copy = function(raster, result) {
   var result = result || Uint8Raster(raster.grid);
   ASSERT_IS_ARRAY(raster, Uint8Array)
   ASSERT_IS_ARRAY(result, Uint8Array)
-  for (var i=0, li=raster.length; i<li; ++i) {
-      result[i] = raster[i];
-  }
+  result.set(raster);
   return result;
 }
 Uint8Raster.fill = function (raster, value) {
   ASSERT_IS_ARRAY(raster, Uint8Array)
-  for (var i = 0, li = raster.length; i < li; i++) {
-    raster[i] = value;
-  }
+  raster.fill(value);
 };
 
 Uint8Raster.min_id = function (raster) {

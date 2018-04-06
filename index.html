@@ -34,21 +34,19 @@
 	<script src="libraries/threex/THREEx.FibonacciSphereGeometry.js"></script>
 	<script src="libraries/threex/THREEx.Debug.js"></script>
 	<script src="libraries/jquery-1.10.2.min.js"></script>
-	<script src="libraries/buckets-minified.js"></script>
 	<script src="libraries/random-0.26.js"></script>
 	<script src="libraries/base64-arraybuffer.js"></script>
-	<script src="libraries/uuid.js"></script>
 	<script src="postcompiled/utils/Rasters.js"></script>
 	<script src="postcompiled/view/FragmentShaders.js"></script>
 	<script src="postcompiled/view/VertexShaders.js"></script>
 	<script src="noncompiled/utils/Float32SphereRaster.js"></script>
-	<script src="noncompiled/academics/TectonicsModeling.js"></script>
-	<script src="noncompiled/academics/AtmosphericModeling.js"></script>
-	<script src="noncompiled/academics/BiosphereModeling.js"></script>
 	<script src="noncompiled/Logging.js"></script>
 	<script src="noncompiled/IntegerLattice.js"></script>
 	<script src="noncompiled/VoronoiSphere.js"></script>
 	<script src="noncompiled/Sphere.js"></script>
+	<script src="noncompiled/academics/TectonicsModeling.js"></script>
+	<script src="noncompiled/academics/AtmosphericModeling.js"></script>
+	<script src="noncompiled/academics/BiosphereModeling.js"></script>
 	<script src="noncompiled/model/Crust.js"></script>
 	<script src="noncompiled/model/RockColumn.js"></script>
 	<script src="noncompiled/model/Plate.js"></script>
@@ -306,14 +304,14 @@
 	'use strict';
 	
 	//standards:
-	// all points are vectors
+	// all spatial coordinates are xyz vectors on a unit sphere
 	// all angles are in radians
-	// all distance is in km
-	// all thickness is in meters
+	// all length is in meters
 	// all time in Million years (My)
-	// all speeds are in km/My (goes along with distance)
-	// all densities are in kg/m^3 (goes along with thickness)
-	// planets are rendered as unit spheres
+	// all speeds are in m/My (goes along with distance)
+	// all densities are in tons/m^3 (goes along with mass/thickness)
+	// all mass is in tons (goes along with density)
+	// all pressure is in kiloPascals (goes along with tons)
 	
     var querystring = [];
     for(var i = 0, 

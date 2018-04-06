@@ -44,14 +44,14 @@
 
 #ifndef IS_PROD
 #define ASSERT_IS_VECTOR_RASTER(INPUT) \
-	if (!(INPUT.x !== void 0) && !(INPUT.x instanceof Float32Array)) { throw #INPUT + ' is not a vector raster'; }
+	if ((INPUT.everything === void 0) || !(INPUT.everything instanceof Float32Array)) { throw #INPUT + ' is not a vector raster'; }
 #else
 #define ASSERT_IS_VECTOR_RASTER(INPUT)
 #endif
 
 #ifndef IS_PROD
 #define ASSERT_IS_3X3_MATRIX(INPUT) \
-	if (INPUT.length !== 9) { throw #INPUT + ' is not a 3x3 matrix'; }
+	if ((INPUT.length !== 9) || !(INPUT instanceof Float32Array)) { throw #INPUT + ' is not a 3x3 matrix'; }
 #else
 #define ASSERT_IS_3X3_MATRIX(INPUT)
 #endif
@@ -59,6 +59,7 @@
 #include "precompiled/utils/Grid.js"
 #include "precompiled/utils/Matrix.js"
 #include "precompiled/utils/Vector.js"
+#include "precompiled/utils/RasterStackBuffer.js"
 
 #include "precompiled/utils/datasets/Float32Dataset.js"
 #include "precompiled/utils/datasets/Uint16Dataset.js"
@@ -82,5 +83,6 @@
 
 #include "precompiled/utils/interpolation/Float32RasterInterpolation.js"
 #include "precompiled/utils/trigonometry/Float32RasterTrigonometry.js"
+#include "precompiled/utils/scalar-transport/ScalarTransport.js"
 #include "precompiled/utils/image-analysis/VectorImageAnalysis.js"
 #include "precompiled/utils/morphology/BinaryMorphology.js"

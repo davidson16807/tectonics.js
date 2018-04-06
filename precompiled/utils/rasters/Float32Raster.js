@@ -19,9 +19,7 @@ function Float32Raster(grid, fill) {
 	var result = new Float32Array(grid.vertices.length);
 	result.grid = grid;
 	if (fill !== void 0) { 
-	for (var i=0, li=result.length; i<li; ++i) {
-	    result[i] = fill;
-	}
+    result.fill(fill);
 	}
 	return result;
 };
@@ -29,6 +27,11 @@ Float32Raster.OfLength = function(length, grid) {
 	var result = new Float32Array(length);
 	result.grid = grid;
 	return result;
+}
+Uint16Raster.FromBuffer = function(buffer, grid) {
+  var result = new Uint16Array(buffer, 0, grid.vertices.length);
+  result.grid = grid;
+  return result;
 }
 Float32Raster.FromUint8Raster = function(raster, result) {
   var result = result || Float32Raster(raster.grid);
@@ -52,16 +55,12 @@ Float32Raster.copy = function(raster, result) {
   var result = result || Float32Raster(raster.grid);
   ASSERT_IS_ARRAY(raster, Float32Array)
   ASSERT_IS_ARRAY(result, Float32Array)
-  for (var i=0, li=raster.length; i<li; ++i) {
-      result[i] = raster[i];
-  }
+  result.set(raster);
   return result;
 }
 Float32Raster.fill = function (raster, value) {
   ASSERT_IS_ARRAY(raster, Float32Array)
-  for (var i = 0, li = raster.length; i < li; i++) {
-    raster[i] = value;
-  }
+  raster.fill(value);
 };
 
 Float32Raster.min_id = function (raster) {
@@ -145,99 +144,20 @@ Float32Raster.set_ids_to_values = function(raster, id_array, value_array) {
   return raster;
 }
 
-
-
-
-
-//TODO: move this to its own namespace: Float32ScalarTransport
-Float32Raster.assert_nonnegative_quantity = function(quantity) {
-  ASSERT_IS_ARRAY(quantity, Float32Array)
-
-#ifndef IS_PROD
-  var quantity_i = 0.0;
-  for (var i=0, li=quantity.length; i<li; ++i) {
-    if (quantity[i] < 0) {
-      debugger;
-    }
+// example: Float32Raster.add_values_to_ids(local, local_ids_of_global_cells, global, local);
+// NOTE: this differs from set_ids_to_values - 
+//   in the event an id is mentioned twice in id_array, add_values_to_ids will add those values together
+Float32Raster.add_values_to_ids = function(raster1, id_array, raster2, result) {
+  if (raster1 !== result) {
+    Float32Raster.copy(raster1, result);
   }
-#endif
-}
-Float32Raster.assert_conserved_quantity_delta = function(delta, threshold) {
-  ASSERT_IS_ARRAY(delta, Float32Array)
-
-#ifndef IS_PROD
-  var average = Float32Dataset.average(delta);
-  if (average * average > threshold * threshold) {
-    debugger;
-  }
-#endif
-}
-Float32Raster.assert_nonnegative_quantity_delta = function(delta, quantity) {
-  ASSERT_IS_ARRAY(delta, Float32Array)
-  ASSERT_IS_ARRAY(quantity, Float32Array)
   
-#ifndef IS_PROD
-  for (var i=0, li=delta.length; i<li; ++i) {
-    if (-delta[i] > quantity[i]) {
-      debugger;
-    }
+  var id_array_i = 0;
+  for (var i=0, li=raster2.length; i<li; ++i) {
+    id_array_i = id_array[i];
+    result[id_array_i] = result[id_array_i] + raster2[i];
   }
-#endif
+  return result;
 }
-Float32Raster.fix_nonnegative_quantity = function(quantity) {
-  ASSERT_IS_ARRAY(quantity, Float32Array)
-  
-  ScalarField.min_scalar(quantity, 0);
-}
-Float32Raster.fix_conserved_quantity_delta = function(delta, threshold) {
-  ASSERT_IS_ARRAY(delta, Float32Array)
 
-  var average = Float32Dataset.average(delta);
-  if (average * average > threshold * threshold) {
-    ScalarField.sub_scalar(delta, average, delta);
-  }
-}
-Float32Raster.fix_nonnegative_quantity_delta = function(delta, quantity) {
-  ASSERT_IS_ARRAY(delta, Float32Array)
-  ASSERT_IS_ARRAY(quantity, Float32Array)
 
-  for (var i=0, li=delta.length; i<li; ++i) {
-    if (-delta[i] > quantity[i]) {
-      delta[i] = -quantity[i];
-    }
-  }
-}
-// NOTE: if anyone can find a shorter more intuitive name for this, I'm all ears
-Float32Raster.fix_nonnegative_conserved_quantity_delta = function(delta, quantity, scratch) {
-  var scratch = scratch || Float32Raster(delta.grid);
-
-  ASSERT_IS_ARRAY(delta, Float32Array)
-  ASSERT_IS_ARRAY(quantity, Float32Array)
-  ASSERT_IS_ARRAY(scratch, Float32Array)
-  
-  var total_excess = 0.0;
-  var total_remaining = 0.0;
-  var remaining = scratch;
-  // clamp delta to quantity available
-  // keep tabs on excess where delta exceeds quantity
-  // also keep tabs on which cells still have quantity remaining after delta is applied
-  for (var i=0, li=delta.length; i<li; ++i) {
-    if (-delta[i] > quantity[i]) {
-      delta[i] = -quantity[i];
-      total_excess += -delta[i] - quantity[i];
-      remaining[i] = 0;
-    }
-    else {
-      remaining[i] = quantity[i] + delta[i];
-      total_remaining += quantity[i] + delta[i];
-    }
-  }
-  // go back and correct the excess by taxing from the remaining quantity
-  // the more remaining a cell has, the more it gets taxed
-  var remaining_tax = total_excess / total_remaining;
-  if (remaining_tax) {
-    for (var i=0, li=delta.length; i<li; ++i) {
-      delta[i] -= remaining[i] * remaining_tax;
-    }
-  }
-}

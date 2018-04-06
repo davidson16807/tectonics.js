@@ -33,11 +33,16 @@ VectorRasterGraphics.magic_wand_select = function function_name(vector_raster, s
 	var neighbors = [];
 	var is_similar = 0;
 	var threshold = Math.cos(Math.PI * 60/180);
+
+	var start_x = x[start_id];
+	var start_y = y[start_id];
+	var start_z = z[start_id];
+
 	while(searching.length > 0){
 		id = searching.shift();
 
-		is_similar = similarity (x[id], 		y[id], 		z[id], 
-								 x[start_id],	y[start_id],	z[start_id]) > threshold;
+		is_similar = similarity (x[id], 	y[id], 		z[id], 
+								 start_x,	start_y,	start_z) > threshold;
 		if (is_similar) {
 			grouped[id] = 1;
 
@@ -57,28 +62,20 @@ VectorRasterGraphics.magic_wand_select = function function_name(vector_raster, s
 
 VectorRasterGraphics.copy_into_selection = function(vector_raster, copied, selection, result) {
 	result = result || Float32Raster(vector_raster.grid);
+
 	ASSERT_IS_VECTOR_RASTER(vector_raster)
 	ASSERT_IS_VECTOR_RASTER(copied)
 	ASSERT_IS_ARRAY(selection, Uint8Array)
 	ASSERT_IS_VECTOR_RASTER(result)
 
-	var ax = vector_raster.x;
-	var ay = vector_raster.y;
-	var az = vector_raster.z;
+	var a = vector_raster.everything;
+	var b = copied.everything;
+	var c = result.everything;
 
-	var bx = copied.x;
-	var by = copied.y;
-	var bz = copied.z;
-
-	var cx = result.x;
-	var cy = result.y;
-	var cz = result.z;
-
-	for (var i=0, li=vector_raster.length; i<li; ++i) {
-	    cx[i] = selection[i] === 1? bx[i] : ax[i];
-	    cy[i] = selection[i] === 1? by[i] : ay[i];
-	    cz[i] = selection[i] === 1? bz[i] : az[i];
-	}
+	var length = selection.length;
+	for (var i=0, li=a.length; i<li; ++i) { 
+		c[i] = selection[i%length] === 1? b[i] : a[i]; 
+	} 
 
 	return result;
 }
@@ -101,10 +98,12 @@ VectorRasterGraphics.fill_into_selection = function(vector_raster, fill, selecti
 	var cy = result.y;
 	var cz = result.z;
 
+	var selection_i = 0;
 	for (var i=0, li=vector_raster.length; i<li; ++i) {
-	    cx[i] = selection[i] === 1? bx : ax[i];
-	    cy[i] = selection[i] === 1? by : ay[i];
-	    cz[i] = selection[i] === 1? bz : az[i];
+      selection_i = selection[i]; 
+      cx[i] = selection_i === 1? bx : ax[i]; 
+      cy[i] = selection_i === 1? by : ay[i]; 
+      cz[i] = selection_i === 1? bz : az[i]; 
 	}
 
 	return result;
