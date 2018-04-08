@@ -529,7 +529,7 @@
 
 	function format (num, rollover, precision){
 				var quantity = num;
-				var units = ['', 'k', 'M', 'G']
+				var units = ['', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']
 				var unit = units.shift();
 				while(quantity > rollover) {
 					unit = units.shift();
@@ -894,19 +894,30 @@
 				}
 				var max = Float32Dataset.max(field);
 				var min = Float32Dataset.min(field);
-				var range = Math.pow(10, Math.round(Math.log10(max - min)));
+				var median = Float32Dataset.median(field); 
+				var plot_range = Math.pow(10, Math.floor(Math.log10(max-min)));
+		        var plot_min = Math.round(median - plot_range/2); 
+        		var plot_max = Math.round(median + plot_range/2); 
 				var bin_num = 10;
-				var bin_size = range/bin_num;
+				var bin_size = plot_range/bin_num;
 				var bin_min = 0;
 				var bin_max = 0;
 				var bin_mag = 0;
 				var x = [];
 				var y = [];
+				var surface_area = Sphere.surface_area(world.radius);
+
+				var bin_size = Math.pow(10, Math.floor(Math.log10(max-min))-1); 
+				var bin_num = 10; 
+				var bin_size = plot_range / bin_num;
+				var plot_middle = Math.round(median/bin_size)*bin_size; 
+				var plot_min = plot_middle - bin_size * Math.round(bin_num/2); 
 				for (var i = 0; i < bin_num; i++) {
-					bin_min = Math.round(min+i*bin_size);
-					bin_max = Math.round(max+i*bin_size);
-					x[i] = Uint8Dataset.sum(ScalarField.between_scalars(field, bin_min, bin_max))
-					y[i] = bin_min;
+					// debugger;
+			        bin_min = plot_min + i*bin_size; 
+			        bin_max = plot_min + (i+1)*bin_size; 
+					x[i] = Uint8Dataset.average(ScalarField.between_scalars(field, bin_min, bin_max)) * 100
+					y[i] = Math.round(bin_min * 1e3)/1e3;
 				}
 				_this.min = min;
 				_this.max = max;
