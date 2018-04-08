@@ -877,6 +877,10 @@
 						}
 					}],
 					yAxes: [{
+						scaleLabel: {
+							display: true,
+							labelString: '% surface'
+						},
 						ticks: {
 						  fontColor: '#FFFFFF'
 						},
@@ -896,8 +900,6 @@
 				var min = Float32Dataset.min(field);
 				var median = Float32Dataset.median(field); 
 				var plot_range = Math.pow(10, Math.floor(Math.log10(max-min)));
-		        var plot_min = Math.round(median - plot_range/2); 
-        		var plot_max = Math.round(median + plot_range/2); 
 				var bin_num = 10;
 				var bin_size = plot_range/bin_num;
 				var bin_min = 0;
@@ -905,7 +907,6 @@
 				var bin_mag = 0;
 				var x = [];
 				var y = [];
-				var surface_area = Sphere.surface_area(world.radius);
 
 				var bin_size = Math.pow(10, Math.floor(Math.log10(max-min))-1); 
 				var bin_num = 10; 
