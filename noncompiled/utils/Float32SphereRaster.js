@@ -11,3 +11,11 @@ Float32SphereRaster.latitude = function(height, lat) {
 	}
 	return lat;
 }
+Float32SphereRaster.longitude = function(x, z, lon) {
+	var lon = lon || Float32Raster(world.grid);
+	var atan = Math.atan2;
+	for (var i=0, li=x.length; i<li; ++i) {
+		lon[i] = atan(-z[i], x[i]);
+	}
+	return lon;
+}

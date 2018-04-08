@@ -62,7 +62,8 @@
 	<script src="noncompiled/view/View.js"></script>
 	<script src="noncompiled/name-gen/NameGenerator.js"></script>
 	<script src="noncompiled/name-gen/NameCorpii.js"></script>
-	<script src="noncompiled/JsonSerializer.js"></script>
+	<script src="noncompiled/file-io/JsonSerializer.js"></script>
+	<script src="noncompiled/file-io/CsvExporter.js"></script>
 </head>
 <body>
 <!-- three.js container -->
@@ -222,6 +223,23 @@
 			<span class="instructions">drag</span>
 			<input id="load-input" ref="loadInput" type="file" v-on:change="loadPart2($event.target.files[0])" class="hidden" />
 		</button>
+		<div id="export" class="btn-group">
+			<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				<img src="icons/export.svg" height="16em" width="16em"/>
+				Export
+				<span class="caret"></span>
+			</button>
+			<ul class="dropdown-menu btn-default btn-xs">
+				<li>
+					<button type="button" 
+						class="btn btn-default btn-xs" 
+						v-on:click="csv">
+						<img src="icons/view-list.svg" height="16em" width="16em"/>
+						CSV
+					</button>
+				</li>
+			</ul>
+		</div>
 	</div>
 </div>
 
@@ -621,14 +639,22 @@
 	  	save(event) {
 			var serialized = JsonSerializer.model(model,{seed: seed, random: random});
 			var stringified = JSON.stringify(serialized);
-  			var dataUrl = 
-  				"data:application/json;"+
-  				"charset=utf-8," + 
-  				stringified;
-  			var filename = 
-  				seed+'-'+
-  				format_text(model.age, 1000, 3).replace(/\s/,'')+
-  				'.sim'
+  			var dataUrl = `data:application/json;charset=utf-8,${stringified}`;
+  			var age = format_text(model.age, 1000, 3).replace(/\s/,'');
+  			var filename = `${seed}-${age}.sim`;
+  			download(dataUrl, filename);
+  		}
+	  }
+	});
+
+	var exportVue = new Vue({
+	  el: '#export',
+	  methods: {
+	  	csv(event) {
+			var content = CsvExporter.world(model.world());
+  			var dataUrl = `data:application/json;charset=utf-8,${content}`;
+  			var age = format_text(model.age, 1000, 3).replace(/\s/,'');
+  			var filename = `${seed}-${age}.csv`;
   			download(dataUrl, filename);
   		}
 	  }
