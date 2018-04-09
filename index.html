@@ -55,6 +55,7 @@
 	<script src="noncompiled/model/EliasHeightMapGenerator.js"></script>
 	<script src="noncompiled/model/WorldGenerator.js"></script>
 	<script src="noncompiled/model/Model.js"></script>
+	<script src="noncompiled/view/ChartDisplay.js"></script>
 	<script src="noncompiled/view/ScalarDisplay.js"></script>
 	<script src="noncompiled/view/VectorDisplay.js"></script>
 	<script src="noncompiled/view/RegressionTestDisplays.js"></script>
@@ -837,6 +838,7 @@
         	stddev: 0,
             x: [],
             y: [],
+        	ocean_visibility: 1,
             options: {
             	legend: {display: false}, 
             	animation : false,
@@ -862,33 +864,29 @@
 					_this.isEnabled = false;
 					return;
 				}
-				var max = Float32Dataset.max(field);
-				var min = Float32Dataset.min(field);
-				var range = Math.pow(10, Math.round(Math.log10(max - min)));
-				var bin_num = 10;
-				var bin_size = range/bin_num;
-				var bin_min = 0;
-				var bin_max = 0;
-				var bin_mag = 0;
-				var x = [];
-				var y = [];
-				for (var i = 0; i < bin_num; i++) {
-					bin_min = Math.round(min+i*bin_size);
-					bin_max = Math.round(max+i*bin_size);
-					x[i] = Uint8Dataset.sum(ScalarField.between_scalars(field, bin_min, bin_max))
-					y[i] = bin_min;
-				}
-				_this.min = min;
-				_this.max = max;
+
+				_this.min = Float32Dataset.max(field);
+				_this.max = Float32Dataset.min(field);
 				_this.mean = Float32Dataset.average(field);
 				_this.median = Float32Dataset.median(field);
 				_this.stddev = Float32Dataset.standard_deviation(field);
+
+				var chart_display = view._scalarDisplay.chartDisplays[0];
+				if (chart_display === void 0){
+					_this.isEnabled = false;
+					return;
+				}
+				var chart_data = chart_display.get_dynamic_data(field, { ocean_visibility: this.ocean_visibility });
+
 				_this.isEnabled = true;
-				_this.$data.x = x;
-				_this.$data.y = y;
+				_this.$data.x = chart_data.x;
+				_this.$data.y = chart_data.y;
 			}, 1000/2);
 		},
 		methods: {
+			set_ocean_visibility(value){
+				this.ocean_visibility = value? 1:0;
+			},
 			round(x) {
 				return Math.round(x);
 			}
