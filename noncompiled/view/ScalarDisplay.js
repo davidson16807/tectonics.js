@@ -18,6 +18,7 @@ function RealisticDisplay(shader_return_value) {
 			gl_FragColor = ice_covered;
 			**/}))
 		.replace('@UNCOVERED', shader_return_value);
+	this.chartDisplays = []; 
 }
 RealisticDisplay.prototype.addTo = function(mesh) {
 	mesh.material.fragmentShader = this._fragmentShader;
@@ -45,6 +46,7 @@ function ScalarDisplay(options) {
 	this.field = void 0;
 	this.scratch = void 0;
 	this.getField = options['getField'];
+	this.chartDisplays = options['chartDisplays'] || [ new SpatialPdfChartDisplay('land') ]; 
 	function hex_color_to_glsl_string_color(color) {
 		var rIntValue = ((color / 256 / 256) % 256) / 255.0;
 		var gIntValue = ((color / 256      ) % 256) / 255.0;
@@ -142,6 +144,7 @@ function ScalarHeatDisplay(options) {
 	var scaling = options['scaling'] || false;
 	var scalar = options['scalar'] || 'vScalar';
 	this.getField = options['getField'];
+	this.chartDisplays = options['chartDisplays'] || [ new SpatialPdfChartDisplay('land') ]; 
 	this.scaling = scaling;
 	this.field = void 0;
 	this.scratch = void 0;
