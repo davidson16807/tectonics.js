@@ -1,5 +1,5 @@
 
-var AtmosphericModeling = (function() {
+var AtmosphereModeling = (function() {
 
 	var surface_air_pressure_land_effect = function(displacement, lat, sealevel, season, effect, scratch) {
 		var is_land = ScalarField.gt_scalar(displacement, sealevel);
@@ -31,8 +31,8 @@ var AtmosphericModeling = (function() {
 		return effect;
 	}
 
-	AtmosphericModeling = {};
-	AtmosphericModeling.surface_air_velocity = function(pos, pressure, angular_speed, velocity) {
+	AtmosphereModeling = {};
+	AtmosphereModeling.surface_air_velocity = function(pos, pressure, angular_speed, velocity) {
 		velocity = velocity || VectorRaster(pos.grid);
 		ScalarField.gradient(pressure, velocity);
 		EARTH_RADIUS = 6.3e6; // meters
@@ -42,7 +42,7 @@ var AtmosphericModeling = (function() {
 		VectorDataset.rescale(velocity, velocity, 15.65); //15.65 m/s is the fastest average wind speed on Earth, recorded at Mt. Washington
 		return velocity;
 	}
-	AtmosphericModeling.surface_air_pressure = function(displacement, lat, sealevel, meanAnomaly, axial_tilt, pressure, scratch) {
+	AtmosphereModeling.surface_air_pressure = function(displacement, lat, sealevel, meanAnomaly, axial_tilt, pressure, scratch) {
 		pressure = pressure || Float32Raster(lat.grid);
 		scratch = scratch || Float32Raster(lat.grid);
 		var season = meanAnomaly / Math.PI;
@@ -61,7 +61,7 @@ var AtmosphericModeling = (function() {
 
 		return pressure;
 	}
-	AtmosphericModeling.surface_air_temp = function(pos, meanAnomaly, axial_tilt) {
+	AtmosphereModeling.surface_air_temp = function(pos, meanAnomaly, axial_tilt) {
 		var season = meanAnomaly / Math.PI;
 		var temp = Float32Raster(pos.grid);
 		var lat = Float32SphereRaster.latitude(pos.y);
@@ -75,7 +75,7 @@ var AtmosphericModeling = (function() {
 		}
 		return temp;
 	}
-	AtmosphericModeling.precip = function(lat, result) {
+	AtmosphereModeling.precip = function(lat, result) {
 	    result = result || Float32Raster(lat.grid);
 		//Mean annual precipitation over land, mm yr-1
 		//credits for original model go to /u/astrographer, 
@@ -97,7 +97,7 @@ var AtmosphericModeling = (function() {
 		}
 		return result;
 	}
-	AtmosphericModeling.albedo = function(
+	AtmosphereModeling.albedo = function(
 		land_fraction,
 		ice_fraction, 
 		plant_fraction,
@@ -123,5 +123,5 @@ var AtmosphericModeling = (function() {
 		return result;
 	}
 
-	return AtmosphericModeling;
+	return AtmosphereModeling;
 })();

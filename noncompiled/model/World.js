@@ -105,7 +105,7 @@ var World = (function() {
 		Crust.get_total_mass				(world.total_crust, world.material_density,								world.total_mass);
 		Crust.get_density 					(world.total_mass, world.thickness,	world.material_density.mafic_volcanic_min, 	world.density);
 		Crust.get_buoyancy 					(world.density, world.material_density, world.surface_gravity, 		 	world.buoyancy);
-		TectonicsModeling.get_displacement 	(world.thickness, world.density, world.material_density, 				world.displacement);
+		LithosphereModeling.get_displacement 	(world.thickness, world.density, world.material_density, 				world.displacement);
 	}
 	function merge_plates_to_master(plates, master) {
 	  	var scratchpad = RasterStackBuffer.scratchpad;
@@ -330,7 +330,7 @@ var World = (function() {
 	function calculate_deltas(world, timestep) {
 
        	// CALCULATE DELTAS
-		TectonicsModeling.get_erosion(
+		LithosphereModeling.get_erosion(
 			world.displacement, world.SEALEVEL, timestep,
 			world.material_density, world.surface_gravity,
 			world.top_crust, world.erosion, world.crust_scratch
@@ -338,7 +338,7 @@ var World = (function() {
 		Crust.assert_conserved_transport_delta(world.erosion, 1e-2); 
 
        	// CALCULATE DELTAS
-		TectonicsModeling.get_weathering(
+		LithosphereModeling.get_weathering(
 			world.displacement, world.SEALEVEL, timestep,
 			world.material_density, world.surface_gravity,
 			world.top_crust, world.weathering, world.crust_scratch
@@ -346,7 +346,7 @@ var World = (function() {
 		Crust.assert_conserved_reaction_delta(world.weathering, 1e-2); 
 
        	// CALCULATE DELTAS
-		TectonicsModeling.get_lithification(
+		LithosphereModeling.get_lithification(
 			world.displacement, world.SEALEVEL, timestep,
 			world.material_density, world.surface_gravity,
 			world.top_crust, world.lithification, world.crust_scratch
@@ -354,7 +354,7 @@ var World = (function() {
 		Crust.assert_conserved_reaction_delta(world.lithification, 1e-2); 
 
        	// CALCULATE DELTAS
-		TectonicsModeling.get_metamorphosis(
+		LithosphereModeling.get_metamorphosis(
 			world.displacement, world.SEALEVEL, timestep,
 			world.material_density, world.surface_gravity,
 			world.top_crust, world.metamorphosis, world.crust_scratch
@@ -469,10 +469,10 @@ var World = (function() {
 		// get plate masks from image segmentation of asthenosphere velocity
 		update_calculated_fields(this);
 
-		var pressure = TectonicsModeling.get_asthenosphere_pressure(this.buoyancy);
-		TectonicsModeling.get_asthenosphere_velocity(pressure, this.asthenosphere_velocity);
+		var pressure = LithosphereModeling.get_asthenosphere_pressure(this.buoyancy);
+		LithosphereModeling.get_asthenosphere_velocity(pressure, this.asthenosphere_velocity);
 		var angular_velocity = VectorField.cross_vector_field(this.asthenosphere_velocity, this.grid.pos);
-		var top_plate_map = TectonicsModeling.get_plate_map(angular_velocity, 7, 200);
+		var top_plate_map = LithosphereModeling.get_plate_map(angular_velocity, 7, 200);
 		var plate_ids = Uint8Dataset.unique(top_plate_map);
 		this.plates = [];
 

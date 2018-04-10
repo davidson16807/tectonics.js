@@ -1,13 +1,13 @@
 
-// "TectonicsModeling" is the distillation of all raster-based geological sub models within tectonics.js
+// "LithosphereModeling" is the distillation of all raster-based geological sub models within tectonics.js
 // All functions are global and stateless. 
 // Only the raster data structures and namespaces are used. 
 // No other data structure is assumed to exist.
 // The idea is to create a core that's invariant to changes across application architecture.
 
-var TectonicsModeling = (function() {
+var LithosphereModeling = (function() {
 
-var TectonicsModeling = {};
+var LithosphereModeling = {};
 
 
 
@@ -16,7 +16,7 @@ var TectonicsModeling = {};
 // requires:
 //    geothermal temperature model
 //    geostatic pressure
-TectonicsModeling.get_lithification = function(
+LithosphereModeling.get_lithification = function(
 		displacement, sealevel, timestep,
 		material_density, surface_gravity,
 		top_crust, crust_delta, crust_scratch){
@@ -57,7 +57,7 @@ TectonicsModeling.get_lithification = function(
 
 
 
-TectonicsModeling.get_metamorphosis = function(
+LithosphereModeling.get_metamorphosis = function(
 		displacement, sealevel, timestep,
 		material_density, surface_gravity,
 		top_crust, crust_delta, crust_scratch){
@@ -131,7 +131,7 @@ TectonicsModeling.get_metamorphosis = function(
 
 
 // "weathering" is the process by which rock is converted to sediment 
-TectonicsModeling.get_weathering = function(
+LithosphereModeling.get_weathering = function(
 		displacement, sealevel, timestep,
 		material_density, surface_gravity,
 		top_crust, crust_delta, crust_scratch){
@@ -207,7 +207,7 @@ TectonicsModeling.get_weathering = function(
 
 
 
-TectonicsModeling.get_erosion = function(
+LithosphereModeling.get_erosion = function(
 		displacement, sealevel, timestep,
 		material_density, surface_gravity,
 		top_crust, crust_delta, crust_scratch){
@@ -333,7 +333,7 @@ var coarse_grid = new Grid(
 	{ voronoi_generator: VoronoiSphere.FromPos }
 );
 // gets surface pressure of the asthenosphere by smoothing a field representing buoyancy
-TectonicsModeling.get_asthenosphere_pressure = function(buoyancy, pressure, scratch) {
+LithosphereModeling.get_asthenosphere_pressure = function(buoyancy, pressure, scratch) {
 	var fine_grid = buoyancy.grid;
 	var fine_buoyancy = buoyancy;
 	var fine_pressure = pressure;
@@ -379,13 +379,13 @@ TectonicsModeling.get_asthenosphere_pressure = function(buoyancy, pressure, scra
 }
 
 // gets surface velocity of the asthenosphere as the gradient of pressure
-TectonicsModeling.get_asthenosphere_velocity = function(pressure, velocity) {
+LithosphereModeling.get_asthenosphere_velocity = function(pressure, velocity) {
 	velocity = velocity || VectorRaster(pressure.grid);
 	ScalarField.gradient(pressure, velocity);
 	return velocity;
 }
 
-TectonicsModeling.get_plate_velocity = function(plate_mask, buoyancy, material_viscosity, result) {
+LithosphereModeling.get_plate_velocity = function(plate_mask, buoyancy, material_viscosity, result) {
 	result = result || VectorRaster(plate_mask.grid);
 
   	var scratchpad = RasterStackBuffer.scratchpad;
@@ -462,7 +462,7 @@ TectonicsModeling.get_plate_velocity = function(plate_mask, buoyancy, material_v
 
 }
 
-TectonicsModeling.get_plate_center_of_mass = function(mass, plate_mask, scratch) {
+LithosphereModeling.get_plate_center_of_mass = function(mass, plate_mask, scratch) {
 	scratch = scratch || Float32Raster(mass.grid);
 
 	// find plate's center of mass
@@ -473,7 +473,7 @@ TectonicsModeling.get_plate_center_of_mass = function(mass, plate_mask, scratch)
 	return center_of_plate;
 }
 
-TectonicsModeling.get_plate_rotation_matrix = function(plate_velocity, center_of_plate, timestep) {
+LithosphereModeling.get_plate_rotation_matrix = function(plate_velocity, center_of_plate, timestep) {
 
   	var scratchpad = RasterStackBuffer.scratchpad;
   	scratchpad.allocate('get_plate_rotation_matrix');
@@ -532,11 +532,11 @@ TectonicsModeling.get_plate_rotation_matrix = function(plate_velocity, center_of
 }
 
 // gets angular velocity of the asthenosphere as the cross product of velocity and position
-TectonicsModeling.get_angular_velocity = function(velocity, pos, angular_velocity) {
+LithosphereModeling.get_angular_velocity = function(velocity, pos, angular_velocity) {
 	return VectorField.cross_vector_field(velocity, pos, angular_velocity);
 }
 // gets displacement using an isostatic model
-TectonicsModeling.get_displacement = function(thickness, density, material_density, displacement) {
+LithosphereModeling.get_displacement = function(thickness, density, material_density, displacement) {
  	var thickness_i, rootDepth;
  	var inverse_mantle_density = 1 / material_density.mantle;
  	for(var i=0, li = displacement.length; i<li; i++){
@@ -550,7 +550,7 @@ TectonicsModeling.get_displacement = function(thickness, density, material_densi
 }
 
 // get a map of plates using image segmentation and binary morphology
-TectonicsModeling.get_plate_map = function(vector_field, segment_num, min_segment_size, segments) {
+LithosphereModeling.get_plate_map = function(vector_field, segment_num, min_segment_size, segments) {
   var segments = segments || Uint8Raster(vector_field.grid);
   
   // step 1: run image segmentation algorithm
@@ -585,5 +585,5 @@ TectonicsModeling.get_plate_map = function(vector_field, segment_num, min_segmen
 }
 
 
-return TectonicsModeling;
+return LithosphereModeling;
 })();
