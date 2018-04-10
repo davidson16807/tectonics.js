@@ -1,11 +1,11 @@
 
-function SpatialPdfChartDisplay(name, surface_type_focus) {
-	surface_type_focus = surface_type_focus || 'ocean';
+function SpatialPdfChartDisplay(surface_type_focus, name) {
+	surface_type_focus = surface_type_focus || 'land';
 	this.name = name;
 
 	this.get_dynamic_data = function(field, options) {
 		options = options || {};
-		var ocean_visibility = options['ocean_visibility'] || true;
+		var ocean_visibility = options['ocean_visibility'];
 
 		var max = Float32Dataset.max(field);
 		var min = Float32Dataset.min(field);
@@ -23,11 +23,24 @@ function SpatialPdfChartDisplay(name, surface_type_focus) {
 		var bin_size = plot_range / bin_num;
 		var plot_middle = Math.round(median/bin_size)*bin_size; 
 		var plot_min = plot_middle - bin_size * Math.round(bin_num/2); 
+
+		var land = ScalarField.gte_scalar(world.displacement, world.SEALEVEL);
+		var ocean = ScalarField.lt_scalar(world.displacement, world.SEALEVEL);
+
+		var category = Uint8Raster(field.grid);
+
 		for (var i = 0; i < bin_num; i++) {
 			// debugger;
 	        bin_min = plot_min + i*bin_size; 
 	        bin_max = plot_min + (i+1)*bin_size; 
-			x[i] = Uint8Dataset.average(ScalarField.between_scalars(field, bin_min, bin_max)) * 100
+	        ScalarField.between_scalars(field, bin_min, bin_max, category);
+	        if (surface_type_focus == 'land' && ocean_visibility) {
+	        	BinaryMorphology.intersection(category, land, category);
+	        }
+	        if (surface_type_focus == 'ocean' && ocean_visibility) {
+	        	BinaryMorphology.intersection(category, ocean, category);
+	        }
+			x[i] = Uint8Dataset.average(category) * 100;
 			y[i] = Math.round(bin_min * 1e3)/1e3;
 		}
 

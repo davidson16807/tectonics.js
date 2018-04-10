@@ -824,6 +824,7 @@
 	    	var timestep = 1000/fps; 	//milliseconds
 	    	var duration = 500; 		//milliseconds
 	    	var increment = timestep/duration;
+	    	chartVue.setOceanVisibility(value);
 	    	var timer = setInterval(function() {
 	    		v.ocean += Math.sign(v.ocean_target - v.ocean) * increment
 	    		if (Math.abs(v.ocean_target - v.ocean) < 2*increment) {
@@ -857,7 +858,7 @@
 	});
 
 	Vue.use(VueCharts);
-    const app = new Vue({
+    const chartVue = new Vue({
         el: '#chart',
         data:{
         	isEnabled: false,
@@ -909,7 +910,7 @@
 					_this.isEnabled = false;
 					return;
 				}
-				var chart_data = chart_display.get_dynamic_data(field, { ocean_visibility: this.ocean_visibility });
+				var chart_data = chart_display.get_dynamic_data(field, { ocean_visibility: _this.ocean_visibility });
 
 				_this.isEnabled = true;
 				_this.$data.x = chart_data.x;
@@ -917,7 +918,7 @@
 			}, 1000/2);
 		},
 		methods: {
-			set_ocean_visibility(value){
+			setOceanVisibility(value){
 				this.ocean_visibility = value? 1:0;
 			},
 			round(x) {
