@@ -16,9 +16,6 @@ function Plate(params)
 
 	this.mask = params['mask'] || Uint8Raster(this.grid);
 
-	this.eulerPole = params['eulerPole'] || Vector();
-	this.angularSpeed = params['angularSpeed'];
-	
 	this.local_to_global_matrix = params['local_to_global_matrix'] || Matrix.Identity();
 	this.global_to_local_matrix = Matrix.invert(this.local_to_global_matrix);
 
@@ -40,9 +37,6 @@ Plate.prototype.move = function(timestep){
 
 	var center_of_mass = LithosphereModeling.get_plate_center_of_mass	(this.total_mass, this.mask);
 	var rotation_matrix = LithosphereModeling.get_plate_rotation_matrix(this.velocity, center_of_mass, timestep);
-
-    // this.increment = this.angularSpeed * timestep; 
-    // var rotation_matrix = Matrix.RotationAboutAxis( this.eulerPole.x, this.eulerPole.y, this.eulerPole.z, this.angularSpeed * timestep ); 
 
 	Matrix.mult_matrix(this.local_to_global_matrix, rotation_matrix, this.local_to_global_matrix);
 	Matrix.invert(this.local_to_global_matrix, this.global_to_local_matrix);

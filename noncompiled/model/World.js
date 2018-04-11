@@ -32,11 +32,6 @@ var World = (function() {
 			// felsic_plutonic: 	100, // This can be set above zero to "cheat" on felsic mass conservation
 		 });
 
-		this.getRandomPlateSpeed = parameters['getRandomPlateSpeed'] ||
-			//function() { return Math.exp(random.normal(-5.13, 0.548)); }
-			function() { return random.normal(0.00687, 0.00380); }
-			//^^^ log normal and normal distribution fit to angular velocities from Larson et al. 1997
-
 		this.supercontinentCycle = parameters['supercontinentCycle'] || new SupercontinentCycle(this, parameters);
 
 		// The following are fields that are derived from other fields:
@@ -481,20 +476,11 @@ var World = (function() {
 		for (var i = 0, li = plate_ids.length; i < li; ++i) {
 			var mask = Uint8Field.eq_scalar(top_plate_map, plate_ids[i]);
 
-			//TODO: comment this out when you're done
-			var eulerPole = VectorDataset.weighted_average(angular_velocity, mask);
-			//TODO: fix it properly - no negation!
-			Vector.normalize(-eulerPole.x, -eulerPole.y, -eulerPole.z, eulerPole);
-
 			plate = new Plate({
 				world: 	this,
 				mask: 	mask,
-				eulerPole: eulerPole
 			})
 			Crust.copy(this.total_crust, plate.crust);
-
-			// TODO: see if you can't get this to reflect relative magnitude of average surface asthenosphere velocity
-			plate.angularSpeed = this.getRandomPlateSpeed();
 
 			this.plates.push(plate);
 		}
