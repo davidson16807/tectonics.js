@@ -405,53 +405,12 @@ var World = (function() {
 
 			equals 			(top_plate_map, i, 												globalized_is_on_top);
 
-        	// resample_ui8	(globalized_is_on_top, global_ids_of_local_cells,			localized_is_on_top);
-
-
-        	// // METHOD 3: 
-        	// // map cells 1-to-1 from global delta map to local delta map (when cell is mentioned twice, the last one in wins), 
-        	// // then filter the local delta map where plate is on top, 
-        	// // then apply the local delta map.
-        	// // 
-        	// // retains positive mass, but doesn't seem to erode landscapes well, 
-        	// // planet looks really rocky after >1Gy
-        	// Crust.reset(world.crust_scratch);
-			// Float32Raster.set_ids_to_values(world.crust_delta.metamorphic, local_ids_of_global_cells, world.crust_scratch.metamorphic);
-			// Float32Raster.set_ids_to_values(world.crust_delta.sedimentary, local_ids_of_global_cells, world.crust_scratch.sedimentary);
-			// Float32Raster.set_ids_to_values(world.crust_delta.sediment, local_ids_of_global_cells, world.crust_scratch.sediment);
-			// Float32Raster.set_ids_to_values(world.crust_delta.mafic_volcanic, local_ids_of_global_cells, world.crust_scratch.mafic_volcanic);
-			// Float32Raster.set_ids_to_values(world.crust_delta.felsic_plutonic, local_ids_of_global_cells, world.crust_scratch.felsic_plutonic);
-			// Float32Raster.set_ids_to_values(world.crust_delta.age, local_ids_of_global_cells, world.crust_scratch.age);
-			// mult_crust 		(world.crust_scratch, localized_is_on_top, 					world.crust_scratch);
-        	// add_crust_delta	(plate.crust, world.crust_scratch, 							plate.crust);
-
-
-
-			// METHOD 1:
 			// filter the global delta map where plate is on top, 
 			// then map cells 1-to-many from global delta map to local delta map (adding together effects when cell is mentioned twice)
 			// then apply the local delta map
-        	// // retains positive mass, and appears to give the best results of any method attempted so far
+        	// this method retains positive mass, and appears to give the best results of any method attempted so far
 			mult_crust 		(globalized_deltas, globalized_is_on_top, 					world.crust_scratch);
 			Crust.add_values_to_ids(plate.crust, local_ids_of_global_cells, world.crust_scratch, plate.crust);
-
-
-
-			// // METHOD 2:
-			// // map cells many-to-many from global delta map to local delta map
-			// // then filter the local delta map where plate is on top,
-			// // then apply the local delta map
-			// // fails to retain positive mass at all times, also 
-        	// resample_ui8	(globalized_is_on_top, global_ids_of_local_cells,			localized_is_on_top);
-        	// resample_crust	(globalized_deltas, global_ids_of_local_cells,				localized_deltas);
-        	// mult_crust 		(localized_deltas, localized_is_on_top, 					localized_deltas);
-	        // // enforce constraint: erosion should never exceed amount of rock available
-	        // // get_erosion() guarantees against this, but plate motion sometimes causes violations to this constraint
-	        // // violations to constraint are usually small, so we just modify erosion after the fact to preserve the constraint
-        	// add_crust_delta	(plate.crust, localized_deltas, 							plate.crust);
-
-        	// NOTE: use this before calling add_crust_delta in case negative mass crops up and you can't help it
-	        // fix_crust_delta	(localized_deltas, plate.crust, scratch_f32);
 		}
 
 	  	scratchpad.deallocate('integrate_deltas');
