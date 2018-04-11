@@ -26,9 +26,9 @@ Model.prototype.update = function() {
 	if (this.paused){
 		return;
 	}
-	if (world !== void 0) {
+	if (this._world !== void 0) {
 		this.age += this.MegaYearPerSecond * seconds;
-		world.update(this.MegaYearPerSecond * seconds);
+		this._world.update(this.MegaYearPerSecond * seconds);
 	};
 };
 

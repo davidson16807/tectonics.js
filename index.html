@@ -393,20 +393,22 @@
 	var model = new Model();
 	model.MegaYearPerSecond = start_speed;
 
-	var world = void 0;
-	if (querystring['load']) {
-		loadUrl(querystring['load']);
-	} else {
-		world = new World({ grid: view.grid });
-		WorldGenerator.generate(world, 
-			EliasHeightMapGenerator.generate(world.grid), 
-			WorldGenerator.modern_earth_hypsography, 
-			WorldGenerator.modern_earth_control_points
-		);
-		model.world(world);
-		$('.controls').show();
-	}
-	
+	(function(){
+		var world = void 0;
+		if (querystring['load']) {
+			loadUrl(querystring['load']);
+		} else {
+			world = new World({ grid: view.grid });
+			WorldGenerator.generate(world, 
+				EliasHeightMapGenerator.generate(world.grid), 
+				WorldGenerator.modern_earth_hypsography, 
+				WorldGenerator.modern_earth_control_points
+			);
+			model.world(world);
+			$('.controls').show();
+		}
+	})();
+		
 	if( Detector.webgl ){
 		init();
 		animate();
@@ -471,7 +473,7 @@
 		};
 		
 		model.update();
-		view.cellUpdate(world); 
+		view.cellUpdate(model.world()); 
 
 		if (autosave_period) {
 			if (model.age >= (autosave_timestamp + autosave_period)) {
