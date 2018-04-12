@@ -33,6 +33,7 @@ WorldGenerator.generate = function (world, height_ranks, hypsography, control_po
 	// To do this, we start off with a set of rock column templates expressing
 	// what thickness/density should look like at a given density.
 	// We then interpolate between these templated values.
+	var crust = world.lithosphere.total_crust
 	var tallest = control_points[control_points.length - 1];
 	for (var i = 0, li = cell_ids.length; i < li; i++) {
 		var height = heights[i];
@@ -44,13 +45,13 @@ WorldGenerator.generate = function (world, height_ranks, hypsography, control_po
 				upper.displacement == tallest.displacement){
 				var fraction = smoothstep(lower.displacement, upper.displacement, height);
 				
-				Crust.set_value( world.total_crust, cell_ids[i], RockColumn.lerp(lower, upper, fraction) );
+				Crust.set_value( crust, cell_ids[i], RockColumn.lerp(lower, upper, fraction) );
 
 				break;
 			}
 		};
 	};
-	average_conserved_per_cell = Crust.get_average_conserved_per_cell(world.total_crust);
+	average_conserved_per_cell = Crust.get_average_conserved_per_cell(crust);
 };
 
 WorldGenerator.early_earth_hypsography = function() {

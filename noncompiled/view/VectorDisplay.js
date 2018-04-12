@@ -148,7 +148,7 @@ vectorDisplays.aesthenosphere_velocity	= new VectorFieldDisplay( {
 vectorDisplays.surface_air_velocity = new VectorFieldDisplay( {
 		getField: function (world) {
 			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
-			var pressure = AtmosphericModeling.surface_air_pressure(world.displacement, lat, world.SEALEVEL, world.meanAnomaly, Math.PI*23.5/180);
+			var pressure = AtmosphericModeling.surface_air_pressure(world.lithosphere.displacement, lat, world.SEALEVEL, world.meanAnomaly, Math.PI*23.5/180);
 			var velocity = AtmosphericModeling.surface_air_velocity(world.grid.pos, pressure, ANGULAR_SPEED);
 			return velocity;
 		} 
@@ -158,8 +158,8 @@ vectorDisplays.surface_air_velocity = new VectorFieldDisplay( {
 vectorDisplays.plate_velocity = new VectorFieldDisplay( {  
     getField: function (world) { 
       var grid = world.grid; 
-      var plates = world.plates; 
-      var plate_map = world.top_plate_map; 
+      var plates = world.lithosphere.plates; 
+      var plate_map = world.lithosphere.top_plate_map; 
       var plate_velocity = VectorRaster(grid); 
       var all_velocities = VectorRaster(grid); 
       var add_term = VectorField.add_vector_field_and_scalar_field_term; 
@@ -189,5 +189,5 @@ DisabledVectorDisplay.prototype.addTo = function(mesh) {
 	}
 };
 DisabledVectorDisplay.prototype.removeFrom = function(mesh) {};
-DisabledVectorDisplay.prototype.updateAttributes = function(material, plate) {}
+DisabledVectorDisplay.prototype.updateAttributes = function(material, world) {}
 vectorDisplays.disabled	= new DisabledVectorDisplay( {  } );

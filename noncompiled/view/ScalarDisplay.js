@@ -27,8 +27,8 @@ RealisticDisplay.prototype.addTo = function(mesh) {
 RealisticDisplay.prototype.removeFrom = function(mesh) {
 	
 };
-RealisticDisplay.prototype.updateAttributes = function(geometry, plate) {
-	Float32Raster.get_ids(plate.displacement, view.grid.buffer_array_to_cell, geometry.attributes.displacement.array); 
+RealisticDisplay.prototype.updateAttributes = function(geometry, world) {
+	Float32Raster.get_ids(world.lithosphere.displacement, view.grid.buffer_array_to_cell, geometry.attributes.displacement.array); 
 	geometry.attributes.displacement.needsUpdate = true;
 }
 scalarDisplays.satellite = new RealisticDisplay('canopy');
@@ -80,19 +80,19 @@ ScalarDisplay.prototype.addTo = function(mesh) {
 ScalarDisplay.prototype.removeFrom = function(mesh) {
 	
 };
-ScalarDisplay.prototype.updateAttributes = function(geometry, plate) {
-	Float32Raster.get_ids(plate.displacement, view.grid.buffer_array_to_cell, geometry.attributes.displacement.array); 
+ScalarDisplay.prototype.updateAttributes = function(geometry, world) {
+	Float32Raster.get_ids(world.lithosphere.displacement, view.grid.buffer_array_to_cell, geometry.attributes.displacement.array); 
 	geometry.attributes.displacement.needsUpdate = true;
 
-	this.field = this.field || Float32Raster(plate.grid);
-	this.scratch = this.scratch || Float32Raster(plate.grid);
+	this.field = this.field || Float32Raster(world.grid);
+	this.scratch = this.scratch || Float32Raster(world.grid);
 
 	// run getField()
 	if (this.getField === void 0) {
 		log_once("ScalarDisplay.getField is undefined.");
 		return;
 	}
-	var scalar_model = this.getField(plate, this.field, this.scratch);
+	var scalar_model = this.getField(world, this.field, this.scratch);
 	if (scalar_model === void 0) {
 		log_once("ScalarDisplay.getField() returned undefined.");
 		return;
@@ -131,8 +131,9 @@ scalarDisplays.npp 	= new ScalarDisplay( { minColor: 0xffffff, maxColor: 0x00ff0
 	} );
 scalarDisplays.alt 	= new ScalarDisplay( { minColor: 0x000000, maxColor: 0xffffff, min:'0.', max:'10000.', 
 		getField: function (world, result) {
-			return (scalarDisplayVue.ocean)?(ScalarField.max_scalar(world.displacement, world.SEALEVEL)):
-			                                (world.displacement);
+			lithosphere = world.lithosphere;
+			return (scalarDisplayVue.ocean)?(ScalarField.max_scalar(lithosphere.displacement, lithosphere.SEALEVEL)):
+			                                (lithosphere.displacement);
 		}
 	} );
 
@@ -170,8 +171,8 @@ ScalarHeatDisplay.prototype.addTo = function(mesh) {
 ScalarHeatDisplay.prototype.removeFrom = function(mesh) {
 	
 };
-ScalarHeatDisplay.prototype.updateAttributes = function(geometry, plate) {
-	Float32Raster.get_ids(plate.displacement, view.grid.buffer_array_to_cell, geometry.attributes.displacement.array); 
+ScalarHeatDisplay.prototype.updateAttributes = function(geometry, world) {
+	Float32Raster.get_ids(world.lithosphere.displacement, view.grid.buffer_array_to_cell, geometry.attributes.displacement.array); 
 	geometry.attributes.displacement.needsUpdate = true;
 
 	// run getField()
@@ -180,15 +181,15 @@ ScalarHeatDisplay.prototype.updateAttributes = function(geometry, plate) {
 		return;
 	}
 
-	this.field = this.field || Float32Raster(plate.grid);
-	this.scratch = this.scratch || Float32Raster(plate.grid);
+	this.field = this.field || Float32Raster(world.grid);
+	this.scratch = this.scratch || Float32Raster(world.grid);
 	
 	// run getField()
 	if (this.getField === void 0) {
 		log_once("ScalarDisplay.getField is undefined.");
 		return;
 	}
-	var scalar_model = this.getField(plate, this.field, this.scratch);
+	var scalar_model = this.getField(world, this.field, this.scratch);
 	if (scalar_model === void 0) {
 		log_once("ScalarDisplay.getField() returned undefined.");
 		return;
@@ -219,12 +220,12 @@ ScalarHeatDisplay.prototype.updateAttributes = function(geometry, plate) {
 }
 scalarDisplays.plates 	= new ScalarHeatDisplay( { min: '0.', max: '7.', 
 		getField: function (world) {
-			return world.top_plate_map;
+			return world.lithosphere.top_plate_map;
 		} 	
 	} );
 scalarDisplays.plate_count 	= new ScalarHeatDisplay( { min: '0.', max: '3.',  
 		getField: function (world) {
-			return world.plate_count;
+			return world.lithosphere.plate_count;
 		} 
 	} );
 scalarDisplays.temp 	= new ScalarHeatDisplay( { min: '-25.', max: '30.',  
@@ -243,68 +244,68 @@ scalarDisplays.precip 	= new ScalarHeatDisplay( { min: '2000.', max: '1.',
 	} );
 scalarDisplays.age 	= new ScalarHeatDisplay( { min: '250.', max: '0.',  
 		getField: function (world) {
-			return world.top_crust.age;
+			return world.lithosphere.top_crust.age;
 		} 
 	} );
 scalarDisplays.mafic_volcanic 	= new ScalarHeatDisplay( { min: '0.', max: '7000.',  
 		getField: function (world) {
-			return world.top_crust.mafic_volcanic;
+			return world.lithosphere.top_crust.mafic_volcanic;
 		} 
 	} );
 scalarDisplays.felsic_plutonic 	= new ScalarHeatDisplay( { min: '0.', max: '70000.',  
 		getField: function (world) {
-			return world.top_crust.felsic_plutonic;
+			return world.lithosphere.top_crust.felsic_plutonic;
 		} 
 	} );
 scalarDisplays.felsic_plutonic_erosion 	= new ScalarHeatDisplay( { min: '0.', max: '100.',  
 		getField: function (world) {
-			return world.erosion.felsic_plutonic;
+			return world.lithosphere.erosion.felsic_plutonic;
 		} 
 	} );
 scalarDisplays.sediment 	= new ScalarHeatDisplay( { min: '0.', max: '5.',  
 		getField: function (world) {
-			return world.top_crust.sediment;
+			return world.lithosphere.top_crust.sediment;
 		} 
 	} );
 scalarDisplays.sediment_erosion 	= new ScalarHeatDisplay( { min: '0.', max: '5.',  
 		getField: function (world) {
-			return world.erosion.sediment;
+			return world.lithosphere.erosion.sediment;
 		} 
 	} );
 scalarDisplays.sediment_weathering 	= new ScalarHeatDisplay( { min: '0.', max: '5.',  
 		getField: function (world) {
-			return world.weathering.sediment;
+			return world.lithosphere.weathering.sediment;
 		} 
 	} );
 scalarDisplays.sedimentary 	= new ScalarHeatDisplay( { min: '0.', max: '10000.',  
 		getField: function (world) {
-			return world.top_crust.sedimentary;
+			return world.lithosphere.top_crust.sedimentary;
 		} 
 	} );
 scalarDisplays.metamorphic 	= new ScalarHeatDisplay( { min: '0.', max: '10000.',  
 		getField: function (world) {
-			return world.top_crust.metamorphic;
+			return world.lithosphere.top_crust.metamorphic;
 		} 
 	} );
 scalarDisplays.thickness 	= new ScalarHeatDisplay( { min: '0.', max: '70000.',  
 		getField: function (world) {
-			return world.thickness;
+			return world.lithosphere.thickness;
 		} 
 	} );
 scalarDisplays.density 	= new ScalarHeatDisplay( { min: '2.700', max: '3.300',  
 		getField: function (world) {
-			return world.density;
+			return world.lithosphere.density;
 		} 
 	} );
 scalarDisplays.elevation 	= new ScalarHeatDisplay( { min: '0.', max: '10000.',  
 		getField: function (world) {
-			return ScalarField.sub_scalar(world.displacement, -3682);
+			return ScalarField.sub_scalar(world.lithosphere.displacement, -3682);
 		}
 	} );
 scalarDisplays.asthenosphere_pressure = new ScalarHeatDisplay(  { 
 		min: '1.', max: '0.',
 		getField: function (world, output, scratch, iterations) {
-			return TectonicsModeling.get_asthenosphere_pressure(world.density, output, scratch);
+			return TectonicsModeling.get_asthenosphere_pressure(world.lithosphere.density, output, scratch);
 		}
 	} );
 
@@ -312,7 +313,7 @@ scalarDisplays.surface_air_pressure = new ScalarHeatDisplay( { min: '980000.', m
 		getField: function (world, pressure, scratch) {
 			console.log(world.meanAnomaly);
 			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
-			AtmosphericModeling.surface_air_pressure(world.displacement, lat, world.SEALEVEL, world.meanAnomaly, Math.PI*23.5/180, pressure, scratch);
+			AtmosphericModeling.surface_air_pressure(world.lithosphere.displacement, lat, world.SEALEVEL, world.meanAnomaly, Math.PI*23.5/180, pressure, scratch);
 			return pressure;
 		}
 	} );

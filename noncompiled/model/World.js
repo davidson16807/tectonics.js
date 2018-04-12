@@ -4,6 +4,8 @@ var World = (function() {
 	function World(parameters) {
 		this.grid = parameters['grid'] || stop('missing parameter: "grid"');
 
+		this.lithosphere = this;
+
 		this.material_viscosity = parameters['material_viscosity'] || {
 			mantle: 1.57e17
 		};
