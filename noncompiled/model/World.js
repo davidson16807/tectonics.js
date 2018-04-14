@@ -4,7 +4,6 @@ var World = (function() {
 	function World(parameters) {
 		this.grid = parameters['grid'] || stop('missing parameter: "grid"');
 
-		this.lithosphere = new Lithosphere(parameters);
 
 		this.material_viscosity = parameters['material_viscosity'] || {
 			mantle: 1.57e17
@@ -27,6 +26,14 @@ var World = (function() {
 		};
 
 		this.surface_gravity = parameters['surface_gravity'] || 9.8; // m/s^2
+
+		this.lithosphere = new Lithosphere(parameters);
+		this.lithosphere.setDependencies({
+			'surface_gravity': 		this.surface_gravity,
+			'sealevel': 			this.SEALEVEL,
+			'material_density': 	this.material_density,
+			'material_viscosity': 	this.material_viscosity,
+		});
 	}
 	World.prototype.SEALEVEL = 3682;
 
@@ -34,10 +41,14 @@ var World = (function() {
 		if (timestep === 0) {
 			return;
 		};
-		this.lithosphere.update(timestep);
-	};
-	World.prototype.worldLoaded = function(timestep){
-		this.lithosphere.worldLoaded(timestep)
+
+		this.lithosphere.setDependencies({
+			'sealevel': 			this.SEALEVEL,
+		});
+
+		this.lithosphere.calcChanges(timestep);
+
+		this.lithosphere.applyChanges(timestep);
 	};
 	return World;
 })();

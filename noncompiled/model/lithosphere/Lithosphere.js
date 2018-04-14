@@ -6,26 +6,10 @@ var Lithosphere = (function() {
 
 		this.lithosphere = this;
 
-		this.material_viscosity = parameters['material_viscosity'] || {
-			mantle: 1.57e17
-		};
 
 		// all densities in T/m^3
-		this.material_density = parameters['material_density'] || {
-			// most values are estimates from looking around wolfram alpha
-			fine_sediment: 1.500,
-			coarse_sediment: 1.500,
-			sediment: 1.500,
-			sedimentary: 2.600,
-			metamorphic: 2.800,
-			felsic_plutonic: 2.600,
-			felsic_volcanic: 2.600,
-			mafic_volcanic_min: 2.890, // Carlson & Raskin 1984
-			mafic_volcanic_max: 3.300,
-			mantle: 3.075, // derived empirically using isostatic model
-			ocean: 1.026 
-		};
-
+		this.material_viscosity = parameters['material_viscosity'];
+		this.material_density = parameters['material_density'];
 		this.surface_gravity = parameters['surface_gravity'] || 9.8; // m/s^2
 
 		this.ocean =
@@ -446,10 +430,23 @@ var Lithosphere = (function() {
 		}
 	};
 
-	Lithosphere.prototype.update = function(timestep){
+	Lithosphere.prototype.setDependencies = function(dependencies) {
+		this.surface_gravity 	= dependencies['surface_gravity'] 	|| this.surface_gravity;
+		this.sealevel 			= dependencies['sealevel'] 			|| this.sealevel 			|| stop('"sealevel" not provided');
+		this.material_density 	= dependencies['material_density'] 	|| this.material_density 	|| stop('"material_density" not provided');
+		this.material_viscosity = dependencies['material_viscosity']|| this.material_viscosity 	|| stop('"material_viscosity" not provided');
+	};
+
+	Lithosphere.prototype.calcChanges = function(timestep) {
+		calculate_deltas		(this, timestep); 			// this creates a world map of all additions and subtractions to crust (e.g. from erosion, accretion, etc.)
+	};
+
+	Lithosphere.prototype.applyChanges = function(timestep){
 		if (timestep === 0) {
 			return;
 		};
+
+		integrate_deltas 		(this, this.plates); 		// this uses the map above in order to add and subtract crust
 
 		move_plates 			(this.plates, timestep); 	// this performs the actual plate movement
 		this.supercontinentCycle.update(timestep); 			// this periodically splits the world into plates
@@ -458,11 +455,6 @@ var Lithosphere = (function() {
 		update_calculated_fields(this); 					// this creates world maps for things like density and elevation
 		update_rifting			(this, this.plates); 		// this identifies rifting regions on the world map and adds crust to plates where needed
 		update_subducted 		(this, this.plates); 		// this identifies detaching regions on the world map and then removes crust from plates where needed
-		calculate_deltas		(this, timestep); 			// this creates a world map of all additions and subtractions to crust (e.g. from erosion, accretion, etc.)
-		integrate_deltas 		(this, this.plates); 		// this uses the map above in order to add and subtract crust
-	};
-	Lithosphere.prototype.worldLoaded = function(timestep){
-		merge_plates_to_master(this.plates, this);
 	};
 	return Lithosphere;
 })();

@@ -500,9 +500,6 @@
 			random = results.random;
 			model.age = results.model.age;
 			model.world(world);
-			if (model.paused) {
-				model.worldLoaded()
-			}
 			dialogVue.$data.isLoadingSave = false;
 			$('.controls').show();
 		});
@@ -523,9 +520,6 @@
 			random = results.random;
 			model.age = results.model.age;
 			model.world(world);
-			if (model.paused) {
-				model.worldLoaded()
-			}
 	    }
 
 	    reader.readAsText(file);
