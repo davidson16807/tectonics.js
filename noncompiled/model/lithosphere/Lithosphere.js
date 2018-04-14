@@ -9,7 +9,7 @@ function Lithosphere(parameters) {
 	var material_density = parameters['material_density'];
 	var surface_gravity = parameters['surface_gravity'] || 9.8; // m/s^2
 
-	this.ocean =
+	this.rifting_crust =
 	 new RockColumn({
 		mafic_volcanic: 		7100, 	// +/- 800, White McKenzie and O'nions 1992
 		// felsic_plutonic: 	100, // This can be set above zero to "cheat" on felsic mass conservation
@@ -165,7 +165,7 @@ function Lithosphere(parameters) {
 
 	function update_rifting(world, plates) { 
 	  	var top_plate_map = world.top_plate_map;
-	  	var ocean = world.ocean;
+	  	var rifting_crust = world.rifting_crust;
 	  	var grid = world.grid;
 
 	  	var scratchpad = RasterStackBuffer.scratchpad;
@@ -213,7 +213,7 @@ function Lithosphere(parameters) {
 			and 	(localized_will_stay_riftable, localized_is_just_outside_border,  	localized_is_rifting); 
 
 	        fill_into(plate.mask, 1, localized_is_rifting,                 				plate.mask); 
-	        fill_into_crust(plate.crust, ocean, localized_is_rifting, 					plate.crust);
+	        fill_into_crust(plate.crust, rifting_crust, localized_is_rifting, 					plate.crust);
 		}
 
 	  	scratchpad.deallocate('update_rifting');
