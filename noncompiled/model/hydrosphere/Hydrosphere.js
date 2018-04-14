@@ -15,8 +15,6 @@ function Hydrosphere(parameters) {
 	}
 
 	function integrate_deltas(world) { 
-		// INTEGRATE DELTAS
-
 	  	var grid = world.grid;
 
 	  	var scratchpad = RasterStackBuffer.scratchpad;

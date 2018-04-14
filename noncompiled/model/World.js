@@ -27,6 +27,10 @@ function World(parameters) {
 
 	this.surface_gravity = parameters['surface_gravity'] || 9.8; // m/s^2
 
+	this.radius = parameters['radius'] || 6367e3; // meters
+
+	this.age = parameters['age'] || 0; // megayears
+
 	this.lithosphere = new Lithosphere(parameters);
 	this.hydrosphere = new Hydrosphere(parameters);
 

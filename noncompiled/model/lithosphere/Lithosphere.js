@@ -4,10 +4,10 @@
 function Lithosphere(parameters) {
 	this.grid = parameters['grid'] || stop('missing parameter: "grid"');
 
-	// all densities in T/m^3
-	this.material_viscosity = parameters['material_viscosity'];
-	this.material_density = parameters['material_density'];
-	this.surface_gravity = parameters['surface_gravity'] || 9.8; // m/s^2
+	var material_viscosity = parameters['material_viscosity'];
+	var sealevel = parameters['sealevel'];
+	var material_density = parameters['material_density'];
+	var surface_gravity = parameters['surface_gravity'] || 9.8; // m/s^2
 
 	this.ocean =
 	 new RockColumn({
@@ -33,8 +33,6 @@ function Lithosphere(parameters) {
 	this.plate_count 		= Uint8Raster(this.grid);
 	this.asthenosphere_velocity = VectorRaster(this.grid);
 
-	// this.radius = parameters['radius'] || 6367;
-	// this.age = parameters['age'] || 0;
 	// this.maxPlatesNum = parameters['platesNum'] || 8;
 
 	this.top_crust 		= new Crust({grid: this.grid});
@@ -53,16 +51,16 @@ function Lithosphere(parameters) {
 
 
 
-	
+
 	function move_plates(plates, timestep) {
 		for (var i=0, li=plates.length; i<li; ++i) {
-	 		plates[i].move(timestep);
+	 		plates[i].move(timestep, material_density, material_viscosity, surface_gravity);
 	 	}
 	}
     // calculate derived properties for plates
 	function update_calculated_plate_fields(world, plates) { 
-		var plate_thickness = Float32Raster(plates[0].grid); 
-		var plate_mass = Float32Raster(plates[0].grid); 
+		var plate_thickness = Float32Raster(world.grid); 
+		var plate_mass = Float32Raster(world.grid); 
 
 	    var get_thickness = Crust.get_thickness; 
 	    var get_total_mass = Crust.get_total_mass; 
@@ -71,18 +69,18 @@ function Lithosphere(parameters) {
 		var plate;
 		for (var i=0, li=plates.length; i<li; ++i) {
 		    plate = plates[i]; 
-            get_thickness		(plate.crust, world.material_density,									plate_thickness); 
-            get_total_mass 		(plate.crust, world.material_density,									plate_mass); 
-            get_density			(plate_mass, plate_thickness, world.material_density.mafic_volcanic_min, plate.density); 
+            get_thickness		(plate.crust, material_density,									plate_thickness); 
+            get_total_mass 		(plate.crust, material_density,									plate_mass); 
+            get_density			(plate_mass, plate_thickness, material_density.mafic_volcanic_min, plate.density); 
 	 	}
 	}
 	// update fields that are derived from others
 	function update_calculated_fields(world) {
-		Crust.get_thickness					(world.total_crust, world.material_density,								world.thickness);
-		Crust.get_total_mass				(world.total_crust, world.material_density,								world.total_mass);
-		Crust.get_density 					(world.total_mass, world.thickness,	world.material_density.mafic_volcanic_min, 	world.density);
-		Crust.get_buoyancy 					(world.density, world.material_density, world.surface_gravity, 		 	world.buoyancy);
-		LithosphereModeling.get_displacement 	(world.thickness, world.density, world.material_density, 				world.displacement);
+		Crust.get_thickness					(world.total_crust, material_density,								world.thickness);
+		Crust.get_total_mass				(world.total_crust, material_density,								world.total_mass);
+		Crust.get_density 					(world.total_mass, world.thickness,	material_density.mafic_volcanic_min, 	world.density);
+		Crust.get_buoyancy 					(world.density, material_density, surface_gravity, 		 	world.buoyancy);
+		LithosphereModeling.get_displacement 	(world.thickness, world.density, material_density, 				world.displacement);
 	}
 	function merge_plates_to_master(plates, master) {
 	  	var scratchpad = RasterStackBuffer.scratchpad;
@@ -288,7 +286,7 @@ function Lithosphere(parameters) {
 
             erode		(localized_is_subducted, 1,											localized_will_stay_detachable, 	localized_scratch_ui8);
 		    padding 	(plate.mask, 1, 													localized_is_just_inside_border, 	localized_scratch_ui8);
-        	gt_f32		(plate.density, world.material_density.mantle,							localized_is_subducted);
+        	gt_f32		(plate.density, material_density.mantle,							localized_is_subducted);
 		    and 		(localized_will_stay_detachable, localized_is_just_inside_border, 	localized_is_detaching);
 		    and 		(localized_is_detaching, localized_is_subducted, 					localized_is_detaching);
 
@@ -309,7 +307,7 @@ function Lithosphere(parameters) {
        	// CALCULATE DELTAS
 		LithosphereModeling.get_erosion(
 			world.displacement, world.SEALEVEL, timestep,
-			world.material_density, world.surface_gravity,
+			material_density, surface_gravity,
 			world.top_crust, world.erosion, world.crust_scratch
 		);
 		Crust.assert_conserved_transport_delta(world.erosion, 1e-2); 
@@ -317,7 +315,7 @@ function Lithosphere(parameters) {
        	// CALCULATE DELTAS
 		LithosphereModeling.get_weathering(
 			world.displacement, world.SEALEVEL, timestep,
-			world.material_density, world.surface_gravity,
+			material_density, surface_gravity,
 			world.top_crust, world.weathering, world.crust_scratch
 		);
 		Crust.assert_conserved_reaction_delta(world.weathering, 1e-2); 
@@ -325,7 +323,7 @@ function Lithosphere(parameters) {
        	// CALCULATE DELTAS
 		LithosphereModeling.get_lithification(
 			world.displacement, world.SEALEVEL, timestep,
-			world.material_density, world.surface_gravity,
+			material_density, surface_gravity,
 			world.top_crust, world.lithification, world.crust_scratch
 		);
 		Crust.assert_conserved_reaction_delta(world.lithification, 1e-2); 
@@ -333,7 +331,7 @@ function Lithosphere(parameters) {
        	// CALCULATE DELTAS
 		LithosphereModeling.get_metamorphosis(
 			world.displacement, world.SEALEVEL, timestep,
-			world.material_density, world.surface_gravity,
+			material_density, surface_gravity,
 			world.top_crust, world.metamorphosis, world.crust_scratch
 		);
 		Crust.assert_conserved_reaction_delta(world.metamorphosis, 1e-2); 
@@ -418,7 +416,7 @@ function Lithosphere(parameters) {
 			var mask = Uint8Field.eq_scalar(top_plate_map, plate_ids[i]);
 
 			plate = new Plate({
-				world: 	this,
+				grid: 	this.grid,
 				mask: 	mask,
 			})
 			Crust.copy(this.total_crust, plate.crust);
@@ -428,10 +426,10 @@ function Lithosphere(parameters) {
 	};
 
 	this.setDependencies = function(dependencies) {
-		this.surface_gravity 	= dependencies['surface_gravity'] 	|| this.surface_gravity;
-		this.sealevel 			= dependencies['sealevel'] 			|| this.sealevel 			|| stop('"sealevel" not provided');
-		this.material_density 	= dependencies['material_density'] 	|| this.material_density 	|| stop('"material_density" not provided');
-		this.material_viscosity = dependencies['material_viscosity']|| this.material_viscosity 	|| stop('"material_viscosity" not provided');
+		surface_gravity 	= dependencies['surface_gravity'] 	|| surface_gravity;
+		sealevel 			= dependencies['sealevel'] 			|| sealevel 			|| stop('"sealevel" not provided');
+		material_density 	= dependencies['material_density'] 	|| material_density 	|| stop('"material_density" not provided');
+		material_viscosity = dependencies['material_viscosity']|| material_viscosity 	|| stop('"material_viscosity" not provided');
 	};
 
 	this.calcChanges = function(timestep) {
