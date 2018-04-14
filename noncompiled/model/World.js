@@ -28,11 +28,16 @@ var World = (function() {
 		this.surface_gravity = parameters['surface_gravity'] || 9.8; // m/s^2
 
 		this.lithosphere = new Lithosphere(parameters);
+		this.hydrosphere = new Hydrosphere(parameters);
+
 		this.lithosphere.setDependencies({
 			'surface_gravity': 		this.surface_gravity,
-			'sealevel': 			this.SEALEVEL,
+			'sealevel': 			this.hydrosphere.sealevel,
 			'material_density': 	this.material_density,
 			'material_viscosity': 	this.material_viscosity,
+		});
+		this.hydrosphere.setDependencies({
+			'displacement': 		this.lithosphere.displacement,
 		});
 	}
 	World.prototype.SEALEVEL = 3682;
@@ -42,13 +47,16 @@ var World = (function() {
 			return;
 		};
 
+		// NOTE: update all non-constant, non-spatial dependencies
 		this.lithosphere.setDependencies({
-			'sealevel': 			this.SEALEVEL,
+			'sealevel': 			this.hydrosphere.sealevel,
 		});
 
 		this.lithosphere.calcChanges(timestep);
+		this.hydrosphere.calcChanges(timestep);
 
 		this.lithosphere.applyChanges(timestep);
+		this.hydrosphere.applyChanges(timestep);
 	};
 	return World;
 })();

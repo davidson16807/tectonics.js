@@ -4,9 +4,6 @@ var Lithosphere = (function() {
 	function Lithosphere(parameters) {
 		this.grid = parameters['grid'] || stop('missing parameter: "grid"');
 
-		this.lithosphere = this;
-
-
 		// all densities in T/m^3
 		this.material_viscosity = parameters['material_viscosity'];
 		this.material_density = parameters['material_density'];
