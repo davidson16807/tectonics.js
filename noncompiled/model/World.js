@@ -44,6 +44,7 @@ function World(parameters) {
 		'displacement': 		this.lithosphere.displacement,
 	});
 	this.SEALEVEL = 3682;
+	
 	this.update = function(timestep){
 		if (timestep === 0) {
 			return;

@@ -306,7 +306,7 @@ function Lithosphere(parameters) {
 
        	// CALCULATE DELTAS
 		LithosphereModeling.get_erosion(
-			world.displacement, world.SEALEVEL, timestep,
+			world.displacement, sealevel, timestep,
 			material_density, surface_gravity,
 			world.top_crust, world.erosion, world.crust_scratch
 		);
@@ -314,7 +314,7 @@ function Lithosphere(parameters) {
 
        	// CALCULATE DELTAS
 		LithosphereModeling.get_weathering(
-			world.displacement, world.SEALEVEL, timestep,
+			world.displacement, sealevel, timestep,
 			material_density, surface_gravity,
 			world.top_crust, world.weathering, world.crust_scratch
 		);
@@ -322,7 +322,7 @@ function Lithosphere(parameters) {
 
        	// CALCULATE DELTAS
 		LithosphereModeling.get_lithification(
-			world.displacement, world.SEALEVEL, timestep,
+			world.displacement, sealevel, timestep,
 			material_density, surface_gravity,
 			world.top_crust, world.lithification, world.crust_scratch
 		);
@@ -330,7 +330,7 @@ function Lithosphere(parameters) {
 
        	// CALCULATE DELTAS
 		LithosphereModeling.get_metamorphosis(
-			world.displacement, world.SEALEVEL, timestep,
+			world.displacement, sealevel, timestep,
 			material_density, surface_gravity,
 			world.top_crust, world.metamorphosis, world.crust_scratch
 		);
@@ -396,8 +396,6 @@ function Lithosphere(parameters) {
 	  	scratchpad.deallocate('integrate_deltas');
 
 	}
-
-	this.SEALEVEL = 3682;
 
 	this.resetPlates = function() {
 		// get plate masks from image segmentation of asthenosphere velocity
