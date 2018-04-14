@@ -152,11 +152,11 @@ View.prototype.matrixUpdate = function(matrix) {
 	mesh.rotation.setFromRotationMatrix(mesh.matrix);
 };
 
-View.prototype.cellUpdate = function(crust){
-	this.uniform('sealevel', crust.SEALEVEL);
+View.prototype.cellUpdate = function(world){
+	this.uniform('sealevel', world.hydrosphere.sealevel);
 
-	this._scalarDisplay.updateAttributes(this.scalar_field_geometry, crust);
-	this._vectorDisplay.updateAttributes(this.vector_field_geometry, crust);
+	this._scalarDisplay.updateAttributes(this.scalar_field_geometry, world);
+	this._vectorDisplay.updateAttributes(this.vector_field_geometry, world);
 }
 
 View.prototype.vertexShader = function(vertexShader){

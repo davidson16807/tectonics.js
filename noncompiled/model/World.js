@@ -43,7 +43,6 @@ function World(parameters) {
 	this.hydrosphere.setDependencies({
 		'displacement': 		this.lithosphere.displacement,
 	});
-	this.SEALEVEL = 3682;
 	
 	this.update = function(timestep){
 		if (timestep === 0) {

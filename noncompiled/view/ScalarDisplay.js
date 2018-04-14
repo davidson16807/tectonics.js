@@ -132,7 +132,8 @@ scalarDisplays.npp 	= new ScalarDisplay( { minColor: 0xffffff, maxColor: 0x00ff0
 scalarDisplays.alt 	= new ScalarDisplay( { minColor: 0x000000, maxColor: 0xffffff, min:'0.', max:'10000.', 
 		getField: function (world, result) {
 			lithosphere = world.lithosphere;
-			return (scalarDisplayVue.ocean)?(ScalarField.max_scalar(lithosphere.displacement, lithosphere.SEALEVEL)):
+			hydrosphere = world.hydrosphere;
+			return (scalarDisplayVue.ocean)?(ScalarField.max_scalar(lithosphere.displacement, hydrosphere.sealevel)):
 			                                (lithosphere.displacement);
 		}
 	} );
@@ -313,7 +314,7 @@ scalarDisplays.surface_air_pressure = new ScalarHeatDisplay( { min: '980000.', m
 		getField: function (world, pressure, scratch) {
 			console.log(world.meanAnomaly);
 			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
-			AtmosphericModeling.surface_air_pressure(world.lithosphere.displacement, lat, world.SEALEVEL, world.meanAnomaly, Math.PI*23.5/180, pressure, scratch);
+			AtmosphericModeling.surface_air_pressure(world.lithosphere.displacement, lat, world.hydrosphere.sealevel, world.meanAnomaly, Math.PI*23.5/180, pressure, scratch);
 			return pressure;
 		}
 	} );

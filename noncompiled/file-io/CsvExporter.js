@@ -23,12 +23,12 @@ CsvExporter.world = function (world, options) {
 	var latitude = Float32SphereRaster.latitude(grid.pos.y);
 	var longitude = Float32SphereRaster.longitude(grid.pos.x, grid.pos.z);
 
-	for (var i = 0, li = world.grid.vertices.length; i < li; i++) {
+	for (var i = 0, li = grid.vertices.length; i < li; i++) {
 		csv_text += [
 			latitude[i]  * 180/Math.PI,
 			longitude[i] * 180/Math.PI,
-			world.displacement[i] - world.SEALEVEL,
-			world.top_plate_map[i],
+			world.lithosphere.displacement[i] - world.hydrosphere.sealevel,
+			world.lithosphere.top_plate_map[i],
 			// TODO: add precip, temperature, and npp
 		].join() + '\n'
 	}
