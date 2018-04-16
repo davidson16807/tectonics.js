@@ -27,6 +27,11 @@ function Hydrosphere(parameters) {
 		Float32Raster.copy(ocean_depth_updated, world.ocean_depth);
 	}
 
+	function assert_dependencies() {
+		displacement || stop('"displacement" not provided');
+		material_density || stop('"material_density" not provided');
+	}
+
 	this.initialize = function() {
 		HydrosphereModeling.get_ocean_depth(displacement, this.sealevel, this.ocean_depth);
 		this.average_ocean_depth = Float32Dataset.average(this.ocean_depth);
@@ -38,8 +43,7 @@ function Hydrosphere(parameters) {
 	};
 
 	this.calcChanges = function(timestep) {
-		displacement || stop('"displacement" not provided');
-		material_density || stop('"material_density" not provided');
+		assert_dependencies();
 
 		calculate_deltas(this, timestep); 			// this creates a world map of all additions and subtractions to crust (e.g. from erosion, accretion, etc.)
 		calculate_refresh(this); 					// this calculates the updated state of the model to reflect the most recent changes to derived attributes
@@ -49,6 +53,8 @@ function Hydrosphere(parameters) {
 		if (timestep === 0) {
 			return;
 		};
+		
+		assert_dependencies();
 
 		apply_deltas(this); 	// this applies additions and subtractions to crust
 		apply_refresh(this); 	// this applies the updated state of the model to reflect the most recent changes to derived attributes

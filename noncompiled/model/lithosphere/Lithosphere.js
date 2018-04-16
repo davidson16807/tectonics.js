@@ -423,6 +423,12 @@ function Lithosphere(parameters) {
 		}
 	};
 
+	function assert_dependencies() {
+		sealevel 			|| stop('"sealevel" not provided');
+		material_density 	|| stop('"material_density" not provided');
+		material_viscosity 	|| stop('"material_viscosity" not provided');
+	}
+
 	this.initialize = function() { 
 		update_calculated_fields(this); 					// this creates world maps for things like density and elevation
 
@@ -437,10 +443,7 @@ function Lithosphere(parameters) {
 	};
 
 	this.calcChanges = function(timestep) {
-		sealevel 			|| stop('"sealevel" not provided');
-		material_density 	|| stop('"material_density" not provided');
-		material_viscosity 	|| stop('"material_viscosity" not provided');
-		
+		assert_dependencies();
 		calculate_deltas		(this, timestep); 			// this creates a world map of all additions and subtractions to crust (e.g. from erosion, accretion, etc.)
 	};
 
@@ -448,6 +451,8 @@ function Lithosphere(parameters) {
 		if (timestep === 0) {
 			return;
 		};
+		
+		assert_dependencies();
 
 		integrate_deltas 		(this, this.plates); 		// this uses the map above in order to add and subtract crust
 
