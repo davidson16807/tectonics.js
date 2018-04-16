@@ -42,8 +42,14 @@ function World(parameters) {
 	});
 	this.hydrosphere.setDependencies({
 		'displacement': 		this.lithosphere.displacement,
+		'material_density': 	this.material_density,
 	});
-	
+
+	this.initialize = function() {
+		// WARNING: order matters! (sorry, I'm working on it!)
+		this.lithosphere.initialize();
+		this.hydrosphere.initialize();
+	}
 	this.update = function(timestep){
 		if (timestep === 0) {
 			return;

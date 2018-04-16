@@ -1,5 +1,4 @@
 
-var average_conserved_per_cell = 0.0;
 var WorldGenerator = {};
 WorldGenerator.generate = function (world, height_ranks, hypsography, control_points) {
 	function clamp (x, minVal, maxVal) {
@@ -51,7 +50,6 @@ WorldGenerator.generate = function (world, height_ranks, hypsography, control_po
 			}
 		};
 	};
-	average_conserved_per_cell = Crust.get_average_conserved_per_cell(crust);
 };
 
 WorldGenerator.early_earth_hypsography = function() {

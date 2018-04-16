@@ -11,6 +11,8 @@ Model.prototype.world = function(world) {
 		return this._world;
 	};
 	this._world = world;
+	world.initialize()
+	
 };
 
 Model.prototype.update = function() {

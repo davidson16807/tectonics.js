@@ -46,7 +46,7 @@ function Lithosphere(parameters) {
 	this.crust_scratch 	= new Crust({grid: this.grid});
 
 	this.plates = [];
-
+	this.average_conserved_per_cell = 0;
 
 
 
@@ -422,6 +422,12 @@ function Lithosphere(parameters) {
 			this.plates.push(plate);
 		}
 	};
+
+	this.initialize = function() { 
+		update_calculated_fields(this); 					// this creates world maps for things like density and elevation
+
+		this.average_conserved_per_cell = Crust.get_average_conserved_per_cell(this.total_crust);
+	}
 
 	this.setDependencies = function(dependencies) {
 		surface_gravity 	= dependencies['surface_gravity'] 	|| surface_gravity;
