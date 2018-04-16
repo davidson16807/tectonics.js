@@ -3,9 +3,23 @@
 
 var experimentalDisplays = {};
 
-
+experimentalDisplays.eliptic_ids = new ScalarHeatDisplay( { 
+    scaling: true, 
+    getField: function (crust) { 
+      var ids = Float32Raster(crust.grid); 
+      Float32Raster.FromUint16Raster(crust.grid.vertex_ids, ids); 
+      var pos = OrbitalMechanics.get_ecliptic_coordinates_raster_from_equatorial_coordinates_raster( 
+        crust.grid.pos, 
+        23.5/180*Math.PI, 
+        23.5/180*Math.PI 
+      ); 
+      return Float32Raster.get_nearest_values(ids, pos); 
+    } 
+   } ); 
 experimentalDisplays.albedo 	= new ScalarHeatDisplay( { min: '0.', max: '1.',  
 	getField: function (world) {
+
+		// dependencies: sealevel, displacement, mean_anomaly, ice_fraction, 
 		var sealevel = world.hydrosphere.sealevel;
 		var land_fraction = Float32RasterInterpolation.smoothstep(sealevel-200, sealevel, world.displacement);
 		var temp = AtmosphericModeling.surface_air_temp(world.grid.pos, world.meanAnomaly, Math.PI*23.5/180);
