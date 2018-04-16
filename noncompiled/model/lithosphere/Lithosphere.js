@@ -2,7 +2,7 @@
 
 
 function Lithosphere(parameters) {
-	this.grid = parameters['grid'] || stop('missing parameter: "grid"');
+	var grid = parameters['grid'] || stop('missing parameter: "grid"');
 
 	var material_viscosity = parameters['material_viscosity'];
 	var sealevel = parameters['sealevel'];
@@ -18,32 +18,32 @@ function Lithosphere(parameters) {
 	this.supercontinentCycle = parameters['supercontinentCycle'] || new SupercontinentCycle(this, parameters);
 
 	// The following are fields that are derived from other fields:
-	this.displacement = Float32Raster(this.grid);
+	this.displacement = Float32Raster(grid);
 	// "displacement is the height of the crust relative to an arbitrary datum level
 	// It is not called "elevation" to emphasize that it is not relative to sea level
-	this.thickness = Float32Raster(this.grid);
+	this.thickness = Float32Raster(grid);
 	// the thickness of the crust in km
-	this.total_mass = Float32Raster(this.grid);
+	this.total_mass = Float32Raster(grid);
 	// total mass of the crust in tons
-	this.density = Float32Raster(this.grid);
+	this.density = Float32Raster(grid);
 	// the average density of the crust, in T/m^3
-	this.buoyancy = Float32Raster(this.grid);
+	this.buoyancy = Float32Raster(grid);
 
-	this.top_plate_map 			= Uint8Raster(this.grid);
-	this.plate_count 		= Uint8Raster(this.grid);
-	this.asthenosphere_velocity = VectorRaster(this.grid);
+	this.top_plate_map 			= Uint8Raster(grid);
+	this.plate_count 		= Uint8Raster(grid);
+	this.asthenosphere_velocity = VectorRaster(grid);
 
 	// this.maxPlatesNum = parameters['platesNum'] || 8;
 
-	this.top_crust 		= new Crust({grid: this.grid});
-	this.total_crust 	= new Crust({grid: this.grid});
-	this.erosion 		= new Crust({grid: this.grid});
-	this.weathering 	= new Crust({grid: this.grid});
-	this.lithification 	= new Crust({grid: this.grid});
-	this.metamorphosis 	= new Crust({grid: this.grid});
-	this.accretion 		= new Crust({grid: this.grid});
-	this.crust_delta 	= new Crust({grid: this.grid});
-	this.crust_scratch 	= new Crust({grid: this.grid});
+	this.top_crust 		= new Crust({grid: grid});
+	this.total_crust 	= new Crust({grid: grid});
+	this.erosion 		= new Crust({grid: grid});
+	this.weathering 	= new Crust({grid: grid});
+	this.lithification 	= new Crust({grid: grid});
+	this.metamorphosis 	= new Crust({grid: grid});
+	this.accretion 		= new Crust({grid: grid});
+	this.crust_delta 	= new Crust({grid: grid});
+	this.crust_scratch 	= new Crust({grid: grid});
 
 	this.plates = [];
 	this.average_conserved_per_cell = 0;
@@ -403,7 +403,7 @@ function Lithosphere(parameters) {
 
 		var pressure = LithosphereModeling.get_asthenosphere_pressure(this.buoyancy);
 		LithosphereModeling.get_asthenosphere_velocity(pressure, this.asthenosphere_velocity);
-		var angular_velocity = VectorField.cross_vector_field(this.asthenosphere_velocity, this.grid.pos);
+		var angular_velocity = VectorField.cross_vector_field(this.asthenosphere_velocity, grid.pos);
 		var top_plate_map = LithosphereModeling.get_plate_map(angular_velocity, 7, 200);
 		var plate_ids = Uint8Dataset.unique(top_plate_map);
 		this.plates = [];
@@ -414,7 +414,7 @@ function Lithosphere(parameters) {
 			var mask = Uint8Field.eq_scalar(top_plate_map, plate_ids[i]);
 
 			plate = new Plate({
-				grid: 	this.grid,
+				grid: 	grid,
 				mask: 	mask,
 			})
 			Crust.copy(this.total_crust, plate.crust);
@@ -429,18 +429,18 @@ function Lithosphere(parameters) {
 		material_viscosity 	|| stop('"material_viscosity" not provided');
 	}
 
-	this.initialize = function() { 
-		update_calculated_fields(this); 					// this creates world maps for things like density and elevation
-
-		this.average_conserved_per_cell = Crust.get_average_conserved_per_cell(this.total_crust);
-	}
-
 	this.setDependencies = function(dependencies) {
 		surface_gravity 	= dependencies['surface_gravity'] 	|| surface_gravity;
 		sealevel 			= dependencies['sealevel'] 			|| sealevel;
 		material_density 	= dependencies['material_density'] 	|| material_density;
 		material_viscosity	= dependencies['material_viscosity']|| material_viscosity;
 	};
+
+	this.initialize = function() { 
+		update_calculated_fields(this); 					// this creates world maps for things like density and elevation
+
+		this.average_conserved_per_cell = Crust.get_average_conserved_per_cell(this.total_crust);
+	}
 
 	this.calcChanges = function(timestep) {
 		assert_dependencies();
@@ -451,7 +451,7 @@ function Lithosphere(parameters) {
 		if (timestep === 0) {
 			return;
 		};
-		
+
 		assert_dependencies();
 
 		integrate_deltas 		(this, this.plates); 		// this uses the map above in order to add and subtract crust
