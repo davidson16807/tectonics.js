@@ -27,16 +27,16 @@ function Biosphere(parameters) {
 	function apply_refresh(world) { }
 
 	function assert_dependencies() {
-		surface_temp 	|| stop('"surface_temp" not provided'); 
-		precip 	|| stop('"precip" not provided'); 
+		if (surface_temp === void 0)	{ throw '"surface_temp" not provided'; }
+		if (precip === void 0)	 		{ throw '"precip" not provided'; }
 	}
 
 	this.setDependencies = function(dependencies) {
-		surface_temp 	= dependencies['surface_temp']	|| surface_temp;
-		precip 			= dependencies['precip']		|| precip;
-		growth_factor 	= dependencies['growth_factor']	|| growth_factor;
-		npp_max 		= dependencies['npp_max']		|| npp_max;
-		lai_max 		= dependencies['lai_max']		|| lai_max;
+		surface_temp 	= dependencies['surface_temp'] 	!== void 0? 	dependencies['surface_temp'] 	: surface_temp;
+		precip 			= dependencies['precip'] 		!== void 0? 	dependencies['precip'] 			: precip;
+		growth_factor 	= dependencies['growth_factor'] !== void 0? 	dependencies['growth_factor'] 	: growth_factor;
+		npp_max 		= dependencies['npp_max'] 		!== void 0? 	dependencies['npp_max'] 		: npp_max;
+		lai_max 		= dependencies['lai_max'] 		!== void 0? 	dependencies['lai_max'] 		: lai_max;
 	};
 
 	this.initialize = function() {

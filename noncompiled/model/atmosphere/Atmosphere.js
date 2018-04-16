@@ -32,26 +32,23 @@ function Atmosphere(parameters) {
 	function apply_refresh(world) { }
 
 	function assert_dependencies() {
-		if (mean_anomaly === void 0) { stop('"mean_anomaly" not provided'); }
-
-		displacement 	= displacement 	|| stop('"displacement" not provided');
-		land_coverage 	= land_coverage || stop('"land_coverage" not provided');
-		ice_coverage 	= ice_coverage 	|| stop('"ice_coverage" not provided');
-		plant_coverage 	= plant_coverage|| stop('"plant_coverage" not provided');
-		axial_tilt 		= axial_tilt 	|| stop('"axial_tilt" not provided');
-		sealevel 		= sealevel 		|| stop('"sealevel" not provided');
+		if (displacement === void 0)	 { throw '"displacement" not provided'; }
+		if (land_coverage === void 0)	 { throw '"land_coverage" not provided'; }
+		if (ice_coverage === void 0)	 { throw '"ice_coverage" not provided'; }
+		if (plant_coverage === void 0)	 { throw '"plant_coverage" not provided'; }
+		if (mean_anomaly === void 0)	 { throw '"mean_anomaly" not provided'; }
+		if (axial_tilt === void 0)		 { throw '"axial_tilt" not provided'; }
+		if (sealevel === void 0)		 { throw '"sealevel" not provided'; }
 	}
 
 	this.setDependencies = function(dependencies) {
-		if (dependencies['mean_anomaly'] !== void 0) { mean_anomaly = dependencies['mean_anomaly']; }
-		
-		displacement 	= dependencies['displacement'] 	|| displacement;
-		land_coverage 	= dependencies['land_coverage'] || land_coverage;
-		ice_coverage 	= dependencies['ice_coverage'] 	|| ice_coverage;
-		plant_coverage 	= dependencies['plant_coverage']|| plant_coverage;
-		mean_anomaly 	= dependencies['mean_anomaly'] 	|| mean_anomaly;
-		axial_tilt 		= dependencies['axial_tilt'] 	|| axial_tilt;
-		sealevel 		= dependencies['sealevel'] 		|| sealevel;
+		displacement 	= dependencies['displacement'] 	!== void 0? 	dependencies['displacement'] 	: displacement;
+		land_coverage 	= dependencies['land_coverage'] !== void 0? 	dependencies['land_coverage'] 	: land_coverage;
+		ice_coverage 	= dependencies['ice_coverage'] 	!== void 0? 	dependencies['ice_coverage'] 	: ice_coverage;
+		plant_coverage 	= dependencies['plant_coverage']!== void 0? 	dependencies['plant_coverage'] 	: plant_coverage;
+		mean_anomaly 	= dependencies['mean_anomaly'] 	!== void 0? 	dependencies['mean_anomaly'] 	: mean_anomaly;
+		axial_tilt 		= dependencies['axial_tilt'] 	!== void 0? 	dependencies['axial_tilt'] 		: axial_tilt;
+		sealevel 		= dependencies['sealevel'] 		!== void 0? 	dependencies['sealevel'] 		: sealevel;
 	};
 
 	this.initialize = function() {

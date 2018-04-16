@@ -31,13 +31,13 @@ function Hydrosphere(parameters) {
 	}
 
 	function assert_dependencies() {
-		displacement 	 || stop('"displacement" not provided');
-		material_density || stop('"material_density" not provided');
+		if (displacement === void 0)	 { throw '"displacement" not provided'; }
+		if (material_density === void 0) { throw '"material_density" not provided'; }
 	}
 
 	this.setDependencies = function(dependencies) {
-		displacement = dependencies['displacement'] 		|| displacement;	
-		material_density = dependencies['material_density'] || material_density;
+		displacement 	= dependencies['displacement'] 	!== void 0? 	dependencies['displacement'] 		: displacement;
+		material_density= dependencies['material_density'] 	!== void 0? dependencies['material_density'] 	: material_density;
 	};
 
 	this.initialize = function() {

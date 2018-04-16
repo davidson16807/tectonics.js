@@ -423,16 +423,16 @@ function Lithosphere(parameters) {
 	};
 
 	function assert_dependencies() {
-		sealevel 			|| stop('"sealevel" not provided');
-		material_density 	|| stop('"material_density" not provided');
-		material_viscosity 	|| stop('"material_viscosity" not provided');
+		if (sealevel === void 0)	 		{ throw '"sealevel" not provided'; }
+		if (material_viscosity === void 0)	{ throw '"material_viscosity" not provided'; }
+		if (material_viscosity === void 0)	{ throw '"material_viscosity" not provided'; }
 	}
 
 	this.setDependencies = function(dependencies) {
-		surface_gravity 	= dependencies['surface_gravity'] 	|| surface_gravity;
-		sealevel 			= dependencies['sealevel'] 			|| sealevel;
-		material_density 	= dependencies['material_density'] 	|| material_density;
-		material_viscosity	= dependencies['material_viscosity']|| material_viscosity;
+		surface_gravity 	= dependencies['surface_gravity'] 	!== void 0? 	dependencies['surface_gravity'] 		: surface_gravity;
+		sealevel 			= dependencies['sealevel'] 			!== void 0? 	dependencies['sealevel'] 		: sealevel;
+		material_density 	= dependencies['material_density'] 	!== void 0? 	dependencies['material_density'] 		: material_density;
+		material_viscosity 	= dependencies['material_viscosity']!== void 0? 	dependencies['material_viscosity'] 		: material_viscosity;
 	};
 
 	this.initialize = function() { 
