@@ -33,13 +33,16 @@ function Hydrosphere(parameters) {
 	}
 
 	this.setDependencies = function(dependencies) {
-		displacement = dependencies['displacement'] || displacement || stop('"displacement" not provided');
-		material_density = dependencies['material_density'] || material_density || stop('"material_density" not provided');
+		displacement = dependencies['displacement'];	
+		material_density = dependencies['material_density'];
 	};
 
 	this.calcChanges = function(timestep) {
+		displacement || stop('"displacement" not provided');
+		material_density || stop('"material_density" not provided');
+
 		calculate_deltas(this, timestep); 			// this creates a world map of all additions and subtractions to crust (e.g. from erosion, accretion, etc.)
-		calculate_refresh(this); 					// this creates a world map of all additions and subtractions to crust (e.g. from erosion, accretion, etc.)
+		calculate_refresh(this); 					// this calculates the updated state of the model to reflect the most recent changes to derived attributes
 	};
 
 	this.applyChanges = function(timestep){
@@ -47,7 +50,7 @@ function Hydrosphere(parameters) {
 			return;
 		};
 
-		apply_deltas(this); 	// this uses the map above in order to add and subtract crust
-		apply_refresh(this); 	// this uses the map above in order to add and subtract crust
+		apply_deltas(this); 	// this applies additions and subtractions to crust
+		apply_refresh(this); 	// this applies the updated state of the model to reflect the most recent changes to derived attributes
 	};
 }

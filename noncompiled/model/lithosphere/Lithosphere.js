@@ -431,12 +431,16 @@ function Lithosphere(parameters) {
 
 	this.setDependencies = function(dependencies) {
 		surface_gravity 	= dependencies['surface_gravity'] 	|| surface_gravity;
-		sealevel 			= dependencies['sealevel'] 			|| sealevel 			|| stop('"sealevel" not provided');
-		material_density 	= dependencies['material_density'] 	|| material_density 	|| stop('"material_density" not provided');
-		material_viscosity = dependencies['material_viscosity']|| material_viscosity 	|| stop('"material_viscosity" not provided');
+		sealevel 			= dependencies['sealevel'] 			|| sealevel;
+		material_density 	= dependencies['material_density'] 	|| material_density;
+		material_viscosity	= dependencies['material_viscosity']|| material_viscosity;
 	};
 
 	this.calcChanges = function(timestep) {
+		sealevel 			|| stop('"sealevel" not provided');
+		material_density 	|| stop('"material_density" not provided');
+		material_viscosity 	|| stop('"material_viscosity" not provided');
+		
 		calculate_deltas		(this, timestep); 			// this creates a world map of all additions and subtractions to crust (e.g. from erosion, accretion, etc.)
 	};
 
