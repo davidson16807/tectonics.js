@@ -9,6 +9,8 @@ function Hydrosphere(parameters) {
 	this.surface_height = Float32Raster(grid);
 	this.ocean_depth = Float32Raster(grid);
 	this.average_ocean_depth = 0;
+	this.ice_coverage = Float32Raster(grid);
+	this.ocean_coverage = Float32Raster(grid);
 
 	// private variables
 	var sealevel_refresh = this.sealevel;
@@ -39,6 +41,8 @@ function Hydrosphere(parameters) {
 	};
 
 	this.initialize = function() {
+		assert_dependencies();
+
 		HydrosphereModeling.get_ocean_depth(displacement, this.sealevel, this.ocean_depth);
 		this.average_ocean_depth = Float32Dataset.average(this.ocean_depth);
 	}

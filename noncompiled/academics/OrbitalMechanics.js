@@ -51,3 +51,4 @@ OrbitalMechanics.get_eliptic_coordinate_sample = function(
     y: 0,
     z: a*sin(E)*sqrt(1-e*e)
   };
+}

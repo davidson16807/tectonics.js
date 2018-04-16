@@ -14,7 +14,7 @@ function Biosphere(parameters) {
 	var lai_refresh = Float32Raster(grid);
 	var plant_coverage_refresh = Float32Raster(grid);
 
-	var temp = undefined;
+	var surface_temp = undefined;
 	var precip = undefined;
 	var growth_factor 	= parameters['growth_factor'] || 1; // This is something I haven't bothered parameterizing. If c=1/∞, then npp∝lai
 	var npp_max 		= parameters['npp_max'] || 1;
@@ -27,12 +27,12 @@ function Biosphere(parameters) {
 	function apply_refresh(world) { }
 
 	function assert_dependencies() {
-		temp 	|| stop('"temp" not provided'); 
+		surface_temp 	|| stop('"surface_temp" not provided'); 
 		precip 	|| stop('"precip" not provided'); 
 	}
 
 	this.setDependencies = function(dependencies) {
-		temp 			= dependencies['temp']			|| temp;
+		surface_temp 	= dependencies['surface_temp']	|| surface_temp;
 		precip 			= dependencies['precip']		|| precip;
 		growth_factor 	= dependencies['growth_factor']	|| growth_factor;
 		npp_max 		= dependencies['npp_max']		|| npp_max;
@@ -40,6 +40,7 @@ function Biosphere(parameters) {
 	};
 
 	this.initialize = function() {
+		assert_dependencies();
 
 	}
 

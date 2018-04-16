@@ -32,16 +32,19 @@ function Atmosphere(parameters) {
 	function apply_refresh(world) { }
 
 	function assert_dependencies() {
+		if (mean_anomaly === void 0) { stop('"mean_anomaly" not provided'); }
+
 		displacement 	= displacement 	|| stop('"displacement" not provided');
 		land_coverage 	= land_coverage || stop('"land_coverage" not provided');
 		ice_coverage 	= ice_coverage 	|| stop('"ice_coverage" not provided');
 		plant_coverage 	= plant_coverage|| stop('"plant_coverage" not provided');
-		mean_anomaly 	= mean_anomaly 	|| stop('"mean_anomaly" not provided');
 		axial_tilt 		= axial_tilt 	|| stop('"axial_tilt" not provided');
 		sealevel 		= sealevel 		|| stop('"sealevel" not provided');
 	}
 
 	this.setDependencies = function(dependencies) {
+		if (dependencies['mean_anomaly'] !== void 0) { mean_anomaly = dependencies['mean_anomaly']; }
+		
 		displacement 	= dependencies['displacement'] 	|| displacement;
 		land_coverage 	= dependencies['land_coverage'] || land_coverage;
 		ice_coverage 	= dependencies['ice_coverage'] 	|| ice_coverage;
@@ -52,6 +55,7 @@ function Atmosphere(parameters) {
 	};
 
 	this.initialize = function() {
+		assert_dependencies();
 
 
 	}

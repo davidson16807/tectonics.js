@@ -28,6 +28,8 @@ function Lithosphere(parameters) {
 	this.density = Float32Raster(grid);
 	// the average density of the crust, in T/m^3
 	this.buoyancy = Float32Raster(grid);
+	// land coverage
+	this.land_coverage = Float32Raster(grid);
 
 	this.top_plate_map 			= Uint8Raster(grid);
 	this.plate_count 		= Uint8Raster(grid);
@@ -434,6 +436,8 @@ function Lithosphere(parameters) {
 	};
 
 	this.initialize = function() { 
+		assert_dependencies();
+
 		update_calculated_fields(this); 					// this creates world maps for things like density and elevation
 
 		this.average_conserved_per_cell = Crust.get_average_conserved_per_cell(this.total_crust);

@@ -39,6 +39,8 @@ function World(parameters) {
 
 	this.lithosphere = new Lithosphere(parameters);
 	this.hydrosphere = new Hydrosphere(parameters);
+	this.atmosphere = new Atmosphere(parameters);
+	this.biosphere = new Biosphere(parameters);
 
 	this.lithosphere.setDependencies({
 		'surface_gravity': 		this.surface_gravity,
@@ -60,7 +62,7 @@ function World(parameters) {
 		'axial_tilt' 	: this.orbit.axial_tilt,
 	});
 	this.biosphere.setDependencies({
-		'temp'			: this.atmosphere.temp,
+		'surface_temp'	: this.atmosphere.surface_temp,
 		'precip'		: this.atmosphere.precip,
 	});
 
