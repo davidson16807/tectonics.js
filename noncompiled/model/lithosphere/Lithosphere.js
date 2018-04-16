@@ -59,8 +59,8 @@ function Lithosphere(parameters) {
 	}
     // calculate derived properties for plates
 	function update_calculated_plate_fields(world, plates) { 
-		var plate_thickness = Float32Raster(world.grid); 
-		var plate_mass = Float32Raster(world.grid); 
+		var plate_thickness = Float32Raster(grid); 
+		var plate_mass = Float32Raster(grid); 
 
 	    var get_thickness = Crust.get_thickness; 
 	    var get_total_mass = Crust.get_total_mass; 
@@ -103,14 +103,14 @@ function Lithosphere(parameters) {
 		var local_ids_of_global_cells; 
 
 		//global variables
-		var globalized_is_on_top = scratchpad.getUint8Raster(master.grid);
-		var globalized_plate_mask = scratchpad.getUint8Raster(master.grid); 
+		var globalized_is_on_top = scratchpad.getUint8Raster(grid);
+		var globalized_plate_mask = scratchpad.getUint8Raster(grid); 
 		var global_ids_of_local_cells; 
 
 		// float32array used for temporary storage of globalized scalar fields
 		// this is used for performance reasons
-		var globalized_scalar_field = scratchpad.getFloat32Raster(master.grid); 
-		var plate_thickness = scratchpad.getFloat32Raster(master.grid); 
+		var globalized_scalar_field = scratchpad.getFloat32Raster(grid); 
+		var plate_thickness = scratchpad.getFloat32Raster(grid); 
 
 		var globalized_crust = master.crust_scratch;
 
@@ -166,7 +166,6 @@ function Lithosphere(parameters) {
 	function update_rifting(world, plates) { 
 	  	var top_plate_map = world.top_plate_map;
 	  	var rifting_crust = world.rifting_crust;
-	  	var grid = world.grid;
 
 	  	var scratchpad = RasterStackBuffer.scratchpad;
 	  	scratchpad.allocate('update_rifting');
@@ -220,7 +219,6 @@ function Lithosphere(parameters) {
 	} 
 	function update_subducted(world, plates) {
 	  	var top_plate_map = world.top_plate_map;
-	  	var grid = world.grid;
 
 		// WARNING: unfortunate side effect!
 		// we calculate accretion delta during detachment for performance reasons
@@ -350,7 +348,6 @@ function Lithosphere(parameters) {
 	function integrate_deltas(world, plates) { 
 		// INTEGRATE DELTAS
 
-	  	var grid = world.grid;
 
 	  	var scratchpad = RasterStackBuffer.scratchpad;
 	  	scratchpad.allocate('integrate_deltas');

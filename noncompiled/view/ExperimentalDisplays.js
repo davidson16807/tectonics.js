@@ -19,7 +19,7 @@ experimentalDisplays.eliptic_ids = new ScalarHeatDisplay( {
 experimentalDisplays.albedo 	= new ScalarHeatDisplay( { min: '0.', max: '1.',  
 	getField: function (world) {
 
-		// dependencies: sealevel, displacement, mean_anomaly, ice_fraction, 
+		// dependencies: sealevel, displacement, mean_anomaly, ice_fraction, precip, npp, lai, plant_fraction, land_fraction
 		var sealevel = world.hydrosphere.sealevel;
 		var land_fraction = Float32RasterInterpolation.smoothstep(sealevel-200, sealevel, world.displacement);
 		var temp = AtmosphericModeling.surface_air_temp(world.grid.pos, world.meanAnomaly, Math.PI*23.5/180);
