@@ -98,12 +98,12 @@ var AtmosphereModeling = (function() {
 		return result;
 	}
 	AtmosphereModeling.albedo = function(
-		land_fraction,
-		ice_fraction, 
-		plant_fraction,
+		ocean_coverage,
+		ice_coverage, 
+		plant_coverage,
 		result) {
 
-	    result = result || Float32Raster(land_fraction.grid);
+	    result = result || Float32Raster(land_coverage.grid);
 	    var albedo = result;
 
 	    var water_albedo = 0.06;
@@ -116,9 +116,9 @@ var AtmosphereModeling = (function() {
 
 	    // albedo hierarchy: cloud, ice, water, plant, soil
 	    Float32Raster.fill(albedo, land_albedo);
-		lerp_fsf(albedo, 		plant_albedo, 	plant_fraction, albedo);
-		lerp_sff(water_albedo, 	albedo, 		land_fraction, 	albedo);
-		lerp_fsf(albedo, 		ice_albedo, 	ice_fraction, 	albedo);
+		lerp_fsf(albedo, 		plant_albedo, 	plant_coverage, albedo);
+		lerp_sff(albedo, 		water_albedo, 	ocean_coverage, albedo);
+		lerp_fsf(albedo, 		ice_albedo, 	ice_coverage, 	albedo);
 
 		return result;
 	}

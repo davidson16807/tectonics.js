@@ -18,13 +18,17 @@ function Biosphere(parameters) {
 	var precip = undefined;
 	var growth_factor 	= parameters['growth_factor'] || 1; // This is something I haven't bothered parameterizing. If c=1/∞, then npp∝lai
 	var npp_max 		= parameters['npp_max'] || 1;
-	var lai_max 		= parameters['lai_max'] || 1;
+	var lai_max 		= parameters['lai_max'] || 10;
 
 	function calculate_deltas(world, timestep) { }
 	function calculate_refresh(world) { }
 
 	function apply_deltas(world) { }
-	function apply_refresh(world) { }
+	function apply_refresh(world) {
+		BiosphereModeling.net_primary_productivity(world.surface_temp_refresh, world.precip_refresh, npp_max, world.npp);
+		BiosphereModeling.leaf_area_index(npp, npp_max, lai_max, world.lai);
+		Float32RasterInterpolation.smoothstep(0, 2, lai, world.plant_coverage);
+	}
 
 	function assert_dependencies() {
 		if (surface_temp === void 0)	{ throw '"surface_temp" not provided'; }

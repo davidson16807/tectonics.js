@@ -22,20 +22,45 @@ function Hydrosphere(parameters) {
 	function calculate_deltas(world, timestep) { }
 	function calculate_refresh(world) {
 		sealevel_refresh = HydrosphereModeling.solve_sealevel(displacement, world.average_ocean_depth, material_density.ocean, ocean_depth_refresh);
+
 	}
 
 	function apply_deltas(world) { }
 	function apply_refresh(world) {
 		world.sealevel = sealevel_refresh;
 		Float32Raster.copy(ocean_depth_refresh, world.ocean_depth);
+
+		var epipelagic = world.sealevel-200;
+		var mesopelagic = world.sealevel-1000;
+		var freezing_point = 273.15; // TODO: update this to reflect surface_pressure
+		Float32RasterInterpolation.smoothstep(epipelagic, world.sealevel, displacement, world.ocean_coverage);
+		Float32RasterInterpolation.lerp( 
+				1, 0, 
+				Float32RasterInterpolation.smoothstep(freezing_point-10, freezing_point, surface_temp),
+				world.ice_coverage
+			);
+		Float32RasterGraphics.fill_into_selection(
+			ice_coverage, 0.,
+			ScalarField.lt_field(
+				displacement, 
+				Float32RasterInterpolation.lerp(
+					mesopelagic, 
+					epipelagic,
+					Float32RasterInterpolation.smoothstep(freezing_point-10, freezing_point, surface_temp)
+				)
+			),
+			ice_coverage
+		);
 	}
 
 	function assert_dependencies() {
+		if (surface_temp === void 0)	 { throw '"surface_temp" not provided'; }
 		if (displacement === void 0)	 { throw '"displacement" not provided'; }
 		if (material_density === void 0) { throw '"material_density" not provided'; }
 	}
 
 	this.setDependencies = function(dependencies) {
+		surface_temp 	= dependencies['surface_temp'] 	!== void 0? 	dependencies['surface_temp'] 		: surface_temp;
 		displacement 	= dependencies['displacement'] 	!== void 0? 	dependencies['displacement'] 		: displacement;
 		material_density= dependencies['material_density'] 	!== void 0? dependencies['material_density'] 	: material_density;
 	};

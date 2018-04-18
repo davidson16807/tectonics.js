@@ -10,6 +10,7 @@ function Atmosphere(parameters) {
 	this.surface_pressure = Float32Raster(grid);
 	this.surface_wind_velocity = VectorRaster(grid);
 	this.precip = Float32Raster(grid);
+	this.albedo = Float32Raster(grid);
 
 	// private variables
 	var surface_temp_refresh = Float32Raster(grid);
@@ -18,7 +19,7 @@ function Atmosphere(parameters) {
 	var precip_refresh = Float32Raster(grid);
 
 	var displacement 	= undefined;
-	var land_coverage 	= undefined;
+	var ocean_coverage 	= undefined;
 	var ice_coverage 	= undefined;
 	var plant_coverage 	= undefined;
 	var mean_anomaly 	= undefined;
@@ -29,11 +30,18 @@ function Atmosphere(parameters) {
 	function calculate_refresh(world) { }
 
 	function apply_deltas(world) { }
-	function apply_refresh(world) { }
+	function apply_refresh(world) {
+		Float32SphereRaster.latitude(grid.pos.y, lat);
+		AtmosphericModeling.surface_air_temp(grid.pos, mean_anomaly, axial_tilt, world.surface_temp_refresh);
+		AtmosphericModeling.precip 			(lat, world.precip_refresh);
+		AtmosphericModeling.albedo(ocean_coverage, ice_coverage, plant_coverage, world.albedo);
+
+		return albedo;
+	}
 
 	function assert_dependencies() {
 		if (displacement === void 0)	 { throw '"displacement" not provided'; }
-		if (land_coverage === void 0)	 { throw '"land_coverage" not provided'; }
+		if (ocean_coverage === void 0)	 { throw '"ocean_coverage" not provided'; }
 		if (ice_coverage === void 0)	 { throw '"ice_coverage" not provided'; }
 		if (plant_coverage === void 0)	 { throw '"plant_coverage" not provided'; }
 		if (mean_anomaly === void 0)	 { throw '"mean_anomaly" not provided'; }
@@ -43,7 +51,7 @@ function Atmosphere(parameters) {
 
 	this.setDependencies = function(dependencies) {
 		displacement 	= dependencies['displacement'] 	!== void 0? 	dependencies['displacement'] 	: displacement;
-		land_coverage 	= dependencies['land_coverage'] !== void 0? 	dependencies['land_coverage'] 	: land_coverage;
+		ocean_coverage 	= dependencies['ocean_coverage']!== void 0? 	dependencies['ocean_coverage'] 	: ocean_coverage;
 		ice_coverage 	= dependencies['ice_coverage'] 	!== void 0? 	dependencies['ice_coverage'] 	: ice_coverage;
 		plant_coverage 	= dependencies['plant_coverage']!== void 0? 	dependencies['plant_coverage'] 	: plant_coverage;
 		mean_anomaly 	= dependencies['mean_anomaly'] 	!== void 0? 	dependencies['mean_anomaly'] 	: mean_anomaly;
@@ -53,8 +61,8 @@ function Atmosphere(parameters) {
 
 	this.initialize = function() {
 		assert_dependencies();
-
-
+		calculate_refresh(this);	// this calculates the updated state of the model to reflect the most recent changes to derived attributes
+		apply_refresh(this); 		// this applies the updated state of the model to reflect the most recent changes to derived attributes
 	}
 
 	this.calcChanges = function(timestep) {
