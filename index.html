@@ -107,7 +107,7 @@
 				<img src="icons/weather-sunny.svg" height="12em" width="12em">
   			</span>
   			<span class="form-control input-sm age">
-  				<input type="range" min="-1" max="1" step="0.01" 
+  				<input type="range" min="-1.57" max="1.57" step="0.01" 
   					v-model="season" v-on:input="setSeason()"/>
   			</span>
   			<span class="input-group-addon">
@@ -733,7 +733,7 @@
 			model.MegaYearPerSecond = this.speed;
 		},
 		setSeason: function() {
-			model.world().meanAnomaly = 2*Math.asin(this.season);
+			model.world().meanAnomaly = this.season;
 		},
 		setSeasonVisibility: function(visibility) {
 			this.isSeasonVisible = visibility || false;
