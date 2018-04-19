@@ -28,7 +28,7 @@ RealisticDisplay.prototype.removeFrom = function(mesh) {
 	
 };
 RealisticDisplay.prototype.updateAttributes = function(geometry, world) {
-	Float32Raster.get_ids(world.lithosphere.displacement, view.grid.buffer_array_to_cell, geometry.attributes.displacement.array); 
+	Float32Raster.get_ids(world.lithosphere.displacement.value(), view.grid.buffer_array_to_cell, geometry.attributes.displacement.array); 
 	geometry.attributes.displacement.needsUpdate = true;
 }
 scalarDisplays.satellite = new RealisticDisplay('canopy');
@@ -81,7 +81,7 @@ ScalarDisplay.prototype.removeFrom = function(mesh) {
 	
 };
 ScalarDisplay.prototype.updateAttributes = function(geometry, world) {
-	Float32Raster.get_ids(world.lithosphere.displacement, view.grid.buffer_array_to_cell, geometry.attributes.displacement.array); 
+	Float32Raster.get_ids(world.lithosphere.displacement.value(), view.grid.buffer_array_to_cell, geometry.attributes.displacement.array); 
 	geometry.attributes.displacement.needsUpdate = true;
 
 	this.field = this.field || Float32Raster(world.grid);
@@ -133,8 +133,8 @@ scalarDisplays.alt 	= new ScalarDisplay( { minColor: 0x000000, maxColor: 0xfffff
 		getField: function (world, result) {
 			lithosphere = world.lithosphere;
 			hydrosphere = world.hydrosphere;
-			return (scalarDisplayVue.ocean)?(ScalarField.max_scalar(lithosphere.displacement, hydrosphere.sealevel)):
-			                                (lithosphere.displacement);
+			return (scalarDisplayVue.ocean)?(ScalarField.max_scalar(lithosphere.displacement.value(), hydrosphere.sealevel)):
+			                                (lithosphere.displacement.value());
 		}
 	} );
 
@@ -173,7 +173,7 @@ ScalarHeatDisplay.prototype.removeFrom = function(mesh) {
 	
 };
 ScalarHeatDisplay.prototype.updateAttributes = function(geometry, world) {
-	Float32Raster.get_ids(world.lithosphere.displacement, view.grid.buffer_array_to_cell, geometry.attributes.displacement.array); 
+	Float32Raster.get_ids(world.lithosphere.displacement.value(), view.grid.buffer_array_to_cell, geometry.attributes.displacement.array); 
 	geometry.attributes.displacement.needsUpdate = true;
 
 	// run getField()
@@ -300,7 +300,7 @@ scalarDisplays.density 	= new ScalarHeatDisplay( { min: '2.700', max: '3.300',
 	} );
 scalarDisplays.elevation 	= new ScalarHeatDisplay( { min: '0.', max: '10000.',  
 		getField: function (world) {
-			return ScalarField.sub_scalar(world.lithosphere.displacement, -3682);
+			return ScalarField.sub_scalar(world.lithosphere.displacement.value(), -3682);
 		}
 	} );
 scalarDisplays.asthenosphere_pressure = new ScalarHeatDisplay(  { 
@@ -314,7 +314,7 @@ scalarDisplays.surface_air_pressure = new ScalarHeatDisplay( { min: '980000.', m
 		getField: function (world, pressure, scratch) {
 			console.log(world.meanAnomaly);
 			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
-			AtmosphericModeling.surface_air_pressure(world.lithosphere.displacement, lat, world.hydrosphere.sealevel, world.meanAnomaly, Math.PI*23.5/180, pressure, scratch);
+			AtmosphericModeling.surface_air_pressure(world.lithosphere.displacement.value(), lat, world.hydrosphere.sealevel, world.meanAnomaly, Math.PI*23.5/180, pressure, scratch);
 			return pressure;
 		}
 	} );

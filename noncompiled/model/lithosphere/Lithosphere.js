@@ -18,8 +18,14 @@ function Lithosphere(parameters) {
 	this.supercontinentCycle = parameters['supercontinentCycle'] || new SupercontinentCycle(this, parameters);
 
 	// The following are fields that are derived from other fields:
-	this.displacement = Float32Raster(grid);
 	// "displacement is the height of the crust relative to an arbitrary datum level
+	var this_ = this; 
+	this.displacement = new Memo(  
+		Float32Raster(grid),  
+		function (result) { 
+			return LithosphereModeling.get_displacement(this_.thickness, this_.density, material_density, result); 
+		}
+	); 
 	// It is not called "elevation" to emphasize that it is not relative to sea level
 	this.thickness = Float32Raster(grid);
 	// the thickness of the crust in km
@@ -82,7 +88,6 @@ function Lithosphere(parameters) {
 		Crust.get_total_mass				(world.total_crust, material_density,								world.total_mass);
 		Crust.get_density 					(world.total_mass, world.thickness,	material_density.mafic_volcanic_min, 	world.density);
 		Crust.get_buoyancy 					(world.density, material_density, surface_gravity, 		 	world.buoyancy);
-		LithosphereModeling.get_displacement 	(world.thickness, world.density, material_density, 				world.displacement);
 	}
 	function merge_plates_to_master(plates, master) {
 	  	var scratchpad = RasterStackBuffer.scratchpad;
@@ -306,7 +311,7 @@ function Lithosphere(parameters) {
 
        	// CALCULATE DELTAS
 		LithosphereModeling.get_erosion(
-			world.displacement, sealevel, timestep,
+			world.displacement.value(), sealevel, timestep,
 			material_density, surface_gravity,
 			world.top_crust, world.erosion, world.crust_scratch
 		);
@@ -314,7 +319,7 @@ function Lithosphere(parameters) {
 
        	// CALCULATE DELTAS
 		LithosphereModeling.get_weathering(
-			world.displacement, sealevel, timestep,
+			world.displacement.value(), sealevel, timestep,
 			material_density, surface_gravity,
 			world.top_crust, world.weathering, world.crust_scratch
 		);
@@ -322,7 +327,7 @@ function Lithosphere(parameters) {
 
        	// CALCULATE DELTAS
 		LithosphereModeling.get_lithification(
-			world.displacement, sealevel, timestep,
+			world.displacement.value(), sealevel, timestep,
 			material_density, surface_gravity,
 			world.top_crust, world.lithification, world.crust_scratch
 		);
@@ -330,7 +335,7 @@ function Lithosphere(parameters) {
 
        	// CALCULATE DELTAS
 		LithosphereModeling.get_metamorphosis(
-			world.displacement, sealevel, timestep,
+			world.displacement.value(), sealevel, timestep,
 			material_density, surface_gravity,
 			world.top_crust, world.metamorphosis, world.crust_scratch
 		);
@@ -452,6 +457,8 @@ function Lithosphere(parameters) {
 		if (timestep === 0) {
 			return;
 		};
+
+		this.displacement.invalidate();
 
 		assert_dependencies();
 
