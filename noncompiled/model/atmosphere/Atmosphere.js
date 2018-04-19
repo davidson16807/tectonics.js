@@ -18,7 +18,6 @@ function Atmosphere(parameters) {
 	var precip_refresh = Float32Raster(grid);
 
 	var displacement 	= undefined;
-	var land_coverage 	= undefined;
 	var ice_coverage 	= undefined;
 	var plant_coverage 	= undefined;
 	var mean_anomaly 	= undefined;
@@ -33,7 +32,6 @@ function Atmosphere(parameters) {
 
 	function assert_dependencies() {
 		if (displacement === void 0)	 { throw '"displacement" not provided'; }
-		if (land_coverage === void 0)	 { throw '"land_coverage" not provided'; }
 		if (ice_coverage === void 0)	 { throw '"ice_coverage" not provided'; }
 		if (plant_coverage === void 0)	 { throw '"plant_coverage" not provided'; }
 		if (mean_anomaly === void 0)	 { throw '"mean_anomaly" not provided'; }
@@ -43,7 +41,6 @@ function Atmosphere(parameters) {
 
 	this.setDependencies = function(dependencies) {
 		displacement 	= dependencies['displacement'] 	!== void 0? 	dependencies['displacement'] 	: displacement;
-		land_coverage 	= dependencies['land_coverage'] !== void 0? 	dependencies['land_coverage'] 	: land_coverage;
 		ice_coverage 	= dependencies['ice_coverage'] 	!== void 0? 	dependencies['ice_coverage'] 	: ice_coverage;
 		plant_coverage 	= dependencies['plant_coverage']!== void 0? 	dependencies['plant_coverage'] 	: plant_coverage;
 		mean_anomaly 	= dependencies['mean_anomaly'] 	!== void 0? 	dependencies['mean_anomaly'] 	: mean_anomaly;

@@ -3,50 +3,97 @@
 function Plate(parameters)
 {
 	parameters = parameters || stop('missing parameter object')
-	this.grid = parameters['grid'] || stop('missing parameter: "grid"');
+	var grid = parameters['grid'] || stop('missing parameter: "grid"');
 
-	this.crust = parameters['crust'] || new Crust({grid: this.grid});
+	this.crust = parameters['crust'] || new Crust({grid: grid});
+	var material_density = parameters['material_density'] || stop('missing parameter: "material_density"');
+	var material_viscosity = parameters['material_viscosity'] || stop('missing parameter: "material_viscosity"');
+	var surface_gravity = parameters['surface_gravity'] || stop('missing parameter: "surface_gravity"');
 
-	this.total_mass = Float32Raster(this.grid);
-	this.thickness = Float32Raster(this.grid);
-	this.density = Float32Raster(this.grid);
-	this.buoyancy = Float32Raster(this.grid);
-	this.velocity = VectorRaster(this.grid);
+	var self = this; 
+	this.displacement = new Memo(  
+		Float32Raster(grid),  
+		function (result) { 
+			return LithosphereModeling.get_displacement(self.thickness.value(), self.density.value(), material_density, result); 
+		}
+	); 
+	// the thickness of the crust in km
+	this.thickness = new Memo(  
+		Float32Raster(grid),  
+		function (result) { 
+			return Crust.get_thickness(self.crust, material_density, result);
+		}
+	); 
+	// total mass of the crust in tons
+	this.total_mass = new Memo(  
+		Float32Raster(grid),  
+		function (result) { 
+			return Crust.get_total_mass(self.crust, result);
+		}
+	); 
+	// the average density of the crust, in T/m^3
+	this.density = new Memo(  
+		Float32Raster(grid),  
+		function (result) { 
+			return Crust.get_density(self.total_mass.value(), self.thickness.value(),	material_density.mafic_volcanic_min, result);
+		}
+	); 
+	this.buoyancy = new Memo(  
+		Float32Raster(grid),  
+		function (result) { 
+			return Crust.get_buoyancy(self.density.value(), material_density, surface_gravity, result);
+		}
+	); 
+	this.velocity = new Memo(  
+		VectorRaster(grid), 
+		function (result) { 
+			return LithosphereModeling.get_plate_velocity(self.mask, self.buoyancy.value(), material_viscosity, result);
+		}
+	); 
+	this.center_of_mass = new Memo(  
+		{ x:0, y:0, z:0 },
+		function (result) {
+			return LithosphereModeling.get_plate_center_of_mass	(self.total_mass.value(), self.mask);
+		}
+	); 
 
-	this.mask = parameters['mask'] || Uint8Raster(this.grid);
+	this.mask = parameters['mask'] || Uint8Raster(grid);
 
 	this.local_to_global_matrix = parameters['local_to_global_matrix'] || Matrix.Identity();
 	this.global_to_local_matrix = Matrix.invert(this.local_to_global_matrix);
 
-	this.global_ids_of_local_cells = Uint16Raster(this.grid);
-	this.local_ids_of_global_cells = Uint16Raster(this.grid);
+	this.global_ids_of_local_cells = Uint16Raster(grid);
+	this.local_ids_of_global_cells = Uint16Raster(grid);
 
-	this.global_pos_of_local_cells = VectorRaster(this.grid);
-	this.local_pos_of_global_cells = VectorRaster(this.grid);
-}
-Plate.prototype.move = function(timestep, material_density, material_viscosity, surface_gravity){
-	var grid = this.grid;
+	this.global_pos_of_local_cells = VectorRaster(grid);
+	this.local_pos_of_global_cells = VectorRaster(grid);
 
-	var world = this.world;
-    Crust.get_thickness		(this.crust, material_density,									this.thickness); 
-    Crust.get_total_mass 	(this.crust, material_density,									this.total_mass); 
-    Crust.get_density		(this.total_mass, this.thickness, material_density.mafic_volcanic_min, this.density); 
-	Crust.get_buoyancy 		(this.density, material_density, surface_gravity, 			this.buoyancy);
-	LithosphereModeling.get_plate_velocity(this.mask, this.buoyancy, material_viscosity,		this.velocity);
+	this.invalidate = function(){
+		this.displacement.invalidate();
+		this.thickness.invalidate();
+		this.total_mass.invalidate();
+		this.density.invalidate();
+		this.buoyancy.invalidate();
+		this.velocity.invalidate();
+		this.center_of_mass.invalidate();
+	}
+	
+	this.move = function(timestep, material_density, material_viscosity, surface_gravity){
+		var world = this.world;
 
-	var center_of_mass = LithosphereModeling.get_plate_center_of_mass	(this.total_mass, this.mask);
-	var rotation_matrix = LithosphereModeling.get_plate_rotation_matrix(this.velocity, center_of_mass, timestep);
+		var rotation_matrix = LithosphereModeling.get_plate_rotation_matrix(this.velocity.value(), this.center_of_mass.value(), timestep);
 
-	Matrix.mult_matrix(this.local_to_global_matrix, rotation_matrix, this.local_to_global_matrix);
-	Matrix.invert(this.local_to_global_matrix, this.global_to_local_matrix);
+		Matrix.mult_matrix(this.local_to_global_matrix, rotation_matrix, this.local_to_global_matrix);
+		Matrix.invert(this.local_to_global_matrix, this.global_to_local_matrix);
 
-	// for each cell in the master's grid, this raster indicates the id of the corresponding cell in the plate's grid
-	// this is used to convert between global and local coordinate systems
-    VectorField.mult_matrix(grid.pos, this.global_to_local_matrix, this.local_pos_of_global_cells); 
-	grid.getNearestIds(this.local_pos_of_global_cells, this.local_ids_of_global_cells);
+		// for each cell in the master's grid, this raster indicates the id of the corresponding cell in the plate's grid
+		// this is used to convert between global and local coordinate systems
+	    VectorField.mult_matrix(grid.pos, this.global_to_local_matrix, this.local_pos_of_global_cells); 
+		grid.getNearestIds(this.local_pos_of_global_cells, this.local_ids_of_global_cells);
 
-	// for each cell in the plate's grid, this raster indicates the id of the corresponding cell in the world's grid
-	// this is used to convert between global and local coordinate systems
-    VectorField.mult_matrix(grid.pos, this.local_to_global_matrix, this.global_pos_of_local_cells);
-	grid.getNearestIds(this.global_pos_of_local_cells, this.global_ids_of_local_cells);
+		// for each cell in the plate's grid, this raster indicates the id of the corresponding cell in the world's grid
+		// this is used to convert between global and local coordinate systems
+	    VectorField.mult_matrix(grid.pos, this.local_to_global_matrix, this.global_pos_of_local_cells);
+		grid.getNearestIds(this.global_pos_of_local_cells, this.global_ids_of_local_cells);
+	}
 }

@@ -54,7 +54,6 @@ function World(parameters) {
 	});
 	this.atmosphere.setDependencies({
 		'displacement' 	: this.lithosphere.displacement, //TODO: convert this to elevation
-		'land_coverage' : this.lithosphere.land_coverage,
 		'ice_coverage' 	: this.hydrosphere.ice_coverage,
 		'sealevel' 		: this.hydrosphere .sealevel,
 		'plant_coverage': this.biosphere.plant_coverage,

@@ -127,7 +127,7 @@ Crust.get_conserved_mass = function(crust, mass) {
 	
 	return mass; 
 }
-Crust.get_total_mass = function(crust, material_density, mass) {  
+Crust.get_total_mass = function(crust, mass) {  
 	mass = mass || Float32Raster(crust.grid);
 	mass.fill(0);
 
