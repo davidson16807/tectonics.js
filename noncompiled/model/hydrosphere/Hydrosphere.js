@@ -21,8 +21,12 @@ function Hydrosphere(parameters) {
 
 	function calculate_deltas(world, timestep) { }
 	function calculate_refresh(world) {
-		sealevel_refresh = HydrosphereModeling.solve_sealevel(displacement.value(), world.average_ocean_depth, material_density.ocean, ocean_depth_refresh);
-
+		sealevel_refresh = HydrosphereModeling.solve_sealevel(
+			displacement.value(), 
+			world.average_ocean_depth, 
+			material_density.ocean, 
+			ocean_depth_refresh
+		);
 	}
 
 	function apply_deltas(world) { }

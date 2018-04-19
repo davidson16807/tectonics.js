@@ -143,6 +143,7 @@ Crust.get_density = function(mass, thickness, default_density, density) {
 	for (var i = 0, li = density.length; i < li; i++) { 
         density[i] = thickness[i] > 0? mass[i] / thickness[i] : default_density; 
     }
+    return density;
 }
 
 
