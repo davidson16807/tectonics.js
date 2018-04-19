@@ -3,12 +3,14 @@ var HydrosphereModeling = {};
 HydrosphereModeling.get_surface_height = function(displacement, sealevel, result) {
 	ScalarField.sub_scalar(displacement, sealevel, result);
 	ScalarField.max_scalar(result, 0, result);
+	return result;
 }
 
 HydrosphereModeling.get_ocean_depth = function(displacement, sealevel, result) {
 	ScalarField.sub_scalar(displacement, sealevel, result);
 	ScalarField.mult_scalar(result, -1, result);
 	ScalarField.max_scalar(result, 0, result);
+	return result;
 }
 
 // solve for sealevel using iterative numerical approximation

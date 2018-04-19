@@ -77,6 +77,11 @@ function World(parameters) {
 			return;
 		};
 
+		this.lithosphere.invalidate();
+		this.hydrosphere.invalidate();
+		this.atmosphere.invalidate();
+		this.biosphere.invalidate();
+
 		// NOTE: update all non-constant, non-spatial dependencies
 		this.lithosphere.setDependencies({
 			'sealevel': 			this.hydrosphere.sealevel,

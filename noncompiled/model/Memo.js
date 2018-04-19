@@ -2,7 +2,7 @@
 
 
 function Memo(initial_value, get_value, is_dirty) {
-	is_dirty = is_dirty || true;
+	is_dirty = is_dirty === void 0? true : is_dirty;
 	var value = initial_value;
 	this.invalidate = function() {
 		is_dirty = true;

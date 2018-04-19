@@ -5,57 +5,87 @@ function Hydrosphere(parameters) {
 	var grid = parameters['grid'] || stop('missing parameter: "grid"');
 
 	// public variables
-	this.sealevel = parameters['sealevel'] || 3682;
-	this.surface_height = Float32Raster(grid);
-	this.ocean_depth = Float32Raster(grid);
+	var self = this; 
 	this.average_ocean_depth = 0;
-	this.ice_coverage = Float32Raster(grid);
-	this.ocean_coverage = Float32Raster(grid);
+	// height of sealevel, in meters, relative to the same datum level used by displacement
+	this.sealevel = new Memo(
+		parameters['sealevel'] || 3682,  
+		function (current_value) { 
+			return HydrosphereModeling.solve_sealevel(
+				displacement.value(), 
+				self.average_ocean_depth, 
+				material_density.ocean, 
+				// Float32Raster(grid)
+			);
+		}, 
+		false
+	); 
+	this.epipelagic = new Memo( 0,  
+		function (current_value) { 
+			return self.sealevel.value()-200;
+		}
+	); 
+	this.mesopelagic = new Memo( 0,  
+		function (current_value) { 
+			return self.sealevel.value()-1000;
+		}
+	); 
+	this.surface_height = new Memo(
+		Float32Raster(grid),  
+		function (result) {
+			return HydrosphereModeling.get_surface_height(displacement.value(), self.sealevel.value(), result);
+		}
+	); 
+	this.ocean_depth = new Memo(
+		Float32Raster(grid),  
+		function (result) {
+			return HydrosphereModeling.get_ocean_depth(displacement.value(), self.sealevel.value(), result);
+		}
+	); 
+	this.ice_coverage = new Memo(
+		Float32Raster(grid),  
+		function (result) { 
+			var freezing_point = 273.15; // TODO: move this to Atmosphere, and update this to reflect surface_pressure
+			Float32RasterInterpolation.lerp(
+					1, 0, 
+					Float32RasterInterpolation.smoothstep(freezing_point-10, freezing_point, surface_temp.value()),
+					result
+				);
+			Float32RasterGraphics.fill_into_selection(
+				result, 0.,
+				ScalarField.lt_field(
+					displacement.value(), 
+					Float32RasterInterpolation.lerp(
+						self.mesopelagic.value(), 
+						self.epipelagic.value(),
+						Float32RasterInterpolation.smoothstep(freezing_point-10, freezing_point, surface_temp.value())
+					)
+				),
+				result
+			);
+			return result;
+		}
+	);
+	this.ocean_coverage = new Memo(
+		Float32Raster(grid),  
+		function (result) {
+		    return Float32RasterInterpolation.smoothstep(self.epipelagic.value(), self.sealevel.value(), displacement.value(), result);
+		}
+	); 
+
+	this.invalidate = function() {
+		this.sealevel		.invalidate();
+		this.epipelagic		.invalidate();
+		this.mesopelagic	.invalidate();
+		this.surface_height	.invalidate();
+		this.ocean_depth	.invalidate();
+		this.ice_coverage	.invalidate();
+		this.ocean_coverage	.invalidate();
+	}
 
 	// private variables
-	var sealevel_refresh = this.sealevel;
-	var ocean_depth_refresh = Float32Raster(grid);
-
 	var displacement = undefined;
 	var material_density = undefined;
-
-	function calculate_deltas(world, timestep) { }
-	function calculate_refresh(world) {
-		sealevel_refresh = HydrosphereModeling.solve_sealevel(
-			displacement.value(), 
-			world.average_ocean_depth, 
-			material_density.ocean, 
-			ocean_depth_refresh
-		);
-	}
-
-	function apply_deltas(world) { }
-	function apply_refresh(world) {
-		world.sealevel = sealevel_refresh;
-		Float32Raster.copy(ocean_depth_refresh, world.ocean_depth);
-
-		//var epipelagic = world.sealevel-200;
-		//var mesopelagic = world.sealevel-1000;
-		//var freezing_point = 273.15; // TODO: update this to reflect surface_pressure
-		//Float32RasterInterpolation.smoothstep(epipelagic, world.sealevel, displacement.value(), world.ocean_coverage);
-		//Float32RasterInterpolation.lerp( 
-		//		1, 0, 
-		//		Float32RasterInterpolation.smoothstep(freezing_point-10, freezing_point, surface_temp),
-		//		world.ice_coverage
-		//	);
-		//Float32RasterGraphics.fill_into_selection(
-		//	ice_coverage, 0.,
-		//	ScalarField.lt_field(
-		//		displacement.value(), 
-		//		Float32RasterInterpolation.lerp(
-		//			mesopelagic, 
-		//			epipelagic,
-		//			Float32RasterInterpolation.smoothstep(freezing_point-10, freezing_point, surface_temp)
-		//		)
-		//	),
-		//	ice_coverage
-		//);
-	}
 
 	function assert_dependencies() {
 		// if (surface_temp === void 0)	 { throw '"surface_temp" not provided'; }
@@ -67,20 +97,16 @@ function Hydrosphere(parameters) {
 		// surface_temp 	= dependencies['surface_temp'] 	!== void 0? 	dependencies['surface_temp'] 		: surface_temp;
 		displacement 	= dependencies['displacement'] 	!== void 0? 	dependencies['displacement'] 		: displacement;
 		material_density= dependencies['material_density'] 	!== void 0? dependencies['material_density'] 	: material_density;
-	};
+	}
 
 	this.initialize = function() {
 		assert_dependencies();
-
-		HydrosphereModeling.get_ocean_depth(displacement.value(), this.sealevel, this.ocean_depth);
-		this.average_ocean_depth = Float32Dataset.average(this.ocean_depth);
+		this.average_ocean_depth = Float32Dataset.average(this.ocean_depth.value());
+		console.log(this.sealevel.value(), this.average_ocean_depth);
 	}
 
 	this.calcChanges = function(timestep) {
 		assert_dependencies();
-
-		calculate_deltas(this, timestep); 			// this creates a world map of all additions and subtractions to crust (e.g. from erosion, accretion, etc.)
-		calculate_refresh(this); 					// this calculates the updated state of the model to reflect the most recent changes to derived attributes
 	};
 
 	this.applyChanges = function(timestep){
@@ -89,8 +115,5 @@ function Hydrosphere(parameters) {
 		};
 
 		assert_dependencies();
-
-		apply_deltas(this); 	// this applies additions and subtractions to crust
-		apply_refresh(this); 	// this applies the updated state of the model to reflect the most recent changes to derived attributes
 	};
 }

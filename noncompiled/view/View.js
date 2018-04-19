@@ -153,7 +153,7 @@ View.prototype.matrixUpdate = function(matrix) {
 };
 
 View.prototype.cellUpdate = function(world){
-	this.uniform('sealevel', world.hydrosphere.sealevel);
+	this.uniform('sealevel', world.hydrosphere.sealevel.value()); // TODO: no! get rid of this! use hydrosphere.surface_height!
 
 	this._scalarDisplay.updateAttributes(this.scalar_field_geometry, world);
 	this._vectorDisplay.updateAttributes(this.vector_field_geometry, world);

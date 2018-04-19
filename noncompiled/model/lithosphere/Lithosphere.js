@@ -305,7 +305,7 @@ function Lithosphere(parameters) {
 
        	// CALCULATE DELTAS
 		LithosphereModeling.get_erosion(
-			world.displacement.value(), sealevel, timestep,
+			world.displacement.value(), sealevel.value(), timestep,
 			material_density, surface_gravity,
 			world.top_crust, world.erosion, world.crust_scratch
 		);
@@ -313,7 +313,7 @@ function Lithosphere(parameters) {
 
        	// CALCULATE DELTAS
 		LithosphereModeling.get_weathering(
-			world.displacement.value(), sealevel, timestep,
+			world.displacement.value(), sealevel.value(), timestep,
 			material_density, surface_gravity,
 			world.top_crust, world.weathering, world.crust_scratch
 		);
@@ -321,7 +321,7 @@ function Lithosphere(parameters) {
 
        	// CALCULATE DELTAS
 		LithosphereModeling.get_lithification(
-			world.displacement.value(), sealevel, timestep,
+			world.displacement.value(), sealevel.value(), timestep,
 			material_density, surface_gravity,
 			world.top_crust, world.lithification, world.crust_scratch
 		);
@@ -329,7 +329,7 @@ function Lithosphere(parameters) {
 
        	// CALCULATE DELTAS
 		LithosphereModeling.get_metamorphosis(
-			world.displacement.value(), sealevel, timestep,
+			world.displacement.value(), sealevel.value(), timestep,
 			material_density, surface_gravity,
 			world.top_crust, world.metamorphosis, world.crust_scratch
 		);
@@ -430,7 +430,7 @@ function Lithosphere(parameters) {
 
 	this.setDependencies = function(dependencies) {
 		surface_gravity 	= dependencies['surface_gravity'] 	!== void 0? 	dependencies['surface_gravity'] 		: surface_gravity;
-		sealevel 			= dependencies['sealevel'] 			!== void 0? 	dependencies['sealevel'] 		: sealevel;
+		sealevel 			= dependencies['sealevel'] 			!== void 0? 	dependencies['sealevel'] 				: sealevel;
 		material_density 	= dependencies['material_density'] 	!== void 0? 	dependencies['material_density'] 		: material_density;
 		material_viscosity 	= dependencies['material_viscosity']!== void 0? 	dependencies['material_viscosity'] 		: material_viscosity;
 	};
@@ -472,6 +472,5 @@ function Lithosphere(parameters) {
 		merge_plates_to_master	(this.plates, this); 		// this stitches plates together to create a world map
 		update_rifting			(this, this.plates); 		// this identifies rifting regions on the world map and adds crust to plates where needed
 		update_subducted 		(this, this.plates); 		// this identifies detaching regions on the world map and then removes crust from plates where needed
-		this.invalidate();
 	};
 }

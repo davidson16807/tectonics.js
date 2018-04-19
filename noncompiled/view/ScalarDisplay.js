@@ -133,7 +133,7 @@ scalarDisplays.alt 	= new ScalarDisplay( { minColor: 0x000000, maxColor: 0xfffff
 		getField: function (world, result) {
 			lithosphere = world.lithosphere;
 			hydrosphere = world.hydrosphere;
-			return (scalarDisplayVue.ocean)?(ScalarField.max_scalar(lithosphere.displacement.value(), hydrosphere.sealevel)):
+			return (scalarDisplayVue.ocean)?(ScalarField.max_scalar(lithosphere.displacement.value(), hydrosphere.sealevel.value())):
 			                                (lithosphere.displacement.value());
 		}
 	} );

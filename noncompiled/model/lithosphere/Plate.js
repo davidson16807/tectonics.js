@@ -11,7 +11,10 @@ function Plate(parameters)
 	var surface_gravity = parameters['surface_gravity'] || stop('missing parameter: "surface_gravity"');
 
 	var self = this; 
-	this.displacement = new Memo(  
+	// The following are fields that are derived from other fields:
+	// "displacement is the height of the crust relative to an arbitrary datum level
+	// It is not called "elevation" because we want to emphasize that it is not relative to sea level
+	this.displacement = new Memo(
 		Float32Raster(grid),  
 		function (result) { 
 			return LithosphereModeling.get_displacement(self.thickness.value(), self.density.value(), material_density, result); 
