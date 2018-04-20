@@ -5,9 +5,25 @@ function Biosphere(parameters) {
 	var grid = parameters['grid'] || stop('missing parameter: "grid"');
 
 	// public variables
-	this.npp = Float32Raster(grid);
-	this.lai = Float32Raster(grid);
-	this.plant_coverage = Float32Raster(grid);
+	var self = this;
+	this.npp = new Memo(
+		Float32Raster(grid),  
+		function (result) {
+			return BiosphereModeling.net_primary_productivity(surface_temp.value(), precip.value(), npp_max, result);
+		}
+	); 
+	this.lai = new Memo(
+		Float32Raster(grid),  
+		function (result) {
+			return BiosphereModeling.leaf_area_index(self.npp.value(), npp_max, lai_max, result, growth_factor);
+		}
+	); 
+	this.plant_coverage = new Memo(
+		Float32Raster(grid),  
+		function (result) {
+			return Float32RasterInterpolation.smoothstep(0, 2, lai.value(), result);
+		}
+	); 
 
 	// private variables
 	var npp_refresh = Float32Raster(grid);
@@ -42,7 +58,9 @@ function Biosphere(parameters) {
 	}
 
 	this.invalidate = function() {
-		
+		this.npp.invalidate();
+		this.lai.invalidate();
+		this.plant_coverage.invalidate();
 	}
 
 	this.calcChanges = function(timestep) {
