@@ -35,6 +35,7 @@ function World(parameters) {
 	this.orbit = parameters['orbit'] || {
 		mean_anomaly: 0,
 		axial_tilt: Math.PI * 24.5/180,
+		angular_speed: 0, //TODO: figure out a value for this
 	};
 
 	this.lithosphere = new Lithosphere(parameters);
@@ -54,11 +55,13 @@ function World(parameters) {
 	});
 	this.atmosphere.setDependencies({
 		'displacement' 	: this.lithosphere.displacement, //TODO: convert this to elevation
+		'sealevel' 		: this.hydrosphere.sealevel,
 		'ice_coverage' 	: this.hydrosphere.ice_coverage,
-		'sealevel' 		: this.hydrosphere .sealevel,
+		'ocean_coverage': this.hydrosphere.ocean_coverage,
 		'plant_coverage': this.biosphere.plant_coverage,
 		'mean_anomaly' 	: this.orbit.mean_anomaly,
 		'axial_tilt' 	: this.orbit.axial_tilt,
+		'angular_speed' : this.orbit.angular_speed,
 	});
 	this.biosphere.setDependencies({
 		'surface_temp'	: this.atmosphere.surface_temp,
@@ -83,13 +86,10 @@ function World(parameters) {
 		this.biosphere.invalidate();
 
 		// NOTE: update all non-constant, non-spatial dependencies
-		this.lithosphere.setDependencies({
-			'sealevel': 			this.hydrosphere.sealevel,
-		});
 		this.atmosphere.setDependencies({
-			'sealevel'		: this.hydrosphere.sealevel,
 			'mean_anomaly' 	: this.orbit.mean_anomaly,
 			'axial_tilt' 	: this.orbit.axial_tilt,
+			'angular_speed' : this.orbit.angular_speed,
 		});
 
 		this.lithosphere.calcChanges(timestep);
