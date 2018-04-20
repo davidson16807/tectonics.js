@@ -9,8 +9,10 @@ function Memo(initial_value, get_value, is_dirty) {
 	}
 	this.value = function(){
 		if (is_dirty) {
-			value = get_value(value)
+			// NOTE: we set is_dirty first in order to resolve circular dependencies between memos
+			//  e.g. ice coverage depends on temperature which depends on albedo which depends on ice coverage
 			is_dirty = false;
+			value = get_value(value); 
 		}
 		return value;
 	}
