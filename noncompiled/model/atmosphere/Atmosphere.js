@@ -4,29 +4,10 @@ function Atmosphere(parameters) {
 
 	// private variables
 	var grid = parameters['grid'] || stop('missing parameter: "grid"');
-	var orbit_sample_num = 12;
 	var lat = new Memo(
 		Float32Raster(grid),  
 		function (result) {
 			return Float32SphereRaster.latitude(grid.pos.y, result);
-		}
-	); 
-	var daily_average_incident_radiation_fraction = new Memo( //TODO: move this to a new "Orbit" class
-		Float32Raster(grid),  
-		function (result) {
-			return AtmosphereModeling.daily_average_incident_radiation_fraction (
-				grid.pos, 
-				// this is a single vector of the planet's position in heliocentric eliptic coordinates (not to be confused with "pos")
-				orbital_pos.value(), 
-				axial_tilt, 
-				orbit_sample_num,
-				result
-			);
-		}
-	);
-	var orbital_pos = new Memo( [],  //TODO: move this to a new "Orbit" class
-		function (result) {
-			return OrbitalMechanics.get_eliptic_coordinate_sample(1, 0, world.mean_anomaly);
 		}
 	); 
 
@@ -72,7 +53,7 @@ function Atmosphere(parameters) {
 	var axial_tilt 		= undefined;
 	var angular_speed 	= undefined;
 	var sealevel 		= undefined;
-
+	var incident_radiation = undefined;
 
 	function assert_dependencies() {
 		if (displacement === void 0)	 { throw '"displacement" not provided'; }
@@ -82,6 +63,7 @@ function Atmosphere(parameters) {
 		if (axial_tilt === void 0)		 { throw '"axial_tilt" not provided'; }
 		if (angular_speed === void 0)	 { throw '"angular_speed" not provided'; }
 		if (sealevel === void 0)		 { throw '"sealevel" not provided'; }
+		if (incident_radiation === void 0)		 { throw '"incident_radiation" not provided'; }
 	}
 
 	this.setDependencies = function(dependencies) {
@@ -92,6 +74,7 @@ function Atmosphere(parameters) {
 		axial_tilt 		= dependencies['axial_tilt'] 	!== void 0? 	dependencies['axial_tilt'] 		: axial_tilt;		
 		angular_speed 	= dependencies['angular_speed'] !== void 0? 	dependencies['angular_speed'] 	: angular_speed;	
 		sealevel 		= dependencies['sealevel'] 		!== void 0? 	dependencies['sealevel'] 		: sealevel;			
+		incident_radiation = dependencies['incident_radiation'] !== void 0? dependencies['incident_radiation'] : incident_radiation;			
 	};
 
 	this.initialize = function() {
@@ -100,9 +83,6 @@ function Atmosphere(parameters) {
 
 	this.invalidate = function() {
 		// NOTE: we don't need to invalidate these commented-out attributes, because the underlying data doesn't change often
-		//daily_average_incident_radiation_fraction.invalidate(); 
-		//lat 	 					.invalidate(); 
-		orbital_pos					.invalidate();
 		this.surface_temp 			.invalidate();
 		this.surface_pressure 		.invalidate();
 		this.surface_wind_velocity 	.invalidate();

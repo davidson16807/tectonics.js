@@ -95,21 +95,20 @@ function Hydrosphere(parameters) {
 
 	this.setDependencies = function(dependencies) {
 		// surface_temp 	= dependencies['surface_temp'] 	!== void 0? 	dependencies['surface_temp'] 		: surface_temp;
-		displacement 	= dependencies['displacement'] 	!== void 0? 	dependencies['displacement'] 		: displacement;
+		displacement 	= dependencies['displacement'] 		!== void 0? dependencies['displacement'] 		: displacement;
 		material_density= dependencies['material_density'] 	!== void 0? dependencies['material_density'] 	: material_density;
 	}
 
 	this.initialize = function() {
 		assert_dependencies();
 		this.average_ocean_depth = Float32Dataset.average(this.ocean_depth.value());
-		console.log(this.sealevel.value(), this.average_ocean_depth);
 	}
 
 	this.calcChanges = function(timestep) {
 		assert_dependencies();
 	};
 
-	this.applyChanges = function(timestep){
+	this.applyChanges = function(timestep) {
 		if (timestep === 0) {
 			return;
 		};

@@ -25,19 +25,13 @@ function World(parameters) {
 		ocean: 1.026,
 	};
 
-
 	this.surface_gravity = parameters['surface_gravity'] || 9.8; // m/s^2
 
 	this.radius = parameters['radius'] || 6367e3; // meters
 
 	this.age = parameters['age'] || 0; // megayears
 
-	this.orbit = parameters['orbit'] || {
-		mean_anomaly: 0,
-		axial_tilt: Math.PI * 24.5/180,
-		angular_speed: 0, //TODO: figure out a value for this
-	};
-
+	this.orbit = new Orbit(parameters);
 	this.lithosphere = new Lithosphere(parameters);
 	this.hydrosphere = new Hydrosphere(parameters);
 	this.atmosphere = new Atmosphere(parameters);
@@ -62,6 +56,7 @@ function World(parameters) {
 		'mean_anomaly' 	: this.orbit.mean_anomaly,
 		'axial_tilt' 	: this.orbit.axial_tilt,
 		'angular_speed' : this.orbit.angular_speed,
+		'incident_radiation' : this.orbit.incident_radiation,
 	});
 	this.biosphere.setDependencies({
 		'surface_temp'	: this.atmosphere.surface_temp,
