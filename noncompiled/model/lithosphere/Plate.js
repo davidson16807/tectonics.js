@@ -16,48 +16,34 @@ function Plate(parameters)
 	// It is not called "elevation" because we want to emphasize that it is not relative to sea level
 	this.displacement = new Memo(
 		Float32Raster(grid),  
-		function (result) { 
-			return LithosphereModeling.get_displacement(self.thickness.value(), self.density.value(), material_density, result); 
-		}
+		result => LithosphereModeling.get_displacement(self.thickness.value(), self.density.value(), material_density, result) 
 	); 
 	// the thickness of the crust in km
 	this.thickness = new Memo(  
 		Float32Raster(grid),  
-		function (result) { 
-			return Crust.get_thickness(self.crust, material_density, result);
-		}
+		result => Crust.get_thickness(self.crust, material_density, result)
 	); 
 	// total mass of the crust in tons
 	this.total_mass = new Memo(  
 		Float32Raster(grid),  
-		function (result) { 
-			return Crust.get_total_mass(self.crust, result);
-		}
+		result => Crust.get_total_mass(self.crust, result)
 	); 
 	// the average density of the crust, in T/m^3
 	this.density = new Memo(  
 		Float32Raster(grid),  
-		function (result) { 
-			return Crust.get_density(self.total_mass.value(), self.thickness.value(),	material_density.mafic_volcanic_min, result);
-		}
+		result => Crust.get_density(self.total_mass.value(), self.thickness.value(),	material_density.mafic_volcanic_min, result)
 	); 
 	this.buoyancy = new Memo(  
 		Float32Raster(grid),  
-		function (result) { 
-			return Crust.get_buoyancy(self.density.value(), material_density, surface_gravity, result);
-		}
+		result => Crust.get_buoyancy(self.density.value(), material_density, surface_gravity, result)
 	); 
 	this.velocity = new Memo(  
 		VectorRaster(grid), 
-		function (result) { 
-			return LithosphereModeling.get_plate_velocity(self.mask, self.buoyancy.value(), material_viscosity, result);
-		}
+		result => LithosphereModeling.get_plate_velocity(self.mask, self.buoyancy.value(), material_viscosity, result)
 	); 
 	this.center_of_mass = new Memo(  
 		{ x:0, y:0, z:0 },
-		function (result) {
-			return LithosphereModeling.get_plate_center_of_mass	(self.total_mass.value(), self.mask);
-		}
+		result => LithosphereModeling.get_plate_center_of_mass	(self.total_mass.value(), self.mask)
 	); 
 
 	this.mask = parameters['mask'] || Uint8Raster(grid);

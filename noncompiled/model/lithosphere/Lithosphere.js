@@ -23,36 +23,26 @@ function Lithosphere(parameters) {
 	var self = this; 
 	this.displacement = new Memo(  
 		Float32Raster(grid),  
-		function (result) { 
-			return LithosphereModeling.get_displacement(self.thickness.value(), self.density.value(), material_density, result); 
-		}
+		result => LithosphereModeling.get_displacement(self.thickness.value(), self.density.value(), material_density, result) 
 	); 
 	// the thickness of the crust in km
 	this.thickness = new Memo(  
 		Float32Raster(grid),  
-		function (result) { 
-			return Crust.get_thickness(self.total_crust, material_density, result);
-		}
+		result => Crust.get_thickness(self.total_crust, material_density, result)
 	); 
 	// total mass of the crust in tons
 	this.total_mass = new Memo(  
 		Float32Raster(grid),  
-		function (result) { 
-			return Crust.get_total_mass(self.total_crust, result);
-		}
+		result => Crust.get_total_mass(self.total_crust, result)
 	); 
 	// the average density of the crust, in T/m^3
 	this.density = new Memo(
 		Float32Raster(grid),  
-		function (result) { 
-			return Crust.get_density(self.total_mass.value(), self.thickness.value(),	material_density.mafic_volcanic_min, result);
-		}
+		result => Crust.get_density(self.total_mass.value(), self.thickness.value(),	material_density.mafic_volcanic_min, result)
 	); 
 	this.buoyancy = new Memo(
 		Float32Raster(grid),  
-		function (result) { 
-			return Crust.get_buoyancy(self.density.value(), material_density, surface_gravity, result);
-		}
+		result => Crust.get_buoyancy(self.density.value(), material_density, surface_gravity, result)
 	); 
 
 	this.top_plate_map 			= Uint8Raster(grid);

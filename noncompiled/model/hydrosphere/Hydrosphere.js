@@ -10,41 +10,32 @@ function Hydrosphere(parameters) {
 	// height of sealevel, in meters, relative to the same datum level used by displacement
 	this.sealevel = new Memo(
 		parameters['sealevel'] || 3682,  
-		function (current_value) { 
-			return HydrosphereModeling.solve_sealevel(
+		current_value => 
+			HydrosphereModeling.solve_sealevel(
 				displacement.value(), 
 				self.average_ocean_depth, 
 				material_density.ocean, 
 				// Float32Raster(grid)
-			);
-		}, 
+			),
 		false
 	); 
 	this.epipelagic = new Memo( 0,  
-		function (current_value) { 
-			return self.sealevel.value()-200;
-		}
+		current_value => self.sealevel.value()-200
 	); 
 	this.mesopelagic = new Memo( 0,  
-		function (current_value) { 
-			return self.sealevel.value()-1000;
-		}
+		current_value => self.sealevel.value()-1000
 	); 
 	this.surface_height = new Memo(
 		Float32Raster(grid),  
-		function (result) {
-			return HydrosphereModeling.get_surface_height(displacement.value(), self.sealevel.value(), result);
-		}
+		result => HydrosphereModeling.get_surface_height(displacement.value(), self.sealevel.value(), result)
 	); 
 	this.ocean_depth = new Memo(
 		Float32Raster(grid),  
-		function (result) {
-			return HydrosphereModeling.get_ocean_depth(displacement.value(), self.sealevel.value(), result);
-		}
+		result => HydrosphereModeling.get_ocean_depth(displacement.value(), self.sealevel.value(), result)
 	); 
 	this.ice_coverage = new Memo(
 		Float32Raster(grid),  
-		function (result) { 
+		result => { 
 			var freezing_point = 273.15; // TODO: move this to Atmosphere, and update this to reflect surface_pressure
 			Float32RasterInterpolation.lerp(
 					1, 0, 
@@ -68,9 +59,7 @@ function Hydrosphere(parameters) {
 	);
 	this.ocean_coverage = new Memo(
 		Float32Raster(grid),  
-		function (result) {
-		    return Float32RasterInterpolation.smoothstep(self.epipelagic.value(), self.sealevel.value(), displacement.value(), result);
-		}
+		result => Float32RasterInterpolation.smoothstep(self.epipelagic.value(), self.sealevel.value(), displacement.value(), result)
 	); 
 
 	this.invalidate = function() {

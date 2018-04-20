@@ -8,21 +8,15 @@ function Biosphere(parameters) {
 	var self = this;
 	this.npp = new Memo(
 		Float32Raster(grid),  
-		function (result) {
-			return BiosphereModeling.net_primary_productivity(surface_temp.value(), precip.value(), npp_max, result);
-		}
+		result => BiosphereModeling.net_primary_productivity(surface_temp.value(), precip.value(), npp_max, result)
 	); 
 	this.lai = new Memo(
 		Float32Raster(grid),  
-		function (result) {
-			return BiosphereModeling.leaf_area_index(self.npp.value(), npp_max, lai_max, result, growth_factor);
-		}
+		result => BiosphereModeling.leaf_area_index(self.npp.value(), npp_max, lai_max, result, growth_factor)
 	); 
 	this.plant_coverage = new Memo(
 		Float32Raster(grid),  
-		function (result) {
-			return Float32RasterInterpolation.smoothstep(0, 2, lai.value(), result);
-		}
+		result => Float32RasterInterpolation.smoothstep(0, 2, lai.value(), result)
 	); 
 
 	// private variables

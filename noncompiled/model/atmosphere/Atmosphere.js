@@ -6,43 +6,33 @@ function Atmosphere(parameters) {
 	var grid = parameters['grid'] || stop('missing parameter: "grid"');
 	var lat = new Memo(
 		Float32Raster(grid),  
-		function (result) {
-			return Float32SphereRaster.latitude(grid.pos.y, result);
-		}
+		result => Float32SphereRaster.latitude(grid.pos.y, result)
 	); 
 
 	// public variables
 	var self = this;
 	this.surface_temp = new Memo(
 		Float32Raster(grid),  
-		function (result) {
-			return AtmosphereModeling.surface_air_temp(grid.pos, mean_anomaly, axial_tilt, result);
-		}
+		result => AtmosphereModeling.surface_air_temp(grid.pos, mean_anomaly, axial_tilt, result)
 	); 
 	this.surface_pressure = new Memo(
 		Float32Raster(grid),  
-		function (result) {
-			return AtmosphereModeling.surface_air_pressure(
+		result => AtmosphereModeling.surface_air_pressure(
 				displacement.value(), 
 				lat.value(), 
 				sealevel.value(), 
 				mean_anomaly, 
 				axial_tilt, 
 				result
-			);
-		}
+			)
 	); 
 	this.surface_wind_velocity = new Memo(
 		VectorRaster(grid),  
-		function (result) {
-			return AtmosphereModeling.surface_air_velocity(grid.pos, surface_pressure.value(), angular_speed, result);
-		}
+		result => AtmosphereModeling.surface_air_velocity(grid.pos, surface_pressure.value(), angular_speed, result)
 	); 
 	this.precip = new Memo(
 		Float32Raster(grid),  
-		function (result) {
-			return AtmosphereModeling.precip(lat.value(), result);
-		}
+		result => AtmosphereModeling.precip(lat.value(), result)
 	); 
 
 	// private variables
