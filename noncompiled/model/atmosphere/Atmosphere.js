@@ -3,20 +3,61 @@
 function Atmosphere(parameters) {
 
 	var grid = parameters['grid'] || stop('missing parameter: "grid"');
+	var sample_num = 12;
 
 	// public variables
-	this.insolation = Float32Raster(grid);
-	this.surface_temp = Float32Raster(grid);
-	this.surface_pressure = Float32Raster(grid);
-	this.surface_wind_velocity = VectorRaster(grid);
-	this.precip = Float32Raster(grid);
+	var self = this;
+	this.orbital_pos = new Memo( [],  
+		function (result) {
+			return OrbitalMechanics.get_eliptic_coordinate_sample(1, 0, world.meanAnomaly);
+		}
+	); 
+	this.daily_average_incident_radiation_fraction = new Memo(
+		Float32Raster(grid),  
+		function (result) {
+			return AtmosphereModeling.daily_average_incident_radiation_fraction (
+				grid.pos, 
+				// this is a single vector of the planet's position in heliocentric eliptic coordinates (not to be confused with "pos")
+				orbital_pos.value(), 
+				axial_tilt, 
+				sample_num,
+				result
+			);
+		}
+	);
+	this.surface_temp = new Memo(
+		Float32Raster(grid),  
+		function (result) {
+			return AtmosphereModeling.surface_air_temp(grid.pos, mean_anomaly, axial_tilt, result);
+		}
+	); 
+	this.surface_pressure = new Memo(
+		Float32Raster(grid),  
+		function (result) {
+			return AtmosphereModeling.surface_air_pressure(
+				displacement.value(), 
+				lat.value(), 
+				sealevel.value(), 
+				mean_anomaly, 
+				axial_tilt, 
+				result
+			);
+		}
+	); 
+	this.surface_wind_velocity = new Memo(
+		VectorRaster(grid),  
+		function (result) {
+			throw 'NOT IMPLEMENTED'
+		}
+	); 
+	this.precip = new Memo(
+		Float32Raster(grid),  
+		function (result) {
+			throw 'NOT IMPLEMENTED'
+		}
+	); 
 
 	// private variables
-	var surface_temp_refresh = Float32Raster(grid);
-	var surface_pressure_refresh = Float32Raster(grid);
-	var surface_wind_velocity_refresh = VectorRaster(grid);
-	var precip_refresh = Float32Raster(grid);
-
 	var displacement 	= undefined;
 	var ice_coverage 	= undefined;
 	var plant_coverage 	= undefined;

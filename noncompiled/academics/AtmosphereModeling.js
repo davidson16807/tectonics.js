@@ -61,9 +61,9 @@ var AtmosphereModeling = (function() {
 
 		return pressure;
 	}
-	AtmosphereModeling.surface_air_temp = function(pos, meanAnomaly, axial_tilt) {
+	AtmosphereModeling.surface_air_temp = function(pos, meanAnomaly, axial_tilt, temp) {
 		var season = meanAnomaly / Math.PI;
-		var temp = Float32Raster(pos.grid);
+		var temp = temp || Float32Raster(pos.grid);
 		var lat = Float32SphereRaster.latitude(pos.y);
 		var effective_lat = ScalarField.add_scalar(lat, season*axial_tilt);
 		Float32RasterInterpolation.clamp(effective_lat, -Math.PI/2, Math.PI/2, effective_lat);

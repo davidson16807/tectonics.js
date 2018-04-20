@@ -45,7 +45,6 @@ OrbitalMechanics.get_eliptic_coordinate_sample = function(
 	var sin = Math.sin;
 	var cos = Math.cos;
 	var sqrt = Math.sqrt;
-	var eccentric_anomaly = OrbitalMechanics.solve_eccentric_anomaly(mean_anomaly, eccentricity, 5);
 	return {
 		x: a*cos(E)-e,
 		y: 0,
