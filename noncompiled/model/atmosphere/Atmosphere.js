@@ -1,13 +1,28 @@
 'use strict';
 
 function Atmosphere(parameters) {
-
 	// private variables
 	var grid = parameters['grid'] || stop('missing parameter: "grid"');
 	var lat = new Memo(
 		Float32Raster(grid),  
 		result => Float32SphereRaster.latitude(grid.pos.y, result)
 	); 
+	var max_absorbed_radiation = new Memo(
+		Float32Raster(grid),  
+		result => Float32Dataset.max(self.absorbed_radiation.value())
+	);
+	var min_absorbed_radiation = new Memo(
+		Float32Raster(grid),  
+		result => Float32Dataset.min(self.absorbed_radiation.value())
+	);
+	var mep_max_surface_temp = new Memo(
+		Float32Raster(grid),  
+		result => ScalarField.mult_field(incident_radiation.value(), self.albedo.value(), result)
+	);
+	var mep_min_surface_temp = new Memo(
+		Float32Raster(grid),  
+		result => ScalarField.mult_field(incident_radiation.value(), self.albedo.value(), result)
+	);
 
 	// public variables
 	var self = this;
@@ -34,9 +49,18 @@ function Atmosphere(parameters) {
 		Float32Raster(grid),  
 		result => AtmosphereModeling.precip(lat.value(), result)
 	); 
+	this.albedo = new Memo(
+		Float32Raster(grid),  
+		result => AtmosphereModeling.albedo(ocean_coverage.value(), ice_coverage.value(), plant_coverage.value(), result)	
+	);
+	this.absorbed_radiation = new Memo(
+		Float32Raster(grid),  
+		result => ScalarField.mult_field(incident_radiation.value(), self.albedo.value(), result)
+	);
 
 	// private variables
 	var displacement 	= undefined;
+	var ocean_coverage 	= undefined;
 	var ice_coverage 	= undefined;
 	var plant_coverage 	= undefined;
 	var mean_anomaly 	= undefined;
@@ -47,24 +71,26 @@ function Atmosphere(parameters) {
 
 	function assert_dependencies() {
 		if (displacement === void 0)	 { throw '"displacement" not provided'; }
+		if (ocean_coverage === void 0)	 { throw '"ocean_coverage" not provided'; }
 		if (ice_coverage === void 0)	 { throw '"ice_coverage" not provided'; }
 		if (plant_coverage === void 0)	 { throw '"plant_coverage" not provided'; }
 		if (mean_anomaly === void 0)	 { throw '"mean_anomaly" not provided'; }
 		if (axial_tilt === void 0)		 { throw '"axial_tilt" not provided'; }
 		if (angular_speed === void 0)	 { throw '"angular_speed" not provided'; }
 		if (sealevel === void 0)		 { throw '"sealevel" not provided'; }
-		if (incident_radiation === void 0)		 { throw '"incident_radiation" not provided'; }
+		if (incident_radiation === void 0) { throw '"incident_radiation" not provided'; }
 	}
 
 	this.setDependencies = function(dependencies) {
-		displacement 	= dependencies['displacement'] 	!== void 0? 	dependencies['displacement'] 	: displacement;		
-		ice_coverage 	= dependencies['ice_coverage'] 	!== void 0? 	dependencies['ice_coverage'] 	: ice_coverage;		
-		plant_coverage 	= dependencies['plant_coverage']!== void 0? 	dependencies['plant_coverage'] 	: plant_coverage;	
-		mean_anomaly 	= dependencies['mean_anomaly'] 	!== void 0? 	dependencies['mean_anomaly'] 	: mean_anomaly;		
-		axial_tilt 		= dependencies['axial_tilt'] 	!== void 0? 	dependencies['axial_tilt'] 		: axial_tilt;		
-		angular_speed 	= dependencies['angular_speed'] !== void 0? 	dependencies['angular_speed'] 	: angular_speed;	
-		sealevel 		= dependencies['sealevel'] 		!== void 0? 	dependencies['sealevel'] 		: sealevel;			
-		incident_radiation = dependencies['incident_radiation'] !== void 0? dependencies['incident_radiation'] : incident_radiation;			
+		displacement 		= dependencies['displacement'] 	!== void 0? 	dependencies['displacement'] 	: displacement;		
+		ocean_coverage 		= dependencies['ocean_coverage']!== void 0? 	dependencies['ocean_coverage'] 	: ocean_coverage;		
+		ice_coverage 		= dependencies['ice_coverage'] 	!== void 0? 	dependencies['ice_coverage'] 	: ice_coverage;		
+		plant_coverage 		= dependencies['plant_coverage']!== void 0? 	dependencies['plant_coverage'] 	: plant_coverage;	
+		mean_anomaly 		= dependencies['mean_anomaly'] 	!== void 0? 	dependencies['mean_anomaly'] 	: mean_anomaly;		
+		axial_tilt 			= dependencies['axial_tilt'] 	!== void 0? 	dependencies['axial_tilt'] 		: axial_tilt;		
+		angular_speed 		= dependencies['angular_speed'] !== void 0? 	dependencies['angular_speed'] 	: angular_speed;	
+		sealevel 			= dependencies['sealevel'] 		!== void 0? 	dependencies['sealevel'] 		: sealevel;			
+		incident_radiation 	= dependencies['incident_radiation'] !== void 0? dependencies['incident_radiation'] : incident_radiation;			
 	};
 
 	this.initialize = function() {

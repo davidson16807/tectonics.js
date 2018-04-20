@@ -98,18 +98,20 @@ var AtmosphereModeling = (function() {
 		return result;
 	}
 	AtmosphereModeling.albedo = function(
-		land_fraction,
+		ocean_fraction,
 		ice_fraction, 
 		plant_fraction,
+		material_reflectivity,
 		result) {
 
-	    result = result || Float32Raster(land_fraction.grid);
+		material_reflectivity = material_reflectivity || {};
+	    result = result || Float32Raster(ocean_fraction.grid);
 	    var albedo = result;
 
-	    var water_albedo = 0.06;
-	    var land_albedo = 0.27;
-	    var plant_albedo = 0.1;
-	    var ice_albedo = 0.9;
+	    var ocean_albedo 	= || material_reflectivity || 0.06;
+	    var land_albedo 	= || material_reflectivity || 0.27;
+	    var plant_albedo 	= || material_reflectivity || 0.1;
+	    var ice_albedo 		= || material_reflectivity || 0.9;
 
 	    var lerp_fsf = Float32RasterInterpolation.lerp_fsf;
 	    var lerp_sff = Float32RasterInterpolation.lerp_sff;
@@ -117,7 +119,7 @@ var AtmosphereModeling = (function() {
 	    // albedo hierarchy: cloud, ice, water, plant, soil
 	    Float32Raster.fill(albedo, land_albedo);
 		lerp_fsf(albedo, 		plant_albedo, 	plant_fraction, albedo);
-		lerp_sff(water_albedo, 	albedo, 		land_fraction, 	albedo);
+		lerp_sff(albedo, 		ocean_albedo, 	ocean_fraction, albedo);
 		lerp_fsf(albedo, 		ice_albedo, 	ice_fraction, 	albedo);
 
 		return result;
@@ -195,6 +197,14 @@ var AtmosphereModeling = (function() {
 			// fraction of global solar constant that's felt by the surface of a planet, Float32Raster in W/m^2
 			daily_average_incident_radiation_ratio
 		) {
+		var incident_radiation = ScalarField.mult_scalar(daily_average_incident_radiation_ratio, global_solar_constant);
+		var temperature_4 = ScalarField.div_scalar(incident_radiation, AtmosphericModeling.STEPHAN_BOLTZMANN_CONSTANT);
+		var temperature = ScalarField.pow_scalar(temperature_4, 1/4);
+		return temperature;
+	}
+	// calculates maximum entropy produced within a 2 box temperature model
+	// for more information, see Lorenz et al. 2001: "Titan, Mars and Earth : Entropy Production by Latitudinal Heat Transport"
+	AtmosphereModeling.max_entropy_production_2box_model = function(max_insolation, min_insolation) {
 		var incident_radiation = ScalarField.mult_scalar(daily_average_incident_radiation_ratio, global_solar_constant);
 		var temperature_4 = ScalarField.div_scalar(incident_radiation, AtmosphericModeling.STEPHAN_BOLTZMANN_CONSTANT);
 		var temperature = ScalarField.pow_scalar(temperature_4, 1/4);
