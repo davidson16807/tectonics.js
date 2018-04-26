@@ -189,8 +189,8 @@ var AtmosphereModeling = (function() {
 		ScalarField.div_scalar(incident_radiation_sum, sample_num, result);
 		return result;
 	}
-
-	AtmosphereModeling.STEPHAN_BOLTZMANN_CONSTANT = 5.670373e-8; // W/m^2 per K^4
+	AtmosphereModeling.STEPHAN_BOLTZMANN_CONSTANT = 5.670373e-11; // kW/m^2 per K^4
+	AtmosphereModeling.WATER_FREEZING_POINT_STP = 273.15; // Kelvin/Celcius
 	AtmosphereModeling.black_body_equilibrium_temperature = function(
 			// intensity of sunlight on a panel that's directly facing the sun, number in W/m^2
 			global_solar_constant,
@@ -202,13 +202,47 @@ var AtmosphereModeling = (function() {
 		var temperature = ScalarField.pow_scalar(temperature_4, 1/4);
 		return temperature;
 	}
-	// calculates maximum entropy produced within a 2 box temperature model
-	// for more information, see Lorenz et al. 2001: "Titan, Mars and Earth : Entropy Production by Latitudinal Heat Transport"
-	AtmosphereModeling.max_entropy_production_2box_model = function(max_insolation, min_insolation) {
-		var incident_radiation = ScalarField.mult_scalar(daily_average_incident_radiation_ratio, global_solar_constant);
-		var temperature_4 = ScalarField.div_scalar(incident_radiation, AtmosphericModeling.STEPHAN_BOLTZMANN_CONSTANT);
-		var temperature = ScalarField.pow_scalar(temperature_4, 1/4);
-		return temperature;
+	// TODO: generalize to scalar fields and arbitrary temperature cycles
+	AtmosphereModeling.get_scalar_equilibrium_temperature = function(E, τ) {
+		// var τ = infrared_optical_depth;
+		var σ = AtmosphereModeling.STEPHAN_BOLTZMANN_CONSTANT;
+		return Math.pow( (1+0.75*τ)*E/σ, 1/4 );
+	}
+	// calculates heat flow within a 2 box temperature model 
+	// using the Max Entropy Production Principle and Gradient Descent
+	// for more information, see Lorenz et al. 2001: 
+	// "Titan, Mars and Earth : Entropy Production by Latitudinal Heat Transport"
+	AtmosphereModeling.solve_heat_flow = function(insolation_hot, insolation_cold, infrared_optical_depth, iterations) {
+		iterations = iterations || 10;
+
+		var Ih = insolation_hot;
+		var Ic = insolation_cold;
+		var τ = infrared_optical_depth;
+		var σ = AtmosphereModeling.STEPHAN_BOLTZMANN_CONSTANT;
+		// temperature given net energy flux
+
+		function T(E) {
+			return Math.pow( (1+0.75*τ)*E/σ, 1/4 );
+		}
+		// entropy production given heat flux
+		function N(F, Ih, Ic) {
+			return 2*F/T(Ic+F) - 2*F/T(Ih-2*F);
+		}
+
+		// heat flow
+		F = (Ih-Ic)/4;
+		dF = (Ih-Ic)/iterations;
+		// reduce step_size by this fraction for each iteration
+		annealing_factor = 0.8;
+		// amount to change F with each iteration
+		for (var i = 0; i < iterations; i++) {
+			// TODO: relax assumption that world must have earth-like rotation (e.g. tidally locked)
+			dN = ( N(F-dF, Ih, Ic) - N(F+dF, Ih, Ic) );
+			F -= dF * Math.sign(dN);
+			dF *= annealing_factor;
+		}
+		// console.log(T(Ih-2*F)-273.15, T(Ic+F)-273.15)
+		return F;
 	}
 	return AtmosphereModeling;
 })();

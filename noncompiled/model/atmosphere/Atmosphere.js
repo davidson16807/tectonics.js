@@ -98,7 +98,6 @@ function Atmosphere(parameters) {
 	}
 
 	this.invalidate = function() {
-		// NOTE: we don't need to invalidate these commented-out attributes, because the underlying data doesn't change often
 		this.surface_temp 			.invalidate();
 		this.surface_pressure 		.invalidate();
 		this.surface_wind_velocity 	.invalidate();
