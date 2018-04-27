@@ -15,15 +15,23 @@ function Atmosphere(parameters) {
 		Float32Raster(grid),  
 		result => Float32Dataset.min(self.absorbed_radiation.value())
 	);
-	var mep_max_surface_temp = new Memo(
-		Float32Raster(grid),  
-		result => ScalarField.mult_field(incident_radiation.value(), self.albedo.value(), result)
+	var heat_flow = new Memo( 0,
+		current_value => AtmosphereModeling.solve_heat_flow(
+			max_absorbed_radiation.value(), 
+			min_absorbed_radiation.value(), 
+			4/3, 10
+		);
 	);
-	var mep_min_surface_temp = new Memo(
-		Float32Raster(grid),  
-		result => ScalarField.mult_field(incident_radiation.value(), self.albedo.value(), result)
+	var mep_max_surface_temp = new Memo( 0,
+		current_value => AtmosphereModeling.get_scalar_equilibrium_temperature(
+			max_absorbed_radiation.value() - 2*heat_flow.value(), 
+			4/3);
 	);
-
+	var mep_min_surface_temp = new Memo( 0,
+		current_value => AtmosphereModeling.get_scalar_equilibrium_temperature(
+			min_absorbed_radiation.value() + heat_flow.value(), 
+			4/3);
+	);
 	// public variables
 	var self = this;
 	this.surface_temp = new Memo(
