@@ -33,7 +33,7 @@ function Atmosphere(parameters) {
 			4/3)
 	);
 	this.heat_flow = heat_flow;
-	
+
 	// public variables
 	var self = this;
 	this.surface_heat = new Memo(
@@ -77,11 +77,18 @@ function Atmosphere(parameters) {
 	); 
 	this.albedo = new Memo(
 		Float32Raster(grid),  
-		result => AtmosphereModeling.albedo(ocean_coverage.value(), ice_coverage.value(), plant_coverage.value(), result)	
+		result => AtmosphereModeling.albedo(ocean_coverage.value(), ice_coverage.value(), plant_coverage.value(), result),
+		false // assume everything gets absorbed initially to prevent circular dependencies
 	);
 	this.absorbed_radiation = new Memo(
 		Float32Raster(grid),  
-		result => ScalarField.mult_field(incident_radiation.value(), self.albedo.value(), result)
+		// TODO: implement commented code:
+		// result => {
+		// 	ScalarField.mult_scalar	( self.albedo.value(), -1, result );
+		// 	ScalarField.add_scalar 	( result, 1, result );
+		// 	ScalarField.mult_field(result, incident_radiation.value(), result);
+		// }
+		result => ScalarField.mult_scalar(incident_radiation.value(), 1.0, result)
 	);
 
 	// private variables
