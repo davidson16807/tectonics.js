@@ -3,17 +3,16 @@
 function Atmosphere(parameters) {
 	// private variables
 	var grid = parameters['grid'] || stop('missing parameter: "grid"');
+	var self = this;
 	var lat = new Memo(
 		Float32Raster(grid),  
 		result => Float32SphereRaster.latitude(grid.pos.y, result)
 	); 
-	var max_absorbed_radiation = new Memo(
-		Float32Raster(grid),  
-		result => Float32Dataset.max(self.absorbed_radiation.value())
+	var max_absorbed_radiation = new Memo( 0,
+		current_value => Float32Dataset.max(self.absorbed_radiation.value())
 	);
-	var min_absorbed_radiation = new Memo(
-		Float32Raster(grid),  
-		result => Float32Dataset.min(self.absorbed_radiation.value())
+	var min_absorbed_radiation = new Memo( 0,
+		current_value => Float32Dataset.min(self.absorbed_radiation.value())
 	);
 	var heat_flow = new Memo( 0,
 		current_value => AtmosphereModeling.solve_heat_flow(
@@ -22,20 +21,11 @@ function Atmosphere(parameters) {
 			4/3, 10
 		)
 	);
-	var mep_max_surface_temp = new Memo( 0,
-		current_value => AtmosphereModeling.get_scalar_equilibrium_temperature(
-			max_absorbed_radiation.value() - 2*heat_flow.value(), 
-			4/3)
-	);
-	var mep_min_surface_temp = new Memo( 0,
-		current_value => AtmosphereModeling.get_scalar_equilibrium_temperature(
-			min_absorbed_radiation.value() + heat_flow.value(), 
-			4/3)
-	);
 	this.heat_flow = heat_flow;
+	this.max_absorbed_radiation = max_absorbed_radiation;
+	this.min_absorbed_radiation = min_absorbed_radiation;
 
 	// public variables
-	var self = this;
 	this.surface_heat = new Memo(
 		Float32Raster(grid),
 		result => AtmosphereModeling.surface_air_heat(
@@ -83,12 +73,13 @@ function Atmosphere(parameters) {
 	this.absorbed_radiation = new Memo(
 		Float32Raster(grid),  
 		// TODO: implement commented code:
-		// result => {
-		// 	ScalarField.mult_scalar	( self.albedo.value(), -1, result );
-		// 	ScalarField.add_scalar 	( result, 1, result );
-		// 	ScalarField.mult_field(result, incident_radiation.value(), result);
-		// }
-		result => ScalarField.mult_scalar(incident_radiation.value(), 1.0, result)
+		//result => {
+		//	ScalarField.mult_scalar	( self.albedo.value(), -1, result );
+		//	ScalarField.add_scalar 	( result, 1, result );
+		//	ScalarField.mult_field(result, incident_radiation.value(), result);
+		//	return result
+		//}
+		 result => ScalarField.mult_scalar(incident_radiation.value(), 1.0, result)
 	);
 
 	// private variables
