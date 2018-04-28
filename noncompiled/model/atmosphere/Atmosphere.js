@@ -56,7 +56,7 @@ function Atmosphere(parameters) {
 		VectorRaster(grid),  
 		result => AtmosphereModeling.surface_air_velocity(
 			grid.pos, 
-			surface_pressure.value(), 
+			self.surface_pressure.value(), 
 			angular_speed, 
 			result
 		)

@@ -1,6 +1,5 @@
 'use strict';
 
-var vectorDisplays = {};
 
 function ThreeJsVectorDisplay(options) {
 	var min = options['min'] || '0.';
@@ -9,43 +8,17 @@ function ThreeJsVectorDisplay(options) {
 }
 ThreeJsVectorDisplay.prototype.addTo = function(mesh) {};
 ThreeJsVectorDisplay.prototype.removeFrom = function(mesh) {};
-ThreeJsVectorDisplay.prototype.updateAttributes = function(geometry, plate) {
+ThreeJsVectorDisplay.prototype.updateAttributes = function(geometry, world) {
 	var geometry, displacement;
 	var vector = geometry.vertices;
 
-	var vector_model = this.getField(plate);
+	var vector_model = this.getField(world);
 	for(var i=0, li = vector_model.length; i<li; i++){
 		var vector_i = 2*i+1;
 		vector[vector_i] = vector_model[i]; 
 	}
 	geometry.verticesNeedUpdate = true;
 }
-vectorDisplays.angularVelocity	= new ThreeJsVectorDisplay( { 
-	getField: function (plate) {
-		var field = [];
-		var pos = plate.grid.pos;
-		var vector = plate.eulerPole.clone().multiplyScalar(1/17);
-		for (var i=0, li=pos.length; i<li; ++i) {
-		    field.push(vector);
-		}
-		return field;
-	}
-} );
-vectorDisplays.velocity	= new ThreeJsVectorDisplay( { 
-	getField: function (plate) {
-		var field = [];
-		var positions_model = plate.grid.pos;
-		for (var i=0, li=positions_model.length; i<li; ++i) {
-			var velocity = plate.eulerPole
-				.clone()
-				.cross(positions_model[i])
-				.normalize()
-				.multiplyScalar(0.17) 
-		    field.push(velocity);
-		}
-		return field;
-	}
-} );
 
 
 function VectorFieldDisplay(options) {
@@ -54,7 +27,7 @@ function VectorFieldDisplay(options) {
 }
 VectorFieldDisplay.prototype.addTo = function(mesh) {};
 VectorFieldDisplay.prototype.removeFrom = function(mesh) {};
-VectorFieldDisplay.prototype.updateAttributes = function(geometry, plate) {
+VectorFieldDisplay.prototype.updateAttributes = function(geometry, world) {
 	var offset_length = 1.02; 	// offset of arrow from surface of sphere, in radii
 	var max_arrow_length = 0.1; // max arrow length, in radii
 
@@ -66,7 +39,7 @@ VectorFieldDisplay.prototype.updateAttributes = function(geometry, plate) {
 		log_once("VectorDisplay.getField is undefined.");
 		return;
 	}
-	var vector_model = this.getField(plate);
+	var vector_model = this.getField(world);
 	if (vector_model === void 0) {
 		log_once("VectorDisplay.getField() returned undefined.");
 		return;
@@ -80,7 +53,7 @@ VectorFieldDisplay.prototype.updateAttributes = function(geometry, plate) {
 		log_once(vector)
 	var scaling = max_arrow_length / max;
 
-	var pos = plate.grid.pos;
+	var pos = world.grid.pos;
 	for(var i=0, li = vector_model.x.length; i<li; i++){
 		var start = vector[2*i];
 		start.x = offset_length * pos.x[i];
@@ -94,89 +67,6 @@ VectorFieldDisplay.prototype.updateAttributes = function(geometry, plate) {
 	// geometry.vertices.needsUpdate = true;
 	geometry.verticesNeedUpdate = true;
 }
-vectorDisplays.pos	= new VectorFieldDisplay( { 
-	getField: function (plate) {
-		var pos = plate.grid.pos;
-		return pos;
-	}
-} );
-vectorDisplays.pos2	= new VectorFieldDisplay( { 
-	getField: function (plate) {
-		var rotationMatrix = Matrix.RotationAboutAxis(plate.eulerPole.x, plate.eulerPole.y, plate.eulerPole.z, 1);
-		var pos = VectorField.mult_matrix(plate.grid.pos, rotationMatrix);
-		return pos;
-	}
-} );
-vectorDisplays.displacement_gradient	= new VectorFieldDisplay( { 
-	getField: function (plate) {
-		var displacement = plate.displacement;
-		var gradient = ScalarField.gradient(displacement);
-		return gradient;
-	}
-} );
-vectorDisplays.age_gradient	= new VectorFieldDisplay( { 
-	getField: function (plate) {
-		return ScalarField.gradient(plate.age);
-	}
-} );
-vectorDisplays.pos_gradient	= new VectorFieldDisplay( { 
-	getField: function (plate) {
-		return ScalarField.gradient(plate.grid.pos);
-	}
-} );
-vectorDisplays.density_gradient	= new VectorFieldDisplay( { 
-	getField: function (plate) {
-		var density = plate.density;
-		var gradient = ScalarField.gradient(density);
-		return gradient;
-	}
-} );
-vectorDisplays.density_smoothed = new VectorFieldDisplay( { 
-		getField: function (plate) {
-			var field = getdensitySmoothed(plate);
-			var gradient = ScalarField.gradient(field);
-			return gradient;
-		} 
-	} );
-
-vectorDisplays.aesthenosphere_velocity	= new VectorFieldDisplay( { 
-		getField: function (crust) {
-			return crust.aesthenosphere_velocity;
-		}
-	} );
-
-vectorDisplays.surface_air_velocity = new VectorFieldDisplay( {
-		getField: function (world) {
-			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
-			var pressure = AtmosphericModeling.surface_air_pressure(world.lithosphere.displacement, lat, world.hydrosphere.sealevel, world.meanAnomaly, Math.PI*23.5/180);
-			var velocity = AtmosphericModeling.surface_air_velocity(world.grid.pos, pressure, ANGULAR_SPEED);
-			return velocity;
-		} 
-	} );
-
-
-vectorDisplays.plate_velocity = new VectorFieldDisplay( {  
-    getField: function (world) { 
-      var grid = world.grid; 
-      var plates = world.lithosphere.plates; 
-      var plate_map = world.lithosphere.top_plate_map; 
-      var plate_velocity = VectorRaster(grid); 
-      var all_velocities = VectorRaster(grid); 
-      var add_term = VectorField.add_vector_field_and_scalar_field_term; 
-      var cross = VectorField.cross_vector; 
-      var eq = Uint8Field.eq_scalar;
-      var pos = grid.pos; 
-      var is_plate = Uint8Raster(grid); 
-      var plate; 
-      for (var i=0, li=plates.length; i<li; ++i) { 
-        plate = plates[i]; 
-        cross(pos, plate.eulerPole, plate_velocity); 
-        eq(plate_map, i, is_plate); 
-        add_term(all_velocities, plate_velocity, is_plate, all_velocities); 
-      } 
-      return all_velocities; 
-    }  
-  } ); 
 
 
 function DisabledVectorDisplay(options) {}
@@ -190,4 +80,49 @@ DisabledVectorDisplay.prototype.addTo = function(mesh) {
 };
 DisabledVectorDisplay.prototype.removeFrom = function(mesh) {};
 DisabledVectorDisplay.prototype.updateAttributes = function(material, world) {}
+
+
+
+
+
+
+
+var vectorDisplays = {};
 vectorDisplays.disabled	= new DisabledVectorDisplay( {  } );
+vectorDisplays.asthenosphere_velocity = new VectorFieldDisplay( { 
+		getField: function (world, flood_fill, scratch1) {
+			// scratch represents pressure
+			var pressure = scratch1;
+			// flood_fill does double duty for performance reasons
+			var scratch2 = flood_fill;
+			var field = LithosphereModeling.get_asthenosphere_pressure(world.lithosphere.density.value(), pressure, scratch2);
+			var gradient = ScalarField.gradient(field);
+			return gradient;
+		} 
+	} );
+vectorDisplays.pos	= new VectorFieldDisplay( { 
+	getField: function (world) {
+		var pos = world.grid.pos;
+		return pos;
+	}
+} );
+vectorDisplays.pos2	= new VectorFieldDisplay( { 
+	getField: function (world) {
+		var rotationMatrix = Matrix.RotationAboutAxis(world.eulerPole.x, world.eulerPole.y, world.eulerPole.z, 1);
+		var pos = VectorField.mult_matrix(world.grid.pos, rotationMatrix);
+		return pos;
+	}
+} );
+vectorDisplays.aesthenosphere_velocity	= new VectorFieldDisplay( { 
+		getField: world => world.lithosphere.aesthenosphere_velocity.value()
+	} );
+
+vectorDisplays.surface_air_velocity = new VectorFieldDisplay( {
+		getField: world => world.atmosphere.surface_wind_velocity.value()
+	} );
+
+
+vectorDisplays.plate_velocity = new VectorFieldDisplay( {  
+		getField: world => world.lithosphere.plate_velocity.value()
+  	} ); 
+
