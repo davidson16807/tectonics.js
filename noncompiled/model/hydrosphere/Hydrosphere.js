@@ -59,7 +59,12 @@ function Hydrosphere(parameters) {
 	);
 	this.ocean_coverage = new Memo(
 		Float32Raster(grid),  
-		result => Float32RasterInterpolation.smoothstep(self.epipelagic.value(), self.sealevel.value(), displacement.value(), result)
+		result => Float32RasterInterpolation.smoothstep(
+			self.epipelagic.value(), 
+			self.sealevel.value(), 
+			displacement.value(), 
+			result
+		)
 	); 
 
 	this.invalidate = function() {
@@ -73,17 +78,18 @@ function Hydrosphere(parameters) {
 	}
 
 	// private variables
+	var surface_temp = undefined;
 	var displacement = undefined;
 	var material_density = undefined;
 
 	function assert_dependencies() {
-		// if (surface_temp === void 0)	 { throw '"surface_temp" not provided'; }
+		if (surface_temp === void 0)	 { throw '"surface_temp" not provided'; }
 		if (displacement === void 0)	 { throw '"displacement" not provided'; }
 		if (material_density === void 0) { throw '"material_density" not provided'; }
 	}
 
 	this.setDependencies = function(dependencies) {
-		// surface_temp 	= dependencies['surface_temp'] 	!== void 0? 	dependencies['surface_temp'] 		: surface_temp;
+		surface_temp 	= dependencies['surface_temp'] 		!== void 0? dependencies['surface_temp'] 		: surface_temp;
 		displacement 	= dependencies['displacement'] 		!== void 0? dependencies['displacement'] 		: displacement;
 		material_density= dependencies['material_density'] 	!== void 0? dependencies['material_density'] 	: material_density;
 	}

@@ -1,19 +1,25 @@
 'use strict';
 
 function Orbit(parameters) {
+	var self = this;
 
 	// private variables
 	var grid = parameters['grid'] || stop('missing parameter: "grid"');
 	var sample_num = parameters['orbit_sample_num'] || 12;
 
+	var orbital_pos = new Memo( [], 
+		function (result) {
+			return OrbitalMechanics.get_eliptic_coordinate_sample(1, 0, self.mean_anomaly);
+		}
+	); 
 	var incident_radiation_fraction = new Memo( //TODO: move this to a new "Orbit" class
 		Float32Raster(grid),  
 		function (result) {
-			return OrbitalMechanics.incident_radiation_fraction (
+			return AtmosphereModeling.daily_average_incident_radiation_fraction (
 				grid.pos, 
 				// this is a single vector of the planet's position in heliocentric eliptic coordinates (not to be confused with "pos")
 				orbital_pos.value(), 
-				axial_tilt, 
+				self.axial_tilt, 
 				sample_num,
 				result
 			);
@@ -30,15 +36,10 @@ function Orbit(parameters) {
 	this.mean_anomaly 	= parameters['mean_anomaly'] 	|| 0;
 	this.axial_tilt 	= parameters['axial_tilt'] 		|| Math.PI * 23.5/180;
 	this.angular_speed 	= parameters['angular_speed'] 	|| 460; // m/s
-	this.orbital_pos = new Memo( [], 
-		function (result) {
-			return OrbitalMechanics.get_eliptic_coordinate_sample(1, 0, world.mean_anomaly);
-		}
-	); 
 	this.incident_radiation = new Memo( //TODO: move this to a new "Orbit" class
 		Float32Raster(grid),  
 		function (result) {
-			return ScalarField.mult_scalar(self.incident_radiation_fraction.value(), self.global_solar_constant, result);
+			return ScalarField.mult_scalar(incident_radiation_fraction.value(), self.global_solar_constant, result);
 		}
 	);
 

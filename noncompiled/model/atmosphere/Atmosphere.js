@@ -20,23 +20,36 @@ function Atmosphere(parameters) {
 			max_absorbed_radiation.value(), 
 			min_absorbed_radiation.value(), 
 			4/3, 10
-		);
+		)
 	);
 	var mep_max_surface_temp = new Memo( 0,
 		current_value => AtmosphereModeling.get_scalar_equilibrium_temperature(
 			max_absorbed_radiation.value() - 2*heat_flow.value(), 
-			4/3);
+			4/3)
 	);
 	var mep_min_surface_temp = new Memo( 0,
 		current_value => AtmosphereModeling.get_scalar_equilibrium_temperature(
 			min_absorbed_radiation.value() + heat_flow.value(), 
-			4/3);
+			4/3)
 	);
+	this.heat_flow = heat_flow;
+	
 	// public variables
 	var self = this;
+	this.surface_heat = new Memo(
+		Float32Raster(grid),
+		result => AtmosphereModeling.surface_air_heat(
+			self.absorbed_radiation.value(), 
+			heat_flow.value(), 
+			result) 
+	);
 	this.surface_temp = new Memo(
 		Float32Raster(grid),  
-		result => AtmosphereModeling.surface_air_temp(grid.pos, mean_anomaly, axial_tilt, result)
+		result => AtmosphereModeling.surface_air_temp(
+			self.surface_heat.value(), 
+			4/3, 
+			result
+		)
 	); 
 	this.surface_pressure = new Memo(
 		Float32Raster(grid),  
@@ -51,7 +64,12 @@ function Atmosphere(parameters) {
 	); 
 	this.surface_wind_velocity = new Memo(
 		VectorRaster(grid),  
-		result => AtmosphereModeling.surface_air_velocity(grid.pos, surface_pressure.value(), angular_speed, result)
+		result => AtmosphereModeling.surface_air_velocity(
+			grid.pos, 
+			surface_pressure.value(), 
+			angular_speed, 
+			result
+		)
 	); 
 	this.precip = new Memo(
 		Float32Raster(grid),  

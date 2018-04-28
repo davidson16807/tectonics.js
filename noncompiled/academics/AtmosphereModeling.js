@@ -21,7 +21,7 @@ var AtmosphereModeling = (function() {
 		for (var i=0, li=lat.length; i<li; ++i) {
 		    pressure[i] = -cos(5*(lat[i]));
 		}
-		return pressure
+		return pressure;
 	}
 	var surface_air_velocity_coriolis_effect = function(pos, velocity, angular_speed, effect) {
 		effect = effect || VectorRaster(pos.grid);
@@ -61,19 +61,19 @@ var AtmosphereModeling = (function() {
 
 		return pressure;
 	}
-	AtmosphereModeling.surface_air_temp = function(pos, meanAnomaly, axial_tilt, temp) {
-		var season = meanAnomaly / Math.PI;
-		var temp = temp || Float32Raster(pos.grid);
-		var lat = Float32SphereRaster.latitude(pos.y);
-		var effective_lat = ScalarField.add_scalar(lat, season*axial_tilt);
-		Float32RasterInterpolation.clamp(effective_lat, -Math.PI/2, Math.PI/2, effective_lat);
-		var cos_lat = Float32RasterTrigonometry.cos(effective_lat);
-		var cos_lat_i = 0.
-		for (var i = 0; i < cos_lat.length; i++) {
-			cos_lat_i = cos_lat[i];
-			temp[i] = (273.15-25)*(1-cos_lat_i) + (273.15+30)*(cos_lat_i);
+	AtmosphereModeling.surface_air_temp = function(net_energy, infrared_optical_depth, result) {
+		infrared_optical_depth = infrared_optical_depth || Float32Raster(net_energy.grid);
+		result = result || Float32Raster(net_energy.grid);
+
+		var τ = infrared_optical_depth;
+		var σ = AtmosphereModeling.STEPHAN_BOLTZMANN_CONSTANT;
+		var pow = Math.pow;
+
+		for (var i = 0; i < net_energy.length; i++) {
+			result[i] = pow( (1+0.75*τ)*net_energy[i]/σ, 1/4 );
 		}
-		return temp;
+
+		return result;
 	}
 	AtmosphereModeling.precip = function(lat, result) {
 	    result = result || Float32Raster(lat.grid);
@@ -108,10 +108,10 @@ var AtmosphereModeling = (function() {
 	    result = result || Float32Raster(ocean_fraction.grid);
 	    var albedo = result;
 
-	    var ocean_albedo 	= || material_reflectivity || 0.06;
-	    var land_albedo 	= || material_reflectivity || 0.27;
-	    var plant_albedo 	= || material_reflectivity || 0.1;
-	    var ice_albedo 		= || material_reflectivity || 0.9;
+	    var ocean_albedo 	= material_reflectivity || 0.06;
+	    var land_albedo 	= material_reflectivity || 0.27;
+	    var plant_albedo 	= material_reflectivity || 0.1;
+	    var ice_albedo 		= material_reflectivity || 0.9;
 
 	    var lerp_fsf = Float32RasterInterpolation.lerp_fsf;
 	    var lerp_sff = Float32RasterInterpolation.lerp_sff;
@@ -189,19 +189,17 @@ var AtmosphereModeling = (function() {
 		ScalarField.div_scalar(incident_radiation_sum, sample_num, result);
 		return result;
 	}
+	AtmosphereModeling.surface_air_heat = function(absorbed_radiation, heat_flow, result) {
+		result = result || Float32Raster(net_energy.grid);
+
+		var heat_flow_field = result;
+		Float32Dataset.normalize(absorbed_radiation, result, -heat_flow, 2*heat_flow);
+		ScalarField.sub_field(absorbed_radiation, heat_flow_field, result);
+
+		return result;
+	}
 	AtmosphereModeling.STEPHAN_BOLTZMANN_CONSTANT = 5.670373e-11; // kW/m^2 per K^4
 	AtmosphereModeling.WATER_FREEZING_POINT_STP = 273.15; // Kelvin/Celcius
-	AtmosphereModeling.black_body_equilibrium_temperature = function(
-			// intensity of sunlight on a panel that's directly facing the sun, number in W/m^2
-			global_solar_constant,
-			// fraction of global solar constant that's felt by the surface of a planet, Float32Raster in W/m^2
-			daily_average_incident_radiation_ratio
-		) {
-		var incident_radiation = ScalarField.mult_scalar(daily_average_incident_radiation_ratio, global_solar_constant);
-		var temperature_4 = ScalarField.div_scalar(incident_radiation, AtmosphericModeling.STEPHAN_BOLTZMANN_CONSTANT);
-		var temperature = ScalarField.pow_scalar(temperature_4, 1/4);
-		return temperature;
-	}
 	// TODO: generalize to scalar fields and arbitrary temperature cycles
 	AtmosphereModeling.get_scalar_equilibrium_temperature = function(E, τ) {
 		// var τ = infrared_optical_depth;

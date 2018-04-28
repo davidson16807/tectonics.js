@@ -230,11 +230,10 @@ scalarDisplays.plate_count 	= new ScalarHeatDisplay( { min: '0.', max: '3.',
 		} 
 	} );
 scalarDisplays.temp 	= new ScalarHeatDisplay( { min: '-25.', max: '30.',  
-		getField: function (world) {
-			var temp = AtmosphericModeling.surface_air_temp(world.grid.pos, world.meanAnomaly, Math.PI*23.5/180);
+		getField: function (world, result) {
 			// convert to Celcius
-			ScalarField.add_scalar(temp, -273.15, temp);
-			return temp;
+			console.log(world.atmosphere.surface_temp.value());
+			return ScalarField.add_scalar(world.atmosphere.surface_temp.value(), -273.15, result);
 		} 
 	} );
 scalarDisplays.precip 	= new ScalarHeatDisplay( { min: '2000.', max: '1.',  

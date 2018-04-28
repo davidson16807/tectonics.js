@@ -44,6 +44,7 @@ function World(parameters) {
 		'material_viscosity': 	this.material_viscosity,
 	});
 	this.hydrosphere.setDependencies({
+		'surface_temp': 		this.atmosphere.surface_temp,
 		'displacement': 		this.lithosphere.displacement,
 		'material_density': 	this.material_density,
 	});
