@@ -229,10 +229,9 @@ scalarDisplays.plate_count 	= new ScalarHeatDisplay( { min: '0.', max: '3.',
 			return world.lithosphere.plate_count;
 		} 
 	} );
-scalarDisplays.temp 	= new ScalarHeatDisplay( { min: '-25.', max: '30.',  
+scalarDisplays.temp 	= new ScalarHeatDisplay( { min: '-50.', max: '50.',  
 		getField: function (world, result) {
 			// convert to Celcius
-			console.log(world.atmosphere.surface_temp.value());
 			return ScalarField.add_scalar(world.atmosphere.surface_temp.value(), -273.15, result);
 		} 
 	} );
