@@ -72,14 +72,13 @@ function Atmosphere(parameters) {
 	);
 	this.absorbed_radiation = new Memo(
 		Float32Raster(grid),  
-		// TODO: implement commented code:
-		//result => {
-		//	ScalarField.mult_scalar	( self.albedo.value(), -1, result );
-		//	ScalarField.add_scalar 	( result, 1, result );
-		//	ScalarField.mult_field(result, incident_radiation.value(), result);
-		//	return result
-		//}
-		 result => ScalarField.mult_scalar(incident_radiation.value(), 1.0, result)
+		result => {
+			ScalarField.mult_scalar	( self.albedo.value(), -1, result );
+			ScalarField.add_scalar 	( result, 1, result );
+			ScalarField.mult_field(result, incident_radiation.value(), result);
+			return result
+		}
+		 // result => ScalarField.mult_scalar(incident_radiation.value(), 1.0, result)
 	);
 
 	// private variables
