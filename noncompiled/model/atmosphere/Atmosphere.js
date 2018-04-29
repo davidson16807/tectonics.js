@@ -8,22 +8,14 @@ function Atmosphere(parameters) {
 		Float32Raster(grid),  
 		result => Float32SphereRaster.latitude(grid.pos.y, result)
 	); 
-	var max_absorbed_radiation = new Memo( 0,
-		current_value => Float32Dataset.max(self.absorbed_radiation.value())
-	);
-	var min_absorbed_radiation = new Memo( 0,
-		current_value => Float32Dataset.min(self.absorbed_radiation.value())
-	);
 	var heat_flow = new Memo( 0,
 		current_value => AtmosphereModeling.solve_heat_flow(
-			max_absorbed_radiation.value(), 
-			min_absorbed_radiation.value(), 
+			Float32Dataset.max(self.absorbed_radiation.value()), 
+			Float32Dataset.min(self.absorbed_radiation.value()), 
 			4/3, 10
 		)
 	);
 	this.heat_flow = heat_flow;
-	this.max_absorbed_radiation = max_absorbed_radiation;
-	this.min_absorbed_radiation = min_absorbed_radiation;
 
 	// public variables
 	this.surface_heat = new Memo(

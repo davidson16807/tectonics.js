@@ -262,6 +262,12 @@ scalarDisplays.density 	= new ScalarHeatDisplay( { min: '2.700', max: '3.300',
 scalarDisplays.elevation 	= new ScalarHeatDisplay( { min: '0.', max: '10000.',  
 		getField: world => world.lithosphere.elevation.value()
 	} );
+scalarDisplays.ice_coverage = new ScalarHeatDisplay( { min: '0.', max: '1.',  
+		getField: world => world.hydrosphere.ice_coverage.value()
+	} );
+scalarDisplays.plant_coverage = new ScalarHeatDisplay( { min: '0.', max: '1.',  
+		getField: world => world.biosphere.plant_coverage.value()
+	} );
 scalarDisplays.asthenosphere_pressure = new ScalarHeatDisplay(  { min: '1.', max: '0.',
 		// getField: world => world.lithosphere.asthenosphere_pressure.value()
 		getField: function (world, output, scratch, iterations) {
