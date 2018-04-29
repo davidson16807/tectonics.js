@@ -118,9 +118,10 @@ var AtmosphereModeling = (function() {
 	    var lerp_sff = Float32RasterInterpolation.lerp_sff;
 	    // albedo hierarchy: cloud, ice, water, plant, soil
 	    Float32Raster.fill(albedo, land_albedo);
-		// lerp_fsf(albedo, 		plant_albedo, 	plant_fraction, albedo);
-		lerp_fsf(albedo, 		ocean_albedo, 	ocean_fraction, albedo);
-		// lerp_fsf(albedo, 		ice_albedo, 	ice_fraction, 	albedo);
+		if (plant_fraction !== void 0) {	lerp_fsf(albedo, 	plant_albedo, 	plant_fraction, albedo);	}
+		if (ocean_fraction !== void 0) {	lerp_fsf(albedo, 	ocean_albedo, 	ocean_fraction, albedo);	}
+		if (ice_fraction !== void 0)   {	lerp_fsf(albedo, 	ice_albedo, 	ice_fraction, 	albedo);	}
+		
 		return result;
 	}
 
