@@ -60,8 +60,8 @@ function Hydrosphere(parameters) {
 	this.ocean_coverage = new Memo(
 		Float32Raster(grid),  
 		result => Float32RasterInterpolation.smoothstep(
-			self.epipelagic.value(), 
 			self.sealevel.value(), 
+			self.epipelagic.value(), 
 			displacement.value(), 
 			result
 		)

@@ -107,22 +107,19 @@ var AtmosphereModeling = (function() {
 		material_reflectivity = material_reflectivity || {};
 	    result = result || Float32Raster(ocean_fraction.grid);
 
-Float32Raster.fill(result, 0.0);
-return result;
-
 	    var albedo = result;
 
-	    var ocean_albedo 	= material_reflectivity || 0.06;
-	    var land_albedo 	= material_reflectivity || 0.27;
-	    var plant_albedo 	= material_reflectivity || 0.1;
-	    var ice_albedo 		= material_reflectivity || 0.9;
+	    var ocean_albedo 	= material_reflectivity.ocean || 0.06;
+	    var land_albedo 	= material_reflectivity.felsic || 0.27;
+	    var plant_albedo 	= material_reflectivity.forest || 0.1;
+	    var ice_albedo 		= material_reflectivity.ice || 0.9;
 
 	    var lerp_fsf = Float32RasterInterpolation.lerp_fsf;
 	    var lerp_sff = Float32RasterInterpolation.lerp_sff;
 	    // albedo hierarchy: cloud, ice, water, plant, soil
 	    Float32Raster.fill(albedo, land_albedo);
 		// lerp_fsf(albedo, 		plant_albedo, 	plant_fraction, albedo);
-		lerp_sff(albedo, 		ocean_albedo, 	ocean_fraction, albedo);
+		lerp_fsf(albedo, 		ocean_albedo, 	ocean_fraction, albedo);
 		// lerp_fsf(albedo, 		ice_albedo, 	ice_fraction, 	albedo);
 		return result;
 	}

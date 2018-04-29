@@ -265,6 +265,12 @@ scalarDisplays.elevation 	= new ScalarHeatDisplay( { min: '0.', max: '10000.',
 scalarDisplays.ice_coverage = new ScalarHeatDisplay( { min: '0.', max: '1.',  
 		getField: world => world.hydrosphere.ice_coverage.value()
 	} );
+scalarDisplays.land_coverage = new ScalarHeatDisplay( { min: '0.', max: '1.',  
+		getField: world => world.lithosphere.land_coverage.value()
+	} );
+scalarDisplays.ocean_coverage = new ScalarHeatDisplay( { min: '0.', max: '1.',  
+		getField: world => world.hydrosphere.ocean_coverage.value()
+	} );
 scalarDisplays.plant_coverage = new ScalarHeatDisplay( { min: '0.', max: '1.',  
 		getField: world => world.biosphere.plant_coverage.value()
 	} );

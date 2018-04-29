@@ -6,10 +6,10 @@ function Atmosphere(parameters) {
 	var self = this;
 
 	var material_reflectivity = {
-	    ocean_albedo:  	0.06,
-	    land_albedo:  	0.27,
-	    plant_albedo:  	0.1,
-	    ice_albedo:  	0.9,
+	    ocean:  	0.06,
+	    felsic:  	0.27,
+	    forest:  	0.1,
+	    ice:  		0.9,
 	};
 	var lat = new Memo(
 		Float32Raster(grid),  
@@ -18,7 +18,7 @@ function Atmosphere(parameters) {
 	this.albedo = new Memo(
 		Float32Raster(grid),  
 		// result => AtmosphereModeling.albedo(ocean_coverage.value(), ice_coverage.value(), plant_coverage.value(), result),
-		result => AtmosphereModeling.albedo(undefined, undefined, undefined, material_reflectivity, result),
+		result => AtmosphereModeling.albedo(ocean_coverage.value(), undefined, undefined, material_reflectivity, result),
 		// result => { Float32Raster.fill(result, 0.0); return result; },
 		false // assume everything gets absorbed initially to prevent circular dependencies
 	);
