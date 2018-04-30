@@ -25,7 +25,7 @@ function World(parameters) {
 		ocean: 1.026,
 	};
 
-	this.material_reflectivity = parameters['material_density'] || {
+	this.material_reflectivity = parameters['material_reflectivity'] || {
 	    ocean:  	0.06,
 	    felsic:  	0.27,
 	    forest:  	0.1,

@@ -11,8 +11,8 @@ function Atmosphere(parameters) {
 	); 
 	this.albedo = new Memo(
 		Float32Raster(grid),  
-		// result => AtmosphereModeling.albedo(ocean_coverage.value(), ice_coverage.value(), plant_coverage.value(), material_reflectivity, result),
-		result => AtmosphereModeling.albedo(ocean_coverage.value(), undefined, plant_coverage.value(), material_reflectivity, result),
+		result => AtmosphereModeling.albedo(ocean_coverage.value(), ice_coverage.value(), plant_coverage.value(), material_reflectivity, result),
+		// result => AtmosphereModeling.albedo(ocean_coverage.value(), undefined, plant_coverage.value(), material_reflectivity, result),
 		// result => { Float32Raster.fill(result, 0.0); return result; },
 		false // assume everything gets absorbed initially to prevent circular dependencies
 	);
@@ -41,12 +41,13 @@ function Atmosphere(parameters) {
 			result) 
 	);
 	this.surface_temp = new Memo(
-		Float32Raster(grid),  
+		Float32Raster(grid, 273.15+30),  
 		result => AtmosphereModeling.surface_air_temp(
 			self.surface_heat.value(), 
 			4/3, 
 			result
-		)
+		),
+		false
 	); 
 	this.surface_pressure = new Memo(
 		Float32Raster(grid),  

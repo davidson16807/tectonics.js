@@ -55,7 +55,8 @@ function Hydrosphere(parameters) {
 				result
 			);
 			return result;
-		}
+		},
+		false
 	);
 	this.ocean_coverage = new Memo(
 		Float32Raster(grid),  
