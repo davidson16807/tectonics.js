@@ -13,7 +13,8 @@ postcompiled/utils/Rasters.js : precompiled/utils/Rasters.js
 
 postcompiled/view/FragmentShaders.js : precompiled/view/fragment/FragmentShaders.template.js
 	cat $< | \
-    sed '/TEMPLATE.GLSL.C/ r precompiled/view/fragment/template.glsl.c' | \
+    sed '/GENERIC.GLSL.C/ r precompiled/view/fragment/generic.glsl.c' | \
+    sed '/REALISTIC.GLSL.C/ r precompiled/view/fragment/realistic.glsl.c' | \
     sed '/DEBUG.GLSL.C/ r precompiled/view/fragment/debug.glsl.c' | \
     sed '/VECTOR_FIELD.GLSL.C/ r precompiled/view/fragment/vector_field.glsl.c' \
     > postcompiled/view/FragmentShaders.js

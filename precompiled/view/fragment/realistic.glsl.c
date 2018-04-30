@@ -1,13 +1,4 @@
 
-function _multiline(f) {
-  return f.toString().split('\n').slice(1, -1).join('\n');
-}
-
-var fragmentShaders = {};
-
-fragmentShaders.realistic = `
-//REALISTIC.GLSL.C GOES HERE
-
 varying float vDisplacement;
 varying float vPlantCoverage;
 varying float vIceCoverage;
@@ -57,75 +48,3 @@ void main() {
 	vec4 ice_covered = mix(sea_covered, SNOW, ice_coverage);
 	gl_FragColor = ice_covered;
 }
-`;
-
-fragmentShaders.generic = `
-//GENERIC.GLSL.C GOES HERE
-
-varying float vDisplacement;
-varying float vPlantCoverage;
-varying float vIceCoverage;
-varying float vScalar;
-varying vec4 vPosition;
-
-uniform float sealevel;
-uniform float sealevel_mod;
-
-float cosh (float x){
-	return exp(x)+exp(-x)/2.;
-}
-
-//converts float from 0-1 to a heat map visualtion
-//credit goes to Gaëtan Renaudeau: http://greweb.me/glsl.js/examples/heatmap/
-vec4 heat (float v) {
-	float value = 1.-v;
-	return (0.5+0.5*smoothstep(0.0, 0.1, value))*vec4(
-		smoothstep(0.5, 0.3, value),
-		value < 0.3 ? smoothstep(0.0, 0.3, value) : smoothstep(1.0, 0.6, value),
-		smoothstep(0.4, 0.6, value),
-		1
-	);
-}
-
-void main() {
-	float epipelagic = sealevel - 200.0;
-	float mesopelagic = sealevel - 1000.0;
-	float abyssopelagic = sealevel - 4000.0;
-	float maxheight = sealevel + 15000.0; 
-	
-	@OUTPUT
-}
-`;
-
-fragmentShaders.debug = `
-//DEBUG.GLSL.C GOES HERE
-varying float vDisplacement;
-varying vec4 vPosition;
-
-uniform  float sealevel;
-uniform  vec3 color;
-
-const vec4 BOTTOM = vec4(0.0,0.0,0.0,1.0);//rgba
-const vec4 TOP = vec4(1.0,1.0,1.0,1.0);
-
-void main() {
-	float mountainMinHeight = sealevel + 5000.;
-	float mountainMaxHeight = sealevel + 15000.0;
-	if(vDisplacement > sealevel){
-		float x = smoothstep(mountainMinHeight, mountainMaxHeight, vDisplacement);
-		gl_FragColor =  mix(vec4(color, 1.0), TOP, x);
-	} else if (vDisplacement > 1.){
-		float x = smoothstep(-sealevel, sealevel, vDisplacement);
-		gl_FragColor =  mix(BOTTOM, vec4(color*.75, 1.0), x);
-	} else {
-		gl_FragColor =  vec4(0,0,0,1);
-	}
-}
-`;
-
-fragmentShaders.vectorField = `
-//VECTOR_FIELD.GLSL.C GOES HERE
-void main() {
-	gl_FragColor = vec4(1);
-}
-`;

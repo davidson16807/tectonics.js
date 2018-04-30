@@ -5,8 +5,13 @@ function _multiline(f) {
 
 var fragmentShaders = {};
 
-fragmentShaders.template = `
-//TEMPLATE.GLSL.C GOES HERE
+fragmentShaders.realistic = `
+//REALISTIC.GLSL.C GOES HERE
+
+`;
+
+fragmentShaders.generic = `
+//GENERIC.GLSL.C GOES HERE
 
 `;
 

@@ -3,19 +3,7 @@
 
 
 function RealisticDisplay(shader_return_value) {
-	this._fragmentShader = fragmentShaders.template
-		.replace('@OUTPUT',
-			_multiline(function() {/**   
-			vec4 ocean 				= mix(OCEAN, SHALLOW, smoothstep(epipelagic * sealevel_mod, sealevel * sealevel_mod, vDisplacement));
-			vec4 bedrock			= mix(MAFIC, FELSIC, felsic_fraction);
-			vec4 soil				= mix(bedrock, mix(SAND, PEAT, organic_fraction), mineral_fraction);
-			vec4 canopy 			= mix(soil, JUNGLE, npp);
-			
-			vec4 uncovered = @UNCOVERED;
-			vec4 sea_covered = vDisplacement < sealevel * sealevel_mod? ocean : uncovered;
-			vec4 ice_covered = mix(sea_covered, SNOW, ice_fraction);
-			gl_FragColor = ice_covered;
-			**/}))
+	this._fragmentShader = fragmentShaders.realistic
 		.replace('@UNCOVERED', shader_return_value);
 	this.chartDisplays = []; 
 }
@@ -54,11 +42,11 @@ function ScalarDisplay(options) {
 	}
 	var minColor_str = hex_color_to_glsl_string_color(minColor);
 	var maxColor_str = hex_color_to_glsl_string_color(maxColor);
-	this._fragmentShader = fragmentShaders.template
+	this._fragmentShader = fragmentShaders.generic
 		.replace('@OUTPUT',
 			_multiline(function() {/**   
 			vec4 uncovered 		= @UNCOVERED;
-			vec4 ocean 			= mix(NONE, uncovered, 0.5);
+			vec4 ocean 			= mix(vec4(0.), uncovered, 0.5);
 			vec4 sea_covered 	= vDisplacement < sealevel * sealevel_mod? ocean : uncovered;
 			gl_FragColor = sea_covered;
 			**/}))
@@ -132,11 +120,11 @@ function ScalarHeatDisplay(options) {
 	this.scaling = scaling;
 	this.field = void 0;
 	this.scratch = void 0;
-	this._fragmentShader = fragmentShaders.template
+	this._fragmentShader = fragmentShaders.generic
 		.replace('@OUTPUT',
 			_multiline(function() {/**   
 			vec4 uncovered 		= @UNCOVERED;
-			vec4 ocean 			= mix(OCEAN, uncovered, 0.5);
+			vec4 ocean 			= mix(vec4(0.), uncovered, 0.5);
 			vec4 sea_covered 	= vDisplacement < sealevel * sealevel_mod? ocean : uncovered;
 			gl_FragColor = sea_covered;
 			**/}))

@@ -8,9 +8,13 @@ const float NONE = -0.01;
 const float INDEX_SPACING = PI * 0.75; // anything from 0.0 to 2.*PI
 
 attribute float displacement;
+attribute float plant_coverage;
+attribute float ice_coverage;
 attribute float scalar;
 attribute vec3 vector;
 varying float vDisplacement;
+varying float vPlantCoverage;
+varying float vIceCoverage;
 varying float vScalar;
 varying vec4 vPosition;
 uniform float sealevel;
@@ -26,6 +30,8 @@ float lat(vec3 pos) {
 
 void main() {
 	vDisplacement = displacement;
+	vPlantCoverage = plant_coverage;
+	vIceCoverage = ice_coverage;
 	vScalar = scalar;
 	vPosition = modelMatrix * vec4( position, 1.0 );
 	
@@ -56,9 +62,13 @@ const float NONE = -0.01;
 const float INDEX_SPACING = PI * 0.75; // anything from 0.0 to 2.*PI
 
 attribute float displacement;
+attribute float plant_coverage;
+attribute float ice_coverage;
 attribute float scalar;
 attribute vec3 vector;
 varying float vDisplacement;
+varying float vPlantCoverage;
+varying float vIceCoverage;
 varying float vScalar;
 varying vec4 vPosition;
 uniform float sealevel;
@@ -74,6 +84,8 @@ float lat(vec3 pos) {
 
 void main() {
 	vDisplacement = displacement;
+	vPlantCoverage = plant_coverage;
+	vIceCoverage = ice_coverage;
 	vScalar = scalar;
 	vPosition = modelMatrix * vec4( position, 1.0 );
 	
@@ -100,9 +112,13 @@ const float NONE = -0.01;
 const float INDEX_SPACING = PI * 0.75; // anything from 0.0 to 2.*PI
 
 attribute float displacement;
+attribute float plant_coverage;
+attribute float ice_coverage;
 attribute float scalar;
 attribute vec3 vector;
 varying float vDisplacement;
+varying float vPlantCoverage;
+varying float vIceCoverage;
 varying float vScalar;
 varying vec4 vPosition;
 uniform float sealevel;
@@ -111,6 +127,8 @@ uniform float index;
 
 void main() {
 	vDisplacement = displacement;
+	vPlantCoverage = plant_coverage;
+	vIceCoverage = ice_coverage;
 	vScalar = scalar;
 	vPosition = modelMatrix * vec4( position, 1.0 );
 	

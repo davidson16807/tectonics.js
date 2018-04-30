@@ -8,6 +8,8 @@ float lat(vec3 pos) {
 
 void main() {
 	vDisplacement = displacement;
+	vPlantCoverage = plant_coverage;
+	vIceCoverage = ice_coverage;
 	vScalar = scalar;
 	vPosition = modelMatrix * vec4( position, 1.0 );
 	
