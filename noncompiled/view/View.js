@@ -23,6 +23,8 @@ function View(grid, scalarDisplay, vectorDisplay, vertexShader) {
 	var scalar_field_geometry = THREE.BufferGeometryUtils.fromGeometry(this.grid.template);
 
 	scalar_field_geometry.addAttribute('displacement', Float32Array, faces.length*3, 1);
+	scalar_field_geometry.addAttribute('ice_coverage', Float32Array, faces.length*3, 1);
+	scalar_field_geometry.addAttribute('plant_coverage', Float32Array, faces.length*3, 1);
 	scalar_field_geometry.addAttribute('scalar', Float32Array, faces.length*3, 1);
 	this.scalar_field_geometry = scalar_field_geometry;
 
@@ -32,6 +34,8 @@ function View(grid, scalarDisplay, vectorDisplay, vertexShader) {
 	scalar_field_material = new THREE.ShaderMaterial({
 		attributes: {
 		  displacement: { type: 'f', value: null },
+		  ice_coverage: { type: 'f', value: null },
+		  plant_coverage: { type: 'f', value: null },
 		  scalar: { type: 'f', value: null }
 		},
 		uniforms: {
@@ -51,6 +55,8 @@ function View(grid, scalarDisplay, vectorDisplay, vertexShader) {
 	scalar_field_material = new THREE.ShaderMaterial({
 		attributes: {
 		  displacement: { type: 'f', value: null },
+		  ice_coverage: { type: 'f', value: null },
+		  plant_coverage: { type: 'f', value: null },
 		  scalar: { type: 'f', value: null }
 		},
 		uniforms: {
