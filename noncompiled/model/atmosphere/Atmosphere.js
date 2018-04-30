@@ -5,12 +5,6 @@ function Atmosphere(parameters) {
 	var grid = parameters['grid'] || stop('missing parameter: "grid"');
 	var self = this;
 
-	var material_reflectivity = {
-	    ocean:  	0.06,
-	    felsic:  	0.27,
-	    forest:  	0.1,
-	    ice:  		0.9,
-	};
 	var lat = new Memo(
 		Float32Raster(grid),  
 		result => Float32SphereRaster.latitude(grid.pos.y, result)
@@ -80,6 +74,7 @@ function Atmosphere(parameters) {
 	);
 
 	// private variables
+	var material_reflectivity = undefined;
 	var displacement 	= undefined;
 	var ocean_coverage 	= undefined;
 	var ice_coverage 	= undefined;
@@ -91,6 +86,7 @@ function Atmosphere(parameters) {
 	var incident_radiation = undefined;
 
 	function assert_dependencies() {
+		if (material_reflectivity === void 0) { throw '"material_reflectivity" not provided'; }
 		if (displacement === void 0)	 { throw '"displacement" not provided'; }
 		if (ocean_coverage === void 0)	 { throw '"ocean_coverage" not provided'; }
 		if (ice_coverage === void 0)	 { throw '"ice_coverage" not provided'; }
@@ -103,6 +99,7 @@ function Atmosphere(parameters) {
 	}
 
 	this.setDependencies = function(dependencies) {
+		material_reflectivity = dependencies['material_reflectivity'] !== void 0? 	dependencies['material_reflectivity'] 	: material_reflectivity;		
 		displacement 		= dependencies['displacement'] 	!== void 0? 	dependencies['displacement'] 	: displacement;		
 		ocean_coverage 		= dependencies['ocean_coverage']!== void 0? 	dependencies['ocean_coverage'] 	: ocean_coverage;		
 		ice_coverage 		= dependencies['ice_coverage'] 	!== void 0? 	dependencies['ice_coverage'] 	: ice_coverage;		

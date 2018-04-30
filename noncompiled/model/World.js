@@ -25,6 +25,13 @@ function World(parameters) {
 		ocean: 1.026,
 	};
 
+	this.material_reflectivity = parameters['material_density'] || {
+	    ocean:  	0.06,
+	    felsic:  	0.27,
+	    forest:  	0.1,
+	    ice:  		0.9,
+	};
+
 	this.surface_gravity = parameters['surface_gravity'] || 9.8; // m/s^2
 
 	this.radius = parameters['radius'] || 6367e3; // meters
@@ -38,26 +45,27 @@ function World(parameters) {
 	this.biosphere = new Biosphere(parameters);
 
 	this.lithosphere.setDependencies({
-		'surface_gravity': 		this.surface_gravity,
-		'sealevel': 			this.hydrosphere.sealevel,
-		'material_density': 	this.material_density,
-		'material_viscosity': 	this.material_viscosity,
+		'surface_gravity'		: this.surface_gravity,
+		'sealevel'				: this.hydrosphere.sealevel,
+		'material_density'		: this.material_density,
+		'material_viscosity'	: this.material_viscosity,
 	});
 	this.hydrosphere.setDependencies({
-		'surface_temp': 		this.atmosphere.surface_temp,
-		'displacement': 		this.lithosphere.displacement,
-		'material_density': 	this.material_density,
+		'surface_temp'			: this.atmosphere.surface_temp,
+		'displacement'			: this.lithosphere.displacement,
+		'material_density'		: this.material_density,
 	});
 	this.atmosphere.setDependencies({
-		'displacement' 	: this.lithosphere.displacement, //TODO: convert this to elevation
-		'sealevel' 		: this.hydrosphere.sealevel,
-		'ice_coverage' 	: this.hydrosphere.ice_coverage,
-		'ocean_coverage': this.hydrosphere.ocean_coverage,
-		'plant_coverage': this.biosphere.plant_coverage,
-		'mean_anomaly' 	: this.orbit.mean_anomaly,
-		'axial_tilt' 	: this.orbit.axial_tilt,
-		'angular_speed' : this.orbit.angular_speed,
-		'incident_radiation' : this.orbit.incident_radiation,
+		'material_reflectivity'	: this.material_reflectivity,
+		'displacement' 			: this.lithosphere.displacement, //TODO: convert this to elevation
+		'sealevel' 				: this.hydrosphere.sealevel,
+		'ice_coverage' 			: this.hydrosphere.ice_coverage,
+		'ocean_coverage'		: this.hydrosphere.ocean_coverage,
+		'plant_coverage'		: this.biosphere.plant_coverage,
+		'mean_anomaly' 			: this.orbit.mean_anomaly,
+		'axial_tilt' 			: this.orbit.axial_tilt,
+		'angular_speed' 		: this.orbit.angular_speed,
+		'incident_radiation' 	: this.orbit.incident_radiation,
 	});
 	this.biosphere.setDependencies({
 		'surface_temp'	: this.atmosphere.surface_temp,
