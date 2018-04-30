@@ -718,7 +718,7 @@
 		speed: start_speed,
 	  	age: 0,
 	  	season: 0,
-	  	isSeasonVisible: false,
+	  	isSeasonVisible: true,
 	  },
 	  created: function() {
 	  	var _this = this;
@@ -735,7 +735,7 @@
 			model.MegaYearPerSecond = this.speed;
 		},
 		setSeason: function() {
-			model.world().meanAnomaly = this.season;
+			model.world().orbit.mean_anomaly = this.season;
 		},
 		setSeasonVisibility: function(visibility) {
 			this.isSeasonVisible = visibility || false;
@@ -799,7 +799,7 @@
 	    selected: 'satellite',
 	    vectorDisplay: 'disabled',
 	    options: [
-	      {name: 'Satellite', value: 'satellite', icon: 'icons/satellite-variant.svg'},
+	      {name: 'Satellite', value: 'satellite', icon: 'icons/satellite-variant.svg',season: true},
 	      {name: 'Sediment', value: 'soil', icon: 'icons/dirt.svg'},
 	      {name: 'Bedrock', value: 'bedrock', icon: 'icons/rock.svg'},
 	      {name: 'Elevation', value: 'alt', icon: 'icons/terrain.svg'},

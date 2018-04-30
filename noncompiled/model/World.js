@@ -29,7 +29,7 @@ function World(parameters) {
 	    ocean:  	0.06,
 	    felsic:  	0.27,
 	    forest:  	0.1,
-	    ice:  		0.9,
+	    ice:  		0.8,
 	};
 
 	this.surface_gravity = parameters['surface_gravity'] || 9.8; // m/s^2
@@ -84,6 +84,7 @@ function World(parameters) {
 			return;
 		};
 
+		this.orbit.invalidate();
 		this.lithosphere.invalidate();
 		this.hydrosphere.invalidate();
 		this.atmosphere.invalidate();
@@ -96,11 +97,13 @@ function World(parameters) {
 			'angular_speed' : this.orbit.angular_speed,
 		});
 
+		this.orbit.calcChanges(timestep);
 		this.lithosphere.calcChanges(timestep);
 		this.hydrosphere.calcChanges(timestep);
 		this.atmosphere.calcChanges(timestep);
 		this.biosphere.calcChanges(timestep);
 
+		this.orbit.applyChanges(timestep);
 		this.lithosphere.applyChanges(timestep);
 		this.hydrosphere.applyChanges(timestep);
 		this.atmosphere.applyChanges(timestep);

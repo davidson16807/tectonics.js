@@ -53,10 +53,10 @@ function Orbit(parameters) {
 
 	this.invalidate = function() {
 		// NOTE: we don't need to invalidate these commented-out attributes, because the underlying data doesn't change often
-		// incident_radiation_fraction 		.invalidate(); 
-		// global_solar_constant 			.invalidate(); // TODO: uncomment this once you have a working model for stellar evolution
-		// incident_radiation 				.invalidate(); // TODO: uncomment this once you have a working model for stellar evolution
 		orbital_pos							.invalidate();
+		incident_radiation_fraction 		.invalidate(); 
+		// global_solar_constant 			.invalidate(); // TODO: uncomment this once you have a working model for stellar evolution
+		this.incident_radiation				.invalidate();
 	}
 
 	this.calcChanges = function(timestep) {
