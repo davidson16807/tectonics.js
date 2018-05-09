@@ -9,7 +9,7 @@ function Orbit(parameters) {
 
 	var orbital_pos = new Memo( [], 
 		function (result) {
-			return OrbitalMechanics.get_eliptic_coordinate_sample(1, 0, self.mean_anomaly);
+			return OrbitalMechanics.get_parent_centric_offset(self.mean_anomaly, 1.);
 		}
 	); 
 	var incident_radiation_fraction = new Memo( //TODO: move this to a new "Orbit" class
@@ -28,10 +28,6 @@ function Orbit(parameters) {
 
 	// public variables
 	var self = this;
-	this.daily_averaging = false;
-	this.monthly_averaging = false;
-	this.yearly_averaging = false;
-	this.milankovich_cycle_averaging = false;
 	this.global_solar_constant = parameters['global_solar_constant'] || 1.361; // kiloWatts per m^2 
 	this.mean_anomaly 	= parameters['mean_anomaly'] 	|| 0;
 	this.axial_tilt 	= parameters['axial_tilt'] 		|| Math.PI * 23.5/180;
@@ -42,6 +38,13 @@ function Orbit(parameters) {
 			return ScalarField.mult_scalar(incident_radiation_fraction.value(), self.global_solar_constant, result);
 		}
 	);
+	var incident_radiation = function(cycles) {
+		for (var i = 0, li = cycles.length; i < li; i++) {
+			
+		}
+		// var PI = Math.PI;
+		// cycles = [PI*3/4, PI*2/3, undefined, PI*1/2] // cycles in order of increasing frequency, use "undefined" where we want the average across an entire cycle
+	}
 
 	function assert_dependencies() { }
 

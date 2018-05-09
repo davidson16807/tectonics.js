@@ -161,22 +161,27 @@ var AtmosphereModeling = (function() {
 		var cos_solar_zenith_angle = Float32Raster(grid);
 		var incident_radiation_sum  = Float32Raster(grid);
 
-		var get_surface_normal = OrbitalMechanics.get_eliptic_coordinates_raster_from_equatorial_coordinates_raster;
 		var similarity = VectorField.vector_similarity;
 		var add = ScalarField.add_field;
 		var clamp = Float32RasterInterpolation.clamp;
 
 		var PI = Math.PI;
+		var geocentric_to_heliocentric_matrix = undefined;
 		var rotation_angle = 0.; 
 		for (var i=0; i<sample_num; ++i) {
 			rotation_angle = i * 2*PI/sample_num;
-
-			// find surface normal, i.e. vector that points straight up from the ground
-			get_surface_normal(
-				pos,
+			geocentric_to_heliocentric_matrix = OrbitalMechanics.get_parent_centric_rotation_matrix(
 				rotation_angle, 
 				axial_tilt, 
-				surface_normal);
+				0.
+			);
+
+			// find surface normal, i.e. vector that points straight up from the ground
+			VectorField.mult_matrix(
+				pos,
+				geocentric_to_heliocentric_matrix,
+				surface_normal
+			);
 
 			// use cosine similarity to find cosine of solar zenith angle 
 			similarity 	(surface_normal, sun_coordinates, 					cos_solar_zenith_angle);
