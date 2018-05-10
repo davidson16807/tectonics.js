@@ -42,10 +42,9 @@ function Orbit(parameters) {
 					self.mean_anomaly,
 					self.semi_major_axis, 
 					self.eccentricity, 
-					// TODO: implement the following:
-					// self.inclination,
-					// self.argument_of_periapsis,
-					// self.longitude_of_ascending_node
+					self.inclination,
+					self.argument_of_periapsis,
+					self.longitude_of_ascending_node
 				); 
 			for (var i=0; i<sample_num; ++i) { 
 				rotation_angle = i * 2*PI/sample_num; 
@@ -53,7 +52,7 @@ function Orbit(parameters) {
 					OrbitalMechanics.get_equatorial_to_ecliptic_matrix( 
 						rotation_angle,  
 						self.axial_tilt,  
-						0. // self.precession_angle // TODO: implement this
+						self.precession_angle 
 					); 
 
 				// find surface normal, i.e. vector that points straight up from the ground 
@@ -66,7 +65,7 @@ function Orbit(parameters) {
 				OrbitalMechanics.incident_radiation(
 					surface_normal,
 					heliocentric_ecliptic_pos,
-					OrbitalMechanics.SOLAR_LUMINOSITY, //TODO: add support for arbitrary luminosity
+					self.stellar_luminosity, 
 					incident_radiation_sample,
 				); 
 
@@ -79,11 +78,16 @@ function Orbit(parameters) {
 
 	// public variables
 	var self = this;
-	this.mean_anomaly 	= parameters['mean_anomaly'] 	|| 0;
-	this.semi_major_axis= parameters['semi_major_axis'] || OrbitalMechanics.ASTRONOMICAL_UNIT;
-	this.eccentricity	= parameters['eccentricity'] || 0;
-	this.axial_tilt 	= parameters['axial_tilt'] 		|| Math.PI * 23.5/180;
-	this.angular_speed 	= parameters['angular_speed'] 	|| 460; // m/s
+	this.mean_anomaly 				= parameters['mean_anomaly'] 				|| 0;
+	this.semi_major_axis			= parameters['semi_major_axis'] 			|| OrbitalMechanics.ASTRONOMICAL_UNIT;
+	this.stellar_luminosity			= parameters['stellar_luminosity'] 			|| OrbitalMechanics.SOLAR_LUMINOSITY;
+	this.eccentricity				= parameters['eccentricity'] 				|| 0;
+	this.inclination				= parameters['inclination'] 				|| 0;
+	this.argument_of_periapsis		= parameters['argument_of_periapsis'] 		|| 0;
+	this.longitude_of_ascending_node= parameters['longitude_of_ascending_node'] || 0;
+	this.precession_angle			= parameters['precession_angle'] 			|| 0;
+	this.axial_tilt 				= parameters['axial_tilt'] 					|| Math.PI * 23.5/180;
+	this.angular_speed 				= parameters['angular_speed'] 				|| 460; // m/s
 
 	function assert_dependencies() { }
 
