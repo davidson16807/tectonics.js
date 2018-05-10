@@ -7,14 +7,14 @@ var OrbitalMechanics = (function() {
 	var OrbitalMechanics = {};
 
 	// gets the rotation matrix necessary to convert geocentric equatorial coordinates to geocentric ecliptic coordinates
-	OrbitalMechanics.get_parent_centric_rotation_matrix = function(
+	OrbitalMechanics.get_equatorial_to_ecliptic_matrix = function(
 			//rotation about axis, in radians
 			rotation_angle, 
 			//tilt of the planet's axis, in radians
 			axial_tilt, 
 			//rotation of planet's axis around north celestial pole, in radians
 			precession_angle
-		) {
+	) {
 		var precession_angle  = precession_angle || 0;
 		var rotation_matrix   = Matrix.RotationAboutAxis(0,1,0, rotation_angle);
 		var tilt_matrix 	  = Matrix.RotationAboutAxis(1,0,0, axial_tilt);
@@ -24,10 +24,9 @@ var OrbitalMechanics = (function() {
 		return conversion_matrix;
 	}
 
-	// gets the cartesian coordinates necessary to convert geocentric ecliptic coordinates to heliocentric equatorial coordinates
-	// applying get_parent_centric_rotation_matrix followed by get_parent_centric_offset yields parent centric coordinates
+	// gets the cartesian coordinates necessary to convert geocentric ecliptic coordinates to heliocentric ecliptic coordinates
 	// NOTE: for help understanding parameters to this function, go here: https://orbitalmechanics.info/
-	OrbitalMechanics.get_parent_centric_offset = function(
+	OrbitalMechanics.get_self_centric_to_parent_centric_offset = function(
 			// the phase angle (in radians) that indicates the point in time within an object's revolution. It varies linearly with time.
 			mean_anomaly,
 			// the average between apoapsis and periapsis
@@ -40,7 +39,7 @@ var OrbitalMechanics = (function() {
 			argument_of_periapsis,
 			// the angle (in radians) between the prime meridian of the parent and the "ascending node" - the intersection between the orbital plane and the reference plane
 			longitude_of_ascending_node
-		) {
+	) {
 		var Ω = longitude_of_ascending_node || 0.; 
 		var i = inclination || 0.;
 		var ω = argument_of_periapsis || 0.;
@@ -100,11 +99,17 @@ var OrbitalMechanics = (function() {
 		return E;
 	}
 
+	OrbitalMechanics.ASTRONOMICAL_UNIT = 149597870700; // meters
 
+	// TODO: figure out where to put this between OrbitalMechanics and AtmosphereModeling
+	// maybe another namespace, like "Thermodynamics"? "PhysicsModeling"?
+	var STEPHAN_BOLTZMANN_CONSTANT = 5.670373e-11; // kW/m^2 per K^4
 
+	// TODO: figure out where to put above function
+	// maybe another namespace: "Heliosphere"? "StellarModeling" "Optics" ?
+	OrbitalMechanics.SOLAR_LUMINOSITY = 3.828e23 // kiloWatts
 
-
-	// This calculates the fraction of the global solar constant that's felt by the surface of a planet.
+	// This calculates the intensity of incident radiation (in kiloWatts/m^2) that's felt by the surface of a planet.
 	// This fraction is the cosine of solar zenith angle, as seen in Lambert's law.
 	// The fraction is calculated as a daily average for every region on the globe
 	//
@@ -113,56 +118,44 @@ var OrbitalMechanics = (function() {
 	//     but the global solar constant changes over time due to stellar aging.
 	//     It takes much longer to recompute the fraction than it does the global solar constant.
 	//     We calculate the fraction in a separate function so we can store the result for later.
-	OrbitalMechanics.incident_radiation_fraction = function(
-			// This is a vector raster of each grid cell's position in geocentric equatorial coordinates (just like "pos" in other functions) 
-			pos, 
-			// this is a single vector of the planet's position in heliocentric ecliptic coordinates (not to be confused with "pos")
-			orbital_pos, 
-			// tilt of the planet's axis, in radians
-			axial_tilt, 
-			// number of samples used to calculate average, default is 12
-			sample_num,
+	OrbitalMechanics.incident_radiation = function(
+			// This is a vector raster of each grid cell's position in geocentric ecliptic coordinates 
+			geocentric_ecliptic_pos_field,
+			// This is a vector indicating the planet's center of mass in heliocentric ecliptic coordinates 
+			heliocentric_ecliptic_pos, 
+			// total power output of star in all directions, in kiloWatts
+			stellar_luminosity,
 			// Float32Raster that stores results
 			result
 		) {
 		result = result || Float32Raster(pos.grid);
-		sample_num = sample_num || 12;
 
 		// this is a vector of the sun's geocentric position 
-		var sun_coordinates = Vector(-orbital_pos.x, -orbital_pos.y, -orbital_pos.z);
-
-		var grid = pos.grid;
-
-		// TODO: need scratch for these
-		var surface_normal = VectorRaster(grid);
-		var cos_solar_zenith_angle = Float32Raster(grid);
-
-		var similarity = VectorField.vector_similarity;
-		var add = ScalarField.add_field;
-		var clamp = Float32RasterInterpolation.clamp;
-
-		var PI = Math.PI;
-		var rotation_angle = i * 2*PI/sample_num;
-
-		// find surface normal, i.e. vector that points straight up from the ground
-		OrbitalMechanics.get_ecliptic_coordinates_raster_from_equatorial_coordinates_raster(
-			pos,
-			rotation_angle, 
-			axial_tilt, 
-			surface_normal);
-
-		// use cosine similarity to find cosine of solar zenith angle 
-		VectorField.vector_similarity (
-					surface_normal, sun_coordinates, 		cos_solar_zenith_angle
+		var sun_coordinates = Vector(
+			-heliocentric_ecliptic_pos.x, 
+			-heliocentric_ecliptic_pos.y, 
+			-heliocentric_ecliptic_pos.z
 		);
 
-		// disregard solar angle at night
-		clamp		(cos_solar_zenith_angle, 0, 1, 			cos_solar_zenith_angle);
+		// use cosine similarity to find cosine of solar zenith angle 
+		VectorField.vector_similarity 	(geocentric_ecliptic_pos_field, sun_coordinates, 	result);
 
-		add  		(result, cos_solar_zenith_angle, 		result);
+		// disregard solar angle at night
+		Float32RasterInterpolation.clamp(result, 0, 1, 										result);
+
+		// intensity of stellar insolation, in kiloWatts/m^2
+		// this is the power generated by a 100% efficient, 1 m^2 solar panel that's directly facing the sun
+		var stellar_distance = Vector.magnitude(
+			heliocentric_ecliptic_pos.x,
+			heliocentric_ecliptic_pos.y,
+			heliocentric_ecliptic_pos.z
+		);
+		var global_stellar_constant = stellar_luminosity / ( 4 * Math.PI * stellar_distance * stellar_distance );
+
+		ScalarField.mult_scalar			( result, global_stellar_constant, 					result );
+
 		return result;
 	}
-
 
 	return OrbitalMechanics;
 })();
