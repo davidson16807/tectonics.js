@@ -1,4 +1,4 @@
-// Optics is a namespace isolating all business logic relating to the behavior of light and other EM radiation
+// Optics is a namespace isolating all business logic relating to the transfer of radiation
 // This was written so I could decouple academic concerns (like how to model something mathematically) from architectural concerns (like how a model is represented through classes)
 // All functions within the namespace are static and have no side effects
 // The only data structures allowed are rasters and grid objects
@@ -6,19 +6,33 @@
 var Optics = (function() {
 	var Optics = {};
 
-
-	// TODO: figure out where to put this between OrbitalMechanics and AtmosphereModeling
-	// maybe another namespace, like "Thermodynamics"? "PhysicsModeling"?
-	var STEPHAN_BOLTZMANN_CONSTANT = 5.670373e-11; // kW/m^2 per K^4
+	Optics.STEPHAN_BOLTZMANN_CONSTANT = 5.670373e-11; // kW/m^2 per K^4
 
 	// TODO: figure out where to put above function
-	// maybe another namespace: "Heliosphere"? "StellarModeling" "Optics" ?
-	OrbitalMechanics.SOLAR_LUMINOSITY = 3.828e23 // kiloWatts
+	// maybe another namespace: "Heliosphere"? "StellarModeling"?
+	Optics.SOLAR_LUMINOSITY = 3.828e23 // kiloWatts
+
+	// This calculates the radiation (in kiloWatts/m^2) that's emitted by the surface of an object.
+	Optics.black_body_radiation = function(
+			temperature,
+			result
+		) {
+		result = result || Float32Raster(pos.grid);
+		Float32Raster.copy(temperature, result);
+		ScalarField.mult_field	(result, 		temperature, 						result);
+		ScalarField.mult_field	(result, 		temperature, 						result);
+		ScalarField.mult_field	(result, 		temperature, 						result);
+		ScalarField.mult_field	(result, 		temperature, 						result);
+		ScalarField.mult_scalar	(result, 		Optics.STEPHAN_BOLTZMANN_CONSTANT, 	result);
+
+		return result;
+	}
 	
-	// This calculates the intensity of incident radiation (in kiloWatts/m^2) that's felt by the surface of an object.
+	// This calculates the intensity of incident radiation (in kiloWatts/m^2) 
+	// that's felt on the surface of an object from a circular light source 
 	// The function considers the following:
 	//  * the distance to the light (the "Inverse Square Law")
-	//  * the occlusion of light by object itself
+	//  * the occlusion of light by the object itself
 	//  * the angle at which the light hits ("Lambert's Law")
 	Optics.incident_radiation = function(
 			// This is a vector raster indicating the surface normal of an object
