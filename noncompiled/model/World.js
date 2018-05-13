@@ -38,7 +38,13 @@ function World(parameters) {
 
 	this.age = parameters['age'] || 0; // megayears
 
-	this.orbit = new Orbit(parameters);
+	this.orbit = new Orbit({
+		semi_major_axis: OrbitalMechanics.ASTRONOMICAL_UNIT, 
+		mean_anomaly: 0,
+	});
+	this.spin = new Spin({
+		axial_tilt: Math.PI * 23.5/180,
+	});
 	this.lithosphere = new Lithosphere(parameters);
 	this.hydrosphere = new Hydrosphere(parameters);
 	this.atmosphere = new Atmosphere(parameters);
@@ -63,9 +69,9 @@ function World(parameters) {
 		'ocean_coverage'		: this.hydrosphere.ocean_coverage,
 		'plant_coverage'		: this.biosphere.plant_coverage,
 		'mean_anomaly' 			: this.orbit.mean_anomaly,
-		'axial_tilt' 			: this.orbit.axial_tilt,
-		'angular_speed' 		: this.orbit.angular_speed,
-		'incident_radiation' 	: this.orbit.incident_radiation,
+		'axial_tilt' 			: this.spin.axial_tilt,
+		'angular_speed' 		: this.spin.angular_speed,
+		'incident_radiation' 	: {value: () => new Float32Raster(this.grid, 1361/4)},
 	});
 	this.biosphere.setDependencies({
 		'surface_temp'	: this.atmosphere.surface_temp,
@@ -84,7 +90,7 @@ function World(parameters) {
 			return;
 		};
 
-		this.orbit.invalidate();
+		// this.orbit.invalidate();
 		this.lithosphere.invalidate();
 		this.hydrosphere.invalidate();
 		this.atmosphere.invalidate();
@@ -93,17 +99,17 @@ function World(parameters) {
 		// NOTE: update all non-constant, non-spatial dependencies
 		this.atmosphere.setDependencies({
 			'mean_anomaly' 	: this.orbit.mean_anomaly,
-			'axial_tilt' 	: this.orbit.axial_tilt,
-			'angular_speed' : this.orbit.angular_speed,
+			'axial_tilt' 	: this.spin.axial_tilt,
+			'angular_speed' : this.spin.angular_speed,
 		});
 
-		this.orbit.calcChanges(timestep);
+		// this.orbit.calcChanges(timestep);
 		this.lithosphere.calcChanges(timestep);
 		this.hydrosphere.calcChanges(timestep);
 		this.atmosphere.calcChanges(timestep);
 		this.biosphere.calcChanges(timestep);
 
-		this.orbit.applyChanges(timestep);
+		// this.orbit.applyChanges(timestep);
 		this.lithosphere.applyChanges(timestep);
 		this.hydrosphere.applyChanges(timestep);
 		this.atmosphere.applyChanges(timestep);

@@ -101,8 +101,8 @@ JsonDeserializer.model = function (model_json, grid, options) {
 
 	var _model = new Model({
 		seed: 	model_json.seed,
-		world: 	JsonDeserializer.world(model_json.world, grid, options);
-		age: 	model_json.age;
+		world: 	JsonDeserializer.world(model_json.world, grid, options),
+		age: 	model_json.age,
 	});
 
 	var _random = new Random(model_json.seed);
