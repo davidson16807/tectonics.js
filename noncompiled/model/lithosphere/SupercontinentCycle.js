@@ -1,6 +1,6 @@
 'use strict';
 
-function SupercontinentCycle(world, parameters){
+function SupercontinentCycle(lithosphere, parameters){
 	parameters = parameters || {};
 
 	this.getRandomDuration = parameters['getRandomDuration'] ||
@@ -8,7 +8,7 @@ function SupercontinentCycle(world, parameters){
 		// function() { return random.uniform(300, 500); };
 		// from wikipedia
 	
-	this.world = world;
+	this.lithosphere = lithosphere;
 	this.duration = parameters['duration'] || this.getRandomDuration();
 	this.age = parameters['age'] || this.duration;
 };
@@ -19,14 +19,14 @@ SupercontinentCycle.prototype.update = function(timestep) {
 	}
 };
 SupercontinentCycle.prototype.isEnding = function() {
-	//return this.world.plates.length <= 2;
+	//return this.lithosphere.plates.length <= 2;
 	return this.age >= this.duration;
 };
 SupercontinentCycle.prototype.restart = function() {
-	var world = this.world;
+	var lithosphere = this.lithosphere;
 
 	this.age = 0;
 	this.duration = this.getRandomDuration();
 
-	world.resetPlates();
+	lithosphere.resetPlates();
 }; 

@@ -506,12 +506,12 @@
 		dialogVue.$data.isLoadingSave = true;
 		$('.controls').hide();
 		$.getJSON( url, function( json ) {
-			BlockUpdate = false;
 			var results = JsonDeserializer.model(json, view.grid);
 			random = results.random;
 			model = results.model;
 			dialogVue.$data.isLoadingSave = false;
 			$('.controls').show();
+			BlockUpdate = false;
 		});
 	}
 	function loadFile (file) {
@@ -522,11 +522,11 @@
 	    //reader.onabort = function(e) {};
 	    //reader.onloadstart = function(e) {};
 	    reader.onload = function(e) {
-			BlockUpdate = false;
 			var json = JSON.parse(e.target.result);
 			var results = JsonDeserializer.model(json, view.grid);
 			random = results.random;
 			model = results.model;
+			BlockUpdate = false;
 	    }
 
 	    reader.readAsText(file);

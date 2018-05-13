@@ -5,6 +5,8 @@ function Model (parameters) {
 	this.seed 				= parameters.seed || 0;
 	this._world 			= void 0;
 	this._last_update_timestamp = 0;
+
+	this.world(parameters.world);
 }
 
 Model.prototype.world = function(world) {

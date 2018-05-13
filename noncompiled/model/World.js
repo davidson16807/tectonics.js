@@ -3,6 +3,8 @@
 
 
 function World(parameters) {
+	this.name = parameters.name;
+
 	this.grid = parameters['grid'] || stop('missing parameter: "grid"');
 
 	this.material_viscosity = parameters['material_viscosity'] || {
@@ -39,10 +41,12 @@ function World(parameters) {
 	this.age = parameters['age'] || 0; // megayears
 
 	this.orbit = new Orbit({
+		// TODO: set these using parameters
 		semi_major_axis: OrbitalMechanics.ASTRONOMICAL_UNIT, 
 		mean_anomaly: 0,
 	});
 	this.spin = new Spin({
+		// TODO: set these using parameters
 		axial_tilt: Math.PI * 23.5/180,
 	});
 	this.lithosphere = new Lithosphere(parameters);

@@ -6,9 +6,9 @@ function Plate(parameters)
 	var grid = parameters['grid'] || stop('missing parameter: "grid"');
 
 	this.crust = parameters['crust'] || new Crust({grid: grid});
-	var material_density = parameters['material_density'] || stop('missing parameter: "material_density"');
-	var material_viscosity = parameters['material_viscosity'] || stop('missing parameter: "material_viscosity"');
-	var surface_gravity = parameters['surface_gravity'] || stop('missing parameter: "surface_gravity"');
+	var material_density = parameters['material_density'] || parameters['world'].material_density;
+	var material_viscosity = parameters['material_viscosity'] || parameters['world'].material_viscosity;
+	var surface_gravity = parameters['surface_gravity'] || parameters['world'].surface_gravity;
 
 	var self = this; 
 	// The following are fields that are derived from other fields:
@@ -67,7 +67,7 @@ function Plate(parameters)
 		this.center_of_mass.invalidate();
 	}
 	
-	this.move = function(timestep, material_density, material_viscosity, surface_gravity){
+	this.move = function(timestep){
 		var world = this.world;
 
 		var rotation_matrix = LithosphereModeling.get_plate_rotation_matrix(this.velocity.value(), this.center_of_mass.value(), timestep);

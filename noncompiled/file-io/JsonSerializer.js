@@ -21,10 +21,11 @@ JsonSerializer.model = function (model, options) {
 JsonSerializer.world = function (world, options) {
 	options = options || {};
 
-	var supercontinentCycle = world.supercontinentCycle;
+	var supercontinentCycle = world.lithosphere.supercontinentCycle;
 
 	var world_json = {
 		name: world.name,
+		sealevel: world.hydrosphere.sealevel.value(),
 		plates: [],
 		grid: undefined,
 		supercontinentCycle: {
@@ -33,8 +34,9 @@ JsonSerializer.world = function (world, options) {
 		},
 	};
 
-	for (var i = 0, li = world.plates.length; i < li; i++) {
-		var plate = world.plates[i];
+	var plates = world.lithosphere.plates;
+	for (var i = 0, li = plates.length; i < li; i++) {
+		var plate = plates[i];
 		var plate_json = JsonSerializer.plate(plate, options);
 		world_json.plates.push(plate_json);
 	};
@@ -45,14 +47,10 @@ JsonSerializer.plate = function (plate, options) {
 	
 	// serialize non-field values to json
 	var plate_json = {
-		eulerPole: 				plate.eulerPole,
-		angularSpeed: 			plate.angularSpeed,
+		mask: Base64.encode(plate.mask.buffer),
+		crust: Base64.encode(plate.crust.buffer),
 		local_to_global_matrix: Base64.encode(plate.local_to_global_matrix.buffer),
 	};
-
-	// encode in base64
-	plate_json.mask = Base64.encode(plate.mask.buffer);
-	plate_json.crust = Base64.encode(plate.crust.buffer);
 
 	return plate_json;
 }
@@ -62,9 +60,8 @@ JsonDeserializer.plate = function (plate_json, world, options) {
 	options = options || {};
 
 	var plate = new Plate({
+		grid: world.grid,
 		world: world,
-		angularSpeed: plate_json.angularSpeed,
-		eulerPole: plate_json.eulerPole,
 		local_to_global_matrix: new Float32Array(Base64.decode(plate_json.local_to_global_matrix)),
 		mask: Uint8Raster.FromBuffer(Base64.decode(plate_json.mask), world.grid),
 		crust: new Crust({
@@ -80,19 +77,14 @@ JsonDeserializer.world = function (world_json, grid, options) {
 
 	var world = new World(
 	{
-		name: name,
+		name: world_json.name,
+		sealevel: world_json.sealevel,
 		grid: grid,
 		supercontinentCycle: undefined,
-		plates: [],
 	});
 
-	for (var i = 0; i < world_json.plates.length; i++) {
-		var plate_json = world_json.plates[i];
-		var plate = JsonDeserializer.plate(plate_json, world, options);
-		world.plates.push(plate);
-	};
-
-	world.supercontinentCycle = new SupercontinentCycle(world, world_json.supercontinentCycle);
+	world.lithosphere.plates = world_json.plates.map(plate_json => JsonDeserializer.plate(plate_json, world, options))
+	world.lithosphere.supercontinentCycle = new SupercontinentCycle(world.lithosphere, world_json.supercontinentCycle);
 
 	return world;
 }
