@@ -398,15 +398,20 @@
 		vectorDisplays.disabled, 
 		vertexShaders['orthographic']
 	);
-	var model = new Model();
-	model.MegaYearPerSecond = start_speed;
+	var model = new Model({
+		seed: seed,
+		MegaYearPerSecond: start_speed
+	});
 
 	(function(){
 		var world = void 0;
 		if (querystring['load']) {
 			loadUrl(querystring['load']);
 		} else {
-			world = new World({ grid: view.grid });
+			world = new World({ 
+				name: seed,
+				grid: view.grid 
+			});
 			WorldGenerator.generate(world, 
 				EliasHeightMapGenerator.generate(world.grid), 
 				WorldGenerator.modern_earth_hypsography, 
@@ -502,11 +507,8 @@
 		$.getJSON( url, function( json ) {
 			BlockUpdate = false;
 			var results = JsonDeserializer.model(json, view.grid);
-			world = results.model._world;
-			seed = results.seed;
 			random = results.random;
-			model.age = results.model.age;
-			model.world(world);
+			model = results.model;
 			dialogVue.$data.isLoadingSave = false;
 			$('.controls').show();
 		});
@@ -522,11 +524,8 @@
 			BlockUpdate = false;
 			var json = JSON.parse(e.target.result);
 			var results = JsonDeserializer.model(json, view.grid);
-			world = results.model._world;
-			seed = results.seed;
 			random = results.random;
-			model.age = results.model.age;
-			model.world(world);
+			model = results.model;
 	    }
 
 	    reader.readAsText(file);

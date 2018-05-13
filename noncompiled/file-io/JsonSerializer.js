@@ -1,15 +1,14 @@
 var JsonSerializer 	= {};
 JsonSerializer.model = function (model, options) {
 	options = options || {};
-	var _seed = options['seed'] || '';
-	var _random = options['random'] || new Random(parseSeed(_seed));
+	var _random = options['random'] || new Random(model.seed);
 
-	var world_json = JsonSerializer.world(model._world, options);
+	var world_json = JsonSerializer.world(model.world(), options);
 
 	var model_json = {
 		version: '2.0',
+	    seed: model.seed,
 		random: {
-		    seed: _seed,
 			mt: _random.mt,
 			mti: _random.mti
 		},
@@ -25,6 +24,7 @@ JsonSerializer.world = function (world, options) {
 	var supercontinentCycle = world.supercontinentCycle;
 
 	var world_json = {
+		name: world.name,
 		plates: [],
 		grid: undefined,
 		supercontinentCycle: {
@@ -78,8 +78,9 @@ JsonDeserializer.plate = function (plate_json, world, options) {
 JsonDeserializer.world = function (world_json, grid, options) {
 	options = options || {};
 
-	var _world = new World(
+	var world = new World(
 	{
+		name: name,
 		grid: grid,
 		supercontinentCycle: undefined,
 		plates: [],
@@ -87,28 +88,28 @@ JsonDeserializer.world = function (world_json, grid, options) {
 
 	for (var i = 0; i < world_json.plates.length; i++) {
 		var plate_json = world_json.plates[i];
-		var plate = JsonDeserializer.plate(plate_json, _world, options);
-		_world.plates.push(plate);
+		var plate = JsonDeserializer.plate(plate_json, world, options);
+		world.plates.push(plate);
 	};
 
-	_world.supercontinentCycle = new SupercontinentCycle(_world, world_json.supercontinentCycle);
+	world.supercontinentCycle = new SupercontinentCycle(world, world_json.supercontinentCycle);
 
-	return _world;
+	return world;
 }
 JsonDeserializer.model = function (model_json, grid, options) {
 	options = options || {};
 
-	var _model = new Model();
-	_model._world = JsonDeserializer.world(model_json.world, grid, options);
-	_model.age = model_json.age;
+	var _model = new Model({
+		seed: 	model_json.seed,
+		world: 	JsonDeserializer.world(model_json.world, grid, options);
+		age: 	model_json.age;
+	});
 
-	var _seed = model_json.random.seed;
-	var _random = new Random(parseSeed(seed));
+	var _random = new Random(model_json.seed);
 	_random.mt  = model_json.random.mt;
 	_random.mti  = model_json.random.mti;
 	return {
 		model: _model,
-		seed: _seed,
 		random: _random
 	};
 }

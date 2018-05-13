@@ -1,8 +1,9 @@
-function Model () {
-	this.paused = false;
-	this.MegaYearPerSecond = 5;
-	this.age = 0;
-	this._world = void 0;
+function Model (parameters) {
+	this.paused 			= parameters.paused || false;
+	this.MegaYearPerSecond 	= parameters.MegaYearPerSecond || 5;
+	this.age 				= parameters.age || 0;
+	this.seed 				= parameters.seed || 0;
+	this._world 			= void 0;
 	this._last_update_timestamp = 0;
 }
 
