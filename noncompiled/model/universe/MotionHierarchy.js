@@ -61,4 +61,16 @@ function MotionHierarchy(parameters) {
 		}
 		return map;
 	}
+	// gets a list of all nodes at or below this one in the hierarchy
+	this.descendants = function () {
+		return [this, ...this.children.map(child => child.descendants())];
+	}
+
+	this.calcChanges = function(timestep) {
+		this.motion.calcChanges(timestep);
+	};
+
+	this.applyChanges = function(timestep) {
+		this.motion.applyChanges(timestep);
+	};
 }
