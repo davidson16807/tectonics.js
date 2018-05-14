@@ -6,8 +6,16 @@
 var OrbitalMechanics = (function() {
 	var OrbitalMechanics = {};
 
+
+	OrbitalMechanics.get_period = function(semi_major_axis, effective_parent_mass) {
+		// TODO: move this logic to OrbitalMechanics
+		var a = semi_major_axis;
+		var GM = effective_parent_mass * OrbitalMechanics.GRAVITATIONAL_CONSTANT;
+		var π = Math.PI;
+		return 2*π * Math.sqrt( a*a*a / GM );
+	}
 	// gets the rotation matrix necessary to convert geocentric equatorial coordinates to geocentric ecliptic coordinates
-	OrbitalMechanics.get_equatorial_to_ecliptic_matrix = function(
+	OrbitalMechanics.get_spin_matrix4x4 = function(
 			//rotation about axis, in radians
 			rotation_angle, 
 			//tilt of the planet's axis, in radians
@@ -16,17 +24,17 @@ var OrbitalMechanics = (function() {
 			precession_angle
 	) {
 		var precession_angle  = precession_angle || 0;
-		var rotation_matrix   = Matrix.RotationAboutAxis(0,1,0, rotation_angle);
-		var tilt_matrix 	  = Matrix.RotationAboutAxis(1,0,0, axial_tilt);
-		var precession_matrix = Matrix.RotationAboutAxis(0,1,0, precession_angle);
-		var conversion_matrix = Matrix.mult_matrix (tilt_matrix, 		rotation_matrix);
-		var conversion_matrix = Matrix.mult_matrix (conversion_matrix, 	precession_matrix);
+		var rotation_matrix   = Matrix4x4.from_rotation	(0,1,0, rotation_angle);
+		var tilt_matrix 	  = Matrix4x4.from_rotation	(1,0,0, axial_tilt);
+		var precession_matrix = Matrix4x4.from_rotation	(0,1,0, precession_angle);
+		var conversion_matrix = Matrix4x4.mult_matrix 	(tilt_matrix, 		rotation_matrix);
+		var conversion_matrix = Matrix4x4.mult_matrix 	(precession_matrix, conversion_matrix);
 		return conversion_matrix;
 	}
 
 	// gets the cartesian coordinates necessary to convert geocentric ecliptic coordinates to heliocentric ecliptic coordinates
 	// NOTE: for help understanding parameters to this function, go here: https://orbitalmechanics.info/
-	OrbitalMechanics.get_self_centric_to_parent_centric_offset = function(
+	OrbitalMechanics.get_orbit_matrix4x4 = function(
 			// the phase angle (in radians) that indicates the point in time within an object's revolution. It varies linearly with time.
 			mean_anomaly,
 			// the average between apoapsis and periapsis
@@ -47,25 +55,22 @@ var OrbitalMechanics = (function() {
 		var a = semi_major_axis;
 		var M = mean_anomaly;
 
-		var ω_rotation_matrix = Matrix.RotationAboutAxis(0,1,0, ω);
-		var i_rotation_matrix = Matrix.RotationAboutAxis(1,0,0, i);
-		var Ω_rotation_matrix = Matrix.RotationAboutAxis(0,1,0, Ω);
+		var E = solve_eccentric_anomaly(M, e, 5);
+		var ecliptic_coordinates = get_2d_ecliptic_coordinates(E, a, e);
+		var translation_matrix = Matrix4x4.from_translation( ecliptic_coordinates.x, 0, ecliptic_coordinates.y );
+		var ω_rotation_matrix = Matrix4x4.from_rotation(0,1,0, ω);
+		var i_rotation_matrix = Matrix4x4.from_rotation(1,0,0, i);
+		var Ω_rotation_matrix = Matrix4x4.from_rotation(0,1,0, Ω);
 
 		var conversion_matrix;
-		conversion_matrix = Matrix.mult_matrix(i_rotation_matrix, ω_rotation_matrix);
-		conversion_matrix = Matrix.mult_matrix(conversion_matrix, Ω_rotation_matrix);
+		conversion_matrix = Matrix4x4.mult_matrix(ω_rotation_matrix, translation_matrix);
+		conversion_matrix = Matrix4x4.mult_matrix(i_rotation_matrix, conversion_matrix);
+		conversion_matrix = Matrix4x4.mult_matrix(Ω_rotation_matrix, conversion_matrix);
 
-		var E = solve_eccentric_anomaly(M, e, 5);
-		var ecliptic_coordinates = get_ecliptic_coordinate_sample(E, a, e);
-		return Vector.mult_matrix(
-			ecliptic_coordinates.x,
-			ecliptic_coordinates.y,
-			ecliptic_coordinates.z,
-			conversion_matrix
-		);
+		return conversion_matrix;
 	}
 	// gets the parent-centric ecliptic cartesian coordinates sampled along an orbit
-	var get_ecliptic_coordinate_sample = function(
+	var get_2d_ecliptic_coordinates = function(
 			eccentric_anomaly,
 			semi_major_axis, 
 			eccentricity 
@@ -81,8 +86,7 @@ var OrbitalMechanics = (function() {
 		var sqrt = Math.sqrt;
 		return {
 			x: a*cos(E)-e,
-			y: 0,
-			z: a*sin(E)*sqrt(1-e*e)
+			y: a*sin(E)*sqrt(1-e*e)
 		};
 	}
 	var solve_eccentric_anomaly = function(mean_anomaly, eccentricity, iterations) {
@@ -99,11 +103,9 @@ var OrbitalMechanics = (function() {
 		return E;
 	}
 
-	OrbitalMechanics.ASTRONOMICAL_UNIT = 149597870700; // meters
+	OrbitalMechanics.GRAVITATIONAL_CONSTANT = 6.67408e10-8; // m3 T-1 s-2
 
-	// TODO: figure out where to put this between OrbitalMechanics and AtmosphereModeling
-	// maybe another namespace, like "Thermodynamics"? "PhysicsModeling"?
-	var STEPHAN_BOLTZMANN_CONSTANT = 5.670373e-11; // kW/m^2 per K^4
+	OrbitalMechanics.ASTRONOMICAL_UNIT = 149597870700; // meters
 
 	// TODO: figure out where to put above function
 	// maybe another namespace: "Heliosphere"? "StellarModeling" "Optics" ?
