@@ -13,34 +13,29 @@
 function Orbit(parameters) {
 	var self = this;
 
-	// public variables
-	// the phase angle (in radians) that indicates the state within an object's revolution. It varies linearly with time.
-	var mean_anomaly					= parameters['mean_anomaly'] 						|| 0.;
 	// the average between apoapsis and periapsis
-	var semi_major_axis					= parameters['semi_major_axis'] 					|| stop('missing parameter: "semi_major_axis"');
+	var semi_major_axis					= parameters['semi_major_axis'] 				|| stop('missing parameter: "semi_major_axis"');
 	// the shape of the orbit, where 0 is a circular orbit and >1 is a hyperbolic orbit
-	var eccentricity					= parameters['eccentricity'] 						|| 0.;
+	var eccentricity					= parameters['eccentricity'] 					|| 0.;
 	// the angle (in radians) between the orbital plane and the reference plane (the intersection being known as the "ascending node")
-	var inclination						= parameters['inclination'] 						|| 0.;
+	var inclination						= parameters['inclination'] 					|| 0.;
 	// the angle (in radians) between the ascending node and the periapsis
 	var argument_of_periapsis			= parameters['argument_of_periapsis'] 			|| 0.;
 	// the angle (in radians) between the prime meridian of the parent and the "ascending node" - the intersection between the orbital plane and the reference plane
-	var longitude_of_ascending_node		= parameters['longitude_of_ascending_node'] 		|| 0.;
+	var longitude_of_ascending_node		= parameters['longitude_of_ascending_node'] 	|| 0.;
 	// effective mass of the parent body
 	// We say it is "effective" because sometimes no parent body exists (i.e. barycenters)
 	// It is not typically included in textbooks amongst orbital parameters,
 	// but it allows us to make statements that concern timing: velocity, period, etc.
 	var effective_parent_mass  			= parameters['effective_parent_mass'] 			|| 0.;
 
-	this.is_cycle = true;
-
 	this.period = function(orbit) {
 		return OrbitalMechanics.get_period(orbit.semi_major_axis, orbit.effective_parent_mass);
 	}
 
 	// "position" returns the position vector that is represented by an orbit 
-	this.get_child_to_parent_matrix = function(orbit) {
-		return Orbit.get_orbit_matrix4x4(
+	this.get_child_to_parent_matrix = function(mean_anomaly) {
+		return OrbitalMechanics.get_orbit_matrix4x4(
 				mean_anomaly,
 				semi_major_axis, 
 				eccentricity, 
@@ -49,34 +44,16 @@ function Orbit(parameters) {
 				longitude_of_ascending_node
 			);
 	}
-	this.get_parent_to_child_matrix = function() {
-		return Matrix4x4.invert(this.get_child_to_parent_matrix());
+	this.get_parent_to_child_matrix = function(mean_anomaly) {
+		return Matrix4x4.invert(this.get_child_to_parent_matrix(mean_anomaly));
 	}
 
 	// private variables 
 	var mean_anomaly_refresh			  = 0.;
 
-	this.calcChanges = function(timestep) {
-		timestep *= Units.SECONDS_IN_MILLION_YEARS;
-		if (timestep === 0) {
-			return;
-		};
-		if (timestep/period > 1/10){
-			return;
-		}
+	this.iterate = function(mean_anomaly, timestep) {
 		var period = this.period();
-		mean_anomaly_refresh = (mean_anomaly + (timestep / period)) % period;
+		var TURN = 2*Math.PI;
+		return (mean_anomaly + TURN*(timestep / period)) % TURN;
 	};
-
-	this.applyChanges = function(timestep) {
-		timestep *= Units.SECONDS_IN_MILLION_YEARS;
-		if (timestep === 0) {
-			return;
-		};
-		if (timestep/period > 1/10){
-			return;
-		}
-		mean_anomaly = mean_anomaly_refresh;
-	};
-	
 }

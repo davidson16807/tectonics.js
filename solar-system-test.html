@@ -1,0 +1,193 @@
+<!doctype html>
+<html>
+<head>
+	<title>solar system test model</title>
+	<!--If using IE9 or lower, don't even bother - IE won't even parse three.js right-->
+	<!--[if lte IE 9]>
+		<meta http-equiv="refresh" content="0;url=ie.html" />
+	<![endif]-->
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+
+	<link rel="icon" type="text/css" href="blog/icon4.png">
+	<link rel="stylesheet" href="styles/bootstrap.min.css">
+	<link rel="stylesheet" href="styles/bootstrap.custom.css">
+	<link rel="stylesheet" href="styles/main.css"/>
+	<link rel="stylesheet" href="styles/modern.css"/>
+	<link rel="stylesheet" href="styles/app.css"/>
+
+	<script src="http://code.jquery.com/jquery.min.js"></script>
+	<script src="libraries/bootstrap.js"></script>
+	<script src="libraries/three.js/Three.js"></script>
+	<script src="libraries/three.js/Detector.js"></script>
+	<script src="libraries/three.js/Stats.js"></script>
+	<script src="libraries/three.js/OrbitControls.js"></script>
+	<script src="libraries/three.js/BufferGeometryUtils.js"></script>
+	<script src="libraries/three.js/ConvexGeometry.js"></script>
+	<script src="libraries/threex/THREEx.screenshot.js"></script>
+	<script src="libraries/threex/THREEx.FullScreen.js"></script>
+	<script src="libraries/threex/THREEx.WindowResize.js"></script>
+	<script src="libraries/threex/THREEx.Debug.js"></script>
+	<script src="libraries/random-0.26.js"></script>
+	<script src="postcompiled/utils/Rasters.js"></script>
+	<script src="noncompiled/utils/Units.js"></script>
+	<script src="noncompiled/academics/OrbitalMechanics.js"></script>
+	<script src="noncompiled/model/universe/Orbit.js"></script>
+	<script src="noncompiled/model/universe/Spin.js"></script>
+	<script src="noncompiled/model/universe/System.js"></script>
+	<script src="noncompiled/name-gen/NameGenerator.js"></script>
+	<script src="noncompiled/name-gen/NameCorpii.js"></script>
+</head>
+<body>
+<!-- three.js container -->
+<div id="container"></div>
+<script type="x-shader/x-vertex" id="particle-vertex-shader">
+	varying vec3 vPosition;
+	attribute float mass;
+    const float earth_mass = 1e24; //kg
+
+	//USER_INPUT_GOES_HERE
+
+	void main() {
+		vPosition = position;
+		gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.);
+		gl_PointSize = 8. * mass / earth_mass;
+	}
+</script>
+<script type="x-shader/x-fragment" id="particle-fragment-shader">
+    const float PI = 3.1415926;
+
+    varying vec3 vPosition;
+
+    //USER_INPUT_GOES_HERE
+
+    void main() {
+        gl_FragColor = vec4(1,1,1,1);
+    }
+</script> 
+<!-- logo -->
+<script type="text/javascript">
+	'use strict';
+	
+	var scene, renderer, composer, clock;
+	var camera, cameraControl;
+	var renderStats;
+
+	var bodies = {
+		sun: 	{ name: 'sun' 	},
+		earth: 	{ name: 'earth' },
+		moon: 	{ name: 'moon' 	},
+	};
+	var solar_system = new System({
+		name: 'Solar System',
+		motion: new Orbit({ semi_major_axis: 2.35e20 }),
+		body: bodies['sun'],
+		children: [
+			new System({
+				name: 'Earth-Moon System',
+				motion: new Orbit({
+					semi_major_axis: 1.*OrbitalMechanics.ASTRONOMICAL_UNIT,
+					eccentricity: 0.0167,
+					inclination: Math.PI * 5e-5/180,
+					// mean_anomaly: Math.PI * 131/180,
+				}),	
+				children: [
+					new System({
+						name: 'Earth',
+						motion: new Spin({ 
+							angular_speed: 2*Math.PI/(60*60*24),
+							axial_tilt: Math.PI * 23.5/180,
+						}),	
+						body: bodies['earth'],
+					}),
+				],
+			}),
+		]
+	});
+	var solar_system_descendants = solar_system.descendants()
+	i=0; solar_system_descendants[i].get_body_matrices({})
+	i=1; solar_system_descendants[i].get_body_matrices({})
+	i=2; solar_system_descendants[i].get_body_matrices({})
+
+
+	if( Detector.webgl ){
+		init();
+		animate();
+		update();
+	} 
+
+	// init the scene
+	function init(){
+		renderer = new THREE.WebGLRenderer({
+			antialias		: true,	// to get smoother output
+			preserveDrawingBuffer	: true	// to allow screenshot
+		});
+		renderer.setClearColor( 0x000000, 1 );
+		renderer.setSize( window.innerWidth, window.innerHeight );
+		$('#container').append(renderer.domElement);
+
+		
+		if(!IsProd){
+			// add Stats.js - https://github.com/mrdoob/renderStats.js
+			renderStats = new Stats();
+			$('#renderStats').append( renderStats.domElement );
+
+			updateStats = new Stats();
+			$('#updateStats').append( updateStats.domElement );
+
+			$('.header').hide();
+		}
+
+		// create a camera contol
+		controls	= new THREE.OrbitControls( view.camera, $("#container").get(0) );
+
+		// transparently support window resize
+		THREEx.WindowResize.bind(renderer, view.camera);
+	}
+
+	// animation loop
+	function animate() {
+		// push to render queue and loop
+		// - it has to be at the begining of the function
+		// - to learn more: https://www.youtube.com/watch?v=8aGhZQkoFbQ
+		requestAnimationFrame( animate );
+
+		// update camera controls
+		controls.update();
+
+		// actually render the scene
+		renderer.render( view.scene, view.camera );
+
+		if(!IsProd){
+			renderStats.update();
+		}
+	}
+
+	function update(){
+		// push to task queue and loop
+		// - it has to be at the begining of the function
+		//maximum refresh rate of 20fps
+		setTimeout(update, IsProd? 1000/20 : 0);
+
+		if (BlockUpdate) {
+			return;
+		};
+		
+		model.update();
+		view.cellUpdate(model.world()); 
+
+		if (autosave_period) {
+			if (model.age >= (autosave_timestamp + autosave_period)) {
+				saveVue.save();
+				autosave_timestamp = autosave_timestamp + autosave_period;
+			}
+		}
+
+		if(!IsProd){
+			updateStats.update();
+		}
+	}
+
+</script>
+</body>
+</html>
