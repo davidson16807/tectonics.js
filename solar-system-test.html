@@ -51,7 +51,7 @@
 	void main() {
 		vPosition = position;
 		gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.);
-		gl_PointSize = 8. * mass / earth_mass;
+		gl_PointSize = 8.;
 	}
 </script>
 <script type="x-shader/x-fragment" id="particle-fragment-shader">
@@ -70,7 +70,7 @@
 	'use strict';
 	
 	var scene, renderer, composer, clock;
-	var camera, cameraControl;
+	var camera, controls;
 	var renderStats;
 
 	var bodies = {
@@ -84,16 +84,35 @@
 		body: bodies['sun'],
 		children: [
 			new System({
-				name: 'Earth-Moon System',
+				name: 'Earth Orbit',
 				motion: new Orbit({
 					semi_major_axis: 1.*OrbitalMechanics.ASTRONOMICAL_UNIT,
 					eccentricity: 0.0167,
 					inclination: Math.PI * 5e-5/180,
-					// mean_anomaly: Math.PI * 131/180,
 				}),	
 				children: [
+
 					new System({
-						name: 'Earth',
+						name: 'Moon Orbit',
+						motion: new Orbit({
+							semi_major_axis: 384e6,
+							eccentricity: 0.0554,
+							inclination: Math.PI * 5.16/180,
+						}),	
+						children: [
+							new System({
+								name: 'Moon Spin',
+								motion: new Spin({ 
+									angular_speed: 2*Math.PI/(60*60*24*27.3),
+									axial_tilt: 0,
+								}),	
+								body: bodies['moon'],
+							}),
+						],
+					}),
+
+					new System({
+						name: 'Earth Spin',
 						motion: new Spin({ 
 							angular_speed: 2*Math.PI/(60*60*24),
 							axial_tilt: Math.PI * 23.5/180,
@@ -104,11 +123,30 @@
 			}),
 		]
 	});
-	var solar_system_descendants = solar_system.descendants()
-	i=0; solar_system_descendants[i].get_body_matrices({})
-	i=1; solar_system_descendants[i].get_body_matrices({})
-	i=2; solar_system_descendants[i].get_body_matrices({})
 
+
+	var particleGeometry	= new THREE.Geometry();
+    var particleShader = new THREE.ShaderMaterial({
+        vertexShader: $('#particle-vertex-shader').text(),
+        fragmentShader: $('#particle-fragment-shader').text(),
+        attributes: {
+        	charge:{
+        		type: 'f',
+        		value: []
+        	}
+        },
+        uniforms: {}
+    });
+
+	var solar_system_descendants = solar_system.descendants()
+	var body_matrix_map = solar_system_descendants[2].get_body_matrices({
+		'Moon Orbit': Math.PI/10,
+		'Earth Oribt': 0,
+	})
+	for (var id in body_matrix_map) {
+		particleGeometry.vertices.push( new THREE.Vector3( ...Matrix4x4.get_translation(body_matrix_map[id]) ) );
+	}
+	var particleSystem = new THREE.ParticleSystem(particleGeometry, particleShader);
 
 	if( Detector.webgl ){
 		init();
@@ -118,31 +156,48 @@
 
 	// init the scene
 	function init(){
-		renderer = new THREE.WebGLRenderer({
-			antialias		: true,	// to get smoother output
-			preserveDrawingBuffer	: true	// to allow screenshot
-		});
-		renderer.setClearColor( 0x000000, 1 );
-		renderer.setSize( window.innerWidth, window.innerHeight );
-		$('#container').append(renderer.domElement);
+		clock = new THREE.Clock();
 
-		
-		if(!IsProd){
-			// add Stats.js - https://github.com/mrdoob/renderStats.js
-			renderStats = new Stats();
-			$('#renderStats').append( renderStats.domElement );
-
-			updateStats = new Stats();
-			$('#updateStats').append( updateStats.domElement );
-
-			$('.header').hide();
+		if( Detector.webgl ){
+			renderer = new THREE.WebGLRenderer({
+				antialias		: true,	// to get smoother output
+				preserveDrawingBuffer	: true	// to allow screenshot
+			});
+			renderer.setClearColor( 0x000000 );
+		}else{
+			Detector.addGetWebGLMessage();
+			return true;
 		}
+		var container = $("#container").get(0);
+		renderer.setSize( window.innerWidth, window.innerHeight );
+		$("#container").get(0).appendChild(renderer.domElement);
+
+		renderStats = new Stats();
+		$('#renderStats').append( renderStats.domElement );
+
+		// create a scene
+		scene = new THREE.Scene();
+
+		// put a camera in the scene
+		camera	= new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.01, 1e15 );
+		camera.position.set(0, 0, 20);
+		scene.add(camera);
 
 		// create a camera contol
-		controls	= new THREE.OrbitControls( view.camera, $("#container").get(0) );
-
+		controls	= new THREE.OrbitControls( camera, $("#container").get(0) );
+		controls.noPan = false;
+		
 		// transparently support window resize
-		THREEx.WindowResize.bind(renderer, view.camera);
+		THREEx.WindowResize.bind(renderer, camera);
+		// allow 'p' to make screenshot
+		// THREEx.Screenshot.bindKey(renderer);
+
+		// here you add your objects
+		// - you will most likely replace this part by your own
+		var light	= new THREE.AmbientLight(  0xffffff );
+		scene.add( light );
+		scene.add( particleSystem );
+		// scene.add( vectorField );
 	}
 
 	// animation loop
@@ -156,36 +211,16 @@
 		controls.update();
 
 		// actually render the scene
-		renderer.render( view.scene, view.camera );
+		renderer.render( scene, camera );
 
-		if(!IsProd){
-			renderStats.update();
-		}
+		renderStats.update();
 	}
 
 	function update(){
-		// push to task queue and loop
-		// - it has to be at the begining of the function
-		//maximum refresh rate of 20fps
-		setTimeout(update, IsProd? 1000/20 : 0);
-
-		if (BlockUpdate) {
-			return;
-		};
 		
-		model.update();
-		view.cellUpdate(model.world()); 
+		//model.update();
+		//view.cellUpdate(model.world()); 
 
-		if (autosave_period) {
-			if (model.age >= (autosave_timestamp + autosave_period)) {
-				saveVue.save();
-				autosave_timestamp = autosave_timestamp + autosave_period;
-			}
-		}
-
-		if(!IsProd){
-			updateStats.update();
-		}
 	}
 
 </script>
