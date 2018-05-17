@@ -17,6 +17,7 @@
 	<link rel="stylesheet" href="styles/app.css"/>
 
 	<script src="http://code.jquery.com/jquery.min.js"></script>
+	<script src="https://unpkg.com/vue"></script>
 	<script src="libraries/bootstrap.js"></script>
 	<script src="libraries/three.js/Three.js"></script>
 	<script src="libraries/three.js/Detector.js"></script>
@@ -41,6 +42,19 @@
 <body>
 <!-- three.js container -->
 <div id="container"></div>
+
+<div class="topright controls" id="season-sliders" >
+    <div class="input-group season-group" v-for="(value, key) in state">
+        <span class="input-group-addon">
+        	{{key}}
+        </span>
+        <span class="form-control input-sm">
+            <input type="range" min="-1.57" max="1.57" step="0.01" 
+                v-model="value" v-on:input="setState"/>
+        </span>
+    </div>
+</div>
+
 <script type="x-shader/x-vertex" id="particle-vertex-shader">
 	varying vec3 vColor;
 	varying vec3 vPosition;
@@ -178,7 +192,10 @@
 		'Lunar Orbit': Math.PI/5,
 		'Earth Oribt': 0,
 	})
+	var body_index_map = {};
+	var i = 0;
 	for (var id in body_matrix_map) {
+		body_index_map[id] = i; i++;
 		particleGeometry.vertices.push( new THREE.Vector3( ...Matrix4x4.get_translation(body_matrix_map[id]) ) );
 		particleShader.attributes.color.value.push(new THREE.Color(bodies[id].color));
 		particleShader.attributes.radius.value.push(bodies[id].radius);
@@ -261,6 +278,28 @@
 
 	}
 
+    const seasonVue = new Vue({
+        el: '#season-sliders',
+        data:{
+        	state:{
+        		'Solar System': 0,
+				'Earth Orbit': 	0,
+				'Lunar Orbit': 	0,
+				'Lunar Spin': 	0,
+				'Earth Spin': 	0,
+				'Martian Orbit':0,
+				'Martian Day': 	0,
+        	}
+        },
+        methods: {
+            setState(){
+				var body_matrix_map = solar_system_descendants['Earth Orbit'].get_body_matrices(this.state);
+				for (var id in body_matrix_map) {
+					particleGeometry.vertices[body_index_map[id]] = new THREE.Vector3( ...Matrix4x4.get_translation(body_matrix_map[id]) );
+				}
+            },
+        }
+    });
 </script>
 </body>
 </html>
