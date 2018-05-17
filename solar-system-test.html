@@ -42,27 +42,31 @@
 <!-- three.js container -->
 <div id="container"></div>
 <script type="x-shader/x-vertex" id="particle-vertex-shader">
+	varying vec3 vColor;
 	varying vec3 vPosition;
-	attribute float mass;
-    const float earth_mass = 1e24; //kg
+	attribute float radius;
+	attribute vec3 color;
+    const float sun_radius = 695e6; //meters
 
 	//USER_INPUT_GOES_HERE
 
 	void main() {
 		vPosition = position;
+		vColor = color;
 		gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.);
-		gl_PointSize = 8.;
+		gl_PointSize = 10. * log(radius)/log(sun_radius);
 	}
 </script>
 <script type="x-shader/x-fragment" id="particle-fragment-shader">
     const float PI = 3.1415926;
 
     varying vec3 vPosition;
+    varying vec3 vColor;
 
     //USER_INPUT_GOES_HERE
 
     void main() {
-        gl_FragColor = vec4(1,1,1,1);
+        gl_FragColor = vec4(vColor,1);
     }
 </script> 
 <!-- logo -->
@@ -74,13 +78,17 @@
 	var renderStats;
 
 	var bodies = {
-		sun: 	{ name: 'sun' 	},
-		earth: 	{ name: 'earth' },
-		moon: 	{ name: 'moon' 	},
+		sun: 	{ name: 'sun',		color: 'yellow',	radius: 695e6, },
+		earth: 	{ name: 'earth',	color: 'blue',	 	radius: 6.3e6, },
+		moon: 	{ name: 'moon',		color: 'white',	 	radius: 1.7e6, },
+		mars: 	{ name: 'mars',		color: 'red',	 	radius: 3.4e6, },
 	};
 	var solar_system = new System({
 		name: 'Solar System',
-		motion: new Orbit({ semi_major_axis: 2.35e20 }),
+		motion: new Orbit({ 
+			semi_major_axis: 2.35e20,
+			effective_parent_mass: 1.22e53, // tons,  back calculated to achieve period of 250 million years
+		}),
 		body: bodies['sun'],
 		children: [
 			new System({
@@ -89,19 +97,21 @@
 					semi_major_axis: 1.*OrbitalMechanics.ASTRONOMICAL_UNIT,
 					eccentricity: 0.0167,
 					inclination: Math.PI * 5e-5/180,
+					effective_parent_mass: 2e27, // tons
 				}),	
 				children: [
 
 					new System({
-						name: 'Moon Orbit',
+						name: 'Lunar Orbit',
 						motion: new Orbit({
 							semi_major_axis: 384e6,
 							eccentricity: 0.0554,
 							inclination: Math.PI * 5.16/180,
+							effective_parent_mass: 5.79e21, // tons
 						}),	
 						children: [
 							new System({
-								name: 'Moon Spin',
+								name: 'Lunar Spin',
 								motion: new Spin({ 
 									angular_speed: 2*Math.PI/(60*60*24*27.3),
 									axial_tilt: 0,
@@ -121,6 +131,25 @@
 					}),
 				],
 			}),
+			new System({
+				name: 'Martian Orbit',
+				motion: new Orbit({
+					semi_major_axis: 1.52*OrbitalMechanics.ASTRONOMICAL_UNIT,
+					eccentricity: 0.093,
+					inclination: Math.PI * 1.85/180,
+					effective_parent_mass: 2e27, // kg
+				}),	
+				children: [
+					new System({
+						name: 'Martian Day',
+						motion: new Spin({ 
+							angular_speed: 2*Math.PI/(60*60*24.6),
+							axial_tilt: Math.PI * 25.19/180,
+						}),	
+						body: bodies['mars'],
+					}),
+				],
+			}),
 		]
 	});
 
@@ -130,21 +159,29 @@
         vertexShader: $('#particle-vertex-shader').text(),
         fragmentShader: $('#particle-fragment-shader').text(),
         attributes: {
-        	charge:{
+        	radius:{
         		type: 'f',
         		value: []
-        	}
+        	},
+        	color:{
+        		type: 'c',
+        		value: []
+        	},
         },
-        uniforms: {}
+        uniforms: {},
     });
 
-	var solar_system_descendants = solar_system.descendants()
-	var body_matrix_map = solar_system_descendants[2].get_body_matrices({
-		'Moon Orbit': Math.PI/10,
+	var solar_system_descendants = solar_system
+			.descendants()
+			.reduce((acc, x) => { acc[x.name] = x; return acc; }, {} )
+	var body_matrix_map = solar_system_descendants['Earth Orbit'].get_body_matrices({
+		'Lunar Orbit': Math.PI/5,
 		'Earth Oribt': 0,
 	})
 	for (var id in body_matrix_map) {
 		particleGeometry.vertices.push( new THREE.Vector3( ...Matrix4x4.get_translation(body_matrix_map[id]) ) );
+		particleShader.attributes.color.value.push(new THREE.Color(bodies[id].color));
+		particleShader.attributes.radius.value.push(bodies[id].radius);
 	}
 	var particleSystem = new THREE.ParticleSystem(particleGeometry, particleShader);
 
@@ -186,6 +223,7 @@
 		// create a camera contol
 		controls	= new THREE.OrbitControls( camera, $("#container").get(0) );
 		controls.noPan = false;
+		controls.zoomSpeed = 5.0;
 		
 		// transparently support window resize
 		THREEx.WindowResize.bind(renderer, camera);
