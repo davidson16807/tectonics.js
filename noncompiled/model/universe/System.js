@@ -62,7 +62,7 @@ function System(parameters) {
 		origin = origin || this;
 		var parent 	 = this.parent;
 		var children = this.children;
-		var system_config = parseFloat(config[this.name] || 0);
+		var system_config = (config[this.name] || 0);
 
 		var map = {};
 		if (parent !== void 0) {
@@ -78,7 +78,7 @@ function System(parameters) {
 			// NOTE: don't consider origin, or else an infinite recursive loop will result
 			if (children[i] !== origin) {
 				var child_map = children[i].get_body_matrices(config, this);
-				var child_config = parseFloat(config[children[i].name] || 0);
+				var child_config = (config[children[i].name] || 0);
 				for(var key in child_map){
 					map[key] = mult_matrix( children[i].motion.get_child_to_parent_matrix(child_config), child_map[key] )
 				}
@@ -94,12 +94,12 @@ function System(parameters) {
 		output = output || {};
 		fps = fps || 60;
 
-		for(id in config){
+		for(id in id_to_descendant_map){
 			if (id_to_descendant_map[id] === void 0) { continue; }
 			var period = id_to_descendant_map[id].motion.period();
 			if (timestep / period > 10/(fps) ) 			{ continue; }
 			if (timestep / period < 1/(fps*60*60*24)) 	{ continue; } 
-			output[id] = (config[id] + 2*Math.PI * (timestep / period)) % (2*Math.PI);
+			output[id] = ((config[id] || 0) + 2*Math.PI * (timestep / period)) % (2*Math.PI);
 		}
 
 		return output;
