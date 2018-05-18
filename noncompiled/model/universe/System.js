@@ -90,12 +90,15 @@ function System(parameters) {
 		return map;
 	}
 	//given a cycle configuration, "advance()" returns the cycle configuration that would occur after a given amount of time
-	this.advance = function(config, timestep, output) {
+	this.advance = function(config, timestep, output, fps) {
 		output = output || {};
+		fps = fps || 60;
 
 		for(id in config){
 			if (id_to_descendant_map[id] === void 0) { continue; }
 			var period = id_to_descendant_map[id].motion.period();
+			if (timestep / period > 10/(fps) ) 			{ continue; }
+			if (timestep / period < 1/(fps*60*60*24)) 	{ continue; } 
 			output[id] = (config[id] + 2*Math.PI * (timestep / period)) % (2*Math.PI);
 		}
 
