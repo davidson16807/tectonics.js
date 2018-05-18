@@ -49,7 +49,7 @@
         	{{key}}
         </span>
         <span class="form-control input-sm">
-            <input type="range" min="-1.57" max="1.57" step="0.01" 
+            <input type="range" min="-3.14" max="3.14" step="0.01" 
                 v-model="state[key]" v-on:input="setState"/>
         </span>
     </div>
@@ -193,7 +193,7 @@
 			.descendants()
 			.filter(x => x.body)
 			.reduce((acc, x) => { acc[x.body.name] = x; return acc; }, {} )
-	var body_matrix_map = solar_system_descendants['Earth Orbit'].get_body_matrices({
+	var body_matrix_map = solar_system_descendants['Earth Spin'].get_body_matrices({
 		'Lunar Orbit': Math.PI/5,
 		'Earth Oribt': 0,
 	})
@@ -299,10 +299,9 @@
         },
         methods: {
             setState(){
-				var body_matrix_map = solar_system_descendants['Earth Orbit'].get_body_matrices(this.state);
+				var body_matrix_map = solar_system_descendants['Earth Spin'].get_body_matrices(this.state);
 				for (var id in body_matrix_map) {
 					var v = Matrix4x4.get_translation(body_matrix_map[id]);
-					console.log(v)
 					particleGeometry.vertices[body_index_map[id]].x = v.x;
 					particleGeometry.vertices[body_index_map[id]].y = v.y;
 					particleGeometry.vertices[body_index_map[id]].z = v.z;
