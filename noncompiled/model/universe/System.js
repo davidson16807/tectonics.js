@@ -33,33 +33,37 @@ function System(parameters) {
 	// it may for instance describe a group of objects that are gravitationally bound
 	this.body		= parameters['body'];
 
+	var id_to_node_map = this
+		.descendants()
+		.reduce((acc, x) => { acc[x.name] = x; return acc; }, {} );
+
 	var mult_matrix = Matrix4x4.mult_matrix;
 
 	// returns a dictionary mapping body ids to transformation matrices
 	//  indicating the position/rotation relative to this node 
-	this.get_body_matrices = function (state, origin) {
+	this.get_body_matrices = function (config, origin) {
 		origin = origin || this;
 		var parent 	 = this.parent;
 		var children = this.children;
-		var system_state = parseFloat(state[this.name] || 0);
+		var system_config = parseFloat(config[this.name] || 0);
 
 		var map = {};
 		if (parent !== void 0) {
 			// NOTE: don't consider origin, or else an infinite recursive loop will result
 			if (parent !== origin) {
-				var parent_map = parent.get_body_matrices(state, this);
+				var parent_map = parent.get_body_matrices(config, this);
 				for(var key in parent_map){
-					map[key] = mult_matrix( this.motion.get_parent_to_child_matrix(system_state), parent_map[key] )
+					map[key] = mult_matrix( this.motion.get_parent_to_child_matrix(system_config), parent_map[key] )
 				}
 			}
 		}
 		for (var i = 0; i < children.length; i++) {
 			// NOTE: don't consider origin, or else an infinite recursive loop will result
 			if (children[i] !== origin) {
-				var child_map = children[i].get_body_matrices(state, this);
-				var child_state = parseFloat(state[children[i].name] || 0);
+				var child_map = children[i].get_body_matrices(config, this);
+				var child_config = parseFloat(config[children[i].name] || 0);
 				for(var key in child_map){
-					map[key] = mult_matrix( children[i].motion.get_child_to_parent_matrix(child_state), child_map[key] )
+					map[key] = mult_matrix( children[i].motion.get_child_to_parent_matrix(child_config), child_map[key] )
 				}
 			}
 		}
@@ -84,7 +88,25 @@ function System(parameters) {
 				.reduce((acc, e) => acc.concat(e), [])
 		];
 	}
-	this.iterate = function(state) {
-		// body...
+	//given a cycle configuration, "advance()" returns the cycle configuration that would occur after a given amount of time
+	this.advance = function(config, timestep, output) {
+		output = output || config;
+
+		for(id in config){
+			if (id_to_node_map[id] === void 0) { continue; }
+			var period = id_to_node_map[id].motion.period();
+			output[id] = (config[id] + 2*Math.PI * (timestep / period)) % (2*Math.PI);
+		}
+
+		return output;
+	}
+	// given a cycle configuration with undefined cycle states, 
+	// "sample()" generates list of cycle configurations that sample over each cycle with undefined states
+	// this is useful for finding, e.g. mean daily solar radiation
+	// the function will not generate more than a given number of samples per cycle
+	this.sample = function(config, samples_per_cycle) {
+		for(id in config){
+			
+		}
 	}
 }

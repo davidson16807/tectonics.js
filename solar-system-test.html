@@ -49,8 +49,8 @@
         	{{key}}
         </span>
         <span class="form-control input-sm">
-            <input type="range" min="-3.14" max="3.14" step="0.01" 
-                v-model="state[key]" v-on:input="setState"/>
+            <input type="range" min="0" max="6.28" step="0.01" 
+                v-model="state[key]" v-on:input="reset"/>
         </span>
     </div>
 </div>
@@ -93,9 +93,14 @@
 
 	var bodies = {
 		sun: 	{ name: 'sun',		color: 'yellow',	radius: 695e6, },
+		venus: 	{ name: 'earth',	color: 'paleyellow',radius: 6.1e6, },
 		earth: 	{ name: 'earth',	color: 'blue',	 	radius: 6.3e6, },
 		moon: 	{ name: 'moon',		color: 'white',	 	radius: 1.7e6, },
 		mars: 	{ name: 'mars',		color: 'red',	 	radius: 3.4e6, },
+		jupiter:{ name: 'jupiter',	color: 'orange',	radius:  71e6, },
+		saturn: { name: 'saturn',	color: 'lightgold',	radius:  60e6, },
+		uranus: { name: 'uranus',	color: 'lightgreen',radius:  25e6, },
+		neptune: { name: 'neptune',	color: 'lightblue',	radius:  24e6, },
 	};
 	var solar_system = new System({
 		name: 'Solar System',
@@ -155,7 +160,7 @@
 				}),	
 				children: [
 					new System({
-						name: 'Martian Day',
+						name: 'Martian Spin',
 						motion: new Spin({ 
 							angular_speed: 2*Math.PI/(60*60*24.6),
 							axial_tilt: Math.PI * 25.19/180,
@@ -193,10 +198,8 @@
 			.descendants()
 			.filter(x => x.body)
 			.reduce((acc, x) => { acc[x.body.name] = x; return acc; }, {} )
-	var body_matrix_map = solar_system_descendants['Earth Spin'].get_body_matrices({
-		'Lunar Orbit': Math.PI/5,
-		'Earth Oribt': 0,
-	})
+	var FOCUS = 'Earth Spin';
+	var body_matrix_map = solar_system_descendants[FOCUS].get_body_matrices({ })
 	var body_index_map = {};
 	var i = 0;
 	for (var id in body_matrix_map) {
@@ -212,7 +215,7 @@
 		init();
 		animate();
 		update();
-	} 
+	}
 
 	// init the scene
 	function init(){
@@ -240,7 +243,7 @@
 
 		// put a camera in the scene
 		camera	= new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.01, 1e15 );
-		camera.position.set(0, 0, 20);
+		camera.position.set(0, 0, 400e6);
 		scene.add(camera);
 
 		// create a camera contol
@@ -283,7 +286,7 @@
 		//view.cellUpdate(model.world()); 
 
 	}
-
+	var TIMESTEP = 1*60;
     const seasonVue = new Vue({
         el: '#season-sliders',
         data:{
@@ -297,9 +300,16 @@
 				'Martian Day': 	0,
         	}
         },
+        created: function() {
+            var _this = this;
+            setInterval(function() {
+            	solar_system.advance(_this.state, TIMESTEP, _this.state);
+            	_this.reset();
+            }, 1000/30);
+        },
         methods: {
-            setState(){
-				var body_matrix_map = solar_system_descendants['Earth Spin'].get_body_matrices(this.state);
+            reset(){
+				var body_matrix_map = solar_system_descendants[FOCUS].get_body_matrices(this.state);
 				for (var id in body_matrix_map) {
 					var v = Matrix4x4.get_translation(body_matrix_map[id]);
 					particleGeometry.vertices[body_index_map[id]].x = v.x;

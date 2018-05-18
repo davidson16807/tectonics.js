@@ -29,8 +29,8 @@ function Orbit(parameters) {
 	// but it allows us to make statements that concern timing: velocity, period, etc.
 	var effective_parent_mass  			= parameters['effective_parent_mass'] 			|| 0.;
 
-	this.period = function(orbit) {
-		return OrbitalMechanics.get_period(orbit.semi_major_axis, orbit.effective_parent_mass);
+	this.period = function() {
+		return OrbitalMechanics.get_period(semi_major_axis, effective_parent_mass);
 	}
 
 	// "position" returns the position vector that is represented by an orbit 
