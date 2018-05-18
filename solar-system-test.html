@@ -106,7 +106,7 @@
 		name: 'Solar System',
 		motion: new Orbit({ 
 			semi_major_axis: 2.35e20,
-			effective_parent_mass: 1.22e53, // tons,  back calculated to achieve period of 250 million years
+			effective_parent_mass: 1.22e56, // kg,  back calculated to achieve period of 250 million years
 		}),
 		body: bodies['sun'],
 		children: [
@@ -116,7 +116,7 @@
 					semi_major_axis: 1.*OrbitalMechanics.ASTRONOMICAL_UNIT,
 					eccentricity: 0.0167,
 					inclination: Math.PI * 5e-5/180,
-					effective_parent_mass: 2e27, // tons
+					effective_parent_mass: 2e30, // kg
 				}),	
 				children: [
 
@@ -126,7 +126,7 @@
 							semi_major_axis: 384e6,
 							eccentricity: 0.0554,
 							inclination: Math.PI * 5.16/180,
-							effective_parent_mass: 5.79e21, // tons
+							effective_parent_mass: 5.79e24, // kg
 						}),	
 						children: [
 							new System({
@@ -156,7 +156,7 @@
 					semi_major_axis: 1.52*OrbitalMechanics.ASTRONOMICAL_UNIT,
 					eccentricity: 0.093,
 					inclination: Math.PI * 1.85/180,
-					effective_parent_mass: 2e27, // kg
+					effective_parent_mass: 2e30, // kg
 				}),	
 				children: [
 					new System({
@@ -286,7 +286,7 @@
 		//view.cellUpdate(model.world()); 
 
 	}
-	var TIMESTEP = 1*60;
+	var TIMESTEP = 1;
     const seasonVue = new Vue({
         el: '#season-sliders',
         data:{

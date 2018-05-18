@@ -47,13 +47,4 @@ function Orbit(parameters) {
 	this.get_parent_to_child_matrix = function(mean_anomaly) {
 		return Matrix4x4.invert(this.get_child_to_parent_matrix(mean_anomaly));
 	}
-
-	// private variables 
-	var mean_anomaly_refresh			  = 0.;
-
-	this.iterate = function(mean_anomaly, timestep) {
-		var period = this.period();
-		var TURN = 2*Math.PI;
-		return (mean_anomaly + TURN*(timestep / period)) % TURN;
-	};
 }

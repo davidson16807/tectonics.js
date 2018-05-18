@@ -33,7 +33,24 @@ function System(parameters) {
 	// it may for instance describe a group of objects that are gravitationally bound
 	this.body		= parameters['body'];
 
-	var id_to_node_map = this
+	// gets a list of all nodes at or below this one in the hierarchy
+	this.ancestors = function () {
+		return [
+			...(this.parent === void 0? [] : this.parent.ancestors()), 
+			this
+		];
+	}
+	// gets a list of all nodes at or below this one in the hierarchy
+	this.descendants = function () {
+		return [
+			this, 
+			...this.children
+				.map(child => child.descendants())
+				.reduce((acc, e) => acc.concat(e), [])
+		];
+	}
+
+	var id_to_descendant_map = this
 		.descendants()
 		.reduce((acc, x) => { acc[x.name] = x; return acc; }, {} );
 
@@ -72,29 +89,13 @@ function System(parameters) {
 		}
 		return map;
 	}
-	// gets a list of all nodes at or below this one in the hierarchy
-	this.ancestors = function () {
-		return [
-			...(this.parent === void 0? [] : this.parent.ancestors()), 
-			this
-		];
-	}
-	// gets a list of all nodes at or below this one in the hierarchy
-	this.descendants = function () {
-		return [
-			this, 
-			...this.children
-				.map(child => child.descendants())
-				.reduce((acc, e) => acc.concat(e), [])
-		];
-	}
 	//given a cycle configuration, "advance()" returns the cycle configuration that would occur after a given amount of time
 	this.advance = function(config, timestep, output) {
-		output = output || config;
+		output = output || {};
 
 		for(id in config){
-			if (id_to_node_map[id] === void 0) { continue; }
-			var period = id_to_node_map[id].motion.period();
+			if (id_to_descendant_map[id] === void 0) { continue; }
+			var period = id_to_descendant_map[id].motion.period();
 			output[id] = (config[id] + 2*Math.PI * (timestep / period)) % (2*Math.PI);
 		}
 
