@@ -23,14 +23,14 @@ function Orbit(parameters) {
 	var argument_of_periapsis			= parameters['argument_of_periapsis'] 			|| 0.;
 	// the angle (in radians) between the prime meridian of the parent and the "ascending node" - the intersection between the orbital plane and the reference plane
 	var longitude_of_ascending_node		= parameters['longitude_of_ascending_node'] 	|| 0.;
-	// effective mass of the parent body
-	// We say it is "effective" because sometimes no parent body exists (i.e. barycenters)
+	// effective mass of the parent and child bodies
+	// We say it is "effective" because sometimes no parent body exists (i.e. galaxies)
 	// It is not typically included in textbooks amongst orbital parameters,
 	// but it allows us to make statements that concern timing: velocity, period, etc.
-	var effective_parent_mass  			= parameters['effective_parent_mass'] 			|| 0.;
+	var effective_combined_mass  		= parameters['effective_combined_mass'] 			|| 0.;
 
 	this.period = function() {
-		return OrbitalMechanics.get_period(semi_major_axis, effective_parent_mass);
+		return OrbitalMechanics.get_period(semi_major_axis, effective_combined_mass);
 	}
 
 	// "position" returns the position vector that is represented by an orbit 
