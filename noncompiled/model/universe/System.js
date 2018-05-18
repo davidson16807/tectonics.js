@@ -41,8 +41,7 @@ function System(parameters) {
 		origin = origin || this;
 		var parent 	 = this.parent;
 		var children = this.children;
-		var system_state = state[this.name] || 0;
-		var parent_state = parent === void 0? 0 : state[parent.name] || 0;
+		var system_state = parseFloat(state[this.name] || 0);
 
 		var map = {};
 		if (parent !== void 0) {
@@ -58,8 +57,9 @@ function System(parameters) {
 			// NOTE: don't consider origin, or else an infinite recursive loop will result
 			if (children[i] !== origin) {
 				var child_map = children[i].get_body_matrices(state, this);
+				var child_state = parseFloat(state[children[i].name] || 0);
 				for(var key in child_map){
-					map[key] = mult_matrix( children[i].motion.get_child_to_parent_matrix(system_state), child_map[key] )
+					map[key] = mult_matrix( children[i].motion.get_child_to_parent_matrix(child_state), child_map[key] )
 				}
 			}
 		}

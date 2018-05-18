@@ -513,10 +513,10 @@ Matrix4x4.from_dual_quaternion = function(a, out) {
  * @return {vec3} out
  */
 Matrix4x4.get_translation = function( mat, out) {
-  out = out || Matrix4x4();
-  out[0] = mat[12];
-  out[1] = mat[13];
-  out[2] = mat[14];
+  out = out || Vector();
+  out.x = mat[12];
+  out.y = mat[13];
+  out.z = mat[14];
 
   return out;
 }
@@ -532,7 +532,7 @@ Matrix4x4.get_translation = function( mat, out) {
  * @return {vec3} out
  */
 Matrix4x4.get_scaling = function( mat, out) {
-  out = out || Matrix4x4();
+  out = out || Vector();
   let m11 = mat[0];
   let m12 = mat[1];
   let m13 = mat[2];
@@ -543,9 +543,9 @@ Matrix4x4.get_scaling = function( mat, out) {
   let m32 = mat[9];
   let m33 = mat[10];
 
-  out[0] = Math.sqrt(m11 * m11 + m12 * m12 + m13 * m13);
-  out[1] = Math.sqrt(m21 * m21 + m22 * m22 + m23 * m23);
-  out[2] = Math.sqrt(m31 * m31 + m32 * m32 + m33 * m33);
+  out.x = Math.sqrt(m11 * m11 + m12 * m12 + m13 * m13);
+  out.y = Math.sqrt(m21 * m21 + m22 * m22 + m23 * m23);
+  out.z = Math.sqrt(m31 * m31 + m32 * m32 + m33 * m33);
 
   return out;
 }

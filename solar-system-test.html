@@ -50,7 +50,7 @@
         </span>
         <span class="form-control input-sm">
             <input type="range" min="-1.57" max="1.57" step="0.01" 
-                v-model="value" v-on:input="setState"/>
+                v-model="state[key]" v-on:input="setState"/>
         </span>
     </div>
 </div>
@@ -188,6 +188,11 @@
 	var solar_system_descendants = solar_system
 			.descendants()
 			.reduce((acc, x) => { acc[x.name] = x; return acc; }, {} )
+
+	var body_node_map = solar_system
+			.descendants()
+			.filter(x => x.body)
+			.reduce((acc, x) => { acc[x.body.name] = x; return acc; }, {} )
 	var body_matrix_map = solar_system_descendants['Earth Orbit'].get_body_matrices({
 		'Lunar Orbit': Math.PI/5,
 		'Earth Oribt': 0,
@@ -196,7 +201,8 @@
 	var i = 0;
 	for (var id in body_matrix_map) {
 		body_index_map[id] = i; i++;
-		particleGeometry.vertices.push( new THREE.Vector3( ...Matrix4x4.get_translation(body_matrix_map[id]) ) );
+		var v = Matrix4x4.get_translation(body_matrix_map[id]);
+		particleGeometry.vertices.push( new THREE.Vector3( v.x, v.y, v.z ) );
 		particleShader.attributes.color.value.push(new THREE.Color(bodies[id].color));
 		particleShader.attributes.radius.value.push(bodies[id].radius);
 	}
@@ -295,7 +301,13 @@
             setState(){
 				var body_matrix_map = solar_system_descendants['Earth Orbit'].get_body_matrices(this.state);
 				for (var id in body_matrix_map) {
-					particleGeometry.vertices[body_index_map[id]] = new THREE.Vector3( ...Matrix4x4.get_translation(body_matrix_map[id]) );
+					var v = Matrix4x4.get_translation(body_matrix_map[id]);
+					console.log(v)
+					particleGeometry.vertices[body_index_map[id]].x = v.x;
+					particleGeometry.vertices[body_index_map[id]].y = v.y;
+					particleGeometry.vertices[body_index_map[id]].z = v.z;
+					particleGeometry.verticesNeedUpdate = true;
+					particleGeometry.dynamic = true;
 				}
             },
         }
