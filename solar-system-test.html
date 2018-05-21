@@ -163,7 +163,7 @@
 					new System({
 						name: 'Lunar Orbit',
 						motion: new Orbit({
-							semi_major_axis: 384e6,
+							semi_major_axis: 384.748e6,
 							eccentricity: 0.0554,
 							inclination: Math.PI * 5.16/180,
 							effective_combined_mass: 5.79e24, // kg
@@ -172,8 +172,7 @@
 							new System({
 								name: 'Lunar Spin',
 								motion: new Spin({ 
-									angular_speed: 2*Math.PI/(60*60*24*27.3),
-									axial_tilt: 0,
+									angular_speed: 2*Math.PI/(Units.SECONDS_IN_DAY*27.322),
 								}),	
 								body: bodies['moon'],
 							}),
@@ -181,12 +180,20 @@
 					}),
 
 					new System({
-						name: 'Earth Spin',
+						name: 'Earth Precession',
 						motion: new Spin({ 
-							angular_speed: 2*Math.PI/(60*60*24),
-							axial_tilt: Math.PI * 23.5/180,
+							angular_speed: 2*Math.PI/(10e3*Units.SECONDS_IN_YEAR),
 						}),	
-						body: bodies['earth'],
+						children: [
+							new System({
+								name: 'Earth Spin',
+								motion: new Spin({ 
+									angular_speed: 2*Math.PI/(60*60*24),
+									axial_tilt: Math.PI * 23.5/180,
+								}),	
+								body: bodies['earth'],
+							}),
+						],
 					}),
 				],
 			}),
