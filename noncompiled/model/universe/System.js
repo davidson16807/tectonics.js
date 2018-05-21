@@ -89,6 +89,53 @@ function System(parameters) {
 		}
 		return map;
 	}
+
+	// amount of real-world time below which user could no longer perceive the effects of a cycle, in seconds
+	IMPERCEPTABLY_SMALL_TIME = 1/2; // half a second
+	// amount of real-world time above which user could no longer perceive the effects of a cycle, in seconds
+	IMPERCEPTABLY_LARGE_TIME = 60*60*24; // 1 day
+
+	// find all resonances that must be considered for a given timestep
+	var find_resonances = function(timestep) {
+		resonances = [];
+		fps = fps || 60;
+
+		// if two cycles are out of sync, they form a larger cycle
+		// if the sim needs to run more than a day to see the effects of that larger cycle, don't bother simulating it.
+
+		for(cycle1 in id_to_descendant_map){
+			for(cycle2 in id_to_descendant_map){
+				var period1 = id_to_descendant_map[cycle1].motion.period();
+				var period2 = id_to_descendant_map[cycle2].motion.period();
+
+				// only consider where larger period is first
+				if (period1 > period2) { continue; }
+				var period_ratio = period1 / period2;
+
+				// NOTE: resonances with whole numbers greater than 10 are not noticeable enough to consider
+				// e.g. 3/4 is ok, but not 11/15
+				for (var i = 0; i < 10; i++) {
+					// offset from whole number after i iterations of cycle1
+					var mismatch_after_i_periods = (period_ratio * i) % 1.
+
+					// number of cycle1 iterations that are needed for mismatches to compound into a half turn
+					var randomization_cycle_count = 1/(2*mismatch_after_shared_cycle)
+					var randomization_time = randomization_cycle_count * i * period1;
+					if (timestep / randomization_time > IMPERCEPTABLY_SMALL_TIME) {
+						resonances.push({ 
+							large_cycle: cycle1, 
+							large_cycle_iterations: i, 
+							small_cycle: cycle2, 
+							small_cycle_iterations: i * period_ratio, 
+							ratio: period_ratio,
+							randomization_time: randomization_time
+						});
+					}
+				}
+			}
+		}
+	}
+
 	//given a cycle configuration, "advance()" returns the cycle configuration that would occur after a given amount of time
 	this.advance = function(config, timestep, output, fps) {
 		output = output || {};
@@ -97,8 +144,10 @@ function System(parameters) {
 		for(id in id_to_descendant_map){
 			if (id_to_descendant_map[id] === void 0) { continue; }
 			var period = id_to_descendant_map[id].motion.period();
-			if (timestep / period > 10/(fps) ) 			{ continue; }
-			if (timestep / period < 1/(fps*60*60*24)) 	{ continue; } 
+			// if cycle completes too fast for the user to perceive, don't simulate 
+			if (timestep / period > 1/(fps*IMPERCEPTABLY_SMALL_TIME) ) 	{ continue; } 
+			// if cycle completes too slow for the user to perceive, don't simulate
+			if (timestep / period < 1/(fps*IMPERCEPTABLY_LARGE_TIME) ) 	{ continue; } 
 			output[id] = ((config[id] || 0) + 2*Math.PI * (timestep / period)) % (2*Math.PI);
 		}
 
