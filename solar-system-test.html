@@ -89,17 +89,18 @@
 	var camera, controls;
 	var renderStats;
 
+	// colors from http://colorhunt.co/blog/solar-system-stars-color-palettes/
 	var bodies = {
-		sun: 	{ name: 'sun',		color: 'yellow',	radius: 695e6, },
-		mercury:{ name: 'mercury',	color: 'darkgrey',		radius: 2.4e6, },
-		venus: 	{ name: 'venus',	color: 'khaki',radius: 6.1e6, },
-		earth: 	{ name: 'earth',	color: 'blue',	 	radius: 6.3e6, },
-		moon: 	{ name: 'moon',		color: 'grey',	 	radius: 1.7e6, },
-		mars: 	{ name: 'mars',		color: 'red',	 	radius: 3.4e6, },
-		jupiter:{ name: 'jupiter',	color: 'orange',	radius:  71e6, },
-		saturn: { name: 'saturn',	color: 0xEEE8AA,	radius:  60e6, },
-		uranus: { name: 'uranus',	color: 'lightgreen',radius:  25e6, },
-		neptune: { name: 'neptune',	color: 'lightblue',	radius:  24e6, },
+		sun: 	{ name: 'sun',		color: 0xffff00,	radius: 695e6, },
+		mercury:{ name: 'mercury',	color: 0x888888,	radius: 2.4e6, },
+		venus: 	{ name: 'venus',	color: 0xeecb8b,	radius: 6.1e6, },
+		earth: 	{ name: 'earth',	color: 0x182A61,	radius: 6.3e6, },
+		moon: 	{ name: 'moon',		color: 0x888888,	radius: 1.7e6, },
+		mars: 	{ name: 'mars',		color: 0x4c0803,	radius: 3.4e6, },
+		jupiter:{ name: 'jupiter',	color: 0xc1844d,	radius:  71e6, },
+		saturn: { name: 'saturn',	color: 0xe0cdad,	radius:  60e6, },
+		uranus: { name: 'uranus',	color: 0xc7edf0,	radius:  25e6, },
+		neptune: { name: 'neptune',	color: 0x537cfe,	radius:  24e6, },
 	};
 	var solar_system = new System({
 		name: 'Solar System',
