@@ -36,7 +36,7 @@ function World(parameters) {
 
 	this.surface_gravity = parameters['surface_gravity'] || 9.8; // m/s^2
 
-	this.radius = parameters['radius'] || 6367e3; // meters
+	this.radius = parameters['radius'] || Units.EARTH_RADIUS; // meters
 
 	this.age = parameters['age'] || 0; // megayears
 

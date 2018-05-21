@@ -105,11 +105,6 @@ var OrbitalMechanics = (function() {
 
 	OrbitalMechanics.GRAVITATIONAL_CONSTANT = 6.67408e-11; // m3 kg-1 s-2
 
-	OrbitalMechanics.ASTRONOMICAL_UNIT = 149597870700; // meters
-
-	// TODO: figure out where to put above function
-	// maybe another namespace: "Heliosphere"? "StellarModeling" "Optics" ?
-	OrbitalMechanics.SOLAR_LUMINOSITY = 3.828e26 // watts
 
 
 	return OrbitalMechanics;

@@ -6,11 +6,10 @@
 var Optics = (function() {
 	var Optics = {};
 
-	Optics.STEPHAN_BOLTZMANN_CONSTANT = 5.670373e-11; // kW/m^2 per K^4
+	Optics.STEPHAN_BOLTZMANN_CONSTANT = 5.670373e-8; // W/m^2 per K^4
 
 	// TODO: figure out where to put above function
 	// maybe another namespace: "Heliosphere"? "StellarModeling"?
-	Optics.SOLAR_LUMINOSITY = 3.828e23 // kiloWatts
 
 	// This calculates the radiation (in kiloWatts/m^2) that's emitted by the surface of an object.
 	Optics.black_body_radiation = function(
@@ -24,6 +23,18 @@ var Optics = (function() {
 		ScalarField.mult_field	(result, 		temperature, 						result);
 		ScalarField.mult_field	(result, 		temperature, 						result);
 		ScalarField.mult_scalar	(result, 		Optics.STEPHAN_BOLTZMANN_CONSTANT, 	result);
+
+		return result;
+	}
+	// This calculates the temperature of a body given its luminosity
+	// TODO: put this under a new namespace? "Thermodynamics"?
+	Optics.black_body_equilibrium_temperature = function(
+			luminosity,
+			result
+		) {
+		result = result || Float32Raster(pos.grid);
+		ScalarField.div_scalar	(luminosity, 	Optics.STEPHAN_BOLTZMANN_CONSTANT, 	result);
+		ScalarField.pow_scalar	(result, 		1/4, 								result);
 
 		return result;
 	}
