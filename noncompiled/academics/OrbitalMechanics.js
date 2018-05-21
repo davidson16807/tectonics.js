@@ -19,16 +19,12 @@ var OrbitalMechanics = (function() {
 			//rotation about axis, in radians
 			rotation_angle, 
 			//tilt of the planet's axis, in radians
-			axial_tilt, 
-			//rotation of planet's axis around north celestial pole, in radians
-			precession_angle
+			axial_tilt
 	) {
 		var precession_angle  = precession_angle || 0;
-		var rotation_matrix   = Matrix4x4.from_rotation	(0,1,0, rotation_angle);
-		var tilt_matrix 	  = Matrix4x4.from_rotation	(1,0,0, axial_tilt);
-		var precession_matrix = Matrix4x4.from_rotation	(0,1,0, precession_angle);
+		var rotation_matrix   = Matrix4x4.from_rotation	(0,1,0, -rotation_angle);
+		var tilt_matrix 	  = Matrix4x4.from_rotation	(1,0,0, -axial_tilt);
 		var conversion_matrix = Matrix4x4.mult_matrix 	(tilt_matrix, 		rotation_matrix);
-		var conversion_matrix = Matrix4x4.mult_matrix 	(precession_matrix, conversion_matrix);
 		return conversion_matrix;
 	}
 
@@ -58,9 +54,9 @@ var OrbitalMechanics = (function() {
 		var E = solve_eccentric_anomaly(M, e, 5);
 		var ecliptic_coordinates = get_2d_ecliptic_coordinates(E, a, e);
 		var translation_matrix = Matrix4x4.from_translation( ecliptic_coordinates.x, 0, ecliptic_coordinates.y );
-		var ω_rotation_matrix = Matrix4x4.from_rotation(0,1,0, ω);
-		var i_rotation_matrix = Matrix4x4.from_rotation(1,0,0, i);
-		var Ω_rotation_matrix = Matrix4x4.from_rotation(0,1,0, Ω);
+		var ω_rotation_matrix = Matrix4x4.from_rotation(0,1,0, -ω);
+		var i_rotation_matrix = Matrix4x4.from_rotation(1,0,0, -i);
+		var Ω_rotation_matrix = Matrix4x4.from_rotation(0,1,0, -Ω);
 
 		var conversion_matrix;
 		conversion_matrix = Matrix4x4.mult_matrix(ω_rotation_matrix, translation_matrix);
