@@ -42,7 +42,7 @@ function World(parameters) {
 
 	this.orbit = new Orbit({
 		// TODO: set these using parameters
-		semi_major_axis: OrbitalMechanics.ASTRONOMICAL_UNIT, 
+		semi_major_axis: Units.ASTRONOMICAL_UNIT, 
 		mean_anomaly: 0,
 	});
 	this.spin = new Spin({

@@ -36,8 +36,6 @@
 	<script src="noncompiled/model/universe/Orbit.js"></script>
 	<script src="noncompiled/model/universe/Spin.js"></script>
 	<script src="noncompiled/model/universe/System.js"></script>
-	<script src="noncompiled/name-gen/NameGenerator.js"></script>
-	<script src="noncompiled/name-gen/NameCorpii.js"></script>
 </head>
 <body>
 <!-- three.js container -->
@@ -114,7 +112,7 @@
 			new System({
 				name: 'Mercurial Orbit',
 				motion: new Orbit({
-					semi_major_axis: 0.387*OrbitalMechanics.ASTRONOMICAL_UNIT,
+					semi_major_axis: 0.387*Units.ASTRONOMICAL_UNIT,
 					eccentricity: 0.205,
 					inclination: Math.PI * 7./180,
 					longitude_of_ascending_node: Math.PI * 48/180,
@@ -134,7 +132,7 @@
 			new System({
 				name: 'Venerean Orbit',
 				motion: new Orbit({
-					semi_major_axis: 0.723*OrbitalMechanics.ASTRONOMICAL_UNIT,
+					semi_major_axis: 0.723*Units.ASTRONOMICAL_UNIT,
 					eccentricity: 0.0067,
 					inclination: Math.PI * 3.4/180,
 					longitude_of_ascending_node: Math.PI * 76/180,
@@ -154,7 +152,7 @@
 			new System({
 				name: 'Earth Orbit',
 				motion: new Orbit({
-					semi_major_axis: 1.*OrbitalMechanics.ASTRONOMICAL_UNIT,
+					semi_major_axis: 1.*Units.ASTRONOMICAL_UNIT,
 					eccentricity: 0.0167,
 					inclination: Math.PI * 5e-5/180,
 					longitude_of_ascending_node: Math.PI * -11/180,
@@ -195,7 +193,7 @@
 			new System({
 				name: 'Martian Orbit',
 				motion: new Orbit({
-					semi_major_axis: 1.52*OrbitalMechanics.ASTRONOMICAL_UNIT,
+					semi_major_axis: 1.52*Units.ASTRONOMICAL_UNIT,
 					eccentricity: 0.093,
 					inclination: Math.PI * 1.85/180,
 					longitude_of_ascending_node: Math.PI * -49/180,
@@ -215,7 +213,7 @@
 			new System({
 				name: 'Jovian Orbit',
 				motion: new Orbit({
-					semi_major_axis: 5.2*OrbitalMechanics.ASTRONOMICAL_UNIT,
+					semi_major_axis: 5.2*Units.ASTRONOMICAL_UNIT,
 					eccentricity: 0.048,
 					inclination: Math.PI * 1.3/180,
 					effective_combined_mass: 2e30, // kg
@@ -235,7 +233,7 @@
 			new System({
 				name: 'Saturnian Orbit',
 				motion: new Orbit({
-					semi_major_axis: 9.5*OrbitalMechanics.ASTRONOMICAL_UNIT,
+					semi_major_axis: 9.5*Units.ASTRONOMICAL_UNIT,
 					eccentricity: 0.054,
 					inclination: Math.PI * 2.48/180,
 					longitude_of_ascending_node: Math.PI * -113/180,
@@ -255,7 +253,7 @@
 			new System({
 				name: 'Uranian Orbit',
 				motion: new Orbit({
-					semi_major_axis: 19.19*OrbitalMechanics.ASTRONOMICAL_UNIT,
+					semi_major_axis: 19.19*Units.ASTRONOMICAL_UNIT,
 					eccentricity: 0.047,
 					inclination: Math.PI * 0.77/180,
 					effective_combined_mass: 2e30, // kg
@@ -275,7 +273,7 @@
 			new System({
 				name: 'Neptunian Orbit',
 				motion: new Orbit({
-					semi_major_axis: 30.06*OrbitalMechanics.ASTRONOMICAL_UNIT,
+					semi_major_axis: 30.06*Units.ASTRONOMICAL_UNIT,
 					eccentricity: 0.008,
 					inclination: Math.PI * 1.77/180,
 					longitude_of_ascending_node: Math.PI * -131/180,
