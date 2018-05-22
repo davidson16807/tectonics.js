@@ -22,9 +22,11 @@
 //   composition (determined by stellar distance and time of stellar ignition: ice giants formed after ignition)
 //   ...
 //   
-// 
-// 
-// 
+// Jcloud = 
+// Jp = m sqrt(MGa(1-e^2))
+// J* = γMRvsin(i*)
+// Jsys = mᵃ where a=2
+// J*/Jsys = 95%
 // 
 // 
 var StarSystemGenerator = {};
@@ -58,7 +60,7 @@ StarSystemGenerator.generate = function (random, system_mass) {
 
 	// system_ref_frame = 
 
-	// semi major axis of binary system's galactic orbit 
+	// semi major axis of system's galactic orbit 
 	var galactic_sma = 
 
 	// 1/3 of binary stars have planets
@@ -89,6 +91,7 @@ StarSystemGenerator.generate = function (random, system_mass) {
 				new System({
 					motion: new Orbit({
 						semi_major_axis: subsystem1_sma,
+						eccentricity: eccentricity,
 					}),
 					children: [subsystem1],
 				}),
@@ -96,6 +99,7 @@ StarSystemGenerator.generate = function (random, system_mass) {
 				new System({
 					motion: new Orbit({
 						semi_major_axis: subsystem2_sma,
+						eccentricity: eccentricity,
 					}),
 					children: [subsystem2],
 				}),
