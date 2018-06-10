@@ -40,13 +40,11 @@ function World(parameters) {
 
 	this.age = parameters['age'] || 0; // megayears
 
-	this.orbit = new Orbit({
+	this.orbit = new OldOrbit({
+		grid: this.grid,
 		// TODO: set these using parameters
 		semi_major_axis: Units.ASTRONOMICAL_UNIT, 
 		mean_anomaly: 0,
-	});
-	this.spin = new Spin({
-		// TODO: set these using parameters
 		axial_tilt: Math.PI * 23.5/180,
 	});
 	this.lithosphere = new Lithosphere(parameters);
@@ -73,8 +71,8 @@ function World(parameters) {
 		'ocean_coverage'		: this.hydrosphere.ocean_coverage,
 		'plant_coverage'		: this.biosphere.plant_coverage,
 		'mean_anomaly' 			: this.orbit.mean_anomaly,
-		'axial_tilt' 			: this.spin.axial_tilt,
-		'angular_speed' 		: this.spin.angular_speed,
+		'axial_tilt' 			: this.orbit.axial_tilt,
+		'angular_speed' 		: this.orbit.angular_speed,
 		'incident_radiation' 	: {value: () => new Float32Raster(this.grid, 1361/4)},
 	});
 	this.biosphere.setDependencies({
@@ -103,8 +101,8 @@ function World(parameters) {
 		// NOTE: update all non-constant, non-spatial dependencies
 		this.atmosphere.setDependencies({
 			'mean_anomaly' 	: this.orbit.mean_anomaly,
-			'axial_tilt' 	: this.spin.axial_tilt,
-			'angular_speed' : this.spin.angular_speed,
+			'axial_tilt' 	: this.orbit.axial_tilt,
+			'angular_speed' : this.orbit.angular_speed,
 		});
 
 		// this.orbit.calcChanges(timestep);
