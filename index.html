@@ -113,6 +113,7 @@
 			</span>
 
 			<span class="input-group-addon">{{format(speed * 1e6, 1000, 3).quantity}}{{format(speed * 1e6, 1000, 3).unit}}y/s</span>
+			<span class="instructions">&lt;/&gt;</span>
 		</div>
 		<div class="input-group season-group" v-if="isSeasonVisible">
   			<span class="input-group-addon">
@@ -573,6 +574,15 @@
       }
       if (event.keyCode == 83) { //s
       	saveVue.save();
+      }
+      if (event.keyCode == 188) { // <
+      	timeMenuVue.rewind();
+      }
+      if (event.keyCode == 190) { // >
+      	timeMenuVue.fastForward();
+      }
+      if (event.keyCode == 191) { // /
+      	timeMenuVue.togglePause();
       }
     });
 
