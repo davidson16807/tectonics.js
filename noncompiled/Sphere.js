@@ -1,10 +1,10 @@
 Sphere = {}
 
 Sphere.surface_area = function(radius) {
-	return 4*Math.PI.radius*radius;
+	return 4*Math.PI*radius*radius;
 }
 Sphere.volume = function(radius) {
-	return 4/3*Math.PI.radius*radius*radius;
+	return 4/3*Math.PI*radius*radius*radius;
 }
 Sphere.cartesian_to_spherical = function(x,y,z){
 	return {lat: Math.asin(y/Math.sqrt(x*x+y*y+z*z)), lon: Math.atan2(-z, x)};
