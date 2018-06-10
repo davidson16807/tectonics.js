@@ -4,8 +4,53 @@
 
 function World(parameters) {
 	this.name = parameters.name;
-
 	this.grid = parameters['grid'] || stop('missing parameter: "grid"');
+
+	this.star = new Star({
+		grid: this.grid,
+		mass: Units.SOLAR_MASS,
+	});
+	this.star_system = new System({
+		name: 'galactic orbit',
+		motion: new Orbit({ // motion mirrors orbit of sun around galactic center
+			semi_major_axis: 2.35e20, // meters
+			effective_combined_mass: 1.22e56, // kg, back calculated to achieve period of 250 million years
+		}),
+		body: this.star,
+		children: [
+
+			new System({
+				name: 'orbit',
+				motion: new Orbit({
+					semi_major_axis: 1.*Units.ASTRONOMICAL_UNIT,
+					eccentricity: 0.0167,
+					inclination: Math.PI * 5e-5/180,
+					longitude_of_ascending_node: Math.PI * -11/180,
+					effective_combined_mass: 2e30, // kg
+				}),	
+				children: [
+					new System({
+						name: 'precession',
+						motion: new Spin({ 
+							angular_speed: 2*Math.PI/(10e3*Units.SECONDS_IN_YEAR),
+						}),	
+						children: [
+							new System({
+								name: 'spin',
+								motion: new Spin({ 
+									angular_speed: 2*Math.PI/(60*60*24),
+									axial_tilt: Math.PI * 23.5/180,
+								}),	
+								body: this,
+							}),
+						],
+					}),
+				],
+			}),
+		]
+	});
+
+
 
 	this.material_viscosity = parameters['material_viscosity'] || {
 		mantle: 1.57e17, // m/s per kiloPascal
