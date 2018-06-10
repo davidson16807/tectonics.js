@@ -101,14 +101,18 @@
 			<span class="input-group-addon age-units">{{ format(age * 1e6, 1000, 3).unit }}y</span>
 		</div>
 		<div class="input-group speed-group">
+			<span class="input-group-addon rewind" v-on:click="rewind()">
+				<img src="icons/rewind.svg" height="12em" width="12em">
+			</span>
 			<span class="input-group-addon play" v-on:click="togglePause()">
-				<img src="icons/play.svg" height="12em" width="12em" v-if="paused">
 				<img src="icons/pause.svg" height="12em" width="12em" v-if="!paused">
+				<img src="icons/play.svg" height="12em" width="12em" v-if="paused">
+			</span>
+			<span class="input-group-addon fast-forward" v-on:click="fastForward()">
+				<img src="icons/fast-forward.svg" height="12em" width="12em">
 			</span>
 
-			<input class="form-control input-sm" type="number" value="5" min="0" max="10" step="1" v-model="speed" v-on:change="setSpeed()"/> 
-
-			<span class="input-group-addon">My/s</span>
+			<span class="input-group-addon">{{format(speed * 1e6, 1000, 3).quantity}}{{format(speed * 1e6, 1000, 3).unit}}y/s</span>
 		</div>
 		<div class="input-group season-group" v-if="isSeasonVisible">
   			<span class="input-group-addon">
@@ -552,7 +556,7 @@
 			}
 	function format_text (My, rollover, precision) {
 		var formatted = format(My * 1e6, rollover, precision);
-		return formatted.quantity + ' ' + formatted.unit + 'y';
+		return formatted.quantity + '' + formatted.unit + 'y';
 	}
 
 	function download(dataUrl, filename) {
@@ -734,10 +738,15 @@
 	  methods: {
 		togglePause: function() {
 			this.paused = !this.paused;
-		model.toggle_pause();
+			model.toggle_pause();
 		},
-		setSpeed: function() {
-			model.MegaYearPerSecond = this.speed;
+		fastForward: function() {
+			if (this.speed >= 10) {return} // do not exceed 10My/s
+			this.speed *= 10;
+		},
+		rewind: function() {
+			if (this.speed <= 1e-6) {return} // do not fall below 1yr/s
+			this.speed /= 10;
 		},
 		setSeason: function() {
 			model.world().orbit.mean_anomaly = this.season;
@@ -745,7 +754,7 @@
 		setSeasonVisibility: function(visibility) {
 			this.isSeasonVisible = visibility || false;
 		},
-		format: format
+		format: format,
 	}
 	});
 
