@@ -743,10 +743,12 @@
 		fastForward: function() {
 			if (this.speed >= 10) {return} // do not exceed 10My/s
 			this.speed *= 10;
+			model.MegaYearPerSecond = this.speed;
 		},
 		rewind: function() {
 			if (this.speed <= 1e-6) {return} // do not fall below 1yr/s
 			this.speed /= 10;
+			model.MegaYearPerSecond = this.speed;
 		},
 		setSeason: function() {
 			model.world().orbit.mean_anomaly = this.season;
