@@ -10,11 +10,12 @@ function World(parameters) {
 		grid: this.grid,
 		mass: Units.SOLAR_MASS,
 	});
+	this.star_system_configuration = {};
 	this.star_system = new System({
 		name: 'galactic orbit',
 		motion: new Orbit({ // motion mirrors orbit of sun around galactic center
 			semi_major_axis: 2.35e20, // meters
-			effective_combined_mass: 1.22e56, // kg, back calculated to achieve period of 250 million years
+			effective_combined_mass: 1.262e41, // kg, back calculated to achieve period of 250 million years
 		}),
 		body: this.star,
 		children: [
@@ -161,6 +162,13 @@ function World(parameters) {
 		this.hydrosphere.applyChanges(timestep);
 		this.atmosphere.applyChanges(timestep);
 		this.biosphere.applyChanges(timestep);
+
+		this.star_system.advance(
+			this.star_system_configuration, 
+			timestep * Units.SECONDS_IN_MEGAYEAR, 
+			this.star_system_configuration, 
+			60
+		); // TODO: set fps dynamically
 	};
 	return this;
 }
