@@ -95,47 +95,6 @@ function System(parameters) {
 		return map;
 	}
 
-	// find all resonances that must be considered for a given timestep
-	var find_resonances = function(timestep) {
-		resonances = [];
-		fps = fps || 60;
-
-		// if two cycles are out of sync, they form a larger cycle
-		// if the sim needs to run more than a day to see the effects of that larger cycle, don't bother simulating it.
-
-		for(cycle1 in id_to_descendant_map){
-			for(cycle2 in id_to_descendant_map){
-				var period1 = id_to_descendant_map[cycle1].motion.period();
-				var period2 = id_to_descendant_map[cycle2].motion.period();
-
-				// only consider where larger period is first
-				if (period1 > period2) { continue; }
-				var period_ratio = period1 / period2;
-
-				// NOTE: resonances with whole numbers greater than 10 are not noticeable enough to consider
-				// e.g. 3/4 is ok, but not 11/15
-				for (var i = 0; i < 10; i++) {
-					// offset from whole number after i iterations of cycle1
-					var mismatch_after_i_periods = (period_ratio * i) % 1.
-
-					// number of cycle1 iterations that are needed for mismatches to compound into a half turn
-					var randomization_cycle_count = 1/(2*mismatch_after_shared_cycle)
-					var randomization_time = randomization_cycle_count * i * period1;
-					if (timestep / randomization_time > IMPERCEPTABLY_SMALL_TIME) {
-						resonances.push({ 
-							large_cycle: cycle1, 
-							large_cycle_iterations: i, 
-							small_cycle: cycle2, 
-							small_cycle_iterations: i * period_ratio, 
-							ratio: period_ratio,
-							randomization_time: randomization_time
-						});
-					}
-				}
-			}
-		}
-	}
-
 	//given a cycle configuration, "advance()" returns the cycle configuration that would occur after a given amount of time
 	this.advance = function(config, timestep, output, min_cycle_frames, max_cycle_frames) {
 		output = output || {};
