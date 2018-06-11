@@ -388,7 +388,7 @@
 	var IsProd = false;
 
 	var resolution      = parseInt(querystring['resolution'] || '5');
-	var start_speed     = parseInt(querystring['speed']      || '1');
+	var start_speed     = parseInt(querystring['speed']      || (1e6*Units.SECONDS_IN_YEAR).toString());
 	var autosave_period = parseInt(querystring['autosave']   || '0');
 	var autosave_timestamp = 0;
 
@@ -411,7 +411,7 @@
 	);
 	var model = new Model({
 		seed: seed,
-		MegaYearPerSecond: 0
+		speed: start_speed
 	});
 
 	(function(){
@@ -781,12 +781,12 @@
 		fastForward: function() {
 			if (this.speed_i >= this.speed_strings.length-1) {return} 
 			this.speed_i += 1;
-			model.MegaYearPerSecond = this.speeds[this.speed_i] / Units.SECONDS_IN_MEGAYEAR;
+			model.speed = this.speeds[this.speed_i];
 		},
 		rewind: function() {
 			if (this.speed_i <= 0) {return} 
 			this.speed_i -= 1;
-			model.MegaYearPerSecond = this.speeds[this.speed_i] / Units.SECONDS_IN_MEGAYEAR;
+			model.speed = this.speeds[this.speed_i];
 		},
 		setSeason: function() {
 			model.world().orbit.mean_anomaly = this.season;

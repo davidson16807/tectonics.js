@@ -137,6 +137,7 @@ function World(parameters) {
 		if (timestep === 0) {
 			return;
 		};
+		var timestep_megayears =  timestep / Units.SECONDS_IN_MEGAYEAR;
 
 		// this.orbit.invalidate();
 		this.lithosphere.invalidate();
@@ -151,21 +152,21 @@ function World(parameters) {
 			'angular_speed' : this.orbit.angular_speed,
 		});
 
-		// this.orbit.calcChanges(timestep);
-		this.lithosphere.calcChanges(timestep);
-		this.hydrosphere.calcChanges(timestep);
-		this.atmosphere.calcChanges(timestep);
-		this.biosphere.calcChanges(timestep);
+		// this.orbit.calcChanges(timestep_megayears);
+		this.lithosphere.calcChanges(timestep_megayears);
+		this.hydrosphere.calcChanges(timestep_megayears);
+		this.atmosphere.calcChanges(timestep_megayears);
+		this.biosphere.calcChanges(timestep_megayears);
 
-		// this.orbit.applyChanges(timestep);
-		this.lithosphere.applyChanges(timestep);
-		this.hydrosphere.applyChanges(timestep);
-		this.atmosphere.applyChanges(timestep);
-		this.biosphere.applyChanges(timestep);
+		// this.orbit.applyChanges(timestep_megayears);
+		this.lithosphere.applyChanges(timestep_megayears);
+		this.hydrosphere.applyChanges(timestep_megayears);
+		this.atmosphere.applyChanges(timestep_megayears);
+		this.biosphere.applyChanges(timestep_megayears);
 
 		this.star_system.advance(
 			this.star_system_configuration, 
-			timestep * Units.SECONDS_IN_MEGAYEAR, 
+			timestep, 
 			this.star_system_configuration, 
 			60
 		); // TODO: set fps dynamically
