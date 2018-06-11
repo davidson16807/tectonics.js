@@ -97,8 +97,8 @@
 <div class="topright collapse collapsible controls" >
 	<div id="time-menu" class="time-menu">
 		<div class="input-group age-group">
-			<span class="form-control input-sm age">{{ format(age * 1e6, 1000, 3).quantity }}</span>
-			<span class="input-group-addon age-units">{{ format(age * 1e6, 1000, 3).unit }}y</span>
+			<span class="form-control input-sm age">{{ format(age * 1e6, 1000, 1).quantity }}</span>
+			<span class="input-group-addon age-units">{{ format(age * 1e6, 1000, 1).unit }}y</span>
 		</div>
 		<div class="input-group speed-group">
 			<span class="input-group-addon rewind" v-on:click="rewind()">
@@ -112,7 +112,7 @@
 				<img src="icons/fast-forward.svg" height="12em" width="12em">
 			</span>
 
-			<span class="input-group-addon">{{format(speed * 1e6, 1000, 3).quantity}}{{format(speed * 1e6, 1000, 3).unit}}y/s</span>
+			<span class="input-group-addon">{{speed_strings[speed_i]}}</span>
 			<span class="instructions">&lt;/&gt;</span>
 		</div>
 		<div class="input-group season-group" v-if="isSeasonVisible">
@@ -388,7 +388,7 @@
 	var IsProd = false;
 
 	var resolution      = parseInt(querystring['resolution'] || '5');
-	var start_speed     = parseInt(querystring['speed']      || '5');
+	var start_speed     = parseInt(querystring['speed']      || '1');
 	var autosave_period = parseInt(querystring['autosave']   || '0');
 	var autosave_timestamp = 0;
 
@@ -411,7 +411,7 @@
 	);
 	var model = new Model({
 		seed: seed,
-		MegaYearPerSecond: start_speed
+		MegaYearPerSecond: 0
 	});
 
 	(function(){
@@ -734,7 +734,35 @@
 	  el: '#time-menu',
 	  data: {
 	  	paused: false,
-		speed: start_speed,
+		speed_i: 11,
+		speeds: [
+			1,
+			60,
+			60*60,
+			60*60*24,
+			60*60*24*31,
+			1  *Units.SECONDS_IN_YEAR,
+			10 *Units.SECONDS_IN_YEAR,
+			100*Units.SECONDS_IN_YEAR,
+			1e3*Units.SECONDS_IN_YEAR,
+			1e4*Units.SECONDS_IN_YEAR,
+			1e5*Units.SECONDS_IN_YEAR,
+			1e6*Units.SECONDS_IN_YEAR,
+		],
+		speed_strings: [
+			'1s/s',
+			'1m/s',
+			'1hr/s',
+			'1dy/s',
+			'1mo/s',
+			'1y/s',
+			'10y/s',
+			'100y/s',
+			'1ky/s',
+			'10ky/s',
+			'100ky/s',
+			'1My/s',
+		],
 	  	age: 0,
 	  	season: 0,
 	  	isSeasonVisible: true,
@@ -751,14 +779,14 @@
 			model.toggle_pause();
 		},
 		fastForward: function() {
-			if (this.speed >= 10) {return} // do not exceed 10My/s
-			this.speed *= 10;
-			model.MegaYearPerSecond = this.speed;
+			if (this.speed_i >= this.speed_strings.length-1) {return} 
+			this.speed_i += 1;
+			model.MegaYearPerSecond = this.speeds[this.speed_i] / Units.SECONDS_IN_MEGAYEAR;
 		},
 		rewind: function() {
-			if (this.speed <= 1e-6) {return} // do not fall below 1yr/s
-			this.speed /= 10;
-			model.MegaYearPerSecond = this.speed;
+			if (this.speed_i <= 0) {return} 
+			this.speed_i -= 1;
+			model.MegaYearPerSecond = this.speeds[this.speed_i] / Units.SECONDS_IN_MEGAYEAR;
 		},
 		setSeason: function() {
 			model.world().orbit.mean_anomaly = this.season;
