@@ -58,8 +58,66 @@ function System(parameters) {
 		.sort((a,b) => a.motion.period() - b.motion.period())
 		.reverse()
 		.map(x => x.name);
+	var bodies = this
+		.descendants()
+		.map(x => x.body)
+		.filter(x => x !== void 0);
 
 	var mult_matrix = Matrix4x4.mult_matrix;
+
+
+	//given a cycle configuration, "advance()" returns the cycle configuration that would occur after a given amount of time
+	this.advance = function(config, timestep, output, min_frames_per_cycle, max_frames_per_cycle) {
+		output = output || {};
+		// number of frames below which user could no longer perceive the effects of a cycle, in seconds
+		min_frames_per_cycle = min_frames_per_cycle || 30/2; // half a second
+		// number of frames above which user could no longer perceive the effects of a cycle, in seconds
+		max_frames_per_cycle = max_frames_per_cycle || 60*60*24*30; // 1 day worth at 30fps
+
+		for(id in id_to_descendant_map){
+			if (id_to_descendant_map[id] === void 0) { continue; }
+			var period = id_to_descendant_map[id].motion.period();
+			// default to current value, if present
+			if (config[id]) { output[id] = config[id]};
+			// if cycle completes too fast for the user to perceive, don't simulate 
+			if (timestep / period > 1/(min_frames_per_cycle) ) 	{ continue; }
+			// if cycle completes too slow for the user to perceive, don't simulate
+			if (timestep / period < 1/(max_frames_per_cycle) ) 	{ continue; }
+			output[id] = ((config[id] || 0) + 2*Math.PI * (timestep / period)) % (2*Math.PI);
+		}
+
+		return output;
+	}
+	// given a cycle configuration and timestep, 
+	// "sample()" generates a list of cycle configurations that are representative of that timestep
+	// this is useful for finding, e.g. mean daily solar radiation
+	// the function will not generate more than a given number of samples per cycle
+	this.samples = function(config, timestep, samples_per_cycle, min_frames_per_cycle) {
+		// number of frames below which user could no longer perceive the effects of a cycle, in seconds
+		min_frames_per_cycle = min_frames_per_cycle || 30/2; // half a second
+
+		// list of configs to sample across, starting with a clone of config
+		var samples = [Object.assign({}, config)];
+		// for each imperceptably small cycle:
+		for(id of ids_by_period) {
+			if (id_to_descendant_map[id] === void 0) { continue; }
+			var period = id_to_descendant_map[id].motion.period();
+			// if the cycle takes more than a given number of frames to complete, 
+			// then it can be perceived by the user, so don't sample across it
+			if (period / timestep > min_frames_per_cycle ) 	{ continue; }
+			debugger
+			// sample across the cycle's period and add results to `samples`
+			var period = id_to_descendant_map[id].motion.period();
+			var subsamples = [];
+			for (sample of samples) {
+				for (var j = 0; j < samples_per_cycle; j++) {
+					subsamples.push(this.advance(sample, j*period/samples_per_cycle, {}, 1));
+				}
+			}
+			samples = subsamples;
+		}
+		return samples;
+	}
 
 	// returns a dictionary mapping body ids to transformation matrices
 	//  indicating the position/rotation relative to this node 
@@ -79,13 +137,13 @@ function System(parameters) {
 				}
 			}
 		}
-		for (var i = 0; i < children.length; i++) {
+		for (child of children) {
 			// NOTE: don't consider origin, or else an infinite recursive loop will result
-			if (children[i] !== origin) {
-				var child_map = children[i].get_body_matrices(config, this);
-				var child_config = (config[children[i].name] || 0);
+			if (child !== origin) {
+				var child_map = child.get_body_matrices(config, this);
+				var child_config = (config[child.name] || 0);
 				for(var key in child_map){
-					map[key] = mult_matrix( children[i].motion.get_child_to_parent_matrix(child_config), child_map[key] )
+					map[key] = mult_matrix( child.motion.get_child_to_parent_matrix(child_config), child_map[key] )
 				}
 			}
 		}
@@ -95,56 +153,27 @@ function System(parameters) {
 		return map;
 	}
 
-	//given a cycle configuration, "advance()" returns the cycle configuration that would occur after a given amount of time
-	this.advance = function(config, timestep, output, min_cycle_frames, max_cycle_frames) {
-		output = output || {};
-		// number of frames below which user could no longer perceive the effects of a cycle, in seconds
-		min_cycle_frames = min_cycle_frames || 30/2; // half a second
-		// number of frames above which user could no longer perceive the effects of a cycle, in seconds
-		max_cycle_frames = max_cycle_frames || 60*60*24*30; // 1 day worth at 30fps
-
-		for(id in id_to_descendant_map){
-			if (id_to_descendant_map[id] === void 0) { continue; }
-			var period = id_to_descendant_map[id].motion.period();
-			// default to current value, if present
-			if (config[id]) { output[id] = config[id]};
-			// if cycle completes too fast for the user to perceive, don't simulate 
-			if (timestep / period > 1/(min_cycle_frames) ) 	{ continue; }
-			// if cycle completes too slow for the user to perceive, don't simulate
-			if (timestep / period < 1/(max_cycle_frames) ) 	{ continue; }
-			output[id] = ((config[id] || 0) + 2*Math.PI * (timestep / period)) % (2*Math.PI);
+	this.get_insolation = function(config, origin, surface_normal, insolation) {
+		var body_matrices = this.get_body_matrices(config, origin);
+		var insolation_sample = Float32Raster(insolation.grid);
+		var total_insolation = insolation; // double duty
+		// clear out result
+		Float32Raster.fill(insolation, 0);
+		var stars = bodies.filter(body => body instanceof Star);
+		for (star of stars) {
+			var star = body;
+			var star_matrix = body_matrices[star.name];
+			var star_pos = Matrix4x4.get_translation(star_matrix);
+			// calculate insolation effects of a single star
+			Optics.incident_radiation(
+				surface_normal,
+				star_pos, 
+				star.luminosity,
+				insolation_sample
+			);
+			// TODO: add effects of occlusion, e.g. moons around gas giants
+			ScalarField.add_field(insolation, insolation_sample, insolation);
 		}
-
-		return output;
-	}
-	// given a cycle configuration and timestep, 
-	// "sample()" generates a list of cycle configurations that are representative of that timestep
-	// this is useful for finding, e.g. mean daily solar radiation
-	// the function will not generate more than a given number of samples per cycle
-	this.samples = function(config, timestep, samples_per_cycle, min_cycle_frames) {
-		// number of frames below which user could no longer perceive the effects of a cycle, in seconds
-		min_cycle_frames = min_cycle_frames || 30/2; // half a second
-
-		// list of configs to sample across, starting with a clone of config
-		var samples = [Object.assign({}, config)];
-		// for each imperceptably small cycle:
-		for(id of ids_by_period) {
-			if (id_to_descendant_map[id] === void 0) { continue; }
-			var period = id_to_descendant_map[id].motion.period();
-			// if the cycle takes more than a given number of frames to complete, 
-			// then it can be perceived by the user, so don't sample across it
-			if (period / timestep > min_cycle_frames ) 	{ continue; }
-			debugger
-			// sample across the cycle's period and add results to `samples`
-			var period = id_to_descendant_map[id].motion.period();
-			var subsamples = [];
-			for (sample of samples) {
-				for (var j = 0; j < samples_per_cycle; j++) {
-					subsamples.push(this.advance(sample, j*period/samples_per_cycle, {}, 1));
-				}
-			}
-			samples = subsamples;
-		}
-		return samples;
+		return insolation;
 	}
 }
