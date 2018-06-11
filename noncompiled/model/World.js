@@ -167,8 +167,7 @@ function World(parameters) {
 		this.star_system.advance(
 			this.star_system_configuration, 
 			timestep, 
-			this.star_system_configuration, 
-			60
+			this.star_system_configuration
 		); // TODO: set fps dynamically
 	};
 	return this;

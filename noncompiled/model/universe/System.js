@@ -53,6 +53,11 @@ function System(parameters) {
 	var id_to_descendant_map = this
 		.descendants()
 		.reduce((acc, x) => { acc[x.name] = x; return acc; }, {} );
+	var ids_by_period = this
+		.descendants()
+		.sort((a,b) => a.motion.period() - b.motion.period())
+		.reverse()
+		.map(x => x.name);
 
 	var mult_matrix = Matrix4x4.mult_matrix;
 
@@ -89,11 +94,6 @@ function System(parameters) {
 		}
 		return map;
 	}
-
-	// amount of real-world time below which user could no longer perceive the effects of a cycle, in seconds
-	IMPERCEPTABLY_SMALL_TIME = 1/2; // half a second
-	// amount of real-world time above which user could no longer perceive the effects of a cycle, in seconds
-	IMPERCEPTABLY_LARGE_TIME = 60*60*24; // 1 day
 
 	// find all resonances that must be considered for a given timestep
 	var find_resonances = function(timestep) {
@@ -137,29 +137,55 @@ function System(parameters) {
 	}
 
 	//given a cycle configuration, "advance()" returns the cycle configuration that would occur after a given amount of time
-	this.advance = function(config, timestep, output, fps) {
+	this.advance = function(config, timestep, output, min_cycle_frames, max_cycle_frames) {
 		output = output || {};
-		fps = fps || 60;
+		// number of frames below which user could no longer perceive the effects of a cycle, in seconds
+		min_cycle_frames = min_cycle_frames || 30/2; // half a second
+		// number of frames above which user could no longer perceive the effects of a cycle, in seconds
+		max_cycle_frames = max_cycle_frames || 60*60*24*30; // 1 day worth at 30fps
 
 		for(id in id_to_descendant_map){
 			if (id_to_descendant_map[id] === void 0) { continue; }
 			var period = id_to_descendant_map[id].motion.period();
+			// default to current value, if present
+			if (config[id]) { output[id] = config[id]};
 			// if cycle completes too fast for the user to perceive, don't simulate 
-			if (timestep / period > 1/(fps*IMPERCEPTABLY_SMALL_TIME) ) 	{ continue; } 
+			if (timestep / period > 1/(min_cycle_frames) ) 	{ continue; }
 			// if cycle completes too slow for the user to perceive, don't simulate
-			if (timestep / period < 1/(fps*IMPERCEPTABLY_LARGE_TIME) ) 	{ continue; } 
+			if (timestep / period < 1/(max_cycle_frames) ) 	{ continue; }
 			output[id] = ((config[id] || 0) + 2*Math.PI * (timestep / period)) % (2*Math.PI);
 		}
 
 		return output;
 	}
-	// given a cycle configuration with undefined cycle states, 
-	// "sample()" generates list of cycle configurations that sample over each cycle with undefined states
+	// given a cycle configuration and timestep, 
+	// "sample()" generates a list of cycle configurations that are representative of that timestep
 	// this is useful for finding, e.g. mean daily solar radiation
 	// the function will not generate more than a given number of samples per cycle
-	this.sample = function(config, samples_per_cycle) {
-		for(id in config){
-			
+	this.samples = function(config, timestep, samples_per_cycle, min_cycle_frames) {
+		// number of frames below which user could no longer perceive the effects of a cycle, in seconds
+		min_cycle_frames = min_cycle_frames || 30/2; // half a second
+
+		// list of configs to sample across, starting with a clone of config
+		var samples = [Object.assign({}, config)];
+		// for each imperceptably small cycle:
+		for(id of ids_by_period) {
+			if (id_to_descendant_map[id] === void 0) { continue; }
+			var period = id_to_descendant_map[id].motion.period();
+			// if the cycle takes more than a given number of frames to complete, 
+			// then it can be perceived by the user, so don't sample across it
+			if (period / timestep > min_cycle_frames ) 	{ continue; }
+			debugger
+			// sample across the cycle's period and add results to `samples`
+			var period = id_to_descendant_map[id].motion.period();
+			var subsamples = [];
+			for (sample of samples) {
+				for (var j = 0; j < samples_per_cycle; j++) {
+					subsamples.push(this.advance(sample, j*period/samples_per_cycle, {}, 1));
+				}
+			}
+			samples = subsamples;
 		}
+		return samples;
 	}
 }
