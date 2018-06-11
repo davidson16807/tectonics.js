@@ -2,3 +2,4 @@
 *.sublime-workspace
 node_modules
 .fuse_hidden*
+*.DS_Store
