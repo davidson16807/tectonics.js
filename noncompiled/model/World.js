@@ -7,6 +7,7 @@ function World(parameters) {
 	this.grid = parameters['grid'] || stop('missing parameter: "grid"');
 
 	this.star = new Star({
+		name: 'sun'
 		grid: this.grid,
 		mass: Units.SOLAR_MASS,
 	});

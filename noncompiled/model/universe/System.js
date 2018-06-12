@@ -60,8 +60,12 @@ function System(parameters) {
 		.map(x => x.name);
 	var bodies = this
 		.descendants()
-		.map(x => x.body)
-		.filter(x => x !== void 0);
+		.filter(x => x.body !== void 0)
+		.map(x => x.body);
+	var body_id_to_descendant_map = this
+		.descendants()
+		.filter(x => x.body !== void 0)
+		.reduce((acc, x) => { acc[x.body.name] = x; return acc; }, {} );
 
 	var mult_matrix = Matrix4x4.mult_matrix;
 
@@ -80,9 +84,9 @@ function System(parameters) {
 			// default to current value, if present
 			if (config[id]) { output[id] = config[id]};
 			// if cycle completes too fast for the user to perceive, don't simulate 
-			if (timestep / period > 1/(min_frames_per_cycle) ) 	{ continue; }
+			if (period / timestep > min_frames_per_cycle ) 	{ continue; }
 			// if cycle completes too slow for the user to perceive, don't simulate
-			if (timestep / period < 1/(max_frames_per_cycle) ) 	{ continue; }
+			if (period / timestep < max_frames_per_cycle ) 	{ continue; }
 			output[id] = ((config[id] || 0) + 2*Math.PI * (timestep / period)) % (2*Math.PI);
 		}
 
@@ -105,7 +109,6 @@ function System(parameters) {
 			// if the cycle takes more than a given number of frames to complete, 
 			// then it can be perceived by the user, so don't sample across it
 			if (period / timestep > min_frames_per_cycle ) 	{ continue; }
-			debugger
 			// sample across the cycle's period and add results to `samples`
 			var period = id_to_descendant_map[id].motion.period();
 			var subsamples = [];
@@ -153,15 +156,15 @@ function System(parameters) {
 		return map;
 	}
 
-	this.get_insolation = function(config, origin, surface_normal, insolation) {
-		var body_matrices = this.get_body_matrices(config, origin);
-		var insolation_sample = Float32Raster(insolation.grid);
-		var total_insolation = insolation; // double duty
+	this.get_insolation = function(config, body, surface_normal, insolation) {
+		var insolation = insolation || Float32Raster(surface_normal.grid);
+		var insolation_sample = Float32Raster(surface_normal.grid);
+		var origin = body_id_to_descendant_map[body.name];
+		var body_matrices = origin.get_body_matrices(config);
 		// clear out result
 		Float32Raster.fill(insolation, 0);
 		var stars = bodies.filter(body => body instanceof Star);
 		for (star of stars) {
-			var star = body;
 			var star_matrix = body_matrices[star.name];
 			var star_pos = Matrix4x4.get_translation(star_matrix);
 			// calculate insolation effects of a single star
