@@ -50,78 +50,8 @@ function System(parameters) {
 		];
 	}
 
-	var id_to_descendant_map = this
-		.descendants()
-		.reduce((acc, x) => { acc[x.name] = x; return acc; }, {} );
-	var ids_by_period = this
-		.descendants()
-		.sort((a,b) => a.motion.period() - b.motion.period())
-		.reverse()
-		.map(x => x.name);
-	var bodies = this
-		.descendants()
-		.filter(x => x.body !== void 0)
-		.map(x => x.body);
-	var body_id_to_descendant_map = this
-		.descendants()
-		.filter(x => x.body !== void 0)
-		.reduce((acc, x) => { acc[x.body.name] = x; return acc; }, {} );
-
 	var mult_matrix = Matrix4x4.mult_matrix;
-
-
-	//given a cycle configuration, "advance()" returns the cycle configuration that would occur after a given amount of time
-	this.advance = function(config, timestep, output, min_frames_per_cycle, max_frames_per_cycle) {
-		output = output || {};
-		// number of frames below which user could no longer perceive the effects of a cycle, in seconds
-		min_frames_per_cycle = min_frames_per_cycle || 30/2; // half a second
-		// number of frames above which user could no longer perceive the effects of a cycle, in seconds
-		max_frames_per_cycle = max_frames_per_cycle || 60*60*24*30; // 1 day worth at 30fps
-
-		for(id in id_to_descendant_map){
-			if (id_to_descendant_map[id] === void 0) { continue; }
-			var period = id_to_descendant_map[id].motion.period();
-			// default to current value, if present
-			if (config[id]) { output[id] = config[id]};
-			// if cycle completes too fast for the user to perceive, don't simulate 
-			if (period / timestep > min_frames_per_cycle ) 	{ continue; }
-			// if cycle completes too slow for the user to perceive, don't simulate
-			if (period / timestep < max_frames_per_cycle ) 	{ continue; }
-			output[id] = ((config[id] || 0) + 2*Math.PI * (timestep / period)) % (2*Math.PI);
-		}
-
-		return output;
-	}
-	// given a cycle configuration and timestep, 
-	// "sample()" generates a list of cycle configurations that are representative of that timestep
-	// this is useful for finding, e.g. mean daily solar radiation
-	// the function will not generate more than a given number of samples per cycle
-	this.samples = function(config, timestep, samples_per_cycle, min_frames_per_cycle) {
-		// number of frames below which user could no longer perceive the effects of a cycle, in seconds
-		min_frames_per_cycle = min_frames_per_cycle || 30/2; // half a second
-
-		// list of configs to sample across, starting with a clone of config
-		var samples = [Object.assign({}, config)];
-		// for each imperceptably small cycle:
-		for(id of ids_by_period) {
-			if (id_to_descendant_map[id] === void 0) { continue; }
-			var period = id_to_descendant_map[id].motion.period();
-			// if the cycle takes more than a given number of frames to complete, 
-			// then it can be perceived by the user, so don't sample across it
-			if (period / timestep > min_frames_per_cycle ) 	{ continue; }
-			// sample across the cycle's period and add results to `samples`
-			var period = id_to_descendant_map[id].motion.period();
-			var subsamples = [];
-			for (sample of samples) {
-				for (var j = 0; j < samples_per_cycle; j++) {
-					subsamples.push(this.advance(sample, j*period/samples_per_cycle, {}, 1));
-				}
-			}
-			samples = subsamples;
-		}
-		return samples;
-	}
-
+	
 	// returns a dictionary mapping body ids to transformation matrices
 	//  indicating the position/rotation relative to this node 
 	this.get_body_matrices = function (config, origin) {
@@ -156,27 +86,4 @@ function System(parameters) {
 		return map;
 	}
 
-	this.get_insolation = function(config, body, surface_normal, insolation) {
-		var insolation = insolation || Float32Raster(surface_normal.grid);
-		var insolation_sample = Float32Raster(surface_normal.grid);
-		var origin = body_id_to_descendant_map[body.name];
-		var body_matrices = origin.get_body_matrices(config);
-		// clear out result
-		Float32Raster.fill(insolation, 0);
-		var stars = bodies.filter(body => body instanceof Star);
-		for (star of stars) {
-			var star_matrix = body_matrices[star.name];
-			var star_pos = Matrix4x4.get_translation(star_matrix);
-			// calculate insolation effects of a single star
-			Optics.incident_radiation(
-				surface_normal,
-				star_pos, 
-				star.luminosity,
-				insolation_sample
-			);
-			// TODO: add effects of occlusion, e.g. moons around gas giants
-			ScalarField.add_field(insolation, insolation_sample, insolation);
-		}
-		return insolation;
-	}
 }

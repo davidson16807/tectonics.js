@@ -4,7 +4,7 @@
 // the data structure is designed to allow for:
 //  * iterative physics simulation
 //  * "on-rails" simulation, ala Kerbal Space Program
-//  * arbitrary assignment of cycle states from the user (since any state is likely occur within a single million year timestep)
+//  * arbitrary assignment of cycle states from the user (since the system is ergodic - any state is likely occur within a single million year timestep)
 // design principles:
 //  1. must be able to easily update the state of all "on-rails" motions 
 //  2. must be able to easily update the state of all bodies
@@ -23,7 +23,6 @@
 // 
 // so we have the following:
 // 
-//motion hierarchy
 //	ancestors(hierarchy, node)
 //		returns a hierarchy containing only immediate ancestors of a given node 
 //	descendants(hierarchy, node)
@@ -48,106 +47,135 @@
 //			successively iterate() by 1.61^n that approximates averaging_window_size / sample_num
 //			successively iterate() by averaging_window_size / sample_num
 //
-//'galactic revolution': {
-//	motion:{sma: 4.7e20,}
-//	parent: undefined
-//	children: ['solar rotation', 'earth revolution']
-//},
-//'solar rotation': {
-//	motion: { axial_tilt: 0, }
-//	parent : 'galactic revolution'
-//	children: []
-//	body: 'sun'
-//},
-//'earth revolution': {
-//	motion: { sma: 4.7e10, }
-//	parent : 'galactic revolution'
-//	children: ['earth rotation', 'moon revolution']
-//},
-//'earth rotation': {
-//	motion: { axial_tilt: 0, }
-//	parent : 'earth revolution'
-//	children: []
-//	body: 'earth'
-//},
-//'moon revolution': {
-//	motion: { sma: 4.7e10, }
-//	parent : 'earth revolution'
-//	children: ['moon rotation']
-//}
-//'moon rotation': {
-//	motion: { axial_tilt: 4.7e10, }
-//	parent : 'moon revolution'
-//	children: []
-//	body: 'moon'
-//}
-//
-//state:
-//{
-//	'galactic revolution': 0.5,
-//	'sun rotation': 0.2,
-//	'earth revolution': 0.3,
-//	'earth rotation': undefined,
-//	'moon revolution': 0.3,
-//	'moon rotation': 0.3,
-//}
-//
-//matrices:
-//{
-//	'sun': Matrix4x4(...),
-//	'earth': Matrix4x4(...),
-//	'moon': Matrix4x4(...),
-//}
-//
 
 
-function Universe(motion_hierarchy) {
-	var self = this;
+function Universe(hierarchy, config) {
+	config = config || {};
 
-	var motion_hierarchy = motion_hierarchy;
+	var id_to_node_map = this
+		.descendants()
+		.reduce((acc, x) => { acc[x.name] = x; return acc; }, {} );
+	var nodes_by_period = this
+		.descendants()
+		.sort((a,b) => a.motion.period() - b.motion.period())
+		.reverse();
+	var bodies = this
+		.descendants()
+		.filter(x => x.body !== void 0)
+		.map(x => x.body);
+	var body_id_to_node_map = this
+		.descendants()
+		.filter(x => x.body !== void 0)
+		.reduce((acc, x) => { acc[x.body.name] = x; return acc; }, {} );
 
-	var motion_hierarchy_nodes = motion_hierarchy.descendants();
+	//given a cycle configuration, "advance()" returns the cycle configuration that would occur after a given amount of time
+	function advance(config, timestep, output, min_frames_per_cycle, max_frames_per_cycle) {
+		output = output || {};
+		// number of frames below which user could no longer perceive the effects of a cycle, in seconds
+		min_frames_per_cycle = min_frames_per_cycle || 30/2; // half a second
+		// number of frames above which user could no longer perceive the effects of a cycle, in seconds
+		max_frames_per_cycle = max_frames_per_cycle || 60*60*24*30; // 1 day worth at 30fps
 
-	var star_nodes = 
-		this.motion_hierarchy_nodes
-			.filter	(node => node.body)
-			.filter	(node => node.body instanceof Star)
-			.map	(node => node.body)
+		for(id in id_to_node_map){
+			if (id_to_node_map[id] === void 0) { continue; }
+			var period = id_to_node_map[id].motion.period();
+			// default to current value, if present
+			if (config[id]) { output[id] = config[id]};
+			// if cycle completes too fast for the user to perceive, don't simulate 
+			if (period / timestep > min_frames_per_cycle ) 	{ continue; }
+			// if cycle completes too slow for the user to perceive, don't simulate
+			if (period / timestep < max_frames_per_cycle ) 	{ continue; }
+			output[id] = ((config[id] || 0) + 2*Math.PI * (timestep / period)) % (2*Math.PI);
+		}
 
-	var body_nodes = 
-		this.motion_hierarchy_nodes
-			.filter	(node => node.body)
-			// .map	(node => node.body)
+		return output;
+	}
 
-	var body_nodes_lookup = 
-		this.motion_hierarchy_nodes
-			.filter	(node => node.body)
-			.reduce	((map, node) => ({ ...map, [node.body.name]: node.body }), {}); // convert to dict
-			// .map	(node => node.body)
+	// given a cycle configuration and timestep, 
+	// "sample()" generates a list of cycle configurations that are representative of that timestep
+	// this is useful for finding, e.g. mean daily solar radiation
+	// the function will not generate more than a given number of samples per cycle
+	function samples(config, timestep, samples_per_cycle, min_frames_per_cycle) {
+		// number of frames below which user could no longer perceive the effects of a cycle, in seconds
+		min_frames_per_cycle = min_frames_per_cycle || 30/2; // half a second
 
-//	this.invalidate = function() {
-//
-//	}
+		// list of configs to sample across, starting with a clone of config
+		var samples = [Object.assign({}, config)];
+		// for each imperceptably small cycle:
+		for(node of nodes_by_period) {
+			if (node === void 0) { continue; }
+			var period = node.motion.period();
+			// if the cycle takes more than a given number of frames to complete, 
+			// then it can be perceived by the user, so don't sample across it
+			if (period / timestep > min_frames_per_cycle ) 	{ continue; }
+			// sample across the cycle's period and add results to `samples`
+			var period = node.motion.period();
+			var subsamples = [];
+			for (sample of samples) {
+				for (var j = 0; j < samples_per_cycle; j++) {
+					subsamples.push(this.advance(sample, j*period/samples_per_cycle, {}, 1));
+				}
+			}
+			samples = subsamples;
+		}
+		return samples;
+	}
+
+	function insolation(config, body, insolation) {
+		var insolation = insolation || Float32Raster(body.grid);
+		var insolation_sample = Float32Raster(body.grid);
+
+		var origin = body_id_to_node_map[body.name];
+		var surface_normal = body.grid.pos;
+
+		var body_matrices = origin.get_body_matrices(config);
+		// clear out result
+		Float32Raster.fill(insolation, 0);
+		var stars = bodies.filter(body => body instanceof Star);
+		for (star of stars) {
+			var star_matrix = body_matrices[star.name];
+			var star_pos = Matrix4x4.get_translation(star_matrix);
+			// calculate insolation effects of a single star
+			Optics.incident_radiation(
+				surface_normal,
+				star_pos, 
+				star.luminosity,
+				insolation_sample
+			);
+			// TODO: add effects of occlusion, e.g. moons around gas giants
+			ScalarField.add_field(insolation, insolation_sample, insolation);
+		}
+		return insolation;
+	}
+
+	this.average_insolation(body, timestep, samples_per_cycle, min_frames_per_cycle){
+		var insolation_sample = Float32Raster(body.grid);
+
+		min_frames_per_cycle = 100;
+		var samples_ = samples(config, timestep, samples_per_cycle, min_frames_per_cycle);
+		for (sample of samples_){
+			insolation(sample, body, insolation_sample);
+			
+		}
+	}
+
 //
 //	this.setDependencies = function(dependencies) {
 //
 //	}
 //
-//	this.initialize = function() {
-//
-//	}
+	this.initialize = function() {
+
+	}
+
+	this.invalidate = function() {
+
+	}
 
 	this.calcChanges = function(timestep) {
 		if (timestep === 0) {
 			return;
 		};
-
-		for (var i = 0; i < motion_hierarchy_nodes.length; i++) {
-			motion_hierarchy_nodes[i].calcChanges(timestep);
-		}
-		for (var i = 0; i < body_nodes.length; i++) {
-			body_nodes[i].body.calcChanges(timestep);
-		}
 	};
 
 	this.applyChanges = function(timestep) {
@@ -155,44 +183,6 @@ function Universe(motion_hierarchy) {
 			return;
 		};
 
-		for (var i = 0; i < motion_hierarchy_nodes.length; i++) {
-			motion_hierarchy_nodes[i].applyChanges(timestep);
-		}
-		for (var i = 0; i < body_nodes.length; i++) {
-			body_nodes[i].body.applyChanges(timestep);
-		}
+		hierarchy.advance(config, timestep, config); 
 	};
-
-    // This calculates the incident radiation received by a celestial body from all the light sources in the system
-	this.incident_radiation = function (body, cycle_states, result) { 
-		var grid = body.grid;
-
-		var add = ScalarField.add_field; 
-		var get_incident_radiation = Optics.incident_radiation;
-
-		var body_node = body_nodes_lookup[body.name];
-		var body_matrix_lookup = body_node.get_parent_relative_matrices();
-		var body_surface_normal = grid.pos; 
-		var incident_radiation_star = Float32Raster(grid); 
-		// TODO: take the average of cycles whose period is small enough
-		for (var i = 0; i < star_nodes.length; i++) {
-			var star = star_nodes[i].body;
-			var star_matrix = body_matrix_lookup[star.name];
-			var star_pos = Vector.mult_matrix4x4(0,0,0, star_matrix);
-			var star_pos = Vector.normalize(star_pos.x, star_pos.y, star_pos.z);
-			get_incident_radiation(
-				body_surface_normal,
-				star_pos,
-				star.stellar_luminosity, 
-				incident_radiation_star,
-			); 
-			add (incident_radiation_star, incident_radiation_stars, incident_radiation_stars);
-		}
-		// TODO: need scratch for these 
-		var incident_radiation_sum  = Float32Raster(grid); 
-
-
-		ScalarField.div_scalar(incident_radiation_sum, sample_num, result); 
-		return result; 
-	}
 }
