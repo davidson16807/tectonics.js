@@ -98,8 +98,8 @@
 <div class="topright collapse collapsible controls" >
 	<div id="time-menu" class="time-menu">
 		<div class="input-group age-group">
-			<span class="form-control input-sm age">{{ format(age * 1e6, 1000, 1).quantity }}</span>
-			<span class="input-group-addon age-units">{{ format(age * 1e6, 1000, 1).unit }}y</span>
+			<span class="form-control input-sm age">{{ format(age).quantity }}</span>
+			<span class="input-group-addon age-units">{{ format(age).unit }}y</span>
 		</div>
 		<div class="input-group speed-group">
 			<span class="input-group-addon rewind" v-on:click="rewind()">
@@ -556,9 +556,9 @@
 					unit: 		unit,
 				};
 			}
-	function format_text (My, rollover, precision) {
-		var formatted = format(My * 1e6, rollover, precision);
-		return formatted.quantity + '' + formatted.unit + 'y';
+	function format_time (seconds) {
+		var formatted = format(seconds / Units.SECONDS_IN_YEAR, 1000, 3);
+		return formatted.quantity + formatted.unit + 'y';
 	}
 
 	function download(dataUrl, filename) {
@@ -665,7 +665,7 @@
 			var serialized = JsonSerializer.model(model,{seed: seed, random: random});
 			var stringified = JSON.stringify(serialized);
   			var dataUrl = `data:application/json;charset=utf-8,${stringified}`;
-  			var age = format_text(model.age, 1000, 3).replace(/\s/,'');
+  			var age = format_time(model.age);
   			var filename = `${seed}-${age}.sim`;
   			download(dataUrl, filename);
   		}
@@ -678,7 +678,7 @@
 	  	csv(event) {
 			var content = CsvExporter.world(model.world());
   			var dataUrl = `data:application/json;charset=utf-8,${content}`;
-  			var age = format_text(model.age, 1000, 3).replace(/\s/,'');
+  			var age = format_time(model.age);
   			var filename = `${seed}-${age}.csv`;
   			download(dataUrl, filename);
   		}
@@ -698,7 +698,7 @@
   			var dataUrl = THREEx.Screenshot.toDataURL(renderer);
   			var filename = 
   				seed+'-'+
-  				format_text(model.age, 1000, 3).replace(/\s/,'')+
+  				format_time(model.age)+
   				'.png';
   			download(dataUrl, filename);
   		}
@@ -779,7 +779,9 @@
 		setSeasonVisibility: function(visibility) {
 			this.isSeasonVisible = visibility || false;
 		},
-		format: format,
+		format: function(time) {
+			return format(time/Units.SECONDS_IN_YEAR, 1000, 3)
+		},
 	}
 	});
 
