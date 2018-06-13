@@ -70,16 +70,16 @@
 	<script src="noncompiled/model/Model.js"></script>
 	<script src="noncompiled/generators/EliasHeightMapGenerator.js"></script>
 	<script src="noncompiled/generators/WorldGenerator.js"></script>
+	<script src="noncompiled/generators/NameGenerator.js"></script>
+	<script src="noncompiled/generators/NameCorpii.js"></script>
+	<script src="noncompiled/file-io/JsonSerializer.js"></script>
+	<script src="noncompiled/file-io/CsvExporter.js"></script>
 	<script src="noncompiled/view/ChartDisplay.js"></script>
 	<script src="noncompiled/view/ScalarDisplay.js"></script>
 	<script src="noncompiled/view/VectorDisplay.js"></script>
 	<script src="noncompiled/view/RegressionTestDisplays.js"></script>
 	<script src="noncompiled/view/ExperimentalDisplays.js"></script>
 	<script src="noncompiled/view/View.js"></script>
-	<script src="noncompiled/generators/NameGenerator.js"></script>
-	<script src="noncompiled/generators/NameCorpii.js"></script>
-	<script src="noncompiled/file-io/JsonSerializer.js"></script>
-	<script src="noncompiled/file-io/CsvExporter.js"></script>
 </head>
 <body>
 <!-- three.js container -->
@@ -113,7 +113,7 @@
 				<img src="icons/fast-forward.svg" height="12em" width="12em">
 			</span>
 
-			<span class="input-group-addon">{{speed_strings[speed_i]}}</span>
+			<span class="input-group-addon">{{speeds[speed_i].name}}</span>
 			<span class="instructions">&lt;/&gt;</span>
 		</div>
 		<div class="input-group season-group" v-if="isSeasonVisible">
@@ -737,28 +737,16 @@
 	  	paused: false,
 		speed_i: 9,
 		speeds: [
-			1,
-			60,
-			60*60,
-			60*60*24,
-			60*60*24*31,
-			1  *Units.SECONDS_IN_YEAR,
-			30 *Units.SECONDS_IN_YEAR,
-			1e3*Units.SECONDS_IN_YEAR,
-			3e4*Units.SECONDS_IN_YEAR,
-			1e6*Units.SECONDS_IN_YEAR,
-		],
-		speed_strings: [
-			'1s/s',
-			'1m/s',
-			'1hr/s',
-			'1dy/s',
-			'1mo/s',
-			'1y/s',
-			'30y/s',
-			'1ky/s',
-			'30ky/s',
-			'1My/s',
+			{	name:'1s/s', 	scale: 1,							},
+			{	name:'1m/s', 	scale: 60,							},
+			{	name:'1hr/s', 	scale: 60*60,						},
+			{	name:'1dy/s', 	scale: 60*60*24,					},
+			{	name:'1mo/s', 	scale: 60*60*24*31,					},
+			{	name:'1y/s', 	scale: 1  *Units.SECONDS_IN_YEAR,	},
+			{	name:'30y/s', 	scale: 30 *Units.SECONDS_IN_YEAR,	},
+			{	name:'1ky/s', 	scale: 1e3*Units.SECONDS_IN_YEAR,	},
+			{	name:'30ky/s', 	scale: 3e4*Units.SECONDS_IN_YEAR,	},
+			{	name:'1My/s', 	scale: 1e6*Units.SECONDS_IN_YEAR,	},
 		],
 	  	age: 0,
 	  	season: 0,
@@ -776,14 +764,14 @@
 			model.toggle_pause();
 		},
 		fastForward: function() {
-			if (this.speed_i >= this.speed_strings.length-1) {return} 
+			if (this.speed_i >= this.speeds.length-1) {return} 
 			this.speed_i += 1;
-			model.speed = this.speeds[this.speed_i];
+			model.speed = this.speeds[this.speed_i].scale;
 		},
 		rewind: function() {
 			if (this.speed_i <= 0) {return} 
 			this.speed_i -= 1;
-			model.speed = this.speeds[this.speed_i];
+			model.speed = this.speeds[this.speed_i].scale;
 		},
 		setSeason: function() {
 			model.world().orbit.mean_anomaly = this.season;
