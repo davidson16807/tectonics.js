@@ -382,6 +382,12 @@
 		var gen = NameGenerator.get_length_distribution_generator(corpus, 25, {5:1,6:3,7:11,8:3,9:1}, 100);
 		seed = gen();
 	}
+	var star_name = '';
+	{
+		var corpus = NameGenerator.tokenize_corpus(NameCorpii.arabic_star_names);
+		var gen = NameGenerator.get_length_distribution_generator(corpus, 25, {5:1,6:3,7:11,8:3,9:1}, 100);
+		star_name = gen();
+	}
 	var random = new Random(parseSeed(seed));
 
 	var renderStats, updateStats, renderer, controls;
@@ -422,7 +428,8 @@
 		} else {
 			world = new World({ 
 				name: seed,
-				grid: view.grid 
+				grid: view.grid,
+				star_name: star_name,
 			});
 			WorldGenerator.generate(world, 
 				EliasHeightMapGenerator.generate(world.grid), 
