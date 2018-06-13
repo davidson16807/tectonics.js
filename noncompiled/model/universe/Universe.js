@@ -71,10 +71,10 @@ function Universe(hierarchy, config) {
 	// NOTE: max_perceivable_period = 60*60*24*30 * timestep // 1 day worth of real time at 30fps
 
 	//given a cycle configuration, "advance()" returns the cycle configuration that would occur after a given amount of time
-	function advance(config, output, min_perceivable_period, max_perceivable_period) {
+	function advance(config, timestep, output, min_perceivable_period, max_perceivable_period) {
 		output = output || {};
 
-		for(id in id_to_node_map){
+		for(var id in id_to_node_map){
 			if (id_to_node_map[id] === void 0) { continue; }
 			var period = id_to_node_map[id].motion.period();
 			// default to current value, if present
@@ -97,7 +97,7 @@ function Universe(hierarchy, config) {
 		// list of configs to sample across, starting with a clone of config
 		var samples = [Object.assign({}, config)];
 		// for each imperceptably small cycle:
-		for(node of nodes_by_period) {
+		for(var node of nodes_by_period) {
 			if (node === void 0) { continue; }
 			var period = node.motion.period();
 			// if the cycle takes more than a given amount to complete, 
@@ -106,7 +106,7 @@ function Universe(hierarchy, config) {
 			// sample across the cycle's period and add results to `samples`
 			var period = node.motion.period();
 			var subsamples = [];
-			for (sample of samples) {
+			for (var sample of samples) {
 				for (var j = 0; j < samples_per_cycle; j++) {
 					subsamples.push(advance(sample, j*period/samples_per_cycle, {}, 1));
 				}
@@ -136,15 +136,15 @@ function Universe(hierarchy, config) {
 	}
 	
 	// average insolation from a single star
-	average_insolation_from_star = function(body, star, min_perceivable_period, average_insolation, samples_per_cycle){
+	function average_insolation_from_star(body, star, min_perceivable_period, average_insolation, samples_per_cycle){
 		samples_per_cycle = samples_per_cycle || 6;
 		var average_insolation = average_insolation || Float32Raster(body.grid);
 		var insolation_sample = Float32Raster(body.grid);
 		var total_insolation = average_insolation; // double duty for performance
 		Float32Raster.fill(total_insolation, 0);
 
-		var samples_ = samples(config, timestep, samples_per_cycle, min_perceivable_period);
-		for (sample of samples_){
+		var samples_ = samples(config, samples_per_cycle, min_perceivable_period);
+		for (var sample of samples_){
 			insolation(sample, body, star, insolation_sample);
 			ScalarField.add_field(total_insolation, insolation_sample, total_insolation);
 		}
@@ -154,18 +154,18 @@ function Universe(hierarchy, config) {
 	// average insolation from all stars
 	// TODO: memoize this into "average_insolation_from_star" and "reference_luminosity"
 	//   correct memoized result to reflect actual luminosity as star ages
-	this.average_insolation = function(body, min_perceivable_period, total_insolation, samples_per_cycle){
+	this.average_insolation = function(body, min_perceivable_period, average_insolation, samples_per_cycle){
 		samples_per_cycle = samples_per_cycle || 6;
+		var average_insolation = average_insolation || Float32Raster(body.grid);
 		var insolation_sample = Float32Raster(body.grid);
-		var total_insolation = average_insolation; // double duty for performance
-		Float32Raster.fill(total_insolation, 0);
+		Float32Raster.fill(average_insolation, 0);
 
 		var stars = bodies.filter(body => body instanceof Star);
-		for (star of stars){
-			insolation(body, star, min_perceivable_period, insolation_sample, samples_per_cycle);
-			ScalarField.add_field(total_insolation, insolation_sample, total_insolation);
+		for (var star of stars){
+			average_insolation_from_star(body, star, min_perceivable_period, insolation_sample, samples_per_cycle);
+			ScalarField.add_field(average_insolation, insolation_sample, average_insolation);
 		}
-		return total_insolation;
+		return average_insolation;
 	}
 
 //
@@ -192,6 +192,6 @@ function Universe(hierarchy, config) {
 			return;
 		};
 
-		hierarchy.advance(config, timestep, config); 
+		advance(config, timestep, config); 
 	};
 }
