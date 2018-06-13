@@ -22,6 +22,9 @@ function System(parameters) {
 	// the motions described by the children assume a coordinate basis that is designated by this node
 	this.children 	= parameters['children'] || [];
 
+	// whether or not the insolation of child bodies will change throughout this system's motion
+	this.invariant_insolation = parameters['invariant_insolation'] || false;
+
 	// iterate through children and assign their parents
 	for (var i = 0; i < this.children.length; i++) {
 		this.children[i].parent = this;

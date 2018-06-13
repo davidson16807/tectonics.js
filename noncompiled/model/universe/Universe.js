@@ -103,6 +103,7 @@ function Universe(hierarchy, config) {
 			// if the cycle takes more than a given amount to complete, 
 			// then it can be simulated, so don't sample across it
 			if (period > min_perceivable_period) 	{ continue; }
+			if (node.invariant_insolation) 			{ continue; }
 			// sample across the cycle's period and add results to `samples`
 			var period = node.motion.period();
 			var subsamples = [];

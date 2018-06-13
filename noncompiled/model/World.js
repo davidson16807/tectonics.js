@@ -18,6 +18,7 @@ function World(parameters) {
 				semi_major_axis: 2.35e20, // meters
 				effective_combined_mass: 1.262e41, // kg, back calculated to achieve period of 250 million years
 			}),
+			invariant_insolation: true,
 			body: this.star,
 			children: [
 
@@ -36,6 +37,7 @@ function World(parameters) {
 							motion: new Spin({ 
 								angular_speed: 2*Math.PI/(25860 * Units.SECONDS_IN_YEAR),
 							}),	
+							invariant_insolation: true,
 							children: [
 								new System({
 									name: 'spin',
@@ -45,7 +47,7 @@ function World(parameters) {
 									}),	
 									body: this,
 								}),
-							],
+						 	]
 						}),
 					],
 				}),
