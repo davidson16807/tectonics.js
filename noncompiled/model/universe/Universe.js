@@ -191,7 +191,6 @@ function Universe(hierarchy, config) {
 		if (timestep === 0) {
 			return;
 		};
-
-		advance(config, timestep, config); 
+		advance(config, timestep*Units.SECONDS_IN_MEGAYEAR, config); 
 	};
 }
