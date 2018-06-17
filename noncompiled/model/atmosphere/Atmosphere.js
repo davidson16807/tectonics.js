@@ -75,6 +75,7 @@ function Atmosphere(parameters) {
 	);
 
 	// private variables
+	var get_average_insolation = undefined;
 	var material_reflectivity = undefined;
 	var displacement 	= undefined;
 	var ocean_coverage 	= undefined;
@@ -87,6 +88,7 @@ function Atmosphere(parameters) {
 	var incident_radiation = undefined;
 
 	function assert_dependencies() {
+		if (get_average_insolation === void 0) { throw '"get_average_insolation" not provided'; }
 		if (material_reflectivity === void 0) { throw '"material_reflectivity" not provided'; }
 		if (displacement === void 0)	 { throw '"displacement" not provided'; }
 		if (ocean_coverage === void 0)	 { throw '"ocean_coverage" not provided'; }
@@ -100,6 +102,7 @@ function Atmosphere(parameters) {
 	}
 
 	this.setDependencies = function(dependencies) {
+		get_average_insolation = dependencies['get_average_insolation'] !== void 0? 	dependencies['get_average_insolation'] 	: material_reflectivity;		
 		material_reflectivity = dependencies['material_reflectivity'] !== void 0? 	dependencies['material_reflectivity'] 	: material_reflectivity;		
 		displacement 		= dependencies['displacement'] 	!== void 0? 	dependencies['displacement'] 	: displacement;		
 		ocean_coverage 		= dependencies['ocean_coverage']!== void 0? 	dependencies['ocean_coverage'] 	: ocean_coverage;		

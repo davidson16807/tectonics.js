@@ -7,7 +7,7 @@ function World(parameters) {
 	this.grid = parameters['grid'] || stop('missing parameter: "grid"');
 
 	this.star = new Star({
-		name: parameters['star_name'] || 'sun',
+		name: 'sun',
 		grid: this.grid,
 		mass: Units.SOLAR_MASS,
 	});
@@ -114,6 +114,7 @@ function World(parameters) {
 		'material_density'		: this.material_density,
 	});
 	this.atmosphere.setDependencies({
+		'get_average_insolation': this.universe.get_average_insolation,
 		'material_reflectivity'	: this.material_reflectivity,
 		'displacement' 			: this.lithosphere.displacement, //TODO: convert this to elevation
 		'sealevel' 				: this.hydrosphere.sealevel,

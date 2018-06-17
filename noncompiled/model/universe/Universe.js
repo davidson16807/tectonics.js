@@ -73,7 +73,6 @@ function Universe(hierarchy, config) {
 	//given a cycle configuration, "advance()" returns the cycle configuration that would occur after a given amount of time
 	function advance(config, timestep, output, min_perceivable_period, max_perceivable_period) {
 		output = output || {};
-
 		for(var id in id_to_node_map){
 			if (id_to_node_map[id] === void 0) { continue; }
 			var period = id_to_node_map[id].motion.period();
@@ -155,7 +154,7 @@ function Universe(hierarchy, config) {
 	// average insolation from all stars
 	// TODO: memoize this into "average_insolation_from_star" and "reference_luminosity"
 	//   correct memoized result to reflect actual luminosity as star ages
-	this.average_insolation = function(body, min_perceivable_period, average_insolation, samples_per_cycle){
+	function average_insolation(body, min_perceivable_period, average_insolation, samples_per_cycle){
 		samples_per_cycle = samples_per_cycle || 6;
 		var average_insolation = average_insolation || Float32Raster(body.grid);
 		var insolation_sample = Float32Raster(body.grid);
@@ -167,6 +166,15 @@ function Universe(hierarchy, config) {
 			ScalarField.add_field(average_insolation, insolation_sample, average_insolation);
 		}
 		return average_insolation;
+	}
+
+	this.get_average_insolation = function(body, timestep, result) {
+		return average_insolation(
+			body, 
+			30/2        * timestep*Units.SECONDS_IN_MEGAYEAR, 
+			result,
+			6
+		)
 	}
 
 //
@@ -192,6 +200,11 @@ function Universe(hierarchy, config) {
 		if (timestep === 0) {
 			return;
 		};
-		advance(config, timestep*Units.SECONDS_IN_MEGAYEAR, config); 
+		advance(config, 
+				timestep * Units.SECONDS_IN_MEGAYEAR,
+				{},
+				30/2        * timestep * Units.SECONDS_IN_MEGAYEAR, 
+				60*60*24*30 * timestep * Units.SECONDS_IN_MEGAYEAR, 
+				config); 
 	};
 }
