@@ -124,6 +124,23 @@ var AtmosphereModeling = (function() {
 		
 		return result;
 	}
+	AtmosphereModeling.heat_capacity = function(
+		ocean_fraction,
+		material_heat_capacity,
+		result) {
+
+	    result = result || Float32Raster(ocean_fraction.grid);
+
+	    var ocean_heat_capacity 	= material_heat_capacity.ocean || 30e7; // heat capacity of 1m^2 of 75m water column, the ocean's "mixing layer"
+	    var land_heat_capacity		= material_heat_capacity.felsic || 1e7; // heat capacity of 1m^2 air column on earth
+
+	    var lerp_fsf = Float32RasterInterpolation.lerp_fsf;
+
+	    Float32Raster.fill(result, land_heat_capacity);
+		if (ocean_fraction !== void 0) {	lerp_fsf(result, 	ocean_albedo, 	ocean_fraction, result);	}
+		
+		return result;
+	}
 
 
 

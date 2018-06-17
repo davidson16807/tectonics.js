@@ -32,6 +32,9 @@ function Atmosphere(parameters) {
 			Float32Dataset.min(self.absorbed_radiation.value()), 
 			4/3, 10
 		)
+	this.heat_capacity = new Memo(
+		Float32Raster(grid),
+		result => AtmosphereModeling.heat_capacity(ocean_fraction, material_heat_capacity, result)
 	);
 	this.surface_heat = new Memo(
 		Float32Raster(grid),
