@@ -136,7 +136,7 @@ function Universe(hierarchy, config) {
 	}
 	
 	// average insolation from a single star
-	function average_insolation_from_star(body, star, min_perceivable_period, average_insolation, samples_per_cycle){
+	function average_insolation_from_star(config, body, star, min_perceivable_period, average_insolation, samples_per_cycle){
 		samples_per_cycle = samples_per_cycle || 6;
 		var average_insolation = average_insolation || Float32Raster(body.grid);
 		var insolation_sample = Float32Raster(body.grid);
@@ -162,7 +162,7 @@ function Universe(hierarchy, config) {
 
 		var stars = bodies.filter(body => body instanceof Star);
 		for (var star of stars){
-			average_insolation_from_star(body, star, min_perceivable_period, insolation_sample, samples_per_cycle);
+			average_insolation_from_star(config, body, star, min_perceivable_period, insolation_sample, samples_per_cycle);
 			ScalarField.add_field(average_insolation, insolation_sample, average_insolation);
 		}
 		return average_insolation;
