@@ -161,6 +161,20 @@ var AtmosphereModeling = (function() {
 		var σ = AtmosphereModeling.STEPHAN_BOLTZMANN_CONSTANT;
 		return Math.pow( (1+0.75*τ)*E/σ, 1/4 );
 	}
+	AtmosphereModeling.guess_heat_flow_uniform = function(insolation_hot, insolation_cold, insolation_average, infrared_optical_depth) { 
+		var Ih = insolation_hot; 
+		var Ic = insolation_cold; 
+		var τ = infrared_optical_depth; 
+		var σ = AtmosphereModeling.STEPHAN_BOLTZMANN_CONSTANT; 
+		var Tguess = Optics.black_body_equilibrium_temperature_uniform(insolation_average); 
+		var B = 4*σ * Tguess*Tguess*Tguess / (1+0.75*τ); // estimated change in emission with respect to temperature 
+
+		var ΔT = Ih-Ic; // temperature differential 
+		var D = B/4; // "meridional heat diffusion" discussed by North et al 1989 
+		var F = 2*D*ΔT; // F, starts with initial estimate described by Lorenz 2001 
+		return F; 
+	} 
+  	// calculates entropic heat flow within a 2 box temperature model  
 	// calculates heat flow within a 2 box temperature model 
 	// using the Max Entropy Production Principle and Gradient Descent
 	// for more information, see Lorenz et al. 2001: 
@@ -182,11 +196,12 @@ var AtmosphereModeling = (function() {
 			return 2*F/T(Ic+F) - 2*F/T(Ih-2*F);
 		}
 
-		// heat flow
-		F = (Ih-Ic)/4;
-		dF = (Ih-Ic)/iterations;
-		// reduce step_size by this fraction for each iteration
-		annealing_factor = 0.8;
+ 
+	    // heat flow 
+	    var F = AtmosphereModeling.guess_heat_flow_uniform(insolation_hot, insolation_cold, infrared_optical_depth); 
+	    var dF = F/iterations; // "dF" is a measure for how much F changes with each iteration 
+	    // reduce step_size by this fraction for each iteration 
+	    var annealing_factor = 0.8; 
 		// amount to change F with each iteration
 		for (var i = 0; i < iterations; i++) {
 			// TODO: relax assumption that world must have earth-like rotation (e.g. tidally locked)

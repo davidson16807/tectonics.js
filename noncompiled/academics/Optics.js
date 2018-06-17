@@ -26,6 +26,11 @@ var Optics = (function() {
 
 		return result;
 	}
+	// This calculates the uniform (non-field) temperature of a body given its luminosity 
+	// TODO: put this under a new namespace? "Thermodynamics"? 
+	Optics.black_body_equilibrium_temperature_uniform = function(heat) { 
+		return Math.pow(heat / Optics.STEPHAN_BOLTZMANN_CONSTANT, 1/4); 
+	} 
 	// This calculates the temperature of a body given its luminosity
 	// TODO: put this under a new namespace? "Thermodynamics"?
 	Optics.black_body_equilibrium_temperature = function(
