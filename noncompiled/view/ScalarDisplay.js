@@ -17,9 +17,9 @@ RealisticDisplay.prototype.removeFrom = function(mesh) {
 RealisticDisplay.prototype.updateAttributes = function(geometry, world) {
 	Float32Raster.get_ids(world.lithosphere.displacement.value(), view.grid.buffer_array_to_cell, geometry.attributes.displacement.array); 
 	geometry.attributes.displacement.needsUpdate = true;
-	Float32Raster.get_ids(world.hydrosphere.ice_coverage.value(), view.grid.buffer_array_to_cell, geometry.attributes.ice_coverage.array); 
+	// Float32Raster.get_ids(world.hydrosphere.ice_coverage.value(), view.grid.buffer_array_to_cell, geometry.attributes.ice_coverage.array); 
 	geometry.attributes.ice_coverage.needsUpdate = true;
-	Float32Raster.get_ids(world.biosphere.plant_coverage.value(), view.grid.buffer_array_to_cell, geometry.attributes.plant_coverage.array); 
+	// Float32Raster.get_ids(world.biosphere.plant_coverage.value(), view.grid.buffer_array_to_cell, geometry.attributes.plant_coverage.array); 
 	geometry.attributes.plant_coverage.needsUpdate = true;
 }
 
@@ -210,10 +210,10 @@ scalarDisplays.plates 	= new ScalarHeatDisplay( { min: '0.', max: '7.',
 scalarDisplays.plate_count 	= new ScalarHeatDisplay( { min: '0.', max: '3.',  
 		getField: world => world.lithosphere.plate_count
 	} );
-scalarDisplays.temp 	= new ScalarHeatDisplay( { min: '-50.', max: '50.',  
+scalarDisplays.temp 	= new ScalarHeatDisplay( { min: '-50.', max: '30.',  
 		// NOTE: convert to Celcius
 		getField: (world, result) => 
-			ScalarField.add_scalar(world.atmosphere.surface_temp.value(), -273.15, result)
+			ScalarField.add_scalar(world.atmosphere.temperature, -273.15, result)
 	} );
 scalarDisplays.precip 	= new ScalarHeatDisplay( { min: '2000.', max: '1.',  
 		getField: world => world.atmosphere.precip.value()

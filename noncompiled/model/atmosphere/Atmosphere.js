@@ -5,44 +5,53 @@ function Atmosphere(parameters) {
 	var grid = parameters['grid'] || stop('missing parameter: "grid"');
 	var self = this;
 
+	this.long_term_average_insolation = Float32Raster(grid);
+	this.average_insolation = Float32Raster(grid);
+	this.absorption = Float32Raster(grid);
+	this.absorbed_radiation = Float32Raster(grid);
+	this.heat_capacity = Float32Raster(grid);
+	this.incoming_heat = Float32Raster(grid);
+	this.outgoing_heat = Float32Raster(grid);
+	this.net_heat_gain = Float32Raster(grid);
+	this.temperature_delta_rate = Float32Raster(grid);
+	this.temperature_delta = Float32Raster(grid);
+	this.temperature = undefined;
+	this.albedo = new Memo(
+		Float32Raster(grid),  
+		// result => AtmosphereModeling.albedo(ocean_coverage.value(), ice_coverage.value(), plant_coverage.value(), material_reflectivity, result),
+		// result => AtmosphereModeling.albedo(ocean_coverage.value(), undefined, plant_coverage.value(), material_reflectivity, result),
+		result => { Float32Raster.fill(result, 0.2); return result; },
+		false // assume everything gets absorbed initially to prevent circular dependencies
+	);
 	var lat = new Memo(
 		Float32Raster(grid),  
 		result => Float32SphereRaster.latitude(grid.pos.y, result)
 	); 
-	this.albedo = new Memo(
-		Float32Raster(grid),  
-		// result => AtmosphereModeling.albedo(ocean_coverage.value(), ice_coverage.value(), plant_coverage.value(), material_reflectivity, result),
-		result => AtmosphereModeling.albedo(ocean_coverage.value(), undefined, plant_coverage.value(), material_reflectivity, result),
-		// result => { Float32Raster.fill(result, 0.0); return result; },
-		false // assume everything gets absorbed initially to prevent circular dependencies
-	);
-	this.absorbed_radiation = new Memo(
-		Float32Raster(grid),  
-		result => {
-			ScalarField.mult_scalar	( self.albedo.value(), -1, result );
-			ScalarField.add_scalar 	( result, 1, result );
-			ScalarField.mult_field(result, incident_radiation.value(), result);
-			return result;
-		}
-		// result => ScalarField.mult_scalar(incident_radiation.value(), 1.0, result)
-	);
-	var heat_flow = new Memo( 0,
-		current_value => AtmosphereModeling.solve_heat_flow(
-			Float32Dataset.max(self.absorbed_radiation.value()), 
-			Float32Dataset.min(self.absorbed_radiation.value()), 
-			4/3, 10
-		)
-	this.heat_capacity = new Memo(
-		Float32Raster(grid),
-		result => AtmosphereModeling.heat_capacity(ocean_fraction, material_heat_capacity, result)
-	);
-	this.surface_heat = new Memo(
-		Float32Raster(grid),
-		result => AtmosphereModeling.surface_air_heat(
-			self.absorbed_radiation.value(), 
-			heat_flow.value(), 
-			result) 
-	);
+	this.absorbed_radiation_old = new Memo( 
+		Float32Raster(grid),   
+		result => { 
+		  ScalarField.mult_scalar  ( self.albedo.value(), -1, result ); 
+		  ScalarField.add_scalar   ( result, 1, result ); 
+		  ScalarField.mult_field(result, incident_radiation.value(), result); 
+		  return result; 
+		} 
+		// result => ScalarField.mult_scalar(incident_radiation.value(), 1.0, result) 
+	); 
+	var heat_flow = new Memo( 0, 
+    current_value => AtmosphereModeling.guess_heat_flow_uniform(
+	      Float32Dataset.max(self.absorbed_radiation_old.value()),  
+	      Float32Dataset.min(self.absorbed_radiation_old.value()),  
+	      Float32Dataset.average(self.absorbed_radiation_old.value()),
+	      4/3
+    	)
+    );
+	this.surface_heat = new Memo( 
+		Float32Raster(grid), 
+		result => AtmosphereModeling.surface_air_heat( 
+		  self.absorbed_radiation_old.value(),  
+		  heat_flow.value(),  
+		  result)  
+	); 
 	this.surface_temp = new Memo(
 		Float32Raster(grid, 273.15+30),  
 		result => AtmosphereModeling.surface_air_temp(
@@ -78,6 +87,7 @@ function Atmosphere(parameters) {
 	);
 
 	// private variables
+	var material_heat_capacity = undefined;
 	var get_average_insolation = undefined;
 	var material_reflectivity = undefined;
 	var displacement 	= undefined;
@@ -91,6 +101,7 @@ function Atmosphere(parameters) {
 	var incident_radiation = undefined;
 
 	function assert_dependencies() {
+		if (material_heat_capacity === void 0) { throw '"material_heat_capacity" not provided'; }
 		if (get_average_insolation === void 0) { throw '"get_average_insolation" not provided'; }
 		if (material_reflectivity === void 0) { throw '"material_reflectivity" not provided'; }
 		if (displacement === void 0)	 { throw '"displacement" not provided'; }
@@ -105,7 +116,8 @@ function Atmosphere(parameters) {
 	}
 
 	this.setDependencies = function(dependencies) {
-		get_average_insolation = dependencies['get_average_insolation'] !== void 0? 	dependencies['get_average_insolation'] 	: material_reflectivity;		
+		get_average_insolation = dependencies['get_average_insolation'] !== void 0? 	dependencies['get_average_insolation'] 	: get_average_insolation;		
+		material_heat_capacity = dependencies['material_heat_capacity'] !== void 0? 	dependencies['material_heat_capacity'] 	: material_heat_capacity;		
 		material_reflectivity = dependencies['material_reflectivity'] !== void 0? 	dependencies['material_reflectivity'] 	: material_reflectivity;		
 		displacement 		= dependencies['displacement'] 	!== void 0? 	dependencies['displacement'] 	: displacement;		
 		ocean_coverage 		= dependencies['ocean_coverage']!== void 0? 	dependencies['ocean_coverage'] 	: ocean_coverage;		
@@ -124,9 +136,6 @@ function Atmosphere(parameters) {
 
 	this.invalidate = function() {
 		this.albedo.invalidate();
-		this.absorbed_radiation.invalidate();
-		heat_flow.invalidate();
-		this.surface_heat.invalidate();
 		this.surface_temp .invalidate();
 		this.surface_pressure .invalidate();
 		this.surface_wind_velocity.invalidate();
@@ -141,7 +150,70 @@ function Atmosphere(parameters) {
 		if (timestep === 0) {
 			return;
 		};
-		
 		assert_dependencies();
+		var seconds = timestep * Units.SECONDS_IN_MEGAYEAR;
+
+		get_average_insolation(seconds, 					this.average_insolation);
+		get_average_insolation(Units.SECONDS_IN_MEGAYEAR, 	this.long_term_average_insolation);
+		if (this.temperature === void 0) {
+			this.temperature = Optics.black_body_equilibrium_temperature(this.long_term_average_insolation);
+		}
+
+		ScalarField.mult_scalar	( this.albedo.value(), -1, this.absorption );
+		ScalarField.add_scalar 	( this.absorption, 1, this.absorption );
+		ScalarField.mult_field	( this.absorption, this.average_insolation, this.absorbed_radiation);
+
+		var max_absorbed_radiation = Float32Dataset.max( this.absorbed_radiation );
+		var min_absorbed_radiation = Float32Dataset.min( this.absorbed_radiation );
+		var mean_absorbed_radiation = Float32Dataset.average( this.absorbed_radiation );
+
+		// TODO: improve heat flow by modeling it as a vector field
+		var heat_flow_uniform = AtmosphereModeling.solve_heat_flow_uniform(
+			max_absorbed_radiation, 
+			min_absorbed_radiation, 
+			4/3,
+			10
+		);
+
+		AtmosphereModeling.surface_air_heat(
+			this.absorbed_radiation, 
+			heat_flow_uniform, 
+			this.incoming_heat
+		);
+
+		// TODO: initialize temperature with nonzero value
+		Optics.black_body_radiation(this.temperature, this.outgoing_heat);
+
+		var greenhouse_gas_factor = 1.3;
+		ScalarField.div_scalar 	( this.outgoing_heat, greenhouse_gas_factor, this.outgoing_heat);
+
+		AtmosphereModeling.heat_capacity (ocean_coverage.value(), material_heat_capacity, this.heat_capacity);
+
+		ScalarField.sub_field 	( this.incoming_heat, this.outgoing_heat, this.net_heat_gain );
+
+		ScalarField.div_field 	( this.net_heat_gain, this.heat_capacity, this.temperature_delta_rate );
+
+		ScalarField.mult_scalar ( this.temperature_delta_rate, seconds, this.temperature_delta );
+
+		if (seconds > 7*Units.SECONDS_IN_DAY) {
+			Optics.black_body_equilibrium_temperature(this.long_term_average_insolation, this.temperature);
+		} else {
+			ScalarField.add_field 	( this.temperature_delta, this.temperature, this.temperature );
+		}
+
+
+		// estimate black body equilibrium temperature, T̄
+		// if applying ΔT*t to T results in a T' that exceeds a threshold past T̄, just accept the average
+		// if T̄-T < ΔT*t, don't simulate
+
+		// TODO: fall back on equilibrium estimate if timestep exceeds threshold 
+		// the threshold is based on the fastest<< time required for the sun to provide the heat needed to reach equilibrium temperature
+		// i.e. at min heat capacity 
+		// e.g. for earth: 3% * (300 kelvin * 1e7 Joules per kelvin) / 400 joules per second in years
+		//                    = 3 days
+
+		// option 2:
+		// define threshold as fraction of time needed to 
+
 	};
 }

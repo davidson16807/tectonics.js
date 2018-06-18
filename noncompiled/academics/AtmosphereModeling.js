@@ -66,7 +66,7 @@ var AtmosphereModeling = (function() {
 		result = result || Float32Raster(net_energy.grid);
 
 		var τ = infrared_optical_depth;
-		var σ = AtmosphereModeling.STEPHAN_BOLTZMANN_CONSTANT;
+		var σ = Optics.STEPHAN_BOLTZMANN_CONSTANT;
 		var pow = Math.pow;
 
 		for (var i = 0; i < net_energy.length; i++) {
@@ -137,7 +137,7 @@ var AtmosphereModeling = (function() {
 	    var lerp_fsf = Float32RasterInterpolation.lerp_fsf;
 
 	    Float32Raster.fill(result, land_heat_capacity);
-		if (ocean_fraction !== void 0) {	lerp_fsf(result, 	ocean_albedo, 	ocean_fraction, result);	}
+		if (ocean_fraction !== void 0) {	lerp_fsf(result, 	ocean_heat_capacity, 	ocean_fraction, result);	}
 		
 		return result;
 	}
@@ -148,12 +148,12 @@ var AtmosphereModeling = (function() {
 		result = result || Float32Raster(net_energy.grid);
 
 		var heat_flow_field = result;
-		Float32Dataset.normalize(absorbed_radiation, result, -heat_flow, 2*heat_flow);
-		ScalarField.sub_field(absorbed_radiation, heat_flow_field, result);
+		Float32Dataset.normalize(absorbed_radiation, result, -heat_flow, heat_flow);
+		ScalarField.sub_field(absorbed_radiation, result, result);
 
 		return result;
 	}
-	AtmosphereModeling.STEPHAN_BOLTZMANN_CONSTANT = 5.670373e-11; // kW/m^2 per K^4
+	AtmosphereModeling.STEPHAN_BOLTZMANN_CONSTANT = 5.670373e-8; // W/m^2 per K^4
 	AtmosphereModeling.WATER_FREEZING_POINT_STP = 273.15; // Kelvin/Celcius
 	// TODO: generalize to scalar fields and arbitrary temperature cycles
 	AtmosphereModeling.get_scalar_equilibrium_temperature = function(E, τ) {
@@ -165,11 +165,13 @@ var AtmosphereModeling = (function() {
 		var Ih = insolation_hot; 
 		var Ic = insolation_cold; 
 		var τ = infrared_optical_depth; 
-		var σ = AtmosphereModeling.STEPHAN_BOLTZMANN_CONSTANT; 
+		var σ = Optics.STEPHAN_BOLTZMANN_CONSTANT; 
 		var Tguess = Optics.black_body_equilibrium_temperature_uniform(insolation_average); 
+		var Tmax = Optics.black_body_equilibrium_temperature_uniform(insolation_hot);
+		var Tmin = Optics.black_body_equilibrium_temperature_uniform(insolation_cold);
 		var B = 4*σ * Tguess*Tguess*Tguess / (1+0.75*τ); // estimated change in emission with respect to temperature 
 
-		var ΔT = Ih-Ic; // temperature differential 
+		var ΔT = Tmax-Tmin; // temperature differential 
 		var D = B/4; // "meridional heat diffusion" discussed by North et al 1989 
 		var F = 2*D*ΔT; // F, starts with initial estimate described by Lorenz 2001 
 		return F; 
@@ -179,13 +181,13 @@ var AtmosphereModeling = (function() {
 	// using the Max Entropy Production Principle and Gradient Descent
 	// for more information, see Lorenz et al. 2001: 
 	// "Titan, Mars and Earth : Entropy Production by Latitudinal Heat Transport"
-	AtmosphereModeling.solve_heat_flow = function(insolation_hot, insolation_cold, infrared_optical_depth, iterations) {
+	AtmosphereModeling.solve_heat_flow_uniform = function(insolation_hot, insolation_cold, infrared_optical_depth, iterations) {
 		iterations = iterations || 10;
 
 		var Ih = insolation_hot;
 		var Ic = insolation_cold;
 		var τ = infrared_optical_depth;
-		var σ = AtmosphereModeling.STEPHAN_BOLTZMANN_CONSTANT;
+		var σ = Optics.STEPHAN_BOLTZMANN_CONSTANT;
 		// temperature given net energy flux
 
 		function T(E) {
@@ -198,7 +200,7 @@ var AtmosphereModeling = (function() {
 
  
 	    // heat flow 
-	    var F = AtmosphereModeling.guess_heat_flow_uniform(insolation_hot, insolation_cold, infrared_optical_depth); 
+	    var F = (Ih-Ic)/4; 
 	    var dF = F/iterations; // "dF" is a measure for how much F changes with each iteration 
 	    // reduce step_size by this fraction for each iteration 
 	    var annealing_factor = 0.8; 

@@ -141,6 +141,11 @@ experimentalDisplays.speed 	= new ScalarHeatDisplay( { min: '0.', max: '1.',
 	} );
 experimentalDisplays.insolation 	= new ScalarHeatDisplay( { min: '0.', max: '400.', 
 		getField: function (world, result) {
-			return world.universe.average_insolation(world, 2*model.speed/30);
+			return world.atmosphere.average_insolation;
 		} 	
+	} );
+experimentalDisplays.insolation 	= new ScalarHeatDisplay( { min: '0.', max: '400.', 
+		getField: function (world, result) {
+			return world.universe.get_average_insolation(world, model.speed/(30));
+		}
 	} );

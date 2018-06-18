@@ -11,13 +11,13 @@ var Optics = (function() {
 	// TODO: figure out where to put above function
 	// maybe another namespace: "Heliosphere"? "StellarModeling"?
 
-	// This calculates the radiation (in kiloWatts/m^2) that's emitted by the surface of an object.
+	// This calculates the radiation (in watts/m^2) that's emitted by the surface of an object.
 	Optics.black_body_radiation = function(
 			temperature,
 			result
 		) {
 		result = result || Float32Raster(pos.grid);
-		Float32Raster.copy(temperature, result);
+		Float32Raster.fill(result, 1);
 		ScalarField.mult_field	(result, 		temperature, 						result);
 		ScalarField.mult_field	(result, 		temperature, 						result);
 		ScalarField.mult_field	(result, 		temperature, 						result);
@@ -35,11 +35,13 @@ var Optics = (function() {
 	// TODO: put this under a new namespace? "Thermodynamics"?
 	Optics.black_body_equilibrium_temperature = function(
 			luminosity,
-			result
+			result,
+			greenhouse_gas_factor
 		) {
-		result = result || Float32Raster(pos.grid);
-		ScalarField.div_scalar	(luminosity, 	Optics.STEPHAN_BOLTZMANN_CONSTANT, 	result);
-		ScalarField.pow_scalar	(result, 		1/4, 								result);
+		greenhouse_gas_factor = greenhouse_gas_factor || 1.3;
+		result = result || Float32Raster(luminosity.grid);
+		ScalarField.mult_scalar	(luminosity, 	greenhouse_gas_factor / Optics.STEPHAN_BOLTZMANN_CONSTANT, 	result);
+		ScalarField.pow_scalar	(result, 		1/4, 														result);
 
 		return result;
 	}

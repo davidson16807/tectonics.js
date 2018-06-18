@@ -3,6 +3,7 @@
 
 
 function World(parameters) {
+	var this_ = this;
 	this.name = parameters.name;
 	this.grid = parameters['grid'] || stop('missing parameter: "grid"');
 
@@ -58,8 +59,8 @@ function World(parameters) {
 
 	// all heat capacities in Joules per Kelvin
 	this.material_heat_capacity = parameters['material_heat_capacity'] || {
-	    ocean  : 30e7; 	// heat capacity of 1m^2 of 75m water column, the ocean's "mixing layer"
-	    felsic : 1e7; 	// heat capacity of 1m^2 air column on earth
+	    ocean  : 30e7, 	// heat capacity of 1m^2 of 75m water column, the ocean's "mixing layer"
+	    felsic : 1e7, 	// heat capacity of 1m^2 air column on earth
 	}
 
 	// all viscosities in m/s per kiloPascal
@@ -120,7 +121,8 @@ function World(parameters) {
 		'material_density'		: this.material_density,
 	});
 	this.atmosphere.setDependencies({
-		'get_average_insolation': this.universe.get_average_insolation,
+		'get_average_insolation': ((t, out) => this_.universe.get_average_insolation(this_, t, out)),
+		'material_heat_capacity'	: this.material_heat_capacity,
 		'material_reflectivity'	: this.material_reflectivity,
 		'displacement' 			: this.lithosphere.displacement, //TODO: convert this to elevation
 		'sealevel' 				: this.hydrosphere.sealevel,

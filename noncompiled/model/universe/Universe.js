@@ -171,9 +171,9 @@ function Universe(hierarchy, config) {
 	this.get_average_insolation = function(body, timestep, result) {
 		return average_insolation(
 			body, 
-			30/2        * timestep*Units.SECONDS_IN_MEGAYEAR, 
+			30/2        * timestep, 
 			result,
-			6
+			8
 		)
 	}
 
@@ -200,11 +200,12 @@ function Universe(hierarchy, config) {
 		if (timestep === 0) {
 			return;
 		};
+		var seconds = timestep * Units.SECONDS_IN_MEGAYEAR;
 		advance(config, 
-				timestep * Units.SECONDS_IN_MEGAYEAR,
-				{},
-				30/2        * timestep * Units.SECONDS_IN_MEGAYEAR, 
-				60*60*24*30 * timestep * Units.SECONDS_IN_MEGAYEAR, 
-				config); 
+				seconds,
+				config,
+				1/2        * seconds, 
+				60*60*24*30 * seconds
+			); 
 	};
 }
