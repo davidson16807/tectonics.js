@@ -116,7 +116,7 @@ function World(parameters) {
 		'material_viscosity'	: this.material_viscosity,
 	});
 	this.hydrosphere.setDependencies({
-		'surface_temp'			: this.atmosphere.surface_temp,
+		'surface_temp'			: this.atmosphere.temperature,
 		'displacement'			: this.lithosphere.displacement,
 		'material_density'		: this.material_density,
 	});
@@ -135,7 +135,7 @@ function World(parameters) {
 		'incident_radiation' 	: {value: () => new Float32Raster(this.grid, 1361/4)},
 	});
 	this.biosphere.setDependencies({
-		'surface_temp'	: this.atmosphere.surface_temp,
+		'surface_temp'	: this.atmosphere.temperature,
 		'precip'		: this.atmosphere.precip,
 	});
 
@@ -165,6 +165,12 @@ function World(parameters) {
 			'mean_anomaly' 	: this.orbit.mean_anomaly,
 			'axial_tilt' 	: this.orbit.axial_tilt,
 			'angular_speed' : this.orbit.angular_speed,
+		});
+		this.biosphere.setDependencies({
+			'surface_temp'	: this.atmosphere.temperature,
+		});
+		this.hydrosphere.setDependencies({
+			'surface_temp'	: this.atmosphere.temperature,
 		});
 
 		// this.orbit.calcChanges(timestep_megayears);

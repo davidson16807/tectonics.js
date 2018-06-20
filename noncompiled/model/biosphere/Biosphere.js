@@ -8,7 +8,13 @@ function Biosphere(parameters) {
 	var self = this;
 	this.npp = new Memo(
 		Float32Raster(grid),  
-		result => BiosphereModeling.net_primary_productivity(surface_temp.value(), precip.value(), npp_max, result)
+		result => {
+			if (surface_temp === void 0) {
+				Float32Raster.fill(result, 0);
+				return result;
+			}
+			return BiosphereModeling.net_primary_productivity(surface_temp, precip.value(), npp_max, result)
+		}
 	); 
 	this.lai = new Memo(
 		Float32Raster(grid),  
@@ -35,7 +41,8 @@ function Biosphere(parameters) {
 	function apply_deltas(world) { }
 
 	function assert_dependencies() {
-		if (surface_temp === void 0)	{ throw '"surface_temp" not provided'; }
+		// NOTE: surface_temp is not a strict requirement
+		// if (surface_temp === void 0)	{ throw '"surface_temp" not provided'; }
 		if (precip === void 0)	 		{ throw '"precip" not provided'; }
 	}
 

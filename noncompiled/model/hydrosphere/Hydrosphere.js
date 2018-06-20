@@ -36,10 +36,14 @@ function Hydrosphere(parameters) {
 	this.ice_coverage = new Memo(
 		Float32Raster(grid),  
 		result => { 
+			if (surface_temp === void 0) {
+				Float32Raster.fill(result, 0);
+				return result;
+			}
 			var freezing_point = 273.15; // TODO: move this to Atmosphere, and update this to reflect surface_pressure
 			Float32RasterInterpolation.lerp(
 					1, 0, 
-					Float32RasterInterpolation.smoothstep(freezing_point-10, freezing_point, surface_temp.value()),
+					Float32RasterInterpolation.smoothstep(freezing_point-10, freezing_point, surface_temp),
 					result
 				);
 			Float32RasterGraphics.fill_into_selection(
@@ -49,7 +53,7 @@ function Hydrosphere(parameters) {
 					Float32RasterInterpolation.lerp(
 						self.mesopelagic.value(), 
 						self.epipelagic.value(),
-						Float32RasterInterpolation.smoothstep(freezing_point-10, freezing_point, surface_temp.value())
+						Float32RasterInterpolation.smoothstep(freezing_point-10, freezing_point, surface_temp)
 					)
 				),
 				result
@@ -84,7 +88,8 @@ function Hydrosphere(parameters) {
 	var material_density = undefined;
 
 	function assert_dependencies() {
-		if (surface_temp === void 0)	 { throw '"surface_temp" not provided'; }
+		// NOTE: surface_temp is not a strict requirement
+		// if (surface_temp === void 0)	 { throw '"surface_temp" not provided'; }
 		if (displacement === void 0)	 { throw '"displacement" not provided'; }
 		if (material_density === void 0) { throw '"material_density" not provided'; }
 	}

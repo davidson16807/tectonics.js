@@ -16,6 +16,7 @@ function Atmosphere(parameters) {
 	this.temperature_delta_rate = Float32Raster(grid);
 	this.temperature_delta = Float32Raster(grid);
 	this.temperature = undefined;
+
 	this.albedo = new Memo(
 		Float32Raster(grid),  
 		// result => AtmosphereModeling.albedo(ocean_coverage.value(), ice_coverage.value(), plant_coverage.value(), material_reflectivity, result),
@@ -26,40 +27,6 @@ function Atmosphere(parameters) {
 	var lat = new Memo(
 		Float32Raster(grid),  
 		result => Float32SphereRaster.latitude(grid.pos.y, result)
-	); 
-	this.absorbed_radiation_old = new Memo( 
-		Float32Raster(grid),   
-		result => { 
-		  ScalarField.mult_scalar  ( self.albedo.value(), -1, result ); 
-		  ScalarField.add_scalar   ( result, 1, result ); 
-		  ScalarField.mult_field(result, incident_radiation.value(), result); 
-		  return result; 
-		} 
-		// result => ScalarField.mult_scalar(incident_radiation.value(), 1.0, result) 
-	); 
-	var heat_flow = new Memo( 0, 
-    current_value => AtmosphereModeling.guess_heat_flow_uniform(
-	      Float32Dataset.max(self.absorbed_radiation_old.value()),  
-	      Float32Dataset.min(self.absorbed_radiation_old.value()),  
-	      Float32Dataset.average(self.absorbed_radiation_old.value()),
-	      4/3
-    	)
-    );
-	this.surface_heat = new Memo( 
-		Float32Raster(grid), 
-		result => AtmosphereModeling.surface_air_heat( 
-		  self.absorbed_radiation_old.value(),  
-		  heat_flow.value(),  
-		  result)  
-	); 
-	this.surface_temp = new Memo(
-		Float32Raster(grid, 273.15+30),  
-		result => AtmosphereModeling.surface_air_temp(
-			self.surface_heat.value(), 
-			4/3, 
-			result
-		),
-		false
 	); 
 	this.surface_pressure = new Memo(
 		Float32Raster(grid),  
@@ -136,7 +103,6 @@ function Atmosphere(parameters) {
 
 	this.invalidate = function() {
 		this.albedo.invalidate();
-		this.surface_temp .invalidate();
 		this.surface_pressure .invalidate();
 		this.surface_wind_velocity.invalidate();
 		this.precip.invalidate();
