@@ -11,11 +11,14 @@ fragmentShaders.realistic = `
 varying float vDisplacement;
 varying float vPlantCoverage;
 varying float vIceCoverage;
+varying float vInsolation;
 varying float vScalar;
 varying vec4 vPosition;
 
 uniform float sealevel;
 uniform float sealevel_mod;
+
+uniform float insolation_max;
 
 const vec4 NONE = vec4(0.0,0.0,0.0,0.0);
 const vec4 OCEAN = vec4(0.04,0.04,0.2,1.0);
@@ -46,6 +49,7 @@ void main() {
 	float ice_coverage 		= vIceCoverage;
 	float plant_coverage 	= vPlantCoverage;
 	float ocean_coverage 	= smoothstep(epipelagic * sealevel_mod, sealevel * sealevel_mod, vDisplacement);
+	float darkness_coverage = smoothstep(insolation_max, 0., vInsolation);
 
 	vec4 ocean 		= mix(OCEAN, SHALLOW, ocean_coverage);
 	vec4 bedrock	= mix(MAFIC, FELSIC, felsic_coverage);
@@ -55,7 +59,10 @@ void main() {
 	vec4 uncovered = @UNCOVERED;
 	vec4 sea_covered = vDisplacement < sealevel * sealevel_mod? ocean : uncovered;
 	vec4 ice_covered = mix(sea_covered, SNOW, ice_coverage);
-	gl_FragColor = ice_covered;
+
+	vec4 darkness_covered = mix(ice_covered, NONE, darkness_coverage-0.01);
+
+	gl_FragColor = darkness_covered;
 }
 `;
 
@@ -65,6 +72,7 @@ fragmentShaders.generic = `
 varying float vDisplacement;
 varying float vPlantCoverage;
 varying float vIceCoverage;
+varying float vInsolation;
 varying float vScalar;
 varying vec4 vPosition;
 

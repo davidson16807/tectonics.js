@@ -40,7 +40,7 @@ void main() {
 	float ice_coverage 		= vIceCoverage;
 	float plant_coverage 	= vPlantCoverage;
 	float ocean_coverage 	= smoothstep(epipelagic * sealevel_mod, sealevel * sealevel_mod, vDisplacement);
-	// float darkness_coverage = smoothstep(0, insolation_max, vInsolation);
+	float darkness_coverage = smoothstep(insolation_max, 0., vInsolation);
 
 	vec4 ocean 		= mix(OCEAN, SHALLOW, ocean_coverage);
 	vec4 bedrock	= mix(MAFIC, FELSIC, felsic_coverage);
@@ -51,7 +51,7 @@ void main() {
 	vec4 sea_covered = vDisplacement < sealevel * sealevel_mod? ocean : uncovered;
 	vec4 ice_covered = mix(sea_covered, SNOW, ice_coverage);
 
-	// vec4 darkness_covered = mix(ice_covered, NONE, smoothstep);
+	vec4 darkness_covered = mix(ice_covered, NONE, darkness_coverage-0.01);
 
-	gl_FragColor = ice_covered;
+	gl_FragColor = darkness_covered;
 }

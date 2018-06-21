@@ -15,7 +15,8 @@ function View(grid, scalarDisplay, vectorDisplay, vertexShader) {
 	this._scalarDisplay = scalarDisplay;
 	this._vectorDisplay = vectorDisplay;
 	this._uniforms = {
-		sealevel_mod: 1.0
+		sealevel_mod: 1.0,
+		insolation_max: 0,
 	};
 
 	var faces, scalar_field_geometry, scalar_field_mesh, scalar_field_material;
@@ -30,6 +31,7 @@ function View(grid, scalarDisplay, vectorDisplay, vertexShader) {
 	this.scalar_field_geometry = scalar_field_geometry;
 
 	var sealevel_mod = this._uniforms.sealevel_mod;
+	var insolation_max = this._uniforms.insolation_max;
 
 
 	scalar_field_material = new THREE.ShaderMaterial({
@@ -43,6 +45,7 @@ function View(grid, scalarDisplay, vectorDisplay, vertexShader) {
 		uniforms: {
 		  sealevel:     { type: 'f', value: 0 },
 		  sealevel_mod: { type: 'f', value: sealevel_mod },
+		  insolation_max: { type: 'f', value: insolation_max },
 		  index: 		{ type: 'f', value: -1 },
 		},
 		blending: THREE.NoBlending,
@@ -65,6 +68,7 @@ function View(grid, scalarDisplay, vectorDisplay, vertexShader) {
 		uniforms: {
 		  sealevel:     { type: 'f', value: 0 },
 		  sealevel_mod: { type: 'f', value: sealevel_mod },
+		  insolation_max: { type: 'f', value: insolation_max },
 		  index: 		{ type: 'f', value: 1 }
 		},
 		blending: THREE.NoBlending,
@@ -162,7 +166,8 @@ View.prototype.matrixUpdate = function(matrix) {
 };
 
 View.prototype.cellUpdate = function(world){
-	this.uniform('sealevel', world.hydrosphere.sealevel.value()); // TODO: no! get rid of this! use hydrosphere.surface_height!
+	this.uniform('sealevel', world.hydrosphere.sealevel.value()); 
+	this.uniform('insolation_max', Float32Dataset.max(world.atmosphere.average_insolation)); 
 
 	this._scalarDisplay.updateAttributes(this.scalar_field_geometry, world);
 	this._vectorDisplay.updateAttributes(this.vector_field_geometry, world);
