@@ -113,20 +113,11 @@
 				<img src="icons/fast-forward.svg" height="12em" width="12em">
 			</span>
 
-			<span class="input-group-addon">{{speeds[speed_i].name}}</span>
-			<span class="instructions">&lt;/&gt;</span>
-		</div>
-		<div class="input-group season-group" v-if="isSeasonVisible">
-  			<span class="input-group-addon">
-				<img src="icons/weather-sunny.svg" height="12em" width="12em">
-  			</span>
-  			<span class="form-control input-sm age">
-  				<input type="range" min="-1.57" max="1.57" step="0.01" 
-  					v-model="season" v-on:input="setSeason()"/>
-  			</span>
-  			<span class="input-group-addon">
-				<img src="icons/snowflake.svg" height="12em" width="12em">
-  			</span>
+			<span class="input-group-addon">
+				{{speeds[speed_i].name}}
+				<span class="instructions">&lt;/&gt;</span>
+			</span>
+			
 		</div>
 	</div>
 	<div class="view-menu btn-group-vertical">
@@ -329,7 +320,7 @@
 		</p>
 		<p>Until then, here's a video of what you're missing:
 		</p>
-		<iframe width="420" height="315" src="//www.youtube.com/embed/VE67RgnLdKw" frameborder="0" allowfullscreen></iframe>
+		<iframe width="420" height="315" src="http://www.youtube.com/embed/VE67RgnLdKw" frameborder="0" allowfullscreen></iframe>
 	</div>
 	<div v-if="isNoJs" class="hcenter dialog">
 		<h2>Hang Tight</h2>
@@ -756,7 +747,6 @@
 			{	name:'1My/s', 	scale: 1e6*Units.SECONDS_IN_YEAR,	},
 		],
 	  	age: 0,
-	  	season: 0,
 	  	isSeasonVisible: true,
 	  },
 	  created: function() {
@@ -779,12 +769,6 @@
 			if (this.speed_i <= 0) {return} 
 			this.speed_i -= 1;
 			model.speed = this.speeds[this.speed_i].scale;
-		},
-		setSeason: function() {
-			model.world().orbit.mean_anomaly = this.season;
-		},
-		setSeasonVisibility: function(visibility) {
-			this.isSeasonVisible = visibility || false;
 		},
 		format: function(time) {
 			return format(time/Units.SECONDS_IN_YEAR, 1000, 3)
@@ -822,7 +806,7 @@
 	      { name: "None", value: "disabled", icon: "" },
 	      { name: "Mantle Flow", value: "asthenosphere_velocity", icon: "icons/fire-flow.svg" },
 	      { name: "Plate Motion", value: "plate_velocity", icon: "icons/plate-motion.svg" },
-	      { name: "Wind Speed", value: "surface_air_velocity", icon: "icons/air-flow.svg", season: true },
+	      { name: "Wind Speed", value: "surface_air_velocity", icon: "icons/air-flow.svg" },
 	    ],
 	  },
 	  methods: {
@@ -831,7 +815,6 @@
 	  		var option = this.options.filter(x => x.value == value)[0];
 	  		this.selected = value;
 	  		view.setVectorDisplay(vectorDisplays[value]);
-	  		timeMenuVue.setSeasonVisibility(option.season || false);
 	  	},
 	  	getClass: function(value, selected) {
 	  		return value == selected? 'active' : '';
@@ -847,13 +830,13 @@
 	    selected: 'satellite',
 	    vectorDisplay: 'disabled',
 	    options: [
-	      {name: 'Satellite', value: 'satellite', icon: 'icons/satellite-variant.svg',season: true},
+	      {name: 'Satellite', value: 'satellite', icon: 'icons/satellite-variant.svg' },
 	      {name: 'Sediment', value: 'soil', icon: 'icons/dirt.svg'},
 	      {name: 'Bedrock', value: 'bedrock', icon: 'icons/rock.svg'},
 	      {name: 'Elevation', value: 'alt', icon: 'icons/terrain.svg'},
 	      {name: 'Plant Productivity', value: 'npp', icon: 'icons/leaf.svg'},
-	      {name: 'Air Temperature', value: 'temp', icon: 'icons/thermometer.svg', season: true},
-	      {name: 'Air Pressure', value: 'surface_air_pressure', icon: 'icons/air-pressure.svg', season: true},
+	      {name: 'Air Temperature', value: 'temp', icon: 'icons/thermometer.svg' },
+	      {name: 'Air Pressure', value: 'surface_air_pressure', icon: 'icons/air-pressure.svg' },
 	      {name: 'Precipitation', value: 'precip', icon: 'icons/weather-raining.svg'},
 	      {name: 'Crust Age', value: 'age', icon: 'icons/clock.svg'},
 	      {name: 'Crust Density', value: 'density', icon: 'icons/scale.svg'},
@@ -867,7 +850,6 @@
 	  		var option = this.options.filter(x => x.value == value)[0];
 	    	this.selected = value;
 	    	view.setScalarDisplay(scalarDisplays[value]);
-	  		timeMenuVue.setSeasonVisibility(option.season || false);
 	    },
 	    setOcean: function(value) {
 	    	this.ocean_target = value;
