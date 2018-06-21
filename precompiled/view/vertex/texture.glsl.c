@@ -1,3 +1,4 @@
+uniform float insolation_max;
 
 float lon(vec3 pos) {
 	return atan(-pos.z, pos.x) + PI;
@@ -10,7 +11,7 @@ void main() {
 	vDisplacement = displacement;
 	vPlantCoverage = plant_coverage;
 	vIceCoverage = ice_coverage;
-	vInsolation = 1.0; // always use "1" for textures
+	vInsolation = insolation_max; // always use "insolation_max" for textures
 	vScalar = scalar;
 	vPosition = modelMatrix * vec4( position, 1.0 );
 	
