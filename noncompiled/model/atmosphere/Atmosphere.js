@@ -66,7 +66,6 @@ function Atmosphere(parameters) {
 	var mean_anomaly 	= undefined;
 	var axial_tilt 		= undefined;
 	var angular_speed 	= undefined;
-	var incident_radiation = undefined;
 
 	function assert_dependencies() {
 		if (material_heat_capacity === void 0) { throw '"material_heat_capacity" not provided'; }
@@ -79,7 +78,6 @@ function Atmosphere(parameters) {
 		if (mean_anomaly === void 0)	 { throw '"mean_anomaly" not provided'; }
 		if (axial_tilt === void 0)		 { throw '"axial_tilt" not provided'; }
 		if (angular_speed === void 0)	 { throw '"angular_speed" not provided'; }
-		if (incident_radiation === void 0) { throw '"incident_radiation" not provided'; }
 	}
 
 	this.setDependencies = function(dependencies) {
@@ -93,7 +91,6 @@ function Atmosphere(parameters) {
 		mean_anomaly 		= dependencies['mean_anomaly'] 	!== void 0? 	dependencies['mean_anomaly'] 	: mean_anomaly;		
 		axial_tilt 			= dependencies['axial_tilt'] 	!== void 0? 	dependencies['axial_tilt'] 		: axial_tilt;		
 		angular_speed 		= dependencies['angular_speed'] !== void 0? 	dependencies['angular_speed'] 	: angular_speed;	
-		incident_radiation 	= dependencies['incident_radiation'] !== void 0? dependencies['incident_radiation'] : incident_radiation;			
 	};
 
 	this.initialize = function() {

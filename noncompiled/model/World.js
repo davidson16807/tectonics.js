@@ -121,10 +121,11 @@ function World(parameters) {
 		'ice_coverage' 			: this.hydrosphere.ice_coverage,
 		'ocean_coverage'		: this.hydrosphere.ocean_coverage,
 		'plant_coverage'		: this.biosphere.plant_coverage,
+
+		// TODO: find a way to get rid of these dependencies!
 		'mean_anomaly' 			: 0,
 		'axial_tilt' 			: this.universe.id_to_node_map['spin'].motion.axial_tilt,    // TODO: respect the law of demeter
 		'angular_speed' 		: this.universe.id_to_node_map['spin'].motion.angular_speed,
-		'incident_radiation' 	: {value: () => new Float32Raster(this.grid, 1361/4)},
 	});
 	this.biosphere.setDependencies({
 		'surface_temp'	: this.atmosphere.surface_temp,
