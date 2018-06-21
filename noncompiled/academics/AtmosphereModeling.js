@@ -10,7 +10,7 @@ var AtmosphereModeling = (function() {
 		for (var i=0; i<smoothing_iterations; ++i) {
 			diffuse(effect, 1, effect, scratch);
 		}
-		var pos = world.grid.pos;
+		var pos = elevation.grid.pos;
 		ScalarField.mult_field(effect, lat, effect);
 	    ScalarField.mult_scalar(effect, season, effect);
 		return effect;
