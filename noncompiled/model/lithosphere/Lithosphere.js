@@ -444,14 +444,21 @@ function Lithosphere(parameters) {
 	}
 
 	this.calcChanges = function(timestep) {
+		var max_perceivable_duration = 60*60*24*30 * timestep; // 1 day worth of real time at 30fps
+		if (this.supercontinentCycle.duration > max_perceivable_duration) {
+			return;
+		}
+		
 		assert_dependencies();
+
 		calculate_deltas		(this, timestep); 			// this creates a world map of all additions and subtractions to crust (e.g. from erosion, accretion, etc.)
 	};
 
 	this.applyChanges = function(timestep){
-		if (timestep === 0) {
+		var max_perceivable_duration = 60*60*24*30 * timestep; // 1 day worth of real time at 30fps
+		if (this.supercontinentCycle.duration > max_perceivable_duration) {
 			return;
-		};
+		}
 
 		assert_dependencies();
 
