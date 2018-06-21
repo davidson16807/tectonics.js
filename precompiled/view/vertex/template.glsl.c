@@ -7,12 +7,14 @@ const float INDEX_SPACING = PI * 0.75; // anything from 0.0 to 2.*PI
 attribute float displacement;
 attribute float plant_coverage;
 attribute float ice_coverage;
+attribute float insolation;
 attribute float scalar;
 attribute vec3 vector;
 
 varying float vDisplacement;
 varying float vPlantCoverage;
 varying float vIceCoverage;
+varying float vInsolation;
 varying float vScalar;
 varying vec4 vPosition;
 

@@ -17,6 +17,8 @@ RealisticDisplay.prototype.removeFrom = function(mesh) {
 RealisticDisplay.prototype.updateAttributes = function(geometry, world) {
 	Float32Raster.get_ids(world.lithosphere.displacement.value(), view.grid.buffer_array_to_cell, geometry.attributes.displacement.array); 
 	geometry.attributes.displacement.needsUpdate = true;
+	Float32Raster.get_ids(world.atmosphere.average_insolation, view.grid.buffer_array_to_cell, geometry.attributes.insolation.array); 
+	geometry.attributes.insolation.needsUpdate = true;
 	Float32Raster.get_ids(world.hydrosphere.ice_coverage.value(), view.grid.buffer_array_to_cell, geometry.attributes.ice_coverage.array); 
 	geometry.attributes.ice_coverage.needsUpdate = true;
 	Float32Raster.get_ids(world.biosphere.plant_coverage.value(), view.grid.buffer_array_to_cell, geometry.attributes.plant_coverage.array); 

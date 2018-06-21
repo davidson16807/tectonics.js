@@ -10,6 +10,7 @@ void main() {
 	vDisplacement = displacement;
 	vPlantCoverage = plant_coverage;
 	vIceCoverage = ice_coverage;
+	vInsolation = 1.0; // always use "1" for textures
 	vScalar = scalar;
 	vPosition = modelMatrix * vec4( position, 1.0 );
 	
