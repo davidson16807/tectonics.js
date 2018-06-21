@@ -1,8 +1,8 @@
 
 var AtmosphereModeling = (function() {
 
-	var surface_air_pressure_land_effect = function(displacement, lat, sealevel, season, effect, scratch) {
-		var is_land = ScalarField.gt_scalar(displacement, sealevel);
+	var surface_air_pressure_land_effect = function(elevation, lat, season, effect, scratch) {
+		var is_land = ScalarField.gt_scalar(elevation, 0);
 		BinaryMorphology.erosion(is_land, 2, is_land);
 		Float32Raster.FromUint8Raster(is_land, effect);
 		var diffuse = ScalarField.diffusion_by_constant;
@@ -42,7 +42,7 @@ var AtmosphereModeling = (function() {
 		VectorDataset.rescale(velocity, velocity, 15.65); //15.65 m/s is the fastest average wind speed on Earth, recorded at Mt. Washington
 		return velocity;
 	}
-	AtmosphereModeling.surface_air_pressure = function(displacement, lat, sealevel, meanAnomaly, axial_tilt, pressure, scratch) {
+	AtmosphereModeling.surface_air_pressure = function(elevation, lat, meanAnomaly, axial_tilt, pressure, scratch) {
 		pressure = pressure || Float32Raster(lat.grid);
 		scratch = scratch || Float32Raster(lat.grid);
 		var season = meanAnomaly / Math.PI;
@@ -55,7 +55,7 @@ var AtmosphereModeling = (function() {
 
 		var land_effect = Float32Raster(lat.grid);
 		var scratch2 = Float32Raster(lat.grid);
-		surface_air_pressure_land_effect(displacement, effective_lat, sealevel, season, land_effect, scratch2);
+		surface_air_pressure_land_effect(elevation, effective_lat, season, land_effect, scratch2);
 		ScalarField.add_scalar_term(pressure, land_effect, 1, pressure);
 		Float32Dataset.normalize(pressure, pressure, 980e3, 1030e3);
 

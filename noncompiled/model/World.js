@@ -116,16 +116,15 @@ function World(parameters) {
 		'material_viscosity'	: this.material_viscosity,
 	});
 	this.hydrosphere.setDependencies({
-		'surface_temp'			: this.atmosphere.temperature,
+		'surface_temp'			: this.atmosphere.surface_temp,
 		'displacement'			: this.lithosphere.displacement,
 		'material_density'		: this.material_density,
 	});
 	this.atmosphere.setDependencies({
 		'get_average_insolation': ((t, out) => this_.universe.get_average_insolation(this_, t, out)),
-		'material_heat_capacity'	: this.material_heat_capacity,
+		'material_heat_capacity': this.material_heat_capacity,
 		'material_reflectivity'	: this.material_reflectivity,
-		'displacement' 			: this.lithosphere.displacement, //TODO: convert this to elevation
-		'sealevel' 				: this.hydrosphere.sealevel,
+		'surface_height' 		: this.hydrosphere.surface_height,
 		'ice_coverage' 			: this.hydrosphere.ice_coverage,
 		'ocean_coverage'		: this.hydrosphere.ocean_coverage,
 		'plant_coverage'		: this.biosphere.plant_coverage,
@@ -135,7 +134,7 @@ function World(parameters) {
 		'incident_radiation' 	: {value: () => new Float32Raster(this.grid, 1361/4)},
 	});
 	this.biosphere.setDependencies({
-		'surface_temp'	: this.atmosphere.temperature,
+		'surface_temp'	: this.atmosphere.surface_temp,
 		'precip'		: this.atmosphere.precip,
 	});
 

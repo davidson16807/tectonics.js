@@ -213,7 +213,7 @@ scalarDisplays.plate_count 	= new ScalarHeatDisplay( { min: '0.', max: '3.',
 scalarDisplays.temp 	= new ScalarHeatDisplay( { min: '-50.', max: '30.',  
 		// NOTE: convert to Celcius
 		getField: (world, result) => 
-			ScalarField.add_scalar(world.atmosphere.temperature, -273.15, result)
+			ScalarField.add_scalar(world.atmosphere.surface_temp, -273.15, result)
 	} );
 scalarDisplays.precip 	= new ScalarHeatDisplay( { min: '2000.', max: '1.',  
 		getField: world => world.atmosphere.precip.value()
