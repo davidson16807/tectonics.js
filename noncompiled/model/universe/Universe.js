@@ -50,11 +50,12 @@
 
 
 function Universe(hierarchy, config) {
-	config = config || {};
+	this.config = config || {};
 
 	var nodes = hierarchy.descendants();
 	var id_to_node_map = nodes
 		.reduce((acc, x) => { acc[x.name] = x; return acc; }, {} );
+	this.id_to_node_map = id_to_node_map;
 	var nodes_by_period = nodes
 		.sort((a,b) => a.motion.period() - b.motion.period())
 		.reverse();
@@ -154,7 +155,7 @@ function Universe(hierarchy, config) {
 	// average insolation from all stars
 	// TODO: memoize this into "average_insolation_from_star" and "reference_luminosity"
 	//   correct memoized result to reflect actual luminosity as star ages
-	function average_insolation(body, min_perceivable_period, average_insolation, samples_per_cycle){
+	function average_insolation(config, body, min_perceivable_period, average_insolation, samples_per_cycle){
 		samples_per_cycle = samples_per_cycle || 6;
 		var average_insolation = average_insolation || Float32Raster(body.grid);
 		var insolation_sample = Float32Raster(body.grid);
@@ -170,11 +171,12 @@ function Universe(hierarchy, config) {
 
 	this.get_average_insolation = function(body, timestep, result) {
 		return average_insolation(
+			this.config,
 			body, 
 			30/2        * timestep, 
 			result,
 			8
-		)
+		);
 	}
 
 //
@@ -201,9 +203,9 @@ function Universe(hierarchy, config) {
 			return;
 		};
 		var seconds = timestep * Units.SECONDS_IN_MEGAYEAR;
-		advance(config, 
+		advance(this.config, 
 				seconds,
-				config,
+				this.config,
 				1/2        * seconds, 
 				60*60*24*30 * seconds
 			); 

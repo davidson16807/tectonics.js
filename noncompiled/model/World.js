@@ -97,13 +97,6 @@ function World(parameters) {
 
 	this.age = parameters['age'] || 0; // megayears
 
-	this.orbit = new OldOrbit({
-		grid: this.grid,
-		// TODO: set these using parameters
-		semi_major_axis: Units.ASTRONOMICAL_UNIT, 
-		mean_anomaly: 0,
-		axial_tilt: Math.PI * 23.5/180,
-	});
 	this.lithosphere = new Lithosphere(parameters);
 	this.hydrosphere = new Hydrosphere(parameters);
 	this.atmosphere = new Atmosphere(parameters);
@@ -128,9 +121,9 @@ function World(parameters) {
 		'ice_coverage' 			: this.hydrosphere.ice_coverage,
 		'ocean_coverage'		: this.hydrosphere.ocean_coverage,
 		'plant_coverage'		: this.biosphere.plant_coverage,
-		'mean_anomaly' 			: this.orbit.mean_anomaly,
-		'axial_tilt' 			: this.orbit.axial_tilt,
-		'angular_speed' 		: this.orbit.angular_speed,
+		'mean_anomaly' 			: 0,
+		'axial_tilt' 			: this.universe.id_to_node_map['spin'].motion.axial_tilt,    // TODO: respect the law of demeter
+		'angular_speed' 		: this.universe.id_to_node_map['spin'].motion.angular_speed,
 		'incident_radiation' 	: {value: () => new Float32Raster(this.grid, 1361/4)},
 	});
 	this.biosphere.setDependencies({
@@ -152,7 +145,6 @@ function World(parameters) {
 		};
 		var timestep_megayears =  timestep / Units.SECONDS_IN_MEGAYEAR;
 
-		// this.orbit.invalidate();
 		this.universe.invalidate();
 		this.lithosphere.invalidate();
 		this.hydrosphere.invalidate();
@@ -161,9 +153,7 @@ function World(parameters) {
 
 		// NOTE: update all non-constant, non-spatial dependencies
 		this.atmosphere.setDependencies({
-			'mean_anomaly' 	: this.orbit.mean_anomaly,
-			'axial_tilt' 	: this.orbit.axial_tilt,
-			'angular_speed' : this.orbit.angular_speed,
+			'mean_anomaly' 	: this.universe.config['orbit'],
 		});
 		this.biosphere.setDependencies({
 			'surface_temp'	: this.atmosphere.temperature,
@@ -172,14 +162,12 @@ function World(parameters) {
 			'surface_temp'	: this.atmosphere.temperature,
 		});
 
-		// this.orbit.calcChanges(timestep_megayears);
 		this.universe.calcChanges(timestep_megayears);
 		this.lithosphere.calcChanges(timestep_megayears);
 		this.hydrosphere.calcChanges(timestep_megayears);
 		this.atmosphere.calcChanges(timestep_megayears);
 		this.biosphere.calcChanges(timestep_megayears);
 
-		// this.orbit.applyChanges(timestep_megayears);
 		this.universe.applyChanges(timestep_megayears);
 		this.lithosphere.applyChanges(timestep_megayears);
 		this.hydrosphere.applyChanges(timestep_megayears);
