@@ -128,7 +128,7 @@ function World(parameters) {
 		'angular_speed' 		: this.universe.id_to_node_map['spin'].motion.angular_speed,
 	});
 	this.biosphere.setDependencies({
-		'surface_temp'	: this.atmosphere.surface_temp,
+		'long_term_surface_temp'	: this.atmosphere.long_term_surface_temp,
 		'precip'		: this.atmosphere.precip,
 	});
 
@@ -156,11 +156,8 @@ function World(parameters) {
 		this.atmosphere.setDependencies({
 			'mean_anomaly' 	: this.universe.config['orbit'],
 		});
-		this.biosphere.setDependencies({
-			'surface_temp'	: this.atmosphere.temperature,
-		});
 		this.hydrosphere.setDependencies({
-			'surface_temp'	: this.atmosphere.temperature,
+			'surface_temp'	: this.atmosphere.surface_temp,
 		});
 
 		this.universe.calcChanges(timestep_megayears);

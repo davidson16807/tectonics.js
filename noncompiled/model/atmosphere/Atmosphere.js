@@ -5,9 +5,27 @@ function Atmosphere(parameters) {
 	var grid = parameters['grid'] || stop('missing parameter: "grid"');
 	var self = this;
 
-	this.long_term_average_insolation = Float32Raster(grid);
+	this.long_term_average_insolation = new Memo(
+		Float32Raster(grid),  
+		result => get_average_insolation(Units.SECONDS_IN_MEGAYEAR, result)
+	);
+	this.long_term_absorbed_radiation = new Memo(
+		Float32Raster(grid),  
+		result => ScalarField.mult_field( this.absorption.value(), this.long_term_average_insolation.value(), result )
+	);
+	this.long_term_sealevel_temp = new Memo(
+		Float32Raster(grid),  
+		result => {
+			Optics.black_body_equilibrium_temperature(this.long_term_absorbed_radiation.value(), result);
+			return result;
+		}
+	);
+	this.long_term_surface_temp = new Memo(
+		Float32Raster(grid),  
+		result => ScalarField.sub_scalar_term ( this.long_term_sealevel_temp.value(), surface_height.value(), this.lapse_rate, result ),
+	);
+
 	this.average_insolation = Float32Raster(grid);
-	this.absorption = Float32Raster(grid);
 	this.absorbed_radiation = Float32Raster(grid);
 	this.heat_capacity = Float32Raster(grid);
 	this.incoming_heat = Float32Raster(grid);
@@ -19,6 +37,7 @@ function Atmosphere(parameters) {
 	this.surface_temp = Float32Raster(grid);
 
 	this.lapse_rate = parameters['lapse_rate'] || 3.5 / 1e3; // degrees Kelvin per meter
+	this.greenhouse_gas_factor = parameters['greenhouse_gas_factor'] || 1.3;
 
 	this.albedo = new Memo(
 		Float32Raster(grid),  
@@ -26,6 +45,14 @@ function Atmosphere(parameters) {
 		// result => AtmosphereModeling.albedo(ocean_coverage.value(), undefined, plant_coverage.value(), material_reflectivity, result),
 		result => { Float32Raster.fill(result, 0.2); return result; },
 		false // assume everything gets absorbed initially to prevent circular dependencies
+	);
+	this.absorption = new Memo(
+		Float32Raster(grid),  
+		result => { 
+			ScalarField.mult_scalar	( this.albedo.value(), -1, result );
+			ScalarField.add_scalar 	( result, 1, result );
+			return result;
+		},
 	);
 	var lat = new Memo(
 		Float32Raster(grid),  
@@ -116,14 +143,7 @@ function Atmosphere(parameters) {
 		var seconds = timestep * Units.SECONDS_IN_MEGAYEAR;
 
 		get_average_insolation(seconds, 					this.average_insolation);
-		get_average_insolation(Units.SECONDS_IN_MEGAYEAR, 	this.long_term_average_insolation);
-		if (this.sealevel_temp === void 0) {
-			this.sealevel_temp = Optics.black_body_equilibrium_temperature(this.long_term_average_insolation);
-		}
-
-		ScalarField.mult_scalar	( this.albedo.value(), -1, this.absorption );
-		ScalarField.add_scalar 	( this.absorption, 1, this.absorption );
-		ScalarField.mult_field	( this.absorption, this.average_insolation, this.absorbed_radiation);
+		ScalarField.mult_field( this.absorption.value(), this.average_insolation, this.absorbed_radiation );
 
 		var max_absorbed_radiation = Float32Dataset.max( this.absorbed_radiation );
 		var min_absorbed_radiation = Float32Dataset.min( this.absorbed_radiation );
@@ -143,29 +163,25 @@ function Atmosphere(parameters) {
 			this.incoming_heat
 		);
 
-		// TODO: initialize temperature with nonzero value
-		Optics.black_body_radiation(this.sealevel_temp, this.outgoing_heat);
-
-		var greenhouse_gas_factor = 1.3;
-		ScalarField.div_scalar 	( this.outgoing_heat, greenhouse_gas_factor, this.outgoing_heat);
-
-		AtmosphereModeling.heat_capacity (ocean_coverage.value(), material_heat_capacity, this.heat_capacity);
-
-		ScalarField.sub_field 	( this.incoming_heat, this.outgoing_heat, this.net_heat_gain );
-
-		ScalarField.div_field 	( this.net_heat_gain, this.heat_capacity, this.temperature_delta_rate );
-
-		ScalarField.mult_scalar ( this.temperature_delta_rate, seconds, this.temperature_delta );
-
-		if (seconds > 7*Units.SECONDS_IN_DAY) {
-			Optics.black_body_equilibrium_temperature(this.long_term_average_insolation, this.sealevel_temp);
-		} else {
-			ScalarField.add_field 	( this.temperature_delta, this.sealevel_temp, this.sealevel_temp );
+		if (this.sealevel_temp === void 0) {
+			this.sealevel_temp = Float32Raster.copy(this.long_term_sealevel_temp.value());
 		}
 
-		// TODO: rename "scalar" to "uniform" across all raster namespaces
-		ScalarField.sub_scalar_term ( this.sealevel_temp, surface_height.value(), this.lapse_rate, this.surface_temp );
+		if (seconds > 7*Units.SECONDS_IN_DAY) {
+			Optics.black_body_equilibrium_temperature(this.long_term_absorbed_radiation.value(), this.sealevel_temp, this.greenhouse_gas_factor);
+		} else {
+			Optics.black_body_radiation	(this.sealevel_temp, 								this.outgoing_heat);
+			ScalarField.div_scalar 		( this.outgoing_heat, this.greenhouse_gas_factor, 	this.outgoing_heat);
+			AtmosphereModeling.heat_capacity(ocean_coverage.value(), material_heat_capacity, this.heat_capacity);
+			ScalarField.sub_field 		( this.incoming_heat, this.outgoing_heat, 			this.net_heat_gain );
+			ScalarField.div_field 		( this.net_heat_gain, this.heat_capacity, 			this.temperature_delta_rate );
+			ScalarField.mult_scalar 	( this.temperature_delta_rate, seconds, 			this.temperature_delta );
+			ScalarField.add_field 		( this.temperature_delta, this.sealevel_temp, 		this.sealevel_temp );
+		}
 
+ 		ScalarField.sub_scalar_term ( this.sealevel_temp, surface_height.value(), this.lapse_rate, this.surface_temp );
+
+		// TODO: rename "scalar" to "uniform" across all raster namespaces
 
 		// estimate black body equilibrium temperature, T̄
 		// if applying ΔT*t to T results in a T' that exceeds a threshold past T̄, just accept the average

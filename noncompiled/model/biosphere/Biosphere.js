@@ -9,11 +9,7 @@ function Biosphere(parameters) {
 	this.npp = new Memo(
 		Float32Raster(grid),  
 		result => {
-			if (surface_temp === void 0) {
-				Float32Raster.fill(result, 0);
-				return result;
-			}
-			return BiosphereModeling.net_primary_productivity(surface_temp, precip.value(), npp_max, result)
+			return BiosphereModeling.net_primary_productivity(long_term_surface_temp.value(), precip.value(), npp_max, result)
 		}
 	); 
 	this.lai = new Memo(
@@ -30,7 +26,7 @@ function Biosphere(parameters) {
 	var lai_refresh = Float32Raster(grid);
 	var plant_coverage_refresh = Float32Raster(grid);
 
-	var surface_temp = undefined;
+	var long_term_surface_temp = undefined;
 	var precip = undefined;
 	var growth_factor 	= parameters['growth_factor'] || 1; // This is something I haven't bothered parameterizing. If c=1/∞, then npp∝lai
 	var npp_max 		= parameters['npp_max'] || 1;
@@ -41,13 +37,12 @@ function Biosphere(parameters) {
 	function apply_deltas(world) { }
 
 	function assert_dependencies() {
-		// NOTE: surface_temp is not a strict requirement
-		// if (surface_temp === void 0)	{ throw '"surface_temp" not provided'; }
+		if (long_term_surface_temp === void 0)	{ throw '"long_term_surface_temp" not provided'; }
 		if (precip === void 0)	 		{ throw '"precip" not provided'; }
 	}
 
 	this.setDependencies = function(dependencies) {
-		surface_temp 	= dependencies['surface_temp'] 	!== void 0? 	dependencies['surface_temp'] 	: surface_temp;
+		long_term_surface_temp 	= dependencies['long_term_surface_temp'] 	!== void 0? 	dependencies['long_term_surface_temp'] 	: long_term_surface_temp;
 		precip 			= dependencies['precip'] 		!== void 0? 	dependencies['precip'] 			: precip;
 		growth_factor 	= dependencies['growth_factor'] !== void 0? 	dependencies['growth_factor'] 	: growth_factor;
 		npp_max 		= dependencies['npp_max'] 		!== void 0? 	dependencies['npp_max'] 		: npp_max;
