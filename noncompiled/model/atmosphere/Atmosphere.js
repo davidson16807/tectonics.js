@@ -5,18 +5,34 @@ function Atmosphere(parameters) {
 	var grid = parameters['grid'] || stop('missing parameter: "grid"');
 	var self = this;
 
-	this.long_term_average_insolation = new Memo(
-		Float32Raster(grid),  
-		result => get_average_insolation(Units.SECONDS_IN_MEGAYEAR, result)
-	);
-	this.long_term_absorbed_radiation = new Memo(
-		Float32Raster(grid),  
-		result => ScalarField.mult_field( this.absorption.value(), this.long_term_average_insolation.value(), result )
-	);
+	this.scratch = Float32Raster(grid);
 	this.long_term_sealevel_temp = new Memo(
 		Float32Raster(grid),  
-		result => {
-			Optics.black_body_equilibrium_temperature(this.long_term_absorbed_radiation.value(), result);
+		result => { 
+			var long_term_average_insolation = result; // double duty for performance
+			get_average_insolation(Units.SECONDS_IN_MEGAYEAR, long_term_average_insolation)
+			var absorbed_radiation = this.scratch; // double duty for performance
+			ScalarField.mult_field( this.absorption.value(), long_term_average_insolation, absorbed_radiation );
+			var max_absorbed_radiation 	= Float32Dataset.max( absorbed_radiation );
+			var min_absorbed_radiation 	= Float32Dataset.min( absorbed_radiation );
+			var mean_absorbed_radiation	= Float32Dataset.average( absorbed_radiation );
+
+			// TODO: improve heat flow by modeling it as a vector field
+			var heat_flow_uniform = AtmosphereModeling.solve_heat_flow_uniform(
+				max_absorbed_radiation, 
+				min_absorbed_radiation, 
+				4/3,
+				10
+			);
+
+			var incoming_heat = result; // double duty for performance
+			AtmosphereModeling.surface_air_heat(
+				absorbed_radiation, 
+				heat_flow_uniform, 
+				incoming_heat
+			);
+
+			Optics.black_body_equilibrium_temperature(incoming_heat, result, this.greenhouse_gas_factor);
 			return result;
 		}
 	);
@@ -142,34 +158,28 @@ function Atmosphere(parameters) {
 		assert_dependencies();
 		var seconds = timestep * Units.SECONDS_IN_MEGAYEAR;
 
-		get_average_insolation(seconds, 					this.average_insolation);
-		ScalarField.mult_field( this.absorption.value(), this.average_insolation, this.absorbed_radiation );
-
-		var max_absorbed_radiation = Float32Dataset.max( this.absorbed_radiation );
-		var min_absorbed_radiation = Float32Dataset.min( this.absorbed_radiation );
-		var mean_absorbed_radiation = Float32Dataset.average( this.absorbed_radiation );
-
-		// TODO: improve heat flow by modeling it as a vector field
-		var heat_flow_uniform = AtmosphereModeling.solve_heat_flow_uniform(
-			max_absorbed_radiation, 
-			min_absorbed_radiation, 
-			4/3,
-			10
-		);
-
-		AtmosphereModeling.surface_air_heat(
-			this.absorbed_radiation, 
-			heat_flow_uniform, 
-			this.incoming_heat
-		);
-
-		if (this.sealevel_temp === void 0) {
-			this.sealevel_temp = Float32Raster.copy(this.long_term_sealevel_temp.value());
-		}
-
-		if (seconds > 7*Units.SECONDS_IN_DAY) {
-			Optics.black_body_equilibrium_temperature(this.long_term_absorbed_radiation.value(), this.sealevel_temp, this.greenhouse_gas_factor);
+		if (this.sealevel_temp === void 0 || seconds > 7*Units.SECONDS_IN_DAY) {
+			this.sealevel_temp = Float32Raster.copy(this.long_term_sealevel_temp.value(), 	this.sealevel_temp);
 		} else {
+			get_average_insolation(seconds, 											this.average_insolation);
+			ScalarField.mult_field( this.absorption.value(), this.average_insolation, 	this.absorbed_radiation );
+
+			var max_absorbed_radiation = Float32Dataset.max( this.absorbed_radiation );
+			var min_absorbed_radiation = Float32Dataset.min( this.absorbed_radiation );
+			var mean_absorbed_radiation = Float32Dataset.average( this.absorbed_radiation );
+
+			// TODO: improve heat flow by modeling it as a vector field
+			var heat_flow_uniform = AtmosphereModeling.solve_heat_flow_uniform(
+				max_absorbed_radiation, 
+				min_absorbed_radiation, 
+				4/3,
+				10
+			);
+			AtmosphereModeling.surface_air_heat(
+				this.absorbed_radiation, 
+				heat_flow_uniform, 
+				this.incoming_heat
+			);
 			Optics.black_body_radiation	(this.sealevel_temp, 								this.outgoing_heat);
 			ScalarField.div_scalar 		( this.outgoing_heat, this.greenhouse_gas_factor, 	this.outgoing_heat);
 			AtmosphereModeling.heat_capacity(ocean_coverage.value(), material_heat_capacity, this.heat_capacity);
