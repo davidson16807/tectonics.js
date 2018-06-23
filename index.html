@@ -874,7 +874,11 @@
 	    	view.setScalarDisplay(scalarDisplays[value]);
 	    },
 	    isSelected: function(value) {
-	    	return this.selected == value;
+	    	return {
+	    		satellite: true,
+	    		soil: true,
+	    		bedrock: true,
+	    	}[this.selected];
 	    },
 	    setOcean: function(value) {
 	    	this.ocean_target = value;
