@@ -157,8 +157,9 @@
 				<li>
 					<button type="button" 
 						class="btn btn-default btn-xs" 
+						v-if="isSelected('satellite')"
 						v-bind:class="{active: night}" 
-						v-on:click="setNight(!night? 1:0)">
+						v-on:click="setN,ight(!night? 1:0)">
 						<img src="icons/weather-night.svg" height="16em" width="16em"/>
 						Night
 					</button>
@@ -166,6 +167,7 @@
 				<li>
 					<button type="button" 
 						class="btn btn-default btn-xs" 
+						v-if="isSelected('satellite')"
 						v-bind:class="{active: snow}" 
 						v-on:click="setSnow(!snow? 1:0)">
 						<img src="icons/snowflake.svg" height="16em" width="16em"/>
@@ -870,6 +872,9 @@
 	  		var option = this.options.filter(x => x.value == value)[0];
 	    	this.selected = value;
 	    	view.setScalarDisplay(scalarDisplays[value]);
+	    },
+	    isSelected: function(value) {
+	    	return this.selected == value;
 	    },
 	    setOcean: function(value) {
 	    	this.ocean_target = value;
