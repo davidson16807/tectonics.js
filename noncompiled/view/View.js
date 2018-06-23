@@ -16,6 +16,8 @@ function View(grid, scalarDisplay, vectorDisplay, vertexShader) {
 	this._vectorDisplay = vectorDisplay;
 	this._uniforms = {
 		sealevel_mod: 1.0,
+		darkness_mod: 1.0,
+		ice_mod: 1.0,
 		insolation_max: 0,
 	};
 
@@ -30,10 +32,6 @@ function View(grid, scalarDisplay, vectorDisplay, vertexShader) {
 	scalar_field_geometry.addAttribute('scalar', Float32Array, faces.length*3, 1);
 	this.scalar_field_geometry = scalar_field_geometry;
 
-	var sealevel_mod = this._uniforms.sealevel_mod;
-	var insolation_max = this._uniforms.insolation_max;
-
-
 	scalar_field_material = new THREE.ShaderMaterial({
 		attributes: {
 		  displacement: { type: 'f', value: null },
@@ -44,8 +42,10 @@ function View(grid, scalarDisplay, vectorDisplay, vertexShader) {
 		},
 		uniforms: {
 		  sealevel:     { type: 'f', value: 0 },
-		  sealevel_mod: { type: 'f', value: sealevel_mod },
-		  insolation_max: { type: 'f', value: insolation_max },
+		  sealevel_mod: { type: 'f', value: this._uniforms.sealevel_mod },
+		  darkness_mod: { type: 'f', value: this._uniforms.darkness_mod },
+		  ice_mod: 		{ type: 'f', value: this._uniforms.ice_mod },
+		  insolation_max: { type: 'f', value: this._uniforms.insolation_max },
 		  index: 		{ type: 'f', value: -1 },
 		},
 		blending: THREE.NoBlending,
@@ -56,7 +56,6 @@ function View(grid, scalarDisplay, vectorDisplay, vertexShader) {
 	this.scene.add(scalar_field_mesh);
 	this.scalar_field_mesh1 = scalar_field_mesh;
 
-
 	scalar_field_material = new THREE.ShaderMaterial({
 		attributes: {
 		  displacement: { type: 'f', value: null },
@@ -67,9 +66,11 @@ function View(grid, scalarDisplay, vectorDisplay, vertexShader) {
 		},
 		uniforms: {
 		  sealevel:     { type: 'f', value: 0 },
-		  sealevel_mod: { type: 'f', value: sealevel_mod },
-		  insolation_max: { type: 'f', value: insolation_max },
-		  index: 		{ type: 'f', value: 1 }
+		  sealevel_mod: { type: 'f', value: this._uniforms.sealevel_mod },
+		  darkness_mod: { type: 'f', value: this._uniforms.darkness_mod },
+		  ice_mod: 		{ type: 'f', value: this._uniforms.ice_mod },
+		  insolation_max: { type: 'f', value: this._uniforms.insolation_max },
+		  index: 		{ type: 'f', value: 1 },
 		},
 		blending: THREE.NoBlending,
 		vertexShader: this._vertexShader,
@@ -202,6 +203,7 @@ View.prototype.uniform = function(key, value){
 	if(this._uniforms[key] === value){
 		return;
 	}
+	
 	this._uniforms[key] = value;
 
  	var meshes, mesh;

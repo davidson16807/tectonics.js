@@ -8,6 +8,8 @@ varying vec4 vPosition;
 
 uniform float sealevel;
 uniform float sealevel_mod;
+uniform float darkness_mod;
+uniform float ice_mod;
 
 uniform float insolation_max;
 
@@ -49,9 +51,9 @@ void main() {
 
 	vec4 uncovered = @UNCOVERED;
 	vec4 sea_covered = vDisplacement < sealevel * sealevel_mod? ocean : uncovered;
-	vec4 ice_covered = mix(sea_covered, SNOW, ice_coverage);
+	vec4 ice_covered = mix(sea_covered, SNOW, ice_coverage*ice_mod);
 
-	vec4 darkness_covered = mix(ice_covered, NONE, darkness_coverage-0.01);
+	vec4 darkness_covered = mix(ice_covered, NONE, darkness_coverage*darkness_mod-0.01);
 
 	gl_FragColor = darkness_covered;
 }

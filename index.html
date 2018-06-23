@@ -154,6 +154,24 @@
 						Ocean
 					</button>
 				</li>
+				<li>
+					<button type="button" 
+						class="btn btn-default btn-xs" 
+						v-bind:class="{active: night}" 
+						v-on:click="setNight(!night? 1:0)">
+						<img src="icons/weather-night.svg" height="16em" width="16em"/>
+						Night
+					</button>
+				</li>
+				<li>
+					<button type="button" 
+						class="btn btn-default btn-xs" 
+						v-bind:class="{active: snow}" 
+						v-on:click="setSnow(!snow? 1:0)">
+						<img src="icons/snowflake.svg" height="16em" width="16em"/>
+						Snow
+					</button>
+				</li>
 				<li role="separator" class="divider"></li> 
 				<li v-for="option in options">
 					<button type="button" 
@@ -825,6 +843,10 @@
 	  data: {
 	    ocean: 1,
 	    ocean_target: 1,
+	    night: 1,
+	    night_target: 1,
+	    snow: 1,
+	    snow_target: 1,
 	    selected: 'satellite',
 	    vectorDisplay: 'disabled',
 	    options: [
@@ -852,6 +874,7 @@
 	    setOcean: function(value) {
 	    	this.ocean_target = value;
 	    	var v = this;
+	    	// TODO: hook this up to actual fps
 	    	var fps = 30
 	    	var timestep = 1000/fps; 	//milliseconds
 	    	var duration = 500; 		//milliseconds
@@ -866,9 +889,43 @@
 	    		view.uniform('sealevel_mod', (v.ocean)?(1.0):(-1.0));
 	    	}, timestep);
 	    },
+	    setNight: function(value) {
+	    	this.night_target = value;
+	    	var v = this;
+	    	// TODO: hook this up to actual fps
+	    	var fps = 30
+	    	var timestep = 1000/fps; 	//milliseconds
+	    	var duration = 500; 		//milliseconds
+	    	var increment = timestep/duration;
+	    	var timer = setInterval(function() {
+	    		v.night += Math.sign(v.night_target - v.night) * increment
+	    		if (Math.abs(v.night_target - v.night) < 2*increment) {
+	    		  clearInterval(timer); 
+	    		  v.night = v.night_target;
+	    		}
+	    		view.uniform('darkness_mod', (v.night)?(1.0):(0.0));
+	    	}, timestep);
+	    },
+	    setSnow: function(value) {
+	    	this.snow_target = value;
+	    	var v = this;
+	    	// TODO: hook this up to actual fps
+	    	var fps = 30
+	    	var timestep = 1000/fps; 	//milliseconds
+	    	var duration = 500; 		//milliseconds
+	    	var increment = timestep/duration;
+	    	var timer = setInterval(function() {
+	    		v.snow += Math.sign(v.snow_target - v.snow) * increment
+	    		if (Math.abs(v.snow_target - v.snow) < 2*increment) {
+	    		  clearInterval(timer); 
+	    		  v.snow = v.snow_target;
+	    		}
+	    		view.uniform('ice_mod', (v.snow)?(1.0):(0.0));
+	    	}, timestep);
+	    },
 	    getClass: function(value, selected) {
 	    	return value == selected? 'active' : '';
-	    }
+	    },
 	  }
 	});
 
