@@ -156,9 +156,6 @@ function World(parameters) {
 		this.atmosphere.setDependencies({
 			'mean_anomaly' 	: this.universe.config['orbit'],
 		});
-		this.hydrosphere.setDependencies({
-			'surface_temp'	: this.atmosphere.surface_temp,
-		});
 
 		this.universe.calcChanges(timestep_megayears);
 		this.lithosphere.calcChanges(timestep_megayears);
