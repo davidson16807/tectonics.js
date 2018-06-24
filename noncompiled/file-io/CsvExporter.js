@@ -9,6 +9,8 @@ CsvExporter.world = function (world, options) {
 		'longitude',
 		'elevation',
 		'plate',
+		'temperature',
+		'precipitation'
 	].join() + '\n'
 
 	// commented line, containing metadata
@@ -17,19 +19,26 @@ CsvExporter.world = function (world, options) {
 		'degrees',
 		'meters',
 		'id',
+		'celcius',
+		'millimeters/year'
 	].join() + '\n'
 
 	var grid = world.grid;
-	var latitude = Float32SphereRaster.latitude(grid.pos.y);
-	var longitude = Float32SphereRaster.longitude(grid.pos.x, grid.pos.z);
+	var latitude = Float32SphereRaster.latitude(grid.pos.y, 				Float32Raster(world.grid));
+	var longitude = Float32SphereRaster.longitude(grid.pos.x, grid.pos.z, 	Float32Raster(world.grid));
+	var elevation = world.hydrosphere.elevation.value();
+	var top_plate_map = world.lithosphere.top_plate_map;
+	var surface_temp = world.atmosphere.surface_temp;
+	var precip = world.atmosphere.precip.value();
 
 	for (var i = 0, li = grid.vertices.length; i < li; i++) {
 		csv_text += [
 			latitude[i]  * 180/Math.PI,
 			longitude[i] * 180/Math.PI,
-			world.lithosphere.displacement[i] - world.hydrosphere.sealevel,
-			world.lithosphere.top_plate_map[i],
-			// TODO: add precip, temperature, and npp
+			elevation[i],
+			top_plate_map[i],
+			surface_temp[i] - AtmosphereModeling.WATER_FREEZING_POINT_STP,
+			precip[i],
 		].join() + '\n'
 	}
 
