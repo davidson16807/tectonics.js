@@ -3,10 +3,6 @@
 function Star(parameters) {
 	var _this = this;
 
-	// private variables
-	var grid = parameters['grid'] || stop('missing parameter: "grid"');
-
-
 	this.mass = parameters['mass'] || stop('missing parameter: "mass"')
 
 	// scaling laws from artifexian: https://www.youtube.com/watch?v=hG1of0MroM8
@@ -33,11 +29,13 @@ function Star(parameters) {
 		assert_dependencies();
 	}
 
-	this.invalidate = function() {
-		// NOTE: we don't need to invalidate these commented-out attributes, because the underlying data doesn't change often
-	}
+	this.invalidate = function() {}
 
 	this.calcChanges = function(timestep) {
+		if (timestep === 0) {
+			return;
+		};
+
 		assert_dependencies();
 	};
 

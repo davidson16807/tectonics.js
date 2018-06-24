@@ -1,19 +1,23 @@
 function Model (parameters) {
-	var _world 				= void 0;
+	var _subject 			= void 0;
 	this.paused 			= parameters.paused || false;
 	this.speed 				= parameters.speed || 1;
-	this.age 				= parameters.age || 0;
+	this.elapsed_time		= parameters.elapsed_time || 0;
 	this.seed 				= parameters.seed || 0;
 	this._last_update_timestamp = 0;
 
-	this.world = function(world) {
-		if (world === void 0) {
-			return _world;
+	// the "subject" is the singular entity we are modeling
+	// it can anything that implements the correct interface: a universe, a planet, an atmosphere, etc.
+	this.subject = parameters['subject'];
+
+	this.subject = function(subject) {
+		if (subject === void 0) {
+			return _subject;
 		};
-		_world = world;
-		world.initialize()
+		_subject = subject;
+		subject.initialize();
 	};
-	this.world(parameters.world);
+	this.subject(parameters.subject);
 
 	this.update = function() {
 		var now = performance.now();
@@ -29,19 +33,17 @@ function Model (parameters) {
 			return;
 		}
 
-		if (_world !== void 0) {
-			this.age += this.speed * seconds;
-			_world.update(this.speed * seconds);
-		};
-	};
+		if (_subject === void 0) {
+			return;
+		}
 
-	this.worldLoaded = function() {
-		var now = performance.now();
-		this._last_update_timestamp = now;
+		this.elapsed_time += this.speed * seconds;
 
-		if (world !== void 0) {
-			world.worldLoaded();
-		};
+		var timestep = this.speed * seconds / Units.SECONDS_IN_MEGAYEAR;
+
+		_subject.invalidate(timestep);
+		_subject.calcChanges(timestep);
+		_subject.applyChanges(timestep);
 	};
 
 	this.toggle_pause = function () {

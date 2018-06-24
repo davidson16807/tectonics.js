@@ -7,54 +7,6 @@ function World(parameters) {
 	this.name = parameters.name;
 	this.grid = parameters['grid'] || stop('missing parameter: "grid"');
 
-	this.star = new Star({
-		name: 'sun',
-		grid: this.grid,
-		mass: Units.SOLAR_MASS,
-	});
-	this.universe = new Universe(
-		new System({
-			name: 'galactic orbit',
-			motion: new Orbit({ // motion mirrors orbit of sun around galactic center
-				semi_major_axis: 2.35e20, // meters
-				effective_combined_mass: 1.262e41, // kg, back calculated to achieve period of 250 million years
-			}),
-			invariant_insolation: true,
-			body: this.star,
-			children: [
-
-				new System({
-					name: 'orbit',
-					motion: new Orbit({
-						semi_major_axis: 1. * Units.ASTRONOMICAL_UNIT,
-						eccentricity: 0.0167,
-						inclination: Math.PI * 5e-5/180,
-						longitude_of_ascending_node: Math.PI * -11/180,
-						effective_combined_mass: 2e30, // kg
-					}),	
-					children: [
-						new System({
-							name: 'precession',
-							motion: new Spin({ 
-								angular_speed: 2*Math.PI/(25860 * Units.SECONDS_IN_YEAR),
-							}),	
-							invariant_insolation: true,
-							children: [
-								new System({
-									name: 'spin',
-									motion: new Spin({ 
-										angular_speed: 2*Math.PI/(60*60*24),
-										axial_tilt: Math.PI * 23.5/180,
-									}),	
-									body: this,
-								}),
-						 	]
-						}),
-					],
-				}),
-			]
-		})
-	);
 
 
 	// all heat capacities in Joules per Kelvin
@@ -102,72 +54,76 @@ function World(parameters) {
 	this.atmosphere = new Atmosphere(parameters);
 	this.biosphere = new Biosphere(parameters);
 
-	this.lithosphere.setDependencies({
-		'surface_gravity'		: this.surface_gravity,
-		'sealevel'				: this.hydrosphere.sealevel,
-		'material_density'		: this.material_density,
-		'material_viscosity'	: this.material_viscosity,
-	});
-	this.hydrosphere.setDependencies({
-		'surface_temp'			: this.atmosphere.surface_temp,
-		'displacement'			: this.lithosphere.displacement,
-		'material_density'		: this.material_density,
-	});
-	this.atmosphere.setDependencies({
-		'get_average_insolation': ((t, out) => this_.universe.get_average_insolation(this_, t, out)),
-		'material_heat_capacity': this.material_heat_capacity,
-		'material_reflectivity'	: this.material_reflectivity,
-		'surface_height' 		: this.hydrosphere.surface_height,
-		'ice_coverage' 			: this.hydrosphere.ice_coverage,
-		'ocean_coverage'		: this.hydrosphere.ocean_coverage,
-		'plant_coverage'		: this.biosphere.plant_coverage,
-
-		// TODO: find a way to get rid of these dependencies!
-		'mean_anomaly' 			: 0,
-		'axial_tilt' 			: this.universe.id_to_node_map['spin'].motion.axial_tilt,    // TODO: respect the law of demeter
-		'angular_speed' 		: this.universe.id_to_node_map['spin'].motion.angular_speed,
-	});
-	this.biosphere.setDependencies({
-		'long_term_surface_temp'	: this.atmosphere.long_term_surface_temp,
-		'precip'		: this.atmosphere.precip,
-	});
+	this.setDependencies = function(dependencies) {
+		this.lithosphere.setDependencies(dependencies);
+		this.hydrosphere.setDependencies(dependencies);
+		this.atmosphere.setDependencies(dependencies);
+		this.biosphere.setDependencies(dependencies);
+	};
 
 	this.initialize = function() {
+		this.lithosphere.setDependencies({
+			'surface_gravity'		: this.surface_gravity,
+			'sealevel'				: this.hydrosphere.sealevel,
+			'material_density'		: this.material_density,
+			'material_viscosity'	: this.material_viscosity,
+		});
+		this.hydrosphere.setDependencies({
+			'surface_temp'			: this.atmosphere.surface_temp,
+			'displacement'			: this.lithosphere.displacement,
+			'material_density'		: this.material_density,
+		});
+		this.atmosphere.setDependencies({
+			'material_heat_capacity': this.material_heat_capacity,
+			'material_reflectivity'	: this.material_reflectivity,
+			'surface_height' 		: this.hydrosphere.surface_height,
+			'ice_coverage' 			: this.hydrosphere.ice_coverage,
+			'ocean_coverage'		: this.hydrosphere.ocean_coverage,
+			'plant_coverage'		: this.biosphere.plant_coverage,
+
+			// TODO: find a way to get rid of these dependencies!
+			'mean_anomaly' 			: 0,
+		});
+		this.biosphere.setDependencies({
+			'long_term_surface_temp'	: this.atmosphere.long_term_surface_temp,
+			'precip'		: this.atmosphere.precip,
+		});
+
 		// WARNING: order matters! (sorry, I'm working on it!)
-		this.universe.initialize();
 		this.lithosphere.initialize();
 		this.hydrosphere.initialize();
 		this.atmosphere.initialize();
 		this.biosphere.initialize();
 	}
-	this.update = function(timestep){
-		if (timestep === 0) {
-			return;
-		};
-		var timestep_megayears =  timestep / Units.SECONDS_IN_MEGAYEAR;
 
-		this.universe.invalidate();
+	this.invalidate = function() {
 		this.lithosphere.invalidate();
 		this.hydrosphere.invalidate();
 		this.atmosphere.invalidate();
 		this.biosphere.invalidate();
+	}
 
-		// NOTE: update all non-constant, non-spatial dependencies
-		this.atmosphere.setDependencies({
-			'mean_anomaly' 	: this.universe.config['orbit'],
-		});
+	this.calcChanges = function(timestep) {
+		if (timestep === 0) {
+			return;
+		};
 
-		this.universe.calcChanges(timestep_megayears);
-		this.lithosphere.calcChanges(timestep_megayears);
-		this.hydrosphere.calcChanges(timestep_megayears);
-		this.atmosphere.calcChanges(timestep_megayears);
-		this.biosphere.calcChanges(timestep_megayears);
+		// TODO: switch all submodels to record time in seconds
+		this.lithosphere.calcChanges(timestep);
+		this.hydrosphere.calcChanges(timestep);
+		this.atmosphere.calcChanges(timestep);
+		this.biosphere.calcChanges(timestep);
+	};
 
-		this.universe.applyChanges(timestep_megayears);
-		this.lithosphere.applyChanges(timestep_megayears);
-		this.hydrosphere.applyChanges(timestep_megayears);
-		this.atmosphere.applyChanges(timestep_megayears);
-		this.biosphere.applyChanges(timestep_megayears);
+	this.applyChanges = function(timestep) {
+		if (timestep === 0) {
+			return;
+		};
+
+		this.lithosphere.applyChanges(timestep);
+		this.hydrosphere.applyChanges(timestep);
+		this.atmosphere.applyChanges(timestep);
+		this.biosphere.applyChanges(timestep);
 	};
 	return this;
 }

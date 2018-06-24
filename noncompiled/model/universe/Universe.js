@@ -65,6 +65,7 @@ function Universe(hierarchy, config) {
 	var body_id_to_node_map = nodes
 		.filter(x => x.body !== void 0)
 		.reduce((acc, x) => { acc[x.body.name] = x; return acc; }, {} );
+	this.body_id_to_node_map = body_id_to_node_map;
 
 	// time below which user could no longer perceive the effects of a cycle, in simulated seconds
 	// NOTE: min_perceivable_period = 30/2 * timestep // half a second of real time
@@ -169,39 +170,70 @@ function Universe(hierarchy, config) {
 		return average_insolation;
 	}
 
-	this.get_average_insolation = function(body, timestep, result) {
-		return average_insolation(
-			this.config,
-			body, 
-			30/2        * timestep, 
-			result,
-			8
-		);
-	}
+	function assert_dependencies() { }
 
-//
-//	this.setDependencies = function(dependencies) {
-//
-//	}
-//
+	this.setDependencies = function(dependencies) {}
+
 	this.initialize = function() {
-
+		assert_dependencies();
+		for(var body of bodies) {
+			if (body instanceof World) {
+				body.setDependencies({
+					get_average_insolation: ((t, out) => average_insolation(
+							this.config,
+							body, 
+							30/2 * t,  // TODO: set this to the correct fps
+							out,
+							8
+						)),
+				});
+			}
+		}
+		for(var node of nodes) {
+			var body = node.body;
+			var motion = node.motion;
+			if (body !== void 0 && motion instanceof Spin) {
+				body.setDependencies({
+					axial_tilt: 	motion.axial_tilt,
+					angular_speed: 	motion.angular_speed,
+				});
+			}
+		}
+		for(var body of bodies) {
+			body.initialize();
+		}
 	}
 
 	this.invalidate = function() {
-
+		for(var body of bodies){
+			body.invalidate();
+		}
 	}
 
 	this.calcChanges = function(timestep) {
 		if (timestep === 0) {
 			return;
 		};
+		assert_dependencies();
+
+		for(var body of bodies){
+			// TODO: do away with this! We don't need to set mean anomaly!
+			body.setDependencies({ 
+				mean_anomaly: this.config['orbit'],
+			});
+		}
+
+		for(var body of bodies){
+			body.calcChanges(timestep);
+		}
 	};
 
 	this.applyChanges = function(timestep) {
 		if (timestep === 0) {
 			return;
 		};
+		assert_dependencies();
+
 		var seconds = timestep * Units.SECONDS_IN_MEGAYEAR;
 		advance(this.config, 
 				seconds,
@@ -209,5 +241,9 @@ function Universe(hierarchy, config) {
 				1/2        * seconds, 
 				60*60*24*30 * seconds
 			); 
+
+		for(var body of bodies){
+			body.applyChanges(timestep);
+		}
 	};
 }

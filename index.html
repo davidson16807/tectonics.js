@@ -391,12 +391,7 @@
 		var gen = NameGenerator.get_length_distribution_generator(corpus, 25, {5:1,6:3,7:11,8:3,9:1}, 100);
 		seed = gen();
 	}
-	var star_name = '';
-	{
-		var corpus = NameGenerator.tokenize_corpus(NameCorpii.arabic_star_names);
-		var gen = NameGenerator.get_length_distribution_generator(corpus, 25, {5:1,6:3,7:11,8:3,9:1}, 100);
-		star_name = gen();
-	}
+		
 	var random = new Random(parseSeed(seed));
 
 	var renderStats, updateStats, renderer, controls;
@@ -431,21 +426,69 @@
 	});
 
 	(function(){
-		var world = void 0;
 		if (querystring['load']) {
 			loadUrl(querystring['load']);
 		} else {
-			world = new World({ 
+			var star_name_corpus = NameGenerator.tokenize_corpus(NameCorpii.arabic_star_names);
+			var star_name_generator = NameGenerator.get_length_distribution_generator(star_name_corpus, 25, {5:1,6:3,7:11,8:3,9:1}, 100);
+			var star = new Star({
+				name: star_name_generator(),
+				mass: Units.SOLAR_MASS,
+			});
+			var world = new World({ 
 				name: seed,
 				grid: view.grid,
-				star_name: star_name,
 			});
 			WorldGenerator.generate(world, 
 				EliasHeightMapGenerator.generate(world.grid), 
 				WorldGenerator.modern_earth_hypsography, 
 				WorldGenerator.modern_earth_control_points
 			);
-			model.world(world);
+			var universe = new Universe(
+				new System({
+					name: 'galactic orbit',
+					motion: new Orbit({ // motion mirrors orbit of sun around galactic center
+						semi_major_axis: 2.35e20, // meters
+						effective_combined_mass: 1.262e41, // kg, back calculated to achieve period of 250 million years
+					}),
+					invariant_insolation: true,
+					body: star,
+					children: [
+
+						new System({
+							name: 'orbit',
+							motion: new Orbit({
+								semi_major_axis: 1. * Units.ASTRONOMICAL_UNIT,
+								eccentricity: 0.0167,
+								inclination: Math.PI * 5e-5/180,
+								longitude_of_ascending_node: Math.PI * -11/180,
+								effective_combined_mass: 2e30, // kg
+							}),	
+							children: [
+								new System({
+									name: 'precession',
+									motion: new Spin({ 
+										angular_speed: 2*Math.PI/(25860 * Units.SECONDS_IN_YEAR),
+									}),	
+									invariant_insolation: true,
+									children: [
+										new System({
+											name: 'spin',
+											motion: new Spin({ 
+												angular_speed: 2*Math.PI/(60*60*24),
+												axial_tilt: Math.PI * 23.5/180,
+											}),	
+											body: world,
+										}),
+								 	]
+								}),
+							],
+						}),
+					]
+				})
+			);
+			
+			model.subject(universe);
 			$('.controls').show();
 		}
 	})();
@@ -514,10 +557,10 @@
 		};
 		
 		model.update();
-		view.cellUpdate(model.world()); 
+		view.cellUpdate(model.subject().body_id_to_node_map[seed].body); 
 
 		if (autosave_period) {
-			if (model.age >= (autosave_timestamp + autosave_period)) {
+			if (model.elapsed_time >= (autosave_timestamp + autosave_period)) {
 				saveVue.save();
 				autosave_timestamp = autosave_timestamp + autosave_period;
 			}
