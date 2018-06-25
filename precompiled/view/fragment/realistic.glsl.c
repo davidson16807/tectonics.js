@@ -36,7 +36,7 @@ void main() {
 
 	float lat = (asin(abs(vPosition.y)));
 	
-	float felsic_coverage 	= smoothstep(mesopelagic, sealevel+5000., vDisplacement);
+	float felsic_coverage 	= smoothstep(abyssopelagic, sealevel+5000., vDisplacement);
 	float mineral_coverage 	= vDisplacement > sealevel? smoothstep(maxheight, sealevel, vDisplacement) : 0.;
 	float organic_coverage 	= degrees(lat)/90.; // smoothstep(30., -30., temp); 
 	float ice_coverage 		= vIceCoverage;
