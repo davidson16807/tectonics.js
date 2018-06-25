@@ -1,13 +1,24 @@
 'use strict';
 
-function View(grid, scalarDisplay, vectorDisplay, vertexShader) {
+function View(innerWidth, innerHeight, grid, scalarDisplay, vectorDisplay, vertexShader) {
 
-	// create a scene
-	this.scene = new THREE.Scene();
+	// create the renderer
+	this.renderer = new THREE.WebGLRenderer({
+		antialias		: true,	// to get smoother output
+		preserveDrawingBuffer	: true	// to allow screenshot
+	});
+	this.renderer.setClearColor( 0x000000, 1 );
+	this.renderer.setSize( innerWidth, innerHeight );
 
 	// put a camera in the scene
 	this.camera	= new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, .01, 10000 );
 	this.camera.position.set(0, 0, 5);
+
+	// transparently support window resize
+	THREEx.WindowResize.bind(this.renderer, this.camera);
+
+	// create a scene
+	this.scene = new THREE.Scene();
 	this.scene.add(this.camera);
 
 	this.grid = grid;
@@ -120,6 +131,26 @@ function View(grid, scalarDisplay, vectorDisplay, vertexShader) {
 	this.vector_field_mesh2 = vector_field_mesh;
 }
 
+View.prototype.render = function() {
+	return this.renderer.render( this.scene, this.camera );
+};
+
+View.prototype.update = function(world){
+	this.uniform('sealevel', world.hydrosphere.sealevel.value()); 
+	this.uniform('insolation_max', Float32Dataset.max(world.atmosphere.average_insolation)); 
+
+	this._scalarDisplay.updateAttributes(this.scalar_field_geometry, world);
+	this._vectorDisplay.updateAttributes(this.vector_field_geometry, world);
+}
+
+View.prototype.getDomElement = function() {
+	return this.renderer.domElement;
+};
+
+View.prototype.getScreenshotDataURL = function() {
+	return THREEx.Screenshot.toDataURL(this.renderer);
+};
+
 View.prototype.setScalarDisplay = function(display) {
 	if(this._scalarDisplay === display){
 		return;
@@ -145,34 +176,6 @@ View.prototype.setVectorDisplay = function(display) {
 	this._vectorDisplay.addTo(this.vector_field_mesh1);
 	this._vectorDisplay.addTo(this.vector_field_mesh2);
 };
-
-View.prototype.matrixUpdate = function(matrix) {
-	var mesh;
-
-	mesh = this.scalar_field_mesh1;
-	mesh.matrix = matrix;
-	mesh.rotation.setFromRotationMatrix(mesh.matrix);
-
-	mesh = this.scalar_field_mesh2;
-	mesh.matrix = matrix;
-	mesh.rotation.setFromRotationMatrix(mesh.matrix);
-
-	mesh = this.vector_field_mesh1;
-	mesh.matrix = matrix;
-	mesh.rotation.setFromRotationMatrix(mesh.matrix);
-
-	mesh = this.vector_field_mesh2;
-	mesh.matrix = matrix;
-	mesh.rotation.setFromRotationMatrix(mesh.matrix);
-};
-
-View.prototype.cellUpdate = function(world){
-	this.uniform('sealevel', world.hydrosphere.sealevel.value()); 
-	this.uniform('insolation_max', Float32Dataset.max(world.atmosphere.average_insolation)); 
-
-	this._scalarDisplay.updateAttributes(this.scalar_field_geometry, world);
-	this._vectorDisplay.updateAttributes(this.vector_field_geometry, world);
-}
 
 View.prototype.vertexShader = function(vertexShader){
 	if(this._vertexShader === vertexShader){
@@ -232,28 +235,3 @@ View.prototype.uniform = function(key, value){
 	 	mesh.material.uniforms[key].needsUpdate = true;
  	}
 }
-
-View.prototype.destroy = function() {
-	var mesh;
-
-	this.scene.remove(this.scalar_field_mesh1);
-	this.scene.remove(this.scalar_field_mesh2);
-	this.scene.remove(this.vector_field_mesh1);
-	this.scene.remove(this.vector_field_mesh2);
-
-	mesh = this.scalar_field_mesh1;
-	mesh.material.dispose();
-	mesh.geometry.dispose();
-
-	mesh = this.scalar_field_mesh2;
-	mesh.material.dispose();
-	mesh.geometry.dispose();
-
-	mesh = this.vector_field_mesh1;
-	mesh.material.dispose();
-	mesh.geometry.dispose();
-
-	mesh = this.vector_field_mesh2;
-	mesh.material.dispose();
-	mesh.geometry.dispose();
-};

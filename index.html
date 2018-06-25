@@ -394,7 +394,7 @@
 		
 	var random = new Random(parseSeed(seed));
 
-	var renderStats, updateStats, renderer, controls;
+	var renderStats, updateStats, controls;
 	var BlockUpdate = false;
 	var IsProd = false;
 
@@ -408,6 +408,8 @@
 	};
 
 	var view = new View(
+		window.innerWidth, 
+		window.innerHeight,
 		new Grid( 
 			new THREE.IcosahedronGeometry(1, resolution),
 			{ voronoi_generator: function(points, farthest_distance) {	
@@ -418,7 +420,7 @@
 		),
 		scalarDisplays.satellite, 
 		vectorDisplays.disabled, 
-		vertexShaders['orthographic']
+		vertexShaders['orthographic'],
 	);
 	var simulation = new Simulation({
 		seed: seed,
@@ -501,14 +503,7 @@
 
 	// init the scene
 	function init(){
-		renderer = new THREE.WebGLRenderer({
-			antialias		: true,	// to get smoother output
-			preserveDrawingBuffer	: true	// to allow screenshot
-		});
-		renderer.setClearColor( 0x000000, 1 );
-		renderer.setSize( window.innerWidth, window.innerHeight );
-		$('#container').append(renderer.domElement);
-
+		$('#container').append(view.getDomElement());
 		
 		if(!IsProd){
 			// add Stats.js - https://github.com/mrdoob/renderStats.js
@@ -523,9 +518,6 @@
 
 		// create a camera contol
 		controls	= new THREE.OrbitControls( view.camera, $("#container").get(0) );
-
-		// transparently support window resize
-		THREEx.WindowResize.bind(renderer, view.camera);
 	}
 
 	// animation loop
@@ -537,9 +529,9 @@
 
 		// update camera controls
 		controls.update();
+		view.render();
 
 		// actually render the scene
-		renderer.render( view.scene, view.camera );
 
 		if(!IsProd){
 			renderStats.update();
@@ -557,7 +549,7 @@
 		};
 		
 		simulation.update();
-		view.cellUpdate(simulation.model().body_id_to_node_map[seed].body); 
+		view.update(simulation.model().body_id_to_node_map[seed].body); 
 
 		if (autosave_period) {
 			if (simulation.elapsed_time >= (autosave_timestamp + autosave_period)) {
@@ -754,7 +746,7 @@
 	  },
 	  methods: {
 	  	capture(event) {
-  			var dataUrl = THREEx.Screenshot.toDataURL(renderer);
+  			var dataUrl = view.getScreenshotDataURL();
   			var filename = 
   				seed+'-'+
   				format_time(simulation.elapsed_time)+
