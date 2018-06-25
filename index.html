@@ -95,9 +95,9 @@
 <!-- info on screen display -->
 <div class="topright collapse collapsible controls" >
 	<div id="time-menu" class="time-menu">
-		<div class="input-group age-group">
-			<span class="form-control input-sm age">{{ format(age).quantity }}</span>
-			<span class="input-group-addon age-units">{{ format(age).unit }}y</span>
+		<div class="input-group elapsed_time-group">
+			<span class="form-control input-sm age">{{ format(elapsed_time).quantity }}</span>
+			<span class="input-group-addon age-units">{{ format(elapsed_time).unit }}y</span>
 		</div>
 		<div class="input-group speed-group">
 			<span class="input-group-addon rewind" v-on:click="rewind()">
@@ -724,8 +724,8 @@
 			var serialized = JsonSerializer.model(model,{seed: seed, random: random});
 			var stringified = JSON.stringify(serialized);
   			var dataUrl = `data:application/json;charset=utf-8,${stringified}`;
-  			var age = format_time(model.age);
-  			var filename = `${seed}-${age}.sim`;
+  			var elapsed_time = format_time(model.elapsed_time);
+  			var filename = `${seed}-${elapsed_time}.sim`;
   			download(dataUrl, filename);
   		}
 	  }
@@ -737,8 +737,8 @@
 	  	csv(event) {
 			var content = CsvExporter.world(model.world());
   			var dataUrl = `data:application/json;charset=utf-8,${content}`;
-  			var age = format_time(model.age);
-  			var filename = `${seed}-${age}.csv`;
+  			var elapsed_time = format_time(model.elapsed_time);
+  			var filename = `${seed}-${elapsed_time}.csv`;
   			download(dataUrl, filename);
   		}
 	  }
@@ -757,7 +757,7 @@
   			var dataUrl = THREEx.Screenshot.toDataURL(renderer);
   			var filename = 
   				seed+'-'+
-  				format_time(model.age)+
+  				format_time(model.elapsed_time)+
   				'.png';
   			download(dataUrl, filename);
   		}
@@ -807,13 +807,13 @@
 			{	name:'30ky/s', 	scale: 3e4*Units.SECONDS_IN_YEAR,	},
 			{	name:'1My/s', 	scale: 1e6*Units.SECONDS_IN_YEAR,	},
 		],
-	  	age: 0,
+	  	elapsed_time: 0,
 	  	isSeasonVisible: true,
 	  },
 	  created: function() {
 	  	var _this = this;
 	  	setInterval(function() {
-	  		_this.$data.age = model.age;
+	  		_this.$data.elapsed_time = model.elapsed_time;
 	  	}, 1000/10);
 	  },
 	  methods: {
