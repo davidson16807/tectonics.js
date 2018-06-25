@@ -65,7 +65,7 @@
 	<script src="noncompiled/model/atmosphere/Atmosphere.js"></script>
 	<script src="noncompiled/model/biosphere/Biosphere.js"></script>
 	<script src="noncompiled/model/World.js"></script>
-	<script src="noncompiled/model/Model.js"></script>
+	<script src="noncompiled/model/Simulation.js"></script>
 	<script src="noncompiled/generators/EliasHeightMapGenerator.js"></script>
 	<script src="noncompiled/generators/WorldGenerator.js"></script>
 	<script src="noncompiled/generators/NameGenerator.js"></script>
@@ -364,70 +364,74 @@
 	// all densities are in tons/m^3 (goes along with mass/thickness)
 	// all mass is in tons (goes along with density)
 	// all pressure is in kiloPascals (goes along with tons)
-	
-    var querystring = [];
-    for(var i = 0, 
-    	hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&'); 
-    	i < hashes.length; i++)
-    {
-        var hash = hashes[i].split('=');
-        querystring.push(hash[0]);
-        querystring[hash[0]] = hash[1];
-    }
 
-    function parseSeed(text) {
-		var parsed = parseInt(text);
-		if(isNaN(parsed)) {
-			parsed = 0;
-			for (var i = 0; i < Math.min(8, text.length); i++) {
-				parsed = (parsed * 256) + text.charCodeAt(i);
-			}
-		}
-		return parsed;
-    }
-	var seed = querystring['seed']  //|| (new Date).getTime().toString();
-	if (!seed) {
-		var corpus = NameGenerator.tokenize_corpus(NameCorpii.greek_mythological_names);
-		var gen = NameGenerator.get_length_distribution_generator(corpus, 25, {5:1,6:3,7:11,8:3,9:1}, 100);
-		seed = gen();
+	if( !Detector.webgl ){
+		process.exit(1);
 	}
-		
-	var random = new Random(parseSeed(seed));
 
+	var simulation, view;
+	var focus;
+	var random;
 	var renderStats, updateStats, controls;
 	var BlockUpdate = false;
 	var IsProd = false;
-
-	var resolution      = parseInt(querystring['resolution'] || '5');
-	var start_speed     = parseInt(querystring['speed']      || (1e6*Units.SECONDS_IN_YEAR).toString());
-	var autosave_period = parseInt(querystring['autosave']   || '0');
 	var autosave_timestamp = 0;
+	var autosave_period;
 
-	if (resolution > 6) {
-		resolution = 6;
-	};
+	init();
+	animate();
+	update();
 
-	var view = new View(
-		window.innerWidth, 
-		window.innerHeight,
-		new Grid( 
-			new THREE.IcosahedronGeometry(1, resolution),
-			{ voronoi_generator: function(points, farthest_distance) {	
-					return VoronoiSphere.FromPos(points, farthest_distance)	
-				} 
+	// init the scene
+	function init(){
+    	var querystring = [];
+		var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&')
+	    for(var i = 0; i < hashes.length; i++)
+	    {
+	        var hash = hashes[i].split('=');
+	        querystring.push(hash[0]);
+	        querystring[hash[0]] = hash[1];
+	    }
+
+	    function parseSeed(text) {
+			var parsed = parseInt(text);
+			if(isNaN(parsed)) {
+				parsed = 0;
+				for (var i = 0; i < Math.min(8, text.length); i++) {
+					parsed = (parsed * 256) + text.charCodeAt(i);
+				}
 			}
-			// { voronoi_generator: VoronoiSphere.FromPos }
-		),
-		scalarDisplays.satellite, 
-		vectorDisplays.disabled, 
-		vertexShaders['orthographic'],
-	);
-	var simulation = new Simulation({
-		seed: seed,
-		speed: start_speed
-	});
+			return parsed;
+	    }
 
-	(function(){
+		var resolution      = Math.min(6, parseInt(querystring['resolution'] || '5'));
+		var start_speed     = parseInt(querystring['speed']      || (1e6*Units.SECONDS_IN_YEAR).toString());
+		var seed 			= querystring['seed'] || (new Date).getTime().toString();
+		random 				= new Random(parseSeed(seed));
+		autosave_period 	= parseInt(querystring['autosave']   || '0');
+
+		view = new View(
+			window.innerWidth, 
+			window.innerHeight,
+			new Grid( 
+				new THREE.IcosahedronGeometry(1, resolution),
+				{ 
+					voronoi_generator: function(points, farthest_distance) {	
+						return VoronoiSphere.FromPos(points, farthest_distance)	
+					} 
+				}
+				// { voronoi_generator: VoronoiSphere.FromPos }
+			),
+			scalarDisplays.satellite, 
+			vectorDisplays.disabled, 
+			vertexShaders['orthographic'],
+		);
+
+		simulation = new Simulation({
+			seed: seed,
+			speed: start_speed
+		});
+
 		if (querystring['load']) {
 			loadUrl(querystring['load']);
 		} else {
@@ -437,15 +441,20 @@
 				name: star_name_generator(),
 				mass: Units.SOLAR_MASS,
 			});
+			
+			var planet_name_corpus = NameGenerator.tokenize_corpus(NameCorpii.greek_mythological_names);
+			var planet_name_gen = NameGenerator.get_length_distribution_generator(planet_name_corpus, 25, {5:1,6:3,7:11,8:3,9:1}, 100);
 			var world = new World({ 
-				name: seed,
+				name: planet_name_gen(),
 				grid: view.grid,
 			});
+			focus = world;
 			WorldGenerator.generate(world, 
 				EliasHeightMapGenerator.generate(world.grid), 
 				WorldGenerator.modern_earth_hypsography, 
 				WorldGenerator.modern_earth_control_points
 			);
+			
 			var universe = new Universe(
 				new System({
 					name: 'galactic orbit',
@@ -493,16 +502,7 @@
 			simulation.model(universe);
 			$('.controls').show();
 		}
-	})();
 		
-	if( Detector.webgl ){
-		init();
-		animate();
-		update();
-	} 
-
-	// init the scene
-	function init(){
 		$('#container').append(view.getDomElement());
 		
 		if(!IsProd){
@@ -549,7 +549,7 @@
 		};
 		
 		simulation.update();
-		view.update(simulation.model().body_id_to_node_map[seed].body); 
+		view.update(focus); 
 
 		if (autosave_period) {
 			if (simulation.elapsed_time >= (autosave_timestamp + autosave_period)) {
@@ -713,11 +713,11 @@
 	  el: '#save',
 	  methods: {
 	  	save(event) {
-			var serialized = JsonSerializer.simulation(simulation,{seed: seed, random: random});
+			var serialized = JsonSerializer.simulation(simulation,{random: random});
 			var stringified = JSON.stringify(serialized);
   			var dataUrl = `data:application/json;charset=utf-8,${stringified}`;
   			var elapsed_time = format_time(simulation.elapsed_time);
-  			var filename = `${seed}-${elapsed_time}.sim`;
+  			var filename = `${simulation.seed}-${elapsed_time}.sim`;
   			download(dataUrl, filename);
   		}
 	  }
@@ -730,7 +730,7 @@
 			var content = CsvExporter.world(simulation.world());
   			var dataUrl = `data:application/json;charset=utf-8,${content}`;
   			var elapsed_time = format_time(simulation.elapsed_time);
-  			var filename = `${seed}-${elapsed_time}.csv`;
+  			var filename = `${simulation.seed}-${elapsed_time}.csv`;
   			download(dataUrl, filename);
   		}
 	  }
