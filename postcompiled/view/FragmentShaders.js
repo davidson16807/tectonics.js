@@ -28,8 +28,8 @@ const vec4 SHALLOW = vec4(0.04,0.58,0.54,1.0);
 
 const vec4 MAFIC  = vec4(50,45,50,255)/255.			// observed on lunar maria 
                   * vec4(1,1,1,1);					// aesthetic correction 
-const vec4 FELSIC = vec4(190,180,185,255)/255.		// observed on lunar highlands
-				  * vec4(0.6 * vec3(1,1,.66), 1);	// aesthetic correction;
+const vec4 FELSIC = vec4(214,181,158,255)/255.		// observed color of rhyolite sample
+                  * vec4(1,1,1,1);					// aesthetic correction 
 //const vec4 SAND = vec4(255,230,155,255)/255.;
 const vec4 SAND = vec4(245,215,145,255)/255.;
 const vec4 PEAT = vec4(100,85,60,255)/255.;
@@ -41,15 +41,15 @@ void main() {
 	float epipelagic = sealevel - 200.0;
 	float mesopelagic = sealevel - 1000.0;
 	float abyssopelagic = sealevel - 4000.0;
-	float maxheight = sealevel + 15000.0; 
+	float maxheight = sealevel + 10000.0; 
 
 	float lat = (asin(abs(vPosition.y)));
 	
-	float felsic_coverage 	= smoothstep(abyssopelagic, maxheight, vDisplacement);
+	float felsic_coverage 	= smoothstep(mesopelagic, sealevel+1000., vDisplacement);
 	float mineral_coverage 	= vDisplacement > sealevel? smoothstep(maxheight, sealevel, vDisplacement) : 0.;
 	float organic_coverage 	= degrees(lat)/90.; // smoothstep(30., -30., temp); 
 	float ice_coverage 		= vIceCoverage;
-	float plant_coverage 	= vPlantCoverage;
+	float plant_coverage 	= vPlantCoverage * (vDisplacement > sealevel? 1. : 0.);
 	float ocean_coverage 	= smoothstep(epipelagic * sealevel_mod, sealevel * sealevel_mod, vDisplacement);
 	float darkness_coverage = smoothstep(insolation_max, 0., vInsolation);
 
