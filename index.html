@@ -420,7 +420,7 @@
 		vectorDisplays.disabled, 
 		vertexShaders['orthographic']
 	);
-	var model = new Model({
+	var simulation = new Simulation({
 		seed: seed,
 		speed: start_speed
 	});
@@ -488,7 +488,7 @@
 				})
 			);
 			
-			model.subject(universe);
+			simulation.model(universe);
 			$('.controls').show();
 		}
 	})();
@@ -556,11 +556,11 @@
 			return;
 		};
 		
-		model.update();
-		view.cellUpdate(model.subject().body_id_to_node_map[seed].body); 
+		simulation.update();
+		view.cellUpdate(simulation.model().body_id_to_node_map[seed].body); 
 
 		if (autosave_period) {
-			if (model.elapsed_time >= (autosave_timestamp + autosave_period)) {
+			if (simulation.elapsed_time >= (autosave_timestamp + autosave_period)) {
 				saveVue.save();
 				autosave_timestamp = autosave_timestamp + autosave_period;
 			}
@@ -576,9 +576,9 @@
 		dialogVue.$data.isLoadingSave = true;
 		$('.controls').hide();
 		$.getJSON( url, function( json ) {
-			var results = JsonDeserializer.model(json, view.grid);
+			var results = JsonDeserializer.simulation(json, view.grid);
 			random = results.random;
-			model = results.model;
+			simulation = results.simulation;
 			dialogVue.$data.isLoadingSave = false;
 			$('.controls').show();
 			BlockUpdate = false;
@@ -593,9 +593,9 @@
 	    //reader.onloadstart = function(e) {};
 	    reader.onload = function(e) {
 			var json = JSON.parse(e.target.result);
-			var results = JsonDeserializer.model(json, view.grid);
+			var results = JsonDeserializer.simulation(json, view.grid);
 			random = results.random;
-			model = results.model;
+			simulation = results.simulation;
 			BlockUpdate = false;
 	    }
 
@@ -721,10 +721,10 @@
 	  el: '#save',
 	  methods: {
 	  	save(event) {
-			var serialized = JsonSerializer.model(model,{seed: seed, random: random});
+			var serialized = JsonSerializer.simulation(simulation,{seed: seed, random: random});
 			var stringified = JSON.stringify(serialized);
   			var dataUrl = `data:application/json;charset=utf-8,${stringified}`;
-  			var elapsed_time = format_time(model.elapsed_time);
+  			var elapsed_time = format_time(simulation.elapsed_time);
   			var filename = `${seed}-${elapsed_time}.sim`;
   			download(dataUrl, filename);
   		}
@@ -735,9 +735,9 @@
 	  el: '#export',
 	  methods: {
 	  	csv(event) {
-			var content = CsvExporter.world(model.world());
+			var content = CsvExporter.world(simulation.world());
   			var dataUrl = `data:application/json;charset=utf-8,${content}`;
-  			var elapsed_time = format_time(model.elapsed_time);
+  			var elapsed_time = format_time(simulation.elapsed_time);
   			var filename = `${seed}-${elapsed_time}.csv`;
   			download(dataUrl, filename);
   		}
@@ -757,7 +757,7 @@
   			var dataUrl = THREEx.Screenshot.toDataURL(renderer);
   			var filename = 
   				seed+'-'+
-  				format_time(model.elapsed_time)+
+  				format_time(simulation.elapsed_time)+
   				'.png';
   			download(dataUrl, filename);
   		}
@@ -813,23 +813,23 @@
 	  created: function() {
 	  	var _this = this;
 	  	setInterval(function() {
-	  		_this.$data.elapsed_time = model.elapsed_time;
+	  		_this.$data.elapsed_time = simulation.elapsed_time;
 	  	}, 1000/10);
 	  },
 	  methods: {
 		togglePause: function() {
 			this.paused = !this.paused;
-			model.toggle_pause();
+			simulation.toggle_pause();
 		},
 		fastForward: function() {
 			if (this.speed_i >= this.speeds.length-1) {return} 
 			this.speed_i += 1;
-			model.speed = this.speeds[this.speed_i].scale;
+			simulation.speed = this.speeds[this.speed_i].scale;
 		},
 		rewind: function() {
 			if (this.speed_i <= 0) {return} 
 			this.speed_i -= 1;
-			model.speed = this.speeds[this.speed_i].scale;
+			simulation.speed = this.speeds[this.speed_i].scale;
 		},
 		format: function(time) {
 			return format(time/Units.SECONDS_IN_YEAR, 1000, 3)
@@ -962,9 +962,9 @@
 	    	this.snow_target = value;
 	    	var v = this;
 	    	// TODO: hook this up to actual fps
-	    	var fps = 30
-	    	var timestep = 1000/fps; 	//milliseconds
-	    	var duration = 500; 		//milliseconds
+	    	var fps 		= 30
+	    	var timestep 	= 1000/fps;	//milliseconds
+	    	var duration 	= 500; 		//milliseconds
 	    	var increment = timestep/duration;
 	    	var timer = setInterval(function() {
 	    		v.snow += Math.sign(v.snow_target - v.snow) * increment
@@ -990,9 +990,9 @@
 	    setSupercontinentBreakup: function(value) {
 	    	this.supercontinentBreakup = value;
 	    	if (!this.supercontinentBreakup) {
-		    	model.world().supercontinentCycle.duration = Infinity;
+		    	simulation.world().supercontinentCycle.duration = Infinity;
 	    	} else {
-	    		model.world().supercontinentCycle.duration = 0;
+	    		simulation.world().supercontinentCycle.duration = 0;
 	    	}
 	    },
 	  }
