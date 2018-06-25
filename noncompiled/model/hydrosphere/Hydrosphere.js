@@ -53,18 +53,18 @@ function Hydrosphere(parameters) {
 					Float32RasterInterpolation.smoothstep(freezing_point-10, freezing_point, surface_temp),
 					result
 				);
-			Float32RasterGraphics.fill_into_selection(
-				result, 0.,
-				ScalarField.lt_field(
-					displacement.value(), 
-					Float32RasterInterpolation.lerp(
-						self.mesopelagic.value(), 
-						self.epipelagic.value(),
-						Float32RasterInterpolation.smoothstep(freezing_point-10, freezing_point, surface_temp)
-					)
-				),
-				result
-			);
+			//Float32RasterGraphics.fill_into_selection(
+			//	result, 0.,
+			//	ScalarField.lt_field(
+			//		displacement.value(), 
+			//		Float32RasterInterpolation.lerp(
+			//			self.mesopelagic.value(), 
+			//			self.epipelagic.value(),
+			//			Float32RasterInterpolation.smoothstep(freezing_point-10, freezing_point, surface_temp)
+			//		)
+			//	),
+			//	result
+			//);
 			return result;
 		},
 		false

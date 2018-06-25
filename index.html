@@ -713,7 +713,7 @@
 			var stringified = JSON.stringify(serialized);
   			var dataUrl = `data:application/json;charset=utf-8,${stringified}`;
   			var elapsed_time = format_time(simulation.elapsed_time);
-  			var filename = `${simulation.seed}-${elapsed_time}.sim`;
+  			var filename = `${focus.name}-${elapsed_time}.sim`;
   			download(dataUrl, filename);
   		}
 	  }
@@ -726,7 +726,7 @@
 			var content = CsvExporter.world(simulation.world());
   			var dataUrl = `data:application/json;charset=utf-8,${content}`;
   			var elapsed_time = format_time(simulation.elapsed_time);
-  			var filename = `${simulation.seed}-${elapsed_time}.csv`;
+  			var filename = `${focus.name}-${elapsed_time}.csv`;
   			download(dataUrl, filename);
   		}
 	  }
@@ -744,7 +744,7 @@
 	  	capture(event) {
   			var dataUrl = view.getScreenshotDataURL();
   			var filename = 
-  				seed+'-'+
+  				focus.name+'-'+
   				format_time(simulation.elapsed_time)+
   				'.png';
   			download(dataUrl, filename);
