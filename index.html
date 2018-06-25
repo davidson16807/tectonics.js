@@ -378,9 +378,6 @@
 	var autosave_timestamp = 0;
 	var autosave_period;
 
-	init();
-	animate();
-	update();
 
 	// init the scene
 	function init(){
@@ -520,6 +517,12 @@
 		controls	= new THREE.OrbitControls( view.camera, $("#container").get(0) );
 	}
 
+	function autosave() {
+		if (!autosave_period) { return; }
+		setTimeout(update, 1000*autosave_period);
+		saveVue.save();
+	}
+
 	// animation loop
 	function animate() {
 		// push to render queue and loop
@@ -550,13 +553,6 @@
 		
 		simulation.update();
 		view.update(focus); 
-
-		if (autosave_period) {
-			if (simulation.elapsed_time >= (autosave_timestamp + autosave_period)) {
-				saveVue.save();
-				autosave_timestamp = autosave_timestamp + autosave_period;
-			}
-		}
 
 		if(!IsProd){
 			updateStats.update();
@@ -1059,6 +1055,11 @@
 			}
 		}
     });
+    
+	init();
+	animate();
+	update();
+	autosave();
 </script>
 </body>
 </html>
