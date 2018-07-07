@@ -183,6 +183,8 @@ function Atmosphere(parameters) {
 			ScalarField.add_field 		( this.temperature_delta, this.sealevel_temp, 		this.sealevel_temp );
 		}
 
+		ScalarField.diffusion_by_constant(this.sealevel_temp, 0.2, this.sealevel_temp);
+
  		ScalarField.sub_scalar_term ( this.sealevel_temp, surface_height.value(), this.lapse_rate, this.surface_temp );
 
 		// TODO: rename "scalar" to "uniform" across all raster namespaces
