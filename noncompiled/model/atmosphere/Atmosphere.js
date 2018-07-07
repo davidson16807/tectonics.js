@@ -100,8 +100,6 @@ function Atmosphere(parameters) {
 	var ocean_coverage 	= undefined;
 	var ice_coverage 	= undefined;
 	var plant_coverage 	= undefined;
-	var mean_anomaly 	= undefined;
-	var axial_tilt 		= undefined;
 	var angular_speed 	= undefined;
 
 	function assert_dependencies() {
@@ -112,8 +110,6 @@ function Atmosphere(parameters) {
 		if (ocean_coverage === void 0)	 { throw '"ocean_coverage" not provided'; }
 		if (ice_coverage === void 0)	 { throw '"ice_coverage" not provided'; }
 		if (plant_coverage === void 0)	 { throw '"plant_coverage" not provided'; }
-		if (mean_anomaly === void 0)	 { throw '"mean_anomaly" not provided'; }
-		if (axial_tilt === void 0)		 { throw '"axial_tilt" not provided'; }
 		if (angular_speed === void 0)	 { throw '"angular_speed" not provided'; }
 	}
 
@@ -125,8 +121,6 @@ function Atmosphere(parameters) {
 		ocean_coverage 		= dependencies['ocean_coverage']!== void 0? 	dependencies['ocean_coverage'] 	: ocean_coverage;		
 		ice_coverage 		= dependencies['ice_coverage'] 	!== void 0? 	dependencies['ice_coverage'] 	: ice_coverage;		
 		plant_coverage 		= dependencies['plant_coverage']!== void 0? 	dependencies['plant_coverage'] 	: plant_coverage;	
-		mean_anomaly 		= dependencies['mean_anomaly'] 	!== void 0? 	dependencies['mean_anomaly'] 	: mean_anomaly;		
-		axial_tilt 			= dependencies['axial_tilt'] 	!== void 0? 	dependencies['axial_tilt'] 		: axial_tilt;		
 		angular_speed 		= dependencies['angular_speed'] !== void 0? 	dependencies['angular_speed'] 	: angular_speed;	
 	};
 

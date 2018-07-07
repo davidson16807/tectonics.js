@@ -83,7 +83,7 @@ function World(parameters) {
 			'plant_coverage'		: this.biosphere.plant_coverage,
 
 			// TODO: find a way to get rid of these dependencies!
-			'mean_anomaly' 			: 0,
+			'angular_speed' 		: Math.PI * 24.5/180,
 		});
 		this.biosphere.setDependencies({
 			'long_term_surface_temp'	: this.atmosphere.long_term_surface_temp,
