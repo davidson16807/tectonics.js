@@ -723,7 +723,7 @@
 	  el: '#export',
 	  methods: {
 	  	csv(event) {
-			var content = CsvExporter.world(simulation.world());
+			var content = CsvExporter.world(focus);
   			var dataUrl = `data:application/json;charset=utf-8,${content}`;
   			var elapsed_time = format_time(simulation.elapsed_time);
   			var filename = `${focus.name}-${elapsed_time}.csv`;
@@ -978,9 +978,9 @@
 	    setSupercontinentBreakup: function(value) {
 	    	this.supercontinentBreakup = value;
 	    	if (!this.supercontinentBreakup) {
-		    	simulation.world().supercontinentCycle.duration = Infinity;
+		    	focus.lithosphere.supercontinentCycle.duration = Infinity;
 	    	} else {
-	    		simulation.world().supercontinentCycle.duration = 0;
+	    		focus.lithosphere.supercontinentCycle.duration = 0;
 	    	}
 	    },
 	  }
