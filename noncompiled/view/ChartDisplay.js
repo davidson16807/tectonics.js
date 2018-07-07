@@ -24,7 +24,7 @@ function SpatialPdfChartDisplay(surface_type_focus, name) {
 		var plot_middle = Math.round(median/bin_size)*bin_size; 
 		var plot_min = plot_middle - bin_size * Math.round(bin_num/2); 
 
-		var world = model.world(); //TODO: pass in as parameter
+		var world = focus; //TODO: pass in as parameter
 		var land = ScalarField.gte_scalar(world.lithosphere.displacement.value(), world.hydrosphere.sealevel.value());
 		var ocean = ScalarField.lt_scalar(world.lithosphere.displacement.value(), world.hydrosphere.sealevel.value());
 
