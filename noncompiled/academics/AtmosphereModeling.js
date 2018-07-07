@@ -1,19 +1,11 @@
 
 var AtmosphereModeling = (function() {
 
-	var surface_air_pressure_land_effect = function(elevation, lat, season, effect, scratch) {
-		var is_land = ScalarField.gt_scalar(elevation, 0);
-		BinaryMorphology.erosion(is_land, 2, is_land);
-		Float32Raster.FromUint8Raster(is_land, effect);
-		var diffuse = ScalarField.diffusion_by_constant;
-		var smoothing_iterations =  2;
-		for (var i=0; i<smoothing_iterations; ++i) {
-			diffuse(effect, 1, effect, scratch);
-		}
-		var pos = elevation.grid.pos;
-		ScalarField.mult_field(effect, lat, effect);
-	    ScalarField.mult_scalar(effect, season, effect);
-		return effect;
+	var surface_air_pressure_temperature_effect = function(temperature, material_heat_capacity, atmospheric_height, result) {
+		// NOTE: "volumetric_heat_capacity" is the energy required to heat a volume of air by 1 Kelvin
+		// it is reported in joules per kelvin per square meter column of air
+
+		return ScalarField.mult_scalar(temperature, material_heat_capacity.air / atmospheric_height, result);
 	}
 	var surface_air_pressure_lat_effect = function (lat, pressure) {
 		pressure = pressure || Float32Raster(lat.grid);
@@ -42,24 +34,19 @@ var AtmosphereModeling = (function() {
 		VectorDataset.rescale(velocity, velocity, 15.65); //15.65 m/s is the fastest average wind speed on Earth, recorded at Mt. Washington
 		return velocity;
 	}
-	AtmosphereModeling.surface_air_pressure = function(elevation, lat, meanAnomaly, axial_tilt, pressure, scratch) {
-		pressure = pressure || Float32Raster(lat.grid);
+	AtmosphereModeling.surface_air_pressure = function(temperature, lat, material_heat_capacity, atmospheric_height, result, scratch) {
+		result = result || Float32Raster(lat.grid);
 		scratch = scratch || Float32Raster(lat.grid);
-		var season = meanAnomaly / Math.PI;
-		// "effective latitude" is what the latitude is like weather-wise, when taking axial tilt into account
-		var effective_lat = scratch; 
-		ScalarField.add_scalar(lat, season*axial_tilt, effective_lat);
-		Float32RasterInterpolation.clamp(effective_lat, -Math.PI/2, Math.PI/2, effective_lat);
 
-		surface_air_pressure_lat_effect(effective_lat, pressure);
+		surface_air_pressure_lat_effect(lat, result);
 
-		var land_effect = Float32Raster(lat.grid);
-		var scratch2 = Float32Raster(lat.grid);
-		surface_air_pressure_land_effect(elevation, effective_lat, season, land_effect, scratch2);
-		ScalarField.add_scalar_term(pressure, land_effect, 1, pressure);
-		Float32Dataset.normalize(pressure, pressure, 980e3, 1030e3);
+		var temperature_effect = scratch;
+		surface_air_pressure_temperature_effect(temperature, material_heat_capacity, atmospheric_height, temperature_effect);
+		Float32Dataset.normalize(temperature_effect, temperature_effect);
+		ScalarField.add_scalar_term(result, temperature_effect, 3, result);
+		Float32Dataset.normalize(result, result, 980e3, 1030e3);
 
-		return pressure;
+		return result;
 	}
 	AtmosphereModeling.surface_air_temp = function(net_energy, infrared_optical_depth, result) {
 		infrared_optical_depth = infrared_optical_depth || Float32Raster(net_energy.grid);

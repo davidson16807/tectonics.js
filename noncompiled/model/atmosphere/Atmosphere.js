@@ -76,13 +76,7 @@ function Atmosphere(parameters) {
 	); 
 	this.surface_pressure = new Memo(
 		Float32Raster(grid),  
-		result => AtmosphereModeling.surface_air_pressure(
-				surface_height.value(), 
-				lat.value(), 
-				mean_anomaly, 
-				axial_tilt, 
-				result
-			)
+		result => AtmosphereModeling.surface_air_pressure( this.surface_temp, lat.value(), material_heat_capacity, 100e3, result)
 	); 
 	this.surface_wind_velocity = new Memo(
 		VectorRaster(grid),  
