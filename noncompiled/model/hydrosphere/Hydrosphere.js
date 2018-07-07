@@ -50,21 +50,21 @@ function Hydrosphere(parameters) {
 			var freezing_point = 273.15; // TODO: move this to Atmosphere, and update this to reflect surface_pressure
 			Float32RasterInterpolation.lerp(
 					1, 0, 
-					Float32RasterInterpolation.smoothstep(freezing_point-10, freezing_point, surface_temp),
+					Float32RasterInterpolation.smoothstep(freezing_point-5, freezing_point, surface_temp),
 					result
 				);
-			//Float32RasterGraphics.fill_into_selection(
-			//	result, 0.,
-			//	ScalarField.lt_field(
-			//		displacement.value(), 
-			//		Float32RasterInterpolation.lerp(
-			//			self.mesopelagic.value(), 
-			//			self.epipelagic.value(),
-			//			Float32RasterInterpolation.smoothstep(freezing_point-10, freezing_point, surface_temp)
-			//		)
-			//	),
-			//	result
-			//);
+			Float32RasterGraphics.fill_into_selection(
+				result, 0.,
+				ScalarField.lt_field(
+					displacement.value(), 
+					Float32RasterInterpolation.lerp(
+						self.mesopelagic.value(), 
+						self.epipelagic.value(),
+						Float32RasterInterpolation.smoothstep(freezing_point-5, freezing_point, surface_temp)
+					)
+				),
+				result
+			);
 			return result;
 		},
 		false
