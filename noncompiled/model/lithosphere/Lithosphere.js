@@ -4,10 +4,10 @@
 function Lithosphere(parameters) {
 	var grid = parameters['grid'] || stop('missing parameter: "grid"');
 
-	var material_viscosity = parameters['material_viscosity'];
-	var sealevel = parameters['sealevel'];
-	var material_density = parameters['material_density'];
-	var surface_gravity = parameters['surface_gravity'] || 9.8; // m/s^2
+	var material_viscosity = undefined;
+	var material_density = undefined;
+	var sealevel = undefined;
+	var surface_gravity = undefined;
 
 	this.rifting_crust =
 	 new RockColumn({
@@ -15,7 +15,7 @@ function Lithosphere(parameters) {
 		// felsic_plutonic: 	100, // This can be set above zero to "cheat" on felsic mass conservation
 	 });
 
-	this.supercontinentCycle = parameters['supercontinentCycle'] || new SupercontinentCycle(this, parameters);
+	this.supercontinentCycle = new SupercontinentCycle(this, parameters);
 
 	// The following are fields that are derived from other fields:
 	// "displacement is the height of the crust relative to an arbitrary datum level
@@ -414,6 +414,7 @@ function Lithosphere(parameters) {
 
 	function assert_dependencies() {
 		if (sealevel === void 0)	 		{ throw '"sealevel" not provided'; }
+		if (surface_gravity === void 0)	{ throw '"surface_gravity" not provided'; }
 		if (material_density === void 0)	{ throw '"material_density" not provided'; }
 		if (material_viscosity === void 0)	{ throw '"material_viscosity" not provided'; }
 	}
