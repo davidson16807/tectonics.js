@@ -440,7 +440,7 @@
 			var focus_name = get_planet_name();
 			
 			var universe = new Universe(
-				new System({
+				new System(undefined, {
 					name: 'galactic orbit',
 					motion: { // motion mirrors orbit of sun around galactic center
 						type: 'orbit',
@@ -454,8 +454,7 @@
 						mass: Units.SOLAR_MASS,
 					},
 					children: [
-
-						new System({
+						{
 							name: 'orbit',
 							motion: {
 								type: 'orbit',
@@ -466,7 +465,7 @@
 								effective_combined_mass: 2e30, // kg
 							},	
 							children: [
-								new System({
+								{
 									name: 'precession',
 									motion: { 
 										type: 'spin',
@@ -474,7 +473,7 @@
 									},	
 									invariant_insolation: true,
 									children: [
-										new System({
+										{
 											name: 'spin',
 											motion: { 
 												type: 'spin',
@@ -486,13 +485,13 @@
 												name: focus_name,
 												grid: view.grid,
 											},
-										}),
-								 	]
-								}),
+										},
+								 	],
+								},
 							],
-						}),
-					]
-				})
+						},
+					],
+				}),
 			);
 			focus = universe.body_id_to_node_map[focus_name].body;
 			WorldGenerator.generate(focus, 

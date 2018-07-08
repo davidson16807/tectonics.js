@@ -6,7 +6,7 @@
 // and allows arbitrary nodes to be designated as the origin of a coordinate system.
 // Designating arbitrary nodes as the origin is meant to resolve floating point precision issues 
 // that commonly occur for very distant objects, A.K.A. the "Deep Space Kraken" of Kerbal Space Program
-function System(parameters) {
+function System(parent, parameters) {
 	// name of the cycle induced by the system
 	this.name 		= parameters['name'];
 
@@ -41,20 +41,14 @@ function System(parameters) {
 	// the parent motion of the scene graph node (optional)
 	// the motion described by this.motion assumes a coordinate basis that is designated by the parent node
 	// TODO: maybe set this to a dependency? it is assigned by the Universe object, after all
-	this.parent 	= undefined;
+	this.parent 	= parent;
 
 	// the child motions of the scene graph node (optional)
 	// the motions described by the children assume a coordinate basis that is designated by this node
-	this.children 	= parameters['children'] || [];
+	this.children = (parameters.children || []).map(child_parameters => new System(this, child_parameters));
 
 	// whether or not the insolation of child bodies will change throughout this system's motion
 	this.invariant_insolation = parameters['invariant_insolation'] || false;
-
-	// iterate through children and assign their parents
-	for (var i = 0; i < this.children.length; i++) {
-		this.children[i].parent = this;
-	}
-
 
 	// gets a list of all nodes at or below this one in the hierarchy
 	this.ancestors = function () {
