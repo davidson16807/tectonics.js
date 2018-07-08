@@ -10,13 +10,38 @@ function System(parameters) {
 	// name of the cycle induced by the system
 	this.name 		= parameters['name'];
 
+	if (parameters.motion === void 0) {
+		stop('missing parameter: "motion"');
+	}
+	if (parameters.motion.type === void 0) {
+		stop('missing parameter: "motion.type"');
+	}
 	// the motion that characterizes all bodies within the system
 	// motion can currently either be an "Orbit" or "Spin", although it could be any class that instantiates their methods
-	this.motion 	= parameters['motion'] || stop('missing parameter: "motion"');
+	this.motion = {
+		'orbit': () => new Orbit(parameters.motion),
+		'spin': () => new Spin(parameters.motion),
+	}[parameters.motion.type]();
+
+	// the body that exhibits the motion (optional)
+	// the position/rotation of the body is described by a coordinate basis that is designated by this node
+	// remember that a path need not always have a body - 
+	// it may for instance describe a group of objects that are gravitationally bound
+	this.body = undefined;
+	if (parameters.body !== void 0) {
+		if (parameters.body.type === void 0) {
+			stop('missing parameter: "body.type"');
+		}
+		this.body = {
+			'world': () => new World(parameters.body),
+			'star': () => new Star(parameters.body),
+		}[parameters.body.type]();
+	}
 
 	// the parent motion of the scene graph node (optional)
 	// the motion described by this.motion assumes a coordinate basis that is designated by the parent node
-	this.parent 	= parameters['parent'];
+	// TODO: maybe set this to a dependency? it is assigned by the Universe object, after all
+	this.parent 	= undefined;
 
 	// the child motions of the scene graph node (optional)
 	// the motions described by the children assume a coordinate basis that is designated by this node
@@ -30,11 +55,6 @@ function System(parameters) {
 		this.children[i].parent = this;
 	}
 
-	// the body that exhibits the motion (optional)
-	// the position/rotation of the body is described by a coordinate basis that is designated by this node
-	// remember that a path need not always have a body - 
-	// it may for instance describe a group of objects that are gravitationally bound
-	this.body		= parameters['body'];
 
 	// gets a list of all nodes at or below this one in the hierarchy
 	this.ancestors = function () {

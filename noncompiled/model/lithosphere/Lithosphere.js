@@ -3,6 +3,7 @@
 
 function Lithosphere(parameters) {
 	var grid = parameters['grid'] || stop('missing parameter: "grid"');
+	this.supercontinentCycle = new SupercontinentCycle(this, parameters);
 
 	var material_viscosity = undefined;
 	var material_density = undefined;
@@ -15,7 +16,6 @@ function Lithosphere(parameters) {
 		// felsic_plutonic: 	100, // This can be set above zero to "cheat" on felsic mass conservation
 	 });
 
-	this.supercontinentCycle = new SupercontinentCycle(this, parameters);
 
 	// The following are fields that are derived from other fields:
 	// "displacement is the height of the crust relative to an arbitrary datum level
@@ -48,8 +48,6 @@ function Lithosphere(parameters) {
 	this.top_plate_map 			= Uint8Raster(grid);
 	this.plate_count 		= Uint8Raster(grid);
 	this.asthenosphere_velocity = VectorRaster(grid);
-
-	// this.maxPlatesNum = parameters['platesNum'] || 8;
 
 	this.top_crust 		= new Crust({grid: grid});
 	this.total_crust 	= new Crust({grid: grid});

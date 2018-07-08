@@ -7,9 +7,7 @@ function Simulation (parameters) {
 	this._last_update_timestamp = 0;
 
 	// the "model" is the singular entity we are simulating
-	// it can anything that implements the correct interface: a universe, a planet, an atmosphere, etc.
-	this.model = parameters['model'];
-
+	// it can be anything that implements the correct interface: a universe, a planet, an atmosphere, etc.
 	this.model = function(model) {
 		if (model === void 0) {
 			return _model;

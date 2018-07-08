@@ -1,8 +1,10 @@
 'use strict';
 
 function Biosphere(parameters) {
-	var self = this;
 	var grid = parameters['grid'] || stop('missing parameter: "grid"');
+	var growth_factor 	= parameters['growth_factor'] || 1; // This is something I haven't bothered parameterizing. If c=1/∞, then npp∝lai
+	var npp_max 		= parameters['npp_max'] || 1;
+	var lai_max 		= parameters['lai_max'] || 1;
 
 	// public variables
 	var self = this;
@@ -28,9 +30,6 @@ function Biosphere(parameters) {
 
 	var long_term_surface_temp = undefined;
 	var precip = undefined;
-	var growth_factor 	= parameters['growth_factor'] || 1; // This is something I haven't bothered parameterizing. If c=1/∞, then npp∝lai
-	var npp_max 		= parameters['npp_max'] || 1;
-	var lai_max 		= parameters['lai_max'] || 1;
 
 	function calculate_deltas(world, timestep) { }
 
@@ -44,9 +43,6 @@ function Biosphere(parameters) {
 	this.setDependencies = function(dependencies) {
 		long_term_surface_temp 	= dependencies['long_term_surface_temp'] 	!== void 0? 	dependencies['long_term_surface_temp'] 	: long_term_surface_temp;
 		precip 			= dependencies['precip'] 		!== void 0? 	dependencies['precip'] 			: precip;
-		growth_factor 	= dependencies['growth_factor'] !== void 0? 	dependencies['growth_factor'] 	: growth_factor;
-		npp_max 		= dependencies['npp_max'] 		!== void 0? 	dependencies['npp_max'] 		: npp_max;
-		lai_max 		= dependencies['lai_max'] 		!== void 0? 	dependencies['lai_max'] 		: lai_max;
 	}
 
 	this.initialize = function() {

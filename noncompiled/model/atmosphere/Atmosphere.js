@@ -3,6 +3,8 @@
 function Atmosphere(parameters) {
 	// private variables
 	var grid = parameters['grid'] || stop('missing parameter: "grid"');
+	this.lapse_rate = parameters['lapse_rate'] || 3.5 / 1e3; // degrees Kelvin per meter
+	this.greenhouse_gas_factor = parameters['greenhouse_gas_factor'] || 1.3;
 	var self = this;
 
 	this.scratch = Float32Raster(grid);
@@ -52,8 +54,6 @@ function Atmosphere(parameters) {
 	this.sealevel_temp = undefined;
 	this.surface_temp = Float32Raster(grid);
 
-	this.lapse_rate = parameters['lapse_rate'] || 3.5 / 1e3; // degrees Kelvin per meter
-	this.greenhouse_gas_factor = parameters['greenhouse_gas_factor'] || 1.3;
 
 	this.albedo = new Memo(
 		Float32Raster(grid),  

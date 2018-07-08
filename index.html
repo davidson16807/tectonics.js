@@ -433,60 +433,59 @@
 			loadUrl(querystring['load']);
 		} else {
 			var star_name_corpus = NameGenerator.tokenize_corpus(NameCorpii.arabic_star_names);
-			var star_name_generator = NameGenerator.get_length_distribution_generator(star_name_corpus, 25, {5:1,6:3,7:11,8:3,9:1}, 100);
-			var star = new Star({
-				name: star_name_generator(),
-				mass: Units.SOLAR_MASS,
-			});
+			var get_star_name = NameGenerator.get_length_distribution_generator(star_name_corpus, 25, {5:1,6:3,7:11,8:3,9:1}, 100);
 			
 			var planet_name_corpus = NameGenerator.tokenize_corpus(NameCorpii.greek_mythological_names);
-			var planet_name_gen = NameGenerator.get_length_distribution_generator(planet_name_corpus, 25, {5:1,6:3,7:11,8:3,9:1}, 100);
-			var world = new World({ 
-				name: planet_name_gen(),
-				grid: view.grid,
-			});
-			focus = world;
-			WorldGenerator.generate(world, 
-				EliasHeightMapGenerator.generate(world.grid), 
-				WorldGenerator.modern_earth_hypsography, 
-				WorldGenerator.modern_earth_control_points
-			);
+			var get_planet_name = NameGenerator.get_length_distribution_generator(planet_name_corpus, 25, {5:1,6:3,7:11,8:3,9:1}, 100);
+			var focus_name = get_planet_name();
 			
 			var universe = new Universe(
 				new System({
 					name: 'galactic orbit',
-					motion: new Orbit({ // motion mirrors orbit of sun around galactic center
+					motion: { // motion mirrors orbit of sun around galactic center
+						type: 'orbit',
 						semi_major_axis: 2.35e20, // meters
 						effective_combined_mass: 1.262e41, // kg, back calculated to achieve period of 250 million years
-					}),
+					},
 					invariant_insolation: true,
-					body: star,
+					body: {
+						type: 'star',
+						name: get_star_name(),
+						mass: Units.SOLAR_MASS,
+					},
 					children: [
 
 						new System({
 							name: 'orbit',
-							motion: new Orbit({
+							motion: {
+								type: 'orbit',
 								semi_major_axis: 1. * Units.ASTRONOMICAL_UNIT,
 								eccentricity: 0.0167,
 								inclination: Math.PI * 5e-5/180,
 								longitude_of_ascending_node: Math.PI * -11/180,
 								effective_combined_mass: 2e30, // kg
-							}),	
+							},	
 							children: [
 								new System({
 									name: 'precession',
-									motion: new Spin({ 
+									motion: { 
+										type: 'spin',
 										angular_speed: 2*Math.PI/(25860 * Units.SECONDS_IN_YEAR),
-									}),	
+									},	
 									invariant_insolation: true,
 									children: [
 										new System({
 											name: 'spin',
-											motion: new Spin({ 
+											motion: { 
+												type: 'spin',
 												angular_speed: 2*Math.PI/(60*60*24),
 												axial_tilt: Math.PI * 23.5/180,
-											}),	
-											body: world,
+											},	
+											body: { 
+												type: 'world',
+												name: focus_name,
+												grid: view.grid,
+											},
 										}),
 								 	]
 								}),
@@ -495,7 +494,12 @@
 					]
 				})
 			);
-			
+			focus = universe.body_id_to_node_map[focus_name].body;
+			WorldGenerator.generate(focus, 
+				EliasHeightMapGenerator.generate(focus.grid), 
+				WorldGenerator.modern_earth_hypsography, 
+				WorldGenerator.modern_earth_control_points
+			);
 			simulation.model(universe);
 			$('.controls').show();
 		}
