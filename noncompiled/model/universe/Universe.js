@@ -49,10 +49,11 @@
 //
 
 
-function Universe(hierarchy, config) {
-	this.config = config || {};
+function Universe(parameters) {
+	this.config = parameters.config || {};
+	var system = new System(undefined, parameters.system || stop('missing parameter: "system"'));
 
-	var nodes = hierarchy.descendants();
+	var nodes = system.descendants();
 	var id_to_node_map = nodes
 		.reduce((acc, x) => { acc[x.name] = x; return acc; }, {} );
 	this.id_to_node_map = id_to_node_map;
