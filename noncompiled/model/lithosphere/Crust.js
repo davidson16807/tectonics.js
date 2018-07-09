@@ -3,12 +3,12 @@
 // A "Crust" is defined as a tuple of rasters that represent a planet's crust
 // The Crust namespace provides methods that extend the functionality of rasters.js to Crust objects
 // It also provides functions for modeling properties of Crust
-function Crust(params) {
-	this.grid = params['grid'] || stop('missing parameter: "grid"');
+function Crust(parameters) {
+	this.grid = parameters['grid'] || stop('missing parameter: "grid"');
 
 	var length = this.grid.vertices.length;
 
-    var buffer = params['buffer'] || new ArrayBuffer(8 * Float32Array.BYTES_PER_ELEMENT * length);
+    var buffer = parameters['buffer'] || new ArrayBuffer(8 * Float32Array.BYTES_PER_ELEMENT * length);
     this.buffer = buffer;
 
     this.sediment 			= new Float32Array(buffer, 0 * Float32Array.BYTES_PER_ELEMENT * length, length);

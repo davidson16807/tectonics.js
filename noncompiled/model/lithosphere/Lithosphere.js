@@ -4,6 +4,7 @@
 function Lithosphere(parameters) {
 	var grid = parameters['grid'] || stop('missing parameter: "grid"');
 	this.supercontinentCycle = new SupercontinentCycle(this, parameters);
+	this.plates = (parameters['plates'] || []).map(plate_parameters => new Plate(plate_parameters));
 
 	var material_viscosity = undefined;
 	var material_density = undefined;
@@ -59,7 +60,6 @@ function Lithosphere(parameters) {
 	this.crust_delta 	= new Crust({grid: grid});
 	this.crust_scratch 	= new Crust({grid: grid});
 
-	this.plates = [];
 	this.average_conserved_per_cell = 0;
 
 
@@ -399,10 +399,9 @@ function Lithosphere(parameters) {
 
 			plate = new Plate({
 				grid: 	grid,
-				mask: 	mask,
+				mask: 	mask.buffer,
+				crust:  this.total_crust.buffer.slice(0)
 			})
-			Crust.copy(this.total_crust, plate.crust);
-
 			plate.setDependencies({
 				material_density: 	material_density,
 				material_viscosity: material_viscosity,

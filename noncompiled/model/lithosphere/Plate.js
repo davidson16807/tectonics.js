@@ -5,7 +5,13 @@ function Plate(parameters)
 	parameters = parameters || stop('missing parameter object')
 	var grid = parameters['grid'] || stop('missing parameter: "grid"');
 
-	this.crust = parameters['crust'] || new Crust({grid: grid});
+	this.crust = new Crust({grid: grid, buffer: parameters['crust']});
+	this.mask = Uint8Raster.FromBuffer(parameters['mask'], grid);
+	this.local_to_global_matrix = Matrix.Identity();
+	if (parameters['local_to_global_matrix'] !== void 0) {
+		this.local_to_global_matrix.set(parameters['local_to_global_matrix'])
+	}
+	this.global_to_local_matrix = Matrix.invert(this.local_to_global_matrix);
 
 	var self = this; 
 	// The following are fields that are derived from other fields:
@@ -43,10 +49,7 @@ function Plate(parameters)
 		result => LithosphereModeling.get_plate_center_of_mass	(self.total_mass.value(), self.mask)
 	); 
 
-	this.mask = parameters['mask'] || Uint8Raster(grid);
 
-	this.local_to_global_matrix = parameters['local_to_global_matrix'] || Matrix.Identity();
-	this.global_to_local_matrix = Matrix.invert(this.local_to_global_matrix);
 
 	this.global_ids_of_local_cells = Uint16Raster(grid);
 	this.local_ids_of_global_cells = Uint16Raster(grid);
