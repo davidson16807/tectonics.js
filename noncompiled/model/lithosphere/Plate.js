@@ -6,9 +6,6 @@ function Plate(parameters)
 	var grid = parameters['grid'] || stop('missing parameter: "grid"');
 
 	this.crust = parameters['crust'] || new Crust({grid: grid});
-	var material_density = parameters['material_density'] || parameters['world'].material_density;
-	var material_viscosity = parameters['material_viscosity'] || parameters['world'].material_viscosity;
-	var surface_gravity = parameters['surface_gravity'] || parameters['world'].surface_gravity;
 
 	var self = this; 
 	// The following are fields that are derived from other fields:
@@ -57,6 +54,22 @@ function Plate(parameters)
 	this.global_pos_of_local_cells = VectorRaster(grid);
 	this.local_pos_of_global_cells = VectorRaster(grid);
 
+	var material_density = undefined;
+	var material_viscosity = undefined;
+	var surface_gravity = undefined;
+
+	function assert_dependencies() {
+		if (material_density === void 0)	{ throw '"material_density" not provided'; }
+		if (material_viscosity === void 0)	{ throw '"material_viscosity" not provided'; }
+		if (surface_gravity === void 0)	{ throw '"surface_gravity" not provided'; }
+	}
+
+	this.setDependencies = function(dependencies) {
+		material_density 	= dependencies['material_density'] 	!== void 0? 	dependencies['material_density'] 		: material_density;
+		material_viscosity 	= dependencies['material_viscosity']!== void 0? 	dependencies['material_viscosity'] 		: material_viscosity;
+		surface_gravity 	= dependencies['surface_gravity'] 	!== void 0? 	dependencies['surface_gravity'] 		: surface_gravity;
+	};
+
 	this.invalidate = function(){
 		this.displacement.invalidate();
 		this.thickness.invalidate();
@@ -68,6 +81,8 @@ function Plate(parameters)
 	}
 	
 	this.move = function(timestep){
+		assert_dependencies();
+
 		var world = this.world;
 
 		var rotation_matrix = LithosphereModeling.get_plate_rotation_matrix(this.velocity.value(), this.center_of_mass.value(), timestep);

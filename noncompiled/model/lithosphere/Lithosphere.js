@@ -400,12 +400,14 @@ function Lithosphere(parameters) {
 			plate = new Plate({
 				grid: 	grid,
 				mask: 	mask,
-				material_density: 	material_density,
-				material_viscosity: material_viscosity,
-				surface_gravity: surface_gravity,
 			})
 			Crust.copy(this.total_crust, plate.crust);
 
+			plate.setDependencies({
+				material_density: 	material_density,
+				material_viscosity: material_viscosity,
+				surface_gravity: surface_gravity,
+			});
 			this.plates.push(plate);
 		}
 	};
@@ -418,8 +420,12 @@ function Lithosphere(parameters) {
 	}
 
 	this.setDependencies = function(dependencies) {
-		surface_gravity 	= dependencies['surface_gravity'] 	!== void 0? 	dependencies['surface_gravity'] 		: surface_gravity;
+		for (var i = 0; i < this.plates.length; i++) {
+			this.plates[i].setDependencies(dependencies);
+		}
+
 		sealevel 			= dependencies['sealevel'] 			!== void 0? 	dependencies['sealevel'] 				: sealevel;
+		surface_gravity 	= dependencies['surface_gravity'] 	!== void 0? 	dependencies['surface_gravity'] 		: surface_gravity;
 		material_density 	= dependencies['material_density'] 	!== void 0? 	dependencies['material_density'] 		: material_density;
 		material_viscosity 	= dependencies['material_viscosity']!== void 0? 	dependencies['material_viscosity'] 		: material_viscosity;
 	};
