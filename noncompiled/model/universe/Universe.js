@@ -53,6 +53,12 @@ function Universe(parameters) {
 	this.config = parameters.config || {};
 	var system = new System(undefined, parameters.system || stop('missing parameter: "system"'));
 
+	this.getParameters = function() {
+		return {
+			system: system.getParameters(),
+		}
+	}
+
 	var nodes = system.descendants();
 	var id_to_node_map = nodes
 		.reduce((acc, x) => { acc[x.name] = x; return acc; }, {} );

@@ -50,6 +50,16 @@ function System(parent, parameters) {
 	// whether or not the insolation of child bodies will change throughout this system's motion
 	this.invariant_insolation = parameters['invariant_insolation'] || false;
 
+	this.getParameters = function() {
+		return {
+			name: 		this.name,
+			motion: 	this.motion  .getParameters(),
+			body: 		this.body === void 0? 	undefined : undefined, //this.body.getParameters(),
+			children: 	this.children.map(	child => child.getParameters()	),
+			invariant_insolation: this.invariant_insolation,
+		};
+	}
+
 	// gets a list of all nodes at or below this one in the hierarchy
 	this.ancestors = function () {
 		return [

@@ -29,6 +29,18 @@ function Orbit(parameters) {
 	// but it allows us to make statements that concern timing: velocity, period, etc.
 	var effective_combined_mass  		= parameters['effective_combined_mass'] 			|| 0.;
 
+	this.getParameters = function() {
+		return {
+			type: 'orbit',
+			semi_major_axis: 				semi_major_axis,
+			eccentricity: 					eccentricity,
+			inclination: 					inclination,
+			argument_of_periapsis: 			argument_of_periapsis,
+			longitude_of_ascending_node: 	longitude_of_ascending_node,
+			effective_combined_mass: 		effective_combined_mass,
+		};
+	}
+
 	this.period = function() {
 		return OrbitalMechanics.get_period(semi_major_axis, effective_combined_mass);
 	}
