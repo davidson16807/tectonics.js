@@ -13,6 +13,15 @@ function Plate(parameters)
 	}
 	this.global_to_local_matrix = Matrix.invert(this.local_to_global_matrix);
 
+	this.getParameters = function() {
+		return { 
+			//grid: 		grid. // TODO: add grid
+			crust: 			this.crust.buffer,
+			mask: 			this.mask.buffer,
+			local_to_global_matrix: Array.from(this.local_to_global_matrix)
+		};
+	}
+
 	var self = this; 
 	// The following are fields that are derived from other fields:
 	// "displacement is the height of the crust relative to an arbitrary datum level

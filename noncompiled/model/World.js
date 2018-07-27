@@ -50,10 +50,31 @@ function World(parameters) {
 
 	this.age = parameters['age'] || 0; // megayears
 
-	this.lithosphere = new Lithosphere(parameters);
-	this.hydrosphere = new Hydrosphere(parameters);
-	this.atmosphere = new Atmosphere(parameters);
-	this.biosphere = new Biosphere(parameters);
+	this.lithosphere 	= new Lithosphere	(this.grid, parameters.lithosphere	|| {});
+	this.hydrosphere 	= new Hydrosphere	(this.grid, parameters.hydrosphere	|| {});
+	this.atmosphere 	= new Atmosphere	(this.grid, parameters.atmosphere 	|| {});
+	this.biosphere 		= new Biosphere		(this.grid, parameters.biosphere 	|| {});
+
+
+	this.getParameters = function() {
+		return { 
+			type: 					'world',
+			//grid: 				grid. // TODO: add grid
+			name: 					this.name,
+			material_heat_capacity: this.material_heat_capacity,
+			material_viscosity: 	this.material_viscosity,
+			material_density: 		this.material_density,
+			material_reflectivity: 	this.material_reflectivity,
+			surface_gravity: 		this.surface_gravity,
+			radius: 				this.radius,
+			age: 					this.age,
+			lithosphere: 			this.lithosphere.getParameters(),
+			hydrosphere: 			this.hydrosphere.getParameters(),
+			atmosphere: 			this.atmosphere.getParameters(),
+			biosphere: 				this.biosphere.getParameters(),
+		};
+	}
+
 
 	this.setDependencies = function(dependencies) {
 		this.lithosphere.setDependencies(dependencies);

@@ -1,10 +1,18 @@
 'use strict';
 
 
-function Lithosphere(parameters) {
-	var grid = parameters['grid'] || stop('missing parameter: "grid"');
+function Lithosphere(grid, parameters) {
+	var grid = grid || stop('missing parameter: "grid"');
 	this.supercontinentCycle = new SupercontinentCycle(this, parameters);
 	this.plates = (parameters['plates'] || []).map(plate_parameters => new Plate(plate_parameters));
+
+	this.getParameters = function() {
+		return { 
+			//grid: 				grid. // TODO: add grid
+			plates: 				this.plates.map(plate => plate.getParameters()),
+			supercontinent_cycle: 	this.supercontinentCycle.getParameters(),
+		};
+	}
 
 	var material_viscosity = undefined;
 	var material_density = undefined;

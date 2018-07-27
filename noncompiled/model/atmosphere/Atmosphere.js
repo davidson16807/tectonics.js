@@ -1,12 +1,20 @@
 'use strict';
 
-function Atmosphere(parameters) {
+function Atmosphere(grid, parameters) {
 	// private variables
-	var grid = parameters['grid'] || stop('missing parameter: "grid"');
+	var grid = grid || stop('missing parameter: "grid"');
 	this.lapse_rate = parameters['lapse_rate'] || 3.5 / 1e3; // degrees Kelvin per meter
 	this.greenhouse_gas_factor = parameters['greenhouse_gas_factor'] || 1.3;
-	var self = this;
 
+	this.getParameters = function() {
+		return { 
+			//grid: 				grid. // TODO: add grid
+			lapse_rate: 			lapse_rate,
+			greenhouse_gas_factor: 	greenhouse_gas_factor,
+		};
+	}
+
+	var _this = this;
 	this.scratch = Float32Raster(grid);
 	this.long_term_sealevel_temp = new Memo(
 		Float32Raster(grid),  
@@ -82,7 +90,7 @@ function Atmosphere(parameters) {
 		VectorRaster(grid),  
 		result => AtmosphereModeling.surface_air_velocity(
 			grid.pos, 
-			self.surface_pressure.value(), 
+			_this.surface_pressure.value(), 
 			angular_speed, 
 			result
 		)

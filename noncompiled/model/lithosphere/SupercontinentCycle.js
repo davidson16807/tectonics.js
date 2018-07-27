@@ -3,14 +3,20 @@
 function SupercontinentCycle(lithosphere, parameters){
 	parameters = parameters || {};
 
-	this.getRandomDuration = parameters['getRandomDuration'] ||
-		function() { return 150; };
+	this.getRandomDuration = function() { return 150; };
 		// function() { return random.uniform(300, 500); };
 		// from wikipedia
 	
 	this.lithosphere = lithosphere;
 	this.duration = parameters['duration'] || this.getRandomDuration();
 	this.age = parameters['age'] || this.duration;
+
+	this.getParameters = function() {
+		return { 
+			duration: 	duration,
+			age: 		age,
+		};
+	}
 };
 SupercontinentCycle.prototype.update = function(timestep) {
 	this.age += timestep;

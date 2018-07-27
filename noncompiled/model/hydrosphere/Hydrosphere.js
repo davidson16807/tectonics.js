@@ -1,13 +1,11 @@
 'use strict';
 
-function Hydrosphere(parameters) {
+function Hydrosphere(grid, parameters) {
 
-	var grid = parameters['grid'] || stop('missing parameter: "grid"');
+	var grid = grid || stop('missing parameter: "grid"');
 
 	// public variables
 	var self = this; 
-	this.average_ocean_depth = 0;
-	// height of sealevel, in meters, relative to the same datum level used by displacement
 	this.sealevel = new Memo(
 		parameters['sealevel'] || 3682,  
 		current_value => 
@@ -19,6 +17,16 @@ function Hydrosphere(parameters) {
 			),
 		false
 	); 
+
+	this.getParameters = function() {
+		return { 
+			//grid: 	grid., // TODO: store grid
+			sealevel: 	this.sealevel.value(), // TODO: store average_ocean_depth as parameter and modify WorldGenerator to find it
+		};
+	}
+
+	this.average_ocean_depth = 0;
+	// height of sealevel, in meters, relative to the same datum level used by displacement
 	this.epipelagic = new Memo( 0,  
 		current_value => self.sealevel.value()-200
 	); 

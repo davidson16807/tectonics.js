@@ -1,10 +1,19 @@
 'use strict';
 
-function Biosphere(parameters) {
-	var grid = parameters['grid'] || stop('missing parameter: "grid"');
+function Biosphere(grid, parameters) {
+	var grid 			= grid || stop('missing parameter: "grid"');
 	var growth_factor 	= parameters['growth_factor'] || 1; // This is something I haven't bothered parameterizing. If c=1/∞, then npp∝lai
 	var npp_max 		= parameters['npp_max'] || 1;
 	var lai_max 		= parameters['lai_max'] || 1;
+
+	this.getParameters = function() {
+		return { 
+			//grid: 		grid. // TODO: add grid
+			growth_factor: 	growth_factor,
+			npp_max: 		npp_max,
+			lai_max: 		lai_max,
+		};
+	}
 
 	// public variables
 	var self = this;
