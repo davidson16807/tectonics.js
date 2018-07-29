@@ -407,18 +407,11 @@
 		random 				= new Random(parseSeed(seed));
 		autosave_period 	= parseInt(querystring['autosave']   || '0');
 
+		var geometry = new THREE.IcosahedronGeometry(1, resolution);
 		view = new View(
 			window.innerWidth, 
 			window.innerHeight,
-			new Grid( 
-				new THREE.IcosahedronGeometry(1, resolution),
-				{ 
-					voronoi_generator: function(points, farthest_distance) {	
-						return VoronoiSphere.FromPos(points, farthest_distance)	
-					} 
-				}
-				// { voronoi_generator: VoronoiSphere.FromPos }
-			),
+			new Grid( geometry, { voronoi_generator: VoronoiSphere.FromPos }, ),
 			scalarDisplays.satellite, 
 			vectorDisplays.disabled, 
 			vertexShaders['orthographic'],
@@ -483,7 +476,7 @@
 											body: { 
 												type: 'world',
 												name: focus_name,
-												grid: view.grid,
+												grid: geometry,
 											},
 										},
 								 	],

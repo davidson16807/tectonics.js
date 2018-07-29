@@ -13,8 +13,8 @@ function SupercontinentCycle(lithosphere, parameters){
 
 	this.getParameters = function() {
 		return { 
-			duration: 	duration,
-			age: 		age,
+			duration: 	this.duration,
+			age: 		this.age,
 		};
 	}
 };

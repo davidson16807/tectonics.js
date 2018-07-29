@@ -1,9 +1,9 @@
 'use strict';
 
-function Plate(parameters)
+function Plate(grid, parameters)
 {
 	parameters = parameters || stop('missing parameter object')
-	var grid = parameters['grid'] || stop('missing parameter: "grid"');
+	var grid = grid || stop('missing parameter: "grid"');
 
 	this.crust = new Crust({grid: grid, buffer: parameters['crust']});
 	this.mask = Uint8Raster.FromBuffer(parameters['mask'], grid);

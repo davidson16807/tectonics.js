@@ -4,7 +4,7 @@
 function Lithosphere(grid, parameters) {
 	var grid = grid || stop('missing parameter: "grid"');
 	this.supercontinentCycle = new SupercontinentCycle(this, parameters);
-	this.plates = (parameters['plates'] || []).map(plate_parameters => new Plate(plate_parameters));
+	this.plates = (parameters['plates'] || []).map(plate_parameters => new Plate(grid, plate_parameters));
 
 	this.getParameters = function() {
 		return { 
@@ -405,11 +405,13 @@ function Lithosphere(grid, parameters) {
 		for (var i = 0, li = plate_ids.length; i < li; ++i) {
 			var mask = Uint8Field.eq_scalar(top_plate_map, plate_ids[i]);
 
-			plate = new Plate({
-				grid: 	grid,
-				mask: 	mask.buffer,
-				crust:  this.total_crust.buffer.slice(0)
-			})
+			plate = new Plate(
+				grid,
+				{
+					mask: 	mask.buffer,
+					crust:  this.total_crust.buffer.slice(0)
+				},
+			)
 			plate.setDependencies({
 				material_density: 	material_density,
 				material_viscosity: material_viscosity,

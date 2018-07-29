@@ -9,8 +9,8 @@ function Atmosphere(grid, parameters) {
 	this.getParameters = function() {
 		return { 
 			//grid: 				grid. // TODO: add grid
-			lapse_rate: 			lapse_rate,
-			greenhouse_gas_factor: 	greenhouse_gas_factor,
+			lapse_rate: 			this.lapse_rate,
+			greenhouse_gas_factor: 	this.greenhouse_gas_factor,
 		};
 	}
 

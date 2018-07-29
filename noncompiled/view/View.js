@@ -33,8 +33,12 @@ function View(innerWidth, innerHeight, grid, scalarDisplay, vectorDisplay, verte
 	};
 
 	var faces, scalar_field_geometry, scalar_field_mesh, scalar_field_material;
-	var faces = this.grid.template.faces;
-	var scalar_field_geometry = THREE.BufferGeometryUtils.fromGeometry(this.grid.template);
+	var faces = this.grid.faces;
+	var scalar_field_geometry = THREE.BufferGeometryUtils.fromGeometry({
+		faces: this.grid.faces, 
+		vertices: this.grid.vertices, 
+		faceVertexUvs: [[]], // HACK: necessary for use with BufferGeometryUtils.fromGeometry
+	});
 
 	scalar_field_geometry.addAttribute('displacement', Float32Array, faces.length*3, 1);
 	scalar_field_geometry.addAttribute('ice_coverage', Float32Array, faces.length*3, 1);

@@ -54,7 +54,7 @@ function System(parent, parameters) {
 		return {
 			name: 		this.name,
 			motion: 	this.motion  .getParameters(),
-			body: 		this.body === void 0? 	undefined : undefined, //this.body.getParameters(),
+			body: 		this.body === void 0? 	undefined : this.body.getParameters(),
 			children: 	this.children.map(	child => child.getParameters()	),
 			invariant_insolation: this.invariant_insolation,
 		};
