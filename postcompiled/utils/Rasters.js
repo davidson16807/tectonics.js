@@ -2,18 +2,24 @@
 // The Grid class is the one stop shop for high performance grid cell operations
 // You can find grid cells by neighbor, by position, and by the index of a WebGL buffer array
 // It is the lowest level data structure in the app - all raster operations under rasters/ depend on it
-function Grid(template, options){
+function Grid(parameters, options){
  options = options || {};
  var voronoi_generator = options.voronoi_generator;
  var neighbor_lookup, face, points, vertex;
- this.template = template;
+ this.parameters = parameters;
  // Precompute map between buffer array ids and grid cell ids
  // This helps with mapping cells within the model to buffer arrays in three.js
- // Map is created by flattening this.template.faces
- var faces = this.template.faces;
+ // Map is created by flattening this.parameters.faces
+ var faces = this.parameters.faces;
  this.faces = faces;
- var vertices = this.template.vertices;
+ var vertices = this.parameters.vertices;
  this.vertices = vertices;
+ this.getParameters = function(){
+  return {
+   faces: faces .map(f => { return {a: f.a, b: f.b, c: f.c} } ),
+   vertices: vertices.map(v => { return {x: v.x, y: v.y, z: v.z} } ),
+  };
+ }
  var vertex_ids = new Uint16Array(this.vertices.length);
  for (var i=0, li=vertex_ids.length; i<li; ++i) {
      vertex_ids[i] = i;
@@ -29,8 +35,8 @@ function Grid(template, options){
  };
  this.buffer_array_to_cell = buffer_array_to_cell;
  //Precompute neighbors for O(1) lookups
- var neighbor_lookup = this.template.vertices.map(function(vertex) { return {}});
- for(var i=0, il = this.template.faces.length, faces = this.template.faces; i<il; i++){
+ var neighbor_lookup = vertices.map(function(vertex) { return {}});
+ for(var i=0, il = faces.length; i<il; i++){
   face = faces[i];
   neighbor_lookup[face.a][face.b] = face.b;
   neighbor_lookup[face.a][face.c] = face.c;
