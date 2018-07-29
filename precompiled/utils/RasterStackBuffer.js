@@ -21,7 +21,7 @@ RasterStackBuffer.prototype.deallocate = function(name) {
 	this.pos = this.stack.pop();
 	var method = this.method_names.pop();
 	if (method !== name) {
-		throw `memory was deallocated for the method, ${name} but memory wasn't allocated. This indicates improper memory management.`;
+		throw `memory was deallocated for the method, ${name} but memory was not allocated. This indicates improper memory management.`;
 	}
 }
 RasterStackBuffer.prototype.getFloat32Raster = function(grid) {
