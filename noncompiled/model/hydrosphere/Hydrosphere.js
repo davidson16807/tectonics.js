@@ -4,49 +4,48 @@ function Hydrosphere(grid, parameters) {
 
 	var grid = grid || stop('missing parameter: "grid"');
 
+	this.average_ocean_depth = parameters['average_ocean_depth'] || 2000; // meters, conserved quantity
+
 	// public variables
-	var self = this; 
-	this.sealevel = new Memo(
-		parameters['sealevel'] || 3682,  
+	var _this = this; 
+	this.sealevel = new Memo( 0,
 		current_value => 
 			HydrosphereModeling.solve_sealevel(
 				displacement.value(), 
-				self.average_ocean_depth, 
+				_this.average_ocean_depth, 
 				material_density.ocean, 
-				// Float32Raster(grid)
+				// Float32Raster(grid) 
 			),
-		false
+		true,
 	); 
 
 	this.getParameters = function() {
 		return { 
-			//grid: 	grid., // TODO: store grid
-			sealevel: 	this.sealevel.value(), // TODO: store average_ocean_depth as parameter and modify WorldGenerator to find it
+			average_ocean_depth: 	this.average_ocean_depth, 
 		};
 	}
 
-	this.average_ocean_depth = 0;
 	// height of sealevel, in meters, relative to the same datum level used by displacement
 	this.epipelagic = new Memo( 0,  
-		current_value => self.sealevel.value()-200
+		current_value => _this.sealevel.value()-200
 	); 
 	this.mesopelagic = new Memo( 0,  
-		current_value => self.sealevel.value()-1000
+		current_value => _this.sealevel.value()-1000
 	); 
 	// "elevation" is the height of the crust relative to sealevel
 	this.elevation = new Memo(
 		Float32Raster(grid),  
-		result => ScalarField.sub_scalar(displacement.value(), self.sealevel.value(), result)
+		result => ScalarField.sub_scalar(displacement.value(), _this.sealevel.value(), result)
 	); 
 	// "surface_height" is the height of the surface relative to sealevel - if elevation < 0, then surface_height = 0
 	this.surface_height = new Memo(
 		Float32Raster(grid),  
-		result => HydrosphereModeling.get_surface_height(displacement.value(), self.sealevel.value(), result)
+		result => HydrosphereModeling.get_surface_height(displacement.value(), _this.sealevel.value(), result)
 	); 
 	// "ocean_depth" is the depth of the ocean - if elevation > 0, then ocean_depth = 0; if elevation < 0, then ocean_depth > 0 
 	this.ocean_depth = new Memo(
 		Float32Raster(grid),  
-		result => HydrosphereModeling.get_ocean_depth(displacement.value(), self.sealevel.value(), result)
+		result => HydrosphereModeling.get_ocean_depth(displacement.value(), _this.sealevel.value(), result)
 	); 
 	this.ice_coverage = new Memo(
 		Float32Raster(grid),  
@@ -66,8 +65,8 @@ function Hydrosphere(grid, parameters) {
 				ScalarField.lt_field(
 					displacement.value(), 
 					Float32RasterInterpolation.lerp(
-						self.mesopelagic.value(), 
-						self.epipelagic.value(),
+						_this.mesopelagic.value(), 
+						_this.epipelagic.value(),
 						Float32RasterInterpolation.smoothstep(freezing_point-5, freezing_point, surface_temp)
 					)
 				),
@@ -80,8 +79,8 @@ function Hydrosphere(grid, parameters) {
 	this.ocean_coverage = new Memo(
 		Float32Raster(grid),  
 		result => Float32RasterInterpolation.smoothstep(
-			self.sealevel.value(), 
-			self.epipelagic.value(), 
+			_this.sealevel.value(), 
+			_this.epipelagic.value(), 
 			displacement.value(), 
 			result
 		)
@@ -117,7 +116,6 @@ function Hydrosphere(grid, parameters) {
 
 	this.initialize = function() {
 		assert_dependencies();
-		this.average_ocean_depth = Float32Dataset.average(this.ocean_depth.value());
 	}
 
 	this.calcChanges = function(timestep) {
