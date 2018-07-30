@@ -67,7 +67,7 @@
 	<script src="noncompiled/model/World.js"></script>
 	<script src="noncompiled/model/Simulation.js"></script>
 	<script src="noncompiled/generators/EliasHeightMapGenerator.js"></script>
-	<script src="noncompiled/generators/WorldGenerator.js"></script>
+	<script src="noncompiled/generators/CrustGenerator.js"></script>
 	<script src="noncompiled/generators/NameGenerator.js"></script>
 	<script src="noncompiled/generators/NameCorpii.js"></script>
 	<script src="noncompiled/file-io/JsonSerializer.js"></script>
@@ -487,10 +487,11 @@
 				},
 			});
 			focus = universe.body_id_to_node_map[focus_name].body;
-			WorldGenerator.generate(focus, 
+			CrustGenerator.generate(
 				EliasHeightMapGenerator.generate(focus.grid), 
-				WorldGenerator.modern_earth_hypsography, 
-				WorldGenerator.modern_earth_control_points
+				CrustGenerator.modern_earth_hypsography, 
+				CrustGenerator.modern_earth_control_points, 
+				focus.lithosphere.total_crust
 			);
 			simulation.model(universe);
 			$('.controls').show();

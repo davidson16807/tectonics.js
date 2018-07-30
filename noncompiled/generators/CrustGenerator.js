@@ -1,6 +1,6 @@
 
-var WorldGenerator = {};
-WorldGenerator.generate = function (world, height_ranks, hypsography, control_points) {
+var CrustGenerator = {};
+CrustGenerator.generate = function (height_ranks, hypsography, control_points, crust) {
 	function clamp (x, minVal, maxVal) {
 		return Math.min(Math.max(x, minVal), maxVal);
 	}
@@ -32,7 +32,6 @@ WorldGenerator.generate = function (world, height_ranks, hypsography, control_po
 	// To do this, we start off with a set of rock column templates expressing
 	// what thickness/density should look like at a given density.
 	// We then interpolate between these templated values.
-	var crust = world.lithosphere.total_crust
 	var tallest = control_points[control_points.length - 1];
 	for (var i = 0, li = cell_ids.length; i < li; i++) {
 		var height = heights[i];
@@ -52,19 +51,19 @@ WorldGenerator.generate = function (world, height_ranks, hypsography, control_po
 	};
 };
 
-WorldGenerator.early_earth_hypsography = function() {
+CrustGenerator.early_earth_hypsography = function() {
 	var water_fraction = 0.95; // Earth = 0.71
 	return random.uniform(0,1) < water_fraction? 
 		random.normal(-4019,1113) :
 		random.normal(797,1169);
 };
-WorldGenerator.modern_earth_hypsography = function() {
+CrustGenerator.modern_earth_hypsography = function() {
 	var water_fraction = 0.6; // 60% of earth's crust is oceanic
 	return random.uniform(0,1) < water_fraction? 
 		random.normal(-4019,1113) :
 		random.normal(797,1169);
 };
-WorldGenerator.modern_earth_control_points = [
+CrustGenerator.modern_earth_control_points = [
 	//abyss
 	new RockColumn({
 		displacement: -11000,
