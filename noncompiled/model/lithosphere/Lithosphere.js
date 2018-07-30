@@ -10,6 +10,7 @@ function Lithosphere(grid, parameters) {
 		return { 
 			//grid: 				grid. // TODO: add grid
 			plates: 				this.plates.map(plate => plate.getParameters()),
+			total_crust: 			this.total_crust.buffer,
 			supercontinent_cycle: 	this.supercontinentCycle.getParameters(),
 		};
 	}
@@ -58,8 +59,8 @@ function Lithosphere(grid, parameters) {
 	this.plate_count 		= Uint8Raster(grid);
 	this.asthenosphere_velocity = VectorRaster(grid);
 
+	this.total_crust 	= new Crust({grid: grid, buffer: parameters['total_crust']});
 	this.top_crust 		= new Crust({grid: grid});
-	this.total_crust 	= new Crust({grid: grid});
 	this.erosion 		= new Crust({grid: grid});
 	this.weathering 	= new Crust({grid: grid});
 	this.lithification 	= new Crust({grid: grid});
