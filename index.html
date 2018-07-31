@@ -389,21 +389,11 @@
 	        querystring[hash[0]] = hash[1];
 	    }
 
-	    function parseSeed(text) {
-			var parsed = parseInt(text);
-			if(isNaN(parsed)) {
-				parsed = 0;
-				for (var i = 0; i < Math.min(8, text.length); i++) {
-					parsed = (parsed * 256) + text.charCodeAt(i);
-				}
-			}
-			return parsed;
-	    }
-
+	    
 		var resolution      = Math.min(6, parseInt(querystring['resolution'] || '5'));
 		var start_speed     = parseInt(querystring['speed']      || (1e6*Units.SECONDS_IN_YEAR).toString());
 		var seed 			= querystring['seed'] || (new Date).getTime().toString();
-		random 				= new Random(parseSeed(seed));
+		random 				= new Random({seed: seed});
 		autosave_period 	= parseInt(querystring['autosave']   || '0');
 
 		var geometry = new THREE.IcosahedronGeometry(1, resolution);
