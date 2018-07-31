@@ -539,25 +539,21 @@
 	function loadUrl (url) {
 		dialogVue.$data.isLoadingSave = true;
 		$('.controls').hide();
-		$.getJSON( url, function( json ) {
-			var results = JsonDeserializer.sim(json, view.grid);
-			sim = results.sim;
+		$.get( url, function( json ) {
+			sim = JsonDeserializer.sim(json);
 			dialogVue.$data.isLoadingSave = false;
 			$('.controls').show();
 		});
 	}
 	function loadFile (file) {
+		dialogVue.$data.isLoadingSave = true;
+		$('.controls').hide();
 		var reader = new FileReader();
-	    //reader.onerror = function(e) {};
-	    //reader.onprogress = function(e) {};
-	    //reader.onabort = function(e) {};
-	    //reader.onloadstart = function(e) {};
 	    reader.onload = function(e) {
-			var json = JSON.parse(e.target.result);
-			var results = JsonDeserializer.sim(json, view.grid);
-			sim = results.sim;
+			sim = JsonDeserializer.sim(e.target.result);
+			dialogVue.$data.isLoadingSave = false;
+			$('.controls').show();
 	    }
-
 	    reader.readAsText(file);
 	}
 
@@ -680,11 +676,11 @@
 	  el: '#save',
 	  methods: {
 	  	save(event) {
-			var serialized = JsonSerializer.sim(sim,{random: random});
-			var stringified = JSON.stringify(serialized);
+			var stringified = JsonSerializer.sim(sim);
   			var dataUrl = `data:application/json;charset=utf-8,${stringified}`;
   			var elapsed_time = format_time(sim.elapsed_time);
   			var filename = `${sim.focus.name}-${elapsed_time}.sim`;
+  			console.log(dataUrl, filename)
   			download(dataUrl, filename);
   		}
 	  }
