@@ -6,11 +6,9 @@ function Simulation (parameters) {
 	this.elapsed_time		= parameters.elapsed_time || 0;
 	this.seed 				= parameters.seed || 0;
 	this.focus 				= parameters.focus;
-
-
 	this.random 			= new Random(parseSeed(this.seed));
 	if (parameters.random !== void 0) {
-		this.random.mt = parameters.random.mt;
+		this.random.mt  = parameters.random.mt;
 		this.random.mti = parameters.random.mti;
 	}
 	this._last_update_timestamp = 0;
@@ -27,7 +25,7 @@ function Simulation (parameters) {
 	    }
 	    
 	// the "model" is the singular entity we are simulating
-	// it can be anything that implements the correct interface: a univ erse, a planet, an atmosphere, etc.
+	// it can be anything that implements the correct interface: a universe, a planet, an atmosphere, etc.
 	this.model = function(model) {
 		if (model === void 0) {
 			return _model;
@@ -39,16 +37,16 @@ function Simulation (parameters) {
 
 	this.getParameters = function() {
 		return {
+			model: 			this._model !== void 0? this._model.getParameters() : undefined,
 			paused: 		this.paused,
 			speed: 			this.speed,
 			elapsed_time: 	this.elapsed_time,
 			seed: 			this.seed,
-			random: {
-				mt: _random.mt,
-				mti: _random.mti
-			},
-			model: 			this._model !== void 0? this._model.getParameters() : undefined,
 			focus: 			this.focus,
+			random: {
+				mt: random.mt,
+				mti: random.mti
+			},
 		};
 	}
 

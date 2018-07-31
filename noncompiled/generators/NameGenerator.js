@@ -13,7 +13,7 @@ var NameGenerator = (function() {
 	    }
 	  }
 	  return function() {
-	    return table[Math.floor(Math.random() * table.length)];
+	    return table[Math.floor(sim.random.uniform(0,1) * table.length)];
 	  }
 	}
 
