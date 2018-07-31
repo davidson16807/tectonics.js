@@ -371,9 +371,7 @@
 
 	var sim, view;
 	var renderStats, updateStats, controls;
-	var BlockUpdate = false;
-	var IsProd = false;
-	var autosave_timestamp = 0;
+	var IS_PROD = false;
 	var autosave_period;
 
 
@@ -485,7 +483,7 @@
 		
 		$('#container').append(view.getDomElement());
 		
-		if(!IsProd){
+		if(!IS_PROD){
 			// add Stats.js - https://github.com/mrdoob/renderStats.js
 			renderStats = new Stats();
 			$('#renderStats').append( renderStats.domElement );
@@ -519,7 +517,7 @@
 
 		// actually render the scene
 
-		if(!IsProd){
+		if(!IS_PROD){
 			renderStats.update();
 		}
 	}
@@ -528,35 +526,27 @@
 		// push to task queue and loop
 		// - it has to be at the begining of the function
 		//maximum refresh rate of 20fps
-		setTimeout(update, IsProd? 1000/20 : 0);
+		setTimeout(update, IS_PROD? 1000/20 : 0);
 
-		if (BlockUpdate) {
-			return;
-		};
-		
 		sim.update();
 		view.update(sim); 
 
-		if(!IsProd){
+		if(!IS_PROD){
 			updateStats.update();
 		}
 	}
 	
 	function loadUrl (url) {
-		BlockUpdate = true;
 		dialogVue.$data.isLoadingSave = true;
 		$('.controls').hide();
 		$.getJSON( url, function( json ) {
 			var results = JsonDeserializer.sim(json, view.grid);
-			random = results.random;
 			sim = results.sim;
 			dialogVue.$data.isLoadingSave = false;
 			$('.controls').show();
-			BlockUpdate = false;
 		});
 	}
 	function loadFile (file) {
-		BlockUpdate = true;
 		var reader = new FileReader();
 	    //reader.onerror = function(e) {};
 	    //reader.onprogress = function(e) {};
@@ -565,9 +555,7 @@
 	    reader.onload = function(e) {
 			var json = JSON.parse(e.target.result);
 			var results = JsonDeserializer.sim(json, view.grid);
-			random = results.random;
 			sim = results.sim;
-			BlockUpdate = false;
 	    }
 
 	    reader.readAsText(file);
