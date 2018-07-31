@@ -417,85 +417,86 @@
 			vertexShaders['orthographic'],
 		);
 
+
+		var star_name_corpus = NameGenerator.tokenize_corpus(NameCorpii.arabic_star_names);
+		var get_star_name = NameGenerator.get_length_distribution_generator(star_name_corpus, 25, {5:1,6:3,7:11,8:3,9:1}, 100);
+		
+		var planet_name_corpus = NameGenerator.tokenize_corpus(NameCorpii.greek_mythological_names);
+		var get_planet_name = NameGenerator.get_length_distribution_generator(planet_name_corpus, 25, {5:1,6:3,7:11,8:3,9:1}, 100);
+		var focus_name = get_planet_name();
+		
+		var universe = new Universe({
+			system: {
+				name: 'galactic orbit',
+				motion: { // motion mirrors orbit of sun around galactic center
+					type: 'orbit',
+					semi_major_axis: 2.35e20, // meters
+					effective_combined_mass: 1.262e41, // kg, back calculated to achieve period of 250 million years
+				},
+				invariant_insolation: true,
+				body: {
+					type: 'star',
+					name: get_star_name(),
+					mass: Units.SOLAR_MASS,
+				},
+				children: [
+					{
+						name: 'orbit',
+						motion: {
+							type: 'orbit',
+							semi_major_axis: 1. * Units.ASTRONOMICAL_UNIT,
+							eccentricity: 0.0167,
+							inclination: Math.PI * 5e-5/180,
+							longitude_of_ascending_node: Math.PI * -11/180,
+							effective_combined_mass: 2e30, // kg
+						},	
+						children: [
+							{
+								name: 'precession',
+								motion: { 
+									type: 'spin',
+									angular_speed: 2*Math.PI/(25860 * Units.SECONDS_IN_YEAR),
+								},	
+								invariant_insolation: true,
+								children: [
+									{
+										name: 'spin',
+										motion: { 
+											type: 'spin',
+											angular_speed: 2*Math.PI/(60*60*24),
+											axial_tilt: Math.PI * 23.5/180,
+										},	
+										body: { 
+											type: 'world',
+											name: focus_name,
+											grid: geometry,
+										},
+									},
+							 	],
+							},
+						],
+					},
+				],
+			},
+		});
+		focus = universe.body_id_to_node_map[focus_name].body;
+		CrustGenerator.generate(
+			EliasHeightMapGenerator.generate(focus.grid), 
+			CrustGenerator.modern_earth_hypsography, 
+			CrustGenerator.modern_earth_control_points, 
+			focus.lithosphere.total_crust
+		);
 		simulation = new Simulation({
 			seed: seed,
-			speed: start_speed
+			speed: start_speed,
+			model: universe,
 		});
 
 		if (querystring['load']) {
 			loadUrl(querystring['load']);
-		} else {
-			var star_name_corpus = NameGenerator.tokenize_corpus(NameCorpii.arabic_star_names);
-			var get_star_name = NameGenerator.get_length_distribution_generator(star_name_corpus, 25, {5:1,6:3,7:11,8:3,9:1}, 100);
-			
-			var planet_name_corpus = NameGenerator.tokenize_corpus(NameCorpii.greek_mythological_names);
-			var get_planet_name = NameGenerator.get_length_distribution_generator(planet_name_corpus, 25, {5:1,6:3,7:11,8:3,9:1}, 100);
-			var focus_name = get_planet_name();
-			
-			var universe = new Universe({
-				system: {
-					name: 'galactic orbit',
-					motion: { // motion mirrors orbit of sun around galactic center
-						type: 'orbit',
-						semi_major_axis: 2.35e20, // meters
-						effective_combined_mass: 1.262e41, // kg, back calculated to achieve period of 250 million years
-					},
-					invariant_insolation: true,
-					body: {
-						type: 'star',
-						name: get_star_name(),
-						mass: Units.SOLAR_MASS,
-					},
-					children: [
-						{
-							name: 'orbit',
-							motion: {
-								type: 'orbit',
-								semi_major_axis: 1. * Units.ASTRONOMICAL_UNIT,
-								eccentricity: 0.0167,
-								inclination: Math.PI * 5e-5/180,
-								longitude_of_ascending_node: Math.PI * -11/180,
-								effective_combined_mass: 2e30, // kg
-							},	
-							children: [
-								{
-									name: 'precession',
-									motion: { 
-										type: 'spin',
-										angular_speed: 2*Math.PI/(25860 * Units.SECONDS_IN_YEAR),
-									},	
-									invariant_insolation: true,
-									children: [
-										{
-											name: 'spin',
-											motion: { 
-												type: 'spin',
-												angular_speed: 2*Math.PI/(60*60*24),
-												axial_tilt: Math.PI * 23.5/180,
-											},	
-											body: { 
-												type: 'world',
-												name: focus_name,
-												grid: geometry,
-											},
-										},
-								 	],
-								},
-							],
-						},
-					],
-				},
-			});
-			focus = universe.body_id_to_node_map[focus_name].body;
-			CrustGenerator.generate(
-				EliasHeightMapGenerator.generate(focus.grid), 
-				CrustGenerator.modern_earth_hypsography, 
-				CrustGenerator.modern_earth_control_points, 
-				focus.lithosphere.total_crust
-			);
-			simulation.model(universe);
-			$('.controls').show();
-		}
+		} 
+
+		$('.controls').show();
 		
 		$('#container').append(view.getDomElement());
 		
