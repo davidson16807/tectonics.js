@@ -65,7 +65,7 @@
 	<script src="noncompiled/model/atmosphere/Atmosphere.js"></script>
 	<script src="noncompiled/model/biosphere/Biosphere.js"></script>
 	<script src="noncompiled/model/World.js"></script>
-	<script src="noncompiled/model/Simulation.js"></script>
+	<script src="noncompiled/model/simulation.js"></script>
 	<script src="noncompiled/generators/EliasHeightMapGenerator.js"></script>
 	<script src="noncompiled/generators/CrustGenerator.js"></script>
 	<script src="noncompiled/generators/NameGenerator.js"></script>
@@ -369,7 +369,7 @@
 		process.exit(1);
 	}
 
-	var simulation, view;
+	var sim, view;
 	var random;
 	var renderStats, updateStats, controls;
 	var BlockUpdate = false;
@@ -475,7 +475,7 @@
 			CrustGenerator.modern_earth_control_points, 
 			focus.lithosphere.total_crust
 		);
-		simulation = new Simulation({
+		sim = new Simulation({
 			seed: seed,
 			speed: start_speed,
 			model: universe,
@@ -539,8 +539,8 @@
 			return;
 		};
 		
-		simulation.update();
-		view.update(simulation.focus); 
+		sim.update();
+		view.update(sim.focus); 
 
 		if(!IsProd){
 			updateStats.update();
@@ -552,9 +552,9 @@
 		dialogVue.$data.isLoadingSave = true;
 		$('.controls').hide();
 		$.getJSON( url, function( json ) {
-			var results = JsonDeserializer.simulation(json, view.grid);
+			var results = JsonDeserializer.sim(json, view.grid);
 			random = results.random;
-			simulation = results.simulation;
+			sim = results.sim;
 			dialogVue.$data.isLoadingSave = false;
 			$('.controls').show();
 			BlockUpdate = false;
@@ -569,9 +569,9 @@
 	    //reader.onloadstart = function(e) {};
 	    reader.onload = function(e) {
 			var json = JSON.parse(e.target.result);
-			var results = JsonDeserializer.simulation(json, view.grid);
+			var results = JsonDeserializer.sim(json, view.grid);
 			random = results.random;
-			simulation = results.simulation;
+			sim = results.sim;
 			BlockUpdate = false;
 	    }
 
@@ -697,11 +697,11 @@
 	  el: '#save',
 	  methods: {
 	  	save(event) {
-			var serialized = JsonSerializer.simulation(simulation,{random: random});
+			var serialized = JsonSerializer.sim(sim,{random: random});
 			var stringified = JSON.stringify(serialized);
   			var dataUrl = `data:application/json;charset=utf-8,${stringified}`;
-  			var elapsed_time = format_time(simulation.elapsed_time);
-  			var filename = `${simulation.focus.name}-${elapsed_time}.sim`;
+  			var elapsed_time = format_time(sim.elapsed_time);
+  			var filename = `${sim.focus.name}-${elapsed_time}.sim`;
   			download(dataUrl, filename);
   		}
 	  }
@@ -711,10 +711,10 @@
 	  el: '#export',
 	  methods: {
 	  	csv(event) {
-			var content = CsvExporter.world(simulation.focus);
+			var content = CsvExporter.world(sim.focus);
   			var dataUrl = `data:application/json;charset=utf-8,${content}`;
-  			var elapsed_time = format_time(simulation.elapsed_time);
-  			var filename = `${simulation.focus.name}-${elapsed_time}.csv`;
+  			var elapsed_time = format_time(sim.elapsed_time);
+  			var filename = `${sim.focus.name}-${elapsed_time}.csv`;
   			download(dataUrl, filename);
   		}
 	  }
@@ -732,8 +732,8 @@
 	  	capture(event) {
   			var dataUrl = view.getScreenshotDataURL();
   			var filename = 
-  				simulation.focus.name+'-'+
-  				format_time(simulation.elapsed_time)+
+  				sim.focus.name+'-'+
+  				format_time(sim.elapsed_time)+
   				'.png';
   			download(dataUrl, filename);
   		}
@@ -789,23 +789,23 @@
 	  created: function() {
 	  	var _this = this;
 	  	setInterval(function() {
-	  		_this.$data.elapsed_time = simulation.elapsed_time;
+	  		_this.$data.elapsed_time = sim.elapsed_time;
 	  	}, 1000/10);
 	  },
 	  methods: {
 		togglePause: function() {
 			this.paused = !this.paused;
-			simulation.toggle_pause();
+			sim.toggle_pause();
 		},
 		fastForward: function() {
 			if (this.speed_i >= this.speeds.length-1) {return} 
 			this.speed_i += 1;
-			simulation.speed = this.speeds[this.speed_i].scale;
+			sim.speed = this.speeds[this.speed_i].scale;
 		},
 		rewind: function() {
 			if (this.speed_i <= 0) {return} 
 			this.speed_i -= 1;
-			simulation.speed = this.speeds[this.speed_i].scale;
+			sim.speed = this.speeds[this.speed_i].scale;
 		},
 		format: function(time) {
 			return format(time/Units.SECONDS_IN_YEAR, 1000, 3)
@@ -966,9 +966,9 @@
 	    setSupercontinentBreakup: function(value) {
 	    	this.supercontinentBreakup = value;
 	    	if (!this.supercontinentBreakup) {
-		    	simulation.focus.lithosphere.supercontinentCycle.duration = Infinity;
+		    	sim.focus.lithosphere.supercontinentCycle.duration = Infinity;
 	    	} else {
-	    		simulation.focus.lithosphere.supercontinentCycle.duration = 0;
+	    		sim.focus.lithosphere.supercontinentCycle.duration = 0;
 	    	}
 	    },
 	  }
