@@ -370,7 +370,6 @@
 	}
 
 	var sim, view;
-	var random;
 	var renderStats, updateStats, controls;
 	var BlockUpdate = false;
 	var IsProd = false;
@@ -536,7 +535,7 @@
 		};
 		
 		sim.update();
-		view.update(sim.focus); 
+		view.update(sim); 
 
 		if(!IsProd){
 			updateStats.update();

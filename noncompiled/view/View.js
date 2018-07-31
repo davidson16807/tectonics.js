@@ -139,7 +139,9 @@ View.prototype.render = function() {
 	return this.renderer.render( this.scene, this.camera );
 };
 
-View.prototype.update = function(world){
+View.prototype.update = function(sim){
+	var world = sim.focus;
+
 	this.uniform('sealevel', world.hydrosphere.sealevel.value()); 
 	this.uniform('insolation_max', Float32Dataset.max(world.atmosphere.average_insolation)); 
 
