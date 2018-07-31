@@ -17,7 +17,7 @@ function Lithosphere(grid, parameters) {
 
 	var material_viscosity = undefined;
 	var material_density = undefined;
-	var sealevel = undefined;
+	var surface_height = undefined;
 	var surface_gravity = undefined;
 
 	this.rifting_crust =
@@ -298,48 +298,48 @@ function Lithosphere(grid, parameters) {
 
 	  	scratchpad.deallocate('update_subducted');
 	}
-	function calculate_deltas(world, timestep) {
+	function calculate_deltas(lithosphere, timestep) {
 
        	// CALCULATE DELTAS
 		LithosphereModeling.get_erosion(
-			world.displacement.value(), sealevel.value(), timestep,
+			surface_height.value(), timestep,
 			material_density, surface_gravity,
-			world.top_crust, world.erosion, world.crust_scratch
+			lithosphere.top_crust, lithosphere.erosion, lithosphere.crust_scratch
 		);
-		Crust.assert_conserved_transport_delta(world.erosion, 1e-2); 
+		Crust.assert_conserved_transport_delta(lithosphere.erosion, 1e-2); 
 
        	// CALCULATE DELTAS
 		LithosphereModeling.get_weathering(
-			world.displacement.value(), sealevel.value(), timestep,
+			surface_height.value(), timestep,
 			material_density, surface_gravity,
-			world.top_crust, world.weathering, world.crust_scratch
+			lithosphere.top_crust, lithosphere.weathering, lithosphere.crust_scratch
 		);
-		Crust.assert_conserved_reaction_delta(world.weathering, 1e-2); 
+		Crust.assert_conserved_reaction_delta(lithosphere.weathering, 1e-2); 
 
        	// CALCULATE DELTAS
 		LithosphereModeling.get_lithification(
-			world.displacement.value(), sealevel.value(), timestep,
+			surface_height.value(), timestep,
 			material_density, surface_gravity,
-			world.top_crust, world.lithification, world.crust_scratch
+			lithosphere.top_crust, lithosphere.lithification, lithosphere.crust_scratch
 		);
-		Crust.assert_conserved_reaction_delta(world.lithification, 1e-2); 
+		Crust.assert_conserved_reaction_delta(lithosphere.lithification, 1e-2); 
 
        	// CALCULATE DELTAS
 		LithosphereModeling.get_metamorphosis(
-			world.displacement.value(), sealevel.value(), timestep,
+			surface_height.value(), timestep,
 			material_density, surface_gravity,
-			world.top_crust, world.metamorphosis, world.crust_scratch
+			lithosphere.top_crust, lithosphere.metamorphosis, lithosphere.crust_scratch
 		);
-		Crust.assert_conserved_reaction_delta(world.metamorphosis, 1e-2); 
+		Crust.assert_conserved_reaction_delta(lithosphere.metamorphosis, 1e-2); 
 
 		// COMPILE DELTAS
-		var globalized_deltas = world.crust_delta;
+		var globalized_deltas = lithosphere.crust_delta;
 		Crust.reset 			(globalized_deltas);
-		Crust.add_delta 		(globalized_deltas, world.erosion, 						globalized_deltas);
-		Crust.add_delta 		(globalized_deltas, world.weathering, 					globalized_deltas);
-		Crust.add_delta 		(globalized_deltas, world.lithification,				globalized_deltas);
-		Crust.add_delta 		(globalized_deltas, world.metamorphosis,				globalized_deltas);
-		Crust.add_delta 		(globalized_deltas, world.accretion,					globalized_deltas);
+		Crust.add_delta 		(globalized_deltas, lithosphere.erosion, 				globalized_deltas);
+		Crust.add_delta 		(globalized_deltas, lithosphere.weathering, 			globalized_deltas);
+		Crust.add_delta 		(globalized_deltas, lithosphere.lithification,			globalized_deltas);
+		Crust.add_delta 		(globalized_deltas, lithosphere.metamorphosis,			globalized_deltas);
+		Crust.add_delta 		(globalized_deltas, lithosphere.accretion,				globalized_deltas);
 		ScalarField.add_scalar 	(globalized_deltas.age, timestep, 						globalized_deltas.age); // aging
 	}
 
@@ -423,7 +423,7 @@ function Lithosphere(grid, parameters) {
 	};
 
 	function assert_dependencies() {
-		if (sealevel === void 0)	 		{ throw '"sealevel" not provided'; }
+		if (surface_height === void 0)	 		{ throw '"surface_height" not provided'; }
 		if (surface_gravity === void 0)	{ throw '"surface_gravity" not provided'; }
 		if (material_density === void 0)	{ throw '"material_density" not provided'; }
 		if (material_viscosity === void 0)	{ throw '"material_viscosity" not provided'; }
@@ -434,7 +434,7 @@ function Lithosphere(grid, parameters) {
 			this.plates[i].setDependencies(dependencies);
 		}
 
-		sealevel 			= dependencies['sealevel'] 			!== void 0? 	dependencies['sealevel'] 				: sealevel;
+		surface_height 			= dependencies['surface_height'] 			!== void 0? 	dependencies['surface_height'] 				: surface_height;
 		surface_gravity 	= dependencies['surface_gravity'] 	!== void 0? 	dependencies['surface_gravity'] 		: surface_gravity;
 		material_density 	= dependencies['material_density'] 	!== void 0? 	dependencies['material_density'] 		: material_density;
 		material_viscosity 	= dependencies['material_viscosity']!== void 0? 	dependencies['material_viscosity'] 		: material_viscosity;

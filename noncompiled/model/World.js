@@ -84,7 +84,7 @@ function World(parameters) {
 	this.initialize = function() {
 		this.lithosphere.setDependencies({
 			'surface_gravity'		: this.surface_gravity,
-			'sealevel'				: this.hydrosphere.sealevel,
+			'surface_height'		: this.hydrosphere.surface_height,
 			'material_density'		: this.material_density,
 			'material_viscosity'	: this.material_viscosity,
 		});

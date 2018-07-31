@@ -17,7 +17,7 @@ var LithosphereModeling = {};
 //    geothermal temperature model
 //    geostatic pressure
 LithosphereModeling.get_lithification = function(
-		displacement, sealevel, timestep,
+		surface_height, timestep,
 		material_density, surface_gravity,
 		top_crust, crust_delta, crust_scratch){
 	var grid = top_crust.grid;
@@ -58,7 +58,7 @@ LithosphereModeling.get_lithification = function(
 
 
 LithosphereModeling.get_metamorphosis = function(
-		displacement, sealevel, timestep,
+		surface_height, timestep,
 		material_density, surface_gravity,
 		top_crust, crust_delta, crust_scratch){
 
@@ -132,10 +132,10 @@ LithosphereModeling.get_metamorphosis = function(
 
 // "weathering" is the process by which rock is converted to sediment 
 LithosphereModeling.get_weathering = function(
-		displacement, sealevel, timestep,
+		surface_height, timestep,
 		material_density, surface_gravity,
 		top_crust, crust_delta, crust_scratch){
-  var grid = displacement.grid;
+  var grid = surface_height.grid;
   var scratch = Float32Raster(grid);
 
   var precipitation = 7.8e5; 
@@ -149,11 +149,7 @@ LithosphereModeling.get_weathering = function(
  
   var earth_surface_gravity = 9.8; // m/s^2 
    
-  var water_height = scratch;
-  ScalarField.sub_scalar(displacement, sealevel, 	water_height);
-  ScalarField.max_scalar(water_height, 0, 			water_height);
-
-  var average_difference = ScalarField.average_difference(water_height); 
+  var average_difference = ScalarField.average_difference(surface_height); 
   var weathering = scratch;
   // NOTE: result array does double duty for performance reasons 
  
@@ -208,7 +204,7 @@ LithosphereModeling.get_weathering = function(
 
 
 LithosphereModeling.get_erosion = function(
-		displacement, sealevel, timestep,
+		surface_height, timestep,
 		material_density, surface_gravity,
 		top_crust, crust_delta, crust_scratch){
   	var scratchpad = RasterStackBuffer.scratchpad;
@@ -217,8 +213,8 @@ LithosphereModeling.get_erosion = function(
 	var sediment 		= top_crust.sediment;
 	var sedimentary 	= top_crust.sedimentary;
 	var metamorphic 	= top_crust.metamorphic;
-	var felsic_plutonic 		 	= top_crust.felsic_plutonic;
-	var felsic_volcanic 		 	= top_crust.felsic_volcanic;
+	var felsic_plutonic = top_crust.felsic_plutonic;
+	var felsic_volcanic = top_crust.felsic_volcanic;
 	
 	Crust.reset(crust_delta);
 
@@ -230,26 +226,22 @@ LithosphereModeling.get_erosion = function(
 	// ^^^ the rate of erosion per the rate of rainfall in that place
 	// measured in fraction of height difference per meters of rain per million years
 
-	var water_height = scratchpad.getFloat32Raster(displacement.grid);
-	ScalarField.sub_scalar(displacement, sealevel, 	water_height);
-	ScalarField.max_scalar(water_height, 0, 			water_height);
-
-	var outbound_height_transfer = scratchpad.getFloat32Raster(displacement.grid);
+	var outbound_height_transfer = scratchpad.getFloat32Raster(surface_height.grid);
 	Float32Raster.fill(outbound_height_transfer, 0);
 
-	var arrows = displacement.grid.arrows;
+	var arrows = surface_height.grid.arrows;
 	var arrow;
 	var from = 0;
 	var to = 0;
 	var height_difference = 0.0;
 	var outbound_height_transfer_i = 0.0;
-  	var neighbor_count = displacement.grid.neighbor_count;
+  	var neighbor_count = surface_height.grid.neighbor_count;
 
 	for (var i=0, li=arrows.length; i<li; ++i) {
 	    arrow = arrows[i];
 	    from = arrow[0];
 	    to = arrow[1];
-	    height_difference = water_height[from] - water_height[to];
+	    height_difference = surface_height[from] - surface_height[to];
 	    outbound_height_transfer[from] += height_difference > 0? height_difference * precipitation * timestep * erosiveFactor * material_density.felsic_plutonic : 0;
 	}
 
@@ -301,7 +293,7 @@ LithosphereModeling.get_erosion = function(
 	    arrow = arrows[i];
 	    from = arrow[0];
 	    to = arrow[1];
-	    height_difference = water_height[from] - water_height[to];
+	    height_difference = surface_height[from] - surface_height[to];
 	    outbound_height_transfer_i = height_difference > 0? height_difference * precipitation * timestep * erosiveFactor * material_density.felsic_plutonic : 0;
 
 	    transfer = outbound_height_transfer_i * outbound_sediment_fraction[from];
