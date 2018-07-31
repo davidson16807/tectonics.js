@@ -16,8 +16,8 @@ function Plate(grid, parameters)
 	this.getParameters = function() {
 		return { 
 			//grid: 		grid. // TODO: add grid
-			crust: 			this.crust.buffer,
-			mask: 			this.mask.buffer,
+			crust: 			this.crust.buffer.slice(0),
+			mask: 			this.mask.buffer.slice(0),
 			local_to_global_matrix: Array.from(this.local_to_global_matrix)
 		};
 	}

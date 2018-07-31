@@ -56,6 +56,7 @@ function Universe(parameters) {
 	this.getParameters = function() {
 		return {
 			system: system.getParameters(),
+			config: this.config,
 		}
 	}
 

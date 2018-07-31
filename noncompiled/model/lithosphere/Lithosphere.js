@@ -10,7 +10,7 @@ function Lithosphere(grid, parameters) {
 		return { 
 			//grid: 				grid. // TODO: add grid
 			plates: 				this.plates.map(plate => plate.getParameters()),
-			total_crust: 			this.total_crust.buffer,
+			total_crust: 			this.total_crust.buffer.slice(0),
 			supercontinent_cycle: 	this.supercontinentCycle.getParameters(),
 		};
 	}
