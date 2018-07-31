@@ -17,6 +17,16 @@ function Simulation (parameters) {
 	};
 	this.model(parameters.model);
 
+	this.getParameters = function() {
+		return {
+			paused: 		this.paused,
+			speed: 			this.speed,
+			elapsed_time: 	this.elapsed_time,
+			seed: 			this.seed,
+			model: 			this._model !== void 0? this._model.getParameters() : undefined,
+		};
+	}
+
 	this.update = function() {
 		var now = performance.now();
 		var seconds = (now - this._last_update_timestamp)/1000;
