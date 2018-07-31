@@ -4,6 +4,7 @@ function Simulation (parameters) {
 	this.speed 				= parameters.speed || 1;
 	this.elapsed_time		= parameters.elapsed_time || 0;
 	this.seed 				= parameters.seed || 0;
+	this.focus 				= parameters.focus;
 	this._last_update_timestamp = 0;
 
 	// the "model" is the singular entity we are simulating
@@ -24,6 +25,7 @@ function Simulation (parameters) {
 			elapsed_time: 	this.elapsed_time,
 			seed: 			this.seed,
 			model: 			this._model !== void 0? this._model.getParameters() : undefined,
+			focus: 			this.focus,
 		};
 	}
 

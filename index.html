@@ -370,7 +370,6 @@
 	}
 
 	var simulation, view;
-	var focus;
 	var random;
 	var renderStats, updateStats, controls;
 	var BlockUpdate = false;
@@ -479,7 +478,7 @@
 				],
 			},
 		});
-		focus = universe.body_id_to_node_map[focus_name].body;
+		var focus = universe.body_id_to_node_map[focus_name].body;
 		CrustGenerator.generate(
 			EliasHeightMapGenerator.generate(focus.grid), 
 			CrustGenerator.modern_earth_hypsography, 
@@ -490,6 +489,7 @@
 			seed: seed,
 			speed: start_speed,
 			model: universe,
+			focus: focus,
 		});
 
 		if (querystring['load']) {
@@ -550,7 +550,7 @@
 		};
 		
 		simulation.update();
-		view.update(focus); 
+		view.update(simulation.focus); 
 
 		if(!IsProd){
 			updateStats.update();
@@ -711,7 +711,7 @@
 			var stringified = JSON.stringify(serialized);
   			var dataUrl = `data:application/json;charset=utf-8,${stringified}`;
   			var elapsed_time = format_time(simulation.elapsed_time);
-  			var filename = `${focus.name}-${elapsed_time}.sim`;
+  			var filename = `${simulation.focus.name}-${elapsed_time}.sim`;
   			download(dataUrl, filename);
   		}
 	  }
@@ -721,10 +721,10 @@
 	  el: '#export',
 	  methods: {
 	  	csv(event) {
-			var content = CsvExporter.world(focus);
+			var content = CsvExporter.world(simulation.focus);
   			var dataUrl = `data:application/json;charset=utf-8,${content}`;
   			var elapsed_time = format_time(simulation.elapsed_time);
-  			var filename = `${focus.name}-${elapsed_time}.csv`;
+  			var filename = `${simulation.focus.name}-${elapsed_time}.csv`;
   			download(dataUrl, filename);
   		}
 	  }
@@ -742,7 +742,7 @@
 	  	capture(event) {
   			var dataUrl = view.getScreenshotDataURL();
   			var filename = 
-  				focus.name+'-'+
+  				simulation.focus.name+'-'+
   				format_time(simulation.elapsed_time)+
   				'.png';
   			download(dataUrl, filename);
@@ -976,9 +976,9 @@
 	    setSupercontinentBreakup: function(value) {
 	    	this.supercontinentBreakup = value;
 	    	if (!this.supercontinentBreakup) {
-		    	focus.lithosphere.supercontinentCycle.duration = Infinity;
+		    	simulation.focus.lithosphere.supercontinentCycle.duration = Infinity;
 	    	} else {
-	    		focus.lithosphere.supercontinentCycle.duration = 0;
+	    		simulation.focus.lithosphere.supercontinentCycle.duration = 0;
 	    	}
 	    },
 	  }
