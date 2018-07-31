@@ -5,11 +5,10 @@ function Simulation (parameters) {
 	this.speed 				= parameters.speed || 1;
 	this.elapsed_time		= parameters.elapsed_time || 0;
 	this.seed 				= parameters.seed || 0;
-	this.focus 				= parameters.focus;
 	this.random 			= new Random(parseSeed(this.seed));
 	if (parameters.random !== void 0) {
-		this.random.mt  = parameters.random.mt;
-		this.random.mti = parameters.random.mti;
+		this.random.mt  	= parameters.random.mt;
+		this.random.mti 	= parameters.random.mti;
 	}
 	this._last_update_timestamp = 0;
 
@@ -33,19 +32,26 @@ function Simulation (parameters) {
 		_model = model;
 		model.initialize();
 	};
-	this.model(parameters.model);
+	if (parameters.model !== void 0) {
+		this.model(new Universe(parameters.model));
+	}
+
+	this.focus = undefined;
+	if (parameters.focus !== void 0 && _model !== void 0) {
+		this.focus = _model.body_id_to_node_map[parameters.focus].body;
+	} 
 
 	this.getParameters = function() {
 		return {
-			model: 			this._model !== void 0? this._model.getParameters() : undefined,
+			model: 			_model !== void 0? _model.getParameters() : undefined,
 			paused: 		this.paused,
 			speed: 			this.speed,
 			elapsed_time: 	this.elapsed_time,
 			seed: 			this.seed,
-			focus: 			this.focus,
+			focus: 			this.focus.name, 
 			random: {
-				mt: random.mt,
-				mti: random.mti
+				mt:  this.random.mt,
+				mti: this.random.mti
 			},
 		};
 	}
