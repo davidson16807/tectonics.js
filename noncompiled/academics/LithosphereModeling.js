@@ -522,7 +522,13 @@ LithosphereModeling.get_plate_rotation_matrix = function(plate_velocity, center_
 
 	// TODO: negation shouldn't theoretically be needed! find out where the discrepancy lies and fix it the proper way! 
 	var center_of_plate_rotation_matrix = Matrix.FromRotationVector(-center_of_plate_rotation_vector.x, -center_of_plate_rotation_vector.y, -center_of_plate_rotation_vector.z);
+	if (isNaN(center_of_plate_rotation_matrix[0])) {
+		center_of_plate_rotation_matrix = Matrix.Identity();
+	}
 	var center_of_world_rotation_matrix = Matrix.FromRotationVector(-center_of_world_rotation_vector.x, -center_of_world_rotation_vector.y, -center_of_world_rotation_vector.z);
+	if (isNaN(center_of_world_rotation_matrix[0])) {
+		center_of_world_rotation_matrix = Matrix.Identity();
+	}
 
 	var rotation_matrix = Matrix.mult_matrix(center_of_plate_rotation_matrix, center_of_world_rotation_matrix);
 
