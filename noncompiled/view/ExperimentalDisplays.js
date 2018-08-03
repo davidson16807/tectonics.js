@@ -3,10 +3,25 @@
 
 var experimentalDisplays = {};
 
-
+experimentalDisplays.eliptic_ids = new ScalarHeatDisplay( { 
+    scaling: true, 
+    getField: function (crust) { 
+      var ids = Float32Raster(crust.grid); 
+      Float32Raster.FromUint16Raster(crust.grid.vertex_ids, ids); 
+      var pos = OrbitalMechanics.get_ecliptic_coordinates_raster_from_equatorial_coordinates_raster( 
+        crust.grid.pos, 
+        23.5/180*Math.PI, 
+        23.5/180*Math.PI 
+      ); 
+      return Float32Raster.get_nearest_values(ids, pos); 
+    } 
+   } ); 
 experimentalDisplays.albedo 	= new ScalarHeatDisplay( { min: '0.', max: '1.',  
 	getField: function (world) {
-		var land_fraction = Float32RasterInterpolation.smoothstep(world.SEALEVEL-200, world.SEALEVEL, world.displacement);
+
+		// dependencies: sealevel, displacement, mean_anomaly, ice_fraction, precip, npp, lai, plant_fraction, land_fraction
+		var sealevel = world.hydrosphere.sealevel;
+		var land_fraction = Float32RasterInterpolation.smoothstep(sealevel-200, sealevel, world.displacement);
 		var temp = AtmosphericModeling.surface_air_temp(world.grid.pos, world.meanAnomaly, Math.PI*23.5/180);
 
 		var ice_fraction = Float32RasterInterpolation.lerp( 
@@ -18,8 +33,8 @@ experimentalDisplays.albedo 	= new ScalarHeatDisplay( { min: '0.', max: '1.',
 			ScalarField.lt_field(
 				world.displacement, 
 				Float32RasterInterpolation.lerp(
-					world.SEALEVEL-1000, 
-					world.SEALEVEL-200, 
+					sealevel-1000, 
+					sealevel-200, 
 					Float32RasterInterpolation.smoothstep(273.15-10, 273.15, temp)
 				)
 			),
@@ -123,4 +138,14 @@ experimentalDisplays.speed 	= new ScalarHeatDisplay( { min: '0.', max: '1.',
 			var velocity = TectonicsModeling.get_plate_velocity(plate.mask, plate.buoyancy, world.material_viscosity);
 			return VectorField.magnitude(velocity, result);
 		} 	
+	} );
+experimentalDisplays.insolation 	= new ScalarHeatDisplay( { min: '0.', max: '400.', 
+		getField: function (world, result) {
+			return world.atmosphere.average_insolation;
+		} 	
+	} );
+experimentalDisplays.insolation 	= new ScalarHeatDisplay( { min: '0.', max: '400.', 
+		getField: function (world, result) {
+			return world.universe.get_average_insolation(world, model.speed/(30));
+		}
 	} );

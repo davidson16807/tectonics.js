@@ -472,6 +472,86 @@ VectorField.div_scalar = function(vector_field, scalar, result) {
 
 	return result;
 };
+VectorField.vector_similarity = function(vector_field, vector, result) {
+	result = result || VectorRaster(vector_field.grid);
+
+	ASSERT_IS_VECTOR_RASTER(vector_field)
+	ASSERT_IS_ARRAY(result, Float32Array)
+
+	var ax = vector_field.x;
+	var ay = vector_field.y;
+	var az = vector_field.z;
+
+	var bx = vector.x;
+	var by = vector.y;
+	var bz = vector.z;
+
+	var axi = 0.; 
+	var ayi = 0.; 
+	var azi = 0.; 
+
+	var sqrt = Math.sqrt;
+	for (var i=0, li=result.length; i<li; ++i) {
+		axi = ax[i]; 
+		ayi = ay[i]; 
+		azi = az[i]; 
+
+		result[i] = 
+		 (axi*bx + 
+          ayi*by + 
+          azi*bz)   /   ( sqrt(axi*axi+
+                               ayi*ayi+
+                               azi*azi)   *   sqrt(bx*bx+
+                                                   by*by+
+                                                   bz*bz) );
+	}
+	return result;
+};
+
+
+VectorField.vector_field_similarity = function(vector_field1, vector_field2, result) {
+	result = result || VectorRaster(vector_field1.grid);
+
+	ASSERT_IS_VECTOR_RASTER(vector_field1)
+	ASSERT_IS_VECTOR_RASTER(vector_field2)
+	ASSERT_IS_ARRAY(result, Float32Array)
+
+	var ax = vector_field1.x;
+	var ay = vector_field1.y;
+	var az = vector_field1.z;
+
+	var bx = vector_field2.x;
+	var by = vector_field2.y;
+	var bz = vector_field2.z;
+
+	var axi = 0.; 
+	var ayi = 0.; 
+	var azi = 0.; 
+
+	var bxi = 0.;
+	var byi = 0.;	
+	var bzi = 0.;
+
+	for (var i=0, li=result.length; i<li; ++i) {
+		axi = ax[i]; 
+		ayi = ay[i]; 
+		azi = az[i]; 
+
+		bxi = bx[i];
+		byi = by[i];	
+		bzi = bz[i];
+
+		result[i] = 
+		 (axi*bxi + 
+          ayi*byi + 
+          azi*bzi)   /   ( sqrt(axi*axi+
+                                ayi*ayi+
+                                azi*azi)   *   sqrt(bxi*bxi+
+                                                    byi*byi+
+                                                    bzi*bzi) );
+	}
+	return result;
+};
 
 VectorField.map = function(vector_field, fn, result) {
 	result = result || Float32Raster(vector_field.grid)
@@ -483,8 +563,8 @@ VectorField.map = function(vector_field, fn, result) {
 	var y = vector_field.y;
 	var z = vector_field.z;
 
-	for (var i = field_value.length - 1; i >= 0; i--) {
-		this_value[i] = fn(x[i], y[i], z[i]);
+	for (var i = 0, li = result.length; i<li; i++) {
+		result[i] = fn(x[i], y[i], z[i]);
 	}
 	return result;
 };

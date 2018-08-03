@@ -180,15 +180,3 @@ vectorDisplays.test = new VectorFieldDisplay( {
 			return crust.grid.pos;
 		} 
 	} );
-
-vectorDisplays.asthenosphere_velocity = new VectorFieldDisplay( { 
-		getField: function (world, flood_fill, scratch1) {
-			// scratch represents pressure
-			var pressure = scratch1;
-			// flood_fill does double duty for performance reasons
-			var scratch2 = flood_fill;
-			var field = TectonicsModeling.get_asthenosphere_pressure(world.density, pressure, scratch2);
-			var gradient = ScalarField.gradient(field);
-			return gradient;
-		} 
-	} );

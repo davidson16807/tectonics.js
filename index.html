@@ -9,17 +9,17 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 
-	<link rel="icon" type="text/css" href="blog/icon4.png">
+	<link rel="icon" type="text/css" href="blog/icon5.png">
 	<link rel="stylesheet" href="styles/bootstrap.min.css">
 	<link rel="stylesheet" href="styles/bootstrap.custom.css">
 	<link rel="stylesheet" href="styles/main.css"/>
 	<link rel="stylesheet" href="styles/modern.css"/>
 	<link rel="stylesheet" href="styles/app.css"/>
 
-	<script src="http://code.jquery.com/jquery.min.js"></script>
 	<script src="https://unpkg.com/vue"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.3.0/Chart.js"></script>
 	<script src="libraries/vue-charts.js"></script>
+	<script src="libraries/jquery-1.10.2.min.js"></script>
 	<script src="libraries/bootstrap.js"></script>
 	<script src="libraries/three.js/Three.js"></script>
 	<script src="libraries/three.js/Detector.js"></script>
@@ -33,36 +33,51 @@
 	<!-- <script src="libraries/threex/THREEx.QuickHull.js"></script> -->
 	<script src="libraries/threex/THREEx.FibonacciSphereGeometry.js"></script>
 	<script src="libraries/threex/THREEx.Debug.js"></script>
-	<script src="libraries/jquery-1.10.2.min.js"></script>
 	<script src="libraries/random-0.26.js"></script>
 	<script src="libraries/base64-arraybuffer.js"></script>
 	<script src="postcompiled/utils/Rasters.js"></script>
 	<script src="postcompiled/view/FragmentShaders.js"></script>
 	<script src="postcompiled/view/VertexShaders.js"></script>
 	<script src="noncompiled/utils/Float32SphereRaster.js"></script>
+	<script src="noncompiled/utils/Units.js"></script>
 	<script src="noncompiled/Logging.js"></script>
 	<script src="noncompiled/IntegerLattice.js"></script>
 	<script src="noncompiled/VoronoiSphere.js"></script>
 	<script src="noncompiled/Sphere.js"></script>
-	<script src="noncompiled/academics/TectonicsModeling.js"></script>
-	<script src="noncompiled/academics/AtmosphericModeling.js"></script>
+	<script src="noncompiled/academics/Optics.js"></script>
+	<script src="noncompiled/academics/OrbitalMechanics.js"></script>
+	<script src="noncompiled/academics/LithosphereModeling.js"></script>
+	<script src="noncompiled/academics/HydrosphereModeling.js"></script>
+	<script src="noncompiled/academics/AtmosphereModeling.js"></script>
 	<script src="noncompiled/academics/BiosphereModeling.js"></script>
-	<script src="noncompiled/model/Crust.js"></script>
-	<script src="noncompiled/model/RockColumn.js"></script>
-	<script src="noncompiled/model/Plate.js"></script>
-	<script src="noncompiled/model/SupercontinentCycle.js"></script>
+	<script src="noncompiled/model/Memo.js"></script>
+	<script src="noncompiled/model/universe/Orbit.js"></script>
+	<script src="noncompiled/model/universe/Spin.js"></script>
+	<script src="noncompiled/model/universe/Star.js"></script>
+	<script src="noncompiled/model/universe/System.js"></script>
+	<script src="noncompiled/model/universe/Universe.js"></script>
+	<script src="noncompiled/model/lithosphere/Crust.js"></script>
+	<script src="noncompiled/model/lithosphere/RockColumn.js"></script>
+	<script src="noncompiled/model/lithosphere/Plate.js"></script>
+	<script src="noncompiled/model/lithosphere/SupercontinentCycle.js"></script>
+	<script src="noncompiled/model/lithosphere/Lithosphere.js"></script>
+	<script src="noncompiled/model/hydrosphere/Hydrosphere.js"></script>
+	<script src="noncompiled/model/atmosphere/Atmosphere.js"></script>
+	<script src="noncompiled/model/biosphere/Biosphere.js"></script>
 	<script src="noncompiled/model/World.js"></script>
-	<script src="noncompiled/model/EliasHeightMapGenerator.js"></script>
-	<script src="noncompiled/model/WorldGenerator.js"></script>
-	<script src="noncompiled/model/Model.js"></script>
+	<script src="noncompiled/model/Simulation.js"></script>
+	<script src="noncompiled/generators/EliasHeightMapGenerator.js"></script>
+	<script src="noncompiled/generators/CrustGenerator.js"></script>
+	<script src="noncompiled/generators/NameGenerator.js"></script>
+	<script src="noncompiled/generators/NameCorpii.js"></script>
+	<script src="noncompiled/file-io/JsonSerializer.js"></script>
+	<script src="noncompiled/file-io/CsvExporter.js"></script>
+	<script src="noncompiled/view/ChartDisplay.js"></script>
 	<script src="noncompiled/view/ScalarDisplay.js"></script>
 	<script src="noncompiled/view/VectorDisplay.js"></script>
 	<script src="noncompiled/view/RegressionTestDisplays.js"></script>
 	<script src="noncompiled/view/ExperimentalDisplays.js"></script>
 	<script src="noncompiled/view/View.js"></script>
-	<script src="noncompiled/name-gen/NameGenerator.js"></script>
-	<script src="noncompiled/name-gen/NameCorpii.js"></script>
-	<script src="noncompiled/JsonSerializer.js"></script>
 </head>
 <body>
 <!-- three.js container -->
@@ -80,31 +95,27 @@
 <!-- info on screen display -->
 <div class="topright collapse collapsible controls" >
 	<div id="time-menu" class="time-menu">
-		<div class="input-group age-group">
-			<span class="form-control input-sm age">{{ format(age * 1e6, 1000, 3).quantity }}</span>
-			<span class="input-group-addon age-units">{{ format(age * 1e6, 1000, 3).unit }}y</span>
+		<div class="input-group elapsed_time-group">
+			<span class="form-control input-sm age">{{ format(elapsed_time).quantity }}</span>
+			<span class="input-group-addon age-units">{{ format(elapsed_time).unit }}y</span>
 		</div>
 		<div class="input-group speed-group">
+			<span class="input-group-addon rewind" v-on:click="rewind()">
+				<img src="icons/rewind.svg" height="12em" width="12em">
+			</span>
 			<span class="input-group-addon play" v-on:click="togglePause()">
-				<img src="icons/play.svg" height="12em" width="12em" v-if="paused">
 				<img src="icons/pause.svg" height="12em" width="12em" v-if="!paused">
+				<img src="icons/play.svg" height="12em" width="12em" v-if="paused">
+			</span>
+			<span class="input-group-addon fast-forward" v-on:click="fastForward()">
+				<img src="icons/fast-forward.svg" height="12em" width="12em">
 			</span>
 
-			<input class="form-control input-sm" type="number" value="5" min="0" max="10" step="1" v-model="speed" v-on:change="setSpeed()"/> 
-
-			<span class="input-group-addon">My/s</span>
-		</div>
-		<div class="input-group season-group" v-if="isSeasonVisible">
-  			<span class="input-group-addon">
-				<img src="icons/weather-sunny.svg" height="12em" width="12em">
-  			</span>
-  			<span class="form-control input-sm age">
-  				<input type="range" min="-1" max="1" step="0.01" 
-  					v-model="season" v-on:input="setSeason()"/>
-  			</span>
-  			<span class="input-group-addon">
-				<img src="icons/snowflake.svg" height="12em" width="12em">
-  			</span>
+			<span class="input-group-addon">
+				{{speeds[speed_i].name}}
+				<span class="instructions">&lt;/&gt;</span>
+			</span>
+			
 		</div>
 	</div>
 	<div class="view-menu btn-group-vertical">
@@ -141,6 +152,26 @@
 						v-on:click="setOcean(!ocean? 1:0)">
 						<img src="icons/water.svg" height="16em" width="16em"/>
 						Ocean
+					</button>
+				</li>
+				<li>
+					<button type="button" 
+						class="btn btn-default btn-xs" 
+						v-if="isSelected('satellite')"
+						v-bind:class="{active: night}" 
+						v-on:click="setNight(!night? 1:0)">
+						<img src="icons/weather-night.svg" height="16em" width="16em"/>
+						Night
+					</button>
+				</li>
+				<li>
+					<button type="button" 
+						class="btn btn-default btn-xs" 
+						v-if="isSelected('satellite')"
+						v-bind:class="{active: snow}" 
+						v-on:click="setSnow(!snow? 1:0)">
+						<img src="icons/snowflake.svg" height="16em" width="16em"/>
+						Snow
 					</button>
 				</li>
 				<li role="separator" class="divider"></li> 
@@ -222,6 +253,23 @@
 			<span class="instructions">drag</span>
 			<input id="load-input" ref="loadInput" type="file" v-on:change="loadPart2($event.target.files[0])" class="hidden" />
 		</button>
+		<div id="export" class="btn-group">
+			<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				<img src="icons/export.svg" height="16em" width="16em"/>
+				Export
+				<span class="caret"></span>
+			</button>
+			<ul class="dropdown-menu btn-default btn-xs">
+				<li>
+					<button type="button" 
+						class="btn btn-default btn-xs" 
+						v-on:click="csv">
+						<img src="icons/view-list.svg" height="16em" width="16em"/>
+						CSV
+					</button>
+				</li>
+			</ul>
+		</div>
 	</div>
 </div>
 
@@ -264,8 +312,12 @@
 			:data="x" 
 			:labels="y" 
 			:bind="true"
-			:bordercolor="'#FFF'"
-			:backgroundcolor="'rgba(256,256,256,0.2)'" 
+			:pointbackgroundcolor="'rgba(255,255,255,0.2)'"
+			:pointhoverbackgroundcolor="'rgba(255,255,255,0.2)'"
+			:pointbordercolor="'rgba(255,255,255,0.2)'"
+			:pointhoverbordercolor="'rgba(255,255,255,0.2)'"
+			:bordercolor="'rgba(255,255,255,0.5)'"
+			:backgroundcolor="'rgba(255,255,255,0.5)'" 
 			:fill="true"
 			:option="options">
 		</chartjs-line>
@@ -286,7 +338,7 @@
 		</p>
 		<p>Until then, here's a video of what you're missing:
 		</p>
-		<iframe width="420" height="315" src="//www.youtube.com/embed/VE67RgnLdKw" frameborder="0" allowfullscreen></iframe>
+		<iframe width="420" height="315" src="http://www.youtube.com/embed/VE67RgnLdKw" frameborder="0" allowfullscreen></iframe>
 	</div>
 	<div v-if="isNoJs" class="hcenter dialog">
 		<h2>Hang Tight</h2>
@@ -312,96 +364,126 @@
 	// all densities are in tons/m^3 (goes along with mass/thickness)
 	// all mass is in tons (goes along with density)
 	// all pressure is in kiloPascals (goes along with tons)
-	
-    var querystring = [];
-    for(var i = 0, 
-    	hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&'); 
-    	i < hashes.length; i++)
-    {
-        var hash = hashes[i].split('=');
-        querystring.push(hash[0]);
-        querystring[hash[0]] = hash[1];
-    }
 
-    function parseSeed(text) {
-		var parsed = parseInt(text);
-		if(isNaN(parsed)) {
-			parsed = 0;
-			for (var i = 0; i < Math.min(8, text.length); i++) {
-				parsed = (parsed * 256) + text.charCodeAt(i);
-			}
-		}
-		return parsed;
-    }
-	var seed = querystring['seed']  //|| (new Date).getTime().toString();
-	if (!seed) {
-		var corpus = NameGenerator.tokenize_corpus(NameCorpii.greek_mythological_names);
-		var gen = NameGenerator.get_length_distribution_generator(corpus, 25, {5:1,6:3,7:11,8:3,9:1}, 100);
-		seed = gen();
+	if( !Detector.webgl ){
+		process.exit(1);
 	}
-	var random = new Random(parseSeed(seed));
 
-	var renderStats, updateStats, renderer, controls;
-	var BlockUpdate = false;
-	var IsProd = true;
+	var sim, view;
+	var renderStats, updateStats, controls;
+	var IS_PROD = true;
+	var autosave_period;
 
-	var resolution      = parseInt(querystring['resolution'] || '5');
-	var start_speed     = parseInt(querystring['speed']      || '5');
-	var autosave_period = parseInt(querystring['autosave']   || '0');
-	var autosave_timestamp = 0;
-
-	if (resolution > 6) {
-		resolution = 6;
-	};
-
-	var view = new View(
-		new Grid( 
-			new THREE.IcosahedronGeometry(1, resolution),
-			{ voronoi_generator: function(points, farthest_distance) {	
-					return VoronoiSphere.FromPos(points, farthest_distance)	
-				} 
-			}
-			// { voronoi_generator: VoronoiSphere.FromPos }
-		),
-		scalarDisplays.satellite, 
-		vectorDisplays.disabled, 
-		vertexShaders['orthographic']
-	);
-	var model = new Model();
-	model.MegaYearPerSecond = start_speed;
-
-	var world = void 0;
-	if (querystring['load']) {
-		loadUrl(querystring['load']);
-	} else {
-		world = new World({ grid: view.grid });
-		WorldGenerator.generate(world, 
-			EliasHeightMapGenerator.generate(world.grid), 
-			WorldGenerator.modern_earth_hypsography, 
-			WorldGenerator.modern_earth_control_points
-		);
-		model.world(world);
-		$('.controls').show();
-	}
-	
-	if( Detector.webgl ){
-		init();
-		animate();
-		update();
-	} 
 
 	// init the scene
 	function init(){
-		renderer = new THREE.WebGLRenderer({
-			antialias		: true,	// to get smoother output
-			preserveDrawingBuffer	: true	// to allow screenshot
-		});
-		renderer.setClearColor( 0x000000, 1 );
-		renderer.setSize( window.innerWidth, window.innerHeight );
-		$('#container').append(renderer.domElement);
+    	var querystring = [];
+		var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&')
+	    for(var i = 0; i < hashes.length; i++)
+	    {
+	        var hash = hashes[i].split('=');
+	        querystring.push(hash[0]);
+	        querystring[hash[0]] = hash[1];
+	    }
 
+	    
+		var resolution      = Math.min(6, parseInt(querystring['resolution'] || '5'));
+		autosave_period 	= parseInt(querystring['autosave']   || '0');
+
+		var geometry = new THREE.IcosahedronGeometry(1, resolution);
+		view = new View(
+			window.innerWidth, 
+			window.innerHeight,
+			new Grid( geometry, { voronoi_generator: VoronoiSphere.FromPos }, ),
+			scalarDisplays.satellite, 
+			vectorDisplays.disabled, 
+			vertexShaders['orthographic'],
+		);
+		sim = new Simulation({
+			seed:  querystring['seed'] 			|| (new Date).getTime().toString(),
+			speed: parseInt(querystring['speed']	|| (1e6*Units.SECONDS_IN_YEAR).toString()),
+		});
+
+		var star_name_corpus = NameGenerator.tokenize_corpus(NameCorpii.arabic_star_names);
+		var get_star_name = NameGenerator.get_length_distribution_generator(star_name_corpus, 25, {5:1,6:3,7:11,8:3,9:1}, 100);
 		
-		if(!IsProd){
+		var planet_name_corpus = NameGenerator.tokenize_corpus(NameCorpii.greek_mythological_names);
+		var get_planet_name = NameGenerator.get_length_distribution_generator(planet_name_corpus, 25, {5:1,6:3,7:11,8:3,9:1}, 100);
+		var focus_name = get_planet_name();
+		
+		var universe = new Universe({
+			system: {
+				name: 'galactic orbit',
+				motion: { // motion mirrors orbit of sun around galactic center
+					type: 'orbit',
+					semi_major_axis: 2.35e20, // meters
+					effective_combined_mass: 1.262e41, // kg, back calculated to achieve period of 250 million years
+				},
+				invariant_insolation: true,
+				body: {
+					type: 'star',
+					name: get_star_name(),
+					mass: Units.SOLAR_MASS,
+				},
+				children: [
+					{
+						name: 'orbit',
+						motion: {
+							type: 'orbit',
+							semi_major_axis: 1. * Units.ASTRONOMICAL_UNIT,
+							eccentricity: 0.0167,
+							inclination: Math.PI * 5e-5/180,
+							longitude_of_ascending_node: Math.PI * -11/180,
+							effective_combined_mass: 2e30, // kg
+						},	
+						children: [
+							{
+								name: 'precession',
+								motion: { 
+									type: 'spin',
+									angular_speed: 2*Math.PI/(25860 * Units.SECONDS_IN_YEAR),
+								},	
+								invariant_insolation: true,
+								children: [
+									{
+										name: 'spin',
+										motion: { 
+											type: 'spin',
+											angular_speed: 2*Math.PI/(60*60*24),
+											axial_tilt: Math.PI * 23.5/180,
+										},	
+										body: { 
+											type: 'world',
+											name: focus_name,
+											grid: geometry,
+										},
+									},
+							 	],
+							},
+						],
+					},
+				],
+			},
+		});
+		var focus = universe.body_id_to_node_map[focus_name].body;
+		CrustGenerator.generate(
+			EliasHeightMapGenerator.generate(focus.grid), 
+			CrustGenerator.modern_earth_hypsography, 
+			CrustGenerator.modern_earth_control_points, 
+			focus.lithosphere.total_crust
+		);
+		sim.model(universe);
+		sim.focus = focus;
+
+		if (querystring['load']) {
+			loadUrl(querystring['load']); // TODO: rework this
+		} 
+
+		$('.controls').show();
+		
+		$('#container').append(view.getDomElement());
+		
+		if(!IS_PROD){
 			// add Stats.js - https://github.com/mrdoob/renderStats.js
 			renderStats = new Stats();
 			$('#renderStats').append( renderStats.domElement );
@@ -414,9 +496,12 @@
 
 		// create a camera contol
 		controls	= new THREE.OrbitControls( view.camera, $("#container").get(0) );
+	}
 
-		// transparently support window resize
-		THREEx.WindowResize.bind(renderer, view.camera);
+	function autosave() {
+		if (!autosave_period) { return; }
+		setTimeout(update, 1000*autosave_period);
+		saveVue.save();
 	}
 
 	// animation loop
@@ -428,11 +513,11 @@
 
 		// update camera controls
 		controls.update();
+		view.render();
 
 		// actually render the scene
-		renderer.render( view.scene, view.camera );
 
-		if(!IsProd){
+		if(!IS_PROD){
 			renderStats.update();
 		}
 	}
@@ -441,73 +526,40 @@
 		// push to task queue and loop
 		// - it has to be at the begining of the function
 		//maximum refresh rate of 20fps
-		setTimeout(update, IsProd? 1000/20 : 0);
+		setTimeout(update, IS_PROD? 1000/20 : 0);
 
-		if (BlockUpdate) {
-			return;
-		};
-		
-		model.update();
-		view.cellUpdate(world); 
+		sim.update();
+		view.update(sim); 
 
-		if (autosave_period) {
-			if (model.age >= (autosave_timestamp + autosave_period)) {
-				saveVue.save();
-				autosave_timestamp = autosave_timestamp + autosave_period;
-			}
-		}
-
-		if(!IsProd){
+		if(!IS_PROD){
 			updateStats.update();
 		}
 	}
 	
 	function loadUrl (url) {
-		BlockUpdate = true;
 		dialogVue.$data.isLoadingSave = true;
 		$('.controls').hide();
-		$.getJSON( url, function( json ) {
-			BlockUpdate = false;
-			var results = JsonDeserializer.model(json, view.grid);
-			world = results.model._world;
-			seed = results.seed;
-			random = results.random;
-			model.age = results.model.age;
-			model.world(world);
-			if (model.paused) {
-				model.worldLoaded()
-			}
+		$.get( url, function( json ) {
+			sim = JsonDeserializer.sim(json);
 			dialogVue.$data.isLoadingSave = false;
 			$('.controls').show();
 		});
 	}
 	function loadFile (file) {
-		BlockUpdate = true;
+		dialogVue.$data.isLoadingSave = true;
+		$('.controls').hide();
 		var reader = new FileReader();
-	    //reader.onerror = function(e) {};
-	    //reader.onprogress = function(e) {};
-	    //reader.onabort = function(e) {};
-	    //reader.onloadstart = function(e) {};
 	    reader.onload = function(e) {
-			BlockUpdate = false;
-			var json = JSON.parse(e.target.result);
-			var results = JsonDeserializer.model(json, view.grid);
-			world = results.model._world;
-			seed = results.seed;
-			random = results.random;
-			model.age = results.model.age;
-			model.world(world);
-			if (model.paused) {
-				model.worldLoaded()
-			}
+			sim = JsonDeserializer.sim(e.target.result);
+			dialogVue.$data.isLoadingSave = false;
+			$('.controls').show();
 	    }
-
 	    reader.readAsText(file);
 	}
 
 	function format (num, rollover, precision){
 				var quantity = num;
-				var units = ['', 'k', 'M', 'G']
+				var units = ['', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']
 				var unit = units.shift();
 				while(quantity > rollover) {
 					unit = units.shift();
@@ -518,9 +570,9 @@
 					unit: 		unit,
 				};
 			}
-	function format_text (My, rollover, precision) {
-		var formatted = format(My * 1e6, rollover, precision);
-		return formatted.quantity + ' ' + formatted.unit + 'y';
+	function format_time (seconds) {
+		var formatted = format(seconds / Units.SECONDS_IN_YEAR, 1000, 3);
+		return formatted.quantity + formatted.unit + 'y';
 	}
 
 	function download(dataUrl, filename) {
@@ -537,6 +589,15 @@
       }
       if (event.keyCode == 83) { //s
       	saveVue.save();
+      }
+      if (event.keyCode == 188) { // <
+      	timeMenuVue.rewind();
+      }
+      if (event.keyCode == 190) { // >
+      	timeMenuVue.fastForward();
+      }
+      if (event.keyCode == 191) { // /
+      	timeMenuVue.togglePause();
       }
     });
 
@@ -615,16 +676,24 @@
 	  el: '#save',
 	  methods: {
 	  	save(event) {
-			var serialized = JsonSerializer.model(model,{seed: seed, random: random});
-			var stringified = JSON.stringify(serialized);
-  			var dataUrl = 
-  				"data:application/json;"+
-  				"charset=utf-8," + 
-  				stringified;
-  			var filename = 
-  				seed+'-'+
-  				format_text(model.age, 1000, 3).replace(/\s/,'')+
-  				'.sim'
+			var stringified = JsonSerializer.sim(sim);
+  			var dataUrl = `data:application/json;charset=utf-8,${stringified}`;
+  			var elapsed_time = format_time(sim.elapsed_time);
+  			var filename = `${sim.focus.name}-${elapsed_time}.sim`;
+  			console.log(dataUrl, filename)
+  			download(dataUrl, filename);
+  		}
+	  }
+	});
+
+	var exportVue = new Vue({
+	  el: '#export',
+	  methods: {
+	  	csv(event) {
+			var content = CsvExporter.world(sim.focus);
+  			var dataUrl = `data:application/json;charset=utf-8,${content}`;
+  			var elapsed_time = format_time(sim.elapsed_time);
+  			var filename = `${sim.focus.name}-${elapsed_time}.csv`;
   			download(dataUrl, filename);
   		}
 	  }
@@ -640,10 +709,10 @@
 	  },
 	  methods: {
 	  	capture(event) {
-  			var dataUrl = THREEx.Screenshot.toDataURL(renderer);
+  			var dataUrl = view.getScreenshotDataURL();
   			var filename = 
-  				seed+'-'+
-  				format_text(model.age, 1000, 3).replace(/\s/,'')+
+  				sim.focus.name+'-'+
+  				format_time(sim.elapsed_time)+
   				'.png';
   			download(dataUrl, filename);
   		}
@@ -680,32 +749,46 @@
 	  el: '#time-menu',
 	  data: {
 	  	paused: false,
-		speed: start_speed,
-	  	age: 0,
-	  	season: 0,
-	  	isSeasonVisible: false,
+		speed_i: 9,
+		speeds: [
+			{	name:'1s/s', 	scale: 1,							},
+			{	name:'1m/s', 	scale: 60,							},
+			{	name:'1hr/s', 	scale: 60*60,						},
+			{	name:'1dy/s', 	scale: 60*60*24,					},
+			{	name:'1mo/s', 	scale: 60*60*24*31,					},
+			{	name:'1y/s', 	scale: 1  *Units.SECONDS_IN_YEAR,	},
+			{	name:'30y/s', 	scale: 30 *Units.SECONDS_IN_YEAR,	},
+			{	name:'1ky/s', 	scale: 1e3*Units.SECONDS_IN_YEAR,	},
+			{	name:'30ky/s', 	scale: 3e4*Units.SECONDS_IN_YEAR,	},
+			{	name:'1My/s', 	scale: 1e6*Units.SECONDS_IN_YEAR,	},
+		],
+	  	elapsed_time: 0,
+	  	isSeasonVisible: true,
 	  },
 	  created: function() {
 	  	var _this = this;
 	  	setInterval(function() {
-	  		_this.$data.age = model.age;
+	  		_this.$data.elapsed_time = sim.elapsed_time;
 	  	}, 1000/10);
 	  },
 	  methods: {
 		togglePause: function() {
 			this.paused = !this.paused;
-		model.toggle_pause();
+			sim.toggle_pause();
 		},
-		setSpeed: function() {
-			model.MegaYearPerSecond = this.speed;
+		fastForward: function() {
+			if (this.speed_i >= this.speeds.length-1) {return} 
+			this.speed_i += 1;
+			sim.speed = this.speeds[this.speed_i].scale;
 		},
-		setSeason: function() {
-			model.world().meanAnomaly = 2*Math.asin(this.season);
+		rewind: function() {
+			if (this.speed_i <= 0) {return} 
+			this.speed_i -= 1;
+			sim.speed = this.speeds[this.speed_i].scale;
 		},
-		setSeasonVisibility: function(visibility) {
-			this.isSeasonVisible = visibility || false;
+		format: function(time) {
+			return format(time/Units.SECONDS_IN_YEAR, 1000, 3)
 		},
-		format: format
 	}
 	});
 
@@ -738,8 +821,8 @@
 	    options: [
 	      { name: "None", value: "disabled", icon: "" },
 	      { name: "Mantle Flow", value: "asthenosphere_velocity", icon: "icons/fire-flow.svg" },
-	      { name: "Plate Motion", value: "plate_velocity", icon: "icons/plate-motion.svg" },
-	      { name: "Wind Speed", value: "surface_air_velocity", icon: "icons/air-flow.svg", season: true },
+	      // { name: "Plate Motion", value: "plate_velocity", icon: "icons/plate-motion.svg" },
+	      { name: "Wind Speed", value: "surface_air_velocity", icon: "icons/air-flow.svg" },
 	    ],
 	  },
 	  methods: {
@@ -748,7 +831,6 @@
 	  		var option = this.options.filter(x => x.value == value)[0];
 	  		this.selected = value;
 	  		view.setVectorDisplay(vectorDisplays[value]);
-	  		timeMenuVue.setSeasonVisibility(option.season || false);
 	  	},
 	  	getClass: function(value, selected) {
 	  		return value == selected? 'active' : '';
@@ -761,16 +843,20 @@
 	  data: {
 	    ocean: 1,
 	    ocean_target: 1,
+	    night: 1,
+	    night_target: 1,
+	    snow: 1,
+	    snow_target: 1,
 	    selected: 'satellite',
 	    vectorDisplay: 'disabled',
 	    options: [
-	      {name: 'Satellite', value: 'satellite', icon: 'icons/satellite-variant.svg'},
+	      {name: 'Satellite', value: 'satellite', icon: 'icons/satellite-variant.svg' },
 	      {name: 'Sediment', value: 'soil', icon: 'icons/dirt.svg'},
 	      {name: 'Bedrock', value: 'bedrock', icon: 'icons/rock.svg'},
 	      {name: 'Elevation', value: 'alt', icon: 'icons/terrain.svg'},
 	      {name: 'Plant Productivity', value: 'npp', icon: 'icons/leaf.svg'},
-	      {name: 'Air Temperature', value: 'temp', icon: 'icons/thermometer.svg', season: true},
-	      {name: 'Air Pressure', value: 'surface_air_pressure', icon: 'icons/air-pressure.svg', season: true},
+	      {name: 'Air Temperature', value: 'temp', icon: 'icons/thermometer.svg' },
+	      {name: 'Air Pressure', value: 'surface_air_pressure', icon: 'icons/air-pressure.svg' },
 	      {name: 'Precipitation', value: 'precip', icon: 'icons/weather-raining.svg'},
 	      {name: 'Crust Age', value: 'age', icon: 'icons/clock.svg'},
 	      {name: 'Crust Density', value: 'density', icon: 'icons/scale.svg'},
@@ -784,15 +870,23 @@
 	  		var option = this.options.filter(x => x.value == value)[0];
 	    	this.selected = value;
 	    	view.setScalarDisplay(scalarDisplays[value]);
-	  		timeMenuVue.setSeasonVisibility(option.season || false);
+	    },
+	    isSelected: function(value) {
+	    	return {
+	    		satellite: true,
+	    		soil: true,
+	    		bedrock: true,
+	    	}[this.selected];
 	    },
 	    setOcean: function(value) {
 	    	this.ocean_target = value;
 	    	var v = this;
+	    	// TODO: hook this up to actual fps
 	    	var fps = 30
 	    	var timestep = 1000/fps; 	//milliseconds
 	    	var duration = 500; 		//milliseconds
 	    	var increment = timestep/duration;
+	    	chartVue.setOceanVisibility(value);
 	    	var timer = setInterval(function() {
 	    		v.ocean += Math.sign(v.ocean_target - v.ocean) * increment
 	    		if (Math.abs(v.ocean_target - v.ocean) < 2*increment) {
@@ -802,9 +896,43 @@
 	    		view.uniform('sealevel_mod', (v.ocean)?(1.0):(-1.0));
 	    	}, timestep);
 	    },
+	    setNight: function(value) {
+	    	this.night_target = value;
+	    	var v = this;
+	    	// TODO: hook this up to actual fps
+	    	var fps = 30
+	    	var timestep = 1000/fps; 	//milliseconds
+	    	var duration = 500; 		//milliseconds
+	    	var increment = timestep/duration;
+	    	var timer = setInterval(function() {
+	    		v.night += Math.sign(v.night_target - v.night) * increment
+	    		if (Math.abs(v.night_target - v.night) < 2*increment) {
+	    		  clearInterval(timer); 
+	    		  v.night = v.night_target;
+	    		}
+	    		view.uniform('darkness_mod', (v.night)?(1.0):(0.0));
+	    	}, timestep);
+	    },
+	    setSnow: function(value) {
+	    	this.snow_target = value;
+	    	var v = this;
+	    	// TODO: hook this up to actual fps
+	    	var fps 		= 30
+	    	var timestep 	= 1000/fps;	//milliseconds
+	    	var duration 	= 500; 		//milliseconds
+	    	var increment = timestep/duration;
+	    	var timer = setInterval(function() {
+	    		v.snow += Math.sign(v.snow_target - v.snow) * increment
+	    		if (Math.abs(v.snow_target - v.snow) < 2*increment) {
+	    		  clearInterval(timer); 
+	    		  v.snow = v.snow_target;
+	    		}
+	    		view.uniform('ice_mod', (v.snow)?(1.0):(0.0));
+	    	}, timestep);
+	    },
 	    getClass: function(value, selected) {
 	    	return value == selected? 'active' : '';
-	    }
+	    },
 	  }
 	});
 
@@ -817,16 +945,16 @@
 	    setSupercontinentBreakup: function(value) {
 	    	this.supercontinentBreakup = value;
 	    	if (!this.supercontinentBreakup) {
-		    	model.world().supercontinentCycle.duration = Infinity;
+		    	sim.focus.lithosphere.supercontinentCycle.duration = Infinity;
 	    	} else {
-	    		model.world().supercontinentCycle.duration = 0;
+	    		sim.focus.lithosphere.supercontinentCycle.duration = 0;
 	    	}
 	    },
 	  }
 	});
 
 	Vue.use(VueCharts);
-    const app = new Vue({
+    const chartVue = new Vue({
         el: '#chart',
         data:{
         	isEnabled: false,
@@ -837,6 +965,7 @@
         	stddev: 0,
             x: [],
             y: [],
+        	ocean_visibility: 1,
             options: {
             	legend: {display: false}, 
             	animation : false,
@@ -847,6 +976,10 @@
 						}
 					}],
 					yAxes: [{
+						scaleLabel: {
+							display: true,
+							labelString: '% surface'
+						},
 						ticks: {
 						  fontColor: '#FFFFFF'
 						},
@@ -862,38 +995,38 @@
 					_this.isEnabled = false;
 					return;
 				}
-				var max = Float32Dataset.max(field);
-				var min = Float32Dataset.min(field);
-				var range = Math.pow(10, Math.round(Math.log10(max - min)));
-				var bin_num = 10;
-				var bin_size = range/bin_num;
-				var bin_min = 0;
-				var bin_max = 0;
-				var bin_mag = 0;
-				var x = [];
-				var y = [];
-				for (var i = 0; i < bin_num; i++) {
-					bin_min = Math.round(min+i*bin_size);
-					bin_max = Math.round(max+i*bin_size);
-					x[i] = Uint8Dataset.sum(ScalarField.between_scalars(field, bin_min, bin_max))
-					y[i] = bin_min;
-				}
-				_this.min = min;
-				_this.max = max;
+				_this.min = Float32Dataset.max(field);
+				_this.max = Float32Dataset.min(field);
 				_this.mean = Float32Dataset.average(field);
 				_this.median = Float32Dataset.median(field);
 				_this.stddev = Float32Dataset.standard_deviation(field);
+
+				var chart_display = view._scalarDisplay.chartDisplays[0];
+				if (chart_display === void 0){
+					_this.isEnabled = false;
+					return;
+				}
+				var chart_data = chart_display.get_dynamic_data(field, { ocean_visibility: _this.ocean_visibility });
+
 				_this.isEnabled = true;
-				_this.$data.x = x;
-				_this.$data.y = y;
+				_this.$data.x = chart_data.x;
+				_this.$data.y = chart_data.y;
 			}, 1000/2);
 		},
 		methods: {
+			setOceanVisibility(value){
+				this.ocean_visibility = value? 1:0;
+			},
 			round(x) {
 				return Math.round(x);
 			}
 		}
     });
+    
+	init();
+	animate();
+	update();
+	autosave();
 </script>
 </body>
 </html>

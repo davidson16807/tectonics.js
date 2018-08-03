@@ -1,5 +1,11 @@
 Sphere = {}
 
+Sphere.surface_area = function(radius) {
+	return 4*Math.PI*radius*radius;
+}
+Sphere.volume = function(radius) {
+	return 4/3*Math.PI*radius*radius*radius;
+}
 Sphere.cartesian_to_spherical = function(x,y,z){
 	return {lat: Math.asin(y/Math.sqrt(x*x+y*y+z*z)), lon: Math.atan2(-z, x)};
 }
@@ -12,8 +18,8 @@ Sphere.spherical_to_cartesian = function(lat, lon){
 }
 Sphere.random_point = function() {
 	return Sphere.spherical_to_cartesian(
-		Math.asin(2*random.random() - 1),
-		2*Math.PI * random.random()
+		Math.asin(2*sim.random.random() - 1),
+		2*Math.PI * sim.random.random()
 	);
 };
 Sphere.random_point_along_great_circle = function(eulerPole) {
@@ -26,7 +32,7 @@ Sphere.random_point_along_great_circle = function(eulerPole) {
     Vector.normalize(c.x, c.y, c.z, 					c); 
 	
 	// then rotate by some random amount around the eulerPole
-	var random_rotation_matrix = Matrix.RotationAboutAxis(a.x, a.y, a.z, 2*Math.PI * random.random());
+	var random_rotation_matrix = Matrix.RotationAboutAxis(a.x, a.y, a.z, 2*Math.PI * sim.random.random());
 	return Vector.mult_matrix(c.x, c.y, c.z,  random_rotation_matrix)
 };
 Sphere.random_basis = function () {
