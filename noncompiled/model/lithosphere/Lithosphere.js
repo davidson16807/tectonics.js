@@ -75,9 +75,9 @@ function Lithosphere(grid, parameters) {
 
 
 
-	function move_plates(plates, timestep) {
+	function move_plates(plates, megayears) {
 		for (var i=0, li=plates.length; i<li; ++i) {
-	 		plates[i].move(timestep, material_density, material_viscosity, surface_gravity);
+	 		plates[i].move(megayears, material_density, material_viscosity, surface_gravity);
 	 	}
 	}
 
@@ -298,11 +298,11 @@ function Lithosphere(grid, parameters) {
 
 	  	scratchpad.deallocate('update_subducted');
 	}
-	function calculate_deltas(lithosphere, timestep) {
+	function calculate_deltas(lithosphere, megayears) {
 
        	// CALCULATE DELTAS
 		LithosphereModeling.get_erosion(
-			surface_height.value(), timestep,
+			surface_height.value(), megayears,
 			material_density, surface_gravity,
 			lithosphere.top_crust, lithosphere.erosion, lithosphere.crust_scratch
 		);
@@ -310,7 +310,7 @@ function Lithosphere(grid, parameters) {
 
        	// CALCULATE DELTAS
 		LithosphereModeling.get_weathering(
-			surface_height.value(), timestep,
+			surface_height.value(), megayears,
 			material_density, surface_gravity,
 			lithosphere.top_crust, lithosphere.weathering, lithosphere.crust_scratch
 		);
@@ -318,7 +318,7 @@ function Lithosphere(grid, parameters) {
 
        	// CALCULATE DELTAS
 		LithosphereModeling.get_lithification(
-			surface_height.value(), timestep,
+			surface_height.value(), megayears,
 			material_density, surface_gravity,
 			lithosphere.top_crust, lithosphere.lithification, lithosphere.crust_scratch
 		);
@@ -326,7 +326,7 @@ function Lithosphere(grid, parameters) {
 
        	// CALCULATE DELTAS
 		LithosphereModeling.get_metamorphosis(
-			surface_height.value(), timestep,
+			surface_height.value(), megayears,
 			material_density, surface_gravity,
 			lithosphere.top_crust, lithosphere.metamorphosis, lithosphere.crust_scratch
 		);
@@ -340,7 +340,7 @@ function Lithosphere(grid, parameters) {
 		Crust.add_delta 		(globalized_deltas, lithosphere.lithification,			globalized_deltas);
 		Crust.add_delta 		(globalized_deltas, lithosphere.metamorphosis,			globalized_deltas);
 		Crust.add_delta 		(globalized_deltas, lithosphere.accretion,				globalized_deltas);
-		ScalarField.add_scalar 	(globalized_deltas.age, timestep, 						globalized_deltas.age); // aging
+		ScalarField.add_scalar 	(globalized_deltas.age, megayears, 						globalized_deltas.age); // aging
 	}
 
 	function integrate_deltas(world, plates) { 
@@ -460,8 +460,8 @@ function Lithosphere(grid, parameters) {
 
 	var mean_supercontinent_cycle_duration = 150;
 
-	this.calcChanges = function(timestep) {
-		var megayears = timestep / Units.SECONDS_IN_MEGAYEAR;
+	this.calcChanges = function(seconds) {
+		var megayears = seconds / Units.SECONDS_IN_MEGAYEAR;
 		var max_perceivable_duration = 60*60*24*30 * megayears; // 1 day worth of real time at 30fps
 		if (mean_supercontinent_cycle_duration > max_perceivable_duration) {
 			return;
@@ -472,8 +472,8 @@ function Lithosphere(grid, parameters) {
 		calculate_deltas		(this, megayears); 			// this creates a world map of all additions and subtractions to crust (e.g. from erosion, accretion, etc.)
 	};
 
-	this.applyChanges = function(timestep){
-		var megayears = timestep / Units.SECONDS_IN_MEGAYEAR;
+	this.applyChanges = function(seconds){
+		var megayears = seconds / Units.SECONDS_IN_MEGAYEAR;
 		var max_perceivable_duration = 60*60*24*30 * megayears; // 1 day worth of real time at 30fps
 		if (mean_supercontinent_cycle_duration > max_perceivable_duration) {
 			return;

@@ -118,12 +118,12 @@ function Hydrosphere(grid, parameters) {
 		assert_dependencies();
 	}
 
-	this.calcChanges = function(timestep) {
+	this.calcChanges = function(seconds) {
 		assert_dependencies();
 	};
 
-	this.applyChanges = function(timestep) {
-		if (timestep === 0) {
+	this.applyChanges = function(seconds) {
+		if (seconds === 0) {
 			return;
 		};
 

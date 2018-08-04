@@ -152,12 +152,11 @@ function Atmosphere(grid, parameters) {
 			return;
 		};
 		assert_dependencies();
-		var seconds = timestep;
 
-		if (this.sealevel_temp === void 0 || seconds > 7*Units.SECONDS_IN_DAY) {
+		if (this.sealevel_temp === void 0 || timestep > 7*Units.SECONDS_IN_DAY) {
 			this.sealevel_temp = Float32Raster.copy(this.long_term_sealevel_temp.value(), 	this.sealevel_temp);
 		} else {
-			get_average_insolation(seconds, 											this.average_insolation);
+			get_average_insolation(timestep, 											this.average_insolation);
 			ScalarField.mult_field( this.absorption.value(), this.average_insolation, 	this.absorbed_radiation );
 
 			var max_absorbed_radiation = Float32Dataset.max( this.absorbed_radiation );
@@ -181,7 +180,7 @@ function Atmosphere(grid, parameters) {
 			AtmosphereModeling.heat_capacity(ocean_coverage.value(), material_heat_capacity, this.heat_capacity);
 			ScalarField.sub_field 		( this.incoming_heat, this.outgoing_heat, 			this.net_heat_gain );
 			ScalarField.div_field 		( this.net_heat_gain, this.heat_capacity, 			this.temperature_delta_rate );
-			ScalarField.mult_scalar 	( this.temperature_delta_rate, seconds, 			this.temperature_delta );
+			ScalarField.mult_scalar 	( this.temperature_delta_rate, timestep, 			this.temperature_delta );
 			ScalarField.add_field 		( this.temperature_delta, this.sealevel_temp, 		this.sealevel_temp );
 		}
 

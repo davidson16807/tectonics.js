@@ -242,12 +242,11 @@ function Universe(parameters) {
 		};
 		assert_dependencies();
 
-		var seconds = timestep;
 		advance(this.config, 
-				seconds,
+				timestep,
 				this.config,
-				1/2        * seconds, 
-				60*60*24*30 * seconds
+				1/2        * timestep, 
+				60*60*24*30 * timestep
 			); 
 
 		for(var body of bodies){
