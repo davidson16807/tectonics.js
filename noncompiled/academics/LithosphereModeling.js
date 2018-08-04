@@ -17,7 +17,7 @@ var LithosphereModeling = {};
 //    geothermal temperature model
 //    geostatic pressure
 LithosphereModeling.get_lithification = function(
-		surface_height, megayears,
+		surface_height, seconds,
 		material_density, surface_gravity,
 		top_crust, crust_delta, crust_scratch){
 	var grid = top_crust.grid;
@@ -58,7 +58,7 @@ LithosphereModeling.get_lithification = function(
 
 
 LithosphereModeling.get_metamorphosis = function(
-		surface_height, megayears,
+		surface_height, seconds,
 		material_density, surface_gravity,
 		top_crust, crust_delta, crust_scratch){
 
@@ -132,16 +132,16 @@ LithosphereModeling.get_metamorphosis = function(
 
 // "weathering" is the process by which rock is converted to sediment 
 LithosphereModeling.get_weathering = function(
-		surface_height, megayears,
+		surface_height, seconds,
 		material_density, surface_gravity,
 		top_crust, crust_delta, crust_scratch){
   var grid = surface_height.grid;
   var scratch = Float32Raster(grid);
 
-  var precipitation = 7.8e5; 
+  var precipitation = 0.0021 * Units.SECONDS_IN_DAY; 
   // ^^^ measured in meters of rain per million years 
   // global land average from wikipedia 
-  var weathering_factor = 1.8e-7;  
+  var weathering_factor = 1.8e-7 / Units.SECONDS_IN_MEGAYEAR;  
   // ^^^ the rate of weathering per the rate of rainfall in that place 
   // measured in fraction of height difference per meters of rain per million years 
   var critical_sediment_thickness = 1; 
@@ -157,7 +157,7 @@ LithosphereModeling.get_weathering = function(
     average_difference,  
     weathering_factor *       	// apply weathering factor to get height change per unit precip  
     precipitation *         	// apply precip to get height change 
-    megayears *         			// 
+    seconds *         			// 
     material_density.felsic_plutonic *      	// apply density to get mass converted to sediment 
     surface_gravity/earth_surface_gravity, //correct for planet's gravity 
     weathering) 
@@ -204,7 +204,7 @@ LithosphereModeling.get_weathering = function(
 
 
 LithosphereModeling.get_erosion = function(
-		surface_height, megayears,
+		surface_height, seconds,
 		material_density, surface_gravity,
 		top_crust, crust_delta, crust_scratch){
   	var scratchpad = RasterStackBuffer.scratchpad;
@@ -219,10 +219,10 @@ LithosphereModeling.get_erosion = function(
 	Crust.reset(crust_delta);
 
 	// TODO: add consideration for surface_gravity
-	var precipitation = 7.8e5;
+	var precipitation = 0.0021 * Units.SECONDS_IN_DAY;
 	// ^^^ measured in meters of rain per million years
 	// global land average from wikipedia
-	var erosiveFactor = 1.8e-7; 
+	var erosiveFactor = 1.8e-7 / Units.SECONDS_IN_MEGAYEAR; 
 	// ^^^ the rate of erosion per the rate of rainfall in that place
 	// measured in fraction of height difference per meters of rain per million years
 
@@ -242,7 +242,7 @@ LithosphereModeling.get_erosion = function(
 	    from = arrow[0];
 	    to = arrow[1];
 	    height_difference = surface_height[from] - surface_height[to];
-	    outbound_height_transfer[from] += height_difference > 0? height_difference * precipitation * megayears * erosiveFactor * material_density.felsic_plutonic : 0;
+	    outbound_height_transfer[from] += height_difference > 0? height_difference * precipitation * seconds * erosiveFactor * material_density.felsic_plutonic : 0;
 	}
 
 	var outbound_sediment_fraction = crust_scratch.sediment;
@@ -294,7 +294,7 @@ LithosphereModeling.get_erosion = function(
 	    from = arrow[0];
 	    to = arrow[1];
 	    height_difference = surface_height[from] - surface_height[to];
-	    outbound_height_transfer_i = height_difference > 0? height_difference * precipitation * megayears * erosiveFactor * material_density.felsic_plutonic : 0;
+	    outbound_height_transfer_i = height_difference > 0? height_difference * precipitation * seconds * erosiveFactor * material_density.felsic_plutonic : 0;
 
 	    transfer = outbound_height_transfer_i * outbound_sediment_fraction[from];
 	    sediment_delta[from] -= transfer;

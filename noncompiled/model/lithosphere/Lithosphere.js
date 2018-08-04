@@ -298,11 +298,11 @@ function Lithosphere(grid, parameters) {
 
 	  	scratchpad.deallocate('update_subducted');
 	}
-	function calculate_deltas(lithosphere, megayears) {
+	function calculate_deltas(lithosphere, seconds) {
 
        	// CALCULATE DELTAS
 		LithosphereModeling.get_erosion(
-			surface_height.value(), megayears,
+			surface_height.value(), seconds,
 			material_density, surface_gravity,
 			lithosphere.top_crust, lithosphere.erosion, lithosphere.crust_scratch
 		);
@@ -310,7 +310,7 @@ function Lithosphere(grid, parameters) {
 
        	// CALCULATE DELTAS
 		LithosphereModeling.get_weathering(
-			surface_height.value(), megayears,
+			surface_height.value(), seconds,
 			material_density, surface_gravity,
 			lithosphere.top_crust, lithosphere.weathering, lithosphere.crust_scratch
 		);
@@ -318,7 +318,7 @@ function Lithosphere(grid, parameters) {
 
        	// CALCULATE DELTAS
 		LithosphereModeling.get_lithification(
-			surface_height.value(), megayears,
+			surface_height.value(), seconds,
 			material_density, surface_gravity,
 			lithosphere.top_crust, lithosphere.lithification, lithosphere.crust_scratch
 		);
@@ -326,7 +326,7 @@ function Lithosphere(grid, parameters) {
 
        	// CALCULATE DELTAS
 		LithosphereModeling.get_metamorphosis(
-			surface_height.value(), megayears,
+			surface_height.value(), seconds,
 			material_density, surface_gravity,
 			lithosphere.top_crust, lithosphere.metamorphosis, lithosphere.crust_scratch
 		);
@@ -340,7 +340,7 @@ function Lithosphere(grid, parameters) {
 		Crust.add_delta 		(globalized_deltas, lithosphere.lithification,			globalized_deltas);
 		Crust.add_delta 		(globalized_deltas, lithosphere.metamorphosis,			globalized_deltas);
 		Crust.add_delta 		(globalized_deltas, lithosphere.accretion,				globalized_deltas);
-		ScalarField.add_scalar 	(globalized_deltas.age, megayears, 						globalized_deltas.age); // aging
+		ScalarField.add_scalar 	(globalized_deltas.age, seconds, 						globalized_deltas.age); // aging
 	}
 
 	function integrate_deltas(world, plates) { 
@@ -469,7 +469,7 @@ function Lithosphere(grid, parameters) {
 		
 		assert_dependencies();
 
-		calculate_deltas		(this, megayears); 			// this creates a world map of all additions and subtractions to crust (e.g. from erosion, accretion, etc.)
+		calculate_deltas		(this, seconds); 			// this creates a world map of all additions and subtractions to crust (e.g. from erosion, accretion, etc.)
 	};
 
 	this.applyChanges = function(seconds){
