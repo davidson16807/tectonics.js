@@ -458,11 +458,11 @@ function Lithosphere(grid, parameters) {
 		}
 	}
 
-	var mean_supercontinent_cycle_duration = 150;
+	var mean_supercontinent_cycle_duration = 150 * Units.SECONDS_IN_MEGAYEAR;
 
 	this.calcChanges = function(seconds) {
 		var megayears = seconds / Units.SECONDS_IN_MEGAYEAR;
-		var max_perceivable_duration = 60*60*24*30 * megayears; // 1 day worth of real time at 30fps
+		var max_perceivable_duration = 60*60*24*30 * seconds; // 1 day worth of real time at 30fps
 		if (mean_supercontinent_cycle_duration > max_perceivable_duration) {
 			return;
 		}
@@ -474,7 +474,7 @@ function Lithosphere(grid, parameters) {
 
 	this.applyChanges = function(seconds){
 		var megayears = seconds / Units.SECONDS_IN_MEGAYEAR;
-		var max_perceivable_duration = 60*60*24*30 * megayears; // 1 day worth of real time at 30fps
+		var max_perceivable_duration = 60*60*24*30 * seconds; // 1 day worth of real time at 30fps
 		if (mean_supercontinent_cycle_duration > max_perceivable_duration) {
 			return;
 		}
