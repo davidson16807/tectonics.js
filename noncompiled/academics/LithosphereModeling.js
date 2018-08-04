@@ -411,13 +411,12 @@ LithosphereModeling.get_plate_velocity = function(plate_mask, buoyancy, material
 	// TODO: commit Schellart 2010 to the research folder!
 	// TODO: REMOVE HARDCODED CONSTANTS!
 	// TODO: make width dependant on the size of subducting region!
-	var width = 5000e3; // meters 
+	var width = 300e3; // meters 
 	var length = 600e3; // meters
 	var thickness = 100e3; // meters
 	var effective_area = Math.pow(thickness * length * width, 2/3); // m^2
 	var shape_parameter = 0.725; // unitless
 	var slab_dip_angle_constant = 4.025; // unitless
-	var SECONDS_PER_MILLION_EARTH_YEARS = 60*60*365.25*1e6; // seconds/My
 	var world_radius = 6367e3; // meters
 
 	var lateral_speed = scratchpad.getFloat32Raster(grid); 				
@@ -427,7 +426,7 @@ LithosphereModeling.get_plate_velocity = function(plate_mask, buoyancy, material
 	lateral_speed_per_force /= 18; 									// apply various unitless constants
 	lateral_speed_per_force *= shape_parameter; 					
 	lateral_speed_per_force /= slab_dip_angle_constant; 			
-	lateral_speed_per_force *= SECONDS_PER_MILLION_EARTH_YEARS; 	// convert to m/My per kiloNewton
+	lateral_speed_per_force *= Units.SECONDS_IN_MEGAYEAR; 			// convert to m/My per kiloNewton
 	lateral_speed_per_force /= world_radius;						// convert to radians/My per kiloNewton
 
 	ScalarField.mult_scalar 		(buoyancy, lateral_speed_per_force, lateral_speed); // radians/My

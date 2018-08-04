@@ -92,12 +92,12 @@ function Plate(grid, parameters)
 		this.center_of_mass.invalidate();
 	}
 	
-	this.move = function(timestep){
+	this.move = function(megayears){
 		assert_dependencies();
 
 		var world = this.world;
 
-		var rotation_matrix = LithosphereModeling.get_plate_rotation_matrix(this.velocity.value(), this.center_of_mass.value(), timestep);
+		var rotation_matrix = LithosphereModeling.get_plate_rotation_matrix(this.velocity.value(), this.center_of_mass.value(), megayears);
 
 		Matrix.mult_matrix(this.local_to_global_matrix, rotation_matrix, this.local_to_global_matrix);
 		Matrix.invert(this.local_to_global_matrix, this.global_to_local_matrix);
