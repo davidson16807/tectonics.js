@@ -377,8 +377,6 @@ LithosphereModeling.get_asthenosphere_velocity = function(pressure, velocity) {
 	return velocity;
 }
 
-// NOTE: Float32Array lacks the precision to represent velocity using seconds, 
-// so we break with convention here to express velocity using megayears
 LithosphereModeling.get_plate_velocity = function(plate_mask, buoyancy, material_viscosity, result) {
 	result = result || VectorRaster(plate_mask.grid);
 
@@ -428,7 +426,7 @@ LithosphereModeling.get_plate_velocity = function(plate_mask, buoyancy, material
 	lateral_speed_per_force /= 18; 									// apply various unitless constants
 	lateral_speed_per_force *= shape_parameter; 					
 	lateral_speed_per_force /= slab_dip_angle_constant; 			
-	lateral_speed_per_force *= Units.SECONDS_IN_MEGAYEAR; 			// convert to m/My per kiloNewton
+	// lateral_speed_per_force *= Units.SECONDS_IN_MEGAYEAR; 		// convert to m/My per kiloNewton
 	lateral_speed_per_force /= world_radius;						// convert to radians/My per kiloNewton
 
 	ScalarField.mult_scalar 		(buoyancy, lateral_speed_per_force, lateral_speed); // radians/My
@@ -466,7 +464,7 @@ LithosphereModeling.get_plate_center_of_mass = function(mass, plate_mask, scratc
 	return center_of_plate;
 }
 
-LithosphereModeling.get_plate_rotation_matrix = function(plate_velocity, center_of_plate, megayears) {
+LithosphereModeling.get_plate_rotation_matrix = function(plate_velocity, center_of_plate, seconds) {
 
   	var scratchpad = RasterStackBuffer.scratchpad;
   	scratchpad.allocate('get_plate_rotation_matrix');
@@ -503,14 +501,14 @@ LithosphereModeling.get_plate_rotation_matrix = function(plate_velocity, center_
 	var plate_velocity_magnitude = scratchpad.getFloat32Raster(grid);
 	VectorField.magnitude 			(plate_velocity, 					plate_velocity_magnitude);
 	var is_pulled = scratchpad.getUint8Raster(grid);
-	ScalarField.gt_scalar 			(plate_velocity_magnitude, 1e-4,	is_pulled);
+	ScalarField.gt_scalar 			(plate_velocity_magnitude, 3e-18,	is_pulled);
 // console.log(Uint8Dataset.sum(is_pulled))
 
 	var center_of_plate_angular_velocity_average = VectorDataset.weighted_average(center_of_plate_angular_velocity, is_pulled);
 	var center_of_world_angular_velocity_average = VectorDataset.weighted_average(center_of_world_angular_velocity, is_pulled);
 
-	var center_of_plate_rotation_vector = Vector.mult_scalar(center_of_plate_angular_velocity_average.x, center_of_plate_angular_velocity_average.y, center_of_plate_angular_velocity_average.z, megayears);
-	var center_of_world_rotation_vector = Vector.mult_scalar(center_of_world_angular_velocity_average.x, center_of_world_angular_velocity_average.y, center_of_world_angular_velocity_average.z, megayears);
+	var center_of_plate_rotation_vector = Vector.mult_scalar(center_of_plate_angular_velocity_average.x, center_of_plate_angular_velocity_average.y, center_of_plate_angular_velocity_average.z, seconds);
+	var center_of_world_rotation_vector = Vector.mult_scalar(center_of_world_angular_velocity_average.x, center_of_world_angular_velocity_average.y, center_of_world_angular_velocity_average.z, seconds);
 // debugger;
 
 	// TODO: negation shouldn't theoretically be needed! find out where the discrepancy lies and fix it the proper way! 

@@ -75,9 +75,9 @@ function Lithosphere(grid, parameters) {
 
 
 
-	function move_plates(plates, megayears) {
+	function move_plates(plates, seconds) {
 		for (var i=0, li=plates.length; i<li; ++i) {
-	 		plates[i].move(megayears, material_density, material_viscosity, surface_gravity);
+	 		plates[i].move(seconds, material_density, material_viscosity, surface_gravity);
 	 	}
 	}
 
@@ -472,7 +472,6 @@ function Lithosphere(grid, parameters) {
 	};
 
 	this.applyChanges = function(seconds){
-		var megayears = seconds / Units.SECONDS_IN_MEGAYEAR;
 		var max_perceivable_duration = 60*60*24*30 * seconds; // 1 day worth of real time at 30fps
 		if (mean_supercontinent_cycle_duration > max_perceivable_duration) {
 			return;
@@ -482,7 +481,7 @@ function Lithosphere(grid, parameters) {
 
 		integrate_deltas 		(this, this.plates); 		// this uses the map above in order to add and subtract crust
 
-		move_plates 			(this.plates, megayears); 	// this performs the actual plate movement
+		move_plates 			(this.plates, seconds); 	// this performs the actual plate movement
 		this.supercontinentCycle.update(seconds); 			// this periodically splits the world into plates
 		merge_plates_to_master	(this.plates, this); 		// this stitches plates together to create a world map
 		update_rifting			(this, this.plates); 		// this identifies rifting regions on the world map and adds crust to plates where needed
