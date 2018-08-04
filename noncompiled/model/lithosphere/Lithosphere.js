@@ -484,7 +484,7 @@ function Lithosphere(grid, parameters) {
 		integrate_deltas 		(this, this.plates); 		// this uses the map above in order to add and subtract crust
 
 		move_plates 			(this.plates, megayears); 	// this performs the actual plate movement
-		this.supercontinentCycle.update(megayears); 			// this periodically splits the world into plates
+		this.supercontinentCycle.update(seconds); 			// this periodically splits the world into plates
 		merge_plates_to_master	(this.plates, this); 		// this stitches plates together to create a world map
 		update_rifting			(this, this.plates); 		// this identifies rifting regions on the world map and adds crust to plates where needed
 		update_subducted 		(this, this.plates); 		// this identifies detaching regions on the world map and then removes crust from plates where needed

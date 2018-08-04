@@ -3,7 +3,7 @@
 function SupercontinentCycle(lithosphere, parameters){
 	parameters = parameters || {};
 
-	this.getRandomDuration = function() { return 150; };
+	this.getRandomDuration = function() { return 150 * Units.SECONDS_IN_MEGAYEAR; };
 		// function() { return sim.random.uniform(300, 500); };
 		// from wikipedia
 	
@@ -18,8 +18,8 @@ function SupercontinentCycle(lithosphere, parameters){
 		};
 	}
 };
-SupercontinentCycle.prototype.update = function(timestep) {
-	this.age += timestep;
+SupercontinentCycle.prototype.update = function(seconds) {
+	this.age += seconds;
 	if(this.isEnding() === true){
 		this.restart();
 	}
