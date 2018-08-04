@@ -40,7 +40,7 @@ function Plate(grid, parameters)
 		Float32Raster(grid),  
 		result => Crust.get_total_mass(self.crust, result)
 	); 
-	// the average density of the crust, in T/m^3
+	// the average density of the crust, in kg/m^3
 	this.density = new Memo(  
 		Float32Raster(grid),  
 		result => Crust.get_density(self.total_mass.value(), self.thickness.value(),	material_density.mafic_volcanic_min, result)

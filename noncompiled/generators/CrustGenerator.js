@@ -67,50 +67,50 @@ CrustGenerator.modern_earth_control_points = [
 	//abyss
 	new RockColumn({
 		displacement: -11000,
-		mafic_volcanic: 		2.890 * 7100, 
+		mafic_volcanic: 		2890. * 7100, 
 		age: 		250,
 	}),
 	//deep_ocean
 	new RockColumn({
 		displacement: -6000,  
-		mafic_volcanic: 	 	2.890 * 7100, // +/- 800, White McKenzie and O'nions 1992
+		mafic_volcanic: 	 	2890. * 7100, // +/- 800, White McKenzie and O'nions 1992
 		age: 		200,
 	}),
 	//shallow_ocean
 	new RockColumn({
 		displacement: -3682,	 // Charette & Smith 2010
-		mafic_volcanic: 		2.890 * 7100, // +/- 800, White McKenzie and O'nions 1992
+		mafic_volcanic: 		2890. * 7100, // +/- 800, White McKenzie and O'nions 1992
 		age: 		0,
 	}),
 	//shelf_bottom
 	new RockColumn({
 		displacement: -3200,    // encyclopedia britannica, "continental slope"
-		mafic_volcanic: 		2.890 * 7100,  // +/- 2900, estimate for shields, Zandt & Ammon 1995
-		sediment: 	2.500 * 5,
+		mafic_volcanic: 		2890. * 7100,  // +/- 2900, estimate for shields, Zandt & Ammon 1995
+		sediment: 	2500. * 5,
 		age: 		100,
 	}),
 	//shelf_top
 	new RockColumn({
 		displacement: -200,    //wikipedia
-		felsic_plutonic: 		2.700 * 0.85 * 28300,  
-		felsic_volcanic: 		2.700 * 0.15 * 28300,  
+		felsic_plutonic: 		2700. * 0.85 * 28300,  
+		felsic_volcanic: 		2700. * 0.15 * 28300,  
 		// "28300m" is back-calculated using isostatic model and estimates from control point for land
-		sediment: 	2.500 * 5,
+		sediment: 	2500. * 5,
 		age: 		100,
 	}),
 	//land
 	new RockColumn({
 		displacement: 840,    //Sverdrup & Fleming 1942
-		felsic_plutonic: 		2.700 * 0.85 * 36900,  // +/- 2900, estimate for shields, Zandt & Ammon 1995
-		felsic_volcanic: 		2.700 * 0.15 * 36900,  // +/- 2900, estimate for shields, Zandt & Ammon 1995
-		sediment: 	2.500 * 5,
+		felsic_plutonic: 		2700. * 0.85 * 36900,  // +/- 2900, estimate for shields, Zandt & Ammon 1995
+		felsic_volcanic: 		2700. * 0.15 * 36900,  // +/- 2900, estimate for shields, Zandt & Ammon 1995
+		sediment: 	2500. * 5,
 		age: 		1000,
 	}),
 	//mountain
 	new RockColumn({
 		displacement: 8848,
-		felsic_plutonic: 		2.700 * 0.85 *70000,  // +/- 2900, estimate for shields, Zandt & Ammon 1995
-		felsic_volcanic: 		2.700 * 0.15 *70000,  // +/- 2900, estimate for shields, Zandt & Ammon 1995
+		felsic_plutonic: 		2700. * 0.85 *70000,  // +/- 2900, estimate for shields, Zandt & Ammon 1995
+		felsic_volcanic: 		2700. * 0.15 *70000,  // +/- 2900, estimate for shields, Zandt & Ammon 1995
 		age: 		1000,
 	})
 ];

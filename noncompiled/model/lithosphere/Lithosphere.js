@@ -40,12 +40,12 @@ function Lithosphere(grid, parameters) {
 		Float32Raster(grid),  
 		result => Crust.get_thickness(self.total_crust, material_density, result)
 	); 
-	// total mass of the crust in tons
+	// total mass of the crust in kg
 	this.total_mass = new Memo(  
 		Float32Raster(grid),  
 		result => Crust.get_total_mass(self.total_crust, result)
 	); 
-	// the average density of the crust, in T/m^3
+	// the average density of the crust, in kg/m^3
 	this.density = new Memo(
 		Float32Raster(grid),  
 		result => Crust.get_density(self.total_mass.value(), self.thickness.value(),	material_density.mafic_volcanic_min, result)

@@ -35,13 +35,13 @@ LithosphereModeling.get_lithification = function(
 	ScalarField.add_scalar_term	(overpressure, top_crust.sediment, surface_gravity, overpressure);
 
 	var excess_overpressure = scratchpad.getFloat32Raster(grid); 
-	ScalarField.sub_scalar(overpressure, 2.2e3, excess_overpressure); 
-	// NOTE: 2.2e3 kiloPascals is the pressure equivalent of 500ft of sediment @ 1500T/m^3 density
+	ScalarField.sub_scalar(overpressure, 2.2e6, excess_overpressure); 
+	// NOTE: 2.2e6 Pascals is the pressure equivalent of 500ft of sediment @ 1500kg/m^3 density
   	// 500ft from http://wiki.aapg.org/Sandstone_diagenetic_processes
   	// TODO: rephrase in terms of lithostatic pressure + geothermal gradient
 
-	// convert excess_overpressure to tons
-	// this represents the number of tons of sediment that have lithified
+	// convert excess_overpressure to kg
+	// this represents the number of kg of sediment that have lithified
 	var lithified_meters = scratchpad.getFloat32Raster(grid); 
 	ScalarField.div_scalar	(excess_overpressure, surface_gravity, 	lithified_meters);
 
@@ -71,20 +71,20 @@ LithosphereModeling.get_metamorphosis = function(
     // Crust.mult_profile(top_crust, [2500, 2700, 2700, 2700, 2890, 0], crust_scratch);
 
 	// TODO: include overpressure from ocean water
-	var overpressure = scratchpad.getFloat32Raster(grid); // NOTE: in kiloPascals
+	var overpressure = scratchpad.getFloat32Raster(grid); // NOTE: in Pascals
 	Float32Raster.fill 			(overpressure, 0);
 	// TODO: simply math now that we're using mass, not thickness
 	ScalarField.add_scalar_term	(overpressure, top_crust.sediment, 		surface_gravity, 	overpressure);
 	ScalarField.add_scalar_term	(overpressure, top_crust.sedimentary, 	surface_gravity, 	overpressure);
 	//TODO: convert igneous to metamorphic
 	var excess_overpressure = scratchpad.getFloat32Raster(grid); // pressure at bottom of the layer that's beyond which is necessary to metamorphose 
-	ScalarField.sub_scalar(overpressure, 300e3, excess_overpressure); 
-	// NOTE: 300e3 Pascals is the pressure equivalent of 11km of sedimentary rock @ 2700kg/m^3 density
+	ScalarField.sub_scalar(overpressure, 300e6, excess_overpressure); 
+	// NOTE: 300e6 Pascals is the pressure equivalent of 11km of sedimentary rock @ 2700kg/m^3 density
   	// 300 MPa from https://www.tulane.edu/~sanelson/eens212/typesmetamorph.htm
   	// TODO: rephrase in terms of lithostatic pressure + geothermal gradient
 
-	// convert excess_overpressure to tons
-	// this represents the number of tons of sediment that have lithified
+	// convert excess_overpressure to kg
+	// this represents the number of kg of sediment that have lithified
 	var metamorphosed_meters = scratchpad.getFloat32Raster(grid);  
 	ScalarField.div_scalar	(excess_overpressure, surface_gravity, metamorphosed_meters);
 
@@ -422,18 +422,18 @@ LithosphereModeling.get_plate_velocity = function(plate_mask, buoyancy, material
 	var lateral_speed = scratchpad.getFloat32Raster(grid); 				
 	var lateral_speed_per_force  = 1;
 	lateral_speed_per_force *= effective_area; 						// start with m^2
-	lateral_speed_per_force /= material_viscosity.mantle; 			// convert to m/s per kiloNewton
+	lateral_speed_per_force /= material_viscosity.mantle; 			// convert to m/s per Newton
 	lateral_speed_per_force /= 18; 									// apply various unitless constants
 	lateral_speed_per_force *= shape_parameter; 					
 	lateral_speed_per_force /= slab_dip_angle_constant; 			
-	// lateral_speed_per_force *= Units.SECONDS_IN_MEGAYEAR; 		// convert to m/My per kiloNewton
-	lateral_speed_per_force /= world_radius;						// convert to radians/My per kiloNewton
+	// lateral_speed_per_force *= Units.SECONDS_IN_MEGAYEAR; 		// convert to m/My per Newton
+	lateral_speed_per_force /= world_radius;						// convert to radians/My per Newton
 
 	ScalarField.mult_scalar 		(buoyancy, lateral_speed_per_force, lateral_speed); // radians/My
  	// 	scratchpad.deallocate('get_plate_velocity');
 	// return lateral_speed;
 
-	// find slab pull force field (kiloNewtons/m^3)
+	// find slab pull force field (Newtons/m^3)
 	// buoyancy = slab_pull * normalize(gradient(mask))
 	// lateral_velocity = buoyancy * normalize(gradient(mask))
 	// NOTE: result does double duty for performance reasons
