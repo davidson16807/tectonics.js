@@ -76,7 +76,7 @@ function Simulation (parameters) {
 
 		this.elapsed_time += this.speed * seconds;
 
-		var timestep = this.speed * seconds / Units.SECONDS_IN_MEGAYEAR;
+		var timestep = this.speed * seconds;
 
 		_model.invalidate(timestep);
 		_model.calcChanges(timestep);

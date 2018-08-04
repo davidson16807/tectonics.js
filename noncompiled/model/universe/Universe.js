@@ -242,7 +242,7 @@ function Universe(parameters) {
 		};
 		assert_dependencies();
 
-		var seconds = timestep * Units.SECONDS_IN_MEGAYEAR;
+		var seconds = timestep;
 		advance(this.config, 
 				seconds,
 				this.config,

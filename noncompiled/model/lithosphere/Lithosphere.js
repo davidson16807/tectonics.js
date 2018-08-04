@@ -461,18 +461,20 @@ function Lithosphere(grid, parameters) {
 	var mean_supercontinent_cycle_duration = 150;
 
 	this.calcChanges = function(timestep) {
-		var max_perceivable_duration = 60*60*24*30 * timestep; // 1 day worth of real time at 30fps
+		var megayears = timestep / Units.SECONDS_IN_MEGAYEAR;
+		var max_perceivable_duration = 60*60*24*30 * megayears; // 1 day worth of real time at 30fps
 		if (mean_supercontinent_cycle_duration > max_perceivable_duration) {
 			return;
 		}
 		
 		assert_dependencies();
 
-		calculate_deltas		(this, timestep); 			// this creates a world map of all additions and subtractions to crust (e.g. from erosion, accretion, etc.)
+		calculate_deltas		(this, megayears); 			// this creates a world map of all additions and subtractions to crust (e.g. from erosion, accretion, etc.)
 	};
 
 	this.applyChanges = function(timestep){
-		var max_perceivable_duration = 60*60*24*30 * timestep; // 1 day worth of real time at 30fps
+		var megayears = timestep / Units.SECONDS_IN_MEGAYEAR;
+		var max_perceivable_duration = 60*60*24*30 * megayears; // 1 day worth of real time at 30fps
 		if (mean_supercontinent_cycle_duration > max_perceivable_duration) {
 			return;
 		}
@@ -481,8 +483,8 @@ function Lithosphere(grid, parameters) {
 
 		integrate_deltas 		(this, this.plates); 		// this uses the map above in order to add and subtract crust
 
-		move_plates 			(this.plates, timestep); 	// this performs the actual plate movement
-		this.supercontinentCycle.update(timestep); 			// this periodically splits the world into plates
+		move_plates 			(this.plates, megayears); 	// this performs the actual plate movement
+		this.supercontinentCycle.update(megayears); 			// this periodically splits the world into plates
 		merge_plates_to_master	(this.plates, this); 		// this stitches plates together to create a world map
 		update_rifting			(this, this.plates); 		// this identifies rifting regions on the world map and adds crust to plates where needed
 		update_subducted 		(this, this.plates); 		// this identifies detaching regions on the world map and then removes crust from plates where needed

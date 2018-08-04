@@ -152,7 +152,7 @@ function Atmosphere(grid, parameters) {
 			return;
 		};
 		assert_dependencies();
-		var seconds = timestep * Units.SECONDS_IN_MEGAYEAR;
+		var seconds = timestep;
 
 		if (this.sealevel_temp === void 0 || seconds > 7*Units.SECONDS_IN_DAY) {
 			this.sealevel_temp = Float32Raster.copy(this.long_term_sealevel_temp.value(), 	this.sealevel_temp);
