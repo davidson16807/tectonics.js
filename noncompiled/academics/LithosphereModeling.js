@@ -377,6 +377,8 @@ LithosphereModeling.get_asthenosphere_velocity = function(pressure, velocity) {
 	return velocity;
 }
 
+// NOTE: Float32Array lacks the precision to represent velocity using seconds, 
+// so we break with convention here to express velocity using megayears
 LithosphereModeling.get_plate_velocity = function(plate_mask, buoyancy, material_viscosity, result) {
 	result = result || VectorRaster(plate_mask.grid);
 
