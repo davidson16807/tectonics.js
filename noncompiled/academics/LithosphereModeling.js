@@ -17,7 +17,7 @@ var LithosphereModeling = {};
 //    geothermal temperature model
 //    geostatic pressure
 LithosphereModeling.get_lithification = function(
-		surface_height, timestep,
+		surface_height, megayears,
 		material_density, surface_gravity,
 		top_crust, crust_delta, crust_scratch){
 	var grid = top_crust.grid;
@@ -58,7 +58,7 @@ LithosphereModeling.get_lithification = function(
 
 
 LithosphereModeling.get_metamorphosis = function(
-		surface_height, timestep,
+		surface_height, megayears,
 		material_density, surface_gravity,
 		top_crust, crust_delta, crust_scratch){
 
@@ -132,7 +132,7 @@ LithosphereModeling.get_metamorphosis = function(
 
 // "weathering" is the process by which rock is converted to sediment 
 LithosphereModeling.get_weathering = function(
-		surface_height, timestep,
+		surface_height, megayears,
 		material_density, surface_gravity,
 		top_crust, crust_delta, crust_scratch){
   var grid = surface_height.grid;
@@ -157,7 +157,7 @@ LithosphereModeling.get_weathering = function(
     average_difference,  
     weathering_factor *       	// apply weathering factor to get height change per unit precip  
     precipitation *         	// apply precip to get height change 
-    timestep *         			// 
+    megayears *         			// 
     material_density.felsic_plutonic *      	// apply density to get mass converted to sediment 
     surface_gravity/earth_surface_gravity, //correct for planet's gravity 
     weathering) 
@@ -204,7 +204,7 @@ LithosphereModeling.get_weathering = function(
 
 
 LithosphereModeling.get_erosion = function(
-		surface_height, timestep,
+		surface_height, megayears,
 		material_density, surface_gravity,
 		top_crust, crust_delta, crust_scratch){
   	var scratchpad = RasterStackBuffer.scratchpad;
@@ -242,7 +242,7 @@ LithosphereModeling.get_erosion = function(
 	    from = arrow[0];
 	    to = arrow[1];
 	    height_difference = surface_height[from] - surface_height[to];
-	    outbound_height_transfer[from] += height_difference > 0? height_difference * precipitation * timestep * erosiveFactor * material_density.felsic_plutonic : 0;
+	    outbound_height_transfer[from] += height_difference > 0? height_difference * precipitation * megayears * erosiveFactor * material_density.felsic_plutonic : 0;
 	}
 
 	var outbound_sediment_fraction = crust_scratch.sediment;
@@ -294,7 +294,7 @@ LithosphereModeling.get_erosion = function(
 	    from = arrow[0];
 	    to = arrow[1];
 	    height_difference = surface_height[from] - surface_height[to];
-	    outbound_height_transfer_i = height_difference > 0? height_difference * precipitation * timestep * erosiveFactor * material_density.felsic_plutonic : 0;
+	    outbound_height_transfer_i = height_difference > 0? height_difference * precipitation * megayears * erosiveFactor * material_density.felsic_plutonic : 0;
 
 	    transfer = outbound_height_transfer_i * outbound_sediment_fraction[from];
 	    sediment_delta[from] -= transfer;
@@ -465,7 +465,7 @@ LithosphereModeling.get_plate_center_of_mass = function(mass, plate_mask, scratc
 	return center_of_plate;
 }
 
-LithosphereModeling.get_plate_rotation_matrix = function(plate_velocity, center_of_plate, timestep) {
+LithosphereModeling.get_plate_rotation_matrix = function(plate_velocity, center_of_plate, megayears) {
 
   	var scratchpad = RasterStackBuffer.scratchpad;
   	scratchpad.allocate('get_plate_rotation_matrix');
@@ -508,8 +508,8 @@ LithosphereModeling.get_plate_rotation_matrix = function(plate_velocity, center_
 	var center_of_plate_angular_velocity_average = VectorDataset.weighted_average(center_of_plate_angular_velocity, is_pulled);
 	var center_of_world_angular_velocity_average = VectorDataset.weighted_average(center_of_world_angular_velocity, is_pulled);
 
-	var center_of_plate_rotation_vector = Vector.mult_scalar(center_of_plate_angular_velocity_average.x, center_of_plate_angular_velocity_average.y, center_of_plate_angular_velocity_average.z, timestep);
-	var center_of_world_rotation_vector = Vector.mult_scalar(center_of_world_angular_velocity_average.x, center_of_world_angular_velocity_average.y, center_of_world_angular_velocity_average.z, timestep);
+	var center_of_plate_rotation_vector = Vector.mult_scalar(center_of_plate_angular_velocity_average.x, center_of_plate_angular_velocity_average.y, center_of_plate_angular_velocity_average.z, megayears);
+	var center_of_world_rotation_vector = Vector.mult_scalar(center_of_world_angular_velocity_average.x, center_of_world_angular_velocity_average.y, center_of_world_angular_velocity_average.z, megayears);
 // debugger;
 
 	// TODO: negation shouldn't theoretically be needed! find out where the discrepancy lies and fix it the proper way! 
