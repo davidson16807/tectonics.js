@@ -17,7 +17,7 @@ matrix:
        - npm install -g codecov@2.x
        - codecov
       
-# notifications:
+# notifications: 
 #   irc:
 #     channels:
 #       - "chat.freenode.net#example"
