@@ -1,0 +1,6 @@
+extends: eslint:recommended
+parserOptions:
+  ecmaVersion: 5
+env:
+  browser: true
+  node: true
