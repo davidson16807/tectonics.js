@@ -5,8 +5,8 @@ module.exports = function (config) {
 		browsers: [ 'ChromeHeadless' ],
 		frameworks: [ 'qunit' ],
 		files: [
-			'src/MyLib.js',
-			'test/MyLib.test.js'
+			'postcompiled/utils/Rasters.js',
+			'test/utils/Rasters.test.js'
 		],
 		autoWatch: false,
 		singleRun: true,
