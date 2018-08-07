@@ -16,17 +16,16 @@ var tetrahedron = new Grid({
 	],
 });
 
-
-// "abelian_group_tests" tests a operation and its inverse to see whether it functions as an Abelian (aka "commutative") group from Abstract Algebra
+// "algabraic_group_tests" tests a operation and its inverse to see whether it functions as a group from Abstract Algebra
 // NOTE: b and c must produce valid invertible values, i.e. they must not contain edge cases like NaNs or 0s
-function abelian_group_tests(op, op_name, inv, inv_name, args){
+function algabraic_group_tests(op, op_name, inv, inv_name, args){
 	let a 	= args.a; 
 	let b 	= args.b;
 	let ab 	= args.ab;
 	let abinv = args.abinv;
 	let c 	= args.c;
 	let I 	= args.I;
-	QUnit.test(`${op_name}/${inv_name} Abelian Group tests`, function (assert) {
+	QUnit.test(`${op_name}/${inv_name} Algebraic Group tests`, function (assert) {
 		assert.deepEqual( a, a, 
 			`this test ensures ${op_name} and ${inv_name} can be tested using QUnit's assert.deepEqual() function`
 		);
@@ -87,23 +86,6 @@ function abelian_group_tests(op, op_name, inv, inv_name, args){
 		assert.deepEqual( inv(c, c), I,
 			`${inv_name} needs the inverse property: an operation exists that returns a value to the identity`
 		);
-		
-
-		assert.deepEqual( 
-			op( a, b ), 
-			op( b, a ), 
-			`${op_name} needs the commutative property: values in an operation can be swapped to the same effect`,
-		);
-		assert.deepEqual( 
-			op( a, c ), 
-			op( c, a ), 
-			`${op_name} needs the commutative property: values in an operation can be swapped to the same effect`,
-		);
-		assert.deepEqual( 
-			op( b, c ), 
-			op( c, b ), 
-			`${op_name} needs the commutative property: values in an operation can be swapped to the same effect`,
-		);
 
 
 		assert.deepEqual( 
@@ -136,6 +118,37 @@ function abelian_group_tests(op, op_name, inv, inv_name, args){
 			inv(c, b),
 			`${inv_name} needs to behave consistantly with the identity`,
 		);
+	});
+}
+
+// "abelian_group_tests" tests a operation and its inverse to see whether it functions as an Abelian (aka "commutative") group from Abstract Algebra
+// NOTE: b and c must produce valid invertible values, i.e. they must not contain edge cases like NaNs or 0s
+function abelian_group_tests 	(op, op_name, inv, inv_name, args){
+	     algabraic_group_tests 	(op, op_name, inv, inv_name, args);
+	let a 	= args.a; 
+	let b 	= args.b;
+	let ab 	= args.ab;
+	let abinv = args.abinv;
+	let c 	= args.c;
+	let I 	= args.I;
+	QUnit.test(`${op_name}/${inv_name} Abelian Group tests`, function (assert) {
+
+		assert.deepEqual( 
+			op( a, b ), 
+			op( b, a ), 
+			`${op_name} needs the commutative property: values in an operation can be swapped to the same effect`,
+		);
+		assert.deepEqual( 
+			op( a, c ), 
+			op( c, a ), 
+			`${op_name} needs the commutative property: values in an operation can be swapped to the same effect`,
+		);
+		assert.deepEqual( 
+			op( b, c ), 
+			op( c, b ), 
+			`${op_name} needs the commutative property: values in an operation can be swapped to the same effect`,
+		);
+		
 	});
 }
 
