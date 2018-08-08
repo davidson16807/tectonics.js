@@ -2,7 +2,7 @@
 // Author: Philippe Rathé <prathe@gmail.com>
 // modified by: Carl Davidson <diadophus@gmail.com>
 QUnit.get_approx = function(percentage) {
-	var percentage = percentage || 0.01;
+	var percentage = percentage || 0.0001;
 
 	// Stack to decide between skip/abort functions
 	var callers = [];
