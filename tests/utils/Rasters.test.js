@@ -177,8 +177,8 @@ function commutative_inverse_tests(op, op_name, inv, inv_name, args){
 	});
 }
 
-function commutativity_tests 	(op, op_name, inv, inv_name, args){
-	QUnit.test(`${op_name}/${inv_name} Commutativity tests`, function (assert) {
+function commutativity_tests 	(op, op_name, args){
+	QUnit.test(`${op_name} Commutativity tests`, function (assert) {
 		for (var a_name in args) {
 			for (var b_name in args) {
 				let a = args[a_name];
@@ -186,7 +186,7 @@ function commutativity_tests 	(op, op_name, inv, inv_name, args){
 				assert.deepApprox( 
 					op( a, b ), 
 					op( b, a ), 
-					`${op_name}(${a_name}, ${b_name}) needs the commutative property: values in an operation can be swapped to the same effect`,
+					`${op_name}(${a_name}, ${b_name}) must equal ${op_name}(${b_name}, ${a_name})`,
 				);
 			}
 		}
@@ -273,33 +273,54 @@ function algabraic_group_tests	(op, op_name, inv, inv_name, A, B){
 	inverse_tests 			(op, op_name, inv, inv_name,  A, B);
 }
 
+// "algabraic_monoid_tests" tests a operation to see whether it functions as a monoid from Abstract Algebra
+function algabraic_commutative_semigroup_tests	(op, op_name, args){
+	binary_operator_tests	(op, op_name,  	args, args);
+	
+	closure_tests			(op, op_name,  	args, args);
+	associativity_tests		(op, op_name, 	args, args);
+	commutativity_tests		(op, op_name, 	args);
+}
+
+// "algabraic_monoid_tests" tests a operation to see whether it functions as a monoid from Abstract Algebra
+function algabraic_commutative_monoid_tests	(op, op_name, args){
+	binary_operator_tests	(op, op_name,  	args, args);
+	
+	closure_tests			(op, op_name,  	args, args);
+	associativity_tests		(op, op_name, 	args, args);
+	identity_tests			(op, op_name, 	args, args);
+	commutativity_tests		(op, op_name, 	args);
+}
+
 // "algabraic_abelian_group_tests" tests a operation and its inverse to see whether it functions as an Abelian (aka "commutative") group from Abstract Algebra
 function algabraic_abelian_group_tests 	(op, op_name, inv, inv_name, args){
 	algabraic_group_tests 		(op, op_name,inv, inv_name, 	args, args);
 
+	commutativity_tests		 	(op, op_name, 					args);
 	commutative_inverse_tests 	(op, op_name, inv, inv_name, 	args);
-	commutativity_tests		 	(op, op_name, inv, inv_name, 	args);
 }
 
 // "algabraic_abelian_group_tests" tests a set of four operations to see whether it consitutes a "Field" from Abstract Algebra
-function field_tests	(add, add_name,  sub, sub_name, happy_add_args,	edgy_add_args,
+function algabraic_field_tests	(add, add_name,  sub, sub_name, happy_add_args,	edgy_add_args,
 						 mult,mult_name, div, div_name, happy_mult_args,edgy_mult_args) {
 
-	algabraic_abelian_group_tests	(add, add_name, sub, sub_name, 		happy_add_args);
+	algabraic_abelian_group_tests		(add, add_name, sub, sub_name, 		happy_add_args);
 
-	algabraic_group_tests			(add, add_name, sub, sub_name, 		edgy_add_args, edgy_add_args);
+	algabraic_commutative_semigroup_tests(add, add_name, 					edgy_add_args);
+	algabraic_unital_magma_tests		(sub, sub_name, 					edgy_add_args, 	edgy_add_args);
 
-	algabraic_abelian_group_tests	(mult, mult_name, div, div_name, 	happy_mult_args);
+	algabraic_abelian_group_tests		(mult, mult_name, div, div_name, 	happy_mult_args);
 
-	algabraic_group_tests			(mult, mult_name, div, div_name, 	edgy_mult_args, edgy_mult_args);
+	algabraic_commutative_semigroup_tests(mult, mult_name, 					edgy_mult_args);
+	algabraic_unital_magma_tests		(div, div_name, 					edgy_mult_args,	edgy_mult_args);
 
-	distributivity_tests			(add, add_name, mult, mult_name,	happy_add_args	);
-	distributivity_tests			(add, add_name, mult, mult_name,	happy_mult_args	);
-	distributivity_tests			(add, add_name, div,  div_name, 	happy_mult_args	); // NOTE: don't run div on happy_add_args, since div0 errors can occur
+	distributivity_tests				(add, add_name, mult, mult_name,	happy_add_args	);
+	distributivity_tests				(add, add_name, mult, mult_name,	happy_mult_args	);
+	distributivity_tests				(add, add_name, div,  div_name, 	happy_mult_args	); // NOTE: don't run div on happy_add_args, since div0 errors can occur
 
-	distributivity_tests			(sub, sub_name, mult, mult_name,	happy_add_args	);
-	distributivity_tests			(sub, sub_name, mult, mult_name,	happy_mult_args	);
-	distributivity_tests			(sub, sub_name, div,  div_name, 	happy_mult_args	); // NOTE: don't run div on happy_add_args, since div0 errors can occur
+	distributivity_tests				(sub, sub_name, mult, mult_name,	happy_add_args	);
+	distributivity_tests				(sub, sub_name, mult, mult_name,	happy_mult_args	);
+	distributivity_tests				(sub, sub_name, div,  div_name, 	happy_mult_args	); // NOTE: don't run div on happy_add_args, since div0 errors can occur
 }
 
 
@@ -524,7 +545,7 @@ let mult_vector_field_edgy_args = {
 //	Vector.div_scalar, "Vector.div_scalar",
 //	mult_vector_field_happy_args, mult_scalar_field_happy_args,
 //);
-//field_tests(
+//algabraic_field_tests(
 //	Vector.add_vector, "Vector.add_vector",
 //	Vector.sub_vector, "Vector.sub_vector",
 //	add_vector_field_happy_args, 
@@ -579,37 +600,34 @@ algabraic_unital_magma_tests(
 	mult_scalar_field_edgy_args, mult_uniform_args,
 );
 
+algabraic_semigroup_tests(
+	ScalarField.min_scalar, "ScalarField.min_scalar",
+	mult_scalar_field_happy_args, mult_uniform_args,
+);
+algabraic_semigroup_tests(
+	ScalarField.max_scalar, "ScalarField.max_scalar",
+	mult_scalar_field_happy_args, mult_uniform_args,
+);
 
 
-field_tests(
+algabraic_field_tests(
 	ScalarField.add_field, "ScalarField.add_field",
 	ScalarField.sub_field, "ScalarField.sub_field",
 	add_scalar_field_happy_args, 
-	add_scalar_field_happy_args, 
+	add_scalar_field_edgy_args, 
 	ScalarField.mult_field,"ScalarField.mult_field",
 	ScalarField.div_field, "ScalarField.div_field",
 	mult_scalar_field_happy_args, 
+	mult_scalar_field_edgy_args, 
+);
+
+algabraic_commutative_semigroup_tests(
+	ScalarField.min_field, "ScalarField.min_field",
 	mult_scalar_field_happy_args, 
 );
-algabraic_semigroup_tests(
-	ScalarField.add_field, "ScalarField.add_field",
-	add_scalar_field_edgy_args, 
-	add_scalar_field_edgy_args, 
-);
-algabraic_semigroup_tests(
-	ScalarField.mult_field,"ScalarField.mult_field",
-	mult_scalar_field_edgy_args, 
-	mult_scalar_field_edgy_args, 
-);
-algabraic_unital_magma_tests(
-	ScalarField.sub_field, "ScalarField.sub_field",
-	add_scalar_field_edgy_args, 
-	add_scalar_field_edgy_args, 
-);
-algabraic_unital_magma_tests(
-	ScalarField.div_field, "ScalarField.div_field",
-	mult_scalar_field_edgy_args, 
-	mult_scalar_field_edgy_args, 
+algabraic_commutative_semigroup_tests(
+	ScalarField.max_field, "ScalarField.max_field",
+	mult_scalar_field_happy_args, 
 );
 
 
@@ -676,15 +694,16 @@ algabraic_unital_magma_tests(
 
 
 
-field_tests(
-	VectorField.add_vector_field, "VectorField.add_vector_field",
-	VectorField.sub_vector_field, "VectorField.sub_vector_field",
-	add_vector_field_happy_args, 
-	add_vector_field_happy_args, 
-	VectorField.hadamard_vector_field,"VectorField.hadamard_vector_field",
-	VectorField.div_vector_field, "VectorField.div_vector_field",
-	mult_vector_field_happy_args, 
-	mult_vector_field_happy_args, 
+
+algabraic_group_tests(
+	VectorField.add_scalar_field, "VectorField.add_scalar_field",
+	VectorField.sub_scalar_field, "VectorField.sub_scalar_field",
+	add_vector_field_happy_args, add_scalar_field_happy_args,
+);
+algabraic_group_tests(
+	VectorField.mult_scalar_field, "VectorField.mult_scalar_field",
+	VectorField.div_scalar_field, "VectorField.div_scalar_field",
+	mult_vector_field_happy_args, mult_scalar_field_happy_args,
 );
 algabraic_semigroup_tests(
 	VectorField.add_scalar_field, "VectorField.add_scalar_field",
@@ -701,6 +720,20 @@ algabraic_unital_magma_tests(
 algabraic_unital_magma_tests(
 	VectorField.div_scalar_field, "VectorField.div_scalar_field",
 	mult_vector_field_edgy_args, mult_scalar_field_edgy_args,
+);
+
+
+
+
+algabraic_field_tests(
+	VectorField.add_vector_field, "VectorField.add_vector_field",
+	VectorField.sub_vector_field, "VectorField.sub_vector_field",
+	add_vector_field_happy_args, 
+	add_vector_field_edgy_args, 
+	VectorField.hadamard_vector_field,"VectorField.hadamard_vector_field",
+	VectorField.div_vector_field, "VectorField.div_vector_field",
+	mult_vector_field_happy_args, 
+	mult_vector_field_edgy_args, 
 );
 
 
