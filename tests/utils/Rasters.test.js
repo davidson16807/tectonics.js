@@ -15,7 +15,7 @@ var tetrahedron = new Grid({
 		{ x: 0, y: 0, z: 1 },
 	],
 });
-function framework_tests(type_name, a,b){
+function framework_tests(type_name, a, b){
 	QUnit.test(`${type_name} Framework tests`, function (assert) {
 
 		assert.deepApprox( a, a, 
@@ -27,17 +27,17 @@ function framework_tests(type_name, a,b){
 	});
 }
 
-function associativity_tests(op, op_name, inv, inv_name, valid){
+function associativity_tests(op, op_name, inv, inv_name, A, B){
 	QUnit.test(`${op_name}/${inv_name} Associativity tests`, function (assert) {
-		for (var a_name in valid) {
-			for (var b_name in valid) {
-				for (var c_name in valid) {
-					let a = valid[a_name];
-					let b = valid[b_name];
-					let c = valid[c_name];
+		for (var a_name in A) {
+			for (var b_name in B) {
+				for (var c_name in B) {
+					let a = A[a_name];
+					let b = B[b_name];
+					let c = B[c_name];
 					assert.deepApprox( 
 						op( op(a, b), c ), 
-						op( a, op(b, c) ), 
+						op( op(a, c), b ), 
 						`${op_name}(${a_name}, ${op_name}(${b_name}, ${c_name})) needs the associative property: values can be applied in any order to the same effect`
 					);
 				}
@@ -47,58 +47,51 @@ function associativity_tests(op, op_name, inv, inv_name, valid){
 }
 
 
-function closure_tests(op, op_name, inv, inv_name, args){
-	let a 	= args.a; 
-	let b 	= args.b;
-	let ab 	= args.ab;
-	let abinv = args.abinv;
-
-	// TODO: generalize this not to depend on a precomputed value, just check it's the right type
-	return
+function closure_tests(op, op_name, inv, inv_name, A, B){
 	QUnit.test(`${op_name}/${inv_name} Closure tests`, function (assert) {
 
-		assert.deepApprox( op(a, b), ab,
-			`${op_name}(a,b) needs the closure property: any value can be applied to produce another valid value`
-		);
-		
-		assert.deepApprox( inv(a, b), abinv,
-			`${inv_name}(a,b) needs the closure property: any value can be applied to produce another valid value`
-		);
+		for (var a_name in A) {
+			for (var b_name in B) {
+				let a = A[a_name];
+				let b = B[b_name];
+				assert.equal( typeof op(a, b), typeof a,
+					`${op_name}(a,b) needs the closure property: any value can be applied to produce another valid value`
+				);
+				assert.equal( op(a, b).constructor.name, a.constructor.name,
+					`${op_name}(a,b) needs the closure property: any value can be applied to produce another valid value`
+				);
+			}
+		}
 	});
 }
-function identity_tests(op, op_name, inv, inv_name, valid){
-	let I 	= valid.I;
+function identity_tests(op, op_name, inv, inv_name, A, B){
+	let Ia 	= A.I;
+	let Ib 	= B.I;
 
 	QUnit.test(`${op_name}/${inv_name} Identity tests`, function (assert) {
-		for (var a_name in valid) {
-			let a = valid[a_name];
-			assert.deepApprox( op(a, I), a,
+		for (var a_name in A) {
+			let a = A[a_name];
+			assert.deepApprox( op(a, Ib), a,
 				`${op_name}(${a_name}, I) needs the identity property: a value exists that can be applied that has no effect`
 			);
 		}
-	});
-}
-function inverse_tests(op, op_name, inv, inv_name, valid){
-	let I 	= valid.I;
-
-	QUnit.test(`${op_name}/${inv_name} Inverse tests`, function (assert) {
-		for (var a_name in valid) {
-			let a = valid[a_name];
-			assert.deepApprox( inv(a, a), I,
-				`${inv_name}(${a_name}, ${a_name}) needs the inverse property: an operation exists that returns a value to the identity`
+		for (var b_name in B) {
+			let b = B[b_name];
+			assert.deepApprox( op(Ia, b), b,
+				`${op_name}(${b_name}, I) needs the identity property: a value exists that can be applied that has no effect`
 			);
 		}
 	});
 }
 
-function inverse_consistency_tests(op, op_name, inv, inv_name, valid){
-	let I 	= valid.I;
+function inverse_tests(op, op_name, inv, inv_name, A, B){
+	let I 	= A.I;
 
 	QUnit.test(`${op_name}/${inv_name} Inverse consistency tests`, function (assert) {
-		for (var a_name in valid) {
-			for (var b_name in valid) {
-				let a = valid[a_name];
-				let b = valid[b_name];
+		for (var a_name in A) {
+			for (var b_name in B) {
+				let a = A[a_name];
+				let b = B[b_name];
 				assert.deepApprox( 
 					op( a, inv( I, b ) ), 
 					inv(a, b),
@@ -108,13 +101,25 @@ function inverse_consistency_tests(op, op_name, inv, inv_name, valid){
 		}
 	});
 }
+function commutative_inverse_tests(op, op_name, inv, inv_name, args){
+	let I 	= args.I;
 
-function commutativity_tests 	(op, op_name, inv, inv_name, valid){
+	QUnit.test(`${op_name}/${inv_name} Inverse tests`, function (assert) {
+		for (var a_name in args) {
+			let a = args[a_name];
+			assert.deepApprox( inv(a, a), I,
+				`${inv_name}(${a_name}, ${a_name}) needs the inverse property: an operation exists that returns a value to the identity`
+			);
+		}
+	});
+}
+
+function commutativity_tests 	(op, op_name, inv, inv_name, args){
 	QUnit.test(`${op_name}/${inv_name} Commutativity tests`, function (assert) {
-		for (var a_name in valid) {
-			for (var b_name in valid) {
-				let a = valid[a_name];
-				let b = valid[b_name];
+		for (var a_name in args) {
+			for (var b_name in args) {
+				let a = args[a_name];
+				let b = args[b_name];
 				assert.deepApprox( 
 					op( a, b ), 
 					op( b, a ), 
@@ -125,14 +130,14 @@ function commutativity_tests 	(op, op_name, inv, inv_name, valid){
 	});
 }
 
-function distributivity_tests 	(add, add_name, mult, mult_name, valid){
+function distributivity_tests 	(add, add_name, mult, mult_name, args){
 	QUnit.test(`${add_name}/${mult_name} Distributivity tests`, function (assert) {
-		for (var a_name in valid) {
-			for (var b_name in valid) {
-				for (var c_name in valid) {
-					let a = valid[a_name];
-					let b = valid[b_name];
-					let c = valid[c_name];
+		for (var a_name in args) {
+			for (var b_name in args) {
+				for (var c_name in args) {
+					let a = args[a_name];
+					let b = args[b_name];
+					let c = args[c_name];
 					assert.deepApprox( 
 						mult( add(b,c), a ), 
 						add( mult(b,a), mult(c,a) ), 
@@ -145,26 +150,24 @@ function distributivity_tests 	(add, add_name, mult, mult_name, valid){
 }
 
 // "algabraic_group_tests" tests a operation and its inverse to see whether it functions as a group from Abstract Algebra
-// NOTE: b and c must produce valid invertible values, i.e. they must not contain edge cases like NaNs or 0s
-function algabraic_group_tests	(op, op_name, inv, inv_name, valid, edge){
-	closure_tests			(op, op_name, inv, inv_name, valid, edge);
-	associativity_tests		(op, op_name, inv, inv_name, valid, edge);
-	identity_tests			(op, op_name, inv, inv_name, valid, edge);
-	inverse_tests			(op, op_name, inv, inv_name, valid, edge);
-	inverse_consistency_tests(op, op_name, inv, inv_name, valid, edge);
+function algabraic_group_tests	(op, op_name, inv, inv_name, A, B){
+	closure_tests			(op, op_name, inv, inv_name, A, B);
+	associativity_tests		(op, op_name, inv, inv_name, A, B);
+	identity_tests			(op, op_name, inv, inv_name, A, B);
+	inverse_tests 			(op, op_name, inv, inv_name, A, B);
 }
 
 // "abelian_group_tests" tests a operation and its inverse to see whether it functions as an Abelian (aka "commutative") group from Abstract Algebra
-// NOTE: b and c must produce valid invertible values, i.e. they must not contain edge cases like NaNs or 0s
-function abelian_group_tests 	(op, op_name, inv, inv_name, valid, edge){
-	closure_tests			(op, op_name, inv, inv_name, valid, edge);
-	associativity_tests		(op, op_name, inv, inv_name, valid, edge);
-	identity_tests			(op, op_name, inv, inv_name, valid, edge);
-	inverse_tests			(op, op_name, inv, inv_name, valid, edge);
-	inverse_consistency_tests(op, op_name, inv, inv_name, valid, edge);
-	commutativity_tests		(op, op_name, inv, inv_name, valid, edge);
+function abelian_group_tests 	(op, op_name, inv, inv_name, args){
+	closure_tests			(op, op_name, inv, inv_name, args, args);
+	associativity_tests		(op, op_name, inv, inv_name, args, args);
+	identity_tests			(op, op_name, inv, inv_name, args, args);
+	inverse_tests 			(op, op_name, inv, inv_name,args, args);
+	commutative_inverse_tests(op, op_name, inv, inv_name, args);
+	commutativity_tests		(op, op_name, inv, inv_name, args);
 }
 
+// "abelian_group_tests" tests a set of four operations to see whether it consitutes a "Field" from Abstract Algebra
 function field_tests	(add, add_name, 	sub, sub_name, add_args,
 						 mult,mult_name, 	div, div_name, mult_args) {
 
@@ -191,16 +194,18 @@ field_tests(
 	ScalarField.sub_field, "ScalarField.sub_field",
 	{
 		a: 		Float32Raster.FromArray([-1,	 0,		 1,		 0.5 ], tetrahedron),
-		b: 		Float32Raster.FromArray([-1,	 0,		 1,		 0.5 ], tetrahedron),
-		c: 		Float32Raster.FromArray([ 2,	 1,		 0,		-1	 ], tetrahedron),
+		b: 		Float32Raster.FromArray([ 0.5,	-1,		 0,		 1,	 ], tetrahedron),
+		c: 		Float32Raster.FromArray([ 1,	 0.5,	-1,		 0,	 ], tetrahedron),
+		d: 		Float32Raster.FromArray([ 0,	 1,	 	 0.5,	-1,	 ], tetrahedron),
 		I: 		Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
 	},
 	ScalarField.mult_field,"ScalarField.mult_field",
 	ScalarField.div_field, "ScalarField.div_field",
 	{
 		a: 		Float32Raster.FromArray([-1,	-0.5,	 1,		 0.5 ], tetrahedron),
-		b: 		Float32Raster.FromArray([ 1, 	 2,		 3,		 4 	 ], tetrahedron),
-		c: 		Float32Raster.FromArray([ 2,	 1,		-2,		-1	 ], tetrahedron),
+		b: 		Float32Raster.FromArray([ 0.5,	-1,		-0.5,	 1,	 ], tetrahedron),
+		c: 		Float32Raster.FromArray([ 1,	 0.5,	-1,		-0.5 ], tetrahedron),
+		d: 		Float32Raster.FromArray([-0.5,	 1,	 	 0.5,	-1,	 ], tetrahedron),
 		I: 		Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
 	},
 );
