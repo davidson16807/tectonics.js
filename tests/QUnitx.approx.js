@@ -1,8 +1,9 @@
 // Test for equality any JavaScript type.
 // Author: Philippe Rathé <prathe@gmail.com>
 // modified by: Carl Davidson <diadophus@gmail.com>
-QUnit.get_approx = function(percentage) {
-	var percentage = percentage || 0.0001;
+QUnit.get_approx = function(threshold, percentage) {
+	var threshold = threshold || 0.001;
+	var percentage = percentage || 0.001;
 
 	// Stack to decide between skip/abort functions
 	var callers = [];
@@ -44,8 +45,7 @@ QUnit.get_approx = function(percentage) {
 			b = b.valueOf();
 		}
 
-		var percent_diff = Math.abs((a - b) / b);
-		return percent_diff < percentage;
+		return Math.abs(a - b) < threshold || Math.abs((a - b)/b) < percentage;
 	}
 
 	function compareConstructors( a, b ) {
@@ -278,17 +278,17 @@ QUnit.get_approx = function(percentage) {
 
 	return innerEquiv;
 };
-QUnit.assert.deepApprox = function( actual, expected, message, percentage ) {
+QUnit.assert.deepApprox = function( actual, expected, message, threshold, percentage ) {
 	this.pushResult( {
-		result: QUnit.get_approx(percentage)( actual, expected ),
+		result: QUnit.get_approx(threshold, percentage)( actual, expected ),
 		actual: actual,
 		expected: expected,
 		message: message
 	} );
 }
-QUnit.assert.notDeepApprox = function( actual, expected, message, percentage ) {
+QUnit.assert.notDeepApprox = function( actual, expected, message, threshold, percentage ) {
 	this.pushResult( {
-		result: !QUnit.get_approx(percentage)( actual, expected ),
+		result: !QUnit.get_approx(threshold, percentage)( actual, expected ),
 		actual: actual,
 		expected: expected,
 		message: message
