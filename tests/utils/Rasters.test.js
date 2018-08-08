@@ -21,11 +21,11 @@ function framework_tests(op, op_name, inv, inv_name, args){
 
 	QUnit.test(`${op_name}/${inv_name} Framework tests`, function (assert) {
 
-		assert.deepEqual( a, a, 
-			`It must be possible to test using QUnit's assert.deepEqual() function`
+		assert.deepApprox( a, a, 
+			`It must be possible to test using QUnit's assert.deepApprox() function`
 		);
-		assert.notDeepEqual( a, b,
-			`It must be possible to test using QUnit's assert.notDeepEqual() function`
+		assert.notDeepApprox( a, b,
+			`It must be possible to test using QUnit's assert.notdeepApprox() function`
 		);
 	});
 }
@@ -39,22 +39,22 @@ function associativity_tests(op, op_name, inv, inv_name, args){
 	let I 	= args.I;
 
 	QUnit.test(`${op_name}/${inv_name} Associativity tests`, function (assert) {
-		assert.deepEqual( 
+		assert.deepApprox( 
 			op( op(a, b), c ), 
 			op( a, op(b, c) ), 
 			`${op_name} needs the associative property: values can be applied in any order to the same effect`
 		);
-		assert.deepEqual( 
+		assert.deepApprox( 
 			op( op(a, c), b ), 
 			op( a, op(c, b) ), 
 			`${op_name} needs the associative property: values can be applied in any order to the same effect`
 		);
-		assert.deepEqual( 
+		assert.deepApprox( 
 			op( op(b, a), c ), 
 			op( b, op(a, c) ), 
 			`${op_name} needs the associative property: values can be applied in any order to the same effect`
 		);
-		assert.deepEqual( 
+		assert.deepApprox( 
 			op( op(b, c), a ), 
 			op( b, op(c, a) ), 
 			`${op_name} needs the associative property: values can be applied in any order to the same effect`
@@ -73,11 +73,11 @@ function closure_tests(op, op_name, inv, inv_name, args){
 
 	QUnit.test(`${op_name}/${inv_name} Closure tests`, function (assert) {
 
-		assert.deepEqual( op(a, b), ab,
+		assert.deepApprox( op(a, b), ab,
 			`${op_name} needs the closure property: any value can be applied to produce a (predictable) valid value`
 		);
 		
-		assert.deepEqual( inv(a, b), abinv,
+		assert.deepApprox( inv(a, b), abinv,
 			`${inv_name} needs the closure property: any value can be applied to produce a (predictable) valid value`
 		);
 	});
@@ -92,17 +92,17 @@ function identity_tests(op, op_name, inv, inv_name, args){
 
 	QUnit.test(`${op_name}/${inv_name} Identity tests`, function (assert) {
 
-		assert.deepEqual( op(b, I), b,
+		assert.deepApprox( op(b, I), b,
 			`${op_name} needs the identity property: a value exists that can be applied that has no effect`
 		);
-		assert.deepEqual( op(c, I), c,
+		assert.deepApprox( op(c, I), c,
 			`${op_name} needs the identity property: a value exists that can be applied that has no effect`
 		);
 		
-		assert.deepEqual( inv(b, I), b,
+		assert.deepApprox( inv(b, I), b,
 			`${inv_name} needs the identity property: a value exists that can be applied that has no effect`
 		);
-		assert.deepEqual( inv(c, I), c,
+		assert.deepApprox( inv(c, I), c,
 			`${inv_name} needs the identity property: a value exists that can be applied that has no effect`
 		);
 
@@ -117,54 +117,30 @@ function inverse_tests(op, op_name, inv, inv_name, args){
 	let I 	= args.I;
 
 	QUnit.test(`${op_name}/${inv_name} Inverse tests`, function (assert) {
-		assert.deepEqual( inv(b, b), I,
+		assert.deepApprox( inv(b, b), I,
 			`${inv_name} needs the inverse property: an operation exists that returns a value to the identity`
 		);
-		assert.deepEqual( inv(c, c), I,
+		assert.deepApprox( inv(c, c), I,
 			`${inv_name} needs the inverse property: an operation exists that returns a value to the identity`
 		);
 	});
 }
 
 function inverse_consistency_tests(op, op_name, inv, inv_name, valid){
-	let a 	= valid.a; 
-	let b 	= valid.b;
-	let ab 	= valid.ab;
-	let abinv = valid.abinv;
-	let c 	= valid.c;
 	let I 	= valid.I;
 
 	QUnit.test(`${op_name}/${inv_name} Inverse consistency tests`, function (assert) {
-		assert.deepEqual( 
-			op( a, inv( I, b ) ), 
-			inv(a, b),
-			`${inv_name} needs to behave consistantly with the identity`,
-		);
-		assert.deepEqual( 
-			op( a, inv( I, c ) ), 
-			inv(a, c),
-			`${inv_name} needs to behave consistantly with the identity`,
-		);
-		assert.deepEqual( 
-			op( b, inv( I, a ) ), 
-			inv(b, a),
-			`${inv_name} needs to behave consistantly with the identity`,
-		);
-		assert.deepEqual( 
-			op( b, inv( I, c ) ), 
-			inv(b, c),
-			`${inv_name} needs to behave consistantly with the identity`,
-		);
-		assert.deepEqual( 
-			op( c, inv( I, a ) ), 
-			inv(c, a),
-			`${inv_name} needs to behave consistantly with the identity`,
-		);
-		assert.deepEqual( 
-			op( c, inv( I, b ) ), 
-			inv(c, b),
-			`${inv_name} needs to behave consistantly with the identity`,
-		);
+		for (var a_name in valid) {
+			for (var b_name in valid) {
+				let a = valid[a_name];
+				let b = valid[b_name];
+				assert.deepApprox( 
+					op( a, inv( I, b ) ), 
+					inv(a, b),
+					`${inv_name}(${a_name}, ${b_name}) needs to behave consistantly with the identity`,
+				);
+			}
+		}
 	});
 }
 
@@ -174,7 +150,7 @@ function commutativity_tests 	(op, op_name, inv, inv_name, valid){
 			for (var b_name in valid) {
 				let a = valid[a_name];
 				let b = valid[b_name];
-				assert.deepEqual( 
+				assert.deepApprox( 
 					op( a, b ), 
 					op( b, a ), 
 					`${op_name}(${a_name}, ${b_name}) needs the commutative property: values in an operation can be swapped to the same effect`,

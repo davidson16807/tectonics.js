@@ -1,6 +1,8 @@
 // Test for equality any JavaScript type.
 // Author: Philippe Rathé <prathe@gmail.com>
-QUnit.get_close_equiv = function(percentage) {
+// modified by: Carl Davidson <diadophus@gmail.com>
+QUnit.get_approx = function(percentage) {
+	var percentage = percentage || 0.01;
 
 	// Stack to decide between skip/abort functions
 	var callers = [];
@@ -42,7 +44,7 @@ QUnit.get_close_equiv = function(percentage) {
 			b = b.valueOf();
 		}
 
-		var percent_diff = Math.abs(a - b / b);
+		var percent_diff = Math.abs((a - b) / b);
 		return percent_diff < percentage;
 	}
 
@@ -276,9 +278,17 @@ QUnit.get_close_equiv = function(percentage) {
 
 	return innerEquiv;
 };
-QUnit.assert.deepClose = function( actual, expected, percentage, message ) {
+QUnit.assert.deepApprox = function( actual, expected, message, percentage ) {
 	this.pushResult( {
-		result: QUnit.get_close_equiv(percentage)( actual, expected ),
+		result: QUnit.get_approx(percentage)( actual, expected ),
+		actual: actual,
+		expected: expected,
+		message: message
+	} );
+}
+QUnit.assert.notDeepApprox = function( actual, expected, message, percentage ) {
+	this.pushResult( {
+		result: !QUnit.get_approx(percentage)( actual, expected ),
 		actual: actual,
 		expected: expected,
 		message: message
