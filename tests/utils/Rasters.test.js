@@ -82,47 +82,28 @@ function closure_tests(op, op_name, inv, inv_name, args){
 		);
 	});
 }
-function identity_tests(op, op_name, inv, inv_name, args){
-	let a 	= args.a; 
-	let b 	= args.b;
-	let ab 	= args.ab;
-	let abinv = args.abinv;
-	let c 	= args.c;
-	let I 	= args.I;
+function identity_tests(op, op_name, inv, inv_name, valid){
+	let I 	= valid.I;
 
 	QUnit.test(`${op_name}/${inv_name} Identity tests`, function (assert) {
-
-		assert.deepApprox( op(b, I), b,
-			`${op_name} needs the identity property: a value exists that can be applied that has no effect`
-		);
-		assert.deepApprox( op(c, I), c,
-			`${op_name} needs the identity property: a value exists that can be applied that has no effect`
-		);
-		
-		assert.deepApprox( inv(b, I), b,
-			`${inv_name} needs the identity property: a value exists that can be applied that has no effect`
-		);
-		assert.deepApprox( inv(c, I), c,
-			`${inv_name} needs the identity property: a value exists that can be applied that has no effect`
-		);
-
+		for (var a_name in valid) {
+			let a = valid[a_name];
+			assert.deepApprox( op(a, I), a,
+				`${op_name}(${a_name}, I) needs the identity property: a value exists that can be applied that has no effect`
+			);
+		}
 	});
 }
-function inverse_tests(op, op_name, inv, inv_name, args){
-	let a 	= args.a; 
-	let b 	= args.b;
-	let ab 	= args.ab;
-	let abinv = args.abinv;
-	let c 	= args.c;
-	let I 	= args.I;
+function inverse_tests(op, op_name, inv, inv_name, valid){
+	let I 	= valid.I;
 
 	QUnit.test(`${op_name}/${inv_name} Inverse tests`, function (assert) {
-		assert.deepApprox( inv(b, b), I,
-			`${inv_name} needs the inverse property: an operation exists that returns a value to the identity`
-		);
-		assert.deepApprox( inv(c, c), I,
-			`${inv_name} needs the inverse property: an operation exists that returns a value to the identity`
-		);
+		for (var a_name in valid) {
+			let a = valid[a_name];
+			assert.deepApprox( inv(a, a), I,
+				`${inv_name}(${a_name}, ${a_name}) needs the inverse property: an operation exists that returns a value to the identity`
+			);
+		}
 	});
 }
 
@@ -137,7 +118,7 @@ function inverse_consistency_tests(op, op_name, inv, inv_name, valid){
 				assert.deepApprox( 
 					op( a, inv( I, b ) ), 
 					inv(a, b),
-					`${inv_name}(${a_name}, ${b_name}) needs to behave consistantly with the identity`,
+					`${inv_name}(${a_name}, ${inv_name}(I, ${b_name}) ) needs to behave consistantly with the identity`,
 				);
 			}
 		}
@@ -185,23 +166,10 @@ abelian_group_tests(
 	ScalarField.add_field, "ScalarField.add_field",
 	ScalarField.sub_field, "ScalarField.sub_field",
 	{
-		a: 		Float32Raster.FromArray([-1,	 0,		 1,		 NaN ], tetrahedron),
+		a: 		Float32Raster.FromArray([-1,	 0,		 1,		 2	 ], tetrahedron),
 		b: 		Float32Raster.FromArray([ 1, 	 2,		 3,		 4 	 ], tetrahedron),
-		ab: 	Float32Raster.FromArray([ 0, 	 2,		 4,		 NaN ], tetrahedron),
-		abinv: 	Float32Raster.FromArray([-2, 	-2,		-2,		 NaN ], tetrahedron),
-		c: 		Float32Raster.FromArray([ 2,	 1,		 0,		-1	 ], tetrahedron),
-		I: 		Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
-	}
-);
-
-abelian_group_tests(
-	ScalarField.add_field, "ScalarField.add_field",
-	ScalarField.sub_field, "ScalarField.sub_field",
-	{
-		a: 		Float32Raster.FromArray([-1,	 0,		 1,		 NaN ], tetrahedron),
-		b: 		Float32Raster.FromArray([ 1, 	 2,		 3,		 4 	 ], tetrahedron),
-		ab: 	Float32Raster.FromArray([ 0, 	 2,		 4,		 NaN ], tetrahedron),
-		abinv: 	Float32Raster.FromArray([-2, 	-2,		-2,		 NaN ], tetrahedron),
+		ab: 	Float32Raster.FromArray([ 0, 	 2,		 4,		 6	 ], tetrahedron),
+		abinv: 	Float32Raster.FromArray([-2, 	-2,		-2,		-2	 ], tetrahedron),
 		c: 		Float32Raster.FromArray([ 2,	 1,		 0,		-1	 ], tetrahedron),
 		I: 		Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
 	}
@@ -211,10 +179,10 @@ abelian_group_tests(
 	ScalarField.mult_field, "ScalarField.mult_field",
 	ScalarField.div_field,  "ScalarField.div_field",
 	{
-		a: 		Float32Raster.FromArray([-1,	 0,		 1,		 NaN ], tetrahedron),
+		a: 		Float32Raster.FromArray([-1,	-2,		 1,		 2	 ], tetrahedron),
 		b: 		Float32Raster.FromArray([ 1, 	 2,		 3,		 4 	 ], tetrahedron),
-		ab: 	Float32Raster.FromArray([-1, 	 0,		 3,	 	 NaN ], tetrahedron),
-		abinv: 	Float32Raster.FromArray([-1, 	 0,		1/3,	 NaN ], tetrahedron),
+		ab: 	Float32Raster.FromArray([-1, 	-4,		 3,	 	 8	 ], tetrahedron),
+		abinv: 	Float32Raster.FromArray([-1, 	-1,		1/3,	1/2	 ], tetrahedron),
 		c: 		Float32Raster.FromArray([ 2,	 1,		 3,		-1	 ], tetrahedron),
 		I: 		Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
 	}
