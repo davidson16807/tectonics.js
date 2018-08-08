@@ -15,50 +15,34 @@ var tetrahedron = new Grid({
 		{ x: 0, y: 0, z: 1 },
 	],
 });
-function framework_tests(op, op_name, inv, inv_name, args){
-	let a 	= args.a; 
-	let b 	= args.b;
-
-	QUnit.test(`${op_name}/${inv_name} Framework tests`, function (assert) {
+function framework_tests(type_name, a,b){
+	QUnit.test(`${type_name} Framework tests`, function (assert) {
 
 		assert.deepApprox( a, a, 
-			`It must be possible to test using QUnit's assert.deepApprox() function`
+			`It must be possible to test ${type_name} using QUnit's assert.deepApprox() function`
 		);
 		assert.notDeepApprox( a, b,
-			`It must be possible to test using QUnit's assert.notdeepApprox() function`
+			`It must be possible to test ${type_name} using QUnit's assert.notdeepApprox() function`
 		);
 	});
 }
 
-function associativity_tests(op, op_name, inv, inv_name, args){
-	let a 	= args.a; 
-	let b 	= args.b;
-	let ab 	= args.ab;
-	let abinv = args.abinv;
-	let c 	= args.c;
-	let I 	= args.I;
-
+function associativity_tests(op, op_name, inv, inv_name, valid){
 	QUnit.test(`${op_name}/${inv_name} Associativity tests`, function (assert) {
-		assert.deepApprox( 
-			op( op(a, b), c ), 
-			op( a, op(b, c) ), 
-			`${op_name} needs the associative property: values can be applied in any order to the same effect`
-		);
-		assert.deepApprox( 
-			op( op(a, c), b ), 
-			op( a, op(c, b) ), 
-			`${op_name} needs the associative property: values can be applied in any order to the same effect`
-		);
-		assert.deepApprox( 
-			op( op(b, a), c ), 
-			op( b, op(a, c) ), 
-			`${op_name} needs the associative property: values can be applied in any order to the same effect`
-		);
-		assert.deepApprox( 
-			op( op(b, c), a ), 
-			op( b, op(c, a) ), 
-			`${op_name} needs the associative property: values can be applied in any order to the same effect`
-		);
+		for (var a_name in valid) {
+			for (var b_name in valid) {
+				for (var c_name in valid) {
+					let a = valid[a_name];
+					let b = valid[b_name];
+					let c = valid[c_name];
+					assert.deepApprox( 
+						op( op(a, b), c ), 
+						op( a, op(b, c) ), 
+						`${op_name}(${a_name}, ${op_name}(${b_name}, ${c_name})) needs the associative property: values can be applied in any order to the same effect`
+					);
+				}
+			}
+		}
 	});
 }
 
@@ -68,8 +52,6 @@ function closure_tests(op, op_name, inv, inv_name, args){
 	let b 	= args.b;
 	let ab 	= args.ab;
 	let abinv = args.abinv;
-	let c 	= args.c;
-	let I 	= args.I;
 
 	QUnit.test(`${op_name}/${inv_name} Closure tests`, function (assert) {
 
@@ -141,6 +123,25 @@ function commutativity_tests 	(op, op_name, inv, inv_name, valid){
 	});
 }
 
+function distributivity_tests 	(add, add_name, mult, mult_name, valid){
+	QUnit.test(`${add_name}/${mult_name} Distributivity tests`, function (assert) {
+		for (var a_name in valid) {
+			for (var b_name in valid) {
+				for (var c_name in valid) {
+					let a = valid[a_name];
+					let b = valid[b_name];
+					let c = valid[c_name];
+					assert.deepApprox( 
+						mult( a, add(b,c) ), 
+						add( mult(a,b), mult(a,c) ), 
+						`${mult_name}(${a_name}, ${add_name}(${b_name}, ${c_name})) needs the distributive property: a multiplied value can be distributed across added values`,
+					);
+				}
+			}
+		}
+	});
+}
+
 // "algabraic_group_tests" tests a operation and its inverse to see whether it functions as a group from Abstract Algebra
 // NOTE: b and c must produce valid invertible values, i.e. they must not contain edge cases like NaNs or 0s
 function algabraic_group_tests	(op, op_name, inv, inv_name, valid, edge){
@@ -162,6 +163,17 @@ function abelian_group_tests 	(op, op_name, inv, inv_name, valid, edge){
 	commutativity_tests		(op, op_name, inv, inv_name, valid, edge);
 }
 
+function field_tests	(add, add_name, 	sub, sub_name, 
+						 mult,mult_name, 	div, div_name, valid) {
+	abelian_group_tests	(add, add_name, 	sub, sub_name, valid);
+	abelian_group_tests	(mult, mult_name, 	div, div_name, valid);
+}
+
+framework_tests(
+	'Float32Raster',
+	Float32Raster.FromArray([-1,	 0,		 1,		 NaN ], tetrahedron),
+	Float32Raster.FromArray([ 1, 	 2,		 3,		 4 	 ], tetrahedron),
+);
 abelian_group_tests(
 	ScalarField.add_field, "ScalarField.add_field",
 	ScalarField.sub_field, "ScalarField.sub_field",
@@ -174,7 +186,6 @@ abelian_group_tests(
 		I: 		Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
 	}
 );
-
 abelian_group_tests(
 	ScalarField.mult_field, "ScalarField.mult_field",
 	ScalarField.div_field,  "ScalarField.div_field",
@@ -187,3 +198,16 @@ abelian_group_tests(
 		I: 		Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
 	}
 );
+distributivity_tests(
+	ScalarField.add_field, "ScalarField.add_field",
+	ScalarField.mult_field, "ScalarField.mult_field",
+	{
+		a: 		Float32Raster.FromArray([-1,	-2,		 1,		 2	 ], tetrahedron),
+		b: 		Float32Raster.FromArray([ 1, 	 2,		 3,		 4 	 ], tetrahedron),
+		ab: 	Float32Raster.FromArray([-1, 	-4,		 3,	 	 8	 ], tetrahedron),
+		abinv: 	Float32Raster.FromArray([-1, 	-1,		1/3,	1/2	 ], tetrahedron),
+		c: 		Float32Raster.FromArray([ 2,	 1,		 3,		-1	 ], tetrahedron),
+		I: 		Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
+	}
+);
+
