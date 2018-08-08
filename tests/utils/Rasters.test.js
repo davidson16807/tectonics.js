@@ -27,7 +27,7 @@ function framework_tests(type_name, a, b){
 	});
 }
 
-function output_reference_test(op, op_name, A, B){
+function binary_output_reference_test(op, op_name, A, B){
 	let out = A.out;
 	QUnit.test(`${op_name} Output Reference tests`, function (assert) {
 		for (var a_name in A) {
@@ -48,8 +48,26 @@ function output_reference_test(op, op_name, A, B){
 		}
 	});
 }
+function unary_output_reference_test(op, op_name, A){
+	let out = A.out;
+	QUnit.test(`${op_name} Output Reference tests`, function (assert) {
+		for (var a_name in A) {
+			let a = A[a_name];
+			assert.deepApprox( 
+				op( a ), op( a, out ), 
+				`${op_name}(${a_name}, out) should behave the same whether or not "out" is specified`
+			);
+			assert.strictEqual( 
+				op( a, out ), out, 
+				`${op_name}(${a_name}, out) should return a reference to the "out" variable`
+			);
+			//NOTE: clean up out after your done, so you don't get wierd test results later on
+			op(A.I, B.I, out)
+		}
+	});
+}
 
-function idempotence_tests(op, op_name, A, B){
+function binary_idempotence_tests(op, op_name, A, B){
 	QUnit.test(`${op_name} Idempotence tests`, function (assert) {
 		for (var a_name in A) {
 			for (var b_name in B) {
@@ -60,6 +78,18 @@ function idempotence_tests(op, op_name, A, B){
 					`${op_name}(${a_name}, ${b_name}) needs the idemoptent property: the operation can be called repeatedly without changing the value`
 				);
 			}
+		}
+	});
+}
+
+function unary_idempotence_tests(op, op_name, A){
+	QUnit.test(`${op_name} Idempotence tests`, function (assert) {
+		for (var a_name in A) {
+			let a = A[a_name];
+			assert.deepApprox( 
+				op( a ), op( a ), 
+				`${op_name}(${a_name}) needs the idemoptent property: the operation can be called repeatedly without changing the value`
+			);
 		}
 	});
 }
@@ -115,22 +145,25 @@ function identity_tests(op, op_name, A, B){
 	});
 }
 
-function inverse_tests(op, op_name, A, B){
-	let I 	= B.I;
-
-	QUnit.test(`${op_name} Inverse consistency tests`, function (assert) {
+function inverse_tests(op, op_name, inv, inv_name, A, B){
+	QUnit.test(`${op_name}/${inv_name} Inverse tests`, function (assert) {
 		for (var a_name in A) {
 			for (var b_name in B) {
 				let a = A[a_name];
 				let b = B[b_name];
 				assert.deepApprox( 
-					op( a, I ), a, 
-					`${op_name}(${a_name}, I) needs to behave consistantly with the identity`,
+					op( inv( a, b ), b ), 	a,
+					`${op_name}(${inv_name}(${a_name}, ${b_name}), ${b_name} ) needs to return ${a_name}`,
+				);
+				assert.deepApprox( 
+					inv( op( a, b ), b ), 	a,
+					`${inv_name}(${op_name}(${a_name}, ${b_name}), ${b_name} ) needs to return ${a_name}`,
 				);
 			}
 		}
 	});
 }
+
 function commutative_inverse_tests(op, op_name, inv, inv_name, args){
 	let I 	= args.I;
 
@@ -140,19 +173,6 @@ function commutative_inverse_tests(op, op_name, inv, inv_name, args){
 			assert.deepApprox( inv(a, a), I,
 				`${inv_name}(${a_name}, ${a_name}) needs the inverse property: an operation exists that returns a value to the identity`
 			);
-		}
-	});
-	QUnit.test(`${op_name}/${inv_name} Commutative Inverse Consistency tests`, function (assert) {
-		for (var a_name in args) {
-			for (var b_name in args) {
-				let a = args[a_name];
-				let b = args[b_name];
-				assert.deepApprox( 
-					op( a, inv( I, b ) ), 
-					inv(a, b),
-					`${inv_name}(${a_name}, ${inv_name}(I, ${b_name}) ) needs to behave consistantly with the identity`,
-				);
-			}
 		}
 	});
 }
@@ -192,157 +212,122 @@ function distributivity_tests 	(add, add_name, mult, mult_name, args){
 	});
 }
 
-// "library_standards_tests" tests an operation for conformance to standards used throughout the library
-function library_standards_tests(op, op_name, A, B) {
-	output_reference_test 	(op, op_name, A, B);
-	idempotence_tests		(op, op_name, A, B);
+
+// "unary_operator_tests" tests an operation for conformance to standards used throughout the library
+function unary_operator_tests(op, op_name, A) {
+	unary_output_reference_test	(op, op_name, A);
+	unary_idempotence_tests		(op, op_name, A);
 }
 
-// "algabraic_group_tests" tests a operation and its inverse to see whether it functions as a group from Abstract Algebra
-function algabraic_group_tests	(op, op_name, inv, inv_name, A, B){
-	library_standards_tests	(op, op_name, 	 A, B);
-	library_standards_tests	(inv, inv_name,  A, B);
+// "binary_operator_tests" tests an operation for conformance to standards used throughout the library
+function binary_operator_tests(op, op_name, A, B) {
+	binary_output_reference_test	(op, op_name, A, B);
+	binary_idempotence_tests		(op, op_name, A, B);
+}
+
+// "algabraic_magma_tests" tests an operation to see whether it functions as a magma from Abstract Algebra
+function algabraic_magma_tests	(op, op_name, A, B){
+	binary_operator_tests	(op, op_name, 	 A, B);
+
+	closure_tests			(op, op_name, 	 A, B);
+}
+
+// "algabraic_monoid_tests" tests an operation to see whether it functions as a unital magma from Abstract Algebra
+function algabraic_unital_magma_tests	(op, op_name, A, B){
+	binary_operator_tests	(op, op_name, 	 A, B);
+
+	closure_tests			(op, op_name, 	 A, B);
+	identity_tests			(op, op_name, 	 A, B);
+}
+
+// "algabraic_semigroup_tests" tests a operation to see whether it functions as a semigroup from Abstract Algebra
+function algabraic_semigroup_tests	(op, op_name, A, B){
+	binary_operator_tests	(op, op_name, 	 A, B);
+
+	closure_tests			(op, op_name, 	 A, B);
+	associativity_tests		(op, op_name,	 A, B);
+}
+
+// "algabraic_monoid_tests" tests a operation to see whether it functions as a monoid from Abstract Algebra
+function algabraic_monoid_tests	(op, op_name, A, B){
+	binary_operator_tests	(op, op_name, 	 A, B);
 
 	closure_tests			(op, op_name, 	 A, B);
 	associativity_tests		(op, op_name,	 A, B);
 	identity_tests			(op, op_name, 	 A, B);
-	inverse_tests 			(op, op_name, 	 A, B);
+}
+
+// "algabraic_group_tests" tests a operation and its inverse to see whether it functions as a group from Abstract Algebra
+function algabraic_group_tests	(op, op_name, inv, inv_name, A, B){
+	binary_operator_tests	(op, op_name, 	 A, B);
+	binary_operator_tests	(inv, inv_name,  A, B);
+
+	closure_tests			(op, op_name, 	 A, B);
+	associativity_tests		(op, op_name,	 A, B);
+	identity_tests			(op, op_name, 	 A, B);
 
 	closure_tests			(inv, inv_name,  A, B);
 //	associativity_tests		(inv, inv_name,	 A, B); // NOTE: inv can never be associative - it's the inverse!
 	identity_tests			(inv, inv_name,  A, B);
-	inverse_tests 			(inv, inv_name,  A, B);
+
+	inverse_tests 			(op, op_name, inv, inv_name,  A, B);
 }
 
-// "abelian_group_tests" tests a operation and its inverse to see whether it functions as an Abelian (aka "commutative") group from Abstract Algebra
-function abelian_group_tests 	(op, op_name, inv, inv_name, args){
+// "algabraic_abelian_group_tests" tests a operation and its inverse to see whether it functions as an Abelian (aka "commutative") group from Abstract Algebra
+function algabraic_abelian_group_tests 	(op, op_name, inv, inv_name, args){
 	algabraic_group_tests 		(op, op_name,inv, inv_name, 	args, args);
 
 	commutative_inverse_tests 	(op, op_name, inv, inv_name, 	args);
 	commutativity_tests		 	(op, op_name, inv, inv_name, 	args);
 }
 
-// "abelian_group_tests" tests a set of four operations to see whether it consitutes a "Field" from Abstract Algebra
-function field_tests	(add, add_name, 	sub, sub_name, happy_add_args,	edgy_add_args,
-						 mult,mult_name, 	div, div_name, happy_mult_args,	edgy_mult_args) {
+// "algabraic_abelian_group_tests" tests a set of four operations to see whether it consitutes a "Field" from Abstract Algebra
+function field_tests	(add, add_name,  sub, sub_name, happy_add_args,	edgy_add_args,
+						 mult,mult_name, div, div_name, happy_mult_args,edgy_mult_args) {
 
-	abelian_group_tests		(add, add_name, sub, sub_name, 		happy_add_args);
+	algabraic_abelian_group_tests	(add, add_name, sub, sub_name, 		happy_add_args);
 
-	algabraic_group_tests	(add, add_name, sub, sub_name, 		edgy_add_args, edgy_add_args);
+	algabraic_group_tests			(add, add_name, sub, sub_name, 		edgy_add_args, edgy_add_args);
 
-	abelian_group_tests		(mult, mult_name, div, div_name, 	happy_mult_args);
+	algabraic_abelian_group_tests	(mult, mult_name, div, div_name, 	happy_mult_args);
 
-	algabraic_group_tests	(mult, mult_name, div, div_name, 	edgy_mult_args, edgy_mult_args);
+	algabraic_group_tests			(mult, mult_name, div, div_name, 	edgy_mult_args, edgy_mult_args);
 
-	distributivity_tests	(add, add_name, mult, mult_name,	happy_add_args	);
-	distributivity_tests	(add, add_name, mult, mult_name,	happy_mult_args	);
-	distributivity_tests	(add, add_name, div,  div_name, 	happy_mult_args	); // NOTE: don't run div on happy_add_args, since div0 errors can occur
+	distributivity_tests			(add, add_name, mult, mult_name,	happy_add_args	);
+	distributivity_tests			(add, add_name, mult, mult_name,	happy_mult_args	);
+	distributivity_tests			(add, add_name, div,  div_name, 	happy_mult_args	); // NOTE: don't run div on happy_add_args, since div0 errors can occur
 
-	distributivity_tests	(sub, sub_name, mult, mult_name,	happy_add_args	);
-	distributivity_tests	(sub, sub_name, mult, mult_name,	happy_mult_args	);
-	distributivity_tests	(sub, sub_name, div,  div_name, 	happy_mult_args	); // NOTE: don't run div on happy_add_args, since div0 errors can occur
+	distributivity_tests			(sub, sub_name, mult, mult_name,	happy_add_args	);
+	distributivity_tests			(sub, sub_name, mult, mult_name,	happy_mult_args	);
+	distributivity_tests			(sub, sub_name, div,  div_name, 	happy_mult_args	); // NOTE: don't run div on happy_add_args, since div0 errors can occur
 }
 
 
-let add_scalar_field_happy_args = {
-	pos: 	Float32Raster.FromArray([ 1,	 1,		 1,		 1,	 ], tetrahedron),
-	neg:	Float32Raster.FromArray([-1,	-1,		-1,		-1	 ], tetrahedron),
-	tiny: 	Float32Raster.FromArray([ 1e-1,	 1e-1,	 1e-1,	 1e-1], tetrahedron),
-	big: 	Float32Raster.FromArray([ 1e9,	 1e9,	 1e9,	 1e9,], tetrahedron),
-	I: 		Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
-	out: 	Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
-}
-let mult_scalar_field_happy_args = {
-	neg:	Float32Raster.FromArray([-1,	-1,		-1,		-1	 ], tetrahedron),
-	tiny: 	Float32Raster.FromArray([ 1e-1,	 1e-1,	 1e-1,	 1e-1], tetrahedron),
-	big: 	Float32Raster.FromArray([ 1e9,	 1e9,	 1e9,	 1e9,], tetrahedron),
-	I: 		Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
-	out: 	Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
-}
-// an "edge case" is anything that produces a technically valid value but does not follow abelian group algebra
-// for instance, a "NaN" value that spreads through calculations
-let add_scalar_field_edgy_args = {
-	pos: 	Float32Raster.FromArray([ 1,	 1,		 1,		 1,	 ], tetrahedron),
-	neg:	Float32Raster.FromArray([-1,	-1,		-1,		-1	 ], tetrahedron),
-	tiny: 	Float32Raster.FromArray([ 1e-1,	 1e-1,	 1e-1,	 1e-1], tetrahedron),
-	big: 	Float32Raster.FromArray([ 1e9,	 1e9,	 1e9,	 1e9,], tetrahedron),
-	nans: 	Float32Raster.FromArray([ NaN,	 NaN, 	 NaN, 	 NaN ], tetrahedron),
-	infs: 	Float32Raster.FromArray([ Infinity, Infinity, Infinity, Infinity], tetrahedron),
-	ninfs: 	Float32Raster.FromArray([-Infinity,-Infinity,-Infinity,-Infinity], tetrahedron),
-	I: 		Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
-	out: 	Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
-}
-let mult_scalar_field_edgy_args = {
-	pos: 	Float32Raster.FromArray([ 1,	 1,		 1,		 1,	 ], tetrahedron),
-	neg:	Float32Raster.FromArray([-1,	-1,		-1,		-1	 ], tetrahedron),
-	tiny: 	Float32Raster.FromArray([ 1e-1,	 1e-1,	 1e-1,	 1e-1], tetrahedron),
-	big: 	Float32Raster.FromArray([ 1e9,	 1e9,	 1e9,	 1e9,], tetrahedron),
-	nans: 	Float32Raster.FromArray([ NaN,	 NaN, 	 NaN, 	 NaN ], tetrahedron),
-	infs: 	Float32Raster.FromArray([ Infinity, Infinity, Infinity, Infinity], tetrahedron),
-	ninfs: 	Float32Raster.FromArray([-Infinity,-Infinity,-Infinity,-Infinity], tetrahedron),
-	zeros: 	Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
-	I: 		Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
-	out: 	Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
-}
 let add_uniform_args = {
 	pos: 	 1,
 	neg: 	-1,
 	tiny: 	 1e-1,
-	big: 	 1e20,
+	big: 	 1e4,
 	I: 		 0,
 }
 let mult_uniform_args = {
 	neg: 	-1,
 	tiny: 	 1e-1,
-	big: 	 1e20,
+	big: 	 1e4,
 	I: 		 1,
 }
-
-framework_tests(
-	'Float32Raster',
-	Float32Raster.FromArray([-1,	 0,		 0.5,	 NaN ], tetrahedron),
-	Float32Raster.FromArray([ 1, 	 2,		 0.49,	 3 	 ], tetrahedron),
-);
-algabraic_group_tests(
-	ScalarField.add_scalar, "ScalarField.add_scalar",
-	ScalarField.sub_scalar, "ScalarField.sub_scalar",
-	add_scalar_field_edgy_args, add_uniform_args,
-);
-algabraic_group_tests(
-	ScalarField.mult_scalar, "ScalarField.mult_scalar",
-	ScalarField.div_scalar, "ScalarField.div_scalar",
-	mult_scalar_field_edgy_args, mult_uniform_args,
-);
-field_tests(
-	ScalarField.add_field, "ScalarField.add_field",
-	ScalarField.sub_field, "ScalarField.sub_field",
-	add_scalar_field_happy_args, 
-	add_scalar_field_edgy_args, 
-	ScalarField.mult_field,"ScalarField.mult_field",
-	ScalarField.div_field, "ScalarField.div_field",
-	mult_scalar_field_happy_args, 
-	mult_scalar_field_edgy_args, 
-);
-
-
-
-
-
-
-
-
 let add_vector_happy_args = {
 	pos: 	Vector( 1,			 1,		 1 			),
 	neg:	Vector(-1,			-1,		-1 			),
 	tiny: 	Vector( 1e-1,		 1e-1,	 1e-1 		),
-	big: 	Vector( 1e9,		 1e9,	 1e9 		),
+	big: 	Vector( 1e4,		 1e4,	 1e4 		),
 	I: 		Vector( 0,			 0,		 0 			),
 	out: 	Vector( 0,			 0,		 0 			),
 }
 let mult_vector_happy_args = {
 	neg:	Vector(-1,			-1,		-1 			),
 	tiny: 	Vector( 1e-1,		 1e-1,	 1e-1 		),
-	big: 	Vector( 1e9,		 1e9,	 1e9 		),
+	big: 	Vector( 1e4,		 1e4,	 1e4 		),
 	I: 		Vector( 1,			 1,		 1 			),
 	out: 	Vector( 1,			 1,		 1 			),
 }
@@ -352,7 +337,7 @@ let add_vector_edgy_args = {
 	pos: 	Vector( 1,			 1,		 1 			),
 	neg:	Vector(-1,			-1,		-1 			),
 	tiny: 	Vector( 1e-1,		 1e-1,	 1e-1 		),
-	big: 	Vector( 1e9,		 1e9,	 1e9 		),
+	big: 	Vector( 1e4,		 1e4,	 1e4 		),
 	nans: 	Vector( NaN,		 NaN, 	 NaN 		),
 	infs: 	Vector( Infinity,	 Infinity, Infinity ),
 	ninfs: 	Vector(-Infinity,	-Infinity,-Infinity ),
@@ -363,7 +348,7 @@ let mult_vector_edgy_args = {
 	pos: 	Vector( 1,			 1,		 1 			),
 	neg:	Vector(-1,			-1,		-1 			),
 	tiny: 	Vector( 1e-1,		 1e-1,	 1e-1 		),
-	big: 	Vector( 1e9,		 1e9,	 1e9 		),
+	big: 	Vector( 1e4,		 1e4,	 1e4 		),
 	nans: 	Vector( NaN,		 NaN, 	 NaN 		),
 	infs: 	Vector( Infinity,	 Infinity, Infinity ),
 	ninfs: 	Vector(-Infinity,	-Infinity,-Infinity ),
@@ -371,44 +356,46 @@ let mult_vector_edgy_args = {
 	I: 		Vector( 1,			 1,		 1 			),
 	out: 	Vector( 0,			 0,		 0 			),
 }
-//algabraic_group_tests(
-//	Vector.add_scalar, "Vector.add_scalar",
-//	Vector.sub_scalar, "Vector.sub_scalar",
-//	add_vector_field_edgy_args, add_uniform_args,
-//);
-//algabraic_group_tests(
-//	Vector.mult_scalar, "Vector.mult_scalar",
-//	Vector.div_scalar, "Vector.div_scalar",
-//	mult_vector_field_edgy_args, mult_uniform_args,
-//);
-//algabraic_group_tests(
-//	Vector.add_scalar, "Vector.add_scalar",
-//	Vector.sub_scalar, "Vector.sub_scalar",
-//	add_vector_field_edgy_args, add_scalar_field_edgy_args,
-//);
-//algabraic_group_tests(
-//	Vector.mult_scalar, "Vector.mult_scalar",
-//	Vector.div_scalar, "Vector.div_scalar",
-//	mult_vector_field_edgy_args, mult_scalar_field_edgy_args,
-//);
-//field_tests(
-//	Vector.add_vector, "Vector.add_vector",
-//	Vector.sub_vector, "Vector.sub_vector",
-//	add_vector_field_happy_args, 
-//	add_vector_field_edgy_args, 
-//	Vector.hadamard_vector,"Vector.hadamard_vector",
-//	Vector.div_vector, "Vector.div_vector",
-//	mult_vector_field_happy_args, 
-//	mult_vector_field_edgy_args, 
-//);
-
-
-
-
-
-
-
-
+let add_scalar_field_happy_args = {
+	pos: 	Float32Raster.FromArray([ 1,	 1,		 1,		 1,	 ], tetrahedron),
+	neg:	Float32Raster.FromArray([-1,	-1,		-1,		-1	 ], tetrahedron),
+	tiny: 	Float32Raster.FromArray([ 1e-1,	 1e-1,	 1e-1,	 1e-1], tetrahedron),
+	big: 	Float32Raster.FromArray([ 1e4,	 1e4,	 1e4,	 1e4,], tetrahedron),
+	I: 		Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
+	out: 	Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
+}
+let mult_scalar_field_happy_args = {
+	neg:	Float32Raster.FromArray([-1,	-1,		-1,		-1	 ], tetrahedron),
+	tiny: 	Float32Raster.FromArray([ 1e-1,	 1e-1,	 1e-1,	 1e-1], tetrahedron),
+	big: 	Float32Raster.FromArray([ 1e4,	 1e4,	 1e4,	 1e4,], tetrahedron),
+	I: 		Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
+	out: 	Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
+}
+// an "edge case" is anything that produces a technically valid value but does not follow abelian group algebra
+// for instance, a "NaN" value that spreads through calculations
+let add_scalar_field_edgy_args = {
+	pos: 	Float32Raster.FromArray([ 1,	 1,		 1,		 1,	 ], tetrahedron),
+	neg:	Float32Raster.FromArray([-1,	-1,		-1,		-1	 ], tetrahedron),
+	tiny: 	Float32Raster.FromArray([ 1e-1,	 1e-1,	 1e-1,	 1e-1], tetrahedron),
+	big: 	Float32Raster.FromArray([ 1e4,	 1e4,	 1e4,	 1e4,], tetrahedron),
+	nans: 	Float32Raster.FromArray([ NaN,	 NaN, 	 NaN, 	 NaN ], tetrahedron),
+	infs: 	Float32Raster.FromArray([ Infinity, Infinity, Infinity, Infinity], tetrahedron),
+	ninfs: 	Float32Raster.FromArray([-Infinity,-Infinity,-Infinity,-Infinity], tetrahedron),
+	I: 		Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
+	out: 	Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
+}
+let mult_scalar_field_edgy_args = {
+	pos: 	Float32Raster.FromArray([ 1,	 1,		 1,		 1,	 ], tetrahedron),
+	neg:	Float32Raster.FromArray([-1,	-1,		-1,		-1	 ], tetrahedron),
+	tiny: 	Float32Raster.FromArray([ 1e-1,	 1e-1,	 1e-1,	 1e-1], tetrahedron),
+	big: 	Float32Raster.FromArray([ 1e4,	 1e4,	 1e4,	 1e4,], tetrahedron),
+	nans: 	Float32Raster.FromArray([ NaN,	 NaN, 	 NaN, 	 NaN ], tetrahedron),
+	infs: 	Float32Raster.FromArray([ Infinity, Infinity, Infinity, Infinity], tetrahedron),
+	ninfs: 	Float32Raster.FromArray([-Infinity,-Infinity,-Infinity,-Infinity], tetrahedron),
+	zeros: 	Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
+	I: 		Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
+	out: 	Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
+}
 let add_vector_field_happy_args = {
 	pos: 	VectorRaster.FromArrays([ 1,	 1,		 1,		 1,	 ], 
 									[ 1,	 1,		 1,		 1,	 ], 
@@ -419,9 +406,9 @@ let add_vector_field_happy_args = {
 	tiny: 	VectorRaster.FromArrays([ 1e-1,	 1e-1,	 1e-1,	 1e-1], 
 									[ 1e-1,	 1e-1,	 1e-1,	 1e-1], 
 									[ 1e-1,	 1e-1,	 1e-1,	 1e-1], tetrahedron),
-	big: 	VectorRaster.FromArrays([ 1e9,	 1e9,	 1e9,	 1e9,], 
-									[ 1e9,	 1e9,	 1e9,	 1e9,], 
-									[ 1e9,	 1e9,	 1e9,	 1e9,], tetrahedron),
+	big: 	VectorRaster.FromArrays([ 1e4,	 1e4,	 1e4,	 1e4,], 
+									[ 1e4,	 1e4,	 1e4,	 1e4,], 
+									[ 1e4,	 1e4,	 1e4,	 1e4,], tetrahedron),
 	I: 		VectorRaster.FromArrays([ 0,	 0,		 0,		 0	 ], 
 									[ 0,	 0,		 0,		 0	 ], 
 									[ 0,	 0,		 0,		 0	 ], tetrahedron),
@@ -436,9 +423,9 @@ let mult_vector_field_happy_args = {
 	tiny: 	VectorRaster.FromArrays([ 1e-1,	 1e-1,	 1e-1,	 1e-1], 
 									[ 1e-1,	 1e-1,	 1e-1,	 1e-1], 
 									[ 1e-1,	 1e-1,	 1e-1,	 1e-1], tetrahedron),
-	big: 	VectorRaster.FromArrays([ 1e9,	 1e9,	 1e9,	 1e9,], 
-									[ 1e9,	 1e9,	 1e9,	 1e9,], 
-									[ 1e9,	 1e9,	 1e9,	 1e9,], tetrahedron),
+	big: 	VectorRaster.FromArrays([ 1e4,	 1e4,	 1e4,	 1e4,], 
+									[ 1e4,	 1e4,	 1e4,	 1e4,], 
+									[ 1e4,	 1e4,	 1e4,	 1e4,], tetrahedron),
 	I: 		VectorRaster.FromArrays([ 1,	 1,		 1,		 1	 ], 
 									[ 1,	 1,		 1,		 1	 ], 
 									[ 1,	 1,		 1,		 1	 ], tetrahedron),
@@ -458,9 +445,9 @@ let add_vector_field_edgy_args = {
 	tiny: 	VectorRaster.FromArrays([ 1e-1,	 1e-1,	 1e-1,	 1e-1], 
 									[ 1e-1,	 1e-1,	 1e-1,	 1e-1], 
 									[ 1e-1,	 1e-1,	 1e-1,	 1e-1], tetrahedron),
-	big: 	VectorRaster.FromArrays([ 1e9,	 1e9,	 1e9,	 1e9,], 
-									[ 1e9,	 1e9,	 1e9,	 1e9,], 
-									[ 1e9,	 1e9,	 1e9,	 1e9,], tetrahedron),
+	big: 	VectorRaster.FromArrays([ 1e4,	 1e4,	 1e4,	 1e4,], 
+									[ 1e4,	 1e4,	 1e4,	 1e4,], 
+									[ 1e4,	 1e4,	 1e4,	 1e4,], tetrahedron),
 	nans: 	VectorRaster.FromArrays([ NaN,	 NaN, 	 NaN, 	 NaN ], 
 									[ NaN,	 NaN, 	 NaN, 	 NaN ], 
 									[ NaN,	 NaN, 	 NaN, 	 NaN ], tetrahedron),
@@ -487,9 +474,9 @@ let mult_vector_field_edgy_args = {
 	tiny: 	VectorRaster.FromArrays([ 1e-1,	 1e-1,	 1e-1,	 1e-1], 
 									[ 1e-1,	 1e-1,	 1e-1,	 1e-1], 
 									[ 1e-1,	 1e-1,	 1e-1,	 1e-1], tetrahedron),
-	big: 	VectorRaster.FromArrays([ 1e9,	 1e9,	 1e9,	 1e9,], 
-									[ 1e9,	 1e9,	 1e9,	 1e9,], 
-									[ 1e9,	 1e9,	 1e9,	 1e9,], tetrahedron),
+	big: 	VectorRaster.FromArrays([ 1e4,	 1e4,	 1e4,	 1e4,], 
+									[ 1e4,	 1e4,	 1e4,	 1e4,], 
+									[ 1e4,	 1e4,	 1e4,	 1e4,], tetrahedron),
 	nans: 	VectorRaster.FromArrays([ NaN,	 NaN, 	 NaN, 	 NaN ], 
 									[ NaN,	 NaN, 	 NaN, 	 NaN ], 
 									[ NaN,	 NaN, 	 NaN, 	 NaN ], tetrahedron),
@@ -509,47 +496,212 @@ let mult_vector_field_edgy_args = {
 									[ 0,	 0,		 0,		 0	 ], 
 									[ 0,	 0,		 0,		 0	 ], tetrahedron),
 }
+
+
+
+
+
+
+
+
+//algabraic_group_tests(
+//	Vector.add_scalar, "Vector.add_scalar",
+//	Vector.sub_scalar, "Vector.sub_scalar",
+//	add_vector_field_happy_args, add_uniform_args,
+//);
+//algabraic_group_tests(
+//	Vector.mult_scalar, "Vector.mult_scalar",
+//	Vector.div_scalar, "Vector.div_scalar",
+//	mult_vector_field_happy_args, mult_uniform_args,
+//);
+//algabraic_group_tests(
+//	Vector.add_scalar, "Vector.add_scalar",
+//	Vector.sub_scalar, "Vector.sub_scalar",
+//	add_vector_field_happy_args, add_scalar_field_happy_args,
+//);
+//algabraic_group_tests(
+//	Vector.mult_scalar, "Vector.mult_scalar",
+//	Vector.div_scalar, "Vector.div_scalar",
+//	mult_vector_field_happy_args, mult_scalar_field_happy_args,
+//);
+//field_tests(
+//	Vector.add_vector, "Vector.add_vector",
+//	Vector.sub_vector, "Vector.sub_vector",
+//	add_vector_field_happy_args, 
+//	add_vector_field_happy_args, 
+//	Vector.hadamard_vector,"Vector.hadamard_vector",
+//	Vector.div_vector, "Vector.div_vector",
+//	mult_vector_field_happy_args, 
+//	mult_vector_field_happy_args, 
+//);
+
+
+
+
+
+
+
+
+
+
+
+
+framework_tests(
+	'Float32Raster',
+	Float32Raster.FromArray([-1,	 0,		 0.5,	 NaN ], tetrahedron),
+	Float32Raster.FromArray([ 1, 	 2,		 0.49,	 3 	 ], tetrahedron),
+);
+
+algabraic_group_tests(
+	ScalarField.add_scalar, "ScalarField.add_scalar",
+	ScalarField.sub_scalar, "ScalarField.sub_scalar",
+	add_scalar_field_happy_args, add_uniform_args,
+);
+algabraic_group_tests(
+	ScalarField.mult_scalar, "ScalarField.mult_scalar",
+	ScalarField.div_scalar, "ScalarField.div_scalar",
+	mult_scalar_field_happy_args, mult_uniform_args,
+);
+algabraic_semigroup_tests(
+	ScalarField.add_scalar, "ScalarField.add_scalar",
+	add_scalar_field_edgy_args, add_uniform_args,
+);
+algabraic_semigroup_tests(
+	ScalarField.mult_scalar, "ScalarField.mult_scalar",
+	mult_scalar_field_edgy_args, mult_uniform_args,
+);
+algabraic_unital_magma_tests(
+	ScalarField.sub_scalar, "ScalarField.sub_scalar",
+	add_scalar_field_edgy_args, add_uniform_args,
+);
+algabraic_unital_magma_tests(
+	ScalarField.div_scalar, "ScalarField.div_scalar",
+	mult_scalar_field_edgy_args, mult_uniform_args,
+);
+
+
+
+field_tests(
+	ScalarField.add_field, "ScalarField.add_field",
+	ScalarField.sub_field, "ScalarField.sub_field",
+	add_scalar_field_happy_args, 
+	add_scalar_field_happy_args, 
+	ScalarField.mult_field,"ScalarField.mult_field",
+	ScalarField.div_field, "ScalarField.div_field",
+	mult_scalar_field_happy_args, 
+	mult_scalar_field_happy_args, 
+);
+algabraic_semigroup_tests(
+	ScalarField.add_field, "ScalarField.add_field",
+	add_scalar_field_edgy_args, 
+	add_scalar_field_edgy_args, 
+);
+algabraic_semigroup_tests(
+	ScalarField.mult_field,"ScalarField.mult_field",
+	mult_scalar_field_edgy_args, 
+	mult_scalar_field_edgy_args, 
+);
+algabraic_unital_magma_tests(
+	ScalarField.sub_field, "ScalarField.sub_field",
+	add_scalar_field_edgy_args, 
+	add_scalar_field_edgy_args, 
+);
+algabraic_unital_magma_tests(
+	ScalarField.div_field, "ScalarField.div_field",
+	mult_scalar_field_edgy_args, 
+	mult_scalar_field_edgy_args, 
+);
+
+
+
+
+
 algabraic_group_tests(
 	VectorField.add_scalar, "VectorField.add_scalar",
 	VectorField.sub_scalar, "VectorField.sub_scalar",
-	add_vector_field_edgy_args, add_uniform_args,
+	add_vector_field_happy_args, add_uniform_args,
 );
 algabraic_group_tests(
 	VectorField.mult_scalar, "VectorField.mult_scalar",
 	VectorField.div_scalar, "VectorField.div_scalar",
+	mult_vector_field_happy_args, mult_uniform_args,
+);
+algabraic_semigroup_tests(
+	VectorField.add_scalar, "VectorField.add_scalar",
+	add_vector_field_edgy_args, add_uniform_args,
+);
+algabraic_semigroup_tests(
+	VectorField.mult_scalar, "VectorField.mult_scalar",
 	mult_vector_field_edgy_args, mult_uniform_args,
 );
-algabraic_group_tests(
-	VectorField.add_scalar_field, "VectorField.add_scalar_field",
-	VectorField.sub_scalar_field, "VectorField.sub_scalar_field",
-	add_vector_field_edgy_args, add_scalar_field_edgy_args,
+algabraic_unital_magma_tests(
+	VectorField.sub_scalar, "VectorField.sub_scalar",
+	add_vector_field_edgy_args, add_uniform_args,
 );
-algabraic_group_tests(
-	VectorField.mult_scalar_field, "VectorField.mult_scalar_field",
-	VectorField.div_scalar_field, "VectorField.div_scalar_field",
-	mult_vector_field_edgy_args, mult_scalar_field_edgy_args,
+algabraic_unital_magma_tests(
+	VectorField.div_scalar, "VectorField.div_scalar",
+	mult_vector_field_edgy_args, mult_uniform_args,
 );
+
+
+
+
 algabraic_group_tests(
 	VectorField.add_vector, "VectorField.add_vector",
 	VectorField.sub_vector, "VectorField.sub_vector",
-	add_vector_field_edgy_args, add_vector_edgy_args,
+	add_vector_field_happy_args, add_vector_happy_args,
 );
 algabraic_group_tests(
 	VectorField.hadamard_vector, "VectorField.hadamard_vector",
 	VectorField.div_vector, "VectorField.div_vector",
+	mult_vector_field_happy_args, mult_vector_happy_args,
+);
+algabraic_semigroup_tests(
+	VectorField.add_vector, "VectorField.add_vector",
+	add_vector_field_edgy_args, add_vector_edgy_args,
+);
+algabraic_semigroup_tests(
+	VectorField.hadamard_vector, "VectorField.hadamard_vector",
 	mult_vector_field_edgy_args, mult_vector_edgy_args,
 );
+algabraic_unital_magma_tests(
+	VectorField.sub_vector, "VectorField.sub_vector",
+	add_vector_field_edgy_args, add_vector_edgy_args,
+);
+algabraic_unital_magma_tests(
+	VectorField.div_vector, "VectorField.div_vector",
+	mult_vector_field_edgy_args, mult_vector_edgy_args,
+);
+
+
+
+
 field_tests(
 	VectorField.add_vector_field, "VectorField.add_vector_field",
 	VectorField.sub_vector_field, "VectorField.sub_vector_field",
 	add_vector_field_happy_args, 
-	add_vector_field_edgy_args, 
+	add_vector_field_happy_args, 
 	VectorField.hadamard_vector_field,"VectorField.hadamard_vector_field",
 	VectorField.div_vector_field, "VectorField.div_vector_field",
 	mult_vector_field_happy_args, 
-	mult_vector_field_edgy_args, 
+	mult_vector_field_happy_args, 
 );
-
+algabraic_semigroup_tests(
+	VectorField.add_scalar_field, "VectorField.add_scalar_field",
+	add_vector_field_edgy_args, add_scalar_field_edgy_args,
+);
+algabraic_semigroup_tests(
+	VectorField.mult_scalar_field, "VectorField.mult_scalar_field",
+	mult_vector_field_edgy_args, mult_scalar_field_edgy_args,
+);
+algabraic_unital_magma_tests(
+	VectorField.sub_scalar_field, "VectorField.sub_scalar_field",
+	add_vector_field_edgy_args, add_scalar_field_edgy_args,
+);
+algabraic_unital_magma_tests(
+	VectorField.div_scalar_field, "VectorField.div_scalar_field",
+	mult_vector_field_edgy_args, mult_scalar_field_edgy_args,
+);
 
 
 
