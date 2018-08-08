@@ -56,11 +56,11 @@ function closure_tests(op, op_name, inv, inv_name, args){
 	QUnit.test(`${op_name}/${inv_name} Closure tests`, function (assert) {
 
 		assert.deepApprox( op(a, b), ab,
-			`${op_name} needs the closure property: any value can be applied to produce a (predictable) valid value`
+			`${op_name}(a,b) needs the closure property: any value can be applied to produce a (predictable) valid value`
 		);
 		
 		assert.deepApprox( inv(a, b), abinv,
-			`${inv_name} needs the closure property: any value can be applied to produce a (predictable) valid value`
+			`${inv_name}(a,b) needs the closure property: any value can be applied to produce a (predictable) valid value`
 		);
 	});
 }
@@ -178,10 +178,10 @@ abelian_group_tests(
 	ScalarField.add_field, "ScalarField.add_field",
 	ScalarField.sub_field, "ScalarField.sub_field",
 	{
-		a: 		Float32Raster.FromArray([-1,	 0,		 1,		 2	 ], tetrahedron),
+		a: 		Float32Raster.FromArray([-1,	 0,		 1,		 0.5 ], tetrahedron),
 		b: 		Float32Raster.FromArray([ 1, 	 2,		 3,		 4 	 ], tetrahedron),
-		ab: 	Float32Raster.FromArray([ 0, 	 2,		 4,		 6	 ], tetrahedron),
-		abinv: 	Float32Raster.FromArray([-2, 	-2,		-2,		-2	 ], tetrahedron),
+		ab: 	Float32Raster.FromArray([ 0, 	 2,		 4,		 4.5 ], tetrahedron),
+		abinv: 	Float32Raster.FromArray([-2, 	-2,		-2,		-3.5 ], tetrahedron),
 		c: 		Float32Raster.FromArray([ 2,	 1,		 0,		-1	 ], tetrahedron),
 		I: 		Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
 	}
@@ -190,10 +190,10 @@ abelian_group_tests(
 	ScalarField.mult_field, "ScalarField.mult_field",
 	ScalarField.div_field,  "ScalarField.div_field",
 	{
-		a: 		Float32Raster.FromArray([-1,	-2,		 1,		 2	 ], tetrahedron),
+		a: 		Float32Raster.FromArray([-1,	-2,		 1,		 0.5 ], tetrahedron),
 		b: 		Float32Raster.FromArray([ 1, 	 2,		 3,		 4 	 ], tetrahedron),
-		ab: 	Float32Raster.FromArray([-1, 	-4,		 3,	 	 8	 ], tetrahedron),
-		abinv: 	Float32Raster.FromArray([-1, 	-1,		1/3,	1/2	 ], tetrahedron),
+		ab: 	Float32Raster.FromArray([-1, 	-4,		 3,	 	 2	 ], tetrahedron),
+		abinv: 	Float32Raster.FromArray([-1, 	-1,		1/3,	0.125], tetrahedron),
 		c: 		Float32Raster.FromArray([ 2,	 1,		 3,		-1	 ], tetrahedron),
 		I: 		Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
 	}
@@ -202,10 +202,10 @@ distributivity_tests(
 	ScalarField.add_field, "ScalarField.add_field",
 	ScalarField.mult_field, "ScalarField.mult_field",
 	{
-		a: 		Float32Raster.FromArray([-1,	-2,		 1,		 2	 ], tetrahedron),
+		a: 		Float32Raster.FromArray([-1,	-2,		 1,		 0.5 ], tetrahedron),
 		b: 		Float32Raster.FromArray([ 1, 	 2,		 3,		 4 	 ], tetrahedron),
-		ab: 	Float32Raster.FromArray([-1, 	-4,		 3,	 	 8	 ], tetrahedron),
-		abinv: 	Float32Raster.FromArray([-1, 	-1,		1/3,	1/2	 ], tetrahedron),
+		ab: 	Float32Raster.FromArray([-1, 	-4,		 3,	 	 2	 ], tetrahedron),
+		abinv: 	Float32Raster.FromArray([-1, 	-1,		1/3,	 0.25], tetrahedron),
 		c: 		Float32Raster.FromArray([ 2,	 1,		 3,		-1	 ], tetrahedron),
 		I: 		Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
 	}
