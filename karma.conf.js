@@ -5,7 +5,6 @@ module.exports = function (config) {
 		browsers: [ 'ChromeHeadless' ],
 		frameworks: [ 'qunit' ],
 		files: [
-			'noncompiled/VoronoiSphere.js',
 			'postcompiled/utils/Rasters.js',
 			'tests/utils/Rasters.test.js'
 		],
