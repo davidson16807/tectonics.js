@@ -6,7 +6,7 @@ module.exports = function (config) {
 		frameworks: [ 'qunit' ],
 		files: [
 			'postcompiled/utils/Rasters.js',
-			'tests/QUnitx.approx.js'
+			'tests/QUnitx.approx.js',
 			'tests/utils/Rasters.test.js'
 		],
 		autoWatch: false,
