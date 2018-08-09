@@ -27,6 +27,26 @@ function framework_tests(type_name, a, b){
 	});
 }
 
+function output_reference_test(op, op_name, A, B){
+	let out = A.out;
+	QUnit.test(`${op_name} Output Reference tests`, function (assert) {
+		for (var a_name in A) {
+			for (var b_name in B) {
+				let a = A[a_name];
+				let b = B[b_name];
+				assert.deepApprox( 
+					op( a, b ), op( a, b, out ), 
+					`${op_name}(${a_name}, ${b_name}, out) should behave the same whether or not "out" is specified`
+				);
+				assert.strictEqual( 
+					op( a, b, out ), out, 
+					`${op_name}(${a_name}, ${b_name}, out) should return a reference to the "out" variable`
+				);
+			}
+		}
+	});
+}
+
 function idempotence_tests(op, op_name, A, B){
 	QUnit.test(`${op_name} Idempotence tests`, function (assert) {
 		for (var a_name in A) {
@@ -176,6 +196,8 @@ function distributivity_tests 	(add, add_name, mult, mult_name, args){
 
 // "algabraic_group_tests" tests a operation and its inverse to see whether it functions as a group from Abstract Algebra
 function algabraic_group_tests	(op, op_name, inv, inv_name, A, B){
+	output_reference_test 	(op, op_name, 				 A, B);
+
 	idempotence_tests		(op, op_name, 		 		 A, B);
 	idempotence_tests		(inv,inv_name,		 		 A, B);
 
@@ -187,6 +209,8 @@ function algabraic_group_tests	(op, op_name, inv, inv_name, A, B){
 
 // "abelian_group_tests" tests a operation and its inverse to see whether it functions as an Abelian (aka "commutative") group from Abstract Algebra
 function abelian_group_tests 	(op, op_name, inv, inv_name, args){
+	output_reference_test 	(op, op_name, 				 args, args);
+
 	idempotence_tests		(op, op_name, 		 		 args, args);
 	idempotence_tests		(inv,inv_name,		 		 args, args);
 
@@ -229,6 +253,7 @@ algabraic_group_tests(
 		c: 		Float32Raster.FromArray([Infinity,Infinity,Infinity,Infinity ], tetrahedron),
 		O: 		Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
 		I: 		Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
+		out: 	Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
 	},
 	{
 		a: 		-1,
@@ -247,6 +272,7 @@ algabraic_group_tests(
 		c: 		Float32Raster.FromArray([Infinity,Infinity,Infinity,Infinity ], tetrahedron),
 		O: 		Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
 		I: 		Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
+		out: 	Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
 	},
 	{
 		a: 		-1,
@@ -264,6 +290,7 @@ algabraic_group_tests(
 		b: 		Float32Raster.FromArray([ NaN,	 NaN,	 NaN,	 NaN ], tetrahedron),
 		c: 		Float32Raster.FromArray([Infinity,Infinity,Infinity,Infinity ], tetrahedron),
 		I: 		Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
+		out: 	Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
 	},
 	{
 		a: 		Float32Raster.FromArray([-1,	 0,		 1,		 0.5 ], tetrahedron),
@@ -281,6 +308,7 @@ algabraic_group_tests(
 		c: 		Float32Raster.FromArray([Infinity,Infinity,Infinity,Infinity ], tetrahedron),
 		O: 		Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
 		I: 		Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
+		out: 	Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
 	},
 	{
 		a: 		Float32Raster.FromArray([-1,	 0,		 1,		 0.5 ], tetrahedron),
@@ -299,6 +327,7 @@ field_tests(
 		c: 		Float32Raster.FromArray([ 1,	 0.5,	-1,		 0,	 ], tetrahedron),
 		d: 		Float32Raster.FromArray([ 0,	 1,	 	 0.5,	-1,	 ], tetrahedron),
 		I: 		Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
+		out: 	Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
 	},
 	ScalarField.mult_field,"ScalarField.mult_field",
 	ScalarField.div_field, "ScalarField.div_field",
@@ -308,5 +337,6 @@ field_tests(
 		c: 		Float32Raster.FromArray([ 1,	 0.5,	-1,		-0.5 ], tetrahedron),
 		d: 		Float32Raster.FromArray([-0.5,	 1,	 	 0.5,	-1,	 ], tetrahedron),
 		I: 		Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
+		out: 	Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
 	},
 );
