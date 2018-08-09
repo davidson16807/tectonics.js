@@ -244,7 +244,7 @@ function field_tests	(add, add_name, 	sub, sub_name, happy_add_args,	edgy_add_ar
 }
 
 
-let add_scalar_field_happy_path_args = {
+let add_scalar_field_happy_args = {
 	pos: 	Float32Raster.FromArray([ 1,	 1,		 1,		 1,	 ], tetrahedron),
 	neg:	Float32Raster.FromArray([-1,	-1,		-1,		-1	 ], tetrahedron),
 	tiny: 	Float32Raster.FromArray([ 1e-1,	 1e-1,	 1e-1,	 1e-1], tetrahedron),
@@ -252,7 +252,7 @@ let add_scalar_field_happy_path_args = {
 	I: 		Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
 	out: 	Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
 }
-let mult_scalar_field_happy_path_args = {
+let mult_scalar_field_happy_args = {
 	neg:	Float32Raster.FromArray([-1,	-1,		-1,		-1	 ], tetrahedron),
 	tiny: 	Float32Raster.FromArray([ 1e-1,	 1e-1,	 1e-1,	 1e-1], tetrahedron),
 	big: 	Float32Raster.FromArray([ 1e9,	 1e9,	 1e9,	 1e9,], tetrahedron),
@@ -261,7 +261,7 @@ let mult_scalar_field_happy_path_args = {
 }
 // an "edge case" is anything that produces a technically valid value but does not follow abelian group algebra
 // for instance, a "NaN" value that spreads through calculations
-let add_scalar_field_edge_case_args = {
+let add_scalar_field_edgy_args = {
 	pos: 	Float32Raster.FromArray([ 1,	 1,		 1,		 1,	 ], tetrahedron),
 	neg:	Float32Raster.FromArray([-1,	-1,		-1,		-1	 ], tetrahedron),
 	tiny: 	Float32Raster.FromArray([ 1e-1,	 1e-1,	 1e-1,	 1e-1], tetrahedron),
@@ -272,7 +272,7 @@ let add_scalar_field_edge_case_args = {
 	I: 		Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
 	out: 	Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
 }
-let mult_scalar_field_edge_case_args = {
+let mult_scalar_field_edgy_args = {
 	pos: 	Float32Raster.FromArray([ 1,	 1,		 1,		 1,	 ], tetrahedron),
 	neg:	Float32Raster.FromArray([-1,	-1,		-1,		-1	 ], tetrahedron),
 	tiny: 	Float32Raster.FromArray([ 1e-1,	 1e-1,	 1e-1,	 1e-1], tetrahedron),
@@ -306,29 +306,29 @@ framework_tests(
 algabraic_group_tests(
 	ScalarField.add_scalar, "ScalarField.add_scalar",
 	ScalarField.sub_scalar, "ScalarField.sub_scalar",
-	add_scalar_field_edge_case_args, add_uniform_args,
+	add_scalar_field_edgy_args, add_uniform_args,
 );
 algabraic_group_tests(
 	ScalarField.mult_scalar, "ScalarField.mult_scalar",
 	ScalarField.div_scalar, "ScalarField.div_scalar",
-	mult_scalar_field_edge_case_args, mult_uniform_args,
+	mult_scalar_field_edgy_args, mult_uniform_args,
 );
 field_tests(
 	ScalarField.add_field, "ScalarField.add_field",
 	ScalarField.sub_field, "ScalarField.sub_field",
-	add_scalar_field_happy_path_args, 
-	add_scalar_field_edge_case_args, 
+	add_scalar_field_happy_args, 
+	add_scalar_field_edgy_args, 
 	ScalarField.mult_field,"ScalarField.mult_field",
 	ScalarField.div_field, "ScalarField.div_field",
-	mult_scalar_field_happy_path_args, 
-	mult_scalar_field_edge_case_args, 
+	mult_scalar_field_happy_args, 
+	mult_scalar_field_edgy_args, 
 );
 
 
 
 
 
-let add_vector_field_happy_path_args = {
+let add_vector_field_happy_args = {
 	pos: 	VectorRaster.FromArrays([ 1,	 1,		 1,		 1,	 ], 
 									[ 1,	 1,		 1,		 1,	 ], 
 									[ 1,	 1,		 1,		 1,	 ], tetrahedron),
@@ -348,7 +348,7 @@ let add_vector_field_happy_path_args = {
 									[ 0,	 0,		 0,		 0	 ], 
 									[ 0,	 0,		 0,		 0	 ], tetrahedron),
 }
-let mult_vector_field_happy_path_args = {
+let mult_vector_field_happy_args = {
 	neg:	VectorRaster.FromArrays([-1,	-1,		-1,		-1	 ], 
 									[-1,	-1,		-1,		-1	 ], 
 									[-1,	-1,		-1,		-1	 ], tetrahedron),
@@ -367,7 +367,7 @@ let mult_vector_field_happy_path_args = {
 }
 // an "edge case" is anything that produces a technically valid value but does not follow abelian group algebra
 // for instance, a "NaN" value that spreads through calculations
-let add_vector_field_edge_case_args = {
+let add_vector_field_edgy_args = {
 	pos: 	VectorRaster.FromArrays([ 1,	 1,		 1,		 1,	 ], 
 									[ 1,	 1,		 1,		 1,	 ], 
 									[ 1,	 1,		 1,		 1,	 ], tetrahedron),
@@ -396,7 +396,7 @@ let add_vector_field_edge_case_args = {
 									[ 0,	 0,		 0,		 0	 ], 
 									[ 0,	 0,		 0,		 0	 ], tetrahedron),
 }
-let mult_vector_field_edge_case_args = {
+let mult_vector_field_edgy_args = {
 	pos: 	VectorRaster.FromArrays([ 1,	 1,		 1,		 1,	 ], 
 									[ 1,	 1,		 1,		 1,	 ], 
 									[ 1,	 1,		 1,		 1,	 ], tetrahedron),
@@ -431,30 +431,30 @@ let mult_vector_field_edge_case_args = {
 algabraic_group_tests(
 	VectorField.add_scalar, "VectorField.add_scalar",
 	VectorField.sub_scalar, "VectorField.sub_scalar",
-	add_vector_field_edge_case_args, add_uniform_args,
+	add_vector_field_edgy_args, add_uniform_args,
 );
 algabraic_group_tests(
 	VectorField.mult_scalar, "VectorField.mult_scalar",
 	VectorField.div_scalar, "VectorField.div_scalar",
-	mult_vector_field_edge_case_args, mult_uniform_args,
+	mult_vector_field_edgy_args, mult_uniform_args,
 );
 algabraic_group_tests(
 	VectorField.add_scalar_field, "VectorField.add_scalar_field",
 	VectorField.sub_scalar_field, "VectorField.sub_scalar_field",
-	add_vector_field_edge_case_args, add_scalar_field_edge_case_args,
+	add_vector_field_edgy_args, add_scalar_field_edgy_args,
 );
 algabraic_group_tests(
 	VectorField.mult_scalar_field, "VectorField.mult_scalar_field",
 	VectorField.div_scalar_field, "VectorField.div_scalar_field",
-	mult_vector_field_edge_case_args, mult_scalar_field_edge_case_args,
+	mult_vector_field_edgy_args, mult_scalar_field_edgy_args,
 );
 field_tests(
 	VectorField.add_vector_field, "VectorField.add_vector_field",
 	VectorField.sub_vector_field, "VectorField.sub_vector_field",
-	add_vector_field_happy_path_args, 
-	add_vector_field_edge_case_args, 
+	add_vector_field_happy_args, 
+	add_vector_field_edgy_args, 
 	VectorField.hadamard_vector_field,"VectorField.hadamard_vector_field",
 	VectorField.div_vector_field, "VectorField.div_vector_field",
-	mult_vector_field_happy_path_args, 
-	mult_vector_field_edge_case_args, 
+	mult_vector_field_happy_args, 
+	mult_vector_field_edgy_args, 
 );
