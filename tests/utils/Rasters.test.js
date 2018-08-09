@@ -75,17 +75,11 @@ function identity_tests(op, op_name, inv, inv_name, A, B){
 				`${op_name}(${a_name}, I) needs the identity property: a value exists that can be applied that has no effect`
 			);
 		}
-		for (var b_name in B) {
-			let b = B[b_name];
-			assert.deepApprox( op(Ia, b), b,
-				`${op_name}(${b_name}, I) needs the identity property: a value exists that can be applied that has no effect`
-			);
-		}
 	});
 }
 
 function inverse_tests(op, op_name, inv, inv_name, A, B){
-	let I 	= A.I;
+	let I 	= B.I;
 
 	QUnit.test(`${op_name}/${inv_name} Inverse consistency tests`, function (assert) {
 		for (var a_name in A) {
@@ -93,9 +87,12 @@ function inverse_tests(op, op_name, inv, inv_name, A, B){
 				let a = A[a_name];
 				let b = B[b_name];
 				assert.deepApprox( 
-					op( a, inv( I, b ) ), 
-					inv(a, b),
-					`${inv_name}(${a_name}, ${inv_name}(I, ${b_name}) ) needs to behave consistantly with the identity`,
+					op( a, I ), a, 
+					`${op_name}(${a_name}, I) needs to behave consistantly with the identity`,
+				);
+				assert.deepApprox( 
+					inv(a, I), a,
+					`${inv_name}(${a_name}, I) needs to behave consistantly with the identity`,
 				);
 			}
 		}
@@ -104,12 +101,25 @@ function inverse_tests(op, op_name, inv, inv_name, A, B){
 function commutative_inverse_tests(op, op_name, inv, inv_name, args){
 	let I 	= args.I;
 
-	QUnit.test(`${op_name}/${inv_name} Inverse tests`, function (assert) {
+	QUnit.test(`${op_name}/${inv_name} Commutative Inverse tests`, function (assert) {
 		for (var a_name in args) {
 			let a = args[a_name];
 			assert.deepApprox( inv(a, a), I,
 				`${inv_name}(${a_name}, ${a_name}) needs the inverse property: an operation exists that returns a value to the identity`
 			);
+		}
+	});
+	QUnit.test(`${op_name}/${inv_name} Commutative Inverse Consistency tests`, function (assert) {
+		for (var a_name in args) {
+			for (var b_name in args) {
+				let a = args[a_name];
+				let b = args[b_name];
+				assert.deepApprox( 
+					op( a, inv( I, b ) ), 
+					inv(a, b),
+					`${inv_name}(${a_name}, ${inv_name}(I, ${b_name}) ) needs to behave consistantly with the identity`,
+				);
+			}
 		}
 	});
 }
@@ -188,6 +198,76 @@ framework_tests(
 	'Float32Raster',
 	Float32Raster.FromArray([-1,	 0,		 0.5,	 NaN ], tetrahedron),
 	Float32Raster.FromArray([ 1, 	 2,		 0.49,	 3 	 ], tetrahedron),
+);
+algabraic_group_tests(
+	ScalarField.add_scalar, "ScalarField.add_scalar",
+	ScalarField.sub_scalar, "ScalarField.sub_scalar",
+	{
+		a: 		Float32Raster.FromArray([-1,	 0,		 1,		 0.5 ], tetrahedron),
+		b: 		Float32Raster.FromArray([ NaN,	 NaN,	 NaN,	 NaN ], tetrahedron),
+		c: 		Float32Raster.FromArray([Infinity,Infinity,Infinity,Infinity ], tetrahedron),
+		O: 		Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
+		I: 		Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
+	},
+	{
+		a: 		-1,
+		b: 		 0.5,
+		c: 		 1,
+		d: 		 2,
+		I: 		 0,
+	},
+);
+algabraic_group_tests(
+	ScalarField.mult_scalar, "ScalarField.mult_scalar",
+	ScalarField.div_scalar, "ScalarField.div_scalar",
+	{
+		a: 		Float32Raster.FromArray([-1,	 0,		 1,		 0.5 ], tetrahedron),
+		b: 		Float32Raster.FromArray([ NaN,	 NaN,	 NaN,	 NaN ], tetrahedron),
+		c: 		Float32Raster.FromArray([Infinity,Infinity,Infinity,Infinity ], tetrahedron),
+		O: 		Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
+		I: 		Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
+	},
+	{
+		a: 		-1,
+		b: 		 0.5,
+		c: 		 0,
+		d: 		 2,
+		I: 		 1,
+	},
+);
+algabraic_group_tests(
+	ScalarField.add_field, "ScalarField.add_field",
+	ScalarField.sub_field, "ScalarField.sub_field",
+	{
+		a: 		Float32Raster.FromArray([-1,	 0,		 1,		 0.5 ], tetrahedron),
+		b: 		Float32Raster.FromArray([ NaN,	 NaN,	 NaN,	 NaN ], tetrahedron),
+		c: 		Float32Raster.FromArray([Infinity,Infinity,Infinity,Infinity ], tetrahedron),
+		I: 		Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
+	},
+	{
+		a: 		Float32Raster.FromArray([-1,	 0,		 1,		 0.5 ], tetrahedron),
+		b: 		Float32Raster.FromArray([ NaN,	 NaN,	 NaN,	 NaN ], tetrahedron),
+		c: 		Float32Raster.FromArray([Infinity,Infinity,Infinity,Infinity ], tetrahedron),
+		I: 		Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
+	},
+);
+algabraic_group_tests(
+	ScalarField.mult_field,"ScalarField.mult_field",
+	ScalarField.div_field, "ScalarField.div_field",
+	{
+		a: 		Float32Raster.FromArray([-1,	 0,		 1,		 0.5 ], tetrahedron),
+		b: 		Float32Raster.FromArray([ NaN,	 NaN,	 NaN,	 NaN ], tetrahedron),
+		c: 		Float32Raster.FromArray([Infinity,Infinity,Infinity,Infinity ], tetrahedron),
+		O: 		Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
+		I: 		Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
+	},
+	{
+		a: 		Float32Raster.FromArray([-1,	 0,		 1,		 0.5 ], tetrahedron),
+		b: 		Float32Raster.FromArray([ NaN,	 NaN,	 NaN,	 NaN ], tetrahedron),
+		c: 		Float32Raster.FromArray([Infinity,Infinity,Infinity,Infinity ], tetrahedron),
+		O: 		Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
+		I: 		Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
+	},
 );
 field_tests(
 	ScalarField.add_field, "ScalarField.add_field",
