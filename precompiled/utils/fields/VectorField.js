@@ -157,7 +157,23 @@ VectorField.cross_vector_field = function (vector_field1, vector_field2, result)
 
 	return result;
 }
+VectorField.div_vector_field = function(vector_field1, vector_field2, result) {
+	result = result || VectorRaster(vector_field1.grid);
+	
+	ASSERT_IS_VECTOR_RASTER(vector_field1)
+	ASSERT_IS_VECTOR_RASTER(vector_field2)
+	ASSERT_IS_VECTOR_RASTER(result)
 
+	var u = vector_field1.everything;
+	var v = vector_field2.everything;
+	var out = result.everything;
+
+	for (var i=0, li=u.length; i<li; ++i) {
+	    out[i] = u[i] / v[i];
+	}
+
+	return result;
+};
 
 VectorField.add_vector = function(vector_field, vector, result) {
 	result = result || VectorRaster(vector_field.grid);

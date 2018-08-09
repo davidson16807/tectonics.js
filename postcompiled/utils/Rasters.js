@@ -3078,6 +3078,19 @@ VectorField.cross_vector_field = function (vector_field1, vector_field2, result)
  }
  return result;
 }
+VectorField.div_vector_field = function(vector_field1, vector_field2, result) {
+ result = result || VectorRaster(vector_field1.grid);
+ if ((vector_field1.everything === void 0) || !(vector_field1.everything instanceof Float32Array)) { throw "vector_field1" + ' is not a vector raster'; }
+ if ((vector_field2.everything === void 0) || !(vector_field2.everything instanceof Float32Array)) { throw "vector_field2" + ' is not a vector raster'; }
+ if ((result.everything === void 0) || !(result.everything instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
+ var u = vector_field1.everything;
+ var v = vector_field2.everything;
+ var out = result.everything;
+ for (var i=0, li=u.length; i<li; ++i) {
+     out[i] = u[i] / v[i];
+ }
+ return result;
+};
 VectorField.add_vector = function(vector_field, vector, result) {
  result = result || VectorRaster(vector_field.grid);
  if ((vector_field.everything === void 0) || !(vector_field.everything instanceof Float32Array)) { throw "vector_field" + ' is not a vector raster'; }
@@ -4127,14 +4140,26 @@ VectorRaster.OfLength = function(length, grid) {
   };
 }
 VectorRaster.FromVectors = function(vectors, grid) {
- var result = VectorRaster.OfLength(vectors.length, grid);
- var x = result.x;
- var y = result.y;
- var z = result.z;
- for (var i=0, li=vectors.length; i<li; ++i) {
-     x[i] = vectors[i].x;
-     y[i] = vectors[i].y;
-     z[i] = vectors[i].z;
+  var result = VectorRaster.OfLength(vectors.length, grid);
+  var x = result.x;
+  var y = result.y;
+  var z = result.z;
+  for (var i=0, li=vectors.length; i<li; ++i) {
+      x[i] = vectors[i].x;
+      y[i] = vectors[i].y;
+      z[i] = vectors[i].z;
+  }
+  return result;
+}
+VectorRaster.FromArrays = function(x, y, z, grid) {
+ var result = VectorRaster.OfLength(x.length, grid);
+ var ox = result.x;
+ var oy = result.y;
+ var oz = result.z;
+ for (var i=0, li=x.length; i<li; ++i) {
+     ox[i] = x[i];
+     oy[i] = y[i];
+     oz[i] = z[i];
  }
  return result;
 }
