@@ -2963,36 +2963,6 @@ Uint8Field.gradient = function (scalar_field, result) {
 // The VectorField namespace provides operations over mathematical vector fields.
 // All fields are represented on raster objects, e.g. VectorRaster or Float32Raster
 var VectorField = {};
-VectorField.add_vector_field_and_scalar_term = function(vector_field1, vector_field2, scalar, result) {
- result = result || VectorRaster(vector_field1.grid);
- if ((vector_field1.everything === void 0) || !(vector_field1.everything instanceof Float32Array)) { throw "vector_field1" + ' is not a vector raster'; }
- if ((vector_field2.everything === void 0) || !(vector_field2.everything instanceof Float32Array)) { throw "vector_field2" + ' is not a vector raster'; }
- if (!(typeof scalar == "number")) { throw "scalar" + ' is not a ' + "number"; }
- if ((result.everything === void 0) || !(result.everything instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
- var u = vector_field1.everything;
- var v = vector_field2.everything;
- var out = result.everything;
- var length = scalar_field.length;
- for (var i=0, li=u.length; i<li; ++i) {
-     out[i] = u[i] + scalar * v[i];
- }
- return result;
-};
-VectorField.add_vector_field_and_scalar_field_term = function(vector_field1, vector_field2, scalar_field, result) {
- result = result || VectorRaster(vector_field1.grid);
- if ((vector_field1.everything === void 0) || !(vector_field1.everything instanceof Float32Array)) { throw "vector_field1" + ' is not a vector raster'; }
- if ((vector_field2.everything === void 0) || !(vector_field2.everything instanceof Float32Array)) { throw "vector_field2" + ' is not a vector raster'; }
- if (!(scalar_field instanceof Float32Array || scalar_field instanceof Uint16Array || scalar_field instanceof Uint8Array)) { throw "scalar_field" + ' is not a typed array'; }
- if ((result.everything === void 0) || !(result.everything instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
- var u = vector_field1.everything;
- var v = vector_field2.everything;
- var out = result.everything;
- var length = scalar_field.length;
- for (var i=0, li=u.length; i<li; ++i) {
-     out[i] = u[i] + scalar_field[i%length] * v[i];
- }
- return result;
-};
 VectorField.add_vector_field = function(vector_field1, vector_field2, result) {
  result = result || VectorRaster(vector_field1.grid);
  if ((vector_field1.everything === void 0) || !(vector_field1.everything instanceof Float32Array)) { throw "vector_field1" + ' is not a vector raster'; }

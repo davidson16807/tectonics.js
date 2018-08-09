@@ -5,47 +5,6 @@ var VectorField = {};
 
 
 
-VectorField.add_vector_field_and_scalar_term = function(vector_field1, vector_field2, scalar, result) {
-	result = result || VectorRaster(vector_field1.grid);
-
-	ASSERT_IS_VECTOR_RASTER(vector_field1)
-	ASSERT_IS_VECTOR_RASTER(vector_field2)
-	ASSERT_IS_TYPE(scalar, number)
-	ASSERT_IS_VECTOR_RASTER(result)
-
-
-	var u = vector_field1.everything;
-	var v = vector_field2.everything;
-	var out = result.everything;
-
-	var length = scalar_field.length;
-	for (var i=0, li=u.length; i<li; ++i) {
-	    out[i] = u[i] + scalar * v[i];
-	}
-
-	return result;
-};
-
-VectorField.add_vector_field_and_scalar_field_term = function(vector_field1, vector_field2, scalar_field, result) {
-	result = result || VectorRaster(vector_field1.grid);
-
-	ASSERT_IS_VECTOR_RASTER(vector_field1)
-	ASSERT_IS_VECTOR_RASTER(vector_field2)
-	ASSERT_IS_ANY_ARRAY(scalar_field)
-	ASSERT_IS_VECTOR_RASTER(result)
-
-	var u = vector_field1.everything;
-	var v = vector_field2.everything;
-	var out = result.everything;
-
-	var length = scalar_field.length;
-	for (var i=0, li=u.length; i<li; ++i) {
-	    out[i] = u[i] + scalar_field[i%length] * v[i];
-	}
-
-	return result;
-};
-
 VectorField.add_vector_field = function(vector_field1, vector_field2, result) {
 	result = result || VectorRaster(vector_field1.grid);
 

@@ -64,8 +64,8 @@ function idempotence_tests(op, op_name, A, B){
 	});
 }
 
-function associativity_tests(op, op_name, inv, inv_name, A, B){
-	QUnit.test(`${op_name}/${inv_name} Associativity tests`, function (assert) {
+function associativity_tests(op, op_name, A, B){
+	QUnit.test(`${op_name} Associativity tests`, function (assert) {
 		for (var a_name in A) {
 			for (var b_name in B) {
 				for (var c_name in B) {
@@ -84,8 +84,8 @@ function associativity_tests(op, op_name, inv, inv_name, A, B){
 }
 
 
-function closure_tests(op, op_name, inv, inv_name, A, B){
-	QUnit.test(`${op_name}/${inv_name} Closure tests`, function (assert) {
+function closure_tests(op, op_name, A, B){
+	QUnit.test(`${op_name} Closure tests`, function (assert) {
 
 		for (var a_name in A) {
 			for (var b_name in B) {
@@ -101,11 +101,11 @@ function closure_tests(op, op_name, inv, inv_name, A, B){
 		}
 	});
 }
-function identity_tests(op, op_name, inv, inv_name, A, B){
+function identity_tests(op, op_name, A, B){
 	let Ia 	= A.I;
 	let Ib 	= B.I;
 
-	QUnit.test(`${op_name}/${inv_name} Identity tests`, function (assert) {
+	QUnit.test(`${op_name} Identity tests`, function (assert) {
 		for (var a_name in A) {
 			let a = A[a_name];
 			assert.deepApprox( op(a, Ib), a,
@@ -115,10 +115,10 @@ function identity_tests(op, op_name, inv, inv_name, A, B){
 	});
 }
 
-function inverse_tests(op, op_name, inv, inv_name, A, B){
+function inverse_tests(op, op_name, A, B){
 	let I 	= B.I;
 
-	QUnit.test(`${op_name}/${inv_name} Inverse consistency tests`, function (assert) {
+	QUnit.test(`${op_name} Inverse consistency tests`, function (assert) {
 		for (var a_name in A) {
 			for (var b_name in B) {
 				let a = A[a_name];
@@ -126,10 +126,6 @@ function inverse_tests(op, op_name, inv, inv_name, A, B){
 				assert.deepApprox( 
 					op( a, I ), a, 
 					`${op_name}(${a_name}, I) needs to behave consistantly with the identity`,
-				);
-				assert.deepApprox( 
-					inv(a, I), a,
-					`${inv_name}(${a_name}, I) needs to behave consistantly with the identity`,
 				);
 			}
 		}
@@ -196,32 +192,34 @@ function distributivity_tests 	(add, add_name, mult, mult_name, args){
 	});
 }
 
+// "library_standards_tests" tests an operation for conformance to standards used throughout the library
+function library_standards_tests(op, op_name, A, B) {
+	output_reference_test 	(op, op_name, A, B);
+	idempotence_tests		(op, op_name, A, B);
+}
+
 // "algabraic_group_tests" tests a operation and its inverse to see whether it functions as a group from Abstract Algebra
 function algabraic_group_tests	(op, op_name, inv, inv_name, A, B){
-	output_reference_test 	(op, op_name, 				 A, B);
+	library_standards_tests	(op, op_name, 	 A, B);
+	library_standards_tests	(inv, inv_name,  A, B);
 
-	idempotence_tests		(op, op_name, 		 		 A, B);
-	idempotence_tests		(inv,inv_name,		 		 A, B);
+	closure_tests			(op, op_name, 	 A, B);
+	associativity_tests		(op, op_name,	 A, B);
+	identity_tests			(op, op_name, 	 A, B);
+	inverse_tests 			(op, op_name, 	 A, B);
 
-	closure_tests			(op, op_name, inv, inv_name, A, B);
-	associativity_tests		(op, op_name, inv, inv_name, A, B);
-	identity_tests			(op, op_name, inv, inv_name, A, B);
-	inverse_tests 			(op, op_name, inv, inv_name, A, B);
+	closure_tests			(inv, inv_name,  A, B);
+//	associativity_tests		(inv, inv_name,	 A, B); // NOTE: inv can never be associative - it's the inverse!
+	identity_tests			(inv, inv_name,  A, B);
+	inverse_tests 			(inv, inv_name,  A, B);
 }
 
 // "abelian_group_tests" tests a operation and its inverse to see whether it functions as an Abelian (aka "commutative") group from Abstract Algebra
 function abelian_group_tests 	(op, op_name, inv, inv_name, args){
-	output_reference_test 	(op, op_name, 				 args, args);
+	algabraic_group_tests 		(op, op_name,inv, inv_name, 	args, args);
 
-	idempotence_tests		(op, op_name, 		 		 args, args);
-	idempotence_tests		(inv,inv_name,		 		 args, args);
-
-	closure_tests			(op, op_name, inv, inv_name, args, args);
-	associativity_tests		(op, op_name, inv, inv_name, args, args);
-	identity_tests			(op, op_name, inv, inv_name, args, args);
-	inverse_tests 			(op, op_name, inv, inv_name,args, args);
-	commutative_inverse_tests(op, op_name, inv, inv_name, args);
-	commutativity_tests		(op, op_name, inv, inv_name, args);
+	commutative_inverse_tests 	(op, op_name, inv, inv_name, 	args);
+	commutativity_tests		 	(op, op_name, inv, inv_name, 	args);
 }
 
 // "abelian_group_tests" tests a set of four operations to see whether it consitutes a "Field" from Abstract Algebra
@@ -439,6 +437,16 @@ algabraic_group_tests(
 	VectorField.mult_scalar, "VectorField.mult_scalar",
 	VectorField.div_scalar, "VectorField.div_scalar",
 	mult_vector_field_edge_case_args, mult_uniform_args,
+);
+algabraic_group_tests(
+	VectorField.add_scalar_field, "VectorField.add_scalar_field",
+	VectorField.sub_scalar_field, "VectorField.sub_scalar_field",
+	add_vector_field_edge_case_args, add_scalar_field_edge_case_args,
+);
+algabraic_group_tests(
+	VectorField.mult_scalar_field, "VectorField.mult_scalar_field",
+	VectorField.div_scalar_field, "VectorField.div_scalar_field",
+	mult_vector_field_edge_case_args, mult_scalar_field_edge_case_args,
 );
 field_tests(
 	VectorField.add_vector_field, "VectorField.add_vector_field",
