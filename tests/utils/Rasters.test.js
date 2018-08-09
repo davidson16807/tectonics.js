@@ -244,99 +244,74 @@ framework_tests(
 	Float32Raster.FromArray([-1,	 0,		 0.5,	 NaN ], tetrahedron),
 	Float32Raster.FromArray([ 1, 	 2,		 0.49,	 3 	 ], tetrahedron),
 );
+let scalar_field_add_happy_path_args = {
+	a: 		Float32Raster.FromArray([-1,	 0,		 1,		 0.5 ], tetrahedron),
+	b: 		Float32Raster.FromArray([ 0.5,	-1,		 0,		 1,	 ], tetrahedron),
+	c: 		Float32Raster.FromArray([ 1,	 0.5,	-1,		 0,	 ], tetrahedron),
+	d: 		Float32Raster.FromArray([ 0,	 1,	 	 0.5,	-1,	 ], tetrahedron),
+	I: 		Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
+	out: 	Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
+}
+let scalar_field_mult_happy_path_args = {
+	a: 		Float32Raster.FromArray([-1,	-0.5,	 1,		 0.5 ], tetrahedron),
+	b: 		Float32Raster.FromArray([ 0.5,	-1,		-0.5,	 1,	 ], tetrahedron),
+	c: 		Float32Raster.FromArray([ 1,	 0.5,	-1,		-0.5 ], tetrahedron),
+	d: 		Float32Raster.FromArray([-0.5,	 1,	 	 0.5,	-1,	 ], tetrahedron),
+	I: 		Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
+	out: 	Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
+}
+let scalar_field_add_edge_case_args = {
+	happy: 	Float32Raster.FromArray([-1,	 0,		 1,		 0.5 ], tetrahedron),
+	edge: 	Float32Raster.FromArray([ NaN,	 Infinity,-Infinity,1e19 ], tetrahedron),
+	I: 		Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
+	out: 	Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
+}
+let scalar_field_mult_edge_case_args = {
+	happy: 	Float32Raster.FromArray([-1,	 0,		 1,		 0.5 ], tetrahedron),
+	edge: 	Float32Raster.FromArray([ NaN,	 Infinity,-Infinity,1e19 ], tetrahedron),
+	O: 		Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
+	I: 		Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
+	out: 	Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
+}
+let add_uniform_args = {
+	a: 		-1,
+	b: 		 0.5,
+	c: 		 1,
+	d: 		 1e20,
+	I: 		 0,
+}
+let mult_uniform_args = {
+	a: 		-1,
+	b: 		 0.5,
+	c: 		 1,
+	d: 		 1e20,
+	I: 		 1,
+}
 algabraic_group_tests(
 	ScalarField.add_scalar, "ScalarField.add_scalar",
 	ScalarField.sub_scalar, "ScalarField.sub_scalar",
-	{
-		a: 		Float32Raster.FromArray([-1,	 0,		 1,		 0.5 ], tetrahedron),
-		b: 		Float32Raster.FromArray([ NaN,	 NaN,	 NaN,	 NaN ], tetrahedron),
-		c: 		Float32Raster.FromArray([Infinity,Infinity,Infinity,Infinity ], tetrahedron),
-		O: 		Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
-		I: 		Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
-		out: 	Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
-	},
-	{
-		a: 		-1,
-		b: 		 0.5,
-		c: 		 1,
-		d: 		 2,
-		I: 		 0,
-	},
+	scalar_field_add_edge_case_args, add_uniform_args,
 );
 algabraic_group_tests(
 	ScalarField.mult_scalar, "ScalarField.mult_scalar",
 	ScalarField.div_scalar, "ScalarField.div_scalar",
-	{
-		a: 		Float32Raster.FromArray([-1,	 0,		 1,		 0.5 ], tetrahedron),
-		b: 		Float32Raster.FromArray([ NaN,	 NaN,	 NaN,	 NaN ], tetrahedron),
-		c: 		Float32Raster.FromArray([Infinity,Infinity,Infinity,Infinity ], tetrahedron),
-		O: 		Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
-		I: 		Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
-		out: 	Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
-	},
-	{
-		a: 		-1,
-		b: 		 0.5,
-		c: 		 0,
-		d: 		 2,
-		I: 		 1,
-	},
+	scalar_field_mult_edge_case_args, mult_uniform_args,
 );
 algabraic_group_tests(
 	ScalarField.add_field, "ScalarField.add_field",
 	ScalarField.sub_field, "ScalarField.sub_field",
-	{
-		a: 		Float32Raster.FromArray([-1,	 0,		 1,		 0.5 ], tetrahedron),
-		b: 		Float32Raster.FromArray([ NaN,	 NaN,	 NaN,	 NaN ], tetrahedron),
-		c: 		Float32Raster.FromArray([Infinity,Infinity,Infinity,Infinity ], tetrahedron),
-		I: 		Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
-		out: 	Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
-	},
-	{
-		a: 		Float32Raster.FromArray([-1,	 0,		 1,		 0.5 ], tetrahedron),
-		b: 		Float32Raster.FromArray([ NaN,	 NaN,	 NaN,	 NaN ], tetrahedron),
-		c: 		Float32Raster.FromArray([Infinity,Infinity,Infinity,Infinity ], tetrahedron),
-		I: 		Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
-	},
+	scalar_field_add_edge_case_args, scalar_field_add_edge_case_args,
 );
 algabraic_group_tests(
 	ScalarField.mult_field,"ScalarField.mult_field",
 	ScalarField.div_field, "ScalarField.div_field",
-	{
-		a: 		Float32Raster.FromArray([-1,	 0,		 1,		 0.5 ], tetrahedron),
-		b: 		Float32Raster.FromArray([ NaN,	 NaN,	 NaN,	 NaN ], tetrahedron),
-		c: 		Float32Raster.FromArray([Infinity,Infinity,Infinity,Infinity ], tetrahedron),
-		O: 		Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
-		I: 		Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
-		out: 	Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
-	},
-	{
-		a: 		Float32Raster.FromArray([-1,	 0,		 1,		 0.5 ], tetrahedron),
-		b: 		Float32Raster.FromArray([ NaN,	 NaN,	 NaN,	 NaN ], tetrahedron),
-		c: 		Float32Raster.FromArray([Infinity,Infinity,Infinity,Infinity ], tetrahedron),
-		O: 		Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
-		I: 		Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
-	},
+	scalar_field_mult_edge_case_args, scalar_field_mult_edge_case_args,
 );
 field_tests(
 	ScalarField.add_field, "ScalarField.add_field",
 	ScalarField.sub_field, "ScalarField.sub_field",
-	{
-		a: 		Float32Raster.FromArray([-1,	 0,		 1,		 0.5 ], tetrahedron),
-		b: 		Float32Raster.FromArray([ 0.5,	-1,		 0,		 1,	 ], tetrahedron),
-		c: 		Float32Raster.FromArray([ 1,	 0.5,	-1,		 0,	 ], tetrahedron),
-		d: 		Float32Raster.FromArray([ 0,	 1,	 	 0.5,	-1,	 ], tetrahedron),
-		I: 		Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
-		out: 	Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
-	},
+	scalar_field_add_happy_path_args, 
 	ScalarField.mult_field,"ScalarField.mult_field",
 	ScalarField.div_field, "ScalarField.div_field",
-	{
-		a: 		Float32Raster.FromArray([-1,	-0.5,	 1,		 0.5 ], tetrahedron),
-		b: 		Float32Raster.FromArray([ 0.5,	-1,		-0.5,	 1,	 ], tetrahedron),
-		c: 		Float32Raster.FromArray([ 1,	 0.5,	-1,		-0.5 ], tetrahedron),
-		d: 		Float32Raster.FromArray([-0.5,	 1,	 	 0.5,	-1,	 ], tetrahedron),
-		I: 		Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
-		out: 	Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
-	},
+	scalar_field_mult_happy_path_args, 
 );
