@@ -267,6 +267,32 @@ VectorField.cross_vector = function (vector_field, vector, result)  {
 	}
 	return result;
 }
+VectorField.div_vector = function(vector_field, vector, result) {
+	result = result || VectorRaster(vector_field.grid);
+	
+	ASSERT_IS_VECTOR_RASTER(vector_field)
+	ASSERT_IS_VECTOR_RASTER(result)
+
+	var x1 = vector_field.x;
+	var y1 = vector_field.y;
+	var z1 = vector_field.z;
+
+	var x2 = vector.x;
+	var y2 = vector.y;
+	var z2 = vector.z;
+
+	var x = result.x;
+	var y = result.y;
+	var z = result.z;
+
+	for (var i=0, li=x.length; i<li; ++i) {
+	    x[i] = x1[i] / x2;
+	    y[i] = y1[i] / y2;
+	    z[i] = z1[i] / z2;
+	}
+
+	return result;
+};
 
 // NOTE: matrix is structured to match the output of THREE.Matrix3.toArray()
 // i.e single array in column-major format

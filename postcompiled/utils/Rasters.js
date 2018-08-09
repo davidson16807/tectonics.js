@@ -3164,6 +3164,26 @@ VectorField.cross_vector = function (vector_field, vector, result) {
  }
  return result;
 }
+VectorField.div_vector = function(vector_field, vector, result) {
+ result = result || VectorRaster(vector_field.grid);
+ if ((vector_field.everything === void 0) || !(vector_field.everything instanceof Float32Array)) { throw "vector_field" + ' is not a vector raster'; }
+ if ((result.everything === void 0) || !(result.everything instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
+ var x1 = vector_field.x;
+ var y1 = vector_field.y;
+ var z1 = vector_field.z;
+ var x2 = vector.x;
+ var y2 = vector.y;
+ var z2 = vector.z;
+ var x = result.x;
+ var y = result.y;
+ var z = result.z;
+ for (var i=0, li=x.length; i<li; ++i) {
+     x[i] = x1[i] / x2;
+     y[i] = y1[i] / y2;
+     z[i] = z1[i] / z2;
+ }
+ return result;
+};
 // NOTE: matrix is structured to match the output of THREE.Matrix3.toArray()
 // i.e single array in column-major format
 VectorField.mult_matrix = function (vector_field, matrix, result) {

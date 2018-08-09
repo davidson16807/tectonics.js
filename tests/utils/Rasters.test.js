@@ -328,6 +328,87 @@ field_tests(
 
 
 
+
+
+
+let add_vector_happy_args = {
+	pos: 	Vector( 1,			 1,		 1 			),
+	neg:	Vector(-1,			-1,		-1 			),
+	tiny: 	Vector( 1e-1,		 1e-1,	 1e-1 		),
+	big: 	Vector( 1e9,		 1e9,	 1e9 		),
+	I: 		Vector( 0,			 0,		 0 			),
+	out: 	Vector( 0,			 0,		 0 			),
+}
+let mult_vector_happy_args = {
+	neg:	Vector(-1,			-1,		-1 			),
+	tiny: 	Vector( 1e-1,		 1e-1,	 1e-1 		),
+	big: 	Vector( 1e9,		 1e9,	 1e9 		),
+	I: 		Vector( 1,			 1,		 1 			),
+	out: 	Vector( 1,			 1,		 1 			),
+}
+// an "edge case" is anything that produces a technically valid value but does not follow abelian group algebra
+// for instance, a "NaN" value that spreads through calculations
+let add_vector_edgy_args = {
+	pos: 	Vector( 1,			 1,		 1 			),
+	neg:	Vector(-1,			-1,		-1 			),
+	tiny: 	Vector( 1e-1,		 1e-1,	 1e-1 		),
+	big: 	Vector( 1e9,		 1e9,	 1e9 		),
+	nans: 	Vector( NaN,		 NaN, 	 NaN 		),
+	infs: 	Vector( Infinity,	 Infinity, Infinity ),
+	ninfs: 	Vector(-Infinity,	-Infinity,-Infinity ),
+	I: 		Vector( 0,			 0,		 0 			),
+	out: 	Vector( 0,			 0,		 0 			),
+}
+let mult_vector_edgy_args = {
+	pos: 	Vector( 1,			 1,		 1 			),
+	neg:	Vector(-1,			-1,		-1 			),
+	tiny: 	Vector( 1e-1,		 1e-1,	 1e-1 		),
+	big: 	Vector( 1e9,		 1e9,	 1e9 		),
+	nans: 	Vector( NaN,		 NaN, 	 NaN 		),
+	infs: 	Vector( Infinity,	 Infinity, Infinity ),
+	ninfs: 	Vector(-Infinity,	-Infinity,-Infinity ),
+	zeros: 	Vector( 0,			 0,		 0 			),
+	I: 		Vector( 1,			 1,		 1 			),
+	out: 	Vector( 0,			 0,		 0 			),
+}
+//algabraic_group_tests(
+//	Vector.add_scalar, "Vector.add_scalar",
+//	Vector.sub_scalar, "Vector.sub_scalar",
+//	add_vector_field_edgy_args, add_uniform_args,
+//);
+//algabraic_group_tests(
+//	Vector.mult_scalar, "Vector.mult_scalar",
+//	Vector.div_scalar, "Vector.div_scalar",
+//	mult_vector_field_edgy_args, mult_uniform_args,
+//);
+//algabraic_group_tests(
+//	Vector.add_scalar, "Vector.add_scalar",
+//	Vector.sub_scalar, "Vector.sub_scalar",
+//	add_vector_field_edgy_args, add_scalar_field_edgy_args,
+//);
+//algabraic_group_tests(
+//	Vector.mult_scalar, "Vector.mult_scalar",
+//	Vector.div_scalar, "Vector.div_scalar",
+//	mult_vector_field_edgy_args, mult_scalar_field_edgy_args,
+//);
+//field_tests(
+//	Vector.add_vector, "Vector.add_vector",
+//	Vector.sub_vector, "Vector.sub_vector",
+//	add_vector_field_happy_args, 
+//	add_vector_field_edgy_args, 
+//	Vector.hadamard_vector,"Vector.hadamard_vector",
+//	Vector.div_vector, "Vector.div_vector",
+//	mult_vector_field_happy_args, 
+//	mult_vector_field_edgy_args, 
+//);
+
+
+
+
+
+
+
+
 let add_vector_field_happy_args = {
 	pos: 	VectorRaster.FromArrays([ 1,	 1,		 1,		 1,	 ], 
 									[ 1,	 1,		 1,		 1,	 ], 
@@ -448,6 +529,16 @@ algabraic_group_tests(
 	VectorField.div_scalar_field, "VectorField.div_scalar_field",
 	mult_vector_field_edgy_args, mult_scalar_field_edgy_args,
 );
+algabraic_group_tests(
+	VectorField.add_vector, "VectorField.add_vector",
+	VectorField.sub_vector, "VectorField.sub_vector",
+	add_vector_field_edgy_args, add_vector_edgy_args,
+);
+algabraic_group_tests(
+	VectorField.hadamard_vector, "VectorField.hadamard_vector",
+	VectorField.div_vector, "VectorField.div_vector",
+	mult_vector_field_edgy_args, mult_vector_edgy_args,
+);
 field_tests(
 	VectorField.add_vector_field, "VectorField.add_vector_field",
 	VectorField.sub_vector_field, "VectorField.sub_vector_field",
@@ -458,3 +549,14 @@ field_tests(
 	mult_vector_field_happy_args, 
 	mult_vector_field_edgy_args, 
 );
+
+
+
+
+
+
+
+
+
+
+
