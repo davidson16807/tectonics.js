@@ -42,6 +42,8 @@ function output_reference_test(op, op_name, A, B){
 					op( a, b, out ), out, 
 					`${op_name}(${a_name}, ${b_name}, out) should return a reference to the "out" variable`
 				);
+				//NOTE: clean up out after your done, so you don't get wierd test results later on
+				op(A.I, B.I, out)
 			}
 		}
 	});
@@ -264,6 +266,8 @@ let scalar_field_mult_happy_path_args = {
 	I: 		Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
 	out: 	Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
 }
+// an "edge case" is anything that produces a technically valid value but does not follow abelian group algebra
+// for instance, a "NaN" value that spreads through calculations
 let scalar_field_add_edge_case_args = {
 	pos: 	Float32Raster.FromArray([ 1,	 1,		 1,		 1,	 ], tetrahedron),
 	neg:	Float32Raster.FromArray([-1,	-1,		-1,		-1	 ], tetrahedron),
@@ -288,17 +292,16 @@ let scalar_field_mult_edge_case_args = {
 	out: 	Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
 }
 let add_uniform_args = {
-	a: 		-1,
-	b: 		 0.5,
-	c: 		 1,
-	d: 		 1e20,
+	pos: 	 1,
+	neg: 	-1,
+	tiny: 	 1e-1,
+	big: 	 1e20,
 	I: 		 0,
 }
 let mult_uniform_args = {
-	a: 		-1,
-	b: 		 0.5,
-	c: 		 1,
-	d: 		 1e20,
+	neg: 	-1,
+	tiny: 	 1e-1,
+	big: 	 1e20,
 	I: 		 1,
 }
 
