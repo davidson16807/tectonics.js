@@ -430,6 +430,16 @@ let mult_vector_field_edge_case_args = {
 									[ 0,	 0,		 0,		 0	 ], 
 									[ 0,	 0,		 0,		 0	 ], tetrahedron),
 }
+algabraic_group_tests(
+	VectorField.add_scalar, "VectorField.add_scalar",
+	VectorField.sub_scalar, "VectorField.sub_scalar",
+	add_vector_field_edge_case_args, add_uniform_args,
+);
+algabraic_group_tests(
+	VectorField.mult_scalar, "VectorField.mult_scalar",
+	VectorField.div_scalar, "VectorField.div_scalar",
+	mult_vector_field_edge_case_args, mult_uniform_args,
+);
 field_tests(
 	VectorField.add_vector_field, "VectorField.add_vector_field",
 	VectorField.sub_vector_field, "VectorField.sub_vector_field",
