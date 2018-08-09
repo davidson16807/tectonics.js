@@ -223,20 +223,24 @@ function abelian_group_tests 	(op, op_name, inv, inv_name, args){
 }
 
 // "abelian_group_tests" tests a set of four operations to see whether it consitutes a "Field" from Abstract Algebra
-function field_tests	(add, add_name, 	sub, sub_name, add_args,
-						 mult,mult_name, 	div, div_name, mult_args) {
+function field_tests	(add, add_name, 	sub, sub_name, happy_add_args,	edgy_add_args,
+						 mult,mult_name, 	div, div_name, happy_mult_args,	edgy_mult_args) {
 
-	abelian_group_tests		(add, add_name, sub, sub_name, add_args);
+	abelian_group_tests		(add, add_name, sub, sub_name, 		happy_add_args);
 
-	abelian_group_tests		(mult, mult_name, div, div_name, mult_args);
+	algabraic_group_tests	(add, add_name, sub, sub_name, 		edgy_add_args, edgy_add_args);
 
-	distributivity_tests	(add, add_name, mult, mult_name,	add_args	);
-	distributivity_tests	(add, add_name, mult, mult_name,	mult_args	);
-	distributivity_tests	(add, add_name, div,  div_name, 	mult_args	); // NOTE: don't run div on add_args, since div0 errors can occur
+	abelian_group_tests		(mult, mult_name, div, div_name, 	happy_mult_args);
 
-	distributivity_tests	(sub, sub_name, mult, mult_name,	add_args	);
-	distributivity_tests	(sub, sub_name, mult, mult_name,	mult_args	);
-	distributivity_tests	(sub, sub_name, div,  div_name, 	mult_args	); // NOTE: don't run div on add_args, since div0 errors can occur
+	algabraic_group_tests	(mult, mult_name, div, div_name, 	edgy_mult_args, edgy_mult_args);
+
+	distributivity_tests	(add, add_name, mult, mult_name,	happy_add_args	);
+	distributivity_tests	(add, add_name, mult, mult_name,	happy_mult_args	);
+	distributivity_tests	(add, add_name, div,  div_name, 	happy_mult_args	); // NOTE: don't run div on happy_add_args, since div0 errors can occur
+
+	distributivity_tests	(sub, sub_name, mult, mult_name,	happy_add_args	);
+	distributivity_tests	(sub, sub_name, mult, mult_name,	happy_mult_args	);
+	distributivity_tests	(sub, sub_name, div,  div_name, 	happy_mult_args	); // NOTE: don't run div on happy_add_args, since div0 errors can occur
 }
 
 framework_tests(
@@ -244,32 +248,42 @@ framework_tests(
 	Float32Raster.FromArray([-1,	 0,		 0.5,	 NaN ], tetrahedron),
 	Float32Raster.FromArray([ 1, 	 2,		 0.49,	 3 	 ], tetrahedron),
 );
+
 let scalar_field_add_happy_path_args = {
-	a: 		Float32Raster.FromArray([-1,	 0,		 1,		 0.5 ], tetrahedron),
-	b: 		Float32Raster.FromArray([ 0.5,	-1,		 0,		 1,	 ], tetrahedron),
-	c: 		Float32Raster.FromArray([ 1,	 0.5,	-1,		 0,	 ], tetrahedron),
-	d: 		Float32Raster.FromArray([ 0,	 1,	 	 0.5,	-1,	 ], tetrahedron),
+	pos: 	Float32Raster.FromArray([ 1,	 1,		 1,		 1,	 ], tetrahedron),
+	neg:	Float32Raster.FromArray([-1,	-1,		-1,		-1	 ], tetrahedron),
+	tiny: 	Float32Raster.FromArray([ 1e-1,	 1e-1,	 1e-1,	 1e-1], tetrahedron),
+	big: 	Float32Raster.FromArray([ 1e9,	 1e9,	 1e9,	 1e9,], tetrahedron),
 	I: 		Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
-	out: 	Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
+	out: 	Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
 }
 let scalar_field_mult_happy_path_args = {
-	a: 		Float32Raster.FromArray([-1,	-0.5,	 1,		 0.5 ], tetrahedron),
-	b: 		Float32Raster.FromArray([ 0.5,	-1,		-0.5,	 1,	 ], tetrahedron),
-	c: 		Float32Raster.FromArray([ 1,	 0.5,	-1,		-0.5 ], tetrahedron),
-	d: 		Float32Raster.FromArray([-0.5,	 1,	 	 0.5,	-1,	 ], tetrahedron),
+	neg:	Float32Raster.FromArray([-1,	-1,		-1,		-1	 ], tetrahedron),
+	tiny: 	Float32Raster.FromArray([ 1e-1,	 1e-1,	 1e-1,	 1e-1], tetrahedron),
+	big: 	Float32Raster.FromArray([ 1e9,	 1e9,	 1e9,	 1e9,], tetrahedron),
 	I: 		Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
 	out: 	Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
 }
 let scalar_field_add_edge_case_args = {
-	happy: 	Float32Raster.FromArray([-1,	 0,		 1,		 0.5 ], tetrahedron),
-	edge: 	Float32Raster.FromArray([ NaN,	 Infinity,-Infinity,1e19 ], tetrahedron),
+	pos: 	Float32Raster.FromArray([ 1,	 1,		 1,		 1,	 ], tetrahedron),
+	neg:	Float32Raster.FromArray([-1,	-1,		-1,		-1	 ], tetrahedron),
+	tiny: 	Float32Raster.FromArray([ 1e-1,	 1e-1,	 1e-1,	 1e-1], tetrahedron),
+	big: 	Float32Raster.FromArray([ 1e9,	 1e9,	 1e9,	 1e9,], tetrahedron),
+	nans: 	Float32Raster.FromArray([ NaN,	 NaN, 	 NaN, 	 NaN ], tetrahedron),
+	infs: 	Float32Raster.FromArray([ Infinity, Infinity, Infinity, Infinity], tetrahedron),
+	ninfs: 	Float32Raster.FromArray([-Infinity,-Infinity,-Infinity,-Infinity], tetrahedron),
 	I: 		Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
 	out: 	Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
 }
 let scalar_field_mult_edge_case_args = {
-	happy: 	Float32Raster.FromArray([-1,	 0,		 1,		 0.5 ], tetrahedron),
-	edge: 	Float32Raster.FromArray([ NaN,	 Infinity,-Infinity,1e19 ], tetrahedron),
-	O: 		Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
+	pos: 	Float32Raster.FromArray([ 1,	 1,		 1,		 1,	 ], tetrahedron),
+	neg:	Float32Raster.FromArray([-1,	-1,		-1,		-1	 ], tetrahedron),
+	tiny: 	Float32Raster.FromArray([ 1e-1,	 1e-1,	 1e-1,	 1e-1], tetrahedron),
+	big: 	Float32Raster.FromArray([ 1e9,	 1e9,	 1e9,	 1e9,], tetrahedron),
+	nans: 	Float32Raster.FromArray([ NaN,	 NaN, 	 NaN, 	 NaN ], tetrahedron),
+	infs: 	Float32Raster.FromArray([ Infinity, Infinity, Infinity, Infinity], tetrahedron),
+	ninfs: 	Float32Raster.FromArray([-Infinity,-Infinity,-Infinity,-Infinity], tetrahedron),
+	zeros: 	Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
 	I: 		Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
 	out: 	Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
 }
@@ -287,6 +301,7 @@ let mult_uniform_args = {
 	d: 		 1e20,
 	I: 		 1,
 }
+
 algabraic_group_tests(
 	ScalarField.add_scalar, "ScalarField.add_scalar",
 	ScalarField.sub_scalar, "ScalarField.sub_scalar",
@@ -297,21 +312,13 @@ algabraic_group_tests(
 	ScalarField.div_scalar, "ScalarField.div_scalar",
 	scalar_field_mult_edge_case_args, mult_uniform_args,
 );
-algabraic_group_tests(
-	ScalarField.add_field, "ScalarField.add_field",
-	ScalarField.sub_field, "ScalarField.sub_field",
-	scalar_field_add_edge_case_args, scalar_field_add_edge_case_args,
-);
-algabraic_group_tests(
-	ScalarField.mult_field,"ScalarField.mult_field",
-	ScalarField.div_field, "ScalarField.div_field",
-	scalar_field_mult_edge_case_args, scalar_field_mult_edge_case_args,
-);
 field_tests(
 	ScalarField.add_field, "ScalarField.add_field",
 	ScalarField.sub_field, "ScalarField.sub_field",
 	scalar_field_add_happy_path_args, 
+	scalar_field_add_edge_case_args, 
 	ScalarField.mult_field,"ScalarField.mult_field",
 	ScalarField.div_field, "ScalarField.div_field",
 	scalar_field_mult_happy_path_args, 
+	scalar_field_mult_edge_case_args, 
 );
