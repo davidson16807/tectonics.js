@@ -27,6 +27,21 @@ function framework_tests(type_name, a, b){
 	});
 }
 
+function idempotence_tests(op, op_name, A, B){
+	QUnit.test(`${op_name} Idempotence tests`, function (assert) {
+		for (var a_name in A) {
+			for (var b_name in B) {
+				let a = A[a_name];
+				let b = B[b_name];
+				assert.deepApprox( 
+					op( a, b ), op( a, b ), 
+					`${op_name}(${a_name}, ${b_name}) needs the idemoptent property: the operation can be called repeatedly without changing the value`
+				);
+			}
+		}
+	});
+}
+
 function associativity_tests(op, op_name, inv, inv_name, A, B){
 	QUnit.test(`${op_name}/${inv_name} Associativity tests`, function (assert) {
 		for (var a_name in A) {
@@ -161,6 +176,9 @@ function distributivity_tests 	(add, add_name, mult, mult_name, args){
 
 // "algabraic_group_tests" tests a operation and its inverse to see whether it functions as a group from Abstract Algebra
 function algabraic_group_tests	(op, op_name, inv, inv_name, A, B){
+	idempotence_tests		(op, op_name, 		 		 A, B);
+	idempotence_tests		(inv,inv_name,		 		 A, B);
+
 	closure_tests			(op, op_name, inv, inv_name, A, B);
 	associativity_tests		(op, op_name, inv, inv_name, A, B);
 	identity_tests			(op, op_name, inv, inv_name, A, B);
@@ -169,6 +187,9 @@ function algabraic_group_tests	(op, op_name, inv, inv_name, A, B){
 
 // "abelian_group_tests" tests a operation and its inverse to see whether it functions as an Abelian (aka "commutative") group from Abstract Algebra
 function abelian_group_tests 	(op, op_name, inv, inv_name, args){
+	idempotence_tests		(op, op_name, 		 		 args, args);
+	idempotence_tests		(inv,inv_name,		 		 args, args);
+
 	closure_tests			(op, op_name, inv, inv_name, args, args);
 	associativity_tests		(op, op_name, inv, inv_name, args, args);
 	identity_tests			(op, op_name, inv, inv_name, args, args);
