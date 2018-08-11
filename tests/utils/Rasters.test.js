@@ -27,7 +27,7 @@ function framework_tests(type_name, a, b){
 	});
 }
 
-function binary_output_reference_test(op, op_name, A, B){
+function test_binary_output_reference(op, op_name, A, B){
 	let out = A.out;
 	QUnit.test(`${op_name} Output Reference tests`, function (assert) {
 		for (var a_name in A) {
@@ -48,7 +48,7 @@ function binary_output_reference_test(op, op_name, A, B){
 		}
 	});
 }
-function unary_output_reference_test(op, op_name, A){
+function test_unary_output_reference(op, op_name, A){
 	let out = A.out;
 	QUnit.test(`${op_name} Output Reference tests`, function (assert) {
 		for (var a_name in A) {
@@ -67,7 +67,7 @@ function unary_output_reference_test(op, op_name, A){
 	});
 }
 
-function binary_idempotence_tests(op, op_name, A, B){
+function test_binary_output_idempotence(op, op_name, A, B){
 	QUnit.test(`${op_name} Idempotence tests`, function (assert) {
 		for (var a_name in A) {
 			for (var b_name in B) {
@@ -82,7 +82,7 @@ function binary_idempotence_tests(op, op_name, A, B){
 	});
 }
 
-function unary_idempotence_tests(op, op_name, A){
+function test_unary_idempotence(op, op_name, A){
 	QUnit.test(`${op_name} Idempotence tests`, function (assert) {
 		for (var a_name in A) {
 			let a = A[a_name];
@@ -94,7 +94,7 @@ function unary_idempotence_tests(op, op_name, A){
 	});
 }
 
-function associativity_tests(op, op_name, A, B){
+function test_associativity(op, op_name, A, B){
 	QUnit.test(`${op_name} Associativity tests`, function (assert) {
 		for (var a_name in A) {
 			for (var b_name in B) {
@@ -114,7 +114,7 @@ function associativity_tests(op, op_name, A, B){
 }
 
 
-function closure_tests(op, op_name, A, B){
+function test_closure(op, op_name, A, B){
 	QUnit.test(`${op_name} Closure tests`, function (assert) {
 
 		for (var a_name in A) {
@@ -131,7 +131,7 @@ function closure_tests(op, op_name, A, B){
 		}
 	});
 }
-function identity_tests(op, op_name, A, B){
+function test_identity(op, op_name, A, B){
 	let Ia 	= A.I;
 	let Ib 	= B.I;
 
@@ -164,20 +164,7 @@ function inverse_tests(op, op_name, inv, inv_name, A, B){
 	});
 }
 
-function commutative_inverse_tests(op, op_name, inv, inv_name, args){
-	let I 	= args.I;
-
-	QUnit.test(`${op_name}/${inv_name} Commutative Inverse tests`, function (assert) {
-		for (var a_name in args) {
-			let a = args[a_name];
-			assert.deepApprox( inv(a, a), I,
-				`${inv_name}(${a_name}, ${a_name}) needs the inverse property: an operation exists that returns a value to the identity`
-			);
-		}
-	});
-}
-
-function commutativity_tests 	(op, op_name, args){
+function test_commutativity 	(op, op_name, args){
 	QUnit.test(`${op_name} Commutativity tests`, function (assert) {
 		for (var a_name in args) {
 			for (var b_name in args) {
@@ -193,7 +180,7 @@ function commutativity_tests 	(op, op_name, args){
 	});
 }
 
-function distributivity_tests 	(add, add_name, mult, mult_name, args){
+function test_distributivity 	(add, add_name, mult, mult_name, args){
 	QUnit.test(`${add_name}/${mult_name} Distributivity tests`, function (assert) {
 		for (var a_name in args) {
 			for (var b_name in args) {
@@ -212,115 +199,105 @@ function distributivity_tests 	(add, add_name, mult, mult_name, args){
 	});
 }
 
-
-// "unary_operator_tests" tests an operation for conformance to standards used throughout the library
-function unary_operator_tests(op, op_name, A) {
-	unary_output_reference_test	(op, op_name, A);
-	unary_idempotence_tests		(op, op_name, A);
+function test_properties(properties, op, op_name, A, B) {
+	for(let test of properties){
+		test(op, op_name, A, B);
+	}
 }
 
-// "binary_operator_tests" tests an operation for conformance to standards used throughout the library
-function binary_operator_tests(op, op_name, A, B) {
-	binary_output_reference_test	(op, op_name, A, B);
-	binary_idempotence_tests		(op, op_name, A, B);
-}
 
-// "algabraic_magma_tests" tests an operation to see whether it functions as a magma from Abstract Algebra
-function algabraic_magma_tests	(op, op_name, A, B){
-	binary_operator_tests	(op, op_name, 	 A, B);
-
-	closure_tests			(op, op_name, 	 A, B);
-}
-
-// "algabraic_monoid_tests" tests an operation to see whether it functions as a unital magma from Abstract Algebra
-function algabraic_unital_magma_tests	(op, op_name, A, B){
-	binary_operator_tests	(op, op_name, 	 A, B);
-
-	closure_tests			(op, op_name, 	 A, B);
-	identity_tests			(op, op_name, 	 A, B);
-}
-
-// "algabraic_semigroup_tests" tests a operation to see whether it functions as a semigroup from Abstract Algebra
-function algabraic_semigroup_tests	(op, op_name, A, B){
-	binary_operator_tests	(op, op_name, 	 A, B);
-
-	closure_tests			(op, op_name, 	 A, B);
-	associativity_tests		(op, op_name,	 A, B);
-}
-
-// "algabraic_monoid_tests" tests a operation to see whether it functions as a monoid from Abstract Algebra
-function algabraic_monoid_tests	(op, op_name, A, B){
-	binary_operator_tests	(op, op_name, 	 A, B);
-
-	closure_tests			(op, op_name, 	 A, B);
-	associativity_tests		(op, op_name,	 A, B);
-	identity_tests			(op, op_name, 	 A, B);
-}
 
 // "algabraic_group_tests" tests a operation and its inverse to see whether it functions as a group from Abstract Algebra
 function algabraic_group_tests	(op, op_name, inv, inv_name, A, B){
-	binary_operator_tests	(op, op_name, 	 A, B);
-	binary_operator_tests	(inv, inv_name,  A, B);
+	test_properties([
+			test_binary_output_reference,
+			test_binary_output_idempotence,			
+			test_closure,
+			test_associativity,
+			test_identity,
+		], 
+		op, op_name, A, B
+	);
 
-	closure_tests			(op, op_name, 	 A, B);
-	associativity_tests		(op, op_name,	 A, B);
-	identity_tests			(op, op_name, 	 A, B);
-
-	closure_tests			(inv, inv_name,  A, B);
-//	associativity_tests		(inv, inv_name,	 A, B); // NOTE: inv can never be associative - it's the inverse!
-	identity_tests			(inv, inv_name,  A, B);
+	test_properties([
+			test_binary_output_reference,
+			test_binary_output_idempotence,			
+			test_closure,
+			// test_associativity, // NOTE: inv can never be associative - it's the inverse!
+			test_identity,
+		], 
+		inv, inv_name, A, B
+	);
 
 	inverse_tests 			(op, op_name, inv, inv_name,  A, B);
 }
 
-// "algabraic_monoid_tests" tests a operation to see whether it functions as a monoid from Abstract Algebra
-function algabraic_commutative_semigroup_tests	(op, op_name, args){
-	binary_operator_tests	(op, op_name,  	args, args);
-	
-	closure_tests			(op, op_name,  	args, args);
-	associativity_tests		(op, op_name, 	args, args);
-	commutativity_tests		(op, op_name, 	args);
-}
-
-// "algabraic_monoid_tests" tests a operation to see whether it functions as a monoid from Abstract Algebra
-function algabraic_commutative_monoid_tests	(op, op_name, args){
-	binary_operator_tests	(op, op_name,  	args, args);
-	
-	closure_tests			(op, op_name,  	args, args);
-	associativity_tests		(op, op_name, 	args, args);
-	identity_tests			(op, op_name, 	args, args);
-	commutativity_tests		(op, op_name, 	args);
-}
-
 // "algabraic_abelian_group_tests" tests a operation and its inverse to see whether it functions as an Abelian (aka "commutative") group from Abstract Algebra
-function algabraic_abelian_group_tests 	(op, op_name, inv, inv_name, args){
-	algabraic_group_tests 		(op, op_name,inv, inv_name, 	args, args);
+function algabraic_abelian_group_tests 	(op, op_name,  inv, inv_name, happy_op_args, edgy_op_args){
 
-	commutativity_tests		 	(op, op_name, 					args);
-	commutative_inverse_tests 	(op, op_name, inv, inv_name, 	args);
+
+	test_properties([
+			test_binary_output_reference,
+			test_binary_output_idempotence,			
+			test_closure,
+			test_identity,
+			test_associativity,
+			test_commutativity,
+		], 
+		op, op_name, happy_op_args, happy_op_args
+	);
+
+	test_properties([
+			test_binary_output_reference,
+			test_binary_output_idempotence,			
+			test_closure,
+			// test_identity,
+			test_associativity,
+			test_commutativity,
+		], 
+		op, op_name, edgy_op_args, edgy_op_args
+	);
+
+	test_properties([
+			test_binary_output_reference,
+			test_binary_output_idempotence,			
+			test_closure,
+			test_identity,
+			// test_associativity, // NOTE: inv can never be associative - it's the inverse!
+			// test_commutativity,
+		], 
+		inv, inv_name, happy_op_args, happy_op_args
+	);
+
+	test_properties([
+			test_binary_output_reference,
+			test_binary_output_idempotence,			
+			test_closure,
+			// test_identity,
+			// test_associativity, // NOTE: inv can never be associative - it's the inverse!
+			// test_commutativity,
+		], 
+		inv, inv_name, edgy_op_args, edgy_op_args
+	);
+
+	inverse_tests 			(op, op_name, inv, inv_name,  happy_op_args, happy_op_args);
+
 }
 
 // "algabraic_abelian_group_tests" tests a set of four operations to see whether it consitutes a "Field" from Abstract Algebra
 function algabraic_field_tests	(add, add_name,  sub, sub_name, happy_add_args,	edgy_add_args,
 						 mult,mult_name, div, div_name, happy_mult_args,edgy_mult_args) {
 
-	algabraic_abelian_group_tests		(add, add_name, sub, sub_name, 		happy_add_args);
+	algabraic_abelian_group_tests	(add, add_name, sub, sub_name,  happy_add_args, edgy_add_args);
+	algabraic_abelian_group_tests	(mult, mult_name, div, div_name,  happy_mult_args, edgy_mult_args);
 
-	algabraic_commutative_semigroup_tests(add, add_name, 					edgy_add_args);
-	algabraic_unital_magma_tests		(sub, sub_name, 					edgy_add_args, 	edgy_add_args);
+	test_distributivity	(add, add_name, mult, mult_name,	happy_add_args	);
+	test_distributivity	(add, add_name, mult, mult_name,	happy_mult_args	);
+	test_distributivity	(add, add_name, div,  div_name, 	happy_mult_args	); // NOTE: don't run div on happy_add_args, since div0 errors can occur
 
-	algabraic_abelian_group_tests		(mult, mult_name, div, div_name, 	happy_mult_args);
-
-	algabraic_commutative_semigroup_tests(mult, mult_name, 					edgy_mult_args);
-	algabraic_unital_magma_tests		(div, div_name, 					edgy_mult_args,	edgy_mult_args);
-
-	distributivity_tests				(add, add_name, mult, mult_name,	happy_add_args	);
-	distributivity_tests				(add, add_name, mult, mult_name,	happy_mult_args	);
-	distributivity_tests				(add, add_name, div,  div_name, 	happy_mult_args	); // NOTE: don't run div on happy_add_args, since div0 errors can occur
-
-	distributivity_tests				(sub, sub_name, mult, mult_name,	happy_add_args	);
-	distributivity_tests				(sub, sub_name, mult, mult_name,	happy_mult_args	);
-	distributivity_tests				(sub, sub_name, div,  div_name, 	happy_mult_args	); // NOTE: don't run div on happy_add_args, since div0 errors can occur
+	test_distributivity	(sub, sub_name, mult, mult_name,	happy_add_args	);
+	test_distributivity	(sub, sub_name, mult, mult_name,	happy_mult_args	);
+	test_distributivity	(sub, sub_name, div,  div_name, 	happy_mult_args	); // NOTE: don't run div on happy_add_args, since div0 errors can occur
 }
 
 
@@ -583,28 +560,69 @@ algabraic_group_tests(
 	ScalarField.div_scalar, "ScalarField.div_scalar",
 	mult_scalar_field_happy_args, mult_uniform_args,
 );
-algabraic_semigroup_tests(
+test_properties([
+		test_binary_output_reference,
+		test_binary_output_idempotence,			
+		test_closure,
+		test_identity,
+		test_associativity, 
+		// test_commutativity,
+	], 
 	ScalarField.add_scalar, "ScalarField.add_scalar",
 	add_scalar_field_edgy_args, add_uniform_args,
 );
-algabraic_semigroup_tests(
+test_properties([
+		test_binary_output_reference,
+		test_binary_output_idempotence,			
+		test_closure,
+		test_identity,
+		test_associativity, 
+		// test_commutativity,
+	], 
 	ScalarField.mult_scalar, "ScalarField.mult_scalar",
 	mult_scalar_field_edgy_args, mult_uniform_args,
 );
-algabraic_unital_magma_tests(
+test_properties([
+		test_binary_output_reference,
+		test_binary_output_idempotence,			
+		test_closure,
+		test_identity,
+		// test_associativity, 
+		// test_commutativity,
+	], 
 	ScalarField.sub_scalar, "ScalarField.sub_scalar",
 	add_scalar_field_edgy_args, add_uniform_args,
 );
-algabraic_unital_magma_tests(
+test_properties([
+		test_binary_output_reference,
+		test_binary_output_idempotence,			
+		test_closure,
+		test_identity,
+		// test_associativity, 
+		// test_commutativity,
+	], 
 	ScalarField.div_scalar, "ScalarField.div_scalar",
 	mult_scalar_field_edgy_args, mult_uniform_args,
 );
-
-algabraic_semigroup_tests(
+test_properties([
+		test_binary_output_reference,
+		test_binary_output_idempotence,			
+		test_closure,
+		// test_identity,
+		test_associativity, 
+		// test_commutativity,
+	], 
 	ScalarField.min_scalar, "ScalarField.min_scalar",
 	mult_scalar_field_happy_args, mult_uniform_args,
 );
-algabraic_semigroup_tests(
+test_properties([
+		test_binary_output_reference,
+		test_binary_output_idempotence,			
+		test_closure,
+		// test_identity,
+		test_associativity, 
+		// test_commutativity,
+	], 
 	ScalarField.max_scalar, "ScalarField.max_scalar",
 	mult_scalar_field_happy_args, mult_uniform_args,
 );
@@ -621,14 +639,29 @@ algabraic_field_tests(
 	mult_scalar_field_edgy_args, 
 );
 
-algabraic_commutative_semigroup_tests(
+test_properties([
+		test_binary_output_reference,
+		test_binary_output_idempotence,			
+		test_closure,
+		// test_identity,
+		test_associativity, 
+		// test_commutativity,
+	], 
 	ScalarField.min_field, "ScalarField.min_field",
-	mult_scalar_field_happy_args, 
+	mult_scalar_field_happy_args, mult_scalar_field_happy_args, 
 );
-algabraic_commutative_semigroup_tests(
+test_properties([
+		test_binary_output_reference,
+		test_binary_output_idempotence,			
+		test_closure,
+		// test_identity,
+		test_associativity, 
+		// test_commutativity,
+	], 
 	ScalarField.max_field, "ScalarField.max_field",
-	mult_scalar_field_happy_args, 
+	mult_scalar_field_happy_args, mult_scalar_field_happy_args, 
 );
+
 
 
 
@@ -644,22 +677,51 @@ algabraic_group_tests(
 	VectorField.div_scalar, "VectorField.div_scalar",
 	mult_vector_field_happy_args, mult_uniform_args,
 );
-algabraic_semigroup_tests(
+test_properties([
+		test_binary_output_reference,
+		test_binary_output_idempotence,			
+		test_closure,
+		test_identity,
+		test_associativity, 
+		// test_commutativity,
+	], 
 	VectorField.add_scalar, "VectorField.add_scalar",
 	add_vector_field_edgy_args, add_uniform_args,
 );
-algabraic_semigroup_tests(
+test_properties([
+		test_binary_output_reference,
+		test_binary_output_idempotence,			
+		test_closure,
+		test_identity,
+		test_associativity, 
+		// test_commutativity,
+	], 
 	VectorField.mult_scalar, "VectorField.mult_scalar",
 	mult_vector_field_edgy_args, mult_uniform_args,
 );
-algabraic_unital_magma_tests(
+test_properties([
+		test_binary_output_reference,
+		test_binary_output_idempotence,			
+		test_closure,
+		test_identity,
+		// test_associativity, 
+		// test_commutativity,
+	], 
 	VectorField.sub_scalar, "VectorField.sub_scalar",
 	add_vector_field_edgy_args, add_uniform_args,
 );
-algabraic_unital_magma_tests(
+test_properties([
+		test_binary_output_reference,
+		test_binary_output_idempotence,			
+		test_closure,
+		test_identity,
+		// test_associativity, 
+		// test_commutativity,
+	], 
 	VectorField.div_scalar, "VectorField.div_scalar",
 	mult_vector_field_edgy_args, mult_uniform_args,
 );
+
 
 
 
@@ -674,22 +736,51 @@ algabraic_group_tests(
 	VectorField.div_vector, "VectorField.div_vector",
 	mult_vector_field_happy_args, mult_vector_happy_args,
 );
-algabraic_semigroup_tests(
+test_properties([
+		test_binary_output_reference,
+		test_binary_output_idempotence,			
+		test_closure,
+		test_identity,
+		test_associativity, 
+		// test_commutativity,
+	], 
 	VectorField.add_vector, "VectorField.add_vector",
 	add_vector_field_edgy_args, add_vector_edgy_args,
 );
-algabraic_semigroup_tests(
+test_properties([
+		test_binary_output_reference,
+		test_binary_output_idempotence,			
+		test_closure,
+		test_identity,
+		test_associativity, 
+		// test_commutativity,
+	], 
 	VectorField.hadamard_vector, "VectorField.hadamard_vector",
 	mult_vector_field_edgy_args, mult_vector_edgy_args,
 );
-algabraic_unital_magma_tests(
+test_properties([
+		test_binary_output_reference,
+		test_binary_output_idempotence,			
+		test_closure,
+		test_identity,
+		// test_associativity, 
+		// test_commutativity,
+	], 
 	VectorField.sub_vector, "VectorField.sub_vector",
 	add_vector_field_edgy_args, add_vector_edgy_args,
 );
-algabraic_unital_magma_tests(
+test_properties([
+		test_binary_output_reference,
+		test_binary_output_idempotence,			
+		test_closure,
+		test_identity,
+		// test_associativity, 
+		// test_commutativity,
+	], 
 	VectorField.div_vector, "VectorField.div_vector",
 	mult_vector_field_edgy_args, mult_vector_edgy_args,
 );
+
 
 
 
@@ -705,19 +796,47 @@ algabraic_group_tests(
 	VectorField.div_scalar_field, "VectorField.div_scalar_field",
 	mult_vector_field_happy_args, mult_scalar_field_happy_args,
 );
-algabraic_semigroup_tests(
+test_properties([
+		test_binary_output_reference,
+		test_binary_output_idempotence,			
+		test_closure,
+		test_identity,
+		test_associativity, 
+		// test_commutativity,
+	], 
 	VectorField.add_scalar_field, "VectorField.add_scalar_field",
 	add_vector_field_edgy_args, add_scalar_field_edgy_args,
 );
-algabraic_semigroup_tests(
+test_properties([
+		test_binary_output_reference,
+		test_binary_output_idempotence,			
+		test_closure,
+		test_identity,
+		test_associativity, 
+		// test_commutativity,
+	], 
 	VectorField.mult_scalar_field, "VectorField.mult_scalar_field",
 	mult_vector_field_edgy_args, mult_scalar_field_edgy_args,
 );
-algabraic_unital_magma_tests(
+test_properties([
+		test_binary_output_reference,
+		test_binary_output_idempotence,			
+		test_closure,
+		test_identity,
+		// test_associativity, 
+		// test_commutativity,
+	], 
 	VectorField.sub_scalar_field, "VectorField.sub_scalar_field",
 	add_vector_field_edgy_args, add_scalar_field_edgy_args,
 );
-algabraic_unital_magma_tests(
+test_properties([
+		test_binary_output_reference,
+		test_binary_output_idempotence,			
+		test_closure,
+		test_identity,
+		// test_associativity, 
+		// test_commutativity,
+	], 
 	VectorField.div_scalar_field, "VectorField.div_scalar_field",
 	mult_vector_field_edgy_args, mult_scalar_field_edgy_args,
 );
