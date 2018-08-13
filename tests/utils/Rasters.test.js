@@ -61,8 +61,6 @@ function test_unary_output_reference(op, op_name, A){
 				op( a, out ), out, 
 				`${op_name}(${a_name}, out) should return a reference to the "out" variable`
 			);
-			//NOTE: clean up out after your done, so you don't get wierd test results later on
-			op(A.I, B.I, out)
 		}
 	});
 }
@@ -82,7 +80,7 @@ function test_binary_output_idempotence(op, op_name, A, B){
 	});
 }
 
-function test_unary_idempotence(op, op_name, A){
+function test_unary_output_idempotence(op, op_name, A){
 	QUnit.test(`${op_name} Idempotence tests`, function (assert) {
 		for (var a_name in A) {
 			let a = A[a_name];
@@ -245,8 +243,8 @@ function algabraic_group_tests	(
 			test_binary_output_reference,
 			test_binary_output_idempotence,			
 			test_closure,
-			test_identity,
 			// test_associativity, // NOTE: inv can never be associative - it's the inverse!
+			test_identity,
 		], 
 		inv, inv_name, edgy1, edgy2,
 	);
@@ -257,7 +255,6 @@ function algabraic_group_tests	(
 
 // "algabraic_abelian_group_tests" tests a operation and its inverse to see whether it functions as an Abelian (aka "commutative") group from Abstract Algebra
 function algabraic_abelian_group_tests 	(op, op_name,  inv, inv_name, happy_op_args, edgy_op_args){
-
 
 	test_properties([
 			test_binary_output_reference,
@@ -407,12 +404,10 @@ let mult_matrix_happy_args = {
 	big: 	Matrix( 1e4,		 1e4,	 1e4, 		
 				    1e4,		 1e4,	 1e4, 		
 				    1e4,		 1e4,	 1e4, 		),
-	I: 		Matrix( 1,			 1,		 1, 		
-				    1,			 1,		 1, 		
-				    1,			 1,		 1, 		),
 	out: 	Matrix( 1,			 1,		 1, 		
 				    1,			 1,		 1, 		
 				    1,			 1,		 1, 		),
+	I: 		Matrix.Identity(),
 }
 // an "edge case" is anything that produces a technically valid value but does not follow abelian group algebra
 // for instance, a "NaN" value that spreads through calculations
@@ -470,12 +465,10 @@ let mult_matrix_edgy_args = {
 	zeros: 	Matrix( 0,			 0,		 0, 		
 				    0,			 0,		 0, 		
 				    0,			 0,		 0, 		),
-	I: 		Matrix( 1,			 1,		 1, 		
-				    1,			 1,		 1, 		
-				    1,			 1,		 1, 		),
 	out: 	Matrix( 0,			 0,		 0, 		
 				    0,			 0,		 0, 		
 				    0,			 0,		 0, 		),
+	I: 		Matrix.Identity(),
 }
 let add_matrix4x4_happy_args = {
 	pos: 	Matrix( 1,			 1,		 1, 		 1, 		
@@ -524,6 +517,7 @@ let mult_matrix4x4_happy_args = {
 				    1,			 1,		 1, 		 1, 		
 				    1,			 1,		 1, 		 1, 		
 				    1,			 1,		 1, 		 1, 		),
+	I: 		Matrix4x4.identity(),
 }
 let add_matrix4x4_edgy_args = {
 	pos: 	Matrix( 1,			 1,		 1, 		 1, 		
@@ -596,14 +590,11 @@ let mult_matrix4x4_edgy_args = {
 				    0,			 0,		 0, 		 0, 		
 				    0,			 0,		 0, 		 0, 		
 				    0,			 0,		 0, 		 0, 		),
-	I: 		Matrix( 1,			 1,		 1, 		 1, 		
-				    1,			 1,		 1, 		 1, 		
-				    1,			 1,		 1, 		 1, 		
-				    1,			 1,		 1, 		 1, 		),
 	out: 	Matrix( 0,			 0,		 0, 		 0, 		
 				    0,			 0,		 0, 		 0, 		
 				    0,			 0,		 0, 		 0, 		
 				    0,			 0,		 0, 		 0, 		),
+	I: 		Matrix4x4.identity(),
 }
 let add_scalar_field_happy_args = {
 	pos: 	Float32Raster.FromArray([ 1,	 1,		 1,		 1,	 ], tetrahedron),
@@ -886,10 +877,6 @@ algabraic_group_tests(
 	mult_vector_field_edgy_args, mult_uniform_args,
 );
 
-
-
-
-
 algabraic_group_tests(
 	VectorField.add_vector, "VectorField.add_vector",
 	VectorField.sub_vector, "VectorField.sub_vector",
@@ -902,11 +889,6 @@ algabraic_group_tests(
 	mult_vector_field_happy_args, mult_vector_happy_args,
 	mult_vector_field_edgy_args, mult_vector_edgy_args,
 );
-
-
-
-
-
 
 algabraic_group_tests(
 	VectorField.add_scalar_field, "VectorField.add_scalar_field",
@@ -921,8 +903,6 @@ algabraic_group_tests(
 	mult_vector_field_edgy_args, mult_scalar_field_edgy_args,
 );
 
-
-
 algabraic_field_tests(
 	VectorField.add_vector_field, "VectorField.add_vector_field",
 	VectorField.sub_vector_field, "VectorField.sub_vector_field",
@@ -933,6 +913,79 @@ algabraic_field_tests(
 	mult_vector_field_happy_args, 
 	mult_vector_field_edgy_args, 
 );
+test_properties([
+		test_binary_output_reference,
+		test_binary_output_idempotence,			
+		test_closure,
+		// test_identity,
+		// test_associativity, // NOTE: max_vector_field and min_vector_field are nonassociative, since two vectors can have the same magnitude, e.g. [1,1,1] and [-1,-1,-1]
+		// test_commutativity,
+	], 
+	VectorField.min_vector_field, "VectorField.min_vector_field",
+	mult_vector_field_happy_args, mult_vector_field_happy_args, 
+);
+test_properties([
+		test_binary_output_reference,
+		test_binary_output_idempotence,			
+		test_closure,
+		// test_identity,
+		// test_associativity, // NOTE: max_vector_field and min_vector_field are nonassociative, since two vectors can have the same magnitude, e.g. [1,1,1] and [-1,-1,-1]
+		// test_commutativity,
+	], 
+	VectorField.max_vector_field, "VectorField.max_vector_field",
+	mult_vector_field_happy_args, mult_vector_field_happy_args, 
+);
+
+test_properties([
+		test_binary_output_reference,
+		test_binary_output_idempotence,			
+		test_closure,
+		// test_identity,
+		// test_associativity, 
+		// test_commutativity,
+	], 
+	VectorField.cross_vector, "VectorField.cross_vector",
+	mult_vector_field_happy_args, mult_vector_happy_args, 
+);
+test_properties([
+		test_binary_output_reference,
+		test_binary_output_idempotence,			
+		test_closure,
+		test_identity,
+		test_associativity, 
+		// test_commutativity,
+	], 
+	VectorField.mult_matrix, "VectorField.mult_matrix",
+	mult_vector_field_happy_args, mult_matrix_happy_args, 
+);
+test_properties([
+		test_binary_output_reference,
+		test_binary_output_idempotence,			
+		test_closure,
+		// test_identity,
+		// test_associativity, 
+		// test_commutativity,
+	], 
+	VectorField.cross_vector_field, "VectorField.cross_vector_field",
+	mult_vector_field_happy_args, mult_vector_field_happy_args, 
+);
+test_properties([
+		test_unary_output_reference,
+		test_unary_output_idempotence,			
+		test_closure,
+		// test_identity,
+		test_associativity, 
+		// test_commutativity,
+	], 
+	VectorField.normalize, "VectorField.normalize",
+	mult_vector_field_happy_args, mult_vector_field_happy_args, 
+);
+
+
+
+
+
+
 
 
 
