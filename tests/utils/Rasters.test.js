@@ -208,7 +208,11 @@ function test_properties(properties, op, op_name, A, B) {
 
 
 // "algabraic_group_tests" tests a operation and its inverse to see whether it functions as a group from Abstract Algebra
-function algabraic_group_tests	(op, op_name, inv, inv_name, A, B){
+function algabraic_group_tests	(
+	op, op_name, inv, inv_name, 
+	happy1, happy2, 
+	edgy1, edgy2
+ ){
 	test_properties([
 			test_binary_output_reference,
 			test_binary_output_idempotence,			
@@ -216,7 +220,16 @@ function algabraic_group_tests	(op, op_name, inv, inv_name, A, B){
 			test_associativity,
 			test_identity,
 		], 
-		op, op_name, A, B
+		op, op_name, happy1, happy2,
+	);
+	test_properties([
+			test_binary_output_reference,
+			test_binary_output_idempotence,			
+			test_closure,
+			test_associativity, 
+			test_identity,
+		], 
+		op, op_name, edgy1, edgy2,
 	);
 
 	test_properties([
@@ -226,10 +239,20 @@ function algabraic_group_tests	(op, op_name, inv, inv_name, A, B){
 			// test_associativity, // NOTE: inv can never be associative - it's the inverse!
 			test_identity,
 		], 
-		inv, inv_name, A, B
+		inv, inv_name, happy1, happy2,
+	);
+	test_properties([
+			test_binary_output_reference,
+			test_binary_output_idempotence,			
+			test_closure,
+			test_identity,
+			// test_associativity, // NOTE: inv can never be associative - it's the inverse!
+		], 
+		inv, inv_name, edgy1, edgy2,
 	);
 
-	inverse_tests 			(op, op_name, inv, inv_name,  A, B);
+	inverse_tests 			(op, op_name, inv, inv_name,  happy1, happy2);
+
 }
 
 // "algabraic_abelian_group_tests" tests a operation and its inverse to see whether it functions as an Abelian (aka "commutative") group from Abstract Algebra
@@ -286,7 +309,7 @@ function algabraic_abelian_group_tests 	(op, op_name,  inv, inv_name, happy_op_a
 
 // "algabraic_abelian_group_tests" tests a set of four operations to see whether it consitutes a "Field" from Abstract Algebra
 function algabraic_field_tests	(add, add_name,  sub, sub_name, happy_add_args,	edgy_add_args,
-						 mult,mult_name, div, div_name, happy_mult_args,edgy_mult_args) {
+								 mult,mult_name, div, div_name, happy_mult_args,edgy_mult_args) {
 
 	algabraic_abelian_group_tests	(add, add_name, sub, sub_name,  happy_add_args, edgy_add_args);
 	algabraic_abelian_group_tests	(mult, mult_name, div, div_name,  happy_mult_args, edgy_mult_args);
@@ -353,6 +376,234 @@ let mult_vector_edgy_args = {
 	zeros: 	Vector( 0,			 0,		 0 			),
 	I: 		Vector( 1,			 1,		 1 			),
 	out: 	Vector( 0,			 0,		 0 			),
+}
+let add_matrix_happy_args = {
+	pos: 	Matrix( 1,			 1,		 1, 		
+				    1,			 1,		 1, 		
+				    1,			 1,		 1, 		),
+	neg:	Matrix(-1,			-1,		-1, 		
+				   -1,			-1,		-1, 		
+				   -1,			-1,		-1, 		),
+	tiny: 	Matrix( 1e-1,		 1e-1,	 1e-1,		
+				    1e-1,		 1e-1,	 1e-1,		
+				    1e-1,		 1e-1,	 1e-1,		),
+	big: 	Matrix( 1e4,		 1e4,	 1e4, 		
+				    1e4,		 1e4,	 1e4, 		
+				    1e4,		 1e4,	 1e4, 		),
+	I: 		Matrix( 0,			 0,		 0, 		
+				    0,			 0,		 0, 		
+				    0,			 0,		 0, 		),
+	out: 	Matrix( 0,			 0,		 0, 		
+				    0,			 0,		 0, 		
+				    0,			 0,		 0, 		),
+}
+let mult_matrix_happy_args = {
+	neg:	Matrix(-1,			-1,		-1, 		
+				   -1,			-1,		-1, 		
+				   -1,			-1,		-1, 		),
+	tiny: 	Matrix( 1e-1,		 1e-1,	 1e-1,		
+				    1e-1,		 1e-1,	 1e-1,		
+				    1e-1,		 1e-1,	 1e-1,		),
+	big: 	Matrix( 1e4,		 1e4,	 1e4, 		
+				    1e4,		 1e4,	 1e4, 		
+				    1e4,		 1e4,	 1e4, 		),
+	I: 		Matrix( 1,			 1,		 1, 		
+				    1,			 1,		 1, 		
+				    1,			 1,		 1, 		),
+	out: 	Matrix( 1,			 1,		 1, 		
+				    1,			 1,		 1, 		
+				    1,			 1,		 1, 		),
+}
+// an "edge case" is anything that produces a technically valid value but does not follow abelian group algebra
+// for instance, a "NaN" value that spreads through calculations
+let add_matrix_edgy_args = {
+	pos: 	Matrix( 1,			 1,		 1, 		
+				    1,			 1,		 1, 		
+				    1,			 1,		 1, 		),
+	neg:	Matrix(-1,			-1,		-1, 		
+				   -1,			-1,		-1, 		
+				   -1,			-1,		-1, 		),
+	tiny: 	Matrix( 1e-1,		 1e-1,	 1e-1,		
+				    1e-1,		 1e-1,	 1e-1,		
+				    1e-1,		 1e-1,	 1e-1,		),
+	big: 	Matrix( 1e4,		 1e4,	 1e4, 		
+				    1e4,		 1e4,	 1e4, 		
+				    1e4,		 1e4,	 1e4, 		),
+	nans: 	Matrix( NaN,		 NaN, 	 NaN, 		
+				    NaN,		 NaN, 	 NaN, 		
+				    NaN,		 NaN, 	 NaN, 		),
+	infs: 	Matrix( Infinity,	 Infinity, Infinity, 
+				    Infinity,	 Infinity, Infinity, 
+				    Infinity,	 Infinity, Infinity, ),
+	ninfs: 	Matrix(-Infinity,	-Infinity,-Infinity, 
+				   -Infinity,	-Infinity,-Infinity, 
+				  -Infinity,	-Infinity,-Infinity, ),
+	I: 		Matrix( 0,			 0,		 0, 		
+				    0,			 0,		 0, 		
+				    0,			 0,		 0, 		),
+	out: 	Matrix( 0,			 0,		 0, 		
+				    0,			 0,		 0, 		
+				    0,			 0,		 0, 		),
+}
+let mult_matrix_edgy_args = {
+	pos: 	Matrix( 1,			 1,		 1, 		
+				    1,			 1,		 1, 		
+				    1,			 1,		 1, 		),
+	neg:	Matrix(-1,			-1,		-1, 		
+				   -1,			-1,		-1, 		
+				   -1,			-1,		-1, 		),
+	tiny: 	Matrix( 1e-1,		 1e-1,	 1e-1,		
+				    1e-1,		 1e-1,	 1e-1,		
+				    1e-1,		 1e-1,	 1e-1,		),
+	big: 	Matrix( 1e4,		 1e4,	 1e4, 		
+				    1e4,		 1e4,	 1e4, 		
+				    1e4,		 1e4,	 1e4, 		),
+	nans: 	Matrix( NaN,		 NaN, 	 NaN, 		
+				    NaN,		 NaN, 	 NaN, 		
+				    NaN,		 NaN, 	 NaN, 		),
+	infs: 	Matrix( Infinity,	 Infinity, Infinity, 
+				    Infinity,	 Infinity, Infinity, 
+				    Infinity,	 Infinity, Infinity, ),
+	ninfs: 	Matrix(-Infinity,	-Infinity,-Infinity, 
+				   -Infinity,	-Infinity,-Infinity, 
+				  -Infinity,	-Infinity,-Infinity, ),
+	zeros: 	Matrix( 0,			 0,		 0, 		
+				    0,			 0,		 0, 		
+				    0,			 0,		 0, 		),
+	I: 		Matrix( 1,			 1,		 1, 		
+				    1,			 1,		 1, 		
+				    1,			 1,		 1, 		),
+	out: 	Matrix( 0,			 0,		 0, 		
+				    0,			 0,		 0, 		
+				    0,			 0,		 0, 		),
+}
+let add_matrix4x4_happy_args = {
+	pos: 	Matrix( 1,			 1,		 1, 		 1, 		
+				    1,			 1,		 1, 		 1, 		
+				    1,			 1,		 1, 		 1, 		
+				    1,			 1,		 1, 		 1, 		),
+	neg:	Matrix(-1,			-1,		-1, 		-1, 		
+				   -1,			-1,		-1, 		-1, 		
+				   -1,			-1,		-1, 		-1, 		
+				   -1,			-1,		-1, 		-1, 		),
+	tiny: 	Matrix( 1e-1,		 1e-1,	 1e-1,		 1e-1,		
+				    1e-1,		 1e-1,	 1e-1,		 1e-1,		
+				    1e-1,		 1e-1,	 1e-1,		 1e-1,		
+				    1e-1,		 1e-1,	 1e-1,		 1e-1,		),
+	big: 	Matrix( 1e4,		 1e4,	 1e4, 		 1e4, 		
+				    1e4,		 1e4,	 1e4, 		 1e4, 		
+				    1e4,		 1e4,	 1e4, 		 1e4, 		
+				    1e4,		 1e4,	 1e4, 		 1e4, 		),
+	I: 		Matrix( 0,			 0,		 0, 		 0, 		
+				    0,			 0,		 0, 		 0, 		
+				    0,			 0,		 0, 		 0, 		
+				    0,			 0,		 0, 		 0, 		),
+	out: 	Matrix( 0,			 0,		 0, 		 0, 		
+				    0,			 0,		 0, 		 0, 		
+				    0,			 0,		 0, 		 0, 		
+				    0,			 0,		 0, 		 0, 		),
+}
+let mult_matrix4x4_happy_args = {
+	neg:	Matrix(-1,			-1,		-1, 		-1, 		
+				   -1,			-1,		-1, 		-1, 		
+				   -1,			-1,		-1, 		-1, 		
+				   -1,			-1,		-1, 		-1, 		),
+	tiny: 	Matrix( 1e-1,		 1e-1,	 1e-1,		 1e-1,		
+				    1e-1,		 1e-1,	 1e-1,		 1e-1,		
+				    1e-1,		 1e-1,	 1e-1,		 1e-1,		
+				    1e-1,		 1e-1,	 1e-1,		 1e-1,		),
+	big: 	Matrix( 1e4,		 1e4,	 1e4, 		 1e4, 		
+				    1e4,		 1e4,	 1e4, 		 1e4, 		
+				    1e4,		 1e4,	 1e4, 		 1e4, 		
+				    1e4,		 1e4,	 1e4, 		 1e4, 		),
+	I: 		Matrix( 1,			 1,		 1, 		 1, 		
+				    1,			 1,		 1, 		 1, 		
+				    1,			 1,		 1, 		 1, 		
+				    1,			 1,		 1, 		 1, 		),
+	out: 	Matrix( 1,			 1,		 1, 		 1, 		
+				    1,			 1,		 1, 		 1, 		
+				    1,			 1,		 1, 		 1, 		
+				    1,			 1,		 1, 		 1, 		),
+}
+let add_matrix4x4_edgy_args = {
+	pos: 	Matrix( 1,			 1,		 1, 		 1, 		
+				    1,			 1,		 1, 		 1, 		
+				    1,			 1,		 1, 		 1, 		
+				    1,			 1,		 1, 		 1, 		),
+	neg:	Matrix(-1,			-1,		-1, 		-1, 		
+				   -1,			-1,		-1, 		-1, 		
+				   -1,			-1,		-1, 		-1, 		
+				   -1,			-1,		-1, 		-1, 		),
+	tiny: 	Matrix( 1e-1,		 1e-1,	 1e-1, 		 1e-1, 		
+				    1e-1,		 1e-1,	 1e-1, 		 1e-1, 		
+				    1e-1,		 1e-1,	 1e-1, 		 1e-1, 		
+				    1e-1,		 1e-1,	 1e-1, 		 1e-1, 		),
+	big: 	Matrix( 1e4,		 1e4,	 1e4, 		 1e4, 		
+				    1e4,		 1e4,	 1e4, 		 1e4, 		
+				    1e4,		 1e4,	 1e4, 		 1e4, 		
+				    1e4,		 1e4,	 1e4, 		 1e4, 		),
+	nans: 	Matrix( NaN,		 NaN, 	 NaN, 		 NaN, 		
+				    NaN,		 NaN, 	 NaN, 		 NaN, 		
+				    NaN,		 NaN, 	 NaN, 		 NaN, 		
+				    NaN,		 NaN, 	 NaN, 		 NaN, 		),
+	infs: 	Matrix( Infinity,	 Infinity, Infinity, Infinity, 
+				    Infinity,	 Infinity, Infinity, Infinity, 
+				    Infinity,	 Infinity, Infinity, Infinity, 
+				    Infinity,	 Infinity, Infinity, Infinity, ),
+	ninfs: 	Matrix(-Infinity,	-Infinity,-Infinity,-Infinity, 
+				   -Infinity,	-Infinity,-Infinity,-Infinity, 
+				   -Infinity,	-Infinity,-Infinity,-Infinity, 
+				  -Infinity,	-Infinity,-Infinity,-Infinity, ),
+	I: 		Matrix( 0,			 0,		 0, 		 0, 		
+				    0,			 0,		 0, 		 0, 		
+				    0,			 0,		 0, 		 0, 		
+				    0,			 0,		 0, 		 0, 		),
+	out: 	Matrix( 0,			 0,		 0, 		 0, 		
+				    0,			 0,		 0, 		 0, 		
+				    0,			 0,		 0, 		 0, 		
+				    0,			 0,		 0, 		 0, 		),
+}
+let mult_matrix4x4_edgy_args = {
+	pos: 	Matrix( 1,			 1,		 1, 		 1, 		
+				    1,			 1,		 1, 		 1, 		
+				    1,			 1,		 1, 		 1, 		
+				    1,			 1,		 1, 		 1, 		),
+	neg:	Matrix(-1,			-1,		-1, 		-1, 		
+				   -1,			-1,		-1, 		-1, 		
+				   -1,			-1,		-1, 		-1, 		
+				   -1,			-1,		-1, 		-1, 		),
+	tiny: 	Matrix( 1e-1,		 1e-1,	 1e-1, 		 1e-1, 		
+				    1e-1,		 1e-1,	 1e-1, 		 1e-1, 		
+				    1e-1,		 1e-1,	 1e-1, 		 1e-1, 		
+				    1e-1,		 1e-1,	 1e-1, 		 1e-1, 		),
+	big: 	Matrix( 1e4,		 1e4,	 1e4, 		 1e4, 		
+				    1e4,		 1e4,	 1e4, 		 1e4, 		
+				    1e4,		 1e4,	 1e4, 		 1e4, 		
+				    1e4,		 1e4,	 1e4, 		 1e4, 		),
+	nans: 	Matrix( NaN,		 NaN, 	 NaN, 		 NaN, 		
+				    NaN,		 NaN, 	 NaN, 		 NaN, 		
+				    NaN,		 NaN, 	 NaN, 		 NaN, 		
+				    NaN,		 NaN, 	 NaN, 		 NaN, 		),
+	infs: 	Matrix( Infinity,	 Infinity, Infinity, Infinity, 
+				    Infinity,	 Infinity, Infinity, Infinity, 
+				    Infinity,	 Infinity, Infinity, Infinity, 
+				    Infinity,	 Infinity, Infinity, Infinity, ),
+	ninfs: 	Matrix(-Infinity,	-Infinity,-Infinity,-Infinity, 
+				   -Infinity,	-Infinity,-Infinity,-Infinity, 
+				   -Infinity,	-Infinity,-Infinity,-Infinity, 
+				  -Infinity,	-Infinity,-Infinity,-Infinity, ),
+	zeros: 	Matrix( 0,			 0,		 0, 		 0, 		
+				    0,			 0,		 0, 		 0, 		
+				    0,			 0,		 0, 		 0, 		
+				    0,			 0,		 0, 		 0, 		),
+	I: 		Matrix( 1,			 1,		 1, 		 1, 		
+				    1,			 1,		 1, 		 1, 		
+				    1,			 1,		 1, 		 1, 		
+				    1,			 1,		 1, 		 1, 		),
+	out: 	Matrix( 0,			 0,		 0, 		 0, 		
+				    0,			 0,		 0, 		 0, 		
+				    0,			 0,		 0, 		 0, 		
+				    0,			 0,		 0, 		 0, 		),
 }
 let add_scalar_field_happy_args = {
 	pos: 	Float32Raster.FromArray([ 1,	 1,		 1,		 1,	 ], tetrahedron),
@@ -554,54 +805,12 @@ algabraic_group_tests(
 	ScalarField.add_scalar, "ScalarField.add_scalar",
 	ScalarField.sub_scalar, "ScalarField.sub_scalar",
 	add_scalar_field_happy_args, add_uniform_args,
+	add_scalar_field_edgy_args, add_uniform_args,
 );
 algabraic_group_tests(
 	ScalarField.mult_scalar, "ScalarField.mult_scalar",
 	ScalarField.div_scalar, "ScalarField.div_scalar",
 	mult_scalar_field_happy_args, mult_uniform_args,
-);
-test_properties([
-		test_binary_output_reference,
-		test_binary_output_idempotence,			
-		test_closure,
-		test_identity,
-		test_associativity, 
-		// test_commutativity,
-	], 
-	ScalarField.add_scalar, "ScalarField.add_scalar",
-	add_scalar_field_edgy_args, add_uniform_args,
-);
-test_properties([
-		test_binary_output_reference,
-		test_binary_output_idempotence,			
-		test_closure,
-		test_identity,
-		test_associativity, 
-		// test_commutativity,
-	], 
-	ScalarField.mult_scalar, "ScalarField.mult_scalar",
-	mult_scalar_field_edgy_args, mult_uniform_args,
-);
-test_properties([
-		test_binary_output_reference,
-		test_binary_output_idempotence,			
-		test_closure,
-		test_identity,
-		// test_associativity, 
-		// test_commutativity,
-	], 
-	ScalarField.sub_scalar, "ScalarField.sub_scalar",
-	add_scalar_field_edgy_args, add_uniform_args,
-);
-test_properties([
-		test_binary_output_reference,
-		test_binary_output_idempotence,			
-		test_closure,
-		test_identity,
-		// test_associativity, 
-		// test_commutativity,
-	], 
-	ScalarField.div_scalar, "ScalarField.div_scalar",
 	mult_scalar_field_edgy_args, mult_uniform_args,
 );
 test_properties([
@@ -628,6 +837,7 @@ test_properties([
 );
 
 
+
 algabraic_field_tests(
 	ScalarField.add_field, "ScalarField.add_field",
 	ScalarField.sub_field, "ScalarField.sub_field",
@@ -638,7 +848,6 @@ algabraic_field_tests(
 	mult_scalar_field_happy_args, 
 	mult_scalar_field_edgy_args, 
 );
-
 test_properties([
 		test_binary_output_reference,
 		test_binary_output_idempotence,			
@@ -664,61 +873,16 @@ test_properties([
 
 
 
-
-
-
 algabraic_group_tests(
 	VectorField.add_scalar, "VectorField.add_scalar",
 	VectorField.sub_scalar, "VectorField.sub_scalar",
 	add_vector_field_happy_args, add_uniform_args,
+	add_vector_field_edgy_args, add_uniform_args,
 );
 algabraic_group_tests(
 	VectorField.mult_scalar, "VectorField.mult_scalar",
 	VectorField.div_scalar, "VectorField.div_scalar",
 	mult_vector_field_happy_args, mult_uniform_args,
-);
-test_properties([
-		test_binary_output_reference,
-		test_binary_output_idempotence,			
-		test_closure,
-		test_identity,
-		test_associativity, 
-		// test_commutativity,
-	], 
-	VectorField.add_scalar, "VectorField.add_scalar",
-	add_vector_field_edgy_args, add_uniform_args,
-);
-test_properties([
-		test_binary_output_reference,
-		test_binary_output_idempotence,			
-		test_closure,
-		test_identity,
-		test_associativity, 
-		// test_commutativity,
-	], 
-	VectorField.mult_scalar, "VectorField.mult_scalar",
-	mult_vector_field_edgy_args, mult_uniform_args,
-);
-test_properties([
-		test_binary_output_reference,
-		test_binary_output_idempotence,			
-		test_closure,
-		test_identity,
-		// test_associativity, 
-		// test_commutativity,
-	], 
-	VectorField.sub_scalar, "VectorField.sub_scalar",
-	add_vector_field_edgy_args, add_uniform_args,
-);
-test_properties([
-		test_binary_output_reference,
-		test_binary_output_idempotence,			
-		test_closure,
-		test_identity,
-		// test_associativity, 
-		// test_commutativity,
-	], 
-	VectorField.div_scalar, "VectorField.div_scalar",
 	mult_vector_field_edgy_args, mult_uniform_args,
 );
 
@@ -730,54 +894,12 @@ algabraic_group_tests(
 	VectorField.add_vector, "VectorField.add_vector",
 	VectorField.sub_vector, "VectorField.sub_vector",
 	add_vector_field_happy_args, add_vector_happy_args,
+	add_vector_field_edgy_args, add_vector_edgy_args,
 );
 algabraic_group_tests(
 	VectorField.hadamard_vector, "VectorField.hadamard_vector",
 	VectorField.div_vector, "VectorField.div_vector",
 	mult_vector_field_happy_args, mult_vector_happy_args,
-);
-test_properties([
-		test_binary_output_reference,
-		test_binary_output_idempotence,			
-		test_closure,
-		test_identity,
-		test_associativity, 
-		// test_commutativity,
-	], 
-	VectorField.add_vector, "VectorField.add_vector",
-	add_vector_field_edgy_args, add_vector_edgy_args,
-);
-test_properties([
-		test_binary_output_reference,
-		test_binary_output_idempotence,			
-		test_closure,
-		test_identity,
-		test_associativity, 
-		// test_commutativity,
-	], 
-	VectorField.hadamard_vector, "VectorField.hadamard_vector",
-	mult_vector_field_edgy_args, mult_vector_edgy_args,
-);
-test_properties([
-		test_binary_output_reference,
-		test_binary_output_idempotence,			
-		test_closure,
-		test_identity,
-		// test_associativity, 
-		// test_commutativity,
-	], 
-	VectorField.sub_vector, "VectorField.sub_vector",
-	add_vector_field_edgy_args, add_vector_edgy_args,
-);
-test_properties([
-		test_binary_output_reference,
-		test_binary_output_idempotence,			
-		test_closure,
-		test_identity,
-		// test_associativity, 
-		// test_commutativity,
-	], 
-	VectorField.div_vector, "VectorField.div_vector",
 	mult_vector_field_edgy_args, mult_vector_edgy_args,
 );
 
@@ -790,57 +912,14 @@ algabraic_group_tests(
 	VectorField.add_scalar_field, "VectorField.add_scalar_field",
 	VectorField.sub_scalar_field, "VectorField.sub_scalar_field",
 	add_vector_field_happy_args, add_scalar_field_happy_args,
+	add_vector_field_edgy_args, add_scalar_field_edgy_args,
 );
 algabraic_group_tests(
 	VectorField.mult_scalar_field, "VectorField.mult_scalar_field",
 	VectorField.div_scalar_field, "VectorField.div_scalar_field",
 	mult_vector_field_happy_args, mult_scalar_field_happy_args,
-);
-test_properties([
-		test_binary_output_reference,
-		test_binary_output_idempotence,			
-		test_closure,
-		test_identity,
-		test_associativity, 
-		// test_commutativity,
-	], 
-	VectorField.add_scalar_field, "VectorField.add_scalar_field",
-	add_vector_field_edgy_args, add_scalar_field_edgy_args,
-);
-test_properties([
-		test_binary_output_reference,
-		test_binary_output_idempotence,			
-		test_closure,
-		test_identity,
-		test_associativity, 
-		// test_commutativity,
-	], 
-	VectorField.mult_scalar_field, "VectorField.mult_scalar_field",
 	mult_vector_field_edgy_args, mult_scalar_field_edgy_args,
 );
-test_properties([
-		test_binary_output_reference,
-		test_binary_output_idempotence,			
-		test_closure,
-		test_identity,
-		// test_associativity, 
-		// test_commutativity,
-	], 
-	VectorField.sub_scalar_field, "VectorField.sub_scalar_field",
-	add_vector_field_edgy_args, add_scalar_field_edgy_args,
-);
-test_properties([
-		test_binary_output_reference,
-		test_binary_output_idempotence,			
-		test_closure,
-		test_identity,
-		// test_associativity, 
-		// test_commutativity,
-	], 
-	VectorField.div_scalar_field, "VectorField.div_scalar_field",
-	mult_vector_field_edgy_args, mult_scalar_field_edgy_args,
-);
-
 
 
 
@@ -854,13 +933,6 @@ algabraic_field_tests(
 	mult_vector_field_happy_args, 
 	mult_vector_field_edgy_args, 
 );
-
-
-
-
-
-
-
 
 
 
