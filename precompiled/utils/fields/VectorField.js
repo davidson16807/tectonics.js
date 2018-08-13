@@ -133,6 +133,100 @@ VectorField.div_vector_field = function(vector_field1, vector_field2, result) {
 
 	return result;
 };
+VectorField.max_vector_field = function(vector_field1, vector_field2, result) {
+	result = result || VectorRaster(vector_field2.grid);
+	
+	ASSERT_IS_VECTOR_RASTER(vector_field1)
+	ASSERT_IS_VECTOR_RASTER(vector_field2)
+	ASSERT_IS_VECTOR_RASTER(result)
+
+	var ax = vector_field1.x;
+	var ay = vector_field1.y;
+	var az = vector_field1.z;
+
+	var bx = vector_field2.x;
+	var by = vector_field2.y;
+	var bz = vector_field2.z;
+
+	var cx = result.x;
+	var cy = result.y;
+	var cz = result.z;
+
+	var axi=0, ayi=0, azi=0;
+	var bxi=0, byi=0, bzi=0;
+	var a_mag = 0, b_mag = 0;
+	var is_a_bigger = false;
+
+	var sqrt = Math.sqrt;
+	for (var i = 0, li = ax.length; i<li; i++) {
+		axi = ax[i];
+		ayi = ay[i];
+		azi = az[i];
+		a_mag = sqrt(	axi * axi + 
+						ayi * ayi + 
+						azi * azi	  );
+
+		bxi = bx[i];
+		byi = by[i];
+		bzi = bz[i];
+		b_mag = sqrt(	bxi * bxi + 
+						byi * byi + 
+						bzi * bzi	  );
+
+		is_a_bigger = a_mag > b_mag;
+		cx[i] = is_a_bigger? axi : bxi;
+		cy[i] = is_a_bigger? ayi : byi;
+		cz[i] = is_a_bigger? azi : bzi;
+	}
+	return result;
+}
+VectorField.min_vector_field = function(vector_field1, vector_field2, result) {
+	result = result || VectorRaster(vector_field1.grid);
+	
+	ASSERT_IS_VECTOR_RASTER(vector_field1)
+	ASSERT_IS_VECTOR_RASTER(vector_field2)
+	ASSERT_IS_VECTOR_RASTER(result)
+
+	var ax = vector_field1.x;
+	var ay = vector_field1.y;
+	var az = vector_field1.z;
+
+	var bx = vector_field2.x;
+	var by = vector_field2.y;
+	var bz = vector_field2.z;
+
+	var cx = result.x;
+	var cy = result.y;
+	var cz = result.z;
+
+	var axi=0, ayi=0, azi=0;
+	var bxi=0, byi=0, bzi=0;
+	var a_mag = 0, b_mag = 0;
+	var is_a_smaller = false;
+
+	var sqrt = Math.sqrt;
+	for (var i = 0, li = ax.length; i<li; i++) {
+		axi = ax[i];
+		ayi = ay[i];
+		azi = az[i];
+		a_mag = sqrt(	axi * axi + 
+						ayi * ayi + 
+						azi * azi	  );
+
+		bxi = bx[i];
+		byi = by[i];
+		bzi = bz[i];
+		b_mag = sqrt(	bxi * bxi + 
+						byi * byi + 
+						bzi * bzi	  );
+
+		is_a_smaller = a_mag < b_mag;
+		cx[i] = is_a_smaller? axi : bxi;
+		cy[i] = is_a_smaller? ayi : byi;
+		cz[i] = is_a_smaller? azi : bzi;
+	}
+	return result;
+}
 
 VectorField.add_vector = function(vector_field, vector, result) {
 	result = result || VectorRaster(vector_field.grid);
@@ -569,7 +663,6 @@ VectorField.map = function(vector_field, fn, result) {
 	}
 	return result;
 };
-
 
 VectorField.magnitude = function(vector_field, result) {
 	result = result || Float32Raster(vector_field.grid);

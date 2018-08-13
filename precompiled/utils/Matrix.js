@@ -110,6 +110,50 @@ Matrix.invert = function(matrix, result) {
 
     return B;
 }
+Matrix.add_scalar = function(matrix, scalar, result) {
+  var result = result || Matrix();
+  var A = matrix;
+  var b = scalar;
+  var C = result;
+
+  ASSERT_IS_3X3_MATRIX(matrix)
+  ASSERT_IS_TYPE(scalar, 'number')
+  ASSERT_IS_3X3_MATRIX(result)
+
+  C[0] = A[0]+b;
+  C[1] = A[1]+b;
+  C[2] = A[2]+b;
+  C[3] = A[3]+b;
+  C[4] = A[4]+b;
+  C[5] = A[5]+b;
+  C[6] = A[6]+b;
+  C[7] = A[7]+b;
+  C[8] = A[8]+b;
+  
+  return C;
+}
+Matrix.sub_scalar = function(matrix, scalar, result) {
+  var result = result || Matrix();
+  var A = matrix;
+  var b = scalar;
+  var C = result;
+
+  ASSERT_IS_3X3_MATRIX(matrix)
+  ASSERT_IS_TYPE(scalar, 'number')
+  ASSERT_IS_3X3_MATRIX(result)
+
+  C[0] = A[0]-b;
+  C[1] = A[1]-b;
+  C[2] = A[2]-b;
+  C[3] = A[3]-b;
+  C[4] = A[4]-b;
+  C[5] = A[5]-b;
+  C[6] = A[6]-b;
+  C[7] = A[7]-b;
+  C[8] = A[8]-b;
+  
+  return C;
+}
 Matrix.mult_scalar = function(matrix, scalar, result) {
   var result = result || Matrix();
   var A = matrix;
@@ -160,5 +204,25 @@ Matrix.mult_matrix = function(A, B, result) {
   C[ 5 ] = a31 * b12 + a32 * b22 + a33 * b32;
   C[ 8 ] = a31 * b13 + a32 * b23 + a33 * b33;
 
+  return C;
+}
+Matrix.hadamard_matrix = function(A, B, result) {
+  var result = result || Matrix();
+  var C = result;
+
+  ASSERT_IS_3X3_MATRIX(A)
+  ASSERT_IS_3X3_MATRIX(B)
+  ASSERT_IS_3X3_MATRIX(C)
+
+  C[0] = A[0]*B[0];
+  C[1] = A[1]*B[1];
+  C[2] = A[2]*B[2];
+  C[3] = A[3]*B[3];
+  C[4] = A[4]*B[4];
+  C[5] = A[5]*B[5];
+  C[6] = A[6]*B[6];
+  C[7] = A[7]*B[7];
+  C[8] = A[8]*B[8];
+  
   return C;
 }

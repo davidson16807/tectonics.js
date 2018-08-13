@@ -206,6 +206,44 @@ Matrix.invert = function(matrix, result) {
     B[ 2 ] = b31, B[ 5 ] = b32, B[ 8 ] = b33;
     return B;
 }
+Matrix.add_scalar = function(matrix, scalar, result) {
+  var result = result || Matrix();
+  var A = matrix;
+  var b = scalar;
+  var C = result;
+  if ((matrix.length !== 9) || !(matrix instanceof Float32Array)) { throw "matrix" + ' is not a 3x3 matrix'; }
+  if (!(typeof scalar == "'number'")) { throw "scalar" + ' is not a ' + "'number'"; }
+  if ((result.length !== 9) || !(result instanceof Float32Array)) { throw "result" + ' is not a 3x3 matrix'; }
+  C[0] = A[0]+b;
+  C[1] = A[1]+b;
+  C[2] = A[2]+b;
+  C[3] = A[3]+b;
+  C[4] = A[4]+b;
+  C[5] = A[5]+b;
+  C[6] = A[6]+b;
+  C[7] = A[7]+b;
+  C[8] = A[8]+b;
+  return C;
+}
+Matrix.sub_scalar = function(matrix, scalar, result) {
+  var result = result || Matrix();
+  var A = matrix;
+  var b = scalar;
+  var C = result;
+  if ((matrix.length !== 9) || !(matrix instanceof Float32Array)) { throw "matrix" + ' is not a 3x3 matrix'; }
+  if (!(typeof scalar == "'number'")) { throw "scalar" + ' is not a ' + "'number'"; }
+  if ((result.length !== 9) || !(result instanceof Float32Array)) { throw "result" + ' is not a 3x3 matrix'; }
+  C[0] = A[0]-b;
+  C[1] = A[1]-b;
+  C[2] = A[2]-b;
+  C[3] = A[3]-b;
+  C[4] = A[4]-b;
+  C[5] = A[5]-b;
+  C[6] = A[6]-b;
+  C[7] = A[7]-b;
+  C[8] = A[8]-b;
+  return C;
+}
 Matrix.mult_scalar = function(matrix, scalar, result) {
   var result = result || Matrix();
   var A = matrix;
@@ -246,6 +284,23 @@ Matrix.mult_matrix = function(A, B, result) {
   C[ 2 ] = a31 * b11 + a32 * b21 + a33 * b31;
   C[ 5 ] = a31 * b12 + a32 * b22 + a33 * b32;
   C[ 8 ] = a31 * b13 + a32 * b23 + a33 * b33;
+  return C;
+}
+Matrix.hadamard_matrix = function(A, B, result) {
+  var result = result || Matrix();
+  var C = result;
+  if ((A.length !== 9) || !(A instanceof Float32Array)) { throw "A" + ' is not a 3x3 matrix'; }
+  if ((B.length !== 9) || !(B instanceof Float32Array)) { throw "B" + ' is not a 3x3 matrix'; }
+  if ((C.length !== 9) || !(C instanceof Float32Array)) { throw "C" + ' is not a 3x3 matrix'; }
+  C[0] = A[0]*B[0];
+  C[1] = A[1]*B[1];
+  C[2] = A[2]*B[2];
+  C[3] = A[3]*B[3];
+  C[4] = A[4]*B[4];
+  C[5] = A[5]*B[5];
+  C[6] = A[6]*B[6];
+  C[7] = A[7]*B[7];
+  C[8] = A[8]*B[8];
   return C;
 }
 // NOTE:
@@ -1297,31 +1352,21 @@ Vector.FromArray = function(array) {
     z: array[2] || 0,
   };
 }
-Vector.similarity = function(ax, ay, az, bx, by, bz) {
-  var sqrt = Math.sqrt;
-  return (ax*bx +
-          ay*by +
-          az*bz) / ( sqrt(ax*ax+
-                              ay*ay+
-                              az*az) * sqrt(bx*bx+
-                                          by*by+
-                                          bz*bz) );
-}
-Vector.dot = function(ax, ay, az, bx, by, bz) {
-  var sqrt = Math.sqrt;
-  return (ax*bx + ay*by + az*bz);
-}
-Vector.magnitude = function(x, y, z) {
-  return Math.sqrt(x*x + y*y + z*z);
-}
-Vector.normalize = function(x, y, z, result) {
+Vector.add_vector = function(ax, ay, az, bx, by, bz, result) {
   result = result || Vector()
-  var magnitude = Math.sqrt(x*x + y*y + z*z);
-  result.x = x/(magnitude||1);
-  result.y = y/(magnitude||1);
-  result.z = z/(magnitude||1);
+  result.x = ax + bx;
+  result.y = ay + by;
+  result.z = az + bz;
   return result;
 }
+Vector.sub_vector = function(ax, ay, az, bx, by, bz, result) {
+  result = result || Vector()
+  result.x = ax - bx;
+  result.y = ay - by;
+  result.z = az - bz;
+  return result;
+}
+// TODO: rename to "cross_vector" 
 Vector.cross = function(ax, ay, az, bx, by, bz, result) {
   result = result || Vector()
   result.x = ay*bz - az*by;
@@ -1329,11 +1374,22 @@ Vector.cross = function(ax, ay, az, bx, by, bz, result) {
   result.z = ax*by - ay*bx;
   return result;
 }
+Vector.dot_vector = function(ax, ay, az, bx, by, bz) {
+  var sqrt = Math.sqrt;
+  return (ax*bx + ay*by + az*bz);
+}
 Vector.mult_scalar = function(x, y, z, scalar, result) {
   result = result || Vector();
   result.x = x * scalar;
   result.y = y * scalar;
   result.z = z * scalar;
+  return result;
+}
+Vector.div_scalar = function(x, y, z, scalar, result) {
+  result = result || Vector();
+  result.x = x / scalar;
+  result.y = y / scalar;
+  result.z = z / scalar;
   return result;
 }
 Vector.mult_matrix = function(x, y, z, matrix, result) {
@@ -1344,6 +1400,27 @@ Vector.mult_matrix = function(x, y, z, matrix, result) {
   result.x = x * xx + y * xy + z * xz;
   result.y = x * yx + y * yy + z * yz;
   result.z = x * zx + y * zy + z * zz;
+  return result;
+}
+Vector.similarity = function(ax, ay, az, bx, by, bz) {
+  var sqrt = Math.sqrt;
+  return (ax*bx +
+          ay*by +
+          az*bz) / ( sqrt(ax*ax+
+                              ay*ay+
+                              az*az) * sqrt(bx*bx+
+                                          by*by+
+                                          bz*bz) );
+}
+Vector.magnitude = function(x, y, z) {
+  return Math.sqrt(x*x + y*y + z*z);
+}
+Vector.normalize = function(x, y, z, result) {
+  result = result || Vector()
+  var magnitude = Math.sqrt(x*x + y*y + z*z);
+  result.x = x/(magnitude||1);
+  result.y = y/(magnitude||1);
+  result.z = z/(magnitude||1);
   return result;
 }
 // Raster based methods often need to create temporary rasters that the calling function never sees
@@ -3061,6 +3138,84 @@ VectorField.div_vector_field = function(vector_field1, vector_field2, result) {
  }
  return result;
 };
+VectorField.max_vector_field = function(vector_field1, vector_field2, result) {
+ result = result || VectorRaster(vector_field2.grid);
+ if ((vector_field1.everything === void 0) || !(vector_field1.everything instanceof Float32Array)) { throw "vector_field1" + ' is not a vector raster'; }
+ if ((vector_field2.everything === void 0) || !(vector_field2.everything instanceof Float32Array)) { throw "vector_field2" + ' is not a vector raster'; }
+ if ((result.everything === void 0) || !(result.everything instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
+ var ax = vector_field1.x;
+ var ay = vector_field1.y;
+ var az = vector_field1.z;
+ var bx = vector_field2.x;
+ var by = vector_field2.y;
+ var bz = vector_field2.z;
+ var cx = result.x;
+ var cy = result.y;
+ var cz = result.z;
+ var axi=0, ayi=0, azi=0;
+ var bxi=0, byi=0, bzi=0;
+ var a_mag = 0, b_mag = 0;
+ var is_a_bigger = false;
+ var sqrt = Math.sqrt;
+ for (var i = 0, li = ax.length; i<li; i++) {
+  axi = ax[i];
+  ayi = ay[i];
+  azi = az[i];
+  a_mag = sqrt( axi * axi +
+      ayi * ayi +
+      azi * azi );
+  bxi = bx[i];
+  byi = by[i];
+  bzi = bz[i];
+  b_mag = sqrt( bxi * bxi +
+      byi * byi +
+      bzi * bzi );
+  is_a_bigger = a_mag > b_mag;
+  cx[i] = is_a_bigger? axi : bxi;
+  cy[i] = is_a_bigger? ayi : byi;
+  cz[i] = is_a_bigger? azi : bzi;
+ }
+ return result;
+}
+VectorField.min_vector_field = function(vector_field1, vector_field2, result) {
+ result = result || VectorRaster(vector_field1.grid);
+ if ((vector_field1.everything === void 0) || !(vector_field1.everything instanceof Float32Array)) { throw "vector_field1" + ' is not a vector raster'; }
+ if ((vector_field2.everything === void 0) || !(vector_field2.everything instanceof Float32Array)) { throw "vector_field2" + ' is not a vector raster'; }
+ if ((result.everything === void 0) || !(result.everything instanceof Float32Array)) { throw "result" + ' is not a vector raster'; }
+ var ax = vector_field1.x;
+ var ay = vector_field1.y;
+ var az = vector_field1.z;
+ var bx = vector_field2.x;
+ var by = vector_field2.y;
+ var bz = vector_field2.z;
+ var cx = result.x;
+ var cy = result.y;
+ var cz = result.z;
+ var axi=0, ayi=0, azi=0;
+ var bxi=0, byi=0, bzi=0;
+ var a_mag = 0, b_mag = 0;
+ var is_a_smaller = false;
+ var sqrt = Math.sqrt;
+ for (var i = 0, li = ax.length; i<li; i++) {
+  axi = ax[i];
+  ayi = ay[i];
+  azi = az[i];
+  a_mag = sqrt( axi * axi +
+      ayi * ayi +
+      azi * azi );
+  bxi = bx[i];
+  byi = by[i];
+  bzi = bz[i];
+  b_mag = sqrt( bxi * bxi +
+      byi * byi +
+      bzi * bzi );
+  is_a_smaller = a_mag < b_mag;
+  cx[i] = is_a_smaller? axi : bxi;
+  cy[i] = is_a_smaller? ayi : byi;
+  cz[i] = is_a_smaller? azi : bzi;
+ }
+ return result;
+}
 VectorField.add_vector = function(vector_field, vector, result) {
  result = result || VectorRaster(vector_field.grid);
  if ((vector_field.everything === void 0) || !(vector_field.everything instanceof Float32Array)) { throw "vector_field" + ' is not a vector raster'; }
