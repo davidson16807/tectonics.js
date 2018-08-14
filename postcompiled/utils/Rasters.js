@@ -2076,7 +2076,7 @@ ScalarField.div_field = function (scalar_field1, scalar_field2, result) {
   return result;
 };
 ScalarField.inv_field = function (scalar_field, result) {
-  result = result || Float32Raster(scalar_field1.grid);
+  result = result || Float32Raster(scalar_field.grid);
   if (!(scalar_field instanceof Float32Array)) { throw "scalar_field" + ' is not a ' + "Float32Array"; }
   if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   for (var i = 0, li = result.length; i < li; i++) {
@@ -2085,7 +2085,7 @@ ScalarField.inv_field = function (scalar_field, result) {
   return result;
 };
 ScalarField.sqrt_field = function (scalar_field, result) {
-  result = result || Float32Raster(scalar_field1.grid);
+  result = result || Float32Raster(scalar_field.grid);
   var sqrt = Math.sqrt;
   if (!(scalar_field instanceof Float32Array)) { throw "scalar_field" + ' is not a ' + "Float32Array"; }
   if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }

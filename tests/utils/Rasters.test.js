@@ -197,16 +197,21 @@ function test_distributivity 	(add, add_name, mult, mult_name, args){
 	});
 }
 
-function test_equivalence 	(op1, op1_name, op2, op2_name, A, B){
+function test_equivalence 	(op1, op1_name, op2, op2_name, A, B, C){
+	B = B || {'': undefined};
+	C = C || {'': undefined};
 	QUnit.test(`${op1_name}/${op2_name} Equivalence tests`, function (assert) {
 		for (var a_name in A) {
 			for (var b_name in B) {
-				let a = A[a_name];
-				let b = B[b_name];
-				assert.deepApprox( 
-					op1(a, b), op2(a, b),
-					`${op1_name}(${a_name}, ${b_name}) must behave equivalently to ${op2_name}(${a_name}, ${b_name})`,
-				);
+				for (var c_name in C) {
+					let a = A[a_name];
+					let b = B[b_name];
+					let c = C[c_name];
+					assert.deepApprox( 
+						op1(a, b, c), op2(a, b, c),
+						`${op1_name}(${a_name}, ${b_name}, ${c_name}) must behave equivalently to ${op2_name}(${a_name}, ${b_name}, ${c_name})`,
+					);
+				}
 			}
 		}
 	});
@@ -849,6 +854,16 @@ test_equivalence(
 	(a,b) => BinaryMorphology.negation(ScalarField.eq_scalar(a,b)), "[equivalent expression]",
 	mult_scalar_field_happy_args, mult_uniform_args,
 );
+test_equivalence(
+	ScalarField.add_scalar_term, "ScalarField.add_scalar_term",
+	(a,b,c) => ScalarField.add_field(a,ScalarField.mult_scalar(b,c)), "[equivalent expression]",
+	mult_scalar_field_happy_args, mult_scalar_field_happy_args, mult_uniform_args,
+);
+test_equivalence(
+	ScalarField.sub_scalar_term, "ScalarField.sub_scalar_term",
+	(a,b,c) => ScalarField.sub_field(a,ScalarField.mult_scalar(b,c)), "[equivalent expression]",
+	mult_scalar_field_happy_args, mult_scalar_field_happy_args, mult_uniform_args,
+);
 
 
 
@@ -885,6 +900,16 @@ test_properties([
 	mult_scalar_field_happy_args, mult_scalar_field_happy_args, 
 );
 test_equivalence(
+	ScalarField.sqrt_field, "ScalarField.sqrt_field",
+	(a) => ScalarField.pow_scalar(a,1/2), "[equivalent expression]",
+	mult_scalar_field_happy_args
+);
+test_equivalence(
+	ScalarField.inv_field, "ScalarField.inv_field",
+	(a) => ScalarField.div_field(mult_scalar_field_happy_args.I,a), "[equivalent expression]",
+	mult_scalar_field_happy_args
+);
+test_equivalence(
 	ScalarField.gte_field, "ScalarField.gte_field",
 	(a,b) => BinaryMorphology.union(ScalarField.gt_field(a,b), ScalarField.eq_field(a,b)), "[equivalent expression]",
 	mult_scalar_field_happy_args, mult_scalar_field_happy_args, 
@@ -898,6 +923,16 @@ test_equivalence(
 	ScalarField.ne_field, "ScalarField.ne_field",
 	(a,b) => BinaryMorphology.negation(ScalarField.eq_field(a,b)), "[equivalent expression]",
 	mult_scalar_field_happy_args, mult_scalar_field_happy_args, 
+);
+test_equivalence(
+	ScalarField.add_field_term, "ScalarField.add_field_term",
+	(a,b,c) => ScalarField.add_field(a,ScalarField.mult_field(b,c)), "[equivalent expression]",
+	mult_scalar_field_happy_args, mult_scalar_field_happy_args, mult_scalar_field_happy_args,
+);
+test_equivalence(
+	ScalarField.sub_field_term, "ScalarField.sub_field_term",
+	(a,b,c) => ScalarField.sub_field(a,ScalarField.mult_field(b,c)), "[equivalent expression]",
+	mult_scalar_field_happy_args, mult_scalar_field_happy_args, mult_scalar_field_happy_args,
 );
 
 
