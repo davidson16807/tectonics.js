@@ -1049,6 +1049,19 @@ test_properties([
 	VectorField.cross_vector, "VectorField.cross_vector",
 	mult_vector_field_happy_args, mult_vector_happy_args, 
 );
+test_equivalence(
+	(a) => Vector.cross(a.x, a.y, a.z, a.x, a.y, a.z), "Vector.cross",
+	(a) => mult_vector_edgy_args.zeros, '0',
+	mult_vector_happy_args, 
+);
+test_equivalence(
+	(a,b) => { 
+		x = Vector.cross(a.x, a.y, a.z, b.x, b.y, b.z); 
+		return Vector.dot_vector(a.x, a.y, a.z, x.x, x.y, x.z, );
+	}, "Vector.dot_vector(..., Vector.cross)",
+	(a,b) => 0, '0', 
+	mult_vector_happy_args, mult_vector_happy_args, 
+);
 test_properties([
 		test_binary_output_reference,
 		test_binary_output_idempotence,			
