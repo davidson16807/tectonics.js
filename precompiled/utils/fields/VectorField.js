@@ -804,3 +804,68 @@ VectorField.divergence = function(vector_field, result) {
 
 	return result;
 }
+
+// This function computes the curl of a 3d mesh. 
+// The curl can be thought of as the amount by which vectors curl around a point
+// By applying it to a surface, we mean it's only done for the 2d surface of a 3d object. 
+// This implementation does not have to assume all vertices are equidistant. 
+// 
+// Think of it as taking the average change in the vector rejection:
+// For each neighbor:
+//   draw a vector to the neighbor
+//   find the vector rejection between that vector and the field, 
+//   find how the vector rejection changes along that vector
+//   find the average change across all neighbors
+VectorField.curl = function(vector_field, result) {
+	result = result || VectorRaster(vector_field.grid);
+	
+	ASSERT_IS_VECTOR_RASTER(vector_field)
+	ASSERT_IS_VECTOR_RASTER(result)
+
+	var dlength = vector_field.grid.pos_arrow_distances;
+
+	var arrows = vector_field.grid.arrows;
+
+	var curl_fx = result.x;
+	var curl_fy = result.y;
+	var curl_fz = result.z;
+
+	var fx = vector_field.x;
+	var fy = vector_field.y;
+	var fz = vector_field.z;
+
+	var arrow_pos_diff_normalized = vector_field.grid.pos_arrow_differential_normalized;
+	var dxhat = arrow_pos_diff_normalized.x;
+	var dyhat = arrow_pos_diff_normalized.y;
+	var dzhat = arrow_pos_diff_normalized.z;
+
+	var from = 0;
+	var to  = 0;
+	var dfx = 0;
+	var dfy = 0;
+	var dfz = 0;
+	Float32Raster.fill(curl_fx, 0);
+	Float32Raster.fill(curl_fy, 0);
+	Float32Raster.fill(curl_fz, 0);
+	for (var i = 0, li = arrows.length; i<li; i++) {
+		from = arrows[i][0];
+		to = arrows[i][1];
+
+		dfx = fx[to] - fx[from];
+		dfy = fy[to] - fy[from];
+		dfz = fz[to] - fz[from];
+
+		curl_fx[from] += dfx - (dfx * dxhat[i] / dlength[i]);
+		curl_fy[from] += dfy - (dfy * dyhat[i] / dlength[i]);
+		curl_fz[from] += dfz - (dfz * dzhat[i] / dlength[i]);
+	}
+
+	var neighbor_count = vector_field.grid.neighbor_count;
+	for (var i = 0, li = neighbor_count.length; i < li; i++) {
+		curl_fx[i] /= neighbor_count[i] || 1;
+		curl_fy[i] /= neighbor_count[i] || 1;
+		curl_fz[i] /= neighbor_count[i] || 1;
+	}
+
+	return result;
+}
