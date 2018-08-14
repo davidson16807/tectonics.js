@@ -3515,7 +3515,7 @@ VectorField.vector_similarity = function(vector_field, vector, result) {
  return result;
 };
 VectorField.vector_field_similarity = function(vector_field1, vector_field2, result) {
- result = result || VectorRaster(vector_field1.grid);
+ result = result || Float32Raster(vector_field1.grid);
  if ((vector_field1.everything === void 0) || !(vector_field1.everything instanceof Float32Array)) { throw "vector_field1" + ' is not a vector raster'; }
  if ((vector_field2.everything === void 0) || !(vector_field2.everything instanceof Float32Array)) { throw "vector_field2" + ' is not a vector raster'; }
  if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
@@ -3531,6 +3531,7 @@ VectorField.vector_field_similarity = function(vector_field1, vector_field2, res
  var bxi = 0.;
  var byi = 0.;
  var bzi = 0.;
+ var sqrt = Math.sqrt;
  for (var i=0, li=result.length; i<li; ++i) {
   axi = ax[i];
   ayi = ay[i];

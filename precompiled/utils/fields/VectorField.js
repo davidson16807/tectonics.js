@@ -605,7 +605,7 @@ VectorField.vector_similarity = function(vector_field, vector, result) {
 
 
 VectorField.vector_field_similarity = function(vector_field1, vector_field2, result) {
-	result = result || VectorRaster(vector_field1.grid);
+	result = result || Float32Raster(vector_field1.grid);
 
 	ASSERT_IS_VECTOR_RASTER(vector_field1)
 	ASSERT_IS_VECTOR_RASTER(vector_field2)
@@ -627,6 +627,7 @@ VectorField.vector_field_similarity = function(vector_field1, vector_field2, res
 	var byi = 0.;	
 	var bzi = 0.;
 
+	var sqrt = Math.sqrt;
 	for (var i=0, li=result.length; i<li; ++i) {
 		axi = ax[i]; 
 		ayi = ay[i]; 

@@ -1115,6 +1115,11 @@ test_equivalence(
 	(a,b) => mult_scalar_field_edgy_args.zeros, "0",
 	mult_vector_field_happy_args, mult_vector_field_happy_args, 
 );
+test_equivalence(
+	(a) => VectorField.vector_field_similarity(a, a), "VectorField.vector_field_similarity",
+	(a) => mult_scalar_field_happy_args.I, "1",
+	mult_vector_field_happy_args, 
+);
 
 
 test_equivalence(
