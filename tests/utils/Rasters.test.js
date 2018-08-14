@@ -197,13 +197,26 @@ function test_distributivity 	(add, add_name, mult, mult_name, args){
 	});
 }
 
+function test_equivalence 	(op1, op1_name, op2, op2_name, A, B){
+	QUnit.test(`${op1_name}/${op2_name} Equivalence tests`, function (assert) {
+		for (var a_name in A) {
+			for (var b_name in B) {
+				let a = A[a_name];
+				let b = B[b_name];
+				assert.deepApprox( 
+					op1(a, b), op2(a, b),
+					`${op1_name}(${a_name}, ${b_name}) must behave equivalently to ${op2_name}(${a_name}, ${b_name})`,
+				);
+			}
+		}
+	});
+}
+
 function test_properties(properties, op, op_name, A, B) {
 	for(let test of properties){
 		test(op, op_name, A, B);
 	}
 }
-
-
 
 // "algabraic_group_tests" tests a operation and its inverse to see whether it functions as a group from Abstract Algebra
 function algabraic_group_tests	(
@@ -826,6 +839,16 @@ test_properties([
 	ScalarField.max_scalar, "ScalarField.max_scalar",
 	mult_scalar_field_happy_args, mult_uniform_args,
 );
+test_equivalence(
+	ScalarField.gte_scalar, "ScalarField.gte_scalar",
+	(a,b) => BinaryMorphology.union(ScalarField.gt_scalar(a,b), ScalarField.eq_scalar(a,b)), "[equivalent expression]",
+	mult_scalar_field_happy_args, mult_uniform_args,
+);
+test_equivalence(
+	ScalarField.lte_scalar, "ScalarField.lte_scalar",
+	(a,b) => BinaryMorphology.union(ScalarField.lt_scalar(a,b), ScalarField.eq_scalar(a,b)), "[equivalent expression]",
+	mult_scalar_field_happy_args, mult_uniform_args,
+);
 
 
 
@@ -861,7 +884,16 @@ test_properties([
 	ScalarField.max_field, "ScalarField.max_field",
 	mult_scalar_field_happy_args, mult_scalar_field_happy_args, 
 );
-
+test_equivalence(
+	ScalarField.gte_field, "ScalarField.gte_field",
+	(a,b) => BinaryMorphology.union(ScalarField.gt_field(a,b), ScalarField.eq_field(a,b)), "[equivalent expression]",
+	mult_scalar_field_happy_args, mult_scalar_field_happy_args, 
+);
+test_equivalence(
+	ScalarField.lte_field, "ScalarField.lte_field",
+	(a,b) => BinaryMorphology.union(ScalarField.lt_field(a,b), ScalarField.eq_field(a,b)), "[equivalent expression]",
+	mult_scalar_field_happy_args, mult_scalar_field_happy_args, 
+);
 
 
 algabraic_group_tests(
