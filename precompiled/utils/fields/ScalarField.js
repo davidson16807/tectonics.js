@@ -95,7 +95,7 @@ ScalarField.ne_field = function (scalar_field1, scalar_field2, result, threshold
   ASSERT_IS_ARRAY(result, Uint8Array)
 
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = scalar_field1[i] > scalar_field2[i] + threshold || scalar_field1[i] < scalar_field2[i] - threshold ? 1:0;
+    result[i] = scalar_field1[i] > (scalar_field2[i] + threshold) || scalar_field1[i] < (scalar_field2[i] - threshold) ? 1:0;
   }
   return result;
 };

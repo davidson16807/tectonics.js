@@ -845,20 +845,20 @@ test_equivalence(
 	mult_scalar_field_happy_args, mult_uniform_args,
 );
 test_equivalence(
-	ScalarField.lte_scalar, "ScalarField.lte_scalar",
-	(a,b) => BinaryMorphology.union(ScalarField.lt_scalar(a,b), ScalarField.eq_scalar(a,b)), "[equivalent expression]",
+	ScalarField.ne_scalar, "ScalarField.ne_scalar",
+	(a,b) => BinaryMorphology.negation(ScalarField.eq_scalar(a,b)), "[equivalent expression]",
 	mult_scalar_field_happy_args, mult_uniform_args,
 );
 
 
 
 algabraic_field_tests(
-	ScalarField.add_field, "ScalarField.add_field",
-	ScalarField.sub_field, "ScalarField.sub_field",
+	ScalarField.add_field, "ScalarField.add_field", 
+	ScalarField.sub_field, "ScalarField.sub_field", 
 	add_scalar_field_happy_args, 
 	add_scalar_field_edgy_args, 
 	ScalarField.mult_field,"ScalarField.mult_field",
-	ScalarField.div_field, "ScalarField.div_field",
+	ScalarField.div_field, "ScalarField.div_field", 
 	mult_scalar_field_happy_args, 
 	mult_scalar_field_edgy_args, 
 );
@@ -892,6 +892,11 @@ test_equivalence(
 test_equivalence(
 	ScalarField.lte_field, "ScalarField.lte_field",
 	(a,b) => BinaryMorphology.union(ScalarField.lt_field(a,b), ScalarField.eq_field(a,b)), "[equivalent expression]",
+	mult_scalar_field_happy_args, mult_scalar_field_happy_args, 
+);
+test_equivalence(
+	ScalarField.ne_field, "ScalarField.ne_field",
+	(a,b) => BinaryMorphology.negation(ScalarField.eq_field(a,b)), "[equivalent expression]",
 	mult_scalar_field_happy_args, mult_scalar_field_happy_args, 
 );
 
