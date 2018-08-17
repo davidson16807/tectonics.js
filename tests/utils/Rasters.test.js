@@ -364,53 +364,39 @@ let add_uniform_args = {
 	I: 		 0,
 }
 let mult_uniform_args = {
-	pos: 	 1,
-	neg: 	-1,
-	tiny: 	 1e-1,
-	big: 	 1e4,
+	...add_uniform_args,
 	I: 		 1,
 }
+
+// NOTE: 
+// a "happy path" in this script indicates an operation should produce a valid value as understood within the confines of an abelian algebra
+// an "edge case" is anything that produces a technically valid value but not one understood to be an abelian algebra
+// for instance, a "NaN" value that spreads through calculations
 let add_vector_happy_args = {
 	pos: 	Vector( 1,			 2,		 3 			),
 	neg:	Vector(-1,			-2,		-3 			),
 	tiny: 	Vector( 1e-1,		 1e-1,	 1e-1 		),
 	big: 	Vector( 1e4,		 1e4,	 1e4 		),
 	I: 		Vector( 0,			 0,		 0 			),
-	out: 	Vector( 0,			 0,		 0 			),
-}
-let mult_vector_happy_args = {
-	pos: 	Vector( 1,			 2,		 3 			),
-	neg:	Vector(-1,			-2,		-3 			),
-	tiny: 	Vector( 1e-1,		 1e-1,	 1e-1 		),
-	big: 	Vector( 1e4,		 1e4,	 1e4 		),
-	I: 		Vector( 1,			 1,		 1 			),
 	out: 	Vector( 1,			 1,		 1 			),
 }
-// an "edge case" is anything that produces a technically valid value but does not follow abelian group algebra
-// for instance, a "NaN" value that spreads through calculations
+let mult_vector_happy_args = {
+	...add_vector_happy_args,
+	I: 		Vector( 1,			 1,		 1 			),
+}
 let add_vector_edgy_args = {
-	pos: 	Vector( 1,			 2,		 3 			),
-	neg:	Vector(-1,			-2,		-3 			),
-	tiny: 	Vector( 1e-1,		 1e-1,	 1e-1 		),
-	big: 	Vector( 1e4,		 1e4,	 1e4 		),
+	...add_vector_happy_args,
 	nans: 	Vector( NaN,		 NaN, 	 NaN 		),
 	infs: 	Vector( Infinity,	 Infinity, Infinity ),
 	ninfs: 	Vector(-Infinity,	-Infinity,-Infinity ),
-	I: 		Vector( 0,			 0,		 0 			),
-	out: 	Vector( 0,			 0,		 0 			),
 }
 let mult_vector_edgy_args = {
-	pos: 	Vector( 1,			 2,		 3 			),
-	neg:	Vector(-1,			-2,		-3 			),
-	tiny: 	Vector( 1e-1,		 1e-1,	 1e-1 		),
-	big: 	Vector( 1e4,		 1e4,	 1e4 		),
-	nans: 	Vector( NaN,		 NaN, 	 NaN 		),
-	infs: 	Vector( Infinity,	 Infinity, Infinity ),
-	ninfs: 	Vector(-Infinity,	-Infinity,-Infinity ),
+	...add_vector_edgy_args,
 	zeros: 	Vector( 0,			 0,		 0 			),
 	I: 		Vector( 1,			 1,		 1 			),
-	out: 	Vector( 0,			 0,		 0 			),
 }
+
+
 let add_matrix_happy_args = {
 	pos: 	Matrix( 1,			 2,		 3, 		
 				    4,			 5,		 6, 		
@@ -427,43 +413,16 @@ let add_matrix_happy_args = {
 	I: 		Matrix( 0,			 0,		 0, 		
 				    0,			 0,		 0, 		
 				    0,			 0,		 0, 		),
-	out: 	Matrix( 0,			 0,		 0, 		
-				    0,			 0,		 0, 		
-				    0,			 0,		 0, 		),
-}
-let mult_matrix_happy_args = {
-	pos: 	Matrix( 1,			 2,		 3, 		
-				    4,			 5,		 6, 		
-				    7,			 8,		 9, 		),
-	neg:	Matrix(-1,			-2,		-3, 		
-				   -4,			-5,		-6, 		
-				   -7,			-8,		-9, 		),
-	tiny: 	Matrix( 1e-1,		 1e-1,	 1e-1,		
-				    1e-1,		 1e-1,	 1e-1,		
-				    1e-1,		 1e-1,	 1e-1,		),
-	big: 	Matrix( 1e4,		 1e4,	 1e4, 		
-				    1e4,		 1e4,	 1e4, 		
-				    1e4,		 1e4,	 1e4, 		),
 	out: 	Matrix( 1,			 1,		 1, 		
 				    1,			 1,		 1, 		
 				    1,			 1,		 1, 		),
+}
+let mult_matrix_happy_args = {
+	...add_matrix_happy_args,
 	I: 		Matrix.Identity(),
 }
-// an "edge case" is anything that produces a technically valid value but does not follow abelian group algebra
-// for instance, a "NaN" value that spreads through calculations
 let add_matrix_edgy_args = {
-	pos: 	Matrix( 1,			 2,		 3, 		
-				    4,			 5,		 6, 		
-				    7,			 8,		 9, 		),
-	neg:	Matrix(-1,			-2,		-3, 		
-				   -4,			-5,		-6, 		
-				   -7,			-8,		-9, 		),
-	tiny: 	Matrix( 1e-1,		 1e-1,	 1e-1,		
-				    1e-1,		 1e-1,	 1e-1,		
-				    1e-1,		 1e-1,	 1e-1,		),
-	big: 	Matrix( 1e4,		 1e4,	 1e4, 		
-				    1e4,		 1e4,	 1e4, 		
-				    1e4,		 1e4,	 1e4, 		),
+	...add_matrix_happy_args,
 	nans: 	Matrix( NaN,		 NaN, 	 NaN, 		
 				    NaN,		 NaN, 	 NaN, 		
 				    NaN,		 NaN, 	 NaN, 		),
@@ -472,46 +431,17 @@ let add_matrix_edgy_args = {
 				    Infinity,	 Infinity, Infinity, ),
 	ninfs: 	Matrix(-Infinity,	-Infinity,-Infinity, 
 				   -Infinity,	-Infinity,-Infinity, 
-				  -Infinity,	-Infinity,-Infinity, ),
-	I: 		Matrix( 0,			 0,		 0, 		
-				    0,			 0,		 0, 		
-				    0,			 0,		 0, 		),
-	out: 	Matrix( 0,			 0,		 0, 		
-				    0,			 0,		 0, 		
-				    0,			 0,		 0, 		),
+				   -Infinity,	-Infinity,-Infinity, ),
 }
 let mult_matrix_edgy_args = {
-	pos: 	Matrix( 1,			 2,		 3, 		 4, 		
-				    5,			 6,		 7, 		 8, 		
-				    9,			 10,	 11, 		 12, 		
-				    13,			 14,	 15, 		 16, 		),
-	neg:	Matrix(-1,			-2,		-3, 		-4, 		
-				   -5,			-6,		-7, 		-8, 		
-				   -9,			-10,	-11, 		-12, 		
-				   -13,			-14,	-15, 		-16, 		),
-	tiny: 	Matrix( 1e-1,		 1e-1,	 1e-1,		
-				    1e-1,		 1e-1,	 1e-1,		
-				    1e-1,		 1e-1,	 1e-1,		),
-	big: 	Matrix( 1e4,		 1e4,	 1e4, 		
-				    1e4,		 1e4,	 1e4, 		
-				    1e4,		 1e4,	 1e4, 		),
-	nans: 	Matrix( NaN,		 NaN, 	 NaN, 		
-				    NaN,		 NaN, 	 NaN, 		
-				    NaN,		 NaN, 	 NaN, 		),
-	infs: 	Matrix( Infinity,	 Infinity, Infinity, 
-				    Infinity,	 Infinity, Infinity, 
-				    Infinity,	 Infinity, Infinity, ),
-	ninfs: 	Matrix(-Infinity,	-Infinity,-Infinity, 
-				   -Infinity,	-Infinity,-Infinity, 
-				  -Infinity,	-Infinity,-Infinity, ),
+	...add_matrix_edgy_args,
 	zeros: 	Matrix( 0,			 0,		 0, 		
 				    0,			 0,		 0, 		
 				    0,			 0,		 0, 		),
-	out: 	Matrix( 0,			 0,		 0, 		
-				    0,			 0,		 0, 		
-				    0,			 0,		 0, 		),
 	I: 		Matrix.Identity(),
 }
+
+
 let add_matrix4x4_happy_args = {
 	pos: 	Matrix( 1,			 2,		 3, 		 4, 		
 				    5,			 6,		 7, 		 8, 		
@@ -533,55 +463,17 @@ let add_matrix4x4_happy_args = {
 				    0,			 0,		 0, 		 0, 		
 				    0,			 0,		 0, 		 0, 		
 				    0,			 0,		 0, 		 0, 		),
-	out: 	Matrix( 0,			 0,		 0, 		 0, 		
-				    0,			 0,		 0, 		 0, 		
-				    0,			 0,		 0, 		 0, 		
-				    0,			 0,		 0, 		 0, 		),
-}
-let mult_matrix4x4_happy_args = {
-	pos: 	Matrix( 1,			 2,		 3, 		 4, 		
-				    5,			 6,		 7, 		 8, 		
-				    9,			 10,	 11, 		 12, 		
-				    13,			 14,	 15, 		 16, 		),
-	neg:	Matrix(-1,			-2,		-3, 		-4, 		
-				   -5,			-6,		-7, 		-8, 		
-				   -9,			-10,	-11, 		-12, 		
-				   -13,			-14,	-15, 		-16, 		),
-	tiny: 	Matrix( 1e-1,		 1e-1,	 1e-1,		 1e-1,		
-				    1e-1,		 1e-1,	 1e-1,		 1e-1,		
-				    1e-1,		 1e-1,	 1e-1,		 1e-1,		
-				    1e-1,		 1e-1,	 1e-1,		 1e-1,		),
-	big: 	Matrix( 1e4,		 1e4,	 1e4, 		 1e4, 		
-				    1e4,		 1e4,	 1e4, 		 1e4, 		
-				    1e4,		 1e4,	 1e4, 		 1e4, 		
-				    1e4,		 1e4,	 1e4, 		 1e4, 		),
-	I: 		Matrix( 1,			 1,		 1, 		 1, 		
-				    1,			 1,		 1, 		 1, 		
-				    1,			 1,		 1, 		 1, 		
-				    1,			 1,		 1, 		 1, 		),
 	out: 	Matrix( 1,			 1,		 1, 		 1, 		
 				    1,			 1,		 1, 		 1, 		
 				    1,			 1,		 1, 		 1, 		
 				    1,			 1,		 1, 		 1, 		),
+}
+let mult_matrix4x4_happy_args = {
+	...add_matrix4x4_happy_args,
 	I: 		Matrix4x4.identity(),
 }
 let add_matrix4x4_edgy_args = {
-	pos: 	Matrix( 1,			 2,		 3, 		 4, 		
-				    5,			 6,		 7, 		 8, 		
-				    9,			 10,	 11, 		 12, 		
-				    13,			 14,	 15, 		 16, 		),
-	neg:	Matrix(-1,			-2,		-3, 		-4, 		
-				   -5,			-6,		-7, 		-8, 		
-				   -9,			-10,	-11, 		-12, 		
-				   -13,			-14,	-15, 		-16, 		),
-	tiny: 	Matrix( 1e-1,		 1e-1,	 1e-1, 		 1e-1, 		
-				    1e-1,		 1e-1,	 1e-1, 		 1e-1, 		
-				    1e-1,		 1e-1,	 1e-1, 		 1e-1, 		
-				    1e-1,		 1e-1,	 1e-1, 		 1e-1, 		),
-	big: 	Matrix( 1e4,		 1e4,	 1e4, 		 1e4, 		
-				    1e4,		 1e4,	 1e4, 		 1e4, 		
-				    1e4,		 1e4,	 1e4, 		 1e4, 		
-				    1e4,		 1e4,	 1e4, 		 1e4, 		),
+	...add_matrix4x4_happy_args,
 	nans: 	Matrix( NaN,		 NaN, 	 NaN, 		 NaN, 		
 				    NaN,		 NaN, 	 NaN, 		 NaN, 		
 				    NaN,		 NaN, 	 NaN, 		 NaN, 		
@@ -594,94 +486,42 @@ let add_matrix4x4_edgy_args = {
 				   -Infinity,	-Infinity,-Infinity,-Infinity, 
 				   -Infinity,	-Infinity,-Infinity,-Infinity, 
 				  -Infinity,	-Infinity,-Infinity,-Infinity, ),
-	I: 		Matrix( 0,			 0,		 0, 		 0, 		
-				    0,			 0,		 0, 		 0, 		
-				    0,			 0,		 0, 		 0, 		
-				    0,			 0,		 0, 		 0, 		),
-	out: 	Matrix( 0,			 0,		 0, 		 0, 		
-				    0,			 0,		 0, 		 0, 		
-				    0,			 0,		 0, 		 0, 		
-				    0,			 0,		 0, 		 0, 		),
 }
 let mult_matrix4x4_edgy_args = {
-	pos: 	Matrix( 1,			 2,		 3, 		 4, 		
-				    5,			 6,		 7, 		 8, 		
-				    9,			 10,	 11, 		 12, 		
-				    13,			 14,	 15, 		 16, 		),
-	neg:	Matrix(-1,			-2,		-3, 		-4, 		
-				   -5,			-6,		-7, 		-8, 		
-				   -9,			-10,	-11, 		-12, 		
-				   -13,			-14,	-15, 		-16, 		),
-	tiny: 	Matrix( 1e-1,		 1e-1,	 1e-1, 		 1e-1, 		
-				    1e-1,		 1e-1,	 1e-1, 		 1e-1, 		
-				    1e-1,		 1e-1,	 1e-1, 		 1e-1, 		
-				    1e-1,		 1e-1,	 1e-1, 		 1e-1, 		),
-	big: 	Matrix( 1e4,		 1e4,	 1e4, 		 1e4, 		
-				    1e4,		 1e4,	 1e4, 		 1e4, 		
-				    1e4,		 1e4,	 1e4, 		 1e4, 		
-				    1e4,		 1e4,	 1e4, 		 1e4, 		),
-	nans: 	Matrix( NaN,		 NaN, 	 NaN, 		 NaN, 		
-				    NaN,		 NaN, 	 NaN, 		 NaN, 		
-				    NaN,		 NaN, 	 NaN, 		 NaN, 		
-				    NaN,		 NaN, 	 NaN, 		 NaN, 		),
-	infs: 	Matrix( Infinity,	 Infinity, Infinity, Infinity, 
-				    Infinity,	 Infinity, Infinity, Infinity, 
-				    Infinity,	 Infinity, Infinity, Infinity, 
-				    Infinity,	 Infinity, Infinity, Infinity, ),
-	ninfs: 	Matrix(-Infinity,	-Infinity,-Infinity,-Infinity, 
-				   -Infinity,	-Infinity,-Infinity,-Infinity, 
-				   -Infinity,	-Infinity,-Infinity,-Infinity, 
-				  -Infinity,	-Infinity,-Infinity,-Infinity, ),
+	...add_matrix4x4_edgy_args,
 	zeros: 	Matrix( 0,			 0,		 0, 		 0, 		
 				    0,			 0,		 0, 		 0, 		
 				    0,			 0,		 0, 		 0, 		
 				    0,			 0,		 0, 		 0, 		),
-	out: 	Matrix( 0,			 0,		 0, 		 0, 		
-				    0,			 0,		 0, 		 0, 		
-				    0,			 0,		 0, 		 0, 		
-				    0,			 0,		 0, 		 0, 		),
 	I: 		Matrix4x4.identity(),
 }
+
+
 let add_scalar_field_happy_args = {
 	pos: 	Float32Raster.FromArray([ 1,	 2,		 3,		 4,	 ], tetrahedron),
 	neg:	Float32Raster.FromArray([-1,	-2,		-3,		-4	 ], tetrahedron),
 	tiny: 	Float32Raster.FromArray([ 1e-1,	 1e-1,	 1e-1,	 1e-1], tetrahedron),
 	big: 	Float32Raster.FromArray([ 1e4,	 1e4,	 1e4,	 1e4,], tetrahedron),
 	I: 		Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
-	out: 	Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
-}
-let mult_scalar_field_happy_args = {
-	neg:	Float32Raster.FromArray([-1,	-1,		-1,		-1	 ], tetrahedron),
-	tiny: 	Float32Raster.FromArray([ 1e-1,	 1e-1,	 1e-1,	 1e-1], tetrahedron),
-	big: 	Float32Raster.FromArray([ 1e4,	 1e4,	 1e4,	 1e4,], tetrahedron),
-	I: 		Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
 	out: 	Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
 }
-// an "edge case" is anything that produces a technically valid value but does not follow abelian group algebra
-// for instance, a "NaN" value that spreads through calculations
+let mult_scalar_field_happy_args = {
+	...add_scalar_field_happy_args,
+	I: 		Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
+}
 let add_scalar_field_edgy_args = {
-	pos: 	Float32Raster.FromArray([ 1,	 2,		 3,		 4,	 ], tetrahedron),
-	neg:	Float32Raster.FromArray([-1,	-2,		-3,		-4	 ], tetrahedron),
-	tiny: 	Float32Raster.FromArray([ 1e-1,	 1e-1,	 1e-1,	 1e-1], tetrahedron),
-	big: 	Float32Raster.FromArray([ 1e4,	 1e4,	 1e4,	 1e4,], tetrahedron),
+	...add_scalar_field_happy_args,
 	nans: 	Float32Raster.FromArray([ NaN,	 NaN, 	 NaN, 	 NaN ], tetrahedron),
 	infs: 	Float32Raster.FromArray([ Infinity, Infinity, Infinity, Infinity], tetrahedron),
 	ninfs: 	Float32Raster.FromArray([-Infinity,-Infinity,-Infinity,-Infinity], tetrahedron),
-	I: 		Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
-	out: 	Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
 }
 let mult_scalar_field_edgy_args = {
-	pos: 	Float32Raster.FromArray([ 1,	 2,		 3,		 4,	 ], tetrahedron),
-	neg:	Float32Raster.FromArray([-1,	-2,		-3,		-4	 ], tetrahedron),
-	tiny: 	Float32Raster.FromArray([ 1e-1,	 1e-1,	 1e-1,	 1e-1], tetrahedron),
-	big: 	Float32Raster.FromArray([ 1e4,	 1e4,	 1e4,	 1e4,], tetrahedron),
-	nans: 	Float32Raster.FromArray([ NaN,	 NaN, 	 NaN, 	 NaN ], tetrahedron),
-	infs: 	Float32Raster.FromArray([ Infinity, Infinity, Infinity, Infinity], tetrahedron),
-	ninfs: 	Float32Raster.FromArray([-Infinity,-Infinity,-Infinity,-Infinity], tetrahedron),
+	...add_scalar_field_edgy_args,
 	zeros: 	Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
 	I: 		Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ], tetrahedron),
-	out: 	Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ], tetrahedron),
 }
+
+
 let add_vector_field_happy_args = {
 	pos: 	VectorRaster.FromArrays([ 1,	 2,		 3,		 4,	 ], 
 									[ 5,	 6,		 7,		 8,	 ], 
@@ -698,45 +538,18 @@ let add_vector_field_happy_args = {
 	I: 		VectorRaster.FromArrays([ 0,	 0,		 0,		 0	 ], 
 									[ 0,	 0,		 0,		 0	 ], 
 									[ 0,	 0,		 0,		 0	 ], tetrahedron),
-	out: 	VectorRaster.FromArrays([ 0,	 0,		 0,		 0	 ], 
-									[ 0,	 0,		 0,		 0	 ], 
-									[ 0,	 0,		 0,		 0	 ], tetrahedron),
-}
-let mult_vector_field_happy_args = {
-	pos: 	VectorRaster.FromArrays([ 1,	 2,		 3,		 4,	 ], 
-									[ 5,	 6,		 7,		 8,	 ], 
-									[ 9,	 10,	 11,	 12, ], tetrahedron),
-	neg:	VectorRaster.FromArrays([-1,	-2,		-3,		-4	 ], 
-									[-5,	-6,		-7,		-8	 ], 
-									[-9,	-10,	-11,	-12	 ], tetrahedron),
-	tiny: 	VectorRaster.FromArrays([ 1e-1,	 1e-1,	 1e-1,	 1e-1], 
-									[ 1e-1,	 1e-1,	 1e-1,	 1e-1], 
-									[ 1e-1,	 1e-1,	 1e-1,	 1e-1], tetrahedron),
-	big: 	VectorRaster.FromArrays([ 1e4,	 1e4,	 1e4,	 1e4,], 
-									[ 1e4,	 1e4,	 1e4,	 1e4,], 
-									[ 1e4,	 1e4,	 1e4,	 1e4,], tetrahedron),
-	I: 		VectorRaster.FromArrays([ 1,	 1,		 1,		 1	 ], 
-									[ 1,	 1,		 1,		 1	 ], 
-									[ 1,	 1,		 1,		 1	 ], tetrahedron),
 	out: 	VectorRaster.FromArrays([ 1,	 1,		 1,		 1	 ], 
 									[ 1,	 1,		 1,		 1	 ], 
 									[ 1,	 1,		 1,		 1	 ], tetrahedron),
 }
-// an "edge case" is anything that produces a technically valid value but does not follow abelian group algebra
-// for instance, a "NaN" value that spreads through calculations
+let mult_vector_field_happy_args = {
+	...add_vector_field_happy_args,
+	I: 		VectorRaster.FromArrays([ 1,	 1,		 1,		 1	 ], 
+									[ 1,	 1,		 1,		 1	 ], 
+									[ 1,	 1,		 1,		 1	 ], tetrahedron),
+}
 let add_vector_field_edgy_args = {
-	pos: 	VectorRaster.FromArrays([ 1,	 2,		 3,		 4,	 ], 
-									[ 5,	 6,		 7,		 8,	 ], 
-									[ 9,	 10,	 11,	 12,	 ], tetrahedron),
-	neg:	VectorRaster.FromArrays([-1,	-2,		-3,		-4	 ], 
-									[-5,	-6,		-7,		-8	 ], 
-									[-9,	-10,	-11,	-12	 ], tetrahedron),
-	tiny: 	VectorRaster.FromArrays([ 1e-1,	 1e-1,	 1e-1,	 1e-1], 
-									[ 1e-1,	 1e-1,	 1e-1,	 1e-1], 
-									[ 1e-1,	 1e-1,	 1e-1,	 1e-1], tetrahedron),
-	big: 	VectorRaster.FromArrays([ 1e4,	 1e4,	 1e4,	 1e4,], 
-									[ 1e4,	 1e4,	 1e4,	 1e4,], 
-									[ 1e4,	 1e4,	 1e4,	 1e4,], tetrahedron),
+	...add_vector_field_happy_args,
 	nans: 	VectorRaster.FromArrays([ NaN,	 NaN, 	 NaN, 	 NaN ], 
 									[ NaN,	 NaN, 	 NaN, 	 NaN ], 
 									[ NaN,	 NaN, 	 NaN, 	 NaN ], tetrahedron),
@@ -746,44 +559,15 @@ let add_vector_field_edgy_args = {
 	ninfs: 	VectorRaster.FromArrays([-Infinity,-Infinity,-Infinity,-Infinity], 
 									[-Infinity,-Infinity,-Infinity,-Infinity], 
 									[-Infinity,-Infinity,-Infinity,-Infinity], tetrahedron),
-	I: 		VectorRaster.FromArrays([ 0,	 0,		 0,		 0	 ], 
-									[ 0,	 0,		 0,		 0	 ], 
-									[ 0,	 0,		 0,		 0	 ], tetrahedron),
-	out: 	VectorRaster.FromArrays([ 0,	 0,		 0,		 0	 ], 
-									[ 0,	 0,		 0,		 0	 ], 
-									[ 0,	 0,		 0,		 0	 ], tetrahedron),
 }
 let mult_vector_field_edgy_args = {
-	pos: 	VectorRaster.FromArrays([ 1,	 2,		 3,		 4,	 ], 
-									[ 5,	 6,		 7,		 8,	 ], 
-									[ 9,	 10,	 11,	 12,	 ], tetrahedron),
-	neg:	VectorRaster.FromArrays([-1,	-2,		-3,		-4	 ], 
-									[-5,	-6,		-7,		-8	 ], 
-									[-9,	-10,	-11,	-12	 ], tetrahedron),
-	tiny: 	VectorRaster.FromArrays([ 1e-1,	 1e-1,	 1e-1,	 1e-1], 
-									[ 1e-1,	 1e-1,	 1e-1,	 1e-1], 
-									[ 1e-1,	 1e-1,	 1e-1,	 1e-1], tetrahedron),
-	big: 	VectorRaster.FromArrays([ 1e4,	 1e4,	 1e4,	 1e4,], 
-									[ 1e4,	 1e4,	 1e4,	 1e4,], 
-									[ 1e4,	 1e4,	 1e4,	 1e4,], tetrahedron),
-	nans: 	VectorRaster.FromArrays([ NaN,	 NaN, 	 NaN, 	 NaN ], 
-									[ NaN,	 NaN, 	 NaN, 	 NaN ], 
-									[ NaN,	 NaN, 	 NaN, 	 NaN ], tetrahedron),
-	infs: 	VectorRaster.FromArrays([ Infinity, Infinity, Infinity, Infinity], 
-									[ Infinity, Infinity, Infinity, Infinity], 
-									[ Infinity, Infinity, Infinity, Infinity], tetrahedron),
-	ninfs: 	VectorRaster.FromArrays([-Infinity,-Infinity,-Infinity,-Infinity], 
-									[-Infinity,-Infinity,-Infinity,-Infinity], 
-									[-Infinity,-Infinity,-Infinity,-Infinity], tetrahedron),
+	...add_vector_field_edgy_args,
 	zeros: 	VectorRaster.FromArrays([ 0,	 0,		 0,		 0	 ], 
 									[ 0,	 0,		 0,		 0	 ], 
 									[ 0,	 0,		 0,		 0	 ], tetrahedron),
 	I: 		VectorRaster.FromArrays([ 1,	 1,		 1,		 1	 ], 
 									[ 1,	 1,		 1,		 1	 ], 
 									[ 1,	 1,		 1,		 1	 ], tetrahedron),
-	out: 	VectorRaster.FromArrays([ 0,	 0,		 0,		 0	 ], 
-									[ 0,	 0,		 0,		 0	 ], 
-									[ 0,	 0,		 0,		 0	 ], tetrahedron),
 }
 
 
@@ -1051,15 +835,15 @@ test_properties([
 	mult_vector_field_happy_args, mult_vector_happy_args, 
 );
 test_equivalence(
-	(a) => Vector.cross(a.x, a.y, a.z, a.x, a.y, a.z), "Vector.cross",
+	(a) => Vector.cross_vector(a.x, a.y, a.z, a.x, a.y, a.z), "Vector.cross_vector",
 	(a) => mult_vector_edgy_args.zeros, '0',
 	mult_vector_happy_args, 
 );
 test_equivalence(
 	(a,b) => { 
-		x = Vector.cross(a.x, a.y, a.z, b.x, b.y, b.z); 
+		x = Vector.cross_vector(a.x, a.y, a.z, b.x, b.y, b.z); 
 		return Vector.dot_vector(a.x, a.y, a.z, x.x, x.y, x.z, );
-	}, "Vector.dot_vector(..., Vector.cross)",
+	}, "Vector.dot_vector(..., Vector.cross_vector)",
 	(a,b) => 0, '0', 
 	mult_vector_happy_args, mult_vector_happy_args, 
 );
@@ -1124,11 +908,6 @@ test_equivalence(
 	mult_vector_field_happy_args, 
 );
 
-test_equivalence(
-	(a) => VectorField.curl(ScalarField.gradient(a)), "VectorField.curl(ScalarField.gradient)",
-	(a) => mult_vector_field_edgy_args.zeros, "0",
-	mult_scalar_field_happy_args, 
-);
 // NOTE: this test fails, but I'm not sure whether it's failing 
 //  because its broken or because the "tetrahedron" grid isn't a suitable test subject
 //test_equivalence(
@@ -1136,6 +915,11 @@ test_equivalence(
 //	(a) => mult_scalar_field_edgy_args.zeros, "0",
 //	mult_vector_field_happy_args, 
 //);
+// test_equivalence(
+// 	(a) => VectorField.curl(ScalarField.gradient(a)), "VectorField.curl(ScalarField.gradient)",
+// 	(a) => mult_vector_field_edgy_args.zeros, "0",
+// 	mult_scalar_field_happy_args, 
+// );
 
 test_equivalence(
 	(a,b) => VectorField.dot_vector_field(a, VectorField.cross_vector_field(a, b)), "VectorField.cross_vector_field",

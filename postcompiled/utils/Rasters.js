@@ -1367,7 +1367,7 @@ Vector.sub_vector = function(ax, ay, az, bx, by, bz, result) {
   return result;
 }
 // TODO: rename to "cross_vector" 
-Vector.cross = function(ax, ay, az, bx, by, bz, result) {
+Vector.cross_vector = function(ax, ay, az, bx, by, bz, result) {
   result = result || Vector()
   result.x = ay*bz - az*by;
   result.y = az*bx - ax*bz;

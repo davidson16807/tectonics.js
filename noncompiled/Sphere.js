@@ -28,8 +28,8 @@ Sphere.random_point_along_great_circle = function(eulerPole) {
     var c = Vector()
 
     // First, cross eulerPole with another vector to give a nonrandom point along great circle
-    Vector.cross	(a.x, a.y, a.z,  	b.x, b.y, b.z, 	c); 
-    Vector.normalize(c.x, c.y, c.z, 					c); 
+    Vector.cross_vector	(a.x, a.y, a.z,  	b.x, b.y, b.z, 	c); 
+    Vector.normalize	(c.x, c.y, c.z, 					c); 
 	
 	// then rotate by some random amount around the eulerPole
 	var random_rotation_matrix = Matrix.RotationAboutAxis(a.x, a.y, a.z, 2*Math.PI * sim.random.random());
@@ -40,9 +40,9 @@ Sphere.random_basis = function () {
     var a = Vector(); 
     var b = Vector(); 
     var c = Sphere.random_point(); 
-    Vector.cross(c.x, c.y, c.z, up.x, up.y, up.z, a); 
-    Vector.normalize(a.x, a.y, a.z, a); 
-    Vector.cross(c.x, c.y, c.z, a.x, a.y, a.z, b); 
+    Vector.cross_vector	(c.x, c.y, c.z, up.x, up.y, up.z, a); 
+    Vector.normalize	(a.x, a.y, a.z, a); 
+    Vector.cross_vector	(c.x, c.y, c.z, a.x, a.y, a.z, b); 
     return Matrix.BasisVectors(a,b,c); 
 }
 
