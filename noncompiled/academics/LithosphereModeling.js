@@ -512,16 +512,16 @@ LithosphereModeling.get_plate_rotation_matrix = function(plate_velocity, center_
 // debugger;
 
 	// TODO: negation shouldn't theoretically be needed! find out where the discrepancy lies and fix it the proper way! 
-	var center_of_plate_rotation_matrix = Matrix.FromRotationVector(-center_of_plate_rotation_vector.x, -center_of_plate_rotation_vector.y, -center_of_plate_rotation_vector.z);
+	var center_of_plate_rotation_matrix = Matrix3x3.FromRotationVector(-center_of_plate_rotation_vector.x, -center_of_plate_rotation_vector.y, -center_of_plate_rotation_vector.z);
 	if (isNaN(center_of_plate_rotation_matrix[0])) {
-		center_of_plate_rotation_matrix = Matrix.Identity();
+		center_of_plate_rotation_matrix = Matrix3x3.Identity();
 	}
-	var center_of_world_rotation_matrix = Matrix.FromRotationVector(-center_of_world_rotation_vector.x, -center_of_world_rotation_vector.y, -center_of_world_rotation_vector.z);
+	var center_of_world_rotation_matrix = Matrix3x3.FromRotationVector(-center_of_world_rotation_vector.x, -center_of_world_rotation_vector.y, -center_of_world_rotation_vector.z);
 	if (isNaN(center_of_world_rotation_matrix[0])) {
-		center_of_world_rotation_matrix = Matrix.Identity();
+		center_of_world_rotation_matrix = Matrix3x3.Identity();
 	}
 
-	var rotation_matrix = Matrix.mult_matrix(center_of_plate_rotation_matrix, center_of_world_rotation_matrix);
+	var rotation_matrix = Matrix3x3.mult_matrix(center_of_plate_rotation_matrix, center_of_world_rotation_matrix);
 
   	scratchpad.deallocate('get_plate_rotation_matrix');
 

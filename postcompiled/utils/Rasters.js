@@ -107,7 +107,7 @@ Grid.prototype.getNearestIds = function(pos_field, result) {
 Grid.prototype.getNeighborIds = function(id) {
  return this.neighbor_lookup[id];
 }
-// Tectonics.js rolls its own Vector and Matrix libraries for two reasons:
+// Tectonics.js rolls its own Vector and Matrix3x3 libraries for two reasons:
 //   1.) performance
 //   2.) separation from volatile 3rd part libraries (Three.js)
 // 
@@ -116,37 +116,37 @@ Grid.prototype.getNeighborIds = function(id) {
 // 
 // Lists are used instead of params because performance gain over 
 // independant params is negligible for our purposes.
-function Matrix(){
+function Matrix3x3(){
   return new Float32Array([0,0,0,
                            0,0,0,
                            0,0,0]);
 }
-Matrix.Identity = function() {
+Matrix3x3.Identity = function() {
   return new Float32Array([1,0,0,
                            0,1,0,
                            0,0,1]);
 }
-Matrix.RowMajorOrder = function(list) {
+Matrix3x3.RowMajorOrder = function(list) {
   if ((list.length !== 9) || !(list instanceof Float32Array)) { throw "list" + ' is not a 3x3 matrix'; }
   var xx = list[0]; var xy = list[1]; var xz = list[2];
   var yx = list[3]; var yy = list[4]; var yz = list[5];
   var zx = list[6]; var zy = list[7]; var zz = list[8];
-  var result = Matrix();
+  var result = Matrix3x3();
   result[0] = xx; result[4] = xy; result[8] = xz;
   result[1] = yx; result[5] = yy; result[9] = yz;
   result[2] = zx; result[6] = zy; result[10]= zz;
   return result;
 }
-Matrix.ColumnMajorOrder = function(list) {
+Matrix3x3.ColumnMajorOrder = function(list) {
   if ((list.length !== 9) || !(list instanceof Float32Array)) { throw "list" + ' is not a 3x3 matrix'; }
   return new Float32Array(list); //matrices are standardized to column major order, already
 }
-Matrix.BasisVectors = function(a, b, c) {
+Matrix3x3.BasisVectors = function(a, b, c) {
   return new Float32Array([a.x, a.y, a.z,
                            b.x, b.y, b.z,
                            c.x, c.y, c.z ]);
 }
-Matrix.RotationAboutAxis = function(axis_x, axis_y, axis_z, angle) {
+Matrix3x3.RotationAboutAxis = function(axis_x, axis_y, axis_z, angle) {
   var θ = angle,
       x = axis_x,
       y = axis_y,
@@ -162,7 +162,7 @@ Matrix.RotationAboutAxis = function(axis_x, axis_y, axis_z, angle) {
     vθx*z+sθ*y, vθy*z-sθ*x, vθ*z*z+cθ
   ]);
 }
-Matrix.FromRotationVector = function(ωx, ωy, ωz) {
+Matrix3x3.FromRotationVector = function(ωx, ωy, ωz) {
   var axis = Vector.normalize(ωx, ωy, ωz);
   var θ = Vector.magnitude(ωx, ωy, ωz),
       x = axis.x,
@@ -179,8 +179,8 @@ Matrix.FromRotationVector = function(ωx, ωy, ωz) {
     vθx*z+sθ*y, vθy*z-sθ*x, vθ*z*z+cθ
   ]);
 }
-Matrix.invert = function(matrix, result) {
-    result = result || Matrix();
+Matrix3x3.invert = function(matrix, result) {
+    result = result || Matrix3x3();
     if ((matrix.length !== 9) || !(matrix instanceof Float32Array)) { throw "matrix" + ' is not a 3x3 matrix'; }
     if ((result.length !== 9) || !(result instanceof Float32Array)) { throw "result" + ' is not a 3x3 matrix'; }
     var A = matrix;
@@ -206,8 +206,8 @@ Matrix.invert = function(matrix, result) {
     B[ 2 ] = b31, B[ 5 ] = b32, B[ 8 ] = b33;
     return B;
 }
-Matrix.add_scalar = function(matrix, scalar, result) {
-  var result = result || Matrix();
+Matrix3x3.add_scalar = function(matrix, scalar, result) {
+  var result = result || Matrix3x3();
   var A = matrix;
   var b = scalar;
   var C = result;
@@ -225,8 +225,8 @@ Matrix.add_scalar = function(matrix, scalar, result) {
   C[8] = A[8]+b;
   return C;
 }
-Matrix.sub_scalar = function(matrix, scalar, result) {
-  var result = result || Matrix();
+Matrix3x3.sub_scalar = function(matrix, scalar, result) {
+  var result = result || Matrix3x3();
   var A = matrix;
   var b = scalar;
   var C = result;
@@ -244,8 +244,8 @@ Matrix.sub_scalar = function(matrix, scalar, result) {
   C[8] = A[8]-b;
   return C;
 }
-Matrix.mult_scalar = function(matrix, scalar, result) {
-  var result = result || Matrix();
+Matrix3x3.mult_scalar = function(matrix, scalar, result) {
+  var result = result || Matrix3x3();
   var A = matrix;
   var b = scalar;
   var C = result;
@@ -263,8 +263,8 @@ Matrix.mult_scalar = function(matrix, scalar, result) {
   C[8] = A[8]*b;
   return C;
 }
-Matrix.mult_matrix = function(A, B, result) {
-  var result = result || Matrix();
+Matrix3x3.mult_matrix = function(A, B, result) {
+  var result = result || Matrix3x3();
   var C = result;
   if ((A.length !== 9) || !(A instanceof Float32Array)) { throw "A" + ' is not a 3x3 matrix'; }
   if ((B.length !== 9) || !(B instanceof Float32Array)) { throw "B" + ' is not a 3x3 matrix'; }
@@ -286,8 +286,8 @@ Matrix.mult_matrix = function(A, B, result) {
   C[ 8 ] = a31 * b13 + a32 * b23 + a33 * b33;
   return C;
 }
-Matrix.hadamard_matrix = function(A, B, result) {
-  var result = result || Matrix();
+Matrix3x3.hadamard_matrix = function(A, B, result) {
+  var result = result || Matrix3x3();
   var C = result;
   if ((A.length !== 9) || !(A instanceof Float32Array)) { throw "A" + ' is not a 3x3 matrix'; }
   if ((B.length !== 9) || !(B instanceof Float32Array)) { throw "B" + ' is not a 3x3 matrix'; }
@@ -351,11 +351,11 @@ Matrix4x4.identity = function(out) {
   return out;
 }
 /**
- * Copy the values from one mat4 to another
+ * Copy the values from one out to another
  *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the source matrix
- * @returns {mat4} out
+ * @param {out} out the receiving matrix
+ * @param {out} a the source matrix
+ * @returns {out} out
  */
 Matrix4x4.copy = function(a, out) {
   out = out || Matrix4x4();
@@ -440,11 +440,11 @@ Matrix4x4.row_major_order = function(
   return out;
 }
 /**
- * Transpose the values of a mat4
+ * Transpose the values of a out
  *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the source matrix
- * @returns {mat4} out
+ * @param {out} out the receiving matrix
+ * @param {out} a the source matrix
+ * @returns {out} out
  */
 Matrix4x4.transpose = function(a, out) {
   out = out || Matrix4x4();
@@ -486,11 +486,11 @@ Matrix4x4.transpose = function(a, out) {
   return out;
 }
 /**
- * Inverts a mat4
+ * Inverts a out
  *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the source matrix
- * @returns {mat4} out
+ * @param {out} out the receiving matrix
+ * @param {out} a the source matrix
+ * @returns {out} out
  */
 Matrix4x4.invert = function(a, out) {
   out = out || Matrix4x4();
@@ -535,11 +535,11 @@ Matrix4x4.invert = function(a, out) {
   return out;
 }
 /**
- * Calculates the adjugate of a mat4
+ * Calculates the adjugate of a out
  *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the source matrix
- * @returns {mat4} out
+ * @param {out} out the receiving matrix
+ * @param {out} a the source matrix
+ * @returns {out} out
  */
 Matrix4x4.adjoint = function(a, out) {
   out = out || Matrix4x4();
@@ -566,9 +566,9 @@ Matrix4x4.adjoint = function(a, out) {
   return out;
 }
 /**
- * Calculates the determinant of a mat4
+ * Calculates the determinant of a out
  *
- * @param {mat4} a the source matrix
+ * @param {out} a the source matrix
  * @returns {Number} determinant of a
  */
 Matrix4x4.determinant = function(a){
@@ -592,12 +592,12 @@ Matrix4x4.determinant = function(a){
   return b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
 }
 /**
- * Multiplies two mat4s
+ * Multiplies two outs
  *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the first operand
- * @param {mat4} b the second operand
- * @returns {mat4} out
+ * @param {out} out the receiving matrix
+ * @param {out} a the first operand
+ * @param {out} b the second operand
+ * @returns {out} out
  */
 Matrix4x4.mult_matrix = function(a, b, out) {
   out = out || Matrix4x4();
@@ -632,12 +632,12 @@ Matrix4x4.mult_matrix = function(a, b, out) {
  * Creates a matrix from a vector translation
  * This is equivalent to (but much faster than):
  *
- *     mat4.identity(dest);
- *     mat4.translate(dest, dest, vec);
+ *     out.identity(dest);
+ *     out.translate(dest, dest, vec);
  *
- * @param {mat4} out mat4 receiving operation result
+ * @param {out} out out receiving operation result
  * @param {vec3} v Translation vector
- * @returns {mat4} out
+ * @returns {out} out
  */
 Matrix4x4.from_translation = function( x, y, z, out) {
   out = out || Matrix4x4();
@@ -663,12 +663,12 @@ Matrix4x4.from_translation = function( x, y, z, out) {
  * Creates a matrix from a vector scaling
  * This is equivalent to (but much faster than):
  *
- *     mat4.identity(dest);
- *     mat4.scale(dest, dest, vec);
+ *     out.identity(dest);
+ *     out.scale(dest, dest, vec);
  *
- * @param {mat4} out mat4 receiving operation result
+ * @param {out} out out receiving operation result
  * @param {vec3} v Scaling vector
- * @returns {mat4} out
+ * @returns {out} out
  */
 Matrix4x4.from_scaling = function( x, y, z, out) {
   out = out || Matrix4x4();
@@ -694,13 +694,13 @@ Matrix4x4.from_scaling = function( x, y, z, out) {
  * Creates a matrix from a given angle around a given axis
  * This is equivalent to (but much faster than):
  *
- *     mat4.identity(dest);
- *     mat4.rotate(dest, dest, rad, axis);
+ *     out.identity(dest);
+ *     out.rotate(dest, dest, rad, axis);
  *
- * @param {mat4} out mat4 receiving operation result
+ * @param {out} out out receiving operation result
  * @param {Number} rad the angle to rotate the matrix by
  * @param {vec3} axis the axis to rotate around
- * @returns {mat4} out
+ * @returns {out} out
  */
 Matrix4x4.from_rotation = function( x, y, z, rad, out) {
   out = out || Matrix4x4();
@@ -735,11 +735,11 @@ Matrix4x4.from_rotation = function( x, y, z, rad, out) {
   return out;
 }
 /**
- * Creates a new mat4 from a dual quat.
+ * Creates a new out from a dual quat.
  *
- * @param {mat4} out Matrix
+ * @param {out} out Matrix
  * @param {quat2} a Dual Quaternion
- * @returns {mat4} mat4 receiving operation result
+ * @returns {out} out receiving operation result
  */
 Matrix4x4.from_dual_quaternion = function(a, out) {
   out = out || Matrix4x4();
@@ -767,7 +767,7 @@ Matrix4x4.from_dual_quaternion = function(a, out) {
  *  the returned vector will be the same as the translation vector
  *  originally supplied.
  * @param  {vec3} out Vector to receive translation component
- * @param  {mat4} mat Matrix to be decomposed (input)
+ * @param  {out} mat Matrix to be decomposed (input)
  * @return {vec3} out
  */
 Matrix4x4.get_translation = function( mat, out) {
@@ -784,7 +784,7 @@ Matrix4x4.get_translation = function( mat, out) {
  *  the same as the scaling vector
  *  originally supplied.
  * @param  {vec3} out Vector to receive scaling factor component
- * @param  {mat4} mat Matrix to be decomposed (input)
+ * @param  {out} mat Matrix to be decomposed (input)
  * @return {vec3} out
  */
 Matrix4x4.get_scaling = function( mat, out) {
@@ -809,7 +809,7 @@ Matrix4x4.get_scaling = function( mat, out) {
  *  fromRotationTranslation, the returned quaternion will be the
  *  same as the quaternion originally supplied.
  * @param {quat} out Quaternion to receive the rotation component
- * @param {mat4} mat Matrix to be decomposed (input)
+ * @param {out} mat Matrix to be decomposed (input)
  * @return {quat} out
  */
 Matrix4x4.get_quaternion = function( mat, out) {
@@ -847,10 +847,10 @@ Matrix4x4.get_quaternion = function( mat, out) {
 /**
  * Calculates a 4x4 matrix from the given quaternion
  *
- * @param {mat4} out mat4 receiving operation result
+ * @param {out} out out receiving operation result
  * @param {quat} q Quaternion to create matrix from
  *
- * @returns {mat4} out
+ * @returns {out} out
  */
 Matrix4x4.from_quaternion = function( q, out) {
   out = out || Matrix4x4();
@@ -888,14 +888,14 @@ Matrix4x4.from_quaternion = function( q, out) {
 /**
  * Generates a frustum matrix with the given bounds
  *
- * @param {mat4} out mat4 frustum matrix will be written into
+ * @param {out} out out frustum matrix will be written into
  * @param {Number} left Left bound of the frustum
  * @param {Number} right Right bound of the frustum
  * @param {Number} bottom Bottom bound of the frustum
  * @param {Number} top Top bound of the frustum
  * @param {Number} near Near bound of the frustum
  * @param {Number} far Far bound of the frustum
- * @returns {mat4} out
+ * @returns {out} out
  */
 Matrix4x4.from_frustum = function( left, right, bottom, top, near, far, out) {
   out = out || Matrix4x4();
@@ -923,12 +923,12 @@ Matrix4x4.from_frustum = function( left, right, bottom, top, near, far, out) {
 /**
  * Generates a perspective projection matrix with the given bounds
  *
- * @param {mat4} out mat4 frustum matrix will be written into
+ * @param {out} out out frustum matrix will be written into
  * @param {number} fovy Vertical field of view in radians
  * @param {number} aspect Aspect ratio. typically viewport width/height
  * @param {number} near Near bound of the frustum
  * @param {number} far Far bound of the frustum
- * @returns {mat4} out
+ * @returns {out} out
  */
 Matrix4x4.from_perspective = function( fovy, aspect, near, far, out) {
   out = out || Matrix4x4();
@@ -957,11 +957,11 @@ Matrix4x4.from_perspective = function( fovy, aspect, near, far, out) {
  * This is primarily useful for generating projection matrices to be used
  * with the still experiemental WebVR API.
  *
- * @param {mat4} out mat4 frustum matrix will be written into
+ * @param {out} out out frustum matrix will be written into
  * @param {Object} fov Object containing the following values: upDegrees, downDegrees, leftDegrees, rightDegrees
  * @param {number} near Near bound of the frustum
  * @param {number} far Far bound of the frustum
- * @returns {mat4} out
+ * @returns {out} out
  */
 Matrix4x4.from_field_of_view_perspective = function( fov, near, far, out) {
   out = out || Matrix4x4();
@@ -992,14 +992,14 @@ Matrix4x4.from_field_of_view_perspective = function( fov, near, far, out) {
 /**
  * Generates a orthogonal projection matrix with the given bounds
  *
- * @param {mat4} out mat4 frustum matrix will be written into
+ * @param {out} out out frustum matrix will be written into
  * @param {number} left Left bound of the frustum
  * @param {number} right Right bound of the frustum
  * @param {number} bottom Bottom bound of the frustum
  * @param {number} top Top bound of the frustum
  * @param {number} near Near bound of the frustum
  * @param {number} far Far bound of the frustum
- * @returns {mat4} out
+ * @returns {out} out
  */
 Matrix4x4.ortho = function( left, right, bottom, top, near, far, out) {
   out = out || Matrix4x4();
@@ -1028,11 +1028,11 @@ Matrix4x4.ortho = function( left, right, bottom, top, near, far, out) {
  * Generates a look-at matrix with the given eye position, focal point, and up axis. 
  * If you want a matrix that actually makes an object look at another object, you should use targetTo instead.
  *
- * @param {mat4} out mat4 frustum matrix will be written into
+ * @param {out} out out frustum matrix will be written into
  * @param {vec3} eye Position of the viewer
  * @param {vec3} center Point the viewer is looking at
  * @param {vec3} up vec3 pointing up
- * @returns {mat4} out
+ * @returns {out} out
  */
 Matrix4x4.look_at = function( eye, center, up, out) {
   out = out || Matrix4x4();
@@ -1108,11 +1108,11 @@ Matrix4x4.look_at = function( eye, center, up, out) {
 /**
  * Generates a matrix that makes something look at something else.
  *
- * @param {mat4} out mat4 frustum matrix will be written into
+ * @param {out} out out frustum matrix will be written into
  * @param {vec3} eye Position of the viewer
  * @param {vec3} center Point the viewer is looking at
  * @param {vec3} up vec3 pointing up
- * @returns {mat4} out
+ * @returns {out} out
  */
 Matrix4x4.target_to = function( eye, target, up, out) {
   out = out || Matrix4x4();
@@ -1161,33 +1161,33 @@ Matrix4x4.target_to = function( eye, target, up, out) {
   return out;
 };
 /**
- * Returns a string representation of a mat4
+ * Returns a string representation of a out
  *
- * @param {mat4} a matrix to represent as a string
+ * @param {out} a matrix to represent as a string
  * @returns {String} string representation of the matrix
  */
 Matrix4x4.to_string = function(a) {
-  return 'mat4(' + a[0] + ', ' + a[1] + ', ' + a[2] + ', ' + a[3] + ', ' +
+  return 'out(' + a[0] + ', ' + a[1] + ', ' + a[2] + ', ' + a[3] + ', ' +
           a[4] + ', ' + a[5] + ', ' + a[6] + ', ' + a[7] + ', ' +
           a[8] + ', ' + a[9] + ', ' + a[10] + ', ' + a[11] + ', ' +
           a[12] + ', ' + a[13] + ', ' + a[14] + ', ' + a[15] + ')';
 }
 /**
- * Returns Frobenius norm of a mat4
+ * Returns Frobenius norm of a out
  *
- * @param {mat4} a the matrix to calculate Frobenius norm of
+ * @param {out} a the matrix to calculate Frobenius norm of
  * @returns {Number} Frobenius norm
  */
 Matrix4x4.frobenius = function(a) {
   return(Math.sqrt(Math.pow(a[0], 2) + Math.pow(a[1], 2) + Math.pow(a[2], 2) + Math.pow(a[3], 2) + Math.pow(a[4], 2) + Math.pow(a[5], 2) + Math.pow(a[6], 2) + Math.pow(a[7], 2) + Math.pow(a[8], 2) + Math.pow(a[9], 2) + Math.pow(a[10], 2) + Math.pow(a[11], 2) + Math.pow(a[12], 2) + Math.pow(a[13], 2) + Math.pow(a[14], 2) + Math.pow(a[15], 2) ))
 }
 /**
- * Adds two mat4's
+ * Adds two out's
  *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the first operand
- * @param {mat4} b the second operand
- * @returns {mat4} out
+ * @param {out} out the receiving matrix
+ * @param {out} a the first operand
+ * @param {out} b the second operand
+ * @returns {out} out
  */
 Matrix4x4.add_matrix = function(a, b, out) {
   out = out || Matrix4x4();
@@ -1212,10 +1212,10 @@ Matrix4x4.add_matrix = function(a, b, out) {
 /**
  * Subtracts matrix b from matrix a
  *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the first operand
- * @param {mat4} b the second operand
- * @returns {mat4} out
+ * @param {out} out the receiving matrix
+ * @param {out} a the first operand
+ * @param {out} b the second operand
+ * @returns {out} out
  */
 Matrix4x4.sub_matrix = function(a, b, out) {
   out = out || Matrix4x4();
@@ -1240,10 +1240,10 @@ Matrix4x4.sub_matrix = function(a, b, out) {
 /**
  * Multiply each element of the matrix by a scalar.
  *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the matrix to scale
+ * @param {out} out the receiving matrix
+ * @param {out} a the matrix to scale
  * @param {Number} b amount to scale the matrix's elements by
- * @returns {mat4} out
+ * @returns {out} out
  */
 Matrix4x4.mult_scalar = function(a, b, out) {
   out = out || Matrix4x4();
@@ -1266,13 +1266,13 @@ Matrix4x4.mult_scalar = function(a, b, out) {
   return out;
 }
 /**
- * Adds two mat4's after multing each element of the second operand by a scalar value.
+ * Adds two out's after multing each element of the second operand by a scalar value.
  *
- * @param {mat4} out the receiving vector
- * @param {mat4} a the first operand
- * @param {mat4} b the second operand
+ * @param {out} out the receiving vector
+ * @param {out} a the first operand
+ * @param {out} b the second operand
  * @param {Number} scale the amount to scale b's elements by before adding
- * @returns {mat4} out
+ * @returns {out} out
  */
 Matrix4x4.mult_scalar_term = function(a, b, scale, out) {
   out = out || Matrix4x4();
@@ -1297,8 +1297,8 @@ Matrix4x4.mult_scalar_term = function(a, b, scale, out) {
 /**
  * Returns whether or not the matrices have approximately the same elements in the same position.
  *
- * @param {mat4} a The first matrix.
- * @param {mat4} b The second matrix.
+ * @param {out} a The first matrix.
+ * @param {out} b The second matrix.
  * @returns {Boolean} True if the matrices are equal, false otherwise.
  */
 Matrix4x4.equals = function(a, b) {

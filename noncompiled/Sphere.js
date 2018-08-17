@@ -32,7 +32,7 @@ Sphere.random_point_along_great_circle = function(eulerPole) {
     Vector.normalize	(c.x, c.y, c.z, 					c); 
 	
 	// then rotate by some random amount around the eulerPole
-	var random_rotation_matrix = Matrix.RotationAboutAxis(a.x, a.y, a.z, 2*Math.PI * sim.random.random());
+	var random_rotation_matrix = Matrix3x3.RotationAboutAxis(a.x, a.y, a.z, 2*Math.PI * sim.random.random());
 	return Vector.mult_matrix(c.x, c.y, c.z,  random_rotation_matrix)
 };
 Sphere.random_basis = function () {
@@ -43,6 +43,6 @@ Sphere.random_basis = function () {
     Vector.cross_vector	(c.x, c.y, c.z, up.x, up.y, up.z, a); 
     Vector.normalize	(a.x, a.y, a.z, a); 
     Vector.cross_vector	(c.x, c.y, c.z, a.x, a.y, a.z, b); 
-    return Matrix.BasisVectors(a,b,c); 
+    return Matrix3x3.BasisVectors(a,b,c); 
 }
 

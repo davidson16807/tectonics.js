@@ -42,7 +42,7 @@ regressionTestDisplays.id_rotated 	= new ScalarHeatDisplay( {
 		getField: function (crust) {
 			var ids = Float32Raster(crust.grid);
 			Float32Raster.FromUint16Raster(crust.grid.vertex_ids, ids);
-			var rotationMatrix = Matrix.RotationAboutAxis(1,0,0, 0.5);
+			var rotationMatrix = Matrix3x3.RotationAboutAxis(1,0,0, 0.5);
 			var pos = VectorField.mult_matrix(crust.grid.pos, rotationMatrix);
 			return Float32Raster.get_nearest_values(ids, pos);
 		}
