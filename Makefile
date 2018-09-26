@@ -21,7 +21,8 @@ postcompiled/utils/Rasters.cpp.js:
 	-g precompiled/utils/cpp/Rasters.cpp \
 	-g precompiled/utils/cpp/src/*.cpp \
 	-I precompiled/utils/cpp/inc \
-	-s WASM=1 -s DEMANGLE_SUPPORT=1 -s ASSERTIONS=1 -s SAFE_HEAP=1 -s EXPORT_NAME="'Rasters'" -s MODULARIZE=1 \
+	-s WASM=1 -s DEMANGLE_SUPPORT=1 -s ASSERTIONS=1 -s SAFE_HEAP=1 -s ALLOW_MEMORY_GROWTH=1 \
+	-s EXPORT_NAME="'Rasters'" -s MODULARIZE=1 \
 	-o postcompiled/utils/Rasters.cpp.html
 
 postcompiled/utils/Rasters.js : precompiled/utils/Rasters.js
