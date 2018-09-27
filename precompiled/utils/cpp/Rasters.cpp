@@ -15,11 +15,26 @@ namespace Rasters
 		Vector3d() {};
 		Vector3d(T x, T y, T z) : x(x), y(y), z(z) {};
 		~Vector3d() {};
+
+		double magnitude()
+		{
+			return sqrt(pow(x, 2.) + pow(y, 2.) + pow(z, 2.));
+		}
+		static double distance(const Vector3d<T>& a, const Vector3d<T>& b) 
+		{
+			return sqrt(pow(a.x-b.x, 2.) + pow(a.y-b.y, 2.) + pow(a.z-b.z, 2.));
+		}
+		// static double add(const Vector3d<T>& a, const Vector3d<T>& b, Vector3d<T>& c) 
+		// {
+		// 	c.x = a.x + b.x;
+		// 	c.x = a.y + b.y;
+		// 	c.x = a.z + b.z;
+		// }
 	};
 
 	// describes a 3d cartesian grid where every cell can house a list of points
 	// points are referenced by the order in which they occur in a starting array
-	class CartesianGrid3dLookup
+	class CartesianGridLookup3d
 	{
 		std::vector<std::pair<int, Vector3d<>>>* cells;
 		Vector3d<> min_bounds;
@@ -39,17 +54,11 @@ namespace Rasters
 				  + yi * dimensions.z 
 				  + zi;
 		}
-		// TODO: make this a method of Vector3d?
-		double get_distance(Vector3d<> u, Vector3d<> v)
-		{
-			return sqrt(pow(u.x-v.x, 2.) + pow(u.y-v.y, 2.) + pow(u.z-v.z, 2.));
-		}
 	public:
-		CartesianGrid3dLookup(){}
-		~CartesianGrid3dLookup(){
-		}
+		CartesianGridLookup3d(){}
+		~CartesianGridLookup3d(){}
 		
-		CartesianGrid3dLookup(const Vector3d<> min_bounds, const Vector3d<> max_bounds, const double cell_width) 
+		CartesianGridLookup3d(const Vector3d<>& min_bounds, const Vector3d<>& max_bounds, const double cell_width) 
 			: max_bounds(max_bounds),
 			  min_bounds(min_bounds),
 			  cell_width(cell_width),
@@ -66,7 +75,7 @@ namespace Rasters
 				cells[i] = std::vector<std::pair<int, Vector3d<>>>();
 			}
 		}
-		CartesianGrid3dLookup(const Vector3d<std::vector<double>>& points, const double cell_width)
+		CartesianGridLookup3d(const Vector3d<std::vector<double>>& points, const double cell_width)
 			: min_bounds(
 			      *std::min_element(points.x.begin(), points.x.end()),
 			      *std::min_element(points.y.begin(), points.y.end()),
@@ -113,7 +122,7 @@ namespace Rasters
 			cells[cell_id( xi+1 , yi+1 , zi+1 )].push_back({id, point});
 		}
 
-		int nearest(const Vector3d<> point)
+		int nearest(const Vector3d<>& point)
 		{
 			const int xi = (int)ceil((point.x - min_bounds.x) / cell_width);
 			const int yi = (int)ceil((point.y - min_bounds.y) / cell_width);
@@ -121,18 +130,14 @@ namespace Rasters
 
 			std::vector<std::pair<int, Vector3d<>>> & neighbors = cells[cell_id(xi, yi, zi)];
 
-			int  nearest_neighbor = -1;
-			double nearest_distance = std::numeric_limits<double>::infinity();
-			double neighbor_distance;
-			for(std::pair<int, Vector3d<>> const & neighbor : neighbors){
-				neighbor_distance = get_distance(point, neighbor.second);
-				if (neighbor_distance < nearest_distance) {
-					nearest_neighbor = neighbor.first;
-					nearest_distance = neighbor_distance;
-				}
-			}
+			std::pair<int, Vector3d<>> nearest = 
+				*std::min_element( neighbors.begin(), neighbors.end(),
+			                       [&point]( const std::pair<int, Vector3d<>> &a, const std::pair<int, Vector3d<>> &b )
+			                       {
+			                           return Vector3d<>::distance(a.second, point) < Vector3d<>::distance(b.second, point);
+			                       } );
 
-			return nearest_neighbor;
+			return nearest.first;
 		}
 	};
 }
@@ -146,10 +151,11 @@ EMSCRIPTEN_BINDINGS(rasters)
       .property("y", &Rasters::Vector3d<>::y)
       .property("z", &Rasters::Vector3d<>::z)
   ;
-  class_<Rasters::CartesianGrid3dLookup>("CartesianGrid3dLookup")
+  class_<Rasters::CartesianGridLookup3d>("CartesianGridLookup3d")
       .constructor()
-      .constructor<Rasters::Vector3d<>, Rasters::Vector3d<>, double>()
-      .function("add", &Rasters::CartesianGrid3dLookup::add)
-      .function("nearest", &Rasters::CartesianGrid3dLookup::nearest)
+      .constructor<Rasters::Vector3d<>&, Rasters::Vector3d<>&, const double>()
+      // .constructor<Rasters::Vector3d<>, const double>()
+      .function("add", &Rasters::CartesianGridLookup3d::add)
+      .function("nearest", &Rasters::CartesianGridLookup3d::nearest)
   ;
 }
