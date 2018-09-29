@@ -7,64 +7,89 @@ using namespace emscripten;
 
 namespace Rasters
 {
-	template <class T = double>
-	struct vector2
+	template <class T>
+	struct vec2_template
 	{
 		T x, y;
-		vector2() {};
-		vector2(T x, T y) : x(x), y(y);
-		~vector2() {};
+		vec2_template() {};
+		vec2_template(T x, T y) : x(x), y(y) {};
+		~vec2_template() {};
 
 		double magnitude()
 		{
 			return sqrt(pow(x, 2.) + pow(y, 2.));
 		}
-		static double distance(const vector2<T>& a, const vector2<T>& b) 
+		static double distance(const vec2_template<T>& a, const vec2_template<T>& b) 
 		{
 			return sqrt(pow(a.x-b.x, 2.) + pow(a.y-b.y, 2.));
 		}
-		static double dot(const vector2<T>& a, const vector2<T>& b) 
+		static double dot(const vec2_template<T>& a, const vec2_template<T>& b) 
 		{
 			return  a.x * b.x;
 					a.y * b.y;
 		}
-		// static double add(const vector2<T>& a, const vector2<T>& b, vector2<T>& c) 
+		// static double add(const vec2_template<T>& a, const vec2_template<T>& b, vec2_template<T>& c) 
 		// {
 		// 	c.x = a.x + b.x;
 		// 	c.y = a.y + b.y;
 		// }
 	};
 
-	template <class T = double>
-	struct vector3
+	template <class T>
+	struct vec3_template
 	{
 		T x, y, z;
-		vector3() {};
-		vector3(T x, T y, T z) : x(x), y(y), z(z) {};
-		~vector3() {};
+		vec3_template() {};
+		vec3_template(T x, T y, T z) : x(x), y(y), z(z) {};
+		~vec3_template() {};
 
 		double magnitude()
 		{
 			return sqrt(pow(x, 2.) + pow(y, 2.) + pow(z, 2.));
 		}
-		static double distance(const vector3<T>& a, const vector3<T>& b) 
+		static double distance(const vec3_template<T> a, const vec3_template<T> b) 
 		{
 			return sqrt(pow(a.x-b.x, 2.) + pow(a.y-b.y, 2.) + pow(a.z-b.z, 2.));
 		}
-		// static double add(const vector3<T>& a, const vector3<T>& b, vector3<T>& c) 
+		// static double add(const vec3_template<T>& a, const vec3_template<T>& b, vec3_template<T>& c) 
 		// {
 		// 	c.x = a.x + b.x;
 		// 	c.y = a.y + b.y;
 		// 	c.z = a.z + b.z;
 		// }
+		vec3_template<T> operator*(const double scalar) const
+		{
+			return vec3_template<T>(
+				x + scalar,
+				y + scalar,
+				z + scalar
+			);
+		}
+		double operator*(const vec3_template<T> vector) const
+		{
+			return 
+				x * vector.x+
+				y * vector.y+
+				z * vector.z
+			;
+		}
+		vec3_template<T> operator+(const vec3_template<T> vector) const
+		{
+			return vec3_template<T>(
+				x + vector.x,
+				y + vector.y,
+				z + vector.z
+			);
+		}
 	};
 
-	using vec2 = vector2<float>;
-	using ivec2 = vector2<int>;
-	using bvec2 = vector2<bool>;
-	using vec3 = vector3<float>;
-	using ivec3 = vector3<int>;
-	using bvec3 = vector3<bool>;
+	using vec2 = vec2_template<double>;
+	using ivec2 = vec2_template<int>;
+	using bvec2 = vec2_template<bool>;
+
+	using vec3 = vec3_template<double>;
+	using ivec3 = vec3_template<int>;
+	using bvec3 = vec3_template<bool>;
 
 	// describes a 3d cartesian grid where every cell houses a list of ids representing nearby points
 	class CartesianGridLookup3d
@@ -84,6 +109,20 @@ namespace Rasters
 			return  xi * dimensions.y * dimensions.z
 				  + yi * dimensions.z 
 				  + zi;
+		}
+		void add(const int id, const vec3 point)
+		{
+			const int xi = (int)round((point.x - min_bounds.x) / cell_width);
+			const int yi = (int)round((point.y - min_bounds.y) / cell_width);
+			const int zi = (int)round((point.z - min_bounds.z) / cell_width);
+
+			cells[cell_id( xi   , yi   , zi   )].push_back({id, point});
+			cells[cell_id( xi+1 , yi   , zi   )].push_back({id, point});
+			cells[cell_id( xi   , yi+1 , zi   )].push_back({id, point});
+			cells[cell_id( xi   , yi   , zi+1 )].push_back({id, point});
+			cells[cell_id( xi+1 , yi+1 , zi   )].push_back({id, point});
+			cells[cell_id( xi   , yi+1 , zi+1 )].push_back({id, point});
+			cells[cell_id( xi+1 , yi+1 , zi+1 )].push_back({id, point});
 		}
 	public:
 		CartesianGridLookup3d(){}
@@ -106,23 +145,41 @@ namespace Rasters
 				cells[i] = std::vector<std::pair<int, vec3>>();
 			}
 		}
-
-		void add(const int id, const vec3 point)
+		CartesianGridLookup3d(const std::vector<vec3>& points, const double cell_width) 
+			: cell_width(cell_width)
 		{
-			const int xi = (int)round((point.x - min_bounds.x) / cell_width);
-			const int yi = (int)round((point.y - min_bounds.y) / cell_width);
-			const int zi = (int)round((point.z - min_bounds.z) / cell_width);
+			max_bounds.x = std::max_element(points.begin(), points.end(),
+							[]( const vec3 a, const vec3 b ) { return a.x < b.x; })->x,
+			max_bounds.y = std::max_element(points.begin(), points.end(),
+							[]( const vec3 a, const vec3 b ) { return a.y < b.y; })->y,
+			max_bounds.z = std::max_element(points.begin(), points.end(),
+							[]( const vec3 a, const vec3 b ) { return a.z < b.z; })->z,
 
-			cells[cell_id( xi   , yi   , zi   )].push_back({id, point});
-			cells[cell_id( xi+1 , yi   , zi   )].push_back({id, point});
-			cells[cell_id( xi   , yi+1 , zi   )].push_back({id, point});
-			cells[cell_id( xi   , yi   , zi+1 )].push_back({id, point});
-			cells[cell_id( xi+1 , yi+1 , zi   )].push_back({id, point});
-			cells[cell_id( xi   , yi+1 , zi+1 )].push_back({id, point});
-			cells[cell_id( xi+1 , yi+1 , zi+1 )].push_back({id, point});
+			min_bounds.x = std::min_element(points.begin(), points.end(),
+							[]( const vec3 a, const vec3 b ) { return a.x < b.x; })->x,
+			min_bounds.y = std::min_element(points.begin(), points.end(),
+							[]( const vec3 a, const vec3 b ) { return a.y < b.y; })->y,
+			min_bounds.z = std::min_element(points.begin(), points.end(),
+							[]( const vec3 a, const vec3 b ) { return a.z < b.z; })->z,
+
+			dimensions.x = (max_bounds.x - min_bounds.x) / cell_width;
+			dimensions.y = (max_bounds.y - min_bounds.y) / cell_width;
+			dimensions.z = (max_bounds.z - min_bounds.z) / cell_width;
+
+			// initialize grid
+			int cell_count_ = cell_count();
+			cells = new std::vector<std::pair<int, vec3>>[cell_count_];
+			for (int i = 0; i < cell_count_; ++i)
+			{
+				cells[i] = std::vector<std::pair<int, vec3>>();
+			}
+
+			for (int i = 0; i < points.size(); ++i)
+			{
+				add(i, points[i]);
+			}
 		}
-
-		int nearest(const vec3 point)
+		int nearest_id(const vec3 point)
 		{
 			const int xi = (int)ceil((point.x - min_bounds.x) / cell_width);
 			const int yi = (int)ceil((point.y - min_bounds.y) / cell_width);
@@ -130,14 +187,100 @@ namespace Rasters
 
 			std::vector<std::pair<int, vec3>> & neighbors = cells[cell_id(xi, yi, zi)];
 
-			std::pair<int, vec3> nearest = 
+			std::pair<int, vec3> nearest_id = 
 				*std::min_element( neighbors.begin(), neighbors.end(),
 			                       [&point]( const std::pair<int, vec3> &a, const std::pair<int, vec3> &b )
 			                       {
 			                           return vec3::distance(a.second, point) < vec3::distance(b.second, point);
 			                       } );
 
-			return nearest.first;
+			return nearest_id.first;
+		}
+	};
+
+
+
+	// describes a 3d unit cube sphere where every cell houses an id representing the nearest point
+	// uses CartesianGridLookup3d behind the scenes to optimize initialization
+	class VoronoiCubeSphereLookup3d
+	{
+		const std::array<vec3, 3> CUBE_SPHERE_SIDE_BASES = {
+			vec3( 1., 0., 0. ),
+			vec3( 0., 1., 0. ),
+			vec3( 0., 0., 1. )
+		};
+		const int CUBE_SPHERE_SIDE_COUNT = 6;	// number of sides on the data cube
+		ivec2 dimensions; // dimensions of the grid on each side of the data cube 
+		int* cells;
+		double cell_width;
+
+
+		int cell_count() {
+			return CUBE_SPHERE_SIDE_COUNT * dimensions.x * dimensions.y 
+							              + dimensions.x * dimensions.y 
+							              + dimensions.y;
+		}
+		int cell_id(const int side_id, const int xi, const int yi) {
+			return  side_id * dimensions.x * dimensions.y
+				  + xi      * dimensions.y 
+				  + yi;
+		}
+	public:
+		VoronoiCubeSphereLookup3d(){}
+		~VoronoiCubeSphereLookup3d(){}
+		
+		VoronoiCubeSphereLookup3d(const std::vector<vec3>& points, const double cell_width)
+			: cell_width(cell_width)
+		{
+			dimensions.x = 1/cell_width;
+			dimensions.y = 1/cell_width;
+
+			CartesianGridLookup3d grid = CartesianGridLookup3d(points, cell_width);
+
+			// populate cells using the slower CartesianGridLookup3d implementation
+			cells = new int[cell_count()];
+			for (int side_id = 0; side_id < CUBE_SPHERE_SIDE_COUNT; ++side_id)
+			{
+				for (int xi2d = 0; xi2d < dimensions.x; ++xi2d)
+				{
+					for (int yi2d = 0; yi2d < dimensions.y; ++yi2d)
+					{
+						// get position of the cell that's projected onto the 2d grid
+						double x2d = 0.5 * xi2d * cell_width - 1.;
+						double y2d = 0.5 * yi2d * cell_width - 1.;
+						// reconstruct the dimension omitted from the grid using pythagorean theorem
+						double z2d = sqrt(1 - pow(x2d, 2.) - pow(y2d, 2.));
+						z2d *= side_id > 2? -1 : 1;
+
+						vec3 cell_pos = 
+							CUBE_SPHERE_SIDE_BASES[side_id%3+0] * z2d +
+							CUBE_SPHERE_SIDE_BASES[side_id%3+1] * x2d +
+							CUBE_SPHERE_SIDE_BASES[side_id%3+2] * y2d ;
+
+						cells[cell_id(side_id, xi2d, yi2d)] = grid.nearest_id(cell_pos);
+					}
+				}
+			}
+		}
+
+		int nearest_id(const vec3 point)
+		{
+			const double threshold = sqrt(1/3); // NOTE: on a unit sphere, the largest coordinate will always exceed this threshold
+
+			const int side_id =
+			//point.x > threshold * 0 +
+			  point.y > threshold * 1 +
+			  point.z > threshold * 2 +
+			 -point.x > threshold * 3 + 
+			 -point.y > threshold * 4 +
+			 -point.z > threshold * 5 ;
+			
+			float x2d = CUBE_SPHERE_SIDE_BASES[side_id%3+1] * point;
+			float y2d = CUBE_SPHERE_SIDE_BASES[side_id%3+2] * point;
+
+			int xi2d = (x2d + 1.) * 2. / cell_width;
+			int yi2d = (y2d + 1.) * 2. / cell_width;
+			return cells[cell_id(side_id, xi2d, yi2d)];
 		}
 	};
 }
@@ -153,8 +296,12 @@ EMSCRIPTEN_BINDINGS(rasters)
   ;
   class_<Rasters::CartesianGridLookup3d>("CartesianGridLookup3d")
       .constructor()
-      .constructor<Rasters::vec3, Rasters::vec3, double>()
-      .function("add", &Rasters::CartesianGridLookup3d::add)
-      .function("nearest", &Rasters::CartesianGridLookup3d::nearest)
+      .constructor<std::vector<Rasters::vec3>, double>()
+      .function("nearest_id", &Rasters::CartesianGridLookup3d::nearest_id)
+  ;
+  class_<Rasters::VoronoiCubeSphereLookup3d>("VoronoiCubeSphereLookup3d")
+      .constructor()
+      .constructor<std::vector<Rasters::vec3>, double>()
+      .function("nearest_id", &Rasters::VoronoiCubeSphereLookup3d::nearest_id)
   ;
 }
