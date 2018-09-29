@@ -1,95 +1,18 @@
-#include <emscripten/bind.h>
+#pragma once
+
 #include <math.h>       // ceil, round 
 #include <limits.h> 	// infinity
 #include <vector>		// vectors
+
+#include "vec2_template.h"
+#include "vec3_template.h"
+
+#include <emscripten/bind.h>
 
 using namespace emscripten;
 
 namespace Rasters
 {
-	template <class T>
-	struct vec2_template
-	{
-		T x, y;
-		vec2_template() {};
-		vec2_template(T x, T y) : x(x), y(y) {};
-		~vec2_template() {};
-
-		double magnitude()
-		{
-			return sqrt(pow(x, 2.) + pow(y, 2.));
-		}
-		static double distance(const vec2_template<T>& a, const vec2_template<T>& b) 
-		{
-			return sqrt(pow(a.x-b.x, 2.) + pow(a.y-b.y, 2.));
-		}
-		static double dot(const vec2_template<T>& a, const vec2_template<T>& b) 
-		{
-			return  a.x * b.x;
-					a.y * b.y;
-		}
-		// static double add(const vec2_template<T>& a, const vec2_template<T>& b, vec2_template<T>& c) 
-		// {
-		// 	c.x = a.x + b.x;
-		// 	c.y = a.y + b.y;
-		// }
-	};
-
-	template <class T>
-	struct vec3_template
-	{
-		T x, y, z;
-		vec3_template() {};
-		vec3_template(T x, T y, T z) : x(x), y(y), z(z) {};
-		~vec3_template() {};
-
-		double magnitude()
-		{
-			return sqrt(pow(x, 2.) + pow(y, 2.) + pow(z, 2.));
-		}
-		static double distance(const vec3_template<T> a, const vec3_template<T> b) 
-		{
-			return sqrt(pow(a.x-b.x, 2.) + pow(a.y-b.y, 2.) + pow(a.z-b.z, 2.));
-		}
-		// static double add(const vec3_template<T>& a, const vec3_template<T>& b, vec3_template<T>& c) 
-		// {
-		// 	c.x = a.x + b.x;
-		// 	c.y = a.y + b.y;
-		// 	c.z = a.z + b.z;
-		// }
-		vec3_template<T> operator*(const double scalar) const
-		{
-			return vec3_template<T>(
-				x + scalar,
-				y + scalar,
-				z + scalar
-			);
-		}
-		double operator*(const vec3_template<T> vector) const
-		{
-			return 
-				x * vector.x+
-				y * vector.y+
-				z * vector.z
-			;
-		}
-		vec3_template<T> operator+(const vec3_template<T> vector) const
-		{
-			return vec3_template<T>(
-				x + vector.x,
-				y + vector.y,
-				z + vector.z
-			);
-		}
-	};
-
-	using vec2 = vec2_template<double>;
-	using ivec2 = vec2_template<int>;
-	using bvec2 = vec2_template<bool>;
-
-	using vec3 = vec3_template<double>;
-	using ivec3 = vec3_template<int>;
-	using bvec3 = vec3_template<bool>;
 
 	// describes a 3d cartesian grid where every cell houses a list of ids representing nearby points
 	class CartesianGridLookup3d
@@ -214,11 +137,8 @@ namespace Rasters
 		int* cells;
 		double cell_width;
 
-
 		int cell_count() {
-			return CUBE_SPHERE_SIDE_COUNT * dimensions.x * dimensions.y 
-							              + dimensions.x * dimensions.y 
-							              + dimensions.y;
+			return CUBE_SPHERE_SIDE_COUNT * (dimensions.x+1) * dimensions.y;
 		}
 		int cell_id(const int side_id, const int xi, const int yi) {
 			return  side_id * dimensions.x * dimensions.y

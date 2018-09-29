@@ -18,9 +18,9 @@ run:
 
 postcompiled/utils/Rasters.cpp.js:
 	em++ --emrun --bind --profiling-funcs -std=c++11 \
-	-g precompiled/utils/cpp/Rasters.cpp \
-	-g precompiled/utils/cpp/src/*.cpp \
 	-I precompiled/utils/cpp/inc \
+	-g precompiled/utils/cpp/src/*.cpp \
+	-g precompiled/utils/cpp/Rasters.cpp \
 	-s WASM=1 -s DEMANGLE_SUPPORT=1 -s ASSERTIONS=1 -s SAFE_HEAP=1 -s ALLOW_MEMORY_GROWTH=1 \
 	-s EXPORT_NAME="'Rasters'" -s MODULARIZE=1 \
 	-o postcompiled/utils/Rasters.cpp.html
