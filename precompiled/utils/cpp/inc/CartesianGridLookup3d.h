@@ -28,22 +28,7 @@ namespace Rasters {
 				  + yi * dimensions.z 
 				  + zi;
 		}
-		void add(const int id, const vec3 point)
-		{
-			const int xi = (int)round((point.x - min_bounds.x) / cell_width);
-			const int yi = (int)round((point.y - min_bounds.y) / cell_width);
-			const int zi = (int)round((point.z - min_bounds.z) / cell_width);
-
-			cells[cell_id( xi   , yi   , zi   )].push_back({id, point});
-			cells[cell_id( xi+1 , yi   , zi   )].push_back({id, point});
-			cells[cell_id( xi   , yi+1 , zi   )].push_back({id, point});
-			cells[cell_id( xi   , yi   , zi+1 )].push_back({id, point});
-			cells[cell_id( xi+1 , yi+1 , zi   )].push_back({id, point});
-			cells[cell_id( xi   , yi+1 , zi+1 )].push_back({id, point});
-			cells[cell_id( xi+1 , yi+1 , zi+1 )].push_back({id, point});
-		}
 	public:
-		CartesianGridLookup3d(){}
 		~CartesianGridLookup3d(){}
 		
 		CartesianGridLookup3d(const vec3 min_bounds, const vec3 max_bounds, const double cell_width) 
@@ -96,6 +81,20 @@ namespace Rasters {
 			{
 				add(i, points[i]);
 			}
+		}
+		void add(const int id, const vec3 point)
+		{
+			const int xi = (int)round((point.x - min_bounds.x) / cell_width);
+			const int yi = (int)round((point.y - min_bounds.y) / cell_width);
+			const int zi = (int)round((point.z - min_bounds.z) / cell_width);
+
+			cells[cell_id( xi   , yi   , zi   )].push_back({id, point});
+			cells[cell_id( xi+1 , yi   , zi   )].push_back({id, point});
+			cells[cell_id( xi   , yi+1 , zi   )].push_back({id, point});
+			cells[cell_id( xi   , yi   , zi+1 )].push_back({id, point});
+			cells[cell_id( xi+1 , yi+1 , zi   )].push_back({id, point});
+			cells[cell_id( xi   , yi+1 , zi+1 )].push_back({id, point});
+			cells[cell_id( xi+1 , yi+1 , zi+1 )].push_back({id, point});
 		}
 		int nearest_id(const vec3 point)
 		{
