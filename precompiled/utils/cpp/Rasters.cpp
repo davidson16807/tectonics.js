@@ -1,4 +1,3 @@
-#pragma once
 
 #include <math.h>       // ceil, round 
 #include <limits.h> 	// infinity
