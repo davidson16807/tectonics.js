@@ -85,24 +85,23 @@ namespace Rasters
 				out.z[i] = a.z[i] * b.z[i];
 			}
 		}
-		vec3s_template<T,N> operator*(const double scalar) const
+		vec3s_template<T,N> operator*(const double b) const
 		{
 			vec3s_template<T,N> out = vec3s_template<T,N>();
-			mult(this, scalar, out);
+			mult(this, b, out);
 			return out;
 		}
-		vec1s_template<T,N> operator*(const vec3s_template<T,N> vector) const
+		vec1s_template<T,N> operator*(const vec3s_template<T,N> b) const
 		{
 			vec1s_template<T,N> out = vec1s_template<T,N>();
-			dot(this, vector, out);
+			dot(this, b, out);
 			return out;
 		}
-		vec3s_template<T,N> operator+(const vec3s_template<T,N> vector) const
+		vec3s_template<T,N> operator+(const vec3s_template<T,N> b) const
 		{
-			for (int i = 0; i < N; ++i)
-			{
-
-			}
+			vec3s_template<T,N> out = vec3s_template<T,N>();
+			add(this, b, out);
+			return out;
 		}
 	};
 
@@ -118,7 +117,7 @@ namespace Rasters
 	{
 		//Grid* grid;
 		//mat4* frame;
-		vec3s_raster(){};
-		~vec3s_raster(){};
+		vec3_raster(){};
+		~vec3_raster(){};
 	};
 }

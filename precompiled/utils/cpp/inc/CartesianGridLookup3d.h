@@ -2,6 +2,8 @@
 
 #include <math.h>       // ceil, round 
 #include <vector>		// vectors 
+#include <iostream>		// cout
+#include <algorithm>	// clamp
 
 #include "vec2_template.h"
 #include "vec3_template.h"
@@ -51,23 +53,21 @@ namespace Rasters {
 		CartesianGridLookup3d(const std::vector<vec3>& points, const double cell_width) 
 			: cell_width(cell_width)
 		{
-			max_bounds.x = std::max_element(points.begin(), points.end(),
-							[]( const vec3 a, const vec3 b ) { return a.x < b.x; })->x,
-			max_bounds.y = std::max_element(points.begin(), points.end(),
-							[]( const vec3 a, const vec3 b ) { return a.y < b.y; })->y,
-			max_bounds.z = std::max_element(points.begin(), points.end(),
-							[]( const vec3 a, const vec3 b ) { return a.z < b.z; })->z,
-
-			min_bounds.x = std::min_element(points.begin(), points.end(),
-							[]( const vec3 a, const vec3 b ) { return a.x < b.x; })->x,
-			min_bounds.y = std::min_element(points.begin(), points.end(),
-							[]( const vec3 a, const vec3 b ) { return a.y < b.y; })->y,
-			min_bounds.z = std::min_element(points.begin(), points.end(),
-							[]( const vec3 a, const vec3 b ) { return a.z < b.z; })->z,
-
-			dimensions.x = (max_bounds.x - min_bounds.x) / cell_width;
-			dimensions.y = (max_bounds.y - min_bounds.y) / cell_width;
-			dimensions.z = (max_bounds.z - min_bounds.z) / cell_width;
+			min_bounds = vec3(
+			    (*std::min_element(points.begin(), points.end(), []( const vec3 a, const vec3 b ) { return a.x < b.x; })).x,
+			    (*std::min_element(points.begin(), points.end(), []( const vec3 a, const vec3 b ) { return a.y < b.y; })).y,
+			    (*std::min_element(points.begin(), points.end(), []( const vec3 a, const vec3 b ) { return a.z < b.z; })).z
+    		);
+			max_bounds = vec3(
+			    (*std::max_element(points.begin(), points.end(), []( const vec3 a, const vec3 b ) { return a.x < b.x; })).x,
+			    (*std::max_element(points.begin(), points.end(), []( const vec3 a, const vec3 b ) { return a.y < b.y; })).y,
+			    (*std::max_element(points.begin(), points.end(), []( const vec3 a, const vec3 b ) { return a.z < b.z; })).z
+    		);
+			dimensions = ivec3(
+				(max_bounds.x - min_bounds.x) / cell_width,
+				(max_bounds.y - min_bounds.y) / cell_width,
+				(max_bounds.z - min_bounds.z) / cell_width
+			);
 
 			// initialize grid
 			int cell_count_ = cell_count();
@@ -98,10 +98,15 @@ namespace Rasters {
 		}
 		int nearest_id(const vec3 point)
 		{
-			const int xi = (int)ceil((point.x - min_bounds.x) / cell_width);
-			const int yi = (int)ceil((point.y - min_bounds.y) / cell_width);
-			const int zi = (int)ceil((point.z - min_bounds.z) / cell_width);
+			const int xi = std::clamp((int)ceil((point.x - min_bounds.x) / cell_width), 0, dimensions.x-1);
+			const int yi = std::clamp((int)ceil((point.y - min_bounds.y) / cell_width), 0, dimensions.y-1);
+			const int zi = std::clamp((int)ceil((point.z - min_bounds.z) / cell_width), 0, dimensions.z-1);
 
+    		std::cout << "min_bounds" << min_bounds.x << " " << min_bounds.y << " " << min_bounds.z << " " << std::endl; 
+    		std::cout << "temp" << ((point.x - min_bounds.x) / cell_width) << std::endl; 
+    		std::cout << "point" << point.x << " " << point.y << " " << point.z << " " << std::endl; 
+    		std::cout << "id" << xi << " " << yi << " " << zi << " " << std::endl; 
+			std::cout << "cell_id" << cell_id(xi, yi, zi) << std::endl; 
 			std::vector<std::pair<int, vec3>> & neighbors = cells[cell_id(xi, yi, zi)];
 
 			if (neighbors.size() < 1)
