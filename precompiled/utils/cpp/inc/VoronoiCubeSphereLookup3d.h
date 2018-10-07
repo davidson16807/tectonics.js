@@ -36,9 +36,14 @@ namespace Rasters
 				  + yi;
 		}
 	public:
-		VoronoiCubeSphereLookup3d(){}
 		~VoronoiCubeSphereLookup3d(){}
 		
+		VoronoiCubeSphereLookup3d(const double cell_width)
+			: cell_width(cell_width)
+		{
+			dimensions.x = 1/cell_width;
+			dimensions.y = 1/cell_width;
+		}
 		VoronoiCubeSphereLookup3d(const std::vector<vec3>& points, const double cell_width)
 			: cell_width(cell_width)
 		{
@@ -84,7 +89,7 @@ namespace Rasters
 			 -point.x > threshold * 3 + 
 			 -point.y > threshold * 4 +
 			 -point.z > threshold * 5 ;
-			
+
 			float x2d = CUBE_SPHERE_SIDE_BASES[side_id%3+1] * point;
 			float y2d = CUBE_SPHERE_SIDE_BASES[side_id%3+2] * point;
 

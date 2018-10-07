@@ -104,6 +104,11 @@ namespace Rasters {
 
 			std::vector<std::pair<int, vec3>> & neighbors = cells[cell_id(xi, yi, zi)];
 
+			if (neighbors.size() < 1)
+			{
+				return -1;
+			}
+
 			std::pair<int, vec3> nearest_id = 
 				*std::min_element( neighbors.begin(), neighbors.end(),
 			                       [&point]( const std::pair<int, vec3> &a, const std::pair<int, vec3> &b )

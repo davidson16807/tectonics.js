@@ -1,6 +1,7 @@
 #pragma once
 
 #include <math.h>       // ceil, round 
+#include "vec1s_template.h"
 
 namespace Rasters
 {
@@ -9,6 +10,7 @@ namespace Rasters
 	{
 		T x, y, z;
 		vec3_template() {};
+		vec3_template(T x) : x(x), y(x), z(x) {};
 		vec3_template(T x, T y, T z) : x(x), y(y), z(z) {};
 		~vec3_template() {};
 
@@ -55,5 +57,4 @@ namespace Rasters
 	using vec3 = vec3_template<double>;
 	using ivec3 = vec3_template<int>;
 	using bvec3 = vec3_template<bool>;
-
 }
