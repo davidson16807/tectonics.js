@@ -113,12 +113,12 @@ namespace Rasters
 	template <int N>
 	using bvec3s = vec3s_template<bool, N>;
 
-	// template <class T, int N>
-	// struct vec3s_raster<T,N>: vec3_template<T,N>
-	// {
-	// 	//Grid* grid;
-	// 	//mat4* frame;
-	// 	vec3s_raster(){};
-	// 	~vec3s_raster(){};
-	// };
+	template <class T, int N>
+	struct vec3_raster: vec3s_template<T,N>
+	{
+		//Grid* grid;
+		//mat4* frame;
+		vec3s_raster(){};
+		~vec3s_raster(){};
+	};
 }
