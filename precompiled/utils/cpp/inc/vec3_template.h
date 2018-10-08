@@ -32,6 +32,13 @@ namespace Rasters
 		{
 			return (a-b).magnitude();
 		}
+		static vec3_template<T> cross (const vec3_template<T> a, const vec3_template<T> b) {
+			return vec3_template<T>(
+				a.y * b.z - a.z * b.y,
+				a.z * b.x - a.x * b.z,
+				a.x * b.y - a.y * b.x
+			);
+		}
 		double magnitude() const
 		{
 			return sqrt(pow(x, 2.) + pow(y, 2.) + pow(z, 2.));
@@ -103,6 +110,7 @@ namespace Rasters
 				z * vector.z
 			;
 		}
+
 	};
 
 	using vec3 = vec3_template<double>;
