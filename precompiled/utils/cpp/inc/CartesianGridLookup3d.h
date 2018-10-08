@@ -30,63 +30,11 @@ namespace Rasters {
 				  + yi * dimensions.z 
 				  + zi;
 		}
-	public:
-		~CartesianGridLookup3d(){}
-		
-		CartesianGridLookup3d(const vec3 min_bounds, const vec3 max_bounds, const double cell_width) 
-			: max_bounds(max_bounds),
-			  min_bounds(min_bounds),
-			  cell_width(cell_width),
-			  dimensions(ivec3(
-				(max_bounds.x - min_bounds.x) / cell_width,
-				(max_bounds.y - min_bounds.y) / cell_width,
-				(max_bounds.z - min_bounds.z) / cell_width
-			  ))
-		{
-			int cell_count_ = cell_count();
-			cells = new std::vector<std::pair<int, vec3>>[cell_count_];
-			for (int i = 0; i < cell_count_; ++i)
-			{
-				cells[i] = std::vector<std::pair<int, vec3>>();
-			}
-		}
-		CartesianGridLookup3d(const std::vector<vec3>& points, const double cell_width) 
-			: cell_width(cell_width)
-		{
-			min_bounds = vec3(
-			    (*std::min_element(points.begin(), points.end(), []( const vec3 a, const vec3 b ) { return a.x < b.x; })).x,
-			    (*std::min_element(points.begin(), points.end(), []( const vec3 a, const vec3 b ) { return a.y < b.y; })).y,
-			    (*std::min_element(points.begin(), points.end(), []( const vec3 a, const vec3 b ) { return a.z < b.z; })).z
-    		);
-			max_bounds = vec3(
-			    (*std::max_element(points.begin(), points.end(), []( const vec3 a, const vec3 b ) { return a.x < b.x; })).x,
-			    (*std::max_element(points.begin(), points.end(), []( const vec3 a, const vec3 b ) { return a.y < b.y; })).y,
-			    (*std::max_element(points.begin(), points.end(), []( const vec3 a, const vec3 b ) { return a.z < b.z; })).z
-    		);
-			dimensions = ivec3(
-				(max_bounds.x - min_bounds.x) / cell_width,
-				(max_bounds.y - min_bounds.y) / cell_width,
-				(max_bounds.z - min_bounds.z) / cell_width
-			);
-
-			// initialize grid
-			int cell_count_ = cell_count();
-			cells = new std::vector<std::pair<int, vec3>>[cell_count_];
-			for (int i = 0; i < cell_count_; ++i)
-			{
-				cells[i] = std::vector<std::pair<int, vec3>>();
-			}
-
-			for (int i = 0; i < points.size(); ++i)
-			{
-				add(i, points[i]);
-			}
-		}
 		void add(const int id, const vec3 point)
 		{
-			const int xi = (int)round((point.x - min_bounds.x) / cell_width);
-			const int yi = (int)round((point.y - min_bounds.y) / cell_width);
-			const int zi = (int)round((point.z - min_bounds.z) / cell_width);
+			const int xi = std::clamp((int)round((point.x - min_bounds.x) / cell_width), 0, dimensions.x-2);
+			const int yi = std::clamp((int)round((point.y - min_bounds.y) / cell_width), 0, dimensions.y-2);
+			const int zi = std::clamp((int)round((point.z - min_bounds.z) / cell_width), 0, dimensions.z-2);
 
 			cells[cell_id( xi   , yi   , zi   )].push_back({id, point});
 			cells[cell_id( xi+1 , yi   , zi   )].push_back({id, point});
@@ -96,17 +44,49 @@ namespace Rasters {
 			cells[cell_id( xi   , yi+1 , zi+1 )].push_back({id, point});
 			cells[cell_id( xi+1 , yi+1 , zi+1 )].push_back({id, point});
 		}
+	public:
+		~CartesianGridLookup3d(){}
+		
+		CartesianGridLookup3d(const std::vector<vec3>& aos, const double cell_width) 
+			: cell_width(cell_width)
+		{
+
+			min_bounds = vec3(
+			    (*std::min_element(aos.begin(), aos.end(), []( const vec3 a, const vec3 b ) { return a.x < b.x; })).x,
+			    (*std::min_element(aos.begin(), aos.end(), []( const vec3 a, const vec3 b ) { return a.y < b.y; })).y,
+			    (*std::min_element(aos.begin(), aos.end(), []( const vec3 a, const vec3 b ) { return a.z < b.z; })).z
+    		);
+			max_bounds = vec3(
+			    (*std::max_element(aos.begin(), aos.end(), []( const vec3 a, const vec3 b ) { return a.x < b.x; })).x,
+			    (*std::max_element(aos.begin(), aos.end(), []( const vec3 a, const vec3 b ) { return a.y < b.y; })).y,
+			    (*std::max_element(aos.begin(), aos.end(), []( const vec3 a, const vec3 b ) { return a.z < b.z; })).z
+    		);
+			dimensions = ivec3((max_bounds - min_bounds) / cell_width) + 1; // NOTE: always offset by 1 because add() writes to neighboring cells, as well
+
+			// initialize grid
+			int cell_count_ = cell_count();
+			cells = new std::vector<std::pair<int, vec3>>[cell_count_];
+			for (int i = 0; i < cell_count_; ++i)
+			{
+				cells[i] = std::vector<std::pair<int, vec3>>();
+			}
+
+			for (int i = 0; i < aos.size(); ++i)
+			{
+				add(i, aos[i]);
+			}
+		}
 		int nearest_id(const vec3 point)
 		{
 			const int xi = std::clamp((int)ceil((point.x - min_bounds.x) / cell_width), 0, dimensions.x-1);
 			const int yi = std::clamp((int)ceil((point.y - min_bounds.y) / cell_width), 0, dimensions.y-1);
 			const int zi = std::clamp((int)ceil((point.z - min_bounds.z) / cell_width), 0, dimensions.z-1);
 
-    		std::cout << "min_bounds" << min_bounds.x << " " << min_bounds.y << " " << min_bounds.z << " " << std::endl; 
-    		std::cout << "temp" << ((point.x - min_bounds.x) / cell_width) << std::endl; 
-    		std::cout << "point" << point.x << " " << point.y << " " << point.z << " " << std::endl; 
-    		std::cout << "id" << xi << " " << yi << " " << zi << " " << std::endl; 
-			std::cout << "cell_id" << cell_id(xi, yi, zi) << std::endl; 
+    		// std::cout << "min_bounds" << min_bounds.x << " " << min_bounds.y << " " << min_bounds.z << " " << std::endl; 
+    		// std::cout << "temp" << ((point.x - min_bounds.x) / cell_width) << std::endl; 
+    		// std::cout << "point" << point.x << " " << point.y << " " << point.z << " " << std::endl; 
+    		// std::cout << "id" << xi << " " << yi << " " << zi << " " << std::endl; 
+			// std::cout << "cell_id" << cell_id(xi, yi, zi) << std::endl; 
 			std::vector<std::pair<int, vec3>> & neighbors = cells[cell_id(xi, yi, zi)];
 
 			if (neighbors.size() < 1)

@@ -9,7 +9,16 @@ namespace Rasters
 	{
 		T x, y;
 		vec2_template() {};
-		vec2_template(T x, T y) : x(x), y(y) {};
+
+		template<class T2>
+		vec2_template(T2 x) : x(x), y(x) {};
+
+		template<class T2>
+		vec2_template(T2 x, T2 y) : x(x), y(y) {};
+
+		template<class T2>
+		vec2_template(const vec2_template<T2> a) : x(a.x), y(a.y) {};
+
 		~vec2_template() {};
 
 		double magnitude()
@@ -24,13 +33,48 @@ namespace Rasters
 		// {
 		// 	c.x = a.x + b.x;
 		// 	c.y = a.y + b.y;
-		// 	c.z = a.z + b.z;
 		// }
-		vec2_template<T> operator*(const double scalar) const
+
+		vec2_template<T> operator+(const double scalar) const
 		{
 			return vec2_template<T>(
 				x + scalar,
 				y + scalar
+			);
+		}
+		vec2_template<T> operator-(const double scalar) const
+		{
+			return vec2_template<T>(
+				x - scalar,
+				y - scalar
+			);
+		}
+		vec2_template<T> operator*(const double scalar) const
+		{
+			return vec2_template<T>(
+				x * scalar,
+				y * scalar
+			);
+		}
+		vec2_template<T> operator/(const double scalar) const
+		{
+			return vec2_template<T>(
+				x / scalar,
+				y / scalar
+			);
+		}
+		vec2_template<T> operator+(const vec2_template<T> vector) const
+		{
+			return vec2_template<T>(
+				x + vector.x,
+				y + vector.y
+			);
+		}
+		vec2_template<T> operator-(const vec2_template<T> vector) const
+		{
+			return vec2_template<T>(
+				x - vector.x,
+				y - vector.y
 			);
 		}
 		double operator*(const vec2_template<T> vector) const
@@ -39,13 +83,6 @@ namespace Rasters
 				x * vector.x+
 				y * vector.y
 			;
-		}
-		vec2_template<T> operator+(const vec2_template<T> vector) const
-		{
-			return vec2_template<T>(
-				x + vector.x,
-				y + vector.y
-			);
 		}
 	};
 

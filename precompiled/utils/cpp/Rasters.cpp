@@ -26,9 +26,7 @@ EMSCRIPTEN_BINDINGS(rasters)
       .property("z", &vec3::z)
   ;
   class_<CartesianGridLookup3d>("CartesianGridLookup3d")
-      .constructor<vec3, vec3, double>()
       .constructor<std::vector<vec3>, double>()
-      .function("add", &CartesianGridLookup3d::add)
       .function("nearest_id", &CartesianGridLookup3d::nearest_id)
   ;
   class_<VoronoiCubeSphereLookup3d>("VoronoiCubeSphereLookup3d")
