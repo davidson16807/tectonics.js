@@ -28,13 +28,17 @@ namespace Rasters
 
 		~vec3_template() {};
 
-		double magnitude()
+		static double distance(const vec3_template<T> a, const vec3_template<T> b) 
+		{
+			return (a-b).magnitude();
+		}
+		double magnitude() const
 		{
 			return sqrt(pow(x, 2.) + pow(y, 2.) + pow(z, 2.));
 		}
-		static double distance(const vec3_template<T> a, const vec3_template<T> b) 
+		vec3_template<T> normalize() const
 		{
-			return sqrt(pow(a.x-b.x, 2.) + pow(a.y-b.y, 2.) + pow(a.z-b.z, 2.));
+			return *this / magnitude();
 		}
 		// static double add(const vec3_template<T>& a, const vec3_template<T>& b, vec3_template<T>& c) 
 		// {

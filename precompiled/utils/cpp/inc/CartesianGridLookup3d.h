@@ -35,6 +35,7 @@ namespace Rasters {
 			const int xi = std::clamp((int)round((point.x - min_bounds.x) / cell_width), 0, dimensions.x-2);
 			const int yi = std::clamp((int)round((point.y - min_bounds.y) / cell_width), 0, dimensions.y-2);
 			const int zi = std::clamp((int)round((point.z - min_bounds.z) / cell_width), 0, dimensions.z-2);
+    		std::cout << "point " << id << " " << point.x << " " << point.y << " " << point.z << " " << std::endl; 
 
 			cells[cell_id( xi   , yi   , zi   )].push_back({id, point});
 			cells[cell_id( xi+1 , yi   , zi   )].push_back({id, point});
@@ -47,7 +48,7 @@ namespace Rasters {
 	public:
 		~CartesianGridLookup3d(){}
 		
-		CartesianGridLookup3d(const std::vector<vec3>& aos, const double cell_width) 
+		CartesianGridLookup3d(const std::vector<vec3>& aos, const double cell_width)
 			: cell_width(cell_width)
 		{
 

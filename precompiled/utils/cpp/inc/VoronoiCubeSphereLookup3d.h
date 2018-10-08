@@ -1,7 +1,7 @@
 #pragma once
 
 #include <math.h>       // ceil, round 
-#include <algorithm> 	// max
+#include <algorithm> 	// max, min
 #include <vector>		// vectors
 #include <array>		// arrays
 #include <iostream>		// cout
@@ -30,7 +30,7 @@ namespace Rasters
 		double cell_width;
 
 		int cell_count() {
-			return CUBE_SPHERE_SIDE_COUNT * (dimensions.x+1) * dimensions.y;
+			return CUBE_SPHERE_SIDE_COUNT * dimensions.x * dimensions.y;
 		}
 		int cell_id(const int side_id, const int xi, const int yi) {
 			return  side_id * dimensions.x * dimensions.y
@@ -42,9 +42,9 @@ namespace Rasters
 		
 		VoronoiCubeSphereLookup3d(const std::vector<vec3> points, const double cell_width)
 			: cell_width(cell_width),
-			  dimensions((int)ceil(1./cell_width))
+			  dimensions((int)ceil(2./cell_width)+1)
 		{
-			CartesianGridLookup3d grid = CartesianGridLookup3d(points, cell_width);
+			CartesianGridLookup3d grid = CartesianGridLookup3d(points, 1.*cell_width);
 
 			// populate cells using the slower CartesianGridLookup3d implementation
 			cells = new int[cell_count()];
@@ -55,26 +55,18 @@ namespace Rasters
 					for (int yi2d = 0; yi2d < dimensions.y; ++yi2d)
 					{
 						// get position of the cell that's projected onto the 2d grid
-						double x2d = 0.5 * (double)xi2d * cell_width - 1.;
-						double y2d = 0.5 * (double)yi2d * cell_width - 1.;
+						double x2d = (double)xi2d * cell_width - 1.;
+						double y2d = (double)yi2d * cell_width - 1.;
 						// reconstruct the dimension omitted from the grid using pythagorean theorem
-						double z2d = sqrt(std::max(1 - pow((double)x2d, 2.) - pow((double)y2d, 2.), 0.));
+						double z2d = sqrt(std::max(1. - (x2d*x2d) - (y2d*y2d), 0.));
 						z2d *= side_id > 2? -1 : 1;
 
-    					// std::cout << x2d << " " << y2d << " " << z2d << " " << std::endl; 
-
 						vec3 cell_pos = 
-							CUBE_SPHERE_SIDE_BASES[side_id%3+0] * z2d +
-							CUBE_SPHERE_SIDE_BASES[side_id%3+1] * x2d +
-							CUBE_SPHERE_SIDE_BASES[side_id%3+2] * y2d ;
+							CUBE_SPHERE_SIDE_BASES[(side_id+0)%3] * z2d +
+							CUBE_SPHERE_SIDE_BASES[(side_id+1)%3] * x2d +
+							CUBE_SPHERE_SIDE_BASES[(side_id+2)%3] * y2d ;
 
-    					// std::cout << cell_pos.x << " " << cell_pos.y << " " << cell_pos.z << " " << std::endl; 
-
-						int cell_id_ = cell_id(side_id, xi2d, yi2d);
-    					// std::cout << cell_id_ << std::endl; 
-						int nearest_id = grid.nearest_id(cell_pos);
-    					// std::cout << nearest_id << std::endl; 
-						// cells[cell_id(side_id, xi2d, yi2d)] = grid.nearest_id(cell_pos);
+						cells[cell_id(side_id, xi2d, yi2d)] = grid.nearest_id(cell_pos);
 					}
 				}
 			}
@@ -82,21 +74,30 @@ namespace Rasters
 
 		int nearest_id(const vec3 point)
 		{
-			const double threshold = sqrt(1/3); // NOTE: on a unit sphere, the largest coordinate will always exceed this threshold
+			const vec3 normalized = point.normalize();
+    		std::cout << "normalized " << normalized.x << " " << normalized.y << " " << normalized.z << " " << std::endl; 
 
-			const int side_id =
-			//point.x > threshold * 0 +
-			  point.y > threshold * 1 +
-			  point.z > threshold * 2 +
-			 -point.x > threshold * 3 + 
-			 -point.y > threshold * 4 +
-			 -point.z > threshold * 5 ;
+    		// NOTE: on a unit sphere, the largest coordinate will always exceed this threshold
+    		// we adjust this threshold by epsilon to ensure that only one side is ever selected
+			const double threshold = sqrt(1./3.) + 0.01;
 
-			double x2d = CUBE_SPHERE_SIDE_BASES[side_id%3+1] * point;
-			double y2d = CUBE_SPHERE_SIDE_BASES[side_id%3+2] * point;
+			const int side_id = 
+			//( normalized.x > threshold) * 0 +
+			  ( normalized.y > threshold) * 1 +
+			  ( normalized.z > threshold) * 2 +
+			  (-normalized.x > threshold) * 3 +
+			  (-normalized.y > threshold) * 4 +
+			  (-normalized.z > threshold) * 5 ; 
 
-			int xi2d = (x2d + 1.) * 2. / cell_width;
-			int yi2d = (y2d + 1.) * 2. / cell_width;
+    		std::cout << "side_id " << side_id << std::endl; 
+
+			const double x2d = CUBE_SPHERE_SIDE_BASES[(side_id+1)%3] * normalized;
+			const double y2d = CUBE_SPHERE_SIDE_BASES[(side_id+2)%3] * normalized;
+			std::cout << "2d " << x2d << " " << y2d << " " << std::endl; 
+
+			const int xi2d = (x2d + 1.) / cell_width;
+			const int yi2d = (y2d + 1.) / cell_width;
+			std::cout << "i2d " << side_id << " " << xi2d << " " << yi2d << " " << std::endl; 
 			return cells[cell_id(side_id, xi2d, yi2d)];
 		}
 	};
