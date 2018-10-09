@@ -50,28 +50,28 @@ namespace Rasters
 		}
 
 
-		static void add(const vec3s_template<T,N>& u, const vec1s_template<T,N> a, vec3s_template<T,N>& out)
+		static void add(const vec3s_template<T,N>& u, const vec1s_template<T,N>& a, vec3s_template<T,N>& out)
 		{
 			for (int i = 0; i < N; ++i)
 			{
 				out[i] = vec3_template<T>::add(u[i], a[i]);
 			}
 		}
-		static void sub(const vec3s_template<T,N>& u, const vec1s_template<T,N> a, vec3s_template<T,N>& out)
+		static void sub(const vec3s_template<T,N>& u, const vec1s_template<T,N>& a, vec3s_template<T,N>& out)
 		{
 			for (int i = 0; i < N; ++i)
 			{
 				out[i] = vec3_template<T>::sub(u[i], a[i]);
 			}
 		}
-		static void mult(const vec3s_template<T,N>& u, const vec1s_template<T,N> a, vec3s_template<T,N>& out)
+		static void mult(const vec3s_template<T,N>& u, const vec1s_template<T,N>& a, vec3s_template<T,N>& out)
 		{
 			for (int i = 0; i < N; ++i)
 			{
 				out[i] = vec3_template<T>::mult(u[i], a[i]);
 			}
 		}
-		static void div(const vec3s_template<T,N>& u, const vec1s_template<T,N> a, vec3s_template<T,N>& out)
+		static void div(const vec3s_template<T,N>& u, const vec1s_template<T,N>& a, vec3s_template<T,N>& out)
 		{
 			for (int i = 0; i < N; ++i)
 			{

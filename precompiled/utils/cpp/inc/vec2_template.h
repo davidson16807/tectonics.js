@@ -14,76 +14,150 @@ namespace Rasters
 		vec2_template(T2 x) : x(x), y(x) {};
 
 		template<class T2>
-		vec2_template(T2 x, T2 y) : x(x), y(y) {};
+		vec2_template(T2 x, T2 y, T2 z) : x(x), y(y) {};
 
 		template<class T2>
-		vec2_template(const vec2_template<T2> a) : x(a.x), y(a.y) {};
+		vec2_template(vec2_template<T2> u) : x(u.x), y(u.y) {};
 
 		~vec2_template() {};
 
-		double magnitude()
+		static T distance(const vec2_template<T> u, const vec2_template<T> v) 
 		{
-			return sqrt(pow(x, 2.) + pow(y, 2.));
+			return (u-v).magnitude();
 		}
-		static double distance(const vec2_template<T> a, const vec2_template<T> b) 
-		{
-			return sqrt(pow(a.x-b.x, 2.) + pow(a.y-b.y, 2.));
-		}
-		// static double add(const vec2_template<T>& a, const vec2_template<T>& b, vec2_template<T>& c) 
-		// {
-		// 	c.x = a.x + b.x;
-		// 	c.y = a.y + b.y;
-		// }
-
-		vec2_template<T> operator+(const double scalar) const
+		static vec2_template<T> add(const vec2_template<T> u, const T a)
 		{
 			return vec2_template<T>(
-				x + scalar,
-				y + scalar
+				u.x + a,
+				u.y + a
 			);
 		}
-		vec2_template<T> operator-(const double scalar) const
+		static vec2_template<T> sub(const vec2_template<T> u, const T a)
 		{
 			return vec2_template<T>(
-				x - scalar,
-				y - scalar
+				u.x - a,
+				u.y - a
 			);
 		}
-		vec2_template<T> operator*(const double scalar) const
+		static vec2_template<T> mult(const vec2_template<T> u, const T a)
 		{
 			return vec2_template<T>(
-				x * scalar,
-				y * scalar
+				u.x * a,
+				u.y * a
 			);
 		}
-		vec2_template<T> operator/(const double scalar) const
+		static vec2_template<T> div(const vec2_template<T> u, const T a)
 		{
+			const T ainv = 1./a;
 			return vec2_template<T>(
-				x / scalar,
-				y / scalar
+				u.x * ainv,
+				u.y * ainv
 			);
 		}
-		vec2_template<T> operator+(const vec2_template<T> vector) const
-		{
+		static vec2_template<T> add (const vec2_template<T> u, const vec2_template<T> v) {
 			return vec2_template<T>(
-				x + vector.x,
-				y + vector.y
+				u.x + v.x,
+				u.y + v.y
 			);
 		}
-		vec2_template<T> operator-(const vec2_template<T> vector) const
-		{
+		static vec2_template<T> sub (const vec2_template<T> u, const vec2_template<T> v) {
 			return vec2_template<T>(
-				x - vector.x,
-				y - vector.y
+				u.x - v.x,
+				u.y - v.y
 			);
 		}
-		double operator*(const vec2_template<T> vector) const
+		static T dot (const vec2_template<T> u, const vec2_template<T> v) {
+			return 
+				u.x * v.x+
+				u.y * v.y;
+		}
+		static T cross (const vec2_template<T> u, const vec2_template<T> v) 
 		{
 			return 
-				x * vector.x+
-				y * vector.y
+				u.x * v.y - u.y * v.x
 			;
 		}
+		static vec2_template<T> hadamard (const vec2_template<T> u, const vec2_template<T> v) {
+			return vec2_template<T>(
+				u.x * v.x,
+				u.y * v.y
+			);
+		}
+		static vec2_template<T> div (const vec2_template<T> u, const vec2_template<T> v) {
+			return vec2_template<T>(
+				u.x / v.x,
+				u.y / v.y
+			);
+		}
+
+
+
+		double magnitude() const
+		{
+			return sqrt(x*x + y*y);
+		}
+		vec2_template<T> normalize() const
+		{
+			return *this / magnitude();
+		}
+
+		vec2_template<T> operator+(const T a) const
+		{
+			return vec2_template<T>(
+				x + a,
+				y + a
+			);
+		}
+		vec2_template<T> operator-(const T a) const
+		{
+			return vec2_template<T>(
+				x - a,
+				y - a
+			);
+		}
+		vec2_template<T> operator*(const T a) const
+		{
+			return vec2_template<T>(
+				x * a,
+				y * a
+			);
+		}
+		vec2_template<T> operator/(const T a) const
+		{
+			return vec2_template<T>(
+				x / a,
+				y / a
+			);
+		}
+		vec2_template<T> operator+(const vec2_template<T> u) const
+		{
+			return vec2_template<T>(
+				x + u.x,
+				y + u.y
+			);
+		}
+		vec2_template<T> operator-(const vec2_template<T> u) const
+		{
+			return vec2_template<T>(
+				x - u.x,
+				y - u.y
+			);
+		}
+		double operator*(const vec2_template<T> u) const
+		{
+			return 
+				x * u.x+
+				y * u.y
+			;
+		}
+		vec2_template<T> operator/(const vec2_template<T> u) const
+		{
+			return vec2_template<T>(
+				x / u.x,
+				y / u.y
+			);
+		}
+
 	};
 
 	using vec2 = vec2_template<double>;

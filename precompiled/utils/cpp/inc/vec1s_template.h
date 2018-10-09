@@ -7,86 +7,139 @@ namespace Rasters
 	template <class T, int N>
 	struct vec1s_template
 	{
-		T x[N];
+		T values[N];
 
 		vec1s_template() {};
+
 		~vec1s_template() {};
 
-		static void magnitude(const vec1s_template<T,N>& a, vec1s_template<T,N>& out)
+
+
+		static void add(const vec1s_template<T,N>& a, const T b, vec1s_template<T,N>& out)
 		{
 			for (int i = 0; i < N; ++i)
 			{
-				out[i]  = abs(a.x[i]);
+				out[i] = a[i] + b;
 			}
 		}
-		static void distance(const vec1s_template<T,N>& a, const vec1s_template<T,N>& b, vec1s_template<T,N>& out) 
+		static void sub(const vec1s_template<T,N>& a, const T b, vec1s_template<T,N>& out)
 		{
 			for (int i = 0; i < N; ++i)
 			{
-				out[i]  = pow(a.x[i]-b.x[i], 2);
-			}
-			for (int i = 0; i < N; ++i)
-			{
-				out[i] += pow(a.y[i]-b.y[i], 2);
-			}
-			for (int i = 0; i < N; ++i)
-			{
-				out[i] += pow(a.z[i]-b.z[i], 2);
-			}
-			for (int i = 0; i < N; ++i)
-			{
-				out[i] = sqrt(out[i]);
+				out[i] = a[i] - b;
 			}
 		}
+		static void mult(const vec1s_template<T,N>& a, const T b, vec1s_template<T,N>& out)
+		{
+			for (int i = 0; i < N; ++i)
+			{
+				out[i] = a[i] * b;
+			}
+		}
+		static void div(const vec1s_template<T,N>& a, const T b, vec1s_template<T,N>& out)
+		{
+			const T binv = 1./a;
+			for (int i = 0; i < N; ++i)
+			{
+				out[i] = a[i] * binv;
+			}
+		}
+
+
 		static void add(const vec1s_template<T,N>& a, const vec1s_template<T,N>& b, vec1s_template<T,N>& out)
 		{
 			for (int i = 0; i < N; ++i)
 			{
-				out.x[i] = a.x[i] + b.x[i];
+				out[i] = a[i] + b[i];
 			}
+		}
+		static void sub(const vec1s_template<T,N>& a, const vec1s_template<T,N>& b, vec1s_template<T,N>& out)
+		{
 			for (int i = 0; i < N; ++i)
 			{
-				out.y[i] = a.y[i] + b.y[i];
-			}
-			for (int i = 0; i < N; ++i)
-			{
-				out.z[i] = a.z[i] + b.z[i];
+				out[i] = a[i] + b[i];
 			}
 		}
 		static void mult(const vec1s_template<T,N>& a, const vec1s_template<T,N>& b, vec1s_template<T,N>& out)
 		{
 			for (int i = 0; i < N; ++i)
 			{
-				out.x[i] = a.x[i] * b.x[i];
+				out[i] = a[i] + b[i];
 			}
+		}
+		static void div(const vec1s_template<T,N>& a, const vec1s_template<T,N>& b, vec1s_template<T,N>& out)
+		{
 			for (int i = 0; i < N; ++i)
 			{
-				out.y[i] = a.y[i] * b.y[i];
-			}
-			for (int i = 0; i < N; ++i)
-			{
-				out.z[i] = a.z[i] * b.z[i];
+				out[i] = a[i] + b[i];
 			}
 		}
-		vec1s_template<T,N> operator*(const T scalar) const
+
+
+
+		vec1s_template<T,N> operator+(const T a) const
 		{
 			vec1s_template<T,N> out = vec1s_template<T,N>();
-			mult(this, scalar, out);
+			vec1s_template<T,N>::add(*this, a, out);
 			return out;
 		}
-		vec1s_template<T,N> operator*(const vec1s_template<T,N> vector) const
+		vec1s_template<T,N> operator-(const T a) const
 		{
 			vec1s_template<T,N> out = vec1s_template<T,N>();
-			dot(this, vector, out);
+			vec1s_template<T,N>::sub(*this, a, out);
 			return out;
 		}
-		vec1s_template<T,N> operator+(const vec1s_template<T,N> vector) const
+		vec1s_template<T,N> operator*(const T a) const
 		{
 			vec1s_template<T,N> out = vec1s_template<T,N>();
-			add(this, vector, out);
+			vec1s_template<T,N>::mult(*this, a, out);
 			return out;
+		}
+		vec1s_template<T,N> operator/(const T a) const
+		{
+			vec1s_template<T,N> out = vec1s_template<T,N>();
+			vec1s_template<T,N>::div(*this, a, out);
+			return out;
+		}
+
+
+		vec1s_template<T,N> operator+(const vec1s_template<T,N>& a) const
+		{
+			vec1s_template<T,N> out = vec1s_template<T,N>();
+			vec1s_template<T,N>::add(*this, a, out);
+			return out;
+		}
+		vec1s_template<T,N> operator-(const vec1s_template<T,N>& a) const
+		{
+			vec1s_template<T,N> out = vec1s_template<T,N>();
+			vec1s_template<T,N>::sub(*this, a, out);
+			return out;
+		}
+		vec1s_template<T,N> operator*(const vec1s_template<T,N>& a) const
+		{
+			vec1s_template<T,N> out = vec1s_template<T,N>();
+			vec1s_template<T,N>::mult(*this, a, out);
+			return out;
+		}
+		vec1s_template<T,N> operator/(const vec1s_template<T,N>& a) const
+		{
+			vec1s_template<T,N> out = vec1s_template<T,N>();
+			vec1s_template<T,N>::div(*this, a, out);
+			return out;
+		}
+
+
+
+		T operator[](const int i) const
+		{
+		    if (i >= N) 
+		    { 
+		        exit(0); 
+		    } 
+		    return values[i];
 		}
 	};
+
 
 	template <int N>
 	using floats = vec1s_template<double, N>;

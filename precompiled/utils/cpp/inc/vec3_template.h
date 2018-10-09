@@ -175,6 +175,14 @@ namespace Rasters
 				z * u.z
 			;
 		}
+		vec3_template<T> operator/(const vec3_template<T> u) const
+		{
+			return vec3_template<T>(
+				x / u.x,
+				y / u.y,
+				z / u.z
+			);
+		}
 
 	};
 
