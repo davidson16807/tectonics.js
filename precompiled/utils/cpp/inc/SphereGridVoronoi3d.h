@@ -4,7 +4,7 @@
 #include <algorithm> 	// max, min
 #include <vector>		// vectors
 #include <array>		// arrays
-#include <iostream>		// cout
+// #include <iostream>		// cout
 
 #include "vec2_template.h"
 #include "vec3_template.h"
@@ -100,22 +100,18 @@ namespace Rasters
 		int nearest_id(const vec3 point)
 		{
 			const vec3 normalized = point.normalize();
-    		std::cout << "normalized " << normalized.x << " " << normalized.y << " " << normalized.z << " " << std::endl; 
 
 			const int side_id = 
 			  (( normalized.x > 0) << 0) +
 			  (( normalized.y > 0) << 1) +
 			  (( normalized.z > 0) << 2) ; 
 
-    		std::cout << "side_id " << side_id << std::endl; 
-
 			const double x2d = CUBE_SPHERE_SIDE_X[side_id] * normalized;
 			const double y2d = CUBE_SPHERE_SIDE_Y[side_id] * normalized;
-			std::cout << "2d " << x2d << " " << y2d << " " << std::endl; 
 
 			const int xi2d = (x2d + 1.) / cell_width;
 			const int yi2d = (y2d + 1.) / cell_width;
-			std::cout << "i2d " << side_id << " " << xi2d << " " << yi2d << " " << std::endl; 
+			
 			return cells[cell_id(side_id, xi2d, yi2d)];
 		}
 	};
