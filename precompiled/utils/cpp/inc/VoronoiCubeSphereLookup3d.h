@@ -19,7 +19,7 @@ namespace Rasters
 	// uses CartesianGridLookup3d behind the scenes to optimize initialization
 	class VoronoiCubeSphereLookup3d
 	{
-		const std::array<vec3, 8> CUBE_SPHERE_SIDE_CENTER = {
+		const std::array<vec3, 8> CUBE_SPHERE_SIDE_Z = {
 			vec3(-1,-1,-1).normalize(),
 			vec3( 1,-1,-1).normalize(),
 			vec3(-1, 1,-1).normalize(),
@@ -29,38 +29,28 @@ namespace Rasters
 			vec3(-1, 1, 1).normalize(),
 			vec3( 1, 1, 1).normalize()
 		};
-		const std::array<vec3, 8> CUBE_SPHERE_SIDE_Y = {
-			vec3( 0, 0, 1),
-			vec3( 0, 0, 1),
-			vec3( 0, 0, 1),
-			vec3( 0, 0, 1),
-			vec3( 0, 0, 1),
-			vec3( 0, 0, 1),
-			vec3( 0, 0, 1),
-			vec3( 0, 0, 1),
-		};
 		const std::array<vec3, 8> CUBE_SPHERE_SIDE_X = {
-			vec3::cross(CUBE_SPHERE_SIDE_CENTER[0], CUBE_SPHERE_SIDE_Y[0]).normalize(),
-			vec3::cross(CUBE_SPHERE_SIDE_CENTER[1], CUBE_SPHERE_SIDE_Y[1]).normalize(),
-			vec3::cross(CUBE_SPHERE_SIDE_CENTER[2], CUBE_SPHERE_SIDE_Y[2]).normalize(),
-			vec3::cross(CUBE_SPHERE_SIDE_CENTER[3], CUBE_SPHERE_SIDE_Y[3]).normalize(),
-			vec3::cross(CUBE_SPHERE_SIDE_CENTER[4], CUBE_SPHERE_SIDE_Y[4]).normalize(),
-			vec3::cross(CUBE_SPHERE_SIDE_CENTER[5], CUBE_SPHERE_SIDE_Y[5]).normalize(),
-			vec3::cross(CUBE_SPHERE_SIDE_CENTER[6], CUBE_SPHERE_SIDE_Y[6]).normalize(),
-			vec3::cross(CUBE_SPHERE_SIDE_CENTER[7], CUBE_SPHERE_SIDE_Y[7]).normalize()
+			vec3::cross(CUBE_SPHERE_SIDE_Z[0], vec3(0,0,1)).normalize(),
+			vec3::cross(CUBE_SPHERE_SIDE_Z[1], vec3(0,0,1)).normalize(),
+			vec3::cross(CUBE_SPHERE_SIDE_Z[2], vec3(0,0,1)).normalize(),
+			vec3::cross(CUBE_SPHERE_SIDE_Z[3], vec3(0,0,1)).normalize(),
+			vec3::cross(CUBE_SPHERE_SIDE_Z[4], vec3(0,0,1)).normalize(),
+			vec3::cross(CUBE_SPHERE_SIDE_Z[5], vec3(0,0,1)).normalize(),
+			vec3::cross(CUBE_SPHERE_SIDE_Z[6], vec3(0,0,1)).normalize(),
+			vec3::cross(CUBE_SPHERE_SIDE_Z[7], vec3(0,0,1)).normalize()
 		};
-		const std::array<vec3, 8> CUBE_SPHERE_SIDE_Z = {
-			vec3::cross(CUBE_SPHERE_SIDE_X[0], CUBE_SPHERE_SIDE_Y[0]).normalize(),
-			vec3::cross(CUBE_SPHERE_SIDE_X[1], CUBE_SPHERE_SIDE_Y[1]).normalize(),
-			vec3::cross(CUBE_SPHERE_SIDE_X[2], CUBE_SPHERE_SIDE_Y[2]).normalize(),
-			vec3::cross(CUBE_SPHERE_SIDE_X[3], CUBE_SPHERE_SIDE_Y[3]).normalize(),
-			vec3::cross(CUBE_SPHERE_SIDE_X[4], CUBE_SPHERE_SIDE_Y[4]).normalize(),
-			vec3::cross(CUBE_SPHERE_SIDE_X[5], CUBE_SPHERE_SIDE_Y[5]).normalize(),
-			vec3::cross(CUBE_SPHERE_SIDE_X[6], CUBE_SPHERE_SIDE_Y[6]).normalize(),
-			vec3::cross(CUBE_SPHERE_SIDE_X[7], CUBE_SPHERE_SIDE_Y[7]).normalize()
+		const std::array<vec3, 8> CUBE_SPHERE_SIDE_Y = {
+			vec3::cross(CUBE_SPHERE_SIDE_Z[0], CUBE_SPHERE_SIDE_X[0] ).normalize(),
+			vec3::cross(CUBE_SPHERE_SIDE_Z[1], CUBE_SPHERE_SIDE_X[1] ).normalize(),
+			vec3::cross(CUBE_SPHERE_SIDE_Z[2], CUBE_SPHERE_SIDE_X[2] ).normalize(),
+			vec3::cross(CUBE_SPHERE_SIDE_Z[3], CUBE_SPHERE_SIDE_X[3] ).normalize(),
+			vec3::cross(CUBE_SPHERE_SIDE_Z[4], CUBE_SPHERE_SIDE_X[4] ).normalize(),
+			vec3::cross(CUBE_SPHERE_SIDE_Z[5], CUBE_SPHERE_SIDE_X[5] ).normalize(),
+			vec3::cross(CUBE_SPHERE_SIDE_Z[6], CUBE_SPHERE_SIDE_X[6] ).normalize(),
+			vec3::cross(CUBE_SPHERE_SIDE_Z[7], CUBE_SPHERE_SIDE_X[7] ).normalize()
 		};
 		const int CUBE_SPHERE_SIDE_COUNT = 8;	// number of sides on the data cube
-		
+
 		ivec2 dimensions; // dimensions of the grid on each side of the data cube 
 		int* cells;
 		double cell_width;
@@ -80,7 +70,7 @@ namespace Rasters
 			: cell_width(cell_width),
 			  dimensions((int)ceil(2./cell_width)+1)
 		{
-			CartesianGridLookup3d grid = CartesianGridLookup3d(points, 1.*cell_width);
+			CartesianGridLookup3d grid = CartesianGridLookup3d(points, 2.*cell_width);
 
 			// populate cells using the slower CartesianGridLookup3d implementation
 			cells = new int[cell_count()];
@@ -95,7 +85,6 @@ namespace Rasters
 						double y2d = (double)yi2d * cell_width - 1.;
 						// reconstruct the dimension omitted from the grid using pythagorean theorem
 						double z2d = sqrt(std::max(1. - (x2d*x2d) - (y2d*y2d), 0.));
-						z2d *= side_id > 2? -1 : 1;
 
 						vec3 cell_pos = 
 							CUBE_SPHERE_SIDE_X[side_id] * x2d +
@@ -112,10 +101,6 @@ namespace Rasters
 		{
 			const vec3 normalized = point.normalize();
     		std::cout << "normalized " << normalized.x << " " << normalized.y << " " << normalized.z << " " << std::endl; 
-
-    		// NOTE: on a unit sphere, the largest coordinate will always exceed this threshold
-    		// we adjust this threshold by epsilon to ensure that only one side is ever selected
-			const double threshold = sqrt(1./3.) + 0.01;
 
 			const int side_id = 
 			  (( normalized.x > 0) << 0) +
