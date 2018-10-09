@@ -11,123 +11,293 @@ namespace Rasters
 	template <class T, int N>
 	struct vec3s_template
 	{
-		T x[N];
-		T y[N];
-		T z[N];
+		vec3_template<T> values[N];
 
 		vec3s_template() {};
 
-		template<class T2>
-		vec3s_template(std::vector<vec3_template<T2>> aos) {
-			for (int i = 0; i < N; ++i)
-			{
-				x[i] = aos[i].x;
-			}
-			for (int i = 0; i < N; ++i)
-			{
-				y[i] = aos[i].y;
-			}
-			for (int i = 0; i < N; ++i)
-			{
-				z[i] = aos[i].z;
-			}
-		};
-		
 		~vec3s_template() {};
 
-		static void magnitude(const vec3s_template<T,N>& a, vec1s_template<T,N>& out)
+
+
+		static void add(const vec3s_template<T,N>& u, const T a, vec3s_template<T,N>& out)
 		{
 			for (int i = 0; i < N; ++i)
 			{
-				out[i]  = pow(a.x[i], 2);
-			}
-			for (int i = 0; i < N; ++i)
-			{
-				out[i] += pow(a.y[i], 2);
-			}
-			for (int i = 0; i < N; ++i)
-			{
-				out[i] += pow(a.z[i], 2);
-			}
-			for (int i = 0; i < N; ++i)
-			{
-				out[i] = sqrt(out[i]);
+				out[i] = vec3_template<T>::add(u[i], a);
 			}
 		}
-		static void distance(const vec3s_template<T,N>& a, const vec3s_template<T,N>& b, vec1s_template<T,N>& out) 
+		static void sub(const vec3s_template<T,N>& u, const T a, vec3s_template<T,N>& out)
 		{
 			for (int i = 0; i < N; ++i)
 			{
-				out[i]  = pow(a.x[i]-b.x[i], 2);
-			}
-			for (int i = 0; i < N; ++i)
-			{
-				out[i] += pow(a.y[i]-b.y[i], 2);
-			}
-			for (int i = 0; i < N; ++i)
-			{
-				out[i] += pow(a.z[i]-b.z[i], 2);
-			}
-			for (int i = 0; i < N; ++i)
-			{
-				out[i] = sqrt(out[i]);
+				out[i] = vec3_template<T>::sub(u[i], a);
 			}
 		}
-		static void add(const vec3s_template<T,N>& a, const vec3s_template<T,N>& b, vec3s_template<T,N>& out)
+		static void mult(const vec3s_template<T,N>& u, const T a, vec3s_template<T,N>& out)
 		{
 			for (int i = 0; i < N; ++i)
 			{
-				out.x[i] = a.x[i] + b.x[i];
-			}
-			for (int i = 0; i < N; ++i)
-			{
-				out.y[i] = a.y[i] + b.y[i];
-			}
-			for (int i = 0; i < N; ++i)
-			{
-				out.z[i] = a.z[i] + b.z[i];
+				out[i] = vec3_template<T>::mult(u[i], a);
 			}
 		}
-		static void mult(const vec3s_template<T,N>& a, const vec3s_template<T,N>& b, vec3s_template<T,N>& out)
+		static void div(const vec3s_template<T,N>& u, const T a, vec3s_template<T,N>& out)
+		{
+			const T ainv = 1./a;
+			for (int i = 0; i < N; ++i)
+			{
+				out[i] = vec3_template<T>::mult(u[i], ainv);
+			}
+		}
+
+
+		static void add(const vec3s_template<T,N>& u, const vec1s_template<T,N> a, vec3s_template<T,N>& out)
 		{
 			for (int i = 0; i < N; ++i)
 			{
-				out.x[i] = a.x[i] * b.x[i];
-			}
-			for (int i = 0; i < N; ++i)
-			{
-				out.y[i] = a.y[i] * b.y[i];
-			}
-			for (int i = 0; i < N; ++i)
-			{
-				out.z[i] = a.z[i] * b.z[i];
+				out[i] = vec3_template<T>::add(u[i], a[i]);
 			}
 		}
-		vec3s_template<T,N> operator*(const double b) const
+		static void sub(const vec3s_template<T,N>& u, const vec1s_template<T,N> a, vec3s_template<T,N>& out)
+		{
+			for (int i = 0; i < N; ++i)
+			{
+				out[i] = vec3_template<T>::sub(u[i], a[i]);
+			}
+		}
+		static void mult(const vec3s_template<T,N>& u, const vec1s_template<T,N> a, vec3s_template<T,N>& out)
+		{
+			for (int i = 0; i < N; ++i)
+			{
+				out[i] = vec3_template<T>::mult(u[i], a[i]);
+			}
+		}
+		static void div(const vec3s_template<T,N>& u, const vec1s_template<T,N> a, vec3s_template<T,N>& out)
+		{
+			for (int i = 0; i < N; ++i)
+			{
+				out[i] = vec3_template<T>::div(u[i], a[i]);
+			}
+		}
+
+
+		static void add (const vec3s_template<T,N>& u, const vec3_template<T> v, vec3s_template<T,N>& out) {
+			for (int i = 0; i < N; ++i)
+			{
+				out[i] = vec3_template<T>::add(u[i], v);
+			}
+		}
+		static void sub (const vec3s_template<T,N>& u, const vec3_template<T> v, vec3s_template<T,N>& out) {
+			for (int i = 0; i < N; ++i)
+			{
+				out[i] = vec3_template<T>::sub(u[i], v);
+			}
+		}
+		static void dot (const vec3s_template<T,N>& u, const vec3_template<T> v, vec1s_template<T,N>& out) {
+			for (int i = 0; i < N; ++i)
+			{
+				out[i] = vec3_template<T>::dot(u[i], v);
+			}
+		}
+		static void cross (const vec3s_template<T,N>& u, const vec3_template<T> v, vec3s_template<T,N>& out) 
+		{
+			for (int i = 0; i < N; ++i)
+			{
+				out[i] = vec3_template<T>::cross(u[i], v);
+			}
+		}
+		static void hadamard (const vec3s_template<T,N>& u, const vec3_template<T> v, vec3s_template<T,N>& out) {
+			for (int i = 0; i < N; ++i)
+			{
+				out[i] = vec3_template<T>::hadamard(u[i], v);
+			}
+		}
+		static void div (const vec3s_template<T,N>& u, const vec3_template<T> v, vec3s_template<T,N>& out) {
+			for (int i = 0; i < N; ++i)
+			{
+				out[i] = vec3_template<T>::div(u[i], v);
+			}
+		}
+		static void distance(const vec3s_template<T,N>& u, const vec3_template<T> v, vec1s_template<T,N>& out) 
+		{
+			for (int i = 0; i < N; ++i)
+			{
+				out[i] = vec3_template<T>::distance(u[i], v);
+			}
+		}
+
+
+		static void add (const vec3s_template<T,N>& u, const vec3s_template<T,N>& v, vec3s_template<T,N>& out) {
+			for (int i = 0; i < N; ++i)
+			{
+				out[i] = vec3_template<T>::add(u[i], v[i]);
+			}
+		}
+		static void sub (const vec3s_template<T,N>& u, const vec3s_template<T,N>& v, vec3s_template<T,N>& out) {
+			for (int i = 0; i < N; ++i)
+			{
+				out[i] = vec3_template<T>::sub(u[i], v[i]);
+			}
+		}
+		static void dot (const vec3s_template<T,N>& u, const vec3s_template<T,N>& v, vec1s_template<T,N>& out) {
+			for (int i = 0; i < N; ++i)
+			{
+				out[i] = vec3_template<T>::dot(u[i], v[i]);
+			}
+		}
+		static void cross (const vec3s_template<T,N>& u, const vec3s_template<T,N>& v, vec3s_template<T,N>& out) 
+		{
+			for (int i = 0; i < N; ++i)
+			{
+				out[i] = vec3_template<T>::cross(u[i], v[i]);
+			}
+		}
+		static void hadamard (const vec3s_template<T,N>& u, const vec3s_template<T,N>& v, vec3s_template<T,N>& out) {
+			for (int i = 0; i < N; ++i)
+			{
+				out[i] = vec3_template<T>::hadamard(u[i], v[i]);
+			}
+		}
+		static void div (const vec3s_template<T,N>& u, const vec3s_template<T,N>& v, vec3s_template<T,N>& out) {
+			for (int i = 0; i < N; ++i)
+			{
+				out[i] = vec3_template<T>::div(u[i], v[i]);
+			}
+		}
+		static void distance(const vec3s_template<T,N>& u, const vec3s_template<T,N>& v, vec1s_template<T,N>& out) 
+		{
+			for (int i = 0; i < N; ++i)
+			{
+				out[i] = vec3_template<T>::distance(u[i], v[i]);
+			}
+		}
+
+
+		static void magnitude(const vec3s_template<T,N>& u, vec1s_template<T,N>& out) 
+		{
+			for (int i = 0; i < N; ++i)
+			{
+				out[i] = u[i].magnitude();
+			}
+		}
+		static void normalize(const vec3s_template<T,N>& u, vec1s_template<T,N>& out) 
+		{
+			for (int i = 0; i < N; ++i)
+			{
+				out[i] = u[i].normalize();
+			}
+		}
+
+		vec3s_template<T,N> operator+(const T a) const
 		{
 			vec3s_template<T,N> out = vec3s_template<T,N>();
-			mult(this, b, out);
+			vec3s_template<T,N>::add(*this, a, out);
 			return out;
 		}
-		vec1s_template<T,N> operator*(const vec3s_template<T,N> b) const
+		vec3s_template<T,N> operator-(const T a) const
+		{
+			vec3s_template<T,N> out = vec3s_template<T,N>();
+			vec3s_template<T,N>::sub(*this, a, out);
+			return out;
+		}
+		vec3s_template<T,N> operator*(const T a) const
+		{
+			vec3s_template<T,N> out = vec3s_template<T,N>();
+			vec3s_template<T,N>::mult(*this, a, out);
+			return out;
+		}
+		vec3s_template<T,N> operator/(const T a) const
+		{
+			vec3s_template<T,N> out = vec3s_template<T,N>();
+			vec3s_template<T,N>::div(*this, a, out);
+			return out;
+		}
+
+
+		vec3s_template<T,N> operator+(const vec1s_template<T,N>& a) const
+		{
+			vec3s_template<T,N> out = vec3s_template<T,N>();
+			vec3s_template<T,N>::add(*this, a, out);
+			return out;
+		}
+		vec3s_template<T,N> operator-(const vec1s_template<T,N>& a) const
+		{
+			vec3s_template<T,N> out = vec3s_template<T,N>();
+			vec3s_template<T,N>::sub(*this, a, out);
+			return out;
+		}
+		vec3s_template<T,N> operator*(const vec1s_template<T,N>& a) const
+		{
+			vec3s_template<T,N> out = vec3s_template<T,N>();
+			vec3s_template<T,N>::mult(*this, a, out);
+			return out;
+		}
+		vec3s_template<T,N> operator/(const vec1s_template<T,N>& a) const
+		{
+			vec3s_template<T,N> out = vec3s_template<T,N>();
+			vec3s_template<T,N>::div(*this, a, out);
+			return out;
+		}
+
+
+		vec3s_template<T,N> operator+(const vec3_template<T> u) const
+		{
+			vec3s_template<T,N> out = vec3s_template<T,N>();
+			vec3s_template<T,N>::add(*this, u, out);
+			return out;
+		}
+		vec3s_template<T,N> operator-(const vec3_template<T> u) const
+		{
+			vec3s_template<T,N> out = vec3s_template<T,N>();
+			vec3s_template<T,N>::add(*this, u, out);
+			return out;
+		}
+		vec1s_template<T,N> operator*(const vec3_template<T> u) const
 		{
 			vec1s_template<T,N> out = vec1s_template<T,N>();
-			dot(this, b, out);
+			vec3s_template<T,N>::add(*this, u, out);
 			return out;
 		}
-		vec3s_template<T,N> operator+(const vec3s_template<T,N> b) const
+		vec3s_template<T,N> operator/(const vec3_template<T> u) const
 		{
 			vec3s_template<T,N> out = vec3s_template<T,N>();
-			add(this, b, out);
+			vec3s_template<T,N>::div(*this, u, out);
 			return out;
 		}
+
+
+		vec3s_template<T,N> operator+(const vec3s_template<T,N>& u) const
+		{
+			vec3s_template<T,N> out = vec3s_template<T,N>();
+			vec3s_template<T,N>::add(*this, u, out);
+			return out;
+		}
+		vec3s_template<T,N> operator-(const vec3s_template<T,N>& u) const
+		{
+			vec3s_template<T,N> out = vec3s_template<T,N>();
+			vec3s_template<T,N>::add(*this, u, out);
+			return out;
+		}
+		vec1s_template<T,N> operator*(const vec3s_template<T,N>& u) const
+		{
+			vec1s_template<T,N> out = vec1s_template<T,N>();
+			vec3s_template<T,N>::add(*this, u, out);
+			return out;
+		}
+		vec3s_template<T,N> operator/(const vec3s_template<T,N>& u) const
+		{
+			vec3s_template<T,N> out = vec3s_template<T,N>();
+			vec3s_template<T,N>::div(*this, u, out);
+			return out;
+		}
+
+
 		vec3_template<T> operator[](const int i) const
 		{
 		    if (i >= N) 
 		    { 
 		        exit(0); 
 		    } 
-		    return vec3_template<T>(x[i], y[i], z[i]);
+		    return vec3_template<T>(values[i]);
 		}
 	};
 
