@@ -5,8 +5,8 @@
 #include "vec3_template.h"
 #include "vec3s_template.h"
 
-#include "VoronoiCubeSphereLookup3d.h"
-#include "CartesianGridLookup3d.h"
+#include "SphereGridVoronoi3d.h"
+#include "CartesianGridCellList3d.h"
 
 #include <emscripten/bind.h>
 
@@ -27,12 +27,12 @@ EMSCRIPTEN_BINDINGS(rasters)
       .function("magnitude", &vec3::magnitude)
       .function("normalize", &vec3::normalize)
   ;
-  class_<CartesianGridLookup3d>("CartesianGridLookup3d")
+  class_<CartesianGridCellList3d>("CartesianGridCellList3d")
       .constructor<std::vector<vec3>, double>()
-      .function("nearest_id", &CartesianGridLookup3d::nearest_id)
+      .function("nearest_id", &CartesianGridCellList3d::nearest_id)
   ;
-  class_<VoronoiCubeSphereLookup3d>("VoronoiCubeSphereLookup3d")
+  class_<SphereGridVoronoi3d>("SphereGridVoronoi3d")
       .constructor<std::vector<vec3>, double>()
-      .function("nearest_id", &VoronoiCubeSphereLookup3d::nearest_id)
+      .function("nearest_id", &SphereGridVoronoi3d::nearest_id)
   ;
 }

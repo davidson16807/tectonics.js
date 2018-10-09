@@ -18,96 +18,161 @@ namespace Rasters
 		vec3_template(T2 x, T2 y, T2 z) : x(x), y(y), z(z) {};
 
 		template<class T2>
-		vec3_template(vec3_template<T2> a) : x(a.x), y(a.y), z(a.z) {};
+		vec3_template(vec3_template<T2> u) : x(u.x), y(u.y), z(u.z) {};
 
 		template<class T2>
-		vec3_template(const vec2_template<T2> a, T z) : x(a.x), y(a.y), z(z) {};
+		vec3_template(const vec2_template<T2> u, T z) : x(u.x), y(u.y), z(z) {};
 
 		template<class T2>
-		vec3_template(T x, vec2_template<T2> a) : x(x), y(a.y), z(a.z) {};
+		vec3_template(T x, vec2_template<T2> u) : x(x), y(u.y), z(u.z) {};
 
 		~vec3_template() {};
 
-		static double distance(const vec3_template<T> a, const vec3_template<T> b) 
+		static T distance(const vec3_template<T> u, const vec3_template<T> v) 
 		{
-			return (a-b).magnitude();
+			return (u-v).magnitude();
 		}
-		static vec3_template<T> cross (const vec3_template<T> a, const vec3_template<T> b) {
+		static vec3_template<T> add(const vec3_template<T> u, const T a)
+		{
 			return vec3_template<T>(
-				a.y * b.z - a.z * b.y,
-				a.z * b.x - a.x * b.z,
-				a.x * b.y - a.y * b.x
+				u.x + a,
+				u.y + a,
+				u.z + a
 			);
 		}
+		static vec3_template<T> sub(const vec3_template<T> u, const T a)
+		{
+			return vec3_template<T>(
+				u.x - a,
+				u.y - a,
+				u.z - a
+			);
+		}
+		static vec3_template<T> mult(const vec3_template<T> u, const T a)
+		{
+			return vec3_template<T>(
+				u.x * a,
+				u.y * a,
+				u.z * a
+			);
+		}
+		static vec3_template<T> div(const vec3_template<T> u, const T a)
+		{
+			const T ainv = 1./a;
+			return vec3_template<T>(
+				u.x * ainv,
+				u.y * ainv,
+				u.z * ainv
+			);
+		}
+		static vec3_template<T> add (const vec3_template<T> u, const vec3_template<T> v) {
+			return vec3_template<T>(
+				u.x + v.x,
+				u.y + v.y,
+				u.z + v.z
+			);
+		}
+		static vec3_template<T> sub (const vec3_template<T> u, const vec3_template<T> v) {
+			return vec3_template<T>(
+				u.x - v.x,
+				u.y - v.y,
+				u.z - v.z
+			);
+		}
+		static T dot (const vec3_template<T> u, const vec3_template<T> v) {
+			return 
+				u.x * v.x+
+				u.y * v.y+
+				u.z * v.z;
+		}
+		static vec3_template<T> cross (const vec3_template<T> u, const vec3_template<T> v) 
+		{
+			return vec3_template<T>(
+				u.y * v.z - u.z * v.y,
+				u.z * v.x - u.x * v.z,
+				u.x * v.y - u.y * v.x
+			);
+		}
+		static vec3_template<T> hadamard (const vec3_template<T> u, const vec3_template<T> v) {
+			return vec3_template<T>(
+				u.x * v.x,
+				u.y * v.y,
+				u.z * v.z
+			);
+		}
+		static vec3_template<T> div (const vec3_template<T> u, const vec3_template<T> v) {
+			return vec3_template<T>(
+				u.x / v.x,
+				u.y / v.y,
+				u.z / v.z
+			);
+		}
+
+
+
 		double magnitude() const
 		{
-			return sqrt(pow(x, 2.) + pow(y, 2.) + pow(z, 2.));
+			return sqrt(x*x + y*y + z*z);
 		}
 		vec3_template<T> normalize() const
 		{
 			return *this / magnitude();
 		}
-		// static double add(const vec3_template<T>& a, const vec3_template<T>& b, vec3_template<T>& c) 
-		// {
-		// 	c.x = a.x + b.x;
-		// 	c.y = a.y + b.y;
-		// 	c.z = a.z + b.z;
-		// }
 
-		vec3_template<T> operator+(const double scalar) const
+		vec3_template<T> operator+(const T a) const
 		{
 			return vec3_template<T>(
-				x + scalar,
-				y + scalar,
-				z + scalar
+				x + a,
+				y + a,
+				z + a
 			);
 		}
-		vec3_template<T> operator-(const double scalar) const
+		vec3_template<T> operator-(const T a) const
 		{
 			return vec3_template<T>(
-				x - scalar,
-				y - scalar,
-				z - scalar
+				x - a,
+				y - a,
+				z - a
 			);
 		}
-		vec3_template<T> operator*(const double scalar) const
+		vec3_template<T> operator*(const T a) const
 		{
 			return vec3_template<T>(
-				x * scalar,
-				y * scalar,
-				z * scalar
+				x * a,
+				y * a,
+				z * a
 			);
 		}
-		vec3_template<T> operator/(const double scalar) const
+		vec3_template<T> operator/(const T a) const
 		{
 			return vec3_template<T>(
-				x / scalar,
-				y / scalar,
-				z / scalar
+				x / a,
+				y / a,
+				z / a
 			);
 		}
-		vec3_template<T> operator+(const vec3_template<T> vector) const
+		vec3_template<T> operator+(const vec3_template<T> u) const
 		{
 			return vec3_template<T>(
-				x + vector.x,
-				y + vector.y,
-				z + vector.z
+				x + u.x,
+				y + u.y,
+				z + u.z
 			);
 		}
-		vec3_template<T> operator-(const vec3_template<T> vector) const
+		vec3_template<T> operator-(const vec3_template<T> u) const
 		{
 			return vec3_template<T>(
-				x - vector.x,
-				y - vector.y,
-				z - vector.z
+				x - u.x,
+				y - u.y,
+				z - u.z
 			);
 		}
-		double operator*(const vec3_template<T> vector) const
+		double operator*(const vec3_template<T> u) const
 		{
 			return 
-				x * vector.x+
-				y * vector.y+
-				z * vector.z
+				x * u.x+
+				y * u.y+
+				z * u.z
 			;
 		}
 

@@ -12,7 +12,7 @@
 namespace Rasters {
 	
 	// describes a 3d cartesian grid where every cell houses a list of ids representing nearby points
-	class CartesianGridLookup3d
+	class CartesianGridCellList3d
 	{
 		std::vector<std::pair<int, vec3>>* cells;
 		vec3 min_bounds;
@@ -46,9 +46,9 @@ namespace Rasters {
 			cells[cell_id( xi+1 , yi+1 , zi+1 )].push_back({id, point});
 		}
 	public:
-		~CartesianGridLookup3d(){}
+		~CartesianGridCellList3d(){}
 		
-		CartesianGridLookup3d(const std::vector<vec3>& aos, const double cell_width)
+		CartesianGridCellList3d(const std::vector<vec3>& aos, const double cell_width)
 			: cell_width(cell_width)
 		{
 

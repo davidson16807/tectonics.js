@@ -10,14 +10,14 @@
 #include "vec3_template.h"
 // #include "vec3s_template.h"
 
-#include "CartesianGridLookup3d.h"
+#include "CartesianGridCellList3d.h"
 
 namespace Rasters
 {
 
 	// describes a 3d unit cube sphere where every cell houses an id representing the nearest point
-	// uses CartesianGridLookup3d behind the scenes to optimize initialization
-	class VoronoiCubeSphereLookup3d
+	// uses CartesianGridCellList3d behind the scenes to optimize initialization
+	class SphereGridVoronoi3d
 	{
 		const std::array<vec3, 8> CUBE_SPHERE_SIDE_Z = {
 			vec3(-1,-1,-1).normalize(),
@@ -64,15 +64,15 @@ namespace Rasters
 				  + yi;
 		}
 	public:
-		~VoronoiCubeSphereLookup3d(){}
+		~SphereGridVoronoi3d(){}
 		
-		VoronoiCubeSphereLookup3d(const std::vector<vec3> points, const double cell_width)
+		SphereGridVoronoi3d(const std::vector<vec3> points, const double cell_width)
 			: cell_width(cell_width),
 			  dimensions((int)ceil(2./cell_width)+1)
 		{
-			CartesianGridLookup3d grid = CartesianGridLookup3d(points, 2.*cell_width);
+			CartesianGridCellList3d grid = CartesianGridCellList3d(points, 2.*cell_width);
 
-			// populate cells using the slower CartesianGridLookup3d implementation
+			// populate cells using the slower CartesianGridCellList3d implementation
 			cells = new int[cell_count()];
 			for (int side_id = 0; side_id < CUBE_SPHERE_SIDE_COUNT; ++side_id)
 			{
