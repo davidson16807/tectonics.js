@@ -6,9 +6,10 @@
 #include <array>		// arrays
 // #include <iostream>		// cout
 
+#include "vec1s_template.h"
 #include "vec2_template.h"
 #include "vec3_template.h"
-// #include "vec3s_template.h"
+#include "vec3s_template.h"
 
 #include "CartesianGridCellList3d.h"
 

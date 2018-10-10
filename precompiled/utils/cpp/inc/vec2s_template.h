@@ -361,7 +361,7 @@ namespace Rasters
 				out.values[i] = vec2_template<T>::dot(u.values[i], v);
 			}
 		}
-		static void cross (const vec2s_template<T,N>& u, const vec2_template<T> v, vec2s_template<T,N>& out) 
+		static void cross (const vec2s_template<T,N>& u, const vec2_template<T> v, vec1s_template<T,N>& out) 
 		{
 			for (int i = 0; i < N; ++i)
 			{
@@ -407,7 +407,7 @@ namespace Rasters
 				out.values[i] = vec2_template<T>::dot(u.values[i], v.values[i]);
 			}
 		}
-		static void cross (const vec2s_template<T,N>& u, const vec2s_template<T,N>& v, vec2s_template<T,N>& out) 
+		static void cross (const vec2s_template<T,N>& u, const vec2s_template<T,N>& v, vec1s_template<T,N>& out) 
 		{
 			for (int i = 0; i < N; ++i)
 			{
