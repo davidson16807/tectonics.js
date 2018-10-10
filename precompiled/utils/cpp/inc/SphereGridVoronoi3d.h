@@ -55,10 +55,10 @@ namespace Rasters
 		int* cells;
 		double cell_width;
 
-		int cell_count() {
+		int cell_count() const {
 			return CUBE_SPHERE_SIDE_COUNT * dimensions.x * dimensions.y;
 		}
-		int cell_id(const int side_id, const int xi, const int yi) {
+		int cell_id(const int side_id, const int xi, const int yi) const {
 			return  side_id * dimensions.x * dimensions.y
 				  + xi      * dimensions.y 
 				  + yi;
@@ -97,22 +97,40 @@ namespace Rasters
 			}
 		}
 
-		int nearest_id(const vec3 point)
+		int nearest_id(const vec3 point) const
 		{
-			const vec3 normalized = point.normalize();
-
 			const int side_id = 
-			  (( normalized.x > 0) << 0) +
-			  (( normalized.y > 0) << 1) +
-			  (( normalized.z > 0) << 2) ; 
+			  (( point.x > 0) << 0) +
+			  (( point.y > 0) << 1) +
+			  (( point.z > 0) << 2) ; 
 
-			const double x2d = CUBE_SPHERE_SIDE_X[side_id] * normalized;
-			const double y2d = CUBE_SPHERE_SIDE_Y[side_id] * normalized;
+			const double x2d = CUBE_SPHERE_SIDE_X[side_id] * point;
+			const double y2d = CUBE_SPHERE_SIDE_Y[side_id] * point;
 
 			const int xi2d = (x2d + 1.) / cell_width;
 			const int yi2d = (y2d + 1.) / cell_width;
 			
 			return cells[cell_id(side_id, xi2d, yi2d)];
+		}
+
+		template <int N>
+		void nearest_ids(const vec3s<N>& points, ints<N>& out) const
+		{
+			for (int i = 0; i < N; ++i)
+			{
+				const int side_id = 
+				  (( points[i].x > 0) << 0) +
+				  (( points[i].y > 0) << 1) +
+				  (( points[i].z > 0) << 2) ; 
+
+				const double x2d = CUBE_SPHERE_SIDE_X[side_id] * points[i];
+				const double y2d = CUBE_SPHERE_SIDE_Y[side_id] * points[i];
+
+				const int xi2d = (x2d + 1.) / cell_width;
+				const int yi2d = (y2d + 1.) / cell_width;
+
+				out[i] = cells[cell_id(side_id, xi2d, yi2d)];
+			}
 		}
 	};
 }

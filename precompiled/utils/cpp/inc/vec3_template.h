@@ -28,10 +28,107 @@ namespace Rasters
 
 		~vec3_template() {};
 
-		static T distance(const vec3_template<T> u, const vec3_template<T> v) 
+		static vec3_template<bool> gt(const vec3_template<T> u, const T a)
 		{
-			return (u-v).magnitude();
+			return vec3_template<bool>(
+				u.x > a,
+				u.y > a,
+				u.z > a
+			);
 		}
+		static vec3_template<bool> gte(const vec3_template<T> u, const T a)
+		{
+			return vec3_template<bool>(
+				u.x >= a,
+				u.y >= a,
+				u.z >= a
+			);
+		}
+		static vec3_template<bool> lt(const vec3_template<T> u, const T a)
+		{
+			return vec3_template<bool>(
+				u.x < a,
+				u.y < a,
+				u.z < a
+			);
+		}
+		static vec3_template<bool> lte(const vec3_template<T> u, const T a)
+		{
+			return vec3_template<bool>(
+				u.x <= a,
+				u.y <= a,
+				u.z <= a
+			);
+		}
+		static vec3_template<bool> eq(const vec3_template<T> u, const T a, const T threshold)
+		{
+			return vec3_template<bool>(
+				abs(u.x - a) < threshold,
+				abs(u.y - a) < threshold,
+				abs(u.z - a) < threshold
+			);
+		}
+		static vec3_template<bool> ne(const vec3_template<T> u, const T a, const T threshold)
+		{
+			return vec3_template<bool>(
+				abs(u.x - a) > threshold,
+				abs(u.y - a) > threshold,
+				abs(u.z - a) > threshold
+			);
+		}
+
+
+
+		static vec3_template<bool> gt(const vec3_template<T> u, const vec3_template<T> v)
+		{
+			return vec3_template<bool>(
+				u.x > v.x,
+				u.y > v.y,
+				u.z > v.z
+			);
+		}
+		static vec3_template<bool> gte(const vec3_template<T> u, const vec3_template<T> v)
+		{
+			return vec3_template<bool>(
+				u.x >= v.x,
+				u.y >= v.y,
+				u.z >= v.z
+			);
+		}
+		static vec3_template<bool> lt(const vec3_template<T> u, const vec3_template<T> v)
+		{
+			return vec3_template<bool>(
+				u.x < v.x,
+				u.y < v.y,
+				u.z < v.z
+			);
+		}
+		static vec3_template<bool> lte(const vec3_template<T> u, const vec3_template<T> v)
+		{
+			return vec3_template<bool>(
+				u.x <= v.x,
+				u.y <= v.y,
+				u.z <= v.z
+			);
+		}
+		static vec3_template<bool> eq(const vec3_template<T> u, const vec3_template<T> v, const T threshold)
+		{
+			return vec3_template<bool>(
+				abs(u.x - v.x) < threshold,
+				abs(u.y - v.y) < threshold,
+				abs(u.z - v.z) < threshold
+			);
+		}
+		static vec3_template<bool> ne(const vec3_template<T> u, const vec3_template<T> v, const T threshold)
+		{
+			return vec3_template<bool>(
+				abs(u.x - v.x) > threshold,
+				abs(u.y - v.y) > threshold,
+				abs(u.z - v.z) > threshold
+			);
+		}
+
+
 		static vec3_template<T> add(const vec3_template<T> u, const T a)
 		{
 			return vec3_template<T>(
@@ -109,6 +206,13 @@ namespace Rasters
 		}
 
 
+		static T distance(const vec3_template<T> u, const vec3_template<T> v) 
+		{
+			return (u-v).magnitude();
+		}
+
+
+
 
 		double magnitude() const
 		{
@@ -119,70 +223,99 @@ namespace Rasters
 			return *this / magnitude();
 		}
 
+
+
+
+
+
+
+
+		vec3_template<bool> operator>(const T a) const
+		{
+			return gt(*this, a);
+		}
+		vec3_template<bool> operator>=(const T a) const
+		{
+			return gte(*this, a);
+		}
+		vec3_template<bool> operator<(const T a) const
+		{
+			return lt(*this, a);
+		}
+		vec3_template<bool> operator<=(const T a) const
+		{
+			return lte(*this, a);
+		}
+		vec3_template<bool> operator==(const T a) const
+		{
+			return eq(*this, a, 1e-4);
+		}
+		vec3_template<bool> operator!=(const T a) const
+		{
+			return ne(*this, a, 1e-4);
+		}
+
+
+
+		vec3_template<bool> operator>(const vec3_template<T> v) const
+		{
+			return gt(*this, v);
+		}
+		vec3_template<bool> operator>=(const vec3_template<T> v) const
+		{
+			return gte(*this, v);
+		}
+		vec3_template<bool> operator<(const vec3_template<T> v) const
+		{
+			return lt(*this, v);
+		}
+		vec3_template<bool> operator<=(const vec3_template<T> v) const
+		{
+			return lte(*this, v);
+		}
+		vec3_template<bool> operator==(const vec3_template<T> v) const
+		{
+			return eq(*this, v, 1e-4);
+		}
+		vec3_template<bool> operator!=(const vec3_template<T> v) const
+		{
+			return ne(*this, v, 1e-4);
+		}
+
+
 		vec3_template<T> operator+(const T a) const
 		{
-			return vec3_template<T>(
-				x + a,
-				y + a,
-				z + a
-			);
+			return add(*this, a);
 		}
 		vec3_template<T> operator-(const T a) const
 		{
-			return vec3_template<T>(
-				x - a,
-				y - a,
-				z - a
-			);
+			return sub(*this, a);
 		}
 		vec3_template<T> operator*(const T a) const
 		{
-			return vec3_template<T>(
-				x * a,
-				y * a,
-				z * a
-			);
+			return mult(*this, a);
 		}
 		vec3_template<T> operator/(const T a) const
 		{
-			return vec3_template<T>(
-				x / a,
-				y / a,
-				z / a
-			);
+			return div(*this, a);
 		}
-		vec3_template<T> operator+(const vec3_template<T> u) const
+		vec3_template<T> operator+ (const vec3_template<T> v) const 
 		{
-			return vec3_template<T>(
-				x + u.x,
-				y + u.y,
-				z + u.z
-			);
+			return add (*this, v);
 		}
-		vec3_template<T> operator-(const vec3_template<T> u) const
+		vec3_template<T> operator- (const vec3_template<T> v) const 
 		{
-			return vec3_template<T>(
-				x - u.x,
-				y - u.y,
-				z - u.z
-			);
+			return sub (*this, v);
 		}
-		double operator*(const vec3_template<T> u) const
+		T operator* (const vec3_template<T> v) const 
 		{
-			return 
-				x * u.x+
-				y * u.y+
-				z * u.z
-			;
+			return dot (*this, v);
 		}
-		vec3_template<T> operator/(const vec3_template<T> u) const
+		vec3_template<T> operator/ (const vec3_template<T> v) const 
 		{
-			return vec3_template<T>(
-				x / u.x,
-				y / u.y,
-				z / u.z
-			);
+			return div (*this, v);
 		}
+
 
 	};
 
