@@ -20,12 +20,14 @@ namespace Rasters {
 		ivec3 dimensions;
 		double cell_width;
 
-		int cell_count() {
+		int cell_count() const
+		{
 			return dimensions.x * dimensions.y * dimensions.z 
 		         + dimensions.y * dimensions.z 
 		         + dimensions.z;
 		}
-		int cell_id(const int xi, const int yi, const int zi) {
+		int cell_id(const int xi, const int yi, const int zi) const
+		{
 			return  xi * dimensions.y * dimensions.z
 				  + yi * dimensions.z 
 				  + zi;
@@ -77,17 +79,12 @@ namespace Rasters {
 				add(i, aos[i]);
 			}
 		}
-		int nearest_id(const vec3 point)
+		int nearest_id(const vec3 point) const
 		{
 			const int xi = std::clamp((int)ceil((point.x - min_bounds.x) / cell_width), 0, dimensions.x-1);
 			const int yi = std::clamp((int)ceil((point.y - min_bounds.y) / cell_width), 0, dimensions.y-1);
 			const int zi = std::clamp((int)ceil((point.z - min_bounds.z) / cell_width), 0, dimensions.z-1);
 
-    		// std::cout << "min_bounds" << min_bounds.x << " " << min_bounds.y << " " << min_bounds.z << " " << std::endl; 
-    		// std::cout << "temp" << ((point.x - min_bounds.x) / cell_width) << std::endl; 
-    		// std::cout << "point" << point.x << " " << point.y << " " << point.z << " " << std::endl; 
-    		// std::cout << "id" << xi << " " << yi << " " << zi << " " << std::endl; 
-			// std::cout << "cell_id" << cell_id(xi, yi, zi) << std::endl; 
 			std::vector<std::pair<int, vec3>> & neighbors = cells[cell_id(xi, yi, zi)];
 
 			if (neighbors.size() < 1)
