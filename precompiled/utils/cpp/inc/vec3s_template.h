@@ -4,12 +4,12 @@
 #include <vector>       // vectors
 
 #include "vec3_template.h"
-#include "dataseries_template.h"
+#include "numerics_template.h"
 
-namespace Rasters
+namespace rasters
 {
 	template <class T, int N>
-	class vec3s_template : dataseries_template<vec3_template<T>, N>
+	class vec3s_template : numerics_template<vec3_template<T>, N>
 	{
 		vec3_template<T> values[N];
 
@@ -26,7 +26,7 @@ namespace Rasters
 			}
 		};
 
-		vec3s_template(const dataseries_template<T,N>& x) 
+		vec3s_template(const numerics_template<T,N>& x) 
 		{
 			for (int i = 0; i < N; ++i)
 			{
@@ -46,7 +46,7 @@ namespace Rasters
 			}
 		};
 
-		vec3s_template(const dataseries_template<T,N>& x, 	const T y, 					const T z)
+		vec3s_template(const numerics_template<T,N>& x, 	const T y, 					const T z)
 		{
 			for (int i = 0; i < N; ++i)
 			{
@@ -56,7 +56,7 @@ namespace Rasters
 			}
 		};
 
-		vec3s_template(const T x, 					const dataseries_template<T,N>& y, const T z)
+		vec3s_template(const T x, 					const numerics_template<T,N>& y, const T z)
 		{
 			for (int i = 0; i < N; ++i)
 			{
@@ -66,7 +66,7 @@ namespace Rasters
 			}
 		};
 
-		vec3s_template(const dataseries_template<T,N>& x, 	const dataseries_template<T,N>& y, const T z)
+		vec3s_template(const numerics_template<T,N>& x, 	const numerics_template<T,N>& y, const T z)
 		{
 			for (int i = 0; i < N; ++i)
 			{
@@ -75,7 +75,7 @@ namespace Rasters
 				values[i].z = z;
 			}
 		};
-		vec3s_template(const T x, 					const T y, 					const dataseries_template<T,N>&  z)
+		vec3s_template(const T x, 					const T y, 					const numerics_template<T,N>&  z)
 		{
 			for (int i = 0; i < N; ++i)
 			{
@@ -85,7 +85,7 @@ namespace Rasters
 			}
 		};
 
-		vec3s_template(const dataseries_template<T,N>& x, 	const T y, 					const dataseries_template<T,N>&  z)
+		vec3s_template(const numerics_template<T,N>& x, 	const T y, 					const numerics_template<T,N>&  z)
 		{
 			for (int i = 0; i < N; ++i)
 			{
@@ -95,7 +95,7 @@ namespace Rasters
 			}
 		};
 
-		vec3s_template(const T x, 					const dataseries_template<T,N>& y, const dataseries_template<T,N>&  z)
+		vec3s_template(const T x, 					const numerics_template<T,N>& y, const numerics_template<T,N>&  z)
 		{
 			for (int i = 0; i < N; ++i)
 			{
@@ -105,7 +105,7 @@ namespace Rasters
 			}
 		};
 
-		vec3s_template(const dataseries_template<T,N>& x, 	const dataseries_template<T,N>& y, const dataseries_template<T,N>&  z)
+		vec3s_template(const numerics_template<T,N>& x, 	const numerics_template<T,N>& y, const numerics_template<T,N>&  z)
 		{
 			for (int i = 0; i < N; ++i)
 			{
@@ -133,7 +133,7 @@ namespace Rasters
 		~vec3s_template() {};
 
 
-		static void dot (const vec3s_template<T,N>& u, const vec3_template<T> v, dataseries_template<T,N>& out) {
+		static void dot (const vec3s_template<T,N>& u, const vec3_template<T> v, numerics_template<T,N>& out) {
 			for (int i = 0; i < N; ++i)
 			{
 				out.values[i] = vec3_template<T>::dot(u.values[i], v);
@@ -152,7 +152,7 @@ namespace Rasters
 				out.values[i] = vec3_template<T>::hadamard(u.values[i], v);
 			}
 		}
-		static void distance(const vec3s_template<T,N>& u, const vec3_template<T> v, dataseries_template<T,N>& out) 
+		static void distance(const vec3s_template<T,N>& u, const vec3_template<T> v, numerics_template<T,N>& out) 
 		{
 			for (int i = 0; i < N; ++i)
 			{
@@ -161,7 +161,7 @@ namespace Rasters
 		}
 
 
-		static void dot (const vec3s_template<T,N>& u, const vec3s_template<T,N>& v, dataseries_template<T,N>& out) {
+		static void dot (const vec3s_template<T,N>& u, const vec3s_template<T,N>& v, numerics_template<T,N>& out) {
 			for (int i = 0; i < N; ++i)
 			{
 				out.values[i] = vec3_template<T>::dot(u.values[i], v.values[i]);
@@ -180,7 +180,7 @@ namespace Rasters
 				out.values[i] = vec3_template<T>::hadamard(u.values[i], v.values[i]);
 			}
 		}
-		static void distance(const vec3s_template<T,N>& u, const vec3s_template<T,N>& v, dataseries_template<T,N>& out) 
+		static void distance(const vec3s_template<T,N>& u, const vec3s_template<T,N>& v, numerics_template<T,N>& out) 
 		{
 			for (int i = 0; i < N; ++i)
 			{
@@ -188,23 +188,21 @@ namespace Rasters
 			}
 		}
 
-
-		static void magnitude(const vec3s_template<T,N>& u, dataseries_template<T,N>& out) 
+		static void magnitude(const vec3s_template<T,N>& u, numerics_template<T,N>& out) 
 		{
 			for (int i = 0; i < N; ++i)
 			{
 				out.values[i] = u.values[i].magnitude();
 			}
 		}
-		static void normalize(const vec3s_template<T,N>& u, dataseries_template<T,N>& out) 
+
+		static void normalize(const vec3s_template<T,N>& u, numerics_template<T,N>& out) 
 		{
 			for (int i = 0; i < N; ++i)
 			{
 				out.values[i] = u.values[i].normalize();
 			}
 		}
-
-
 
 		vec3_template<T> operator[](const int i) const
 		{

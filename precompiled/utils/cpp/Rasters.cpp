@@ -11,7 +11,7 @@
 #include <emscripten/bind.h>
 
 using namespace emscripten;
-using namespace Rasters;
+using namespace rasters;
 
 EMSCRIPTEN_BINDINGS(rasters)
 {

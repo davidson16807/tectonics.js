@@ -9,7 +9,7 @@
 #include "vec3_template.h"
 // #include "vec3s_template.h"
 
-namespace Rasters {
+namespace rasters {
 	
 	// describes a 3d cartesian grid where every cell houses a list of ids representing nearby points
 	class CartesianGridCellList3d

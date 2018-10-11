@@ -6,21 +6,21 @@
 #include <array>		// arrays
 // #include <iostream>		// cout
 
-#include "vec1s_template.h"
+#include "numerics_template.h"
 #include "vec2_template.h"
 #include "vec3_template.h"
 #include "vec3s_template.h"
 
 #include "CartesianGridCellList3d.h"
 
-namespace Rasters
+namespace rasters
 {
 
 	// describes a 3d unit cube sphere where every cell houses an id representing the nearest point
 	// uses CartesianGridCellList3d behind the scenes to optimize initialization
 	class SphereGridVoronoi3d
 	{
-		const std::array<vec3, 8> CUBE_SPHERE_SIDE_Z = {
+		const std::array<vec3, 8> OCTAHEDRON_SIDE_GRID_Z = {
 			vec3(-1,-1,-1).normalize(),
 			vec3( 1,-1,-1).normalize(),
 			vec3(-1, 1,-1).normalize(),
@@ -30,34 +30,34 @@ namespace Rasters
 			vec3(-1, 1, 1).normalize(),
 			vec3( 1, 1, 1).normalize()
 		};
-		const std::array<vec3, 8> CUBE_SPHERE_SIDE_X = {
-			vec3::cross(CUBE_SPHERE_SIDE_Z[0], vec3(0,0,1)).normalize(),
-			vec3::cross(CUBE_SPHERE_SIDE_Z[1], vec3(0,0,1)).normalize(),
-			vec3::cross(CUBE_SPHERE_SIDE_Z[2], vec3(0,0,1)).normalize(),
-			vec3::cross(CUBE_SPHERE_SIDE_Z[3], vec3(0,0,1)).normalize(),
-			vec3::cross(CUBE_SPHERE_SIDE_Z[4], vec3(0,0,1)).normalize(),
-			vec3::cross(CUBE_SPHERE_SIDE_Z[5], vec3(0,0,1)).normalize(),
-			vec3::cross(CUBE_SPHERE_SIDE_Z[6], vec3(0,0,1)).normalize(),
-			vec3::cross(CUBE_SPHERE_SIDE_Z[7], vec3(0,0,1)).normalize()
+		const std::array<vec3, 8> OCTAHEDRON_SIDE_X = {
+			vec3::cross(OCTAHEDRON_SIDE_GRID_Z[0], vec3(0,0,1)).normalize(),
+			vec3::cross(OCTAHEDRON_SIDE_GRID_Z[1], vec3(0,0,1)).normalize(),
+			vec3::cross(OCTAHEDRON_SIDE_GRID_Z[2], vec3(0,0,1)).normalize(),
+			vec3::cross(OCTAHEDRON_SIDE_GRID_Z[3], vec3(0,0,1)).normalize(),
+			vec3::cross(OCTAHEDRON_SIDE_GRID_Z[4], vec3(0,0,1)).normalize(),
+			vec3::cross(OCTAHEDRON_SIDE_GRID_Z[5], vec3(0,0,1)).normalize(),
+			vec3::cross(OCTAHEDRON_SIDE_GRID_Z[6], vec3(0,0,1)).normalize(),
+			vec3::cross(OCTAHEDRON_SIDE_GRID_Z[7], vec3(0,0,1)).normalize()
 		};
-		const std::array<vec3, 8> CUBE_SPHERE_SIDE_Y = {
-			vec3::cross(CUBE_SPHERE_SIDE_Z[0], CUBE_SPHERE_SIDE_X[0] ).normalize(),
-			vec3::cross(CUBE_SPHERE_SIDE_Z[1], CUBE_SPHERE_SIDE_X[1] ).normalize(),
-			vec3::cross(CUBE_SPHERE_SIDE_Z[2], CUBE_SPHERE_SIDE_X[2] ).normalize(),
-			vec3::cross(CUBE_SPHERE_SIDE_Z[3], CUBE_SPHERE_SIDE_X[3] ).normalize(),
-			vec3::cross(CUBE_SPHERE_SIDE_Z[4], CUBE_SPHERE_SIDE_X[4] ).normalize(),
-			vec3::cross(CUBE_SPHERE_SIDE_Z[5], CUBE_SPHERE_SIDE_X[5] ).normalize(),
-			vec3::cross(CUBE_SPHERE_SIDE_Z[6], CUBE_SPHERE_SIDE_X[6] ).normalize(),
-			vec3::cross(CUBE_SPHERE_SIDE_Z[7], CUBE_SPHERE_SIDE_X[7] ).normalize()
+		const std::array<vec3, 8> OCTAHEDRON_SIDE_Y = {
+			vec3::cross(OCTAHEDRON_SIDE_GRID_Z[0], OCTAHEDRON_SIDE_X[0] ).normalize(),
+			vec3::cross(OCTAHEDRON_SIDE_GRID_Z[1], OCTAHEDRON_SIDE_X[1] ).normalize(),
+			vec3::cross(OCTAHEDRON_SIDE_GRID_Z[2], OCTAHEDRON_SIDE_X[2] ).normalize(),
+			vec3::cross(OCTAHEDRON_SIDE_GRID_Z[3], OCTAHEDRON_SIDE_X[3] ).normalize(),
+			vec3::cross(OCTAHEDRON_SIDE_GRID_Z[4], OCTAHEDRON_SIDE_X[4] ).normalize(),
+			vec3::cross(OCTAHEDRON_SIDE_GRID_Z[5], OCTAHEDRON_SIDE_X[5] ).normalize(),
+			vec3::cross(OCTAHEDRON_SIDE_GRID_Z[6], OCTAHEDRON_SIDE_X[6] ).normalize(),
+			vec3::cross(OCTAHEDRON_SIDE_GRID_Z[7], OCTAHEDRON_SIDE_X[7] ).normalize()
 		};
-		const int CUBE_SPHERE_SIDE_COUNT = 8;	// number of sides on the data cube
+		const int OCTAHEDRON_SIDE_COUNT = 8;	// number of sides on the data cube
 
 		ivec2 dimensions; // dimensions of the grid on each side of the data cube 
 		int* cells;
 		double cell_width;
 
 		int cell_count() const {
-			return CUBE_SPHERE_SIDE_COUNT * dimensions.x * dimensions.y;
+			return OCTAHEDRON_SIDE_COUNT * dimensions.x * dimensions.y;
 		}
 		int cell_id(const int side_id, const int xi, const int yi) const {
 			return  side_id * dimensions.x * dimensions.y
@@ -75,7 +75,7 @@ namespace Rasters
 
 			// populate cells using the slower CartesianGridCellList3d implementation
 			cells = new int[cell_count()];
-			for (int side_id = 0; side_id < CUBE_SPHERE_SIDE_COUNT; ++side_id)
+			for (int side_id = 0; side_id < OCTAHEDRON_SIDE_COUNT; ++side_id)
 			{
 				for (int xi2d = 0; xi2d < dimensions.x; ++xi2d)
 				{
@@ -88,9 +88,9 @@ namespace Rasters
 						double z2d = sqrt(std::max(1. - (x2d*x2d) - (y2d*y2d), 0.));
 
 						vec3 cell_pos = 
-							CUBE_SPHERE_SIDE_X[side_id] * x2d +
-							CUBE_SPHERE_SIDE_Y[side_id] * y2d +
-							CUBE_SPHERE_SIDE_Z[side_id] * z2d ;
+							OCTAHEDRON_SIDE_X[side_id] * x2d +
+							OCTAHEDRON_SIDE_Y[side_id] * y2d +
+							OCTAHEDRON_SIDE_GRID_Z[side_id] * z2d ;
 
 						cells[cell_id(side_id, xi2d, yi2d)] = grid.nearest_id(cell_pos);
 					}
@@ -105,8 +105,8 @@ namespace Rasters
 			  (( point.y > 0) << 1) +
 			  (( point.z > 0) << 2) ; 
 
-			const double x2d = CUBE_SPHERE_SIDE_X[side_id] * point;
-			const double y2d = CUBE_SPHERE_SIDE_Y[side_id] * point;
+			const double x2d = OCTAHEDRON_SIDE_X[side_id] * point;
+			const double y2d = OCTAHEDRON_SIDE_Y[side_id] * point;
 
 			const int xi2d = (x2d + 1.) / cell_width;
 			const int yi2d = (y2d + 1.) / cell_width;
@@ -117,6 +117,9 @@ namespace Rasters
 		template <int N>
 		void nearest_ids(const vec3s<N>& points, ints<N>& out) const
 		{
+			int side_id = 0;
+			vec2 projection = vec2();
+			ivec2 grid_pos = ivec2(); 
 			for (int i = 0; i < N; ++i)
 			{
 				const int side_id = 
@@ -124,13 +127,12 @@ namespace Rasters
 				  (( points[i].y > 0) << 1) +
 				  (( points[i].z > 0) << 2) ; 
 
-				const double x2d = CUBE_SPHERE_SIDE_X[side_id] * points[i];
-				const double y2d = CUBE_SPHERE_SIDE_Y[side_id] * points[i];
+				projection.x = OCTAHEDRON_SIDE_X[side_id] * points[i];
+				projection.y = OCTAHEDRON_SIDE_Y[side_id] * points[i];
 
-				const int xi2d = (x2d + 1.) / cell_width;
-				const int yi2d = (y2d + 1.) / cell_width;
+				grid_pos = (projection + 1.) / cell_width;
 
-				out[i] = cells[cell_id(side_id, xi2d, yi2d)];
+				out[i] = cells[cell_id(side_id, grid_pos.x, grid_pos.y)];
 			}
 		}
 	};

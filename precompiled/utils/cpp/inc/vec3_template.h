@@ -3,7 +3,7 @@
 #include <math.h>       // ceil, round 
 #include "vec2_template.h"
 
-namespace Rasters
+namespace rasters
 {
 	template <class T>
 	struct vec3_template
