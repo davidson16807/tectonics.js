@@ -20,6 +20,39 @@ namespace rasters
 
 		~numerics_template() {};
 
+		static T min(const numerics_template<T,N>& u)
+		{
+			T out = u.values[0];
+			for (int i = 0; i < N; ++i)
+			{
+				out = u.values[i] < out? u.values[i] : out;
+			}
+			return out;
+		}
+		static T max(const numerics_template<T,N>& u)
+		{
+			T out = u.values[0];
+			for (int i = 0; i < N; ++i)
+			{
+				out = u.values[i] > out? u.values[i] : out;
+			}
+			return out;
+		}
+		static void min(const numerics_template<T,N>& u, const numerics_template<T,N>& v, numerics_template<T,N>& out)
+		{
+			for (int i = 0; i < N; ++i)
+			{
+				out.values[i] = u.values[i] <= v.values[i]? u.values[i] : v.values[i];
+			}
+		}
+		static void max(const numerics_template<T,N>& u, const numerics_template<T,N>& v, numerics_template<T,N>& out)
+		{
+			for (int i = 0; i < N; ++i)
+			{
+				out.values[i] = u.values[i] >= v.values[i]? u.values[i] : v.values[i];
+			}
+		}
+
 		template <class T2>
 		static bool eq(const numerics_template<T,N>& u, const T2 a)
 		{
@@ -416,10 +449,9 @@ namespace rasters
 	};
 
 	template <int N>
-	using floats = numerics_template<double, N>;
+	using floats = numerics_template<float, N>;
 	template <int N>
-	using ints = numerics_template<int, N>;
+	using ints = numerics_template<vec3_template<int>, N>;
 	template <int N>
-	using bools = numerics_template<bool, N>;
-
+	using bools = numerics_template<vec3_template<bool>, N>;
 }

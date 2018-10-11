@@ -201,7 +201,7 @@ namespace rasters
 	};
 
 	template <int N>
-	using vec3s = numerics_template<vec3_template<double>, N>;
+	using vec3s = numerics_template<vec3_template<float>, N>;
 	template <int N>
 	using ivec3s = numerics_template<vec3_template<int>, N>;
 	template <int N>
