@@ -105,8 +105,8 @@ namespace rasters
 			  (( point.y > 0) << 1) +
 			  (( point.z > 0) << 2) ; 
 
-			const double x2d = OCTAHEDRON_SIDE_X[side_id] * point;
-			const double y2d = OCTAHEDRON_SIDE_Y[side_id] * point;
+			const double x2d = vec3::dot( OCTAHEDRON_SIDE_X[side_id], point );
+			const double y2d = vec3::dot( OCTAHEDRON_SIDE_Y[side_id], point );
 
 			const int xi2d = (x2d + 1.) / cell_width;
 			const int yi2d = (y2d + 1.) / cell_width;
@@ -115,20 +115,20 @@ namespace rasters
 		}
 
 		template <int N>
-		void nearest_ids(const vec3s<N>& points, ints<N>& out) const
+		void nearest_ids(const vec3s& points, ints& out) const
 		{
 			int side_id = 0;
 			vec2 projection = vec2();
 			ivec2 grid_pos = ivec2(); 
-			for (int i = 0; i < N; ++i)
+			for (unsigned int i = 0; i < N; ++i)
 			{
-				const int side_id = 
+				const unsigned int side_id = 
 				  (( points[i].x > 0) << 0) +
 				  (( points[i].y > 0) << 1) +
 				  (( points[i].z > 0) << 2) ; 
 
-				projection.x = OCTAHEDRON_SIDE_X[side_id] * points[i];
-				projection.y = OCTAHEDRON_SIDE_Y[side_id] * points[i];
+				projection.x = vec3::dot( OCTAHEDRON_SIDE_X[side_id], points[i] );
+				projection.y = vec3::dot( OCTAHEDRON_SIDE_Y[side_id], points[i] );
 
 				grid_pos = (projection + 1.) / cell_width;
 

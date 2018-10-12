@@ -227,59 +227,62 @@ namespace rasters
 
 
 
+		// NOTE: THESE ARE NOT COMPONENT-WISE!
+		// THIS IS DONE FOR CONSISTENCY WITH OTHER DATATYPES THAT ALSO RETURN BOOL,
+		// AND ALSO TO MIMIC GLSL's "vec3" DATATYPE
+		bool operator>(const T a) const
+		{
+			return this->magnitude() > a;
+		}
+		bool operator>=(const T a) const
+		{
+			return this->magnitude() >= a;
+		}
+		bool operator<(const T a) const
+		{
+			return this->magnitude() < a;
+		}
+		bool operator<=(const T a) const
+		{
+			return this->magnitude() <= a;
+		}
+		bool operator==(const T a) const
+		{
+			return ((*this)-a).magnitude() < 1e-4;
+		}
+		bool operator!=(const T a) const
+		{
+			return ((*this)-a).magnitude() > 1e-4;
+		}
 
 
 
-		vec3_template<bool> operator>(const T a) const
+		// NOTE: THESE ARE NOT COMPONENT-WISE!
+		// THIS IS DONE FOR CONSISTENCY WITH OTHER DATATYPES THAT ALSO RETURN BOOL,
+		// AND ALSO TO MIMIC GLSL's "vec3" DATATYPE
+		bool operator>(const vec3_template<T> a)
 		{
-			return gt(*this, a);
+			return this->magnitude() > a.magnitude();
 		}
-		vec3_template<bool> operator>=(const T a) const
+		bool operator>=(const vec3_template<T> a)
 		{
-			return gte(*this, a);
+			return this->magnitude() >= a.magnitude();
 		}
-		vec3_template<bool> operator<(const T a) const
+		bool operator<(const vec3_template<T> a)
 		{
-			return lt(*this, a);
+			return this->magnitude() < a.magnitude();
 		}
-		vec3_template<bool> operator<=(const T a) const
+		bool operator<=(const vec3_template<T> a)
 		{
-			return lte(*this, a);
+			return this->magnitude() <= a.magnitude();
 		}
-		vec3_template<bool> operator==(const T a) const
+		bool operator==(const vec3_template<T> a)
 		{
-			return eq(*this, a, 1e-4);
+			return ((*this)-a).magnitude() < 1e-4;
 		}
-		vec3_template<bool> operator!=(const T a) const
+		bool operator!=(const vec3_template<T> a)
 		{
-			return ne(*this, a, 1e-4);
-		}
-
-
-
-		vec3_template<bool> operator>(const vec3_template<T> v) const
-		{
-			return gt(*this, v);
-		}
-		vec3_template<bool> operator>=(const vec3_template<T> v) const
-		{
-			return gte(*this, v);
-		}
-		vec3_template<bool> operator<(const vec3_template<T> v) const
-		{
-			return lt(*this, v);
-		}
-		vec3_template<bool> operator<=(const vec3_template<T> v) const
-		{
-			return lte(*this, v);
-		}
-		vec3_template<bool> operator==(const vec3_template<T> v) const
-		{
-			return eq(*this, v, 1e-4);
-		}
-		vec3_template<bool> operator!=(const vec3_template<T> v) const
-		{
-			return ne(*this, v, 1e-4);
+			return ((*this)-a).magnitude() > 1e-4;
 		}
 
 
@@ -299,6 +302,9 @@ namespace rasters
 		{
 			return div(*this, a);
 		}
+
+
+
 		vec3_template<T> operator+ (const vec3_template<T> v) const 
 		{
 			return add (*this, v);
@@ -307,19 +313,23 @@ namespace rasters
 		{
 			return sub (*this, v);
 		}
-		T operator* (const vec3_template<T> v) const 
+		// NOTE: THIS IS NOT THE DOT PRODUCT!
+		// THIS IS COMPONENT-WISE MULTIPLICATION
+		// THIS IS DONE FOR CONSISTENCY WITH OTHER DATATYPES THAT DEMONSTRATE THE "CLOSURE" PROPERTY
+		// AND ALSO TO MIMIC GLSL's "vec3" DATATYPE
+		vec3_template<T> operator* (const vec3_template<T> v) const 
 		{
-			return dot (*this, v);
+			return hadamard(*this, v);
 		}
 		vec3_template<T> operator/ (const vec3_template<T> v) const 
 		{
 			return div (*this, v);
 		}
 
-
 	};
 
-	using vec3 = vec3_template<double>;
+	using vec3 = vec3_template<float>;
 	using ivec3 = vec3_template<int>;
+	using uivec3 = vec3_template<unsigned int>;
 	using bvec3 = vec3_template<bool>;
 }

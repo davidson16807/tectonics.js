@@ -8,191 +8,202 @@
 
 namespace rasters
 {
-	template<class T, int N>
-	class numerics_template<vec3_template<T>, N>{
-		T values[N];
+	template<class T>
+	class vec3s_template : numerics_template<vec3_template<T>>{
 
 	public:
-		numerics_template(const T x) 
+
+		vec3s_template(const unsigned int N) 
 		{
-			for (int i = 0; i < N; ++i)
+			this->N = N;
+			this->values = new T[this->N];
+		};
+
+		vec3s_template(const unsigned int N, const T x)  
+		{
+			this->N = N;
+			this->values = new T[this->N];
+			for (int i = 0; i < this->N; ++i)
 			{
-				values[i].x = x;
-				values[i].y = x;
-				values[i].z = x;
+				this->values[i].x = x;
+				this->values[i].y = x;
+				this->values[i].z = x;
 			}
 		};
 
-		numerics_template(const numerics_template<T,N>& x) 
+		vec3s_template(const numerics_template<T>& x)   
 		{
-			for (int i = 0; i < N; ++i)
+			this->N = x.N;
+			this->values = new T[this->N];
+			for (int i = 0; i < this->N; ++i)
 			{
-				values[i].x = x[i];
-				values[i].y = x[i];
-				values[i].z = x[i];
+				this->values[i].x = x[i];
+				this->values[i].y = x[i];
+				this->values[i].z = x[i];
 			}
 		};
 
-		numerics_template(const T x, const T y, const T z)
+		vec3s_template(const unsigned int N, const T x, const T y, const T z)  
 		{
-			for (int i = 0; i < N; ++i)
+			this->N = N;
+			this->values = new T[this->N];
+			for (int i = 0; i < this->N; ++i)
 			{
-				values[i].x = x;
-				values[i].y = y;
-				values[i].z = z;
+				this->values[i].x = x;
+				this->values[i].y = y;
+				this->values[i].z = z;
 			}
 		};
-		numerics_template(const numerics_template<T,N>& x, const T y, const T z)
+		vec3s_template(const numerics_template<T>& x, const T y, const T z)  
 		{
-			for (int i = 0; i < N; ++i)
+			this->N = x.N;
+			this->values = new T[this->N];
+			for (int i = 0; i < this->N; ++i)
 			{
-				values[i].x = x[i];
-				values[i].y = y;
-				values[i].z = z;
-			}
-		};
-
-		numerics_template(const T x, const numerics_template<T,N>& y, const T z)
-		{
-			for (int i = 0; i < N; ++i)
-			{
-				values[i].x = x;
-				values[i].y = y[i];
-				values[i].z = z;
+				this->values[i].x = x[i];
+				this->values[i].y = y;
+				this->values[i].z = z;
 			}
 		};
 
-		numerics_template(const numerics_template<T,N>& x, const numerics_template<T,N>& y, const T z)
+		vec3s_template(const T x, const numerics_template<T>& y, const T z)  
 		{
-			for (int i = 0; i < N; ++i)
+			this->N = y.N;
+			this->values = new T[this->N];
+			for (int i = 0; i < this->N; ++i)
 			{
-				values[i].x = x[i];
-				values[i].y = y[i];
-				values[i].z = z;
+				this->values[i].x = x;
+				this->values[i].y = y[i];
+				this->values[i].z = z;
 			}
 		};
 
-		numerics_template(const T x, const T y, const numerics_template<T,N>&  z)
+		vec3s_template(const numerics_template<T>& x, const numerics_template<T>& y, const T z)   
 		{
-			for (int i = 0; i < N; ++i)
+			this->N = y.N;
+			this->values = new T[this->N];
+			for (int i = 0; i < this->N; ++i)
 			{
-				values[i].x = x;
-				values[i].y = y;
-				values[i].z = z[i];
+				this->values[i].x = x[i];
+				this->values[i].y = y[i];
+				this->values[i].z = z;
 			}
 		};
 
-		numerics_template(const numerics_template<T,N>& x, const T y, const numerics_template<T,N>&  z)
+		vec3s_template(const T x, const T y, const numerics_template<T>&  z)  
 		{
-			for (int i = 0; i < N; ++i)
+			this->N = z.N;
+			this->values = new T[this->N];
+			for (int i = 0; i < this->N; ++i)
 			{
-				values[i].x = x[i];
-				values[i].y = y;
-				values[i].z = z[i];
+				this->values[i].x = x;
+				this->values[i].y = y;
+				this->values[i].z = z[i];
 			}
 		};
 
-		numerics_template(const T x, const numerics_template<T,N>& y, const numerics_template<T,N>&  z)
+		vec3s_template(const numerics_template<T>& x, const T y, const numerics_template<T>&  z)  
 		{
-			for (int i = 0; i < N; ++i)
+			this->N = z.N;
+			this->values = new T[this->N];
+			for (int i = 0; i < this->N; ++i)
 			{
-				values[i].x = x;
-				values[i].y = y[i];
-				values[i].z = z[i];
+				this->values[i].x = x[i];
+				this->values[i].y = y;
+				this->values[i].z = z[i];
 			}
 		};
 
-		numerics_template(const numerics_template<T,N>& x, const numerics_template<T,N>& y, const numerics_template<T,N>&  z)
+		vec3s_template(const T x, const numerics_template<T>& y, const numerics_template<T>&  z)  
 		{
-			for (int i = 0; i < N; ++i)
+			this->N = z.N;
+			this->values = new T[this->N];
+			for (int i = 0; i < this->N; ++i)
 			{
-				values[i].x = x[i];
-				values[i].y = y[i];
-				values[i].z = z[i];
+				this->values[i].x = x;
+				this->values[i].y = y[i];
+				this->values[i].z = z[i];
 			}
 		};
 
-		numerics_template(const vec3_template<T> u)
+		vec3s_template(const numerics_template<T>& x, const numerics_template<T>& y, const numerics_template<T>&  z)  
 		{
-			for (int i = 0; i < N; ++i)
+			this->N = z.N;
+			this->values = new T[this->N];
+			for (int i = 0; i < this->N; ++i)
 			{
-				values[i] = u;
-			}
-		};
-		numerics_template(const numerics_template<vec3_template<T>,N>& u)
-		{
-			for (int i = 0; i < N; ++i)
-			{
-				values[i] = u.values[i];
+				this->values[i].x = x[i];
+				this->values[i].y = y[i];
+				this->values[i].z = z[i];
 			}
 		};
 
-		static void dot (const numerics_template<vec3_template<T>,N>& u, const vec3_template<T> v, numerics_template<T,N>& out) {
-			for (int i = 0; i < N; ++i)
+		static void dot (const vec3s_template<T>& u, const vec3_template<T> v, numerics_template<T>& out) {
+			for (int i = 0; i < u.N; ++i)
 			{
 				out.values[i] = vec3_template<T>::dot(u.values[i], v);
 			}
 		}
-		static void cross (const numerics_template<vec3_template<T>,N>& u, const vec3_template<T> v, numerics_template<vec3_template<T>,N>& out) 
+		static void cross (const vec3s_template<T>& u, const vec3_template<T> v, vec3s_template<T>& out) 
 		{
-			for (int i = 0; i < N; ++i)
+			for (int i = 0; i < u.N; ++i)
 			{
 				out.values[i] = vec3_template<T>::cross(u.values[i], v);
 			}
 		}
-		static void hadamard (const numerics_template<vec3_template<T>,N>& u, const vec3_template<T> v, numerics_template<vec3_template<T>,N>& out) {
-			for (int i = 0; i < N; ++i)
+		static void hadamard (const vec3s_template<T>& u, const vec3_template<T> v, vec3s_template<T>& out) {
+			for (int i = 0; i < u.N; ++i)
 			{
 				out.values[i] = vec3_template<T>::hadamard(u.values[i], v);
 			}
 		}
-		static void distance(const numerics_template<vec3_template<T>,N>& u, const vec3_template<T> v, numerics_template<T,N>& out) 
+		static void distance(const vec3s_template<T>& u, const vec3_template<T> v, numerics_template<T>& out) 
 		{
-			for (int i = 0; i < N; ++i)
+			for (int i = 0; i < u.N; ++i)
 			{
 				out.values[i] = vec3_template<T>::distance(u.values[i], v);
 			}
 		}
 
 
-		static void dot (const numerics_template<vec3_template<T>,N>& u, const numerics_template<vec3_template<T>,N>& v, numerics_template<T,N>& out) {
-			for (int i = 0; i < N; ++i)
+		static void dot (const vec3s_template<T>& u, const vec3s_template<T>& v, numerics_template<T>& out) {
+			for (int i = 0; i < u.N; ++i)
 			{
 				out.values[i] = vec3_template<T>::dot(u.values[i], v.values[i]);
 			}
 		}
-		static void cross (const numerics_template<vec3_template<T>,N>& u, const numerics_template<vec3_template<T>,N>& v, numerics_template<vec3_template<T>,N>& out) 
+		static void cross (const vec3s_template<T>& u, const vec3s_template<T>& v, vec3s_template<T>& out) 
 		{
-			for (int i = 0; i < N; ++i)
+			for (int i = 0; i < u.N; ++i)
 			{
 				out.values[i] = vec3_template<T>::cross(u.values[i], v.values[i]);
 			}
 		}
-		static void hadamard (const numerics_template<vec3_template<T>,N>& u, const numerics_template<vec3_template<T>,N>& v, numerics_template<vec3_template<T>,N>& out) {
-			for (int i = 0; i < N; ++i)
+		static void hadamard (const vec3s_template<T>& u, const vec3s_template<T>& v, vec3s_template<T>& out) {
+			for (int i = 0; i < u.N; ++i)
 			{
 				out.values[i] = vec3_template<T>::hadamard(u.values[i], v.values[i]);
 			}
 		}
-		static void distance(const numerics_template<vec3_template<T>,N>& u, const numerics_template<vec3_template<T>,N>& v, numerics_template<T,N>& out) 
+		static void distance(const vec3s_template<T>& u, const vec3s_template<T>& v, numerics_template<T>& out) 
 		{
-			for (int i = 0; i < N; ++i)
+			for (int i = 0; i < u.N; ++i)
 			{
 				out.values[i] = vec3_template<T>::distance(u.values[i], v.values[i]);
 			}
 		}
 
-		static void magnitude(const numerics_template<vec3_template<T>,N>& u, numerics_template<T,N>& out) 
+		static void magnitude(const vec3s_template<T>& u, numerics_template<T>& out) 
 		{
-			for (int i = 0; i < N; ++i)
+			for (int i = 0; i < u.N; ++i)
 			{
 				out.values[i] = u.values[i].magnitude();
 			}
 		}
 
-		static void normalize(const numerics_template<vec3_template<T>,N>& u, numerics_template<T,N>& out) 
+		static void normalize(const vec3s_template<T>& u, numerics_template<T>& out) 
 		{
-			for (int i = 0; i < N; ++i)
+			for (int i = 0; i < u.N; ++i)
 			{
 				out.values[i] = u.values[i].normalize();
 			}
@@ -200,10 +211,8 @@ namespace rasters
 
 	};
 
-	template <int N>
-	using vec3s = numerics_template<vec3_template<float>, N>;
-	template <int N>
-	using ivec3s = numerics_template<vec3_template<int>, N>;
-	template <int N>
-	using bvec3s = numerics_template<vec3_template<bool>, N>;
+	using vec3s = numerics_template<vec3_template<float>>;
+	using ivec3s = numerics_template<vec3_template<int>>;
+	using uivec3s = numerics_template<vec3_template<unsigned int>>;
+	using bvec3s = numerics_template<vec3_template<bool>>;
 }
