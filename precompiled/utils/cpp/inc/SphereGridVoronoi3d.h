@@ -115,7 +115,7 @@ namespace rasters
 		}
 
 		template <int N>
-		void nearest_ids(const vec3s& points, ints& out) const
+		void nearest_ids(const vec3s& points, uints& out) const
 		{
 			int side_id = 0;
 			vec2 projection = vec2();

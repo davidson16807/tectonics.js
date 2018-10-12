@@ -140,15 +140,14 @@ namespace rasters
 			}
 		}
 
-		static void magnitude(const vec2s_template<T>& u, numerics_template<T>& out) 
+		static void magnitude(const vec3s_template<T>& u, numerics_template<T>& out) 
 		{
 			for (int i = 0; i < u.N; ++i)
 			{
 				out.values[i] = u.values[i].magnitude();
 			}
 		}
-
-		static void normalize(const vec2s_template<T>& u, numerics_template<T>& out) 
+		static void normalize(const vec3s_template<T>& u, numerics_template<T>& out) 
 		{
 			for (int i = 0; i < u.N; ++i)
 			{

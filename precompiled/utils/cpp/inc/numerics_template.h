@@ -30,94 +30,140 @@ namespace rasters
 			values = new T[N];
 		};
 
-		numerics_template(const unsigned int N, const T u)  : N(N)
+		numerics_template(const unsigned int N, const T a)  : N(N)
 		{
 			values = new T[N];
-			for (int i = 0; i < u.N; ++i)
+			for (int i = 0; i < a.N; ++i)
 			{
-				values[i] = u;
+				values[i] = a;
 			}
 		};
 
-		numerics_template(const numerics_template<T>& u)  : N(u.N)
+		numerics_template(const numerics_template<T>& a)  : N(a.N)
 		{
 			values = new T[N];
 			for (int i = 0; i < N; ++i)
 			{
-				values[i] = u.values[i];
+				values[i] = a.values[i];
 			}
 		};
 
-		static T min(const numerics_template<T>& u)
+
+
+		static T get(const numerics_template<T>& a, const unsigned int id )
 		{
-			T out = u.values[0];
-			for (int i = 0; i < u.N; ++i)
-			{
-				out = u.values[i] < out? u.values[i] : out;
-			}
-			return out;
+			return a.values[id];
 		}
-		static T max(const numerics_template<T>& u)
+		static void set(numerics_template<T>& out, const unsigned int id, const T a )
 		{
-			T out = u.values[0];
-			for (int i = 0; i < u.N; ++i)
-			{
-				out = u.values[i] > out? u.values[i] : out;
-			}
-			return out;
+			out.values[id] = a;
 		}
-		static void min(const numerics_template<T>& u, const numerics_template<T>& v, numerics_template<T>& out)
+
+		//TODO: revisit need to get by mask instead of ids
+		static void get(const numerics_template<T>& a, const numerics_template<unsigned int>& ids, numerics_template<T>& out )
 		{
-			for (int i = 0; i < u.N; ++i)
+			for (int i = 0; i < ids.N; ++i)
 			{
-				out.values[i] = u.values[i] <= v.values[i]? u.values[i] : v.values[i];
+				out.values[i] = a.values[ids[i]];
 			}
 		}
-		static void max(const numerics_template<T>& u, const numerics_template<T>& v, numerics_template<T>& out)
+		//TODO: revisit need to set by mask instead of ids
+		static void set(numerics_template<T>& out, const numerics_template<unsigned int>& ids, const numerics_template<T>& a )
 		{
-			for (int i = 0; i < u.N; ++i)
+			for (int i = 0; i < ids.N; ++i)
 			{
-				out.values[i] = u.values[i] >= v.values[i]? u.values[i] : v.values[i];
+				out.values[ids[i]] = a.values[i];
+			}
+		}
+		static void fill(const numerics_template<T>& out, const T a )
+		{
+			for (int i = 0; i < out.N; ++i)
+			{
+				out.values[i] = a;
+			}
+		}
+		static void copy(const numerics_template<T>& a, const numerics_template<T>& out )
+		{
+			for (int i = 0; i < out.N; ++i)
+			{
+				out.values[i] = a.values[i];
+			}
+		}
+		//TODO: revisit need to fill by ids instead of mask
+		static void fill(const numerics_template<T>& out, const numerics_template<bool>& mask, const T a )
+		{
+			for (int i = 0; i < out.N; ++i)
+			{
+				out.values[i] = mask[i]? a : out.values[i];
+			}
+		}
+		//TODO: revisit need to copy by ids instead of mask
+		static void copy(const numerics_template<T>& a, const numerics_template<bool>& mask, const numerics_template<T>& out )
+		{
+			for (int i = 0; i < out.N; ++i)
+			{
+				out.values[i] = mask[i]? a.values[i] : out.values[i];
 			}
 		}
 
+
+
+		static T min(const numerics_template<T>& a)
+		{
+			T out = a.values[0];
+			for (int i = 0; i < a.N; ++i)
+			{
+				out = a.values[i] < out? a.values[i] : out;
+			}
+			return out;
+		}
+		static T max(const numerics_template<T>& a)
+		{
+			T out = a.values[0];
+			for (int i = 0; i < a.N; ++i)
+			{
+				out = a.values[i] > out? a.values[i] : out;
+			}
+			return out;
+		}
+
 		template <class T2>
-		static bool eq(const numerics_template<T>& u, const T2 a)
+		static bool eq(const numerics_template<T>& a, const T2 b)
 		{
 			bool out = true;
-			for (int i = 0; i < u.N; ++i)
+			for (int i = 0; i < a.N; ++i)
 			{
-				out &= u.values[i] == a;
+				out &= a.values[i] == b;
 			}
 			return out;
 		}
 		template <class T2>
-		static bool ne(const numerics_template<T>& u, const T2 a)
+		static bool ne(const numerics_template<T>& a, const T2 b)
 		{
 			bool out = false;
-			for (int i = 0; i < u.N; ++i)
+			for (int i = 0; i < a.N; ++i)
 			{
-				out |= u.values[i] != a;
+				out |= a.values[i] != b;
 			}
 			return out;
 		}
 		template <class T2>
-		static bool eq(const numerics_template<T>& u, const numerics_template<T2>& a)
+		static bool eq(const numerics_template<T>& a, const numerics_template<T2>& b)
 		{
 			bool out = true;
-			for (int i = 0; i < u.N; ++i)
+			for (int i = 0; i < a.N; ++i)
 			{
-				out &= u.values[i] == a.values[i];
+				out &= a.values[i] == b.values[i];
 			}
 			return out;
 		}
 		template <class T2>
-		static bool ne(const numerics_template<T>& u, const numerics_template<T2>& a)
+		static bool ne(const numerics_template<T>& a, const numerics_template<T2>& b)
 		{
 			bool out = false;
-			for (int i = 0; i < u.N; ++i)
+			for (int i = 0; i < a.N; ++i)
 			{
-				out |= u.values[i] != a.values[i];
+				out |= a.values[i] != b.values[i];
 			}
 			return out;
 		}
@@ -125,108 +171,108 @@ namespace rasters
 
 
 		template <class T2>
-		static void eq(const numerics_template<T>& u, const T2 a, numerics_template<bool>& out)
+		static void eq(const numerics_template<T>& a, const T2 b, numerics_template<bool>& out)
 		{
-			for (int i = 0; i < u.N; ++i)
+			for (int i = 0; i < a.N; ++i)
 			{
-				out.values[i] = u.values[i] == a;
+				out.values[i] = a.values[i] == b;
 			}
 		}
 		template <class T2>
-		static void ne(const numerics_template<T>& u, const T2 a, numerics_template<bool>& out)
+		static void ne(const numerics_template<T>& a, const T2 b, numerics_template<bool>& out)
 		{
-			for (int i = 0; i < u.N; ++i)
+			for (int i = 0; i < a.N; ++i)
 			{
-				out.values[i] = u.values[i] == a;
+				out.values[i] = a.values[i] == b;
 			}
 		}
 		template <class T2>
-		static void eq(const numerics_template<T>& u, const numerics_template<T2>& a, numerics_template<bool>& out)
+		static void eq(const numerics_template<T>& a, const numerics_template<T2>& b, numerics_template<bool>& out)
 		{
-			for (int i = 0; i < u.N; ++i)
+			for (int i = 0; i < a.N; ++i)
 			{
-				out.values[i] = u.values[i] == a.values[i];
+				out.values[i] = a.values[i] == b.values[i];
 			}
 		}
 		template <class T2>
-		static void ne(const numerics_template<T>& u, const numerics_template<T2>& a, numerics_template<bool>& out)
+		static void ne(const numerics_template<T>& a, const numerics_template<T2>& b, numerics_template<bool>& out)
 		{
-			for (int i = 0; i < u.N; ++i)
+			for (int i = 0; i < a.N; ++i)
 			{
-				out.values[i] = u.values[i] != a.values[i];
-			}
-		}
-
-
-
-
-		template <class T2>
-		static void gt(const numerics_template<T>& u, const T2 a, numerics_template<bool>& out)
-		{
-			for (int i = 0; i < u.N; ++i)
-			{
-				out.values[i] = u.values[i] > a;
-			}
-		}
-		template <class T2>
-		static void gte(const numerics_template<T>& u, const T a, numerics_template<bool>& out)
-		{
-			for (int i = 0; i < u.N; ++i)
-			{
-				out.values[i] = u.values[i] >= a;
-			}
-		}
-		template <class T2>
-		static void lt(const numerics_template<T>& u, const T2 a, numerics_template<bool>& out)
-		{
-			for (int i = 0; i < u.N; ++i)
-			{
-				out.values[i] = u.values[i] < a;
-			}
-		}
-		template <class T2>
-		static void lte(const numerics_template<T>& u, const T2 a, numerics_template<bool>& out)
-		{
-			for (int i = 0; i < u.N; ++i)
-			{
-				out.values[i] = u.values[i] <= a;
+				out.values[i] = a.values[i] != b.values[i];
 			}
 		}
 
 
 
 
+		template <class T2>
+		static void gt(const numerics_template<T>& a, const T2 b, numerics_template<bool>& out)
+		{
+			for (int i = 0; i < a.N; ++i)
+			{
+				out.values[i] = a.values[i] > b;
+			}
+		}
+		template <class T2>
+		static void gte(const numerics_template<T>& a, const T b, numerics_template<bool>& out)
+		{
+			for (int i = 0; i < a.N; ++i)
+			{
+				out.values[i] = a.values[i] >= b;
+			}
+		}
+		template <class T2>
+		static void lt(const numerics_template<T>& a, const T2 b, numerics_template<bool>& out)
+		{
+			for (int i = 0; i < a.N; ++i)
+			{
+				out.values[i] = a.values[i] < b;
+			}
+		}
+		template <class T2>
+		static void lte(const numerics_template<T>& a, const T2 b, numerics_template<bool>& out)
+		{
+			for (int i = 0; i < a.N; ++i)
+			{
+				out.values[i] = a.values[i] <= b;
+			}
+		}
+
+
+
+
 
 		template <class T2>
-		static void gt(const numerics_template<T>& u, const numerics_template<T2>& a, numerics_template<bool>& out)
+		static void gt(const numerics_template<T>& a, const numerics_template<T2>& b, numerics_template<bool>& out)
 		{
-			for (int i = 0; i < u.N; ++i)
+			for (int i = 0; i < a.N; ++i)
 			{
-				out.values[i] = u.values[i] > a.values[i];
+				out.values[i] = a.values[i] > b.values[i];
 			}
 		}
 		template <class T2>
-		static void gte(const numerics_template<T>& u, const numerics_template<T2>& a, numerics_template<bool>& out)
+		static void gte(const numerics_template<T>& a, const numerics_template<T2>& b, numerics_template<bool>& out)
 		{
-			for (int i = 0; i < u.N; ++i)
+			for (int i = 0; i < a.N; ++i)
 			{
-				out.values[i] = u.values[i] >= a.values[i];
+				out.values[i] = a.values[i] >= b.values[i];
 			}
 		}
 		template <class T2>
-		static void lt(const numerics_template<T>& u, const numerics_template<T2>& a, numerics_template<bool>& out)
+		static void lt(const numerics_template<T>& a, const numerics_template<T2>& b, numerics_template<bool>& out)
 		{
-			for (int i = 0; i < u.N; ++i)
+			for (int i = 0; i < a.N; ++i)
 			{
-				out.values[i] = u.values[i] <= a.values[i];
+				out.values[i] = a.values[i] <= b.values[i];
 			}
 		}
 		template <class T2>
-		static void lte(const numerics_template<T>& u, const numerics_template<T2>& a, numerics_template<bool>& out)
+		static void lte(const numerics_template<T>& a, const numerics_template<T2>& b, numerics_template<bool>& out)
 		{
-			for (int i = 0; i < u.N; ++i)
+			for (int i = 0; i < a.N; ++i)
 			{
-				out.values[i] = u.values[i] < a.values[i];
+				out.values[i] = a.values[i] < b.values[i];
 			}
 		}
 
@@ -235,171 +281,171 @@ namespace rasters
 
 
 		template <class T2, class T3>
-		static void add(const numerics_template<T>& u, const T2 a, numerics_template<T3>& out)
+		static void add(const numerics_template<T>& a, const T2 b, numerics_template<T3>& out)
 		{
-			for (int i = 0; i < u.N; ++i)
+			for (int i = 0; i < a.N; ++i)
 			{
-				out.values[i] = u.values[i] + a;
+				out.values[i] = a.values[i] + b;
 			}
 		}
 		template <class T2, class T3>
-		static void sub(const numerics_template<T>& u, const T2 a, numerics_template<T3>& out)
+		static void sub(const numerics_template<T>& a, const T2 b, numerics_template<T3>& out)
 		{
-			for (int i = 0; i < u.N; ++i)
+			for (int i = 0; i < a.N; ++i)
 			{
-				out.values[i] = u.values[i] - a;
+				out.values[i] = a.values[i] - b;
 			}
 		}
 		template <class T2, class T3>
-		static void mult(const numerics_template<T>& u, const T2 a, numerics_template<T3>& out)
+		static void mult(const numerics_template<T>& a, const T2 b, numerics_template<T3>& out)
 		{
-			for (int i = 0; i < u.N; ++i)
+			for (int i = 0; i < a.N; ++i)
 			{
-				out.values[i] = u.values[i] * a;
+				out.values[i] = a.values[i] * b;
 			}
 		}
 		template <class T2, class T3>
-		static void div(const numerics_template<T>& u, const T2 a, numerics_template<T3>& out)
+		static void div(const numerics_template<T>& a, const T2 b, numerics_template<T3>& out)
 		{
-			const T ainv = 1./a;
-			for (int i = 0; i < u.N; ++i)
+			const T ainv = 1./b;
+			for (int i = 0; i < a.N; ++i)
 			{
-				out.values[i] = u.values[i] / a;
+				out.values[i] = a.values[i] / b;
 			}
 		}
 
 
 
 		template <class T2, class T3>
-		static void add(const numerics_template<T>& u, const numerics_template<T2>& a, numerics_template<T3>& out)
+		static void add(const numerics_template<T>& a, const numerics_template<T2>& b, numerics_template<T3>& out)
 		{
-			for (int i = 0; i < u.N; ++i)
+			for (int i = 0; i < a.N; ++i)
 			{
-				out.values[i] = u.values[i] + a.values[i];
+				out.values[i] = a.values[i] + b.values[i];
 			}
 		}
 		template <class T2, class T3>
-		static void sub(const numerics_template<T>& u, const numerics_template<T2>& a, numerics_template<T3>& out)
+		static void sub(const numerics_template<T>& a, const numerics_template<T2>& b, numerics_template<T3>& out)
 		{
-			for (int i = 0; i < u.N; ++i)
+			for (int i = 0; i < a.N; ++i)
 			{
-				out.values[i] = u.values[i] - a.values[i];
+				out.values[i] = a.values[i] - b.values[i];
 			}
 		}
 		template <class T2, class T3>
-		static void mult(const numerics_template<T>& u, const numerics_template<T2>& a, numerics_template<T3>& out)
+		static void mult(const numerics_template<T>& a, const numerics_template<T2>& b, numerics_template<T3>& out)
 		{
-			for (int i = 0; i < u.N; ++i)
+			for (int i = 0; i < a.N; ++i)
 			{
-				out.values[i] = u.values[i] * a.values[i];
+				out.values[i] = a.values[i] * b.values[i];
 			}
 		}
 		template <class T2, class T3>
-		static void div(const numerics_template<T>& u, const numerics_template<T2>& a, numerics_template<T3>& out)
+		static void div(const numerics_template<T>& a, const numerics_template<T2>& b, numerics_template<T3>& out)
 		{
-			for (int i = 0; i < u.N; ++i)
+			for (int i = 0; i < a.N; ++i)
 			{
-				out.values[i] = u.values[i] / a.values[i];
+				out.values[i] = a.values[i] / b.values[i];
 			}
 		}
 
 
 
-		// static void magnitude(const numerics_template<T>& u, numerics_template<double>& out) 
+		// static void magnitude(const numerics_template<T>& a, numerics_template<double>& out) 
 		// {
-		// 	for (int i = 0; i < u.N; ++i)
+		// 	for (int i = 0; i < a.N; ++i)
 		// 	{
-		// 		out.values[i] = u.values[i].magnitude();
+		// 		out.values[i] = a.values[i].magnitude();
 		// 	}
 		// }
-		// static void normalize(const numerics_template<T>& u, numerics_template<T>& out) 
+		// static void normalize(const numerics_template<T>& a, numerics_template<T>& out) 
 		// {
-		// 	for (int i = 0; i < u.N; ++i)
+		// 	for (int i = 0; i < a.N; ++i)
 		// 	{
-		// 		out.values[i] = u.values[i].normalize();
+		// 		out.values[i] = a.values[i].normalize();
 		// 	}
 		// }
 
 
 		template <class T2>
-		bool operator==(const T2 a) const
+		bool operator==(const T2 b) const
 		{
-			return numerics_template<T>::eq(*this, a);
+			return numerics_template<T>::eq(*this, b);
 		}
 		template <class T2>
-		bool operator!=(const T2 a) const
+		bool operator!=(const T2 b) const
 		{
-			return numerics_template<T>::ne(*this, a);
+			return numerics_template<T>::ne(*this, b);
 		}
 		template <class T2>
-		bool operator==(const numerics_template<T2>& a) const
+		bool operator==(const numerics_template<T2>& b) const
 		{
-			return numerics_template<T>::eq(*this, a);
+			return numerics_template<T>::eq(*this, b);
 		}
 		template <class T2>
-		bool operator!=(const numerics_template<T2>& a) const
+		bool operator!=(const numerics_template<T2>& b) const
 		{
-			return numerics_template<T>::ne(*this, a);
+			return numerics_template<T>::ne(*this, b);
 		}
 		
 
 		template <class T2, class T3>
-		numerics_template<T3> operator>(const T2 a) const
+		numerics_template<T3> operator>(const T2 b) const
 		{
 			numerics_template<T3> out = numerics_template<T3>();
-			numerics_template<T>::gt(*this, a, out);
+			numerics_template<T>::gt(*this, b, out);
 			return out;
 		}
 		template <class T2, class T3>
-		numerics_template<T3> operator>=(const T2 a) const
+		numerics_template<T3> operator>=(const T2 b) const
 		{
 			numerics_template<T3> out = numerics_template<T3>();
-			numerics_template<T>::gte(*this, a, out);
+			numerics_template<T>::gte(*this, b, out);
 			return out;
 		}
 		template <class T2, class T3>
-		numerics_template<T3> operator<(const T2 a) const
+		numerics_template<T3> operator<(const T2 b) const
 		{
 			numerics_template<T3> out = numerics_template<T3>();
-			numerics_template<T>::lt(*this, a, out);
+			numerics_template<T>::lt(*this, b, out);
 			return out;
 		}
 		template <class T2, class T3>
-		numerics_template<T3> operator<=(const T2 a) const
+		numerics_template<T3> operator<=(const T2 b) const
 		{
 			numerics_template<T3> out = numerics_template<T3>();
-			numerics_template<T>::lte(*this, a, out);
+			numerics_template<T>::lte(*this, b, out);
 			return out;
 		}
 
 		
 
 		template <class T2, class T3>
-		numerics_template<T3> operator>(const numerics_template<T2>& a) const
+		numerics_template<T3> operator>(const numerics_template<T2>& b) const
 		{
 			numerics_template<T3> out = numerics_template<T3>();
-			numerics_template<T>::gt(*this, a, out);
+			numerics_template<T>::gt(*this, b, out);
 			return out;
 		}
 		template <class T2, class T3>
-		numerics_template<T3> operator>=(const numerics_template<T2>& a) const
+		numerics_template<T3> operator>=(const numerics_template<T2>& b) const
 		{
 			numerics_template<T3> out = numerics_template<T3>();
-			numerics_template<T>::gte(*this, a, out);
+			numerics_template<T>::gte(*this, b, out);
 			return out;
 		}
 		template <class T2, class T3>
-		numerics_template<T3> operator<(const numerics_template<T2>& a) const
+		numerics_template<T3> operator<(const numerics_template<T2>& b) const
 		{
 			numerics_template<T3> out = numerics_template<T3>();
-			numerics_template<T>::lt(*this, a, out);
+			numerics_template<T>::lt(*this, b, out);
 			return out;
 		}
 		template <class T2, class T3>
-		numerics_template<T3> operator<=(const numerics_template<T2>& a) const
+		numerics_template<T3> operator<=(const numerics_template<T2>& b) const
 		{
 			numerics_template<T3> out = numerics_template<T3>();
-			numerics_template<T>::lte(*this, a, out);
+			numerics_template<T>::lte(*this, b, out);
 			return out;
 		}
 		
@@ -408,72 +454,97 @@ namespace rasters
 
 
 		template <class T2, class T3>
-		numerics_template<T3> operator+(const T2 a) const
+		numerics_template<T3> operator+(const T2 b) const
 		{
 			numerics_template<T3> out = numerics_template<T3>();
-			numerics_template<T>::add(*this, a, out);
+			numerics_template<T>::add(*this, b, out);
 			return out;
 		}
 		template <class T2, class T3>
-		numerics_template<T3> operator-(const T2 a) const
+		numerics_template<T3> operator-(const T2 b) const
 		{
 			numerics_template<T3> out = numerics_template<T3>();
-			numerics_template<T>::sub(*this, a, out);
+			numerics_template<T>::sub(*this, b, out);
 			return out;
 		}
 		template <class T2, class T3>
-		numerics_template<T> operator*(const T2 a) const
+		numerics_template<T> operator*(const T2 b) const
 		{
 			numerics_template<T3> out = numerics_template<T3>();
-			numerics_template<T>::mult(*this, a, out);
+			numerics_template<T>::mult(*this, b, out);
 			return out;
 		}
 		template <class T2, class T3>
-		numerics_template<T3> operator/(const T2 a) const
+		numerics_template<T3> operator/(const T2 b) const
 		{
 			numerics_template<T3> out = numerics_template<T3>();
-			numerics_template<T>::div(*this, a, out);
+			numerics_template<T>::div(*this, b, out);
 			return out;
 		}
 
 
 		template <class T2, class T3>
-		numerics_template<T3> operator+(const numerics_template<T2>& a) const
+		numerics_template<T3> operator+(const numerics_template<T2>& b) const
 		{
 			numerics_template<T3> out = numerics_template<T3>();
-			numerics_template<T>::add(*this, a, out);
+			numerics_template<T>::add(*this, b, out);
 			return out;
 		}
 		template <class T2, class T3>
-		numerics_template<T3> operator-(const numerics_template<T2>& a) const
+		numerics_template<T3> operator-(const numerics_template<T2>& b) const
 		{
 			numerics_template<T3> out = numerics_template<T3>();
-			numerics_template<T>::sub(*this, a, out);
+			numerics_template<T>::sub(*this, b, out);
 			return out;
 		}
 		template <class T2, class T3>
-		numerics_template<T3> operator*(const numerics_template<T2>& a) const
+		numerics_template<T3> operator*(const numerics_template<T2>& b) const
 		{
 			numerics_template<T3> out = numerics_template<T3>();
-			numerics_template<T>::mult(*this, a, out);
+			numerics_template<T>::mult(*this, b, out);
 			return out;
 		}
 		template <class T2, class T3>
-		numerics_template<T3> operator/(const numerics_template<T2>& a) const
+		numerics_template<T3> operator/(const numerics_template<T2>& b) const
 		{
 			numerics_template<T3> out = numerics_template<T3>();
-			numerics_template<T>::div(*this, a, out);
+			numerics_template<T>::div(*this, b, out);
 			return out;
+		}
+		
+		T& operator[](const unsigned int id )
+		{
+		   return values[id]; // reference return 
 		}
 
-
-		T operator[](const unsigned int i) const
+		numerics_template<T>& operator[](const numerics_template<bool>& ids ) 	
 		{
-		    return values[i];
+			numerics_template<T> out = numerics_template<T>(ids.N);
+			for (int i = 0; i < ids.N; ++i)
+			{
+				out.values[i] = values[ids[i]];
+			}
+			return out;
+		}
+		
+		const T& operator[](const unsigned int id ) const
+		{
+		   return values[id]; // reference return 
+		}
+
+		const numerics_template<T>& operator[](const numerics_template<bool>& ids ) const
+		{
+			numerics_template<T> out = numerics_template<T>(ids.N);
+			for (int i = 0; i < ids.N; ++i)
+			{
+				out.values[i] = values[ids[i]];
+			}
+			return out;
 		}
 	};
 
 	using floats = numerics_template<float>;
 	using ints = numerics_template<vec3_template<int>>;
+	using uints = numerics_template<vec3_template<unsigned int>>;
 	using bools = numerics_template<vec3_template<bool>>;
 }
