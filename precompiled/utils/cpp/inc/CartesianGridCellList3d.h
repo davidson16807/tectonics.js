@@ -48,7 +48,10 @@ namespace rasters {
 			cells[cell_id( xi+1 , yi+1 , zi+1 )].push_back({id, point});
 		}
 	public:
-		~CartesianGridCellList3d(){}
+		~CartesianGridCellList3d()
+		{
+    		delete [] cells;
+		}
 		
 		CartesianGridCellList3d(const std::vector<vec3>& aos, const double cell_width)
 			: cell_width(cell_width)
