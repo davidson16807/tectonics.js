@@ -75,14 +75,14 @@ namespace rasters
 				out.values[ids[i]] = a.values[i];
 			}
 		}
-		static void fill(const numerics_template<T>& out, const T a )
+		static void fill(numerics_template<T>& out, const T a )
 		{
 			for (int i = 0; i < out.N; ++i)
 			{
 				out.values[i] = a;
 			}
 		}
-		static void copy(const numerics_template<T>& a, const numerics_template<T>& out )
+		static void copy(const numerics_template<T>& a, numerics_template<T>& out )
 		{
 			for (int i = 0; i < out.N; ++i)
 			{
@@ -98,7 +98,7 @@ namespace rasters
 			}
 		}
 		//TODO: revisit need to copy by ids instead of mask
-		static void copy(const numerics_template<T>& a, const numerics_template<bool>& mask, const numerics_template<T>& out )
+		static void copy(const numerics_template<T>& a, const numerics_template<bool>& mask, numerics_template<T>& out )
 		{
 			for (int i = 0; i < out.N; ++i)
 			{
