@@ -1,28 +1,19 @@
 #pragma once
 
-#include <math.h>       // ceil, round 
-#include <vector>       // vectors
-
 #include "vec3_template.h"
 #include "numerics_template.h"
 
 namespace rasters
 {
 	template<class T>
-	class vec3s_template : numerics_template<vec3_template<T>>{
+	class vec3s_template : public numerics_template<vec3_template<T>>
+	{
 
 	public:
+		vec3s_template(const unsigned int N) : numerics_template<vec3_template<T>>(N) {};
 
-		vec3s_template(const unsigned int N) 
+		vec3s_template(const unsigned int N, const T x) : numerics_template<vec3_template<T>>(N)
 		{
-			this->N = N;
-			this->values = new T[this->N];
-		};
-
-		vec3s_template(const unsigned int N, const T x)  
-		{
-			this->N = N;
-			this->values = new T[this->N];
 			for (int i = 0; i < this->N; ++i)
 			{
 				this->values[i].x = x;
@@ -31,10 +22,8 @@ namespace rasters
 			}
 		};
 
-		vec3s_template(const numerics_template<T>& x)   
+		vec3s_template(const numerics_template<T>& x)   : numerics_template<vec3_template<T>>(x.N)
 		{
-			this->N = x.N;
-			this->values = new T[this->N];
 			for (int i = 0; i < this->N; ++i)
 			{
 				this->values[i].x = x[i];
@@ -43,10 +32,8 @@ namespace rasters
 			}
 		};
 
-		vec3s_template(const unsigned int N, const T x, const T y, const T z)  
+		vec3s_template(const unsigned int N, const T x, const T y, const T z) : numerics_template<vec3_template<T>>(N)
 		{
-			this->N = N;
-			this->values = new T[this->N];
 			for (int i = 0; i < this->N; ++i)
 			{
 				this->values[i].x = x;
@@ -54,10 +41,8 @@ namespace rasters
 				this->values[i].z = z;
 			}
 		};
-		vec3s_template(const numerics_template<T>& x, const T y, const T z)  
+		vec3s_template(const numerics_template<T>& x, const T y, const T z)  : numerics_template<vec3_template<T>>(x.N)
 		{
-			this->N = x.N;
-			this->values = new T[this->N];
 			for (int i = 0; i < this->N; ++i)
 			{
 				this->values[i].x = x[i];
@@ -66,10 +51,8 @@ namespace rasters
 			}
 		};
 
-		vec3s_template(const T x, const numerics_template<T>& y, const T z)  
+		vec3s_template(const T x, const numerics_template<T>& y, const T z)  : numerics_template<vec3_template<T>>(y.N)
 		{
-			this->N = y.N;
-			this->values = new T[this->N];
 			for (int i = 0; i < this->N; ++i)
 			{
 				this->values[i].x = x;
@@ -78,10 +61,8 @@ namespace rasters
 			}
 		};
 
-		vec3s_template(const numerics_template<T>& x, const numerics_template<T>& y, const T z)   
+		vec3s_template(const numerics_template<T>& x, const numerics_template<T>& y, const T z)   : numerics_template<vec3_template<T>>(y.N)
 		{
-			this->N = y.N;
-			this->values = new T[this->N];
 			for (int i = 0; i < this->N; ++i)
 			{
 				this->values[i].x = x[i];
@@ -90,10 +71,8 @@ namespace rasters
 			}
 		};
 
-		vec3s_template(const T x, const T y, const numerics_template<T>&  z)  
+		vec3s_template(const T x, const T y, const numerics_template<T>&  z)     : numerics_template<vec3_template<T>>(z.N)
 		{
-			this->N = z.N;
-			this->values = new T[this->N];
 			for (int i = 0; i < this->N; ++i)
 			{
 				this->values[i].x = x;
@@ -102,10 +81,8 @@ namespace rasters
 			}
 		};
 
-		vec3s_template(const numerics_template<T>& x, const T y, const numerics_template<T>&  z)  
+		vec3s_template(const numerics_template<T>& x, const T y, const numerics_template<T>&  z)      : numerics_template<vec3_template<T>>(z.N)
 		{
-			this->N = z.N;
-			this->values = new T[this->N];
 			for (int i = 0; i < this->N; ++i)
 			{
 				this->values[i].x = x[i];
@@ -114,10 +91,8 @@ namespace rasters
 			}
 		};
 
-		vec3s_template(const T x, const numerics_template<T>& y, const numerics_template<T>&  z)  
+		vec3s_template(const T x, const numerics_template<T>& y, const numerics_template<T>&  z)      : numerics_template<vec3_template<T>>(z.N)
 		{
-			this->N = z.N;
-			this->values = new T[this->N];
 			for (int i = 0; i < this->N; ++i)
 			{
 				this->values[i].x = x;
@@ -126,10 +101,8 @@ namespace rasters
 			}
 		};
 
-		vec3s_template(const numerics_template<T>& x, const numerics_template<T>& y, const numerics_template<T>&  z)  
+		vec3s_template(const numerics_template<T>& x, const numerics_template<T>& y, const numerics_template<T>&  z)     : numerics_template<vec3_template<T>>(z.N) 
 		{
-			this->N = z.N;
-			this->values = new T[this->N];
 			for (int i = 0; i < this->N; ++i)
 			{
 				this->values[i].x = x[i];
@@ -200,7 +173,6 @@ namespace rasters
 				out.values[i] = u.values[i].magnitude();
 			}
 		}
-
 		static void normalize(const vec3s_template<T>& u, numerics_template<T>& out) 
 		{
 			for (int i = 0; i < u.N; ++i)
@@ -208,7 +180,6 @@ namespace rasters
 				out.values[i] = u.values[i].normalize();
 			}
 		}
-
 	};
 
 	using vec3s = numerics_template<vec3_template<float>>;
