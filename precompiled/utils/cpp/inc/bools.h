@@ -1,5 +1,7 @@
 #pragma once
 
+#include <initializer_list>// initializer_list
+
 #include "primitives.h"
 
 namespace rasters
@@ -10,8 +12,9 @@ namespace rasters
 	{
 	public:
 		bools(const unsigned int N) 				: primitives_template<bool>(N){};
-		bools(const unsigned int N, const bool a)  	: primitives_template<bool>(N, a){};
+		bools(const unsigned int N, const bool a)  	: primitives_template<bool>(N,a){};
 		bools(const bools& a) 						: primitives_template<bool>(a){};
+		bools(std::initializer_list<bool> list)  	: primitives_template<bool>(list){};
 
 		static void unite(const bools& a, const bool b, bools& out)
 		{

@@ -20,41 +20,14 @@ namespace rasters
 	// uses CartesianGridCellList3d behind the scenes to optimize initialization
 	class SphereGridVoronoi3d
 	{
-		static const int OCTAHEDRON_SIDE_COUNT = 8;	// number of sides on the data cube
-		const std::array<vec3, 8> OCTAHEDRON_SIDE_GRID_Z = {
-			vec3(-1,-1,-1).normalize(),
-			vec3( 1,-1,-1).normalize(),
-			vec3(-1, 1,-1).normalize(),
-			vec3( 1, 1,-1).normalize(),
-			vec3(-1,-1, 1).normalize(),
-			vec3( 1,-1, 1).normalize(),
-			vec3(-1, 1, 1).normalize(),
-			vec3( 1, 1, 1).normalize()
-		};
-		const std::array<vec3, 8> OCTAHEDRON_SIDE_X = {
-			vec3::cross(OCTAHEDRON_SIDE_GRID_Z[0], vec3(0,0,1)).normalize(),
-			vec3::cross(OCTAHEDRON_SIDE_GRID_Z[1], vec3(0,0,1)).normalize(),
-			vec3::cross(OCTAHEDRON_SIDE_GRID_Z[2], vec3(0,0,1)).normalize(),
-			vec3::cross(OCTAHEDRON_SIDE_GRID_Z[3], vec3(0,0,1)).normalize(),
-			vec3::cross(OCTAHEDRON_SIDE_GRID_Z[4], vec3(0,0,1)).normalize(),
-			vec3::cross(OCTAHEDRON_SIDE_GRID_Z[5], vec3(0,0,1)).normalize(),
-			vec3::cross(OCTAHEDRON_SIDE_GRID_Z[6], vec3(0,0,1)).normalize(),
-			vec3::cross(OCTAHEDRON_SIDE_GRID_Z[7], vec3(0,0,1)).normalize()
-		};
-		const std::array<vec3, 8> OCTAHEDRON_SIDE_Y = {
-			vec3::cross(OCTAHEDRON_SIDE_GRID_Z[0], OCTAHEDRON_SIDE_X[0] ).normalize(),
-			vec3::cross(OCTAHEDRON_SIDE_GRID_Z[1], OCTAHEDRON_SIDE_X[1] ).normalize(),
-			vec3::cross(OCTAHEDRON_SIDE_GRID_Z[2], OCTAHEDRON_SIDE_X[2] ).normalize(),
-			vec3::cross(OCTAHEDRON_SIDE_GRID_Z[3], OCTAHEDRON_SIDE_X[3] ).normalize(),
-			vec3::cross(OCTAHEDRON_SIDE_GRID_Z[4], OCTAHEDRON_SIDE_X[4] ).normalize(),
-			vec3::cross(OCTAHEDRON_SIDE_GRID_Z[5], OCTAHEDRON_SIDE_X[5] ).normalize(),
-			vec3::cross(OCTAHEDRON_SIDE_GRID_Z[6], OCTAHEDRON_SIDE_X[6] ).normalize(),
-			vec3::cross(OCTAHEDRON_SIDE_GRID_Z[7], OCTAHEDRON_SIDE_X[7] ).normalize()
-		};
+		static const vec3s OCTAHEDRON_SIDE_Z;
+		static const vec3s OCTAHEDRON_SIDE_X;
+		static const vec3s OCTAHEDRON_SIDE_Y;
+		static constexpr int OCTAHEDRON_SIDE_COUNT = 8;	// number of sides on the data cube
 
 		ivec2 dimensions; // dimensions of the grid on each side of the data cube 
-		int* cells;
 		double cell_width;
+		int* cells;
 
 		int cell_count() const {
 			return OCTAHEDRON_SIDE_COUNT * dimensions.x * dimensions.y;
@@ -65,16 +38,20 @@ namespace rasters
 				  + yi;
 		}
 	public:
-		~SphereGridVoronoi3d(){}
+		~SphereGridVoronoi3d()
+		{
+    		delete [] cells;
+    		cells = nullptr;
+		}
 		
 		SphereGridVoronoi3d(const std::vector<vec3> points, const double cell_width)
-			: cell_width(cell_width),
-			  dimensions((int)ceil(2./cell_width)+1)
+			: dimensions((int)ceil(2./cell_width)+1),
+			  cell_width(cell_width),
+			  cells(new int[cell_count()])
 		{
 			CartesianGridCellList3d grid = CartesianGridCellList3d(points, 2.*cell_width);
-
+			
 			// populate cells using the slower CartesianGridCellList3d implementation
-			cells = new int[cell_count()];
 			for (int side_id = 0; side_id < OCTAHEDRON_SIDE_COUNT; ++side_id)
 			{
 				for (int xi2d = 0; xi2d < dimensions.x; ++xi2d)
@@ -90,7 +67,7 @@ namespace rasters
 						vec3 cell_pos = 
 							OCTAHEDRON_SIDE_X[side_id] * x2d +
 							OCTAHEDRON_SIDE_Y[side_id] * y2d +
-							OCTAHEDRON_SIDE_GRID_Z[side_id] * z2d ;
+							OCTAHEDRON_SIDE_Z[side_id] * z2d ;
 
 						cells[cell_id(side_id, xi2d, yi2d)] = grid.nearest_id(cell_pos);
 					}
@@ -117,23 +94,34 @@ namespace rasters
 		template <int N>
 		void nearest_ids(const vec3s& points, uints& out) const
 		{
-			int side_id = 0;
-			vec2 projection = vec2();
-			ivec2 grid_pos = ivec2(); 
 			for (unsigned int i = 0; i < N; ++i)
 			{
 				const unsigned int side_id = 
-				  (( points[i].x > 0) << 0) +
+				  (( points[i].x > 0)     ) +
 				  (( points[i].y > 0) << 1) +
 				  (( points[i].z > 0) << 2) ; 
 
-				projection.x = vec3::dot( OCTAHEDRON_SIDE_X[side_id], points[i] );
-				projection.y = vec3::dot( OCTAHEDRON_SIDE_Y[side_id], points[i] );
+				const vec2 projection = vec2(
+					vec3::dot( OCTAHEDRON_SIDE_X[side_id], points[i] ),
+					vec3::dot( OCTAHEDRON_SIDE_Y[side_id], points[i] )
+				);
 
-				grid_pos = (projection + 1.) / cell_width;
+				const ivec2 grid_pos = (projection + 1.) / cell_width;
 
 				out[i] = cells[cell_id(side_id, grid_pos.x, grid_pos.y)];
 			}
 		}
 	};
+	const vec3s SphereGridVoronoi3d::OCTAHEDRON_SIDE_Z = vec3s({
+		vec3(-1,-1,-1),
+		vec3( 1,-1,-1),
+		vec3(-1, 1,-1),
+		vec3( 1, 1,-1),
+		vec3(-1,-1, 1),
+		vec3( 1,-1, 1),
+		vec3(-1, 1, 1),
+		vec3( 1, 1, 1)
+	}).normalize();
+	const vec3s SphereGridVoronoi3d::OCTAHEDRON_SIDE_X = vec3s::cross(SphereGridVoronoi3d::OCTAHEDRON_SIDE_Z, vec3(0,0,1)).normalize();
+	const vec3s SphereGridVoronoi3d::OCTAHEDRON_SIDE_Y = vec3s::cross(OCTAHEDRON_SIDE_Z, OCTAHEDRON_SIDE_X).normalize();
 }

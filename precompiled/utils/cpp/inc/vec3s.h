@@ -173,7 +173,7 @@ namespace rasters
 				out.values[i] = u.values[i].magnitude();
 			}
 		}
-		static void normalize(const vec3s_template<T>& u, numerics_template<T>& out) 
+		static void normalize(const vec3s_template<T>& u, vec3s_template<T>& out) 
 		{
 			for (int i = 0; i < u.N; ++i)
 			{
@@ -181,11 +181,61 @@ namespace rasters
 			}
 		}
 
-		const T& operator[](const unsigned int id ) const
+
+		// NOTE: Here we have convenience functions that are stand-ins for operators
+		// we do this because there are no operators that can express them succinctly
+		static numerics_template<T> dot (const vec3s_template<T>& u, const vec3_template<T> v ) {
+			vec3s_template<T> out = vec3s_template<T>(u.N);
+			dot(u, v, out);
+			return out;
+		}
+		static vec3s_template<T> cross (const vec3s_template<T>& u, const vec3_template<T> v ) 
+		{
+			vec3s_template<T> out = vec3s_template<T>(u.N);
+			cross(u, v, out);
+			return out;
+		}
+		static numerics_template<T> distance(const vec3s_template<T>& u, const vec3_template<T> v ) 
+		{
+			vec3s_template<T> out = vec3s_template<T>(u.N);
+			distance(u, v, out);
+			return out;
+		}
+		static numerics_template<T> dot (const vec3s_template<T>& u, const vec3s_template<T>& v ) {
+			vec3s_template<T> out = vec3s_template<T>(u.N);
+			dot(u, v, out);
+			return out;
+		}
+		static vec3s_template<T> cross (const vec3s_template<T>& u, const vec3s_template<T>& v ) 
+		{
+			vec3s_template<T> out = vec3s_template<T>(u.N);
+			cross(u, v, out);
+			return out;
+		}
+		static numerics_template<T> distance(const vec3s_template<T>& u, const vec3s_template<T>& v ) 
+		{
+			vec3s_template<T> out = vec3s_template<T>(u.N);
+			distance(u, v, out);
+			return out;
+		}
+		vec3s_template<T> normalize() 
+		{
+			vec3s_template<T> out = vec3s_template<T>(this->N);
+			normalize(*this, out);
+			return out;
+		}
+		floats magnitude() 
+		{
+			floats out = floats(this->N);
+			normalize(*this, out);
+			return out;
+		}
+
+		const vec3_template<T>& operator[](const unsigned int id ) const
 		{
 		   return this->values[id]; // reference return 
 		}
-		T& operator[](const unsigned int id )
+		vec3_template<T>& operator[](const unsigned int id )
 		{
 		   return this->values[id]; // reference return 
 		}

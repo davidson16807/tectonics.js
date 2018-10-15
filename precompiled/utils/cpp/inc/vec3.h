@@ -11,19 +11,19 @@ namespace rasters
 		vec3_template() {};
 
 		template<class T2>
-		vec3_template(T2 x) : x(x), y(x), z(x) {};
+		constexpr vec3_template(T2 x) : x(x), y(x), z(x) {};
 
 		template<class T2>
-		vec3_template(T2 x, T2 y, T2 z) : x(x), y(y), z(z) {};
+		constexpr vec3_template(T2 x, T2 y, T2 z) : x(x), y(y), z(z) {};
 
 		template<class T2>
-		vec3_template(vec3_template<T2> u) : x(u.x), y(u.y), z(u.z) {};
+		constexpr vec3_template(vec3_template<T2> u) : x(u.x), y(u.y), z(u.z) {};
 
 		template<class T2>
-		vec3_template(const vec3_template<T2> u, T z) : x(u.x), y(u.y), z(z) {};
+		constexpr vec3_template(const vec3_template<T2> u, T z) : x(u.x), y(u.y), z(z) {};
 
 		template<class T2>
-		vec3_template(T x, vec3_template<T2> u) : x(x), y(u.y), z(u.z) {};
+		constexpr vec3_template(T x, vec3_template<T2> u) : x(x), y(u.y), z(u.z) {};
 
 		~vec3_template() {};
 
