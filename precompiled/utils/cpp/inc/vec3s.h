@@ -180,6 +180,27 @@ namespace rasters
 				out.values[i] = u.values[i].normalize();
 			}
 		}
+
+		const T& operator[](const unsigned int id ) const
+		{
+		   return this->values[id]; // reference return 
+		}
+		T& operator[](const unsigned int id )
+		{
+		   return this->values[id]; // reference return 
+		}
+		const vec3s_template<T> operator[](const primitives_template<bool>& mask ) const
+		{
+			vec3s_template<T> out = vec3s_template<T>(mask.N);
+			get(*this, mask, out);
+			return out;
+		}
+		const vec3s_template<T> operator[](const primitives_template<unsigned int>& ids ) const
+		{
+			vec3s_template<T> out = vec3s_template<T>(ids.N);
+			get(*this, ids, out);
+			return out;
+		}
 	};
 
 	using vec3s = numerics_template<vec3_template<float>>;

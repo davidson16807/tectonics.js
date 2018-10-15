@@ -1,5 +1,7 @@
 #pragma once
 
+#include <initializer_list>// initializer_list
+
 #include "bools.h"
 #include "primitives.h"
 
@@ -22,6 +24,11 @@ namespace rasters
 		numerics_template(const unsigned int N, const T a)  : primitives_template<T>(N, a) {};
 
 		numerics_template(const numerics_template<T>& a)  : primitives_template<T>(a) {};
+
+		numerics_template(std::initializer_list<T> list)  : primitives_template<T>(list.size()) 
+		{
+
+		};
 
 		static T min(const numerics_template<T>& a)
 		{
@@ -464,10 +471,31 @@ namespace rasters
 			numerics_template<T>::div(*this, b, out);
 			return out;
 		}
+
+		const T& operator[](const unsigned int id ) const
+		{
+		   return this->values[id]; // reference return 
+		}
+		T& operator[](const unsigned int id )
+		{
+		   return this->values[id]; // reference return 
+		}
+		const numerics_template<T> operator[](const primitives_template<bool>& mask ) const
+		{
+			numerics_template<T> out = numerics_template<T>(mask.N);
+			get(*this, mask, out);
+			return out;
+		}
+		const numerics_template<T> operator[](const primitives_template<unsigned int>& ids ) const
+		{
+			numerics_template<T> out = numerics_template<T>(ids.N);
+			get(*this, ids, out);
+			return out;
+		}
 	};
 
 	using floats = numerics_template<float>;
-	using ints = numerics_template<vec3_template<int>>;
-	using uints = numerics_template<vec3_template<unsigned int>>;
+	using ints = numerics_template<int>;
+	using uints = numerics_template<unsigned int>;
 
 }

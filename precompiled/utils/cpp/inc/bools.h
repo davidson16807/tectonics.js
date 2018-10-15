@@ -126,5 +126,26 @@ namespace rasters
 			bools::intersect(*this, b, *this);
 			return *this;
 		}
+
+		const bool& operator[](const unsigned int id ) const
+		{
+		   return this->values[id]; // reference return 
+		}
+		bool& operator[](const unsigned int id )
+		{
+		   return this->values[id]; // reference return 
+		}
+		const bools operator[](const primitives_template<bool>& mask ) const
+		{
+			bools out = bools(mask.N);
+			get(*this, mask, out);
+			return out;
+		}
+		const bools operator[](const primitives_template<unsigned int>& ids ) const
+		{
+			bools out = bools(ids.N);
+			get(*this, ids, out);
+			return out;
+		}
 	};
 }

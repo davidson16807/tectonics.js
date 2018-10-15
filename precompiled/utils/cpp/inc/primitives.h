@@ -12,9 +12,9 @@ namespace rasters
 	{
 	protected:
 		T* const values;
-		const unsigned int N;
 
 	public:
+		const unsigned int N;
 
 		~primitives_template() 
 		{
@@ -221,34 +221,25 @@ namespace rasters
 
 
 
-
-		T& operator[](const unsigned int id )
-		{
-		   return values[id]; // reference return 
-		}
 		
 		const T& operator[](const unsigned int id ) const
 		{
-		   return values[id]; // reference return 
+		   return this->values[id]; // reference return 
 		}
-
-		const primitives_template<T>& operator[](const primitives_template<bool>& mask ) const
+		T& operator[](const unsigned int id )
+		{
+		   return this->values[id]; // reference return 
+		}
+		const primitives_template<T> operator[](const primitives_template<bool>& mask ) const
 		{
 			primitives_template<T> out = primitives_template<T>(mask.N);
-			for (int i = 0; i < mask.N; ++i)
-			{
-				out.values[i] = values[mask[i]];
-			}
+			get(*this, mask, out);
 			return out;
 		}
-
-		const primitives_template<T>& operator[](const primitives_template<unsigned int>& ids ) const
+		const primitives_template<T> operator[](const primitives_template<unsigned int>& ids ) const
 		{
 			primitives_template<T> out = primitives_template<T>(ids.N);
-			for (int i = 0; i < ids.N; ++i)
-			{
-				out.values[i] = values[ids[i]];
-			}
+			get(*this, ids, out);
 			return out;
 		}
 	};
