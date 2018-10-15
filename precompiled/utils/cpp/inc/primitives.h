@@ -11,7 +11,7 @@ namespace rasters
 	class primitives_template
 	{
 	protected:
-		T* values;
+		T* const values;
 		const unsigned int N;
 
 	public:
@@ -21,14 +21,12 @@ namespace rasters
     		delete [] values;
 		};
 
-		primitives_template(const unsigned int N) : N(N)
+		primitives_template(const unsigned int N) : N(N), values(new T[N])
 		{
-			values = new T[N];
 		};
 
-		primitives_template(const unsigned int N, const T a)  : N(N)
+		primitives_template(const unsigned int N, const T a)  : N(N), values(new T[N])
 		{
-			values = new T[N];
 			for (int i = 0; i < N; ++i)
 			{
 				values[i] = a;
@@ -36,16 +34,13 @@ namespace rasters
 		};
 
 		template <class T2>
-		primitives_template(const primitives_template<T2>& a)  : N(a.N)
+		primitives_template(const primitives_template<T2>& a)  : N(a.N), values(new T[N])
 		{
-			values = new T[N];
 			for (int i = 0; i < N; ++i)
 			{
 				values[i] = a.values[i];
 			}
 		};
-
-
 
 		static T get(const primitives_template<T>& a, const unsigned int id )
 		{
@@ -257,129 +252,5 @@ namespace rasters
 			return out;
 		}
 	};
-
-	// NOTE: bools get special treatment because they're special
-	class bools : public primitives_template<bool>
-	{
-	public:
-		bools(const unsigned int N) 				: primitives_template<bool>(N){};
-		bools(const unsigned int N, const bool a)  	: primitives_template<bool>(N, a){};
-		bools(const bools& a) 						: primitives_template<bool>(a){};
-
-		static void unite(const bools& a, const bool b, bools& out)
-		{
-			for (int i = 0; i < a.N; ++i)
-			{
-				out.values[i] = a.values[i] || b;
-			}
-		}
-
-		static void unite(const bools& a, const bools& b, bools& out)
-		{
-			for (int i = 0; i < a.N; ++i)
-			{
-				out.values[i] = a.values[i] || b.values[i];
-			}
-		}
-
-		static void intersect(const bools& a, const bool b, bools& out)
-		{
-			for (int i = 0; i < a.N; ++i)
-			{
-				out.values[i] = a.values[i] && b;
-			}
-		}
-
-		static void intersect(const bools& a, const bools& b, bools& out)
-		{
-			for (int i = 0; i < a.N; ++i)
-			{
-				out.values[i] = a.values[i] && b.values[i];
-			}
-		}
-
-		static void differ(const bools& a, const bool b, bools& out)
-		{
-			for (int i = 0; i < a.N; ++i)
-			{
-				out.values[i] = a.values[i] && !b;
-			}
-		}
-
-		static void differ(const bools& a, const bools& b, bools& out)
-		{
-			for (int i = 0; i < a.N; ++i)
-			{
-				out.values[i] = a.values[i] && !b.values[i];
-			}
-		}
-
-		static void negate(const bools& a, bools& out)
-		{
-			for (int i = 0; i < a.N; ++i)
-			{
-				out.values[i] = !a.values[i];
-			}
-		}
-
-
-		bools operator~() const
-		{
-			bools out = bools(this->N);
-			bools::negate(*this, out);
-			return out;
-		}
-
-
-
-
-		bools operator|(const bool b) const
-		{
-			bools out = bools(this->N);
-			bools::unite(*this, b, out);
-			return out;
-		}
-		bools operator&(const bool b) const
-		{
-			bools out = bools(this->N);
-			bools::intersect(*this, b, out);
-			return out;
-		}
-
-		bools operator|(const bools& b) const
-		{
-			bools out = bools(this->N);
-			bools::unite(*this, b, out);
-			return out;
-		}
-		bools operator&(const bools& b) const
-		{
-			bools out = bools(this->N);
-			bools::intersect(*this, b, out);
-			return out;
-		}
-
-
-
-
-		bools& operator|=(const bool b){
-			bools::unite(*this, b, *this);
-			return *this;
-		}
-		bools& operator&=(const bool b){
-			bools::intersect(*this, b, *this);
-			return *this;
-		}
-
-		bools& operator|=(const bools& b){
-			bools::unite(*this, b, *this);
-			return *this;
-		}
-		bools& operator&=(const bools& b){
-			bools::intersect(*this, b, *this);
-			return *this;
-		}
-	};
-
 
 }

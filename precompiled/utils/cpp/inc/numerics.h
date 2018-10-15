@@ -1,6 +1,7 @@
 #pragma once
 
-#include "primitives_template.h"
+#include "bools.h"
+#include "primitives.h"
 
 namespace rasters
 {
@@ -43,6 +44,79 @@ namespace rasters
 
 
 
+		template <class T2>
+		static void max(const numerics_template<T>& a, const T2 b, numerics_template<T>& out)
+		{
+			for (int i = 0; i < a.N; ++i)
+			{
+				out.values[i] = a.values[i] > b? a.values[i] : b;
+			}
+		}
+		template <class T2>
+		static void min(const numerics_template<T>& a, const T2 b, numerics_template<T>& out)
+		{
+			for (int i = 0; i < a.N; ++i)
+			{
+				out.values[i] = a.values[i] < b? a.values[i] : b;
+			}
+		}
+
+
+
+		template <class T2>
+		static void max(const numerics_template<T>& a, const numerics_template<T2>& b, numerics_template<T>& out)
+		{
+			for (int i = 0; i < a.N; ++i)
+			{
+				out.values[i] = a.values[i] > b.values[i]? a.values[i] : b.values[i];
+			}
+		}
+		template <class T2>
+		static void min(const numerics_template<T>& a, const numerics_template<T2>& b, numerics_template<T>& out)
+		{
+			for (int i = 0; i < a.N; ++i)
+			{
+				out.values[i] = a.values[i] < b.values[i]? a.values[i] : b.values[i];
+			}
+		}
+
+
+		template <class Tlo, class Thi>
+		static void clamp(const numerics_template<T>& a, const Tlo lo, const Thi hi, const numerics_template<T>& out)
+		{
+			for (int i = 0; i < a.N; ++i)
+			{
+				out.values[i] = a.values[i] > hi? hi : a.values[i] < lo? lo : a.values[i];
+			}
+		}
+		template <class Tlo, class Thi>
+		static void clamp(const numerics_template<T>& a, const Tlo lo, const numerics_template<Thi>& hi, const numerics_template<T>& out)
+		{
+			for (int i = 0; i < a.N; ++i)
+			{
+				out.values[i] = a.values[i] > hi.values[i]? hi.values[i] : a.values[i] < lo? lo : a.values[i];
+			}
+		}
+		template <class Tlo, class Thi>
+		static void clamp(const numerics_template<T>& a, const numerics_template<Tlo>& lo, const Thi hi, const numerics_template<T>& out)
+		{
+			for (int i = 0; i < a.N; ++i)
+			{
+				out.values[i] = a.values[i] > hi? hi : a.values[i] < lo.values[i]? lo.values[i] : a.values[i];
+			}
+		}
+		template <class Tlo, class Thi>
+		static void clamp(const numerics_template<T>& a, const numerics_template<Tlo>& lo, const numerics_template<Thi>& hi, const numerics_template<T>& out)
+		{
+			for (int i = 0; i < a.N; ++i)
+			{
+				out.values[i] = a.values[i] > hi.values[i]? hi.values[i] : a.values[i];
+			}
+			for (int i = 0; i < a.N; ++i)
+			{
+				out.values[i] = a.values[i] < lo.values[i]? lo.values[i] : out.values[i];
+			}
+		}
 
 		template <class T2>
 		static void gt(const numerics_template<T>& a, const T2 b, bools& out)
@@ -53,7 +127,7 @@ namespace rasters
 			}
 		}
 		template <class T2>
-		static void gte(const numerics_template<T>& a, const T b, bools& out)
+		static void gte(const numerics_template<T>& a, const T2 b, bools& out)
 		{
 			for (int i = 0; i < a.N; ++i)
 			{

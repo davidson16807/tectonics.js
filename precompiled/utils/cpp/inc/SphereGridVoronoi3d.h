@@ -6,10 +6,10 @@
 #include <array>		// arrays
 // #include <iostream>		// cout
 
-#include "numerics_template.h"
-#include "vec2_template.h"
-#include "vec3_template.h"
-#include "vec3s_template.h"
+#include "numerics.h"
+#include "vec2.h"
+#include "vec3.h"
+#include "vec3s.h"
 
 #include "CartesianGridCellList3d.h"
 
@@ -20,6 +20,7 @@ namespace rasters
 	// uses CartesianGridCellList3d behind the scenes to optimize initialization
 	class SphereGridVoronoi3d
 	{
+		static const int OCTAHEDRON_SIDE_COUNT = 8;	// number of sides on the data cube
 		const std::array<vec3, 8> OCTAHEDRON_SIDE_GRID_Z = {
 			vec3(-1,-1,-1).normalize(),
 			vec3( 1,-1,-1).normalize(),
@@ -50,7 +51,6 @@ namespace rasters
 			vec3::cross(OCTAHEDRON_SIDE_GRID_Z[6], OCTAHEDRON_SIDE_X[6] ).normalize(),
 			vec3::cross(OCTAHEDRON_SIDE_GRID_Z[7], OCTAHEDRON_SIDE_X[7] ).normalize()
 		};
-		const int OCTAHEDRON_SIDE_COUNT = 8;	// number of sides on the data cube
 
 		ivec2 dimensions; // dimensions of the grid on each side of the data cube 
 		int* cells;

@@ -5,8 +5,8 @@
 #include <algorithm>	// clamp
 // #include <iostream>		// cout
 
-#include "vec2_template.h"
-#include "vec3_template.h"
+#include "vec2.h"
+#include "vec3.h"
 // #include "vec3s_template.h"
 
 namespace rasters {

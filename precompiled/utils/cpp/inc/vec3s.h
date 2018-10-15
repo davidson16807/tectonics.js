@@ -1,7 +1,7 @@
 #pragma once
 
-#include "vec3_template.h"
-#include "numerics_template.h"
+#include "vec3s.h"
+#include "numerics.h"
 
 namespace rasters
 {

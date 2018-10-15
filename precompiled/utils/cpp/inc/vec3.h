@@ -1,7 +1,6 @@
 #pragma once
 
 #include <math.h>       // ceil, round 
-#include "vec2_template.h"
 
 namespace rasters
 {
@@ -21,10 +20,10 @@ namespace rasters
 		vec3_template(vec3_template<T2> u) : x(u.x), y(u.y), z(u.z) {};
 
 		template<class T2>
-		vec3_template(const vec2_template<T2> u, T z) : x(u.x), y(u.y), z(z) {};
+		vec3_template(const vec3_template<T2> u, T z) : x(u.x), y(u.y), z(z) {};
 
 		template<class T2>
-		vec3_template(T x, vec2_template<T2> u) : x(x), y(u.y), z(u.z) {};
+		vec3_template(T x, vec3_template<T2> u) : x(x), y(u.y), z(u.z) {};
 
 		~vec3_template() {};
 

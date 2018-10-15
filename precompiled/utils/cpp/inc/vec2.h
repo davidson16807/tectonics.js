@@ -1,7 +1,6 @@
 #pragma once
 
 #include <math.h>       // ceil, round 
-#include "vec2_template.h"
 
 namespace rasters
 {

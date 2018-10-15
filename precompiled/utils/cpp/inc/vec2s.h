@@ -3,7 +3,7 @@
 #include <math.h>       // ceil, round 
 #include <vector>       // vectors
 
-#include "vec2_template.h"
+#include "vec2.h"
 #include "numerics_template.h"
 
 namespace rasters

@@ -2,8 +2,8 @@
 #include <math.h>       // ceil, round 
 #include <limits.h> 	// infinity
 
-#include "vec3_template.h"
-#include "vec3s_template.h"
+#include "vec3.h"
+#include "vec3s.h"
 
 #include "SphereGridVoronoi3d.h"
 #include "CartesianGridCellList3d.h"
