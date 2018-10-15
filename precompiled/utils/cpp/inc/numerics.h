@@ -18,17 +18,10 @@ namespace rasters
 	{
 
 	public:
-
-		numerics_template(const unsigned int N) : primitives_template<T>(N) {};
-
+		numerics_template(const unsigned int N) 			: primitives_template<T>(N) {};
 		numerics_template(const unsigned int N, const T a)  : primitives_template<T>(N, a) {};
-
-		numerics_template(const numerics_template<T>& a)  : primitives_template<T>(a) {};
-
-		numerics_template(std::initializer_list<T> list)  : primitives_template<T>(list.size()) 
-		{
-
-		};
+		numerics_template(const numerics_template<T>& a)  	: primitives_template<T>(a) {};
+		numerics_template(std::initializer_list<T> list)  	: primitives_template<T>(list)  {};
 
 		static T min(const numerics_template<T>& a)
 		{

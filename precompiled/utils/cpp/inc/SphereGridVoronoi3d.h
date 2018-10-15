@@ -37,6 +37,8 @@ namespace rasters
 				  + xi      * dimensions.y 
 				  + yi;
 		}
+		// NOTE: copy constructor set to private so we don't have to think about managing pointer resources
+		SphereGridVoronoi3d(const SphereGridVoronoi3d& grid){};
 	public:
 		~SphereGridVoronoi3d()
 		{
@@ -50,7 +52,7 @@ namespace rasters
 			  cells(new int[cell_count()])
 		{
 			CartesianGridCellList3d grid = CartesianGridCellList3d(points, 2.*cell_width);
-			
+
 			// populate cells using the slower CartesianGridCellList3d implementation
 			for (int side_id = 0; side_id < OCTAHEDRON_SIDE_COUNT; ++side_id)
 			{
@@ -112,7 +114,7 @@ namespace rasters
 			}
 		}
 	};
-	const vec3s SphereGridVoronoi3d::OCTAHEDRON_SIDE_Z = vec3s({
+	const vec3s SphereGridVoronoi3d::OCTAHEDRON_SIDE_Z = vec3s::normalize({
 		vec3(-1,-1,-1),
 		vec3( 1,-1,-1),
 		vec3(-1, 1,-1),
@@ -121,7 +123,11 @@ namespace rasters
 		vec3( 1,-1, 1),
 		vec3(-1, 1, 1),
 		vec3( 1, 1, 1)
-	}).normalize();
-	const vec3s SphereGridVoronoi3d::OCTAHEDRON_SIDE_X = vec3s::cross(SphereGridVoronoi3d::OCTAHEDRON_SIDE_Z, vec3(0,0,1)).normalize();
-	const vec3s SphereGridVoronoi3d::OCTAHEDRON_SIDE_Y = vec3s::cross(OCTAHEDRON_SIDE_Z, OCTAHEDRON_SIDE_X).normalize();
+	});
+	const vec3s SphereGridVoronoi3d::OCTAHEDRON_SIDE_X = vec3s::normalize({
+		vec3s::cross(SphereGridVoronoi3d::OCTAHEDRON_SIDE_Z, vec3(0,0,1))
+	});
+	const vec3s SphereGridVoronoi3d::OCTAHEDRON_SIDE_Y = vec3s::normalize({
+		vec3s::cross(OCTAHEDRON_SIDE_Z, OCTAHEDRON_SIDE_X)
+	});
 }

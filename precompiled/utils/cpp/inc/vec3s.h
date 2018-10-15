@@ -1,5 +1,8 @@
 #pragma once
 
+#include <initializer_list>// initializer_list
+#include <iostream>// cout
+
 #include "vec3s.h"
 #include "numerics.h"
 
@@ -8,9 +11,11 @@ namespace rasters
 	template<class T>
 	class vec3s_template : public numerics_template<vec3_template<T>>
 	{
-
 	public:
-		vec3s_template(const unsigned int N) : numerics_template<vec3_template<T>>(N) {};
+		vec3s_template(const unsigned int N) 							: numerics_template<vec3_template<T>>(N) {};
+		vec3s_template(const unsigned int N, const vec3_template<T> a)	: numerics_template<vec3_template<T>>(N,a) {};
+		vec3s_template(const numerics_template<vec3_template<T>>& a)	: numerics_template<vec3_template<T>>(a) {};
+		vec3s_template(std::initializer_list<vec3_template<T>> list)  	: numerics_template<vec3_template<T>>(list) {};
 
 		vec3s_template(const unsigned int N, const T x) : numerics_template<vec3_template<T>>(N)
 		{
@@ -166,6 +171,8 @@ namespace rasters
 			}
 		}
 
+
+
 		static void magnitude(const vec3s_template<T>& u, numerics_template<T>& out) 
 		{
 			for (int i = 0; i < u.N; ++i)
@@ -218,16 +225,16 @@ namespace rasters
 			distance(u, v, out);
 			return out;
 		}
-		vec3s_template<T> normalize() 
+		static vec3s_template<T> normalize(const vec3s_template<T>& u) 
 		{
-			vec3s_template<T> out = vec3s_template<T>(this->N);
-			normalize(*this, out);
+			vec3s_template<T> out = vec3s_template<T>(u.N);
+			normalize(u, out);
 			return out;
 		}
-		floats magnitude() 
+		static floats magnitude(const vec3s_template<T>& u) 
 		{
-			floats out = floats(this->N);
-			normalize(*this, out);
+			floats out = floats(u.N);
+			normalize(u, out);
 			return out;
 		}
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <initializer_list>	// initializer_list
+
 namespace rasters
 {
 
@@ -11,21 +13,20 @@ namespace rasters
 	class primitives_template
 	{
 	protected:
-		T* const values;
+		T* values;
 
 	public:
 		const unsigned int N;
 
-		~primitives_template() 
+		~primitives_template()
 		{
-    		delete [] values;
+    		delete [] this->values;
+    		this->values = nullptr;
 		};
 
-		primitives_template(const unsigned int N) : N(N), values(new T[N])
-		{
-		};
+		primitives_template(const unsigned int N) : values(new T[N]), N(N) {};
 
-		primitives_template(const unsigned int N, const T a)  : N(N), values(new T[N])
+		primitives_template(const unsigned int N, const T a)  : values(new T[N]), N(N)
 		{
 			for (int i = 0; i < N; ++i)
 			{
@@ -34,11 +35,21 @@ namespace rasters
 		};
 
 		template <class T2>
-		primitives_template(const primitives_template<T2>& a)  : N(a.N), values(new T[N])
+		primitives_template(const primitives_template<T2>& a)  : values(new T[a.N]), N(a.N)
 		{
 			for (int i = 0; i < N; ++i)
 			{
 				values[i] = a.values[i];
+			}
+		};
+
+		primitives_template(std::initializer_list<T> list) : values(new T[list.size()]), N(list.size())
+		{
+			int id = 0;
+			for (auto i = list.begin(); i != list.end(); ++i)
+			{
+				this->values[id] = *i;
+				id++;
 			}
 		};
 

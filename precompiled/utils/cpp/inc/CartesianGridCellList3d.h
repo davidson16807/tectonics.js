@@ -45,6 +45,9 @@ namespace rasters {
 			cells[cell_id( xi   , yi+1 , zi+1 )].push_back({id, point});
 			cells[cell_id( xi+1 , yi+1 , zi+1 )].push_back({id, point});
 		}
+		// NOTE: copy constructor set to private so we don't have to think about managing pointer resources
+		CartesianGridCellList3d(const CartesianGridCellList3d& grid){};
+
 	public:
 		~CartesianGridCellList3d()
 		{
@@ -57,15 +60,15 @@ namespace rasters {
 			    (*std::min_element(aos.begin(), aos.end(), []( const vec3 a, const vec3 b ) { return a.x < b.x; })).x,
 			    (*std::min_element(aos.begin(), aos.end(), []( const vec3 a, const vec3 b ) { return a.y < b.y; })).y,
 			    (*std::min_element(aos.begin(), aos.end(), []( const vec3 a, const vec3 b ) { return a.z < b.z; })).z
-    		),
-			max_bounds(
-			    (*std::max_element(aos.begin(), aos.end(), []( const vec3 a, const vec3 b ) { return a.x < b.x; })).x,
-			    (*std::max_element(aos.begin(), aos.end(), []( const vec3 a, const vec3 b ) { return a.y < b.y; })).y,
-			    (*std::max_element(aos.begin(), aos.end(), []( const vec3 a, const vec3 b ) { return a.z < b.z; })).z
-    		),
-			dimensions((max_bounds - min_bounds) / cell_width + 1), // NOTE: always offset by 1 because add() writes to neighboring cells, as well
-			cell_width(cell_width),
-			cells(new std::vector<std::pair<int, vec3>>[cell_count()])
+    		  ),
+			  max_bounds(
+			      (*std::max_element(aos.begin(), aos.end(), []( const vec3 a, const vec3 b ) { return a.x < b.x; })).x,
+			      (*std::max_element(aos.begin(), aos.end(), []( const vec3 a, const vec3 b ) { return a.y < b.y; })).y,
+			      (*std::max_element(aos.begin(), aos.end(), []( const vec3 a, const vec3 b ) { return a.z < b.z; })).z
+    		  ),
+			  dimensions((max_bounds - min_bounds) / cell_width + 1), // NOTE: always offset by 1 because add() writes to neighboring cells, as well
+			  cell_width(cell_width),
+			  cells(new std::vector<std::pair<int, vec3>>[cell_count()])
 		{
 			// initialize grid
 			int cell_count_ = cell_count();

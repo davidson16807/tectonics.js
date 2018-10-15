@@ -6,14 +6,13 @@
 
 namespace rasters
 {
-
 	// NOTE: bools get special treatment because they're special
 	class bools : public primitives_template<bool>
 	{
 	public:
 		bools(const unsigned int N) 				: primitives_template<bool>(N){};
 		bools(const unsigned int N, const bool a)  	: primitives_template<bool>(N,a){};
-		bools(const bools& a) 						: primitives_template<bool>(a){};
+		bools(const primitives_template<bool>& a) 	: primitives_template<bool>(a){};
 		bools(std::initializer_list<bool> list)  	: primitives_template<bool>(list){};
 
 		static void unite(const bools& a, const bool b, bools& out)
