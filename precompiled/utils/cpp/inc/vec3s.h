@@ -203,8 +203,8 @@ namespace rasters
 		}
 	};
 
-	using vec3s = numerics_template<vec3_template<float>>;
-	using ivec3s = numerics_template<vec3_template<int>>;
-	using uivec3s = numerics_template<vec3_template<unsigned int>>;
-	using bvec3s = numerics_template<vec3_template<bool>>;
+	using vec3s = vec3s_template<float>;
+	using ivec3s = vec3s_template<int>;
+	using uivec3s = vec3s_template<unsigned int>;
+	using bvec3s = vec3s_template<bool>;
 }

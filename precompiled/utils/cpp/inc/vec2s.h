@@ -1,28 +1,19 @@
 #pragma once
 
-#include <math.h>       // ceil, round 
-#include <vector>       // vectors
-
-#include "vec2.h"
-#include "numerics_template.h"
+#include "vec2s.h"
+#include "numerics.h"
 
 namespace rasters
 {
 	template<class T>
-	class vec2s_template : numerics_template<vec2_template<T>>{
+	class vec2s_template : public numerics_template<vec2_template<T>>
+	{
 
 	public:
+		vec2s_template(const unsigned int N) : numerics_template<vec2_template<T>>(N) {};
 
-		vec2s_template(const unsigned int N) 
+		vec2s_template(const unsigned int N, const T x) : numerics_template<vec2_template<T>>(N)
 		{
-			this->N = N;
-			this->values = new T[this->N];
-		};
-
-		vec2s_template(const unsigned int N, const T x)  
-		{
-			this->N = N;
-			this->values = new T[this->N];
 			for (int i = 0; i < this->N; ++i)
 			{
 				this->values[i].x = x;
@@ -30,10 +21,8 @@ namespace rasters
 			}
 		};
 
-		vec2s_template(const numerics_template<T>& x)   
+		vec2s_template(const numerics_template<T>& x)   : numerics_template<vec2_template<T>>(x.N)
 		{
-			this->N = x.N;
-			this->values = new T[this->N];
 			for (int i = 0; i < this->N; ++i)
 			{
 				this->values[i].x = x[i];
@@ -41,20 +30,16 @@ namespace rasters
 			}
 		};
 
-		vec2s_template(const unsigned int N, const T x, const T y)  
+		vec2s_template(const unsigned int N, const T x, const T y) : numerics_template<vec2_template<T>>(N)
 		{
-			this->N = N;
-			this->values = new T[this->N];
 			for (int i = 0; i < this->N; ++i)
 			{
 				this->values[i].x = x;
 				this->values[i].y = y;
 			}
 		};
-		vec2s_template(const numerics_template<T>& x, const T y)  
+		vec2s_template(const numerics_template<T>& x, const T y)  : numerics_template<vec2_template<T>>(x.N)
 		{
-			this->N = x.N;
-			this->values = new T[this->N];
 			for (int i = 0; i < this->N; ++i)
 			{
 				this->values[i].x = x[i];
@@ -62,10 +47,8 @@ namespace rasters
 			}
 		};
 
-		vec2s_template(const T x, const numerics_template<T>& y)  
+		vec2s_template(const T x, const numerics_template<T>& y)  : numerics_template<vec2_template<T>>(y.N)
 		{
-			this->N = y.N;
-			this->values = new T[this->N];
 			for (int i = 0; i < this->N; ++i)
 			{
 				this->values[i].x = x;
@@ -73,10 +56,8 @@ namespace rasters
 			}
 		};
 
-		vec2s_template(const numerics_template<T>& x, const numerics_template<T>& y)   
+		vec2s_template(const numerics_template<T>& x, const numerics_template<T>& y)   : numerics_template<vec2_template<T>>(y.N)
 		{
-			this->N = y.N;
-			this->values = new T[this->N];
 			for (int i = 0; i < this->N; ++i)
 			{
 				this->values[i].x = x[i];
@@ -91,7 +72,7 @@ namespace rasters
 				out.values[i] = vec2_template<T>::dot(u.values[i], v);
 			}
 		}
-		static void cross (const vec2s_template<T>& u, const vec2_template<T> v, numerics_template<T>& out) 
+		static void cross (const vec2s_template<T>& u, const vec2_template<T> v, vec2s_template<T>& out) 
 		{
 			for (int i = 0; i < u.N; ++i)
 			{
@@ -119,7 +100,7 @@ namespace rasters
 				out.values[i] = vec2_template<T>::dot(u.values[i], v.values[i]);
 			}
 		}
-		static void cross (const vec2s_template<T>& u, const vec2s_template<T>& v, numerics_template<T>& out) 
+		static void cross (const vec2s_template<T>& u, const vec2s_template<T>& v, vec2s_template<T>& out) 
 		{
 			for (int i = 0; i < u.N; ++i)
 			{
@@ -140,14 +121,14 @@ namespace rasters
 			}
 		}
 
-		static void magnitude(const vec3s_template<T>& u, numerics_template<T>& out) 
+		static void magnitude(const vec2s_template<T>& u, numerics_template<T>& out) 
 		{
 			for (int i = 0; i < u.N; ++i)
 			{
 				out.values[i] = u.values[i].magnitude();
 			}
 		}
-		static void normalize(const vec3s_template<T>& u, numerics_template<T>& out) 
+		static void normalize(const vec2s_template<T>& u, numerics_template<T>& out) 
 		{
 			for (int i = 0; i < u.N; ++i)
 			{
@@ -155,10 +136,30 @@ namespace rasters
 			}
 		}
 
+		const T& operator[](const unsigned int id ) const
+		{
+		   return this->values[id]; // reference return 
+		}
+		T& operator[](const unsigned int id )
+		{
+		   return this->values[id]; // reference return 
+		}
+		const vec2s_template<T> operator[](const primitives_template<bool>& mask ) const
+		{
+			vec2s_template<T> out = vec2s_template<T>(mask.N);
+			get(*this, mask, out);
+			return out;
+		}
+		const vec2s_template<T> operator[](const primitives_template<unsigned int>& ids ) const
+		{
+			vec2s_template<T> out = vec2s_template<T>(ids.N);
+			get(*this, ids, out);
+			return out;
+		}
 	};
 
-	using vec2s = numerics_template<vec2_template<float>>;
-	using ivec2s = numerics_template<vec2_template<int>>;
-	using uivec2s = numerics_template<vec2_template<unsigned int>>;
-	using bvec2s = numerics_template<vec2_template<bool>>;
+	using vec2s = vec2s_template<float>;
+	using ivec2s = vec2s_template<int>;
+	using uivec2s = vec2s_template<unsigned int>;
+	using bvec2s = vec2s_template<bool>;
 }
