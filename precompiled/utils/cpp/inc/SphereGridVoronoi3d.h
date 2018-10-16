@@ -116,7 +116,7 @@ namespace rasters
 			}
 		}
 	};
-	const vec3s SphereGridVoronoi3d::OCTAHEDRON_SIDE_Z = vec3s::normalize({
+	const vec3s SphereGridVoronoi3d::OCTAHEDRON_SIDE_Z = normalize(vec3s({
 		vec3(-1,-1,-1),
 		vec3( 1,-1,-1),
 		vec3(-1, 1,-1),
@@ -125,11 +125,11 @@ namespace rasters
 		vec3( 1,-1, 1),
 		vec3(-1, 1, 1),
 		vec3( 1, 1, 1)
-	});
-	const vec3s SphereGridVoronoi3d::OCTAHEDRON_SIDE_X = vec3s::normalize({
-		vec3s::cross(SphereGridVoronoi3d::OCTAHEDRON_SIDE_Z, vec3(0,0,1))
-	});
-	const vec3s SphereGridVoronoi3d::OCTAHEDRON_SIDE_Y = vec3s::normalize({
-		vec3s::cross(OCTAHEDRON_SIDE_Z, OCTAHEDRON_SIDE_X)
-	});
+	}));
+	const vec3s SphereGridVoronoi3d::OCTAHEDRON_SIDE_X = normalize(
+		cross(SphereGridVoronoi3d::OCTAHEDRON_SIDE_Z, vec3(0,0,1))
+	);
+	const vec3s SphereGridVoronoi3d::OCTAHEDRON_SIDE_Y = normalize(
+		cross(OCTAHEDRON_SIDE_Z, OCTAHEDRON_SIDE_X)
+	);
 }

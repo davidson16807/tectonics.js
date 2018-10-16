@@ -13,6 +13,7 @@ namespace composites
 	{
 	public:
 		tvec3s(std::initializer_list<tvec3<T>> list)  			: numerics<tvec3<T>>(list) {};
+		tvec3s(numerics<tvec3<T>>&& a)							: numerics<tvec3<T>>(a) {};
 		explicit tvec3s(const unsigned int N) 					: numerics<tvec3<T>>(N) {};
 		explicit tvec3s(const unsigned int N, const tvec3<T> a)	: numerics<tvec3<T>>(N,a) {};
 		explicit tvec3s(const numerics<tvec3<T>>& a)			: numerics<tvec3<T>>(a) {};
@@ -119,131 +120,6 @@ namespace composites
 			}
 		};
 
-		static void dot (const tvec3s<T>& u, const tvec3<T> v, numerics<T>& out) {
-			for (unsigned int i = 0; i < u.size(); ++i)
-			{
-				out[i] = tvec3<T>::dot(u[i], v);
-			}
-		}
-		static void cross (const tvec3s<T>& u, const tvec3<T> v, tvec3s<T>& out) 
-		{
-			for (unsigned int i = 0; i < u.size(); ++i)
-			{
-				out[i] = tvec3<T>::cross(u[i], v);
-			}
-		}
-		static void hadamard (const tvec3s<T>& u, const tvec3<T> v, tvec3s<T>& out) {
-			for (unsigned int i = 0; i < u.size(); ++i)
-			{
-				out[i] = tvec3<T>::hadamard(u[i], v);
-			}
-		}
-		static void distance(const tvec3s<T>& u, const tvec3<T> v, numerics<T>& out) 
-		{
-			for (unsigned int i = 0; i < u.size(); ++i)
-			{
-				out[i] = tvec3<T>::distance(u[i], v);
-			}
-		}
-
-
-		static void dot (const tvec3s<T>& u, const tvec3s<T>& v, numerics<T>& out) {
-			for (unsigned int i = 0; i < u.size(); ++i)
-			{
-				out[i] = tvec3<T>::dot(u[i], v[i]);
-			}
-		}
-		static void cross (const tvec3s<T>& u, const tvec3s<T>& v, tvec3s<T>& out) 
-		{
-			for (unsigned int i = 0; i < u.size(); ++i)
-			{
-				out[i] = tvec3<T>::cross(u[i], v[i]);
-			}
-		}
-		static void hadamard (const tvec3s<T>& u, const tvec3s<T>& v, tvec3s<T>& out) {
-			for (unsigned int i = 0; i < u.size(); ++i)
-			{
-				out[i] = tvec3<T>::hadamard(u[i], v[i]);
-			}
-		}
-		static void distance(const tvec3s<T>& u, const tvec3s<T>& v, numerics<T>& out) 
-		{
-			for (unsigned int i = 0; i < u.size(); ++i)
-			{
-				out[i] = tvec3<T>::distance(u[i], v[i]);
-			}
-		}
-
-
-
-		static void magnitude(const tvec3s<T>& u, numerics<T>& out) 
-		{
-			for (unsigned int i = 0; i < u.size(); ++i)
-			{
-				out[i] = u[i].magnitude();
-			}
-		}
-		static void normalize(const tvec3s<T>& u, tvec3s<T>& out) 
-		{
-			for (unsigned int i = 0; i < u.size(); ++i)
-			{
-				out[i] = u[i].normalize();
-			}
-		}
-
-
-		// NOTE: Here we have convenience functions that are stand-ins for operators
-		//  we do this because there are no operators that can express them succinctly
-
-		// NOTE: all operators and convenience functions are marked inline,
-		//  because they are thin wrappers of static functions
-
-		static inline numerics<T> dot (const numerics<tvec3<T>>& u, const tvec3<T> v ) {
-			tvec3s<T> out = tvec3s<T>(u.N);
-			dot(u, v, out);
-			return out;
-		}
-		static inline tvec3s<T> cross (const tvec3s<T>& u, const tvec3<T> v ) 
-		{
-			tvec3s<T> out = tvec3s<T>(u.N);
-			cross(u, v, out);
-			return out;
-		}
-		static inline numerics<T> distance(const numerics<tvec3<T>>& u, const tvec3<T> v ) 
-		{
-			tvec3s<T> out = tvec3s<T>(u.N);
-			distance(u, v, out);
-			return out;
-		}
-		static inline numerics<T> dot (const numerics<tvec3<T>>& u, const tvec3s<T>& v ) {
-			tvec3s<T> out = tvec3s<T>(u.N);
-			dot(u, v, out);
-			return out;
-		}
-		static inline tvec3s<T> cross (const tvec3s<T>& u, const tvec3s<T>& v ) 
-		{
-			tvec3s<T> out = tvec3s<T>(u.N);
-			cross(u, v, out);
-			return out;
-		}
-		static inline numerics<T> distance(const numerics<tvec3<T>>& u, const tvec3s<T>& v ) 
-		{
-			tvec3s<T> out = tvec3s<T>(u.N);
-			distance(u, v, out);
-			return out;
-		}
-		static inline tvec3s<T> normalize(const tvec3s<T>& u) 
-		{
-			tvec3s<T> out = tvec3s<T>(u.N);
-			normalize(u, out);
-			return out;
-		}
-		static inline floats magnitude(const tvec3s<T>& u) 
-		{
-			numerics<T> out = numerics<T>(u.N);
-			magnitude(u, out);
-			return out;
-		}
 
 		inline const tvec3<T>& operator[](const unsigned int id ) const
 		{
@@ -255,13 +131,13 @@ namespace composites
 		}
 		inline const tvec3s<T> operator[](const primitives<bool>& mask ) const
 		{
-			tvec3s<T> out = tvec3s<T>(mask.N);
+			tvec3s<T> out = tvec3s<T>(mask.size());
 			get(*this, mask, out);
 			return out;
 		}
 		inline const tvec3s<T> operator[](const primitives<unsigned int>& ids ) const
 		{
-			tvec3s<T> out = tvec3s<T>(ids.N);
+			tvec3s<T> out = tvec3s<T>(ids.size());
 			get(*this, ids, out);
 			return out;
 		}
@@ -271,4 +147,149 @@ namespace composites
 	using ivec3s = tvec3s<int>;
 	using uivec3s = tvec3s<unsigned int>;
 	using bvec3s = tvec3s<bool>;
+
+
+	template <class T>
+	void dot (const tvec3s<T>& u, const tvec3<T> v, numerics<T>& out) {
+		for (unsigned int i = 0; i < u.size(); ++i)
+		{
+			out[i] = tvec3<T>::dot(u[i], v);
+		}
+	}
+	template <class T>
+	void cross (const tvec3s<T>& u, const tvec3<T> v, tvec3s<T>& out) 
+	{
+		for (unsigned int i = 0; i < u.size(); ++i)
+		{
+			out[i] = tvec3<T>::cross(u[i], v);
+		}
+	}
+	template <class T>
+	void hadamard (const tvec3s<T>& u, const tvec3<T> v, tvec3s<T>& out) {
+		for (unsigned int i = 0; i < u.size(); ++i)
+		{
+			out[i] = tvec3<T>::hadamard(u[i], v);
+		}
+	}
+	template <class T>
+	void distance(const tvec3s<T>& u, const tvec3<T> v, numerics<T>& out) 
+	{
+		for (unsigned int i = 0; i < u.size(); ++i)
+		{
+			out[i] = tvec3<T>::distance(u[i], v);
+		}
+	}
+
+
+	template <class T>
+	void dot (const tvec3s<T>& u, const tvec3s<T>& v, numerics<T>& out) {
+		for (unsigned int i = 0; i < u.size(); ++i)
+		{
+			out[i] = tvec3<T>::dot(u[i], v[i]);
+		}
+	}
+	template <class T>
+	void cross (const tvec3s<T>& u, const tvec3s<T>& v, tvec3s<T>& out) 
+	{
+		for (unsigned int i = 0; i < u.size(); ++i)
+		{
+			out[i] = tvec3<T>::cross(u[i], v[i]);
+		}
+	}
+	template <class T>
+	void hadamard (const tvec3s<T>& u, const tvec3s<T>& v, tvec3s<T>& out) {
+		for (unsigned int i = 0; i < u.size(); ++i)
+		{
+			out[i] = tvec3<T>::hadamard(u[i], v[i]);
+		}
+	}
+	template <class T>
+	void distance(const tvec3s<T>& u, const tvec3s<T>& v, numerics<T>& out) 
+	{
+		for (unsigned int i = 0; i < u.size(); ++i)
+		{
+			out[i] = tvec3<T>::distance(u[i], v[i]);
+		}
+	}
+
+
+
+	template <class T>
+	void magnitude(const tvec3s<T>& u, numerics<T>& out) 
+	{
+		for (unsigned int i = 0; i < u.size(); ++i)
+		{
+			out[i] = u[i].magnitude();
+		}
+	}
+	template <class T>
+	void normalize(const tvec3s<T>& u, tvec3s<T>& out) 
+	{
+		for (unsigned int i = 0; i < u.size(); ++i)
+		{
+			out[i] = u[i].normalize();
+		}
+	}
+
+
+	// NOTE: Here we have convenience functions that are stand-ins for operators
+	//  we do this because there are no operators that can express them succinctly
+
+	// NOTE: all operators and convenience functions are marked inline,
+	//  because they are thin wrappers of static functions
+
+	template <class T>
+	inline numerics<T> dot (const numerics<tvec3<T>>& u, const tvec3<T> v ) {
+		tvec3s<T> out = tvec3s<T>(u.size());
+		dot(u, v, out);
+		return out;
+	}
+	template <class T>
+	inline tvec3s<T> cross (const tvec3s<T>& u, const tvec3<T> v ) 
+	{
+		tvec3s<T> out = tvec3s<T>(u.size());
+		cross(u, v, out);
+		return out;
+	}
+	template <class T>
+	inline numerics<T> distance(const numerics<tvec3<T>>& u, const tvec3<T> v ) 
+	{
+		tvec3s<T> out = tvec3s<T>(u.size());
+		distance(u, v, out);
+		return out;
+	}
+	template <class T>
+	inline numerics<T> dot (const numerics<tvec3<T>>& u, const tvec3s<T>& v ) {
+		tvec3s<T> out = tvec3s<T>(u.size());
+		dot(u, v, out);
+		return out;
+	}
+	template <class T>
+	inline tvec3s<T> cross (const tvec3s<T>& u, const tvec3s<T>& v ) 
+	{
+		tvec3s<T> out = tvec3s<T>(u.size());
+		cross(u, v, out);
+		return out;
+	}
+	template <class T>
+	inline numerics<T> distance(const numerics<tvec3<T>>& u, const tvec3s<T>& v ) 
+	{
+		tvec3s<T> out = tvec3s<T>(u.size());
+		distance(u, v, out);
+		return out;
+	}
+	template <class T>
+	inline tvec3s<T> normalize(const tvec3s<T>& u) 
+	{
+		tvec3s<T> out = tvec3s<T>(u.size());
+		normalize(u, out);
+		return out;
+	}
+	template <class T>
+	inline floats magnitude(const tvec3s<T>& u) 
+	{
+		numerics<T> out = numerics<T>(u.size());
+		magnitude(u, out);
+		return out;
+	}
 }

@@ -14,16 +14,18 @@ namespace composites
 	{
 	protected:
 		T* values;
-
-	public:
 		const unsigned int N;
 
+	public:
+
+		// destructor: delete pointer 
 		~primitives()
 		{
     		delete [] this->values;
     		this->values = nullptr;
 		};
 
+		// initializer list constructor
 		primitives(std::initializer_list<T> list) : values(new T[list.size()]), N(list.size())
 		{
 			int id = 0;
@@ -31,6 +33,21 @@ namespace composites
 			{
 				this->values[id] = *i;
 				id++;
+			}
+		};
+		
+		// move constructor
+		primitives(primitives<T>&& a)  : values(a.values), N(a.N)
+		{
+			a.values = nullptr;
+		};
+
+		// copy constructor
+		explicit primitives(const primitives<T>& a)  : values(new T[a.N]), N(a.N)
+		{
+			for (unsigned int i = 0; i < N; ++i)
+			{
+				values[i] = a[i];
 			}
 		};
 
@@ -43,14 +60,6 @@ namespace composites
 				values[i] = a;
 			}
 		};
-		explicit primitives(const primitives<T>& a)  : values(new T[a.N]), N(a.N)
-		{
-			for (unsigned int i = 0; i < N; ++i)
-			{
-				values[i] = a[i];
-			}
-		};
-
 		template <class T2>
 		explicit primitives(const primitives<T2>& a)  : values(new T[a.N]), N(a.N)
 		{
@@ -65,187 +74,7 @@ namespace composites
 			return N;
 		}
 
-		inline static T get(const primitives<T>& a, const unsigned int id )
-		{
-			return a[id];
-		}
-		static void get(const primitives<T>& a, const primitives<unsigned int>& ids, primitives<T>& out )
-		{
-			for (unsigned int i = 0; i < ids.size(); ++i)
-			{
-				out[i] = a[ids[i]];
-			}
-		}
-		static void get(const primitives<T>& a, const primitives<bool>& mask, primitives<T>& out )
-		{
-			int out_i = 0;
-			for (unsigned int i = 0; i < a.size(); ++i)
-			{
-				if (mask[i])
-				{
-					out[out_i] = a[i];
-					out_i++;
-				}
-			}
-		}
-
-		inline static void set(primitives<T>& out, const unsigned int id, const T a )
-		{
-			out[id] = a;
-		}
-		static void set(primitives<T>& out, const T a )
-		{
-			for (unsigned int i = 0; i < out.size(); ++i)
-			{
-				out[i] = a;
-			}
-		}
-		static void set(primitives<T>& out, const primitives<unsigned int>& ids, const T a )
-		{
-			for (unsigned int i = 0; i < ids.size(); ++i)
-			{
-				out[ids[i]] = a;
-			}
-		}
-		static void set(const primitives<T>& out, const primitives<bool>& mask, const T a )
-		{
-			for (unsigned int i = 0; i < out.size(); ++i)
-			{
-				out[i] = mask[i]? a : out[i];
-			}
-		}
-
-
-		static void set(primitives<T>& out, const primitives<T>& a )
-		{
-			for (unsigned int i = 0; i < out.size(); ++i)
-			{
-				out[i] = a[i];
-			}
-		}
-		static void set(primitives<T>& out, const primitives<unsigned int>& ids, const primitives<T>& a )
-		{
-			for (unsigned int i = 0; i < ids.size(); ++i)
-			{
-				out[ids[i]] = a[i];
-			}
-		}
-		static void set(primitives<T>& out, const primitives<bool>& mask, const primitives<T>& a )
-		{
-			for (unsigned int i = 0; i < out.size(); ++i)
-			{
-				out[i] = mask[i]? a[i] : out[i];
-			}
-		}
-
-
-
-		template <class T2>
-		static bool eq(const primitives<T>& a, const T2 b)
-		{
-			bool out = true;
-			for (unsigned int i = 0; i < a.size(); ++i)
-			{
-				out &= a[i] == b;
-			}
-			return out;
-		}
-		template <class T2>
-		static bool ne(const primitives<T>& a, const T2 b)
-		{
-			bool out = false;
-			for (unsigned int i = 0; i < a.size(); ++i)
-			{
-				out |= a[i] != b;
-			}
-			return out;
-		}
-		template <class T2>
-		static bool eq(const primitives<T>& a, const primitives<T2>& b)
-		{
-			bool out = true;
-			for (unsigned int i = 0; i < a.size(); ++i)
-			{
-				out &= a[i] == b[i];
-			}
-			return out;
-		}
-		template <class T2>
-		static bool ne(const primitives<T>& a, const primitives<T2>& b)
-		{
-			bool out = false;
-			for (unsigned int i = 0; i < a.size(); ++i)
-			{
-				out |= a[i] != b[i];
-			}
-			return out;
-		}
-
-
-
-		template <class T2>
-		static void eq(const primitives<T>& a, const T2 b, primitives<bool>& out)
-		{
-			for (unsigned int i = 0; i < a.size(); ++i)
-			{
-				out[i] = a[i] == b;
-			}
-		}
-		template <class T2>
-		static void ne(const primitives<T>& a, const T2 b, primitives<bool>& out)
-		{
-			for (unsigned int i = 0; i < a.size(); ++i)
-			{
-				out[i] = a[i] == b;
-			}
-		}
-		template <class T2>
-		static void eq(const primitives<T>& a, const primitives<T2>& b, primitives<bool>& out)
-		{
-			for (unsigned int i = 0; i < a.size(); ++i)
-			{
-				out[i] = a[i] == b[i];
-			}
-		}
-		template <class T2>
-		static void ne(const primitives<T>& a, const primitives<T2>& b, primitives<bool>& out)
-		{
-			for (unsigned int i = 0; i < a.size(); ++i)
-			{
-				out[i] = a[i] != b[i];
-			}
-		}
-
-
-
-
-		// NOTE: all operators are suggested to be inline because they are thin wrappers of static functions
-		template <class T2>
-		inline bool operator==(const T2 b) const
-		{
-			return primitives<T>::eq(*this, b);
-		}
-		template <class T2>
-		inline bool operator!=(const T2 b) const
-		{
-			return primitives<T>::ne(*this, b);
-		}
-		template <class T2>
-		inline bool operator==(const primitives<T2>& b) const
-		{
-			return primitives<T>::eq(*this, b);
-		}
-		template <class T2>
-		inline bool operator!=(const primitives<T2>& b) const
-		{
-			return primitives<T>::ne(*this, b);
-		}
-		
-
-
-
-
-		// NOTE: all operators are suggested to be inline because they are thin wrappers of static functions
+		// NOTE: all operators should to be inline because they are thin wrappers of functions
 		inline const T& operator[](const unsigned int id ) const
 		{
 		   return this->values[id]; // reference return 
@@ -254,18 +83,203 @@ namespace composites
 		{
 		   return this->values[id]; // reference return 
 		}
-		inline const primitives<T> operator[](const primitives<bool>& mask ) const
+	
+		inline primitives<T> operator[](const primitives<bool>& mask )
 		{
-			primitives<T> out = primitives<T>(mask.N);
+			primitives<T> out = primitives<T>(mask.size());
 			get(*this, mask, out);
 			return out;
 		}
-		inline const primitives<T> operator[](const primitives<unsigned int>& ids ) const
+		inline primitives<T> operator[](const primitives<unsigned int>& ids )
 		{
-			primitives<T> out = primitives<T>(ids.N);
+			primitives<T> out = primitives<T>(ids.size());
 			get(*this, ids, out);
 			return out;
 		}
 	};
 
+
+	template <class T>
+	inline T get(const primitives<T>& a, const unsigned int id )
+	{
+		return a[id];
+	}
+	template <class T>
+	void get(const primitives<T>& a, const primitives<unsigned int>& ids, primitives<T>& out )
+	{
+		for (unsigned int i = 0; i < ids.size(); ++i)
+		{
+			out[i] = a[ids[i]];
+		}
+	}
+	template <class T>
+	void get(const primitives<T>& a, const primitives<bool>& mask, primitives<T>& out )
+	{
+		int out_i = 0;
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			if (mask[i])
+			{
+				out[out_i] = a[i];
+				out_i++;
+			}
+		}
+	}
+
+	template <class T>
+	inline void set(primitives<T>& out, const unsigned int id, const T a )
+	{
+		out[id] = a;
+	}
+	template <class T>
+	void set(primitives<T>& out, const T a )
+	{
+		for (unsigned int i = 0; i < out.size(); ++i)
+		{
+			out[i] = a;
+		}
+	}
+	template <class T>
+	void set(primitives<T>& out, const primitives<unsigned int>& ids, const T a )
+	{
+		for (unsigned int i = 0; i < ids.size(); ++i)
+		{
+			out[ids[i]] = a;
+		}
+	}
+	template <class T>
+	void set(const primitives<T>& out, const primitives<bool>& mask, const T a )
+	{
+		for (unsigned int i = 0; i < out.size(); ++i)
+		{
+			out[i] = mask[i]? a : out[i];
+		}
+	}
+
+
+	template <class T>
+	void set(primitives<T>& out, const primitives<T>& a )
+	{
+		for (unsigned int i = 0; i < out.size(); ++i)
+		{
+			out[i] = a[i];
+		}
+	}
+	template <class T>
+	void set(primitives<T>& out, const primitives<unsigned int>& ids, const primitives<T>& a )
+	{
+		for (unsigned int i = 0; i < ids.size(); ++i)
+		{
+			out[ids[i]] = a[i];
+		}
+	}
+	template <class T>
+	void set(primitives<T>& out, const primitives<bool>& mask, const primitives<T>& a )
+	{
+		for (unsigned int i = 0; i < out.size(); ++i)
+		{
+			out[i] = mask[i]? a[i] : out[i];
+		}
+	}
+
+
+
+	template <class T>
+	bool eq(const primitives<T>& a, const T b)
+	{
+		bool out = true;
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out &= a[i] == b;
+		}
+		return out;
+	}
+	template <class T>
+	bool ne(const primitives<T>& a, const T b)
+	{
+		bool out = false;
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out |= a[i] != b;
+		}
+		return out;
+	}
+	template <class T>
+	bool eq(const primitives<T>& a, const primitives<T>& b)
+	{
+		bool out = true;
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out &= a[i] == b[i];
+		}
+		return out;
+	}
+	template <class T>
+	bool ne(const primitives<T>& a, const primitives<T>& b)
+	{
+		bool out = false;
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out |= a[i] != b[i];
+		}
+		return out;
+	}
+
+
+
+	template <class T>
+	void eq(const primitives<T>& a, const T b, primitives<bool>& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] == b;
+		}
+	}
+	template <class T>
+	void ne(const primitives<T>& a, const T b, primitives<bool>& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] == b;
+		}
+	}
+	template <class T>
+	void eq(const primitives<T>& a, const primitives<T>& b, primitives<bool>& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] == b[i];
+		}
+	}
+	template <class T>
+	void ne(const primitives<T>& a, const primitives<T>& b, primitives<bool>& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] != b[i];
+		}
+	}
+
+
+	// NOTE: all operators are suggested to be inline because they are thin wrappers of functions
+	template <class T>
+	inline bool operator==(const primitives<T>& a, const T b)
+	{
+		return primitives<T>::eq(a, b);
+	}
+	template <class T>
+	inline bool operator!=(const primitives<T>& a, const T b)
+	{
+		return primitives<T>::ne(a, b);
+	}
+	template <class T>
+	inline bool operator==(const primitives<T>& a, const primitives<T>& b)
+	{
+		return primitives<T>::eq(a, b);
+	}
+	template <class T>
+	inline bool operator!=(const primitives<T>& a, const primitives<T>& b)
+	{
+		return primitives<T>::ne(a, b);
+	}
 }

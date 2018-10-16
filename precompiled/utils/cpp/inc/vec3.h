@@ -2,13 +2,20 @@
 
 #include <math.h>       // ceil, round 
 
+#include "vec2.h"
+
 namespace composites
 {
 	template <class T>
 	struct tvec3
 	{
 		T x, y, z;
-		tvec3() {};
+
+		// destructor: don't implement, we want it to be trivial so tvec3 can be built at compile time
+		// ~tvec3() {};
+
+		// default constructor
+		constexpr tvec3() : x(0), y(0), z(0) {};
 
 		template<class T2>
 		constexpr tvec3(T2 x) : x(x), y(x), z(x) {};
@@ -19,12 +26,11 @@ namespace composites
 		explicit constexpr tvec3(tvec3<T2> u) : x(u.x), y(u.y), z(u.z) {};
 
 		template<class T2, class T3>
-		explicit constexpr tvec3(const tvec3<T2> u, T3 z) : x(u.x), y(u.y), z(z) {};
+		explicit constexpr tvec3(const tvec2<T2> u, T3 z) : x(u.x), y(u.y), z(z) {};
 
 		template<class T2, class T3>
-		explicit constexpr tvec3(T2 x, tvec3<T3> u) : x(x), y(u.y), z(u.z) {};
+		explicit constexpr tvec3(T2 x, tvec2<T3> u) : x(x), y(u.y), z(u.z) {};
 
-		~tvec3() {};
 
 		static inline tvec3<bool> gt(const tvec3<T> u, const T a)
 		{

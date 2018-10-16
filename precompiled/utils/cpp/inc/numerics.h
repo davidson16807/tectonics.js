@@ -18,457 +18,16 @@ namespace composites
 	{
 
 	public:
-		numerics(std::initializer_list<T> list)  			: primitives<T>(list)  {};
+		numerics(std::initializer_list<T> list)  	: primitives<T>(list)  {};
+		numerics(numerics<T>&&a)  					: primitives<T>(a) {};
 
-		explicit numerics(const unsigned int N) 			: primitives<T>(N) {};
+		explicit numerics(const unsigned int N) 	: primitives<T>(N) {};
 		explicit numerics(const unsigned int N, const T a) : primitives<T>(N, a) {};
 		explicit numerics(const numerics<T>& a)  	: primitives<T>(a) {};
 
 		template <class T2>
 		explicit numerics(const numerics<T2>& a)  : primitives<T>(a) {};
 
-		static T min(const numerics<T>& a)
-		{
-			T out = a[0];
-			for (unsigned int i = 0; i < a.size(); ++i)
-			{
-				out = a[i] < out? a[i] : out;
-			}
-			return out;
-		}
-		static T max(const numerics<T>& a)
-		{
-			T out = a[0];
-			for (unsigned int i = 0; i < a.size(); ++i)
-			{
-				out = a[i] > out? a[i] : out;
-			}
-			return out;
-		}
-
-
-
-		template <class T2>
-		static void max(const numerics<T>& a, const T2 b, numerics<T>& out)
-		{
-			for (unsigned int i = 0; i < a.size(); ++i)
-			{
-				out[i] = a[i] > b? a[i] : b;
-			}
-		}
-		template <class T2>
-		static void min(const numerics<T>& a, const T2 b, numerics<T>& out)
-		{
-			for (unsigned int i = 0; i < a.size(); ++i)
-			{
-				out[i] = a[i] < b? a[i] : b;
-			}
-		}
-
-
-
-		template <class T2>
-		static void max(const numerics<T>& a, const numerics<T2>& b, numerics<T>& out)
-		{
-			for (unsigned int i = 0; i < a.size(); ++i)
-			{
-				out[i] = a[i] > b[i]? a[i] : b[i];
-			}
-		}
-		template <class T2>
-		static void min(const numerics<T>& a, const numerics<T2>& b, numerics<T>& out)
-		{
-			for (unsigned int i = 0; i < a.size(); ++i)
-			{
-				out[i] = a[i] < b[i]? a[i] : b[i];
-			}
-		}
-
-
-		template <class Tlo, class Thi>
-		static void clamp(const numerics<T>& a, const Tlo lo, const Thi hi, const numerics<T>& out)
-		{
-			for (unsigned int i = 0; i < a.size(); ++i)
-			{
-				out[i] = a[i] > hi? hi : a[i] < lo? lo : a[i];
-			}
-		}
-		template <class Tlo, class Thi>
-		static void clamp(const numerics<T>& a, const Tlo lo, const numerics<Thi>& hi, const numerics<T>& out)
-		{
-			for (unsigned int i = 0; i < a.size(); ++i)
-			{
-				out[i] = a[i] > hi[i]? hi[i] : a[i] < lo? lo : a[i];
-			}
-		}
-		template <class Tlo, class Thi>
-		static void clamp(const numerics<T>& a, const numerics<Tlo>& lo, const Thi hi, const numerics<T>& out)
-		{
-			for (unsigned int i = 0; i < a.size(); ++i)
-			{
-				out[i] = a[i] > hi? hi : a[i] < lo[i]? lo[i] : a[i];
-			}
-		}
-		template <class Tlo, class Thi>
-		static void clamp(const numerics<T>& a, const numerics<Tlo>& lo, const numerics<Thi>& hi, const numerics<T>& out)
-		{
-			for (unsigned int i = 0; i < a.size(); ++i)
-			{
-				out[i] = a[i] > hi[i]? hi[i] : a[i];
-			}
-			for (unsigned int i = 0; i < a.size(); ++i)
-			{
-				out[i] = a[i] < lo[i]? lo[i] : out[i];
-			}
-		}
-
-		template <class T2>
-		static void gt(const numerics<T>& a, const T2 b, bools& out)
-		{
-			for (unsigned int i = 0; i < a.size(); ++i)
-			{
-				out[i] = a[i] > b;
-			}
-		}
-		template <class T2>
-		static void gte(const numerics<T>& a, const T2 b, bools& out)
-		{
-			for (unsigned int i = 0; i < a.size(); ++i)
-			{
-				out[i] = a[i] >= b;
-			}
-		}
-		template <class T2>
-		static void lt(const numerics<T>& a, const T2 b, bools& out)
-		{
-			for (unsigned int i = 0; i < a.size(); ++i)
-			{
-				out[i] = a[i] < b;
-			}
-		}
-		template <class T2>
-		static void lte(const numerics<T>& a, const T2 b, bools& out)
-		{
-			for (unsigned int i = 0; i < a.size(); ++i)
-			{
-				out[i] = a[i] <= b;
-			}
-		}
-
-
-
-
-
-		template <class T2>
-		static void gt(const numerics<T>& a, const numerics<T2>& b, bools& out)
-		{
-			for (unsigned int i = 0; i < a.size(); ++i)
-			{
-				out[i] = a[i] > b[i];
-			}
-		}
-		template <class T2>
-		static void gte(const numerics<T>& a, const numerics<T2>& b, bools& out)
-		{
-			for (unsigned int i = 0; i < a.size(); ++i)
-			{
-				out[i] = a[i] >= b[i];
-			}
-		}
-		template <class T2>
-		static void lt(const numerics<T>& a, const numerics<T2>& b, bools& out)
-		{
-			for (unsigned int i = 0; i < a.size(); ++i)
-			{
-				out[i] = a[i] <= b[i];
-			}
-		}
-		template <class T2>
-		static void lte(const numerics<T>& a, const numerics<T2>& b, bools& out)
-		{
-			for (unsigned int i = 0; i < a.size(); ++i)
-			{
-				out[i] = a[i] < b[i];
-			}
-		}
-
-
-
-
-
-		template <class T2, class T3>
-		static void add(const numerics<T>& a, const T2 b, numerics<T3>& out)
-		{
-			for (unsigned int i = 0; i < a.size(); ++i)
-			{
-				out[i] = a[i] + b;
-			}
-		}
-		template <class T2, class T3>
-		static void sub(const numerics<T>& a, const T2 b, numerics<T3>& out)
-		{
-			for (unsigned int i = 0; i < a.size(); ++i)
-			{
-				out[i] = a[i] - b;
-			}
-		}
-		template <class T2, class T3>
-		static void mult(const numerics<T>& a, const T2 b, numerics<T3>& out)
-		{
-			for (unsigned int i = 0; i < a.size(); ++i)
-			{
-				out[i] = a[i] * b;
-			}
-		}
-		template <class T2, class T3>
-		static void div(const numerics<T>& a, const T2 b, numerics<T3>& out)
-		{
-			const T ainv = 1./b;
-			for (unsigned int i = 0; i < a.size(); ++i)
-			{
-				out[i] = a[i] / b;
-			}
-		}
-
-
-
-		template <class T2, class T3>
-		static void add(const numerics<T>& a, const numerics<T2>& b, numerics<T3>& out)
-		{
-			for (unsigned int i = 0; i < a.size(); ++i)
-			{
-				out[i] = a[i] + b[i];
-			}
-		}
-		template <class T2, class T3>
-		static void sub(const numerics<T>& a, const numerics<T2>& b, numerics<T3>& out)
-		{
-			for (unsigned int i = 0; i < a.size(); ++i)
-			{
-				out[i] = a[i] - b[i];
-			}
-		}
-		template <class T2, class T3>
-		static void mult(const numerics<T>& a, const numerics<T2>& b, numerics<T3>& out)
-		{
-			for (unsigned int i = 0; i < a.size(); ++i)
-			{
-				out[i] = a[i] * b[i];
-			}
-		}
-		template <class T2, class T3>
-		static void div(const numerics<T>& a, const numerics<T2>& b, numerics<T3>& out)
-		{
-			for (unsigned int i = 0; i < a.size(); ++i)
-			{
-				out[i] = a[i] / b[i];
-			}
-		}
-		
-		// NOTE: all wrappers are suggested to be inline because they are thin wrappers of static functions
-
-		template <class T2, class T3>
-		inline numerics<T3> operator>(const T2 b) const
-		{
-			numerics<T3> out = numerics<T3>(this->N);
-			numerics<T>::gt(*this, b, out);
-			return out;
-		}
-		template <class T2, class T3>
-		inline numerics<T3> operator>=(const T2 b) const
-		{
-			numerics<T3> out = numerics<T3>(this->N);
-			numerics<T>::gte(*this, b, out);
-			return out;
-		}
-		template <class T2, class T3>
-		inline numerics<T3> operator<(const T2 b) const
-		{
-			numerics<T3> out = numerics<T3>(this->N);
-			numerics<T>::lt(*this, b, out);
-			return out;
-		}
-		template <class T2, class T3>
-		inline numerics<T3> operator<=(const T2 b) const
-		{
-			numerics<T3> out = numerics<T3>(this->N);
-			numerics<T>::lte(*this, b, out);
-			return out;
-		}
-
-		
-
-		template <class T2, class T3>
-		inline numerics<T3> operator>(const numerics<T2>& b) const
-		{
-			numerics<T3> out = numerics<T3>(this->N);
-			numerics<T>::gt(*this, b, out);
-			return out;
-		}
-		template <class T2, class T3>
-		inline numerics<T3> operator>=(const numerics<T2>& b) const
-		{
-			numerics<T3> out = numerics<T3>(this->N);
-			numerics<T>::gte(*this, b, out);
-			return out;
-		}
-		template <class T2, class T3>
-		inline numerics<T3> operator<(const numerics<T2>& b) const
-		{
-			numerics<T3> out = numerics<T3>(this->N);
-			numerics<T>::lt(*this, b, out);
-			return out;
-		}
-		template <class T2, class T3>
-		inline numerics<T3> operator<=(const numerics<T2>& b) const
-		{
-			numerics<T3> out = numerics<T3>(this->N);
-			numerics<T>::lte(*this, b, out);
-			return out;
-		}
-
-
-
-
-
-
-		template <class T2>
-		inline numerics<T>& operator+=(const T2 b) 
-		{
-			numerics<T>::add(*this, b, *this);
-			return *this;
-		}
-		template <class T2>
-		inline numerics<T>& operator-=(const T2 b) 
-		{
-			numerics<T>::sub(*this, b, *this);
-			return *this;
-		}
-		template <class T2>
-		inline numerics<T>& operator*=(const T2 b) 
-		{
-			numerics<T>::mult(*this, b, *this);
-			return *this;
-		}
-		template <class T2>
-		inline numerics<T>& operator/=(const T2 b) 
-		{
-			numerics<T>::div(*this, b, *this);
-			return *this;
-		}
-
-
-		template <class T2>
-		inline numerics<T>& operator+=(const numerics<T2>& b) 
-		{
-			numerics<T>::add(*this, b, *this);
-			return *this;
-		}
-		template <class T2>
-		inline numerics<T>& operator-=(const numerics<T2>& b) 
-		{
-			numerics<T>::sub(*this, b, *this);
-			return *this;
-		}
-		template <class T2>
-		inline numerics<T>& operator*=(const numerics<T2>& b) 
-		{
-			numerics<T>::mult(*this, b, *this);
-			return *this;
-		}
-		template <class T2>
-		inline numerics<T>& operator/=(const numerics<T2>& b) 
-		{
-			numerics<T>::div(*this, b, *this);
-			return *this;
-		}
-
-		// NOTE: prefix increment/decrement
-		inline numerics<T>& operator++()  
-		{  
-			numerics<T>::add(*this, 1, *this);
-			return *this;
-		}  
-		inline numerics<T>& operator--()  
-		{  
-			numerics<T>::add(*this, 1, *this);
-			return *this;
-		}  
-
-		// NOTE: postfix increment/decrement
-		inline numerics<T> operator++(int)  
-		{  
-			numerics<T>::add(*this, 1, *this);
-			return *this;
-		}  
-		inline numerics<T> operator--(int)  
-		{  
-			numerics<T>::add(*this, 1, *this);
-			return *this;
-		}  
-		
-
-
-
-
-		template <class T2, class T3>
-		inline numerics<T3> operator+(const T2 b) const
-		{
-			numerics<T3> out = numerics<T3>(this->N);
-			numerics<T>::add(*this, b, out);
-			return out;
-		}
-		template <class T2, class T3>
-		inline numerics<T3> operator-(const T2 b) const
-		{
-			numerics<T3> out = numerics<T3>(this->N);
-			numerics<T>::sub(*this, b, out);
-			return out;
-		}
-		template <class T2, class T3>
-		inline numerics<T> operator*(const T2 b) const
-		{
-			numerics<T3> out = numerics<T3>(this->N);
-			numerics<T>::mult(*this, b, out);
-			return out;
-		}
-		template <class T2, class T3>
-		inline numerics<T3> operator/(const T2 b) const
-		{
-			numerics<T3> out = numerics<T3>(this->N);
-			numerics<T>::div(*this, b, out);
-			return out;
-		}
-
-
-		template <class T2, class T3>
-		inline numerics<T3> operator+(const numerics<T2>& b) const
-		{
-			numerics<T3> out = numerics<T3>(this->N);
-			numerics<T>::add(*this, b, out);
-			return out;
-		}
-		template <class T2, class T3>
-		inline numerics<T3> operator-(const numerics<T2>& b) const
-		{
-			numerics<T3> out = numerics<T3>(this->N);
-			numerics<T>::sub(*this, b, out);
-			return out;
-		}
-		template <class T2, class T3>
-		inline numerics<T3> operator*(const numerics<T2>& b) const
-		{
-			numerics<T3> out = numerics<T3>(this->N);
-			numerics<T>::mult(*this, b, out);
-			return out;
-		}
-		template <class T2, class T3>
-		inline numerics<T3> operator/(const numerics<T2>& b) const
-		{
-			numerics<T3> out = numerics<T3>(this->N);
-			numerics<T>::div(*this, b, out);
-			return out;
-		}
 
 		inline const T& operator[](const unsigned int id ) const
 		{
@@ -495,5 +54,455 @@ namespace composites
 	using floats = numerics<float>;
 	using ints = numerics<int>;
 	using uints = numerics<unsigned int>;
+
+
+	template <class T>
+	T min(const numerics<T>& a)
+	{
+		T out = a[0];
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out = a[i] < out? a[i] : out;
+		}
+		return out;
+	}
+	template <class T>
+	T max(const numerics<T>& a)
+	{
+		T out = a[0];
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out = a[i] > out? a[i] : out;
+		}
+		return out;
+	}
+
+
+
+	template <class T, class T2>
+	void max(const numerics<T>& a, const T2 b, numerics<T>& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] > b? a[i] : b;
+		}
+	}
+	template <class T, class T2>
+	void min(const numerics<T>& a, const T2 b, numerics<T>& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] < b? a[i] : b;
+		}
+	}
+
+
+
+	template <class T, class T2>
+	void max(const numerics<T>& a, const numerics<T2>& b, numerics<T>& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] > b[i]? a[i] : b[i];
+		}
+	}
+	template <class T, class T2>
+	void min(const numerics<T>& a, const numerics<T2>& b, numerics<T>& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] < b[i]? a[i] : b[i];
+		}
+	}
+
+
+	template <class T, class Tlo, class Thi>
+	void clamp(const numerics<T>& a, const Tlo lo, const Thi hi, const numerics<T>& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] > hi? hi : a[i] < lo? lo : a[i];
+		}
+	}
+	template <class T, class Tlo, class Thi>
+	void clamp(const numerics<T>& a, const Tlo lo, const numerics<Thi>& hi, const numerics<T>& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] > hi[i]? hi[i] : a[i] < lo? lo : a[i];
+		}
+	}
+	template <class T, class Tlo, class Thi>
+	void clamp(const numerics<T>& a, const numerics<Tlo>& lo, const Thi hi, const numerics<T>& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] > hi? hi : a[i] < lo[i]? lo[i] : a[i];
+		}
+	}
+	template <class T, class Tlo, class Thi>
+	void clamp(const numerics<T>& a, const numerics<Tlo>& lo, const numerics<Thi>& hi, const numerics<T>& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] > hi[i]? hi[i] : a[i];
+		}
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] < lo[i]? lo[i] : out[i];
+		}
+	}
+
+	template <class T, class T2>
+	void gt(const numerics<T>& a, const T2 b, bools& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] > b;
+		}
+	}
+	template <class T, class T2>
+	void gte(const numerics<T>& a, const T2 b, bools& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] >= b;
+		}
+	}
+	template <class T, class T2>
+	void lt(const numerics<T>& a, const T2 b, bools& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] < b;
+		}
+	}
+	template <class T, class T2>
+	void lte(const numerics<T>& a, const T2 b, bools& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] <= b;
+		}
+	}
+
+
+
+
+
+	template <class T, class T2>
+	void gt(const numerics<T>& a, const numerics<T2>& b, bools& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] > b[i];
+		}
+	}
+	template <class T, class T2>
+	void gte(const numerics<T>& a, const numerics<T2>& b, bools& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] >= b[i];
+		}
+	}
+	template <class T, class T2>
+	void lt(const numerics<T>& a, const numerics<T2>& b, bools& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] <= b[i];
+		}
+	}
+	template <class T, class T2>
+	void lte(const numerics<T>& a, const numerics<T2>& b, bools& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] < b[i];
+		}
+	}
+
+
+
+
+
+	template <class T, class T2, class T3>
+	void add(const numerics<T>& a, const T2 b, numerics<T3>& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] + b;
+		}
+	}
+	template <class T, class T2, class T3>
+	void sub(const numerics<T>& a, const T2 b, numerics<T3>& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] - b;
+		}
+	}
+	template <class T, class T2, class T3>
+	void mult(const numerics<T>& a, const T2 b, numerics<T3>& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] * b;
+		}
+	}
+	template <class T, class T2, class T3>
+	void div(const numerics<T>& a, const T2 b, numerics<T3>& out)
+	{
+		const T ainv = 1./b;
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] / b;
+		}
+	}
+
+
+
+	template <class T, class T2, class T3>
+	void add(const numerics<T>& a, const numerics<T2>& b, numerics<T3>& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] + b[i];
+		}
+	}
+	template <class T, class T2, class T3>
+	void sub(const numerics<T>& a, const numerics<T2>& b, numerics<T3>& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] - b[i];
+		}
+	}
+	template <class T, class T2, class T3>
+	void mult(const numerics<T>& a, const numerics<T2>& b, numerics<T3>& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] * b[i];
+		}
+	}
+	template <class T, class T2, class T3>
+	void div(const numerics<T>& a, const numerics<T2>& b, numerics<T3>& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] / b[i];
+		}
+	}
+	
+	// NOTE: all wrappers are suggested to be inline because they are thin wrappers of functions
+
+	template <class T, class T2, class T3>
+	inline numerics<T3> operator>(const numerics<T>& a, const T2 b)
+	{
+		numerics<T3> out = numerics<T3>(a.N);
+		numerics<T>::gt(a, b, out);
+		return out;
+	}
+	template <class T, class T2, class T3>
+	inline numerics<T3> operator>=(const numerics<T>& a, const T2 b)
+	{
+		numerics<T3> out = numerics<T3>(a.N);
+		numerics<T>::gte(a, b, out);
+		return out;
+	}
+	template <class T, class T2, class T3>
+	inline numerics<T3> operator<(const numerics<T>& a, const T2 b)
+	{
+		numerics<T3> out = numerics<T3>(a.N);
+		numerics<T>::lt(a, b, out);
+		return out;
+	}
+	template <class T, class T2, class T3>
+	inline numerics<T3> operator<=(const numerics<T>& a, const T2 b)
+	{
+		numerics<T3> out = numerics<T3>(a.N);
+		numerics<T>::lte(a, b, out);
+		return out;
+	}
+
+	
+
+	template <class T, class T2, class T3>
+	inline numerics<T3> operator>(const numerics<T>& a, const numerics<T2>& b)
+	{
+		numerics<T3> out = numerics<T3>(a.N);
+		numerics<T>::gt(a, b, out);
+		return out;
+	}
+	template <class T, class T2, class T3>
+	inline numerics<T3> operator>=(const numerics<T>& a, const numerics<T2>& b)
+	{
+		numerics<T3> out = numerics<T3>(a.N);
+		numerics<T>::gte(a, b, out);
+		return out;
+	}
+	template <class T, class T2, class T3>
+	inline numerics<T3> operator<(const numerics<T>& a, const numerics<T2>& b)
+	{
+		numerics<T3> out = numerics<T3>(a.N);
+		numerics<T>::lt(a, b, out);
+		return out;
+	}
+	template <class T, class T2, class T3>
+	inline numerics<T3> operator<=(const numerics<T>& a, const numerics<T2>& b)
+	{
+		numerics<T3> out = numerics<T3>(a.N);
+		numerics<T>::lte(a, b, out);
+		return out;
+	}
+
+
+
+
+
+
+	template <class T, class T2>
+	inline numerics<T>& operator+=(const numerics<T>& a, const T2 b) 
+	{
+		numerics<T>::add(a, b, a);
+		return a;
+	}
+	template <class T, class T2>
+	inline numerics<T>& operator-=(const numerics<T>& a, const T2 b) 
+	{
+		numerics<T>::sub(a, b, a);
+		return a;
+	}
+	template <class T, class T2>
+	inline numerics<T>& operator*=(const numerics<T>& a, const T2 b) 
+	{
+		numerics<T>::mult(a, b, a);
+		return a;
+	}
+	template <class T, class T2>
+	inline numerics<T>& operator/=(const numerics<T>& a, const T2 b) 
+	{
+		numerics<T>::div(a, b, a);
+		return a;
+	}
+
+
+	template <class T, class T2>
+	inline numerics<T>& operator+=(const numerics<T>& a, const numerics<T2>& b) 
+	{
+		numerics<T>::add(a, b, a);
+		return a;
+	}
+	template <class T, class T2>
+	inline numerics<T>& operator-=(const numerics<T>& a, const numerics<T2>& b) 
+	{
+		numerics<T>::sub(a, b, a);
+		return a;
+	}
+	template <class T, class T2>
+	inline numerics<T>& operator*=(const numerics<T>& a, const numerics<T2>& b) 
+	{
+		numerics<T>::mult(a, b, a);
+		return a;
+	}
+	template <class T, class T2>
+	inline numerics<T>& operator/=(const numerics<T>& a, const numerics<T2>& b) 
+	{
+		numerics<T>::div(a, b, a);
+		return a;
+	}
+
+	// NOTE: prefix increment/decrement
+	template <class T>
+	inline numerics<T>& operator++(const numerics<T>& a)  
+	{  
+		numerics<T>::add(a, 1, a);
+		return a;
+	}  
+	template <class T>
+	inline numerics<T>& operator--(const numerics<T>& a)  
+	{  
+		numerics<T>::add(a, 1, a);
+		return a;
+	}  
+
+	// NOTE: postfix increment/decrement
+	template <class T>
+	inline numerics<T> operator++(const numerics<T>& a, int)  
+	{  
+		numerics<T>::add(a, 1, a);
+		return a;
+	}  
+	template <class T>
+	inline numerics<T> operator--(const numerics<T>& a, int)  
+	{  
+		numerics<T>::add(a, 1, a);
+		return a;
+	}  
+	
+
+
+
+
+	template <class T, class T2, class T3>
+	inline numerics<T3> operator+(const numerics<T>& a, const T2 b)
+	{
+		numerics<T3> out = numerics<T3>(a.N);
+		numerics<T>::add(a, b, out);
+		return out;
+	}
+	template <class T, class T2, class T3>
+	inline numerics<T3> operator-(const numerics<T>& a, const T2 b)
+	{
+		numerics<T3> out = numerics<T3>(a.N);
+		numerics<T>::sub(a, b, out);
+		return out;
+	}
+	template <class T, class T2, class T3>
+	inline numerics<T> operator*(const numerics<T>& a, const T2 b)
+	{
+		numerics<T3> out = numerics<T3>(a.N);
+		numerics<T>::mult(a, b, out);
+		return out;
+	}
+	template <class T, class T2, class T3>
+	inline numerics<T3> operator/(const numerics<T>& a, const T2 b)
+	{
+		numerics<T3> out = numerics<T3>(a.N);
+		numerics<T>::div(a, b, out);
+		return out;
+	}
+
+
+	template <class T, class T2, class T3>
+	inline numerics<T3> operator+(const numerics<T>& a, const numerics<T2>& b)
+	{
+		numerics<T3> out = numerics<T3>(a.N);
+		numerics<T>::add(a, b, out);
+		return out;
+	}
+	template <class T, class T2, class T3>
+	inline numerics<T3> operator-(const numerics<T>& a, const numerics<T2>& b)
+	{
+		numerics<T3> out = numerics<T3>(a.N);
+		numerics<T>::sub(a, b, out);
+		return out;
+	}
+	template <class T, class T2, class T3>
+	inline numerics<T3> operator*(const numerics<T>& a, const numerics<T2>& b)
+	{
+		numerics<T3> out = numerics<T3>(a.N);
+		numerics<T>::mult(a, b, out);
+		return out;
+	}
+	template <class T, class T2, class T3>
+	inline numerics<T3> operator/(const numerics<T>& a, const numerics<T2>& b)
+	{
+		numerics<T3> out = numerics<T3>(a.N);
+		numerics<T>::div(a, b, out);
+		return out;
+	}
 
 }
