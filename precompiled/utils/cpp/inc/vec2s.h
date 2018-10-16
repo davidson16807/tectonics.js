@@ -1,64 +1,72 @@
 #pragma once
 
-#include "vec2s.h"
+#include <initializer_list>// initializer_list
+#include <iostream>// cout
+
 #include "numerics.h"
 
 namespace composites
 {
 	template<class T>
-	class vec2s_template : public numerics_template<vec2_template<T>>
+	class tvec2s : public numerics<tvec2<T>>
 	{
-
 	public:
-		vec2s_template(const unsigned int N) : numerics_template<vec2_template<T>>(N) {};
+		tvec2s(std::initializer_list<tvec2<T>> list)  			: numerics<tvec2<T>>(list) {};
+		tvec2s(numerics<tvec2<T>>&& a)							: numerics<tvec2<T>>(a) {};
+		explicit tvec2s(const unsigned int N) 					: numerics<tvec2<T>>(N) {};
+		explicit tvec2s(const unsigned int N, const tvec2<T> a)	: numerics<tvec2<T>>(N,a) {};
+		explicit tvec2s(const numerics<tvec2<T>>& a)			: numerics<tvec2<T>>(a) {};
 
-		vec2s_template(const unsigned int N, const T x) : numerics_template<vec2_template<T>>(N)
+		template <class T2>
+		explicit tvec2s(const numerics<tvec2<T2>>& a)			: numerics<tvec2<T>>(a) {};
+
+		explicit tvec2s(const unsigned int N, const T x) : numerics<tvec2<T>>(N)
 		{
-			for (int i = 0; i < this->N; ++i)
+			for (unsigned int i = 0; i < this->N; ++i)
 			{
 				this->values[i].x = x;
 				this->values[i].y = x;
 			}
 		};
 
-		vec2s_template(const numerics_template<T>& x)   : numerics_template<vec2_template<T>>(x.N)
+		explicit tvec2s(const numerics<T>& x) : numerics<tvec2<T>>(x.N)
 		{
-			for (int i = 0; i < this->N; ++i)
+			for (unsigned int i = 0; i < this->N; ++i)
 			{
 				this->values[i].x = x[i];
 				this->values[i].y = x[i];
 			}
 		};
 
-		vec2s_template(const unsigned int N, const T x, const T y) : numerics_template<vec2_template<T>>(N)
+		explicit tvec2s(const unsigned int N, const T x, const T y) : numerics<tvec2<T>>(N)
 		{
-			for (int i = 0; i < this->N; ++i)
+			for (unsigned int i = 0; i < this->N; ++i)
 			{
 				this->values[i].x = x;
 				this->values[i].y = y;
 			}
 		};
-		vec2s_template(const numerics_template<T>& x, const T y)  : numerics_template<vec2_template<T>>(x.N)
+		explicit tvec2s(const numerics<T>& x, const T y)  : numerics<tvec2<T>>(x.N)
 		{
-			for (int i = 0; i < this->N; ++i)
+			for (unsigned int i = 0; i < this->N; ++i)
 			{
 				this->values[i].x = x[i];
 				this->values[i].y = y;
 			}
 		};
 
-		vec2s_template(const T x, const numerics_template<T>& y)  : numerics_template<vec2_template<T>>(y.N)
+		explicit tvec2s(const T x, const numerics<T>& y)  : numerics<tvec2<T>>(y.N)
 		{
-			for (int i = 0; i < this->N; ++i)
+			for (unsigned int i = 0; i < this->N; ++i)
 			{
 				this->values[i].x = x;
 				this->values[i].y = y[i];
 			}
 		};
 
-		vec2s_template(const numerics_template<T>& x, const numerics_template<T>& y)   : numerics_template<vec2_template<T>>(y.N)
+		explicit tvec2s(const numerics<T>& x, const numerics<T>& y)   : numerics<tvec2<T>>(y.N)
 		{
-			for (int i = 0; i < this->N; ++i)
+			for (unsigned int i = 0; i < this->N; ++i)
 			{
 				this->values[i].x = x[i];
 				this->values[i].y = y[i];
@@ -66,100 +74,175 @@ namespace composites
 		};
 
 
-		static void dot (const vec2s_template<T>& u, const vec2_template<T> v, numerics_template<T>& out) {
-			for (int i = 0; i < u.size(); ++i)
-			{
-				out[i] = vec2_template<T>::dot(u[i], v);
-			}
-		}
-		static void cross (const vec2s_template<T>& u, const vec2_template<T> v, vec2s_template<T>& out) 
-		{
-			for (int i = 0; i < u.size(); ++i)
-			{
-				out[i] = vec2_template<T>::cross(u[i], v);
-			}
-		}
-		static void hadamard (const vec2s_template<T>& u, const vec2_template<T> v, vec2s_template<T>& out) {
-			for (int i = 0; i < u.size(); ++i)
-			{
-				out[i] = vec2_template<T>::hadamard(u[i], v);
-			}
-		}
-		static void distance(const vec2s_template<T>& u, const vec2_template<T> v, numerics_template<T>& out) 
-		{
-			for (int i = 0; i < u.size(); ++i)
-			{
-				out[i] = vec2_template<T>::distance(u[i], v);
-			}
-		}
-
-
-		static void dot (const vec2s_template<T>& u, const vec2s_template<T>& v, numerics_template<T>& out) {
-			for (int i = 0; i < u.size(); ++i)
-			{
-				out[i] = vec2_template<T>::dot(u[i], v[i]);
-			}
-		}
-		static void cross (const vec2s_template<T>& u, const vec2s_template<T>& v, vec2s_template<T>& out) 
-		{
-			for (int i = 0; i < u.size(); ++i)
-			{
-				out[i] = vec2_template<T>::cross(u[i], v[i]);
-			}
-		}
-		static void hadamard (const vec2s_template<T>& u, const vec2s_template<T>& v, vec2s_template<T>& out) {
-			for (int i = 0; i < u.size(); ++i)
-			{
-				out[i] = vec2_template<T>::hadamard(u[i], v[i]);
-			}
-		}
-		static void distance(const vec2s_template<T>& u, const vec2s_template<T>& v, numerics_template<T>& out) 
-		{
-			for (int i = 0; i < u.size(); ++i)
-			{
-				out[i] = vec2_template<T>::distance(u[i], v[i]);
-			}
-		}
-
-		static void magnitude(const vec2s_template<T>& u, numerics_template<T>& out) 
-		{
-			for (int i = 0; i < u.size(); ++i)
-			{
-				out[i] = u[i].magnitude();
-			}
-		}
-		static void normalize(const vec2s_template<T>& u, numerics_template<T>& out) 
-		{
-			for (int i = 0; i < u.size(); ++i)
-			{
-				out[i] = u[i].normalize();
-			}
-		}
-
-		const T& operator[](const unsigned int id ) const
+		inline const tvec2<T>& operator[](const unsigned int id ) const
 		{
 		   return this->values[id]; // reference return 
 		}
-		T& operator[](const unsigned int id )
+		inline tvec2<T>& operator[](const unsigned int id )
 		{
 		   return this->values[id]; // reference return 
 		}
-		const vec2s_template<T> operator[](const primitives_template<bool>& mask ) const
+		inline const tvec2s<T> operator[](const primitives<bool>& mask ) const
 		{
-			vec2s_template<T> out = vec2s_template<T>(mask.N);
+			tvec2s<T> out = tvec2s<T>(mask.size());
 			get(*this, mask, out);
 			return out;
 		}
-		const vec2s_template<T> operator[](const primitives_template<unsigned int>& ids ) const
+		inline const tvec2s<T> operator[](const primitives<unsigned int>& ids ) const
 		{
-			vec2s_template<T> out = vec2s_template<T>(ids.N);
+			tvec2s<T> out = tvec2s<T>(ids.size());
 			get(*this, ids, out);
 			return out;
 		}
 	};
 
-	using vec2s = vec2s_template<float>;
-	using ivec2s = vec2s_template<int>;
-	using uivec2s = vec2s_template<unsigned int>;
-	using bvec2s = vec2s_template<bool>;
+	using vec2s = tvec2s<float>;
+	using ivec2s = tvec2s<int>;
+	using uivec2s = tvec2s<unsigned int>;
+	using bvec2s = tvec2s<bool>;
+
+
+	template <class T>
+	void dot (const tvec2s<T>& u, const tvec2<T> v, numerics<T>& out) {
+		for (unsigned int i = 0; i < u.size(); ++i)
+		{
+			out[i] = dot(u[i], v);
+		}
+	}
+	template <class T>
+	void cross (const tvec2s<T>& u, const tvec2<T> v, tvec2s<T>& out) 
+	{
+		for (unsigned int i = 0; i < u.size(); ++i)
+		{
+			out[i] = cross(u[i], v);
+		}
+	}
+	template <class T>
+	void hadamard (const tvec2s<T>& u, const tvec2<T> v, tvec2s<T>& out) {
+		for (unsigned int i = 0; i < u.size(); ++i)
+		{
+			out[i] = hadamard(u[i], v);
+		}
+	}
+	template <class T>
+	void distance(const tvec2s<T>& u, const tvec2<T> v, numerics<T>& out) 
+	{
+		for (unsigned int i = 0; i < u.size(); ++i)
+		{
+			out[i] = distance(u[i], v);
+		}
+	}
+
+
+	template <class T>
+	void dot (const tvec2s<T>& u, const tvec2s<T>& v, numerics<T>& out) {
+		for (unsigned int i = 0; i < u.size(); ++i)
+		{
+			out[i] = dot(u[i], v[i]);
+		}
+	}
+	template <class T>
+	void cross (const tvec2s<T>& u, const tvec2s<T>& v, tvec2s<T>& out) 
+	{
+		for (unsigned int i = 0; i < u.size(); ++i)
+		{
+			out[i] = cross(u[i], v[i]);
+		}
+	}
+	template <class T>
+	void hadamard (const tvec2s<T>& u, const tvec2s<T>& v, tvec2s<T>& out) {
+		for (unsigned int i = 0; i < u.size(); ++i)
+		{
+			out[i] = hadamard(u[i], v[i]);
+		}
+	}
+	template <class T>
+	void distance(const tvec2s<T>& u, const tvec2s<T>& v, numerics<T>& out) 
+	{
+		for (unsigned int i = 0; i < u.size(); ++i)
+		{
+			out[i] = distance(u[i], v[i]);
+		}
+	}
+
+
+
+	template <class T>
+	void length(const tvec2s<T>& u, numerics<T>& out) 
+	{
+		for (unsigned int i = 0; i < u.size(); ++i)
+		{
+			out[i] = u[i].length();
+		}
+	}
+	template <class T>
+	void normalize(const tvec2s<T>& u, tvec2s<T>& out) 
+	{
+		for (unsigned int i = 0; i < u.size(); ++i)
+		{
+			out[i] = normalize(u[i]);
+		}
+	}
+
+
+	// NOTE: Here we have convenience functions that are stand-ins for operators
+	//  we do this because there are no operators that can express them succinctly
+
+	// NOTE: all operators and convenience functions are marked inline,
+	//  because they are thin wrappers of static functions
+
+	template <class T>
+	inline numerics<T> dot (const numerics<tvec2<T>>& u, const tvec2<T> v ) {
+		tvec2s<T> out = tvec2s<T>(u.size());
+		dot(u, v, out);
+		return out;
+	}
+	template <class T>
+	inline tvec2s<T> cross (const tvec2s<T>& u, const tvec2<T> v ) 
+	{
+		tvec2s<T> out = tvec2s<T>(u.size());
+		cross(u, v, out);
+		return out;
+	}
+	template <class T>
+	inline numerics<T> distance(const numerics<tvec2<T>>& u, const tvec2<T> v ) 
+	{
+		tvec2s<T> out = tvec2s<T>(u.size());
+		distance(u, v, out);
+		return out;
+	}
+	template <class T>
+	inline numerics<T> dot (const numerics<tvec2<T>>& u, const tvec2s<T>& v ) {
+		tvec2s<T> out = tvec2s<T>(u.size());
+		dot(u, v, out);
+		return out;
+	}
+	template <class T>
+	inline tvec2s<T> cross (const tvec2s<T>& u, const tvec2s<T>& v ) 
+	{
+		tvec2s<T> out = tvec2s<T>(u.size());
+		cross(u, v, out);
+		return out;
+	}
+	template <class T>
+	inline numerics<T> distance(const numerics<tvec2<T>>& u, const tvec2s<T>& v ) 
+	{
+		tvec2s<T> out = tvec2s<T>(u.size());
+		distance(u, v, out);
+		return out;
+	}
+	template <class T>
+	inline tvec2s<T> normalize(const tvec2s<T>& u) 
+	{
+		tvec2s<T> out = tvec2s<T>(u.size());
+		normalize(u, out);
+		return out;
+	}
+	template <class T>
+	inline floats length(const tvec2s<T>& u) 
+	{
+		numerics<T> out = numerics<T>(u.size());
+		length(u, out);
+		return out;
+	}
 }

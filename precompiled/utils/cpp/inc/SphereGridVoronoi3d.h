@@ -86,8 +86,8 @@ namespace rasters
 			  (( point.y > 0) << 1) +
 			  (( point.z > 0) << 2) ; 
 
-			const double x2d = vec3::dot( OCTAHEDRON_SIDE_X[side_id], point );
-			const double y2d = vec3::dot( OCTAHEDRON_SIDE_Y[side_id], point );
+			const double x2d = dot( OCTAHEDRON_SIDE_X[side_id], point );
+			const double y2d = dot( OCTAHEDRON_SIDE_Y[side_id], point );
 
 			const int xi2d = (x2d + 1.) / cell_width;
 			const int yi2d = (y2d + 1.) / cell_width;
@@ -106,11 +106,11 @@ namespace rasters
 				  (( points[i].z > 0) << 2) ; 
 
 				const vec2 projection = vec2(
-					vec3::dot( OCTAHEDRON_SIDE_X[side_id], points[i] ),
-					vec3::dot( OCTAHEDRON_SIDE_Y[side_id], points[i] )
+					dot( OCTAHEDRON_SIDE_X[side_id], points[i] ),
+					dot( OCTAHEDRON_SIDE_Y[side_id], points[i] )
 				);
 
-				const ivec2 grid_pos = (projection + 1.) / cell_width;
+				const ivec2 grid_pos = ivec2((projection + 1.) / cell_width);
 
 				out[i] = cells[cell_id(side_id, grid_pos.x, grid_pos.y)];
 			}

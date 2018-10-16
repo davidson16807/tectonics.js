@@ -3,7 +3,7 @@
 #include <initializer_list>// initializer_list
 #include <iostream>// cout
 
-#include "vec3s.h"
+#include "vec3.h"
 #include "numerics.h"
 
 namespace composites
@@ -153,7 +153,7 @@ namespace composites
 	void dot (const tvec3s<T>& u, const tvec3<T> v, numerics<T>& out) {
 		for (unsigned int i = 0; i < u.size(); ++i)
 		{
-			out[i] = tvec3<T>::dot(u[i], v);
+			out[i] = dot(u[i], v);
 		}
 	}
 	template <class T>
@@ -161,14 +161,14 @@ namespace composites
 	{
 		for (unsigned int i = 0; i < u.size(); ++i)
 		{
-			out[i] = tvec3<T>::cross(u[i], v);
+			out[i] = cross(u[i], v);
 		}
 	}
 	template <class T>
 	void hadamard (const tvec3s<T>& u, const tvec3<T> v, tvec3s<T>& out) {
 		for (unsigned int i = 0; i < u.size(); ++i)
 		{
-			out[i] = tvec3<T>::hadamard(u[i], v);
+			out[i] = hadamard(u[i], v);
 		}
 	}
 	template <class T>
@@ -176,7 +176,7 @@ namespace composites
 	{
 		for (unsigned int i = 0; i < u.size(); ++i)
 		{
-			out[i] = tvec3<T>::distance(u[i], v);
+			out[i] = distance(u[i], v);
 		}
 	}
 
@@ -185,7 +185,7 @@ namespace composites
 	void dot (const tvec3s<T>& u, const tvec3s<T>& v, numerics<T>& out) {
 		for (unsigned int i = 0; i < u.size(); ++i)
 		{
-			out[i] = tvec3<T>::dot(u[i], v[i]);
+			out[i] = dot(u[i], v[i]);
 		}
 	}
 	template <class T>
@@ -193,14 +193,14 @@ namespace composites
 	{
 		for (unsigned int i = 0; i < u.size(); ++i)
 		{
-			out[i] = tvec3<T>::cross(u[i], v[i]);
+			out[i] = cross(u[i], v[i]);
 		}
 	}
 	template <class T>
 	void hadamard (const tvec3s<T>& u, const tvec3s<T>& v, tvec3s<T>& out) {
 		for (unsigned int i = 0; i < u.size(); ++i)
 		{
-			out[i] = tvec3<T>::hadamard(u[i], v[i]);
+			out[i] = hadamard(u[i], v[i]);
 		}
 	}
 	template <class T>
@@ -208,18 +208,18 @@ namespace composites
 	{
 		for (unsigned int i = 0; i < u.size(); ++i)
 		{
-			out[i] = tvec3<T>::distance(u[i], v[i]);
+			out[i] = distance(u[i], v[i]);
 		}
 	}
 
 
 
 	template <class T>
-	void magnitude(const tvec3s<T>& u, numerics<T>& out) 
+	void length(const tvec3s<T>& u, numerics<T>& out) 
 	{
 		for (unsigned int i = 0; i < u.size(); ++i)
 		{
-			out[i] = u[i].magnitude();
+			out[i] = u[i].length();
 		}
 	}
 	template <class T>
@@ -227,7 +227,7 @@ namespace composites
 	{
 		for (unsigned int i = 0; i < u.size(); ++i)
 		{
-			out[i] = u[i].normalize();
+			out[i] = normalize(u[i]);
 		}
 	}
 
@@ -286,10 +286,10 @@ namespace composites
 		return out;
 	}
 	template <class T>
-	inline floats magnitude(const tvec3s<T>& u) 
+	inline floats length(const tvec3s<T>& u) 
 	{
 		numerics<T> out = numerics<T>(u.size());
-		magnitude(u, out);
+		length(u, out);
 		return out;
 	}
 }

@@ -24,8 +24,6 @@ EMSCRIPTEN_BINDINGS(rasters)
       .property("x", &vec3::x)
       .property("y", &vec3::y)
       .property("z", &vec3::z)
-      .function("magnitude", &vec3::magnitude)
-      .function("normalize", &vec3::normalize)
   ;
   class_<CartesianGridCellList3d>("CartesianGridCellList3d")
       .constructor<std::vector<vec3>, double>()

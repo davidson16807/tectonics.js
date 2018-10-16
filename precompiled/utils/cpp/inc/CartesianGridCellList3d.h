@@ -18,7 +18,7 @@ namespace rasters {
 		vec3 min_bounds;
 		vec3 max_bounds;
 		ivec3 dimensions;
-		double cell_width;
+		float cell_width;
 		std::vector<std::pair<int, vec3>>* cells;
 
 		int cell_count() const
@@ -57,7 +57,7 @@ namespace rasters {
     		cells = nullptr;
 		}
 		
-		CartesianGridCellList3d(const std::vector<vec3>& aos, const double cell_width)
+		CartesianGridCellList3d(const std::vector<vec3>& aos, const float cell_width)
 			: min_bounds(
 			    (*std::min_element(aos.begin(), aos.end(), []( const vec3 a, const vec3 b ) { return a.x < b.x; })).x,
 			    (*std::min_element(aos.begin(), aos.end(), []( const vec3 a, const vec3 b ) { return a.y < b.y; })).y,
@@ -101,7 +101,7 @@ namespace rasters {
 				*std::min_element( neighbors.begin(), neighbors.end(),
 			                       [&point]( const std::pair<int, vec3> &a, const std::pair<int, vec3> &b )
 			                       {
-			                           return vec3::distance(a.second, point) < vec3::distance(b.second, point);
+			                           return distance(a.second, point) < distance(b.second, point);
 			                       } );
 
 			return nearest_id.first;
