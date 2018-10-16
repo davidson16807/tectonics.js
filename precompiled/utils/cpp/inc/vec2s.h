@@ -3,7 +3,7 @@
 #include "vec2s.h"
 #include "numerics.h"
 
-namespace rasters
+namespace composites
 {
 	template<class T>
 	class vec2s_template : public numerics_template<vec2_template<T>>

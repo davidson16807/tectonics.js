@@ -6,21 +6,21 @@
 #include "vec3s.h"
 #include "numerics.h"
 
-namespace rasters
+namespace composites
 {
 	template<class T>
-	class vec3s_template : public numerics_template<vec3_template<T>>
+	class tvec3s : public numerics<tvec3<T>>
 	{
 	public:
-		vec3s_template(std::initializer_list<vec3_template<T>> list)  			: numerics_template<vec3_template<T>>(list) {};
-		explicit vec3s_template(const unsigned int N) 							: numerics_template<vec3_template<T>>(N) {};
-		explicit vec3s_template(const unsigned int N, const vec3_template<T> a)	: numerics_template<vec3_template<T>>(N,a) {};
-		explicit vec3s_template(const numerics_template<vec3_template<T>>& a)	: numerics_template<vec3_template<T>>(a) {};
+		tvec3s(std::initializer_list<tvec3<T>> list)  			: numerics<tvec3<T>>(list) {};
+		explicit tvec3s(const unsigned int N) 					: numerics<tvec3<T>>(N) {};
+		explicit tvec3s(const unsigned int N, const tvec3<T> a)	: numerics<tvec3<T>>(N,a) {};
+		explicit tvec3s(const numerics<tvec3<T>>& a)			: numerics<tvec3<T>>(a) {};
 
 		template <class T2>
-		explicit vec3s_template(const numerics_template<vec3_template<T2>>& a)	: numerics_template<vec3_template<T>>(a) {};
+		explicit tvec3s(const numerics<tvec3<T2>>& a)			: numerics<tvec3<T>>(a) {};
 
-		explicit vec3s_template(const unsigned int N, const T x) : numerics_template<vec3_template<T>>(N)
+		explicit tvec3s(const unsigned int N, const T x) : numerics<tvec3<T>>(N)
 		{
 			for (unsigned int i = 0; i < this->N; ++i)
 			{
@@ -30,7 +30,7 @@ namespace rasters
 			}
 		};
 
-		explicit vec3s_template(const numerics_template<T>& x)   : numerics_template<vec3_template<T>>(x.N)
+		explicit tvec3s(const numerics<T>& x) : numerics<tvec3<T>>(x.N)
 		{
 			for (unsigned int i = 0; i < this->N; ++i)
 			{
@@ -40,7 +40,7 @@ namespace rasters
 			}
 		};
 
-		explicit vec3s_template(const unsigned int N, const T x, const T y, const T z) : numerics_template<vec3_template<T>>(N)
+		explicit tvec3s(const unsigned int N, const T x, const T y, const T z) : numerics<tvec3<T>>(N)
 		{
 			for (unsigned int i = 0; i < this->N; ++i)
 			{
@@ -49,7 +49,7 @@ namespace rasters
 				this->values[i].z = z;
 			}
 		};
-		explicit vec3s_template(const numerics_template<T>& x, const T y, const T z)  : numerics_template<vec3_template<T>>(x.N)
+		explicit tvec3s(const numerics<T>& x, const T y, const T z)  : numerics<tvec3<T>>(x.N)
 		{
 			for (unsigned int i = 0; i < this->N; ++i)
 			{
@@ -59,7 +59,7 @@ namespace rasters
 			}
 		};
 
-		explicit vec3s_template(const T x, const numerics_template<T>& y, const T z)  : numerics_template<vec3_template<T>>(y.N)
+		explicit tvec3s(const T x, const numerics<T>& y, const T z)  : numerics<tvec3<T>>(y.N)
 		{
 			for (unsigned int i = 0; i < this->N; ++i)
 			{
@@ -69,7 +69,7 @@ namespace rasters
 			}
 		};
 
-		explicit vec3s_template(const numerics_template<T>& x, const numerics_template<T>& y, const T z)   : numerics_template<vec3_template<T>>(y.N)
+		explicit tvec3s(const numerics<T>& x, const numerics<T>& y, const T z)   : numerics<tvec3<T>>(y.N)
 		{
 			for (unsigned int i = 0; i < this->N; ++i)
 			{
@@ -79,7 +79,7 @@ namespace rasters
 			}
 		};
 
-		explicit vec3s_template(const T x, const T y, const numerics_template<T>&  z)     : numerics_template<vec3_template<T>>(z.N)
+		explicit tvec3s(const T x, const T y, const numerics<T>&  z)     : numerics<tvec3<T>>(z.N)
 		{
 			for (unsigned int i = 0; i < this->N; ++i)
 			{
@@ -89,7 +89,7 @@ namespace rasters
 			}
 		};
 
-		explicit vec3s_template(const numerics_template<T>& x, const T y, const numerics_template<T>&  z)      : numerics_template<vec3_template<T>>(z.N)
+		explicit tvec3s(const numerics<T>& x, const T y, const numerics<T>&  z)      : numerics<tvec3<T>>(z.N)
 		{
 			for (unsigned int i = 0; i < this->N; ++i)
 			{
@@ -99,7 +99,7 @@ namespace rasters
 			}
 		};
 
-		explicit vec3s_template(const T x, const numerics_template<T>& y, const numerics_template<T>&  z)      : numerics_template<vec3_template<T>>(z.N)
+		explicit tvec3s(const T x, const numerics<T>& y, const numerics<T>&  z)      : numerics<tvec3<T>>(z.N)
 		{
 			for (unsigned int i = 0; i < this->N; ++i)
 			{
@@ -109,7 +109,7 @@ namespace rasters
 			}
 		};
 
-		explicit vec3s_template(const numerics_template<T>& x, const numerics_template<T>& y, const numerics_template<T>&  z)     : numerics_template<vec3_template<T>>(z.N) 
+		explicit tvec3s(const numerics<T>& x, const numerics<T>& y, const numerics<T>&  z)     : numerics<tvec3<T>>(z.N) 
 		{
 			for (unsigned int i = 0; i < this->N; ++i)
 			{
@@ -119,71 +119,71 @@ namespace rasters
 			}
 		};
 
-		static void dot (const vec3s_template<T>& u, const vec3_template<T> v, numerics_template<T>& out) {
+		static void dot (const tvec3s<T>& u, const tvec3<T> v, numerics<T>& out) {
 			for (unsigned int i = 0; i < u.N; ++i)
 			{
-				out.values[i] = vec3_template<T>::dot(u.values[i], v);
+				out.values[i] = tvec3<T>::dot(u.values[i], v);
 			}
 		}
-		static void cross (const vec3s_template<T>& u, const vec3_template<T> v, vec3s_template<T>& out) 
+		static void cross (const tvec3s<T>& u, const tvec3<T> v, tvec3s<T>& out) 
 		{
 			for (unsigned int i = 0; i < u.N; ++i)
 			{
-				out.values[i] = vec3_template<T>::cross(u.values[i], v);
+				out.values[i] = tvec3<T>::cross(u.values[i], v);
 			}
 		}
-		static void hadamard (const vec3s_template<T>& u, const vec3_template<T> v, vec3s_template<T>& out) {
+		static void hadamard (const tvec3s<T>& u, const tvec3<T> v, tvec3s<T>& out) {
 			for (unsigned int i = 0; i < u.N; ++i)
 			{
-				out.values[i] = vec3_template<T>::hadamard(u.values[i], v);
+				out.values[i] = tvec3<T>::hadamard(u.values[i], v);
 			}
 		}
-		static void distance(const vec3s_template<T>& u, const vec3_template<T> v, numerics_template<T>& out) 
+		static void distance(const tvec3s<T>& u, const tvec3<T> v, numerics<T>& out) 
 		{
 			for (unsigned int i = 0; i < u.N; ++i)
 			{
-				out.values[i] = vec3_template<T>::distance(u.values[i], v);
+				out.values[i] = tvec3<T>::distance(u.values[i], v);
 			}
 		}
 
 
-		static void dot (const vec3s_template<T>& u, const vec3s_template<T>& v, numerics_template<T>& out) {
+		static void dot (const tvec3s<T>& u, const tvec3s<T>& v, numerics<T>& out) {
 			for (unsigned int i = 0; i < u.N; ++i)
 			{
-				out.values[i] = vec3_template<T>::dot(u.values[i], v.values[i]);
+				out.values[i] = tvec3<T>::dot(u.values[i], v.values[i]);
 			}
 		}
-		static void cross (const vec3s_template<T>& u, const vec3s_template<T>& v, vec3s_template<T>& out) 
+		static void cross (const tvec3s<T>& u, const tvec3s<T>& v, tvec3s<T>& out) 
 		{
 			for (unsigned int i = 0; i < u.N; ++i)
 			{
-				out.values[i] = vec3_template<T>::cross(u.values[i], v.values[i]);
+				out.values[i] = tvec3<T>::cross(u.values[i], v.values[i]);
 			}
 		}
-		static void hadamard (const vec3s_template<T>& u, const vec3s_template<T>& v, vec3s_template<T>& out) {
+		static void hadamard (const tvec3s<T>& u, const tvec3s<T>& v, tvec3s<T>& out) {
 			for (unsigned int i = 0; i < u.N; ++i)
 			{
-				out.values[i] = vec3_template<T>::hadamard(u.values[i], v.values[i]);
+				out.values[i] = tvec3<T>::hadamard(u.values[i], v.values[i]);
 			}
 		}
-		static void distance(const vec3s_template<T>& u, const vec3s_template<T>& v, numerics_template<T>& out) 
+		static void distance(const tvec3s<T>& u, const tvec3s<T>& v, numerics<T>& out) 
 		{
 			for (unsigned int i = 0; i < u.N; ++i)
 			{
-				out.values[i] = vec3_template<T>::distance(u.values[i], v.values[i]);
+				out.values[i] = tvec3<T>::distance(u.values[i], v.values[i]);
 			}
 		}
 
 
 
-		static void magnitude(const vec3s_template<T>& u, numerics_template<T>& out) 
+		static void magnitude(const tvec3s<T>& u, numerics<T>& out) 
 		{
 			for (unsigned int i = 0; i < u.N; ++i)
 			{
 				out.values[i] = u.values[i].magnitude();
 			}
 		}
-		static void normalize(const vec3s_template<T>& u, vec3s_template<T>& out) 
+		static void normalize(const tvec3s<T>& u, tvec3s<T>& out) 
 		{
 			for (unsigned int i = 0; i < u.N; ++i)
 			{
@@ -198,77 +198,77 @@ namespace rasters
 		// NOTE: all operators and convenience functions are marked inline,
 		//  because they are thin wrappers of static functions
 
-		static inline numerics_template<T> dot (const numerics_template<vec3_template<T>>& u, const vec3_template<T> v ) {
-			vec3s_template<T> out = vec3s_template<T>(u.N);
+		static inline numerics<T> dot (const numerics<tvec3<T>>& u, const tvec3<T> v ) {
+			tvec3s<T> out = tvec3s<T>(u.N);
 			dot(u, v, out);
 			return out;
 		}
-		static inline vec3s_template<T> cross (const vec3s_template<T>& u, const vec3_template<T> v ) 
+		static inline tvec3s<T> cross (const tvec3s<T>& u, const tvec3<T> v ) 
 		{
-			vec3s_template<T> out = vec3s_template<T>(u.N);
+			tvec3s<T> out = tvec3s<T>(u.N);
 			cross(u, v, out);
 			return out;
 		}
-		static inline numerics_template<T> distance(const numerics_template<vec3_template<T>>& u, const vec3_template<T> v ) 
+		static inline numerics<T> distance(const numerics<tvec3<T>>& u, const tvec3<T> v ) 
 		{
-			vec3s_template<T> out = vec3s_template<T>(u.N);
+			tvec3s<T> out = tvec3s<T>(u.N);
 			distance(u, v, out);
 			return out;
 		}
-		static inline numerics_template<T> dot (const numerics_template<vec3_template<T>>& u, const vec3s_template<T>& v ) {
-			vec3s_template<T> out = vec3s_template<T>(u.N);
+		static inline numerics<T> dot (const numerics<tvec3<T>>& u, const tvec3s<T>& v ) {
+			tvec3s<T> out = tvec3s<T>(u.N);
 			dot(u, v, out);
 			return out;
 		}
-		static inline vec3s_template<T> cross (const vec3s_template<T>& u, const vec3s_template<T>& v ) 
+		static inline tvec3s<T> cross (const tvec3s<T>& u, const tvec3s<T>& v ) 
 		{
-			vec3s_template<T> out = vec3s_template<T>(u.N);
+			tvec3s<T> out = tvec3s<T>(u.N);
 			cross(u, v, out);
 			return out;
 		}
-		static inline numerics_template<T> distance(const numerics_template<vec3_template<T>>& u, const vec3s_template<T>& v ) 
+		static inline numerics<T> distance(const numerics<tvec3<T>>& u, const tvec3s<T>& v ) 
 		{
-			vec3s_template<T> out = vec3s_template<T>(u.N);
+			tvec3s<T> out = tvec3s<T>(u.N);
 			distance(u, v, out);
 			return out;
 		}
-		static inline vec3s_template<T> normalize(const vec3s_template<T>& u) 
+		static inline tvec3s<T> normalize(const tvec3s<T>& u) 
 		{
-			vec3s_template<T> out = vec3s_template<T>(u.N);
+			tvec3s<T> out = tvec3s<T>(u.N);
 			normalize(u, out);
 			return out;
 		}
-		static inline floats magnitude(const vec3s_template<T>& u) 
+		static inline floats magnitude(const tvec3s<T>& u) 
 		{
-			numerics_template<T> out = numerics_template<T>(u.N);
+			numerics<T> out = numerics<T>(u.N);
 			magnitude(u, out);
 			return out;
 		}
 
-		inline const vec3_template<T>& operator[](const unsigned int id ) const
+		inline const tvec3<T>& operator[](const unsigned int id ) const
 		{
 		   return this->values[id]; // reference return 
 		}
-		inline vec3_template<T>& operator[](const unsigned int id )
+		inline tvec3<T>& operator[](const unsigned int id )
 		{
 		   return this->values[id]; // reference return 
 		}
-		inline const vec3s_template<T> operator[](const primitives_template<bool>& mask ) const
+		inline const tvec3s<T> operator[](const primitives<bool>& mask ) const
 		{
-			vec3s_template<T> out = vec3s_template<T>(mask.N);
+			tvec3s<T> out = tvec3s<T>(mask.N);
 			get(*this, mask, out);
 			return out;
 		}
-		inline const vec3s_template<T> operator[](const primitives_template<unsigned int>& ids ) const
+		inline const tvec3s<T> operator[](const primitives<unsigned int>& ids ) const
 		{
-			vec3s_template<T> out = vec3s_template<T>(ids.N);
+			tvec3s<T> out = tvec3s<T>(ids.N);
 			get(*this, ids, out);
 			return out;
 		}
 	};
 
-	using vec3s = vec3s_template<float>;
-	using ivec3s = vec3s_template<int>;
-	using uivec3s = vec3s_template<unsigned int>;
-	using bvec3s = vec3s_template<bool>;
+	using vec3s = tvec3s<float>;
+	using ivec3s = tvec3s<int>;
+	using uivec3s = tvec3s<unsigned int>;
+	using bvec3s = tvec3s<bool>;
 }

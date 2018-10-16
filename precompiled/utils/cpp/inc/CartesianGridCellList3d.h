@@ -8,6 +8,8 @@
 #include "vec2.h"
 #include "vec3.h"
 
+using namespace composites;
+
 namespace rasters {
 	
 	// describes a 3d cartesian grid where every cell houses a list of ids representing nearby points

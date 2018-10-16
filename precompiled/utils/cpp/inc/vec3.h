@@ -2,74 +2,73 @@
 
 #include <math.h>       // ceil, round 
 
-namespace rasters
+namespace composites
 {
 	template <class T>
-	struct vec3_template
+	struct tvec3
 	{
 		T x, y, z;
-		vec3_template() {};
+		tvec3() {};
 
 		template<class T2>
-		constexpr vec3_template(T2 x) : x(x), y(x), z(x) {};
+		constexpr tvec3(T2 x) : x(x), y(x), z(x) {};
+
+		constexpr tvec3(T x, T y, T z) : x(x), y(y), z(z) {};
 
 		template<class T2>
-		constexpr vec3_template(T2 x, T2 y, T2 z) : x(x), y(y), z(z) {};
+		explicit constexpr tvec3(tvec3<T2> u) : x(u.x), y(u.y), z(u.z) {};
 
-		template<class T2>
-		constexpr vec3_template(vec3_template<T2> u) : x(u.x), y(u.y), z(u.z) {};
+		template<class T2, class T3>
+		explicit constexpr tvec3(const tvec3<T2> u, T3 z) : x(u.x), y(u.y), z(z) {};
 
-		template<class T2>
-		constexpr vec3_template(const vec3_template<T2> u, T z) : x(u.x), y(u.y), z(z) {};
+		template<class T2, class T3>
+		explicit constexpr tvec3(T2 x, tvec3<T3> u) : x(x), y(u.y), z(u.z) {};
 
-		template<class T2>
-		constexpr vec3_template(T x, vec3_template<T2> u) : x(x), y(u.y), z(u.z) {};
+		~tvec3() {};
 
-		~vec3_template() {};
-
-		static vec3_template<bool> gt(const vec3_template<T> u, const T a)
+		static inline tvec3<bool> gt(const tvec3<T> u, const T a)
 		{
-			return vec3_template<bool>(
+			return tvec3<bool>(
 				u.x > a,
 				u.y > a,
 				u.z > a
 			);
 		}
-		static vec3_template<bool> gte(const vec3_template<T> u, const T a)
+		static inline tvec3<bool> gte(const tvec3<T> u, const T a)
 		{
-			return vec3_template<bool>(
+			return tvec3<bool>(
 				u.x >= a,
 				u.y >= a,
 				u.z >= a
 			);
 		}
-		static vec3_template<bool> lt(const vec3_template<T> u, const T a)
+		static inline tvec3<bool> lt(const tvec3<T> u, const T a)
 		{
-			return vec3_template<bool>(
+			return tvec3<bool>(
 				u.x < a,
 				u.y < a,
 				u.z < a
 			);
 		}
-		static vec3_template<bool> lte(const vec3_template<T> u, const T a)
+		static inline tvec3<bool> lte(const tvec3<T> u, const T a)
 		{
-			return vec3_template<bool>(
+			return tvec3<bool>(
 				u.x <= a,
 				u.y <= a,
 				u.z <= a
 			);
 		}
-		static vec3_template<bool> eq(const vec3_template<T> u, const T a, const T threshold)
+		static inline tvec3<bool> eq(const tvec3<T> u, const T a, const T threshold)
 		{
-			return vec3_template<bool>(
+			return tvec3<bool>(
 				abs(u.x - a) < threshold,
 				abs(u.y - a) < threshold,
 				abs(u.z - a) < threshold
 			);
 		}
-		static vec3_template<bool> ne(const vec3_template<T> u, const T a, const T threshold)
+		static inline tvec3<bool> ne(const tvec3<T> u, const T a, const T threshold)
 		{
-			return vec3_template<bool>(
+			return tvec3<bool>(
 				abs(u.x - a) > threshold,
 				abs(u.y - a) > threshold,
 				abs(u.z - a) > threshold
@@ -78,49 +77,49 @@ namespace rasters
 
 
 
-		static vec3_template<bool> gt(const vec3_template<T> u, const vec3_template<T> v)
+		static inline tvec3<bool> gt(const tvec3<T> u, const tvec3<T> v)
 		{
-			return vec3_template<bool>(
+			return tvec3<bool>(
 				u.x > v.x,
 				u.y > v.y,
 				u.z > v.z
 			);
 		}
-		static vec3_template<bool> gte(const vec3_template<T> u, const vec3_template<T> v)
+		static inline tvec3<bool> gte(const tvec3<T> u, const tvec3<T> v)
 		{
-			return vec3_template<bool>(
+			return tvec3<bool>(
 				u.x >= v.x,
 				u.y >= v.y,
 				u.z >= v.z
 			);
 		}
-		static vec3_template<bool> lt(const vec3_template<T> u, const vec3_template<T> v)
+		static inline tvec3<bool> lt(const tvec3<T> u, const tvec3<T> v)
 		{
-			return vec3_template<bool>(
+			return tvec3<bool>(
 				u.x < v.x,
 				u.y < v.y,
 				u.z < v.z
 			);
 		}
-		static vec3_template<bool> lte(const vec3_template<T> u, const vec3_template<T> v)
+		static inline tvec3<bool> lte(const tvec3<T> u, const tvec3<T> v)
 		{
-			return vec3_template<bool>(
+			return tvec3<bool>(
 				u.x <= v.x,
 				u.y <= v.y,
 				u.z <= v.z
 			);
 		}
-		static vec3_template<bool> eq(const vec3_template<T> u, const vec3_template<T> v, const T threshold)
+		static inline tvec3<bool> eq(const tvec3<T> u, const tvec3<T> v, const T threshold)
 		{
-			return vec3_template<bool>(
+			return tvec3<bool>(
 				abs(u.x - v.x) < threshold,
 				abs(u.y - v.y) < threshold,
 				abs(u.z - v.z) < threshold
 			);
 		}
-		static vec3_template<bool> ne(const vec3_template<T> u, const vec3_template<T> v, const T threshold)
+		static inline tvec3<bool> ne(const tvec3<T> u, const tvec3<T> v, const T threshold)
 		{
-			return vec3_template<bool>(
+			return tvec3<bool>(
 				abs(u.x - v.x) > threshold,
 				abs(u.y - v.y) > threshold,
 				abs(u.z - v.z) > threshold
@@ -128,76 +127,76 @@ namespace rasters
 		}
 
 
-		static vec3_template<T> add(const vec3_template<T> u, const T a)
+		static inline tvec3<T> add(const tvec3<T> u, const T a)
 		{
-			return vec3_template<T>(
+			return tvec3<T>(
 				u.x + a,
 				u.y + a,
 				u.z + a
 			);
 		}
-		static vec3_template<T> sub(const vec3_template<T> u, const T a)
+		static inline tvec3<T> sub(const tvec3<T> u, const T a)
 		{
-			return vec3_template<T>(
+			return tvec3<T>(
 				u.x - a,
 				u.y - a,
 				u.z - a
 			);
 		}
-		static vec3_template<T> mult(const vec3_template<T> u, const T a)
+		static inline tvec3<T> mult(const tvec3<T> u, const T a)
 		{
-			return vec3_template<T>(
+			return tvec3<T>(
 				u.x * a,
 				u.y * a,
 				u.z * a
 			);
 		}
-		static vec3_template<T> div(const vec3_template<T> u, const T a)
+		static inline tvec3<T> div(const tvec3<T> u, const T a)
 		{
 			const T ainv = 1./a;
-			return vec3_template<T>(
+			return tvec3<T>(
 				u.x * ainv,
 				u.y * ainv,
 				u.z * ainv
 			);
 		}
-		static vec3_template<T> add (const vec3_template<T> u, const vec3_template<T> v) {
-			return vec3_template<T>(
+		static inline tvec3<T> add (const tvec3<T> u, const tvec3<T> v) {
+			return tvec3<T>(
 				u.x + v.x,
 				u.y + v.y,
 				u.z + v.z
 			);
 		}
-		static vec3_template<T> sub (const vec3_template<T> u, const vec3_template<T> v) {
-			return vec3_template<T>(
+		static inline tvec3<T> sub (const tvec3<T> u, const tvec3<T> v) {
+			return tvec3<T>(
 				u.x - v.x,
 				u.y - v.y,
 				u.z - v.z
 			);
 		}
-		static T dot (const vec3_template<T> u, const vec3_template<T> v) {
+		static inline T dot (const tvec3<T> u, const tvec3<T> v) {
 			return 
 				u.x * v.x+
 				u.y * v.y+
 				u.z * v.z;
 		}
-		static vec3_template<T> cross (const vec3_template<T> u, const vec3_template<T> v) 
+		static inline tvec3<T> cross (const tvec3<T> u, const tvec3<T> v) 
 		{
-			return vec3_template<T>(
+			return tvec3<T>(
 				u.y * v.z - u.z * v.y,
 				u.z * v.x - u.x * v.z,
 				u.x * v.y - u.y * v.x
 			);
 		}
-		static vec3_template<T> hadamard (const vec3_template<T> u, const vec3_template<T> v) {
-			return vec3_template<T>(
+		static inline tvec3<T> hadamard (const tvec3<T> u, const tvec3<T> v) {
+			return tvec3<T>(
 				u.x * v.x,
 				u.y * v.y,
 				u.z * v.z
 			);
 		}
-		static vec3_template<T> div (const vec3_template<T> u, const vec3_template<T> v) {
-			return vec3_template<T>(
+		static inline tvec3<T> div (const tvec3<T> u, const tvec3<T> v) {
+			return tvec3<T>(
 				u.x / v.x,
 				u.y / v.y,
 				u.z / v.z
@@ -205,7 +204,7 @@ namespace rasters
 		}
 
 
-		static T distance(const vec3_template<T> u, const vec3_template<T> v) 
+		static inline T distance(const tvec3<T> u, const tvec3<T> v) 
 		{
 			return (u-v).magnitude();
 		}
@@ -213,11 +212,11 @@ namespace rasters
 
 
 
-		double magnitude() const
+		inline double magnitude() const
 		{
 			return sqrt(x*x + y*y + z*z);
 		}
-		vec3_template<T> normalize() const
+		inline tvec3<T> normalize() const
 		{
 			return *this / magnitude();
 		}
@@ -229,27 +228,27 @@ namespace rasters
 		// NOTE: THESE ARE NOT COMPONENT-WISE!
 		// THIS IS DONE FOR CONSISTENCY WITH OTHER DATATYPES THAT ALSO RETURN BOOL,
 		// AND ALSO TO MIMIC GLSL's "vec3" DATATYPE
-		bool operator>(const T a) const
+		inline bool operator>(const T a) const
 		{
 			return this->magnitude() > a;
 		}
-		bool operator>=(const T a) const
+		inline bool operator>=(const T a) const
 		{
 			return this->magnitude() >= a;
 		}
-		bool operator<(const T a) const
+		inline bool operator<(const T a) const
 		{
 			return this->magnitude() < a;
 		}
-		bool operator<=(const T a) const
+		inline bool operator<=(const T a) const
 		{
 			return this->magnitude() <= a;
 		}
-		bool operator==(const T a) const
+		inline bool operator==(const T a) const
 		{
 			return ((*this)-a).magnitude() < 1e-4;
 		}
-		bool operator!=(const T a) const
+		inline bool operator!=(const T a) const
 		{
 			return ((*this)-a).magnitude() > 1e-4;
 		}
@@ -259,56 +258,56 @@ namespace rasters
 		// NOTE: THESE ARE NOT COMPONENT-WISE!
 		// THIS IS DONE FOR CONSISTENCY WITH OTHER DATATYPES THAT ALSO RETURN BOOL,
 		// AND ALSO TO MIMIC GLSL's "vec3" DATATYPE
-		bool operator>(const vec3_template<T> a)
+		inline bool operator>(const tvec3<T> a)
 		{
 			return this->magnitude() > a.magnitude();
 		}
-		bool operator>=(const vec3_template<T> a)
+		inline bool operator>=(const tvec3<T> a)
 		{
 			return this->magnitude() >= a.magnitude();
 		}
-		bool operator<(const vec3_template<T> a)
+		inline bool operator<(const tvec3<T> a)
 		{
 			return this->magnitude() < a.magnitude();
 		}
-		bool operator<=(const vec3_template<T> a)
+		inline bool operator<=(const tvec3<T> a)
 		{
 			return this->magnitude() <= a.magnitude();
 		}
-		bool operator==(const vec3_template<T> a)
+		inline bool operator==(const tvec3<T> a)
 		{
 			return ((*this)-a).magnitude() < 1e-4;
 		}
-		bool operator!=(const vec3_template<T> a)
+		inline bool operator!=(const tvec3<T> a)
 		{
 			return ((*this)-a).magnitude() > 1e-4;
 		}
 
 
-		vec3_template<T> operator+(const T a) const
+		inline tvec3<T> operator+(const T a) const
 		{
 			return add(*this, a);
 		}
-		vec3_template<T> operator-(const T a) const
+		inline tvec3<T> operator-(const T a) const
 		{
 			return sub(*this, a);
 		}
-		vec3_template<T> operator*(const T a) const
+		inline tvec3<T> operator*(const T a) const
 		{
 			return mult(*this, a);
 		}
-		vec3_template<T> operator/(const T a) const
+		inline tvec3<T> operator/(const T a) const
 		{
 			return div(*this, a);
 		}
 
 
 
-		vec3_template<T> operator+ (const vec3_template<T> v) const 
+		inline tvec3<T> operator+ (const tvec3<T> v) const 
 		{
 			return add (*this, v);
 		}
-		vec3_template<T> operator- (const vec3_template<T> v) const 
+		inline tvec3<T> operator- (const tvec3<T> v) const 
 		{
 			return sub (*this, v);
 		}
@@ -316,19 +315,19 @@ namespace rasters
 		// THIS IS COMPONENT-WISE MULTIPLICATION
 		// THIS IS DONE FOR CONSISTENCY WITH OTHER DATATYPES THAT DEMONSTRATE THE "CLOSURE" PROPERTY
 		// AND ALSO TO MIMIC GLSL's "vec3" DATATYPE
-		vec3_template<T> operator* (const vec3_template<T> v) const 
+		inline tvec3<T> operator* (const tvec3<T> v) const 
 		{
 			return hadamard(*this, v);
 		}
-		vec3_template<T> operator/ (const vec3_template<T> v) const 
+		inline tvec3<T> operator/ (const tvec3<T> v) const 
 		{
 			return div (*this, v);
 		}
 
 	};
 
-	using vec3 = vec3_template<float>;
-	using ivec3 = vec3_template<int>;
-	using uivec3 = vec3_template<unsigned int>;
-	using bvec3 = vec3_template<bool>;
+	using vec3 = tvec3<float>;
+	using ivec3 = tvec3<int>;
+	using uivec3 = tvec3<unsigned int>;
+	using bvec3 = tvec3<bool>;
 }

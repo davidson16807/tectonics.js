@@ -4,20 +4,20 @@
 
 #include "primitives.h"
 
-namespace rasters
+namespace composites
 {
 	// NOTE: bools get special treatment because they're special
-	class bools : public primitives_template<bool>
+	class bools : public primitives<bool>
 	{
 	public:
-		bools(std::initializer_list<bool> list)  			: primitives_template<bool>(list){};
+		bools(std::initializer_list<bool> list)  			: primitives<bool>(list){};
 
-		explicit bools(const unsigned int N) 				: primitives_template<bool>(N){};
-		explicit bools(const unsigned int N, const bool a)  : primitives_template<bool>(N,a){};
-		explicit bools(const primitives_template<bool>& a) 	: primitives_template<bool>(a){};
+		explicit bools(const unsigned int N) 				: primitives<bool>(N){};
+		explicit bools(const unsigned int N, const bool a)  : primitives<bool>(N,a){};
+		explicit bools(const primitives<bool>& a) 	: primitives<bool>(a){};
 
 		template <class T2>
-		explicit bools(const primitives_template<T2>& a) 	: primitives_template<bool>(a){};
+		explicit bools(const primitives<T2>& a) 	: primitives<bool>(a){};
 
 		static void unite(const bools& a, const bool b, bools& out)
 		{
@@ -141,13 +141,13 @@ namespace rasters
 		{
 		   return this->values[id]; // reference return 
 		}
-		inline const bools operator[](const primitives_template<bool>& mask ) const
+		inline const bools operator[](const primitives<bool>& mask ) const
 		{
 			bools out = bools(mask.N);
 			get(*this, mask, out);
 			return out;
 		}
-		inline const bools operator[](const primitives_template<unsigned int>& ids ) const
+		inline const bools operator[](const primitives<unsigned int>& ids ) const
 		{
 			bools out = bools(ids.N);
 			get(*this, ids, out);

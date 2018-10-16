@@ -2,7 +2,7 @@
 
 #include <initializer_list>	// initializer_list
 
-namespace rasters
+namespace composites
 {
 
 	// This template represents a statically-sized contiguous block of memory occupied by primitive data of arbitrary type
@@ -10,7 +10,7 @@ namespace rasters
 	// the data type should be small enough to fit in a computer's register (e.g. ints, floats, and even vec3s)
 	// the data type must have basic operators common to all primitives: == != 
 	template <class T>
-	class primitives_template
+	class primitives
 	{
 	protected:
 		T* values;
@@ -18,13 +18,13 @@ namespace rasters
 	public:
 		const unsigned int N;
 
-		~primitives_template()
+		~primitives()
 		{
     		delete [] this->values;
     		this->values = nullptr;
 		};
 
-		primitives_template(std::initializer_list<T> list) : values(new T[list.size()]), N(list.size())
+		primitives(std::initializer_list<T> list) : values(new T[list.size()]), N(list.size())
 		{
 			int id = 0;
 			for (auto i = list.begin(); i != list.end(); ++i)
@@ -34,16 +34,16 @@ namespace rasters
 			}
 		};
 
-		explicit primitives_template(const unsigned int N) : values(new T[N]), N(N) {};
+		explicit primitives(const unsigned int N) : values(new T[N]), N(N) {};
 
-		explicit primitives_template(const unsigned int N, const T a)  : values(new T[N]), N(N)
+		explicit primitives(const unsigned int N, const T a)  : values(new T[N]), N(N)
 		{
 			for (unsigned int i = 0; i < N; ++i)
 			{
 				values[i] = a;
 			}
 		};
-		explicit primitives_template(const primitives_template<T>& a)  : values(new T[a.N]), N(a.N)
+		explicit primitives(const primitives<T>& a)  : values(new T[a.N]), N(a.N)
 		{
 			for (unsigned int i = 0; i < N; ++i)
 			{
@@ -52,7 +52,7 @@ namespace rasters
 		};
 
 		template <class T2>
-		explicit primitives_template(const primitives_template<T2>& a)  : values(new T[a.N]), N(a.N)
+		explicit primitives(const primitives<T2>& a)  : values(new T[a.N]), N(a.N)
 		{
 			for (unsigned int i = 0; i < N; ++i)
 			{
@@ -65,18 +65,18 @@ namespace rasters
 			return N;
 		}
 
-		inline static T get(const primitives_template<T>& a, const unsigned int id )
+		inline static T get(const primitives<T>& a, const unsigned int id )
 		{
 			return a.values[id];
 		}
-		static void get(const primitives_template<T>& a, const primitives_template<unsigned int>& ids, primitives_template<T>& out )
+		static void get(const primitives<T>& a, const primitives<unsigned int>& ids, primitives<T>& out )
 		{
 			for (unsigned int i = 0; i < ids.N; ++i)
 			{
 				out.values[i] = a.values[ids[i]];
 			}
 		}
-		static void get(const primitives_template<T>& a, const primitives_template<bool>& mask, primitives_template<T>& out )
+		static void get(const primitives<T>& a, const primitives<bool>& mask, primitives<T>& out )
 		{
 			int out_i = 0;
 			for (unsigned int i = 0; i < a.N; ++i)
@@ -89,25 +89,25 @@ namespace rasters
 			}
 		}
 
-		inline static void set(primitives_template<T>& out, const unsigned int id, const T a )
+		inline static void set(primitives<T>& out, const unsigned int id, const T a )
 		{
 			out.values[id] = a;
 		}
-		static void set(primitives_template<T>& out, const T a )
+		static void set(primitives<T>& out, const T a )
 		{
 			for (unsigned int i = 0; i < out.N; ++i)
 			{
 				out.values[i] = a;
 			}
 		}
-		static void set(primitives_template<T>& out, const primitives_template<unsigned int>& ids, const T a )
+		static void set(primitives<T>& out, const primitives<unsigned int>& ids, const T a )
 		{
 			for (unsigned int i = 0; i < ids.N; ++i)
 			{
 				out.values[ids[i]] = a;
 			}
 		}
-		static void set(const primitives_template<T>& out, const primitives_template<bool>& mask, const T a )
+		static void set(const primitives<T>& out, const primitives<bool>& mask, const T a )
 		{
 			for (unsigned int i = 0; i < out.N; ++i)
 			{
@@ -116,21 +116,21 @@ namespace rasters
 		}
 
 
-		static void set(primitives_template<T>& out, const primitives_template<T>& a )
+		static void set(primitives<T>& out, const primitives<T>& a )
 		{
 			for (unsigned int i = 0; i < out.N; ++i)
 			{
 				out.values[i] = a.values[i];
 			}
 		}
-		static void set(primitives_template<T>& out, const primitives_template<unsigned int>& ids, const primitives_template<T>& a )
+		static void set(primitives<T>& out, const primitives<unsigned int>& ids, const primitives<T>& a )
 		{
 			for (unsigned int i = 0; i < ids.N; ++i)
 			{
 				out.values[ids[i]] = a.values[i];
 			}
 		}
-		static void set(primitives_template<T>& out, const primitives_template<bool>& mask, const primitives_template<T>& a )
+		static void set(primitives<T>& out, const primitives<bool>& mask, const primitives<T>& a )
 		{
 			for (unsigned int i = 0; i < out.N; ++i)
 			{
@@ -141,7 +141,7 @@ namespace rasters
 
 
 		template <class T2>
-		static bool eq(const primitives_template<T>& a, const T2 b)
+		static bool eq(const primitives<T>& a, const T2 b)
 		{
 			bool out = true;
 			for (unsigned int i = 0; i < a.N; ++i)
@@ -151,7 +151,7 @@ namespace rasters
 			return out;
 		}
 		template <class T2>
-		static bool ne(const primitives_template<T>& a, const T2 b)
+		static bool ne(const primitives<T>& a, const T2 b)
 		{
 			bool out = false;
 			for (unsigned int i = 0; i < a.N; ++i)
@@ -161,7 +161,7 @@ namespace rasters
 			return out;
 		}
 		template <class T2>
-		static bool eq(const primitives_template<T>& a, const primitives_template<T2>& b)
+		static bool eq(const primitives<T>& a, const primitives<T2>& b)
 		{
 			bool out = true;
 			for (unsigned int i = 0; i < a.N; ++i)
@@ -171,7 +171,7 @@ namespace rasters
 			return out;
 		}
 		template <class T2>
-		static bool ne(const primitives_template<T>& a, const primitives_template<T2>& b)
+		static bool ne(const primitives<T>& a, const primitives<T2>& b)
 		{
 			bool out = false;
 			for (unsigned int i = 0; i < a.N; ++i)
@@ -184,7 +184,7 @@ namespace rasters
 
 
 		template <class T2>
-		static void eq(const primitives_template<T>& a, const T2 b, primitives_template<bool>& out)
+		static void eq(const primitives<T>& a, const T2 b, primitives<bool>& out)
 		{
 			for (unsigned int i = 0; i < a.N; ++i)
 			{
@@ -192,7 +192,7 @@ namespace rasters
 			}
 		}
 		template <class T2>
-		static void ne(const primitives_template<T>& a, const T2 b, primitives_template<bool>& out)
+		static void ne(const primitives<T>& a, const T2 b, primitives<bool>& out)
 		{
 			for (unsigned int i = 0; i < a.N; ++i)
 			{
@@ -200,7 +200,7 @@ namespace rasters
 			}
 		}
 		template <class T2>
-		static void eq(const primitives_template<T>& a, const primitives_template<T2>& b, primitives_template<bool>& out)
+		static void eq(const primitives<T>& a, const primitives<T2>& b, primitives<bool>& out)
 		{
 			for (unsigned int i = 0; i < a.N; ++i)
 			{
@@ -208,7 +208,7 @@ namespace rasters
 			}
 		}
 		template <class T2>
-		static void ne(const primitives_template<T>& a, const primitives_template<T2>& b, primitives_template<bool>& out)
+		static void ne(const primitives<T>& a, const primitives<T2>& b, primitives<bool>& out)
 		{
 			for (unsigned int i = 0; i < a.N; ++i)
 			{
@@ -223,22 +223,22 @@ namespace rasters
 		template <class T2>
 		inline bool operator==(const T2 b) const
 		{
-			return primitives_template<T>::eq(*this, b);
+			return primitives<T>::eq(*this, b);
 		}
 		template <class T2>
 		inline bool operator!=(const T2 b) const
 		{
-			return primitives_template<T>::ne(*this, b);
+			return primitives<T>::ne(*this, b);
 		}
 		template <class T2>
-		inline bool operator==(const primitives_template<T2>& b) const
+		inline bool operator==(const primitives<T2>& b) const
 		{
-			return primitives_template<T>::eq(*this, b);
+			return primitives<T>::eq(*this, b);
 		}
 		template <class T2>
-		inline bool operator!=(const primitives_template<T2>& b) const
+		inline bool operator!=(const primitives<T2>& b) const
 		{
-			return primitives_template<T>::ne(*this, b);
+			return primitives<T>::ne(*this, b);
 		}
 		
 
@@ -254,15 +254,15 @@ namespace rasters
 		{
 		   return this->values[id]; // reference return 
 		}
-		inline const primitives_template<T> operator[](const primitives_template<bool>& mask ) const
+		inline const primitives<T> operator[](const primitives<bool>& mask ) const
 		{
-			primitives_template<T> out = primitives_template<T>(mask.N);
+			primitives<T> out = primitives<T>(mask.N);
 			get(*this, mask, out);
 			return out;
 		}
-		inline const primitives_template<T> operator[](const primitives_template<unsigned int>& ids ) const
+		inline const primitives<T> operator[](const primitives<unsigned int>& ids ) const
 		{
-			primitives_template<T> out = primitives_template<T>(ids.N);
+			primitives<T> out = primitives<T>(ids.N);
 			get(*this, ids, out);
 			return out;
 		}

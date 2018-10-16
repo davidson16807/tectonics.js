@@ -13,6 +13,8 @@
 
 #include "CartesianGridCellList3d.h"
 
+using namespace composites;
+
 namespace rasters
 {
 
