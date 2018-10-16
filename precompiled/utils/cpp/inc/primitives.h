@@ -24,25 +24,6 @@ namespace rasters
     		this->values = nullptr;
 		};
 
-		primitives_template(const unsigned int N) : values(new T[N]), N(N) {};
-
-		primitives_template(const unsigned int N, const T a)  : values(new T[N]), N(N)
-		{
-			for (unsigned int i = 0; i < N; ++i)
-			{
-				values[i] = a;
-			}
-		};
-
-		template <class T2>
-		primitives_template(const primitives_template<T2>& a)  : values(new T[a.N]), N(a.N)
-		{
-			for (unsigned int i = 0; i < N; ++i)
-			{
-				values[i] = a.values[i];
-			}
-		};
-
 		primitives_template(std::initializer_list<T> list) : values(new T[list.size()]), N(list.size())
 		{
 			int id = 0;
@@ -53,7 +34,38 @@ namespace rasters
 			}
 		};
 
-		static T get(const primitives_template<T>& a, const unsigned int id )
+		explicit primitives_template(const unsigned int N) : values(new T[N]), N(N) {};
+
+		explicit primitives_template(const unsigned int N, const T a)  : values(new T[N]), N(N)
+		{
+			for (unsigned int i = 0; i < N; ++i)
+			{
+				values[i] = a;
+			}
+		};
+		explicit primitives_template(const primitives_template<T>& a)  : values(new T[a.N]), N(a.N)
+		{
+			for (unsigned int i = 0; i < N; ++i)
+			{
+				values[i] = a.values[i];
+			}
+		};
+
+		template <class T2>
+		explicit primitives_template(const primitives_template<T2>& a)  : values(new T[a.N]), N(a.N)
+		{
+			for (unsigned int i = 0; i < N; ++i)
+			{
+				values[i] = a.values[i];
+			}
+		};
+
+		inline unsigned int size()
+		{
+			return N;
+		}
+
+		inline static T get(const primitives_template<T>& a, const unsigned int id )
 		{
 			return a.values[id];
 		}
@@ -77,16 +89,16 @@ namespace rasters
 			}
 		}
 
+		inline static void set(primitives_template<T>& out, const unsigned int id, const T a )
+		{
+			out.values[id] = a;
+		}
 		static void set(primitives_template<T>& out, const T a )
 		{
 			for (unsigned int i = 0; i < out.N; ++i)
 			{
 				out.values[i] = a;
 			}
-		}
-		static void set(primitives_template<T>& out, const unsigned int id, const T a )
-		{
-			out.values[id] = a;
 		}
 		static void set(primitives_template<T>& out, const primitives_template<unsigned int>& ids, const T a )
 		{
@@ -207,23 +219,24 @@ namespace rasters
 
 
 
+		// NOTE: all operators are suggested to be inline because they are thin wrappers of static functions
 		template <class T2>
-		bool operator==(const T2 b) const
+		inline bool operator==(const T2 b) const
 		{
 			return primitives_template<T>::eq(*this, b);
 		}
 		template <class T2>
-		bool operator!=(const T2 b) const
+		inline bool operator!=(const T2 b) const
 		{
 			return primitives_template<T>::ne(*this, b);
 		}
 		template <class T2>
-		bool operator==(const primitives_template<T2>& b) const
+		inline bool operator==(const primitives_template<T2>& b) const
 		{
 			return primitives_template<T>::eq(*this, b);
 		}
 		template <class T2>
-		bool operator!=(const primitives_template<T2>& b) const
+		inline bool operator!=(const primitives_template<T2>& b) const
 		{
 			return primitives_template<T>::ne(*this, b);
 		}
@@ -232,22 +245,22 @@ namespace rasters
 
 
 
-		
-		const T& operator[](const unsigned int id ) const
+		// NOTE: all operators are suggested to be inline because they are thin wrappers of static functions
+		inline const T& operator[](const unsigned int id ) const
 		{
 		   return this->values[id]; // reference return 
 		}
-		T& operator[](const unsigned int id )
+		inline T& operator[](const unsigned int id )
 		{
 		   return this->values[id]; // reference return 
 		}
-		const primitives_template<T> operator[](const primitives_template<bool>& mask ) const
+		inline const primitives_template<T> operator[](const primitives_template<bool>& mask ) const
 		{
 			primitives_template<T> out = primitives_template<T>(mask.N);
 			get(*this, mask, out);
 			return out;
 		}
-		const primitives_template<T> operator[](const primitives_template<unsigned int>& ids ) const
+		inline const primitives_template<T> operator[](const primitives_template<unsigned int>& ids ) const
 		{
 			primitives_template<T> out = primitives_template<T>(ids.N);
 			get(*this, ids, out);

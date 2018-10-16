@@ -12,12 +12,15 @@ namespace rasters
 	class vec3s_template : public numerics_template<vec3_template<T>>
 	{
 	public:
-		vec3s_template(const unsigned int N) 							: numerics_template<vec3_template<T>>(N) {};
-		vec3s_template(const unsigned int N, const vec3_template<T> a)	: numerics_template<vec3_template<T>>(N,a) {};
-		vec3s_template(const numerics_template<vec3_template<T>>& a)	: numerics_template<vec3_template<T>>(a) {};
-		vec3s_template(std::initializer_list<vec3_template<T>> list)  	: numerics_template<vec3_template<T>>(list) {};
+		vec3s_template(std::initializer_list<vec3_template<T>> list)  			: numerics_template<vec3_template<T>>(list) {};
+		explicit vec3s_template(const unsigned int N) 							: numerics_template<vec3_template<T>>(N) {};
+		explicit vec3s_template(const unsigned int N, const vec3_template<T> a)	: numerics_template<vec3_template<T>>(N,a) {};
+		explicit vec3s_template(const numerics_template<vec3_template<T>>& a)	: numerics_template<vec3_template<T>>(a) {};
 
-		vec3s_template(const unsigned int N, const T x) : numerics_template<vec3_template<T>>(N)
+		template <class T2>
+		explicit vec3s_template(const numerics_template<vec3_template<T2>>& a)	: numerics_template<vec3_template<T>>(a) {};
+
+		explicit vec3s_template(const unsigned int N, const T x) : numerics_template<vec3_template<T>>(N)
 		{
 			for (unsigned int i = 0; i < this->N; ++i)
 			{
@@ -27,7 +30,7 @@ namespace rasters
 			}
 		};
 
-		vec3s_template(const numerics_template<T>& x)   : numerics_template<vec3_template<T>>(x.N)
+		explicit vec3s_template(const numerics_template<T>& x)   : numerics_template<vec3_template<T>>(x.N)
 		{
 			for (unsigned int i = 0; i < this->N; ++i)
 			{
@@ -37,7 +40,7 @@ namespace rasters
 			}
 		};
 
-		vec3s_template(const unsigned int N, const T x, const T y, const T z) : numerics_template<vec3_template<T>>(N)
+		explicit vec3s_template(const unsigned int N, const T x, const T y, const T z) : numerics_template<vec3_template<T>>(N)
 		{
 			for (unsigned int i = 0; i < this->N; ++i)
 			{
@@ -46,7 +49,7 @@ namespace rasters
 				this->values[i].z = z;
 			}
 		};
-		vec3s_template(const numerics_template<T>& x, const T y, const T z)  : numerics_template<vec3_template<T>>(x.N)
+		explicit vec3s_template(const numerics_template<T>& x, const T y, const T z)  : numerics_template<vec3_template<T>>(x.N)
 		{
 			for (unsigned int i = 0; i < this->N; ++i)
 			{
@@ -56,7 +59,7 @@ namespace rasters
 			}
 		};
 
-		vec3s_template(const T x, const numerics_template<T>& y, const T z)  : numerics_template<vec3_template<T>>(y.N)
+		explicit vec3s_template(const T x, const numerics_template<T>& y, const T z)  : numerics_template<vec3_template<T>>(y.N)
 		{
 			for (unsigned int i = 0; i < this->N; ++i)
 			{
@@ -66,7 +69,7 @@ namespace rasters
 			}
 		};
 
-		vec3s_template(const numerics_template<T>& x, const numerics_template<T>& y, const T z)   : numerics_template<vec3_template<T>>(y.N)
+		explicit vec3s_template(const numerics_template<T>& x, const numerics_template<T>& y, const T z)   : numerics_template<vec3_template<T>>(y.N)
 		{
 			for (unsigned int i = 0; i < this->N; ++i)
 			{
@@ -76,7 +79,7 @@ namespace rasters
 			}
 		};
 
-		vec3s_template(const T x, const T y, const numerics_template<T>&  z)     : numerics_template<vec3_template<T>>(z.N)
+		explicit vec3s_template(const T x, const T y, const numerics_template<T>&  z)     : numerics_template<vec3_template<T>>(z.N)
 		{
 			for (unsigned int i = 0; i < this->N; ++i)
 			{
@@ -86,7 +89,7 @@ namespace rasters
 			}
 		};
 
-		vec3s_template(const numerics_template<T>& x, const T y, const numerics_template<T>&  z)      : numerics_template<vec3_template<T>>(z.N)
+		explicit vec3s_template(const numerics_template<T>& x, const T y, const numerics_template<T>&  z)      : numerics_template<vec3_template<T>>(z.N)
 		{
 			for (unsigned int i = 0; i < this->N; ++i)
 			{
@@ -96,7 +99,7 @@ namespace rasters
 			}
 		};
 
-		vec3s_template(const T x, const numerics_template<T>& y, const numerics_template<T>&  z)      : numerics_template<vec3_template<T>>(z.N)
+		explicit vec3s_template(const T x, const numerics_template<T>& y, const numerics_template<T>&  z)      : numerics_template<vec3_template<T>>(z.N)
 		{
 			for (unsigned int i = 0; i < this->N; ++i)
 			{
@@ -106,7 +109,7 @@ namespace rasters
 			}
 		};
 
-		vec3s_template(const numerics_template<T>& x, const numerics_template<T>& y, const numerics_template<T>&  z)     : numerics_template<vec3_template<T>>(z.N) 
+		explicit vec3s_template(const numerics_template<T>& x, const numerics_template<T>& y, const numerics_template<T>&  z)     : numerics_template<vec3_template<T>>(z.N) 
 		{
 			for (unsigned int i = 0; i < this->N; ++i)
 			{
@@ -190,69 +193,73 @@ namespace rasters
 
 
 		// NOTE: Here we have convenience functions that are stand-ins for operators
-		// we do this because there are no operators that can express them succinctly
-		static numerics_template<T> dot (const vec3s_template<T>& u, const vec3_template<T> v ) {
+		//  we do this because there are no operators that can express them succinctly
+
+		// NOTE: all operators and convenience functions are marked inline,
+		//  because they are thin wrappers of static functions
+
+		static inline numerics_template<T> dot (const numerics_template<vec3_template<T>>& u, const vec3_template<T> v ) {
 			vec3s_template<T> out = vec3s_template<T>(u.N);
 			dot(u, v, out);
 			return out;
 		}
-		static vec3s_template<T> cross (const vec3s_template<T>& u, const vec3_template<T> v ) 
+		static inline vec3s_template<T> cross (const vec3s_template<T>& u, const vec3_template<T> v ) 
 		{
 			vec3s_template<T> out = vec3s_template<T>(u.N);
 			cross(u, v, out);
 			return out;
 		}
-		static numerics_template<T> distance(const vec3s_template<T>& u, const vec3_template<T> v ) 
+		static inline numerics_template<T> distance(const numerics_template<vec3_template<T>>& u, const vec3_template<T> v ) 
 		{
 			vec3s_template<T> out = vec3s_template<T>(u.N);
 			distance(u, v, out);
 			return out;
 		}
-		static numerics_template<T> dot (const vec3s_template<T>& u, const vec3s_template<T>& v ) {
+		static inline numerics_template<T> dot (const numerics_template<vec3_template<T>>& u, const vec3s_template<T>& v ) {
 			vec3s_template<T> out = vec3s_template<T>(u.N);
 			dot(u, v, out);
 			return out;
 		}
-		static vec3s_template<T> cross (const vec3s_template<T>& u, const vec3s_template<T>& v ) 
+		static inline vec3s_template<T> cross (const vec3s_template<T>& u, const vec3s_template<T>& v ) 
 		{
 			vec3s_template<T> out = vec3s_template<T>(u.N);
 			cross(u, v, out);
 			return out;
 		}
-		static numerics_template<T> distance(const vec3s_template<T>& u, const vec3s_template<T>& v ) 
+		static inline numerics_template<T> distance(const numerics_template<vec3_template<T>>& u, const vec3s_template<T>& v ) 
 		{
 			vec3s_template<T> out = vec3s_template<T>(u.N);
 			distance(u, v, out);
 			return out;
 		}
-		static vec3s_template<T> normalize(const vec3s_template<T>& u) 
+		static inline vec3s_template<T> normalize(const vec3s_template<T>& u) 
 		{
 			vec3s_template<T> out = vec3s_template<T>(u.N);
 			normalize(u, out);
 			return out;
 		}
-		static floats magnitude(const vec3s_template<T>& u) 
+		static inline floats magnitude(const vec3s_template<T>& u) 
 		{
-			floats out = floats(u.N);
-			normalize(u, out);
+			numerics_template<T> out = numerics_template<T>(u.N);
+			magnitude(u, out);
 			return out;
 		}
 
-		const vec3_template<T>& operator[](const unsigned int id ) const
+		inline const vec3_template<T>& operator[](const unsigned int id ) const
 		{
 		   return this->values[id]; // reference return 
 		}
-		vec3_template<T>& operator[](const unsigned int id )
+		inline vec3_template<T>& operator[](const unsigned int id )
 		{
 		   return this->values[id]; // reference return 
 		}
-		const vec3s_template<T> operator[](const primitives_template<bool>& mask ) const
+		inline const vec3s_template<T> operator[](const primitives_template<bool>& mask ) const
 		{
 			vec3s_template<T> out = vec3s_template<T>(mask.N);
 			get(*this, mask, out);
 			return out;
 		}
-		const vec3s_template<T> operator[](const primitives_template<unsigned int>& ids ) const
+		inline const vec3s_template<T> operator[](const primitives_template<unsigned int>& ids ) const
 		{
 			vec3s_template<T> out = vec3s_template<T>(ids.N);
 			get(*this, ids, out);

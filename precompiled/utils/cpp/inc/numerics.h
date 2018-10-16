@@ -18,10 +18,14 @@ namespace rasters
 	{
 
 	public:
-		numerics_template(const unsigned int N) 			: primitives_template<T>(N) {};
-		numerics_template(const unsigned int N, const T a)  : primitives_template<T>(N, a) {};
-		numerics_template(const numerics_template<T>& a)  	: primitives_template<T>(a) {};
-		numerics_template(std::initializer_list<T> list)  	: primitives_template<T>(list)  {};
+		numerics_template(std::initializer_list<T> list)  			: primitives_template<T>(list)  {};
+
+		explicit numerics_template(const unsigned int N) 			: primitives_template<T>(N) {};
+		explicit numerics_template(const unsigned int N, const T a) : primitives_template<T>(N, a) {};
+		explicit numerics_template(const numerics_template<T>& a)  	: primitives_template<T>(a) {};
+
+		template <class T2>
+		explicit numerics_template(const numerics_template<T2>& a)  : primitives_template<T>(a) {};
 
 		static T min(const numerics_template<T>& a)
 		{
@@ -261,30 +265,31 @@ namespace rasters
 			}
 		}
 		
+		// NOTE: all wrappers are suggested to be inline because they are thin wrappers of static functions
 
 		template <class T2, class T3>
-		numerics_template<T3> operator>(const T2 b) const
+		inline numerics_template<T3> operator>(const T2 b) const
 		{
 			numerics_template<T3> out = numerics_template<T3>(this->N);
 			numerics_template<T>::gt(*this, b, out);
 			return out;
 		}
 		template <class T2, class T3>
-		numerics_template<T3> operator>=(const T2 b) const
+		inline numerics_template<T3> operator>=(const T2 b) const
 		{
 			numerics_template<T3> out = numerics_template<T3>(this->N);
 			numerics_template<T>::gte(*this, b, out);
 			return out;
 		}
 		template <class T2, class T3>
-		numerics_template<T3> operator<(const T2 b) const
+		inline numerics_template<T3> operator<(const T2 b) const
 		{
 			numerics_template<T3> out = numerics_template<T3>(this->N);
 			numerics_template<T>::lt(*this, b, out);
 			return out;
 		}
 		template <class T2, class T3>
-		numerics_template<T3> operator<=(const T2 b) const
+		inline numerics_template<T3> operator<=(const T2 b) const
 		{
 			numerics_template<T3> out = numerics_template<T3>(this->N);
 			numerics_template<T>::lte(*this, b, out);
@@ -294,28 +299,28 @@ namespace rasters
 		
 
 		template <class T2, class T3>
-		numerics_template<T3> operator>(const numerics_template<T2>& b) const
+		inline numerics_template<T3> operator>(const numerics_template<T2>& b) const
 		{
 			numerics_template<T3> out = numerics_template<T3>(this->N);
 			numerics_template<T>::gt(*this, b, out);
 			return out;
 		}
 		template <class T2, class T3>
-		numerics_template<T3> operator>=(const numerics_template<T2>& b) const
+		inline numerics_template<T3> operator>=(const numerics_template<T2>& b) const
 		{
 			numerics_template<T3> out = numerics_template<T3>(this->N);
 			numerics_template<T>::gte(*this, b, out);
 			return out;
 		}
 		template <class T2, class T3>
-		numerics_template<T3> operator<(const numerics_template<T2>& b) const
+		inline numerics_template<T3> operator<(const numerics_template<T2>& b) const
 		{
 			numerics_template<T3> out = numerics_template<T3>(this->N);
 			numerics_template<T>::lt(*this, b, out);
 			return out;
 		}
 		template <class T2, class T3>
-		numerics_template<T3> operator<=(const numerics_template<T2>& b) const
+		inline numerics_template<T3> operator<=(const numerics_template<T2>& b) const
 		{
 			numerics_template<T3> out = numerics_template<T3>(this->N);
 			numerics_template<T>::lte(*this, b, out);
@@ -328,25 +333,25 @@ namespace rasters
 
 
 		template <class T2>
-		numerics_template<T>& operator+=(const T2 b) 
+		inline numerics_template<T>& operator+=(const T2 b) 
 		{
 			numerics_template<T>::add(*this, b, *this);
 			return *this;
 		}
 		template <class T2>
-		numerics_template<T>& operator-=(const T2 b) 
+		inline numerics_template<T>& operator-=(const T2 b) 
 		{
 			numerics_template<T>::sub(*this, b, *this);
 			return *this;
 		}
 		template <class T2>
-		numerics_template<T>& operator*=(const T2 b) 
+		inline numerics_template<T>& operator*=(const T2 b) 
 		{
 			numerics_template<T>::mult(*this, b, *this);
 			return *this;
 		}
 		template <class T2>
-		numerics_template<T>& operator/=(const T2 b) 
+		inline numerics_template<T>& operator/=(const T2 b) 
 		{
 			numerics_template<T>::div(*this, b, *this);
 			return *this;
@@ -354,49 +359,49 @@ namespace rasters
 
 
 		template <class T2>
-		numerics_template<T>& operator+=(const numerics_template<T2>& b) 
+		inline numerics_template<T>& operator+=(const numerics_template<T2>& b) 
 		{
 			numerics_template<T>::add(*this, b, *this);
 			return *this;
 		}
 		template <class T2>
-		numerics_template<T>& operator-=(const numerics_template<T2>& b) 
+		inline numerics_template<T>& operator-=(const numerics_template<T2>& b) 
 		{
 			numerics_template<T>::sub(*this, b, *this);
 			return *this;
 		}
 		template <class T2>
-		numerics_template<T>& operator*=(const numerics_template<T2>& b) 
+		inline numerics_template<T>& operator*=(const numerics_template<T2>& b) 
 		{
 			numerics_template<T>::mult(*this, b, *this);
 			return *this;
 		}
 		template <class T2>
-		numerics_template<T>& operator/=(const numerics_template<T2>& b) 
+		inline numerics_template<T>& operator/=(const numerics_template<T2>& b) 
 		{
 			numerics_template<T>::div(*this, b, *this);
 			return *this;
 		}
 
 		// NOTE: prefix increment/decrement
-		numerics_template<T>& operator++()  
+		inline numerics_template<T>& operator++()  
 		{  
 			numerics_template<T>::add(*this, 1, *this);
 			return *this;
 		}  
-		numerics_template<T>& operator--()  
+		inline numerics_template<T>& operator--()  
 		{  
 			numerics_template<T>::add(*this, 1, *this);
 			return *this;
 		}  
 
 		// NOTE: postfix increment/decrement
-		numerics_template<T> operator++(int)  
+		inline numerics_template<T> operator++(int)  
 		{  
 			numerics_template<T>::add(*this, 1, *this);
 			return *this;
 		}  
-		numerics_template<T> operator--(int)  
+		inline numerics_template<T> operator--(int)  
 		{  
 			numerics_template<T>::add(*this, 1, *this);
 			return *this;
@@ -407,28 +412,28 @@ namespace rasters
 
 
 		template <class T2, class T3>
-		numerics_template<T3> operator+(const T2 b) const
+		inline numerics_template<T3> operator+(const T2 b) const
 		{
 			numerics_template<T3> out = numerics_template<T3>(this->N);
 			numerics_template<T>::add(*this, b, out);
 			return out;
 		}
 		template <class T2, class T3>
-		numerics_template<T3> operator-(const T2 b) const
+		inline numerics_template<T3> operator-(const T2 b) const
 		{
 			numerics_template<T3> out = numerics_template<T3>(this->N);
 			numerics_template<T>::sub(*this, b, out);
 			return out;
 		}
 		template <class T2, class T3>
-		numerics_template<T> operator*(const T2 b) const
+		inline numerics_template<T> operator*(const T2 b) const
 		{
 			numerics_template<T3> out = numerics_template<T3>(this->N);
 			numerics_template<T>::mult(*this, b, out);
 			return out;
 		}
 		template <class T2, class T3>
-		numerics_template<T3> operator/(const T2 b) const
+		inline numerics_template<T3> operator/(const T2 b) const
 		{
 			numerics_template<T3> out = numerics_template<T3>(this->N);
 			numerics_template<T>::div(*this, b, out);
@@ -437,49 +442,49 @@ namespace rasters
 
 
 		template <class T2, class T3>
-		numerics_template<T3> operator+(const numerics_template<T2>& b) const
+		inline numerics_template<T3> operator+(const numerics_template<T2>& b) const
 		{
 			numerics_template<T3> out = numerics_template<T3>(this->N);
 			numerics_template<T>::add(*this, b, out);
 			return out;
 		}
 		template <class T2, class T3>
-		numerics_template<T3> operator-(const numerics_template<T2>& b) const
+		inline numerics_template<T3> operator-(const numerics_template<T2>& b) const
 		{
 			numerics_template<T3> out = numerics_template<T3>(this->N);
 			numerics_template<T>::sub(*this, b, out);
 			return out;
 		}
 		template <class T2, class T3>
-		numerics_template<T3> operator*(const numerics_template<T2>& b) const
+		inline numerics_template<T3> operator*(const numerics_template<T2>& b) const
 		{
 			numerics_template<T3> out = numerics_template<T3>(this->N);
 			numerics_template<T>::mult(*this, b, out);
 			return out;
 		}
 		template <class T2, class T3>
-		numerics_template<T3> operator/(const numerics_template<T2>& b) const
+		inline numerics_template<T3> operator/(const numerics_template<T2>& b) const
 		{
 			numerics_template<T3> out = numerics_template<T3>(this->N);
 			numerics_template<T>::div(*this, b, out);
 			return out;
 		}
 
-		const T& operator[](const unsigned int id ) const
+		inline const T& operator[](const unsigned int id ) const
 		{
 		   return this->values[id]; // reference return 
 		}
-		T& operator[](const unsigned int id )
+		inline T& operator[](const unsigned int id )
 		{
 		   return this->values[id]; // reference return 
 		}
-		const numerics_template<T> operator[](const primitives_template<bool>& mask ) const
+		inline const numerics_template<T> operator[](const primitives_template<bool>& mask ) const
 		{
 			numerics_template<T> out = numerics_template<T>(mask.N);
 			get(*this, mask, out);
 			return out;
 		}
-		const numerics_template<T> operator[](const primitives_template<unsigned int>& ids ) const
+		inline const numerics_template<T> operator[](const primitives_template<unsigned int>& ids ) const
 		{
 			numerics_template<T> out = numerics_template<T>(ids.N);
 			get(*this, ids, out);
