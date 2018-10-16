@@ -120,57 +120,57 @@ namespace composites
 		};
 
 		static void dot (const tvec3s<T>& u, const tvec3<T> v, numerics<T>& out) {
-			for (unsigned int i = 0; i < u.N; ++i)
+			for (unsigned int i = 0; i < u.size(); ++i)
 			{
-				out.values[i] = tvec3<T>::dot(u.values[i], v);
+				out[i] = tvec3<T>::dot(u[i], v);
 			}
 		}
 		static void cross (const tvec3s<T>& u, const tvec3<T> v, tvec3s<T>& out) 
 		{
-			for (unsigned int i = 0; i < u.N; ++i)
+			for (unsigned int i = 0; i < u.size(); ++i)
 			{
-				out.values[i] = tvec3<T>::cross(u.values[i], v);
+				out[i] = tvec3<T>::cross(u[i], v);
 			}
 		}
 		static void hadamard (const tvec3s<T>& u, const tvec3<T> v, tvec3s<T>& out) {
-			for (unsigned int i = 0; i < u.N; ++i)
+			for (unsigned int i = 0; i < u.size(); ++i)
 			{
-				out.values[i] = tvec3<T>::hadamard(u.values[i], v);
+				out[i] = tvec3<T>::hadamard(u[i], v);
 			}
 		}
 		static void distance(const tvec3s<T>& u, const tvec3<T> v, numerics<T>& out) 
 		{
-			for (unsigned int i = 0; i < u.N; ++i)
+			for (unsigned int i = 0; i < u.size(); ++i)
 			{
-				out.values[i] = tvec3<T>::distance(u.values[i], v);
+				out[i] = tvec3<T>::distance(u[i], v);
 			}
 		}
 
 
 		static void dot (const tvec3s<T>& u, const tvec3s<T>& v, numerics<T>& out) {
-			for (unsigned int i = 0; i < u.N; ++i)
+			for (unsigned int i = 0; i < u.size(); ++i)
 			{
-				out.values[i] = tvec3<T>::dot(u.values[i], v.values[i]);
+				out[i] = tvec3<T>::dot(u[i], v[i]);
 			}
 		}
 		static void cross (const tvec3s<T>& u, const tvec3s<T>& v, tvec3s<T>& out) 
 		{
-			for (unsigned int i = 0; i < u.N; ++i)
+			for (unsigned int i = 0; i < u.size(); ++i)
 			{
-				out.values[i] = tvec3<T>::cross(u.values[i], v.values[i]);
+				out[i] = tvec3<T>::cross(u[i], v[i]);
 			}
 		}
 		static void hadamard (const tvec3s<T>& u, const tvec3s<T>& v, tvec3s<T>& out) {
-			for (unsigned int i = 0; i < u.N; ++i)
+			for (unsigned int i = 0; i < u.size(); ++i)
 			{
-				out.values[i] = tvec3<T>::hadamard(u.values[i], v.values[i]);
+				out[i] = tvec3<T>::hadamard(u[i], v[i]);
 			}
 		}
 		static void distance(const tvec3s<T>& u, const tvec3s<T>& v, numerics<T>& out) 
 		{
-			for (unsigned int i = 0; i < u.N; ++i)
+			for (unsigned int i = 0; i < u.size(); ++i)
 			{
-				out.values[i] = tvec3<T>::distance(u.values[i], v.values[i]);
+				out[i] = tvec3<T>::distance(u[i], v[i]);
 			}
 		}
 
@@ -178,16 +178,16 @@ namespace composites
 
 		static void magnitude(const tvec3s<T>& u, numerics<T>& out) 
 		{
-			for (unsigned int i = 0; i < u.N; ++i)
+			for (unsigned int i = 0; i < u.size(); ++i)
 			{
-				out.values[i] = u.values[i].magnitude();
+				out[i] = u[i].magnitude();
 			}
 		}
 		static void normalize(const tvec3s<T>& u, tvec3s<T>& out) 
 		{
-			for (unsigned int i = 0; i < u.N; ++i)
+			for (unsigned int i = 0; i < u.size(); ++i)
 			{
-				out.values[i] = u.values[i].normalize();
+				out[i] = u[i].normalize();
 			}
 		}
 

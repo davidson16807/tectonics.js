@@ -29,19 +29,19 @@ namespace composites
 
 		static T min(const numerics<T>& a)
 		{
-			T out = a.values[0];
-			for (unsigned int i = 0; i < a.N; ++i)
+			T out = a[0];
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
-				out = a.values[i] < out? a.values[i] : out;
+				out = a[i] < out? a[i] : out;
 			}
 			return out;
 		}
 		static T max(const numerics<T>& a)
 		{
-			T out = a.values[0];
-			for (unsigned int i = 0; i < a.N; ++i)
+			T out = a[0];
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
-				out = a.values[i] > out? a.values[i] : out;
+				out = a[i] > out? a[i] : out;
 			}
 			return out;
 		}
@@ -51,17 +51,17 @@ namespace composites
 		template <class T2>
 		static void max(const numerics<T>& a, const T2 b, numerics<T>& out)
 		{
-			for (unsigned int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
-				out.values[i] = a.values[i] > b? a.values[i] : b;
+				out[i] = a[i] > b? a[i] : b;
 			}
 		}
 		template <class T2>
 		static void min(const numerics<T>& a, const T2 b, numerics<T>& out)
 		{
-			for (unsigned int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
-				out.values[i] = a.values[i] < b? a.values[i] : b;
+				out[i] = a[i] < b? a[i] : b;
 			}
 		}
 
@@ -70,17 +70,17 @@ namespace composites
 		template <class T2>
 		static void max(const numerics<T>& a, const numerics<T2>& b, numerics<T>& out)
 		{
-			for (unsigned int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
-				out.values[i] = a.values[i] > b.values[i]? a.values[i] : b.values[i];
+				out[i] = a[i] > b[i]? a[i] : b[i];
 			}
 		}
 		template <class T2>
 		static void min(const numerics<T>& a, const numerics<T2>& b, numerics<T>& out)
 		{
-			for (unsigned int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
-				out.values[i] = a.values[i] < b.values[i]? a.values[i] : b.values[i];
+				out[i] = a[i] < b[i]? a[i] : b[i];
 			}
 		}
 
@@ -88,70 +88,70 @@ namespace composites
 		template <class Tlo, class Thi>
 		static void clamp(const numerics<T>& a, const Tlo lo, const Thi hi, const numerics<T>& out)
 		{
-			for (unsigned int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
-				out.values[i] = a.values[i] > hi? hi : a.values[i] < lo? lo : a.values[i];
+				out[i] = a[i] > hi? hi : a[i] < lo? lo : a[i];
 			}
 		}
 		template <class Tlo, class Thi>
 		static void clamp(const numerics<T>& a, const Tlo lo, const numerics<Thi>& hi, const numerics<T>& out)
 		{
-			for (unsigned int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
-				out.values[i] = a.values[i] > hi.values[i]? hi.values[i] : a.values[i] < lo? lo : a.values[i];
+				out[i] = a[i] > hi[i]? hi[i] : a[i] < lo? lo : a[i];
 			}
 		}
 		template <class Tlo, class Thi>
 		static void clamp(const numerics<T>& a, const numerics<Tlo>& lo, const Thi hi, const numerics<T>& out)
 		{
-			for (unsigned int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
-				out.values[i] = a.values[i] > hi? hi : a.values[i] < lo.values[i]? lo.values[i] : a.values[i];
+				out[i] = a[i] > hi? hi : a[i] < lo[i]? lo[i] : a[i];
 			}
 		}
 		template <class Tlo, class Thi>
 		static void clamp(const numerics<T>& a, const numerics<Tlo>& lo, const numerics<Thi>& hi, const numerics<T>& out)
 		{
-			for (unsigned int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
-				out.values[i] = a.values[i] > hi.values[i]? hi.values[i] : a.values[i];
+				out[i] = a[i] > hi[i]? hi[i] : a[i];
 			}
-			for (unsigned int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
-				out.values[i] = a.values[i] < lo.values[i]? lo.values[i] : out.values[i];
+				out[i] = a[i] < lo[i]? lo[i] : out[i];
 			}
 		}
 
 		template <class T2>
 		static void gt(const numerics<T>& a, const T2 b, bools& out)
 		{
-			for (unsigned int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
-				out.values[i] = a.values[i] > b;
+				out[i] = a[i] > b;
 			}
 		}
 		template <class T2>
 		static void gte(const numerics<T>& a, const T2 b, bools& out)
 		{
-			for (unsigned int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
-				out.values[i] = a.values[i] >= b;
+				out[i] = a[i] >= b;
 			}
 		}
 		template <class T2>
 		static void lt(const numerics<T>& a, const T2 b, bools& out)
 		{
-			for (unsigned int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
-				out.values[i] = a.values[i] < b;
+				out[i] = a[i] < b;
 			}
 		}
 		template <class T2>
 		static void lte(const numerics<T>& a, const T2 b, bools& out)
 		{
-			for (unsigned int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
-				out.values[i] = a.values[i] <= b;
+				out[i] = a[i] <= b;
 			}
 		}
 
@@ -162,33 +162,33 @@ namespace composites
 		template <class T2>
 		static void gt(const numerics<T>& a, const numerics<T2>& b, bools& out)
 		{
-			for (unsigned int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
-				out.values[i] = a.values[i] > b.values[i];
+				out[i] = a[i] > b[i];
 			}
 		}
 		template <class T2>
 		static void gte(const numerics<T>& a, const numerics<T2>& b, bools& out)
 		{
-			for (unsigned int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
-				out.values[i] = a.values[i] >= b.values[i];
+				out[i] = a[i] >= b[i];
 			}
 		}
 		template <class T2>
 		static void lt(const numerics<T>& a, const numerics<T2>& b, bools& out)
 		{
-			for (unsigned int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
-				out.values[i] = a.values[i] <= b.values[i];
+				out[i] = a[i] <= b[i];
 			}
 		}
 		template <class T2>
 		static void lte(const numerics<T>& a, const numerics<T2>& b, bools& out)
 		{
-			for (unsigned int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
-				out.values[i] = a.values[i] < b.values[i];
+				out[i] = a[i] < b[i];
 			}
 		}
 
@@ -199,34 +199,34 @@ namespace composites
 		template <class T2, class T3>
 		static void add(const numerics<T>& a, const T2 b, numerics<T3>& out)
 		{
-			for (unsigned int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
-				out.values[i] = a.values[i] + b;
+				out[i] = a[i] + b;
 			}
 		}
 		template <class T2, class T3>
 		static void sub(const numerics<T>& a, const T2 b, numerics<T3>& out)
 		{
-			for (unsigned int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
-				out.values[i] = a.values[i] - b;
+				out[i] = a[i] - b;
 			}
 		}
 		template <class T2, class T3>
 		static void mult(const numerics<T>& a, const T2 b, numerics<T3>& out)
 		{
-			for (unsigned int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
-				out.values[i] = a.values[i] * b;
+				out[i] = a[i] * b;
 			}
 		}
 		template <class T2, class T3>
 		static void div(const numerics<T>& a, const T2 b, numerics<T3>& out)
 		{
 			const T ainv = 1./b;
-			for (unsigned int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
-				out.values[i] = a.values[i] / b;
+				out[i] = a[i] / b;
 			}
 		}
 
@@ -235,33 +235,33 @@ namespace composites
 		template <class T2, class T3>
 		static void add(const numerics<T>& a, const numerics<T2>& b, numerics<T3>& out)
 		{
-			for (unsigned int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
-				out.values[i] = a.values[i] + b.values[i];
+				out[i] = a[i] + b[i];
 			}
 		}
 		template <class T2, class T3>
 		static void sub(const numerics<T>& a, const numerics<T2>& b, numerics<T3>& out)
 		{
-			for (unsigned int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
-				out.values[i] = a.values[i] - b.values[i];
+				out[i] = a[i] - b[i];
 			}
 		}
 		template <class T2, class T3>
 		static void mult(const numerics<T>& a, const numerics<T2>& b, numerics<T3>& out)
 		{
-			for (unsigned int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
-				out.values[i] = a.values[i] * b.values[i];
+				out[i] = a[i] * b[i];
 			}
 		}
 		template <class T2, class T3>
 		static void div(const numerics<T>& a, const numerics<T2>& b, numerics<T3>& out)
 		{
-			for (unsigned int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
-				out.values[i] = a.values[i] / b.values[i];
+				out[i] = a[i] / b[i];
 			}
 		}
 		

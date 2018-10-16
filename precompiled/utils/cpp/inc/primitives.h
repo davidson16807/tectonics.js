@@ -47,7 +47,7 @@ namespace composites
 		{
 			for (unsigned int i = 0; i < N; ++i)
 			{
-				values[i] = a.values[i];
+				values[i] = a[i];
 			}
 		};
 
@@ -56,34 +56,34 @@ namespace composites
 		{
 			for (unsigned int i = 0; i < N; ++i)
 			{
-				values[i] = a.values[i];
+				values[i] = a[i];
 			}
 		};
 
-		inline unsigned int size()
+		inline unsigned int size() const
 		{
 			return N;
 		}
 
 		inline static T get(const primitives<T>& a, const unsigned int id )
 		{
-			return a.values[id];
+			return a[id];
 		}
 		static void get(const primitives<T>& a, const primitives<unsigned int>& ids, primitives<T>& out )
 		{
-			for (unsigned int i = 0; i < ids.N; ++i)
+			for (unsigned int i = 0; i < ids.size(); ++i)
 			{
-				out.values[i] = a.values[ids[i]];
+				out[i] = a[ids[i]];
 			}
 		}
 		static void get(const primitives<T>& a, const primitives<bool>& mask, primitives<T>& out )
 		{
 			int out_i = 0;
-			for (unsigned int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
-				if (mask.values[i])
+				if (mask[i])
 				{
-					out.values[out_i] = a.values[i];
+					out[out_i] = a[i];
 					out_i++;
 				}
 			}
@@ -91,50 +91,50 @@ namespace composites
 
 		inline static void set(primitives<T>& out, const unsigned int id, const T a )
 		{
-			out.values[id] = a;
+			out[id] = a;
 		}
 		static void set(primitives<T>& out, const T a )
 		{
-			for (unsigned int i = 0; i < out.N; ++i)
+			for (unsigned int i = 0; i < out.size(); ++i)
 			{
-				out.values[i] = a;
+				out[i] = a;
 			}
 		}
 		static void set(primitives<T>& out, const primitives<unsigned int>& ids, const T a )
 		{
-			for (unsigned int i = 0; i < ids.N; ++i)
+			for (unsigned int i = 0; i < ids.size(); ++i)
 			{
-				out.values[ids[i]] = a;
+				out[ids[i]] = a;
 			}
 		}
 		static void set(const primitives<T>& out, const primitives<bool>& mask, const T a )
 		{
-			for (unsigned int i = 0; i < out.N; ++i)
+			for (unsigned int i = 0; i < out.size(); ++i)
 			{
-				out.values[i] = mask[i]? a : out.values[i];
+				out[i] = mask[i]? a : out[i];
 			}
 		}
 
 
 		static void set(primitives<T>& out, const primitives<T>& a )
 		{
-			for (unsigned int i = 0; i < out.N; ++i)
+			for (unsigned int i = 0; i < out.size(); ++i)
 			{
-				out.values[i] = a.values[i];
+				out[i] = a[i];
 			}
 		}
 		static void set(primitives<T>& out, const primitives<unsigned int>& ids, const primitives<T>& a )
 		{
-			for (unsigned int i = 0; i < ids.N; ++i)
+			for (unsigned int i = 0; i < ids.size(); ++i)
 			{
-				out.values[ids[i]] = a.values[i];
+				out[ids[i]] = a[i];
 			}
 		}
 		static void set(primitives<T>& out, const primitives<bool>& mask, const primitives<T>& a )
 		{
-			for (unsigned int i = 0; i < out.N; ++i)
+			for (unsigned int i = 0; i < out.size(); ++i)
 			{
-				out.values[i] = mask[i]? a.values[i] : out.values[i];
+				out[i] = mask[i]? a[i] : out[i];
 			}
 		}
 
@@ -144,9 +144,9 @@ namespace composites
 		static bool eq(const primitives<T>& a, const T2 b)
 		{
 			bool out = true;
-			for (unsigned int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
-				out &= a.values[i] == b;
+				out &= a[i] == b;
 			}
 			return out;
 		}
@@ -154,9 +154,9 @@ namespace composites
 		static bool ne(const primitives<T>& a, const T2 b)
 		{
 			bool out = false;
-			for (unsigned int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
-				out |= a.values[i] != b;
+				out |= a[i] != b;
 			}
 			return out;
 		}
@@ -164,9 +164,9 @@ namespace composites
 		static bool eq(const primitives<T>& a, const primitives<T2>& b)
 		{
 			bool out = true;
-			for (unsigned int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
-				out &= a.values[i] == b.values[i];
+				out &= a[i] == b[i];
 			}
 			return out;
 		}
@@ -174,9 +174,9 @@ namespace composites
 		static bool ne(const primitives<T>& a, const primitives<T2>& b)
 		{
 			bool out = false;
-			for (unsigned int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
-				out |= a.values[i] != b.values[i];
+				out |= a[i] != b[i];
 			}
 			return out;
 		}
@@ -186,33 +186,33 @@ namespace composites
 		template <class T2>
 		static void eq(const primitives<T>& a, const T2 b, primitives<bool>& out)
 		{
-			for (unsigned int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
-				out.values[i] = a.values[i] == b;
+				out[i] = a[i] == b;
 			}
 		}
 		template <class T2>
 		static void ne(const primitives<T>& a, const T2 b, primitives<bool>& out)
 		{
-			for (unsigned int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
-				out.values[i] = a.values[i] == b;
+				out[i] = a[i] == b;
 			}
 		}
 		template <class T2>
 		static void eq(const primitives<T>& a, const primitives<T2>& b, primitives<bool>& out)
 		{
-			for (unsigned int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
-				out.values[i] = a.values[i] == b.values[i];
+				out[i] = a[i] == b[i];
 			}
 		}
 		template <class T2>
 		static void ne(const primitives<T>& a, const primitives<T2>& b, primitives<bool>& out)
 		{
-			for (unsigned int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
-				out.values[i] = a.values[i] != b.values[i];
+				out[i] = a[i] != b[i];
 			}
 		}
 

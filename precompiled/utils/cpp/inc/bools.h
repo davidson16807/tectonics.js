@@ -21,57 +21,57 @@ namespace composites
 
 		static void unite(const bools& a, const bool b, bools& out)
 		{
-			for (unsigned int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
-				out.values[i] = a.values[i] || b;
+				out[i] = a[i] || b;
 			}
 		}
 
 		static void unite(const bools& a, const bools& b, bools& out)
 		{
-			for (unsigned int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
-				out.values[i] = a.values[i] || b.values[i];
+				out[i] = a[i] || b[i];
 			}
 		}
 
 		static void intersect(const bools& a, const bool b, bools& out)
 		{
-			for (unsigned int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
-				out.values[i] = a.values[i] && b;
+				out[i] = a[i] && b;
 			}
 		}
 
 		static void intersect(const bools& a, const bools& b, bools& out)
 		{
-			for (unsigned int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
-				out.values[i] = a.values[i] && b.values[i];
+				out[i] = a[i] && b[i];
 			}
 		}
 
 		static void differ(const bools& a, const bool b, bools& out)
 		{
-			for (unsigned int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
-				out.values[i] = a.values[i] && !b;
+				out[i] = a[i] && !b;
 			}
 		}
 
 		static void differ(const bools& a, const bools& b, bools& out)
 		{
-			for (unsigned int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
-				out.values[i] = a.values[i] && !b.values[i];
+				out[i] = a[i] && !b[i];
 			}
 		}
 
 		static void negate(const bools& a, bools& out)
 		{
-			for (unsigned int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
-				out.values[i] = !a.values[i];
+				out[i] = !a[i];
 			}
 		}
 

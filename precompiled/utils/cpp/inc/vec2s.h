@@ -67,72 +67,72 @@ namespace composites
 
 
 		static void dot (const vec2s_template<T>& u, const vec2_template<T> v, numerics_template<T>& out) {
-			for (int i = 0; i < u.N; ++i)
+			for (int i = 0; i < u.size(); ++i)
 			{
-				out.values[i] = vec2_template<T>::dot(u.values[i], v);
+				out[i] = vec2_template<T>::dot(u[i], v);
 			}
 		}
 		static void cross (const vec2s_template<T>& u, const vec2_template<T> v, vec2s_template<T>& out) 
 		{
-			for (int i = 0; i < u.N; ++i)
+			for (int i = 0; i < u.size(); ++i)
 			{
-				out.values[i] = vec2_template<T>::cross(u.values[i], v);
+				out[i] = vec2_template<T>::cross(u[i], v);
 			}
 		}
 		static void hadamard (const vec2s_template<T>& u, const vec2_template<T> v, vec2s_template<T>& out) {
-			for (int i = 0; i < u.N; ++i)
+			for (int i = 0; i < u.size(); ++i)
 			{
-				out.values[i] = vec2_template<T>::hadamard(u.values[i], v);
+				out[i] = vec2_template<T>::hadamard(u[i], v);
 			}
 		}
 		static void distance(const vec2s_template<T>& u, const vec2_template<T> v, numerics_template<T>& out) 
 		{
-			for (int i = 0; i < u.N; ++i)
+			for (int i = 0; i < u.size(); ++i)
 			{
-				out.values[i] = vec2_template<T>::distance(u.values[i], v);
+				out[i] = vec2_template<T>::distance(u[i], v);
 			}
 		}
 
 
 		static void dot (const vec2s_template<T>& u, const vec2s_template<T>& v, numerics_template<T>& out) {
-			for (int i = 0; i < u.N; ++i)
+			for (int i = 0; i < u.size(); ++i)
 			{
-				out.values[i] = vec2_template<T>::dot(u.values[i], v.values[i]);
+				out[i] = vec2_template<T>::dot(u[i], v[i]);
 			}
 		}
 		static void cross (const vec2s_template<T>& u, const vec2s_template<T>& v, vec2s_template<T>& out) 
 		{
-			for (int i = 0; i < u.N; ++i)
+			for (int i = 0; i < u.size(); ++i)
 			{
-				out.values[i] = vec2_template<T>::cross(u.values[i], v.values[i]);
+				out[i] = vec2_template<T>::cross(u[i], v[i]);
 			}
 		}
 		static void hadamard (const vec2s_template<T>& u, const vec2s_template<T>& v, vec2s_template<T>& out) {
-			for (int i = 0; i < u.N; ++i)
+			for (int i = 0; i < u.size(); ++i)
 			{
-				out.values[i] = vec2_template<T>::hadamard(u.values[i], v.values[i]);
+				out[i] = vec2_template<T>::hadamard(u[i], v[i]);
 			}
 		}
 		static void distance(const vec2s_template<T>& u, const vec2s_template<T>& v, numerics_template<T>& out) 
 		{
-			for (int i = 0; i < u.N; ++i)
+			for (int i = 0; i < u.size(); ++i)
 			{
-				out.values[i] = vec2_template<T>::distance(u.values[i], v.values[i]);
+				out[i] = vec2_template<T>::distance(u[i], v[i]);
 			}
 		}
 
 		static void magnitude(const vec2s_template<T>& u, numerics_template<T>& out) 
 		{
-			for (int i = 0; i < u.N; ++i)
+			for (int i = 0; i < u.size(); ++i)
 			{
-				out.values[i] = u.values[i].magnitude();
+				out[i] = u[i].magnitude();
 			}
 		}
 		static void normalize(const vec2s_template<T>& u, numerics_template<T>& out) 
 		{
-			for (int i = 0; i < u.N; ++i)
+			for (int i = 0; i < u.size(); ++i)
 			{
-				out.values[i] = u.values[i].normalize();
+				out[i] = u[i].normalize();
 			}
 		}
 
