@@ -17,7 +17,7 @@ namespace rasters
 
 		static void unite(const bools& a, const bool b, bools& out)
 		{
-			for (int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.N; ++i)
 			{
 				out.values[i] = a.values[i] || b;
 			}
@@ -25,7 +25,7 @@ namespace rasters
 
 		static void unite(const bools& a, const bools& b, bools& out)
 		{
-			for (int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.N; ++i)
 			{
 				out.values[i] = a.values[i] || b.values[i];
 			}
@@ -33,7 +33,7 @@ namespace rasters
 
 		static void intersect(const bools& a, const bool b, bools& out)
 		{
-			for (int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.N; ++i)
 			{
 				out.values[i] = a.values[i] && b;
 			}
@@ -41,7 +41,7 @@ namespace rasters
 
 		static void intersect(const bools& a, const bools& b, bools& out)
 		{
-			for (int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.N; ++i)
 			{
 				out.values[i] = a.values[i] && b.values[i];
 			}
@@ -49,7 +49,7 @@ namespace rasters
 
 		static void differ(const bools& a, const bool b, bools& out)
 		{
-			for (int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.N; ++i)
 			{
 				out.values[i] = a.values[i] && !b;
 			}
@@ -57,7 +57,7 @@ namespace rasters
 
 		static void differ(const bools& a, const bools& b, bools& out)
 		{
-			for (int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.N; ++i)
 			{
 				out.values[i] = a.values[i] && !b.values[i];
 			}
@@ -65,7 +65,7 @@ namespace rasters
 
 		static void negate(const bools& a, bools& out)
 		{
-			for (int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.N; ++i)
 			{
 				out.values[i] = !a.values[i];
 			}

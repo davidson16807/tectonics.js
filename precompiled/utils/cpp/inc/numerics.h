@@ -26,7 +26,7 @@ namespace rasters
 		static T min(const numerics_template<T>& a)
 		{
 			T out = a.values[0];
-			for (int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.N; ++i)
 			{
 				out = a.values[i] < out? a.values[i] : out;
 			}
@@ -35,7 +35,7 @@ namespace rasters
 		static T max(const numerics_template<T>& a)
 		{
 			T out = a.values[0];
-			for (int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.N; ++i)
 			{
 				out = a.values[i] > out? a.values[i] : out;
 			}
@@ -47,7 +47,7 @@ namespace rasters
 		template <class T2>
 		static void max(const numerics_template<T>& a, const T2 b, numerics_template<T>& out)
 		{
-			for (int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.N; ++i)
 			{
 				out.values[i] = a.values[i] > b? a.values[i] : b;
 			}
@@ -55,7 +55,7 @@ namespace rasters
 		template <class T2>
 		static void min(const numerics_template<T>& a, const T2 b, numerics_template<T>& out)
 		{
-			for (int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.N; ++i)
 			{
 				out.values[i] = a.values[i] < b? a.values[i] : b;
 			}
@@ -66,7 +66,7 @@ namespace rasters
 		template <class T2>
 		static void max(const numerics_template<T>& a, const numerics_template<T2>& b, numerics_template<T>& out)
 		{
-			for (int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.N; ++i)
 			{
 				out.values[i] = a.values[i] > b.values[i]? a.values[i] : b.values[i];
 			}
@@ -74,7 +74,7 @@ namespace rasters
 		template <class T2>
 		static void min(const numerics_template<T>& a, const numerics_template<T2>& b, numerics_template<T>& out)
 		{
-			for (int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.N; ++i)
 			{
 				out.values[i] = a.values[i] < b.values[i]? a.values[i] : b.values[i];
 			}
@@ -84,7 +84,7 @@ namespace rasters
 		template <class Tlo, class Thi>
 		static void clamp(const numerics_template<T>& a, const Tlo lo, const Thi hi, const numerics_template<T>& out)
 		{
-			for (int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.N; ++i)
 			{
 				out.values[i] = a.values[i] > hi? hi : a.values[i] < lo? lo : a.values[i];
 			}
@@ -92,7 +92,7 @@ namespace rasters
 		template <class Tlo, class Thi>
 		static void clamp(const numerics_template<T>& a, const Tlo lo, const numerics_template<Thi>& hi, const numerics_template<T>& out)
 		{
-			for (int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.N; ++i)
 			{
 				out.values[i] = a.values[i] > hi.values[i]? hi.values[i] : a.values[i] < lo? lo : a.values[i];
 			}
@@ -100,7 +100,7 @@ namespace rasters
 		template <class Tlo, class Thi>
 		static void clamp(const numerics_template<T>& a, const numerics_template<Tlo>& lo, const Thi hi, const numerics_template<T>& out)
 		{
-			for (int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.N; ++i)
 			{
 				out.values[i] = a.values[i] > hi? hi : a.values[i] < lo.values[i]? lo.values[i] : a.values[i];
 			}
@@ -108,11 +108,11 @@ namespace rasters
 		template <class Tlo, class Thi>
 		static void clamp(const numerics_template<T>& a, const numerics_template<Tlo>& lo, const numerics_template<Thi>& hi, const numerics_template<T>& out)
 		{
-			for (int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.N; ++i)
 			{
 				out.values[i] = a.values[i] > hi.values[i]? hi.values[i] : a.values[i];
 			}
-			for (int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.N; ++i)
 			{
 				out.values[i] = a.values[i] < lo.values[i]? lo.values[i] : out.values[i];
 			}
@@ -121,7 +121,7 @@ namespace rasters
 		template <class T2>
 		static void gt(const numerics_template<T>& a, const T2 b, bools& out)
 		{
-			for (int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.N; ++i)
 			{
 				out.values[i] = a.values[i] > b;
 			}
@@ -129,7 +129,7 @@ namespace rasters
 		template <class T2>
 		static void gte(const numerics_template<T>& a, const T2 b, bools& out)
 		{
-			for (int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.N; ++i)
 			{
 				out.values[i] = a.values[i] >= b;
 			}
@@ -137,7 +137,7 @@ namespace rasters
 		template <class T2>
 		static void lt(const numerics_template<T>& a, const T2 b, bools& out)
 		{
-			for (int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.N; ++i)
 			{
 				out.values[i] = a.values[i] < b;
 			}
@@ -145,7 +145,7 @@ namespace rasters
 		template <class T2>
 		static void lte(const numerics_template<T>& a, const T2 b, bools& out)
 		{
-			for (int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.N; ++i)
 			{
 				out.values[i] = a.values[i] <= b;
 			}
@@ -158,7 +158,7 @@ namespace rasters
 		template <class T2>
 		static void gt(const numerics_template<T>& a, const numerics_template<T2>& b, bools& out)
 		{
-			for (int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.N; ++i)
 			{
 				out.values[i] = a.values[i] > b.values[i];
 			}
@@ -166,7 +166,7 @@ namespace rasters
 		template <class T2>
 		static void gte(const numerics_template<T>& a, const numerics_template<T2>& b, bools& out)
 		{
-			for (int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.N; ++i)
 			{
 				out.values[i] = a.values[i] >= b.values[i];
 			}
@@ -174,7 +174,7 @@ namespace rasters
 		template <class T2>
 		static void lt(const numerics_template<T>& a, const numerics_template<T2>& b, bools& out)
 		{
-			for (int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.N; ++i)
 			{
 				out.values[i] = a.values[i] <= b.values[i];
 			}
@@ -182,7 +182,7 @@ namespace rasters
 		template <class T2>
 		static void lte(const numerics_template<T>& a, const numerics_template<T2>& b, bools& out)
 		{
-			for (int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.N; ++i)
 			{
 				out.values[i] = a.values[i] < b.values[i];
 			}
@@ -195,7 +195,7 @@ namespace rasters
 		template <class T2, class T3>
 		static void add(const numerics_template<T>& a, const T2 b, numerics_template<T3>& out)
 		{
-			for (int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.N; ++i)
 			{
 				out.values[i] = a.values[i] + b;
 			}
@@ -203,7 +203,7 @@ namespace rasters
 		template <class T2, class T3>
 		static void sub(const numerics_template<T>& a, const T2 b, numerics_template<T3>& out)
 		{
-			for (int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.N; ++i)
 			{
 				out.values[i] = a.values[i] - b;
 			}
@@ -211,7 +211,7 @@ namespace rasters
 		template <class T2, class T3>
 		static void mult(const numerics_template<T>& a, const T2 b, numerics_template<T3>& out)
 		{
-			for (int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.N; ++i)
 			{
 				out.values[i] = a.values[i] * b;
 			}
@@ -220,7 +220,7 @@ namespace rasters
 		static void div(const numerics_template<T>& a, const T2 b, numerics_template<T3>& out)
 		{
 			const T ainv = 1./b;
-			for (int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.N; ++i)
 			{
 				out.values[i] = a.values[i] / b;
 			}
@@ -231,7 +231,7 @@ namespace rasters
 		template <class T2, class T3>
 		static void add(const numerics_template<T>& a, const numerics_template<T2>& b, numerics_template<T3>& out)
 		{
-			for (int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.N; ++i)
 			{
 				out.values[i] = a.values[i] + b.values[i];
 			}
@@ -239,7 +239,7 @@ namespace rasters
 		template <class T2, class T3>
 		static void sub(const numerics_template<T>& a, const numerics_template<T2>& b, numerics_template<T3>& out)
 		{
-			for (int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.N; ++i)
 			{
 				out.values[i] = a.values[i] - b.values[i];
 			}
@@ -247,7 +247,7 @@ namespace rasters
 		template <class T2, class T3>
 		static void mult(const numerics_template<T>& a, const numerics_template<T2>& b, numerics_template<T3>& out)
 		{
-			for (int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.N; ++i)
 			{
 				out.values[i] = a.values[i] * b.values[i];
 			}
@@ -255,7 +255,7 @@ namespace rasters
 		template <class T2, class T3>
 		static void div(const numerics_template<T>& a, const numerics_template<T2>& b, numerics_template<T3>& out)
 		{
-			for (int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.N; ++i)
 			{
 				out.values[i] = a.values[i] / b.values[i];
 			}

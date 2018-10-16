@@ -28,7 +28,7 @@ namespace rasters
 
 		primitives_template(const unsigned int N, const T a)  : values(new T[N]), N(N)
 		{
-			for (int i = 0; i < N; ++i)
+			for (unsigned int i = 0; i < N; ++i)
 			{
 				values[i] = a;
 			}
@@ -37,7 +37,7 @@ namespace rasters
 		template <class T2>
 		primitives_template(const primitives_template<T2>& a)  : values(new T[a.N]), N(a.N)
 		{
-			for (int i = 0; i < N; ++i)
+			for (unsigned int i = 0; i < N; ++i)
 			{
 				values[i] = a.values[i];
 			}
@@ -59,7 +59,7 @@ namespace rasters
 		}
 		static void get(const primitives_template<T>& a, const primitives_template<unsigned int>& ids, primitives_template<T>& out )
 		{
-			for (int i = 0; i < ids.N; ++i)
+			for (unsigned int i = 0; i < ids.N; ++i)
 			{
 				out.values[i] = a.values[ids[i]];
 			}
@@ -67,7 +67,7 @@ namespace rasters
 		static void get(const primitives_template<T>& a, const primitives_template<bool>& mask, primitives_template<T>& out )
 		{
 			int out_i = 0;
-			for (int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.N; ++i)
 			{
 				if (mask.values[i])
 				{
@@ -79,7 +79,7 @@ namespace rasters
 
 		static void set(primitives_template<T>& out, const T a )
 		{
-			for (int i = 0; i < out.N; ++i)
+			for (unsigned int i = 0; i < out.N; ++i)
 			{
 				out.values[i] = a;
 			}
@@ -90,14 +90,14 @@ namespace rasters
 		}
 		static void set(primitives_template<T>& out, const primitives_template<unsigned int>& ids, const T a )
 		{
-			for (int i = 0; i < ids.N; ++i)
+			for (unsigned int i = 0; i < ids.N; ++i)
 			{
 				out.values[ids[i]] = a;
 			}
 		}
 		static void set(const primitives_template<T>& out, const primitives_template<bool>& mask, const T a )
 		{
-			for (int i = 0; i < out.N; ++i)
+			for (unsigned int i = 0; i < out.N; ++i)
 			{
 				out.values[i] = mask[i]? a : out.values[i];
 			}
@@ -106,21 +106,21 @@ namespace rasters
 
 		static void set(primitives_template<T>& out, const primitives_template<T>& a )
 		{
-			for (int i = 0; i < out.N; ++i)
+			for (unsigned int i = 0; i < out.N; ++i)
 			{
 				out.values[i] = a.values[i];
 			}
 		}
 		static void set(primitives_template<T>& out, const primitives_template<unsigned int>& ids, const primitives_template<T>& a )
 		{
-			for (int i = 0; i < ids.N; ++i)
+			for (unsigned int i = 0; i < ids.N; ++i)
 			{
 				out.values[ids[i]] = a.values[i];
 			}
 		}
 		static void set(primitives_template<T>& out, const primitives_template<bool>& mask, const primitives_template<T>& a )
 		{
-			for (int i = 0; i < out.N; ++i)
+			for (unsigned int i = 0; i < out.N; ++i)
 			{
 				out.values[i] = mask[i]? a.values[i] : out.values[i];
 			}
@@ -132,7 +132,7 @@ namespace rasters
 		static bool eq(const primitives_template<T>& a, const T2 b)
 		{
 			bool out = true;
-			for (int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.N; ++i)
 			{
 				out &= a.values[i] == b;
 			}
@@ -142,7 +142,7 @@ namespace rasters
 		static bool ne(const primitives_template<T>& a, const T2 b)
 		{
 			bool out = false;
-			for (int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.N; ++i)
 			{
 				out |= a.values[i] != b;
 			}
@@ -152,7 +152,7 @@ namespace rasters
 		static bool eq(const primitives_template<T>& a, const primitives_template<T2>& b)
 		{
 			bool out = true;
-			for (int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.N; ++i)
 			{
 				out &= a.values[i] == b.values[i];
 			}
@@ -162,7 +162,7 @@ namespace rasters
 		static bool ne(const primitives_template<T>& a, const primitives_template<T2>& b)
 		{
 			bool out = false;
-			for (int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.N; ++i)
 			{
 				out |= a.values[i] != b.values[i];
 			}
@@ -174,7 +174,7 @@ namespace rasters
 		template <class T2>
 		static void eq(const primitives_template<T>& a, const T2 b, primitives_template<bool>& out)
 		{
-			for (int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.N; ++i)
 			{
 				out.values[i] = a.values[i] == b;
 			}
@@ -182,7 +182,7 @@ namespace rasters
 		template <class T2>
 		static void ne(const primitives_template<T>& a, const T2 b, primitives_template<bool>& out)
 		{
-			for (int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.N; ++i)
 			{
 				out.values[i] = a.values[i] == b;
 			}
@@ -190,7 +190,7 @@ namespace rasters
 		template <class T2>
 		static void eq(const primitives_template<T>& a, const primitives_template<T2>& b, primitives_template<bool>& out)
 		{
-			for (int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.N; ++i)
 			{
 				out.values[i] = a.values[i] == b.values[i];
 			}
@@ -198,7 +198,7 @@ namespace rasters
 		template <class T2>
 		static void ne(const primitives_template<T>& a, const primitives_template<T2>& b, primitives_template<bool>& out)
 		{
-			for (int i = 0; i < a.N; ++i)
+			for (unsigned int i = 0; i < a.N; ++i)
 			{
 				out.values[i] = a.values[i] != b.values[i];
 			}
