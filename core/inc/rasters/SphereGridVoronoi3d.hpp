@@ -8,22 +8,25 @@
 
 #include <composites/numerics.hpp>
 #include <composites/vec3s.hpp>
+#include <composites/geometric.hpp>
 
 #include <rasters/CartesianGridCellList3d.hpp>
 
 namespace rasters
 {
-
+	using namespace glm;
+	using namespace composites;
+	
 	// describes a 3d unit cube sphere where every cell houses an id representing the nearest point
 	// uses CartesianGridCellList3d behind the scenes to optimize initialization
 	class SphereGridVoronoi3d
 	{
-		static const composites::vec3s OCTAHEDRON_SIDE_Z;
-		static const composites::vec3s OCTAHEDRON_SIDE_X;
-		static const composites::vec3s OCTAHEDRON_SIDE_Y;
+		static const vec3s OCTAHEDRON_SIDE_Z;
+		static const vec3s OCTAHEDRON_SIDE_X;
+		static const vec3s OCTAHEDRON_SIDE_Y;
 		static constexpr int OCTAHEDRON_SIDE_COUNT = 8;	// number of sides on the data cube
 
-		glm::ivec2 dimensions; // dimensions of the grid on each side of the data cube 
+		ivec2 dimensions; // dimensions of the grid on each side of the data cube 
 		float cell_width;
 		int* cells;
 
@@ -44,7 +47,7 @@ namespace rasters
     		cells = nullptr;
 		}
 		
-		SphereGridVoronoi3d(const std::vector<glm::vec3> points, const float cell_width)
+		SphereGridVoronoi3d(const std::vector<vec3> points, const float cell_width)
 			: dimensions((int)ceil(2./cell_width)+1),
 			  cell_width(cell_width),
 			  cells(new int[cell_count()])
@@ -64,7 +67,7 @@ namespace rasters
 						// reconstruct the dimension omitted from the grid using pythagorean theorem
 						float z2d = sqrt(std::max(1. - (x2d*x2d) - (y2d*y2d), 0.));
 
-						glm::vec3 cell_pos = 
+						vec3 cell_pos = 
 							OCTAHEDRON_SIDE_X[side_id] * x2d +
 							OCTAHEDRON_SIDE_Y[side_id] * y2d +
 							OCTAHEDRON_SIDE_Z[side_id] * z2d ;
@@ -75,15 +78,15 @@ namespace rasters
 			}
 		}
 
-		int nearest_id(const glm::vec3 point) const
+		int nearest_id(const vec3 point) const
 		{
 			const int side_id = 
 			  (( point.x > 0) << 0) +
 			  (( point.y > 0) << 1) +
 			  (( point.z > 0) << 2) ; 
 
-			const double x2d = glm::dot( OCTAHEDRON_SIDE_X[side_id], point );
-			const double y2d = glm::dot( OCTAHEDRON_SIDE_Y[side_id], point );
+			const double x2d = dot( OCTAHEDRON_SIDE_X[side_id], point );
+			const double y2d = dot( OCTAHEDRON_SIDE_Y[side_id], point );
 
 			const int xi2d = (x2d + 1.) / cell_width;
 			const int yi2d = (y2d + 1.) / cell_width;
@@ -92,7 +95,7 @@ namespace rasters
 		}
 
 		template <int N>
-		void nearest_ids(const composites::vec3s& points, uints& out) const
+		void nearest_ids(const vec3s& points, uints& out) const
 		{
 			for (unsigned int i = 0; i < N; ++i)
 			{
@@ -101,33 +104,33 @@ namespace rasters
 				  (( points[i].y > 0) << 1) +
 				  (( points[i].z > 0) << 2) ; 
 
-				const glm::vec2 projection = glm::vec2(
-					glm::dot( OCTAHEDRON_SIDE_X[side_id], points[i] ),
-					glm::dot( OCTAHEDRON_SIDE_Y[side_id], points[i] )
+				const vec2 projection = vec2(
+					dot( OCTAHEDRON_SIDE_X[side_id], points[i] ),
+					dot( OCTAHEDRON_SIDE_Y[side_id], points[i] )
 				);
 
-				const glm::ivec2 grid_pos = glm::ivec2((projection + 1.f) / cell_width);
+				const ivec2 grid_pos = ivec2((projection + 1.f) / cell_width);
 
 				out[i] = cells[cell_id(side_id, grid_pos.x, grid_pos.y)];
 			}
 		}
 	};
-	const composites::vec3s SphereGridVoronoi3d::OCTAHEDRON_SIDE_Z = composites::normalize(
-		composites::vec3s({
-			glm::vec3(-1,-1,-1),
-			glm::vec3( 1,-1,-1),
-			glm::vec3(-1, 1,-1),
-			glm::vec3( 1, 1,-1),
-			glm::vec3(-1,-1, 1),
-			glm::vec3( 1,-1, 1),
-			glm::vec3(-1, 1, 1),
-			glm::vec3( 1, 1, 1)
+	const vec3s SphereGridVoronoi3d::OCTAHEDRON_SIDE_Z = normalize(
+		vec3s({
+			vec3(-1,-1,-1),
+			vec3( 1,-1,-1),
+			vec3(-1, 1,-1),
+			vec3( 1, 1,-1),
+			vec3(-1,-1, 1),
+			vec3( 1,-1, 1),
+			vec3(-1, 1, 1),
+			vec3( 1, 1, 1)
 		})
 	);
-	const composites::vec3s SphereGridVoronoi3d::OCTAHEDRON_SIDE_X = composites::normalize(
-		composites::cross(SphereGridVoronoi3d::OCTAHEDRON_SIDE_Z, glm::vec3(0,0,1))
+	const vec3s SphereGridVoronoi3d::OCTAHEDRON_SIDE_X = normalize(
+		cross(SphereGridVoronoi3d::OCTAHEDRON_SIDE_Z, vec3(0,0,1))
 	);
-	const composites::vec3s SphereGridVoronoi3d::OCTAHEDRON_SIDE_Y = composites::normalize(
-		composites::cross(OCTAHEDRON_SIDE_Z, OCTAHEDRON_SIDE_X)
+	const vec3s SphereGridVoronoi3d::OCTAHEDRON_SIDE_Y = normalize(
+		cross(OCTAHEDRON_SIDE_Z, OCTAHEDRON_SIDE_X)
 	);
 }

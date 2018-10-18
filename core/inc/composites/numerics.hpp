@@ -2,7 +2,6 @@
 
 #include <initializer_list>// initializer_list
 
-#include "bools.hpp"
 #include "primitives.hpp"
 
 namespace composites
@@ -154,7 +153,7 @@ namespace composites
 	}
 
 	template <class T, class T2>
-	void gt(const numerics<T>& a, const T2 b, bools& out)
+	void gt(const numerics<T>& a, const T2 b, primitives<bool>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -162,7 +161,7 @@ namespace composites
 		}
 	}
 	template <class T, class T2>
-	void gte(const numerics<T>& a, const T2 b, bools& out)
+	void gte(const numerics<T>& a, const T2 b, primitives<bool>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -170,7 +169,7 @@ namespace composites
 		}
 	}
 	template <class T, class T2>
-	void lt(const numerics<T>& a, const T2 b, bools& out)
+	void lt(const numerics<T>& a, const T2 b, primitives<bool>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -178,7 +177,7 @@ namespace composites
 		}
 	}
 	template <class T, class T2>
-	void lte(const numerics<T>& a, const T2 b, bools& out)
+	void lte(const numerics<T>& a, const T2 b, primitives<bool>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -191,7 +190,7 @@ namespace composites
 
 
 	template <class T, class T2>
-	void gt(const numerics<T>& a, const numerics<T2>& b, bools& out)
+	void gt(const numerics<T>& a, const numerics<T2>& b, primitives<bool>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -199,7 +198,7 @@ namespace composites
 		}
 	}
 	template <class T, class T2>
-	void gte(const numerics<T>& a, const numerics<T2>& b, bools& out)
+	void gte(const numerics<T>& a, const numerics<T2>& b, primitives<bool>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -207,7 +206,7 @@ namespace composites
 		}
 	}
 	template <class T, class T2>
-	void lt(const numerics<T>& a, const numerics<T2>& b, bools& out)
+	void lt(const numerics<T>& a, const numerics<T2>& b, primitives<bool>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -215,7 +214,7 @@ namespace composites
 		}
 	}
 	template <class T, class T2>
-	void lte(const numerics<T>& a, const numerics<T2>& b, bools& out)
+	void lte(const numerics<T>& a, const numerics<T2>& b, primitives<bool>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{

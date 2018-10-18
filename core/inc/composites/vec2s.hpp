@@ -8,24 +8,24 @@
 
 #include "numerics.hpp"
 
-using namespace glm;
-
 namespace composites
 {
+	using namespace glm;
+
 	template<class T>
-	class tvec2s : public numerics<glm::tvec2<T>>
+	class tvec2s : public numerics<tvec2<T>>
 	{
 	public:
-		tvec2s(std::initializer_list<glm::tvec2<T>> list)  			: numerics<glm::tvec2<T>>(list) {};
-		tvec2s(numerics<glm::tvec2<T>>&& a)							: numerics<glm::tvec2<T>>(a) {};
-		explicit tvec2s(const unsigned int N) 					: numerics<glm::tvec2<T>>(N) {};
-		explicit tvec2s(const unsigned int N, const glm::tvec2<T> a)	: numerics<glm::tvec2<T>>(N,a) {};
-		explicit tvec2s(const numerics<glm::tvec2<T>>& a)			: numerics<glm::tvec2<T>>(a) {};
+		tvec2s(std::initializer_list<tvec2<T>> list)  			: numerics<tvec2<T>>(list) {};
+		tvec2s(numerics<tvec2<T>>&& a)							: numerics<tvec2<T>>(a) {};
+		explicit tvec2s(const unsigned int N) 					: numerics<tvec2<T>>(N) {};
+		explicit tvec2s(const unsigned int N, const tvec2<T> a) : numerics<tvec2<T>>(N,a) {};
+		explicit tvec2s(const numerics<tvec2<T>>& a)			: numerics<tvec2<T>>(a) {};
 
 		template <class T2>
-		explicit tvec2s(const numerics<glm::tvec2<T2>>& a)			: numerics<glm::tvec2<T>>(a) {};
+		explicit tvec2s(const numerics<tvec2<T2>>& a)			: numerics<tvec2<T>>(a) {};
 
-		explicit tvec2s(const unsigned int N, const T x) : numerics<glm::tvec2<T>>(N)
+		explicit tvec2s(const unsigned int N, const T x) 		: numerics<tvec2<T>>(N)
 		{
 			for (unsigned int i = 0; i < this->N; ++i)
 			{
@@ -34,7 +34,7 @@ namespace composites
 			}
 		};
 
-		explicit tvec2s(const numerics<T>& x) : numerics<glm::tvec2<T>>(x.N)
+		explicit tvec2s(const numerics<T>& x) : numerics<tvec2<T>>(x.N)
 		{
 			for (unsigned int i = 0; i < this->N; ++i)
 			{
@@ -43,7 +43,7 @@ namespace composites
 			}
 		};
 
-		explicit tvec2s(const unsigned int N, const T x, const T y) : numerics<glm::tvec2<T>>(N)
+		explicit tvec2s(const unsigned int N, const T x, const T y) : numerics<tvec2<T>>(N)
 		{
 			for (unsigned int i = 0; i < this->N; ++i)
 			{
@@ -51,7 +51,7 @@ namespace composites
 				this->values[i].y = y;
 			}
 		};
-		explicit tvec2s(const numerics<T>& x, const T y)  : numerics<glm::tvec2<T>>(x.N)
+		explicit tvec2s(const numerics<T>& x, const T y)  : numerics<tvec2<T>>(x.N)
 		{
 			for (unsigned int i = 0; i < this->N; ++i)
 			{
@@ -60,7 +60,7 @@ namespace composites
 			}
 		};
 
-		explicit tvec2s(const T x, const numerics<T>& y)  : numerics<glm::tvec2<T>>(y.N)
+		explicit tvec2s(const T x, const numerics<T>& y)  : numerics<tvec2<T>>(y.N)
 		{
 			for (unsigned int i = 0; i < this->N; ++i)
 			{
@@ -69,7 +69,7 @@ namespace composites
 			}
 		};
 
-		explicit tvec2s(const numerics<T>& x, const numerics<T>& y)   : numerics<glm::tvec2<T>>(y.N)
+		explicit tvec2s(const numerics<T>& x, const numerics<T>& y)   : numerics<tvec2<T>>(y.N)
 		{
 			for (unsigned int i = 0; i < this->N; ++i)
 			{
@@ -79,11 +79,11 @@ namespace composites
 		};
 
 
-		inline const glm::tvec2<T>& operator[](const unsigned int id ) const
+		inline const tvec2<T>& operator[](const unsigned int id ) const
 		{
 		   return this->values[id]; // reference return 
 		}
-		inline glm::tvec2<T>& operator[](const unsigned int id )
+		inline tvec2<T>& operator[](const unsigned int id )
 		{
 		   return this->values[id]; // reference return 
 		}
@@ -107,147 +107,4 @@ namespace composites
 	using bvec2s = tvec2s<bool>;
 
 
-	template <class T>
-	void dot (const tvec2s<T>& u, const glm::tvec2<T> v, numerics<T>& out) {
-		for (unsigned int i = 0; i < u.size(); ++i)
-		{
-			out[i] = dot(u[i], v);
-		}
-	}
-	template <class T>
-	void cross (const tvec2s<T>& u, const glm::tvec2<T> v, tvec2s<T>& out) 
-	{
-		for (unsigned int i = 0; i < u.size(); ++i)
-		{
-			out[i] = cross(u[i], v);
-		}
-	}
-	template <class T>
-	void hadamard (const tvec2s<T>& u, const glm::tvec2<T> v, tvec2s<T>& out) {
-		for (unsigned int i = 0; i < u.size(); ++i)
-		{
-			out[i] = hadamard(u[i], v);
-		}
-	}
-	template <class T>
-	void distance(const tvec2s<T>& u, const glm::tvec2<T> v, numerics<T>& out) 
-	{
-		for (unsigned int i = 0; i < u.size(); ++i)
-		{
-			out[i] = distance(u[i], v);
-		}
-	}
-
-
-	template <class T>
-	void dot (const tvec2s<T>& u, const tvec2s<T>& v, numerics<T>& out) {
-		for (unsigned int i = 0; i < u.size(); ++i)
-		{
-			out[i] = dot(u[i], v[i]);
-		}
-	}
-	template <class T>
-	void cross (const tvec2s<T>& u, const tvec2s<T>& v, tvec2s<T>& out) 
-	{
-		for (unsigned int i = 0; i < u.size(); ++i)
-		{
-			out[i] = cross(u[i], v[i]);
-		}
-	}
-	template <class T>
-	void hadamard (const tvec2s<T>& u, const tvec2s<T>& v, tvec2s<T>& out) {
-		for (unsigned int i = 0; i < u.size(); ++i)
-		{
-			out[i] = hadamard(u[i], v[i]);
-		}
-	}
-	template <class T>
-	void distance(const tvec2s<T>& u, const tvec2s<T>& v, numerics<T>& out) 
-	{
-		for (unsigned int i = 0; i < u.size(); ++i)
-		{
-			out[i] = distance(u[i], v[i]);
-		}
-	}
-
-
-
-	template <class T>
-	void length(const tvec2s<T>& u, numerics<T>& out) 
-	{
-		for (unsigned int i = 0; i < u.size(); ++i)
-		{
-			out[i] = u[i].length();
-		}
-	}
-	template <class T>
-	void normalize(const tvec2s<T>& u, tvec2s<T>& out) 
-	{
-		for (unsigned int i = 0; i < u.size(); ++i)
-		{
-			out[i] = normalize(u[i]);
-		}
-	}
-
-
-	// NOTE: Here we have convenience functions that are stand-ins for operators
-	//  we do this because there are no operators that can express them succinctly
-
-	// NOTE: all operators and convenience functions are marked inline,
-	//  because they are thin wrappers of static functions
-
-	template <class T>
-	inline numerics<T> dot (const numerics<glm::tvec2<T>>& u, const glm::tvec2<T> v ) {
-		tvec2s<T> out = tvec2s<T>(u.size());
-		dot(u, v, out);
-		return out;
-	}
-	template <class T>
-	inline tvec2s<T> cross (const tvec2s<T>& u, const glm::tvec2<T> v ) 
-	{
-		tvec2s<T> out = tvec2s<T>(u.size());
-		cross(u, v, out);
-		return out;
-	}
-	template <class T>
-	inline numerics<T> distance(const numerics<glm::tvec2<T>>& u, const glm::tvec2<T> v ) 
-	{
-		tvec2s<T> out = tvec2s<T>(u.size());
-		distance(u, v, out);
-		return out;
-	}
-	template <class T>
-	inline numerics<T> dot (const numerics<glm::tvec2<T>>& u, const tvec2s<T>& v ) {
-		tvec2s<T> out = tvec2s<T>(u.size());
-		dot(u, v, out);
-		return out;
-	}
-	template <class T>
-	inline tvec2s<T> cross (const tvec2s<T>& u, const tvec2s<T>& v ) 
-	{
-		tvec2s<T> out = tvec2s<T>(u.size());
-		cross(u, v, out);
-		return out;
-	}
-	template <class T>
-	inline numerics<T> distance(const numerics<glm::tvec2<T>>& u, const tvec2s<T>& v ) 
-	{
-		tvec2s<T> out = tvec2s<T>(u.size());
-		distance(u, v, out);
-		return out;
-	}
-	template <class T>
-	inline tvec2s<T> normalize(const tvec2s<T>& u) 
-	{
-		tvec2s<T> out = tvec2s<T>(u.size());
-		normalize(u, out);
-		return out;
-	}
-	template <class T>
-	inline floats length(const tvec2s<T>& u) 
-	{
-		numerics<T> out = numerics<T>(u.size());
-		length(u, out);
-		return out;
-	}
 }

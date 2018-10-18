@@ -1,12 +1,9 @@
 #pragma once
 
-#include <initializer_list>	// initializer_list
-
 #include "primitives.hpp"
 
 namespace composites
 {
-	using bools = primitives<float>;
 
 	void unite(const primitives<bool>& a, const bool b, primitives<bool>& out)
 	{
