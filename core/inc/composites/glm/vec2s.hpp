@@ -1,12 +1,11 @@
 #pragma once
 
 #include <initializer_list>	// initializer_list
-#include <iostream>			// cout
 
 #include <glm/vec2.hpp>    	// vec2, bvec2, dvec2, ivec2 and uvec2
 #include <glm/geometric.hpp>// all the GLSL geometry functions: dot, cross, reflect, etc.
 
-#include "numerics.hpp"
+#include "../numerics.hpp"
 
 namespace composites
 {

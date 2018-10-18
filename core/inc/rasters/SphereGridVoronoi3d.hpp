@@ -7,8 +7,8 @@
 // #include <iostream>		// cout
 
 #include <composites/numerics.hpp>
-#include <composites/vec3s.hpp>
-#include <composites/geometric.hpp>
+#include <composites/glm/vec3s.hpp>
+#include <composites/glm/geometric.hpp>
 
 #include <rasters/CartesianGridCellList3d.hpp>
 
@@ -16,7 +16,7 @@ namespace rasters
 {
 	using namespace glm;
 	using namespace composites;
-	
+
 	// describes a 3d unit cube sphere where every cell houses an id representing the nearest point
 	// uses CartesianGridCellList3d behind the scenes to optimize initialization
 	class SphereGridVoronoi3d
