@@ -185,7 +185,7 @@ namespace composites
 
 
 	template <class T>
-	bool eq(const primitives<T>& a, const T b)
+	bool equals(const primitives<T>& a, const T b)
 	{
 		bool out = true;
 		for (unsigned int i = 0; i < a.size(); ++i)
@@ -195,7 +195,7 @@ namespace composites
 		return out;
 	}
 	template <class T>
-	bool ne(const primitives<T>& a, const T b)
+	bool notEquals(const primitives<T>& a, const T b)
 	{
 		bool out = false;
 		for (unsigned int i = 0; i < a.size(); ++i)
@@ -205,7 +205,7 @@ namespace composites
 		return out;
 	}
 	template <class T>
-	bool eq(const primitives<T>& a, const primitives<T>& b)
+	bool equals(const primitives<T>& a, const primitives<T>& b)
 	{
 		bool out = true;
 		for (unsigned int i = 0; i < a.size(); ++i)
@@ -215,7 +215,7 @@ namespace composites
 		return out;
 	}
 	template <class T>
-	bool ne(const primitives<T>& a, const primitives<T>& b)
+	bool notEquals(const primitives<T>& a, const primitives<T>& b)
 	{
 		bool out = false;
 		for (unsigned int i = 0; i < a.size(); ++i)
@@ -228,7 +228,7 @@ namespace composites
 
 
 	template <class T>
-	void eq(const primitives<T>& a, const T b, primitives<bool>& out)
+	void equals(const primitives<T>& a, const T b, primitives<bool>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -236,7 +236,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void ne(const primitives<T>& a, const T b, primitives<bool>& out)
+	void notEquals(const primitives<T>& a, const T b, primitives<bool>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -244,7 +244,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void eq(const primitives<T>& a, const primitives<T>& b, primitives<bool>& out)
+	void equals(const primitives<T>& a, const primitives<T>& b, primitives<bool>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -252,7 +252,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void ne(const primitives<T>& a, const primitives<T>& b, primitives<bool>& out)
+	void notEquals(const primitives<T>& a, const primitives<T>& b, primitives<bool>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -265,21 +265,21 @@ namespace composites
 	template <class T>
 	inline bool operator==(const primitives<T>& a, const T b)
 	{
-		return primitives<T>::eq(a, b);
+		return primitives<T>::equals(a, b);
 	}
 	template <class T>
 	inline bool operator!=(const primitives<T>& a, const T b)
 	{
-		return primitives<T>::ne(a, b);
+		return primitives<T>::notEquals(a, b);
 	}
 	template <class T>
 	inline bool operator==(const primitives<T>& a, const primitives<T>& b)
 	{
-		return primitives<T>::eq(a, b);
+		return primitives<T>::equals(a, b);
 	}
 	template <class T>
 	inline bool operator!=(const primitives<T>& a, const primitives<T>& b)
 	{
-		return primitives<T>::ne(a, b);
+		return primitives<T>::notEquals(a, b);
 	}
 }
