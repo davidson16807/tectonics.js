@@ -1,16 +1,12 @@
 #pragma once
 
-#include <initializer_list>	// initializer_list
-
 #include <glm/vec3.hpp>    	// vec2, bvec2, dvec2, ivec2 and uvec2
-#include <glm/geometric.hpp>// all the GLSL geometry functions: dot, cross, reflect, etc.
 
 #include "../primitives.hpp"
 
 namespace composites
 {
 	using namespace glm;
-
 
 	template <class T, class T2>
 	void greaterThan(const primitives<tvec<T>>& a, const T2 b, primitives<tvec3<bool>>& out)
