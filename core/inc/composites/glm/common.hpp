@@ -2,7 +2,8 @@
 
 #include <cmath>
 
-#include "primitives.hpp"
+#include "../vec2s.hpp"
+#include "../vec3s.hpp"
 
 namespace composites
 {

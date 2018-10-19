@@ -5,7 +5,7 @@
 namespace composites
 {
 
-	// This template represents a statically-sized contiguous block of memory occupied by primitive data of arbitrary type
+	// This template represents a statically-sized contiguous block of heap memory occupied by the primitive data of the same arbitrary type
 	// The intention is to abstract away arrays of primitives that are used to address data locality issues
 	// the data type should be small enough to fit in a computer's register (e.g. ints, floats, and even vec3s)
 	// the data type must have basic operators common to all primitives: == != 
@@ -282,4 +282,363 @@ namespace composites
 	{
 		return primitives<T>::notEqual(a, b);
 	}
+
+
+
+
+
+
+
+	template <class T, class T2>
+	void greaterThan(const primitives<T>& a, const T2 b, primitives<bool>& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] > b;
+		}
+	}
+	template <class T, class T2>
+	void greaterThanEqual(const primitives<T>& a, const T2 b, primitives<bool>& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] >= b;
+		}
+	}
+	template <class T, class T2>
+	void lessThan(const primitives<T>& a, const T2 b, primitives<bool>& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] < b;
+		}
+	}
+	template <class T, class T2>
+	void lessThanEqual(const primitives<T>& a, const T2 b, primitives<bool>& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] <= b;
+		}
+	}
+
+
+
+	template <class T, class T2>
+	void greaterThan(const primitives<T>& a, const primitives<T2>& b, primitives<bool>& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] > b[i];
+		}
+	}
+	template <class T, class T2>
+	void greaterThanEqual(const primitives<T>& a, const primitives<T2>& b, primitives<bool>& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] >= b[i];
+		}
+	}
+	template <class T, class T2>
+	void lessThan(const primitives<T>& a, const primitives<T2>& b, primitives<bool>& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] <= b[i];
+		}
+	}
+	template <class T, class T2>
+	void lessThanEqual(const primitives<T>& a, const primitives<T2>& b, primitives<bool>& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] < b[i];
+		}
+	}
+
+
+
+	template <class T, class T2, class T3>
+	void add(const primitives<T>& a, const T2 b, primitives<T3>& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] + b;
+		}
+	}
+	template <class T, class T2, class T3>
+	void sub(const primitives<T>& a, const T2 b, primitives<T3>& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] - b;
+		}
+	}
+	template <class T, class T2, class T3>
+	void mult(const primitives<T>& a, const T2 b, primitives<T3>& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] * b;
+		}
+	}
+	template <class T, class T2, class T3>
+	void div(const primitives<T>& a, const T2 b, primitives<T3>& out)
+	{
+		const T ainv = 1./b;
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] / b;
+		}
+	}
+
+
+
+	template <class T, class T2, class T3>
+	void add(const primitives<T>& a, const primitives<T2>& b, primitives<T3>& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] + b[i];
+		}
+	}
+	template <class T, class T2, class T3>
+	void sub(const primitives<T>& a, const primitives<T2>& b, primitives<T3>& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] - b[i];
+		}
+	}
+	template <class T, class T2, class T3>
+	void mult(const primitives<T>& a, const primitives<T2>& b, primitives<T3>& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] * b[i];
+		}
+	}
+	template <class T, class T2, class T3>
+	void div(const primitives<T>& a, const primitives<T2>& b, primitives<T3>& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i] / b[i];
+		}
+	}
+	
+	// NOTE: all wrappers are suggested to be inline because they are thin wrappers of functions
+
+	template <class T, class T2, class T3>
+	inline primitives<T3> operator>(const primitives<T>& a, const T2 b)
+	{
+		primitives<T3> out = primitives<T3>(a.N);
+		primitives<T>::greaterThan(a, b, out);
+		return out;
+	}
+	template <class T, class T2, class T3>
+	inline primitives<T3> operator>=(const primitives<T>& a, const T2 b)
+	{
+		primitives<T3> out = primitives<T3>(a.N);
+		primitives<T>::greaterThanEqual(a, b, out);
+		return out;
+	}
+	template <class T, class T2, class T3>
+	inline primitives<T3> operator<(const primitives<T>& a, const T2 b)
+	{
+		primitives<T3> out = primitives<T3>(a.N);
+		primitives<T>::lessThan(a, b, out);
+		return out;
+	}
+	template <class T, class T2, class T3>
+	inline primitives<T3> operator<=(const primitives<T>& a, const T2 b)
+	{
+		primitives<T3> out = primitives<T3>(a.N);
+		primitives<T>::lessThanEqual(a, b, out);
+		return out;
+	}
+
+	
+
+	template <class T, class T2, class T3>
+	inline primitives<T3> operator>(const primitives<T>& a, const primitives<T2>& b)
+	{
+		primitives<T3> out = primitives<T3>(a.N);
+		primitives<T>::greaterThan(a, b, out);
+		return out;
+	}
+	template <class T, class T2, class T3>
+	inline primitives<T3> operator>=(const primitives<T>& a, const primitives<T2>& b)
+	{
+		primitives<T3> out = primitives<T3>(a.N);
+		primitives<T>::greaterThanEqual(a, b, out);
+		return out;
+	}
+	template <class T, class T2, class T3>
+	inline primitives<T3> operator<(const primitives<T>& a, const primitives<T2>& b)
+	{
+		primitives<T3> out = primitives<T3>(a.N);
+		primitives<T>::lessThan(a, b, out);
+		return out;
+	}
+	template <class T, class T2, class T3>
+	inline primitives<T3> operator<=(const primitives<T>& a, const primitives<T2>& b)
+	{
+		primitives<T3> out = primitives<T3>(a.N);
+		primitives<T>::lessThanEqual(a, b, out);
+		return out;
+	}
+
+
+
+
+
+
+	template <class T, class T2>
+	inline primitives<T>& operator+=(const primitives<T>& a, const T2 b) 
+	{
+		primitives<T>::add(a, b, a);
+		return a;
+	}
+	template <class T, class T2>
+	inline primitives<T>& operator-=(const primitives<T>& a, const T2 b) 
+	{
+		primitives<T>::sub(a, b, a);
+		return a;
+	}
+	template <class T, class T2>
+	inline primitives<T>& operator*=(const primitives<T>& a, const T2 b) 
+	{
+		primitives<T>::mult(a, b, a);
+		return a;
+	}
+	template <class T, class T2>
+	inline primitives<T>& operator/=(const primitives<T>& a, const T2 b) 
+	{
+		primitives<T>::div(a, b, a);
+		return a;
+	}
+
+
+	template <class T, class T2>
+	inline primitives<T>& operator+=(const primitives<T>& a, const primitives<T2>& b) 
+	{
+		primitives<T>::add(a, b, a);
+		return a;
+	}
+	template <class T, class T2>
+	inline primitives<T>& operator-=(const primitives<T>& a, const primitives<T2>& b) 
+	{
+		primitives<T>::sub(a, b, a);
+		return a;
+	}
+	template <class T, class T2>
+	inline primitives<T>& operator*=(const primitives<T>& a, const primitives<T2>& b) 
+	{
+		primitives<T>::mult(a, b, a);
+		return a;
+	}
+	template <class T, class T2>
+	inline primitives<T>& operator/=(const primitives<T>& a, const primitives<T2>& b) 
+	{
+		primitives<T>::div(a, b, a);
+		return a;
+	}
+
+	// NOTE: prefix increment/decrement
+	template <class T>
+	inline primitives<T>& operator++(const primitives<T>& a)  
+	{  
+		primitives<T>::add(a, 1, a);
+		return a;
+	}  
+	template <class T>
+	inline primitives<T>& operator--(const primitives<T>& a)  
+	{  
+		primitives<T>::add(a, 1, a);
+		return a;
+	}  
+
+	// NOTE: postfix increment/decrement
+	template <class T>
+	inline primitives<T> operator++(const primitives<T>& a, int)  
+	{  
+		primitives<T>::add(a, 1, a);
+		return a;
+	}  
+	template <class T>
+	inline primitives<T> operator--(const primitives<T>& a, int)  
+	{  
+		primitives<T>::add(a, 1, a);
+		return a;
+	}  
+	
+
+
+
+
+	template <class T, class T2, class T3>
+	inline primitives<T3> operator+(const primitives<T>& a, const T2 b)
+	{
+		primitives<T3> out = primitives<T3>(a.N);
+		primitives<T>::add(a, b, out);
+		return out;
+	}
+	template <class T, class T2, class T3>
+	inline primitives<T3> operator-(const primitives<T>& a, const T2 b)
+	{
+		primitives<T3> out = primitives<T3>(a.N);
+		primitives<T>::sub(a, b, out);
+		return out;
+	}
+	template <class T, class T2, class T3>
+	inline primitives<T> operator*(const primitives<T>& a, const T2 b)
+	{
+		primitives<T3> out = primitives<T3>(a.N);
+		primitives<T>::mult(a, b, out);
+		return out;
+	}
+	template <class T, class T2, class T3>
+	inline primitives<T3> operator/(const primitives<T>& a, const T2 b)
+	{
+		primitives<T3> out = primitives<T3>(a.N);
+		primitives<T>::div(a, b, out);
+		return out;
+	}
+
+
+	template <class T, class T2, class T3>
+	inline primitives<T3> operator+(const primitives<T>& a, const primitives<T2>& b)
+	{
+		primitives<T3> out = primitives<T3>(a.N);
+		primitives<T>::add(a, b, out);
+		return out;
+	}
+	template <class T, class T2, class T3>
+	inline primitives<T3> operator-(const primitives<T>& a, const primitives<T2>& b)
+	{
+		primitives<T3> out = primitives<T3>(a.N);
+		primitives<T>::sub(a, b, out);
+		return out;
+	}
+	template <class T, class T2, class T3>
+	inline primitives<T3> operator*(const primitives<T>& a, const primitives<T2>& b)
+	{
+		primitives<T3> out = primitives<T3>(a.N);
+		primitives<T>::mult(a, b, out);
+		return out;
+	}
+	template <class T, class T2, class T3>
+	inline primitives<T3> operator/(const primitives<T>& a, const primitives<T2>& b)
+	{
+		primitives<T3> out = primitives<T3>(a.N);
+		primitives<T>::div(a, b, out);
+		return out;
+	}
+	typedef primitives<bool>	bools;
+	typedef primitives<int>		ints;
+	typedef primitives<unsigned int> uints;
+	typedef primitives<float>	floats;
+	typedef primitives<double>	doubles;
 }

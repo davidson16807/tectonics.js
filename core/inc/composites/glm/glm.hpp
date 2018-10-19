@@ -1,6 +1,5 @@
 #pragma once
 
-#include "vec2s.hpp"
-#include "vec3s.hpp"
+#include "vecs.hpp"
 #include "vector_relational.hpp"
 #include "geometric.hpp"

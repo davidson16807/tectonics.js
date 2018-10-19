@@ -4,8 +4,9 @@
 
 #include <glm/vec2.hpp>     // vec2, bvec2, dvec2, ivec2 and uvec2
 #include <glm/vec2.hpp>     // vec2, bvec2, dvec2, ivec2 and uvec2
-#include <composites/glm/vec2s.hpp>     // vec2, bvec2, dvec2, ivec2 and uvec2
-#include <composites/glm/vec3s.hpp>     // vec2, bvec2, dvec2, ivec2 and uvec2
+#include <composites/glm/vecs.hpp>     // vec2, bvec2, dvec2, ivec2 and uvec2
+#include <composites/glm/glm.hpp>     // vec2, bvec2, dvec2, ivec2 and uvec2
+#include <composites/composites.hpp>     // vec2, bvec2, dvec2, ivec2 and uvec2
 
 #include "rasters/SphereGridVoronoi3d.hpp"
 #include "rasters/CartesianGridCellList3d.hpp"

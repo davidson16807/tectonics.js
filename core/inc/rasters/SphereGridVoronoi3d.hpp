@@ -6,8 +6,8 @@
 #include <array>		// arrays
 // #include <iostream>		// cout
 
-#include <composites/numerics.hpp>
-#include <composites/glm/vec3s.hpp>
+#include <composites/primitives.hpp>
+#include <composites/glm/vecs.hpp>
 #include <composites/glm/geometric.hpp>
 
 #include <rasters/CartesianGridCellList3d.hpp>
@@ -116,7 +116,7 @@ namespace rasters
 		}
 	};
 	const vec3s SphereGridVoronoi3d::OCTAHEDRON_SIDE_Z = normalize(
-		vec3s({
+		vec3s {
 			vec3(-1,-1,-1),
 			vec3( 1,-1,-1),
 			vec3(-1, 1,-1),
@@ -125,7 +125,7 @@ namespace rasters
 			vec3( 1,-1, 1),
 			vec3(-1, 1, 1),
 			vec3( 1, 1, 1)
-		})
+		} 
 	);
 	const vec3s SphereGridVoronoi3d::OCTAHEDRON_SIDE_X = normalize(
 		cross(SphereGridVoronoi3d::OCTAHEDRON_SIDE_Z, vec3(0,0,1))
