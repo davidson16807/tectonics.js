@@ -8,32 +8,32 @@ namespace composites
 {
 	using namespace glm;
 
-	template <class T, class T2>
-	void greaterThan(const primitives<tvec<T>>& a, const T2 b, primitives<tvec3<bool>>& out)
+	template <class T>
+	void greaterThan(const primitives<tvec2<T>>& a, const T b, primitives<tvec3<bool>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
 			out[i] = greaterThan(a[i], b);
 		}
 	}
-	template <class T, class T2>
-	void greaterThanEqual(const primitives<tvec<T>>& a, const T2 b, primitives<tvec3<bool>>& out)
+	template <class T>
+	void greaterThanEqual(const primitives<tvec2<T>>& a, const T b, primitives<tvec3<bool>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
 			out[i] = greaterThanEqual(a[i], b);
 		}
 	}
-	template <class T, class T2>
-	void lessThan(const primitives<tvec<T>>& a, const T2 b, primitives<tvec3<bool>>& out)
+	template <class T>
+	void lessThan(const primitives<tvec2<T>>& a, const T b, primitives<tvec3<bool>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
 			out[i] = lessThan(a[i], b);
 		}
 	}
-	template <class T, class T2>
-	void lessThanEqual(const primitives<tvec<T>>& a, const T2 b, primitives<tvec3<bool>>& out)
+	template <class T>
+	void lessThanEqual(const primitives<tvec2<T>>& a, const T b, primitives<tvec3<bool>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -43,32 +43,32 @@ namespace composites
 
 
 
-	template <class T, class T2>
-	void greaterThan(const primitives<tvec3<T>>& a, const primitives<T2>& b, primitives<tvec3<bool>>& out)
+	template <class T>
+	void greaterThan(const primitives<tvec3<T>>& a, const primitives<T>& b, primitives<tvec3<bool>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
 			out[i] = greaterThan(a[i], b[i]);
 		}
 	}
-	template <class T, class T2>
-	void greaterThanEqual(const primitives<tvec3<T>>& a, const primitives<T2>& b, primitives<tvec3<bool>>& out)
+	template <class T>
+	void greaterThanEqual(const primitives<tvec3<T>>& a, const primitives<T>& b, primitives<tvec3<bool>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
 			out[i] = greaterThanEqual(a[i], b[i]);
 		}
 	}
-	template <class T, class T2>
-	void lessThan(const primitives<tvec3<T>>& a, const primitives<T2>& b, primitives<tvec3<bool>>& out)
+	template <class T>
+	void lessThan(const primitives<tvec3<T>>& a, const primitives<T>& b, primitives<tvec3<bool>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
 			out[i] = lessThan(a[i], b[i]);
 		}
 	}
-	template <class T, class T2>
-	void lessThanEqual(const primitives<tvec3<T>>& a, const primitives<T2>& b, primitives<tvec3<bool>>& out)
+	template <class T>
+	void lessThanEqual(const primitives<tvec3<T>>& a, const primitives<T>& b, primitives<tvec3<bool>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{

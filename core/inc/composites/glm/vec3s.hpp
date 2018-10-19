@@ -147,6 +147,7 @@ namespace composites
 	};
 
 	using vec3s = tvec3s<float>;
+	using dvec3s = tvec3s<double>;
 	using ivec3s = tvec3s<int>;
 	using uivec3s = tvec3s<unsigned int>;
 	using bvec3s = tvec3s<bool>;

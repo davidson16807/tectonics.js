@@ -101,9 +101,9 @@ namespace composites
 	};
 
 	using vec2s = tvec2s<float>;
+	using dvec2s = tvec2s<double>;
 	using ivec2s = tvec2s<int>;
 	using uivec2s = tvec2s<unsigned int>;
 	using bvec2s = tvec2s<bool>;
-
 
 }

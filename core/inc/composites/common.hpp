@@ -22,7 +22,7 @@ namespace composites
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
-			out[i] = std::sign(a[i]);
+			out[i] = (T(0) < a[i]) - (a[i] < T(0));
 		}
 	}
 
@@ -58,18 +58,6 @@ namespace composites
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
 			out[i] = std::round(a[i]);
-		}
-	}
-
-	/// Returns a value equal to the nearest integer to x.
-	/// A fractional part of 0.5 will round toward the nearest even
-	/// integer. (Both 3.5 and 4.5 for x will return 4.0.)
-	template <class T, class Tout>
-	void roundEven(const numerics<T>& a, numerics<Tout>& out)
-	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = std::roundEven(a[i]);
 		}
 	}
 
@@ -114,7 +102,7 @@ namespace composites
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
-			fracout[i] = a[i] % 1.
+			fracout[i] = a[i] % 1.;
 			intout[i] = int(a[i]-fracout[i]);
 		}
 	}
@@ -324,7 +312,7 @@ namespace composites
 	}
 
 	/// Returns 0.0 if x < edge, otherwise it returns 1.0 for each component of a genType.
-	template<typename T>
+	template<typename T, class Tout>
 	void step(const numerics<T>&  edge, const numerics<T>&  x, numerics<Tout>& out)
 	{
 		for (unsigned int i = 0; i < edge.size(); ++i)
@@ -332,7 +320,7 @@ namespace composites
 			out[i] = x[i] < edge[i]? 0.0 : 1.0;
 		}
 	}
-	template<typename T>
+	template<typename T, class Tout>
 	void step(const numerics<T>&  edge, const T x, numerics<Tout>& out)
 	{
 		for (unsigned int i = 0; i < edge.size(); ++i)
@@ -340,7 +328,7 @@ namespace composites
 			out[i] = x < edge[i]? 0.0 : 1.0;
 		}
 	}
-	template<typename T>
+	template<typename T, class Tout>
 	void step(const T edge, const numerics<T>&  x, numerics<Tout>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
@@ -445,7 +433,6 @@ namespace composites
 	}
 
 	/// Computes and returns a * b + c.
-	genType fma(genType const& a, genType const& b, genType const& c);
 	template<typename T>
 	void fma(const numerics<T>& a, const numerics<T>& b, const numerics<T>& c, numerics<T>& out)
 	{

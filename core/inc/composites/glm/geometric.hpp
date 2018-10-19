@@ -75,7 +75,6 @@ namespace composites
 	}
 
 
-
 	template <class T>
 	void length(const primitives<tvec3<T>>& u, primitives<T>& out) 
 	{
