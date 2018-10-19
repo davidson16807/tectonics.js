@@ -27,8 +27,8 @@ namespace composites
 	}
 
 	/// Returns a value equal to the nearest integer that is less then or equal to x.
-	template <class T, class Tout>
-	void floor(const numerics<T>& a, numerics<Tout>& out)
+	template <class T>
+	void floor(const numerics<T>& a, numerics<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -38,8 +38,8 @@ namespace composites
 
 	/// Returns a value equal to the nearest integer to x
 	/// whose absolute value is not larger than the absolute value of x.
-	template <class T, class Tout>
-	void trunc(const numerics<T>& a, numerics<Tout>& out)
+	template <class T>
+	void trunc(const numerics<T>& a, numerics<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -52,8 +52,8 @@ namespace composites
 	/// implementation, presumably the direction that is fastest.
 	/// This includes the possibility that round(x) returns the
 	/// same value as roundEven(x) for all values of x.
-	template <class T, class Tout>
-	void round(const numerics<T>& a, numerics<Tout>& out)
+	template <class T>
+	void round(const numerics<T>& a, numerics<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -63,8 +63,8 @@ namespace composites
 
 	/// Returns a value equal to the nearest integer
 	/// that is greater than or equal to x.
-	template <class T, class Tout>
-	void ceil(const numerics<T>& a, numerics<Tout>& out)
+	template <class T>
+	void ceil(const numerics<T>& a, numerics<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -73,8 +73,8 @@ namespace composites
 	}
 
 	/// Return x - floor(x).
-	template <class T, class Tout>
-	void fract(const numerics<T>& a, numerics<Tout>& out)
+	template <class T>
+	void fract(const numerics<T>& a, numerics<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -84,8 +84,8 @@ namespace composites
 
 	/// Modulus. Returns x - y * floor(x / y)
 	/// for each component in x using the floating point value y.
-	template <class T, class Tout>
-	void mod(const numerics<T>& a, const numerics<T>& b, numerics<Tout>& out)
+	template <class T>
+	void mod(const numerics<T>& a, const numerics<T>& b, numerics<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -97,13 +97,13 @@ namespace composites
 	/// part (as a whole number floating point value). Both the
 	/// return value and the output parameter will have the same
 	/// sign as x.
-	template <class T, class Tfracout>
-	void modf(const numerics<T>& a, numerics<int>& intout, numerics<Tfracout>& fracout)
+	template <class T>
+	void modf(const numerics<T>& a, numerics<int>& intout, numerics<T>& fractout)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
-			fracout[i] = a[i] % 1.;
-			intout[i] = int(a[i]-fracout[i]);
+			fractout[i] = a[i] % 1.;
+			intout[i] = int(a[i]-fractout[i]);
 		}
 	}
 
@@ -168,32 +168,32 @@ namespace composites
 
 	/// Returns min(max(x, minVal), maxVal) for each component in x
 	/// using the floating-point values minVal and maxVal.
-	template <class T, class Tlo, class Thi>
-	void clamp(const numerics<T>& a, const Tlo lo, const Thi hi, const numerics<T>& out)
+	template <class T>
+	void clamp(const numerics<T>& a, const T lo, const T hi, const numerics<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
 			out[i] = a[i] > hi? hi : a[i] < lo? lo : a[i];
 		}
 	}
-	template <class T, class Tlo, class Thi>
-	void clamp(const numerics<T>& a, const Tlo lo, const numerics<Thi>& hi, const numerics<T>& out)
+	template <class T>
+	void clamp(const numerics<T>& a, const T lo, const numerics<T>& hi, const numerics<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
 			out[i] = a[i] > hi[i]? hi[i] : a[i] < lo? lo : a[i];
 		}
 	}
-	template <class T, class Tlo, class Thi>
-	void clamp(const numerics<T>& a, const numerics<Tlo>& lo, const Thi hi, const numerics<T>& out)
+	template <class T>
+	void clamp(const numerics<T>& a, const numerics<T>& lo, const T hi, const numerics<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
 			out[i] = a[i] > hi? hi : a[i] < lo[i]? lo[i] : a[i];
 		}
 	}
-	template <class T, class Tlo, class Thi>
-	void clamp(const numerics<T>& a, const numerics<Tlo>& lo, const numerics<Thi>& hi, const numerics<T>& out)
+	template <class T>
+	void clamp(const numerics<T>& a, const numerics<T>& lo, const numerics<T>& hi, const numerics<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -211,6 +211,7 @@ namespace composites
 	/// x and y using the floating-point value a.
 	/// The value for a is not restricted to the range [0, 1].
 	///
+	/// NOTE: should probably implement this:
 	/// If genTypeU is a boolean scalar or vector:
 	/// Selects which vector each returned component comes
 	/// from. For a component of 'a' that is false, the
@@ -226,8 +227,8 @@ namespace composites
 	/// @param[in]  x Value to interpolate.
 	/// @param[in]  y Value to interpolate.
 	/// @param[in]  a Interpolant.
-	template <class T, class Tout>
-	void mix(const numerics<T>& x, const numerics<T>& y, const numerics<T>& a, const numerics<Tout>& out)
+	template <class T>
+	void mix(const numerics<T>& x, const numerics<T>& y, const numerics<T>& a, const numerics<T>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -238,8 +239,8 @@ namespace composites
 			out[i] += y[i] * a[i];
 		}
 	}
-	template <class T, class Tout>
-	void mix(const numerics<T>& x, const numerics<T>& y, const T a, const numerics<Tout>& out)
+	template <class T>
+	void mix(const numerics<T>& x, const numerics<T>& y, const T a, const numerics<T>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -250,8 +251,8 @@ namespace composites
 			out[i] += y[i] * a;
 		}
 	}
-	template <class T, class Tout>
-	void mix(const numerics<T>& x, const T y, const numerics<T>& a, const numerics<Tout>& out)
+	template <class T>
+	void mix(const numerics<T>& x, const T y, const numerics<T>& a, const numerics<T>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -262,8 +263,8 @@ namespace composites
 			out[i] += y * a[i];
 		}
 	}
-	template <class T, class Tout>
-	void mix(const numerics<T>& x, const T y, const T a, const numerics<Tout>& out)
+	template <class T>
+	void mix(const numerics<T>& x, const T y, const T a, const numerics<T>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -274,8 +275,8 @@ namespace composites
 			out[i] += y * a;
 		}
 	}
-	template <class T, class Tout>
-	void mix(const T x, const numerics<T>& y, const numerics<T>& a, const numerics<Tout>& out)
+	template <class T>
+	void mix(const T x, const numerics<T>& y, const numerics<T>& a, const numerics<T>& out)
 	{
 		for (unsigned int i = 0; i < y.size(); ++i)
 		{
@@ -286,8 +287,8 @@ namespace composites
 			out[i] += y[i] * a[i];
 		}
 	}
-	template <class T, class Tout>
-	void mix(const T x, const numerics<T>& y, const T a, const numerics<Tout>& out)
+	template <class T>
+	void mix(const T x, const numerics<T>& y, const T a, const numerics<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -298,8 +299,8 @@ namespace composites
 			out[i] += y[i] * a;
 		}
 	}
-	template <class T, class Tout>
-	void mix(const T x, const T y, const numerics<T>& a, const numerics<Tout>& out)
+	template <class T>
+	void mix(const T x, const T y, const numerics<T>& a, const numerics<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -312,24 +313,24 @@ namespace composites
 	}
 
 	/// Returns 0.0 if x < edge, otherwise it returns 1.0 for each component of a genType.
-	template<typename T, class Tout>
-	void step(const numerics<T>&  edge, const numerics<T>&  x, numerics<Tout>& out)
+	template<typename T>
+	void step(const numerics<T>& edge, const numerics<T>&  x, numerics<T>& out)
 	{
 		for (unsigned int i = 0; i < edge.size(); ++i)
 		{
 			out[i] = x[i] < edge[i]? 0.0 : 1.0;
 		}
 	}
-	template<typename T, class Tout>
-	void step(const numerics<T>&  edge, const T x, numerics<Tout>& out)
+	template<typename T>
+	void step(const numerics<T>&  edge, const T x, numerics<T>& out)
 	{
 		for (unsigned int i = 0; i < edge.size(); ++i)
 		{
 			out[i] = x < edge[i]? 0.0 : 1.0;
 		}
 	}
-	template<typename T, class Tout>
-	void step(const T edge, const numerics<T>&  x, numerics<Tout>& out)
+	template<typename T>
+	void step(const T edge, const numerics<T>&  x, numerics<T>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -346,61 +347,61 @@ namespace composites
 	/// t = clamp ((x - lo) / (hi - lo), 0, 1);
 	/// return t * t * (3 - 2 * t);
 	/// Results are undefined if lo >= hi.
-	template<typename T, typename Tout>
-	void smoothstep(const numerics<T>& lo, const numerics<T>& hi, const numerics<T>& x, numerics<Tout>& out)
+	template<typename T>
+	void smoothstep(const numerics<T>& lo, const numerics<T>& hi, const numerics<T>& x, numerics<T>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
-			out[i] = x[i] <= lo[i]? 0.0 : x[i] >= hi[i]? 1.0 : ((x[i]-lo[i]) / (hi[i]-lo[i]));
+			out[i] = x[i] <= lo[i]? T(0) : x[i] >= hi[i]? T(1) : ((x[i]-lo[i]) / (hi[i]-lo[i]));
 		}
 	}
-	template<typename T, typename Tout>
-	void smoothstep(const T lo, const numerics<T>& hi, const numerics<T>& x, numerics<Tout>& out)
+	template<typename T>
+	void smoothstep(const T lo, const numerics<T>& hi, const numerics<T>& x, numerics<T>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
-			out[i] = x[i] <= lo? 0.0 : x[i] >= hi[i]? 1.0 : ((x[i]-lo) / (hi[i]-lo));
+			out[i] = x[i] <= lo? T(0) : x[i] >= hi[i]? T(1) : ((x[i]-lo) / (hi[i]-lo));
 		}
 	}
-	template<typename T, typename Tout>
-	void smoothstep(const numerics<T>& lo, T hi, const numerics<T>& x, numerics<Tout>& out)
+	template<typename T>
+	void smoothstep(const numerics<T>& lo, T hi, const numerics<T>& x, numerics<T>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
-			out[i] = x[i] <= lo[i]? 0.0 : x[i] >= hi? 1.0 : ((x[i]-lo[i]) / (hi-lo[i]));
+			out[i] = x[i] <= lo[i]? T(0) : x[i] >= hi? T(1) : ((x[i]-lo[i]) / (hi-lo[i]));
 		}
 	}
-	template<typename T, typename Tout>
-	void smoothstep(const T lo, const T hi, const numerics<T>& x, numerics<Tout>& out)
+	template<typename T>
+	void smoothstep(const T lo, const T hi, const numerics<T>& x, numerics<T>& out)
 	{
 		T range = hi-lo;
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
-			out[i] = x[i] <= lo? 0.0 : x[i] >= hi? 1.0 : ((x[i]-lo) / range);
+			out[i] = x[i] <= lo? T(0) : x[i] >= hi? T(1) : ((x[i]-lo) / range);
 		}
 	}
-	template<typename T, typename Tout>
-	void smoothstep(const numerics<T>& lo, const numerics<T>& hi, const T x, numerics<Tout>& out)
+	template<typename T>
+	void smoothstep(const numerics<T>& lo, const numerics<T>& hi, const T x, numerics<T>& out)
 	{
 		for (unsigned int i = 0; i < hi.size(); ++i)
 		{
-			out[i] = x <= lo[i]? 0.0 : x >= hi[i]? 1.0 : ((x-lo[i]) / (hi[i]-lo[i]));
+			out[i] = x <= lo[i]? T(0) : x >= hi[i]? T(1) : ((x-lo[i]) / (hi[i]-lo[i]));
 		}
 	}
-	template<typename T, typename Tout>
-	void smoothstep(const T lo, const numerics<T>& hi, const T x, numerics<Tout>& out)
+	template<typename T>
+	void smoothstep(const T lo, const numerics<T>& hi, const T x, numerics<T>& out)
 	{
 		for (unsigned int i = 0; i < hi.size(); ++i)
 		{
-			out[i] = x <= lo? 0.0 : x >= hi[i]? 1.0 : ((x-lo) / (hi[i]-lo[i]));
+			out[i] = x <= lo? T(0) : x >= hi[i]? T(1) : ((x-lo) / (hi[i]-lo[i]));
 		}
 	}
-	template<typename T, typename Tout>
-	void smoothstep(const numerics<T>& lo, const T hi, const T x, numerics<Tout>& out)
+	template<typename T>
+	void smoothstep(const numerics<T>& lo, const T hi, const T x, numerics<T>& out)
 	{
 		for (unsigned int i = 0; i < lo.size(); ++i)
 		{
-			out[i] = x <= lo[i]? 0.0 : x >= hi? 1.0 : ((x-lo[i]) / (hi-lo[i]));
+			out[i] = x <= lo[i]? T(0) : x >= hi? T(1) : ((x-lo[i]) / (hi-lo[i]));
 		}
 	}
 
