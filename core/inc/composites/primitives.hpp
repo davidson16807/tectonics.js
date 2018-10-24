@@ -395,6 +395,8 @@ namespace composites
 
 
 
+	// NOTE: we define operators for multiple classes T and T2 in order to support 
+	//  vector/scalar multiplication, matrix/vect multiplication, etc.
 	template <class T, class T2, class T3>
 	void add(const primitives<T>& a, const primitives<T2>& b, primitives<T3>& out)
 	{
@@ -495,7 +497,7 @@ namespace composites
 
 
 
-	template <class T, class T2>
+	template <class T, class T2, class T3>
 	inline primitives<T>& operator+=(const primitives<T>& a, const T2 b) 
 	{
 		primitives<T>::add(a, b, a);
@@ -578,6 +580,8 @@ namespace composites
 
 
 
+	// NOTE: we define operators for multiple classes T and T2 in order to support 
+	//  vector/scalar multiplication, matrix/vect multiplication, etc.
 	template <class T, class T2, class T3>
 	inline primitives<T3> operator+(const primitives<T>& a, const T2 b)
 	{
@@ -608,6 +612,8 @@ namespace composites
 	}
 
 
+	// NOTE: we define operators for multiple classes T and T2 in order to support 
+	//  vector/scalar multiplication, matrix/vect multiplication, etc.
 	template <class T, class T2, class T3>
 	inline primitives<T3> operator+(const primitives<T>& a, const primitives<T2>& b)
 	{
