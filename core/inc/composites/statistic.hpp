@@ -127,6 +127,7 @@ namespace composites
 	};
 
 	// TODO: vector version
+	template <class T>
 	void rescale(const primitives<T>& a, primitives<T>& out, T min_new = 0., T max_new = 1.)
 	{
 	    T max_old = max(a);
