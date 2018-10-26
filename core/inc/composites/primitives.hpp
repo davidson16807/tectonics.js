@@ -265,22 +265,22 @@ namespace composites
 	template <class T>
 	inline bool operator==(const primitives<T>& a, const T b)
 	{
-		return primitives<T>::equal(a, b);
+		return equal(a, b);
 	}
 	template <class T>
 	inline bool operator!=(const primitives<T>& a, const T b)
 	{
-		return primitives<T>::notEqual(a, b);
+		return notEqual(a, b);
 	}
 	template <class T>
 	inline bool operator==(const primitives<T>& a, const primitives<T>& b)
 	{
-		return primitives<T>::equal(a, b);
+		return equal(a, b);
 	}
 	template <class T>
 	inline bool operator!=(const primitives<T>& a, const primitives<T>& b)
 	{
-		return primitives<T>::notEqual(a, b);
+		return notEqual(a, b);
 	}
 
 
@@ -436,28 +436,28 @@ namespace composites
 	inline primitives<T3> operator>(const primitives<T>& a, const T2 b)
 	{
 		primitives<T3> out = primitives<T3>(a.N);
-		primitives<T>::greaterThan(a, b, out);
+		greaterThan(a, b, out);
 		return out;
 	}
 	template <class T, class T2, class T3>
 	inline primitives<T3> operator>=(const primitives<T>& a, const T2 b)
 	{
 		primitives<T3> out = primitives<T3>(a.N);
-		primitives<T>::greaterThanEqual(a, b, out);
+		greaterThanEqual(a, b, out);
 		return out;
 	}
 	template <class T, class T2, class T3>
 	inline primitives<T3> operator<(const primitives<T>& a, const T2 b)
 	{
 		primitives<T3> out = primitives<T3>(a.N);
-		primitives<T>::lessThan(a, b, out);
+		lessThan(a, b, out);
 		return out;
 	}
 	template <class T, class T2, class T3>
 	inline primitives<T3> operator<=(const primitives<T>& a, const T2 b)
 	{
 		primitives<T3> out = primitives<T3>(a.N);
-		primitives<T>::lessThanEqual(a, b, out);
+		lessThanEqual(a, b, out);
 		return out;
 	}
 
@@ -467,28 +467,28 @@ namespace composites
 	inline primitives<T3> operator>(const primitives<T>& a, const primitives<T2>& b)
 	{
 		primitives<T3> out = primitives<T3>(a.N);
-		primitives<T>::greaterThan(a, b, out);
+		greaterThan(a, b, out);
 		return out;
 	}
 	template <class T, class T2, class T3>
 	inline primitives<T3> operator>=(const primitives<T>& a, const primitives<T2>& b)
 	{
 		primitives<T3> out = primitives<T3>(a.N);
-		primitives<T>::greaterThanEqual(a, b, out);
+		greaterThanEqual(a, b, out);
 		return out;
 	}
 	template <class T, class T2, class T3>
 	inline primitives<T3> operator<(const primitives<T>& a, const primitives<T2>& b)
 	{
 		primitives<T3> out = primitives<T3>(a.N);
-		primitives<T>::lessThan(a, b, out);
+		lessThan(a, b, out);
 		return out;
 	}
 	template <class T, class T2, class T3>
 	inline primitives<T3> operator<=(const primitives<T>& a, const primitives<T2>& b)
 	{
 		primitives<T3> out = primitives<T3>(a.N);
-		primitives<T>::lessThanEqual(a, b, out);
+		lessThanEqual(a, b, out);
 		return out;
 	}
 
@@ -500,25 +500,25 @@ namespace composites
 	template <class T, class T2, class T3>
 	inline primitives<T>& operator+=(const primitives<T>& a, const T2 b) 
 	{
-		primitives<T>::add(a, b, a);
+		add(a, b, a);
 		return a;
 	}
 	template <class T, class T2>
 	inline primitives<T>& operator-=(const primitives<T>& a, const T2 b) 
 	{
-		primitives<T>::sub(a, b, a);
+		sub(a, b, a);
 		return a;
 	}
 	template <class T, class T2>
 	inline primitives<T>& operator*=(const primitives<T>& a, const T2 b) 
 	{
-		primitives<T>::mult(a, b, a);
+		mult(a, b, a);
 		return a;
 	}
 	template <class T, class T2>
 	inline primitives<T>& operator/=(const primitives<T>& a, const T2 b) 
 	{
-		primitives<T>::div(a, b, a);
+		div(a, b, a);
 		return a;
 	}
 
@@ -526,25 +526,25 @@ namespace composites
 	template <class T, class T2>
 	inline primitives<T>& operator+=(const primitives<T>& a, const primitives<T2>& b) 
 	{
-		primitives<T>::add(a, b, a);
+		add(a, b, a);
 		return a;
 	}
 	template <class T, class T2>
 	inline primitives<T>& operator-=(const primitives<T>& a, const primitives<T2>& b) 
 	{
-		primitives<T>::sub(a, b, a);
+		sub(a, b, a);
 		return a;
 	}
 	template <class T, class T2>
 	inline primitives<T>& operator*=(const primitives<T>& a, const primitives<T2>& b) 
 	{
-		primitives<T>::mult(a, b, a);
+		mult(a, b, a);
 		return a;
 	}
 	template <class T, class T2>
 	inline primitives<T>& operator/=(const primitives<T>& a, const primitives<T2>& b) 
 	{
-		primitives<T>::div(a, b, a);
+		div(a, b, a);
 		return a;
 	}
 
@@ -552,13 +552,13 @@ namespace composites
 	template <class T>
 	inline primitives<T>& operator++(const primitives<T>& a)  
 	{  
-		primitives<T>::add(a, 1, a);
+		add(a, 1, a);
 		return a;
 	}  
 	template <class T>
 	inline primitives<T>& operator--(const primitives<T>& a)  
 	{  
-		primitives<T>::add(a, 1, a);
+		add(a, 1, a);
 		return a;
 	}  
 
@@ -566,13 +566,13 @@ namespace composites
 	template <class T>
 	inline primitives<T> operator++(const primitives<T>& a, int)  
 	{  
-		primitives<T>::add(a, 1, a);
+		add(a, 1, a);
 		return a;
 	}  
 	template <class T>
 	inline primitives<T> operator--(const primitives<T>& a, int)  
 	{  
-		primitives<T>::add(a, 1, a);
+		add(a, 1, a);
 		return a;
 	}  
 	
@@ -586,28 +586,28 @@ namespace composites
 	inline primitives<T3> operator+(const primitives<T>& a, const T2 b)
 	{
 		primitives<T3> out = primitives<T3>(a.N);
-		primitives<T>::add(a, b, out);
+		add(a, b, out);
 		return out;
 	}
 	template <class T, class T2, class T3>
 	inline primitives<T3> operator-(const primitives<T>& a, const T2 b)
 	{
 		primitives<T3> out = primitives<T3>(a.N);
-		primitives<T>::sub(a, b, out);
+		sub(a, b, out);
 		return out;
 	}
 	template <class T, class T2, class T3>
 	inline primitives<T> operator*(const primitives<T>& a, const T2 b)
 	{
 		primitives<T3> out = primitives<T3>(a.N);
-		primitives<T>::mult(a, b, out);
+		mult(a, b, out);
 		return out;
 	}
 	template <class T, class T2, class T3>
 	inline primitives<T3> operator/(const primitives<T>& a, const T2 b)
 	{
 		primitives<T3> out = primitives<T3>(a.N);
-		primitives<T>::div(a, b, out);
+		div(a, b, out);
 		return out;
 	}
 
@@ -618,28 +618,28 @@ namespace composites
 	inline primitives<T3> operator+(const primitives<T>& a, const primitives<T2>& b)
 	{
 		primitives<T3> out = primitives<T3>(a.N);
-		primitives<T>::add(a, b, out);
+		add(a, b, out);
 		return out;
 	}
 	template <class T, class T2, class T3>
 	inline primitives<T3> operator-(const primitives<T>& a, const primitives<T2>& b)
 	{
 		primitives<T3> out = primitives<T3>(a.N);
-		primitives<T>::sub(a, b, out);
+		sub(a, b, out);
 		return out;
 	}
 	template <class T, class T2, class T3>
 	inline primitives<T3> operator*(const primitives<T>& a, const primitives<T2>& b)
 	{
 		primitives<T3> out = primitives<T3>(a.N);
-		primitives<T>::mult(a, b, out);
+		mult(a, b, out);
 		return out;
 	}
 	template <class T, class T2, class T3>
 	inline primitives<T3> operator/(const primitives<T>& a, const primitives<T2>& b)
 	{
 		primitives<T3> out = primitives<T3>(a.N);
-		primitives<T>::div(a, b, out);
+		div(a, b, out);
 		return out;
 	}
 	typedef primitives<bool>	bools;
