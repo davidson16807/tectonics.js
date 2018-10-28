@@ -69,8 +69,20 @@ EMSCRIPTEN_BINDINGS(rasters)
       .constructor<unsigned int>()
   ;
 
-  function("lerp", &lerp<float, float, float>);
-  // function("mult", select_overload<void(floats, float, floats)>(&mult<float, float, float>));
+  // function("lerp", 
+    // (void (*)(const floats&, const floats&, floats&)) 
+    // lerp<float, float, float>);
+  function("mult_many",   (void (*)(const floats&, const floats&, floats&)) mult);
+  function("mult_single", (void (*)(const floats&, const float, floats&))   mult);
+  function("div_many",    (void (*)(const floats&, const floats&, floats&)) div);
+  function("div_single",  (void (*)(const floats&, const float, floats&))   div);
+  function("add_many",    (void (*)(const floats&, const floats&, floats&)) add);
+  function("add_single",  (void (*)(const floats&, const float, floats&))   add);
+  function("sub_many",    (void (*)(const floats&, const floats&, floats&)) sub);
+  function("sub_single",  (void (*)(const floats&, const float, floats&))   sub);
+  // function("mult", 
+    // (void (*)(const composites::primitives<float>&, const composites::primitives<float>&, composites::primitives<float>&)) 
+    // mult<float, float, float>);
 
   register_vector<vec3>("vector_vec3");
 
