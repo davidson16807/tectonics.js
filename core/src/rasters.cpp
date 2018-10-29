@@ -18,14 +18,6 @@ using namespace emscripten;
 using namespace composites;
 using namespace rasters;
 
-template<typename T1, typename T2, typename T3>
-void lerp(const primitives<T1>& a, const primitives<T2>& b, primitives<T3>& out) {
-   // return (1 - t) * a + t * b;
-}
-// template<typename T1, typename T2, typename T3>
-// void lerp(const primitives<T1>& a, const T2& b, primitives<T3>& out) {
-//    // return (1 - t) * a + t * b;
-// }
 EMSCRIPTEN_BINDINGS(rasters)
 {
 
@@ -72,14 +64,39 @@ EMSCRIPTEN_BINDINGS(rasters)
   // function("lerp", 
     // (void (*)(const floats&, const floats&, floats&)) 
     // lerp<float, float, float>);
-  function("mult_many",   (void (*)(const floats&, const floats&, floats&)) mult);
-  function("mult_single", (void (*)(const floats&, const float, floats&))   mult);
-  function("div_many",    (void (*)(const floats&, const floats&, floats&)) div);
-  function("div_single",  (void (*)(const floats&, const float, floats&))   div);
-  function("add_many",    (void (*)(const floats&, const floats&, floats&)) add);
-  function("add_single",  (void (*)(const floats&, const float, floats&))   add);
-  function("sub_many",    (void (*)(const floats&, const floats&, floats&)) sub);
-  function("sub_single",  (void (*)(const floats&, const float, floats&))   sub);
+  function("f32_add_many",    (void (*)(const floats&, const floats&, floats&)) add);
+  function("f32_add_single",  (void (*)(const floats&, const float, floats&))   add);
+  function("f32_sub_many",    (void (*)(const floats&, const floats&, floats&)) sub);
+  function("f32_sub_single",  (void (*)(const floats&, const float, floats&))   sub);
+  function("f32_mult_many",   (void (*)(const floats&, const floats&, floats&)) mult);
+  function("f32_mult_single", (void (*)(const floats&, const float, floats&))   mult);
+  function("f32_div_many",    (void (*)(const floats&, const floats&, floats&)) div);
+  function("f32_div_single",  (void (*)(const floats&, const float, floats&))   div);
+
+  function("f32_get_id",      (float(*)(const floats& a, const unsigned int id ))              get      );
+  function("f32_get_ids",     (void (*)(const floats& a, const uints& ids, floats& out ))      get      );
+  function("f32_get_mask",    (void (*)(const floats& a, const bools& mask, floats& out ))     get      );
+  function("f32_fill",        (void (*)(floats& out, const float a ))                          fill     );
+  function("f32_fill_ids",    (void (*)(floats& out, const uints& ids, const float a ))        fill     );
+  function("f32_fill_mask",   (void (*)(floats& out, const bools& mask, const float a ))       fill     );
+  function("f32_copy",        (void (*)(floats& out, const floats& a ))                        copy     );
+  function("f32_copy_mask",   (void (*)(floats& out, const bools& mask, const floats& a ))     copy     );
+  function("f32_copy_id",     (void (*)(floats& out, const unsigned int id, const floats& a )) copy     );
+  function("f32_copy_ids",    (void (*)(floats& out, const uints& ids, const floats& a ))      copy     );
+  function("f32_set_id",      (void (*)(floats& out, const unsigned int id, const float a ))   set      );
+  function("f32_set_ids",     (void (*)(floats& out, const uints& ids, const floats& a ))      set      );
+
+  function("f32_equal_single",      (bool (*)(const floats& a, const float b))                 equal    );
+  function("f32_notEqual_single",   (bool (*)(const floats& a, const float b))                 notEqual );
+  function("f32_equal_many",        (bool (*)(const floats& a, const floats& b))               equal    );
+  function("f32_notEqual_many",     (bool (*)(const floats& a, const floats& b))               notEqual );
+  function("f32_compEqual_many",    (void (*)(const floats& a, const float b, bools& out))     equal    );
+  function("f32_compNotEqual_many", (void (*)(const floats& a, const float b, bools& out))     notEqual );
+  function("f32_compEqual_many",    (void (*)(const floats& a, const floats& b, bools& out))   equal    );
+  function("f32_compNotEqual_many", (void (*)(const floats& a, const floats& b, bools& out))   notEqual );
+
+
+
   // function("mult", 
     // (void (*)(const composites::primitives<float>&, const composites::primitives<float>&, composites::primitives<float>&)) 
     // mult<float, float, float>);

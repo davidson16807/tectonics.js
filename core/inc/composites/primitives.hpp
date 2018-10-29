@@ -127,12 +127,7 @@ namespace composites
 	}
 
 	template <class T>
-	inline void set(primitives<T>& out, const unsigned int id, const T a )
-	{
-		out[id] = a;
-	}
-	template <class T>
-	void set(primitives<T>& out, const T a )
+	void fill(primitives<T>& out, const T a )
 	{
 		for (unsigned int i = 0; i < out.size(); ++i)
 		{
@@ -140,7 +135,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void set(primitives<T>& out, const primitives<unsigned int>& ids, const T a )
+	void fill(primitives<T>& out, const primitives<unsigned int>& ids, const T a )
 	{
 		for (unsigned int i = 0; i < ids.size(); ++i)
 		{
@@ -148,7 +143,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void set(const primitives<T>& out, const primitives<bool>& mask, const T a )
+	void fill(primitives<T>& out, const primitives<bool>& mask, const T a )
 	{
 		for (unsigned int i = 0; i < out.size(); ++i)
 		{
@@ -156,9 +151,8 @@ namespace composites
 		}
 	}
 
-
 	template <class T>
-	void set(primitives<T>& out, const primitives<T>& a )
+	void copy(primitives<T>& out, const primitives<T>& a )
 	{
 		for (unsigned int i = 0; i < out.size(); ++i)
 		{
@@ -166,19 +160,39 @@ namespace composites
 		}
 	}
 	template <class T>
+	inline void copy(primitives<T>& out, const unsigned int id, const primitives<T>& a )
+	{
+		out[id] = a[id];
+	}
+	template <class T>
+	void copy(primitives<T>& out, const primitives<unsigned int>& ids, const primitives<T>& a )
+	{
+		for (unsigned int i = 0; i < ids.size(); ++i)
+		{
+			out[ids[i]] = a[ids[i]];
+		}
+	}
+	template <class T>
+	void copy(primitives<T>& out, const primitives<bool>& mask, const primitives<T>& a )
+	{
+		for (unsigned int i = 0; i < out.size(); ++i)
+		{
+			out[i] = mask[i]? a[i] : out[i];
+		}
+	}
+
+
+	template <class T>
+	inline void set(primitives<T>& out, const unsigned int id, const T a )
+	{
+		out[id] = a;
+	}
+	template <class T>
 	void set(primitives<T>& out, const primitives<unsigned int>& ids, const primitives<T>& a )
 	{
 		for (unsigned int i = 0; i < ids.size(); ++i)
 		{
 			out[ids[i]] = a[i];
-		}
-	}
-	template <class T>
-	void set(primitives<T>& out, const primitives<bool>& mask, const primitives<T>& a )
-	{
-		for (unsigned int i = 0; i < out.size(); ++i)
-		{
-			out[i] = mask[i]? a[i] : out[i];
 		}
 	}
 
