@@ -148,13 +148,21 @@ EMSCRIPTEN_BINDINGS(rasters)
   function("f32_fma",    ( void (*)(const float a, const floats& b, const float c, floats& out))           fma);
   function("f32_fma",    ( void (*)(const floats& a, const float b, const float c, floats& out))           fma);
 
+  function("f32_pow",         (void (*)(const floats& base, const floats& exponent, floats& out)) pow);
+  function("f32_exp",         (void (*)(const floats& a, floats& out))                            exp);
+  function("f32_log",         (void (*)(const floats& a, floats& out))                            log);
+  function("f32_exp2",        (void (*)(const floats& a, floats& out))                            exp2);
+  function("f32_log2",        (void (*)(const floats& a, floats& out))                            log2);
+  function("f32_sqrt",        (void (*)(const floats& a, floats& out))                            sqrt);
+  function("f32_inversesqrt", (void (*)(const floats& a, floats& out))                            inversesqrt);
 
-
-
-
-  // function("mult", 
-    // (void (*)(const composites::primitives<float>&, const composites::primitives<float>&, composites::primitives<float>&)) 
-    // mult<float, float, float>);
+  function("b_unite", (void (*)(const bools& a, const bool b, bools& out))        unite);
+  function("b_unite", (void (*)(const bools& a, const bools& b, bools& out))      unite);
+  function("b_intersect", (void (*)(const bools& a, const bool b, bools& out))    intersect);
+  function("b_intersect", (void (*)(const bools& a, const bools& b, bools& out))  intersect);
+  function("b_differ", (void (*)(const bools& a, const bool b, bools& out))       differ);
+  function("b_differ", (void (*)(const bools& a, const bools& b, bools& out))     differ);
+  function("b_negate", (void (*)(const bools& a, bools& out))                     negate);
 
   register_vector<vec3>("vector_vec3");
 
