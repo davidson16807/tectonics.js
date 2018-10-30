@@ -400,10 +400,10 @@ namespace composites
 	template <class T, class T2, class T3>
 	void div(const primitives<T>& a, const T2 b, primitives<T3>& out)
 	{
-		const T ainv = 1./b;
+		const T2 binv = T2(1.)/b;
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
-			out[i] = a[i] / b;
+			out[i] = a[i] * binv;
 		}
 	}
 

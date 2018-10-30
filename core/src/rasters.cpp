@@ -115,35 +115,35 @@ EMSCRIPTEN_BINDINGS(rasters)
   function("i32_div_single",  (void (*)(const ints&, const int, ints&))   div  );
 
   function("i32_get_id",      (int(*)(const ints& a, const unsigned int id ))            get      );
-  function("i32_get_ids",     (void (*)(const ints& a, const uints& ids, ints& out ))      get      );
-  function("i32_get_mask",    (void (*)(const ints& a, const bools& mask, ints& out ))     get      );
+  function("i32_get_ids",     (void (*)(const ints& a, const uints& ids, ints& out ))    get      );
+  function("i32_get_mask",    (void (*)(const ints& a, const bools& mask, ints& out ))   get      );
   function("i32_fill",        (void (*)(ints& out, const int a ))                        fill     );
   function("i32_fill_ids",    (void (*)(ints& out, const uints& ids, const int a ))      fill     );
   function("i32_fill_mask",   (void (*)(ints& out, const bools& mask, const int a ))     fill     );
-  function("i32_copy",        (void (*)(ints& out, const ints& a ))                        copy     );
-  function("i32_copy_mask",   (void (*)(ints& out, const bools& mask, const ints& a ))     copy     );
+  function("i32_copy",        (void (*)(ints& out, const ints& a ))                      copy     );
+  function("i32_copy_mask",   (void (*)(ints& out, const bools& mask, const ints& a ))   copy     );
   function("i32_copy_id",     (void (*)(ints& out, const unsigned int id, const ints& a )) copy     );
-  function("i32_copy_ids",    (void (*)(ints& out, const uints& ids, const ints& a ))      copy     );
+  function("i32_copy_ids",    (void (*)(ints& out, const uints& ids, const ints& a ))    copy     );
   function("i32_set_id",      (void (*)(ints& out, const unsigned int id, const int a )) set      );
-  function("i32_set_ids",     (void (*)(ints& out, const uints& ids, const ints& a ))      set      );
+  function("i32_set_ids",     (void (*)(ints& out, const uints& ids, const ints& a ))    set      );
 
   function("i32_equal_single",      (bool (*)(const ints& a, const int b))               equal    );
   function("i32_notEqual_single",   (bool (*)(const ints& a, const int b))               notEqual );
-  function("i32_equal_many",        (bool (*)(const ints& a, const ints& b))               equal    );
-  function("i32_notEqual_many",     (bool (*)(const ints& a, const ints& b))               notEqual );
+  function("i32_equal_many",        (bool (*)(const ints& a, const ints& b))             equal    );
+  function("i32_notEqual_many",     (bool (*)(const ints& a, const ints& b))             notEqual );
   function("i32_compEqual_many",    (void (*)(const ints& a, const int b, bools& out))   equal    );
   function("i32_compNotEqual_many", (void (*)(const ints& a, const int b, bools& out))   notEqual );
-  function("i32_compEqual_many",    (void (*)(const ints& a, const ints& b, bools& out))   equal    );
-  function("i32_compNotEqual_many", (void (*)(const ints& a, const ints& b, bools& out))   notEqual );
+  function("i32_compEqual_many",    (void (*)(const ints& a, const ints& b, bools& out)) equal    );
+  function("i32_compNotEqual_many", (void (*)(const ints& a, const ints& b, bools& out)) notEqual );
 
   function("i32_greaterThan",      (void (*)(const ints& a, const int b, bools& out))    greaterThan      );
   function("i32_greaterThanEqual", (void (*)(const ints& a, const int b, bools& out))    greaterThanEqual );
   function("i32_lessThan",         (void (*)(const ints& a, const int b, bools& out))    lessThan         );
   function("i32_lessThanEqual",    (void (*)(const ints& a, const int b, bools& out))    lessThanEqual    );
-  function("i32_greaterThan",      (void (*)(const ints& a, const ints& b, bools& out))    greaterThan      );
-  function("i32_greaterThanEqual", (void (*)(const ints& a, const ints& b, bools& out))    greaterThanEqual );
-  function("i32_lessThan",         (void (*)(const ints& a, const ints& b, bools& out))    lessThan         );
-  function("i32_lessThanEqual",    (void (*)(const ints& a, const ints& b, bools& out))    lessThanEqual    );
+  function("i32_greaterThan",      (void (*)(const ints& a, const ints& b, bools& out))  greaterThan      );
+  function("i32_greaterThanEqual", (void (*)(const ints& a, const ints& b, bools& out))  greaterThanEqual );
+  function("i32_lessThan",         (void (*)(const ints& a, const ints& b, bools& out))  lessThan         );
+  function("i32_lessThanEqual",    (void (*)(const ints& a, const ints& b, bools& out))  lessThanEqual    );
 
   // function("i32_abs",    ( void (*)(const ints& a, ints& out)) abs   );
   function("i32_sign",   ( void (*)(const ints& a, ints& out)) sign  );
@@ -153,14 +153,14 @@ EMSCRIPTEN_BINDINGS(rasters)
   function("i32_ceil",   ( void (*)(const ints& a, ints& out)) ceil  );
   function("i32_fract",  ( void (*)(const ints& a, ints& out)) fract );
 
-  function("i32_mod",    ( void (*)(const ints& a, const ints& b, ints& out))   mod                              );
-  function("i32_modf",   ( void (*)(const ints& a, ints& intout, ints& fractout)) modf                             );
-  function("i32_min",    ( void (*)(const ints& a, const ints& b, ints& out))   min                              );
-  function("i32_max",    ( void (*)(const ints& a, const ints& b, ints& out))   max                              );
-  function("i32_min",    ( void (*)(const ints& a, const int b, ints& out))   min                              );
-  function("i32_max",    ( void (*)(const ints& a, const int b, ints& out))   max                              );
-  function("i32_min",    ( int(*)(const ints& a))                             min                              );
-  function("i32_max",    ( int(*)(const ints& a))                             max                              );
+  function("i32_mod",    ( void (*)(const ints& a, const ints& b, ints& out))   mod       );
+  function("i32_modf",   ( void (*)(const ints& a, ints& intout, ints& fractout))modf     );
+  function("i32_min",    ( void (*)(const ints& a, const ints& b, ints& out))   min       );
+  function("i32_max",    ( void (*)(const ints& a, const ints& b, ints& out))   max       );
+  function("i32_min",    ( void (*)(const ints& a, const int b, ints& out))     min       );
+  function("i32_max",    ( void (*)(const ints& a, const int b, ints& out))     max       );
+  function("i32_min",    ( int(*)(const ints& a))                               min       );
+  function("i32_max",    ( int(*)(const ints& a))                               max       );
   function("i32_clamp",  ( void (*)(const ints& a, const int lo, const int hi, ints& out))         clamp       );
   function("i32_clamp",  ( void (*)(const ints& a, const int lo, const ints& hi, ints& out))       clamp       );
   function("i32_clamp",  ( void (*)(const ints& a, const ints& lo, const int hi, ints& out))       clamp       );
@@ -172,9 +172,9 @@ EMSCRIPTEN_BINDINGS(rasters)
   function("i32_mix",    ( void (*)(const int x, const ints& y, const ints& a, ints& out))         mix         );
   function("i32_mix",    ( void (*)(const int x, const ints& y, const int a, ints& out))           mix         );
   function("i32_mix",    ( void (*)(const int x, const int y, const ints& a, ints& out))           mix         );
-  function("i32_step",   ( void (*)(const ints& edge, const ints& x, ints& out))                     step        );
-  function("i32_step",   ( void (*)(const ints& edge, const int x, ints& out))                       step        );
-  function("i32_step",   ( void (*)(const int edge, const ints& x, ints& out))                       step        );
+  function("i32_step",   ( void (*)(const ints& edge, const ints& x, ints& out))                   step        );
+  function("i32_step",   ( void (*)(const ints& edge, const int x, ints& out))                     step        );
+  function("i32_step",   ( void (*)(const int edge, const ints& x, ints& out))                     step        );
   function("i32_smoothstep",( void (*)(const ints& lo, const ints& hi, const ints& x, ints& out))  smoothstep  );
   function("i32_smoothstep",( void (*)(const int lo, const ints& hi, const ints& x, ints& out))    smoothstep  );
   function("i32_smoothstep",( void (*)(const ints& lo, int hi, const ints& x, ints& out))          smoothstep  );
@@ -182,8 +182,8 @@ EMSCRIPTEN_BINDINGS(rasters)
   function("i32_smoothstep",( void (*)(const ints& lo, const ints& hi, const int x, ints& out))    smoothstep  );
   function("i32_smoothstep",( void (*)(const int lo, const ints& hi, const int x, ints& out))      smoothstep  );
   function("i32_smoothstep",( void (*)(const ints& lo, const int hi, const int x, ints& out))      smoothstep  );
-  function("i32_isnan",  ( void (*)(const ints& x, bools& out))                                          isnan       );
-  function("i32_isinf",  ( void (*)(const ints& x, bools& out))                                          isinf       );
+  function("i32_isnan",  ( void (*)(const ints& x, bools& out))                                    isnan       );
+  function("i32_isinf",  ( void (*)(const ints& x, bools& out))                                    isinf       );
   function("i32_fma",    ( void (*)(const ints& a, const ints& b, const ints& c, ints& out))       fma         );
   function("i32_fma",    ( void (*)(const int a, const ints& b, const ints& c, ints& out))         fma         );
   function("i32_fma",    ( void (*)(const ints& a, int b, const ints& c, ints& out))               fma         );
@@ -192,20 +192,20 @@ EMSCRIPTEN_BINDINGS(rasters)
   function("i32_fma",    ( void (*)(const int a, const ints& b, const int c, ints& out))           fma         );
   function("i32_fma",    ( void (*)(const ints& a, const int b, const int c, ints& out))           fma         );
 
-  function("i32_pow",         (void (*)(const ints& base, const ints& exponent, ints& out)) pow                  );
-  function("i32_exp",         (void (*)(const ints& a, ints& out))                            exp                  );
-  function("i32_log",         (void (*)(const ints& a, ints& out))                            log                  );
-  function("i32_exp2",        (void (*)(const ints& a, ints& out))                            exp2                 );
-  function("i32_log2",        (void (*)(const ints& a, ints& out))                            log2                 );
-  function("i32_sqrt",        (void (*)(const ints& a, ints& out))                            sqrt                 );
-  function("i32_inversesqrt", (void (*)(const ints& a, ints& out))                            inversesqrt          );
+  function("i32_pow",         (void (*)(const ints& base, const ints& exponent, ints& out))   pow              );
+  function("i32_exp",         (void (*)(const ints& a, ints& out))                            exp              );
+  function("i32_log",         (void (*)(const ints& a, ints& out))                            log              );
+  function("i32_exp2",        (void (*)(const ints& a, ints& out))                            exp2             );
+  function("i32_log2",        (void (*)(const ints& a, ints& out))                            log2             );
+  function("i32_sqrt",        (void (*)(const ints& a, ints& out))                            sqrt             );
+  function("i32_inversesqrt", (void (*)(const ints& a, ints& out))                            inversesqrt      );
 
-  function("i32_min_id",    (unsigned int (*)(const ints& a))                                        min_id );
-  function("i32_max_id",    (unsigned int (*)(const ints& a))                                        max_id );
-  function("i32_sum",       (int (*)(const ints& a))                                                  sum );
-  function("i32_mean",      (int (*)(const ints& a))                                                 mean );
-  // function("i32_median",    (int (*)(const ints& a))                                               median );
-  // function("i32_mode",      (int (*)(const ints& a))                                                 mode );
+  function("i32_min_id",    (unsigned int (*)(const ints& a))                                 min_id          );
+  function("i32_max_id",    (unsigned int (*)(const ints& a))                                 max_id          );
+  function("i32_sum",       (int (*)(const ints& a))                                          sum             );
+  function("i32_mean",      (int (*)(const ints& a))                                          mean            );
+  // function("i32_median",    (int (*)(const ints& a))                                       median          );
+  // function("i32_mode",      (int (*)(const ints& a))                                       mode            );
   function("i32_standard_deviation", (int (*)(const ints& a))                          standard_deviation );
   function("i32_weighted_average", (int (*)(const ints& a, const ints& weights))       weighted_average );
   function("i32_rescale",   (void (*)(const ints& a, ints& out, int min_new, int max_new))    rescale );
@@ -218,7 +218,7 @@ EMSCRIPTEN_BINDINGS(rasters)
   function("i32_asin",      (void (*)(const ints& x, ints& out))                       asin );
   function("i32_acos",      (void (*)(const ints& x, ints& out))                       acos );
   function("i32_atan",      (void (*)(const ints& y_over_x, ints& out))                atan );
-  function("i32_atan",      (void (*)(const ints& x, const ints& y, ints& out))      atan );
+  function("i32_atan",      (void (*)(const ints& x, const ints& y, ints& out))        atan );
   function("i32_sinh",      (void (*)(const ints& radians, ints& out))                 sinh );
   function("i32_cosh",      (void (*)(const ints& radians, ints& out))                 cosh );
   function("i32_tanh",      (void (*)(const ints& radians, ints& out))                 tanh );
@@ -483,6 +483,29 @@ EMSCRIPTEN_BINDINGS(rasters)
   function("f32_acosh",     (void (*)(const floats& x, floats& out))                      acosh );
   function("f32_atanh",     (void (*)(const floats& x, floats& out))                      atanh );
 
+
+
+
+
+
+
+
+  function("vec3_add_vectors",  (void (*)(const primitives<vec3>&, const primitives<vec3>&, primitives<vec3>&))  add  );
+  function("vec3_add_scalars",  (void (*)(const primitives<vec3>&, const floats&, primitives<vec3>&)) add  );
+  function("vec3_add_vector",   (void (*)(const primitives<vec3>&, const vec3, primitives<vec3>&))    add  );
+  function("vec3_add_scalar",   (void (*)(const primitives<vec3>&, const float, primitives<vec3>&))   add  );
+  function("vec3_sub_vectors",  (void (*)(const primitives<vec3>&, const primitives<vec3>&, primitives<vec3>&))  sub  );
+  function("vec3_sub_scalars",  (void (*)(const primitives<vec3>&, const floats&, primitives<vec3>&)) sub  );
+  function("vec3_sub_vector",   (void (*)(const primitives<vec3>&, const vec3, primitives<vec3>&))    sub  );
+  function("vec3_sub_scalar",   (void (*)(const primitives<vec3>&, const float, primitives<vec3>&))   sub  );
+  function("vec3_mult_vectors", (void (*)(const primitives<vec3>&, const primitives<vec3>&, primitives<vec3>&))  mult );
+  function("vec3_mult_scalars", (void (*)(const primitives<vec3>&, const floats&, primitives<vec3>&)) mult );
+  function("vec3_mult_vector",  (void (*)(const primitives<vec3>&, const vec3, primitives<vec3>&))    mult );
+  function("vec3_mult_scalar",  (void (*)(const primitives<vec3>&, const float, primitives<vec3>&))   mult );
+  function("vec3_div_vectors",  (void (*)(const primitives<vec3>&, const primitives<vec3>&, primitives<vec3>&))  div  );
+  function("vec3_div_scalars",  (void (*)(const primitives<vec3>&, const floats&, primitives<vec3>&)) div  );
+  function("vec3_div_vector",   (void (*)(const primitives<vec3>&, const vec3, primitives<vec3>&))    div  );
+  function("vec3_div_scalar",   (void (*)(const primitives<vec3>&, const float, primitives<vec3>&))   div  );
 
 
 
