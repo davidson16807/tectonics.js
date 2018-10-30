@@ -114,7 +114,7 @@ namespace composites
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
-			out[i] = std::atan(x[i], y[i]);
+			out[i] = std::atan2(x[i], y[i]);
 		}
 	}
 

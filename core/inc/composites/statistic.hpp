@@ -66,39 +66,39 @@ namespace composites
 		return out;
 	}
 
-	// component-wise min
-	template <class T>
-	T median(const primitives<T>& a)
-	{
-		const primitives<T> temp = primitives<T>(a);
-		std::sort(temp, temp+sizeof(temp)/sizeof(temp[0]));
-		return a[a.size()/2];
-	}
-
-	template <class T>
-	T mode(const primitives<T>& a)
-	{
-		const primitives<T> temp = primitives<T>(a);
-		std::sort(temp, temp+sizeof(temp)/sizeof(temp[0]));
-	    int value = a[0];
-	    int max = a[0];
-	    int min = a[0];
-	    int mode;
-	    for (int i = 1, mode_count = 1, count = 1; i < a.size(); ++i) {
-	        if (a[i] == value)
-	            ++mode_count;
-	        if (mode_count > count) {
-	            count = mode_count;
-	            mode = value;
-	        }
-	        if (a[i] > max)
-	            max = a[i];
-	        if (a[i] < min)
-	            min = a[i];
-	        value = a[i];
-	    }
-	    return mode;
-	}
+	// // component-wise min
+	// template <class T>
+	// T median(const primitives<T>& a)
+	// {
+	// 	const primitives<T> temp = primitives<T>(a);
+	// 	std::sort(std::begin(temp), std::end(temp));
+	// 	return a[a.size()/2];
+	// }
+// 
+	// template <class T>
+	// T mode(const primitives<T>& a)
+	// {
+	// 	const primitives<T> temp = primitives<T>(a);
+	// 	std::sort(std::begin(temp), std::end(temp));
+	//     int value = a[0];
+	//     int max = a[0];
+	//     int min = a[0];
+	//     int mode;
+	//     for (int i = 1, mode_count = 1, count = 1; i < a.size(); ++i) {
+	//         if (a[i] == value)
+	//             ++mode_count;
+	//         if (mode_count > count) {
+	//             count = mode_count;
+	//             mode = value;
+	//         }
+	//         if (a[i] > max)
+	//             max = a[i];
+	//         if (a[i] < min)
+	//             min = a[i];
+	//         value = a[i];
+	//     }
+	//     return mode;
+	// }
 
 	template <class T>
 	T standard_deviation(const primitives<T>& a)
