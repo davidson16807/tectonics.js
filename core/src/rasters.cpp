@@ -61,17 +61,14 @@ EMSCRIPTEN_BINDINGS(rasters)
       .constructor<unsigned int>()
   ;
 
-  // function("lerp", 
-    // (void (*)(const floats&, const floats&, floats&)) 
-    // lerp<float, float, float>);
-  function("f32_add_many",    (void (*)(const floats&, const floats&, floats&)) add);
-  function("f32_add_single",  (void (*)(const floats&, const float, floats&))   add);
-  function("f32_sub_many",    (void (*)(const floats&, const floats&, floats&)) sub);
-  function("f32_sub_single",  (void (*)(const floats&, const float, floats&))   sub);
-  function("f32_mult_many",   (void (*)(const floats&, const floats&, floats&)) mult);
-  function("f32_mult_single", (void (*)(const floats&, const float, floats&))   mult);
-  function("f32_div_many",    (void (*)(const floats&, const floats&, floats&)) div);
-  function("f32_div_single",  (void (*)(const floats&, const float, floats&))   div);
+  function("f32_add_many",    (void (*)(const floats&, const floats&, floats&)) add  );
+  function("f32_add_single",  (void (*)(const floats&, const float, floats&))   add  );
+  function("f32_sub_many",    (void (*)(const floats&, const floats&, floats&)) sub  );
+  function("f32_sub_single",  (void (*)(const floats&, const float, floats&))   sub  );
+  function("f32_mult_many",   (void (*)(const floats&, const floats&, floats&)) mult );
+  function("f32_mult_single", (void (*)(const floats&, const float, floats&))   mult );
+  function("f32_div_many",    (void (*)(const floats&, const floats&, floats&)) div  );
+  function("f32_div_single",  (void (*)(const floats&, const float, floats&))   div  );
 
   function("f32_get_id",      (float(*)(const floats& a, const unsigned int id ))              get      );
   function("f32_get_ids",     (void (*)(const floats& a, const uints& ids, floats& out ))      get      );
@@ -94,6 +91,64 @@ EMSCRIPTEN_BINDINGS(rasters)
   function("f32_compNotEqual_many", (void (*)(const floats& a, const float b, bools& out))     notEqual );
   function("f32_compEqual_many",    (void (*)(const floats& a, const floats& b, bools& out))   equal    );
   function("f32_compNotEqual_many", (void (*)(const floats& a, const floats& b, bools& out))   notEqual );
+
+  function("f32_greaterThan",      (void (*)(const floats& a, const float b, bools& out))      greaterThan      );
+  function("f32_greaterThanEqual", (void (*)(const floats& a, const float b, bools& out))      greaterThanEqual );
+  function("f32_lessThan",         (void (*)(const floats& a, const float b, bools& out))      lessThan         );
+  function("f32_lessThanEqual",    (void (*)(const floats& a, const float b, bools& out))      lessThanEqual    );
+  function("f32_greaterThan",      (void (*)(const floats& a, const floats& b, bools& out))    greaterThan      );
+  function("f32_greaterThanEqual", (void (*)(const floats& a, const floats& b, bools& out))    greaterThanEqual );
+  function("f32_lessThan",         (void (*)(const floats& a, const floats& b, bools& out))    lessThan         );
+  function("f32_lessThanEqual",    (void (*)(const floats& a, const floats& b, bools& out))    lessThanEqual    );
+
+  function("f32_abs",    ( void (*)(const floats& a, floats& out)) abs);
+  function("f32_sign",   ( void (*)(const floats& a, floats& out)) sign);
+  function("f32_floor",  ( void (*)(const floats& a, floats& out)) floor);
+  function("f32_trunc",  ( void (*)(const floats& a, floats& out)) trunc);
+  function("f32_round",  ( void (*)(const floats& a, floats& out)) round);
+  function("f32_ceil",   ( void (*)(const floats& a, floats& out)) ceil);
+  function("f32_fract",  ( void (*)(const floats& a, floats& out)) fract);
+
+  function("f32_mod",    ( void (*)(const floats& a, const floats& b, floats& out))   mod);
+  function("f32_modf",   ( void (*)(const floats& a, ints& intout, floats& fractout)) modf);
+  function("f32_min",    ( void (*)(const floats& a, const floats& b, floats& out))   min);
+  function("f32_max",    ( void (*)(const floats& a, const floats& b, floats& out))   max);
+  function("f32_min",    ( void (*)(const floats& a, const float b, floats& out))     min);
+  function("f32_max",    ( void (*)(const floats& a, const float b, floats& out))     max);
+  function("f32_min",    ( float(*)(const floats& a))                                 min);
+  function("f32_max",    ( float(*)(const floats& a))                                 max);
+  function("f32_clamp",  ( void (*)(const floats& a, const float lo, const float hi, floats& out))         clamp);
+  function("f32_clamp",  ( void (*)(const floats& a, const float lo, const floats& hi, floats& out))       clamp);
+  function("f32_clamp",  ( void (*)(const floats& a, const floats& lo, const float hi, floats& out))       clamp);
+  function("f32_clamp",  ( void (*)(const floats& a, const floats& lo, const floats& hi, floats& out))     clamp);
+  function("f32_mix",    ( void (*)(const floats& x, const floats& y, const floats& a, floats& out))       mix);
+  function("f32_mix",    ( void (*)(const floats& x, const floats& y, const float a, floats& out))         mix);
+  function("f32_mix",    ( void (*)(const floats& x, const float y, const floats& a, floats& out))         mix);
+  function("f32_mix",    ( void (*)(const floats& x, const float y, const float a, floats& out))           mix);
+  function("f32_mix",    ( void (*)(const float x, const floats& y, const floats& a, floats& out))         mix);
+  function("f32_mix",    ( void (*)(const float x, const floats& y, const float a, floats& out))           mix);
+  function("f32_mix",    ( void (*)(const float x, const float y, const floats& a, floats& out))           mix);
+  function("f32_step",   ( void (*)(const floats& edge, const floats& x, floats& out))                     step);
+  function("f32_step",   ( void (*)(const floats& edge, const float x, floats& out))                       step);
+  function("f32_step",   ( void (*)(const float edge, const floats& x, floats& out))                       step);
+  function("f32_smoothstep",( void (*)(const floats& lo, const floats& hi, const floats& x, floats& out))  smoothstep);
+  function("f32_smoothstep",( void (*)(const float lo, const floats& hi, const floats& x, floats& out))    smoothstep);
+  function("f32_smoothstep",( void (*)(const floats& lo, float hi, const floats& x, floats& out))          smoothstep);
+  function("f32_smoothstep",( void (*)(const float lo, const float hi, const floats& x, floats& out))      smoothstep);
+  function("f32_smoothstep",( void (*)(const floats& lo, const floats& hi, const float x, floats& out))    smoothstep);
+  function("f32_smoothstep",( void (*)(const float lo, const floats& hi, const float x, floats& out))      smoothstep);
+  function("f32_smoothstep",( void (*)(const floats& lo, const float hi, const float x, floats& out))      smoothstep);
+  function("f32_isnan",  ( void (*)(const floats& x, bools& out))                                          isnan);
+  function("f32_isinf",  ( void (*)(const floats& x, bools& out))                                          isinf);
+  function("f32_fma",    ( void (*)(const floats& a, const floats& b, const floats& c, floats& out))       fma);
+  function("f32_fma",    ( void (*)(const float a, const floats& b, const floats& c, floats& out))         fma);
+  function("f32_fma",    ( void (*)(const floats& a, float b, const floats& c, floats& out))               fma);
+  function("f32_fma",    ( void (*)(const float a, const float b, const floats& c, floats& out))           fma);
+  function("f32_fma",    ( void (*)(const floats& a, const floats& b, const float c, floats& out))         fma);
+  function("f32_fma",    ( void (*)(const float a, const floats& b, const float c, floats& out))           fma);
+  function("f32_fma",    ( void (*)(const floats& a, const float b, const float c, floats& out))           fma);
+
+
 
 
 

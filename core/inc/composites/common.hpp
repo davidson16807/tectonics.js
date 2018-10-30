@@ -89,7 +89,7 @@ namespace composites
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
-			out[i] = a[i] % b[i];
+			out[i] = a[i] - b[i] * std::floor(a[i] / b[i]);
 		}
 	}
 
@@ -102,7 +102,7 @@ namespace composites
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
-			fractout[i] = a[i] % 1.;
+			fractout[i] = a[i] - std::floor(a[i]);
 			intout[i] = int(a[i]-fractout[i]);
 		}
 	}
@@ -169,7 +169,7 @@ namespace composites
 	/// Returns min(max(x, minVal), maxVal) for each component in x
 	/// using the floating-point values minVal and maxVal.
 	template <class T>
-	void clamp(const primitives<T>& a, const T lo, const T hi, const primitives<T>& out)
+	void clamp(const primitives<T>& a, const T lo, const T hi, primitives<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -177,7 +177,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void clamp(const primitives<T>& a, const T lo, const primitives<T>& hi, const primitives<T>& out)
+	void clamp(const primitives<T>& a, const T lo, const primitives<T>& hi, primitives<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -185,7 +185,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void clamp(const primitives<T>& a, const primitives<T>& lo, const T hi, const primitives<T>& out)
+	void clamp(const primitives<T>& a, const primitives<T>& lo, const T hi, primitives<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -193,7 +193,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void clamp(const primitives<T>& a, const primitives<T>& lo, const primitives<T>& hi, const primitives<T>& out)
+	void clamp(const primitives<T>& a, const primitives<T>& lo, const primitives<T>& hi, primitives<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -228,7 +228,7 @@ namespace composites
 	/// @param[in]  y Value to interpolate.
 	/// @param[in]  a Interpolant.
 	template <class T>
-	void mix(const primitives<T>& x, const primitives<T>& y, const primitives<T>& a, const primitives<T>& out)
+	void mix(const primitives<T>& x, const primitives<T>& y, const primitives<T>& a, primitives<T>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -240,7 +240,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void mix(const primitives<T>& x, const primitives<T>& y, const T a, const primitives<T>& out)
+	void mix(const primitives<T>& x, const primitives<T>& y, const T a, primitives<T>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -252,7 +252,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void mix(const primitives<T>& x, const T y, const primitives<T>& a, const primitives<T>& out)
+	void mix(const primitives<T>& x, const T y, const primitives<T>& a, primitives<T>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -264,7 +264,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void mix(const primitives<T>& x, const T y, const T a, const primitives<T>& out)
+	void mix(const primitives<T>& x, const T y, const T a, primitives<T>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -276,7 +276,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void mix(const T x, const primitives<T>& y, const primitives<T>& a, const primitives<T>& out)
+	void mix(const T x, const primitives<T>& y, const primitives<T>& a, primitives<T>& out)
 	{
 		for (unsigned int i = 0; i < y.size(); ++i)
 		{
@@ -288,19 +288,19 @@ namespace composites
 		}
 	}
 	template <class T>
-	void mix(const T x, const primitives<T>& y, const T a, const primitives<T>& out)
+	void mix(const T x, const primitives<T>& y, const T a, primitives<T>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
+		for (unsigned int i = 0; i < y.size(); ++i)
 		{
 			out[i] = x * (1.0 - a);
 		}
-		for (unsigned int i = 0; i < a.size(); ++i)
+		for (unsigned int i = 0; i < y.size(); ++i)
 		{
 			out[i] += y[i] * a;
 		}
 	}
 	template <class T>
-	void mix(const T x, const T y, const primitives<T>& a, const primitives<T>& out)
+	void mix(const T x, const T y, const primitives<T>& a, primitives<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -393,7 +393,7 @@ namespace composites
 	{
 		for (unsigned int i = 0; i < hi.size(); ++i)
 		{
-			out[i] = x <= lo? T(0) : x >= hi[i]? T(1) : ((x-lo) / (hi[i]-lo[i]));
+			out[i] = x <= lo? T(0) : x >= hi[i]? T(1) : ((x-lo) / (hi[i]-lo));
 		}
 	}
 	template<typename T>
