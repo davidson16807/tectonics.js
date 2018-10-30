@@ -61,6 +61,34 @@ namespace composites
 		}
 	}
 
+	bool all(const primitives<bool>& a)
+	{
+		bool out = true;
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out &= a[i];
+		}
+		return out;
+	}
+	bool any(const primitives<bool>& a)
+	{
+		bool out = false;
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out |= a[i];
+		}
+		return out;
+	}
+	bool none(const primitives<bool>& a)
+	{
+		bool out = false;
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out |= a[i];
+		}
+		return !out;
+	}
+
 
 	inline primitives<bool> operator~(const primitives<bool>& a)
 	{
