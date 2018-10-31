@@ -8,6 +8,8 @@ OUT=postcompiled/Rasters.js postcompiled/Shaders.js postcompiled/Academics.js
 SCRIPTS = $(shell find precompiled/ -type f -name '*.js')
 SHADERS = $(shell find precompiled/ -type f -name '*.glsl.c')
 
+SRC=core/src/Rasters.cpp
+INC:=$(shell find core/inc/ -name "*.hpp") 
 OUT=postcompiled/utils/Rasters.cpp.js postcompiled/utils/Rasters.js postcompiled/view/FragmentShaders.js postcompiled/view/VertexShaders.js
 
 all: $(OUT)
@@ -16,7 +18,7 @@ postcompiled/Rasters.js : precompiled/rasters/Rasters.js $(SCRIPTS) Makefile
 run:
 	emrun --browser chrome postcompiled/utils/Rasters.cpp.html
 
-postcompiled/utils/Rasters.cpp.js:
+postcompiled/utils/Rasters.cpp.js : $(INC) $(SRC)
 	em++ --emrun --bind --profiling-funcs -std=c++17 \
 	-I core/inc/ \
 	-g core/src/Rasters.cpp \
