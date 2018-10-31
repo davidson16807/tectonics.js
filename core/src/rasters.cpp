@@ -68,7 +68,7 @@ EMSCRIPTEN_BINDINGS(rasters)
   function("bools_intersect_bools",   (void (*)(const bools& a, const bools& b, bools& out))    intersect );
   function("bools_differ_bool",       (void (*)(const bools& a, const bool b, bools& out))      differ    );
   function("bools_differ_bools",      (void (*)(const bools& a, const bools& b, bools& out))    differ    );
-  function("bools_negate",           (void (*)(const bools& a, bools& out))                    negate    );
+  function("bools_negate",            (void (*)(const bools& a, bools& out))                    negate    );
 
   function("bools_all",       (bool (*)(const primitives<bool>& a)) all  );
   function("bools_any",       (bool (*)(const primitives<bool>& a)) any  );
@@ -499,6 +499,164 @@ EMSCRIPTEN_BINDINGS(rasters)
 
 
 
+  function("vec2s_add_vec2s",  (void (*)(const vec2s&, const vec2s&, vec2s&))  add  );
+  function("vec2s_add_floats", (void (*)(const vec2s&, const floats&, vec2s&)) add  );
+  function("vec2s_add_vec2",   (void (*)(const vec2s&, const vec2, vec2s&))    add  );
+  function("vec2s_add_float",  (void (*)(const vec2s&, const float, vec2s&))   add  );
+  function("vec2s_sub_vec2s",  (void (*)(const vec2s&, const vec2s&, vec2s&))  sub  );
+  function("vec2s_sub_floats", (void (*)(const vec2s&, const floats&, vec2s&)) sub  );
+  function("vec2s_sub_vec2",   (void (*)(const vec2s&, const vec2, vec2s&))    sub  );
+  function("vec2s_sub_float",  (void (*)(const vec2s&, const float, vec2s&))   sub  );
+  function("vec2s_mult_vec2s", (void (*)(const vec2s&, const vec2s&, vec2s&))  mult );
+  function("vec2s_mult_floats",(void (*)(const vec2s&, const floats&, vec2s&)) mult );
+  function("vec2s_mult_vec2",  (void (*)(const vec2s&, const vec2, vec2s&))    mult );
+  function("vec2s_mult_float", (void (*)(const vec2s&, const float, vec2s&))   mult );
+  function("vec2s_div_vec2s",  (void (*)(const vec2s&, const vec2s&, vec2s&))  div  );
+  function("vec2s_div_floats", (void (*)(const vec2s&, const floats&, vec2s&)) div  );
+  function("vec2s_div_vec2",   (void (*)(const vec2s&, const vec2, vec2s&))    div  );
+  function("vec2s_div_float",  (void (*)(const vec2s&, const float, vec2s&))   div  );
+
+  function("vec2s_mult_mat3",   (void (*)(const vec2s&, const mat2&, vec2s&))    mult );
+
+  function("vec2s_get_id",      (vec2 (*)(const vec2s& a, const unsigned int id ))             get      );
+  function("vec2s_get_ids",     (void (*)(const vec2s& a, const uints& ids, vec2s& out ))      get      );
+  function("vec2s_get_mask",    (void (*)(const vec2s& a, const bools& mask, vec2s& out ))     get      );
+  function("vec2s_fill",        (void (*)(vec2s& out, const vec2 a ))                          fill     );
+  function("vec2s_fill_ids",    (void (*)(vec2s& out, const uints& ids, const vec2 a ))        fill     );
+  function("vec2s_fill_mask",   (void (*)(vec2s& out, const bools& mask, const vec2 a ))       fill     );
+  function("vec2s_copy",        (void (*)(vec2s& out, const vec2s& a ))                        copy     );
+  function("vec2s_copy_mask",   (void (*)(vec2s& out, const bools& mask, const vec2s& a ))     copy     );
+  function("vec2s_copy_id",     (void (*)(vec2s& out, const unsigned int id, const vec2s& a )) copy     );
+  function("vec2s_copy_ids",    (void (*)(vec2s& out, const uints& ids, const vec2s& a ))      copy     );
+  function("vec2s_set_id",      (void (*)(vec2s& out, const unsigned int id, const vec2 a ))   set      );
+  function("vec2s_set_ids",     (void (*)(vec2s& out, const uints& ids, const vec2s& a ))      set      );
+
+  function("vec2s_equal_vec2",        (bool (*)(const vec2s& a, const vec2 b))                 equal    );
+  function("vec2s_notEqual_vec2",     (bool (*)(const vec2s& a, const vec2 b))                 notEqual );
+  function("vec2s_equal_vec2s",       (bool (*)(const vec2s& a, const vec2s& b))               equal    );
+  function("vec2s_notEqual_vec2s",    (bool (*)(const vec2s& a, const vec2s& b))               notEqual );
+  function("vec2s_compEqual_vec2",    (void (*)(const vec2s& a, const vec2 b, bools& out))     equal    );
+  function("vec2s_compNotEqual_vec2", (void (*)(const vec2s& a, const vec2 b, bools& out))     notEqual );
+  function("vec2s_compEqual_vec2s",   (void (*)(const vec2s& a, const vec2s& b, bools& out))   equal    );
+  function("vec2s_compNotEqual_vec2s",(void (*)(const vec2s& a, const vec2s& b, bools& out))   notEqual );
+
+  // function("vec2s_greaterThan_float",      (void (*)(const vec2s& a, const float b, bvec2s& out))       greaterThan      );
+  // function("vec2s_greaterThanEqual_float", (void (*)(const vec2s& a, const float b, bvec2s& out))       greaterThanEqual );
+  // function("vec2s_lessThan_float",         (void (*)(const vec2s& a, const float b, bvec2s& out))       lessThan         );
+  // function("vec2s_lessThanEqual_float",    (void (*)(const vec2s& a, const float b, bvec2s& out))       lessThanEqual    );
+  // function("vec2s_greaterThan_floats",     (void (*)(const vec2s& a, const floats& b, bvec2s& out))     greaterThan      );
+  // function("vec2s_greaterThanEqual_floats",(void (*)(const vec2s& a, const floats& b, bvec2s& out))     greaterThanEqual );
+  // function("vec2s_lessThan_floats",        (void (*)(const vec2s& a, const floats& b, bvec2s& out))     lessThan         );
+  // function("vec2s_lessThanEqual_floats",   (void (*)(const vec2s& a, const floats& b, bvec2s& out))     lessThanEqual    );
+
+  function("vec2s_greaterThan_vec2",      (void (*)(const vec2s& a, const vec2 b, bvec2s& out))      greaterThan      );
+  function("vec2s_greaterThanEqual_vec2", (void (*)(const vec2s& a, const vec2 b, bvec2s& out))      greaterThanEqual );
+  function("vec2s_lessThan_vec2",         (void (*)(const vec2s& a, const vec2 b, bvec2s& out))      lessThan         );
+  function("vec2s_lessThanEqual_vec2",    (void (*)(const vec2s& a, const vec2 b, bvec2s& out))      lessThanEqual    );
+  function("vec2s_greaterThan_vec2s",     (void (*)(const vec2s& a, const vec2s& b, bvec2s& out))    greaterThan      );
+  function("vec2s_greaterThanEqual_vec2s",(void (*)(const vec2s& a, const vec2s& b, bvec2s& out))    greaterThanEqual );
+  function("vec2s_lessThan_vec2s",        (void (*)(const vec2s& a, const vec2s& b, bvec2s& out))    lessThan         );
+  function("vec2s_lessThanEqual_vec2s",   (void (*)(const vec2s& a, const vec2s& b, bvec2s& out))    lessThanEqual    );
+
+  function("vec2s_abs",    ( void (*)(const vec2s& a, vec2s& out))    abs                                               );
+  function("vec2s_sign",   ( void (*)(const vec2s& a, vec2s& out))    sign                                              );
+  function("vec2s_floor",  ( void (*)(const vec2s& a, vec2s& out))    floor                                             );
+  function("vec2s_trunc",  ( void (*)(const vec2s& a, vec2s& out))    trunc                                             );
+  function("vec2s_round",  ( void (*)(const vec2s& a, vec2s& out))    round                                             );
+  function("vec2s_ceil",   ( void (*)(const vec2s& a, vec2s& out))    ceil                                              );
+  function("vec2s_fract",  ( void (*)(const vec2s& a, vec2s& out))    fract                                             );
+
+  // function("vec2s_mod",    ( void (*)(const vec2s& a, const vec2s& b, vec2s& out))     mod                          );
+  // function("vec2s_modf",   ( void (*)(const vec2s& a, ints& intout, vec2s& fractout))  modf                         );
+  function("vec2s_min_vec2s",    ( void (*)(const vec2s& a, const vec2s& b, vec2s& out))   min                       );
+  function("vec2s_max_vec2s",    ( void (*)(const vec2s& a, const vec2s& b, vec2s& out))   max                       );
+
+  function("vec2s_min_vec2",    ( void (*)(const vec2s& a, const vec2 b, vec2s& out))     min                        );
+  function("vec2s_max_vec2",    ( void (*)(const vec2s& a, const vec2 b, vec2s& out))     max                        );
+
+  function("vec2s_min",    ( vec2(*)(const vec2s& a))                                       min                        );
+  function("vec2s_max",    ( vec2(*)(const vec2s& a))                                       max                        );
+
+  function("vec2s_clamp_11",  ( void (*)(const vec2s& a, const vec2 lo, const vec2 hi, vec2s& out))          clamp     );
+  function("vec2s_clamp_1m",  ( void (*)(const vec2s& a, const vec2 lo, const vec2s& hi, vec2s& out))        clamp     );
+  function("vec2s_clamp_m1",  ( void (*)(const vec2s& a, const vec2s& lo, const vec2 hi, vec2s& out))        clamp     );
+  function("vec2s_clamp_mm",  ( void (*)(const vec2s& a, const vec2s& lo, const vec2s& hi, vec2s& out))      clamp     );
+
+  function("vec2s_mix_float_mmm",  ( void (*)(const vec2s& x, const vec2s& y, const floats& a, vec2s& out)) mix       );
+  function("vec2s_mix_float_mm1",  ( void (*)(const vec2s& x, const vec2s& y, const float a, vec2s& out))   mix       );
+  function("vec2s_mix_float_m1m",  ( void (*)(const vec2s& x, const vec2 y, const floats& a, vec2s& out))   mix       );
+  function("vec2s_mix_float_m11",  ( void (*)(const vec2s& x, const vec2 y, const float a, vec2s& out))     mix       );
+  function("vec2s_mix_float_1mm",  ( void (*)(const vec2 x, const vec2s& y, const floats& a, vec2s& out))   mix       );
+  function("vec2s_mix_float_1m1",  ( void (*)(const vec2 x, const vec2s& y, const float a, vec2s& out))     mix       );
+  function("vec2s_mix_float_11m",  ( void (*)(const vec2 x, const vec2 y, const floats& a, vec2s& out))     mix       );
+
+  function("vec2s_mix_vec2_mmm",    ( void (*)(const vec2s& x, const vec2s& y, const vec2s& a, vec2s& out))     mix         );
+  function("vec2s_mix_vec2_mm1",    ( void (*)(const vec2s& x, const vec2s& y, const vec2 a, vec2s& out))       mix         );
+  function("vec2s_mix_vec2_m1m",    ( void (*)(const vec2s& x, const vec2 y, const vec2s& a, vec2s& out))       mix         );
+  function("vec2s_mix_vec2_m11",    ( void (*)(const vec2s& x, const vec2 y, const vec2 a, vec2s& out))         mix         );
+  function("vec2s_mix_vec2_1mm",    ( void (*)(const vec2 x, const vec2s& y, const vec2s& a, vec2s& out))       mix         );
+  function("vec2s_mix_vec2_1m1",    ( void (*)(const vec2 x, const vec2s& y, const vec2 a, vec2s& out))         mix         );
+  function("vec2s_mix_vec2_11m",    ( void (*)(const vec2 x, const vec2 y, const vec2s& a, vec2s& out))         mix         );
+
+  function("vec2s_step_mm",   ( void (*)(const vec2s& edge, const vec2s& x, vec2s& out))                       step        );
+  function("vec2s_step_m1",   ( void (*)(const vec2s& edge, const vec2 x, vec2s& out))                         step        );
+  function("vec2s_step_1m",   ( void (*)(const vec2 edge, const vec2s& x, vec2s& out))                         step        );
+
+  function("vec2s_smoothstep_mmm",  ( void (*)(const vec2s& lo, const vec2s& hi, const vec2s& x, vec2s& out))  smoothstep  );
+  function("vec2s_smoothstep_1mm",  ( void (*)(const vec2 lo, const vec2s& hi, const vec2s& x, vec2s& out))    smoothstep  );
+  function("vec2s_smoothstep_m1m",  ( void (*)(const vec2s& lo, vec2 hi, const vec2s& x, vec2s& out))          smoothstep  );
+  function("vec2s_smoothstep_11m",  ( void (*)(const vec2 lo, const vec2 hi, const vec2s& x, vec2s& out))      smoothstep  );
+  function("vec2s_smoothstep_mm1",  ( void (*)(const vec2s& lo, const vec2s& hi, const vec2 x, vec2s& out))    smoothstep  );
+  function("vec2s_smoothstep_1m1",  ( void (*)(const vec2 lo, const vec2s& hi, const vec2 x, vec2s& out))      smoothstep  );
+  function("vec2s_smoothstep_m11",  ( void (*)(const vec2s& lo, const vec2 hi, const vec2 x, vec2s& out))      smoothstep  );
+  // function("vec2s_isnan",  ( void (*)(const vec2s& x, bools& out))                                          isnan       );
+  // function("vec2s_isinf",  ( void (*)(const vec2s& x, bools& out))                                          isinf       );
+  function("vec2s_fma_mmm",    ( void (*)(const vec2s& a, const vec2s& b, const vec2s& c, vec2s& out))         fma         );
+  function("vec2s_fma_1mm",    ( void (*)(const vec2 a, const vec2s& b, const vec2s& c, vec2s& out))           fma         );
+  function("vec2s_fma_m1m",    ( void (*)(const vec2s& a, vec2 b, const vec2s& c, vec2s& out))                 fma         );
+  function("vec2s_fma_11m",    ( void (*)(const vec2 a, const vec2 b, const vec2s& c, vec2s& out))             fma         );
+  function("vec2s_fma_mm1",    ( void (*)(const vec2s& a, const vec2s& b, const vec2 c, vec2s& out))           fma         );
+  function("vec2s_fma_1m1",    ( void (*)(const vec2 a, const vec2s& b, const vec2 c, vec2s& out))             fma         );
+  function("vec2s_fma_m11",    ( void (*)(const vec2s& a, const vec2 b, const vec2 c, vec2s& out))             fma         );
+
+  // function("vec2s_pow",         (void (*)(const vec2s& base, const vec2s& exponent, vec2s& out)) pow                  );
+  // function("vec2s_exp",         (void (*)(const vec2s& a, vec2s& out))                           exp                  );
+  // function("vec2s_log",         (void (*)(const vec2s& a, vec2s& out))                           log                  );
+  // function("vec2s_exp2",        (void (*)(const vec2s& a, vec2s& out))                           exp2                 );
+  // function("vec2s_log2",        (void (*)(const vec2s& a, vec2s& out))                           log2                 );
+  // function("vec2s_sqrt",        (void (*)(const vec2s& a, vec2s& out))                           sqrt                 );
+  // function("vec2s_inversesqrt", (void (*)(const vec2s& a, vec2s& out))                           inversesqrt          );
+
+  // function("vec2s_min_id",    (unsigned int (*)(const vec2s& a))                                 min_id               );
+  // function("vec2s_max_id",    (unsigned int (*)(const vec2s& a))                                 max_id               );
+  function("vec2s_sum",       (vec2 (*)(const vec2s& a))                                            sum                  );
+  function("vec2s_mean",      (vec2 (*)(const vec2s& a))                                            mean                 );
+  // function("vec2s_median",    (vec2 (*)(const vec2s& a))                                         median               );
+  // function("vec2s_mode",      (vec2 (*)(const vec2s& a))                                         mode                 );
+  function("vec2s_weighted_average", (vec2 (*)(const vec2s& a, const floats& weights))              weighted_average     );
+  function("vec2s_rescale",   (void (*)(const vec2s& a, vec2s& out, vec2 min_new, vec2 max_new))    rescale              );
+
+  function("vec2s_dot_vec2",        (void (*)(const vec2s& u, const vec2 v, floats& out))   dot       );
+  function("vec2s_cross_vec2",      (void (*)(const vec2s& u, const vec2 v, floats& out))    cross     );
+  function("vec2s_distance_vec2",   (void (*)(const vec2s& u, const vec2 v, floats& out))   distance  );
+  function("vec2s_dot_vec2s",       (void (*)(const vec2s& u, const vec2s& v, floats& out)) dot       );
+  function("vec2s_cross_vec2s",     (void (*)(const vec2s& u, const vec2s& v, floats& out))  cross     );
+  function("vec2s_distance_vec2s",  (void (*)(const vec2s& u, const vec2s& v, floats& out)) distance  );
+
+  function("vec2s_length",     (void (*)(const vec2s& u, floats& out))  length      );
+  function("vec2s_normalize",  (void (*)(const vec2s& u, vec2s& out))   normalize   );
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -642,15 +800,171 @@ EMSCRIPTEN_BINDINGS(rasters)
 
   function("vec3s_dot_vec3",        (void (*)(const vec3s& u, const vec3 v, floats& out))   dot       );
   function("vec3s_cross_vec3",      (void (*)(const vec3s& u, const vec3 v, vec3s& out))    cross     );
-  function("vec3s_mult_vec3",       (void (*)(const vec3s& u, const vec3 v, vec3s& out))    mult      );
   function("vec3s_distance_vec3",   (void (*)(const vec3s& u, const vec3 v, floats& out))   distance  );
   function("vec3s_dot_vec3s",       (void (*)(const vec3s& u, const vec3s& v, floats& out)) dot       );
   function("vec3s_cross_vec3s",     (void (*)(const vec3s& u, const vec3s& v, vec3s& out))  cross     );
-  function("vec3s_mult_vec3s",      (void (*)(const vec3s& u, const vec3s& v, vec3s& out))  mult      );
   function("vec3s_distance_vec3s",  (void (*)(const vec3s& u, const vec3s& v, floats& out)) distance  );
 
   function("vec3s_length",     (void (*)(const vec3s& u, floats& out))  length      );
   function("vec3s_normalize",  (void (*)(const vec3s& u, vec3s& out))   normalize   );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  function("vec4s_add_vec4s",  (void (*)(const vec4s&, const vec4s&, vec4s&))  add  );
+  function("vec4s_add_floats", (void (*)(const vec4s&, const floats&, vec4s&)) add  );
+  function("vec4s_add_vec4",   (void (*)(const vec4s&, const vec4, vec4s&))    add  );
+  function("vec4s_add_float",  (void (*)(const vec4s&, const float, vec4s&))   add  );
+  function("vec4s_sub_vec4s",  (void (*)(const vec4s&, const vec4s&, vec4s&))  sub  );
+  function("vec4s_sub_floats", (void (*)(const vec4s&, const floats&, vec4s&)) sub  );
+  function("vec4s_sub_vec4",   (void (*)(const vec4s&, const vec4, vec4s&))    sub  );
+  function("vec4s_sub_float",  (void (*)(const vec4s&, const float, vec4s&))   sub  );
+  function("vec4s_mult_vec4s", (void (*)(const vec4s&, const vec4s&, vec4s&))  mult );
+  function("vec4s_mult_floats",(void (*)(const vec4s&, const floats&, vec4s&)) mult );
+  function("vec4s_mult_vec4",  (void (*)(const vec4s&, const vec4, vec4s&))    mult );
+  function("vec4s_mult_float", (void (*)(const vec4s&, const float, vec4s&))   mult );
+  function("vec4s_div_vec4s",  (void (*)(const vec4s&, const vec4s&, vec4s&))  div  );
+  function("vec4s_div_floats", (void (*)(const vec4s&, const floats&, vec4s&)) div  );
+  function("vec4s_div_vec4",   (void (*)(const vec4s&, const vec4, vec4s&))    div  );
+  function("vec4s_div_float",  (void (*)(const vec4s&, const float, vec4s&))   div  );
+
+  function("vec4s_mult_mat3",   (void (*)(const vec4s&, const mat4&, vec4s&))    mult );
+
+  function("vec4s_get_id",      (vec4 (*)(const vec4s& a, const unsigned int id ))             get      );
+  function("vec4s_get_ids",     (void (*)(const vec4s& a, const uints& ids, vec4s& out ))      get      );
+  function("vec4s_get_mask",    (void (*)(const vec4s& a, const bools& mask, vec4s& out ))     get      );
+  function("vec4s_fill",        (void (*)(vec4s& out, const vec4 a ))                          fill     );
+  function("vec4s_fill_ids",    (void (*)(vec4s& out, const uints& ids, const vec4 a ))        fill     );
+  function("vec4s_fill_mask",   (void (*)(vec4s& out, const bools& mask, const vec4 a ))       fill     );
+  function("vec4s_copy",        (void (*)(vec4s& out, const vec4s& a ))                        copy     );
+  function("vec4s_copy_mask",   (void (*)(vec4s& out, const bools& mask, const vec4s& a ))     copy     );
+  function("vec4s_copy_id",     (void (*)(vec4s& out, const unsigned int id, const vec4s& a )) copy     );
+  function("vec4s_copy_ids",    (void (*)(vec4s& out, const uints& ids, const vec4s& a ))      copy     );
+  function("vec4s_set_id",      (void (*)(vec4s& out, const unsigned int id, const vec4 a ))   set      );
+  function("vec4s_set_ids",     (void (*)(vec4s& out, const uints& ids, const vec4s& a ))      set      );
+
+  function("vec4s_equal_vec4",        (bool (*)(const vec4s& a, const vec4 b))                 equal    );
+  function("vec4s_notEqual_vec4",     (bool (*)(const vec4s& a, const vec4 b))                 notEqual );
+  function("vec4s_equal_vec4s",       (bool (*)(const vec4s& a, const vec4s& b))               equal    );
+  function("vec4s_notEqual_vec4s",    (bool (*)(const vec4s& a, const vec4s& b))               notEqual );
+  function("vec4s_compEqual_vec4",    (void (*)(const vec4s& a, const vec4 b, bools& out))     equal    );
+  function("vec4s_compNotEqual_vec4", (void (*)(const vec4s& a, const vec4 b, bools& out))     notEqual );
+  function("vec4s_compEqual_vec4s",   (void (*)(const vec4s& a, const vec4s& b, bools& out))   equal    );
+  function("vec4s_compNotEqual_vec4s",(void (*)(const vec4s& a, const vec4s& b, bools& out))   notEqual );
+
+  // function("vec4s_greaterThan_float",      (void (*)(const vec4s& a, const float b, bvec4s& out))       greaterThan      );
+  // function("vec4s_greaterThanEqual_float", (void (*)(const vec4s& a, const float b, bvec4s& out))       greaterThanEqual );
+  // function("vec4s_lessThan_float",         (void (*)(const vec4s& a, const float b, bvec4s& out))       lessThan         );
+  // function("vec4s_lessThanEqual_float",    (void (*)(const vec4s& a, const float b, bvec4s& out))       lessThanEqual    );
+  // function("vec4s_greaterThan_floats",     (void (*)(const vec4s& a, const floats& b, bvec4s& out))     greaterThan      );
+  // function("vec4s_greaterThanEqual_floats",(void (*)(const vec4s& a, const floats& b, bvec4s& out))     greaterThanEqual );
+  // function("vec4s_lessThan_floats",        (void (*)(const vec4s& a, const floats& b, bvec4s& out))     lessThan         );
+  // function("vec4s_lessThanEqual_floats",   (void (*)(const vec4s& a, const floats& b, bvec4s& out))     lessThanEqual    );
+
+  function("vec4s_greaterThan_vec4",      (void (*)(const vec4s& a, const vec4 b, bvec4s& out))      greaterThan      );
+  function("vec4s_greaterThanEqual_vec4", (void (*)(const vec4s& a, const vec4 b, bvec4s& out))      greaterThanEqual );
+  function("vec4s_lessThan_vec4",         (void (*)(const vec4s& a, const vec4 b, bvec4s& out))      lessThan         );
+  function("vec4s_lessThanEqual_vec4",    (void (*)(const vec4s& a, const vec4 b, bvec4s& out))      lessThanEqual    );
+  function("vec4s_greaterThan_vec4s",     (void (*)(const vec4s& a, const vec4s& b, bvec4s& out))    greaterThan      );
+  function("vec4s_greaterThanEqual_vec4s",(void (*)(const vec4s& a, const vec4s& b, bvec4s& out))    greaterThanEqual );
+  function("vec4s_lessThan_vec4s",        (void (*)(const vec4s& a, const vec4s& b, bvec4s& out))    lessThan         );
+  function("vec4s_lessThanEqual_vec4s",   (void (*)(const vec4s& a, const vec4s& b, bvec4s& out))    lessThanEqual    );
+
+  function("vec4s_abs",    ( void (*)(const vec4s& a, vec4s& out))    abs                                               );
+  function("vec4s_sign",   ( void (*)(const vec4s& a, vec4s& out))    sign                                              );
+  function("vec4s_floor",  ( void (*)(const vec4s& a, vec4s& out))    floor                                             );
+  function("vec4s_trunc",  ( void (*)(const vec4s& a, vec4s& out))    trunc                                             );
+  function("vec4s_round",  ( void (*)(const vec4s& a, vec4s& out))    round                                             );
+  function("vec4s_ceil",   ( void (*)(const vec4s& a, vec4s& out))    ceil                                              );
+  function("vec4s_fract",  ( void (*)(const vec4s& a, vec4s& out))    fract                                             );
+
+  // function("vec4s_mod",    ( void (*)(const vec4s& a, const vec4s& b, vec4s& out))     mod                          );
+  // function("vec4s_modf",   ( void (*)(const vec4s& a, ints& intout, vec4s& fractout))  modf                         );
+  function("vec4s_min_vec4s",    ( void (*)(const vec4s& a, const vec4s& b, vec4s& out))   min                       );
+  function("vec4s_max_vec4s",    ( void (*)(const vec4s& a, const vec4s& b, vec4s& out))   max                       );
+
+  function("vec4s_min_vec4",    ( void (*)(const vec4s& a, const vec4 b, vec4s& out))     min                        );
+  function("vec4s_max_vec4",    ( void (*)(const vec4s& a, const vec4 b, vec4s& out))     max                        );
+
+  function("vec4s_min",    ( vec4(*)(const vec4s& a))                                       min                        );
+  function("vec4s_max",    ( vec4(*)(const vec4s& a))                                       max                        );
+
+  function("vec4s_clamp_11",  ( void (*)(const vec4s& a, const vec4 lo, const vec4 hi, vec4s& out))          clamp     );
+  function("vec4s_clamp_1m",  ( void (*)(const vec4s& a, const vec4 lo, const vec4s& hi, vec4s& out))        clamp     );
+  function("vec4s_clamp_m1",  ( void (*)(const vec4s& a, const vec4s& lo, const vec4 hi, vec4s& out))        clamp     );
+  function("vec4s_clamp_mm",  ( void (*)(const vec4s& a, const vec4s& lo, const vec4s& hi, vec4s& out))      clamp     );
+
+  function("vec4s_mix_float_mmm",  ( void (*)(const vec4s& x, const vec4s& y, const floats& a, vec4s& out)) mix       );
+  function("vec4s_mix_float_mm1",  ( void (*)(const vec4s& x, const vec4s& y, const float a, vec4s& out))   mix       );
+  function("vec4s_mix_float_m1m",  ( void (*)(const vec4s& x, const vec4 y, const floats& a, vec4s& out))   mix       );
+  function("vec4s_mix_float_m11",  ( void (*)(const vec4s& x, const vec4 y, const float a, vec4s& out))     mix       );
+  function("vec4s_mix_float_1mm",  ( void (*)(const vec4 x, const vec4s& y, const floats& a, vec4s& out))   mix       );
+  function("vec4s_mix_float_1m1",  ( void (*)(const vec4 x, const vec4s& y, const float a, vec4s& out))     mix       );
+  function("vec4s_mix_float_11m",  ( void (*)(const vec4 x, const vec4 y, const floats& a, vec4s& out))     mix       );
+
+  function("vec4s_mix_vec4_mmm",    ( void (*)(const vec4s& x, const vec4s& y, const vec4s& a, vec4s& out))     mix         );
+  function("vec4s_mix_vec4_mm1",    ( void (*)(const vec4s& x, const vec4s& y, const vec4 a, vec4s& out))       mix         );
+  function("vec4s_mix_vec4_m1m",    ( void (*)(const vec4s& x, const vec4 y, const vec4s& a, vec4s& out))       mix         );
+  function("vec4s_mix_vec4_m11",    ( void (*)(const vec4s& x, const vec4 y, const vec4 a, vec4s& out))         mix         );
+  function("vec4s_mix_vec4_1mm",    ( void (*)(const vec4 x, const vec4s& y, const vec4s& a, vec4s& out))       mix         );
+  function("vec4s_mix_vec4_1m1",    ( void (*)(const vec4 x, const vec4s& y, const vec4 a, vec4s& out))         mix         );
+  function("vec4s_mix_vec4_11m",    ( void (*)(const vec4 x, const vec4 y, const vec4s& a, vec4s& out))         mix         );
+
+  function("vec4s_step_mm",   ( void (*)(const vec4s& edge, const vec4s& x, vec4s& out))                       step        );
+  function("vec4s_step_m1",   ( void (*)(const vec4s& edge, const vec4 x, vec4s& out))                         step        );
+  function("vec4s_step_1m",   ( void (*)(const vec4 edge, const vec4s& x, vec4s& out))                         step        );
+
+  function("vec4s_smoothstep_mmm",  ( void (*)(const vec4s& lo, const vec4s& hi, const vec4s& x, vec4s& out))  smoothstep  );
+  function("vec4s_smoothstep_1mm",  ( void (*)(const vec4 lo, const vec4s& hi, const vec4s& x, vec4s& out))    smoothstep  );
+  function("vec4s_smoothstep_m1m",  ( void (*)(const vec4s& lo, vec4 hi, const vec4s& x, vec4s& out))          smoothstep  );
+  function("vec4s_smoothstep_11m",  ( void (*)(const vec4 lo, const vec4 hi, const vec4s& x, vec4s& out))      smoothstep  );
+  function("vec4s_smoothstep_mm1",  ( void (*)(const vec4s& lo, const vec4s& hi, const vec4 x, vec4s& out))    smoothstep  );
+  function("vec4s_smoothstep_1m1",  ( void (*)(const vec4 lo, const vec4s& hi, const vec4 x, vec4s& out))      smoothstep  );
+  function("vec4s_smoothstep_m11",  ( void (*)(const vec4s& lo, const vec4 hi, const vec4 x, vec4s& out))      smoothstep  );
+  // function("vec4s_isnan",  ( void (*)(const vec4s& x, bools& out))                                          isnan       );
+  // function("vec4s_isinf",  ( void (*)(const vec4s& x, bools& out))                                          isinf       );
+  function("vec4s_fma_mmm",    ( void (*)(const vec4s& a, const vec4s& b, const vec4s& c, vec4s& out))         fma         );
+  function("vec4s_fma_1mm",    ( void (*)(const vec4 a, const vec4s& b, const vec4s& c, vec4s& out))           fma         );
+  function("vec4s_fma_m1m",    ( void (*)(const vec4s& a, vec4 b, const vec4s& c, vec4s& out))                 fma         );
+  function("vec4s_fma_11m",    ( void (*)(const vec4 a, const vec4 b, const vec4s& c, vec4s& out))             fma         );
+  function("vec4s_fma_mm1",    ( void (*)(const vec4s& a, const vec4s& b, const vec4 c, vec4s& out))           fma         );
+  function("vec4s_fma_1m1",    ( void (*)(const vec4 a, const vec4s& b, const vec4 c, vec4s& out))             fma         );
+  function("vec4s_fma_m11",    ( void (*)(const vec4s& a, const vec4 b, const vec4 c, vec4s& out))             fma         );
+
+  // function("vec4s_pow",         (void (*)(const vec4s& base, const vec4s& exponent, vec4s& out)) pow                  );
+  // function("vec4s_exp",         (void (*)(const vec4s& a, vec4s& out))                           exp                  );
+  // function("vec4s_log",         (void (*)(const vec4s& a, vec4s& out))                           log                  );
+  // function("vec4s_exp2",        (void (*)(const vec4s& a, vec4s& out))                           exp2                 );
+  // function("vec4s_log2",        (void (*)(const vec4s& a, vec4s& out))                           log2                 );
+  // function("vec4s_sqrt",        (void (*)(const vec4s& a, vec4s& out))                           sqrt                 );
+  // function("vec4s_inversesqrt", (void (*)(const vec4s& a, vec4s& out))                           inversesqrt          );
+
+  // function("vec4s_min_id",    (unsigned int (*)(const vec4s& a))                                 min_id               );
+  // function("vec4s_max_id",    (unsigned int (*)(const vec4s& a))                                 max_id               );
+  function("vec4s_sum",       (vec4 (*)(const vec4s& a))                                            sum                  );
+  function("vec4s_mean",      (vec4 (*)(const vec4s& a))                                            mean                 );
+  // function("vec4s_median",    (vec4 (*)(const vec4s& a))                                         median               );
+  // function("vec4s_mode",      (vec4 (*)(const vec4s& a))                                         mode                 );
+  function("vec4s_weighted_average", (vec4 (*)(const vec4s& a, const floats& weights))              weighted_average     );
+  function("vec4s_rescale",   (void (*)(const vec4s& a, vec4s& out, vec4 min_new, vec4 max_new))    rescale              );
+
+  function("vec4s_dot_vec4",        (void (*)(const vec4s& u, const vec4 v, floats& out))   dot       );
+  function("vec4s_distance_vec4",   (void (*)(const vec4s& u, const vec4 v, floats& out))   distance  );
+  function("vec4s_dot_vec4s",       (void (*)(const vec4s& u, const vec4s& v, floats& out)) dot       );
+  function("vec4s_distance_vec4s",  (void (*)(const vec4s& u, const vec4s& v, floats& out)) distance  );
+
+  function("vec4s_length",     (void (*)(const vec4s& u, floats& out))  length      );
+  function("vec4s_normalize",  (void (*)(const vec4s& u, vec4s& out))   normalize   );
 
 
 

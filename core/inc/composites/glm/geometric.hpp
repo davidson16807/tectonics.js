@@ -10,6 +10,17 @@ namespace composites
 {
 	using namespace glm;
 
+
+	template<typename T, qualifier Q>
+	float cross(const vec<2,T,Q>& a, const vec<2,T,Q>& b)
+	{
+		return a.x*b.y - b.x*a.y;
+	}
+
+
+
+
+
 	template<length_t L, typename T, qualifier Q>
 	void dot (const primitives<vec<L,T,Q>>& u, const vec<L,T,Q> v, primitives<T>& out) {
 		for (unsigned int i = 0; i < u.size(); ++i)
@@ -17,8 +28,16 @@ namespace composites
 			out[i] = dot(u[i], v);
 		}
 	}
-	template<length_t L, typename T, qualifier Q>
-	void cross (const primitives<vec<L,T,Q>>& u, const vec<L,T,Q> v, primitives<vec<L,T,Q>>& out) 
+	template<typename T, qualifier Q>
+	void cross (const primitives<vec<3,T,Q>>& u, const vec<3,T,Q> v, primitives<vec<3,T,Q>>& out) 
+	{
+		for (unsigned int i = 0; i < u.size(); ++i)
+		{
+			out[i] = cross(u[i], v);
+		}
+	}
+	template<typename T, qualifier Q>
+	void cross (const primitives<vec<2,T,Q>>& u, const vec<2,T,Q> v, primitives<float>& out) 
 	{
 		for (unsigned int i = 0; i < u.size(); ++i)
 		{
@@ -50,8 +69,16 @@ namespace composites
 			out[i] = dot(u[i], v[i]);
 		}
 	}
-	template<length_t L, typename T, qualifier Q>
-	void cross (const primitives<vec<L,T,Q>>& u, const primitives<vec<L,T,Q>>& v, primitives<vec<L,T,Q>>& out) 
+	template<typename T, qualifier Q>
+	void cross (const primitives<vec<3,T,Q>>& u, const primitives<vec<3,T,Q>>& v, primitives<vec<3,T,Q>>& out) 
+	{
+		for (unsigned int i = 0; i < u.size(); ++i)
+		{
+			out[i] = cross(u[i], v[i]);
+		}
+	}
+	template<typename T, qualifier Q>
+	void cross (const primitives<vec<2,T,Q>>& u, const primitives<vec<2,T,Q>>& v, primitives<float>& out) 
 	{
 		for (unsigned int i = 0; i < u.size(); ++i)
 		{
@@ -107,10 +134,17 @@ namespace composites
 		dot(u, v, out);
 		return out;
 	}
-	template<length_t L, typename T, qualifier Q>
-	inline primitives<vec<L,T,Q>> cross (const primitives<vec<L,T,Q>>& u, const vec<L,T,Q> v ) 
+	template<typename T, qualifier Q>
+	inline primitives<vec<3,T,Q>> cross (const primitives<vec<3,T,Q>>& u, const vec<3,T,Q> v ) 
 	{
-		primitives<vec<L,T,Q>> out = primitives<vec<L,T,Q>>(u.size());
+		primitives<vec<3,T,Q>> out = primitives<vec<3,T,Q>>(u.size());
+		cross(u, v, out);
+		return out;
+	}
+	template<typename T, qualifier Q>
+	inline primitives<float> cross (const primitives<vec<2,T,Q>>& u, const vec<2,T,Q> v ) 
+	{
+		primitives<float> out = primitives<float>(u.size());
 		cross(u, v, out);
 		return out;
 	}
