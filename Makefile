@@ -17,6 +17,8 @@ all: $(OUT)
 postcompiled/Rasters.js : precompiled/rasters/Rasters.js $(SCRIPTS) Makefile
 run:
 	emrun --browser chrome postcompiled/utils/Rasters.cpp.html
+test:
+	emrun --browser chrome test.cpp.html
 
 postcompiled/utils/Rasters.cpp.js : $(INC) $(SRC)
 	em++ --emrun --bind --profiling-funcs -std=c++17 \

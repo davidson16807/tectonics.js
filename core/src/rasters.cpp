@@ -19,9 +19,23 @@ using namespace emscripten;
 using namespace composites;
 using namespace rasters;
 
+template class glm::vec<2,float,defaultp>;
+template class glm::vec<3,float,defaultp>;
+template class glm::vec<4,float,defaultp>;
+template class glm::mat<3,3,float,defaultp>;
+template class glm::mat<4,3,float,defaultp>;
+template class glm::mat<4,4,float,defaultp>;
+template class composites::primitives<bool>;
+template class composites::primitives<int>;
+template class composites::primitives<unsigned int>;
+template class composites::primitives<float>;
+template class composites::primitives<double>;
+template class composites::primitives<vec<2,float,defaultp>>;
+template class composites::primitives<vec<3,float,defaultp>>;
+template class composites::primitives<vec<4,float,defaultp>>;
+
 EMSCRIPTEN_BINDINGS(rasters)
 {
-
   class_<vec2>("vec2")
       .constructor()
       .constructor<float>()
@@ -43,7 +57,6 @@ EMSCRIPTEN_BINDINGS(rasters)
 
   class_<vec4>("vec4")
       .constructor()
-      .constructor<float>()
       .constructor<float, float, float, float>()
       .constructor<vec3, float>()
       .constructor<float, vec3>()
@@ -56,11 +69,25 @@ EMSCRIPTEN_BINDINGS(rasters)
 
   class_<floats>("floats")
       .constructor<unsigned int>()
+      .constructor<unsigned int, float>()
   ;
 
-  class_<vec3>("vec3s")
+  class_<vec3s>("vec3s")
       .constructor<unsigned int>()
   ;
+
+  register_vector<vec3>("vector_vec3");
+
+  class_<CartesianGridCellList3d>("CartesianGridCellList3d")
+      .constructor<std::vector<vec3>, double>()
+      .function("nearest_id", &CartesianGridCellList3d::nearest_id)
+  ;
+
+  class_<SphereGridVoronoi3d>("SphereGridVoronoi3d")
+      .constructor<std::vector<vec3>, double>()
+      .function("nearest_id", &SphereGridVoronoi3d::nearest_id)
+  ;
+
 
   function("bools_unite_bool",        (void (*)(const bools& a, const bool b, bools& out))      unite     );
   function("bools_unite_bools",       (void (*)(const bools& a, const bools& b, bools& out))    unite     );
@@ -987,17 +1014,4 @@ EMSCRIPTEN_BINDINGS(rasters)
 
 
 
-
-
-  register_vector<vec3>("vector_vec3");
-
-  class_<CartesianGridCellList3d>("CartesianGridCellList3d")
-      .constructor<std::vector<vec3>, double>()
-      .function("nearest_id", &CartesianGridCellList3d::nearest_id)
-  ;
-
-  class_<SphereGridVoronoi3d>("SphereGridVoronoi3d")
-      .constructor<std::vector<vec3>, double>()
-      .function("nearest_id", &SphereGridVoronoi3d::nearest_id)
-  ;
 }
