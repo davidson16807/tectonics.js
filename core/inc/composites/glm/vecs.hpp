@@ -11,6 +11,16 @@ namespace composites
 {
 	using namespace glm;
 
+	template<typename T, qualifier Q>
+	void mult(const primitives<vec<3,T,Q>>& a, const mat<4,3,T,Q>& b, primitives<vec<3,T,Q>>& out)
+	{
+		constexpr T one = T(1.);
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = b * vec4(a[i], one);
+		}
+	}
+
 	typedef primitives<vec<1, bool, glm::defaultp>>	bvec1s;
 	typedef primitives<vec<2, bool, glm::defaultp>>	bvec2s;
 	typedef primitives<vec<3, bool, glm::defaultp>>	bvec3s;

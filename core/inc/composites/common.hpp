@@ -12,7 +12,7 @@ namespace composites
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
-			out[i] = std::abs(a[i]);
+			out[i] = a[i] >= 0? a[i] : -a[i];
 		}
 	}
 

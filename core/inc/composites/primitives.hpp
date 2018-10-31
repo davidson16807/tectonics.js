@@ -287,6 +287,16 @@ namespace composites
 		return notEqual(a, b);
 	}
 	template <class T>
+	inline bool operator==(const T a, const primitives<T>& b)
+	{
+		return equal(a, b);
+	}
+	template <class T>
+	inline bool operator!=(const T a, const primitives<T>& b)
+	{
+		return notEqual(a, b);
+	}
+	template <class T>
 	inline bool operator==(const primitives<T>& a, const primitives<T>& b)
 	{
 		return equal(a, b);
@@ -394,7 +404,7 @@ namespace composites
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
-			out[i] = a[i] * b;
+			out[i] = b * a[i];
 		}
 	}
 	template <class T, class T2, class T3>
@@ -469,6 +479,37 @@ namespace composites
 	}
 	template <class T, class T2, class T3>
 	inline primitives<T3> operator<=(const primitives<T>& a, const T2 b)
+	{
+		primitives<T3> out = primitives<T3>(a.N);
+		lessThanEqual(a, b, out);
+		return out;
+	}
+	
+	// NOTE: all wrappers are suggested to be inline because they are thin wrappers of functions
+
+	template <class T, class T2, class T3>
+	inline primitives<T3> operator>(const T2 a, const primitives<T>& b)
+	{
+		primitives<T3> out = primitives<T3>(a.N);
+		greaterThan(a, b, out);
+		return out;
+	}
+	template <class T, class T2, class T3>
+	inline primitives<T3> operator>=(const T2 a, const primitives<T>& b)
+	{
+		primitives<T3> out = primitives<T3>(a.N);
+		greaterThanEqual(a, b, out);
+		return out;
+	}
+	template <class T, class T2, class T3>
+	inline primitives<T3> operator<(const T2 a, const primitives<T>& b)
+	{
+		primitives<T3> out = primitives<T3>(a.N);
+		lessThan(a, b, out);
+		return out;
+	}
+	template <class T, class T2, class T3>
+	inline primitives<T3> operator<=(const T2 a, const primitives<T>& b)
 	{
 		primitives<T3> out = primitives<T3>(a.N);
 		lessThanEqual(a, b, out);
@@ -619,6 +660,41 @@ namespace composites
 	}
 	template <class T, class T2, class T3>
 	inline primitives<T3> operator/(const primitives<T>& a, const T2 b)
+	{
+		primitives<T3> out = primitives<T3>(a.N);
+		div(a, b, out);
+		return out;
+	}
+	
+
+
+
+
+	// NOTE: we define operators for multiple classes T and T2 in order to support 
+	//  vector/scalar multiplication, matrix/vect multiplication, etc.
+	template <class T, class T2, class T3>
+	inline primitives<T3> operator+(const T2 a, const primitives<T>& b)
+	{
+		primitives<T3> out = primitives<T3>(a.N);
+		add(a, b, out);
+		return out;
+	}
+	template <class T, class T2, class T3>
+	inline primitives<T3> operator-(const T2 a, const primitives<T>& b)
+	{
+		primitives<T3> out = primitives<T3>(a.N);
+		sub(a, b, out);
+		return out;
+	}
+	template <class T, class T2, class T3>
+	inline primitives<T> operator*(const T2 a, const primitives<T>& b)
+	{
+		primitives<T3> out = primitives<T3>(a.N);
+		mult(a, b, out);
+		return out;
+	}
+	template <class T, class T2, class T3>
+	inline primitives<T3> operator/(const T2 a, const primitives<T>& b)
 	{
 		primitives<T3> out = primitives<T3>(a.N);
 		div(a, b, out);
