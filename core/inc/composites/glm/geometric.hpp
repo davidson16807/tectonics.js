@@ -108,9 +108,9 @@ namespace composites
 		return out;
 	}
 	template<length_t L, typename T, qualifier Q>
-	inline vecs<L,T,Q> cross (const primitives<vec<L,T,Q>>& u, const vec<L,T,Q> v ) 
+	inline primitives<vec<L,T,Q>> cross (const primitives<vec<L,T,Q>>& u, const vec<L,T,Q> v ) 
 	{
-		vecs<L,T,Q> out = vecs<L,T,Q>(u.size());
+		primitives<vec<L,T,Q>> out = primitives<vec<L,T,Q>>(u.size());
 		cross(u, v, out);
 		return out;
 	}
@@ -129,9 +129,9 @@ namespace composites
 		return out;
 	}
 	template<length_t L, typename T, qualifier Q>
-	inline vecs<L,T,Q> cross (const primitives<vec<L,T,Q>>& u, const primitives<vec<L,T,Q>>& v ) 
+	inline primitives<vec<L,T,Q>> cross (const primitives<vec<L,T,Q>>& u, const primitives<vec<L,T,Q>>& v ) 
 	{
-		vecs<L,T,Q> out = vecs<L,T,Q>(u.size());
+		primitives<vec<L,T,Q>> out = primitives<vec<L,T,Q>>(u.size());
 		cross(u, v, out);
 		return out;
 	}
@@ -143,9 +143,9 @@ namespace composites
 		return out;
 	}
 	template<length_t L, typename T, qualifier Q>
-	inline vecs<L,T,Q> normalize(const primitives<vec<L,T,Q>>& u) 
+	inline primitives<vec<L,T,Q>> normalize(const primitives<vec<L,T,Q>>& u) 
 	{
-		vecs<L,T,Q> out = vecs<L,T,Q>(u.size());
+		primitives<vec<L,T,Q>> out = primitives<vec<L,T,Q>>(u.size());
 		normalize(u, out);
 		return out;
 	}

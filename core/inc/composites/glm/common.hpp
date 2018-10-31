@@ -121,6 +121,14 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
+	void min(const primitives<vec<L,T,Q>>& a, const vec<L,T,Q> b, primitives<vec<L,T,Q>>& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = glm::min(a[i], b[i]);
+		}
+	}
+	template <length_t L, typename T, qualifier Q>
 	vec<L,T,Q> min(const primitives<vec<L,T,Q>>& a)
 	{
 		vec<L,T,Q> out = a[0];
@@ -133,6 +141,15 @@ namespace composites
 	/// Returns y if y < x; otherwise, it returns x.
 	template <length_t L, typename T, qualifier Q>
 	void max(const primitives<vec<L,T,Q>>& a, const primitives<vec<L,T,Q>>& b, primitives<vec<L,T,Q>>& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = glm::max(a[i], b[i]);
+		}
+	}
+	/// Returns y if y < x; otherwise, it returns x.
+	template <length_t L, typename T, qualifier Q>
+	void max(const primitives<vec<L,T,Q>>& a, const vec<L,T,Q> b, primitives<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -153,7 +170,7 @@ namespace composites
 	/// Returns min(max(x, minVal), maxVal) for each component in x
 	/// using the floating-point values minVal and maxVal.
 	template <length_t L, typename T, qualifier Q>
-	void clamp(const primitives<vec<L,T,Q>>& a, const T lo, const T hi, const primitives<vec<L,T,Q>>& out)
+	void clamp(const primitives<vec<L,T,Q>>& a, const vec<L,T,Q> lo, const vec<L,T,Q> hi, primitives<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -161,7 +178,7 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	void clamp(const primitives<vec<L,T,Q>>& a, const T lo, const primitives<vec<L,T,Q>>& hi, const primitives<vec<L,T,Q>>& out)
+	void clamp(const primitives<vec<L,T,Q>>& a, const vec<L,T,Q> lo, const primitives<vec<L,T,Q>>& hi, primitives<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -169,7 +186,7 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	void clamp(const primitives<vec<L,T,Q>>& a, const primitives<vec<L,T,Q>>& lo, const T hi, const primitives<vec<L,T,Q>>& out)
+	void clamp(const primitives<vec<L,T,Q>>& a, const primitives<vec<L,T,Q>>& lo, const vec<L,T,Q> hi, primitives<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -177,7 +194,7 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	void clamp(const primitives<vec<L,T,Q>>& a, const primitives<vec<L,T,Q>>& lo, const primitives<vec<L,T,Q>>& hi, const primitives<vec<L,T,Q>>& out)
+	void clamp(const primitives<vec<L,T,Q>>& a, const primitives<vec<L,T,Q>>& lo, const primitives<vec<L,T,Q>>& hi, primitives<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -208,7 +225,7 @@ namespace composites
 	/// @param[in]  y Value to interpolate.
 	/// @param[in]  a Interpolant.
 	template <length_t L, typename T, qualifier Q>
-	void mix(const primitives<vec<L,T,Q>>& x, const primitives<vec<L,T,Q>>& y, const primitives<vec<L,T,Q>>& a, const primitives<vec<L,T,Q>>& out)
+	void mix(const primitives<vec<L,T,Q>>& x, const primitives<vec<L,T,Q>>& y, const primitives<T>& a, primitives<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -216,15 +233,15 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	void mix(const primitives<vec<L,T,Q>>& x, const primitives<vec<L,T,Q>>& y, const T a, const primitives<vec<L,T,Q>>& out)
+	void mix(const primitives<vec<L,T,Q>>& x, const primitives<vec<L,T,Q>>& y, const T a, primitives<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
-			out[i] = glm::mix(x, y[i], a);
+			out[i] = glm::mix(x[i], y[i], a);
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	void mix(const primitives<vec<L,T,Q>>& x, const T y, const primitives<vec<L,T,Q>>& a, const primitives<vec<L,T,Q>>& out)
+	void mix(const primitives<vec<L,T,Q>>& x, const vec<L,T,Q> y, const primitives<T>& a, primitives<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -232,7 +249,7 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	void mix(const primitives<vec<L,T,Q>>& x, const T y, const T a, const primitives<vec<L,T,Q>>& out)
+	void mix(const primitives<vec<L,T,Q>>& x, const vec<L,T,Q> y, const T a, primitives<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -240,7 +257,7 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	void mix(const T x, const primitives<vec<L,T,Q>>& y, const primitives<vec<L,T,Q>>& a, const primitives<vec<L,T,Q>>& out)
+	void mix(const vec<L,T,Q> x, const primitives<vec<L,T,Q>>& y, const primitives<T>& a, primitives<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < y.size(); ++i)
 		{
@@ -248,21 +265,84 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	void mix(const T x, const primitives<vec<L,T,Q>>& y, const T a, const primitives<vec<L,T,Q>>& out)
+	void mix(const vec<L,T,Q> x, const primitives<vec<L,T,Q>>& y, const T a, primitives<vec<L,T,Q>>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
+		for (unsigned int i = 0; i < y.size(); ++i)
 		{
 			out[i] = glm::mix(x, y[i], a);
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	void mix(const T x, const T y, const primitives<vec<L,T,Q>>& a, const primitives<vec<L,T,Q>>& out)
+	void mix(const vec<L,T,Q> x, const vec<L,T,Q> y, const primitives<T>& a, primitives<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
 			out[i] = glm::mix(x, y, a[i]);
 		}
 	}
+
+
+
+
+	template <length_t L, typename T, qualifier Q>
+	void mix(const primitives<vec<L,T,Q>>& x, const primitives<vec<L,T,Q>>& y, const primitives<vec<L,T,Q>>& a, primitives<vec<L,T,Q>>& out)
+	{
+		for (unsigned int i = 0; i < x.size(); ++i)
+		{
+			out[i] = glm::mix(x[i], y[i], a[i]);
+		}
+	}
+	template <length_t L, typename T, qualifier Q>
+	void mix(const primitives<vec<L,T,Q>>& x, const primitives<vec<L,T,Q>>& y, const vec<L,T,Q> a, primitives<vec<L,T,Q>>& out)
+	{
+		for (unsigned int i = 0; i < x.size(); ++i)
+		{
+			out[i] = glm::mix(x[i], y[i], a);
+		}
+	}
+	template <length_t L, typename T, qualifier Q>
+	void mix(const primitives<vec<L,T,Q>>& x, const vec<L,T,Q> y, const primitives<vec<L,T,Q>>& a, primitives<vec<L,T,Q>>& out)
+	{
+		for (unsigned int i = 0; i < x.size(); ++i)
+		{
+			out[i] = glm::mix(x[i], y, a[i]);
+		}
+	}
+	template <length_t L, typename T, qualifier Q>
+	void mix(const primitives<vec<L,T,Q>>& x, const vec<L,T,Q> y, const vec<L,T,Q> a, primitives<vec<L,T,Q>>& out)
+	{
+		for (unsigned int i = 0; i < x.size(); ++i)
+		{
+			out[i] = glm::mix(x[i], y, a);
+		}
+	}
+	template <length_t L, typename T, qualifier Q>
+	void mix(const vec<L,T,Q> x, const primitives<vec<L,T,Q>>& y, const primitives<vec<L,T,Q>>& a, primitives<vec<L,T,Q>>& out)
+	{
+		for (unsigned int i = 0; i < y.size(); ++i)
+		{
+			out[i] = glm::mix(x, y[i], a[i]);
+		}
+	}
+	template <length_t L, typename T, qualifier Q>
+	void mix(const vec<L,T,Q> x, const primitives<vec<L,T,Q>>& y, const vec<L,T,Q> a, primitives<vec<L,T,Q>>& out)
+	{
+		for (unsigned int i = 0; i < y.size(); ++i)
+		{
+			out[i] = glm::mix(x, y[i], a);
+		}
+	}
+	template <length_t L, typename T, qualifier Q>
+	void mix(const vec<L,T,Q> x, const vec<L,T,Q> y, const primitives<vec<L,T,Q>>& a, primitives<vec<L,T,Q>>& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = glm::mix(x, y, a[i]);
+		}
+	}
+
+
+
 
 	/// Returns 0.0 if x < edge, otherwise it returns 1.0 for each component of a genType.
 	template<length_t L, typename T, qualifier Q>
@@ -274,7 +354,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void step(const primitives<vec<L,T,Q>>&  edge, const T x, primitives<vec<L,T,Q>>& out)
+	void step(const primitives<vec<L,T,Q>>&  edge, const vec<L,T,Q> x, primitives<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < edge.size(); ++i)
 		{
@@ -282,7 +362,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void step(const T edge, const primitives<vec<L,T,Q>>&  x, primitives<vec<L,T,Q>>& out)
+	void step(const vec<L,T,Q> edge, const primitives<vec<L,T,Q>>&  x, primitives<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -308,7 +388,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void smoothstep(const T lo, const primitives<vec<L,T,Q>>& hi, const primitives<vec<L,T,Q>>& x, primitives<vec<L,T,Q>>& out)
+	void smoothstep(const vec<L,T,Q> lo, const primitives<vec<L,T,Q>>& hi, const primitives<vec<L,T,Q>>& x, primitives<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -316,7 +396,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void smoothstep(const primitives<vec<L,T,Q>>& lo, T hi, const primitives<vec<L,T,Q>>& x, primitives<vec<L,T,Q>>& out)
+	void smoothstep(const primitives<vec<L,T,Q>>& lo, vec<L,T,Q> hi, const primitives<vec<L,T,Q>>& x, primitives<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -324,16 +404,16 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void smoothstep(const T lo, const T hi, const primitives<vec<L,T,Q>>& x, primitives<vec<L,T,Q>>& out)
+	void smoothstep(const vec<L,T,Q> lo, const vec<L,T,Q> hi, const primitives<vec<L,T,Q>>& x, primitives<vec<L,T,Q>>& out)
 	{
-		T range = hi-lo;
+		vec<L,T,Q> range = hi-lo;
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
 			out[i] = glm::smoothstep(lo, hi, x[i]);
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void smoothstep(const primitives<vec<L,T,Q>>& lo, const primitives<vec<L,T,Q>>& hi, const T x, primitives<vec<L,T,Q>>& out)
+	void smoothstep(const primitives<vec<L,T,Q>>& lo, const primitives<vec<L,T,Q>>& hi, const vec<L,T,Q> x, primitives<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < hi.size(); ++i)
 		{
@@ -341,7 +421,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void smoothstep(const T lo, const primitives<vec<L,T,Q>>& hi, const T x, primitives<vec<L,T,Q>>& out)
+	void smoothstep(const vec<L,T,Q> lo, const primitives<vec<L,T,Q>>& hi, const vec<L,T,Q> x, primitives<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < hi.size(); ++i)
 		{
@@ -349,7 +429,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void smoothstep(const primitives<vec<L,T,Q>>& lo, const T hi, const T x, primitives<vec<L,T,Q>>& out)
+	void smoothstep(const primitives<vec<L,T,Q>>& lo, const vec<L,T,Q> hi, const vec<L,T,Q> x, primitives<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < lo.size(); ++i)
 		{
@@ -395,7 +475,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void fma(const T a, const primitives<vec<L,T,Q>>& b, const primitives<vec<L,T,Q>>& c, primitives<vec<L,T,Q>>& out)
+	void fma(const vec<L,T,Q> a, const primitives<vec<L,T,Q>>& b, const primitives<vec<L,T,Q>>& c, primitives<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < c.size(); ++i)
 		{
@@ -403,7 +483,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void fma(const primitives<vec<L,T,Q>>& a, T b, const primitives<vec<L,T,Q>>& c, primitives<vec<L,T,Q>>& out)
+	void fma(const primitives<vec<L,T,Q>>& a, vec<L,T,Q> b, const primitives<vec<L,T,Q>>& c, primitives<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < c.size(); ++i)
 		{
@@ -411,16 +491,16 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void fma(const T a, const T b, const primitives<vec<L,T,Q>>& c, primitives<vec<L,T,Q>>& out)
+	void fma(const vec<L,T,Q> a, const vec<L,T,Q> b, const primitives<vec<L,T,Q>>& c, primitives<vec<L,T,Q>>& out)
 	{
-		T ab = a*b;
+		vec<L,T,Q> ab = a*b;
 		for (unsigned int i = 0; i < c.size(); ++i)
 		{
 			out[i] = glm::fma(a, b, c[i]);
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void fma(const primitives<vec<L,T,Q>>& a, const primitives<vec<L,T,Q>>& b, const T c, primitives<vec<L,T,Q>>& out)
+	void fma(const primitives<vec<L,T,Q>>& a, const primitives<vec<L,T,Q>>& b, const vec<L,T,Q> c, primitives<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < b.size(); ++i)
 		{
@@ -428,7 +508,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void fma(const T a, const primitives<vec<L,T,Q>>& b, const T c, primitives<vec<L,T,Q>>& out)
+	void fma(const vec<L,T,Q> a, const primitives<vec<L,T,Q>>& b, const vec<L,T,Q> c, primitives<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < b.size(); ++i)
 		{
@@ -436,7 +516,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void fma(const primitives<vec<L,T,Q>>& a, const T b, const T c, primitives<vec<L,T,Q>>& out)
+	void fma(const primitives<vec<L,T,Q>>& a, const vec<L,T,Q> b, const vec<L,T,Q> c, primitives<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
