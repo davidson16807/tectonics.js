@@ -8,7 +8,7 @@ OUT=postcompiled/Rasters.js postcompiled/Shaders.js postcompiled/Academics.js
 SCRIPTS = $(shell find precompiled/ -type f -name '*.js')
 SHADERS = $(shell find precompiled/ -type f -name '*.glsl.c')
 
-SRC=core/src/Rasters.cpp
+SRC=core/src/rasters.cpp
 INC:=$(shell find core/inc/ -name "*.hpp") 
 OUT=postcompiled/utils/Rasters.cpp.js postcompiled/utils/Rasters.js postcompiled/view/FragmentShaders.js postcompiled/view/VertexShaders.js
 
@@ -23,7 +23,7 @@ test:
 postcompiled/utils/Rasters.cpp.js : $(INC) $(SRC)
 	em++ --emrun --bind --profiling-funcs -std=c++17 \
 	-I core/inc/ \
-	-g core/src/Rasters.cpp \
+	-g core/src/rasters.cpp \
 	-s EXPORT_NAME="'Rasters'" -s MODULARIZE=1 \
 	-s WASM=1 -s DEMANGLE_SUPPORT=1 -s ASSERTIONS=1 -s SAFE_HEAP=1 \
 	-s ALLOW_MEMORY_GROWTH=1 \
