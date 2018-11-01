@@ -522,6 +522,83 @@ EMSCRIPTEN_BINDINGS(rasters)
 
 
 
+  function("vec3_add_vec3",   (vec3 (*)(const vec3&, const vec3&))   operator+  );
+  function("vec3_add_float",  (vec3 (*)(const vec3&, const float))   operator+  );
+  function("vec3_sub_vec3",   (vec3 (*)(const vec3&, const vec3&))   operator-  );
+  function("vec3_sub_float",  (vec3 (*)(const vec3&, const float))   operator-  );
+  function("vec3_mult_vec3",  (vec3 (*)(const vec3&, const vec3&))   operator*  );
+  function("vec3_mult_float", (vec3 (*)(const vec3&, const float))   operator*  );
+  function("vec3_div_vec3",   (vec3 (*)(const vec3&, const vec3&))   operator/  );
+  function("vec3_div_float",  (vec3 (*)(const vec3&, const float))   operator/  );
+
+  function("vec3_mult_mat3",   (vec3 (*)(const mat3&, const vec3&))  operator* );
+
+  function("vec3_equal_vec3",        (bool  (*)(const vec3& a, const vec3& b)) operator== );
+  function("vec3_notEqual_vec3",     (bool  (*)(const vec3& a, const vec3& b)) operator!= );
+  function("vec3_compEqual_vec3",    (bvec3 (*)(const vec3& a, const vec3& b)) equal    );
+  function("vec3_compNotEqual_vec3", (bvec3 (*)(const vec3& a, const vec3& b)) notEqual );
+
+  function("vec3_greaterThan_vec3",     (bvec3 (*)(const vec3& a, const vec3& b)) greaterThan      );
+  function("vec3_greaterThanEqual_vec3",(bvec3 (*)(const vec3& a, const vec3& b)) greaterThanEqual );
+  function("vec3_lessThan_vec3",        (bvec3 (*)(const vec3& a, const vec3& b)) lessThan         );
+  function("vec3_lessThanEqual_vec3",   (bvec3 (*)(const vec3& a, const vec3& b)) lessThanEqual    );
+
+  function("vec3_abs",    ( vec3 (*)(const vec3& a)) abs   );
+  function("vec3_sign",   ( vec3 (*)(const vec3& a)) sign  );
+  function("vec3_floor",  ( vec3 (*)(const vec3& a)) floor );
+  function("vec3_trunc",  ( vec3 (*)(const vec3& a)) trunc );
+  function("vec3_round",  ( vec3 (*)(const vec3& a)) round );
+  function("vec3_ceil",   ( vec3 (*)(const vec3& a)) ceil  );
+  function("vec3_fract",  ( vec3 (*)(const vec3& a)) fract );
+
+  // function("vec3s_mod",    ( void (*)(const vec3s& a, const vec3s& b, vec3s& out))     mod         );
+  // function("vec3s_modf",   ( void (*)(const vec3s& a, ints& intout, vec3s& fractout))  modf        );
+  function("vec3_min_vec3",   ( vec3 (*)(const vec3& a, const vec3& b))   min );
+  function("vec3_max_vec3",   ( vec3 (*)(const vec3& a, const vec3& b))   max );
+
+  function("vec3_clamp",      ( vec3 (*)(const vec3& a, const vec3& lo, const vec3& hi))    clamp );
+
+  function("vec3_mix_float",  ( vec3 (*)(const vec3& x, const vec3& y, const float a))    mix         );
+  function("vec3_mix_vec3",   ( vec3 (*)(const vec3& x, const vec3& y, const vec3& a))    mix         );
+
+  function("vec3_step",       ( vec3 (*)(const vec3& edge, const vec3& x))                step        );
+
+  function("vec3_smoothstep", ( vec3 (*)(const vec3& lo, const vec3& hi, const vec3& x))  smoothstep  );
+  function("vec3_fma",        ( vec3 (*)(const vec3& a, const vec3& b, const vec3& c))    fma         );
+
+  // function("vec3_pow",         (vec3 (*)(const vec3& base, const vec3& exponent))  pow                  );
+  // function("vec3_exp",         (vec3 (*)(const vec3& a))                           exp                  );
+  // function("vec3_log",         (vec3 (*)(const vec3& a))                           log                  );
+  // function("vec3_exp2",        (vec3 (*)(const vec3& a))                           exp2                 );
+  // function("vec3_log2",        (vec3 (*)(const vec3& a))                           log2                 );
+  // function("vec3_sqrt",        (vec3 (*)(const vec3& a))                           sqrt                 );
+  // function("vec3_inversesqrt", (vec3 (*)(const vec3& a))                           inversesqrt          );
+
+  // function("vec3_min_id",    (unsigned int (*)(const vec3& a))                     min_id               );
+  // function("vec3_max_id",    (unsigned int (*)(const vec3& a))                     max_id               );
+
+  function("vec3_dot_vec3",       (float (*)(const vec3& u, const vec3& v)) dot       );
+  function("vec3_cross_vec3",     (vec3 (*)(const vec3& u, const vec3& v)) cross     );
+  function("vec3_distance_vec3",  (float (*)(const vec3& u, const vec3& v)) distance  );
+
+  function("vec3_length",     (float (*)(const vec3& u))  length      );
+  function("vec3_normalize",  (vec3 (*)(const vec3& u))  normalize   );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   function("vec2s_add_vec2s",  (void (*)(const vec2s&, const vec2s&, vec2s&))  add  );
   function("vec2s_add_floats", (void (*)(const vec2s&, const floats&, vec2s&)) add  );
   function("vec2s_add_vec2",   (void (*)(const vec2s&, const vec2, vec2s&))    add  );
