@@ -348,175 +348,178 @@ function test_algabraic_field	(add, add_name,  sub, sub_name, happy_add_args,	ed
 
 
 
-cpp = Rasters()
-
-let add_uniform_args = {
+add_uniform_args = {
 	pos: 	 1,
 	neg: 	-1,
 	tiny: 	 1e-1,
 	big: 	 1e4,
 	I: 		 0,
 }
-let mult_uniform_args = {
+mult_uniform_args = {
 	...add_uniform_args,
 	I: 		 1,
 }
+Rasters().then(function(cpp) {
+			
 
-// NOTE: 
-// a "happy path" in this script indicates an operation should produce a valid value as understood within the confines of an abelian algebra
-// an "edge case" is anything that produces a technically valid value but not one understood to be an abelian algebra
-// for instance, a "NaN" value that spreads through calculations
-let add_vector_happy_args = {
-	pos: 	Vector( 1,	2,		 3 			),
-	neg:	Vector(-1,	-2,		-3 			),
-	tiny: 	Vector( 1e-1,	1e-1,	 1e-1 		),
-	big: 	Vector( 1e4,	1e4,	 1e4 		),
-	I: 		Vector( 0,	0,		 0 			),
-	out: 	Vector( 1,	1,		 1 			),
-}
-let mult_vector_happy_args = {
-	...add_vector_happy_args,
-	I: 		Vector( 1,			 1,		 1 			),
-}
-let add_vector_edgy_args = {
-	...add_vector_happy_args,
-	nans: 	Vector( NaN,		 NaN, 	 NaN 		),
-	infs: 	Vector( Infinity,	 Infinity, Infinity ),
-	ninfs: 	Vector(-Infinity,	-Infinity,-Infinity ),
-}
-let mult_vector_edgy_args = {
-	...add_vector_edgy_args,
-	zeros: 	Vector( 0,			 0,		 0 			),
-	I: 		Vector( 1,			 1,		 1 			),
-}
-
-
-let add_matrix_happy_args = {
-	pos: 	Matrix3x3( 1,			 2,		 3, 		
-				    4,			 5,		 6, 		
-				    7,			 8,		 9, 		),
-	neg:	Matrix3x3(-1,			-2,		-3, 		
-				   -4,			-5,		-6, 		
-				   -7,			-8,		-9, 		),
-	tiny: 	Matrix3x3( 1e-1,		 1e-1,	 1e-1,		
-				    1e-1,		 1e-1,	 1e-1,		
-				    1e-1,		 1e-1,	 1e-1,		),
-	big: 	Matrix3x3( 1e4,		 1e4,	 1e4, 		
-				    1e4,		 1e4,	 1e4, 		
-				    1e4,		 1e4,	 1e4, 		),
-	I: 		Matrix3x3( 0,			 0,		 0, 		
-				    0,			 0,		 0, 		
-				    0,			 0,		 0, 		),
-	out: 	Matrix3x3( 1,			 1,		 1, 		
-				    1,			 1,		 1, 		
-				    1,			 1,		 1, 		),
-}
-let mult_matrix_happy_args = {
-	...add_matrix_happy_args,
-	I: 		Matrix3x3.Identity(),
-}
-let add_matrix_edgy_args = {
-	...add_matrix_happy_args,
-	nans: 	Matrix3x3( NaN,		 NaN, 	 NaN, 		
-				    NaN,		 NaN, 	 NaN, 		
-				    NaN,		 NaN, 	 NaN, 		),
-	infs: 	Matrix3x3( Infinity,	 Infinity, Infinity, 
-				    Infinity,	 Infinity, Infinity, 
-				    Infinity,	 Infinity, Infinity, ),
-	ninfs: 	Matrix3x3(-Infinity,	-Infinity,-Infinity, 
-				   -Infinity,	-Infinity,-Infinity, 
-				   -Infinity,	-Infinity,-Infinity, ),
-}
-let mult_matrix_edgy_args = {
-	...add_matrix_edgy_args,
-	zeros: 	Matrix3x3( 0,			 0,		 0, 		
-				    0,			 0,		 0, 		
-				    0,			 0,		 0, 		),
-	I: 		Matrix3x3.Identity(),
-}
+	// NOTE: 
+	// a "happy path" in this script indicates an operation should produce a valid value as understood within the confines of an abelian algebra
+	// an "edge case" is anything that produces a technically valid value but not one understood to be an abelian algebra
+	// for instance, a "NaN" value that spreads through calculations
+	add_vector_happy_args = {
+		pos: 	new cpp.vec3( 1,	2,		 3 			),
+		neg:	new cpp.vec3(-1,	-2,		-3 			),
+		tiny: 	new cpp.vec3( 1e-1,	1e-1,	 1e-1 		),
+		big: 	new cpp.vec3( 1e4,	1e4,	 1e4 		),
+		I: 		new cpp.vec3( 0,	0,		 0 			),
+		out: 	new cpp.vec3( 1,	1,		 1 			),
+	}
+	mult_vector_happy_args = {
+		...add_vector_happy_args,
+		I: 		new cpp.vec3( 1,	1,		 1 			),
+	}
+	add_vector_edgy_args = {
+		...add_vector_happy_args,
+		nans: 	new cpp.vec3( NaN,		 NaN, 	 NaN 		),
+		infs: 	new cpp.vec3( Infinity,	 Infinity, Infinity ),
+		ninfs: 	new cpp.vec3(-Infinity,	-Infinity,-Infinity ),
+	}
+	mult_vector_edgy_args = {
+		...add_vector_edgy_args,
+		zeros: 	new cpp.vec3( 0,	0,		 0 			),
+		I: 		new cpp.vec3( 1,	1,		 1 			),
+	}
 
 
-let add_matrix4x4_happy_args = {
-	pos: 	Matrix3x3( 1,			 2,		 3, 		 4, 		
-				    5,			 6,		 7, 		 8, 		
-				    9,			 10,	 11, 		 12, 		
-				    13,			 14,	 15, 		 16, 		),
-	neg:	Matrix3x3(-1,			-2,		-3, 		-4, 		
-				   -5,			-6,		-7, 		-8, 		
-				   -9,			-10,	-11, 		-12, 		
-				   -13,			-14,	-15, 		-16, 		),
-	tiny: 	Matrix3x3( 1e-1,		 1e-1,	 1e-1,		 1e-1,		
-				    1e-1,		 1e-1,	 1e-1,		 1e-1,		
-				    1e-1,		 1e-1,	 1e-1,		 1e-1,		
-				    1e-1,		 1e-1,	 1e-1,		 1e-1,		),
-	big: 	Matrix3x3( 1e4,		 1e4,	 1e4, 		 1e4, 		
-				    1e4,		 1e4,	 1e4, 		 1e4, 		
-				    1e4,		 1e4,	 1e4, 		 1e4, 		
-				    1e4,		 1e4,	 1e4, 		 1e4, 		),
-	I: 		Matrix3x3( 0,			 0,		 0, 		 0, 		
-				    0,			 0,		 0, 		 0, 		
-				    0,			 0,		 0, 		 0, 		
-				    0,			 0,		 0, 		 0, 		),
-	out: 	Matrix3x3( 1,			 1,		 1, 		 1, 		
-				    1,			 1,		 1, 		 1, 		
-				    1,			 1,		 1, 		 1, 		
-				    1,			 1,		 1, 		 1, 		),
-}
-let mult_matrix4x4_happy_args = {
-	...add_matrix4x4_happy_args,
-	I: 		Matrix4x4.identity(),
-}
-let add_matrix4x4_edgy_args = {
-	...add_matrix4x4_happy_args,
-	nans: 	Matrix3x3( NaN,		 NaN, 	 NaN, 		 NaN, 		
-				 	   NaN,		 NaN, 	 NaN, 		 NaN, 		
-				 	   NaN,		 NaN, 	 NaN, 		 NaN, 		
-				 	   NaN,		 NaN, 	 NaN, 		 NaN, 		),
-	infs: 	Matrix3x3( Infinity,	 Infinity, Infinity, Infinity, 
-				 	   Infinity,	 Infinity, Infinity, Infinity, 
-				 	   Infinity,	 Infinity, Infinity, Infinity, 
-				 	   Infinity,	 Infinity, Infinity, Infinity, ),
-	ninfs: 	Matrix3x3(-Infinity,	-Infinity,-Infinity,-Infinity, 
-					  -Infinity,	-Infinity,-Infinity,-Infinity, 
-				 	  -Infinity,	-Infinity,-Infinity,-Infinity, 
-				 	  -Infinity,	-Infinity,-Infinity,-Infinity, ),
-}
-let mult_matrix4x4_edgy_args = {
-	...add_matrix4x4_edgy_args,
-	zeros: 	Matrix3x3( 0,			 0,		 0, 		 0, 		
-				 	   0,			 0,		 0, 		 0, 		
-				 	   0,			 0,		 0, 		 0, 		
-				 	   0,			 0,		 0, 		 0, 		),
-	I: 		Matrix4x4.identity(),
-}
+	add_matrix_happy_args = {
+		pos: 	new cpp.mat3( 1,			 2,		 3, 		
+					      4,			 5,		 6, 		
+					      7,			 8,		 9, 		),
+		neg:	new cpp.mat3(-1,			-2,		-3, 		
+					     -4,			-5,		-6, 		
+					     -7,			-8,		-9, 		),
+		tiny: 	new cpp.mat3( 1e-1,		 1e-1,	 1e-1,		
+					      1e-1,		 1e-1,	 1e-1,		
+					      1e-1,		 1e-1,	 1e-1,		),
+		big: 	new cpp.mat3( 1e4,		 1e4,	 1e4, 		
+					      1e4,		 1e4,	 1e4, 		
+					      1e4,		 1e4,	 1e4, 		),
+		I: 		new cpp.mat3( 0,			 0,		 0, 		
+					      0,			 0,		 0, 		
+					      0,			 0,		 0, 		),
+		out: 	new cpp.mat3( 1,			 1,		 1, 		
+					      1,			 1,		 1, 		
+					      1,			 1,		 1, 		),
+	}
+	mult_matrix_happy_args = {
+		...add_matrix_happy_args,
+		I: 		new cpp.mat3(1.),
+	}
+	add_matrix_edgy_args = {
+		...add_matrix_happy_args,
+		nans: 	new cpp.mat3( NaN,		 NaN, 	 NaN, 		
+					          NaN,		 NaN, 	 NaN, 		
+					          NaN,		 NaN, 	 NaN, 		),
+		infs: 	new cpp.mat3( Infinity,	 Infinity, Infinity, 
+					          Infinity,	 Infinity, Infinity, 
+					          Infinity,	 Infinity, Infinity, ),
+		ninfs: 	new cpp.mat3(-Infinity,	-Infinity,-Infinity, 
+					         -Infinity,	-Infinity,-Infinity, 
+					         -Infinity,	-Infinity,-Infinity, ),
+	}
 
+	mult_matrix_edgy_args = {
+		...add_matrix_edgy_args,
+		zeros: 	new cpp.mat3( 0,			 0,		 0, 		
+					          0,			 0,		 0, 		
+					          0,			 0,		 0, 		),
+		I: 		new cpp.mat3(1.),
+	}
 
-let add_scalar_field_happy_args = {
-	pos: 	floats_from_array([ 1,	 2,		 3,		 4,	 ]),
-	neg:	floats_from_array([-1,	-2,		-3,		-4	 ]),
-	tiny: 	floats_from_array([ 1e-1,	 1e-1,	 1e-1,	 1e-1]),
-	big: 	floats_from_array([ 1e4,	 1e4,	 1e4,	 1e4,]),
-	I: 		floats_from_array([ 0,	 0,		 0,		 0	 ]),
-	out: 	floats_from_array([ 1,	 1,		 1,		 1	 ]),
+	add_matrix4x4_happy_args = {
+		pos: 	new cpp.mat4( 1,			 2,		 3, 		 4, 		
+					          5,			 6,		 7, 		 8, 		
+					          9,			 10,	 11, 		 12, 		
+					          13,			 14,	 15, 		 16, 		),
+		neg:	new cpp.mat4(-1,			-2,		-3, 		-4, 		
+					         -5,			-6,		-7, 		-8, 		
+					         -9,			-10,	-11, 		-12, 		
+					         -13,			-14,	-15, 		-16, 		),
+		tiny: 	new cpp.mat4( 1e-1,		 1e-1,	 1e-1,		 1e-1,		
+					          1e-1,		 1e-1,	 1e-1,		 1e-1,		
+					          1e-1,		 1e-1,	 1e-1,		 1e-1,		
+					          1e-1,		 1e-1,	 1e-1,		 1e-1,		),
+		big: 	new cpp.mat4( 1e4,		 1e4,	 1e4, 		 1e4, 		
+					          1e4,		 1e4,	 1e4, 		 1e4, 		
+					          1e4,		 1e4,	 1e4, 		 1e4, 		
+					          1e4,		 1e4,	 1e4, 		 1e4, 		),
+		I: 		new cpp.mat4( 0,			 0,		 0, 		 0, 		
+					          0,			 0,		 0, 		 0, 		
+					          0,			 0,		 0, 		 0, 		
+					          0,			 0,		 0, 		 0, 		),
+		out: 	new cpp.mat4( 1,			 1,		 1, 		 1, 		
+					          1,			 1,		 1, 		 1, 		
+					          1,			 1,		 1, 		 1, 		
+					          1,			 1,		 1, 		 1, 		),
+	}
+	mult_matrix4x4_happy_args = {
+		...add_matrix4x4_happy_args,
+		I: 		new cpp.mat4(1.),
+	}    
+	add_matrix4x4_edgy_args = {
+		...add_matrix4x4_happy_args,
+		nans: 	new cpp.mat4 ( NaN,		 NaN, 	 NaN, 		 NaN, 		
+					     	   NaN,		 NaN, 	 NaN, 		 NaN, 		
+					     	   NaN,		 NaN, 	 NaN, 		 NaN, 		
+					     	   NaN,		 NaN, 	 NaN, 		 NaN, 		),
+		infs: 	new cpp.mat4 ( Infinity,	 Infinity, Infinity, Infinity, 
+					     	   Infinity,	 Infinity, Infinity, Infinity, 
+					     	   Infinity,	 Infinity, Infinity, Infinity, 
+					     	   Infinity,	 Infinity, Infinity, Infinity, ),
+		ninfs: 	new cpp.mat4 (-Infinity,	-Infinity,-Infinity,-Infinity, 
+					    	  -Infinity,	-Infinity,-Infinity,-Infinity, 
+					     	  -Infinity,	-Infinity,-Infinity,-Infinity, 
+					     	  -Infinity,	-Infinity,-Infinity,-Infinity, ),
+	}
+	mult_matrix4x4_edgy_args = {
+		...add_matrix4x4_edgy_args,
+		zeros: 	new cpp.mat4 ( 0,			 0,		 0, 		 0, 		
+					     	   0,			 0,		 0, 		 0, 		
+					     	   0,			 0,		 0, 		 0, 		
+					     	   0,			 0,		 0, 		 0, 		),
+		I: 		new cpp.mat4(1.),
+	}    
+	   
+ 
+})
+
+function comment() { //note: commenting out the code below
+var add_scalar_field_happy_args = {
+	pos: 	Float32Raster.FromArray([ 1,	 2,		 3,		 4,	 ]),
+	neg:	Float32Raster.FromArray([-1,	-2,		-3,		-4	 ]),
+	tiny: 	Float32Raster.FromArray([ 1e-1,1e-1,	 1e-1,	 1e-1]),
+	big: 	Float32Raster.FromArray([ 1e4, 1e4,	 1e4,	 1e4,]),
+	I: 		Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ]),
+	out: 	Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ]),
 }
-let mult_scalar_field_happy_args = {
+var mult_scalar_field_happy_args = {
 	...add_scalar_field_happy_args,
-	I: 		floats_from_array([ 1,	 1,		 1,		 1	 ]),
+	I: 		Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ]),
 }
-let add_scalar_field_edgy_args = {
+var add_scalar_field_edgy_args = {
 	...add_scalar_field_happy_args,
-	nans: 	floats_from_array([ NaN,	 NaN, 	 NaN, 	 NaN ]),
-	infs: 	floats_from_array([ Infinity, Infinity, Infinity, Infinity]),
-	ninfs: 	floats_from_array([-Infinity,-Infinity,-Infinity,-Infinity]),
+	nans: 	Float32Raster.FromArray([ NaN,	 NaN, 	 NaN, 	 NaN ]),
+	infs: 	Float32Raster.FromArray([ Infinity, Infinity, Infinity, Infinity]),
+	ninfs: 	Float32Raster.FromArray([-Infinity,-Infinity,-Infinity,-Infinity]),
 }
-let mult_scalar_field_edgy_args = {
+var mult_scalar_field_edgy_args = {
 	...add_scalar_field_edgy_args,
-	zeros: 	floats_from_array([ 0,	 0,		 0,		 0	 ]),
-	I: 		floats_from_array([ 1,	 1,		 1,		 1	 ]),
+	zeros: 	Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ]),
+	I: 		Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ]),
 }
 
 
-let add_vector_field_happy_args = {
+var add_vector_field_happy_args = {
 	pos: 	VectorRaster.FromArrays([ 1,	 2,		 3,		 4,	 ], 
 									[ 5,	 6,		 7,		 8,	 ], 
 									[ 9,	 10,	 11,	 12, ]),
@@ -536,13 +539,13 @@ let add_vector_field_happy_args = {
 									[ 1,	 1,		 1,		 1	 ], 
 									[ 1,	 1,		 1,		 1	 ]),
 }
-let mult_vector_field_happy_args = {
+var mult_vector_field_happy_args = {
 	...add_vector_field_happy_args,
 	I: 		VectorRaster.FromArrays([ 1,	 1,		 1,		 1	 ], 
 									[ 1,	 1,		 1,		 1	 ], 
 									[ 1,	 1,		 1,		 1	 ]),
 }
-let add_vector_field_edgy_args = {
+var add_vector_field_edgy_args = {
 	...add_vector_field_happy_args,
 	nans: 	VectorRaster.FromArrays([ NaN,	 NaN, 	 NaN, 	 NaN ], 
 									[ NaN,	 NaN, 	 NaN, 	 NaN ], 
@@ -554,7 +557,7 @@ let add_vector_field_edgy_args = {
 									[-Infinity,-Infinity,-Infinity,-Infinity], 
 									[-Infinity,-Infinity,-Infinity,-Infinity]),
 }
-let mult_vector_field_edgy_args = {
+var mult_vector_field_edgy_args = {
 	...add_vector_field_edgy_args,
 	zeros: 	VectorRaster.FromArrays([ 0,	 0,		 0,		 0	 ], 
 									[ 0,	 0,		 0,		 0	 ], 
@@ -571,37 +574,6 @@ let mult_vector_field_edgy_args = {
 
 
 
-//test_algabraic_group(
-//	Vector.add_scalar, "Vector.add_scalar",
-//	Vector.sub_scalar, "Vector.sub_scalar",
-//	add_vector_field_happy_args, add_uniform_args,
-//);
-//test_algabraic_group(
-//	Vector.mult_scalar, "Vector.mult_scalar",
-//	Vector.div_scalar, "Vector.div_scalar",
-//	mult_vector_field_happy_args, mult_uniform_args,
-//);
-//test_algabraic_group(
-//	Vector.add_scalar, "Vector.add_scalar",
-//	Vector.sub_scalar, "Vector.sub_scalar",
-//	add_vector_field_happy_args, add_scalar_field_happy_args,
-//);
-//test_algabraic_group(
-//	Vector.mult_scalar, "Vector.mult_scalar",
-//	Vector.div_scalar, "Vector.div_scalar",
-//	mult_vector_field_happy_args, mult_scalar_field_happy_args,
-//);
-//test_algabraic_field(
-//	Vector.add_vector, "Vector.add_vector",
-//	Vector.sub_vector, "Vector.sub_vector",
-//	add_vector_field_happy_args, 
-//	add_vector_field_happy_args, 
-//	Vector.hadamard_vector,"Vector.hadamard_vector",
-//	Vector.div_vector, "Vector.div_vector",
-//	mult_vector_field_happy_args, 
-//	mult_vector_field_happy_args, 
-//);
-
 
 
 
@@ -615,19 +587,19 @@ let mult_vector_field_edgy_args = {
 
 framework_tests(
 	'Float32Raster',
-	floats_from_array([-1,	 0,		 0.5,	 NaN ]),
-	floats_from_array([ 1, 	 2,		 0.49,	 3 	 ]),
+	Float32Raster.FromArray([-1,	 0,		 0.5,	 NaN ]),
+	Float32Raster.FromArray([ 1, 	 2,		 0.49,	 3 	 ]),
 );
 
 test_algabraic_group(
-	cpp.floats_add_float, "cpp.floats_add_float",
-	cpp.floats_sub_float, "cpp.floats_sub_float",
+	ScalarField.add_scalar, "ScalarField.add_scalar",
+	ScalarField.sub_scalar, "ScalarField.sub_scalar",
 	add_scalar_field_happy_args, add_uniform_args,
 	add_scalar_field_edgy_args, add_uniform_args,
 );
 test_algabraic_group(
-	cpp.floats_mult_float, "cpp.floats_mult_float",
-	cpp.floats_div_float, "cpp.floats_div_float",
+	ScalarField.mult_scalar, "ScalarField.mult_scalar",
+	ScalarField.div_scalar, "ScalarField.div_scalar",
 	mult_scalar_field_happy_args, mult_uniform_args,
 	mult_scalar_field_edgy_args, mult_uniform_args,
 );
@@ -639,7 +611,7 @@ test_properties([
 		test_associativity, 
 		// test_commutativity,
 	], 
-	cpp.floats_min_float, "cpp.floats_min_float",
+	ScalarField.min_scalar, "ScalarField.min_scalar",
 	mult_scalar_field_happy_args, mult_uniform_args,
 );
 test_properties([
@@ -745,31 +717,32 @@ test_equivalence(
 );
 
 
-test_algabraic_group(
-	VectorField.add_scalar, "VectorField.add_scalar",
-	VectorField.sub_scalar, "VectorField.sub_scalar",
-	add_vector_field_happy_args, add_uniform_args,
-	add_vector_field_edgy_args, add_uniform_args,
-);
-test_algabraic_group(
-	VectorField.mult_scalar, "VectorField.mult_scalar",
-	VectorField.div_scalar, "VectorField.div_scalar",
-	mult_vector_field_happy_args, mult_uniform_args,
-	mult_vector_field_edgy_args, mult_uniform_args,
-);
+   
+// test_algabraic_group(
+// 	VectorField.add_scalar, "VectorField.add_scalar",
+// 	VectorField.sub_scalar, "VectorField.sub_scalar",
+// 	add_vector_field_happy_args, add_uniform_args,
+// 	add_vector_field_edgy_args, add_uniform_args,
+// );
+// test_algabraic_group(
+// 	VectorField.mult_scalar, "VectorField.mult_scalar",
+// 	VectorField.div_scalar, "VectorField.div_scalar",
+// 	mult_vector_field_happy_args, mult_uniform_args,
+// 	mult_vector_field_edgy_args, mult_uniform_args,
+// );
 
-test_algabraic_group(
-	VectorField.add_vector, "VectorField.add_vector",
-	VectorField.sub_vector, "VectorField.sub_vector",
-	add_vector_field_happy_args, add_vector_happy_args,
-	add_vector_field_edgy_args, add_vector_edgy_args,
-);
-test_algabraic_group(
-	VectorField.hadamard_vector, "VectorField.hadamard_vector",
-	VectorField.div_vector, "VectorField.div_vector",
-	mult_vector_field_happy_args, mult_vector_happy_args,
-	mult_vector_field_edgy_args, mult_vector_edgy_args,
-);
+// test_algabraic_group(
+// 	VectorField.add_vector, "VectorField.add_vector",
+// 	VectorField.sub_vector, "VectorField.sub_vector",
+// 	add_vector_field_happy_args, add_vector_happy_args,
+// 	add_vector_field_edgy_args, add_vector_edgy_args,
+// );
+// test_algabraic_group(
+// 	VectorField.hadamard_vector, "VectorField.hadamard_vector",
+// 	VectorField.div_vector, "VectorField.div_vector",
+// 	mult_vector_field_happy_args, mult_vector_happy_args,
+// 	mult_vector_field_edgy_args, mult_vector_edgy_args,
+// );
 
 test_algabraic_group(
 	VectorField.add_scalar_field, "VectorField.add_scalar_field",
@@ -817,41 +790,41 @@ test_properties([
 	mult_vector_field_happy_args, mult_vector_field_happy_args, 
 );
 
-test_properties([
-		test_binary_output_reference,
-		test_binary_output_idempotence,			
-		test_closure,
-		// test_identity,
-		// test_associativity, 
-		// test_commutativity,
-	], 
-	VectorField.cross_vector, "VectorField.cross_vector",
-	mult_vector_field_happy_args, mult_vector_happy_args, 
-);
-test_equivalence(
-	(a) => Vector.cross_vector(a.x, a.y, a.z, a.x, a.y, a.z), "Vector.cross_vector",
-	(a) => mult_vector_edgy_args.zeros, '0',
-	mult_vector_happy_args, 
-);
-test_equivalence(
-	(a,b) => { 
-		x = Vector.cross_vector(a.x, a.y, a.z, b.x, b.y, b.z); 
-		return Vector.dot_vector(a.x, a.y, a.z, x.x, x.y, x.z, );
-	}, "Vector.dot_vector(..., Vector.cross_vector)",
-	(a,b) => 0, '0', 
-	mult_vector_happy_args, mult_vector_happy_args, 
-);
-test_properties([
-		test_binary_output_reference,
-		test_binary_output_idempotence,			
-		test_closure,
-		test_identity,
-		test_associativity, 
-		// test_commutativity,
-	], 
-	VectorField.mult_matrix, "VectorField.mult_matrix",
-	mult_vector_field_happy_args, mult_matrix_happy_args, 
-);
+// test_properties([
+// 		test_binary_output_reference,
+// 		test_binary_output_idempotence,			
+// 		test_closure,
+// 		// test_identity,
+// 		// test_associativity, 
+// 		// test_commutativity,
+// 	], 
+// 	VectorField.cross_vector, "VectorField.cross_vector",
+// 	mult_vector_field_happy_args, mult_vector_happy_args, 
+// );
+// test_equivalence(
+// 	(a) => Vector.cross_vector(a.x, a.y, a.z, a.x, a.y, a.z), "Vector.cross_vector",
+// 	(a) => mult_vector_edgy_args.zeros, '0',
+// 	mult_vector_happy_args, 
+// );
+// test_equivalence(
+// 	(a,b) => { 
+// 		x = Vector.cross_vector(a.x, a.y, a.z, b.x, b.y, b.z); 
+// 		return Vector.dot_vector(a.x, a.y, a.z, x.x, x.y, x.z, );
+// 	}, "Vector.dot_vector(..., Vector.cross_vector)",
+// 	(a,b) => 0, '0', 
+// 	mult_vector_happy_args, mult_vector_happy_args, 
+// );
+// test_properties([
+// 		test_binary_output_reference,
+// 		test_binary_output_idempotence,			
+// 		test_closure,
+// 		test_identity,
+// 		test_associativity, 
+// 		// test_commutativity,
+// 	], 
+// 	VectorField.mult_matrix, "VectorField.mult_matrix",
+// 	mult_vector_field_happy_args, mult_matrix_happy_args, 
+// );
 test_properties([
 		test_unary_output_reference,
 		test_unary_output_idempotence,			
@@ -867,10 +840,10 @@ test_binary_output_idempotence(
 	VectorField.dot_vector_field, "VectorField.dot_vector_field",
 	mult_vector_field_happy_args, mult_vector_field_happy_args, 
 );
-test_binary_output_idempotence(
-	VectorField.dot_vector, "VectorField.dot_vector_field",
-	mult_vector_field_happy_args, mult_vector_happy_args, 
-);
+// test_binary_output_idempotence(
+// 	VectorField.dot_vector, "VectorField.dot_vector_field",
+// 	mult_vector_field_happy_args, mult_vector_happy_args, 
+// );
 test_binary_output_idempotence(
 	VectorField.vector_field_similarity, "VectorField.vector_field_similarity",
 	mult_vector_field_happy_args, mult_vector_field_happy_args, 
@@ -927,3 +900,4 @@ test_equivalence(
 // 	mult_vector_field_happy_args, 
 // );
 
+}
