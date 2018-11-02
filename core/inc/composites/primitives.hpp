@@ -74,6 +74,11 @@ namespace composites
 			return N;
 		}
 
+		inline T* data()
+		{
+			return this->values;
+		}
+
 		// NOTE: all operators should to be inline because they are thin wrappers of functions
 		inline const T& operator[](const unsigned int id ) const
 		{
