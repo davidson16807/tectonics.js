@@ -490,119 +490,118 @@ Rasters().then(function(cpp) {
 		I: 		new cpp.mat4(1.),
 	}    
 	   
- 
-})
-
-function comment() { //note: commenting out the code below
-var add_scalar_field_happy_args = {
-	pos: 	Float32Raster.FromArray([ 1,	 2,		 3,		 4,	 ]),
-	neg:	Float32Raster.FromArray([-1,	-2,		-3,		-4	 ]),
-	tiny: 	Float32Raster.FromArray([ 1e-1,1e-1,	 1e-1,	 1e-1]),
-	big: 	Float32Raster.FromArray([ 1e4, 1e4,	 1e4,	 1e4,]),
-	I: 		Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ]),
-	out: 	Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ]),
-}
-var mult_scalar_field_happy_args = {
-	...add_scalar_field_happy_args,
-	I: 		Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ]),
-}
-var add_scalar_field_edgy_args = {
-	...add_scalar_field_happy_args,
-	nans: 	Float32Raster.FromArray([ NaN,	 NaN, 	 NaN, 	 NaN ]),
-	infs: 	Float32Raster.FromArray([ Infinity, Infinity, Infinity, Infinity]),
-	ninfs: 	Float32Raster.FromArray([-Infinity,-Infinity,-Infinity,-Infinity]),
-}
-var mult_scalar_field_edgy_args = {
-	...add_scalar_field_edgy_args,
-	zeros: 	Float32Raster.FromArray([ 0,	 0,		 0,		 0	 ]),
-	I: 		Float32Raster.FromArray([ 1,	 1,		 1,		 1	 ]),
-}
+	 
+	add_scalar_field_happy_args = {
+		pos: 	cpp.floats_from_list([ 1,	 2,		 3,		 4,	 ]),
+		neg:	cpp.floats_from_list([-1,	-2,		-3,		-4	 ]),
+		tiny: 	cpp.floats_from_list([ 1e-1,1e-1,	 1e-1,	 1e-1]),
+		big: 	cpp.floats_from_list([ 1e4, 1e4,	 1e4,	 1e4,]),
+		I: 		cpp.floats_from_list([ 0,	 0,		 0,		 0	 ]),
+		out: 	cpp.floats_from_list([ 1,	 1,		 1,		 1	 ]),
+	}
+	mult_scalar_field_happy_args = {
+		...add_scalar_field_happy_args,
+		I: 		cpp.floats_from_list([ 1,	 1,		 1,		 1	 ]),
+	}
+	add_scalar_field_edgy_args = {
+		...add_scalar_field_happy_args,
+		nans: 	cpp.floats_from_list([ NaN,	 NaN, 	 NaN, 	 NaN ]),
+		infs: 	cpp.floats_from_list([ Infinity, Infinity, Infinity, Infinity]),
+		ninfs: 	cpp.floats_from_list([-Infinity,-Infinity,-Infinity,-Infinity]),
+	}
+	mult_scalar_field_edgy_args = {
+		...add_scalar_field_edgy_args,
+		zeros: 	cpp.floats_from_list([ 0,	 0,		 0,		 0	 ]),
+		I: 		cpp.floats_from_list([ 1,	 1,		 1,		 1	 ]),
+	}
 
 
-var add_vector_field_happy_args = {
-	pos: 	VectorRaster.FromArrays([ 1,	 2,		 3,		 4,	 ], 
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	function comment() { //note: commenting out the code below
+
+	framework_tests(
+		'Float32Raster',
+		cpp.floats_from_list([-1,	 0,		 0.5,	 NaN ]),
+		cpp.floats_from_list([ 1, 	 2,		 0.49,	 3 	 ]),
+	);
+
+	test_algabraic_group(
+		floats_add_float, "floats_add_float",
+		floats_sub_float, "floats_sub_float",
+		add_scalar_field_happy_args, add_uniform_args,
+		add_scalar_field_edgy_args, add_uniform_args,
+	);
+	test_algabraic_group(
+		floats_mult_float, "floats_mult_float",
+		floats_div_float, "floats_div_float",
+		mult_scalar_field_happy_args, mult_uniform_args,
+		mult_scalar_field_edgy_args, mult_uniform_args,
+	);
+	add_vector_field_happy_args = {
+		pos: 	cpp.vec3s_from_list([ 1,	 2,		 3,		 4,	 ], 
 									[ 5,	 6,		 7,		 8,	 ], 
 									[ 9,	 10,	 11,	 12, ]),
-	neg:	VectorRaster.FromArrays([-1,	-2,		-3,		-4	 ], 
+		neg:	cpp.vec3s_from_list([-1,	-2,		-3,		-4	 ], 
 									[-5,	-6,		-7,		-8	 ], 
 									[-9,	-10,	-11,	-12	 ]),
-	tiny: 	VectorRaster.FromArrays([ 1e-1,	 1e-1,	 1e-1,	 1e-1], 
+		tiny: 	cpp.vec3s_from_list([ 1e-1,	 1e-1,	 1e-1,	 1e-1], 
 									[ 1e-1,	 1e-1,	 1e-1,	 1e-1], 
 									[ 1e-1,	 1e-1,	 1e-1,	 1e-1]),
-	big: 	VectorRaster.FromArrays([ 1e4,	 1e4,	 1e4,	 1e4,], 
+		big: 	cpp.vec3s_from_list([ 1e4,	 1e4,	 1e4,	 1e4,], 
 									[ 1e4,	 1e4,	 1e4,	 1e4,], 
 									[ 1e4,	 1e4,	 1e4,	 1e4,]),
-	I: 		VectorRaster.FromArrays([ 0,	 0,		 0,		 0	 ], 
+		I: 		cpp.vec3s_from_list([ 0,	 0,		 0,		 0	 ], 
 									[ 0,	 0,		 0,		 0	 ], 
 									[ 0,	 0,		 0,		 0	 ]),
-	out: 	VectorRaster.FromArrays([ 1,	 1,		 1,		 1	 ], 
+		out: 	cpp.vec3s_from_list([ 1,	 1,		 1,		 1	 ], 
 									[ 1,	 1,		 1,		 1	 ], 
 									[ 1,	 1,		 1,		 1	 ]),
-}
-var mult_vector_field_happy_args = {
-	...add_vector_field_happy_args,
-	I: 		VectorRaster.FromArrays([ 1,	 1,		 1,		 1	 ], 
+	}
+	mult_vector_field_happy_args = {
+		...add_vector_field_happy_args,
+		I: 		cpp.vec3s_from_list([ 1,	 1,		 1,		 1	 ], 
 									[ 1,	 1,		 1,		 1	 ], 
 									[ 1,	 1,		 1,		 1	 ]),
-}
-var add_vector_field_edgy_args = {
-	...add_vector_field_happy_args,
-	nans: 	VectorRaster.FromArrays([ NaN,	 NaN, 	 NaN, 	 NaN ], 
+	}
+	add_vector_field_edgy_args = {
+		...add_vector_field_happy_args,
+		nans: 	cpp.vec3s_from_list([ NaN,	 NaN, 	 NaN, 	 NaN ], 
 									[ NaN,	 NaN, 	 NaN, 	 NaN ], 
 									[ NaN,	 NaN, 	 NaN, 	 NaN ]),
-	infs: 	VectorRaster.FromArrays([ Infinity, Infinity, Infinity, Infinity], 
+		infs: 	cpp.vec3s_from_list([ Infinity, Infinity, Infinity, Infinity], 
 									[ Infinity, Infinity, Infinity, Infinity], 
 									[ Infinity, Infinity, Infinity, Infinity]),
-	ninfs: 	VectorRaster.FromArrays([-Infinity,-Infinity,-Infinity,-Infinity], 
+		ninfs: 	cpp.vec3s_from_list([-Infinity,-Infinity,-Infinity,-Infinity], 
 									[-Infinity,-Infinity,-Infinity,-Infinity], 
 									[-Infinity,-Infinity,-Infinity,-Infinity]),
-}
-var mult_vector_field_edgy_args = {
-	...add_vector_field_edgy_args,
-	zeros: 	VectorRaster.FromArrays([ 0,	 0,		 0,		 0	 ], 
+	}
+	mult_vector_field_edgy_args = {
+		...add_vector_field_edgy_args,
+		zeros: 	cpp.vec3s_from_list([ 0,	 0,		 0,		 0	 ], 
 									[ 0,	 0,		 0,		 0	 ], 
 									[ 0,	 0,		 0,		 0	 ]),
-	I: 		VectorRaster.FromArrays([ 1,	 1,		 1,		 1	 ], 
+		I: 		cpp.vec3s_from_list([ 1,	 1,		 1,		 1	 ], 
 									[ 1,	 1,		 1,		 1	 ], 
 									[ 1,	 1,		 1,		 1	 ]),
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-framework_tests(
-	'Float32Raster',
-	Float32Raster.FromArray([-1,	 0,		 0.5,	 NaN ]),
-	Float32Raster.FromArray([ 1, 	 2,		 0.49,	 3 	 ]),
-);
-
-test_algabraic_group(
-	ScalarField.add_scalar, "ScalarField.add_scalar",
-	ScalarField.sub_scalar, "ScalarField.sub_scalar",
-	add_scalar_field_happy_args, add_uniform_args,
-	add_scalar_field_edgy_args, add_uniform_args,
-);
-test_algabraic_group(
-	ScalarField.mult_scalar, "ScalarField.mult_scalar",
-	ScalarField.div_scalar, "ScalarField.div_scalar",
-	mult_scalar_field_happy_args, mult_uniform_args,
-	mult_scalar_field_edgy_args, mult_uniform_args,
-);
+	}
 test_properties([
 		test_binary_output_reference,
 		test_binary_output_idempotence,			
