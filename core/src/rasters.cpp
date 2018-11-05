@@ -136,6 +136,7 @@ EMSCRIPTEN_BINDINGS(rasters)
   class_<floats>("floats")
       .constructor<unsigned int>()
       .constructor<unsigned int, float>()
+      .constructor<floats&>()
   ;
 
   class_<vec3s>("vec3s")

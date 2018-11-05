@@ -164,6 +164,12 @@ namespace composites
 			out[i] = a[i];
 		}
 	}
+	// NOTE: duplicate of copy constructor, just in case library needs it
+	template <class T>
+	primitives<T> copy(const primitives<T>& a )
+	{
+		return primitives<T>(a);
+	}
 	template <class T>
 	inline void copy(primitives<T>& out, const unsigned int id, const primitives<T>& a )
 	{
@@ -202,44 +208,57 @@ namespace composites
 	}
 
 
+	float COMPOSITES_EPSILON = 1e-4;
 
 	template <class T>
 	bool equal(const primitives<T>& a, const T b)
 	{
-		bool out = true;
+		bool out(true);
+		T diff(0);
+		T threshold(COMPOSITES_EPSILON*COMPOSITES_EPSILON);
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
-			out &= a[i] == b;
+			diff = a[i] - b;
+			out &= diff*diff <= threshold;
 		}
 		return out;
 	}
 	template <class T>
 	bool notEqual(const primitives<T>& a, const T b)
 	{
-		bool out = false;
+		bool out(false);
+		T diff(0);
+		T threshold(COMPOSITES_EPSILON*COMPOSITES_EPSILON);
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
-			out |= a[i] != b;
+			diff = a[i] - b;
+			out |= diff*diff > threshold;
 		}
 		return out;
 	}
 	template <class T>
 	bool equal(const primitives<T>& a, const primitives<T>& b)
 	{
-		bool out = true;
+		bool out(true);
+		T diff(0);
+		T threshold(COMPOSITES_EPSILON*COMPOSITES_EPSILON);
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
-			out &= a[i] == b[i];
+			diff = a[i] - b[i];
+			out &= diff*diff <= threshold;
 		}
 		return out;
 	}
 	template <class T>
 	bool notEqual(const primitives<T>& a, const primitives<T>& b)
 	{
-		bool out = false;
+		bool out(false);
+		T diff(0);
+		T threshold(COMPOSITES_EPSILON*COMPOSITES_EPSILON);
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
-			out |= a[i] != b[i];
+			diff = a[i] - b[i];
+			out |= diff*diff > threshold;
 		}
 		return out;
 	}
@@ -249,33 +268,45 @@ namespace composites
 	template <class T>
 	void equal(const primitives<T>& a, const T b, primitives<bool>& out)
 	{
+		T diff(0);
+		T threshold(COMPOSITES_EPSILON*COMPOSITES_EPSILON);
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
-			out[i] = a[i] == b;
+			diff = a[i] - b;
+			out[i] = diff*diff <= threshold;
 		}
 	}
 	template <class T>
 	void notEqual(const primitives<T>& a, const T b, primitives<bool>& out)
 	{
+		T diff(0);
+		T threshold(COMPOSITES_EPSILON*COMPOSITES_EPSILON);
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
-			out[i] = a[i] == b;
+			diff = a[i] - b;
+			out[i] = diff*diff > threshold;
 		}
 	}
 	template <class T>
 	void equal(const primitives<T>& a, const primitives<T>& b, primitives<bool>& out)
 	{
+		T diff(0);
+		T threshold(COMPOSITES_EPSILON*COMPOSITES_EPSILON);
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
-			out[i] = a[i] == b[i];
+			diff = a[i] - b[i];
+			out[i] = diff*diff <= threshold;
 		}
 	}
 	template <class T>
 	void notEqual(const primitives<T>& a, const primitives<T>& b, primitives<bool>& out)
 	{
+		T diff(0);
+		T threshold(COMPOSITES_EPSILON*COMPOSITES_EPSILON);
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
-			out[i] = a[i] != b[i];
+			diff = a[i] - b[i];
+			out[i] = diff*diff > threshold;
 		}
 	}
 
