@@ -21,6 +21,90 @@ namespace composites
 		}
 	}
 
+	template<length_t L, typename T, qualifier Q>
+	bool equal(const primitives<vec<L,T,Q>>& a, const vec<L,T,Q> b)
+	{
+		bool out(true);
+		T threshold(COMPOSITES_EPSILON*COMPOSITES_EPSILON);
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out &= distance(a[i], b) <= threshold;
+		}
+		return out;
+	}
+	template<length_t L, typename T, qualifier Q>
+	bool notEqual(const primitives<vec<L,T,Q>>& a, const vec<L,T,Q> b)
+	{
+		bool out(false);
+		T threshold(COMPOSITES_EPSILON*COMPOSITES_EPSILON);
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out |= distance(a[i], b) > threshold;
+		}
+		return out;
+	}
+	template<length_t L, typename T, qualifier Q>
+	bool equal(const primitives<vec<L,T,Q>>& a, const primitives<vec<L,T,Q>>& b)
+	{
+		bool out(true);
+		T threshold(COMPOSITES_EPSILON*COMPOSITES_EPSILON);
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out &= distance(a[i], b[i]) <= threshold;
+		}
+		return out;
+	}
+	template<length_t L, typename T, qualifier Q>
+	bool notEqual(const primitives<vec<L,T,Q>>& a, const primitives<vec<L,T,Q>>& b)
+	{
+		bool out(false);
+		T threshold(COMPOSITES_EPSILON*COMPOSITES_EPSILON);
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out |= distance(a[i], b[i]) > threshold;
+		}
+		return out;
+	}
+
+
+
+	template<length_t L, typename T, qualifier Q>
+	void equal(const primitives<vec<L,T,Q>>& a, const vec<L,T,Q> b, primitives<bool>& out)
+	{
+		T threshold(COMPOSITES_EPSILON*COMPOSITES_EPSILON);
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = distance(a[i], b) <= threshold;
+		}
+	}
+	template<length_t L, typename T, qualifier Q>
+	void notEqual(const primitives<vec<L,T,Q>>& a, const vec<L,T,Q> b, primitives<bool>& out)
+	{
+		T threshold(COMPOSITES_EPSILON*COMPOSITES_EPSILON);
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = distance(a[i], b) > threshold;
+		}
+	}
+	template<length_t L, typename T, qualifier Q>
+	void equal(const primitives<vec<L,T,Q>>& a, const primitives<vec<L,T,Q>>& b, primitives<bool>& out)
+	{
+		T threshold(COMPOSITES_EPSILON*COMPOSITES_EPSILON);
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = distance(a[i], b[i]) <= threshold;
+		}
+	}
+	template<length_t L, typename T, qualifier Q>
+	void notEqual(const primitives<vec<L,T,Q>>& a, const primitives<vec<L,T,Q>>& b, primitives<bool>& out)
+	{
+		T threshold(COMPOSITES_EPSILON*COMPOSITES_EPSILON);
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = distance(a[i], b[i]) > threshold;
+		}
+	}
+
 	typedef primitives<vec<1, bool, glm::defaultp>>	bvec1s;
 	typedef primitives<vec<2, bool, glm::defaultp>>	bvec2s;
 	typedef primitives<vec<3, bool, glm::defaultp>>	bvec3s;
