@@ -232,20 +232,46 @@ EMSCRIPTEN_BINDINGS(rasters)
                    float, float, float, float>()
   ;
 
+  class_<bools>("bools")
+      .constructor<unsigned int>()
+      .constructor<unsigned int, bool>()
+      .function("size", &bools::size)
+  ;
+
+  class_<ints>("ints")
+      .constructor<unsigned int>()
+      .constructor<unsigned int, int>()
+      .function("size", &ints::size)
+  ;
+
+  class_<uints>("uints")
+      .constructor<unsigned int>()
+      .constructor<unsigned int, uint>()
+      .function("size", &uints::size)
+  ;
+
   class_<floats>("floats")
       .constructor<unsigned int>()
       .constructor<unsigned int, float>()
       .function("size", &floats::size)
   ;
 
-  class_<bools>("bools")
+  class_<vec2s>("vec2s")
       .constructor<unsigned int>()
-      .constructor<unsigned int, float>()
-      .function("size", &bools::size)
+      .constructor<unsigned int, vec2>()
+      .function("size", &vec2s::size)
   ;
 
   class_<vec3s>("vec3s")
       .constructor<unsigned int>()
+      .constructor<unsigned int, vec3>()
+      .function("size", &vec3s::size)
+  ;
+
+  class_<vec4s>("vec4s")
+      .constructor<unsigned int>()
+      .constructor<unsigned int, vec4>()
+      .function("size", &vec4s::size)
   ;
 
   register_vector<vec3>("vector_vec3");
