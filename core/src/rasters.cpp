@@ -31,7 +31,7 @@ void copy_typed_array(primitives<T>& out, const val& typed_array)
 }
 
 template<typename T>
-primitives<T> copy_typed_array(const val& typed_array)
+primitives<T> from_typed_array(const val& typed_array)
 {
   unsigned int typed_array_length = typed_array["length"].as<unsigned int>();
   primitives<T> out = primitives<T>(typed_array_length);
@@ -51,12 +51,111 @@ void copy_list(primitives<T>& out, const val& list)
   }
 }
 
+template<typename T, qualifier Q>
+void copy_list(primitives<vec<2,T,Q>>& out, const val& list)
+{
+  unsigned int list_length = list["length"].as<unsigned int>();
+  //TODO: verify output length equals list length
+
+  for (unsigned int i = 0; i < list_length; i+=2)
+  {
+    out[i/2] = vec<2,T,Q>(
+      list[i+0].as<T>(), 
+      list[i+1].as<T>() 
+    );
+  }
+}
+
+template<typename T, qualifier Q>
+void copy_list(primitives<vec<3,T,Q>>& out, const val& list)
+{
+  unsigned int list_length = list["length"].as<unsigned int>();
+  //TODO: verify output length equals list length
+
+  for (unsigned int i = 0; i < list_length; i+=3)
+  {
+    out[i/3] = vec<3,T,Q>(
+      list[i+0].as<T>(), 
+      list[i+1].as<T>(), 
+      list[i+2].as<T>() 
+    );
+  }
+}
+
+template<typename T, qualifier Q>
+void copy_list(primitives<vec<4,T,Q>>& out, const val& list)
+{
+  unsigned int list_length = list["length"].as<unsigned int>();
+  //TODO: verify output length equals list length
+
+  for (unsigned int i = 0; i < list_length; i+=4)
+  {
+    out[i/4] = vec<4,T,Q>(
+      list[i+0].as<T>(), 
+      list[i+1].as<T>(), 
+      list[i+2].as<T>(), 
+      list[i+3].as<T>() 
+    );
+  }
+}
+
 template<typename T>
-primitives<T> copy_list(const val& list)
+primitives<T> from_list(const val& list)
 {
   unsigned int list_length = list["length"].as<unsigned int>();
   primitives<T> out = primitives<T>(list_length);
   copy_list(out, list);
+  return out;
+}
+template<length_t L, typename T, qualifier Q>
+primitives<vec<L,T,Q>> vecs_from_list(const val& list)
+{
+  unsigned int list_length = list["length"].as<unsigned int>();
+  primitives<vec<L,T,Q>> out = primitives<vec<L,T,Q>>(list_length/L);
+  copy_list(out, list);
+  return out;
+}
+
+template<typename T, qualifier Q>
+val to_list(vec<2,T,Q> a){
+  val out = val::array();
+  out.set(0, a.x);
+  out.set(1, a.y);
+  return out;
+}
+template<typename T, qualifier Q>
+val to_list(vec<3,T,Q> a){
+  val out = val::array();
+  out.set(0, a.x);
+  out.set(1, a.y);
+  out.set(2, a.z);
+  return out;
+}
+template<typename T, qualifier Q>
+val to_list(vec<4,T,Q> a){
+  val out = val::array();
+  out.set(0,a.x);
+  out.set(1,a.y);
+  out.set(2,a.z);
+  out.set(3,a.w);
+  return out;
+}
+template<typename T>
+val to_list(const primitives<T>& a){
+  val out = val::array();
+  for (unsigned int i = 0; i < a.size(); ++i)
+  {
+    out.set(i, val(a[i]));
+  }
+  return out;
+}
+template<length_t L, typename T, qualifier Q>
+val to_list(const primitives<vec<L,T,Q>>& a){
+  val out = val::array();
+  for (unsigned int i = 0; i < a.size(); ++i)
+  {
+    out.set(i, to_list(a[i]));
+  }
   return out;
 }
 
@@ -136,7 +235,13 @@ EMSCRIPTEN_BINDINGS(rasters)
   class_<floats>("floats")
       .constructor<unsigned int>()
       .constructor<unsigned int, float>()
-      // .constructor<floats&>()
+      .function("size", &floats::size)
+  ;
+
+  class_<bools>("bools")
+      .constructor<unsigned int>()
+      .constructor<unsigned int, float>()
+      .function("size", &bools::size)
   ;
 
   class_<vec3s>("vec3s")
@@ -157,9 +262,10 @@ EMSCRIPTEN_BINDINGS(rasters)
 
   function("bools_copy_typed_array",   (void (*)(bools& out, const val& js_list ))              copy_typed_array     );
   function("bools_copy_list",   (void (*)(bools& out, const val& js_list ))                     copy_list     );
-  function("bools_from_typed_array",   (bools (*)(const val& js_list ))                         copy_typed_array     );
-  function("bools_from_list",   (bools (*)(const val& js_list ))                                copy_list     );
+  function("bools_from_typed_array",   (bools (*)(const val& js_list ))                         from_typed_array     );
+  function("bools_from_list",   (bools (*)(const val& js_list ))                                from_list     );
   function("bools_from_bools",  (bools (*)(const bools& a ))                                    copy     );
+  function("bools_to_list",     (val (*)(const bools& a ))                                      to_list     );
 
   function("bools_unite_bool",        (void (*)(const bools& a, const bool b, bools& out))      unite     );
   function("bools_unite_bools",       (void (*)(const bools& a, const bools& b, bools& out))    unite     );
@@ -207,9 +313,10 @@ EMSCRIPTEN_BINDINGS(rasters)
 
   function("ints_copy_typed_array",   (void (*)(ints& out, const val& js_list ))              copy_typed_array     );
   function("ints_copy_list",   (void (*)(ints& out, const val& js_list ))                     copy_list     );
-  function("ints_from_typed_array",   (ints (*)(const val& js_list ))                         copy_typed_array     );
-  function("ints_from_list",   (ints (*)(const val& js_list ))                                copy_list     );
+  function("ints_from_typed_array",   (ints (*)(const val& js_list ))                         from_typed_array     );
+  function("ints_from_list",   (ints (*)(const val& js_list ))                                from_list     );
   function("ints_from_ints",   (ints (*)(const ints& a ))                                     copy     );
+  function("ints_to_list",     (val (*)(const ints& a ))                                      to_list     );
 
   function("ints_add_ints",    (void (*)(const ints&, const ints&, ints&)) add  );
   function("ints_add_int",     (void (*)(const ints&, const int, ints&))   add  );
@@ -342,9 +449,10 @@ EMSCRIPTEN_BINDINGS(rasters)
 
   function("uints_copy_typed_array",   (void (*)(uints& out, const val& js_list ))              copy_typed_array     );
   function("uints_copy_list",   (void (*)(uints& out, const val& js_list ))                     copy_list     );
-  function("uints_from_typed_array",   (uints (*)(const val& js_list ))                         copy_typed_array     );
-  function("uints_from_list",    (uints (*)(const val& js_list ))                               copy_list     );
+  function("uints_from_typed_array",   (uints (*)(const val& js_list ))                         from_typed_array     );
+  function("uints_from_list",    (uints (*)(const val& js_list ))                               from_list     );
   function("uints_from_uints",   (uints (*)(const uints& a ))                                   copy     );
+  function("uints_to_list",      (val (*)(const uints& a ))                                     to_list     );
 
   function("uints_add_uints",    (void (*)(const uints&, const uints&, uints&)) add  );
   function("uints_add_uint",     (void (*)(const uints&, const uint, uints&))   add  );
@@ -474,9 +582,10 @@ EMSCRIPTEN_BINDINGS(rasters)
 
   function("floats_copy_typed_array",   (void (*)(floats& out, const val& js_list ))              copy_typed_array     );
   function("floats_copy_list",   (void (*)(floats& out, const val& js_list ))                     copy_list     );
-  function("floats_from_typed_array",   (floats (*)(const val& js_list ))                         copy_typed_array     );
-  function("floats_from_list",   (floats (*)(const val& js_list ))                                copy_list     );
+  function("floats_from_typed_array",   (floats (*)(const val& js_list ))                         from_typed_array     );
+  function("floats_from_list",   (floats (*)(const val& js_list ))                                from_list     );
   function("floats_from_floats", (floats (*)(const floats& a ))                                   copy     );
+  function("floats_to_list",      (val (*)(const floats& a ))                                     to_list     );
 
   function("floats_add_floats",    (void (*)(const floats&, const floats&, floats&))     add  );
   function("floats_add_float",     (void (*)(const floats&, const float, floats&))       add  );
@@ -811,9 +920,10 @@ EMSCRIPTEN_BINDINGS(rasters)
 
   function("vec2s_copy_typed_array",   (void (*)(vec2s& out, const val& js_list ))              copy_typed_array     );
   function("vec2s_copy_list",   (void (*)(vec2s& out, const val& js_list ))                     copy_list     );
-  function("vec2s_from_typed_array",   (vec2s (*)(const val& js_list ))                         copy_typed_array     );
-  function("vec2s_from_list",   (vec2s (*)(const val& js_list ))                                copy_list     );
+  function("vec2s_from_typed_array",   (vec2s (*)(const val& js_list ))                         from_typed_array     );
+  function("vec2s_from_list",   (vec2s (*)(const val& js_list ))                                vecs_from_list     );
   function("vec2s_from_vec2s",   (vec2s (*)(const vec2s& a ))                                   copy     );
+  function("vec2s_to_list",      (val (*)(const vec2s& a ))                                     to_list     );
 
 
   function("vec2s_add_vec2s",  (void (*)(const vec2s&, const vec2s&, vec2s&))  add  );
@@ -978,9 +1088,10 @@ EMSCRIPTEN_BINDINGS(rasters)
 
   function("vec3s_copy_typed_array",   (void (*)(vec3s& out, const val& js_list ))              copy_typed_array     );
   function("vec3s_copy_list",   (void (*)(vec3s& out, const val& js_list ))                     copy_list     );
-  function("vec3s_from_typed_array",   (vec3s (*)(const val& js_list ))                         copy_typed_array     );
-  function("vec3s_from_list",   (vec3s (*)(const val& js_list ))                                copy_list     );
+  function("vec3s_from_typed_array",   (vec3s (*)(const val& js_list ))                         from_typed_array     );
+  function("vec3s_from_list",    (vec3s (*)(const val& js_list ))                               vecs_from_list     );
   function("vec3s_from_vec3s",   (vec3s (*)(const vec3s& a ))                                   copy     );
+  function("vec3s_to_list",      (val (*)(const vec3s& a ))                                     to_list     );
 
 
   function("vec3s_add_vec3s",  (void (*)(const vec3s&, const vec3s&, vec3s&))  add  );
@@ -1145,9 +1256,10 @@ EMSCRIPTEN_BINDINGS(rasters)
 
   function("vec4s_copy_typed_array",   (void (*)(vec4s& out, const val& js_list ))              copy_typed_array     );
   function("vec4s_copy_list",   (void (*)(vec4s& out, const val& js_list ))                     copy_list     );
-  function("vec4s_from_typed_array",   (vec4s (*)(const val& js_list ))                         copy_typed_array     );
-  function("vec4s_from_list",   (vec4s (*)(const val& js_list ))                                copy_list     );
+  function("vec4s_from_typed_array",   (vec4s (*)(const val& js_list ))                         from_typed_array     );
+  function("vec4s_from_list",   (vec4s (*)(const val& js_list ))                                vecs_from_list     );
   function("vec4s_from_vec4s",   (vec4s (*)(const vec4s& a ))                                   copy     );
+  function("vec4s_to_list",      (val (*)(const vec4s& a ))                                     to_list     );
 
 
   function("vec4s_add_vec4s",  (void (*)(const vec4s&, const vec4s&, vec4s&))  add  );

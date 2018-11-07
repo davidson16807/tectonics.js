@@ -215,7 +215,7 @@ namespace composites
 	{
 		bool out(true);
 		T diff(0);
-		T threshold(COMPOSITES_EPSILON*COMPOSITES_EPSILON);
+		T threshold(COMPOSITES_EPSILON);
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
 			diff = a[i] - b;
@@ -228,7 +228,7 @@ namespace composites
 	{
 		bool out(false);
 		T diff(0);
-		T threshold(COMPOSITES_EPSILON*COMPOSITES_EPSILON);
+		T threshold(COMPOSITES_EPSILON);
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
 			diff = a[i] - b;
@@ -241,7 +241,7 @@ namespace composites
 	{
 		bool out(true);
 		T diff(0);
-		T threshold(COMPOSITES_EPSILON*COMPOSITES_EPSILON);
+		T threshold(COMPOSITES_EPSILON);
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
 			diff = a[i] - b[i];
@@ -254,7 +254,7 @@ namespace composites
 	{
 		bool out(false);
 		T diff(0);
-		T threshold(COMPOSITES_EPSILON*COMPOSITES_EPSILON);
+		T threshold(COMPOSITES_EPSILON);
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
 			diff = a[i] - b[i];
@@ -269,7 +269,7 @@ namespace composites
 	void equal(const primitives<T>& a, const T b, primitives<bool>& out)
 	{
 		T diff(0);
-		T threshold(COMPOSITES_EPSILON*COMPOSITES_EPSILON);
+		T threshold(COMPOSITES_EPSILON);
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
 			diff = a[i] - b;
@@ -280,7 +280,7 @@ namespace composites
 	void notEqual(const primitives<T>& a, const T b, primitives<bool>& out)
 	{
 		T diff(0);
-		T threshold(COMPOSITES_EPSILON*COMPOSITES_EPSILON);
+		T threshold(COMPOSITES_EPSILON);
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
 			diff = a[i] - b;
@@ -291,7 +291,7 @@ namespace composites
 	void equal(const primitives<T>& a, const primitives<T>& b, primitives<bool>& out)
 	{
 		T diff(0);
-		T threshold(COMPOSITES_EPSILON*COMPOSITES_EPSILON);
+		T threshold(COMPOSITES_EPSILON);
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
 			diff = a[i] - b[i];
@@ -302,7 +302,7 @@ namespace composites
 	void notEqual(const primitives<T>& a, const primitives<T>& b, primitives<bool>& out)
 	{
 		T diff(0);
-		T threshold(COMPOSITES_EPSILON*COMPOSITES_EPSILON);
+		T threshold(COMPOSITES_EPSILON);
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
 			diff = a[i] - b[i];
