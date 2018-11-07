@@ -345,16 +345,18 @@ function test_algabraic_field	(add, add_name,  sub, sub_name, happy_add_args,	ed
 
 
 
+TINY = 1e-1;
+BIG = 1e2;
 
-add_uniform_args = {
+add_float_args = {
 	pos: 	 1,
 	neg: 	-1,
-	tiny: 	 1e-1,
-	big: 	 1e1,
+	tiny: 	 TINY,
+	big: 	 BIG,
 	I: 		 0,
 }
-mult_uniform_args = {
-	...add_uniform_args,
+mult_float_args = {
+	...add_float_args,
 	I: 		 1,
 }
 Rasters().then(function(rasters) {
@@ -363,44 +365,44 @@ Rasters().then(function(rasters) {
 	// a "happy path" in this script indicates an operation should produce a valid value as understood within the confines of an abelian algebra
 	// an "edge case" is anything that produces a technically valid value but not one understood to be an abelian algebra
 	// for instance, a "NaN" value that spreads through calculations
-	add_vector_happy_args = {
+	add_vec3_happy_args = {
 		pos: 	new cpp.vec3( 1,	2,		 3 			),
 		neg:	new cpp.vec3(-1,	-2,		-3 			),
-		tiny: 	new cpp.vec3( 1e-1,	1e-1,	 1e-1 		),
-		big: 	new cpp.vec3( 1e1,	1e1,	 1e1 		),
+		tiny: 	new cpp.vec3( TINY,	TINY,	 TINY 		),
+		big: 	new cpp.vec3( BIG,	BIG,	 BIG 		),
 		I: 		new cpp.vec3( 0,	0,		 0 			),
 		out: 	new cpp.vec3( 1,	1,		 1 			),
 	}
 	mult_vector_happy_args = {
-		...add_vector_happy_args,
+		...add_vec3_happy_args,
 		I: 		new cpp.vec3( 1,	1,		 1 			),
 	}
-	add_vector_edgy_args = {
-		...add_vector_happy_args,
+	add_vec3_edgy_args = {
+		...add_vec3_happy_args,
 		// nans: 	new cpp.vec3( NaN,		 NaN, 	 NaN 		),
 		// infs: 	new cpp.vec3( Infinity,	 Infinity, Infinity ),
 		// ninfs: 	new cpp.vec3(-Infinity,	-Infinity,-Infinity ),
 	}
 	mult_vector_edgy_args = {
-		...add_vector_edgy_args,
+		...add_vec3_edgy_args,
 		// zeros: 	new cpp.vec3( 0,	0,		 0 			),
 		I: 		new cpp.vec3( 1,	1,		 1 			),
 	}
 
 
-	add_matrix_happy_args = {
+	add_mat3_happy_args = {
 		pos: 	new cpp.mat3( 1,			 2,		 3, 		
 					      4,			 5,		 6, 		
 					      7,			 8,		 9, 		),
 		neg:	new cpp.mat3(-1,			-2,		-3, 		
 					     -4,			-5,		-6, 		
 					     -7,			-8,		-9, 		),
-		tiny: 	new cpp.mat3( 1e-2,		 1e-2,	 1e-2,		
-					      1e-2,		 1e-2,	 1e-2,		
-					      1e-2,		 1e-2,	 1e-2,		),
-		big: 	new cpp.mat3( 1e2,		 1e2,	 1e2, 		
-					      1e2,		 1e2,	 1e2, 		
-					      1e2,		 1e2,	 1e2, 		),
+		tiny: 	new cpp.mat3( TINY,		 TINY,	 TINY,		
+					      TINY,		 TINY,	 TINY,		
+					      TINY,		 TINY,	 TINY,		),
+		big: 	new cpp.mat3( BIG,		 BIG,	 BIG, 		
+					      BIG,		 BIG,	 BIG, 		
+					      BIG,		 BIG,	 BIG, 		),
 		I: 		new cpp.mat3( 0,			 0,		 0, 		
 					      0,			 0,		 0, 		
 					      0,			 0,		 0, 		),
@@ -409,11 +411,11 @@ Rasters().then(function(rasters) {
 					      1,			 1,		 1, 		),
 	}
 	mult_matrix_happy_args = {
-		...add_matrix_happy_args,
+		...add_mat3_happy_args,
 		I: 		new cpp.mat3(1.),
 	}
-	add_matrix_edgy_args = {
-		...add_matrix_happy_args,
+	add_mat3_edgy_args = {
+		...add_mat3_happy_args,
 		nans: 	new cpp.mat3( NaN,		 NaN, 	 NaN, 		
 					          NaN,		 NaN, 	 NaN, 		
 					          NaN,		 NaN, 	 NaN, 		),
@@ -425,15 +427,15 @@ Rasters().then(function(rasters) {
 					         -Infinity,	-Infinity,-Infinity, ),
 	}
 
-	mult_matrix_edgy_args = {
-		...add_matrix_edgy_args,
+	mult_mat3_edgy_args = {
+		...add_mat3_edgy_args,
 		zeros: 	new cpp.mat3( 0,			 0,		 0, 		
 					          0,			 0,		 0, 		
 					          0,			 0,		 0, 		),
 		I: 		new cpp.mat3(1.),
 	}
 
-	add_matrix4x4_happy_args = {
+	add_mat4_happy_args = {
 		pos: 	new cpp.mat4( 1,			 2,		 3, 		 4, 		
 					          5,			 6,		 7, 		 8, 		
 					          9,			 10,	 11, 		 12, 		
@@ -442,14 +444,14 @@ Rasters().then(function(rasters) {
 					         -5,			-6,		-7, 		-8, 		
 					         -9,			-10,	-11, 		-12, 		
 					         -13,			-14,	-15, 		-16, 		),
-		tiny: 	new cpp.mat4( 1e-1,		 1e-1,	 1e-1,		 1e-1,		
-					          1e-1,		 1e-1,	 1e-1,		 1e-1,		
-					          1e-1,		 1e-1,	 1e-1,		 1e-1,		
-					          1e-1,		 1e-1,	 1e-1,		 1e-1,		),
-		big: 	new cpp.mat4( 1e4,		 1e4,	 1e4, 		 1e4, 		
-					          1e4,		 1e4,	 1e4, 		 1e4, 		
-					          1e4,		 1e4,	 1e4, 		 1e4, 		
-					          1e4,		 1e4,	 1e4, 		 1e4, 		),
+		tiny: 	new cpp.mat4( TINY,		 TINY,	 TINY,		 TINY,		
+					          TINY,		 TINY,	 TINY,		 TINY,		
+					          TINY,		 TINY,	 TINY,		 TINY,		
+					          TINY,		 TINY,	 TINY,		 TINY,		),
+		big: 	new cpp.mat4( BIG,		 BIG,	 BIG, 		 BIG, 		
+					          BIG,		 BIG,	 BIG, 		 BIG, 		
+					          BIG,		 BIG,	 BIG, 		 BIG, 		
+					          BIG,		 BIG,	 BIG, 		 BIG, 		),
 		I: 		new cpp.mat4( 0,			 0,		 0, 		 0, 		
 					          0,			 0,		 0, 		 0, 		
 					          0,			 0,		 0, 		 0, 		
@@ -459,12 +461,12 @@ Rasters().then(function(rasters) {
 					          1,			 1,		 1, 		 1, 		
 					          1,			 1,		 1, 		 1, 		),
 	}
-	mult_matrix4x4_happy_args = {
-		...add_matrix4x4_happy_args,
+	mult_mat4_happy_args = {
+		...add_mat4_happy_args,
 		I: 		new cpp.mat4(1.),
 	}    
-	add_matrix4x4_edgy_args = {
-		...add_matrix4x4_happy_args,
+	add_mat4_edgy_args = {
+		...add_mat4_happy_args,
 		nans: 	new cpp.mat4 ( NaN,		 NaN, 	 NaN, 		 NaN, 		
 					     	   NaN,		 NaN, 	 NaN, 		 NaN, 		
 					     	   NaN,		 NaN, 	 NaN, 		 NaN, 		
@@ -478,8 +480,8 @@ Rasters().then(function(rasters) {
 					     	  -Infinity,	-Infinity,-Infinity,-Infinity, 
 					     	  -Infinity,	-Infinity,-Infinity,-Infinity, ),
 	}
-	mult_matrix4x4_edgy_args = {
-		...add_matrix4x4_edgy_args,
+	mult_mat4_edgy_args = {
+		...add_mat4_edgy_args,
 		zeros: 	new cpp.mat4 ( 0,			 0,		 0, 		 0, 		
 					     	   0,			 0,		 0, 		 0, 		
 					     	   0,			 0,		 0, 		 0, 		
@@ -488,26 +490,26 @@ Rasters().then(function(rasters) {
 	}    
 	   
 	 
-	add_scalar_field_happy_args = {
+	add_floats_happy_args = {
 		pos: 	cpp.floats_from_list([ 1,	 2,		 3,		 4,	 ]),
 		neg:	cpp.floats_from_list([-1,	-2,		-3,		-4	 ]),
-		tiny: 	cpp.floats_from_list([ 1e-2,1e-2,	 1e-2,	 1e-2]),
-		big: 	cpp.floats_from_list([ 1e2, 1e2,	 1e2,	 1e2,]),
+		tiny: 	cpp.floats_from_list([ TINY,TINY,	 TINY,	 TINY]),
+		big: 	cpp.floats_from_list([ BIG, BIG,	 BIG,	 BIG,]),
 		I: 		cpp.floats_from_list([ 0,	 0,		 0,		 0	 ]),
 		out: 	cpp.floats_from_list([ 1,	 1,		 1,		 1	 ]),
 	}
-	mult_scalar_field_happy_args = {
-		...add_scalar_field_happy_args,
+	mult_floats_happy_args = {
+		...add_floats_happy_args,
 		I: 		cpp.floats_from_list([ 1,	 1,		 1,		 1	 ]),
 	}
-	add_scalar_field_edgy_args = {
-		...add_scalar_field_happy_args,
+	add_floats_edgy_args = {
+		...add_floats_happy_args,
 		// nans: 	cpp.floats_from_list([ NaN,	 NaN, 	 NaN, 	 NaN ]),
 		// infs: 	cpp.floats_from_list([ Infinity, Infinity, Infinity, Infinity]),
 		// ninfs: 	cpp.floats_from_list([-Infinity,-Infinity,-Infinity,-Infinity]),
 	}
-	mult_scalar_field_edgy_args = {
-		...add_scalar_field_edgy_args,
+	mult_floats_edgy_args = {
+		...add_floats_edgy_args,
 		// zeros: 	cpp.floats_from_list([ 0,	 0,		 0,		 0	 ]),
 		I: 		cpp.floats_from_list([ 1,	 1,		 1,		 1	 ]),
 	}
@@ -528,15 +530,15 @@ Rasters().then(function(rasters) {
 	test_algabraic_group(
 		cpp.floats_add_float, "cpp.floats_add_float",
 		cpp.floats_sub_float, "cpp.floats_sub_float",
-		add_scalar_field_happy_args, add_uniform_args,
-		add_scalar_field_edgy_args, add_uniform_args,
+		add_floats_happy_args, add_float_args,
+		add_floats_edgy_args, add_float_args,
 	);
 
 	test_algabraic_group(
 		cpp.floats_mult_float, "cpp.floats_mult_float",
 		cpp.floats_div_float, "cpp.floats_div_float",
-		mult_scalar_field_happy_args, mult_uniform_args,
-		mult_scalar_field_edgy_args, mult_uniform_args,
+		mult_floats_happy_args, mult_float_args,
+		mult_floats_edgy_args, mult_float_args,
 	);
 
 	test_properties([
@@ -548,7 +550,7 @@ Rasters().then(function(rasters) {
 			// test_commutativity,
 		], 
 		cpp.floats_min_float, "cpp.floats_min_float",
-		mult_scalar_field_happy_args, mult_uniform_args,
+		mult_floats_happy_args, mult_float_args,
 	);
 	test_properties([
 			// test_binary_output_reference,
@@ -559,7 +561,7 @@ Rasters().then(function(rasters) {
 			// test_commutativity,
 		], 
 		cpp.floats_max_float, "cpp.floats_max_float",
-		mult_scalar_field_happy_args, mult_uniform_args,
+		mult_floats_happy_args, mult_float_args,
 	);
 	//test_equivalence(
 	//	cpp.floats_greaterThanEqual_float, "cpp.floats_greaterThanEqual_float",
@@ -571,7 +573,7 @@ Rasters().then(function(rasters) {
 	//		cpp.bools_unite_bools(out1,out2,out1);
 	//	}, 
 	//	"[equivalent expression]",
-	//	mult_scalar_field_happy_args, mult_uniform_args,
+	//	mult_floats_happy_args, mult_float_args,
 	//);
 	//test_equivalence(
 	//	cpp.floats_notEqual_float, "cpp.floats_notEqual_float",
@@ -580,28 +582,28 @@ Rasters().then(function(rasters) {
 	//		cpp.bools_negate_bools(out1,out1);
 	//	}, 
 	//	"[equivalent expression]",
-	//	mult_scalar_field_happy_args, mult_uniform_args,
+	//	mult_floats_happy_args, mult_float_args,
 	//);
 	//test_equivalence(
 	//	floats_add_float_term, "floats_add_float_term",
 	//	(a,b,c) => floats_add_field(a,floats_mult_float(b,c)), "[equivalent expression]",
-	//	mult_scalar_field_happy_args, mult_scalar_field_happy_args, mult_uniform_args,
+	//	mult_floats_happy_args, mult_floats_happy_args, mult_float_args,
 	//);
 	//test_equivalence(
 	//	floats_sub_float_term, "floats_sub_float_term",
 	//	(a,b,c) => floats_sub_field(a,floats_mult_float(b,c)), "[equivalent expression]",
-	//	mult_scalar_field_happy_args, mult_scalar_field_happy_args, mult_uniform_args,
+	//	mult_floats_happy_args, mult_floats_happy_args, mult_float_args,
 	//);
 
 	test_algabraic_field(
 		cpp.floats_add_floats, "cpp.floats_add_floats", 
 		cpp.floats_sub_floats, "cpp.floats_sub_floats", 
-		add_scalar_field_happy_args, 
-		add_scalar_field_edgy_args, 
+		add_floats_happy_args, 
+		add_floats_edgy_args, 
 		cpp.floats_mult_floats,"cpp.floats_mult_floats",
 		cpp.floats_div_floats, "cpp.floats_div_floats", 
-		mult_scalar_field_happy_args, 
-		mult_scalar_field_edgy_args, 
+		mult_floats_happy_args, 
+		mult_floats_edgy_args, 
 	);
 	test_properties([
 			// test_binary_output_reference,
@@ -612,7 +614,7 @@ Rasters().then(function(rasters) {
 			// test_commutativity,
 		], 
 		cpp.floats_min_floats, "cpp.floats_min_floats",
-		mult_scalar_field_happy_args, mult_scalar_field_happy_args, 
+		mult_floats_happy_args, mult_floats_happy_args, 
 	);
 	test_properties([
 			// test_binary_output_reference,
@@ -623,58 +625,58 @@ Rasters().then(function(rasters) {
 			// test_commutativity,
 		], 
 		cpp.floats_max_floats, "cpp.floats_max_floats",
-		mult_scalar_field_happy_args, mult_scalar_field_happy_args, 
+		mult_floats_happy_args, mult_floats_happy_args, 
 	);
 
 	//test_equivalence(
 	//	cpp.floats_sqrt, "cpp.floats_sqrt",
 	//	(a) => cpp.floats_pow_float(a,1/2), "cpp.floats_pow_float(...,1/2)",
-	//	mult_scalar_field_happy_args
+	//	mult_floats_happy_args
 	//);
 	// test_equivalence(
 	// 	cpp.floats_inv, "cpp.floats_inv",
-	// 	(a) => cpp.floats_div_field(mult_scalar_field_happy_args.I,a), "cpp.floats_div_field(I,...)",
-	// 	mult_scalar_field_happy_args
+	// 	(a) => cpp.floats_div_field(mult_floats_happy_args.I,a), "cpp.floats_div_field(I,...)",
+	// 	mult_floats_happy_args
 	// );
 	// test_equivalence(
 	// 	cpp.floats_gte_field, "cpp.floats_gte_field",
 	// 	(a,b) => BinaryMorphology.union(cpp.floats_gt_field(a,b), cpp.floats_eq_field(a,b)), "BinaryMorphology.union(cpp.floats_gt_field, cpp.floats_eq_field)",
-	// 	mult_scalar_field_happy_args, mult_scalar_field_happy_args, 
+	// 	mult_floats_happy_args, mult_floats_happy_args, 
 	// );
 	// test_equivalence(
 	// 	cpp.floats_lte_field, "cpp.floats_lte_field",
 	// 	(a,b) => BinaryMorphology.union(cpp.floats_lt_field(a,b), cpp.floats_eq_field(a,b)), "BinaryMorphology.union(cpp.floats_lt_field, cpp.floats_eq_field)",
-	// 	mult_scalar_field_happy_args, mult_scalar_field_happy_args, 
+	// 	mult_floats_happy_args, mult_floats_happy_args, 
 	// );
 	// test_equivalence(
 	// 	cpp.floats_ne_field, "cpp.floats_ne_field",
 	// 	(a,b) => BinaryMorphology.negation(cpp.floats_eq_field(a,b)), "BinaryMorphology.negation(cpp.floats_eq_field)",
-	// 	mult_scalar_field_happy_args, mult_scalar_field_happy_args, 
+	// 	mult_floats_happy_args, mult_floats_happy_args, 
 	// );
 	// test_equivalence(
 	// 	cpp.floats_add_field_term, "cpp.floats_add_field_term",
 	// 	(a,b,c) => cpp.floats_add_field(a, cpp.floats_mult_field(b,c)), "cpp.floats_add_field(..., cpp.floats_mult_field)",
-	// 	mult_scalar_field_happy_args, mult_scalar_field_happy_args, mult_scalar_field_happy_args,
+	// 	mult_floats_happy_args, mult_floats_happy_args, mult_floats_happy_args,
 	// );
 	// test_equivalence(
 	// 	cpp.floats_sub_field_term, "cpp.floats_sub_field_term",
 	// 	(a,b,c) => cpp.floats_sub_field(a, cpp.floats_mult_field(b,c)), "cpp.floats_sub_field(..., ScalarField.mult_field)",
-	// 	mult_scalar_field_happy_args, mult_scalar_field_happy_args, mult_scalar_field_happy_args,
+	// 	mult_floats_happy_args, mult_floats_happy_args, mult_floats_happy_args,
 	// );
 
-	add_vector_field_happy_args = {
+	add_vec3s_happy_args = {
 		pos: 	cpp.vec3s_from_list([ 1,	 2,		 3,		 4,	  
 									  5,	 6,		 7,		 8,	  
 									  9,	 10,	 11,	 12 ]),
 		neg:	cpp.vec3s_from_list([-1,	-2,		-3,		-4, 
 									 -5,	-6,		-7,		-8, 
 									 -9,	-10,	-11,	-12 ]),
-		tiny: 	cpp.vec3s_from_list([ 1e-1,	 1e-1,	 1e-1,	 1e-1, 
-									  1e-1,	 1e-1,	 1e-1,	 1e-1, 
-									  1e-1,	 1e-1,	 1e-1,	 1e-1]),
-		big: 	cpp.vec3s_from_list([ 1e1,	 1e1,	 1e1,	 1e1,  
-									  1e1,	 1e1,	 1e1,	 1e1,  
-									  1e1,	 1e1,	 1e1,	 1e1,]),
+		tiny: 	cpp.vec3s_from_list([ TINY,	 TINY,	 TINY,	 TINY, 
+									  TINY,	 TINY,	 TINY,	 TINY, 
+									  TINY,	 TINY,	 TINY,	 TINY]),
+		big: 	cpp.vec3s_from_list([ BIG,	 BIG,	 BIG,	 BIG,  
+									  BIG,	 BIG,	 BIG,	 BIG,  
+									  BIG,	 BIG,	 BIG,	 BIG,]),
 		I: 		cpp.vec3s_from_list([ 0,	 0,		 0,		 0, 
 									  0,	 0,		 0,		 0, 
 									  0,	 0,		 0,		 0 ]),
@@ -682,14 +684,14 @@ Rasters().then(function(rasters) {
 									  1,	 1,		 1,		 1,
 									  1,	 1,		 1,		 1 ]),
 	}
-	mult_vector_field_happy_args = {
-		...add_vector_field_happy_args,
+	mult_vec3s_happy_args = {
+		...add_vec3s_happy_args,
 		I: 		cpp.vec3s_from_list([ 1,	 1,		 1,		 1, 
 									  1,	 1,		 1,		 1, 
 									  1,	 1,		 1,		 1 ]),
 	}
-	add_vector_field_edgy_args = {
-		...add_vector_field_happy_args,
+	add_vec3s_edgy_args = {
+		...add_vec3s_happy_args,
 		//nans: 	cpp.vec3s_from_list([ NaN,	 NaN, 	 NaN, 	 NaN, 
 		//							  NaN,	 NaN, 	 NaN, 	 NaN, 
 		//							  NaN,	 NaN, 	 NaN, 	 NaN ]),
@@ -700,8 +702,8 @@ Rasters().then(function(rasters) {
 		//							 -Infinity,-Infinity,-Infinity,-Infinity, 
 		//							 -Infinity,-Infinity,-Infinity,-Infinity]),
 	}
-	mult_vector_field_edgy_args = {
-		...add_vector_field_edgy_args,
+	mult_vec3s_edgy_args = {
+		...add_vec3s_edgy_args,
 		//zeros: 	cpp.vec3s_from_list([ 0,	 0,		 0,		 0, 
 		//							  0,	 0,		 0,		 0, 
 		//							  0,	 0,		 0,		 0 ]),
@@ -719,51 +721,51 @@ Rasters().then(function(rasters) {
 	test_algabraic_group(
 		cpp.vec3s_add_float, "cpp.vec3s_add_float",
 		cpp.vec3s_sub_float, "cpp.vec3s_sub_float",
-		add_vector_field_happy_args, add_uniform_args,
-		add_vector_field_edgy_args, add_uniform_args,
+		add_vec3s_happy_args, add_float_args,
+		add_vec3s_edgy_args, add_float_args,
 	);
 	test_algabraic_group(
 		cpp.vec3s_mult_float, "cpp.vec3s_mult_float",
 		cpp.vec3s_div_float, "cpp.vec3s_div_float",
-		mult_vector_field_happy_args, mult_uniform_args,
-		mult_vector_field_edgy_args, mult_uniform_args,
+		mult_vec3s_happy_args, mult_float_args,
+		mult_vec3s_edgy_args, mult_float_args,
 	);
 
 	test_algabraic_group(
 		cpp.vec3s_add_vec3, "cpp.vec3s_add_vec3",
 		cpp.vec3s_sub_vec3, "cpp.vec3s_sub_vec3",
-		add_vector_field_happy_args, add_vector_happy_args,
-		add_vector_field_edgy_args, add_vector_edgy_args,
+		add_vec3s_happy_args, add_vec3_happy_args,
+		add_vec3s_edgy_args, add_vec3_edgy_args,
 	);
 	test_algabraic_group(
 		cpp.vec3s_mult_vec3, "cpp.vec3s_mult_vec3",
 		cpp.vec3s_div_vec3, "cpp.vec3s_div_vec3",
-		mult_vector_field_happy_args, mult_vector_happy_args,
-		mult_vector_field_edgy_args, mult_vector_edgy_args,
+		mult_vec3s_happy_args, mult_vector_happy_args,
+		mult_vec3s_edgy_args, mult_vector_edgy_args,
 	);
 
 	test_algabraic_group(
 		cpp.vec3s_add_floats, "cpp.vec3s_add_floats",
 		cpp.vec3s_sub_floats, "cpp.vec3s_sub_floats",
-		add_vector_field_happy_args, add_scalar_field_happy_args,
-		add_vector_field_edgy_args, add_scalar_field_edgy_args,
+		add_vec3s_happy_args, add_floats_happy_args,
+		add_vec3s_edgy_args, add_floats_edgy_args,
 	);
 	test_algabraic_group(
 		cpp.vec3s_mult_floats, "cpp.vec3s_mult_floats",
 		cpp.vec3s_div_floats, "cpp.vec3s_div_floats",
-		mult_vector_field_happy_args, mult_scalar_field_happy_args,
-		mult_vector_field_edgy_args, mult_scalar_field_edgy_args,
+		mult_vec3s_happy_args, mult_floats_happy_args,
+		mult_vec3s_edgy_args, mult_floats_edgy_args,
 	);
 
 	test_algabraic_field(
 		cpp.vec3s_add_vec3s, "cpp.vec3s_add_vec3s",
 		cpp.vec3s_sub_vec3s, "cpp.vec3s_sub_vec3s",
-		add_vector_field_happy_args, 
-		add_vector_field_edgy_args, 
+		add_vec3s_happy_args, 
+		add_vec3s_edgy_args, 
 		cpp.vec3s_mult_vec3s,"cpp.vec3s_mult_vec3s",
 		cpp.vec3s_div_vec3s, "cpp.vec3s_div_vec3s",
-		mult_vector_field_happy_args, 
-		mult_vector_field_edgy_args, 
+		mult_vec3s_happy_args, 
+		mult_vec3s_edgy_args, 
 	);
 	test_properties([
 			// test_binary_output_reference,
@@ -774,7 +776,7 @@ Rasters().then(function(rasters) {
 			// test_commutativity,
 		], 
 		cpp.vec3s_min_vec3s, "cpp.vec3s_min_vec3s",
-		mult_vector_field_happy_args, mult_vector_field_happy_args, 
+		mult_vec3s_happy_args, mult_vec3s_happy_args, 
 	);
 	test_properties([
 			// test_binary_output_reference,
@@ -785,7 +787,7 @@ Rasters().then(function(rasters) {
 			// test_commutativity,
 		], 
 		cpp.vec3s_max_vec3s, "cpp.vec3s_max_vec3s",
-		mult_vector_field_happy_args, mult_vector_field_happy_args, 
+		mult_vec3s_happy_args, mult_vec3s_happy_args, 
 	);
 	test_properties([
 			// test_binary_output_reference,
@@ -796,17 +798,17 @@ Rasters().then(function(rasters) {
 			// test_commutativity,
 		], 
 		cpp.vec3s_cross_vec3s, "cpp.vec3s_cross_vec3s",
-		mult_vector_field_happy_args, mult_vector_field_happy_args, 
+		mult_vec3s_happy_args, mult_vec3s_happy_args, 
 	);
 	test_anticommutativity(
 		cpp.vec3s_cross_vec3s, "cpp.vec3s_cross_vec3s",
 		cpp.vec3s_sub_vec3s, "cpp.vec3s_sub_vec3s",
-		add_vector_field_happy_args, add_vector_field_happy_args, 
+		add_vec3s_happy_args, add_vec3s_happy_args, 
 	);
 	test_distributivity(
 		cpp.vec3s_add_vec3s, "cpp.vec3s_add_vec3s",
 		cpp.vec3s_cross_vec3s, "cpp.vec3s_cross_vec3s",
-		mult_vector_field_happy_args
+		mult_vec3s_happy_args
 	);
 
 
@@ -838,11 +840,11 @@ Rasters().then(function(rasters) {
 // 		// test_commutativity,
 // 	], 
 // 	cpp.vec3s_normalize, "cpp.vec3s_normalize",
-// 	mult_vector_field_happy_args, mult_vector_field_happy_args, 
+// 	mult_vec3s_happy_args, mult_vec3s_happy_args, 
 // );
 // test_binary_output_idempotence(
 // 	cpp.vec3s_dot_vec3s, "cpp.vec3s_dot_vec3s",
-// 	mult_vector_field_happy_args, mult_vector_field_happy_args, 
+// 	mult_vec3s_happy_args, mult_vec3s_happy_args, 
 // );
 
 // test_properties([
@@ -854,7 +856,7 @@ Rasters().then(function(rasters) {
 // 		// test_commutativity,
 // 	], 
 // 	VectorField.cross_vector, "VectorField.cross_vector",
-// 	mult_vector_field_happy_args, mult_vector_happy_args, 
+// 	mult_vec3s_happy_args, mult_vector_happy_args, 
 // );
 // test_equivalence(
 // 	(a) => Vector.cross_vector(a.x, a.y, a.z, a.x, a.y, a.z), "Vector.cross_vector",
@@ -878,44 +880,44 @@ Rasters().then(function(rasters) {
 // 		// test_commutativity,
 // 	], 
 // 	VectorField.mult_matrix, "VectorField.mult_matrix",
-// 	mult_vector_field_happy_args, mult_matrix_happy_args, 
+// 	mult_vec3s_happy_args, mult_matrix_happy_args, 
 // );
 // test_binary_output_idempotence(
 // 	VectorField.dot_vector, "VectorField.dot_vector_field",
-// 	mult_vector_field_happy_args, mult_vector_happy_args, 
+// 	mult_vec3s_happy_args, mult_vector_happy_args, 
 // );
 // test_binary_output_idempotence(
 // 	VectorField.vector_field_similarity, "VectorField.vector_field_similarity",
-// 	mult_vector_field_happy_args, mult_vector_field_happy_args, 
+// 	mult_vec3s_happy_args, mult_vec3s_happy_args, 
 // );
 // test_equivalence(
 // 	(a) => VectorField.cross_vector_field(a, a), "VectorField.cross_vector_field",
-// 	(a) => mult_vector_field_edgy_args.zeros, "0",
-// 	mult_vector_field_happy_args, 
+// 	(a) => mult_vec3s_edgy_args.zeros, "0",
+// 	mult_vec3s_happy_args, 
 // );
 
 // NOTE: this test fails, but I'm not sure whether it's failing 
 //  because its broken or because the "tetrahedron" grid isn't a suitable test subject
 //test_equivalence(
 //	(a) => VectorField.divergence(VectorField.curl(a)), "VectorField.curl(ScalarField.gradient)",
-//	(a) => mult_scalar_field_edgy_args.zeros, "0",
-//	mult_vector_field_happy_args, 
+//	(a) => mult_floats_edgy_args.zeros, "0",
+//	mult_vec3s_happy_args, 
 //);
 // test_equivalence(
 // 	(a) => VectorField.curl(ScalarField.gradient(a)), "VectorField.curl(ScalarField.gradient)",
-// 	(a) => mult_vector_field_edgy_args.zeros, "0",
-// 	mult_scalar_field_happy_args, 
+// 	(a) => mult_vec3s_edgy_args.zeros, "0",
+// 	mult_floats_happy_args, 
 // );
 
 // test_equivalence(
 // 	(a,b) => VectorField.dot_vector_field(a, VectorField.cross_vector_field(a, b)), "VectorField.cross_vector_field",
-// 	(a,b) => mult_scalar_field_edgy_args.zeros, "0",
-// 	mult_vector_field_happy_args, mult_vector_field_happy_args, 
+// 	(a,b) => mult_floats_edgy_args.zeros, "0",
+// 	mult_vec3s_happy_args, mult_vec3s_happy_args, 
 // );
 // NOTE: look into sporadic failures
 // test_equivalence(
 // 	(a) => VectorField.vector_field_similarity(a, a), "VectorField.vector_field_similarity",
-// 	(a) => mult_scalar_field_happy_args.I, "1",
-// 	mult_vector_field_happy_args, 
+// 	(a) => mult_floats_happy_args.I, "1",
+// 	mult_vec3s_happy_args, 
 // );
 
