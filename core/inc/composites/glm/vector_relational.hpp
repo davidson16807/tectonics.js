@@ -2,14 +2,14 @@
 
 #include <glm/vec3.hpp>    	// vec2, bvec2, dvec2, ivec2 and uvec2
 
-#include "../primitives.hpp"
+#include "../many.hpp"
 
 namespace composites
 {
 	using namespace glm;
 
 	// template<length_t L, typename T, qualifier Q>
-	// void greaterThan(const primitives<vec<L,T,Q>>& a, const T b, primitives<vec<L,bool,defaultp>>& out)
+	// void greaterThan(const many<vec<L,T,Q>>& a, const T b, many<vec<L,bool,defaultp>>& out)
 	// {
 	// 	for (unsigned int i = 0; i < a.size(); ++i)
 	// 	{
@@ -17,7 +17,7 @@ namespace composites
 	// 	}
 	// }
 	// template<length_t L, typename T, qualifier Q>
-	// void greaterThanEqual(const primitives<vec<L,T,Q>>& a, const T b, primitives<vec<L,bool,defaultp>>& out)
+	// void greaterThanEqual(const many<vec<L,T,Q>>& a, const T b, many<vec<L,bool,defaultp>>& out)
 	// {
 	// 	for (unsigned int i = 0; i < a.size(); ++i)
 	// 	{
@@ -25,7 +25,7 @@ namespace composites
 	// 	}
 	// }
 	// template<length_t L, typename T, qualifier Q>
-	// void lessThan(const primitives<vec<L,T,Q>>& a, const T b, primitives<vec<L,bool,defaultp>>& out)
+	// void lessThan(const many<vec<L,T,Q>>& a, const T b, many<vec<L,bool,defaultp>>& out)
 	// {
 	// 	for (unsigned int i = 0; i < a.size(); ++i)
 	// 	{
@@ -33,7 +33,7 @@ namespace composites
 	// 	}
 	// }
 	// template<length_t L, typename T, qualifier Q>
-	// void lessThanEqual(const primitives<vec<L,T,Q>>& a, const T b, primitives<vec<L,bool,defaultp>>& out)
+	// void lessThanEqual(const many<vec<L,T,Q>>& a, const T b, many<vec<L,bool,defaultp>>& out)
 	// {
 	// 	for (unsigned int i = 0; i < a.size(); ++i)
 	// 	{
@@ -46,7 +46,7 @@ namespace composites
 
 
 	// template<length_t L, typename T, qualifier Q>
-	// void greaterThan(const primitives<vec<L,T,Q>>& a, const primitives<T> b, primitives<vec<L,bool,defaultp>>& out)
+	// void greaterThan(const many<vec<L,T,Q>>& a, const many<T> b, many<vec<L,bool,defaultp>>& out)
 	// {
 	// 	for (unsigned int i = 0; i < a.size(); ++i)
 	// 	{
@@ -54,7 +54,7 @@ namespace composites
 	// 	}
 	// }
 	// template<length_t L, typename T, qualifier Q>
-	// void greaterThanEqual(const primitives<vec<L,T,Q>>& a, const primitives<T> b, primitives<vec<L,bool,defaultp>>& out)
+	// void greaterThanEqual(const many<vec<L,T,Q>>& a, const many<T> b, many<vec<L,bool,defaultp>>& out)
 	// {
 	// 	for (unsigned int i = 0; i < a.size(); ++i)
 	// 	{
@@ -62,7 +62,7 @@ namespace composites
 	// 	}
 	// }
 	// template<length_t L, typename T, qualifier Q>
-	// void lessThan(const primitives<vec<L,T,Q>>& a, const primitives<T> b, primitives<vec<L,bool,defaultp>>& out)
+	// void lessThan(const many<vec<L,T,Q>>& a, const many<T> b, many<vec<L,bool,defaultp>>& out)
 	// {
 	// 	for (unsigned int i = 0; i < a.size(); ++i)
 	// 	{
@@ -70,7 +70,7 @@ namespace composites
 	// 	}
 	// }
 	// template<length_t L, typename T, qualifier Q>
-	// void lessThanEqual(const primitives<vec<L,T,Q>>& a, const primitives<T> b, primitives<vec<L,bool,defaultp>>& out)
+	// void lessThanEqual(const many<vec<L,T,Q>>& a, const many<T> b, many<vec<L,bool,defaultp>>& out)
 	// {
 	// 	for (unsigned int i = 0; i < a.size(); ++i)
 	// 	{
@@ -82,7 +82,7 @@ namespace composites
 
 
 	template<length_t L, typename T, qualifier Q>
-	void greaterThan(const primitives<vec<L,T,Q>>& a, const vec<L,T,Q> b, primitives<vec<L,bool,defaultp>>& out)
+	void greaterThan(const many<vec<L,T,Q>>& a, const vec<L,T,Q> b, many<vec<L,bool,defaultp>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -90,7 +90,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void greaterThanEqual(const primitives<vec<L,T,Q>>& a, const vec<L,T,Q> b, primitives<vec<L,bool,defaultp>>& out)
+	void greaterThanEqual(const many<vec<L,T,Q>>& a, const vec<L,T,Q> b, many<vec<L,bool,defaultp>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -98,7 +98,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void lessThan(const primitives<vec<L,T,Q>>& a, const vec<L,T,Q> b, primitives<vec<L,bool,defaultp>>& out)
+	void lessThan(const many<vec<L,T,Q>>& a, const vec<L,T,Q> b, many<vec<L,bool,defaultp>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -106,7 +106,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void lessThanEqual(const primitives<vec<L,T,Q>>& a, const vec<L,T,Q> b, primitives<vec<L,bool,defaultp>>& out)
+	void lessThanEqual(const many<vec<L,T,Q>>& a, const vec<L,T,Q> b, many<vec<L,bool,defaultp>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -121,7 +121,7 @@ namespace composites
 
 
 	template<length_t L, typename T, qualifier Q>
-	void greaterThan(const primitives<vec<L,T,Q>>& a, const primitives<vec<L,T,Q>>& b, primitives<vec<L,bool,defaultp>>& out)
+	void greaterThan(const many<vec<L,T,Q>>& a, const many<vec<L,T,Q>>& b, many<vec<L,bool,defaultp>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -129,7 +129,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void greaterThanEqual(const primitives<vec<L,T,Q>>& a, const primitives<vec<L,T,Q>>& b, primitives<vec<L,bool,defaultp>>& out)
+	void greaterThanEqual(const many<vec<L,T,Q>>& a, const many<vec<L,T,Q>>& b, many<vec<L,bool,defaultp>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -137,7 +137,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void lessThan(const primitives<vec<L,T,Q>>& a, const primitives<vec<L,T,Q>>& b, primitives<vec<L,bool,defaultp>>& out)
+	void lessThan(const many<vec<L,T,Q>>& a, const many<vec<L,T,Q>>& b, many<vec<L,bool,defaultp>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -145,7 +145,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void lessThanEqual(const primitives<vec<L,T,Q>>& a, const primitives<vec<L,T,Q>>& b, primitives<vec<L,bool,defaultp>>& out)
+	void lessThanEqual(const many<vec<L,T,Q>>& a, const many<vec<L,T,Q>>& b, many<vec<L,bool,defaultp>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{

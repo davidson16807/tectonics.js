@@ -2,13 +2,13 @@
 
 #include <cmath>
 
-#include "primitives.hpp"
+#include "many.hpp"
 
 namespace composites
 {
 	/// Returns x if x >= 0; otherwise, it returns -x.
 	template <class T>
-	void abs(const primitives<T>& a, primitives<T>& out)
+	void abs(const many<T>& a, many<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -18,7 +18,7 @@ namespace composites
 
 	/// Returns 1.0 if x > 0, 0.0 if x == 0, or -1.0 if x < 0.
 	template <class T, class Tout>
-	void sign(const primitives<T>& a, primitives<Tout>& out)
+	void sign(const many<T>& a, many<Tout>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -28,7 +28,7 @@ namespace composites
 
 	/// Returns a value equal to the nearest integer that is less then or equal to x.
 	template <class T>
-	void floor(const primitives<T>& a, primitives<T>& out)
+	void floor(const many<T>& a, many<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -39,7 +39,7 @@ namespace composites
 	/// Returns a value equal to the nearest integer to x
 	/// whose absolute value is not larger than the absolute value of x.
 	template <class T>
-	void trunc(const primitives<T>& a, primitives<T>& out)
+	void trunc(const many<T>& a, many<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -53,7 +53,7 @@ namespace composites
 	/// This includes the possibility that round(x) returns the
 	/// same value as roundEven(x) for all values of x.
 	template <class T>
-	void round(const primitives<T>& a, primitives<T>& out)
+	void round(const many<T>& a, many<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -64,7 +64,7 @@ namespace composites
 	/// Returns a value equal to the nearest integer
 	/// that is greater than or equal to x.
 	template <class T>
-	void ceil(const primitives<T>& a, primitives<T>& out)
+	void ceil(const many<T>& a, many<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -74,7 +74,7 @@ namespace composites
 
 	/// Return x - floor(x).
 	template <class T>
-	void fract(const primitives<T>& a, primitives<T>& out)
+	void fract(const many<T>& a, many<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -85,7 +85,7 @@ namespace composites
 	/// Modulus. Returns x - y * floor(x / y)
 	/// for each component in x using the floating point value y.
 	template <class T>
-	void mod(const primitives<T>& a, const primitives<T>& b, primitives<T>& out)
+	void mod(const many<T>& a, const many<T>& b, many<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -98,7 +98,7 @@ namespace composites
 	/// return value and the output parameter will have the same
 	/// sign as x.
 	template <class T>
-	void modf(const primitives<T>& a, primitives<int>& intout, primitives<T>& fractout)
+	void modf(const many<T>& a, many<int>& intout, many<T>& fractout)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -109,7 +109,7 @@ namespace composites
 
 	/// Returns y if y < x; otherwise, it returns x.
 	template <class T>
-	void min(const primitives<T>& a, const primitives<T>& b, primitives<T>& out)
+	void min(const many<T>& a, const many<T>& b, many<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -117,7 +117,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void min(const primitives<T>& a, const T b, primitives<T>& out)
+	void min(const many<T>& a, const T b, many<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -127,7 +127,7 @@ namespace composites
 
 	// component-wise min
 	template <class T>
-	T min(const primitives<T>& a)
+	T min(const many<T>& a)
 	{
 		T out = a[0];
 		for (unsigned int i = 0; i < a.size(); ++i)
@@ -139,7 +139,7 @@ namespace composites
 
 	/// Returns y if x < y; otherwise, it returns x.
 	template <class T>
-	void max(const primitives<T>& a, const primitives<T>& b, primitives<T>& out)
+	void max(const many<T>& a, const many<T>& b, many<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -147,7 +147,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void max(const primitives<T>& a, const T b, primitives<T>& out)
+	void max(const many<T>& a, const T b, many<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -156,7 +156,7 @@ namespace composites
 	}
 	// component-wise max
 	template <class T>
-	T max(const primitives<T>& a)
+	T max(const many<T>& a)
 	{
 		T out = a[0];
 		for (unsigned int i = 0; i < a.size(); ++i)
@@ -169,7 +169,7 @@ namespace composites
 	/// Returns min(max(x, minVal), maxVal) for each component in x
 	/// using the floating-point values minVal and maxVal.
 	template <class T>
-	void clamp(const primitives<T>& a, const T lo, const T hi, primitives<T>& out)
+	void clamp(const many<T>& a, const T lo, const T hi, many<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -177,7 +177,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void clamp(const primitives<T>& a, const T lo, const primitives<T>& hi, primitives<T>& out)
+	void clamp(const many<T>& a, const T lo, const many<T>& hi, many<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -185,7 +185,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void clamp(const primitives<T>& a, const primitives<T>& lo, const T hi, primitives<T>& out)
+	void clamp(const many<T>& a, const many<T>& lo, const T hi, many<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -193,7 +193,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void clamp(const primitives<T>& a, const primitives<T>& lo, const primitives<T>& hi, primitives<T>& out)
+	void clamp(const many<T>& a, const many<T>& lo, const many<T>& hi, many<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -228,7 +228,7 @@ namespace composites
 	/// @param[in]  y Value to interpolate.
 	/// @param[in]  a Interpolant.
 	template <class T>
-	void mix(const primitives<T>& x, const primitives<T>& y, const primitives<T>& a, primitives<T>& out)
+	void mix(const many<T>& x, const many<T>& y, const many<T>& a, many<T>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -240,7 +240,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void mix(const primitives<T>& x, const primitives<T>& y, const T a, primitives<T>& out)
+	void mix(const many<T>& x, const many<T>& y, const T a, many<T>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -252,7 +252,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void mix(const primitives<T>& x, const T y, const primitives<T>& a, primitives<T>& out)
+	void mix(const many<T>& x, const T y, const many<T>& a, many<T>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -264,7 +264,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void mix(const primitives<T>& x, const T y, const T a, primitives<T>& out)
+	void mix(const many<T>& x, const T y, const T a, many<T>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -276,7 +276,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void mix(const T x, const primitives<T>& y, const primitives<T>& a, primitives<T>& out)
+	void mix(const T x, const many<T>& y, const many<T>& a, many<T>& out)
 	{
 		for (unsigned int i = 0; i < y.size(); ++i)
 		{
@@ -288,7 +288,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void mix(const T x, const primitives<T>& y, const T a, primitives<T>& out)
+	void mix(const T x, const many<T>& y, const T a, many<T>& out)
 	{
 		for (unsigned int i = 0; i < y.size(); ++i)
 		{
@@ -300,7 +300,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void mix(const T x, const T y, const primitives<T>& a, primitives<T>& out)
+	void mix(const T x, const T y, const many<T>& a, many<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -314,7 +314,7 @@ namespace composites
 
 	/// Returns 0.0 if x < edge, otherwise it returns 1.0 for each component of a genType.
 	template<typename T>
-	void step(const primitives<T>& edge, const primitives<T>&  x, primitives<T>& out)
+	void step(const many<T>& edge, const many<T>&  x, many<T>& out)
 	{
 		for (unsigned int i = 0; i < edge.size(); ++i)
 		{
@@ -322,7 +322,7 @@ namespace composites
 		}
 	}
 	template<typename T>
-	void step(const primitives<T>&  edge, const T x, primitives<T>& out)
+	void step(const many<T>&  edge, const T x, many<T>& out)
 	{
 		for (unsigned int i = 0; i < edge.size(); ++i)
 		{
@@ -330,7 +330,7 @@ namespace composites
 		}
 	}
 	template<typename T>
-	void step(const T edge, const primitives<T>&  x, primitives<T>& out)
+	void step(const T edge, const many<T>&  x, many<T>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -348,7 +348,7 @@ namespace composites
 	/// return t * t * (3 - 2 * t);
 	/// Results are undefined if lo >= hi.
 	template<typename T>
-	void smoothstep(const primitives<T>& lo, const primitives<T>& hi, const primitives<T>& x, primitives<T>& out)
+	void smoothstep(const many<T>& lo, const many<T>& hi, const many<T>& x, many<T>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -356,7 +356,7 @@ namespace composites
 		}
 	}
 	template<typename T>
-	void smoothstep(const T lo, const primitives<T>& hi, const primitives<T>& x, primitives<T>& out)
+	void smoothstep(const T lo, const many<T>& hi, const many<T>& x, many<T>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -364,7 +364,7 @@ namespace composites
 		}
 	}
 	template<typename T>
-	void smoothstep(const primitives<T>& lo, T hi, const primitives<T>& x, primitives<T>& out)
+	void smoothstep(const many<T>& lo, T hi, const many<T>& x, many<T>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -372,7 +372,7 @@ namespace composites
 		}
 	}
 	template<typename T>
-	void smoothstep(const T lo, const T hi, const primitives<T>& x, primitives<T>& out)
+	void smoothstep(const T lo, const T hi, const many<T>& x, many<T>& out)
 	{
 		T range = hi-lo;
 		for (unsigned int i = 0; i < x.size(); ++i)
@@ -381,7 +381,7 @@ namespace composites
 		}
 	}
 	template<typename T>
-	void smoothstep(const primitives<T>& lo, const primitives<T>& hi, const T x, primitives<T>& out)
+	void smoothstep(const many<T>& lo, const many<T>& hi, const T x, many<T>& out)
 	{
 		for (unsigned int i = 0; i < hi.size(); ++i)
 		{
@@ -389,7 +389,7 @@ namespace composites
 		}
 	}
 	template<typename T>
-	void smoothstep(const T lo, const primitives<T>& hi, const T x, primitives<T>& out)
+	void smoothstep(const T lo, const many<T>& hi, const T x, many<T>& out)
 	{
 		for (unsigned int i = 0; i < hi.size(); ++i)
 		{
@@ -397,7 +397,7 @@ namespace composites
 		}
 	}
 	template<typename T>
-	void smoothstep(const primitives<T>& lo, const T hi, const T x, primitives<T>& out)
+	void smoothstep(const many<T>& lo, const T hi, const T x, many<T>& out)
 	{
 		for (unsigned int i = 0; i < lo.size(); ++i)
 		{
@@ -411,7 +411,7 @@ namespace composites
 	/// including for implementations with no NaN
 	/// representations.
 	template<typename T>
-	void isnan(const primitives<T>&  x, primitives<bool>& out)
+	void isnan(const many<T>&  x, many<bool>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -425,7 +425,7 @@ namespace composites
 	/// otherwise, including for implementations with no infinity
 	/// representations.
 	template<typename T>
-	void isinf(const primitives<T>&  x, primitives<bool>& out)
+	void isinf(const many<T>&  x, many<bool>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -435,7 +435,7 @@ namespace composites
 
 	/// Computes and returns a * b + c.
 	template<typename T>
-	void fma(const primitives<T>& a, const primitives<T>& b, const primitives<T>& c, primitives<T>& out)
+	void fma(const many<T>& a, const many<T>& b, const many<T>& c, many<T>& out)
 	{
 		for (unsigned int i = 0; i < c.size(); ++i)
 		{
@@ -443,7 +443,7 @@ namespace composites
 		}
 	}
 	template<typename T>
-	void fma(const T a, const primitives<T>& b, const primitives<T>& c, primitives<T>& out)
+	void fma(const T a, const many<T>& b, const many<T>& c, many<T>& out)
 	{
 		for (unsigned int i = 0; i < c.size(); ++i)
 		{
@@ -451,7 +451,7 @@ namespace composites
 		}
 	}
 	template<typename T>
-	void fma(const primitives<T>& a, T b, const primitives<T>& c, primitives<T>& out)
+	void fma(const many<T>& a, T b, const many<T>& c, many<T>& out)
 	{
 		for (unsigned int i = 0; i < c.size(); ++i)
 		{
@@ -459,7 +459,7 @@ namespace composites
 		}
 	}
 	template<typename T>
-	void fma(const T a, const T b, const primitives<T>& c, primitives<T>& out)
+	void fma(const T a, const T b, const many<T>& c, many<T>& out)
 	{
 		T ab = a*b;
 		for (unsigned int i = 0; i < c.size(); ++i)
@@ -468,7 +468,7 @@ namespace composites
 		}
 	}
 	template<typename T>
-	void fma(const primitives<T>& a, const primitives<T>& b, const T c, primitives<T>& out)
+	void fma(const many<T>& a, const many<T>& b, const T c, many<T>& out)
 	{
 		for (unsigned int i = 0; i < b.size(); ++i)
 		{
@@ -476,7 +476,7 @@ namespace composites
 		}
 	}
 	template<typename T>
-	void fma(const T a, const primitives<T>& b, const T c, primitives<T>& out)
+	void fma(const T a, const many<T>& b, const T c, many<T>& out)
 	{
 		for (unsigned int i = 0; i < b.size(); ++i)
 		{
@@ -484,7 +484,7 @@ namespace composites
 		}
 	}
 	template<typename T>
-	void fma(const primitives<T>& a, const T b, const T c, primitives<T>& out)
+	void fma(const many<T>& a, const T b, const T c, many<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{

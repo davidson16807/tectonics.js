@@ -3,14 +3,14 @@
 #include <cmath> 		// sqrt, etc
 #include <algorithm>	// sort
 
-#include "primitives.hpp"
+#include "many.hpp"
 
 namespace composites
 {
 
 	// component-wise min
 	template <class T>
-	unsigned int min_id(const primitives<T>& a)
+	unsigned int min_id(const many<T>& a)
 	{
 		T min_value = a[0];
 		unsigned int min_id = 0;
@@ -26,7 +26,7 @@ namespace composites
 	}
 
 	template <class T>
-	unsigned int max_id(const primitives<T>& a)
+	unsigned int max_id(const many<T>& a)
 	{
 		T min_value = a[0];
 		unsigned int max_id = 0;
@@ -43,7 +43,7 @@ namespace composites
 
 	// component-wise min
 	template <class T>
-	T sum(const primitives<T>& a)
+	T sum(const many<T>& a)
 	{
 		T out = T(0);
 		for (unsigned int i = 0; i < a.size(); ++i)
@@ -55,7 +55,7 @@ namespace composites
 
 
 	template <class T>
-	T mean(const primitives<T>& a)
+	T mean(const many<T>& a)
 	{
 		T out = T(0);
 		for (unsigned int i = 0; i < a.size(); ++i)
@@ -68,17 +68,17 @@ namespace composites
 
 	// // component-wise min
 	// template <class T>
-	// T median(const primitives<T>& a)
+	// T median(const many<T>& a)
 	// {
-	// 	const primitives<T> temp = primitives<T>(a);
+	// 	const many<T> temp = many<T>(a);
 	// 	std::sort(std::begin(temp), std::end(temp));
 	// 	return a[a.size()/2];
 	// }
 // 
 	// template <class T>
-	// T mode(const primitives<T>& a)
+	// T mode(const many<T>& a)
 	// {
-	// 	const primitives<T> temp = primitives<T>(a);
+	// 	const many<T> temp = many<T>(a);
 	// 	std::sort(std::begin(temp), std::end(temp));
 	//     int value = a[0];
 	//     int max = a[0];
@@ -101,7 +101,7 @@ namespace composites
 	// }
 
 	template <class T>
-	T standard_deviation(const primitives<T>& a)
+	T standard_deviation(const many<T>& a)
 	{
 		T mean_a = mean(a);
 
@@ -115,7 +115,7 @@ namespace composites
 	};
 
 	template <class T>
-	T weighted_average(const primitives<T>& a, const primitives<T>& weights)
+	T weighted_average(const many<T>& a, const many<T>& weights)
 	{
 		T out = T(0);
 		for (unsigned int i = 0; i < a.size(); ++i)
@@ -128,7 +128,7 @@ namespace composites
 
 	// TODO: vector version
 	template <class T>
-	void rescale(const primitives<T>& a, primitives<T>& out, T min_new = 0., T max_new = 1.)
+	void rescale(const many<T>& a, many<T>& out, T min_new = 0., T max_new = 1.)
 	{
 	    T max_old = max(a);
 	    T min_old = min(a);

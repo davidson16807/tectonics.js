@@ -6,7 +6,7 @@
 #include <array>		// arrays
 // #include <iostream>		// cout
 
-#include <composites/primitives.hpp>
+#include <composites/many.hpp>
 #include <composites/glm/vecs.hpp>
 #include <composites/glm/geometric.hpp>
 

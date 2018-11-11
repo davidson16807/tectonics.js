@@ -10,7 +10,7 @@ namespace composites
 	// the data type should be small enough to fit in a computer's register (e.g. ints, floats, and even vec3s)
 	// the data type must have basic operators common to all primitives: == != 
 	template <class T>
-	class primitives
+	class many
 	{
 	protected:
 		T* values;
@@ -19,16 +19,16 @@ namespace composites
 	public:
 
 		// destructor: delete pointer 
-		~primitives()
+		~many()
 		{
     		delete [] this->values;
     		this->values = nullptr;
 		};
 
 		// initializer list constructor
-		primitives(std::initializer_list<T> list) : values(new T[list.size()]), N(list.size())
+		many(std::initializer_list<T> list) : values(new T[list.size()]), N(list.size())
 		{
-			int id = 0;
+			unsigned int id = 0;
 			for (auto i = list.begin(); i != list.end(); ++i)
 			{
 				this->values[id] = *i;
@@ -37,13 +37,13 @@ namespace composites
 		};
 		
 		// move constructor
-		primitives(primitives<T>&& a)  : values(a.values), N(a.N)
+		many(many<T>&& a)  : values(a.values), N(a.N)
 		{
 			a.values = nullptr;
 		};
 
 		// copy constructor
-		explicit primitives(const primitives<T>& a)  : values(new T[a.N]), N(a.N)
+		explicit many(const many<T>& a)  : values(new T[a.N]), N(a.N)
 		{
 			for (unsigned int i = 0; i < N; ++i)
 			{
@@ -51,9 +51,9 @@ namespace composites
 			}
 		};
 
-		explicit primitives(const unsigned int N) : values(new T[N]), N(N) {};
+		explicit many(const unsigned int N) : values(new T[N]), N(N) {};
 
-		explicit primitives(const unsigned int N, const T a)  : values(new T[N]), N(N)
+		explicit many(const unsigned int N, const T a)  : values(new T[N]), N(N)
 		{
 			for (unsigned int i = 0; i < N; ++i)
 			{
@@ -61,7 +61,7 @@ namespace composites
 			}
 		};
 		template <class T2>
-		explicit primitives(const primitives<T2>& a)  : values(new T[a.N]), N(a.N)
+		explicit many(const many<T2>& a)  : values(new T[a.N]), N(a.N)
 		{
 			for (unsigned int i = 0; i < N; ++i)
 			{
@@ -89,15 +89,15 @@ namespace composites
 		   return this->values[id]; // reference return 
 		}
 	
-		inline primitives<T> operator[](const primitives<bool>& mask )
+		inline many<T> operator[](const many<bool>& mask )
 		{
-			primitives<T> out = primitives<T>(mask.size());
+			many<T> out = many<T>(mask.size());
 			get(*this, mask, out);
 			return out;
 		}
-		inline primitives<T> operator[](const primitives<unsigned int>& ids )
+		inline many<T> operator[](const many<unsigned int>& ids )
 		{
-			primitives<T> out = primitives<T>(ids.size());
+			many<T> out = many<T>(ids.size());
 			get(*this, ids, out);
 			return out;
 		}
@@ -105,12 +105,12 @@ namespace composites
 
 
 	template <class T>
-	inline T get(const primitives<T>& a, const unsigned int id )
+	inline T get(const many<T>& a, const unsigned int id )
 	{
 		return a[id];
 	}
 	template <class T>
-	void get(const primitives<T>& a, const primitives<unsigned int>& ids, primitives<T>& out )
+	void get(const many<T>& a, const many<unsigned int>& ids, many<T>& out )
 	{
 		for (unsigned int i = 0; i < ids.size(); ++i)
 		{
@@ -118,7 +118,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void get(const primitives<T>& a, const primitives<bool>& mask, primitives<T>& out )
+	void get(const many<T>& a, const many<bool>& mask, many<T>& out )
 	{
 		int out_i = 0;
 		for (unsigned int i = 0; i < a.size(); ++i)
@@ -132,7 +132,7 @@ namespace composites
 	}
 
 	template <class T>
-	void fill(primitives<T>& out, const T a )
+	void fill(many<T>& out, const T a )
 	{
 		for (unsigned int i = 0; i < out.size(); ++i)
 		{
@@ -140,7 +140,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void fill(primitives<T>& out, const primitives<unsigned int>& ids, const T a )
+	void fill(many<T>& out, const many<unsigned int>& ids, const T a )
 	{
 		for (unsigned int i = 0; i < ids.size(); ++i)
 		{
@@ -148,7 +148,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void fill(primitives<T>& out, const primitives<bool>& mask, const T a )
+	void fill(many<T>& out, const many<bool>& mask, const T a )
 	{
 		for (unsigned int i = 0; i < out.size(); ++i)
 		{
@@ -157,7 +157,7 @@ namespace composites
 	}
 
 	template <class T>
-	void copy(primitives<T>& out, const primitives<T>& a )
+	void copy(many<T>& out, const many<T>& a )
 	{
 		for (unsigned int i = 0; i < out.size(); ++i)
 		{
@@ -166,17 +166,17 @@ namespace composites
 	}
 	// NOTE: duplicate of copy constructor, just in case library needs it
 	template <class T>
-	primitives<T> copy(const primitives<T>& a )
+	many<T> copy(const many<T>& a )
 	{
-		return primitives<T>(a);
+		return many<T>(a);
 	}
 	template <class T>
-	inline void copy(primitives<T>& out, const unsigned int id, const primitives<T>& a )
+	inline void copy(many<T>& out, const unsigned int id, const many<T>& a )
 	{
 		out[id] = a[id];
 	}
 	template <class T>
-	void copy(primitives<T>& out, const primitives<unsigned int>& ids, const primitives<T>& a )
+	void copy(many<T>& out, const many<unsigned int>& ids, const many<T>& a )
 	{
 		for (unsigned int i = 0; i < ids.size(); ++i)
 		{
@@ -184,7 +184,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void copy(primitives<T>& out, const primitives<bool>& mask, const primitives<T>& a )
+	void copy(many<T>& out, const many<bool>& mask, const many<T>& a )
 	{
 		for (unsigned int i = 0; i < out.size(); ++i)
 		{
@@ -194,12 +194,12 @@ namespace composites
 
 
 	template <class T>
-	inline void set(primitives<T>& out, const unsigned int id, const T a )
+	inline void set(many<T>& out, const unsigned int id, const T a )
 	{
 		out[id] = a;
 	}
 	template <class T>
-	void set(primitives<T>& out, const primitives<unsigned int>& ids, const primitives<T>& a )
+	void set(many<T>& out, const many<unsigned int>& ids, const many<T>& a )
 	{
 		for (unsigned int i = 0; i < ids.size(); ++i)
 		{
@@ -211,7 +211,7 @@ namespace composites
 	float COMPOSITES_EPSILON = 1e-4;
 
 	template <class T>
-	bool equal(const primitives<T>& a, const T b)
+	bool equal(const many<T>& a, const T b)
 	{
 		bool out(true);
 		T diff(0);
@@ -224,7 +224,7 @@ namespace composites
 		return out;
 	}
 	template <class T>
-	bool notEqual(const primitives<T>& a, const T b)
+	bool notEqual(const many<T>& a, const T b)
 	{
 		bool out(false);
 		T diff(0);
@@ -237,7 +237,7 @@ namespace composites
 		return out;
 	}
 	template <class T>
-	bool equal(const primitives<T>& a, const primitives<T>& b)
+	bool equal(const many<T>& a, const many<T>& b)
 	{
 		bool out(true);
 		T diff(0);
@@ -250,7 +250,7 @@ namespace composites
 		return out;
 	}
 	template <class T>
-	bool notEqual(const primitives<T>& a, const primitives<T>& b)
+	bool notEqual(const many<T>& a, const many<T>& b)
 	{
 		bool out(false);
 		T diff(0);
@@ -266,7 +266,7 @@ namespace composites
 
 
 	template <class T>
-	void equal(const primitives<T>& a, const T b, primitives<bool>& out)
+	void equal(const many<T>& a, const T b, many<bool>& out)
 	{
 		T diff(0);
 		T threshold(COMPOSITES_EPSILON);
@@ -277,7 +277,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void notEqual(const primitives<T>& a, const T b, primitives<bool>& out)
+	void notEqual(const many<T>& a, const T b, many<bool>& out)
 	{
 		T diff(0);
 		T threshold(COMPOSITES_EPSILON);
@@ -288,7 +288,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void equal(const primitives<T>& a, const primitives<T>& b, primitives<bool>& out)
+	void equal(const many<T>& a, const many<T>& b, many<bool>& out)
 	{
 		T diff(0);
 		T threshold(COMPOSITES_EPSILON);
@@ -299,7 +299,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void notEqual(const primitives<T>& a, const primitives<T>& b, primitives<bool>& out)
+	void notEqual(const many<T>& a, const many<T>& b, many<bool>& out)
 	{
 		T diff(0);
 		T threshold(COMPOSITES_EPSILON);
@@ -313,32 +313,32 @@ namespace composites
 
 	// NOTE: all operators are suggested to be inline because they are thin wrappers of functions
 	template <class T>
-	inline bool operator==(const primitives<T>& a, const T b)
+	inline bool operator==(const many<T>& a, const T b)
 	{
 		return equal(a, b);
 	}
 	template <class T>
-	inline bool operator!=(const primitives<T>& a, const T b)
+	inline bool operator!=(const many<T>& a, const T b)
 	{
 		return notEqual(a, b);
 	}
 	template <class T>
-	inline bool operator==(const T a, const primitives<T>& b)
+	inline bool operator==(const T a, const many<T>& b)
 	{
 		return equal(a, b);
 	}
 	template <class T>
-	inline bool operator!=(const T a, const primitives<T>& b)
+	inline bool operator!=(const T a, const many<T>& b)
 	{
 		return notEqual(a, b);
 	}
 	template <class T>
-	inline bool operator==(const primitives<T>& a, const primitives<T>& b)
+	inline bool operator==(const many<T>& a, const many<T>& b)
 	{
 		return equal(a, b);
 	}
 	template <class T>
-	inline bool operator!=(const primitives<T>& a, const primitives<T>& b)
+	inline bool operator!=(const many<T>& a, const many<T>& b)
 	{
 		return notEqual(a, b);
 	}
@@ -350,7 +350,7 @@ namespace composites
 
 
 	template <class T, class T2>
-	void greaterThan(const primitives<T>& a, const T2 b, primitives<bool>& out)
+	void greaterThan(const many<T>& a, const T2 b, many<bool>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -358,7 +358,7 @@ namespace composites
 		}
 	}
 	template <class T, class T2>
-	void greaterThanEqual(const primitives<T>& a, const T2 b, primitives<bool>& out)
+	void greaterThanEqual(const many<T>& a, const T2 b, many<bool>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -366,7 +366,7 @@ namespace composites
 		}
 	}
 	template <class T, class T2>
-	void lessThan(const primitives<T>& a, const T2 b, primitives<bool>& out)
+	void lessThan(const many<T>& a, const T2 b, many<bool>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -374,7 +374,7 @@ namespace composites
 		}
 	}
 	template <class T, class T2>
-	void lessThanEqual(const primitives<T>& a, const T2 b, primitives<bool>& out)
+	void lessThanEqual(const many<T>& a, const T2 b, many<bool>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -385,7 +385,7 @@ namespace composites
 
 
 	template <class T, class T2>
-	void greaterThan(const primitives<T>& a, const primitives<T2>& b, primitives<bool>& out)
+	void greaterThan(const many<T>& a, const many<T2>& b, many<bool>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -393,7 +393,7 @@ namespace composites
 		}
 	}
 	template <class T, class T2>
-	void greaterThanEqual(const primitives<T>& a, const primitives<T2>& b, primitives<bool>& out)
+	void greaterThanEqual(const many<T>& a, const many<T2>& b, many<bool>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -401,7 +401,7 @@ namespace composites
 		}
 	}
 	template <class T, class T2>
-	void lessThan(const primitives<T>& a, const primitives<T2>& b, primitives<bool>& out)
+	void lessThan(const many<T>& a, const many<T2>& b, many<bool>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -409,7 +409,7 @@ namespace composites
 		}
 	}
 	template <class T, class T2>
-	void lessThanEqual(const primitives<T>& a, const primitives<T2>& b, primitives<bool>& out)
+	void lessThanEqual(const many<T>& a, const many<T2>& b, many<bool>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -420,7 +420,7 @@ namespace composites
 
 
 	template <class T, class T2, class T3>
-	void add(const primitives<T>& a, const T2 b, primitives<T3>& out)
+	void add(const many<T>& a, const T2 b, many<T3>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -428,7 +428,7 @@ namespace composites
 		}
 	}
 	template <class T, class T2, class T3>
-	void sub(const primitives<T>& a, const T2 b, primitives<T3>& out)
+	void sub(const many<T>& a, const T2 b, many<T3>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -436,7 +436,7 @@ namespace composites
 		}
 	}
 	template <class T, class T2, class T3>
-	void mult(const primitives<T>& a, const T2 b, primitives<T3>& out)
+	void mult(const many<T>& a, const T2 b, many<T3>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -444,7 +444,7 @@ namespace composites
 		}
 	}
 	template <class T, class T2, class T3>
-	void div(const primitives<T>& a, const T2 b, primitives<T3>& out)
+	void div(const many<T>& a, const T2 b, many<T3>& out)
 	{
 		const T2 binv = T2(1.)/b;
 		for (unsigned int i = 0; i < a.size(); ++i)
@@ -458,7 +458,7 @@ namespace composites
 	// NOTE: we define operators for multiple classes T and T2 in order to support 
 	//  vector/scalar multiplication, matrix/vect multiplication, etc.
 	template <class T, class T2, class T3>
-	void add(const primitives<T>& a, const primitives<T2>& b, primitives<T3>& out)
+	void add(const many<T>& a, const many<T2>& b, many<T3>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -466,7 +466,7 @@ namespace composites
 		}
 	}
 	template <class T, class T2, class T3>
-	void sub(const primitives<T>& a, const primitives<T2>& b, primitives<T3>& out)
+	void sub(const many<T>& a, const many<T2>& b, many<T3>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -474,7 +474,7 @@ namespace composites
 		}
 	}
 	template <class T, class T2, class T3>
-	void mult(const primitives<T>& a, const primitives<T2>& b, primitives<T3>& out)
+	void mult(const many<T>& a, const many<T2>& b, many<T3>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -482,7 +482,7 @@ namespace composites
 		}
 	}
 	template <class T, class T2, class T3>
-	void div(const primitives<T>& a, const primitives<T2>& b, primitives<T3>& out)
+	void div(const many<T>& a, const many<T2>& b, many<T3>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -493,30 +493,30 @@ namespace composites
 	// NOTE: all wrappers are suggested to be inline because they are thin wrappers of functions
 
 	template <class T, class T2, class T3>
-	inline primitives<T3> operator>(const primitives<T>& a, const T2 b)
+	inline many<T3> operator>(const many<T>& a, const T2 b)
 	{
-		primitives<T3> out = primitives<T3>(a.N);
+		many<T3> out = many<T3>(a.N);
 		greaterThan(a, b, out);
 		return out;
 	}
 	template <class T, class T2, class T3>
-	inline primitives<T3> operator>=(const primitives<T>& a, const T2 b)
+	inline many<T3> operator>=(const many<T>& a, const T2 b)
 	{
-		primitives<T3> out = primitives<T3>(a.N);
+		many<T3> out = many<T3>(a.N);
 		greaterThanEqual(a, b, out);
 		return out;
 	}
 	template <class T, class T2, class T3>
-	inline primitives<T3> operator<(const primitives<T>& a, const T2 b)
+	inline many<T3> operator<(const many<T>& a, const T2 b)
 	{
-		primitives<T3> out = primitives<T3>(a.N);
+		many<T3> out = many<T3>(a.N);
 		lessThan(a, b, out);
 		return out;
 	}
 	template <class T, class T2, class T3>
-	inline primitives<T3> operator<=(const primitives<T>& a, const T2 b)
+	inline many<T3> operator<=(const many<T>& a, const T2 b)
 	{
-		primitives<T3> out = primitives<T3>(a.N);
+		many<T3> out = many<T3>(a.N);
 		lessThanEqual(a, b, out);
 		return out;
 	}
@@ -524,30 +524,30 @@ namespace composites
 	// NOTE: all wrappers are suggested to be inline because they are thin wrappers of functions
 
 	template <class T, class T2, class T3>
-	inline primitives<T3> operator>(const T2 a, const primitives<T>& b)
+	inline many<T3> operator>(const T2 a, const many<T>& b)
 	{
-		primitives<T3> out = primitives<T3>(a.N);
+		many<T3> out = many<T3>(a.N);
 		greaterThan(a, b, out);
 		return out;
 	}
 	template <class T, class T2, class T3>
-	inline primitives<T3> operator>=(const T2 a, const primitives<T>& b)
+	inline many<T3> operator>=(const T2 a, const many<T>& b)
 	{
-		primitives<T3> out = primitives<T3>(a.N);
+		many<T3> out = many<T3>(a.N);
 		greaterThanEqual(a, b, out);
 		return out;
 	}
 	template <class T, class T2, class T3>
-	inline primitives<T3> operator<(const T2 a, const primitives<T>& b)
+	inline many<T3> operator<(const T2 a, const many<T>& b)
 	{
-		primitives<T3> out = primitives<T3>(a.N);
+		many<T3> out = many<T3>(a.N);
 		lessThan(a, b, out);
 		return out;
 	}
 	template <class T, class T2, class T3>
-	inline primitives<T3> operator<=(const T2 a, const primitives<T>& b)
+	inline many<T3> operator<=(const T2 a, const many<T>& b)
 	{
-		primitives<T3> out = primitives<T3>(a.N);
+		many<T3> out = many<T3>(a.N);
 		lessThanEqual(a, b, out);
 		return out;
 	}
@@ -555,30 +555,30 @@ namespace composites
 	
 
 	template <class T, class T2, class T3>
-	inline primitives<T3> operator>(const primitives<T>& a, const primitives<T2>& b)
+	inline many<T3> operator>(const many<T>& a, const many<T2>& b)
 	{
-		primitives<T3> out = primitives<T3>(a.N);
+		many<T3> out = many<T3>(a.N);
 		greaterThan(a, b, out);
 		return out;
 	}
 	template <class T, class T2, class T3>
-	inline primitives<T3> operator>=(const primitives<T>& a, const primitives<T2>& b)
+	inline many<T3> operator>=(const many<T>& a, const many<T2>& b)
 	{
-		primitives<T3> out = primitives<T3>(a.N);
+		many<T3> out = many<T3>(a.N);
 		greaterThanEqual(a, b, out);
 		return out;
 	}
 	template <class T, class T2, class T3>
-	inline primitives<T3> operator<(const primitives<T>& a, const primitives<T2>& b)
+	inline many<T3> operator<(const many<T>& a, const many<T2>& b)
 	{
-		primitives<T3> out = primitives<T3>(a.N);
+		many<T3> out = many<T3>(a.N);
 		lessThan(a, b, out);
 		return out;
 	}
 	template <class T, class T2, class T3>
-	inline primitives<T3> operator<=(const primitives<T>& a, const primitives<T2>& b)
+	inline many<T3> operator<=(const many<T>& a, const many<T2>& b)
 	{
-		primitives<T3> out = primitives<T3>(a.N);
+		many<T3> out = many<T3>(a.N);
 		lessThanEqual(a, b, out);
 		return out;
 	}
@@ -589,25 +589,25 @@ namespace composites
 
 
 	template <class T, class T2, class T3>
-	inline primitives<T>& operator+=(const primitives<T>& a, const T2 b) 
+	inline many<T>& operator+=(const many<T>& a, const T2 b) 
 	{
 		add(a, b, a);
 		return a;
 	}
 	template <class T, class T2>
-	inline primitives<T>& operator-=(const primitives<T>& a, const T2 b) 
+	inline many<T>& operator-=(const many<T>& a, const T2 b) 
 	{
 		sub(a, b, a);
 		return a;
 	}
 	template <class T, class T2>
-	inline primitives<T>& operator*=(const primitives<T>& a, const T2 b) 
+	inline many<T>& operator*=(const many<T>& a, const T2 b) 
 	{
 		mult(a, b, a);
 		return a;
 	}
 	template <class T, class T2>
-	inline primitives<T>& operator/=(const primitives<T>& a, const T2 b) 
+	inline many<T>& operator/=(const many<T>& a, const T2 b) 
 	{
 		div(a, b, a);
 		return a;
@@ -615,25 +615,25 @@ namespace composites
 
 
 	template <class T, class T2>
-	inline primitives<T>& operator+=(const primitives<T>& a, const primitives<T2>& b) 
+	inline many<T>& operator+=(const many<T>& a, const many<T2>& b) 
 	{
 		add(a, b, a);
 		return a;
 	}
 	template <class T, class T2>
-	inline primitives<T>& operator-=(const primitives<T>& a, const primitives<T2>& b) 
+	inline many<T>& operator-=(const many<T>& a, const many<T2>& b) 
 	{
 		sub(a, b, a);
 		return a;
 	}
 	template <class T, class T2>
-	inline primitives<T>& operator*=(const primitives<T>& a, const primitives<T2>& b) 
+	inline many<T>& operator*=(const many<T>& a, const many<T2>& b) 
 	{
 		mult(a, b, a);
 		return a;
 	}
 	template <class T, class T2>
-	inline primitives<T>& operator/=(const primitives<T>& a, const primitives<T2>& b) 
+	inline many<T>& operator/=(const many<T>& a, const many<T2>& b) 
 	{
 		div(a, b, a);
 		return a;
@@ -641,13 +641,13 @@ namespace composites
 
 	// NOTE: prefix increment/decrement
 	template <class T>
-	inline primitives<T>& operator++(const primitives<T>& a)  
+	inline many<T>& operator++(const many<T>& a)  
 	{  
 		add(a, 1, a);
 		return a;
 	}  
 	template <class T>
-	inline primitives<T>& operator--(const primitives<T>& a)  
+	inline many<T>& operator--(const many<T>& a)  
 	{  
 		add(a, 1, a);
 		return a;
@@ -655,13 +655,13 @@ namespace composites
 
 	// NOTE: postfix increment/decrement
 	template <class T>
-	inline primitives<T> operator++(const primitives<T>& a, int)  
+	inline many<T> operator++(const many<T>& a, int)  
 	{  
 		add(a, 1, a);
 		return a;
 	}  
 	template <class T>
-	inline primitives<T> operator--(const primitives<T>& a, int)  
+	inline many<T> operator--(const many<T>& a, int)  
 	{  
 		add(a, 1, a);
 		return a;
@@ -674,30 +674,30 @@ namespace composites
 	// NOTE: we define operators for multiple classes T and T2 in order to support 
 	//  vector/scalar multiplication, matrix/vect multiplication, etc.
 	template <class T, class T2, class T3>
-	inline primitives<T3> operator+(const primitives<T>& a, const T2 b)
+	inline many<T3> operator+(const many<T>& a, const T2 b)
 	{
-		primitives<T3> out = primitives<T3>(a.N);
+		many<T3> out = many<T3>(a.N);
 		add(a, b, out);
 		return out;
 	}
 	template <class T, class T2, class T3>
-	inline primitives<T3> operator-(const primitives<T>& a, const T2 b)
+	inline many<T3> operator-(const many<T>& a, const T2 b)
 	{
-		primitives<T3> out = primitives<T3>(a.N);
+		many<T3> out = many<T3>(a.N);
 		sub(a, b, out);
 		return out;
 	}
 	template <class T, class T2, class T3>
-	inline primitives<T> operator*(const primitives<T>& a, const T2 b)
+	inline many<T> operator*(const many<T>& a, const T2 b)
 	{
-		primitives<T3> out = primitives<T3>(a.N);
+		many<T3> out = many<T3>(a.N);
 		mult(a, b, out);
 		return out;
 	}
 	template <class T, class T2, class T3>
-	inline primitives<T3> operator/(const primitives<T>& a, const T2 b)
+	inline many<T3> operator/(const many<T>& a, const T2 b)
 	{
-		primitives<T3> out = primitives<T3>(a.N);
+		many<T3> out = many<T3>(a.N);
 		div(a, b, out);
 		return out;
 	}
@@ -709,30 +709,30 @@ namespace composites
 	// NOTE: we define operators for multiple classes T and T2 in order to support 
 	//  vector/scalar multiplication, matrix/vect multiplication, etc.
 	template <class T, class T2, class T3>
-	inline primitives<T3> operator+(const T2 a, const primitives<T>& b)
+	inline many<T3> operator+(const T2 a, const many<T>& b)
 	{
-		primitives<T3> out = primitives<T3>(a.N);
+		many<T3> out = many<T3>(a.N);
 		add(a, b, out);
 		return out;
 	}
 	template <class T, class T2, class T3>
-	inline primitives<T3> operator-(const T2 a, const primitives<T>& b)
+	inline many<T3> operator-(const T2 a, const many<T>& b)
 	{
-		primitives<T3> out = primitives<T3>(a.N);
+		many<T3> out = many<T3>(a.N);
 		sub(a, b, out);
 		return out;
 	}
 	template <class T, class T2, class T3>
-	inline primitives<T> operator*(const T2 a, const primitives<T>& b)
+	inline many<T> operator*(const T2 a, const many<T>& b)
 	{
-		primitives<T3> out = primitives<T3>(a.N);
+		many<T3> out = many<T3>(a.N);
 		mult(a, b, out);
 		return out;
 	}
 	template <class T, class T2, class T3>
-	inline primitives<T3> operator/(const T2 a, const primitives<T>& b)
+	inline many<T3> operator/(const T2 a, const many<T>& b)
 	{
-		primitives<T3> out = primitives<T3>(a.N);
+		many<T3> out = many<T3>(a.N);
 		div(a, b, out);
 		return out;
 	}
@@ -741,36 +741,36 @@ namespace composites
 	// NOTE: we define operators for multiple classes T and T2 in order to support 
 	//  vector/scalar multiplication, matrix/vect multiplication, etc.
 	template <class T, class T2, class T3>
-	inline primitives<T3> operator+(const primitives<T>& a, const primitives<T2>& b)
+	inline many<T3> operator+(const many<T>& a, const many<T2>& b)
 	{
-		primitives<T3> out = primitives<T3>(a.N);
+		many<T3> out = many<T3>(a.N);
 		add(a, b, out);
 		return out;
 	}
 	template <class T, class T2, class T3>
-	inline primitives<T3> operator-(const primitives<T>& a, const primitives<T2>& b)
+	inline many<T3> operator-(const many<T>& a, const many<T2>& b)
 	{
-		primitives<T3> out = primitives<T3>(a.N);
+		many<T3> out = many<T3>(a.N);
 		sub(a, b, out);
 		return out;
 	}
 	template <class T, class T2, class T3>
-	inline primitives<T3> operator*(const primitives<T>& a, const primitives<T2>& b)
+	inline many<T3> operator*(const many<T>& a, const many<T2>& b)
 	{
-		primitives<T3> out = primitives<T3>(a.N);
+		many<T3> out = many<T3>(a.N);
 		mult(a, b, out);
 		return out;
 	}
 	template <class T, class T2, class T3>
-	inline primitives<T3> operator/(const primitives<T>& a, const primitives<T2>& b)
+	inline many<T3> operator/(const many<T>& a, const many<T2>& b)
 	{
-		primitives<T3> out = primitives<T3>(a.N);
+		many<T3> out = many<T3>(a.N);
 		div(a, b, out);
 		return out;
 	}
-	typedef primitives<bool>	bools;
-	typedef primitives<int>		ints;
-	typedef primitives<unsigned int> uints;
-	typedef primitives<float>	floats;
-	typedef primitives<double>	doubles;
+	typedef many<bool>	bools;
+	typedef many<int>		ints;
+	typedef many<unsigned int> uints;
+	typedef many<float>	floats;
+	typedef many<double>	doubles;
 }

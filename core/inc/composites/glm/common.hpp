@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-#include "../primitives.hpp"
+#include "../many.hpp"
 
 #include <glm/vec3.hpp>    	// vec2, bvec2, dvec2, ivec2 and uvec2
 #include <glm/common.hpp>	// all the GLSL common functions: abs, floor, etc.
@@ -12,7 +12,7 @@ namespace composites
 {
 	/// Returns x if x >= 0; otherwise, it returns -x.
 	template <length_t L, typename T, qualifier Q>
-	void abs(const primitives<vec<L,T,Q>>& a, primitives<vec<L,T,Q>>& out)
+	void abs(const many<vec<L,T,Q>>& a, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -22,7 +22,7 @@ namespace composites
 
 	/// Returns 1.0 if x > 0, 0.0 if x == 0, or -1.0 if x < 0.
 	template <length_t L, typename T, qualifier Q, class Tout>
-	void sign(const primitives<vec<L,T,Q>>& a, primitives<Tout>& out)
+	void sign(const many<vec<L,T,Q>>& a, many<Tout>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -32,7 +32,7 @@ namespace composites
 
 	/// Returns a value equal to the nearest integer that is less then or equal to x.
 	template <length_t L, typename T, qualifier Q>
-	void floor(const primitives<vec<L,T,Q>>& a, primitives<vec<L,T,Q>>& out)
+	void floor(const many<vec<L,T,Q>>& a, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -43,7 +43,7 @@ namespace composites
 	/// Returns a value equal to the nearest integer to x
 	/// whose absolute value is not larger than the absolute value of x.
 	template <length_t L, typename T, qualifier Q>
-	void trunc(const primitives<vec<L,T,Q>>& a, primitives<vec<L,T,Q>>& out)
+	void trunc(const many<vec<L,T,Q>>& a, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -57,7 +57,7 @@ namespace composites
 	/// This includes the possibility that round(x) returns the
 	/// same value as roundEven(x) for all values of x.
 	template <length_t L, typename T, qualifier Q>
-	void round(const primitives<vec<L,T,Q>>& a, primitives<vec<L,T,Q>>& out)
+	void round(const many<vec<L,T,Q>>& a, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -68,7 +68,7 @@ namespace composites
 	/// Returns a value equal to the nearest integer
 	/// that is greater than or equal to x.
 	template <length_t L, typename T, qualifier Q>
-	void ceil(const primitives<vec<L,T,Q>>& a, primitives<vec<L,T,Q>>& out)
+	void ceil(const many<vec<L,T,Q>>& a, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -78,7 +78,7 @@ namespace composites
 
 	/// Return x - floor(x).
 	template <length_t L, typename T, qualifier Q>
-	void fract(const primitives<vec<L,T,Q>>& a, primitives<vec<L,T,Q>>& out)
+	void fract(const many<vec<L,T,Q>>& a, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -89,7 +89,7 @@ namespace composites
 	/// Modulus. Returns x - y * floor(x / y)
 	/// for each component in x using the floating point value y.
 	template <length_t L, typename T, qualifier Q>
-	void mod(const primitives<vec<L,T,Q>>& a, const primitives<vec<L,T,Q>>& b, primitives<vec<L,T,Q>>& out)
+	void mod(const many<vec<L,T,Q>>& a, const many<vec<L,T,Q>>& b, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -102,7 +102,7 @@ namespace composites
 	/// return value and the output parameter will have the same
 	/// sign as x.
 	template <length_t L, typename T, qualifier Q>
-	void modf(const primitives<vec<L,T,Q>>& a, primitives<vec<L,int,Q>>& intout, primitives<vec<L,T,Q>>& fractout)
+	void modf(const many<vec<L,T,Q>>& a, many<vec<L,int,Q>>& intout, many<vec<L,T,Q>>& fractout)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -113,7 +113,7 @@ namespace composites
 
 	/// Returns y if y < x; otherwise, it returns x.
 	template <length_t L, typename T, qualifier Q>
-	void min(const primitives<vec<L,T,Q>>& a, const primitives<vec<L,T,Q>>& b, primitives<vec<L,T,Q>>& out)
+	void min(const many<vec<L,T,Q>>& a, const many<vec<L,T,Q>>& b, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -121,7 +121,7 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	void min(const primitives<vec<L,T,Q>>& a, const vec<L,T,Q> b, primitives<vec<L,T,Q>>& out)
+	void min(const many<vec<L,T,Q>>& a, const vec<L,T,Q> b, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -129,7 +129,7 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	vec<L,T,Q> min(const primitives<vec<L,T,Q>>& a)
+	vec<L,T,Q> min(const many<vec<L,T,Q>>& a)
 	{
 		vec<L,T,Q> out = a[0];
 		for (unsigned int i = 0; i < a.size(); ++i)
@@ -140,7 +140,7 @@ namespace composites
 	}
 	/// Returns y if y < x; otherwise, it returns x.
 	template <length_t L, typename T, qualifier Q>
-	void max(const primitives<vec<L,T,Q>>& a, const primitives<vec<L,T,Q>>& b, primitives<vec<L,T,Q>>& out)
+	void max(const many<vec<L,T,Q>>& a, const many<vec<L,T,Q>>& b, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -149,7 +149,7 @@ namespace composites
 	}
 	/// Returns y if y < x; otherwise, it returns x.
 	template <length_t L, typename T, qualifier Q>
-	void max(const primitives<vec<L,T,Q>>& a, const vec<L,T,Q> b, primitives<vec<L,T,Q>>& out)
+	void max(const many<vec<L,T,Q>>& a, const vec<L,T,Q> b, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -157,7 +157,7 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	vec<L,T,Q> max(const primitives<vec<L,T,Q>>& a)
+	vec<L,T,Q> max(const many<vec<L,T,Q>>& a)
 	{
 		vec<L,T,Q> out = a[0];
 		for (unsigned int i = 0; i < a.size(); ++i)
@@ -170,7 +170,7 @@ namespace composites
 	/// Returns min(max(x, minVal), maxVal) for each component in x
 	/// using the floating-point values minVal and maxVal.
 	template <length_t L, typename T, qualifier Q>
-	void clamp(const primitives<vec<L,T,Q>>& a, const vec<L,T,Q> lo, const vec<L,T,Q> hi, primitives<vec<L,T,Q>>& out)
+	void clamp(const many<vec<L,T,Q>>& a, const vec<L,T,Q> lo, const vec<L,T,Q> hi, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -178,7 +178,7 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	void clamp(const primitives<vec<L,T,Q>>& a, const vec<L,T,Q> lo, const primitives<vec<L,T,Q>>& hi, primitives<vec<L,T,Q>>& out)
+	void clamp(const many<vec<L,T,Q>>& a, const vec<L,T,Q> lo, const many<vec<L,T,Q>>& hi, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -186,7 +186,7 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	void clamp(const primitives<vec<L,T,Q>>& a, const primitives<vec<L,T,Q>>& lo, const vec<L,T,Q> hi, primitives<vec<L,T,Q>>& out)
+	void clamp(const many<vec<L,T,Q>>& a, const many<vec<L,T,Q>>& lo, const vec<L,T,Q> hi, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -194,7 +194,7 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	void clamp(const primitives<vec<L,T,Q>>& a, const primitives<vec<L,T,Q>>& lo, const primitives<vec<L,T,Q>>& hi, primitives<vec<L,T,Q>>& out)
+	void clamp(const many<vec<L,T,Q>>& a, const many<vec<L,T,Q>>& lo, const many<vec<L,T,Q>>& hi, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -225,7 +225,7 @@ namespace composites
 	/// @param[in]  y Value to interpolate.
 	/// @param[in]  a Interpolant.
 	template <length_t L, typename T, qualifier Q>
-	void mix(const primitives<vec<L,T,Q>>& x, const primitives<vec<L,T,Q>>& y, const primitives<T>& a, primitives<vec<L,T,Q>>& out)
+	void mix(const many<vec<L,T,Q>>& x, const many<vec<L,T,Q>>& y, const many<T>& a, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -233,7 +233,7 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	void mix(const primitives<vec<L,T,Q>>& x, const primitives<vec<L,T,Q>>& y, const T a, primitives<vec<L,T,Q>>& out)
+	void mix(const many<vec<L,T,Q>>& x, const many<vec<L,T,Q>>& y, const T a, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -241,7 +241,7 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	void mix(const primitives<vec<L,T,Q>>& x, const vec<L,T,Q> y, const primitives<T>& a, primitives<vec<L,T,Q>>& out)
+	void mix(const many<vec<L,T,Q>>& x, const vec<L,T,Q> y, const many<T>& a, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -249,7 +249,7 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	void mix(const primitives<vec<L,T,Q>>& x, const vec<L,T,Q> y, const T a, primitives<vec<L,T,Q>>& out)
+	void mix(const many<vec<L,T,Q>>& x, const vec<L,T,Q> y, const T a, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -257,7 +257,7 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	void mix(const vec<L,T,Q> x, const primitives<vec<L,T,Q>>& y, const primitives<T>& a, primitives<vec<L,T,Q>>& out)
+	void mix(const vec<L,T,Q> x, const many<vec<L,T,Q>>& y, const many<T>& a, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < y.size(); ++i)
 		{
@@ -265,7 +265,7 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	void mix(const vec<L,T,Q> x, const primitives<vec<L,T,Q>>& y, const T a, primitives<vec<L,T,Q>>& out)
+	void mix(const vec<L,T,Q> x, const many<vec<L,T,Q>>& y, const T a, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < y.size(); ++i)
 		{
@@ -273,7 +273,7 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	void mix(const vec<L,T,Q> x, const vec<L,T,Q> y, const primitives<T>& a, primitives<vec<L,T,Q>>& out)
+	void mix(const vec<L,T,Q> x, const vec<L,T,Q> y, const many<T>& a, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -285,7 +285,7 @@ namespace composites
 
 
 	template <length_t L, typename T, qualifier Q>
-	void mix(const primitives<vec<L,T,Q>>& x, const primitives<vec<L,T,Q>>& y, const primitives<vec<L,T,Q>>& a, primitives<vec<L,T,Q>>& out)
+	void mix(const many<vec<L,T,Q>>& x, const many<vec<L,T,Q>>& y, const many<vec<L,T,Q>>& a, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -293,7 +293,7 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	void mix(const primitives<vec<L,T,Q>>& x, const primitives<vec<L,T,Q>>& y, const vec<L,T,Q> a, primitives<vec<L,T,Q>>& out)
+	void mix(const many<vec<L,T,Q>>& x, const many<vec<L,T,Q>>& y, const vec<L,T,Q> a, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -301,7 +301,7 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	void mix(const primitives<vec<L,T,Q>>& x, const vec<L,T,Q> y, const primitives<vec<L,T,Q>>& a, primitives<vec<L,T,Q>>& out)
+	void mix(const many<vec<L,T,Q>>& x, const vec<L,T,Q> y, const many<vec<L,T,Q>>& a, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -309,7 +309,7 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	void mix(const primitives<vec<L,T,Q>>& x, const vec<L,T,Q> y, const vec<L,T,Q> a, primitives<vec<L,T,Q>>& out)
+	void mix(const many<vec<L,T,Q>>& x, const vec<L,T,Q> y, const vec<L,T,Q> a, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -317,7 +317,7 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	void mix(const vec<L,T,Q> x, const primitives<vec<L,T,Q>>& y, const primitives<vec<L,T,Q>>& a, primitives<vec<L,T,Q>>& out)
+	void mix(const vec<L,T,Q> x, const many<vec<L,T,Q>>& y, const many<vec<L,T,Q>>& a, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < y.size(); ++i)
 		{
@@ -325,7 +325,7 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	void mix(const vec<L,T,Q> x, const primitives<vec<L,T,Q>>& y, const vec<L,T,Q> a, primitives<vec<L,T,Q>>& out)
+	void mix(const vec<L,T,Q> x, const many<vec<L,T,Q>>& y, const vec<L,T,Q> a, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < y.size(); ++i)
 		{
@@ -333,7 +333,7 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	void mix(const vec<L,T,Q> x, const vec<L,T,Q> y, const primitives<vec<L,T,Q>>& a, primitives<vec<L,T,Q>>& out)
+	void mix(const vec<L,T,Q> x, const vec<L,T,Q> y, const many<vec<L,T,Q>>& a, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -346,7 +346,7 @@ namespace composites
 
 	/// Returns 0.0 if x < edge, otherwise it returns 1.0 for each component of a genType.
 	template<length_t L, typename T, qualifier Q>
-	void step(const primitives<vec<L,T,Q>>& edge, const primitives<vec<L,T,Q>>&  x, primitives<vec<L,T,Q>>& out)
+	void step(const many<vec<L,T,Q>>& edge, const many<vec<L,T,Q>>&  x, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < edge.size(); ++i)
 		{
@@ -354,7 +354,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void step(const primitives<vec<L,T,Q>>&  edge, const vec<L,T,Q> x, primitives<vec<L,T,Q>>& out)
+	void step(const many<vec<L,T,Q>>&  edge, const vec<L,T,Q> x, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < edge.size(); ++i)
 		{
@@ -362,7 +362,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void step(const vec<L,T,Q> edge, const primitives<vec<L,T,Q>>&  x, primitives<vec<L,T,Q>>& out)
+	void step(const vec<L,T,Q> edge, const many<vec<L,T,Q>>&  x, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -380,7 +380,7 @@ namespace composites
 	/// return t * t * (3 - 2 * t);
 	/// Results are undefined if lo >= hi.
 	template<length_t L, typename T, qualifier Q>
-	void smoothstep(const primitives<vec<L,T,Q>>& lo, const primitives<vec<L,T,Q>>& hi, const primitives<vec<L,T,Q>>& x, primitives<vec<L,T,Q>>& out)
+	void smoothstep(const many<vec<L,T,Q>>& lo, const many<vec<L,T,Q>>& hi, const many<vec<L,T,Q>>& x, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -388,7 +388,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void smoothstep(const vec<L,T,Q> lo, const primitives<vec<L,T,Q>>& hi, const primitives<vec<L,T,Q>>& x, primitives<vec<L,T,Q>>& out)
+	void smoothstep(const vec<L,T,Q> lo, const many<vec<L,T,Q>>& hi, const many<vec<L,T,Q>>& x, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -396,7 +396,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void smoothstep(const primitives<vec<L,T,Q>>& lo, vec<L,T,Q> hi, const primitives<vec<L,T,Q>>& x, primitives<vec<L,T,Q>>& out)
+	void smoothstep(const many<vec<L,T,Q>>& lo, vec<L,T,Q> hi, const many<vec<L,T,Q>>& x, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -404,7 +404,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void smoothstep(const vec<L,T,Q> lo, const vec<L,T,Q> hi, const primitives<vec<L,T,Q>>& x, primitives<vec<L,T,Q>>& out)
+	void smoothstep(const vec<L,T,Q> lo, const vec<L,T,Q> hi, const many<vec<L,T,Q>>& x, many<vec<L,T,Q>>& out)
 	{
 		vec<L,T,Q> range = hi-lo;
 		for (unsigned int i = 0; i < x.size(); ++i)
@@ -413,7 +413,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void smoothstep(const primitives<vec<L,T,Q>>& lo, const primitives<vec<L,T,Q>>& hi, const vec<L,T,Q> x, primitives<vec<L,T,Q>>& out)
+	void smoothstep(const many<vec<L,T,Q>>& lo, const many<vec<L,T,Q>>& hi, const vec<L,T,Q> x, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < hi.size(); ++i)
 		{
@@ -421,7 +421,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void smoothstep(const vec<L,T,Q> lo, const primitives<vec<L,T,Q>>& hi, const vec<L,T,Q> x, primitives<vec<L,T,Q>>& out)
+	void smoothstep(const vec<L,T,Q> lo, const many<vec<L,T,Q>>& hi, const vec<L,T,Q> x, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < hi.size(); ++i)
 		{
@@ -429,7 +429,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void smoothstep(const primitives<vec<L,T,Q>>& lo, const vec<L,T,Q> hi, const vec<L,T,Q> x, primitives<vec<L,T,Q>>& out)
+	void smoothstep(const many<vec<L,T,Q>>& lo, const vec<L,T,Q> hi, const vec<L,T,Q> x, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < lo.size(); ++i)
 		{
@@ -443,7 +443,7 @@ namespace composites
 	/// including for implementations with no NaN
 	/// representations.
 	template<length_t L, typename T, qualifier Q>
-	void isnan(const primitives<vec<L,T,Q>>&  x, primitives<bool>& out)
+	void isnan(const many<vec<L,T,Q>>&  x, many<bool>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -457,7 +457,7 @@ namespace composites
 	/// otherwise, including for implementations with no infinity
 	/// representations.
 	template<length_t L, typename T, qualifier Q>
-	void isinf(const primitives<vec<L,T,Q>>&  x, primitives<bool>& out)
+	void isinf(const many<vec<L,T,Q>>&  x, many<bool>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -467,7 +467,7 @@ namespace composites
 
 	/// Computes and returns a * b + c.
 	template<length_t L, typename T, qualifier Q>
-	void fma(const primitives<vec<L,T,Q>>& a, const primitives<vec<L,T,Q>>& b, const primitives<vec<L,T,Q>>& c, primitives<vec<L,T,Q>>& out)
+	void fma(const many<vec<L,T,Q>>& a, const many<vec<L,T,Q>>& b, const many<vec<L,T,Q>>& c, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < c.size(); ++i)
 		{
@@ -475,7 +475,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void fma(const vec<L,T,Q> a, const primitives<vec<L,T,Q>>& b, const primitives<vec<L,T,Q>>& c, primitives<vec<L,T,Q>>& out)
+	void fma(const vec<L,T,Q> a, const many<vec<L,T,Q>>& b, const many<vec<L,T,Q>>& c, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < c.size(); ++i)
 		{
@@ -483,7 +483,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void fma(const primitives<vec<L,T,Q>>& a, vec<L,T,Q> b, const primitives<vec<L,T,Q>>& c, primitives<vec<L,T,Q>>& out)
+	void fma(const many<vec<L,T,Q>>& a, vec<L,T,Q> b, const many<vec<L,T,Q>>& c, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < c.size(); ++i)
 		{
@@ -491,7 +491,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void fma(const vec<L,T,Q> a, const vec<L,T,Q> b, const primitives<vec<L,T,Q>>& c, primitives<vec<L,T,Q>>& out)
+	void fma(const vec<L,T,Q> a, const vec<L,T,Q> b, const many<vec<L,T,Q>>& c, many<vec<L,T,Q>>& out)
 	{
 		vec<L,T,Q> ab = a*b;
 		for (unsigned int i = 0; i < c.size(); ++i)
@@ -500,7 +500,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void fma(const primitives<vec<L,T,Q>>& a, const primitives<vec<L,T,Q>>& b, const vec<L,T,Q> c, primitives<vec<L,T,Q>>& out)
+	void fma(const many<vec<L,T,Q>>& a, const many<vec<L,T,Q>>& b, const vec<L,T,Q> c, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < b.size(); ++i)
 		{
@@ -508,7 +508,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void fma(const vec<L,T,Q> a, const primitives<vec<L,T,Q>>& b, const vec<L,T,Q> c, primitives<vec<L,T,Q>>& out)
+	void fma(const vec<L,T,Q> a, const many<vec<L,T,Q>>& b, const vec<L,T,Q> c, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < b.size(); ++i)
 		{
@@ -516,7 +516,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void fma(const primitives<vec<L,T,Q>>& a, const vec<L,T,Q> b, const vec<L,T,Q> c, primitives<vec<L,T,Q>>& out)
+	void fma(const many<vec<L,T,Q>>& a, const vec<L,T,Q> b, const vec<L,T,Q> c, many<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{

@@ -1,11 +1,11 @@
 #pragma once
 
-#include "primitives.hpp"
+#include "many.hpp"
 
 namespace composites
 {
 
-	void unite(const primitives<bool>& a, const bool b, primitives<bool>& out)
+	void unite(const many<bool>& a, const bool b, many<bool>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -13,7 +13,7 @@ namespace composites
 		}
 	}
 
-	void unite(const primitives<bool>& a, const primitives<bool>& b, primitives<bool>& out)
+	void unite(const many<bool>& a, const many<bool>& b, many<bool>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -21,7 +21,7 @@ namespace composites
 		}
 	}
 
-	void intersect(const primitives<bool>& a, const bool b, primitives<bool>& out)
+	void intersect(const many<bool>& a, const bool b, many<bool>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -29,7 +29,7 @@ namespace composites
 		}
 	}
 
-	void intersect(const primitives<bool>& a, const primitives<bool>& b, primitives<bool>& out)
+	void intersect(const many<bool>& a, const many<bool>& b, many<bool>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -37,7 +37,7 @@ namespace composites
 		}
 	}
 
-	void differ(const primitives<bool>& a, const bool b, primitives<bool>& out)
+	void differ(const many<bool>& a, const bool b, many<bool>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -45,7 +45,7 @@ namespace composites
 		}
 	}
 
-	void differ(const primitives<bool>& a, const primitives<bool>& b, primitives<bool>& out)
+	void differ(const many<bool>& a, const many<bool>& b, many<bool>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -53,7 +53,7 @@ namespace composites
 		}
 	}
 
-	void negate(const primitives<bool>& a, primitives<bool>& out)
+	void negate(const many<bool>& a, many<bool>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -61,7 +61,7 @@ namespace composites
 		}
 	}
 
-	bool all(const primitives<bool>& a)
+	bool all(const many<bool>& a)
 	{
 		bool out = true;
 		for (unsigned int i = 0; i < a.size(); ++i)
@@ -70,7 +70,7 @@ namespace composites
 		}
 		return out;
 	}
-	bool any(const primitives<bool>& a)
+	bool any(const many<bool>& a)
 	{
 		bool out = false;
 		for (unsigned int i = 0; i < a.size(); ++i)
@@ -79,7 +79,7 @@ namespace composites
 		}
 		return out;
 	}
-	bool none(const primitives<bool>& a)
+	bool none(const many<bool>& a)
 	{
 		bool out = false;
 		for (unsigned int i = 0; i < a.size(); ++i)
@@ -90,9 +90,9 @@ namespace composites
 	}
 
 
-	inline primitives<bool> operator~(const primitives<bool>& a)
+	inline many<bool> operator~(const many<bool>& a)
 	{
-		primitives<bool> out = primitives<bool>(a.size());
+		many<bool> out = many<bool>(a.size());
 		negate(a, out);
 		return out;
 	}
@@ -100,28 +100,28 @@ namespace composites
 
 
 
-	inline primitives<bool> operator|(const primitives<bool>& a, const bool b)
+	inline many<bool> operator|(const many<bool>& a, const bool b)
 	{
-		primitives<bool> out = primitives<bool>(a.size());
+		many<bool> out = many<bool>(a.size());
 		unite(a, b, out);
 		return out;
 	}
-	inline primitives<bool> operator&(const primitives<bool>& a, const bool b)
+	inline many<bool> operator&(const many<bool>& a, const bool b)
 	{
-		primitives<bool> out = primitives<bool>(a.size());
+		many<bool> out = many<bool>(a.size());
 		intersect(a, b, out);
 		return out;
 	}
 
-	inline primitives<bool> operator|(const primitives<bool>& a, const primitives<bool>& b)
+	inline many<bool> operator|(const many<bool>& a, const many<bool>& b)
 	{
-		primitives<bool> out = primitives<bool>(a.size());
+		many<bool> out = many<bool>(a.size());
 		unite(a, b, out);
 		return out;
 	}
-	inline primitives<bool> operator&(const primitives<bool>& a, const primitives<bool>& b)
+	inline many<bool> operator&(const many<bool>& a, const many<bool>& b)
 	{
-		primitives<bool> out = primitives<bool>(a.size());
+		many<bool> out = many<bool>(a.size());
 		intersect(a, b, out);
 		return out;
 	}
@@ -129,20 +129,20 @@ namespace composites
 
 
 
-	inline primitives<bool>& operator|=(primitives<bool>& a, const bool b){
+	inline many<bool>& operator|=(many<bool>& a, const bool b){
 		unite(a, b, a);
 		return a;
 	}
-	inline primitives<bool>& operator&=(primitives<bool>& a, const bool b){
+	inline many<bool>& operator&=(many<bool>& a, const bool b){
 		intersect(a, b, a);
 		return a;
 	}
 
-	inline primitives<bool>& operator|=(primitives<bool>& a, const primitives<bool>& b){
+	inline many<bool>& operator|=(many<bool>& a, const many<bool>& b){
 		unite(a, b, a);
 		return a;
 	}
-	inline primitives<bool>& operator&=(primitives<bool>& a, const primitives<bool>& b){
+	inline many<bool>& operator&=(many<bool>& a, const many<bool>& b){
 		intersect(a, b, a);
 		return a;
 	}

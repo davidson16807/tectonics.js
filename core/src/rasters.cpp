@@ -20,7 +20,7 @@ using namespace composites;
 using namespace rasters;
 
 template<typename T>
-void copy_typed_array(primitives<T>& out, const val& typed_array)
+void copy_typed_array(many<T>& out, const val& typed_array)
 {
   unsigned int typed_array_length = typed_array["length"].as<unsigned int>();
   //TODO: verify output length equals typed_array length
@@ -31,16 +31,16 @@ void copy_typed_array(primitives<T>& out, const val& typed_array)
 }
 
 template<typename T>
-primitives<T> from_typed_array(const val& typed_array)
+many<T> from_typed_array(const val& typed_array)
 {
   unsigned int typed_array_length = typed_array["length"].as<unsigned int>();
-  primitives<T> out = primitives<T>(typed_array_length);
+  many<T> out = many<T>(typed_array_length);
   copy_typed_array(out, typed_array);
   return out;
 }
 
 template<typename T>
-void copy_list(primitives<T>& out, const val& list)
+void copy_list(many<T>& out, const val& list)
 {
   unsigned int list_length = list["length"].as<unsigned int>();
   //TODO: verify output length equals list length
@@ -52,7 +52,7 @@ void copy_list(primitives<T>& out, const val& list)
 }
 
 template<typename T, qualifier Q>
-void copy_list(primitives<vec<2,T,Q>>& out, const val& list)
+void copy_list(many<vec<2,T,Q>>& out, const val& list)
 {
   unsigned int list_length = list["length"].as<unsigned int>();
   //TODO: verify output length equals list length
@@ -67,7 +67,7 @@ void copy_list(primitives<vec<2,T,Q>>& out, const val& list)
 }
 
 template<typename T, qualifier Q>
-void copy_list(primitives<vec<3,T,Q>>& out, const val& list)
+void copy_list(many<vec<3,T,Q>>& out, const val& list)
 {
   unsigned int list_length = list["length"].as<unsigned int>();
   //TODO: verify output length equals list length
@@ -83,7 +83,7 @@ void copy_list(primitives<vec<3,T,Q>>& out, const val& list)
 }
 
 template<typename T, qualifier Q>
-void copy_list(primitives<vec<4,T,Q>>& out, const val& list)
+void copy_list(many<vec<4,T,Q>>& out, const val& list)
 {
   unsigned int list_length = list["length"].as<unsigned int>();
   //TODO: verify output length equals list length
@@ -100,18 +100,18 @@ void copy_list(primitives<vec<4,T,Q>>& out, const val& list)
 }
 
 template<typename T>
-primitives<T> from_list(const val& list)
+many<T> from_list(const val& list)
 {
   unsigned int list_length = list["length"].as<unsigned int>();
-  primitives<T> out = primitives<T>(list_length);
+  many<T> out = many<T>(list_length);
   copy_list(out, list);
   return out;
 }
 template<length_t L, typename T, qualifier Q>
-primitives<vec<L,T,Q>> vecs_from_list(const val& list)
+many<vec<L,T,Q>> vecs_from_list(const val& list)
 {
   unsigned int list_length = list["length"].as<unsigned int>();
-  primitives<vec<L,T,Q>> out = primitives<vec<L,T,Q>>(list_length/L);
+  many<vec<L,T,Q>> out = many<vec<L,T,Q>>(list_length/L);
   copy_list(out, list);
   return out;
 }
@@ -141,7 +141,7 @@ val to_list(vec<4,T,Q> a){
   return out;
 }
 template<typename T>
-val to_list(const primitives<T>& a){
+val to_list(const many<T>& a){
   val out = val::array();
   for (unsigned int i = 0; i < a.size(); ++i)
   {
@@ -150,7 +150,7 @@ val to_list(const primitives<T>& a){
   return out;
 }
 template<length_t L, typename T, qualifier Q>
-val to_list(const primitives<vec<L,T,Q>>& a){
+val to_list(const many<vec<L,T,Q>>& a){
   val out = val::array();
   for (unsigned int i = 0; i < a.size(); ++i)
   {
@@ -165,14 +165,14 @@ template class glm::vec<4,float,defaultp>;
 template class glm::mat<3,3,float,defaultp>;
 template class glm::mat<4,3,float,defaultp>;
 template class glm::mat<4,4,float,defaultp>;
-template class composites::primitives<bool>;
-template class composites::primitives<int>;
-template class composites::primitives<unsigned int>;
-template class composites::primitives<float>;
-template class composites::primitives<double>;
-template class composites::primitives<vec<2,float,defaultp>>;
-template class composites::primitives<vec<3,float,defaultp>>;
-template class composites::primitives<vec<4,float,defaultp>>;
+template class composites::many<bool>;
+template class composites::many<int>;
+template class composites::many<unsigned int>;
+template class composites::many<float>;
+template class composites::many<double>;
+template class composites::many<vec<2,float,defaultp>>;
+template class composites::many<vec<3,float,defaultp>>;
+template class composites::many<vec<4,float,defaultp>>;
 
 EMSCRIPTEN_BINDINGS(rasters)
 {
@@ -301,9 +301,9 @@ EMSCRIPTEN_BINDINGS(rasters)
   function("bools_differ_bools",      (void (*)(const bools& a, const bools& b, bools& out))    differ    );
   function("bools_negate",            (void (*)(const bools& a, bools& out))                    negate    );
 
-  function("bools_all",       (bool (*)(const primitives<bool>& a)) all  );
-  function("bools_any",       (bool (*)(const primitives<bool>& a)) any  );
-  function("bools_none",      (bool (*)(const primitives<bool>& a)) none );
+  function("bools_all",       (bool (*)(const bools& a)) all  );
+  function("bools_any",       (bool (*)(const bools& a)) any  );
+  function("bools_none",      (bool (*)(const bools& a)) none );
 
   function("bools_get_id",      (bool (*)(const bools& a, const unsigned int id ))             get      );
   function("bools_get_ids",     (void (*)(const bools& a, const uints& ids, bools& out ))      get      );

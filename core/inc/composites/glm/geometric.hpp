@@ -22,14 +22,14 @@ namespace composites
 
 
 	template<length_t L, typename T, qualifier Q>
-	void dot (const primitives<vec<L,T,Q>>& u, const vec<L,T,Q> v, primitives<T>& out) {
+	void dot (const many<vec<L,T,Q>>& u, const vec<L,T,Q> v, many<T>& out) {
 		for (unsigned int i = 0; i < u.size(); ++i)
 		{
 			out[i] = dot(u[i], v);
 		}
 	}
 	template<typename T, qualifier Q>
-	void cross (const primitives<vec<3,T,Q>>& u, const vec<3,T,Q> v, primitives<vec<3,T,Q>>& out) 
+	void cross (const many<vec<3,T,Q>>& u, const vec<3,T,Q> v, many<vec<3,T,Q>>& out) 
 	{
 		for (unsigned int i = 0; i < u.size(); ++i)
 		{
@@ -37,7 +37,7 @@ namespace composites
 		}
 	}
 	template<typename T, qualifier Q>
-	void cross (const primitives<vec<2,T,Q>>& u, const vec<2,T,Q> v, primitives<float>& out) 
+	void cross (const many<vec<2,T,Q>>& u, const vec<2,T,Q> v, many<float>& out) 
 	{
 		for (unsigned int i = 0; i < u.size(); ++i)
 		{
@@ -45,14 +45,14 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void mult (const primitives<vec<L,T,Q>>& u, const vec<L,T,Q> v, primitives<vec<L,T,Q>>& out) {
+	void mult (const many<vec<L,T,Q>>& u, const vec<L,T,Q> v, many<vec<L,T,Q>>& out) {
 		for (unsigned int i = 0; i < u.size(); ++i)
 		{
 			out[i] = u[i] * v;
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void distance(const primitives<vec<L,T,Q>>& u, const vec<L,T,Q> v, primitives<T>& out) 
+	void distance(const many<vec<L,T,Q>>& u, const vec<L,T,Q> v, many<T>& out) 
 	{
 		for (unsigned int i = 0; i < u.size(); ++i)
 		{
@@ -62,7 +62,7 @@ namespace composites
 
 
 	template<length_t L, typename T, qualifier Q>
-	void dot (const primitives<vec<L,T,Q>>& u, const primitives<vec<L,T,Q>>& v, primitives<T>& out) 
+	void dot (const many<vec<L,T,Q>>& u, const many<vec<L,T,Q>>& v, many<T>& out) 
 	{
 		for (unsigned int i = 0; i < u.size(); ++i)
 		{
@@ -70,7 +70,7 @@ namespace composites
 		}
 	}
 	template<typename T, qualifier Q>
-	void cross (const primitives<vec<3,T,Q>>& u, const primitives<vec<3,T,Q>>& v, primitives<vec<3,T,Q>>& out) 
+	void cross (const many<vec<3,T,Q>>& u, const many<vec<3,T,Q>>& v, many<vec<3,T,Q>>& out) 
 	{
 		for (unsigned int i = 0; i < u.size(); ++i)
 		{
@@ -78,7 +78,7 @@ namespace composites
 		}
 	}
 	template<typename T, qualifier Q>
-	void cross (const primitives<vec<2,T,Q>>& u, const primitives<vec<2,T,Q>>& v, primitives<float>& out) 
+	void cross (const many<vec<2,T,Q>>& u, const many<vec<2,T,Q>>& v, many<float>& out) 
 	{
 		for (unsigned int i = 0; i < u.size(); ++i)
 		{
@@ -86,7 +86,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void mult (const primitives<vec<L,T,Q>>& u, const primitives<vec<L,T,Q>>& v, primitives<vec<L,T,Q>>& out) 
+	void mult (const many<vec<L,T,Q>>& u, const many<vec<L,T,Q>>& v, many<vec<L,T,Q>>& out) 
 	{
 		for (unsigned int i = 0; i < u.size(); ++i)
 		{
@@ -94,7 +94,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void distance(const primitives<vec<L,T,Q>>& u, const primitives<vec<L,T,Q>>& v, primitives<T>& out) 
+	void distance(const many<vec<L,T,Q>>& u, const many<vec<L,T,Q>>& v, many<T>& out) 
 	{
 		for (unsigned int i = 0; i < u.size(); ++i)
 		{
@@ -104,7 +104,7 @@ namespace composites
 
 
 	template<length_t L, typename T, qualifier Q>
-	void length(const primitives<vec<L,T,Q>>& u, primitives<T>& out) 
+	void length(const many<vec<L,T,Q>>& u, many<T>& out) 
 	{
 		for (unsigned int i = 0; i < u.size(); ++i)
 		{
@@ -112,7 +112,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void normalize(const primitives<vec<L,T,Q>>& u, primitives<vec<L,T,Q>>& out) 
+	void normalize(const many<vec<L,T,Q>>& u, many<vec<L,T,Q>>& out) 
 	{
 		for (unsigned int i = 0; i < u.size(); ++i)
 		{
@@ -128,65 +128,65 @@ namespace composites
 	//  because they are thin wrappers of static functions
 
 	template<length_t L, typename T, qualifier Q>
-	inline primitives<T> dot (const primitives<vec<L,T,Q>>& u, const vec<L,T,Q> v ) 
+	inline many<T> dot (const many<vec<L,T,Q>>& u, const vec<L,T,Q> v ) 
 	{
 		vec<L,T,Q> out = vec<L,T,Q>(u.size());
 		dot(u, v, out);
 		return out;
 	}
 	template<typename T, qualifier Q>
-	inline primitives<vec<3,T,Q>> cross (const primitives<vec<3,T,Q>>& u, const vec<3,T,Q> v ) 
+	inline many<vec<3,T,Q>> cross (const many<vec<3,T,Q>>& u, const vec<3,T,Q> v ) 
 	{
-		primitives<vec<3,T,Q>> out = primitives<vec<3,T,Q>>(u.size());
+		many<vec<3,T,Q>> out = many<vec<3,T,Q>>(u.size());
 		cross(u, v, out);
 		return out;
 	}
 	template<typename T, qualifier Q>
-	inline primitives<float> cross (const primitives<vec<2,T,Q>>& u, const vec<2,T,Q> v ) 
+	inline many<float> cross (const many<vec<2,T,Q>>& u, const vec<2,T,Q> v ) 
 	{
-		primitives<float> out = primitives<float>(u.size());
+		many<float> out = many<float>(u.size());
 		cross(u, v, out);
 		return out;
 	}
 	template<length_t L, typename T, qualifier Q>
-	inline primitives<T> distance(const primitives<vec<L,T,Q>>& u, const vec<L,T,Q> v ) 
+	inline many<T> distance(const many<vec<L,T,Q>>& u, const vec<L,T,Q> v ) 
 	{
 		vec<L,T,Q> out = vec<L,T,Q>(u.size());
 		distance(u, v, out);
 		return out;
 	}
 	template<length_t L, typename T, qualifier Q>
-	inline primitives<T> dot (const primitives<vec<L,T,Q>>& u, const primitives<vec<L,T,Q>>& v ) 
+	inline many<T> dot (const many<vec<L,T,Q>>& u, const many<vec<L,T,Q>>& v ) 
 	{
 		vec<L,T,Q> out = vec<L,T,Q>(u.size());
 		dot(u, v, out);
 		return out;
 	}
 	template<length_t L, typename T, qualifier Q>
-	inline primitives<vec<L,T,Q>> cross (const primitives<vec<L,T,Q>>& u, const primitives<vec<L,T,Q>>& v ) 
+	inline many<vec<L,T,Q>> cross (const many<vec<L,T,Q>>& u, const many<vec<L,T,Q>>& v ) 
 	{
-		primitives<vec<L,T,Q>> out = primitives<vec<L,T,Q>>(u.size());
+		many<vec<L,T,Q>> out = many<vec<L,T,Q>>(u.size());
 		cross(u, v, out);
 		return out;
 	}
 	template<length_t L, typename T, qualifier Q>
-	inline primitives<T> distance(const primitives<vec<L,T,Q>>& u, const primitives<vec<L,T,Q>>& v ) 
+	inline many<T> distance(const many<vec<L,T,Q>>& u, const many<vec<L,T,Q>>& v ) 
 	{
 		vec<L,T,Q> out = vec<L,T,Q>(u.size());
 		distance(u, v, out);
 		return out;
 	}
 	template<length_t L, typename T, qualifier Q>
-	inline primitives<vec<L,T,Q>> normalize(const primitives<vec<L,T,Q>>& u) 
+	inline many<vec<L,T,Q>> normalize(const many<vec<L,T,Q>>& u) 
 	{
-		primitives<vec<L,T,Q>> out = primitives<vec<L,T,Q>>(u.size());
+		many<vec<L,T,Q>> out = many<vec<L,T,Q>>(u.size());
 		normalize(u, out);
 		return out;
 	}
 	template<length_t L, typename T, qualifier Q>
-	inline primitives<T> length(const primitives<vec<L,T,Q>>& u) 
+	inline many<T> length(const many<vec<L,T,Q>>& u) 
 	{
-		primitives<T> out = primitives<T>(u.size());
+		many<T> out = many<T>(u.size());
 		length(u, out);
 		return out;
 	}
