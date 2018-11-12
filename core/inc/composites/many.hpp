@@ -35,6 +35,16 @@ namespace composites
 				id++;
 			}
 		};
+		template<class TIterator>
+		many(TIterator first, TIterator last)
+		{
+			unsigned int id = 0;
+			while (first!=last) {
+				this->values[id] = *first;
+				++first;
+				++id;
+			}
+		}
 		
 		// move constructor
 		many(many<T>&& a)  : values(a.values), N(a.N)
