@@ -1,6 +1,7 @@
 #pragma once
 
 #include <initializer_list>	// initializer_list
+#include <iterator>			// std::distance
 
 namespace composites
 {
@@ -36,10 +37,11 @@ namespace composites
 			}
 		};
 		template<class TIterator>
-		many(TIterator first, TIterator last)
+		many(TIterator first, TIterator last) : values(new T[std::distance(first, last)]), N(std::distance(first, last))
 		{
 			unsigned int id = 0;
-			while (first!=last) {
+			while (first!=last) 
+			{
 				this->values[id] = *first;
 				++first;
 				++id;
