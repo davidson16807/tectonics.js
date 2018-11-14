@@ -10,6 +10,7 @@
 #include <composites/composites.hpp>     // vec2, bvec2, dvec2, ivec2 and uvec2
 #include <composites/glm/glm.hpp>     // vec*, bvec*, dvec*, ivec* and uvec*
 
+#include "rasters/Grid.hpp"
 #include "rasters/SphereGridVoronoi3d.hpp"
 #include "rasters/CartesianGridCellList3d.hpp"
 

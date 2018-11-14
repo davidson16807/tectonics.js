@@ -1,12 +1,73 @@
 #pragma once
 
 #include <cmath> 		// sqrt, etc
-#include <algorithm>	// sort
+#include <algorithm>	// std::sort
+#include <functional>	// std::function
 
 #include "many.hpp"
 
 namespace composites
 {
+
+
+	template<class T>
+	void aggregate_into(const many<T>& a, const many<unsigned int>& group_ids, std::function<T(T, T)> aggregator, many<T>& group_out)
+	{
+		for (unsigned int i = 0; i < group_ids.size(); ++i)
+		{
+			group_out[group_ids[i]] = aggregator(group_out[group_ids[i]], a[i]);
+		}
+	}
+	template<class T>
+	void aggregate(const many<T>& a, const many<unsigned int>& group_ids, std::function<T(T, T)> aggregator, many<T>& group_out)
+	{
+		fill(group_out, T(0));
+		for (unsigned int i = 0; i < group_ids.size(); ++i)
+		{
+			group_out[group_ids[i]] = aggregator(group_out[group_ids[i]], a[i]);
+		}
+	}
+	template<class T>
+	many<T> aggregate(const many<T>& a, const many<unsigned int>& group_ids, std::function<T(T, T)> aggregator)
+	{
+		many<T> group_out = many<T>(max(group_ids));
+		for (unsigned int i = 0; i < group_ids.size(); ++i)
+		{
+			group_out[group_ids[i]] = aggregator(group_out[group_ids[i]], a[i]);
+		}
+		return group_out;
+	}
+
+
+	template<class T>
+	void aggregate_into(const many<unsigned int>& group_ids, std::function<T(T, T)> aggregator, many<T>& group_out)
+	{
+		for (unsigned int i = 0; i < group_ids.size(); ++i)
+		{
+			group_out[group_ids[i]] = aggregator(group_out[group_ids[i]]);
+		}
+	}
+	template<class T>
+	void aggregate(const many<unsigned int>& group_ids, std::function<T(T, T)> aggregator, many<T>& group_out)
+	{
+		fill(group_out, T(0));
+		for (unsigned int i = 0; i < group_ids.size(); ++i)
+		{
+			group_out[group_ids[i]] = aggregator(group_out[group_ids[i]]);
+		}
+	}
+	template<class T>
+	many<T> aggregate(const many<unsigned int>& group_ids, std::function<T(T, T)> aggregator)
+	{
+		many<T> group_out = many<T>(max(group_ids));
+		for (unsigned int i = 0; i < group_ids.size(); ++i)
+		{
+			group_out[group_ids[i]] = aggregator(group_out[group_ids[i]]);
+		}
+		return group_out;
+	}
+
+
 
 	// component-wise min
 	template <class T>
@@ -25,6 +86,8 @@ namespace composites
 		return min_id;
 	}
 
+
+
 	template <class T>
 	unsigned int max_id(const many<T>& a)
 	{
@@ -41,6 +104,7 @@ namespace composites
 		return max_id;
 	}
 
+
 	// component-wise min
 	template <class T>
 	T sum(const many<T>& a)
@@ -52,7 +116,6 @@ namespace composites
 		}
 		return out;
 	}
-
 
 	template <class T>
 	T mean(const many<T>& a)

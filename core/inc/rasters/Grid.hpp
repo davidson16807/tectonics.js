@@ -1,7 +1,14 @@
 #pragma once
 
 #include <unordered_set>
+#include <vector>
 
+#include <glm/vec2.hpp>     // vec2, bvec2, dvec2, ivec2 and uvec2
+#include <glm/vec3.hpp>     // vec3, bvec3, dvec3, ivec3 and uvec3
+#include <composites/composites.hpp>     // vec2, bvec2, dvec2, ivec2 and uvec2
+#include <composites/glm/glm.hpp>     // vec*, bvec*, dvec*, ivec* and uvec*
+
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
 
 // The Grid class is the one stop shop for high performance grid cell operations
@@ -10,8 +17,8 @@
 
 namespace rasters {
 
-	using glm;
-	using composites;
+	using namespace glm;
+	using namespace composites;
 
 	class Grid
 	{
@@ -20,68 +27,130 @@ namespace rasters {
 		// Precomputed map between buffer array ids and grid cell ids
 		// This helps with mapping cells within the model to buffer arrays in three.js
 		// Map is created by flattening this.parameters.faces
-		uints 			buffer_array_vertex_ids;
+		uints 		buffer_array_vertex_ids;
 
-		//ivecNs 		vertex_neighbor_ids;
-		// ints 		vertex_neighbor_count;
-		vec3s 			vertex_pos;
-		// floats 		vertex_areas;
+		//ivecNs 	vertex_neighbor_ids;
+		//ints 		vertex_neighbor_count;
+		vec3s 		vertex_pos;
+		vec3s 		vertex_normals;
+		floats 		vertex_areas;
+		float		vertex_average_distance;
 
-		uvec3s 			face_vertex_ids;
-		//uvec3s 		face_edge_ids;
-		//uvec3s 		face_neighbor_ids; // NOTE: only useful because it's constant size, AFAIK
-		//mat3x3		face_endpoints;
-		//vec3s 		face_midpoints;
-		//vec3s 		face_normals;
-		//floats 		face_areas;
 
-		uvec2s 			edge_vertex_ids;
-		//uvec2s 		edge_face_ids;
-		//uvec3s 		edge_neighbor_ids; // NOTE: no known use, only theoretical
-		mat2x3			edge_endpoints;
-		//vec3s 		edge_midpoints;
-		floats 			edge_distances;
-		float 			edge_average_distance;
+		uints 		face_vertex_id_a;
+		uints 		face_vertex_id_b;
+		uints 		face_vertex_id_c;
+		//uints 	face_edge_id_a;
+		//uints 	face_edge_id_b;
+		//uints 	face_edge_id_c;
+		vec3s 		face_endpoint_a;
+		vec3s 		face_endpoint_b;
+		vec3s 		face_endpoint_c;
+		vec3s 		face_midpoints;
+		vec3s 		face_normals;
+		floats 		face_areas;
+		float 		face_average_area;
 
-		uvec2s 			arrow_vertex_ids;
-		//uvec2s 		arrow_face_ids;
-		//uvec3s 		arrow_neighbor_ids; // NOTE: no known use, only theoretical
-		mat2x3s			arrow_endpoints;
-		//vec3s 		arrow_midpoints;
-		// vec3s 		arrow_offset;
-		floats 			arrow_distances;
-		float 			arrow_average_distance;
+		uints 		edge_vertex_id_a;
+		uints 		edge_vertex_id_b;
+		//uints 	edge_face_id_a;
+		//uints 	edge_face_id_b;
+		vec3s 		edge_endpoint_a;
+		vec3s 		edge_endpoint_b;
+		vec3s 		edge_midpoints;
+		floats 		edge_distances;
+		float		edge_average_distance;
+		vec3s 		edge_normals;
+		//floats 	edge_areas;
+		
+		uints 		arrow_vertex_id_from;
+		uints 		arrow_vertex_id_to;
+		//uints 	arrow_face_id_a;
+		//uints 	arrow_face_id_b;
+		vec3s 		arrow_endpoint_from;
+		vec3s 		arrow_endpoint_to;
+		vec3s 		arrow_midpoints;
+		vec3s 		arrow_offsets;
+		floats 		arrow_distances;
+		float		arrow_average_distance;
+		vec3s 		arrow_normals;
+		//floats 	arrow_areas;
 
 		~Grid()
 		{
 
 		}
 		Grid(vec3s vertices, uvec3s faces)
-			: vertex_pos(vertices), 
-			  face_vertex_ids(faces)
+			: 
+			  	buffer_array_vertex_ids(faces.size() * 3),
+
+			//	vertex_neighbor_ids(0),
+			//	vertex_neighbor_count(0),
+				vertex_pos(vertices),
+				vertex_normals(vertices.size()),
+				vertex_areas(vertices.size()),
+				vertex_average_distance(0),
+
+				face_vertex_id_a(faces.size()),
+				face_vertex_id_b(faces.size()),
+				face_vertex_id_c(faces.size()),
+			//	face_edge_id_a(faces.size()),
+			//	face_edge_id_b(faces.size()),
+			//	face_edge_id_c(faces.size()),
+				face_endpoint_a(faces.size()),
+				face_endpoint_b(faces.size()),
+				face_endpoint_c(faces.size()),
+				face_midpoints(faces.size()),
+				face_normals(faces.size()),
+				face_areas(faces.size()),
+				face_average_area(0),
+
+				edge_vertex_id_a(0),
+				edge_vertex_id_b(0),
+			//	edge_face_id_a(0),
+			//	edge_face_id_b(0),
+				edge_endpoint_a(0),
+				edge_endpoint_b(0),
+				edge_midpoints(0),
+				edge_distances(0),
+				edge_average_distance(0),
+				edge_normals(0),
+			//	edge_areas(0),
+				
+				arrow_vertex_id_from(0),
+				arrow_vertex_id_to(0),
+			//	arrow_face_id_a(0),
+			//	arrow_face_id_b(0),
+				arrow_endpoint_from(0),
+				arrow_endpoint_to(0),
+				arrow_midpoints(0),
+				arrow_offsets(0),
+				arrow_distances(0),
+				arrow_average_distance(0),
+				arrow_normals(0)
+			//	arrow_areas(0),
 		{
-			buffer_array_vertex_ids = ints(face_vertex_ids.size() * 3);
-			for (unsigned int i=0, i3=0; i<face_vertex_ids.size(); i++, i3+=3) 
+			for (unsigned int i=0, i3=0; i<faces.size(); i++, i3+=3) 
 			{
-				buffer_array_vertex_ids[i3+0] = face_vertex_ids[i].x;
-				buffer_array_vertex_ids[i3+1] = face_vertex_ids[i].y;
-				buffer_array_vertex_ids[i3+2] = face_vertex_ids[i].z;
+				buffer_array_vertex_ids[i3+0] = faces[i].x;
+				buffer_array_vertex_ids[i3+1] = faces[i].y;
+				buffer_array_vertex_ids[i3+2] = faces[i].z;
 			};
 
-			// Step 1: generate arrows from face_vertex_ids
+			// Step 1: generate arrows from faces
 			// TODO: REMOVE DUPLICATE ARROWS!
-			std::unordered_set<uvec2> arrow_vertex_ids_set = std::unordered_set<uvec2>(faces.size()*3);
-			for (unsigned int i=0; i<face_vertex_ids.size(); i++) 
+			std::unordered_set<uvec2> arrow_vertex_ids_set;
+			for (unsigned int i=0; i<faces.size(); i++) 
 			{
-				arrow_vertex_ids_set.insert(uvec2(face_vertex_ids[i].x, face_vertex_ids[i].y));
-				arrow_vertex_ids_set.insert(uvec2(face_vertex_ids[i].y, face_vertex_ids[i].x));
-				arrow_vertex_ids_set.insert(uvec2(face_vertex_ids[i].x, face_vertex_ids[i].z));
-				arrow_vertex_ids_set.insert(uvec2(face_vertex_ids[i].z, face_vertex_ids[i].x));
-				arrow_vertex_ids_set.insert(uvec2(face_vertex_ids[i].y, face_vertex_ids[i].z));
-				arrow_vertex_ids_set.insert(uvec2(face_vertex_ids[i].z, face_vertex_ids[i].y));
+				arrow_vertex_ids_set.insert(uvec2(faces[i].x, faces[i].y));
+				arrow_vertex_ids_set.insert(uvec2(faces[i].y, faces[i].x));
+				arrow_vertex_ids_set.insert(uvec2(faces[i].x, faces[i].z));
+				arrow_vertex_ids_set.insert(uvec2(faces[i].z, faces[i].x));
+				arrow_vertex_ids_set.insert(uvec2(faces[i].y, faces[i].z));
+				arrow_vertex_ids_set.insert(uvec2(faces[i].z, faces[i].y));
 			}
 		    // sort arrows using a vector to avoid cache misses when retrieving indices
-			std::vector<uvec2> arrow_vertex_ids_vector = std::vector<uvec2>(arrow_vertex_ids_set.begin(), arrow_vertex_ids_set.end());
+			std::vector<uvec2> arrow_vertex_ids_vector(arrow_vertex_ids_set.begin(), arrow_vertex_ids_set.end());
 		    std::sort(
 		    	arrow_vertex_ids_vector.begin(), 
 		    	arrow_vertex_ids_vector.end(), 
@@ -91,111 +160,71 @@ namespace rasters {
 		    		      (std::min(a.x,a.y) == std::min(b.x,b.y) && std::max(a.x,a.y) > std::max(b.x,b.y)); 
 		    	}
 	    	);
-			arrow_vertex_ids = uvec2s(arrow_vertex_ids_vector.begin(), arrow_vertex_ids_vector.end());
-
-
-			arrow_vertex_ids = vec2s(arrow_vertex_ids.size());
-			for (unsigned int i=0; i<arrow_vertex_ids.size(); ++i)
-			{
-				arrow_vertex_ids[i] = distance(vertex_pos[arrow_vertex_ids[i].x], vertex_pos[arrow_vertex_ids[i].y]);
-			}
-			for (unsigned int i=0; i<arrow_vertex_ids.size(); ++i)
-			{
-				arrow_endpoints[i] = mat2x3(vertex_pos[arrow_vertex_ids[i].x], vertex_pos[arrow_vertex_ids[i].y]);
-				
-			}
-			arrow_average_distance = mean(arrow_vertex_ids);
 
 
 			// Step 2: generate edges from arrows,
 			//  an arrow should only become an edge if y > x
-			std::vector<uvec2> edge_vertex_ids_vector = std::vector<uvec2>();
+			std::vector<uvec2> edge_vertex_ids_vector;
 			std::copy_if (
 				arrow_vertex_ids_vector.begin(), 
 				arrow_vertex_ids_vector.end(), 
 				std::back_inserter(edge_vertex_ids_vector), 
 				[](uvec2 a){return a.y > a.x;} 
 			);
-			edge_vertex_ids = uvec2s(edge_vertex_ids_vector.begin(), edge_vertex_ids_vector.end());
 
+			uvec2s edge_vertex_ids  (edge_vertex_ids_vector.begin(), edge_vertex_ids_vector.end());
+			uvec2s arrow_vertex_ids (arrow_vertex_ids_vector.begin(), arrow_vertex_ids_vector.end());
 
-			edge_distances = floats(edge_vertex_ids.size());
-			for (unsigned int i=0; i<edge_vertex_ids.size(); ++i)
-			{
-				edge_distances[i] = distance(vertex_pos[edge_vertex_ids[i].x], vertex_pos[edge_vertex_ids[i].y]);
-			}
-			edge_average_distance = mean(edge_distances);
+			get_x(faces, face_vertex_id_a);
+			get_y(faces, face_vertex_id_a);
+			get_z(faces, face_vertex_id_a);
+			get(vertex_pos, face_vertex_id_a, face_endpoint_a);
+			get(vertex_pos, face_vertex_id_b, face_endpoint_b);
+			get(vertex_pos, face_vertex_id_c, face_endpoint_c);
+			face_midpoints = (face_endpoint_a + face_endpoint_b + face_endpoint_c) / 3.;
+			face_normals   = normalize(cross(face_endpoint_c - face_endpoint_b, face_endpoint_a - face_endpoint_b)); 
+			face_areas     = length   (cross(face_endpoint_c - face_endpoint_b, face_endpoint_a - face_endpoint_b)) / 2.; 
+			// ^^^ NOTE: the magnitude of cross product is the area of a parallelogram, so half that is the area of a triangle
+			face_average_area = mean(face_areas);
+
+			vertex_areas = floats(vertices.size());
+			floats face_vertex_areas_a = length(cross((face_endpoint_c - face_endpoint_a)/2., (face_endpoint_b - face_endpoint_a)/2.)) / 2.; 
+			floats face_vertex_areas_b = length(cross((face_endpoint_a - face_endpoint_b)/2., (face_endpoint_c - face_endpoint_b)/2.)) / 2.; 
+			floats face_vertex_areas_c = length(cross((face_endpoint_b - face_endpoint_c)/2., (face_endpoint_a - face_endpoint_c)/2.)) / 2.; 
+			// ^^^ NOTE: these 3 represent the surface area of the face that lies within a vertex's region of influence
+			aggregate_into(face_vertex_areas_a, face_vertex_id_a, [](float a, float b){ return a+b; }, vertex_areas);
+			aggregate_into(face_vertex_areas_b, face_vertex_id_b, [](float a, float b){ return a+b; }, vertex_areas);
+			aggregate_into(face_vertex_areas_c, face_vertex_id_c, [](float a, float b){ return a+b; }, vertex_areas);
+			vertex_average_area = mean(vertex_areas);
+
+			vertex_normals = floats(vertices.size());
+			vec3s face_area_weighted_normals = face_normals * face_areas;
+			aggregate_into(face_area_weighted_normals, face_vertex_id_a, [](vec3 a, vec3 b){ return a+b; }, vertex_normals);
+			aggregate_into(face_area_weighted_normals, face_vertex_id_b, [](vec3 a, vec3 b){ return a+b; }, vertex_normals);
+			aggregate_into(face_area_weighted_normals, face_vertex_id_c, [](vec3 a, vec3 b){ return a+b; }, vertex_normals);
+			normalize(vertex_normals, vertex_normals);
+
+			edge_vertex_id_a 		= get_x(edge_vertex_ids);
+			edge_vertex_id_b 		= get_y(edge_vertex_ids);
+			edge_endpoint_a 		= get(pos, edge_vertex_id_a);
+			edge_endpoint_b 		= get(pos, edge_vertex_id_b);
+			edge_midpoints 			= (edge_endpoint_a + edge_endpoint_b) / 2.;
+			edge_distances 			= distance(edge_endpoint_a, edge_endpoint_b);
+			edge_average_distance 	= mean(edge_distances);
+			edge_normals 			= (get(vertex_normals, edge_vertex_id_a) + get(vertex_normals, edge_vertex_id_b)) / 2.;
+
+			arrow_vertex_id_from 	= get_x(arrow_vertex_ids);
+			arrow_vertex_id_to   	= get_y(arrow_vertex_ids);
+			arrow_endpoint_from 	= get(pos, arrow_vertex_id_from);
+			arrow_endpoint_to   	= get(pos, arrow_vertex_id_to);
+			arrow_midpoints 		= (arrow_endpoint_from + arrow_endpoint_to) / 2.;
+			arrow_distances 		= distance(arrow_endpoint_from, arrow_endpoint_to);
+			arrow_offsets 			= arrow_endpoint_to - arrow_endpoint_from;
+			arrow_average_distance 	= mean(arrow_distances);
+			arrow_normals 			= (get(vertex_normals, arrowvertex_id_a) + get(vertex_normals, arrowvertex_id_b)) / 2.; 
+
 		}
 	};
-
-	function Grid(parameters, options){
-		options = options || {};
-		var voronoi_generator = options.voronoi_generator;
-		var neighbor_lookup, face, points, vertex;
-
-		this.parameters = parameters;
-		
-
-		var neighbor_count = Uint8Raster(this);
-		for (var i = 0, li=neighbor_lookup.length; i<li; i++) { 
-			neighbor_count[i] = neighbor_lookup[i].length;
-		}
-		this.neighbor_count = neighbor_count;
-
-		// an "edge" in graph theory is a unordered set of vertices 
-		// i.e. this.edges does not contain duplicate neighbor pairs 
-		// e.g. it includes [1,2] but not [2,1] 
-		var edges = []; 
-		var edge_lookup = []; 
-		// an "arrow" in graph theory is an ordered set of vertices 
-		// it is also known as a directed edge 
-		// i.e. this.arrows contains duplicate neighbor pairs 
-		// e.g. it includes [1,2] *and* [2,1] 
-		var arrows = [];  
-		var arrow_lookup = []; 
-
-		var neighbors = []; 
-		var neighbor = 0; 
-		
-		//Precompute a list of neighboring vertex pairs for O(N) traversal 
-		for (var i = 0, li=neighbor_lookup.length; i<li; i++) { 
-		  neighbors = neighbor_lookup[i]; 
-		  for (var j = 0, lj=neighbors.length; j<lj; j++) { 
-		    neighbor = neighbors[j]; 
-		    arrows.push([i, neighbor]); 
-		
-		    arrow_lookup[i] = arrow_lookup[i] || []; 
-		    arrow_lookup[i].push(arrows.length-1); 
-		
-		    if (i < neighbor) { 
-		      edges.push([i, neighbor]); 
-		
-		      edge_lookup[i] = edge_lookup[i] || []; 
-		      edge_lookup[i].push(edges.length-1); 
-		
-		      edge_lookup[neighbor] = edge_lookup[neighbor] || []; 
-		      edge_lookup[neighbor].push(edges.length-1); 
-		    } 
-		  } 
-		} 
-
-		this.edges = edges; 
-		this.edge_lookup = edge_lookup; 
-		this.arrows = arrows; 
-		this.arrow_lookup = arrow_lookup; 
-		
-		this.pos_arrow_differential = VectorField.arrow_differential(this.pos); 
-	    this.pos_arrow_differential_normalized = VectorRaster.OfLength(arrows.length, undefined)
-	    this.pos_arrow_differential_normalized = VectorField.normalize(this.pos_arrow_differential, this.pos_arrow_differential_normalized); 
-		this.pos_arrow_distances = Float32Raster.OfLength(arrows.length, undefined)
-		VectorField.magnitude(this.pos_arrow_differential, this.pos_arrow_distances);
-		this.average_distance = Float32Dataset.average(this.pos_arrow_distances);
-		this.average_area = this.average_distance * this.average_distance;
-
-		if (voronoi_generator){
-			this._voronoi = voronoi_generator(this.pos, Float32Dataset.max(this.pos_arrow_distances));
-		}
-	}
 
 	Grid.prototype.getNearestId = function(vertex) { 
 		return this._voronoi.getNearestId(vertex); 

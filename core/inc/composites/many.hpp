@@ -15,7 +15,7 @@ namespace composites
 	{
 	protected:
 		T* values;
-		const unsigned int N;
+		unsigned int N;
 
 	public:
 
@@ -47,15 +47,9 @@ namespace composites
 				++id;
 			}
 		}
-		
-		// move constructor
-		many(many<T>&& a)  : values(a.values), N(a.N)
-		{
-			a.values = nullptr;
-		};
 
 		// copy constructor
-		explicit many(const many<T>& a)  : values(new T[a.N]), N(a.N)
+		many(const many<T>& a)  : values(new T[a.N]), N(a.N)
 		{
 			for (unsigned int i = 0; i < N; ++i)
 			{
@@ -142,6 +136,14 @@ namespace composites
 			}
 		}
 	}
+	template <class T>
+	many<T> get(const many<T>& a, const many<unsigned int>& ids)
+	{
+		many<T> out = many<T>(ids.size());
+		get(a, ids, out);
+		return out;
+	}
+
 
 	template <class T>
 	void fill(many<T>& out, const T a )
@@ -218,6 +220,8 @@ namespace composites
 			out[ids[i]] = a[i];
 		}
 	}
+
+
 
 
 	float COMPOSITES_EPSILON = 1e-4;
@@ -501,7 +505,29 @@ namespace composites
 			out[i] = a[i] / b[i];
 		}
 	}
+	template <class T, class T2, class T3>
+	void div(const T a, const many<T2>& b, many<T3>& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a / b[i];
+		}
+	}
 	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	// NOTE: all wrappers are suggested to be inline because they are thin wrappers of functions
 
 	template <class T, class T2, class T3>
@@ -685,101 +711,66 @@ namespace composites
 
 	// NOTE: we define operators for multiple classes T and T2 in order to support 
 	//  vector/scalar multiplication, matrix/vect multiplication, etc.
-	template <class T, class T2, class T3>
-	inline many<T3> operator+(const many<T>& a, const T2 b)
+	template <class T, class T2>
+	inline many<T> operator+(const many<T>& a, const T2 b)
 	{
-		many<T3> out = many<T3>(a.N);
+		many<T> out = many<T>(a.N);
 		add(a, b, out);
 		return out;
 	}
-	template <class T, class T2, class T3>
-	inline many<T3> operator-(const many<T>& a, const T2 b)
+	template <class T, class T2>
+	inline many<T> operator-(const many<T>& a, const T2 b)
 	{
-		many<T3> out = many<T3>(a.N);
+		many<T> out = many<T>(a.N);
 		sub(a, b, out);
 		return out;
 	}
-	template <class T, class T2, class T3>
+	template <class T, class T2>
 	inline many<T> operator*(const many<T>& a, const T2 b)
 	{
-		many<T3> out = many<T3>(a.N);
+		many<T> out = many<T>(a.N);
 		mult(a, b, out);
 		return out;
 	}
-	template <class T, class T2, class T3>
-	inline many<T3> operator/(const many<T>& a, const T2 b)
+	template <class T, class T2>
+	inline many<T> operator/(const many<T>& a, const T2 b)
 	{
-		many<T3> out = many<T3>(a.N);
+		many<T> out = many<T>(a.N);
 		div(a, b, out);
 		return out;
 	}
-	
-
-
-
 
 	// NOTE: we define operators for multiple classes T and T2 in order to support 
 	//  vector/scalar multiplication, matrix/vect multiplication, etc.
-	template <class T, class T2, class T3>
-	inline many<T3> operator+(const T2 a, const many<T>& b)
+	template <class T>
+	inline many<T> operator+(const many<T>& a, const many<T>& b)
 	{
-		many<T3> out = many<T3>(a.N);
+		many<T> out = many<T>(a.N);
 		add(a, b, out);
 		return out;
 	}
-	template <class T, class T2, class T3>
-	inline many<T3> operator-(const T2 a, const many<T>& b)
+	template <class T>
+	inline many<T> operator-(const many<T>& a, const many<T>& b)
 	{
-		many<T3> out = many<T3>(a.N);
+		many<T> out = many<T>(a.N);
 		sub(a, b, out);
 		return out;
 	}
-	template <class T, class T2, class T3>
-	inline many<T> operator*(const T2 a, const many<T>& b)
+	template <class T>
+	inline many<T> operator*(const many<T>& a, const many<T>& b)
 	{
-		many<T3> out = many<T3>(a.N);
+		many<T> out = many<T>(a.N);
 		mult(a, b, out);
 		return out;
 	}
-	template <class T, class T2, class T3>
-	inline many<T3> operator/(const T2 a, const many<T>& b)
+	template <class T>
+	inline many<T> operator/(const many<T>& a, const many<T>& b)
 	{
-		many<T3> out = many<T3>(a.N);
+		many<T> out = many<T>(a.N);
 		div(a, b, out);
 		return out;
 	}
 
-
-	// NOTE: we define operators for multiple classes T and T2 in order to support 
-	//  vector/scalar multiplication, matrix/vect multiplication, etc.
-	template <class T, class T2, class T3>
-	inline many<T3> operator+(const many<T>& a, const many<T2>& b)
-	{
-		many<T3> out = many<T3>(a.N);
-		add(a, b, out);
-		return out;
-	}
-	template <class T, class T2, class T3>
-	inline many<T3> operator-(const many<T>& a, const many<T2>& b)
-	{
-		many<T3> out = many<T3>(a.N);
-		sub(a, b, out);
-		return out;
-	}
-	template <class T, class T2, class T3>
-	inline many<T3> operator*(const many<T>& a, const many<T2>& b)
-	{
-		many<T3> out = many<T3>(a.N);
-		mult(a, b, out);
-		return out;
-	}
-	template <class T, class T2, class T3>
-	inline many<T3> operator/(const many<T>& a, const many<T2>& b)
-	{
-		many<T3> out = many<T3>(a.N);
-		div(a, b, out);
-		return out;
-	}
 	typedef many<bool>	bools;
 	typedef many<int>		ints;
 	typedef many<unsigned int> uints;
