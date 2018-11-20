@@ -363,155 +363,232 @@ namespace composites
 
 
 
-
-
-	template <class T, class T2>
-	void greaterThan(const many<T>& a, const T2 b, many<bool>& out)
+	template <class T1, class Tout, typename F>
+	inline void transform(const many<T1>& a, F f, many<Tout>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
-			out[i] = a[i] > b;
+			out[i] = f(a[i]);
 		}
 	}
-	template <class T, class T2>
-	void greaterThanEqual(const many<T>& a, const T2 b, many<bool>& out)
+	template <class T1, class Tout, typename F>
+	inline void transform(const T1 a, F f, many<Tout>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
-			out[i] = a[i] >= b;
-		}
-	}
-	template <class T, class T2>
-	void lessThan(const many<T>& a, const T2 b, many<bool>& out)
-	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = a[i] < b;
-		}
-	}
-	template <class T, class T2>
-	void lessThanEqual(const many<T>& a, const T2 b, many<bool>& out)
-	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = a[i] <= b;
+			out[i] = f(a);
 		}
 	}
 
 
+	template <class T1, class Tout, typename F>
+	inline many<Tout> transform(const many<T1>& a, F f)
+	{
+		many<Tout> out = many<Tout>(a.size());
+		transform(a, f, out); 
+		return out;
+	}
+	template <class T1, class Tout, typename F>
+	inline many<Tout> transform(const T1 a, F f)
+	{
+		many<Tout> out = many<Tout>(a.size());
+		transform(a, f, out); 
+		return out;
+	}
 
-	template <class T, class T2>
-	void greaterThan(const many<T>& a, const many<T2>& b, many<bool>& out)
+
+	template <class T1, class T2, class Tout, typename F>
+	inline void transform(const many<T1>& a, const many<T2>& b, F f, many<Tout>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
-			out[i] = a[i] > b[i];
+			out[i] = f(a[i], b[i]);
 		}
 	}
-	template <class T, class T2>
-	void greaterThanEqual(const many<T>& a, const many<T2>& b, many<bool>& out)
+	template <class T1, class T2, class Tout, typename F>
+	inline void transform(const many<T1>& a, const T2 b, F f, many<Tout>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
-			out[i] = a[i] >= b[i];
+			out[i] = f(a[i], b);
 		}
 	}
-	template <class T, class T2>
-	void lessThan(const many<T>& a, const many<T2>& b, many<bool>& out)
+	template <class T1, class T2, class Tout, typename F>
+	inline void transform(const T1 a, const many<T2>& b, F f, many<Tout>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
-			out[i] = a[i] <= b[i];
-		}
-	}
-	template <class T, class T2>
-	void lessThanEqual(const many<T>& a, const many<T2>& b, many<bool>& out)
-	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = a[i] < b[i];
+			out[i] = f(a, b[i]);
 		}
 	}
 
 
 
-	template <class T, class T2, class T3>
-	void add(const many<T>& a, const T2 b, many<T3>& out)
+	template <class T1, class T2, class Tout, typename F>
+	inline many<Tout> transform(const many<T1>& a, const many<T2>& b, F f)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = a[i] + b;
-		}
+		many<Tout> out = many<Tout>(a.size());
+		transform(a, b, f, out); 
+		return out;
 	}
-	template <class T, class T2, class T3>
-	void sub(const many<T>& a, const T2 b, many<T3>& out)
+	template <class T1, class T2, class Tout, typename F>
+	inline many<Tout> transform(const many<T1>& a, const T2 b, F f)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = a[i] - b;
-		}
+		many<Tout> out = many<Tout>(a.size());
+		transform(a, b, f, out); 
+		return out;
 	}
-	template <class T, class T2, class T3>
-	void mult(const many<T>& a, const T2 b, many<T3>& out)
+	template <class T1, class T2, class Tout, typename F>
+	inline many<Tout> transform(const T1 a, const many<T2>& b, F f)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = b * a[i];
-		}
+		many<Tout> out = many<Tout>(a.size());
+		transform(a, b, f, out); 
+		return out;
 	}
-	template <class T, class T2, class T3>
-	void div(const many<T>& a, const T2 b, many<T3>& out)
+
+
+
+	template <class T>
+	inline void greaterThan(const many<T>& a, const T b, many<bool>& out) 
+	{ 
+		transform(a, b, [](T ai, T bi){ return ai > bi; }, out); 
+	}
+	template <class T>
+	inline void greaterThanEqual(const many<T>& a, const T b, many<bool>& out)
 	{
-		const T2 binv = T2(1.)/b;
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = a[i] * binv;
-		}
+		transform(a, b, [](T ai, T bi){ return ai >= bi; }, out); 
+	}
+	template <class T>
+	inline void lessThan(const many<T>& a, const T b, many<bool>& out)
+	{
+		transform(a, b, [](T ai, T bi){ return ai < bi; }, out); 
+	}
+	template <class T>
+	inline void lessThanEqual(const many<T>& a, const T b, many<bool>& out)
+	{
+		transform(a, b, [](T ai, T bi){ return ai <= bi; }, out); 
+	}
+
+
+
+	template <class T>
+	inline void greaterThan(const many<T>& a, const many<T>& b, many<bool>& out)
+	{
+		transform(a, b, [](T ai, T bi){ return ai > bi; }, out); 
+	}
+	template <class T>
+	inline void greaterThanEqual(const many<T>& a, const many<T>& b, many<bool>& out)
+	{
+		transform(a, b, [](T ai, T bi){ return ai >= bi; }, out); 
+	}
+	template <class T>
+	inline void lessThan(const many<T>& a, const many<T>& b, many<bool>& out)
+	{
+		transform(a, b, [](T ai, T bi){ return ai < bi; }, out); 
+	}
+	template <class T>
+	inline void lessThanEqual(const many<T>& a, const many<T>& b, many<bool>& out)
+	{
+		transform(a, b, [](T ai, T bi){ return ai <= bi; }, out); 
+	}
+
+
+
+	template <class T>
+	inline many<bool> greaterThan(const many<T>& a, const T b) 
+	{ 
+		return transform(a, b, [](T ai, T bi){ return ai > bi; }); 
+	}
+	template <class T>
+	inline many<bool> greaterThanEqual(const many<T>& a, const T b)
+	{
+		return transform(a, b, [](T ai, T bi){ return ai >= bi; }); 
+	}
+	template <class T>
+	inline many<bool> lessThan(const many<T>& a, const T b)
+	{
+		return transform(a, b, [](T ai, T bi){ return ai < bi; }); 
+	}
+	template <class T>
+	inline many<bool> lessThanEqual(const many<T>& a, const T b)
+	{
+		return transform(a, b, [](T ai, T bi){ return ai <= bi; }); 
+	}
+
+
+
+	template <class T>
+	inline many<bool> greaterThan(const many<T>& a, const many<T>& b)
+	{
+		return transform(a, b, [](T ai, T bi){ return ai > bi; }); 
+	}
+	template <class T>
+	inline many<bool> greaterThanEqual(const many<T>& a, const many<T>& b)
+	{
+		return transform(a, b, [](T ai, T bi){ return ai >= bi; }); 
+	}
+	template <class T>
+	inline many<bool> lessThan(const many<T>& a, const many<T>& b)
+	{
+		return transform(a, b, [](T ai, T bi){ return ai < bi; }); 
+	}
+	template <class T>
+	inline many<bool> lessThanEqual(const many<T>& a, const many<T>& b)
+	{
+		return transform(a, b, [](T ai, T bi){ return ai <= bi; }); 
+	}
+
+
+
+	template <class T, class T2, class Tout>
+	inline void add(const many<T>& a, const T2 b, many<Tout>& out)
+	{
+		transform(a, b, [](T ai, T2 bi){ return ai + bi; }, out); 
+	}
+	template <class T, class T2, class Tout>
+	inline void sub(const many<T>& a, const T2 b, many<Tout>& out)
+	{
+		transform(a, b, [](T ai, T2 bi){ return ai - bi; }, out); 
+	}
+	template <class T, class T2, class Tout>
+	inline void mult(const many<T>& a, const T2 b, many<Tout>& out)
+	{
+		transform(a, b, [](T ai, T2 bi){ return ai * bi; }, out); 
+	}
+	template <class T, class T2, class Tout>
+	inline void div(const many<T>& a, const T2 b, many<Tout>& out)
+	{
+		transform(a, b, [](T ai, T2 bi){ return ai / bi; }, out); 
+	}
+	template <class T, class T2, class Tout>
+	inline void div(const T a, const many<T2>& b, many<Tout>& out)
+	{
+		transform(a, b, [](T ai, T2 bi){ return ai / bi; }, out); 
 	}
 
 
 
 	// NOTE: we define operators for multiple classes T and T2 in order to support 
 	//  vector/scalar multiplication, matrix/vect multiplication, etc.
-	template <class T, class T2, class T3>
-	void add(const many<T>& a, const many<T2>& b, many<T3>& out)
+	template <class T, class T2, class Tout>
+	inline void add(const many<T>& a, const many<T2>& b, many<Tout>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = a[i] + b[i];
-		}
+		transform(a, b, [](T ai, T2 bi){ return ai + bi; }, out); 
 	}
-	template <class T, class T2, class T3>
-	void sub(const many<T>& a, const many<T2>& b, many<T3>& out)
+	template <class T, class T2, class Tout>
+	inline void sub(const many<T>& a, const many<T2>& b, many<Tout>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = a[i] - b[i];
-		}
+		transform(a, b, [](T ai, T2 bi){ return ai - bi; }, out); 
 	}
-	template <class T, class T2, class T3>
-	void mult(const many<T>& a, const many<T2>& b, many<T3>& out)
+	template <class T, class T2, class Tout>
+	inline void mult(const many<T>& a, const many<T2>& b, many<Tout>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = a[i] * b[i];
-		}
+		transform(a, b, [](T ai, T2 bi){ return ai * bi; }, out); 
 	}
-	template <class T, class T2, class T3>
-	void div(const many<T>& a, const many<T2>& b, many<T3>& out)
+	template <class T, class T2, class Tout>
+	inline void div(const many<T>& a, const many<T2>& b, many<Tout>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = a[i] / b[i];
-		}
-	}
-	template <class T, class T2, class T3>
-	void div(const T a, const many<T2>& b, many<T3>& out)
-	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = a / b[i];
-		}
+		transform(a, b, [](T ai, T2 bi){ return ai / bi; }, out); 
 	}
 	
 
@@ -530,150 +607,124 @@ namespace composites
 
 	// NOTE: all wrappers are suggested to be inline because they are thin wrappers of functions
 
-	template <class T, class T2, class T3>
-	inline many<T3> operator>(const many<T>& a, const T2 b)
+	template <class T>
+	inline many<bool> operator>(const many<T>& a, const T b)
 	{
-		many<T3> out = many<T3>(a.N);
-		greaterThan(a, b, out);
-		return out;
+		return transform(a, b, [](T ai, T bi){ return ai>bi; });
 	}
-	template <class T, class T2, class T3>
-	inline many<T3> operator>=(const many<T>& a, const T2 b)
+	template <class T>
+	inline many<bool> operator>=(const many<T>& a, const T b)
 	{
-		many<T3> out = many<T3>(a.N);
-		greaterThanEqual(a, b, out);
-		return out;
+		return transform(a, b, [](T ai, T bi){ return ai>=bi; });
 	}
-	template <class T, class T2, class T3>
-	inline many<T3> operator<(const many<T>& a, const T2 b)
+	template <class T>
+	inline many<bool> operator<(const many<T>& a, const T b)
 	{
-		many<T3> out = many<T3>(a.N);
-		lessThan(a, b, out);
-		return out;
+		return transform(a, b, [](T ai, T bi){ return ai<bi; });
 	}
-	template <class T, class T2, class T3>
-	inline many<T3> operator<=(const many<T>& a, const T2 b)
+	template <class T>
+	inline many<bool> operator<=(const many<T>& a, const T b)
 	{
-		many<T3> out = many<T3>(a.N);
-		lessThanEqual(a, b, out);
-		return out;
+		return transform(a, b, [](T ai, T bi){ return ai<=bi; });
 	}
 	
 	// NOTE: all wrappers are suggested to be inline because they are thin wrappers of functions
 
-	template <class T, class T2, class T3>
-	inline many<T3> operator>(const T2 a, const many<T>& b)
+	template <class T>
+	inline many<bool> operator>(const T a, const many<T>& b)
 	{
-		many<T3> out = many<T3>(a.N);
-		greaterThan(a, b, out);
-		return out;
+		return transform(a, b, [](T ai, T bi){ return ai>bi; });
 	}
-	template <class T, class T2, class T3>
-	inline many<T3> operator>=(const T2 a, const many<T>& b)
+	template <class T>
+	inline many<bool> operator>=(const T a, const many<T>& b)
 	{
-		many<T3> out = many<T3>(a.N);
-		greaterThanEqual(a, b, out);
-		return out;
+		return transform(a, b, [](T ai, T bi){ return ai>=bi; });
 	}
-	template <class T, class T2, class T3>
-	inline many<T3> operator<(const T2 a, const many<T>& b)
+	template <class T>
+	inline many<bool> operator<(const T a, const many<T>& b)
 	{
-		many<T3> out = many<T3>(a.N);
-		lessThan(a, b, out);
-		return out;
+		return transform(a, b, [](T ai, T bi){ return ai<bi; });
 	}
-	template <class T, class T2, class T3>
-	inline many<T3> operator<=(const T2 a, const many<T>& b)
+	template <class T>
+	inline many<bool> operator<=(const T a, const many<T>& b)
 	{
-		many<T3> out = many<T3>(a.N);
-		lessThanEqual(a, b, out);
-		return out;
+		return transform(a, b, [](T ai, T bi){ return ai<=bi; });
 	}
 
 	
 
-	template <class T, class T2, class T3>
-	inline many<T3> operator>(const many<T>& a, const many<T2>& b)
+	template <class T>
+	inline many<bool> operator>(const many<T>& a, const many<T>& b)
 	{
-		many<T3> out = many<T3>(a.N);
-		greaterThan(a, b, out);
-		return out;
+		return transform(a, b, [](T ai, T bi){ return ai>bi; });
 	}
-	template <class T, class T2, class T3>
-	inline many<T3> operator>=(const many<T>& a, const many<T2>& b)
+	template <class T>
+	inline many<bool> operator>=(const many<T>& a, const many<T>& b)
 	{
-		many<T3> out = many<T3>(a.N);
-		greaterThanEqual(a, b, out);
-		return out;
+		return transform(a, b, [](T ai, T bi){ return ai>=bi; });
 	}
-	template <class T, class T2, class T3>
-	inline many<T3> operator<(const many<T>& a, const many<T2>& b)
+	template <class T>
+	inline many<bool> operator<(const many<T>& a, const many<T>& b)
 	{
-		many<T3> out = many<T3>(a.N);
-		lessThan(a, b, out);
-		return out;
+		return transform(a, b, [](T ai, T bi){ return ai<bi; });
 	}
-	template <class T, class T2, class T3>
-	inline many<T3> operator<=(const many<T>& a, const many<T2>& b)
+	template <class T>
+	inline many<bool> operator<=(const many<T>& a, const many<T>& b)
 	{
-		many<T3> out = many<T3>(a.N);
-		lessThanEqual(a, b, out);
-		return out;
+		return transform(a, b, [](T ai, T bi){ return ai<=bi; });
 	}
 
 
 
 
 
-
-	template <class T, class T2, class T3>
+	template <class T, class T2>
 	inline many<T>& operator+=(const many<T>& a, const T2 b) 
 	{
-		add(a, b, a);
+		transform(a, b, [](T ai, T2 bi){ return ai+bi; }, a);
 		return a;
 	}
 	template <class T, class T2>
 	inline many<T>& operator-=(const many<T>& a, const T2 b) 
 	{
-		sub(a, b, a);
+		transform(a, b, [](T ai, T2 bi){ return ai-bi; }, a);
 		return a;
 	}
 	template <class T, class T2>
 	inline many<T>& operator*=(const many<T>& a, const T2 b) 
 	{
-		mult(a, b, a);
+		transform(a, b, [](T ai, T2 bi){ return ai*bi; }, a);
 		return a;
 	}
 	template <class T, class T2>
 	inline many<T>& operator/=(const many<T>& a, const T2 b) 
 	{
-		div(a, b, a);
+		transform(a, b, [](T ai, T2 bi){ return ai/bi; }, a);
 		return a;
 	}
-
 
 	template <class T, class T2>
 	inline many<T>& operator+=(const many<T>& a, const many<T2>& b) 
 	{
-		add(a, b, a);
+		transform(a, b, [](T ai, T2 bi){ return ai+bi; }, a);
 		return a;
 	}
 	template <class T, class T2>
 	inline many<T>& operator-=(const many<T>& a, const many<T2>& b) 
 	{
-		sub(a, b, a);
+		transform(a, b, [](T ai, T2 bi){ return ai-bi; }, a);
 		return a;
 	}
 	template <class T, class T2>
 	inline many<T>& operator*=(const many<T>& a, const many<T2>& b) 
 	{
-		mult(a, b, a);
+		transform(a, b, [](T ai, T2 bi){ return ai*bi; }, a);
 		return a;
 	}
 	template <class T, class T2>
 	inline many<T>& operator/=(const many<T>& a, const many<T2>& b) 
 	{
-		div(a, b, a);
+		transform(a, b, [](T ai, T2 bi){ return ai/bi; }, a);
 		return a;
 	}
 
@@ -681,13 +732,13 @@ namespace composites
 	template <class T>
 	inline many<T>& operator++(const many<T>& a)  
 	{  
-		add(a, 1, a);
+		transform(a, T(1), [](T ai, T bi){ return ai+bi; }, a);
 		return a;
 	}  
 	template <class T>
 	inline many<T>& operator--(const many<T>& a)  
 	{  
-		add(a, 1, a);
+		transform(a, T(1), [](T ai, T bi){ return ai-bi; }, a);
 		return a;
 	}  
 
@@ -695,13 +746,13 @@ namespace composites
 	template <class T>
 	inline many<T> operator++(const many<T>& a, int)  
 	{  
-		add(a, 1, a);
+		transform(a, T(1), [](T ai, T bi){ return ai+bi; }, a);
 		return a;
 	}  
 	template <class T>
 	inline many<T> operator--(const many<T>& a, int)  
 	{  
-		add(a, 1, a);
+		transform(a, T(1), [](T ai, T bi){ return ai-bi; }, a);
 		return a;
 	}  
 	
