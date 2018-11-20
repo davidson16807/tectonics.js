@@ -362,7 +362,7 @@ namespace composites
 
 
 
-
+	// UNARY TRANSFORM
 	template <class T1, class Tout, typename F>
 	inline void transform(const many<T1>& a, F f, many<Tout>& out)
 	{
@@ -397,6 +397,7 @@ namespace composites
 	}
 
 
+	// BINARY TRANSFORM
 	template <class T1, class T2, class Tout, typename F>
 	inline void transform(const many<T1>& a, const many<T2>& b, F f, many<Tout>& out)
 	{
@@ -416,12 +417,11 @@ namespace composites
 	template <class T1, class T2, class Tout, typename F>
 	inline void transform(const T1 a, const many<T2>& b, F f, many<Tout>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
+		for (unsigned int i = 0; i < b.size(); ++i)
 		{
 			out[i] = f(a, b[i]);
 		}
 	}
-
 
 
 	template <class T1, class T2, class Tout, typename F>
@@ -441,10 +441,132 @@ namespace composites
 	template <class T1, class T2, class Tout, typename F>
 	inline many<Tout> transform(const T1 a, const many<T2>& b, F f)
 	{
-		many<Tout> out = many<Tout>(a.size());
+		many<Tout> out = many<Tout>(b.size());
 		transform(a, b, f, out); 
 		return out;
 	}
+
+
+
+
+
+
+
+
+
+	// TRINARY TRANSFORM
+	template <class T1, class T2, class T3, class Tout, typename F>
+	inline void transform(const many<T1>& a, const many<T2>& b, const many<T3>& c, F f, many<Tout>& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = f(a[i], b[i], c[i]);
+		}
+	}
+	template <class T1, class T2, class T3, class Tout, typename F>
+	inline void transform(const many<T1>& a, const many<T2>& b, const T3 c, F f, many<Tout>& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = f(a[i], b[i], c);
+		}
+	}
+	template <class T1, class T2, class T3, class Tout, typename F>
+	inline void transform(const many<T1>& a, const T2 b, const many<T3>& c, F f, many<Tout>& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = f(a[i], b, c[i]);
+		}
+	}
+	template <class T1, class T2, class T3, class Tout, typename F>
+	inline void transform(const many<T1>& a, const T2 b, const T3 c, F f, many<Tout>& out)
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = f(a[i], b, c);
+		}
+	}
+	template <class T1, class T2, class T3, class Tout, typename F>
+	inline void transform(const T1 a, const many<T2>& b, const many<T3>& c, F f, many<Tout>& out)
+	{
+		for (unsigned int i = 0; i < b.size(); ++i)
+		{
+			out[i] = f(a, b[i], c[i]);
+		}
+	}
+	template <class T1, class T2, class T3, class Tout, typename F>
+	inline void transform(const T1 a, const many<T2>& b, const T3 c, F f, many<Tout>& out)
+	{
+		for (unsigned int i = 0; i < b.size(); ++i)
+		{
+			out[i] = f(a, b[i], c);
+		}
+	}
+	template <class T1, class T2, class T3, class Tout, typename F>
+	inline void transform(const T1 a, const T2 b, const many<T3>& c, F f, many<Tout>& out)
+	{
+		for (unsigned int i = 0; i < c.size(); ++i)
+		{
+			out[i] = f(a, b, c[i]);
+		}
+	}
+
+
+	template <class T1, class T2, class T3, class Tout, typename F>
+	inline many<Tout> transform(const many<T1>& a, const many<T2>& b, const many<T3>& c, F f)
+	{
+		many<Tout> out = many<Tout>(a.size());
+		transform(a, b, c, f, out); 
+		return out;
+	}
+	template <class T1, class T2, class T3, class Tout, typename F>
+	inline many<Tout> transform(const many<T1>& a, const many<T2>& b, const T3 c, F f)
+	{
+		many<Tout> out = many<Tout>(a.size());
+		transform(a, b, c, f, out); 
+		return out;
+	}
+	template <class T1, class T2, class T3, class Tout, typename F>
+	inline many<Tout> transform(const many<T1>& a, const T2 b, const many<T3>& c, F f)
+	{
+		many<Tout> out = many<Tout>(a.size());
+		transform(a, b, c, f, out); 
+		return out;
+	}
+	template <class T1, class T2, class T3, class Tout, typename F>
+	inline many<Tout> transform(const many<T1>& a, const T2 b, const T3 c, F f)
+	{
+		many<Tout> out = many<Tout>(a.size());
+		transform(a, b, c, f, out); 
+		return out;
+	}
+	template <class T1, class T2, class T3, class Tout, typename F>
+	inline many<Tout> transform(const T1 a, const many<T2>& b, const many<T3>& c, F f)
+	{
+		many<Tout> out = many<Tout>(b.size());
+		transform(a, b, c, f, out); 
+		return out;
+	}
+	template <class T1, class T2, class T3, class Tout, typename F>
+	inline many<Tout> transform(const T1 a, const many<T2>& b, const T3 c, F f)
+	{
+		many<Tout> out = many<Tout>(b.size());
+		transform(a, b, c, f, out); 
+		return out;
+	}
+	template <class T1, class T2, class T3, class Tout, typename F>
+	inline many<Tout> transform(const T1 a, const T2 b, const many<T3>& c, F f)
+	{
+		many<Tout> out = many<Tout>(c.size());
+		transform(a, b, c, f, out); 
+		return out;
+	}
+
+
+
+
+
 
 
 
@@ -560,8 +682,25 @@ namespace composites
 	{
 		transform(a, b, [](T ai, T2 bi){ return ai / bi; }, out); 
 	}
+
+
 	template <class T, class T2, class Tout>
-	inline void div(const T a, const many<T2>& b, many<Tout>& out)
+	inline void add(const T a, const T2 b, many<Tout>& out)
+	{
+		transform(a, b, [](T ai, T2 bi){ return ai + bi; }, out); 
+	}
+	template <class T, class T2, class Tout>
+	inline void sub(const T a, const T2 b, many<Tout>& out)
+	{
+		transform(a, b, [](T ai, T2 bi){ return ai - bi; }, out); 
+	}
+	template <class T, class T2, class Tout>
+	inline void mult(const T a, const T2 b, many<Tout>& out)
+	{
+		transform(a, b, [](T ai, T2 bi){ return ai * bi; }, out); 
+	}
+	template <class T, class T2, class Tout>
+	inline void div(const T a, const T2 b, many<Tout>& out)
 	{
 		transform(a, b, [](T ai, T2 bi){ return ai / bi; }, out); 
 	}

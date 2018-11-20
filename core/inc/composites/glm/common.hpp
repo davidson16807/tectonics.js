@@ -170,36 +170,39 @@ namespace composites
 	/// Returns min(max(x, minVal), maxVal) for each component in x
 	/// using the floating-point values minVal and maxVal.
 	template <length_t L, typename T, qualifier Q>
-	void clamp(const many<vec<L,T,Q>>& a, const vec<L,T,Q> lo, const vec<L,T,Q> hi, many<vec<L,T,Q>>& out)
+	inline void clamp(const many<vec<L,T,Q>>& a, const many<vec<L,T,Q>>& lo, const many<vec<L,T,Q>>& hi, many<vec<L,T,Q>>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = glm::clamp(a[i], lo, hi);
-		}
+		transform(a, lo, hi, (vec<L,T,Q> (*)(const vec<L,T,Q>&, const vec<L,T,Q>&, const vec<L,T,Q>&))glm::clamp, out);
 	}
 	template <length_t L, typename T, qualifier Q>
-	void clamp(const many<vec<L,T,Q>>& a, const vec<L,T,Q> lo, const many<vec<L,T,Q>>& hi, many<vec<L,T,Q>>& out)
+	inline void clamp(const many<vec<L,T,Q>>& a, const many<vec<L,T,Q>>& lo, const vec<L,T,Q> hi, many<vec<L,T,Q>>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = glm::clamp(a[i], lo, hi[i]);
-		}
+		transform(a, lo, hi, (vec<L,T,Q> (*)(const vec<L,T,Q>&, const vec<L,T,Q>&, const vec<L,T,Q>&))glm::clamp, out);
 	}
 	template <length_t L, typename T, qualifier Q>
-	void clamp(const many<vec<L,T,Q>>& a, const many<vec<L,T,Q>>& lo, const vec<L,T,Q> hi, many<vec<L,T,Q>>& out)
+	inline void clamp(const many<vec<L,T,Q>>& a, const vec<L,T,Q> lo, const many<vec<L,T,Q>>& hi, many<vec<L,T,Q>>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = glm::clamp(a[i], lo[i], hi);
-		}
+		transform(a, lo, hi, (vec<L,T,Q> (*)(const vec<L,T,Q>&, const vec<L,T,Q>&, const vec<L,T,Q>&))glm::clamp, out);
 	}
 	template <length_t L, typename T, qualifier Q>
-	void clamp(const many<vec<L,T,Q>>& a, const many<vec<L,T,Q>>& lo, const many<vec<L,T,Q>>& hi, many<vec<L,T,Q>>& out)
+	inline void clamp(const many<vec<L,T,Q>>& a, const vec<L,T,Q> lo, const vec<L,T,Q> hi, many<vec<L,T,Q>>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = glm::clamp(a[i], lo[i], hi[i]);
-		}
+		transform(a, lo, hi, (vec<L,T,Q> (*)(const vec<L,T,Q>&, const vec<L,T,Q>&, const vec<L,T,Q>&))glm::clamp, out);
+	}
+	template <length_t L, typename T, qualifier Q>
+	inline void clamp(const vec<L,T,Q> a, const many<vec<L,T,Q>>& lo, const many<vec<L,T,Q>>& hi, many<vec<L,T,Q>>& out)
+	{
+		transform(a, lo, hi, (vec<L,T,Q> (*)(const vec<L,T,Q>&, const vec<L,T,Q>&, const vec<L,T,Q>&))glm::clamp, out);
+	}
+	template <length_t L, typename T, qualifier Q>
+	inline void clamp(const vec<L,T,Q> a, const many<vec<L,T,Q>>& lo, const vec<L,T,Q> hi, many<vec<L,T,Q>>& out)
+	{
+		transform(a, lo, hi, (vec<L,T,Q> (*)(const vec<L,T,Q>&, const vec<L,T,Q>&, const vec<L,T,Q>&))glm::clamp, out);
+	}
+	template <length_t L, typename T, qualifier Q>
+	inline void clamp(const vec<L,T,Q> a, const vec<L,T,Q> lo, const many<vec<L,T,Q>>& hi, many<vec<L,T,Q>>& out)
+	{
+		transform(a, lo, hi, (vec<L,T,Q> (*)(const vec<L,T,Q>&, const vec<L,T,Q>&, const vec<L,T,Q>&))glm::clamp, out);
 	}
 
 
@@ -224,121 +227,94 @@ namespace composites
 	/// @param[in]  x Value to interpolate.
 	/// @param[in]  y Value to interpolate.
 	/// @param[in]  a Interpolant.
+
+
 	template <length_t L, typename T, qualifier Q>
-	void mix(const many<vec<L,T,Q>>& x, const many<vec<L,T,Q>>& y, const many<T>& a, many<vec<L,T,Q>>& out)
+	inline void mix(const many<vec<L,T,Q>>& x, const many<vec<L,T,Q>>& y, const many<vec<L,T,Q>>& a, many<vec<L,T,Q>>& out)
 	{
-		for (unsigned int i = 0; i < x.size(); ++i)
-		{
-			out[i] = glm::mix(x[i], y[i], a[i]);
-		}
+		const T one = T(1.f);
+		transform(x, y, a, [one](vec<L,T,Q> xi, vec<L,T,Q> yi, vec<L,T,Q> ai){ return xi*(one - ai) + yi*ai; }, out);
 	}
 	template <length_t L, typename T, qualifier Q>
-	void mix(const many<vec<L,T,Q>>& x, const many<vec<L,T,Q>>& y, const T a, many<vec<L,T,Q>>& out)
+	inline void mix(const many<vec<L,T,Q>>& x, const many<vec<L,T,Q>>& y, const vec<L,T,Q> a, many<vec<L,T,Q>>& out)
 	{
-		for (unsigned int i = 0; i < x.size(); ++i)
-		{
-			out[i] = glm::mix(x[i], y[i], a);
-		}
+		const T one = T(1.f);
+		transform(x, y, a, [one](vec<L,T,Q> xi, vec<L,T,Q> yi, vec<L,T,Q> ai){ return xi*(one - ai) + yi*ai; }, out);
 	}
 	template <length_t L, typename T, qualifier Q>
-	void mix(const many<vec<L,T,Q>>& x, const vec<L,T,Q> y, const many<T>& a, many<vec<L,T,Q>>& out)
+	inline void mix(const many<vec<L,T,Q>>& x, const vec<L,T,Q> y, const many<vec<L,T,Q>>& a, many<vec<L,T,Q>>& out)
 	{
-		for (unsigned int i = 0; i < x.size(); ++i)
-		{
-			out[i] = glm::mix(x[i], y, a[i]);
-		}
+		const T one = T(1.f);
+		transform(x, y, a, [one](vec<L,T,Q> xi, vec<L,T,Q> yi, vec<L,T,Q> ai){ return xi*(one - ai) + yi*ai; }, out);
 	}
 	template <length_t L, typename T, qualifier Q>
-	void mix(const many<vec<L,T,Q>>& x, const vec<L,T,Q> y, const T a, many<vec<L,T,Q>>& out)
+	inline void mix(const many<vec<L,T,Q>>& x, const vec<L,T,Q> y, const vec<L,T,Q> a, many<vec<L,T,Q>>& out)
 	{
-		for (unsigned int i = 0; i < x.size(); ++i)
-		{
-			out[i] = glm::mix(x[i], y, a);
-		}
+		const T one = T(1.f);
+		transform(x, y, a, [one](vec<L,T,Q> xi, vec<L,T,Q> yi, vec<L,T,Q> ai){ return xi*(one - ai) + yi*ai; }, out);
 	}
 	template <length_t L, typename T, qualifier Q>
-	void mix(const vec<L,T,Q> x, const many<vec<L,T,Q>>& y, const many<T>& a, many<vec<L,T,Q>>& out)
+	inline void mix(const vec<L,T,Q> x, const many<vec<L,T,Q>>& y, const many<vec<L,T,Q>>& a, many<vec<L,T,Q>>& out)
 	{
-		for (unsigned int i = 0; i < y.size(); ++i)
-		{
-			out[i] = glm::mix(x, y[i], a[i]);
-		}
+		const T one = T(1.f);
+		transform(x, y, a, [one](vec<L,T,Q> xi, vec<L,T,Q> yi, vec<L,T,Q> ai){ return xi*(one - ai) + yi*ai; }, out);
 	}
 	template <length_t L, typename T, qualifier Q>
-	void mix(const vec<L,T,Q> x, const many<vec<L,T,Q>>& y, const T a, many<vec<L,T,Q>>& out)
+	inline void mix(const vec<L,T,Q> x, const many<vec<L,T,Q>>& y, const vec<L,T,Q> a, many<vec<L,T,Q>>& out)
 	{
-		for (unsigned int i = 0; i < y.size(); ++i)
-		{
-			out[i] = glm::mix(x, y[i], a);
-		}
+		const T one = T(1.f);
+		transform(x, y, a, [one](vec<L,T,Q> xi, vec<L,T,Q> yi, vec<L,T,Q> ai){ return xi*(one - ai) + yi*ai; }, out);
 	}
 	template <length_t L, typename T, qualifier Q>
-	void mix(const vec<L,T,Q> x, const vec<L,T,Q> y, const many<T>& a, many<vec<L,T,Q>>& out)
+	inline void mix(const vec<L,T,Q> x, const vec<L,T,Q> y, const many<vec<L,T,Q>>& a, many<vec<L,T,Q>>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = glm::mix(x, y, a[i]);
-		}
+		const T one = T(1.f);
+		transform(x, y, a, [one](vec<L,T,Q> xi, vec<L,T,Q> yi, vec<L,T,Q> ai){ return xi*(one - ai) + yi*ai; }, out);
 	}
 
 
 
-
 	template <length_t L, typename T, qualifier Q>
-	void mix(const many<vec<L,T,Q>>& x, const many<vec<L,T,Q>>& y, const many<vec<L,T,Q>>& a, many<vec<L,T,Q>>& out)
+	inline void mix(const many<vec<L,T,Q>>& x, const many<vec<L,T,Q>>& y, const many<T>& a, many<vec<L,T,Q>>& out)
 	{
-		for (unsigned int i = 0; i < x.size(); ++i)
-		{
-			out[i] = glm::mix(x[i], y[i], a[i]);
-		}
+		const T one = T(1.f);
+		transform(x, y, a, [one](vec<L,T,Q> xi, vec<L,T,Q> yi, T ai){ return xi*(one - ai) + yi*ai; }, out);
 	}
 	template <length_t L, typename T, qualifier Q>
-	void mix(const many<vec<L,T,Q>>& x, const many<vec<L,T,Q>>& y, const vec<L,T,Q> a, many<vec<L,T,Q>>& out)
+	inline void mix(const many<vec<L,T,Q>>& x, const many<vec<L,T,Q>>& y, const T a, many<vec<L,T,Q>>& out)
 	{
-		for (unsigned int i = 0; i < x.size(); ++i)
-		{
-			out[i] = glm::mix(x[i], y[i], a);
-		}
+		const T one = T(1.f);
+		transform(x, y, a, [one](vec<L,T,Q> xi, vec<L,T,Q> yi, T ai){ return xi*(one - ai) + yi*ai; }, out);
 	}
 	template <length_t L, typename T, qualifier Q>
-	void mix(const many<vec<L,T,Q>>& x, const vec<L,T,Q> y, const many<vec<L,T,Q>>& a, many<vec<L,T,Q>>& out)
+	inline void mix(const many<vec<L,T,Q>>& x, const vec<L,T,Q> y, const many<T>& a, many<vec<L,T,Q>>& out)
 	{
-		for (unsigned int i = 0; i < x.size(); ++i)
-		{
-			out[i] = glm::mix(x[i], y, a[i]);
-		}
+		const T one = T(1.f);
+		transform(x, y, a, [one](vec<L,T,Q> xi, vec<L,T,Q> yi, T ai){ return xi*(one - ai) + yi*ai; }, out);
 	}
 	template <length_t L, typename T, qualifier Q>
-	void mix(const many<vec<L,T,Q>>& x, const vec<L,T,Q> y, const vec<L,T,Q> a, many<vec<L,T,Q>>& out)
+	inline void mix(const many<vec<L,T,Q>>& x, const vec<L,T,Q> y, const T a, many<vec<L,T,Q>>& out)
 	{
-		for (unsigned int i = 0; i < x.size(); ++i)
-		{
-			out[i] = glm::mix(x[i], y, a);
-		}
+		const T one = T(1.f);
+		transform(x, y, a, [one](vec<L,T,Q> xi, vec<L,T,Q> yi, T ai){ return xi*(one - ai) + yi*ai; }, out);
 	}
 	template <length_t L, typename T, qualifier Q>
-	void mix(const vec<L,T,Q> x, const many<vec<L,T,Q>>& y, const many<vec<L,T,Q>>& a, many<vec<L,T,Q>>& out)
+	inline void mix(const vec<L,T,Q> x, const many<vec<L,T,Q>>& y, const many<T>& a, many<vec<L,T,Q>>& out)
 	{
-		for (unsigned int i = 0; i < y.size(); ++i)
-		{
-			out[i] = glm::mix(x, y[i], a[i]);
-		}
+		const T one = T(1.f);
+		transform(x, y, a, [one](vec<L,T,Q> xi, vec<L,T,Q> yi, T ai){ return xi*(one - ai) + yi*ai; }, out);
 	}
 	template <length_t L, typename T, qualifier Q>
-	void mix(const vec<L,T,Q> x, const many<vec<L,T,Q>>& y, const vec<L,T,Q> a, many<vec<L,T,Q>>& out)
+	inline void mix(const vec<L,T,Q> x, const many<vec<L,T,Q>>& y, const T a, many<vec<L,T,Q>>& out)
 	{
-		for (unsigned int i = 0; i < y.size(); ++i)
-		{
-			out[i] = glm::mix(x, y[i], a);
-		}
+		const T one = T(1.f);
+		transform(x, y, a, [one](vec<L,T,Q> xi, vec<L,T,Q> yi, T ai){ return xi*(one - ai) + yi*ai; }, out);
 	}
 	template <length_t L, typename T, qualifier Q>
-	void mix(const vec<L,T,Q> x, const vec<L,T,Q> y, const many<vec<L,T,Q>>& a, many<vec<L,T,Q>>& out)
+	inline void mix(const vec<L,T,Q> x, const vec<L,T,Q> y, const many<T>& a, many<vec<L,T,Q>>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = glm::mix(x, y, a[i]);
-		}
+		const T one = T(1.f);
+		transform(x, y, a, [one](vec<L,T,Q> xi, vec<L,T,Q> yi, T ai){ return xi*(one - ai) + yi*ai; }, out);
 	}
 
 
@@ -346,28 +322,37 @@ namespace composites
 
 	/// Returns 0.0 if x < edge, otherwise it returns 1.0 for each component of a genType.
 	template<length_t L, typename T, qualifier Q>
-	void step(const many<vec<L,T,Q>>& edge, const many<vec<L,T,Q>>&  x, many<vec<L,T,Q>>& out)
+	inline void step(const many<vec<L,T,Q>>& edge, const many<vec<L,T,Q>>&  x, many<vec<L,T,Q>>& out)
 	{
-		for (unsigned int i = 0; i < edge.size(); ++i)
-		{
-			out[i] = glm::step(edge[i], x[i]);
-		}
+		transform(edge, x, (vec<L,T,Q> (*)(const vec<L,T,Q>&, const vec<L,T,Q>&))glm::step, out);
 	}
 	template<length_t L, typename T, qualifier Q>
-	void step(const many<vec<L,T,Q>>&  edge, const vec<L,T,Q> x, many<vec<L,T,Q>>& out)
+	inline void step(const many<vec<L,T,Q>>&  edge, const vec<L,T,Q> x, many<vec<L,T,Q>>& out)
 	{
-		for (unsigned int i = 0; i < edge.size(); ++i)
-		{
-			out[i] = glm::step(edge[i], x);
-		}
+		transform(edge, x, (vec<L,T,Q> (*)(const vec<L,T,Q>&, const vec<L,T,Q>&))glm::step, out);
 	}
 	template<length_t L, typename T, qualifier Q>
-	void step(const vec<L,T,Q> edge, const many<vec<L,T,Q>>&  x, many<vec<L,T,Q>>& out)
+	inline void step(const vec<L,T,Q> edge, const many<vec<L,T,Q>>&  x, many<vec<L,T,Q>>& out)
 	{
-		for (unsigned int i = 0; i < x.size(); ++i)
-		{
-			out[i] = glm::step(edge, x[i]);
-		}
+		transform(edge, x, (vec<L,T,Q> (*)(const vec<L,T,Q>&, const vec<L,T,Q>&))glm::step, out);
+	}
+
+
+	/// Returns 0.0 if x < edge, otherwise it returns 1.0 for each component of a genType.
+	template<length_t L, typename T, qualifier Q>
+	inline void step(const many<T>& edge, const many<vec<L,T,Q>>&  x, many<vec<L,T,Q>>& out)
+	{
+		transform(edge, x, (vec<L,T,Q> (*)(const T&, const vec<L,T,Q>&))glm::step, out);
+	}
+	template<length_t L, typename T, qualifier Q>
+	inline void step(const many<T>&  edge, const vec<L,T,Q> x, many<vec<L,T,Q>>& out)
+	{
+		transform(edge, x, (vec<L,T,Q> (*)(const T&, const vec<L,T,Q>&))glm::step, out);
+	}
+	template<length_t L, typename T, qualifier Q>
+	inline void step(const T edge, const many<vec<L,T,Q>>&  x, many<vec<L,T,Q>>& out)
+	{
+		transform(edge, x, (vec<L,T,Q> (*)(const T&, const vec<L,T,Q>&))glm::step, out);
 	}
 
 	/// Returns 0.0 if x <= lo and 1.0 if x >= hi and

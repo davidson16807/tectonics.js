@@ -166,43 +166,41 @@ namespace composites
 		return out;
 	}
 
-	/// Returns min(max(x, minVal), maxVal) for each component in x
-	/// using the floating-point values minVal and maxVal.
+
 	template <class T>
-	void clamp(const many<T>& a, const T lo, const T hi, many<T>& out)
+	inline void clamp(const many<T>& a, const many<T>& lo, const many<T>& hi, many<T>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = a[i] > hi? hi : a[i] < lo? lo : a[i];
-		}
+		transform(a, lo, hi, [](T ai, T loi, T hii){ return ai < loi? loi : ai > hii? hii : ai; }, out);
 	}
 	template <class T>
-	void clamp(const many<T>& a, const T lo, const many<T>& hi, many<T>& out)
+	inline void clamp(const many<T>& a, const many<T>& lo, const T hi, many<T>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = a[i] > hi[i]? hi[i] : a[i] < lo? lo : a[i];
-		}
+		transform(a, lo, hi, [](T ai, T loi, T hii){ return ai < loi? loi : ai > hii? hii : ai; }, out);
 	}
 	template <class T>
-	void clamp(const many<T>& a, const many<T>& lo, const T hi, many<T>& out)
+	inline void clamp(const many<T>& a, const T lo, const many<T>& hi, many<T>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = a[i] > hi? hi : a[i] < lo[i]? lo[i] : a[i];
-		}
+		transform(a, lo, hi, [](T ai, T loi, T hii){ return ai < loi? loi : ai > hii? hii : ai; }, out);
 	}
 	template <class T>
-	void clamp(const many<T>& a, const many<T>& lo, const many<T>& hi, many<T>& out)
+	inline void clamp(const many<T>& a, const T lo, const T hi, many<T>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = a[i] > hi[i]? hi[i] : a[i];
-		}
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = a[i] < lo[i]? lo[i] : out[i];
-		}
+		transform(a, lo, hi, [](T ai, T loi, T hii){ return ai < loi? loi : ai > hii? hii : ai; }, out);
+	}
+	template <class T>
+	inline void clamp(const T a, const many<T>& lo, const many<T>& hi, many<T>& out)
+	{
+		transform(a, lo, hi, [](T ai, T loi, T hii){ return ai < loi? loi : ai > hii? hii : ai; }, out);
+	}
+	template <class T>
+	inline void clamp(const T a, const many<T>& lo, const T hi, many<T>& out)
+	{
+		transform(a, lo, hi, [](T ai, T loi, T hii){ return ai < loi? loi : ai > hii? hii : ai; }, out);
+	}
+	template <class T>
+	inline void clamp(const T a, const T lo, const many<T>& hi, many<T>& out)
+	{
+		transform(a, lo, hi, [](T ai, T loi, T hii){ return ai < loi? loi : ai > hii? hii : ai; }, out);
 	}
 
 
