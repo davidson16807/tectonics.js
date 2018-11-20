@@ -10,16 +10,16 @@ namespace composites
 {
 
 
-	template<class T>
-	void aggregate_into(const many<T>& a, const many<unsigned int>& group_ids, std::function<T(T, T)> aggregator, many<T>& group_out)
+	template<class T, typename Taggregator>
+	void aggregate_into(const many<T>& a, const many<unsigned int>& group_ids, Taggregator aggregator, many<T>& group_out)
 	{
 		for (unsigned int i = 0; i < group_ids.size(); ++i)
 		{
 			group_out[group_ids[i]] = aggregator(group_out[group_ids[i]], a[i]);
 		}
 	}
-	template<class T>
-	void aggregate(const many<T>& a, const many<unsigned int>& group_ids, std::function<T(T, T)> aggregator, many<T>& group_out)
+	template<class T, typename Taggregator>
+	void aggregate(const many<T>& a, const many<unsigned int>& group_ids, Taggregator aggregator, many<T>& group_out)
 	{
 		fill(group_out, T(0));
 		for (unsigned int i = 0; i < group_ids.size(); ++i)
@@ -27,8 +27,8 @@ namespace composites
 			group_out[group_ids[i]] = aggregator(group_out[group_ids[i]], a[i]);
 		}
 	}
-	template<class T>
-	many<T> aggregate(const many<T>& a, const many<unsigned int>& group_ids, std::function<T(T, T)> aggregator)
+	template<class T, typename Taggregator>
+	many<T> aggregate(const many<T>& a, const many<unsigned int>& group_ids, Taggregator aggregator)
 	{
 		many<T> group_out = many<T>(max(group_ids));
 		for (unsigned int i = 0; i < group_ids.size(); ++i)
@@ -39,16 +39,16 @@ namespace composites
 	}
 
 
-	template<class T>
-	void aggregate_into(const many<unsigned int>& group_ids, std::function<T(T, T)> aggregator, many<T>& group_out)
+	template<class T, typename Taggregator>
+	void aggregate_into(const many<unsigned int>& group_ids, Taggregator aggregator, many<T>& group_out)
 	{
 		for (unsigned int i = 0; i < group_ids.size(); ++i)
 		{
 			group_out[group_ids[i]] = aggregator(group_out[group_ids[i]]);
 		}
 	}
-	template<class T>
-	void aggregate(const many<unsigned int>& group_ids, std::function<T(T, T)> aggregator, many<T>& group_out)
+	template<class T, typename Taggregator>
+	void aggregate(const many<unsigned int>& group_ids, Taggregator aggregator, many<T>& group_out)
 	{
 		fill(group_out, T(0));
 		for (unsigned int i = 0; i < group_ids.size(); ++i)
@@ -56,8 +56,8 @@ namespace composites
 			group_out[group_ids[i]] = aggregator(group_out[group_ids[i]]);
 		}
 	}
-	template<class T>
-	many<T> aggregate(const many<unsigned int>& group_ids, std::function<T(T, T)> aggregator)
+	template<class T, typename Taggregator>
+	many<T> aggregate(const many<unsigned int>& group_ids, Taggregator aggregator)
 	{
 		many<T> group_out = many<T>(max(group_ids));
 		for (unsigned int i = 0; i < group_ids.size(); ++i)
@@ -191,7 +191,7 @@ namespace composites
 
 	// TODO: vector version
 	template <class T>
-	void rescale(const many<T>& a, many<T>& out, T min_new = 0., T max_new = 1.)
+	void rescale(const many<T>& a, many<T>& out, T max_new = 1., T min_new = 0.)
 	{
 	    T max_old = max(a);
 	    T min_old = min(a);
