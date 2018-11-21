@@ -139,14 +139,25 @@ View.prototype.render = function() {
 	return this.renderer.render( this.scene, this.camera );
 };
 
-View.prototype.update = function(sim){
-	var world = sim.focus;
+View.prototype.displaySim = function(sim){
+	// TODO: what if sim changed from last iteration?
+	this.displayWorld(sim.focus);
+}
 
+View.prototype.displayWorld = function(world){
+	// TODO: remove these! find a better way!
 	this.uniform('sealevel', world.hydrosphere.sealevel.value()); 
 	this.uniform('insolation_max', Float32Dataset.max(world.atmosphere.average_insolation)); 
 
-	this._scalarDisplay.updateAttributes(this.scalar_field_geometry, world);
-	this._vectorDisplay.updateAttributes(this.vector_field_geometry, world);
+	this._scalarDisplay.displayWorld(this.scalar_field_geometry, world);
+	this._vectorDisplay.displayWorld(this.vector_field_geometry, world);	
+}
+
+View.prototype.displayScalarRaster = function(raster){
+	this._scalarDisplay.displayRaster(this.scalar_field_geometry, raster);
+}
+View.prototype.displayVectorRaster = function(raster){
+	this._vectorDisplay.displayRaster(this.vector_field_geometry, world);	
 }
 
 View.prototype.getDomElement = function() {

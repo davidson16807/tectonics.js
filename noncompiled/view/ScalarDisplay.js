@@ -14,15 +14,19 @@ RealisticDisplay.prototype.addTo = function(mesh) {
 RealisticDisplay.prototype.removeFrom = function(mesh) {
 	
 };
-RealisticDisplay.prototype.updateAttributes = function(geometry, world) {
+RealisticDisplay.prototype.displayWorld = function(geometry, world) {
 	Float32Raster.get_ids(world.lithosphere.displacement.value(), view.grid.buffer_array_to_cell, geometry.attributes.displacement.array); 
 	geometry.attributes.displacement.needsUpdate = true;
+
 	Float32Raster.get_ids(world.atmosphere.average_insolation, view.grid.buffer_array_to_cell, geometry.attributes.insolation.array); 
 	geometry.attributes.insolation.needsUpdate = true;
+
 	Float32Raster.get_ids(world.hydrosphere.ice_coverage.value(), view.grid.buffer_array_to_cell, geometry.attributes.ice_coverage.array); 
 	geometry.attributes.ice_coverage.needsUpdate = true;
+
 	Float32Raster.get_ids(world.biosphere.plant_coverage.value(), view.grid.buffer_array_to_cell, geometry.attributes.plant_coverage.array); 
 	geometry.attributes.plant_coverage.needsUpdate = true;
+
 }
 
 
@@ -69,7 +73,7 @@ ScalarDisplay.prototype.addTo = function(mesh) {
 ScalarDisplay.prototype.removeFrom = function(mesh) {
 	
 };
-ScalarDisplay.prototype.updateAttributes = function(geometry, world) {
+ScalarDisplay.prototype.displayWorld = function(geometry, world) {
 	Float32Raster.get_ids(world.lithosphere.displacement.value(), view.grid.buffer_array_to_cell, geometry.attributes.displacement.array); 
 	geometry.attributes.displacement.needsUpdate = true;
 
@@ -81,28 +85,30 @@ ScalarDisplay.prototype.updateAttributes = function(geometry, world) {
 		log_once("ScalarDisplay.getField is undefined.");
 		return;
 	}
-	var scalar_model = this.getField(world, this.field, this.scratch);
-	if (scalar_model === void 0) {
+	this.displayRaster(geometry, this.getField(world, this.field, this.scratch));
+}
+ScalarDisplay.prototype.displayRaster = function(geometry, raster) {
+	if (raster === void 0) {
 		log_once("ScalarDisplay.getField() returned undefined.");
 		return;
 	}
-	if (!(scalar_model instanceof Float32Array || scalar_model instanceof Uint16Array || scalar_model instanceof Uint8Array)) { 
+	if (!(raster instanceof Float32Array || raster instanceof Uint16Array || raster instanceof Uint8Array)) { 
 		log_once("ScalarDisplay.getField() did not return a TypedArray.");
 		return;
 	}
-	if (scalar_model instanceof Uint8Array) {
-		scalar_model = Float32Raster.FromUint8Raster(scalar_model);
+	if (raster instanceof Uint8Array) {
+		raster = Float32Raster.FromUint8Raster(raster);
 	}
-	if (scalar_model instanceof Uint16Array) {
-		scalar_model = Float32Raster.FromUint16Raster(scalar_model);
+	if (raster instanceof Uint16Array) {
+		raster = Float32Raster.FromUint16Raster(raster);
 	}
 
-	if (scalar_model !== void 0) {
-		if (scalar_model !== this.field) {
-			Float32Raster.copy(scalar_model, this.field);
+	if (raster !== void 0) {
+		if (raster !== this.field) {
+			Float32Raster.copy(raster, this.field);
 		}
 		
-		Float32Raster.get_ids(scalar_model, view.grid.buffer_array_to_cell, geometry.attributes.scalar.array); 
+		Float32Raster.get_ids(raster, view.grid.buffer_array_to_cell, geometry.attributes.scalar.array); 
 		geometry.attributes.scalar.needsUpdate = true;
 
 	} else {
@@ -144,15 +150,9 @@ ScalarHeatDisplay.prototype.addTo = function(mesh) {
 ScalarHeatDisplay.prototype.removeFrom = function(mesh) {
 	
 };
-ScalarHeatDisplay.prototype.updateAttributes = function(geometry, world) {
+ScalarHeatDisplay.prototype.displayWorld = function(geometry, world) {
 	Float32Raster.get_ids(world.lithosphere.displacement.value(), view.grid.buffer_array_to_cell, geometry.attributes.displacement.array); 
 	geometry.attributes.displacement.needsUpdate = true;
-
-	// run getField()
-	if (this.getField === void 0) {
-		log_once("ScalarDisplay.getField is undefined.");
-		return;
-	}
 
 	this.field = this.field || Float32Raster(world.grid);
 	this.scratch = this.scratch || Float32Raster(world.grid);
@@ -162,30 +162,32 @@ ScalarHeatDisplay.prototype.updateAttributes = function(geometry, world) {
 		log_once("ScalarDisplay.getField is undefined.");
 		return;
 	}
-	var scalar_model = this.getField(world, this.field, this.scratch);
-	if (scalar_model === void 0) {
+	this.displayRaster(geometry, this.getField(world, this.field, this.scratch));
+}
+ScalarHeatDisplay.prototype.displayRaster = function(geometry, raster) {
+	if (raster === void 0) {
 		log_once("ScalarDisplay.getField() returned undefined.");
 		return;
 	}
-	if (!(scalar_model instanceof Float32Array || scalar_model instanceof Uint16Array || scalar_model instanceof Uint8Array)) { 
+	if (!(raster instanceof Float32Array || raster instanceof Uint16Array || raster instanceof Uint8Array)) { 
 		log_once("ScalarDisplay.getField() did not return a TypedArray.");
 		return;
 	}
-	if (scalar_model instanceof Uint8Array) {
-		scalar_model = Float32Raster.FromUint8Raster(scalar_model);
+	if (raster instanceof Uint8Array) {
+		raster = Float32Raster.FromUint8Raster(raster);
 	}
-	if (scalar_model instanceof Uint16Array) {
-		scalar_model = Float32Raster.FromUint16Raster(scalar_model);
+	if (raster instanceof Uint16Array) {
+		raster = Float32Raster.FromUint16Raster(raster);
 	}
 	
-	var max = this.scaling? Math.max.apply(null, scalar_model) || 1 : 1;
-	if (scalar_model !== void 0) {
-		if (scalar_model !== this.field) {
-			Float32Raster.copy(scalar_model, this.field);
+	var max = this.scaling? Math.max.apply(null, raster) || 1 : 1;
+	if (raster !== void 0) {
+		if (raster !== this.field) {
+			Float32Raster.copy(raster, this.field);
 		}
 
-		ScalarField.div_scalar(scalar_model, max, scalar_model);
-		Float32Raster.get_ids(scalar_model, view.grid.buffer_array_to_cell, geometry.attributes.scalar.array); 
+		ScalarField.div_scalar(raster, max, raster);
+		Float32Raster.get_ids(raster, view.grid.buffer_array_to_cell, geometry.attributes.scalar.array); 
 		geometry.attributes.scalar.needsUpdate = true;
 	} else {
 		this.field = void 0;

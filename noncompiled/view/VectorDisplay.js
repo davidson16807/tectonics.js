@@ -1,25 +1,6 @@
 'use strict';
 
 
-function ThreeJsVectorDisplay(options) {
-	var min = options['min'] || '0.';
-	var max = options['max'] || '1.';
-	this.getField = options['getField'];
-}
-ThreeJsVectorDisplay.prototype.addTo = function(mesh) {};
-ThreeJsVectorDisplay.prototype.removeFrom = function(mesh) {};
-ThreeJsVectorDisplay.prototype.updateAttributes = function(geometry, world) {
-	var geometry, displacement;
-	var vector = geometry.vertices;
-
-	var vector_model = this.getField(world);
-	for(var i=0, li = vector_model.length; i<li; i++){
-		var vector_i = 2*i+1;
-		vector[vector_i] = vector_model[i]; 
-	}
-	geometry.verticesNeedUpdate = true;
-}
-
 
 function VectorFieldDisplay(options) {
 	this.max = options['max'];
@@ -27,42 +8,42 @@ function VectorFieldDisplay(options) {
 }
 VectorFieldDisplay.prototype.addTo = function(mesh) {};
 VectorFieldDisplay.prototype.removeFrom = function(mesh) {};
-VectorFieldDisplay.prototype.updateAttributes = function(geometry, world) {
-	var offset_length = 1.02; 	// offset of arrow from surface of sphere, in radii
-	var max_arrow_length = 0.1; // max arrow length, in radii
-
-	var geometry, displacement;
-	var vector = geometry.vertices;
-
+VectorFieldDisplay.prototype.displayWorld = function(geometry, world) {
 	// run getField()
 	if (this.getField === void 0) {
 		log_once("VectorDisplay.getField is undefined.");
 		return;
 	}
-	var vector_model = this.getField(world);
-	if (vector_model === void 0) {
+	this.displayRaster(geometry, this.getField(world));
+}
+VectorFieldDisplay.prototype.displayRaster = function(geometry, raster) {
+	var offset_length = 1.02; 	// offset of arrow from surface of sphere, in radii
+	var max_arrow_length = 0.1; // max arrow length, in radii
+	var vector = geometry.vertices;
+
+	if (raster === void 0) {
 		log_once("VectorDisplay.getField() returned undefined.");
 		return;
 	}
-	if (!(vector_model.x !== void 0) && !(vector_model.x instanceof Float32Array)) { 
+	if (!(raster.x !== void 0) && !(raster.x instanceof Float32Array)) { 
 		log_once("VectorDisplay.getField() did not return a VectorRaster.");
 		return;
 	}
 
-	var max = this.max ||  Math.max.apply(null, VectorField.magnitude(vector_model));
+	var max = this.max ||  Math.max.apply(null, VectorField.magnitude(raster));
 		log_once(vector)
 	var scaling = max_arrow_length / max;
 
-	var pos = world.grid.pos;
-	for(var i=0, li = vector_model.x.length; i<li; i++){
+	var pos = raster.grid.pos;
+	for(var i=0, li = raster.x.length; i<li; i++){
 		var start = vector[2*i];
 		start.x = offset_length * pos.x[i];
 		start.y = offset_length * pos.y[i];
 		start.z = offset_length * pos.z[i];
 		var end = vector[2*i+1];
-		end.x = vector_model.x[i] * scaling + start.x;
-		end.y = vector_model.y[i] * scaling + start.y;
-		end.z = vector_model.z[i] * scaling + start.z;
+		end.x = raster.x[i] * scaling + start.x;
+		end.y = raster.y[i] * scaling + start.y;
+		end.z = raster.z[i] * scaling + start.z;
 	}
 	// geometry.vertices.needsUpdate = true;
 	geometry.verticesNeedUpdate = true;
@@ -79,7 +60,7 @@ DisabledVectorDisplay.prototype.addTo = function(mesh) {
 	}
 };
 DisabledVectorDisplay.prototype.removeFrom = function(mesh) {};
-DisabledVectorDisplay.prototype.updateAttributes = function(material, world) {}
+DisabledVectorDisplay.prototype.displayWorld = function(material, world) {}
 
 
 

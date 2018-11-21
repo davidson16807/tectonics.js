@@ -530,7 +530,7 @@
 		setTimeout(update, IS_PROD? 1000/20 : 0);
 
 		sim.update();
-		view.update(sim); 
+		view.displaySim(sim); 
 
 		if(!IS_PROD){
 			updateStats.update();
