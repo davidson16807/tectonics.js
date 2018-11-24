@@ -1,13 +1,13 @@
 var vertexShaders = {};
 vertexShaders.equirectangular = `   
-//TEMPLATE.GLSL.C GOES HERE
-//EQUIRECTANGULAR.GLSL.C GOES HERE
+#include "precompiled/view/vertex/template.glsl.c"
+#include "precompiled/view/vertex/equirectangular.glsl.c"
 `;
 vertexShaders.texture = `
-//TEMPLATE.GLSL.C GOES HERE
-//TEXTURE.GLSL.C GOES HERE
+#include "precompiled/view/vertex/template.glsl.c"
+#include "precompiled/view/vertex/texture.glsl.c"
 `;
 vertexShaders.orthographic = `   
-//TEMPLATE.GLSL.C GOES HERE
-//ORTHOGRAPHIC.GLSL.C GOES HERE
+#include "precompiled/view/vertex/template.glsl.c"
+#include "precompiled/view/vertex/orthographic.glsl.c"
 `;

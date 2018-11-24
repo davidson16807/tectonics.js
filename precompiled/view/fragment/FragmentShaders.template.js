@@ -6,21 +6,17 @@ function _multiline(f) {
 var fragmentShaders = {};
 
 fragmentShaders.realistic = `
-//REALISTIC.GLSL.C GOES HERE
-
+#include "precompiled/view/fragment/realistic.glsl.c"
 `;
 
 fragmentShaders.generic = `
-//GENERIC.GLSL.C GOES HERE
-
+#include "precompiled/view/fragment/generic.glsl.c"
 `;
 
-fragmentShaders.debug = `
-//DEBUG.GLSL.C GOES HERE
-
+fragmentShaders.heatmap = `
+#include "precompiled/view/fragment/heatmap.glsl.c"
 `;
 
 fragmentShaders.vectorField = `
-//VECTOR_FIELD.GLSL.C GOES HERE
-
+#include "precompiled/view/fragment/vector_field.glsl.c"
 `;
