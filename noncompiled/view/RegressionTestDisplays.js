@@ -69,7 +69,7 @@ regressionTestDisplays.add = new ScalarWorldDisplay(
 	);
 
 regressionTestDisplays.mult = new ScalarWorldDisplay(
-		new ScalarHeatDisplay(  { min: '4.', max: '0.'},
+		new ScalarHeatDisplay(  { min: '4.', max: '0.'}),
 		function (crust, result, scratch1) {
 			return ScalarField.mult_field(
 				RasterUnitTests.distance(crust.grid.pos, {x:0,y:0,z:1}),
