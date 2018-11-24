@@ -12,7 +12,8 @@ VectorWorldDisplay.prototype.addTo = function(mesh) {
 VectorWorldDisplay.prototype.removeFrom = function(mesh) {
 	this.vectorRasterRenderer.removeFrom(mesh);
 };
-VectorWorldDisplay.prototype.displayWorld = function(geometry, world) {
+VectorWorldDisplay.prototype.updateUniforms = function(material, world) {};
+VectorWorldDisplay.prototype.updateAttributes = function(geometry, world) {
 	// run getField()
 	if (this.getField === void 0) {
 		log_once("VectorDisplay.getField is undefined.");
@@ -45,7 +46,8 @@ VectorFieldDisplay.prototype.removeFrom = function(mesh) {
 		vector[i].z = 0;
 	}
 };
-VectorFieldDisplay.prototype.displayRaster = function(geometry, raster) {
+VectorFieldDisplay.prototype.updateUniforms = function(material, raster) {};
+VectorFieldDisplay.prototype.updateAttributes = function(geometry, raster) {
 	var offset_length = 1.02; 	// offset of arrow from surface of sphere, in radii
 	var max_arrow_length = 0.1; // max arrow length, in radii
 	var vector = geometry.vertices;
@@ -73,7 +75,8 @@ VectorFieldDisplay.prototype.displayRaster = function(geometry, raster) {
 function DisabledVectorDisplay(options) {}
 DisabledVectorDisplay.prototype.addTo = function(mesh) {};
 DisabledVectorDisplay.prototype.removeFrom = function(mesh) {};
-DisabledVectorDisplay.prototype.displayWorld = function(material, world) {}
+DisabledVectorDisplay.prototype.updateUniforms = function(material, world) {}
+DisabledVectorDisplay.prototype.updateAttributes = function(geometry, world) {}
 
 
 

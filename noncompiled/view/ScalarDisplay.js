@@ -14,7 +14,13 @@ RealisticDisplay.prototype.addTo = function(mesh) {
 RealisticDisplay.prototype.removeFrom = function(mesh) {
 	
 };
-RealisticDisplay.prototype.displayWorld = function(geometry, world) {
+RealisticDisplay.prototype.updateUniforms = function(material, world) {
+	material.uniforms['sealevel'].value = world.hydrosphere.sealevel.value();
+	material.uniforms['sealevel'].needsUpdate = true;
+	material.uniforms['insolation_max'].value = Float32Dataset.max(world.atmosphere.average_insolation);
+	material.uniforms['insolation_max'].needsUpdate = true;
+};
+RealisticDisplay.prototype.updateAttributes = function(geometry, world) {
 	Float32Raster.get_ids(world.lithosphere.displacement.value(), view.grid.buffer_array_to_cell, geometry.attributes.displacement.array); 
 	geometry.attributes.displacement.needsUpdate = true;
 
@@ -48,7 +54,11 @@ ScalarWorldDisplay.prototype.addTo = function(mesh) {
 ScalarWorldDisplay.prototype.removeFrom = function(mesh) {
 	this.scalarRasterRenderer.removeFrom(mesh);
 };
-ScalarWorldDisplay.prototype.displayWorld = function(geometry, world) {
+ScalarWorldDisplay.prototype.updateUniforms = function(material, world) {
+	material.uniforms['sealevel'].value = world.hydrosphere.sealevel.value();
+	material.uniforms['sealevel'].needsUpdate = true;
+};
+ScalarWorldDisplay.prototype.updateAttributes = function(geometry, world) {
 	Float32Raster.get_ids(world.lithosphere.displacement.value(), view.grid.buffer_array_to_cell, geometry.attributes.displacement.array); 
 	geometry.attributes.displacement.needsUpdate = true;
 

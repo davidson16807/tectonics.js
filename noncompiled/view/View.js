@@ -47,7 +47,7 @@ function View(innerWidth, innerHeight, grid, scalarDisplay, vectorDisplay, verte
 	scalar_field_geometry.addAttribute('scalar', Float32Array, faces.length*3, 1);
 	this.scalar_field_geometry = scalar_field_geometry;
 
-	scalar_field_material = new THREE.ShaderMaterial({
+	var scalar_field_material1 = new THREE.ShaderMaterial({
 		attributes: {
 		  displacement: { type: 'f', value: null },
 		  ice_coverage: { type: 'f', value: null },
@@ -67,11 +67,13 @@ function View(innerWidth, innerHeight, grid, scalarDisplay, vectorDisplay, verte
 		vertexShader: this._vertexShader,
 		fragmentShader: this._scalarDisplay._fragmentShader
 	});
-	scalar_field_mesh = new THREE.Mesh( scalar_field_geometry, scalar_field_material);
+	this.scalar_field_material1 = scalar_field_material1;
+
+	scalar_field_mesh = new THREE.Mesh( scalar_field_geometry, scalar_field_material1);
 	this.scene.add(scalar_field_mesh);
 	this.scalar_field_mesh1 = scalar_field_mesh;
 
-	scalar_field_material = new THREE.ShaderMaterial({
+	var scalar_field_material2 = new THREE.ShaderMaterial({
 		attributes: {
 		  displacement: { type: 'f', value: null },
 		  ice_coverage: { type: 'f', value: null },
@@ -91,7 +93,9 @@ function View(innerWidth, innerHeight, grid, scalarDisplay, vectorDisplay, verte
 		vertexShader: this._vertexShader,
 		fragmentShader: this._scalarDisplay._fragmentShader
 	});
-	scalar_field_mesh = new THREE.Mesh( scalar_field_geometry, scalar_field_material);
+	this.scalar_field_material2 = scalar_field_material2;
+
+	scalar_field_mesh = new THREE.Mesh( scalar_field_geometry, scalar_field_material2);
 	this.scene.add(scalar_field_mesh);
 	this.scalar_field_mesh2 = scalar_field_mesh;
 
@@ -108,7 +112,7 @@ function View(innerWidth, innerHeight, grid, scalarDisplay, vectorDisplay, verte
 	var vector_field_material, vector_field_mesh;
 	var positions = grid.pos;
 
-	vector_field_material = new THREE.ShaderMaterial({
+	var vector_field_material1 = new THREE.ShaderMaterial({
 	        vertexShader: 	this._vertexShader,
 	        fragmentShader: fragmentShaders.vectorField,
 	        attributes: {
@@ -117,11 +121,12 @@ function View(innerWidth, innerHeight, grid, scalarDisplay, vectorDisplay, verte
 		  		index: 		{ type: 'f', value: -1 }
 	        }
 	    });
-	vector_field_mesh = new THREE.Line( vector_field_geometry, vector_field_material, THREE.LinePieces);
+	this.vector_field_material1 = vector_field_material1;
+	vector_field_mesh = new THREE.Line( vector_field_geometry, vector_field_material1, THREE.LinePieces);
 	this.scene.add(vector_field_mesh);
 	this.vector_field_mesh1 = vector_field_mesh;
 
-	vector_field_material = new THREE.ShaderMaterial({
+	var vector_field_material2 = new THREE.ShaderMaterial({
 	        vertexShader: 	this._vertexShader,
 	        fragmentShader: fragmentShaders.vectorField,
 	        attributes: {
@@ -130,7 +135,8 @@ function View(innerWidth, innerHeight, grid, scalarDisplay, vectorDisplay, verte
 		  		index: 		{ type: 'f', value: 1 }
 	        }
 	    });
-	vector_field_mesh = new THREE.Line( vector_field_geometry, vector_field_material, THREE.LinePieces);
+	this.vector_field_material2 = vector_field_material2;
+	vector_field_mesh = new THREE.Line( vector_field_geometry, vector_field_material2, THREE.LinePieces);
 	this.scene.add(vector_field_mesh);
 	this.vector_field_mesh2 = vector_field_mesh;
 }
@@ -145,12 +151,13 @@ View.prototype.displaySim = function(sim){
 }
 
 View.prototype.displayWorld = function(world){
-	// TODO: remove these! find a better way!
-	this.uniform('sealevel', world.hydrosphere.sealevel.value()); 
-	this.uniform('insolation_max', Float32Dataset.max(world.atmosphere.average_insolation)); 
-
-	this._scalarDisplay.displayWorld(this.scalar_field_geometry, world);
-	this._vectorDisplay.displayWorld(this.vector_field_geometry, world);	
+	this._scalarDisplay.updateUniforms(this.scalar_field_material1, world);
+	this._scalarDisplay.updateUniforms(this.scalar_field_material2, world);
+	this._scalarDisplay.updateAttributes(this.scalar_field_geometry, world);
+	
+	this._vectorDisplay.updateUniforms(this.vector_field_material1, world);
+	this._vectorDisplay.updateUniforms(this.vector_field_material2, world);
+	this._vectorDisplay.updateAttributes(this.vector_field_geometry, world);	
 }
 
 View.prototype.displayScalarRaster = function(raster){
