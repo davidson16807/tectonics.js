@@ -89,7 +89,6 @@ function ScalarHeatDisplay(options) {
 	var min = options['min'] || '0.';
 	var max = options['max'] || '1.';
 	var scaling = options['scaling'] || false;
-	this.getField = options['getField'];
 	this.chartDisplays = options['chartDisplays'] || [ new SpatialPdfChartDisplay('land') ]; 
 	this.scaling = scaling;
 	this._fragmentShader = fragmentShaders.heatmap
@@ -117,7 +116,6 @@ function ScalarDisplay(options) {
 	var maxColor = options['maxColor'] || 0xffffff;
 	var min = options['min'] || '0.';
 	var max = options['max'] || '1.';
-	this.getField = options['getField'];
 	this.chartDisplays = options['chartDisplays'] || [ new SpatialPdfChartDisplay('land') ]; 
 	function hex_color_to_glsl_string_color(color) {
 		var rIntValue = ((color / 256 / 256) % 256) / 255.0;

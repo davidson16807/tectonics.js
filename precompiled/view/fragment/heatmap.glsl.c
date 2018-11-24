@@ -22,11 +22,6 @@ vec4 heat (float v) {
 }
 
 void main() {
-	float epipelagic = sealevel - 200.0;
-	float mesopelagic = sealevel - 1000.0;
-	float abyssopelagic = sealevel - 4000.0;
-	float maxheight = sealevel + 15000.0; 
-	
 	vec4 uncovered 		= heat( smoothstep(@MIN, @MAX, vScalar) );
 	vec4 ocean 			= mix(vec4(0.), uncovered, 0.5);
 	vec4 sea_covered 	= vDisplacement < sealevel * sealevel_mod? ocean : uncovered;
