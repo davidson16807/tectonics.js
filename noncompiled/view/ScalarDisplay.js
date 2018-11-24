@@ -6,14 +6,55 @@ function RealisticDisplay(shader_return_value) {
 	this._fragmentShader = fragmentShaders.realistic
 		.replace('@UNCOVERED', shader_return_value);
 	this.chartDisplays = []; 
+	// this.mesh = undefined
 }
-RealisticDisplay.prototype.addTo = function(mesh) {
-	mesh.material.fragmentShader = this._fragmentShader;
-	mesh.material.needsUpdate = true;
+RealisticDisplay.prototype.createMesh = function(grid, options) {
+
+	var faces = grid.faces;
+	var geometry = THREE.BufferGeometryUtils.fromGeometry({
+		faces: grid.faces, 
+		vertices: grid.vertices, 
+		faceVertexUvs: [[]], // HACK: necessary for use with BufferGeometryUtils.fromGeometry
+	});
+	geometry.addAttribute('displacement', Float32Array, faces.length*3, 1);
+	geometry.addAttribute('ice_coverage', Float32Array, faces.length*3, 1);
+	geometry.addAttribute('plant_coverage', Float32Array, faces.length*3, 1);
+	geometry.addAttribute('insolation', Float32Array, faces.length*3, 1);
+	geometry.addAttribute('scalar', Float32Array, faces.length*3, 1);
+
+	var material = new THREE.ShaderMaterial({
+		attributes: {
+		  displacement: { type: 'f', value: null },
+		  ice_coverage: { type: 'f', value: null },
+		  plant_coverage: { type: 'f', value: null },
+		  insolation: { type: 'f', value: null },
+		  scalar: { type: 'f', value: null }
+		},
+		uniforms: {
+		  sealevel:     { type: 'f', value: 0 },
+		  sealevel_mod: { type: 'f', value: options.sealevel_mod },
+		  darkness_mod: { type: 'f', value: options.darkness_mod },
+		  ice_mod: 		{ type: 'f', value: options.ice_mod },
+		  insolation_max: { type: 'f', value: options.insolation_max },
+		  index: 		{ type: 'f', value: options.index },
+		},
+		blending: THREE.NoBlending,
+		vertexShader: options.vertexShader,
+		fragmentShader: this._fragmentShader
+	});
+	var mesh = new THREE.Mesh( geometry, material);
+
+	return mesh;
 };
-RealisticDisplay.prototype.removeFrom = function(mesh) {
-	
-};
+// RealisticDisplay.prototype.addToScene = function(grid, scene, options) {
+// 	if (this.mesh === void 0) {
+// 		this.mesh = createMesh(grid, options);
+// 	}
+// 	scene.add(this.mesh);
+// }
+// RealisticDisplay.prototype.removeFromScene = function(scene) {
+// 	scene.remove(this.mesh);
+// };
 RealisticDisplay.prototype.updateUniforms = function(material, world) {
 	material.uniforms['sealevel'].value = world.hydrosphere.sealevel.value();
 	material.uniforms['sealevel'].needsUpdate = true;
@@ -40,19 +81,22 @@ RealisticDisplay.prototype.updateAttributes = function(geometry, world) {
 
 // ScalarWorldRenderer takes as input a ScalarRasterRenderer, and a getField function, 
 // and uses it to display a raster from a given world 
-function ScalarWorldDisplay(scalarRasterRenderer, getField) {
-	this.scalarRasterRenderer = scalarRasterRenderer;
+function ScalarWorldDisplay(scalarRasterDisplay, getField) {
+	this.scalarRasterDisplay = scalarRasterDisplay;
 	this.getField = getField;
 	this.field = void 0;
 	this.scratch = void 0;
 }
+ScalarWorldDisplay.prototype.createMesh = function(grid, options) {
+	return this.scalarRasterDisplay.createMesh(grid, options)
+};
 ScalarWorldDisplay.prototype.addTo = function(mesh) {
 	this.field = void 0;
 	this.scratch = void 0;
-	this.scalarRasterRenderer.addTo(mesh);
+	this.scalarRasterDisplay.addTo(mesh);
 };
 ScalarWorldDisplay.prototype.removeFrom = function(mesh) {
-	this.scalarRasterRenderer.removeFrom(mesh);
+	this.scalarRasterDisplay.removeFrom(mesh);
 };
 ScalarWorldDisplay.prototype.updateUniforms = function(material, world) {
 	material.uniforms['sealevel'].value = world.hydrosphere.sealevel.value();
@@ -88,7 +132,7 @@ ScalarWorldDisplay.prototype.updateAttributes = function(geometry, world) {
 		return;
 	}
 	if (raster !== void 0) {
-		this.scalarRasterRenderer.displayRaster(geometry, raster);
+		this.scalarRasterDisplay.updateAttributes(geometry, raster);
 	} else {
 		this.field = void 0;
 	}
@@ -105,6 +149,43 @@ function ScalarHeatDisplay(options) {
 		.replace('@MIN', min)
 		.replace('@MAX', max);
 }
+ScalarHeatDisplay.prototype.createMesh = function(grid, options) {
+	var faces = grid.faces;
+	var geometry = THREE.BufferGeometryUtils.fromGeometry({
+		faces: grid.faces, 
+		vertices: grid.vertices, 
+		faceVertexUvs: [[]], // HACK: necessary for use with BufferGeometryUtils.fromGeometry
+	});
+	geometry.addAttribute('displacement', Float32Array, faces.length*3, 1);
+	geometry.addAttribute('ice_coverage', Float32Array, faces.length*3, 1);
+	geometry.addAttribute('plant_coverage', Float32Array, faces.length*3, 1);
+	geometry.addAttribute('insolation', Float32Array, faces.length*3, 1);
+	geometry.addAttribute('scalar', Float32Array, faces.length*3, 1);
+
+	var material = new THREE.ShaderMaterial({
+		attributes: {
+		  displacement: { type: 'f', value: null },
+		  ice_coverage: { type: 'f', value: null },
+		  plant_coverage: { type: 'f', value: null },
+		  insolation: { type: 'f', value: null },
+		  scalar: { type: 'f', value: null }
+		},
+		uniforms: {
+		  sealevel:     { type: 'f', value: 0 },
+		  sealevel_mod: { type: 'f', value: options.sealevel_mod },
+		  darkness_mod: { type: 'f', value: options.darkness_mod },
+		  ice_mod: 		{ type: 'f', value: options.ice_mod },
+		  insolation_max: { type: 'f', value: options.insolation_max },
+		  index: 		{ type: 'f', value: options.index },
+		},
+		blending: THREE.NoBlending,
+		vertexShader: options.vertexShader,
+		fragmentShader: this._fragmentShader
+	});
+	var mesh = new THREE.Mesh( geometry, material);
+
+	return mesh;
+};
 ScalarHeatDisplay.prototype.addTo = function(mesh) {
 	mesh.material.fragmentShader = this._fragmentShader;
 	mesh.material.needsUpdate = true;
@@ -112,7 +193,7 @@ ScalarHeatDisplay.prototype.addTo = function(mesh) {
 ScalarHeatDisplay.prototype.removeFrom = function(mesh) {
 	
 };
-ScalarHeatDisplay.prototype.displayRaster = function(geometry, raster) {
+ScalarHeatDisplay.prototype.updateAttributes = function(geometry, raster) {
 	var max = this.scaling? Math.max.apply(null, raster) || 1 : 1;
 	ScalarField.div_scalar(raster, max, raster);
 	Float32Raster.get_ids(raster, view.grid.buffer_array_to_cell, geometry.attributes.scalar.array); 
@@ -141,6 +222,43 @@ function ScalarDisplay(options) {
 		.replace('@MIN', min)
 		.replace('@MAX', max);
 }
+ScalarDisplay.prototype.createMesh = function(grid, options) {
+	var faces = grid.faces;
+	var geometry = THREE.BufferGeometryUtils.fromGeometry({
+		faces: grid.faces, 
+		vertices: grid.vertices, 
+		faceVertexUvs: [[]], // HACK: necessary for use with BufferGeometryUtils.fromGeometry
+	});
+	geometry.addAttribute('displacement', Float32Array, faces.length*3, 1);
+	geometry.addAttribute('ice_coverage', Float32Array, faces.length*3, 1);
+	geometry.addAttribute('plant_coverage', Float32Array, faces.length*3, 1);
+	geometry.addAttribute('insolation', Float32Array, faces.length*3, 1);
+	geometry.addAttribute('scalar', Float32Array, faces.length*3, 1);
+
+	var material = new THREE.ShaderMaterial({
+		attributes: {
+		  displacement: { type: 'f', value: null },
+		  ice_coverage: { type: 'f', value: null },
+		  plant_coverage: { type: 'f', value: null },
+		  insolation: { type: 'f', value: null },
+		  scalar: { type: 'f', value: null }
+		},
+		uniforms: {
+		  sealevel:     { type: 'f', value: 0 },
+		  sealevel_mod: { type: 'f', value: options.sealevel_mod },
+		  darkness_mod: { type: 'f', value: options.darkness_mod },
+		  ice_mod: 		{ type: 'f', value: options.ice_mod },
+		  insolation_max: { type: 'f', value: options.insolation_max },
+		  index: 		{ type: 'f', value: options.index },
+		},
+		blending: THREE.NoBlending,
+		vertexShader: options.vertexShader,
+		fragmentShader: this._fragmentShader
+	});
+	var mesh = new THREE.Mesh( geometry, material);
+
+	return mesh;
+};
 ScalarDisplay.prototype.addTo = function(mesh) {
 	mesh.material.fragmentShader = this._fragmentShader;
 	mesh.material.needsUpdate = true;
@@ -148,7 +266,7 @@ ScalarDisplay.prototype.addTo = function(mesh) {
 ScalarDisplay.prototype.removeFrom = function(mesh) {
 	
 };
-ScalarDisplay.prototype.displayRaster = function(geometry, raster) {
+ScalarDisplay.prototype.updateAttributes = function(geometry, raster) {
 	Float32Raster.get_ids(raster, view.grid.buffer_array_to_cell, geometry.attributes.scalar.array); 
 	geometry.attributes.scalar.needsUpdate = true;
 }

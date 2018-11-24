@@ -32,70 +32,25 @@ function View(innerWidth, innerHeight, grid, scalarDisplay, vectorDisplay, verte
 		insolation_max: 0,
 	};
 
-	var faces, scalar_field_geometry, scalar_field_mesh, scalar_field_material;
-	var faces = this.grid.faces;
-	var scalar_field_geometry = THREE.BufferGeometryUtils.fromGeometry({
-		faces: this.grid.faces, 
-		vertices: this.grid.vertices, 
-		faceVertexUvs: [[]], // HACK: necessary for use with BufferGeometryUtils.fromGeometry
-	});
-
-	scalar_field_geometry.addAttribute('displacement', Float32Array, faces.length*3, 1);
-	scalar_field_geometry.addAttribute('ice_coverage', Float32Array, faces.length*3, 1);
-	scalar_field_geometry.addAttribute('plant_coverage', Float32Array, faces.length*3, 1);
-	scalar_field_geometry.addAttribute('insolation', Float32Array, faces.length*3, 1);
-	scalar_field_geometry.addAttribute('scalar', Float32Array, faces.length*3, 1);
-	this.scalar_field_geometry = scalar_field_geometry;
-
-	var scalar_field_material1 = new THREE.ShaderMaterial({
-		attributes: {
-		  displacement: { type: 'f', value: null },
-		  ice_coverage: { type: 'f', value: null },
-		  plant_coverage: { type: 'f', value: null },
-		  insolation: { type: 'f', value: null },
-		  scalar: { type: 'f', value: null }
-		},
-		uniforms: {
-		  sealevel:     { type: 'f', value: 0 },
-		  sealevel_mod: { type: 'f', value: this._uniforms.sealevel_mod },
-		  darkness_mod: { type: 'f', value: this._uniforms.darkness_mod },
-		  ice_mod: 		{ type: 'f', value: this._uniforms.ice_mod },
-		  insolation_max: { type: 'f', value: this._uniforms.insolation_max },
-		  index: 		{ type: 'f', value: -1 },
-		},
-		blending: THREE.NoBlending,
-		vertexShader: this._vertexShader,
-		fragmentShader: this._scalarDisplay._fragmentShader
-	});
-	this.scalar_field_material1 = scalar_field_material1;
-
-	scalar_field_mesh = new THREE.Mesh( scalar_field_geometry, scalar_field_material1);
+	var scalar_field_mesh = this._scalarDisplay.createMesh(
+		grid,
+		{
+			...this._uniforms, 
+			index: 1, 
+			vertexShader: this._vertexShader
+		}
+	);
 	this.scene.add(scalar_field_mesh);
 	this.scalar_field_mesh1 = scalar_field_mesh;
 
-	var scalar_field_material2 = new THREE.ShaderMaterial({
-		attributes: {
-		  displacement: { type: 'f', value: null },
-		  ice_coverage: { type: 'f', value: null },
-		  plant_coverage: { type: 'f', value: null },
-		  insolation: { type: 'f', value: null },
-		  scalar: { type: 'f', value: null }
-		},
-		uniforms: {
-		  sealevel:     { type: 'f', value: 0 },
-		  sealevel_mod: { type: 'f', value: this._uniforms.sealevel_mod },
-		  darkness_mod: { type: 'f', value: this._uniforms.darkness_mod },
-		  ice_mod: 		{ type: 'f', value: this._uniforms.ice_mod },
-		  insolation_max: { type: 'f', value: this._uniforms.insolation_max },
-		  index: 		{ type: 'f', value: 1 },
-		},
-		blending: THREE.NoBlending,
-		vertexShader: this._vertexShader,
-		fragmentShader: this._scalarDisplay._fragmentShader
-	});
-	this.scalar_field_material2 = scalar_field_material2;
-
-	scalar_field_mesh = new THREE.Mesh( scalar_field_geometry, scalar_field_material2);
+	var scalar_field_mesh = this._scalarDisplay.createMesh(
+		grid,
+		{
+			...this._uniforms, 
+			index: -1, 
+			vertexShader: this._vertexShader
+		}
+	);
 	this.scene.add(scalar_field_mesh);
 	this.scalar_field_mesh2 = scalar_field_mesh;
 
@@ -151,9 +106,10 @@ View.prototype.displaySim = function(sim){
 }
 
 View.prototype.displayWorld = function(world){
-	this._scalarDisplay.updateUniforms(this.scalar_field_material1, world);
-	this._scalarDisplay.updateUniforms(this.scalar_field_material2, world);
-	this._scalarDisplay.updateAttributes(this.scalar_field_geometry, world);
+	this._scalarDisplay.updateUniforms(this.scalar_field_mesh1.material, world);
+	this._scalarDisplay.updateUniforms(this.scalar_field_mesh2.material, world);
+	this._scalarDisplay.updateAttributes(this.scalar_field_mesh1.geometry, world);
+	this._scalarDisplay.updateAttributes(this.scalar_field_mesh2.geometry, world);
 	
 	this._vectorDisplay.updateUniforms(this.vector_field_material1, world);
 	this._vectorDisplay.updateUniforms(this.vector_field_material2, world);
@@ -161,7 +117,7 @@ View.prototype.displayWorld = function(world){
 }
 
 View.prototype.displayScalarRaster = function(raster){
-	this._scalarDisplay.displayRaster(this.scalar_field_geometry, raster);
+	this._scalarDisplay.displayRaster(this.scalar_field_mesh1.geometry, raster);
 }
 View.prototype.displayVectorRaster = function(raster){
 	this._vectorDisplay.displayRaster(this.vector_field_geometry, world);	
@@ -179,13 +135,40 @@ View.prototype.setScalarDisplay = function(display) {
 	if(this._scalarDisplay === display){
 		return;
 	}
-	this._scalarDisplay.removeFrom(this.scalar_field_mesh1);
-	this._scalarDisplay.removeFrom(this.scalar_field_mesh2);
+
+	this.scene.remove(this.scalar_field_mesh1);
+	this.scalar_field_mesh1.geometry.dispose();
+	this.scalar_field_mesh1.material.dispose();
+	this.scalar_field_mesh1 = undefined;
+
+	this.scene.remove(this.scalar_field_mesh2);
+	this.scalar_field_mesh2.geometry.dispose();
+	this.scalar_field_mesh2.material.dispose();
+	this.scalar_field_mesh2 = undefined;
 
 	this._scalarDisplay = display;
 
-	this._scalarDisplay.addTo(this.scalar_field_mesh1);
-	this._scalarDisplay.addTo(this.scalar_field_mesh2);
+	var scalar_field_mesh = this._scalarDisplay.createMesh(
+		this.grid,
+		{
+			...this._uniforms, 
+			index: 1, 
+			vertexShader: this._vertexShader
+		}
+	);
+	this.scene.add(scalar_field_mesh);
+	this.scalar_field_mesh1 = scalar_field_mesh;
+
+	var scalar_field_mesh = this._scalarDisplay.createMesh(
+		this.grid,
+		{
+			...this._uniforms, 
+			index: -1, 
+			vertexShader: this._vertexShader
+		}
+	);
+	this.scene.add(scalar_field_mesh);
+	this.scalar_field_mesh2 = scalar_field_mesh;
 };
 
 View.prototype.setVectorDisplay = function(display) {
