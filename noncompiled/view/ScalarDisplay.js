@@ -89,22 +89,12 @@ function ScalarHeatDisplay(options) {
 	var min = options['min'] || '0.';
 	var max = options['max'] || '1.';
 	var scaling = options['scaling'] || false;
-	var scalar = options['scalar'] || 'vScalar';
 	this.getField = options['getField'];
 	this.chartDisplays = options['chartDisplays'] || [ new SpatialPdfChartDisplay('land') ]; 
 	this.scaling = scaling;
-	this._fragmentShader = fragmentShaders.generic
-		.replace('@OUTPUT',
-			`
-			vec4 uncovered 		= @UNCOVERED;
-			vec4 ocean 			= mix(vec4(0.), uncovered, 0.5);
-			vec4 sea_covered 	= vDisplacement < sealevel * sealevel_mod? ocean : uncovered;
-			gl_FragColor = sea_covered;
-			`)
-		.replace('@UNCOVERED', 'heat( smoothstep(@MIN, @MAX, @SCALAR) )')
+	this._fragmentShader = fragmentShaders.heatmap
 		.replace('@MIN', min)
-		.replace('@MAX', max)
-		.replace('@SCALAR', scalar);
+		.replace('@MAX', max);
 }
 ScalarHeatDisplay.prototype.addTo = function(mesh) {
 	mesh.material.fragmentShader = this._fragmentShader;
@@ -127,7 +117,6 @@ function ScalarDisplay(options) {
 	var maxColor = options['maxColor'] || 0xffffff;
 	var min = options['min'] || '0.';
 	var max = options['max'] || '1.';
-	var scalar = options['scalar'] || 'vScalar';
 	this.getField = options['getField'];
 	this.chartDisplays = options['chartDisplays'] || [ new SpatialPdfChartDisplay('land') ]; 
 	function hex_color_to_glsl_string_color(color) {
@@ -138,20 +127,11 @@ function ScalarDisplay(options) {
 	}
 	var minColor_str = hex_color_to_glsl_string_color(minColor);
 	var maxColor_str = hex_color_to_glsl_string_color(maxColor);
-	this._fragmentShader = fragmentShaders.generic
-		.replace('@OUTPUT',
-			_multiline(function() {/**   
-			vec4 uncovered 		= @UNCOVERED;
-			vec4 ocean 			= mix(vec4(0.), uncovered, 0.5);
-			vec4 sea_covered 	= vDisplacement < sealevel * sealevel_mod? ocean : uncovered;
-			gl_FragColor = sea_covered;
-			**/}))
-		.replace('@UNCOVERED', 'mix( vec4(@MINCOLOR,1.), vec4(@MAXCOLOR,1.), smoothstep(@MIN, @MAX, @SCALAR) )')
+	this._fragmentShader = fragmentShaders.monochromatic
 		.replace('@MINCOLOR', minColor_str)
 		.replace('@MAXCOLOR', maxColor_str)
 		.replace('@MIN', min)
-		.replace('@MAX', max)
-		.replace('@SCALAR', scalar);
+		.replace('@MAX', max);
 }
 ScalarDisplay.prototype.addTo = function(mesh) {
 	mesh.material.fragmentShader = this._fragmentShader;
@@ -160,7 +140,7 @@ ScalarDisplay.prototype.addTo = function(mesh) {
 ScalarDisplay.prototype.removeFrom = function(mesh) {
 	
 };
-ScalarHeatDisplay.prototype.displayRaster = function(geometry, raster) {
+ScalarDisplay.prototype.displayRaster = function(geometry, raster) {
 	Float32Raster.get_ids(raster, view.grid.buffer_array_to_cell, geometry.attributes.scalar.array); 
 	geometry.attributes.scalar.needsUpdate = true;
 }

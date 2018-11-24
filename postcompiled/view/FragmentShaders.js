@@ -1,6 +1,3 @@
-function _multiline(f) {
-  return f.toString().split('\n').slice(1, -1).join('\n');
-}
 var fragmentShaders = {};
 fragmentShaders.realistic = `
 varying float vDisplacement;
@@ -51,7 +48,7 @@ void main() {
  gl_FragColor = darkness_covered;
 }
 `;
-fragmentShaders.generic = `
+fragmentShaders.monochromatic = `
 varying float vDisplacement;
 varying float vPlantCoverage;
 varying float vIceCoverage;
@@ -76,7 +73,10 @@ void main() {
  float mesopelagic = sealevel - 1000.0;
  float abyssopelagic = sealevel - 4000.0;
  float maxheight = sealevel + 15000.0;
- @OUTPUT
+ vec4 uncovered = mix( vec4(@MINCOLOR,1.), vec4(@MAXCOLOR,1.), smoothstep(@MIN, @MAX, vScalar) );
+ vec4 ocean = mix(vec4(0.), uncovered, 0.5);
+ vec4 sea_covered = vDisplacement < sealevel * sealevel_mod? ocean : uncovered;
+ gl_FragColor = sea_covered;
 }
 `;
 fragmentShaders.heatmap = `
