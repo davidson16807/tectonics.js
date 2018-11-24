@@ -25,7 +25,7 @@ Matrix3x3.RowMajorOrder = function(list) {
   var yx = list[3]; var yy = list[4]; var yz = list[5];
   var zx = list[6]; var zy = list[7]; var zz = list[8];
 
-  var result = Matrix();
+  var result = Matrix3x3();
   result[0] = xx; result[4] = xy; result[8] = xz;
   result[1] = yx; result[5] = yy; result[9] = yz;
   result[2] = zx; result[6] = zy; result[10]= zz;
@@ -75,7 +75,7 @@ Matrix3x3.FromRotationVector = function(ωx, ωy, ωz) {
   ]);
 }
 Matrix3x3.invert = function(matrix, result) {
-    result = result || Matrix();
+    result = result || Matrix3x3();
 
     ASSERT_IS_3X3_MATRIX(matrix)
     ASSERT_IS_3X3_MATRIX(result)
@@ -111,7 +111,7 @@ Matrix3x3.invert = function(matrix, result) {
     return B;
 }
 Matrix3x3.add_scalar = function(matrix, scalar, result) {
-  var result = result || Matrix();
+  var result = result || Matrix3x3();
   var A = matrix;
   var b = scalar;
   var C = result;
@@ -133,7 +133,7 @@ Matrix3x3.add_scalar = function(matrix, scalar, result) {
   return C;
 }
 Matrix3x3.sub_scalar = function(matrix, scalar, result) {
-  var result = result || Matrix();
+  var result = result || Matrix3x3();
   var A = matrix;
   var b = scalar;
   var C = result;
@@ -155,7 +155,7 @@ Matrix3x3.sub_scalar = function(matrix, scalar, result) {
   return C;
 }
 Matrix3x3.mult_scalar = function(matrix, scalar, result) {
-  var result = result || Matrix();
+  var result = result || Matrix3x3();
   var A = matrix;
   var b = scalar;
   var C = result;
@@ -177,7 +177,7 @@ Matrix3x3.mult_scalar = function(matrix, scalar, result) {
   return C;
 }
 Matrix3x3.mult_matrix = function(A, B, result) {
-  var result = result || Matrix();
+  var result = result || Matrix3x3();
   var C = result;
 
   ASSERT_IS_3X3_MATRIX(A)
@@ -207,7 +207,7 @@ Matrix3x3.mult_matrix = function(A, B, result) {
   return C;
 }
 Matrix3x3.hadamard_matrix = function(A, B, result) {
-  var result = result || Matrix();
+  var result = result || Matrix3x3();
   var C = result;
 
   ASSERT_IS_3X3_MATRIX(A)
