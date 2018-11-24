@@ -19,122 +19,123 @@ var RasterUnitTests = (function() {
 var regressionTestDisplays = {};
 
 // test for raster id placement
-regressionTestDisplays.ids 	= new ScalarHeatDisplay( { 
-		scaling: true,
-		getField: function (crust) {
+regressionTestDisplays.ids 	= new ScalarWorldDisplay(
+		new ScalarHeatDisplay( { scaling: true}),
+		function (crust) {
 			return crust.grid.vertex_ids;
 		} 
-	} );
+	);
 
 // test for voronoi diagram used by grid.getNearestIds
 // should look just like regressionTestDisplays.ids
-regressionTestDisplays.voronoi_ids	= new ScalarHeatDisplay( {
-		scaling: true,
-		getField: function (crust) {
+regressionTestDisplays.voronoi_ids	= new ScalarWorldDisplay(
+		new ScalarHeatDisplay( {scaling: true}),
+		function (crust) {
 			return crust.grid.getNearestIds(crust.grid.pos);
 		} 
-	} );
+	);
 
 // test for get_nearest_values - does it reconstruct the ids field after rotation?
 // should look just like regressionTestDisplays.ids, but rotated
-regressionTestDisplays.id_rotated 	= new ScalarHeatDisplay( {
-		scaling: true,
-		getField: function (crust) {
+regressionTestDisplays.id_rotated 	= new ScalarWorldDisplay(
+		new ScalarHeatDisplay( {scaling: true}),
+		function (crust) {
 			var ids = Float32Raster(crust.grid);
 			Float32Raster.FromUint16Raster(crust.grid.vertex_ids, ids);
 			var rotationMatrix = Matrix3x3.RotationAboutAxis(1,0,0, 0.5);
 			var pos = VectorField.mult_matrix(crust.grid.pos, rotationMatrix);
 			return Float32Raster.get_nearest_values(ids, pos);
 		}
- 	} );
+ 	);
 
 // test for individual plate mask
-regressionTestDisplays.single_plate = new ScalarHeatDisplay( { min: '0.', max: '1.',  
-		getField: function (world) {
+regressionTestDisplays.single_plate = new ScalarWorldDisplay(
+		new ScalarHeatDisplay( { min: '0.', max: '1.'}),  
+		function (world) {
 			return world.plates[0].mask;
 		} 
-	} );
+	);
 
 
 
-regressionTestDisplays.add = new ScalarHeatDisplay(  { 
-		min: '4.', max: '0.',
-		getField: function (crust, result, scratch1) {
+regressionTestDisplays.add = new ScalarWorldDisplay(
+		new ScalarHeatDisplay(  { min: '4.', max: '0.'}),
+		function (crust, result, scratch1) {
 			return ScalarField.add_field(
 				RasterUnitTests.distance(crust.grid.pos, {x:0,y:0,z:1}),
 				RasterUnitTests.distance(crust.grid.pos, {x:0.7,y:0,z:0.7})
 			);
 		}
-	} );
+	);
 
-regressionTestDisplays.mult = new ScalarHeatDisplay(  { 
-		min: '4.', max: '0.',
-		getField: function (crust, result, scratch1) {
+regressionTestDisplays.mult = new ScalarWorldDisplay(
+		new ScalarHeatDisplay(  { min: '4.', max: '0.'},
+		function (crust, result, scratch1) {
 			return ScalarField.mult_field(
 				RasterUnitTests.distance(crust.grid.pos, {x:0,y:0,z:1}),
 				RasterUnitTests.distance(crust.grid.pos, {x:0.7,y:0,z:0.7})
 			);
 		}
-	} );
+	);
 
-regressionTestDisplays.distance = new ScalarHeatDisplay(  { 
-		min: '1.', max: '0.',
-		getField: function (crust, result, scratch1) {
+regressionTestDisplays.distance = new ScalarWorldDisplay(
+		new ScalarHeatDisplay(  {min: '1.', max: '0.'}),
+		function (crust, result, scratch1) {
 			return RasterUnitTests.distance(crust.grid.pos, {x:0,y:0,z:1});
 		}
-	} );
+	);
 
 // test for binary morphology
-regressionTestDisplays.circle = new ScalarHeatDisplay(  { 
-		min: '1.', max: '0.',
-		getField: function (crust, result, scratch1) {
+regressionTestDisplays.circle = new ScalarWorldDisplay(
+		new ScalarHeatDisplay(  {min: '1.', max: '0.'}),
+		function (crust, result, scratch1) {
 			return RasterUnitTests.circle(crust.grid.pos, {x:0,y:0,z:1});
 		}
-	} );
-regressionTestDisplays.union = new ScalarHeatDisplay(  { 
-		min: '1.', max: '0.',
-		getField: function (crust, flood_fill, scratch1) {
+	);
+regressionTestDisplays.union = new ScalarWorldDisplay(
+		new ScalarHeatDisplay(  {min: '1.', max: '0.'}),
+		function (crust, flood_fill, scratch1) {
 			return BinaryMorphology.union(
 				RasterUnitTests.circle(crust.grid.pos, {x:0,y:0,z:1}),
 				RasterUnitTests.circle(crust.grid.pos, {x:0.7,y:0,z:0.7})
 			);
 		}
-	} );
-regressionTestDisplays.intersection = new ScalarHeatDisplay(  { 
-		min: '1.', max: '0.',
-		getField: function (crust, flood_fill, scratch1) {
+	);
+regressionTestDisplays.intersection = new ScalarWorldDisplay(
+		new ScalarHeatDisplay(  {min: '1.', max: '0.'}),
+		function (crust, flood_fill, scratch1) {
 			return BinaryMorphology.intersection(
 				RasterUnitTests.circle(crust.grid.pos, {x:0,y:0,z:1}),
 				RasterUnitTests.circle(crust.grid.pos, {x:0.7,y:0,z:0.7})
 			);
 		}
-	} );
-regressionTestDisplays.difference = new ScalarHeatDisplay(  { 
-		min: '1.', max: '0.',
-		getField: function (crust, flood_fill, scratch1) {
+	);
+regressionTestDisplays.difference = new ScalarWorldDisplay(
+		new ScalarHeatDisplay(  {min: '1.', max: '0.'}),
+		function (crust, flood_fill, scratch1) {
 			return BinaryMorphology.difference(
 				RasterUnitTests.circle(crust.grid.pos, {x:0,y:0,z:1}),
 				RasterUnitTests.circle(crust.grid.pos, {x:0.7,y:0,z:0.7})
 			);
 		}
-	} );
-regressionTestDisplays.dilation = new ScalarHeatDisplay(  { 
-		min: '1.', max: '0.',
-		getField: function (crust, flood_fill, scratch1) {
+	);
+regressionTestDisplays.dilation = new ScalarWorldDisplay(
+		new ScalarHeatDisplay(  {min: '1.', max: '0.'}),
+		function (crust, flood_fill, scratch1) {
 			return BinaryMorphology.dilation(RasterUnitTests.circle(crust.grid.pos, {x:0,y:0,z:1}), 1);
 		}
-	} );
-regressionTestDisplays.erosion = new ScalarHeatDisplay(  { 
-		min: '1.', max: '0.',
-		getField: function (crust, flood_fill, scratch1) {
+	);
+regressionTestDisplays.erosion = new ScalarWorldDisplay(
+		new ScalarHeatDisplay(  {min: '1.', max: '0.'}),
+		function (crust, flood_fill, scratch1) {
 			return BinaryMorphology.erosion(RasterUnitTests.circle(crust.grid.pos, {x:0,y:0,z:1}), 1);
 		}
-	} );
+	);
 
 // test for the flood fill algorithm, AKA "magic wand select"
-regressionTestDisplays.flood_fill1 = new ScalarHeatDisplay(  { 
-		min: '1.', max: '0.',
-		getField: function (crust, flood_fill, scratch1) {
+regressionTestDisplays.flood_fill1 = new ScalarWorldDisplay(
+		new ScalarHeatDisplay(  {min: '1.', max: '0.'}),
+		function (crust, flood_fill, scratch1) {
 			// scratch represents pressure
 			var pressure = scratch1;
 			// flood_fill does double duty for performance reasons
@@ -151,11 +152,11 @@ regressionTestDisplays.flood_fill1 = new ScalarHeatDisplay(  {
 
 			return flood_fill;
 		}
-	} );
+	);
 // test for image segmentation algorithm
-regressionTestDisplays.flood_fill8 = new ScalarHeatDisplay(  { 
-		min: '8.', max: '0.',
-		getField: function (crust, flood_fill, scratch1) {
+regressionTestDisplays.flood_fill8 = new ScalarWorldDisplay(
+		new ScalarHeatDisplay(  {min: '8.', max: '0.'}),
+		function (crust, flood_fill, scratch1) {
 			// scratch represents pressure
 			var pressure = scratch1;
 			// flood_fill does double duty for performance reasons
@@ -167,11 +168,11 @@ regressionTestDisplays.flood_fill8 = new ScalarHeatDisplay(  {
 			var plate_map = TectonicsModeling.get_plate_map(gradient, 7, 200);
 			return plate_map;
 		}
-	} );
+	);
 
 
 // test for basic vector rendering
-vectorDisplays.test = new VectorFieldDisplay( { 
+vectorDisplays.test = new VectorWorldDisplay( { 
 		getField: function (crust) {
 			var vector = VectorRaster(crust.grid);
 			for(var i=0, li = vector.length; i<li; i++){

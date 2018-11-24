@@ -2,24 +2,23 @@
 
 
 
-function VectorFieldDisplay(options) {
-	this.max = options['max'];
+function VectorWorldDisplay(options) {
+	this.vectorRasterRenderer = options['vectorRasterRenderer'] || new VectorFieldDisplay({});
 	this.getField = options['getField'];
 }
-VectorFieldDisplay.prototype.addTo = function(mesh) {};
-VectorFieldDisplay.prototype.removeFrom = function(mesh) {};
-VectorFieldDisplay.prototype.displayWorld = function(geometry, world) {
+VectorWorldDisplay.prototype.addTo = function(mesh) {
+	this.vectorRasterRenderer.addTo(mesh);
+};
+VectorWorldDisplay.prototype.removeFrom = function(mesh) {
+	this.vectorRasterRenderer.removeFrom(mesh);
+};
+VectorWorldDisplay.prototype.displayWorld = function(geometry, world) {
 	// run getField()
 	if (this.getField === void 0) {
 		log_once("VectorDisplay.getField is undefined.");
 		return;
 	}
-	this.displayRaster(geometry, this.getField(world));
-}
-VectorFieldDisplay.prototype.displayRaster = function(geometry, raster) {
-	var offset_length = 1.02; 	// offset of arrow from surface of sphere, in radii
-	var max_arrow_length = 0.1; // max arrow length, in radii
-	var vector = geometry.vertices;
+	var raster = this.getField(world);
 
 	if (raster === void 0) {
 		log_once("VectorDisplay.getField() returned undefined.");
@@ -29,6 +28,27 @@ VectorFieldDisplay.prototype.displayRaster = function(geometry, raster) {
 		log_once("VectorDisplay.getField() did not return a VectorRaster.");
 		return;
 	}
+	this.vectorRasterRenderer.displayRaster(geometry, raster);
+}
+
+
+
+function VectorFieldDisplay(options) {
+	this.max = options['max'];
+}
+VectorFieldDisplay.prototype.addTo = function(mesh) {};
+VectorFieldDisplay.prototype.removeFrom = function(mesh) {
+	var vector = mesh.geometry.vertices;
+	for(var i=0, li = vector.length; i<li; i++){
+		vector[i].x = 0;
+		vector[i].y = 0;
+		vector[i].z = 0;
+	}
+};
+VectorFieldDisplay.prototype.displayRaster = function(geometry, raster) {
+	var offset_length = 1.02; 	// offset of arrow from surface of sphere, in radii
+	var max_arrow_length = 0.1; // max arrow length, in radii
+	var vector = geometry.vertices;
 
 	var max = this.max ||  Math.max.apply(null, VectorField.magnitude(raster));
 		log_once(vector)
@@ -51,14 +71,7 @@ VectorFieldDisplay.prototype.displayRaster = function(geometry, raster) {
 
 
 function DisabledVectorDisplay(options) {}
-DisabledVectorDisplay.prototype.addTo = function(mesh) {
-	var vector = mesh.geometry.vertices;
-	for(var i=0, li = vector.length; i<li; i++){
-		vector[i].x = 0;
-		vector[i].y = 0;
-		vector[i].z = 0;
-	}
-};
+DisabledVectorDisplay.prototype.addTo = function(mesh) {};
 DisabledVectorDisplay.prototype.removeFrom = function(mesh) {};
 DisabledVectorDisplay.prototype.displayWorld = function(material, world) {}
 
@@ -70,7 +83,7 @@ DisabledVectorDisplay.prototype.displayWorld = function(material, world) {}
 
 var vectorDisplays = {};
 vectorDisplays.disabled	= new DisabledVectorDisplay( {  } );
-vectorDisplays.asthenosphere_velocity = new VectorFieldDisplay( { 
+vectorDisplays.asthenosphere_velocity = new VectorWorldDisplay( { 
 		getField: function (world, flood_fill, scratch1) {
 			// scratch represents pressure
 			var pressure = scratch1;
@@ -81,29 +94,29 @@ vectorDisplays.asthenosphere_velocity = new VectorFieldDisplay( {
 			return gradient;
 		} 
 	} );
-vectorDisplays.pos	= new VectorFieldDisplay( { 
+vectorDisplays.pos	= new VectorWorldDisplay( { 
 	getField: function (world) {
 		var pos = world.grid.pos;
 		return pos;
 	}
 } );
-vectorDisplays.pos2	= new VectorFieldDisplay( { 
+vectorDisplays.pos2	= new VectorWorldDisplay( { 
 	getField: function (world) {
 		var rotationMatrix = Matrix3x3.RotationAboutAxis(world.eulerPole.x, world.eulerPole.y, world.eulerPole.z, 1);
 		var pos = VectorField.mult_matrix(world.grid.pos, rotationMatrix);
 		return pos;
 	}
 } );
-vectorDisplays.aesthenosphere_velocity	= new VectorFieldDisplay( { 
+vectorDisplays.aesthenosphere_velocity	= new VectorWorldDisplay( { 
 		getField: world => world.lithosphere.aesthenosphere_velocity.value()
 	} );
 
-vectorDisplays.surface_air_velocity = new VectorFieldDisplay( {
+vectorDisplays.surface_air_velocity = new VectorWorldDisplay( {
 		getField: world => world.atmosphere.surface_wind_velocity.value()
 	} );
 
 
-vectorDisplays.plate_velocity = new VectorFieldDisplay( {  
+vectorDisplays.plate_velocity = new VectorWorldDisplay( {  
 		getField: world => world.lithosphere.plate_velocity.value()
   	} ); 
 

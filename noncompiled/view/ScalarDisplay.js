@@ -30,14 +30,104 @@ RealisticDisplay.prototype.displayWorld = function(geometry, world) {
 }
 
 
+
+
+// ScalarWorldRenderer takes as input a ScalarRasterRenderer, and a getField function, 
+// and uses it to display a raster from a given world 
+function ScalarWorldDisplay(scalarRasterRenderer, getField) {
+	this.scalarRasterRenderer = scalarRasterRenderer;
+	this.getField = getField;
+	this.field = void 0;
+	this.scratch = void 0;
+}
+ScalarWorldDisplay.prototype.addTo = function(mesh) {
+	this.field = void 0;
+	this.scratch = void 0;
+	this.scalarRasterRenderer.addTo(mesh);
+};
+ScalarWorldDisplay.prototype.removeFrom = function(mesh) {
+	this.scalarRasterRenderer.removeFrom(mesh);
+};
+ScalarWorldDisplay.prototype.displayWorld = function(geometry, world) {
+	Float32Raster.get_ids(world.lithosphere.displacement.value(), view.grid.buffer_array_to_cell, geometry.attributes.displacement.array); 
+	geometry.attributes.displacement.needsUpdate = true;
+
+	this.field = this.field || Float32Raster(world.grid);
+	this.scratch = this.scratch || Float32Raster(world.grid);
+
+	// run getField()
+	if (this.getField === void 0) {
+		log_once("ScalarWorldDisplay.getField is undefined.");
+		return;
+	}
+
+	var raster = this.getField(world, this.field, this.scratch);
+
+	if (raster === void 0) {
+		log_once("ScalarWorldDisplay.getField() returned undefined.");
+		return;
+	}
+	if (raster instanceof Uint8Array) {
+		raster = Float32Raster.FromUint8Raster(raster);
+	}
+	if (raster instanceof Uint16Array) {
+		raster = Float32Raster.FromUint16Raster(raster);
+	}
+	if (!(raster instanceof Float32Array)) { 
+		log_once("ScalarWorldDisplay.getField() did not return a TypedArray.");
+		return;
+	}
+	if (raster !== void 0) {
+		this.scalarRasterRenderer.displayRaster(geometry, raster);
+	} else {
+		this.field = void 0;
+	}
+}
+
+
+function ScalarHeatDisplay(options) {
+	var min = options['min'] || '0.';
+	var max = options['max'] || '1.';
+	var scaling = options['scaling'] || false;
+	var scalar = options['scalar'] || 'vScalar';
+	this.getField = options['getField'];
+	this.chartDisplays = options['chartDisplays'] || [ new SpatialPdfChartDisplay('land') ]; 
+	this.scaling = scaling;
+	this._fragmentShader = fragmentShaders.generic
+		.replace('@OUTPUT',
+			`
+			vec4 uncovered 		= @UNCOVERED;
+			vec4 ocean 			= mix(vec4(0.), uncovered, 0.5);
+			vec4 sea_covered 	= vDisplacement < sealevel * sealevel_mod? ocean : uncovered;
+			gl_FragColor = sea_covered;
+			`)
+		.replace('@UNCOVERED', 'heat( smoothstep(@MIN, @MAX, @SCALAR) )')
+		.replace('@MIN', min)
+		.replace('@MAX', max)
+		.replace('@SCALAR', scalar);
+}
+ScalarHeatDisplay.prototype.addTo = function(mesh) {
+	mesh.material.fragmentShader = this._fragmentShader;
+	mesh.material.needsUpdate = true;
+};
+ScalarHeatDisplay.prototype.removeFrom = function(mesh) {
+	
+};
+ScalarHeatDisplay.prototype.displayRaster = function(geometry, raster) {
+	var max = this.scaling? Math.max.apply(null, raster) || 1 : 1;
+	ScalarField.div_scalar(raster, max, raster);
+	Float32Raster.get_ids(raster, view.grid.buffer_array_to_cell, geometry.attributes.scalar.array); 
+	geometry.attributes.scalar.needsUpdate = true;
+}
+
+
+
 function ScalarDisplay(options) {
 	var minColor = options['minColor'] || 0x000000;
 	var maxColor = options['maxColor'] || 0xffffff;
 	var min = options['min'] || '0.';
 	var max = options['max'] || '1.';
 	var scalar = options['scalar'] || 'vScalar';
-	this.field = void 0;
-	this.scratch = void 0;
 	this.getField = options['getField'];
 	this.chartDisplays = options['chartDisplays'] || [ new SpatialPdfChartDisplay('land') ]; 
 	function hex_color_to_glsl_string_color(color) {
@@ -64,136 +154,16 @@ function ScalarDisplay(options) {
 		.replace('@SCALAR', scalar);
 }
 ScalarDisplay.prototype.addTo = function(mesh) {
-	this.field = void 0;
-	this.scratch = void 0;
-
 	mesh.material.fragmentShader = this._fragmentShader;
 	mesh.material.needsUpdate = true;
 };
 ScalarDisplay.prototype.removeFrom = function(mesh) {
 	
 };
-ScalarDisplay.prototype.displayWorld = function(geometry, world) {
-	Float32Raster.get_ids(world.lithosphere.displacement.value(), view.grid.buffer_array_to_cell, geometry.attributes.displacement.array); 
-	geometry.attributes.displacement.needsUpdate = true;
-
-	this.field = this.field || Float32Raster(world.grid);
-	this.scratch = this.scratch || Float32Raster(world.grid);
-
-	// run getField()
-	if (this.getField === void 0) {
-		log_once("ScalarDisplay.getField is undefined.");
-		return;
-	}
-	this.displayRaster(geometry, this.getField(world, this.field, this.scratch));
-}
-ScalarDisplay.prototype.displayRaster = function(geometry, raster) {
-	if (raster === void 0) {
-		log_once("ScalarDisplay.getField() returned undefined.");
-		return;
-	}
-	if (!(raster instanceof Float32Array || raster instanceof Uint16Array || raster instanceof Uint8Array)) { 
-		log_once("ScalarDisplay.getField() did not return a TypedArray.");
-		return;
-	}
-	if (raster instanceof Uint8Array) {
-		raster = Float32Raster.FromUint8Raster(raster);
-	}
-	if (raster instanceof Uint16Array) {
-		raster = Float32Raster.FromUint16Raster(raster);
-	}
-
-	if (raster !== void 0) {
-		if (raster !== this.field) {
-			Float32Raster.copy(raster, this.field);
-		}
-		
-		Float32Raster.get_ids(raster, view.grid.buffer_array_to_cell, geometry.attributes.scalar.array); 
-		geometry.attributes.scalar.needsUpdate = true;
-
-	} else {
-		this.field = void 0;
-	}
-}
-
-
-
-function ScalarHeatDisplay(options) {
-	var min = options['min'] || '0.';
-	var max = options['max'] || '1.';
-	var scaling = options['scaling'] || false;
-	var scalar = options['scalar'] || 'vScalar';
-	this.getField = options['getField'];
-	this.chartDisplays = options['chartDisplays'] || [ new SpatialPdfChartDisplay('land') ]; 
-	this.scaling = scaling;
-	this.field = void 0;
-	this.scratch = void 0;
-	this._fragmentShader = fragmentShaders.generic
-		.replace('@OUTPUT',
-			_multiline(function() {/**   
-			vec4 uncovered 		= @UNCOVERED;
-			vec4 ocean 			= mix(vec4(0.), uncovered, 0.5);
-			vec4 sea_covered 	= vDisplacement < sealevel * sealevel_mod? ocean : uncovered;
-			gl_FragColor = sea_covered;
-			**/}))
-		.replace('@UNCOVERED', 'heat( smoothstep(@MIN, @MAX, @SCALAR) )')
-		.replace('@MIN', min)
-		.replace('@MAX', max)
-		.replace('@SCALAR', scalar);
-}
-ScalarHeatDisplay.prototype.addTo = function(mesh) {
-	this.field = void 0;
-	this.scratch = void 0;
-	mesh.material.fragmentShader = this._fragmentShader;
-	mesh.material.needsUpdate = true;
-};
-ScalarHeatDisplay.prototype.removeFrom = function(mesh) {
-	
-};
-ScalarHeatDisplay.prototype.displayWorld = function(geometry, world) {
-	Float32Raster.get_ids(world.lithosphere.displacement.value(), view.grid.buffer_array_to_cell, geometry.attributes.displacement.array); 
-	geometry.attributes.displacement.needsUpdate = true;
-
-	this.field = this.field || Float32Raster(world.grid);
-	this.scratch = this.scratch || Float32Raster(world.grid);
-	
-	// run getField()
-	if (this.getField === void 0) {
-		log_once("ScalarDisplay.getField is undefined.");
-		return;
-	}
-	this.displayRaster(geometry, this.getField(world, this.field, this.scratch));
-}
 ScalarHeatDisplay.prototype.displayRaster = function(geometry, raster) {
-	if (raster === void 0) {
-		log_once("ScalarDisplay.getField() returned undefined.");
-		return;
-	}
-	if (!(raster instanceof Float32Array || raster instanceof Uint16Array || raster instanceof Uint8Array)) { 
-		log_once("ScalarDisplay.getField() did not return a TypedArray.");
-		return;
-	}
-	if (raster instanceof Uint8Array) {
-		raster = Float32Raster.FromUint8Raster(raster);
-	}
-	if (raster instanceof Uint16Array) {
-		raster = Float32Raster.FromUint16Raster(raster);
-	}
-	
-	var max = this.scaling? Math.max.apply(null, raster) || 1 : 1;
-	if (raster !== void 0) {
-		if (raster !== this.field) {
-			Float32Raster.copy(raster, this.field);
-		}
-
-		ScalarField.div_scalar(raster, max, raster);
-		Float32Raster.get_ids(raster, view.grid.buffer_array_to_cell, geometry.attributes.scalar.array); 
-		geometry.attributes.scalar.needsUpdate = true;
-	} else {
-		this.field = void 0;
-	}
+	Float32Raster.get_ids(raster, view.grid.buffer_array_to_cell, geometry.attributes.scalar.array); 
+	geometry.attributes.scalar.needsUpdate = true;
 }
-
 
 
 
@@ -202,81 +172,100 @@ scalarDisplays.satellite = new RealisticDisplay('canopy');
 scalarDisplays.soil = new RealisticDisplay('soil');
 scalarDisplays.bedrock = new RealisticDisplay('bedrock');
 
-scalarDisplays.npp 	= new ScalarDisplay( { minColor: 0xffffff, maxColor: 0x00ff00, min: '0.', max: '1.',
-		getField: world => world.biosphere.npp.value()
-	} );
-scalarDisplays.alt 	= new ScalarDisplay( { minColor: 0x000000, maxColor: 0xffffff, min:'0.', max:'10000.', 
-		getField: world => world.hydrosphere.surface_height.value()
-	} );
-scalarDisplays.plates 	= new ScalarHeatDisplay( { min: '0.', max: '7.', 
-		getField: world => world.lithosphere.top_plate_map
-	} );
-scalarDisplays.plate_count 	= new ScalarHeatDisplay( { min: '0.', max: '3.',  
-		getField: world => world.lithosphere.plate_count
-	} );
-scalarDisplays.temp 	= new ScalarHeatDisplay( { min: '-50.', max: '30.',  
-		// NOTE: convert to Celcius
-		getField: (world, result) => 
-			ScalarField.add_scalar(world.atmosphere.surface_temp, -273.15, result)
-	} );
-scalarDisplays.precip 	= new ScalarHeatDisplay( { min: '2000.', max: '1.',  
-		getField: world => world.atmosphere.precip.value()
-	} );
-scalarDisplays.age 	= new ScalarHeatDisplay( { min: '250.', max: '0.',  
-		getField: world => world.lithosphere.top_crust.age
-	} );
-scalarDisplays.mafic_volcanic 	= new ScalarHeatDisplay( { min: '0.', max: '7000.',  
-		getField: world => world.lithosphere.top_crust.mafic_volcanic
-	} );
-scalarDisplays.felsic_plutonic 	= new ScalarHeatDisplay( { min: '0.', max: '70000.',  
-		getField: world => world.lithosphere.top_crust.felsic_plutonic
-	} );
-scalarDisplays.felsic_plutonic_erosion 	= new ScalarHeatDisplay( { min: '0.', max: '100.',  
-		getField: world => world.lithosphere.top_crust.felsic_plutonic_erosion
-	} );
-scalarDisplays.sediment 	= new ScalarHeatDisplay( { min: '0.', max: '5.',  
-		getField: world => world.lithosphere.top_crust.sediment
-	} );
-scalarDisplays.sediment_erosion 	= new ScalarHeatDisplay( { min: '0.', max: '5.',  
-		getField: world => world.lithosphere.top_crust.sediment_erosion
-	} );
-scalarDisplays.sediment_weathering 	= new ScalarHeatDisplay( { min: '0.', max: '5.',  
-		getField: world => world.lithosphere.top_crust.sediment_weathering
-	} );
-scalarDisplays.sedimentary 	= new ScalarHeatDisplay( { min: '0.', max: '10000.',  
-		getField: world => world.lithosphere.top_crust.sedimentary
-	} );
-scalarDisplays.metamorphic 	= new ScalarHeatDisplay( { min: '0.', max: '10000.',  
-		getField: world => world.lithosphere.top_crust.metamorphic
-	} );
-scalarDisplays.thickness 	= new ScalarHeatDisplay( { min: '0.', max: '70000.',  
-		getField: world => world.lithosphere.thickness
-	} );
-scalarDisplays.density 	= new ScalarHeatDisplay( { min: '2.700', max: '3.300',  
-		getField: world => world.lithosphere.density.value()
-	} );
-scalarDisplays.elevation 	= new ScalarHeatDisplay( { min: '0.', max: '10000.',  
-		getField: world => world.lithosphere.elevation.value()
-	} );
-scalarDisplays.ice_coverage = new ScalarHeatDisplay( { min: '0.', max: '1.',  
-		getField: world => world.hydrosphere.ice_coverage.value()
-	} );
-scalarDisplays.land_coverage = new ScalarHeatDisplay( { min: '0.', max: '1.',  
-		getField: world => world.lithosphere.land_coverage.value()
-	} );
-scalarDisplays.ocean_coverage = new ScalarHeatDisplay( { min: '0.', max: '1.',  
-		getField: world => world.hydrosphere.ocean_coverage.value()
-	} );
-scalarDisplays.plant_coverage = new ScalarHeatDisplay( { min: '0.', max: '1.',  
-		getField: world => world.biosphere.plant_coverage.value()
-	} );
-scalarDisplays.asthenosphere_pressure = new ScalarHeatDisplay(  { min: '1.', max: '0.',
-		// getField: world => world.lithosphere.asthenosphere_pressure.value()
-		getField: function (world, output, scratch, iterations) {
-			return TectonicsModeling.get_asthenosphere_pressure(world.lithosphere.density, output, scratch);
-		}
-	} );
+scalarDisplays.npp 	= new ScalarWorldDisplay( 
+		new ScalarDisplay( { minColor: 0xffffff, maxColor: 0x00ff00, min: '0.', max: '1.' }),
+		world => world.biosphere.npp.value()
+	);
+scalarDisplays.alt 	= new ScalarWorldDisplay( 
+		new ScalarDisplay( { minColor: 0x000000, maxColor: 0xffffff, min:'0.', max:'10000.' }),
+		world => world.hydrosphere.surface_height.value()
+	);
+scalarDisplays.plates 	= new ScalarWorldDisplay( 
+		new ScalarHeatDisplay( { min: '0.', max: '7.' }),
+		world => world.lithosphere.top_plate_map
+	);
+scalarDisplays.plate_count 	= new ScalarWorldDisplay( 
+		new ScalarHeatDisplay( { min: '0.', max: '3.' }),
+		world => world.lithosphere.plate_count
+	);
+scalarDisplays.temp 	= new ScalarWorldDisplay( 
+		new ScalarHeatDisplay( { min: '-50.', max: '30.' }),
+		(world, result) => ScalarField.add_scalar(world.atmosphere.surface_temp, -273.15, result)
+	);
+scalarDisplays.precip 	= new ScalarWorldDisplay( 
+		new ScalarHeatDisplay( { min: '2000.', max: '1.' }),
+		world => world.atmosphere.precip.value()
+	);
+scalarDisplays.age 	= new ScalarWorldDisplay( 
+		new ScalarHeatDisplay( { min: '250.', max: '0.' }),
+		world => world.lithosphere.top_crust.age
+	);
+scalarDisplays.mafic_volcanic 	= new ScalarWorldDisplay( 
+		new ScalarHeatDisplay( { min: '0.', max: '7000.' }),
+		world => world.lithosphere.top_crust.mafic_volcanic
+	);
+scalarDisplays.felsic_plutonic 	= new ScalarWorldDisplay( 
+		new ScalarHeatDisplay( { min: '0.', max: '70000.' }),
+		world => world.lithosphere.top_crust.felsic_plutonic
+	);
+scalarDisplays.felsic_plutonic_erosion 	= new ScalarWorldDisplay( 
+		new ScalarHeatDisplay( { min: '0.', max: '100.' }),
+		world => world.lithosphere.top_crust.felsic_plutonic_erosion
+	);
+scalarDisplays.sediment 	= new ScalarWorldDisplay( 
+		new ScalarHeatDisplay( { min: '0.', max: '5.' }),
+		world => world.lithosphere.top_crust.sediment
+	);
+scalarDisplays.sediment_erosion 	= new ScalarWorldDisplay( 
+		new ScalarHeatDisplay( { min: '0.', max: '5.' }),
+		world => world.lithosphere.top_crust.sediment_erosion
+	);
+scalarDisplays.sediment_weathering 	= new ScalarWorldDisplay( 
+		new ScalarHeatDisplay( { min: '0.', max: '5.' }),
+		world => world.lithosphere.top_crust.sediment_weathering
+	);
+scalarDisplays.sedimentary 	= new ScalarWorldDisplay( 
+		new ScalarHeatDisplay( { min: '0.', max: '10000.' }),
+		world => world.lithosphere.top_crust.sedimentary
+	);
+scalarDisplays.metamorphic 	= new ScalarWorldDisplay( 
+		new ScalarHeatDisplay( { min: '0.', max: '10000.' }),
+		world => world.lithosphere.top_crust.metamorphic
+	);
+scalarDisplays.thickness 	= new ScalarWorldDisplay( 
+		new ScalarHeatDisplay( { min: '0.', max: '70000.' }),
+		world => world.lithosphere.thickness
+	);
+scalarDisplays.density 	= new ScalarWorldDisplay( 
+		new ScalarHeatDisplay( { min: '2.700', max: '3.300' }),
+		world => world.lithosphere.density.value()
+	);
+scalarDisplays.elevation 	= new ScalarWorldDisplay( 
+		new ScalarHeatDisplay( { min: '0.', max: '10000.' }),
+		world => world.lithosphere.elevation.value()
+	);
+scalarDisplays.ice_coverage = new ScalarWorldDisplay( 
+		new ScalarHeatDisplay( { min: '0.', max: '1.' }),
+		world => world.hydrosphere.ice_coverage.value()
+	);
+scalarDisplays.land_coverage = new ScalarWorldDisplay( 
+		new ScalarHeatDisplay( { min: '0.', max: '1.' }),
+		world => world.lithosphere.land_coverage.value()
+	);
+scalarDisplays.ocean_coverage = new ScalarWorldDisplay( 
+		new ScalarHeatDisplay( { min: '0.', max: '1.' }),
+		world => world.hydrosphere.ocean_coverage.value()
+	);
+scalarDisplays.plant_coverage = new ScalarWorldDisplay( 
+		new ScalarHeatDisplay( { min: '0.', max: '1.' }),
+		world => world.biosphere.plant_coverage.value()
+	);
+scalarDisplays.asthenosphere_pressure = new ScalarWorldDisplay( 
+		new ScalarHeatDisplay(  { min: '1.', max: '0.'  }),
+		function (world, output, scratch, iterations) {return TectonicsModeling.get_asthenosphere_pressure(world.lithosphere.density, output, scratch);}
+	);
 
-scalarDisplays.surface_air_pressure = new ScalarHeatDisplay( { min: '980000.', max: '1030000.', 
-		getField: world => world.atmosphere.surface_pressure.value()
-	} );
+scalarDisplays.surface_air_pressure = new ScalarWorldDisplay( 
+		new ScalarHeatDisplay( { min: '980000.', max: '1030000.' }),
+		world => world.atmosphere.surface_pressure.value()
+	);

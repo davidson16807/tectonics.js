@@ -3,21 +3,22 @@
 
 var experimentalDisplays = {};
 
-experimentalDisplays.eliptic_ids = new ScalarHeatDisplay( { 
-    scaling: true, 
-    getField: function (crust) { 
-      var ids = Float32Raster(crust.grid); 
-      Float32Raster.FromUint16Raster(crust.grid.vertex_ids, ids); 
-      var pos = OrbitalMechanics.get_ecliptic_coordinates_raster_from_equatorial_coordinates_raster( 
-        crust.grid.pos, 
-        23.5/180*Math.PI, 
-        23.5/180*Math.PI 
-      ); 
-      return Float32Raster.get_nearest_values(ids, pos); 
-    } 
-   } ); 
-experimentalDisplays.albedo 	= new ScalarHeatDisplay( { min: '0.', max: '1.',  
-	getField: function (world) {
+experimentalDisplays.eliptic_ids = new ScalarWorldDisplay(
+		new ScalarHeatDisplay( { scaling: true}), 
+	    function (crust) { 
+	      var ids = Float32Raster(crust.grid); 
+	      Float32Raster.FromUint16Raster(crust.grid.vertex_ids, ids); 
+	      var pos = OrbitalMechanics.get_ecliptic_coordinates_raster_from_equatorial_coordinates_raster( 
+	        crust.grid.pos, 
+	        23.5/180*Math.PI, 
+	        23.5/180*Math.PI 
+	      ); 
+	      return Float32Raster.get_nearest_values(ids, pos); 
+	    } 
+	 ); 
+experimentalDisplays.albedo 	= new ScalarWorldDisplay(
+	new ScalarHeatDisplay( { min: '0.', max: '1.'}),  
+	function (world) {
 
 		// dependencies: sealevel, displacement, mean_anomaly, ice_fraction, precip, npp, lai, plant_fraction, land_fraction
 		var sealevel = world.hydrosphere.sealevel;
@@ -51,11 +52,11 @@ experimentalDisplays.albedo 	= new ScalarHeatDisplay( { min: '0.', max: '1.',
 		albedo = AtmosphericModeling.albedo(land_fraction, ice_fraction, plant_fraction);
 		return albedo;
 	}
-} );
+);
 
 
 
-experimentalDisplays.motion_test = new VectorFieldDisplay( {  
+experimentalDisplays.motion_test = new VectorWorldDisplay( {  
     getField: function (world) { 
       var grid = world.grid; 
       var pos = grid.pos; 
@@ -75,25 +76,28 @@ experimentalDisplays.motion_test = new VectorFieldDisplay( {
   } ); 
 
 
-experimentalDisplays.plate0 	= new ScalarHeatDisplay( { min: '0.', max: '1.', 
-		getField: function (world) {
+experimentalDisplays.plate0 	= new ScalarWorldDisplay(
+		new ScalarHeatDisplay( { min: '0.', max: '1.'}), 
+		function (world) {
 			return world.plates[0].mask;
 		} 	
-	} );
-experimentalDisplays.buoyancy 	= new ScalarHeatDisplay( { min: '-2.', max: '0.', 
-		getField: function (world, buoyancy) {
+	);
+experimentalDisplays.buoyancy 	= new ScalarWorldDisplay(
+		new ScalarHeatDisplay( { min: '-2.', max: '0.'}), 
+		function (world, buoyancy) {
 			Crust.get_buoyancy(world.density, world.material_density, world.surface_gravity, buoyancy);
 			return buoyancy;
 		}
-	} );
-experimentalDisplays.buoyancy_smoothed 	= new ScalarHeatDisplay( { min: '-2.', max: '0.', 
-		getField: function (world, buoyancy) {
+	);
+experimentalDisplays.buoyancy_smoothed 	= new ScalarWorldDisplay(
+		new ScalarHeatDisplay( { min: '-2.', max: '0.'}), 
+		function (world, buoyancy) {
 			Crust.get_buoyancy(world.density, world.material_density, world.surface_gravity, buoyancy);
 			var pressure = TectonicsModeling.get_asthenosphere_pressure(buoyancy);
 			return pressure;
 		}
-	} );
-experimentalDisplays.buoyancy_smoothed_laplacian = new VectorFieldDisplay( {  
+	);
+experimentalDisplays.buoyancy_smoothed_laplacian = new VectorWorldDisplay( {  
     getField: function (world) { 
 			var buoyancy = Crust.get_buoyancy(world.density, world.material_density, world.surface_gravity);
 			var pressure = TectonicsModeling.get_asthenosphere_pressure(buoyancy);
@@ -101,7 +105,7 @@ experimentalDisplays.buoyancy_smoothed_laplacian = new VectorFieldDisplay( {
 			return velocity;
     }
   } ); 
-experimentalDisplays.angular_velocity = new VectorFieldDisplay( {  
+experimentalDisplays.angular_velocity = new VectorWorldDisplay( {  
     getField: function (world) { 
 			var buoyancy = Crust.get_buoyancy(world.density, world.material_density, world.surface_gravity);
 			var pressure = TectonicsModeling.get_asthenosphere_pressure(buoyancy);
@@ -110,8 +114,9 @@ experimentalDisplays.angular_velocity = new VectorFieldDisplay( {
 			return angular_velocity;
     }
   } ); 
-experimentalDisplays.plates = new ScalarHeatDisplay( { min: '0.', max: '7.', 
-		getField: function (world) {
+experimentalDisplays.plates = new ScalarWorldDisplay(
+		new ScalarHeatDisplay( { min: '0.', max: '7.'}), 
+		function (world) {
 			var buoyancy = Crust.get_buoyancy(world.density, world.material_density, world.surface_gravity);
 			var pressure = TectonicsModeling.get_asthenosphere_pressure(buoyancy);
 			var velocity = TectonicsModeling.get_asthenosphere_velocity(pressure);
@@ -119,9 +124,9 @@ experimentalDisplays.plates = new ScalarHeatDisplay( { min: '0.', max: '7.',
 			var top_plate_map = TectonicsModeling.get_plate_map(angular_velocity, 7, 200);
 			return top_plate_map;
 		}
-	} );
+	);
 var PLATE_ID = 0;
-experimentalDisplays.velocity = new VectorFieldDisplay( {  
+experimentalDisplays.velocity = new VectorWorldDisplay( {  
     getField: function (world) { 
     		return world.plates[PLATE_ID].velocity;
     		
@@ -130,22 +135,19 @@ experimentalDisplays.velocity = new VectorFieldDisplay( {
 			return velocity
     }
   } ); 
-experimentalDisplays.speed 	= new ScalarHeatDisplay( { min: '0.', max: '1.', 
-		getField: function (world, result) {
+experimentalDisplays.speed 	= new ScalarWorldDisplay(
+		new ScalarHeatDisplay( { min: '0.', max: '1.'}), 
+		function (world, result) {
 			var plate = world.plates[0];
 
 			Crust.get_buoyancy(plate.density, world.material_density, world.surface_gravity, plate.buoyancy);
 			var velocity = TectonicsModeling.get_plate_velocity(plate.mask, plate.buoyancy, world.material_viscosity);
 			return VectorField.magnitude(velocity, result);
 		} 	
-	} );
-experimentalDisplays.insolation 	= new ScalarHeatDisplay( { min: '0.', max: '400.', 
-		getField: function (world, result) {
+	);
+experimentalDisplays.insolation 	= new ScalarWorldDisplay(
+		new ScalarHeatDisplay( { min: '0.', max: '400.'}), 
+		function (world, result) {
 			return world.atmosphere.average_insolation;
 		} 	
-	} );
-experimentalDisplays.insolation 	= new ScalarHeatDisplay( { min: '0.', max: '400.', 
-		getField: function (world, result) {
-			return world.universe.get_average_insolation(world, model.speed/(30));
-		}
-	} );
+	);

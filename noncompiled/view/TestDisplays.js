@@ -4,50 +4,50 @@
 var testDisplays = {};
 
 // test for raster id placement
-testDisplays.ids 	= new ScalarHeatDisplay( { 
-		scaling: true,
-		getField: function (crust) {
+testDisplays.ids 	= new ScalarWorldDisplay(
+		new ScalarHeatDisplay( { scaling: true }),
+		function (crust) {
 			return crust.grid.vertex_ids;
 		} 
-	} );
+	);
 
 // test for voronoi diagram used by grid.getNearestIds
 // should look just like testDisplays.ids
-testDisplays.voronoi_ids	= new ScalarHeatDisplay( {
-		scaling: true,
-		getField: function (crust) {
+testDisplays.voronoi_ids	= new ScalarWorldDisplay(
+		new ScalarHeatDisplay( { scaling: true }),
+		function (crust) {
 			return crust.grid.getNearestIds(crust.grid.pos);
 		} 
-	} );
+	);
 
 // test for get_nearest_values - does it reconstruct the ids field after rotation?
 // should look just like testDisplays.ids, but rotated
-testDisplays.id_rotated 	= new ScalarHeatDisplay( {
-		scaling: true,
-		getField: function (crust) {
+testDisplays.id_rotated 	= new ScalarWorldDisplay(
+		new ScalarHeatDisplay( {scaling: true}),
+		function (crust) {
 			var ids = Float32Raster(crust.grid);
 			Float32Raster.FromUint16Raster(crust.grid.vertex_ids, ids);
 			var rotationMatrix = Matrix3x3.rotation_about_axis(1,0,0, 0.5);
 			var pos = VectorField.mult_matrix(crust.grid.pos, rotationMatrix);
 			return Float32Raster.get_nearest_values(ids, pos);
 		}
- 	} );
+  	);
 
 // test for Float32Raster.get_nearest_values()
 // rotates the age field by a certain amount
-testDisplays.age_rotated 	= new ScalarHeatDisplay( { min: '250.', max: '0.',  
-		// scaling: true,
-		getField: function (crust, result) {
+testDisplays.age_rotated 	= new ScalarWorldDisplay(
+		new ScalarHeatDisplay( { min: '250.', max: '0.'}),  
+		function (crust, result) {
 			var rotationMatrix = Matrix3x3.rotation_about_axis(1,0,0, 0.5);
 			var pos = VectorField.mult_matrix(crust.grid.pos, rotationMatrix);
 			test = Float32Raster.get_nearest_values(crust.age, pos, result);
 			return test;
 		} 
-	} );
+	);
 
-testDisplays.eliptic_ids = new ScalarHeatDisplay( {
-		scaling: true,
-		getField: function (crust) {
+testDisplays.eliptic_ids = new ScalarWorldDisplay(
+		new ScalarHeatDisplay( {scaling: true}),
+		function (crust) {
 			var ids = Float32Raster(crust.grid);
 			Float32Raster.FromUint16Raster(crust.grid.vertex_ids, ids);
 			var pos = OrbitalMechanics.get_ecliptic_coordinates_raster_from_equatorial_coordinates_raster(
@@ -57,31 +57,34 @@ testDisplays.eliptic_ids = new ScalarHeatDisplay( {
 			);
 			return Float32Raster.get_nearest_values(ids, pos);
 		}
- 	} );
+ 	);
 
 // test for individual plate mask
-testDisplays.single_plate = new ScalarHeatDisplay( { min: '0.', max: '1.',  
-		getField: function (world) {
+testDisplays.single_plate = new ScalarWorldDisplay(
+		new ScalarHeatDisplay( { min: '0.', max: '1.'}),  
+		function (world) {
 			return world.plates[0].mask;
 		} 
-	} );
+	);
 
-testDisplays.surface_air_pressure_lat_effect = new ScalarHeatDisplay( { min: '-1.', max: '1.', 
-		getField: function (world, effect, scratch) {
+testDisplays.surface_air_pressure_lat_effect = new ScalarWorldDisplay(
+		new ScalarHeatDisplay( { min: '-1.', max: '1.'}), 
+		function (world, effect, scratch) {
 			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
 			AtmosphericModeling.surface_air_pressure_lat_effect(lat, effect);
 			return effect;
 		} 
-	} );
-testDisplays.surface_air_pressure_land_effect = new ScalarHeatDisplay( { min: '-1.', max: '1.', 
-		getField: function (world, effect, scratch) {
+	);
+testDisplays.surface_air_pressure_land_effect = new ScalarWorldDisplay(
+		new ScalarHeatDisplay( { min: '-1.', max: '1.'}, 
+		function (world, effect, scratch) {
 			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
 			AtmosphericModeling.surface_air_pressure_land_effect(world.displacement, lat, world.SEALEVEL, effect, scratch);
 			return effect;
 		}
-	} );
+	);
 ANGULAR_SPEED = 1.e0;
-testDisplays.coriolis_effect = new VectorFieldDisplay( {
+testDisplays.coriolis_effect = new VectorWorldDisplay( {
 		getField: function (world) {
 			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
 			var scratch = Float32Raster(world.grid);
@@ -97,8 +100,8 @@ testDisplays.coriolis_effect = new VectorFieldDisplay( {
 
 
 // test for the flood fill algorithm, AKA "magic wand select"
-testDisplays.flood_fill1 = new ScalarHeatDisplay(  { 
-		min: '1.', max: '0.',
+testDisplays.flood_fill1 = new ScalarWorldDisplay(
+		new ScalarHeatDisplay(  { min: '1.', max: '0.' } ),
 		getField: function (crust, flood_fill, scratch1) {
 			// scratch represents pressure
 			var pressure = scratch1;
@@ -116,12 +119,12 @@ testDisplays.flood_fill1 = new ScalarHeatDisplay(  {
 
 			return flood_fill;
 		}
-	} );
+	);
 
 // test for binary morphology
-testDisplays.flood_fill_white_top_hat = new ScalarHeatDisplay(  { 
-		min: '1.', max: '0.',
-		getField: function (crust, flood_fill, scratch1) {
+testDisplays.flood_fill_white_top_hat = new ScalarWorldDisplay(
+		new ScalarHeatDisplay(  { min: '1.', max: '0.' }),
+		function (crust, flood_fill, scratch1) {
 			// scratch represents pressure
 			var pressure = scratch1;
 			// flood_fill does double duty for performance reasons
@@ -139,12 +142,12 @@ testDisplays.flood_fill_white_top_hat = new ScalarHeatDisplay(  {
 			var white_top_hat = BinaryMorphology.white_top_hat(BinaryMorphology.to_binary(flood_fill), 5);
 			return white_top_hat;
 		}
-	} );
+	);
 
 // test for binary morphology
-testDisplays.flood_fill_black_top_hat = new ScalarHeatDisplay(  { 
-		min: '1.', max: '0.',
-		getField: function (crust, flood_fill, scratch1) {
+testDisplays.flood_fill_black_top_hat = new ScalarWorldDisplay(
+		new ScalarHeatDisplay(  { min: '1.', max: '0.'},
+		function (crust, flood_fill, scratch1) {
 			// scratch represents pressure
 			var pressure = scratch1;
 			// flood_fill does double duty for performance reasons
@@ -161,12 +164,12 @@ testDisplays.flood_fill_black_top_hat = new ScalarHeatDisplay(  {
 			var white_top_hat = BinaryMorphology.white_top_hat(BinaryMorphology.to_binary(flood_fill), 5);
 			return white_top_hat;
 		}
-	} );
+	);
 
 // test for binary morphology
-testDisplays.flood_fill_dilation = new ScalarHeatDisplay(  { 
-		min: '1.', max: '0.',
-		getField: function (crust, flood_fill, scratch1) {
+testDisplays.flood_fill_dilation = new ScalarWorldDisplay(
+		new ScalarHeatDisplay(  { min: '1.', max: '0.'}),
+		function (crust, flood_fill, scratch1) {
 			// scratch represents pressure
 			var pressure = scratch1;
 			// flood_fill does double duty for performance reasons
@@ -184,11 +187,11 @@ testDisplays.flood_fill_dilation = new ScalarHeatDisplay(  {
 
 			return BinaryMorphology.to_float(dilation);
 		}
-	} );
+	);
 // test for binary morphology
-testDisplays.flood_fill_erosion = new ScalarHeatDisplay(  { 
-		min: '1.', max: '0.',
-		getField: function (crust, flood_fill, scratch1) {
+testDisplays.flood_fill_erosion = new ScalarWorldDisplay(
+		new ScalarHeatDisplay(  { min: '1.', max: '0.'}),
+		function (crust, flood_fill, scratch1) {
 			// scratch represents pressure
 			var pressure = scratch1;
 			// flood_fill does double duty for performance reasons
@@ -206,11 +209,11 @@ testDisplays.flood_fill_erosion = new ScalarHeatDisplay(  {
 
 			return BinaryMorphology.to_float(erosion);
 		}
-	} );
+	);
 // test for binary morphology
-testDisplays.flood_fill_opening = new ScalarHeatDisplay(  { 
-		min: '1.', max: '0.',
-		getField: function (crust, flood_fill, scratch1) {
+testDisplays.flood_fill_opening = new ScalarWorldDisplay(
+		new ScalarHeatDisplay(  { min: '1.', max: '0.'},
+		function (crust, flood_fill, scratch1) {
 			// scratch represents pressure
 			var pressure = scratch1;
 			// flood_fill does double duty for performance reasons
@@ -228,11 +231,11 @@ testDisplays.flood_fill_opening = new ScalarHeatDisplay(  {
 
 			return BinaryMorphology.to_float(opening);
 		}
-	} );
+	);
 // test for binary morphology
-testDisplays.flood_fill_closing = new ScalarHeatDisplay(  { 
-		min: '1.', max: '0.',
-		getField: function (crust, flood_fill, scratch1) {
+testDisplays.flood_fill_closing = new ScalarWorldDisplay(
+		new ScalarHeatDisplay(  { min: '1.', max: '0.' }),
+		function (crust, flood_fill, scratch1) {
 			// scratch represents pressure
 			var pressure = scratch1;
 			// flood_fill does double duty for performance reasons
@@ -250,12 +253,12 @@ testDisplays.flood_fill_closing = new ScalarHeatDisplay(  {
 
 			return BinaryMorphology.to_float(closing);
 		}
-	} );
+	);
 
 // test for image segmentation algorithm
-testDisplays.flood_fill8 = new ScalarHeatDisplay(  { 
-		min: '8.', max: '0.',
-		getField: function (crust, flood_fill, scratch1) {
+testDisplays.flood_fill8 = new ScalarWorldDisplay(
+		new ScalarHeatDisplay(  { min: '8.', max: '0.'}),
+		function (crust, flood_fill, scratch1) {
 			// scratch represents pressure
 			var pressure = scratch1;
 			// flood_fill does double duty for performance reasons
@@ -267,12 +270,12 @@ testDisplays.flood_fill8 = new ScalarHeatDisplay(  {
 			var plate_map = TectonicsModeling.get_plate_map(gradient, 7, 200);
 			return plate_map;
 		}
-	} );
+	);
 
 // test for image segmentation algorithm
-testDisplays.flood_fill8 = new ScalarHeatDisplay(  { 
-		min: '0.', max: '1.',
-		getField: function (crust, flood_fill, scratch1) {
+testDisplays.flood_fill8 = new ScalarWorldDisplay(
+		new ScalarHeatDisplay(  { min: '0.', max: '1.' } ),
+		function (crust, flood_fill, scratch1) {
 			// scratch represents pressure
 			var pressure = scratch1;
 			// flood_fill does double duty for performance reasons
@@ -284,11 +287,11 @@ testDisplays.flood_fill8 = new ScalarHeatDisplay(  {
 			var plate_map = TectonicsModeling.get_plate_map(gradient, 7, 200);
 			return plate_map;
 		}
-	} );
+	);
 
-testDisplays.daily_average_incident_radiation_fraction = new ScalarHeatDisplay(  { 
-		min: '0.', max: '0.5',
-		getField: function (crust) {
+testDisplays.daily_average_incident_radiation_fraction = new ScalarWorldDisplay(
+		new ScalarHeatDisplay(  { min: '0.', max: '0.5'}),
+		function (crust) {
 			var orbital_pos = OrbitalMechanics.get_eliptic_coordinate_sample(1, 0, world.meanAnomaly);
 			var result = AtmosphericModeling.daily_average_incident_radiation_fraction(
 				world.grid.pos,
@@ -297,11 +300,11 @@ testDisplays.daily_average_incident_radiation_fraction = new ScalarHeatDisplay( 
 			);
 			return result;
 		}
-	} );
+	);
 
-testDisplays.temp2 = new ScalarHeatDisplay(  { 
-		min: '-60.', max: '30.',
-		getField: function (crust) {
+testDisplays.temp2 = new ScalarWorldDisplay(
+		new ScalarHeatDisplay(  { min: '-60.', max: '30.'},
+		function (crust) {
 			var orbital_pos = OrbitalMechanics.get_eliptic_coordinate_sample(1, 0, world.meanAnomaly);
 			var incident_radiation_fraction = AtmosphericModeling.daily_average_incident_radiation_fraction(
 				world.grid.pos,
@@ -314,11 +317,11 @@ testDisplays.temp2 = new ScalarHeatDisplay(  {
 			ScalarField.sub_scalar(temperature, 273.15, temperature);
 			return temperature;
 		}
-	} );
+	);
 
 
 // test for basic vector rendering
-vectorDisplays.test = new VectorFieldDisplay( { 
+vectorDisplays.test = new VectorWorldDisplay( { 
 		getField: function (crust) {
 			var vector = VectorRaster(crust.grid);
 			for(var i=0, li = vector.length; i<li; i++){
@@ -328,7 +331,7 @@ vectorDisplays.test = new VectorFieldDisplay( {
 		} 
 	} );
 
-vectorDisplays.asthenosphere_velocity = new VectorFieldDisplay( { 
+vectorDisplays.asthenosphere_velocity = new VectorWorldDisplay( { 
 		getField: function (world, flood_fill, scratch1) {
 			// scratch represents pressure
 			var pressure = scratch1;
@@ -340,7 +343,7 @@ vectorDisplays.asthenosphere_velocity = new VectorFieldDisplay( {
 		} 
 	} );
 
-vectorDisplays.asthenosphere_angular_velocity = new VectorFieldDisplay( { 
+vectorDisplays.asthenosphere_angular_velocity = new VectorWorldDisplay( { 
 		getField: function (crust, flood_fill, scratch1) {
 			// scratch represents pressure
 			var pressure = scratch1;
@@ -354,7 +357,7 @@ vectorDisplays.asthenosphere_angular_velocity = new VectorFieldDisplay( {
 		} 
 	} );
 
-vectorDisplays.averaged_angular_velocity = new VectorFieldDisplay( { 
+vectorDisplays.averaged_angular_velocity = new VectorWorldDisplay( { 
 		getField: function (world, flood_fill, scratch1) {
 			// scratch represents pressure
 			var pressure = scratch1;
@@ -379,7 +382,7 @@ vectorDisplays.averaged_angular_velocity = new VectorFieldDisplay( {
 		} 
 	} );
 
-vectorDisplays.averaged_velocity = new VectorFieldDisplay( { 
+vectorDisplays.averaged_velocity = new VectorWorldDisplay( { 
 		getField: function (world) {
 			var field = getSubductabilitySmoothed(world);
 			var gradient = ScalarField.gradient(field);
@@ -401,7 +404,7 @@ vectorDisplays.averaged_velocity = new VectorFieldDisplay( {
 		} 
 	} );
 
-vectorDisplays.averaged_velocity = new VectorFieldDisplay( { 
+vectorDisplays.averaged_velocity = new VectorWorldDisplay( { 
 		getField: function (world) {
 			var field = getSubductabilitySmoothed(world);
 			var gradient = ScalarField.gradient(field);
