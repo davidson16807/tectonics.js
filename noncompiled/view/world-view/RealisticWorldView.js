@@ -46,7 +46,7 @@ function RealisticWorldView(shader_return_value) {
 			scene.add(mesh);
 
 			this.mesh = mesh;
-		}
+		} 
 		
 		var mesh = this.mesh;
 		var material = mesh.material;
@@ -77,4 +77,12 @@ function RealisticWorldView(shader_return_value) {
 		this.mesh.material.dispose();
 		this.mesh = void 0;
 	};
+	this.vertexShader = function(vertexShader) {
+		this.mesh.material.vertexShader = vertexShader; 
+		this.mesh.material.needsUpdate = true; 
+	}
+	this.uniform = function(key, value) {
+		this.mesh.material.uniforms[key].value = value;
+		this.mesh.material.uniforms[key].needsUpdate = true;
+	}
 }

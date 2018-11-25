@@ -48,11 +48,17 @@ function ScalarWorldView(scalarRasterView, getField) {
 		material.uniforms['sealevel'].value = world.hydrosphere.sealevel.value();
 		material.uniforms['sealevel'].needsUpdate = true;
 
-		Float32Raster.get_ids(world.lithosphere.displacement.value(), view.grid.buffer_array_to_cell, geometry.attributes.displacement.array); 
+		Float32Raster.get_ids(world.lithosphere.displacement.value(), world.grid.buffer_array_to_cell, geometry.attributes.displacement.array); 
 		geometry.attributes.displacement.needsUpdate = true;
 
 	};
 	this.remove = function(scene) {
 		this.scalarRasterView.remove(scene);
 	};
+	this.vertexShader = function(vertexShader) {
+		this.scalarRasterView.vertexShader(vertexShader);
+	}
+	this.uniform = function(key, value) {
+		this.scalarRasterView.uniform(key, value);
+	}
 }

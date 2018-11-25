@@ -53,4 +53,8 @@ function SpatialPdfChartView(surface_type_focus, name) {
 		    x_label: options['x_label']
 		};
 	}
+	this.vertexShader = function(vertexShader) {
+	}
+	this.uniform = function(key, value) {
+	}
 }

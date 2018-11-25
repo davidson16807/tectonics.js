@@ -122,20 +122,8 @@ View.prototype.vertexShader = function(vertexShader){
 		return;
 	}
 	this._vertexShader = vertexShader;
-	this._scalarWorldView.upsert(this.scene, this.world,
-			{
-				...this._uniforms, 
-				index: 0, 
-				vertexShader: this._vertexShader
-			}
-		);
-	this._vectorWorldView.upsert(this.scene, this.world,
-			{
-				...this._uniforms, 
-				index: 0, 
-				vertexShader: this._vertexShader
-			}
-		);
+	this._scalarWorldView.vertexShader(vertexShader);
+	this._vectorWorldView.vertexShader(vertexShader);
 }
 
 View.prototype.uniform = function(key, value){
@@ -144,18 +132,6 @@ View.prototype.uniform = function(key, value){
 	}
 	
 	this._uniforms[key] = value;
-	this._scalarWorldView.upsert(this.scene, this.world,
-			{
-				...this._uniforms, 
-				index: 0, 
-				vertexShader: this._vertexShader
-			}
-		);
-	this._vectorWorldView.upsert(this.scene, this.world,
-			{
-				...this._uniforms, 
-				index: 0, 
-				vertexShader: this._vertexShader
-			}
-		);
+	this._scalarWorldView.uniform(key, value);
+	this._vectorWorldView.uniform(key, value);
 }

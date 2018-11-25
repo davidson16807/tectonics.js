@@ -25,4 +25,10 @@ function VectorWorldView(options) {
 	this.remove = function(scene) {
 		this.vectorRasterView.remove(scene);
 	};
+	this.vertexShader = function(vertexShader) {
+		this.vectorRasterView.vertexShader(vertexShader);
+	}
+	this.uniform = function(key, value) {
+		this.vectorRasterView.uniform(key, value);
+	}
 }

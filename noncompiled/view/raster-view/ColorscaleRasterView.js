@@ -58,7 +58,7 @@ function ColorscaleRasterView(options) {
 		var material = mesh.material;
 		var geometry = mesh.geometry;
 
-		Float32Raster.get_ids(raster, view.grid.buffer_array_to_cell, geometry.attributes.scalar.array); 
+		Float32Raster.get_ids(raster, raster.grid.buffer_array_to_cell, geometry.attributes.scalar.array); 
 		geometry.attributes.scalar.needsUpdate = true;
 	};
 	this.remove = function(scene) {
@@ -67,4 +67,12 @@ function ColorscaleRasterView(options) {
 		this.mesh.material.dispose();
 		this.mesh = undefined;
 	};
+	this.vertexShader = function(vertexShader) {
+		this.mesh.material.vertexShader = vertexShader; 
+		this.mesh.material.needsUpdate = true; 
+	}
+	this.uniform = function(key, value) {
+		this.mesh.material.uniforms[key].value = value;
+		this.mesh.material.uniforms[key].needsUpdate = true;
+	}
 }

@@ -58,4 +58,12 @@ function VectorRasterView(options) {
 		this.mesh.material.dispose();
 		this.mesh = undefined;
 	};
+	this.vertexShader = function(vertexShader) {
+		this.mesh.material.vertexShader = vertexShader; 
+		this.mesh.material.needsUpdate = true; 
+	}
+	this.uniform = function(key, value) {
+		this.mesh.material.uniforms[key].value = value;
+		this.mesh.material.uniforms[key].needsUpdate = true;
+	}
 }

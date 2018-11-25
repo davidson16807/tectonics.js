@@ -49,7 +49,7 @@ function HeatmapRasterView(options) {
 
 		var max = this.scaling? Math.max.apply(null, raster) || 1 : 1;
 		ScalarField.div_scalar(raster, max, raster);
-		Float32Raster.get_ids(raster, view.grid.buffer_array_to_cell, geometry.attributes.scalar.array); 
+		Float32Raster.get_ids(raster, raster.grid.buffer_array_to_cell, geometry.attributes.scalar.array); 
 		geometry.attributes.scalar.needsUpdate = true;
 
 	};
@@ -59,4 +59,12 @@ function HeatmapRasterView(options) {
 		this.mesh.material.dispose();
 		this.mesh = undefined;
 	};
+	this.vertexShader = function(vertexShader) {
+		this.mesh.material.vertexShader = vertexShader; 
+		this.mesh.material.needsUpdate = true; 
+	}
+	this.uniform = function(key, value) {
+		this.mesh.material.uniforms[key].value = value;
+		this.mesh.material.uniforms[key].needsUpdate = true;
+	}
 }
