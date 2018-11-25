@@ -1,3 +1,5 @@
+'use strict';
+
 // TESTS FOR VARIOUS FIELDS 
 // NOT TO BE INCLUDED IN PRODUCTION
 
@@ -76,7 +78,7 @@ testDisplays.surface_air_pressure_lat_effect = new ScalarWorldDisplay(
 		} 
 	);
 testDisplays.surface_air_pressure_land_effect = new ScalarWorldDisplay(
-		new HeatmapRasterDisplay( { min: '-1.', max: '1.'}, 
+		new HeatmapRasterDisplay( { min: '-1.', max: '1.'}), 
 		function (world, effect, scratch) {
 			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
 			AtmosphericModeling.surface_air_pressure_land_effect(world.displacement, lat, world.SEALEVEL, effect, scratch);
