@@ -58,16 +58,16 @@ function RealisticWorldView(shader_return_value) {
 		material.uniforms['insolation_max'].value = Float32Dataset.max(world.atmosphere.average_insolation);
 		material.uniforms['insolation_max'].needsUpdate = true;
 
-		Float32Raster.get_ids(world.lithosphere.displacement.value(), view.grid.buffer_array_to_cell, geometry.attributes.displacement.array); 
+		Float32Raster.get_ids(world.lithosphere.displacement.value(), world.grid.buffer_array_to_cell, geometry.attributes.displacement.array); 
 		geometry.attributes.displacement.needsUpdate = true;
 
-		Float32Raster.get_ids(world.atmosphere.average_insolation, view.grid.buffer_array_to_cell, geometry.attributes.insolation.array); 
+		Float32Raster.get_ids(world.atmosphere.average_insolation, world.grid.buffer_array_to_cell, geometry.attributes.insolation.array); 
 		geometry.attributes.insolation.needsUpdate = true;
 
-		Float32Raster.get_ids(world.hydrosphere.ice_coverage.value(), view.grid.buffer_array_to_cell, geometry.attributes.ice_coverage.array); 
+		Float32Raster.get_ids(world.hydrosphere.ice_coverage.value(), world.grid.buffer_array_to_cell, geometry.attributes.ice_coverage.array); 
 		geometry.attributes.ice_coverage.needsUpdate = true;
 
-		Float32Raster.get_ids(world.biosphere.plant_coverage.value(), view.grid.buffer_array_to_cell, geometry.attributes.plant_coverage.array); 
+		Float32Raster.get_ids(world.biosphere.plant_coverage.value(), world.grid.buffer_array_to_cell, geometry.attributes.plant_coverage.array); 
 		geometry.attributes.plant_coverage.needsUpdate = true;
 	};
 

@@ -399,11 +399,9 @@
 		var resolution      = Math.min(6, parseInt(querystring['resolution'] || '5'));
 		autosave_period 	= parseInt(querystring['autosave']   || '0');
 
-		var geometry = new THREE.IcosahedronGeometry(1, resolution);
 		view = new View(
 			window.innerWidth, 
 			window.innerHeight,
-			new Grid( geometry, { voronoi_generator: VoronoiSphere.FromPos }, ),
 			scalarViews.satellite, 
 			vectorViews.disabled, 
 			vertexShaders['orthographic'],
@@ -420,6 +418,7 @@
 		var get_planet_name = NameGenerator.get_length_distribution_generator(planet_name_corpus, 25, {5:1,6:3,7:11,8:3,9:1}, 100);
 		var focus_name = get_planet_name();
 		
+		var geometry = new THREE.IcosahedronGeometry(1, resolution);
 		var universe = new Universe({
 			system: {
 				name: 'galactic orbit',

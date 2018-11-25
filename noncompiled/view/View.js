@@ -1,6 +1,6 @@
 'use strict';
 
-function View(innerWidth, innerHeight, grid, scalarDisplay, vectorDisplay, vertexShader) {
+function View(innerWidth, innerHeight, scalarWorldView, vectorWorldView, vertexShader) {
 
 	// create the renderer
 	this.renderer = new THREE.WebGLRenderer({
