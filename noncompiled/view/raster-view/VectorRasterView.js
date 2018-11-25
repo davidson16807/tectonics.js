@@ -1,6 +1,6 @@
 'use strict';
 
-function VectorRasterDisplay(options) {
+function VectorRasterView(options) {
 	this.max = options['max'];
 	this.mesh = void 0;
 	this.upsert = function(scene, raster, options) {

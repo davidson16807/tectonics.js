@@ -1,9 +1,9 @@
 'use strict';
 
 // ScalarWorldRenderer takes as input a ScalarRasterRenderer, and a getField function, 
-// and uses it to display a raster from a given world 
-function ScalarWorldDisplay(scalarRasterDisplay, getField) {
-	this.scalarRasterDisplay = scalarRasterDisplay;
+// and uses it to View a raster from a given world 
+function ScalarWorldView(scalarRasterView, getField) {
+	this.scalarRasterView = scalarRasterView;
 	this.getField = getField;
 	this.field = void 0;
 	this.scratch = void 0;
@@ -15,14 +15,14 @@ function ScalarWorldDisplay(scalarRasterDisplay, getField) {
 
 		// run getField()
 		if (this.getField === void 0) {
-			log_once("ScalarWorldDisplay.getField is undefined.");
+			log_once("ScalarWorldView.getField is undefined.");
 			return;
 		}
 
 		var raster = this.getField(world, this.field, this.scratch);
 
 		if (raster === void 0) {
-			log_once("ScalarWorldDisplay.getField() returned undefined.");
+			log_once("ScalarWorldView.getField() returned undefined.");
 			return;
 		}
 		if (raster instanceof Uint8Array) {
@@ -32,16 +32,16 @@ function ScalarWorldDisplay(scalarRasterDisplay, getField) {
 			raster = Float32Raster.FromUint16Raster(raster);
 		}
 		if (!(raster instanceof Float32Array)) { 
-			log_once("ScalarWorldDisplay.getField() did not return a TypedArray.");
+			log_once("ScalarWorldView.getField() did not return a TypedArray.");
 			return;
 		}
 		if (raster !== void 0) {
-			this.scalarRasterDisplay.upsert(scene, raster, options);	
+			this.scalarRasterView.upsert(scene, raster, options);	
 		} else {
 			this.field = void 0;
 		}
 
-		var mesh = this.scalarRasterDisplay.mesh;
+		var mesh = this.scalarRasterView.mesh;
 		var material = mesh.material;
 		var geometry = mesh.geometry;
 
@@ -53,6 +53,6 @@ function ScalarWorldDisplay(scalarRasterDisplay, getField) {
 
 	};
 	this.remove = function(scene) {
-		this.scalarRasterDisplay.remove(scene);
+		this.scalarRasterView.remove(scene);
 	};
 }

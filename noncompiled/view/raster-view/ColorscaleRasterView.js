@@ -1,11 +1,11 @@
 'use strict';
 
-function ColorscaleRasterDisplay(options) {
+function ColorscaleRasterView(options) {
 	var minColor = options['minColor'] || 0x000000;
 	var maxColor = options['maxColor'] || 0xffffff;
 	var min = options['min'] || '0.';
 	var max = options['max'] || '1.';
-	this.chartDisplays = options['chartDisplays'] || [ new SpatialPdfChartDisplay('land') ]; 
+	this.chartViews = options['chartViews'] || [ new SpatialPdfChartView('land') ]; 
 	function hex_color_to_glsl_string_color(color) {
 		var rIntValue = ((color / 256 / 256) % 256) / 255.0;
 		var gIntValue = ((color / 256      ) % 256) / 255.0;

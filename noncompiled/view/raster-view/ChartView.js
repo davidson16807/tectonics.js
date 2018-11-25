@@ -1,6 +1,6 @@
 'use strict';
 
-function SpatialPdfChartDisplay(surface_type_focus, name) {
+function SpatialPdfChartView(surface_type_focus, name) {
 	surface_type_focus = surface_type_focus || 'land';
 	this.name = name;
 

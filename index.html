@@ -72,19 +72,19 @@
 	<script src="noncompiled/generators/NameCorpii.js"></script>
 	<script src="noncompiled/file-io/JsonSerializer.js"></script>
 	<script src="noncompiled/file-io/CsvExporter.js"></script>
-	<script src="noncompiled/view/raster-display/ChartDisplay.js"></script>
-	<script src="noncompiled/view/raster-display/ColorscaleRasterDisplay.js"></script>
-	<script src="noncompiled/view/raster-display/HeatmapRasterDisplay.js"></script>
-	<script src="noncompiled/view/raster-display/DisabledVectorRasterDisplay.js"></script>
-	<script src="noncompiled/view/raster-display/VectorRasterDisplay.js"></script>
-	<script src="noncompiled/view/world-display/RealisticWorldDisplay.js"></script>
-	<script src="noncompiled/view/world-display/ScalarWorldDisplay.js"></script>
-	<script src="noncompiled/view/world-display/VectorWorldDisplay.js"></script>
-	<script src="noncompiled/view/ScalarDisplays.js"></script>
-	<script src="noncompiled/view/VectorDisplays.js"></script>
-	<script src="noncompiled/view/RegressionTestDisplays.js"></script>
-	<script src="noncompiled/view/ExperimentalDisplays.js"></script>
-	<script src="noncompiled/view/TestDisplays.js"></script>
+	<script src="noncompiled/view/raster-view/ChartView.js"></script>
+	<script src="noncompiled/view/raster-view/ColorscaleRasterView.js"></script>
+	<script src="noncompiled/view/raster-view/HeatmapRasterView.js"></script>
+	<script src="noncompiled/view/raster-view/DisabledVectorRasterView.js"></script>
+	<script src="noncompiled/view/raster-view/VectorRasterView.js"></script>
+	<script src="noncompiled/view/world-view/RealisticWorldView.js"></script>
+	<script src="noncompiled/view/world-view/ScalarWorldView.js"></script>
+	<script src="noncompiled/view/world-view/VectorWorldView.js"></script>
+	<script src="noncompiled/view/ScalarViews.js"></script>
+	<script src="noncompiled/view/VectorViews.js"></script>
+	<script src="noncompiled/view/RegressionTestViews.js"></script>
+	<script src="noncompiled/view/ExperimentalViews.js"></script>
+	<!-- <script src="noncompiled/view/TestViews.js"></script> -->
 	<script src="noncompiled/view/View.js"></script>
 </head>
 <body>
@@ -146,10 +146,10 @@
 				</li>
 			</ul>
 		</div>
-		<div id="scalar-display" class="btn-group">
+		<div id="scalar-view" class="btn-group">
 			<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 				<img src="icons/blur.svg" height="16em" width="16em"/>
-				Display 
+				View 
 				<span class="caret"></span>
 			</button>
 			<ul class="dropdown-menu btn-default btn-xs">
@@ -195,7 +195,7 @@
 				</li>
 			</ul>
 		</div>
-		<div id="vector-display" class="btn-group">
+		<div id="vector-view" class="btn-group">
 			<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 				<img src="icons/arrow-move-all.svg" height="16em" width="16em"/>
 				Arrows
@@ -404,8 +404,8 @@
 			window.innerWidth, 
 			window.innerHeight,
 			new Grid( geometry, { voronoi_generator: VoronoiSphere.FromPos }, ),
-			scalarDisplays.satellite, 
-			vectorDisplays.disabled, 
+			scalarViews.satellite, 
+			vectorViews.disabled, 
 			vertexShaders['orthographic'],
 		);
 		sim = new Simulation({
@@ -823,8 +823,8 @@
 	  }
 	});
 
-	var vectorDisplayVue = new Vue({
-	  el: '#vector-display',
+	var vectorViewVue = new Vue({
+	  el: '#vector-view',
 	  data: {
 	    selected: 'disabled',
 	    options: [
@@ -839,7 +839,7 @@
 	    	if (this.selected == value) { value = this.options[0].value; }
 	  		var option = this.options.filter(x => x.value == value)[0];
 	  		this.selected = value;
-	  		view.setVectorDisplay(vectorDisplays[value]);
+	  		view.setVectorWorldView(vectorViews[value]);
 	  	},
 	  	getClass: function(value, selected) {
 	  		return value == selected? 'active' : '';
@@ -847,8 +847,8 @@
 	  }
 	});
 
-	var scalarDisplayVue = new Vue({
-	  el: '#scalar-display',
+	var scalarViewVue = new Vue({
+	  el: '#scalar-view',
 	  data: {
 	    ocean: 1,
 	    ocean_target: 1,
@@ -857,7 +857,7 @@
 	    snow: 1,
 	    snow_target: 1,
 	    selected: 'satellite',
-	    vectorDisplay: 'disabled',
+	    vectorView: 'disabled',
 	    options: [
 	      {name: 'Satellite', value: 'satellite', icon: 'icons/satellite-variant.svg' },
 	      {name: 'Sediment', value: 'soil', icon: 'icons/dirt.svg'},
@@ -878,7 +878,7 @@
 	    	if (this.selected == value) { value = this.options[0].value; }
 	  		var option = this.options.filter(x => x.value == value)[0];
 	    	this.selected = value;
-	    	view.setScalarDisplay(scalarDisplays[value]);
+	    	view.setScalarWorldView(scalarViews[value]);
 	    },
 	    isSelected: function(value) {
 	    	return {
@@ -999,7 +999,7 @@
 		created: function() {
 			var _this = this;
 			setInterval(function() {
-				var field = view._scalarDisplay.field;
+				var field = view._scalarView.field;
 				if (field === void 0) {
 					_this.isEnabled = false;
 					return;
@@ -1010,12 +1010,12 @@
 				_this.median = Float32Dataset.median(field);
 				_this.stddev = Float32Dataset.standard_deviation(field);
 
-				var chart_display = view._scalarDisplay.chartDisplays[0];
-				if (chart_display === void 0){
+				var chart_view = view._scalarView.chartViews[0];
+				if (chart_view === void 0){
 					_this.isEnabled = false;
 					return;
 				}
-				var chart_data = chart_display.get_dynamic_data(field, { ocean_visibility: _this.ocean_visibility });
+				var chart_data = chart_view.get_dynamic_data(field, { ocean_visibility: _this.ocean_visibility });
 
 				_this.isEnabled = true;
 				_this.$data.x = chart_data.x;

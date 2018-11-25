@@ -21,10 +21,9 @@ function View(innerWidth, innerHeight, grid, scalarDisplay, vectorDisplay, verte
 	this.scene = new THREE.Scene();
 	this.scene.add(this.camera);
 
-	this.grid = grid;
 	this._vertexShader = vertexShader;
-	this._scalarDisplay = scalarDisplay;
-	this._vectorDisplay = vectorDisplay;
+	this._scalarWorldView = scalarWorldView;
+	this._vectorWorldView = vectorWorldView;
 	this._uniforms = {
 		sealevel_mod: 1.0,
 		darkness_mod: 1.0,
@@ -44,14 +43,14 @@ View.prototype.displaySim = function(sim){
 
 View.prototype.displayWorld = function(world){
 	this.world = world;
-	this._scalarDisplay.upsert(this.scene, world, 
+	this._scalarWorldView.upsert(this.scene, world, 
 			{
 				...this._uniforms, 
 				index: 0, 
 				vertexShader: this._vertexShader
 			}
 		);
-	this._vectorDisplay.upsert(this.scene, world, 
+	this._vectorWorldView.upsert(this.scene, world, 
 			{
 				...this._uniforms, 
 				index: 0, 
@@ -68,15 +67,15 @@ View.prototype.getScreenshotDataURL = function() {
 	return THREEx.Screenshot.toDataURL(this.renderer);
 };
 
-View.prototype.setScalarDisplay = function(display) {
-	if(this._scalarDisplay === display){
+View.prototype.setScalarWorldView = function(display) {
+	if(this._scalarWorldView === display){
 		return;
 	}
 
-	this._scalarDisplay.remove(this.scene);
-	this._scalarDisplay = display;
+	this._scalarWorldView.remove(this.scene);
+	this._scalarWorldView = display;
 
-	if(this._scalarDisplay === void 0){
+	if(this._scalarWorldView === void 0){
 		return;
 	}
 
@@ -84,7 +83,7 @@ View.prototype.setScalarDisplay = function(display) {
 		return;
 	}
 
-	this._scalarDisplay.upsert(this.scene, this.world,
+	this._scalarWorldView.upsert(this.scene, this.world,
 			{
 				...this._uniforms, 
 				index: 0, 
@@ -93,15 +92,15 @@ View.prototype.setScalarDisplay = function(display) {
 		);
 };
 
-View.prototype.setVectorDisplay = function(display) {
-	if(this._vectorDisplay === display){
+View.prototype.setVectorWorldView = function(display) {
+	if(this._vectorWorldView === display){
 		return;
 	}
 
-	this._vectorDisplay.remove(this.scene);
-	this._vectorDisplay = display;
+	this._vectorWorldView.remove(this.scene);
+	this._vectorWorldView = display;
 
-	if(this._vectorDisplay === void 0){
+	if(this._vectorWorldView === void 0){
 		return;
 	}
 	
@@ -109,7 +108,7 @@ View.prototype.setVectorDisplay = function(display) {
 		return;
 	}
 
-	this._vectorDisplay.upsert(this.scene, this.world,
+	this._vectorWorldView.upsert(this.scene, this.world,
 			{
 				...this._uniforms, 
 				index: 0, 
@@ -123,14 +122,14 @@ View.prototype.vertexShader = function(vertexShader){
 		return;
 	}
 	this._vertexShader = vertexShader;
-	this._scalarDisplay.upsert(this.scene, this.world,
+	this._scalarWorldView.upsert(this.scene, this.world,
 			{
 				...this._uniforms, 
 				index: 0, 
 				vertexShader: this._vertexShader
 			}
 		);
-	this._vectorDisplay.upsert(this.scene, this.world,
+	this._vectorWorldView.upsert(this.scene, this.world,
 			{
 				...this._uniforms, 
 				index: 0, 
@@ -145,14 +144,14 @@ View.prototype.uniform = function(key, value){
 	}
 	
 	this._uniforms[key] = value;
-	this._scalarDisplay.upsert(this.scene, this.world,
+	this._scalarWorldView.upsert(this.scene, this.world,
 			{
 				...this._uniforms, 
 				index: 0, 
 				vertexShader: this._vertexShader
 			}
 		);
-	this._vectorDisplay.upsert(this.scene, this.world,
+	this._vectorWorldView.upsert(this.scene, this.world,
 			{
 				...this._uniforms, 
 				index: 0, 

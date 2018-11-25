@@ -1,10 +1,10 @@
 // TESTS FOR EXPERIMENTAL FUNCTIONALITY
 // NOT TO BE INCLUDED IN PRODUCTION
 
-var experimentalDisplays = {};
+var experimentalViews = {};
 
-experimentalDisplays.eliptic_ids = new ScalarWorldDisplay(
-		new HeatmapRasterDisplay( { scaling: true}), 
+experimentalViews.eliptic_ids = new ScalarWorldView(
+		new HeatmapRasterView( { scaling: true}), 
 	    function (crust) { 
 	      var ids = Float32Raster(crust.grid); 
 	      Float32Raster.FromUint16Raster(crust.grid.vertex_ids, ids); 
@@ -16,8 +16,8 @@ experimentalDisplays.eliptic_ids = new ScalarWorldDisplay(
 	      return Float32Raster.get_nearest_values(ids, pos); 
 	    } 
 	 ); 
-experimentalDisplays.albedo 	= new ScalarWorldDisplay(
-	new HeatmapRasterDisplay( { min: '0.', max: '1.'}),  
+experimentalViews.albedo 	= new ScalarWorldView(
+	new HeatmapRasterView( { min: '0.', max: '1.'}),  
 	function (world) {
 
 		// dependencies: sealevel, displacement, mean_anomaly, ice_fraction, precip, npp, lai, plant_fraction, land_fraction
@@ -56,7 +56,7 @@ experimentalDisplays.albedo 	= new ScalarWorldDisplay(
 
 
 
-experimentalDisplays.motion_test = new VectorWorldDisplay( {  
+experimentalViews.motion_test = new VectorWorldView( {  
     getField: function (world) { 
       var grid = world.grid; 
       var pos = grid.pos; 
@@ -76,28 +76,28 @@ experimentalDisplays.motion_test = new VectorWorldDisplay( {
   } ); 
 
 
-experimentalDisplays.plate0 	= new ScalarWorldDisplay(
-		new HeatmapRasterDisplay( { min: '0.', max: '1.'}), 
+experimentalViews.plate0 	= new ScalarWorldView(
+		new HeatmapRasterView( { min: '0.', max: '1.'}), 
 		function (world) {
 			return world.plates[0].mask;
 		} 	
 	);
-experimentalDisplays.buoyancy 	= new ScalarWorldDisplay(
-		new HeatmapRasterDisplay( { min: '-2.', max: '0.'}), 
+experimentalViews.buoyancy 	= new ScalarWorldView(
+		new HeatmapRasterView( { min: '-2.', max: '0.'}), 
 		function (world, buoyancy) {
 			Crust.get_buoyancy(world.density, world.material_density, world.surface_gravity, buoyancy);
 			return buoyancy;
 		}
 	);
-experimentalDisplays.buoyancy_smoothed 	= new ScalarWorldDisplay(
-		new HeatmapRasterDisplay( { min: '-2.', max: '0.'}), 
+experimentalViews.buoyancy_smoothed 	= new ScalarWorldView(
+		new HeatmapRasterView( { min: '-2.', max: '0.'}), 
 		function (world, buoyancy) {
 			Crust.get_buoyancy(world.density, world.material_density, world.surface_gravity, buoyancy);
 			var pressure = TectonicsModeling.get_asthenosphere_pressure(buoyancy);
 			return pressure;
 		}
 	);
-experimentalDisplays.buoyancy_smoothed_laplacian = new VectorWorldDisplay( {  
+experimentalViews.buoyancy_smoothed_laplacian = new VectorWorldView( {  
     getField: function (world) { 
 			var buoyancy = Crust.get_buoyancy(world.density, world.material_density, world.surface_gravity);
 			var pressure = TectonicsModeling.get_asthenosphere_pressure(buoyancy);
@@ -105,7 +105,7 @@ experimentalDisplays.buoyancy_smoothed_laplacian = new VectorWorldDisplay( {
 			return velocity;
     }
   } ); 
-experimentalDisplays.angular_velocity = new VectorWorldDisplay( {  
+experimentalViews.angular_velocity = new VectorWorldView( {  
     getField: function (world) { 
 			var buoyancy = Crust.get_buoyancy(world.density, world.material_density, world.surface_gravity);
 			var pressure = TectonicsModeling.get_asthenosphere_pressure(buoyancy);
@@ -114,8 +114,8 @@ experimentalDisplays.angular_velocity = new VectorWorldDisplay( {
 			return angular_velocity;
     }
   } ); 
-experimentalDisplays.plates = new ScalarWorldDisplay(
-		new HeatmapRasterDisplay( { min: '0.', max: '7.'}), 
+experimentalViews.plates = new ScalarWorldView(
+		new HeatmapRasterView( { min: '0.', max: '7.'}), 
 		function (world) {
 			var buoyancy = Crust.get_buoyancy(world.density, world.material_density, world.surface_gravity);
 			var pressure = TectonicsModeling.get_asthenosphere_pressure(buoyancy);
@@ -126,7 +126,7 @@ experimentalDisplays.plates = new ScalarWorldDisplay(
 		}
 	);
 var PLATE_ID = 0;
-experimentalDisplays.velocity = new VectorWorldDisplay( {  
+experimentalViews.velocity = new VectorWorldView( {  
     getField: function (world) { 
     		return world.plates[PLATE_ID].velocity;
     		
@@ -135,8 +135,8 @@ experimentalDisplays.velocity = new VectorWorldDisplay( {
 			return velocity
     }
   } ); 
-experimentalDisplays.speed 	= new ScalarWorldDisplay(
-		new HeatmapRasterDisplay( { min: '0.', max: '1.'}), 
+experimentalViews.speed 	= new ScalarWorldView(
+		new HeatmapRasterView( { min: '0.', max: '1.'}), 
 		function (world, result) {
 			var plate = world.plates[0];
 
@@ -145,8 +145,8 @@ experimentalDisplays.speed 	= new ScalarWorldDisplay(
 			return VectorField.magnitude(velocity, result);
 		} 	
 	);
-experimentalDisplays.insolation 	= new ScalarWorldDisplay(
-		new HeatmapRasterDisplay( { min: '0.', max: '400.'}), 
+experimentalViews.insolation 	= new ScalarWorldView(
+		new HeatmapRasterView( { min: '0.', max: '400.'}), 
 		function (world, result) {
 			return world.atmosphere.average_insolation;
 		} 	

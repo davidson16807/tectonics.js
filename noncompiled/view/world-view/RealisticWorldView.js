@@ -1,9 +1,9 @@
 'use strict';
 
-function RealisticWorldDisplay(shader_return_value) {
+function RealisticWorldView(shader_return_value) {
 	var fragmentShader = fragmentShaders.realistic
 		.replace('@UNCOVERED', shader_return_value);
-	this.chartDisplays = []; 
+	this.chartViews = []; 
 	this.mesh = void 0;
 
 	this.upsert = function(scene, world, options) {

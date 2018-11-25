@@ -1,8 +1,8 @@
 'use strict';
 
-var vectorDisplays = {};
-vectorDisplays.disabled	= new DisabledVectorRasterDisplay();
-vectorDisplays.asthenosphere_velocity = new VectorWorldDisplay( { 
+var vectorViews = {};
+vectorViews.disabled	= new DisabledVectorRasterView();
+vectorViews.asthenosphere_velocity = new VectorWorldView( { 
 		getField: function (world, flood_fill, scratch1) {
 			// scratch represents pressure
 			var pressure = scratch1;
@@ -13,29 +13,29 @@ vectorDisplays.asthenosphere_velocity = new VectorWorldDisplay( {
 			return gradient;
 		} 
 	} );
-vectorDisplays.pos	= new VectorWorldDisplay( { 
+vectorViews.pos	= new VectorWorldView( { 
 	getField: function (world) {
 		var pos = world.grid.pos;
 		return pos;
 	}
 } );
-vectorDisplays.pos2	= new VectorWorldDisplay( { 
+vectorViews.pos2	= new VectorWorldView( { 
 	getField: function (world) {
 		var rotationMatrix = Matrix3x3.RotationAboutAxis(world.eulerPole.x, world.eulerPole.y, world.eulerPole.z, 1);
 		var pos = VectorField.mult_matrix(world.grid.pos, rotationMatrix);
 		return pos;
 	}
 } );
-vectorDisplays.aesthenosphere_velocity	= new VectorWorldDisplay( { 
+vectorViews.aesthenosphere_velocity	= new VectorWorldView( { 
 		getField: world => world.lithosphere.aesthenosphere_velocity.value()
 	} );
 
-vectorDisplays.surface_air_velocity = new VectorWorldDisplay( {
+vectorViews.surface_air_velocity = new VectorWorldView( {
 		getField: world => world.atmosphere.surface_wind_velocity.value()
 	} );
 
 
-vectorDisplays.plate_velocity = new VectorWorldDisplay( {  
+vectorViews.plate_velocity = new VectorWorldView( {  
 		getField: world => world.lithosphere.plate_velocity.value()
   	} ); 
 

@@ -1,10 +1,10 @@
 'use strict';
 
-function HeatmapRasterDisplay(options) {
+function HeatmapRasterView(options) {
 	var min = options['min'] || '0.';
 	var max = options['max'] || '1.';
 	var scaling = options['scaling'] || false;
-	this.chartDisplays = options['chartDisplays'] || [ new SpatialPdfChartDisplay('land') ]; 
+	this.chartViews = options['chartViews'] || [ new SpatialPdfChartView('land') ]; 
 	this.scaling = scaling;
 	var fragmentShader = fragmentShaders.heatmap
 		.replace('@MIN', min)
