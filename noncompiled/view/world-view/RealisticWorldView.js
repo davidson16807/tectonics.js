@@ -4,85 +4,90 @@ function RealisticWorldView(shader_return_value) {
 	var fragmentShader = fragmentShaders.realistic
 		.replace('@UNCOVERED', shader_return_value);
 	this.chartViews = []; 
-	this.mesh = void 0;
+	var mesh = void 0;
+	var uniforms = {};
+	var vertexShader = void 0;
 
+	function create_mesh(world, options) {
+		var grid = world.grid;
+		var faces = grid.faces;
+		var geometry = THREE.BufferGeometryUtils.fromGeometry({
+			faces: grid.faces, 
+			vertices: grid.vertices, 
+			faceVertexUvs: [[]], // HACK: necessary for use with BufferGeometryUtils.fromGeometry
+		});
+		geometry.addAttribute('displacement', Float32Array, faces.length*3, 1);
+		geometry.addAttribute('ice_coverage', Float32Array, faces.length*3, 1);
+		geometry.addAttribute('plant_coverage', Float32Array, faces.length*3, 1);
+		geometry.addAttribute('insolation', Float32Array, faces.length*3, 1);
+		geometry.addAttribute('scalar', Float32Array, faces.length*3, 1);
+
+		var material = new THREE.ShaderMaterial({
+			attributes: {
+			  displacement: { type: 'f', value: null },
+			  ice_coverage: { type: 'f', value: null },
+			  plant_coverage: { type: 'f', value: null },
+			  insolation: { type: 'f', value: null },
+			  scalar: { type: 'f', value: null }
+			},
+			uniforms: {
+			  sealevel:     { type: 'f', value: 0 },
+			  sealevel_mod: { type: 'f', value: options.sealevel_mod },
+			  darkness_mod: { type: 'f', value: options.darkness_mod },
+			  ice_mod: 		{ type: 'f', value: options.ice_mod },
+			  insolation_max: { type: 'f', value: options.insolation_max },
+			  index: 		{ type: 'f', value: options.index },
+			},
+			blending: THREE.NoBlending,
+			vertexShader: options.vertexShader,
+			fragmentShader: fragmentShader
+		});
+		return new THREE.Mesh( geometry, material);
+	}
+	function update_vertex_shader(value) {
+		if (vertexShader !== value) {
+			vertexShader = value;
+			mesh.material.vertexShader = value; 
+			mesh.material.needsUpdate = true; 
+		}
+	}
+	function update_uniform(key, value) {
+		if (uniforms[key] !== value) {
+			uniforms[key] = value;
+			mesh.material.uniforms[key].value = value;
+			mesh.material.uniforms[key].needsUpdate = true;
+		}
+	}
+	function update_attribute(key, raster) {
+		Float32Raster.get_ids(raster, raster.grid.buffer_array_to_cell, mesh.geometry.attributes[key].array); 
+		mesh.geometry.attributes[key].needsUpdate = true;
+	}
 	this.upsert = function(scene, world, options) {
 
-		if (this.mesh === void 0) {
-			var grid = world.grid;
-			var faces = grid.faces;
-			var geometry = THREE.BufferGeometryUtils.fromGeometry({
-				faces: grid.faces, 
-				vertices: grid.vertices, 
-				faceVertexUvs: [[]], // HACK: necessary for use with BufferGeometryUtils.fromGeometry
-			});
-			geometry.addAttribute('displacement', Float32Array, faces.length*3, 1);
-			geometry.addAttribute('ice_coverage', Float32Array, faces.length*3, 1);
-			geometry.addAttribute('plant_coverage', Float32Array, faces.length*3, 1);
-			geometry.addAttribute('insolation', Float32Array, faces.length*3, 1);
-			geometry.addAttribute('scalar', Float32Array, faces.length*3, 1);
-
-			var material = new THREE.ShaderMaterial({
-				attributes: {
-				  displacement: { type: 'f', value: null },
-				  ice_coverage: { type: 'f', value: null },
-				  plant_coverage: { type: 'f', value: null },
-				  insolation: { type: 'f', value: null },
-				  scalar: { type: 'f', value: null }
-				},
-				uniforms: {
-				  sealevel:     { type: 'f', value: 0 },
-				  sealevel_mod: { type: 'f', value: options.sealevel_mod },
-				  darkness_mod: { type: 'f', value: options.darkness_mod },
-				  ice_mod: 		{ type: 'f', value: options.ice_mod },
-				  insolation_max: { type: 'f', value: options.insolation_max },
-				  index: 		{ type: 'f', value: options.index },
-				},
-				blending: THREE.NoBlending,
-				vertexShader: options.vertexShader,
-				fragmentShader: fragmentShader
-			});
-			var mesh = new THREE.Mesh( geometry, material);
+		if (mesh === void 0) {
+			mesh = create_mesh(world, options);
+			uniforms = {...options};
+			vertexShader = options.vertexShader;
 			scene.add(mesh);
-
-			this.mesh = mesh;
 		} 
 		
-		var mesh = this.mesh;
-		var material = mesh.material;
-		var geometry = mesh.geometry;
-
-		material.uniforms['sealevel'].value = world.hydrosphere.sealevel.value();
-		material.uniforms['sealevel'].needsUpdate = true;
-
-		material.uniforms['insolation_max'].value = Float32Dataset.max(world.atmosphere.average_insolation);
-		material.uniforms['insolation_max'].needsUpdate = true;
-
-		Float32Raster.get_ids(world.lithosphere.displacement.value(), world.grid.buffer_array_to_cell, geometry.attributes.displacement.array); 
-		geometry.attributes.displacement.needsUpdate = true;
-
-		Float32Raster.get_ids(world.atmosphere.average_insolation, world.grid.buffer_array_to_cell, geometry.attributes.insolation.array); 
-		geometry.attributes.insolation.needsUpdate = true;
-
-		Float32Raster.get_ids(world.hydrosphere.ice_coverage.value(), world.grid.buffer_array_to_cell, geometry.attributes.ice_coverage.array); 
-		geometry.attributes.ice_coverage.needsUpdate = true;
-
-		Float32Raster.get_ids(world.biosphere.plant_coverage.value(), world.grid.buffer_array_to_cell, geometry.attributes.plant_coverage.array); 
-		geometry.attributes.plant_coverage.needsUpdate = true;
+		update_vertex_shader(options.vertexShader);
+		update_uniform('sealevel_mod',		options.sealevel_mod);
+		update_uniform('darkness_mod',		options.darkness_mod);
+		update_uniform('ice_mod',			options.ice_mod);
+		update_uniform('index',				options.index);
+		update_uniform('sealevel', 			world.hydrosphere.sealevel.value());
+		update_uniform('insolation_max', 	Float32Dataset.max(world.atmosphere.average_insolation));
+		update_attribute('displacement', 	world.lithosphere.displacement.value());
+		update_attribute('insolation', 		world.atmosphere.average_insolation);
+		update_attribute('ice_coverage', 	world.hydrosphere.ice_coverage.value());
+		update_attribute('plant_coverage', 	world.biosphere.plant_coverage.value());
 	};
 
 	this.remove = function(scene) {
-		scene.remove(this.mesh);
-		this.mesh.geometry.dispose();
-		this.mesh.material.dispose();
-		this.mesh = void 0;
+		scene.remove(mesh);
+		mesh.geometry.dispose();
+		mesh.material.dispose();
+		mesh = void 0;
 	};
-	this.vertexShader = function(vertexShader) {
-		this.mesh.material.vertexShader = vertexShader; 
-		this.mesh.material.needsUpdate = true; 
-	}
-	this.uniform = function(key, value) {
-		this.mesh.material.uniforms[key].value = value;
-		this.mesh.material.uniforms[key].needsUpdate = true;
-	}
 }

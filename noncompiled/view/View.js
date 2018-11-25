@@ -113,13 +113,11 @@ function View(innerWidth, innerHeight, scalarWorldView, vectorWorldView, vertexS
 			);
 	};
 
-	this.vertexShader = function(vertexShader){
-		if(vertexShader === vertexShader){
+	this.vertexShader = function(value){
+		if(vertexShader === value){
 			return;
 		}
-		vertexShader = vertexShader;
-		scalarWorldView.vertexShader(vertexShader);
-		vectorWorldView.vertexShader(vertexShader);
+		vertexShader = value;
 	}
 
 	this.uniform = function(key, value){
@@ -128,8 +126,6 @@ function View(innerWidth, innerHeight, scalarWorldView, vectorWorldView, vertexS
 		}
 		
 		uniforms[key] = value;
-		scalarWorldView.uniform(key, value);
-		vectorWorldView.uniform(key, value);
 	}
 
 }

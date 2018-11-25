@@ -18,7 +18,7 @@ function VectorRasterView(options) {
 			        attributes: {
 			        },
 			        uniforms: { 
-				  		index: 		{ type: 'f', value: 1 }
+				  		index: 		{ type: 'f', value: 0 }
 			        }
 			    });
 			var mesh = new THREE.Line( geometry, material, THREE.LinePieces);
