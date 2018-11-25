@@ -55,43 +55,26 @@ function View(innerWidth, innerHeight, grid, scalarDisplay, vectorDisplay, verte
 	this.scalar_field_mesh2 = scalar_field_mesh;
 
 
-	var vector_field_geometry = new THREE.Geometry();
-	for (var i=0, li=grid.vertices.length; i<li; ++i) {
-	    vector_field_geometry.vertices.push( grid.vertices[i].clone() );
-	    vector_field_geometry.vertices.push( grid.vertices[i].clone() );
-	    // vector_field_material.attributes.vector.value.push( new THREE.Vector3() );
-	    // vector_field_material.attributes.vector.value.push( new THREE.Vector3() );
-	}
-	this.vector_field_geometry = vector_field_geometry;
-
-	var vector_field_material, vector_field_mesh;
-	var positions = grid.pos;
-
-	var vector_field_material1 = new THREE.ShaderMaterial({
-	        vertexShader: 	this._vertexShader,
-	        fragmentShader: fragmentShaders.vectorField,
-	        attributes: {
-	        },
-	        uniforms: { 
-		  		index: 		{ type: 'f', value: -1 }
-	        }
-	    });
-	this.vector_field_material1 = vector_field_material1;
-	vector_field_mesh = new THREE.Line( vector_field_geometry, vector_field_material1, THREE.LinePieces);
+	var vector_field_mesh = this._vectorDisplay.createMesh(
+		grid,
+		{
+			...this._uniforms, 
+			index: 1, 
+			vertexShader: this._vertexShader
+		}
+	);
 	this.scene.add(vector_field_mesh);
 	this.vector_field_mesh1 = vector_field_mesh;
 
-	var vector_field_material2 = new THREE.ShaderMaterial({
-	        vertexShader: 	this._vertexShader,
-	        fragmentShader: fragmentShaders.vectorField,
-	        attributes: {
-	        },
-	        uniforms: { 
-		  		index: 		{ type: 'f', value: 1 }
-	        }
-	    });
-	this.vector_field_material2 = vector_field_material2;
-	vector_field_mesh = new THREE.Line( vector_field_geometry, vector_field_material2, THREE.LinePieces);
+
+	var vector_field_mesh = this._vectorDisplay.createMesh(
+		grid,
+		{
+			...this._uniforms, 
+			index: -1, 
+			vertexShader: this._vertexShader
+		}
+	);
 	this.scene.add(vector_field_mesh);
 	this.vector_field_mesh2 = vector_field_mesh;
 }
@@ -111,16 +94,17 @@ View.prototype.displayWorld = function(world){
 	this._scalarDisplay.updateAttributes(this.scalar_field_mesh1.geometry, world);
 	this._scalarDisplay.updateAttributes(this.scalar_field_mesh2.geometry, world);
 	
-	this._vectorDisplay.updateUniforms(this.vector_field_material1, world);
-	this._vectorDisplay.updateUniforms(this.vector_field_material2, world);
-	this._vectorDisplay.updateAttributes(this.vector_field_geometry, world);	
+	this._vectorDisplay.updateUniforms(this.vector_field_mesh1.material, world);
+	this._vectorDisplay.updateUniforms(this.vector_field_mesh2.material, world);
+	this._vectorDisplay.updateAttributes(this.vector_field_mesh1.geometry, world);	
+	this._vectorDisplay.updateAttributes(this.vector_field_mesh2.geometry, world);	
 }
 
 View.prototype.displayScalarRaster = function(raster){
-	this._scalarDisplay.displayRaster(this.scalar_field_mesh1.geometry, raster);
+	this._scalarDisplay.updateAttributes(this.scalar_field_mesh1.geometry, raster);
 }
 View.prototype.displayVectorRaster = function(raster){
-	this._vectorDisplay.displayRaster(this.vector_field_geometry, world);	
+	this._vectorDisplay.updateAttributes(this.vector_field_geometry, world);	
 }
 
 View.prototype.getDomElement = function() {
@@ -175,13 +159,40 @@ View.prototype.setVectorDisplay = function(display) {
 	if(this._vectorDisplay === display){
 		return;
 	}
-	this._vectorDisplay.removeFrom(this.vector_field_mesh1);
-	this._vectorDisplay.removeFrom(this.vector_field_mesh2);
+
+	this.scene.remove(this.vector_field_mesh1);
+	this.vector_field_mesh1.geometry.dispose();
+	this.vector_field_mesh1.material.dispose();
+	this.vector_field_mesh1 = undefined;
+
+	this.scene.remove(this.vector_field_mesh2);
+	this.vector_field_mesh2.geometry.dispose();
+	this.vector_field_mesh2.material.dispose();
+	this.vector_field_mesh2 = undefined;
 
 	this._vectorDisplay = display;
 
-	this._vectorDisplay.addTo(this.vector_field_mesh1);
-	this._vectorDisplay.addTo(this.vector_field_mesh2);
+	var vector_field_mesh = this._vectorDisplay.createMesh(
+		this.grid,
+		{
+			...this._uniforms, 
+			index: 1, 
+			vertexShader: this._vertexShader
+		}
+	);
+	this.scene.add(vector_field_mesh);
+	this.vector_field_mesh1 = vector_field_mesh;
+
+	var vector_field_mesh = this._vectorDisplay.createMesh(
+		this.grid,
+		{
+			...this._uniforms, 
+			index: -1, 
+			vertexShader: this._vertexShader
+		}
+	);
+	this.scene.add(vector_field_mesh);
+	this.vector_field_mesh2 = vector_field_mesh;
 };
 
 View.prototype.vertexShader = function(vertexShader){
