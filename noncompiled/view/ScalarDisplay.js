@@ -145,7 +145,7 @@ function ScalarHeatDisplay(options) {
 	var scaling = options['scaling'] || false;
 	this.chartDisplays = options['chartDisplays'] || [ new SpatialPdfChartDisplay('land') ]; 
 	this.scaling = scaling;
-	this._fragmentShader = fragmentShaders.heatmap
+	var fragmentShader = fragmentShaders.heatmap
 		.replace('@MIN', min)
 		.replace('@MAX', max);
 	this.mesh = void 0;
@@ -183,7 +183,7 @@ function ScalarHeatDisplay(options) {
 				},
 				blending: THREE.NoBlending,
 				vertexShader: options.vertexShader,
-				fragmentShader: this._fragmentShader
+				fragmentShader: fragmentShader
 			});
 			var mesh = new THREE.Mesh( geometry, material);
 			scene.add(mesh);
@@ -225,7 +225,7 @@ function ScalarDisplay(options) {
 	}
 	var minColor_str = hex_color_to_glsl_string_color(minColor);
 	var maxColor_str = hex_color_to_glsl_string_color(maxColor);
-	this._fragmentShader = fragmentShaders.monochromatic
+	var fragmentShader = fragmentShaders.monochromatic
 		.replace('@MINCOLOR', minColor_str)
 		.replace('@MAXCOLOR', maxColor_str)
 		.replace('@MIN', min)
@@ -266,7 +266,7 @@ function ScalarDisplay(options) {
 				},
 				blending: THREE.NoBlending,
 				vertexShader: options.vertexShader,
-				fragmentShader: this._fragmentShader
+				fragmentShader: fragmentShader
 			});
 			var mesh = new THREE.Mesh( geometry, material);
 			scene.add(mesh);
