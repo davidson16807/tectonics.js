@@ -46,15 +46,12 @@ RealisticDisplay.prototype.createMesh = function(grid, options) {
 
 	return mesh;
 };
-// RealisticDisplay.prototype.addToScene = function(grid, scene, options) {
-// 	if (this.mesh === void 0) {
-// 		this.mesh = createMesh(grid, options);
-// 	}
-// 	scene.add(this.mesh);
-// }
-// RealisticDisplay.prototype.removeFromScene = function(scene) {
-// 	scene.remove(this.mesh);
-// };
+RealisticDisplay.prototype.upsert = function(scene, world, options) {
+
+};
+RealisticDisplay.prototype.remove = function(scene) {
+
+};
 RealisticDisplay.prototype.updateUniforms = function(material, world) {
 	material.uniforms['sealevel'].value = world.hydrosphere.sealevel.value();
 	material.uniforms['sealevel'].needsUpdate = true;
@@ -90,13 +87,11 @@ function ScalarWorldDisplay(scalarRasterDisplay, getField) {
 ScalarWorldDisplay.prototype.createMesh = function(grid, options) {
 	return this.scalarRasterDisplay.createMesh(grid, options)
 };
-ScalarWorldDisplay.prototype.addTo = function(mesh) {
-	this.field = void 0;
-	this.scratch = void 0;
-	this.scalarRasterDisplay.addTo(mesh);
+ScalarWorldDisplay.prototype.upsert = function(scene, world, options) {
+	this.scalarRasterDisplay.upsert(scene, world, options);	
 };
-ScalarWorldDisplay.prototype.removeFrom = function(mesh) {
-	this.scalarRasterDisplay.removeFrom(mesh);
+ScalarWorldDisplay.prototype.remove = function(scene) {
+	this.scalarRasterDisplay.remove(scene);
 };
 ScalarWorldDisplay.prototype.updateUniforms = function(material, world) {
 	material.uniforms['sealevel'].value = world.hydrosphere.sealevel.value();
@@ -186,12 +181,11 @@ ScalarHeatDisplay.prototype.createMesh = function(grid, options) {
 
 	return mesh;
 };
-ScalarHeatDisplay.prototype.addTo = function(mesh) {
-	mesh.material.fragmentShader = this._fragmentShader;
-	mesh.material.needsUpdate = true;
-};
-ScalarHeatDisplay.prototype.removeFrom = function(mesh) {
+ScalarHeatDisplay.prototype.upsert = function(scene, world, options) {
 	
+};
+ScalarHeatDisplay.prototype.remove = function(scene) {
+
 };
 ScalarHeatDisplay.prototype.updateAttributes = function(geometry, raster) {
 	var max = this.scaling? Math.max.apply(null, raster) || 1 : 1;
@@ -259,12 +253,11 @@ ScalarDisplay.prototype.createMesh = function(grid, options) {
 
 	return mesh;
 };
-ScalarDisplay.prototype.addTo = function(mesh) {
-	mesh.material.fragmentShader = this._fragmentShader;
-	mesh.material.needsUpdate = true;
-};
-ScalarDisplay.prototype.removeFrom = function(mesh) {
+ScalarHeatDisplay.prototype.upsert = function(scene, world, options) {
 	
+};
+ScalarHeatDisplay.prototype.remove = function(scene) {
+
 };
 ScalarDisplay.prototype.updateAttributes = function(geometry, raster) {
 	Float32Raster.get_ids(raster, view.grid.buffer_array_to_cell, geometry.attributes.scalar.array); 

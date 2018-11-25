@@ -9,11 +9,11 @@ function VectorWorldDisplay(options) {
 VectorWorldDisplay.prototype.createMesh = function(grid, options) {
 	return this.vectorRasterDisplay.createMesh(grid, options)
 };
-VectorWorldDisplay.prototype.addTo = function(mesh) {
-	this.vectorRasterDisplay.addTo(mesh);
+VectorFieldDisplay.prototype.upsert = function(scene, world, options) {
+	this.vectorRasterDisplay.upsert(scene, world, options);
 };
-VectorWorldDisplay.prototype.removeFrom = function(mesh) {
-	this.vectorRasterDisplay.removeFrom(mesh);
+VectorFieldDisplay.prototype.remove = function(scene) {
+	this.vectorRasterDisplay.remove(scene);
 };
 VectorWorldDisplay.prototype.updateUniforms = function(material, world) {};
 VectorWorldDisplay.prototype.updateAttributes = function(geometry, world) {
@@ -60,15 +60,8 @@ VectorFieldDisplay.prototype.createMesh = function(grid, options) {
 	var vector_field_mesh = new THREE.Line( vector_field_geometry, vector_field_material, THREE.LinePieces);
 	return vector_field_mesh;
 }
-VectorFieldDisplay.prototype.addTo = function(mesh) {};
-VectorFieldDisplay.prototype.removeFrom = function(mesh) {
-	var vector = mesh.geometry.vertices;
-	for(var i=0, li = vector.length; i<li; i++){
-		vector[i].x = 0;
-		vector[i].y = 0;
-		vector[i].z = 0;
-	}
-};
+VectorFieldDisplay.prototype.upsert = function(scene, world, options) {};
+VectorFieldDisplay.prototype.remove = function(scene) {};
 VectorFieldDisplay.prototype.updateUniforms = function(material, raster) {};
 VectorFieldDisplay.prototype.updateAttributes = function(geometry, raster) {
 	var offset_length = 1.02; 	// offset of arrow from surface of sphere, in radii
@@ -115,8 +108,8 @@ DisabledVectorDisplay.prototype.createMesh = function(grid, options) {
 	var vector_field_mesh = new THREE.Line( vector_field_geometry, vector_field_material, THREE.LinePieces);
 	return vector_field_mesh;
 }
-DisabledVectorDisplay.prototype.addTo = function(mesh) {};
-DisabledVectorDisplay.prototype.removeFrom = function(mesh) {};
+DisabledVectorDisplay.prototype.upsert = function(scene, world, options) {};
+DisabledVectorDisplay.prototype.remove = function(scene) {};
 DisabledVectorDisplay.prototype.updateUniforms = function(material, world) {}
 DisabledVectorDisplay.prototype.updateAttributes = function(geometry, world) {}
 
