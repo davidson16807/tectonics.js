@@ -160,25 +160,16 @@ function ScalarHeatDisplay(options) {
 				faceVertexUvs: [[]], // HACK: necessary for use with BufferGeometryUtils.fromGeometry
 			});
 			geometry.addAttribute('displacement', Float32Array, faces.length*3, 1);
-			geometry.addAttribute('ice_coverage', Float32Array, faces.length*3, 1);
-			geometry.addAttribute('plant_coverage', Float32Array, faces.length*3, 1);
-			geometry.addAttribute('insolation', Float32Array, faces.length*3, 1);
 			geometry.addAttribute('scalar', Float32Array, faces.length*3, 1);
 
 			var material = new THREE.ShaderMaterial({
 				attributes: {
 				  displacement: { type: 'f', value: null },
-				  ice_coverage: { type: 'f', value: null },
-				  plant_coverage: { type: 'f', value: null },
-				  insolation: { type: 'f', value: null },
 				  scalar: { type: 'f', value: null }
 				},
 				uniforms: {
 				  sealevel:     { type: 'f', value: 0 },
 				  sealevel_mod: { type: 'f', value: options.sealevel_mod },
-				  darkness_mod: { type: 'f', value: options.darkness_mod },
-				  ice_mod: 		{ type: 'f', value: options.ice_mod },
-				  insolation_max: { type: 'f', value: options.insolation_max },
 				  index: 		{ type: 'f', value: options.index },
 				},
 				blending: THREE.NoBlending,
@@ -243,25 +234,16 @@ function ScalarDisplay(options) {
 				faceVertexUvs: [[]], // HACK: necessary for use with BufferGeometryUtils.fromGeometry
 			});
 			geometry.addAttribute('displacement', Float32Array, faces.length*3, 1);
-			geometry.addAttribute('ice_coverage', Float32Array, faces.length*3, 1);
-			geometry.addAttribute('plant_coverage', Float32Array, faces.length*3, 1);
-			geometry.addAttribute('insolation', Float32Array, faces.length*3, 1);
 			geometry.addAttribute('scalar', Float32Array, faces.length*3, 1);
 
 			var material = new THREE.ShaderMaterial({
 				attributes: {
 				  displacement: { type: 'f', value: null },
-				  ice_coverage: { type: 'f', value: null },
-				  plant_coverage: { type: 'f', value: null },
-				  insolation: { type: 'f', value: null },
 				  scalar: { type: 'f', value: null }
 				},
 				uniforms: {
 				  sealevel:     { type: 'f', value: 0 },
 				  sealevel_mod: { type: 'f', value: options.sealevel_mod },
-				  darkness_mod: { type: 'f', value: options.darkness_mod },
-				  ice_mod: 		{ type: 'f', value: options.ice_mod },
-				  insolation_max: { type: 'f', value: options.insolation_max },
 				  index: 		{ type: 'f', value: options.index },
 				},
 				blending: THREE.NoBlending,
