@@ -4,7 +4,7 @@
 var experimentalDisplays = {};
 
 experimentalDisplays.eliptic_ids = new ScalarWorldDisplay(
-		new ScalarHeatDisplay( { scaling: true}), 
+		new HeatmapRasterDisplay( { scaling: true}), 
 	    function (crust) { 
 	      var ids = Float32Raster(crust.grid); 
 	      Float32Raster.FromUint16Raster(crust.grid.vertex_ids, ids); 
@@ -17,7 +17,7 @@ experimentalDisplays.eliptic_ids = new ScalarWorldDisplay(
 	    } 
 	 ); 
 experimentalDisplays.albedo 	= new ScalarWorldDisplay(
-	new ScalarHeatDisplay( { min: '0.', max: '1.'}),  
+	new HeatmapRasterDisplay( { min: '0.', max: '1.'}),  
 	function (world) {
 
 		// dependencies: sealevel, displacement, mean_anomaly, ice_fraction, precip, npp, lai, plant_fraction, land_fraction
@@ -77,20 +77,20 @@ experimentalDisplays.motion_test = new VectorWorldDisplay( {
 
 
 experimentalDisplays.plate0 	= new ScalarWorldDisplay(
-		new ScalarHeatDisplay( { min: '0.', max: '1.'}), 
+		new HeatmapRasterDisplay( { min: '0.', max: '1.'}), 
 		function (world) {
 			return world.plates[0].mask;
 		} 	
 	);
 experimentalDisplays.buoyancy 	= new ScalarWorldDisplay(
-		new ScalarHeatDisplay( { min: '-2.', max: '0.'}), 
+		new HeatmapRasterDisplay( { min: '-2.', max: '0.'}), 
 		function (world, buoyancy) {
 			Crust.get_buoyancy(world.density, world.material_density, world.surface_gravity, buoyancy);
 			return buoyancy;
 		}
 	);
 experimentalDisplays.buoyancy_smoothed 	= new ScalarWorldDisplay(
-		new ScalarHeatDisplay( { min: '-2.', max: '0.'}), 
+		new HeatmapRasterDisplay( { min: '-2.', max: '0.'}), 
 		function (world, buoyancy) {
 			Crust.get_buoyancy(world.density, world.material_density, world.surface_gravity, buoyancy);
 			var pressure = TectonicsModeling.get_asthenosphere_pressure(buoyancy);
@@ -115,7 +115,7 @@ experimentalDisplays.angular_velocity = new VectorWorldDisplay( {
     }
   } ); 
 experimentalDisplays.plates = new ScalarWorldDisplay(
-		new ScalarHeatDisplay( { min: '0.', max: '7.'}), 
+		new HeatmapRasterDisplay( { min: '0.', max: '7.'}), 
 		function (world) {
 			var buoyancy = Crust.get_buoyancy(world.density, world.material_density, world.surface_gravity);
 			var pressure = TectonicsModeling.get_asthenosphere_pressure(buoyancy);
@@ -136,7 +136,7 @@ experimentalDisplays.velocity = new VectorWorldDisplay( {
     }
   } ); 
 experimentalDisplays.speed 	= new ScalarWorldDisplay(
-		new ScalarHeatDisplay( { min: '0.', max: '1.'}), 
+		new HeatmapRasterDisplay( { min: '0.', max: '1.'}), 
 		function (world, result) {
 			var plate = world.plates[0];
 
@@ -146,7 +146,7 @@ experimentalDisplays.speed 	= new ScalarWorldDisplay(
 		} 	
 	);
 experimentalDisplays.insolation 	= new ScalarWorldDisplay(
-		new ScalarHeatDisplay( { min: '0.', max: '400.'}), 
+		new HeatmapRasterDisplay( { min: '0.', max: '400.'}), 
 		function (world, result) {
 			return world.atmosphere.average_insolation;
 		} 	

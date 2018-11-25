@@ -3,7 +3,7 @@
 
 
 function VectorWorldDisplay(options) {
-	this.vectorRasterDisplay = options['vectorRasterDisplay'] || new VectorFieldDisplay({});
+	this.vectorRasterDisplay = options['vectorRasterDisplay'] || new VectorRasterDisplay({});
 	this.getField = options['getField'];
 	this.upsert = function(scene, world, options) {
 		// run getField()
@@ -31,7 +31,7 @@ function VectorWorldDisplay(options) {
 
 
 
-function VectorFieldDisplay(options) {
+function VectorRasterDisplay(options) {
 	this.max = options['max'];
 	this.mesh = void 0;
 	this.upsert = function(scene, raster, options) {

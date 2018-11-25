@@ -20,7 +20,7 @@ var regressionTestDisplays = {};
 
 // test for raster id placement
 regressionTestDisplays.ids 	= new ScalarWorldDisplay(
-		new ScalarHeatDisplay( { scaling: true}),
+		new HeatmapRasterDisplay( { scaling: true}),
 		function (crust) {
 			return crust.grid.vertex_ids;
 		} 
@@ -29,7 +29,7 @@ regressionTestDisplays.ids 	= new ScalarWorldDisplay(
 // test for voronoi diagram used by grid.getNearestIds
 // should look just like regressionTestDisplays.ids
 regressionTestDisplays.voronoi_ids	= new ScalarWorldDisplay(
-		new ScalarHeatDisplay( {scaling: true}),
+		new HeatmapRasterDisplay( {scaling: true}),
 		function (crust) {
 			return crust.grid.getNearestIds(crust.grid.pos);
 		} 
@@ -38,7 +38,7 @@ regressionTestDisplays.voronoi_ids	= new ScalarWorldDisplay(
 // test for get_nearest_values - does it reconstruct the ids field after rotation?
 // should look just like regressionTestDisplays.ids, but rotated
 regressionTestDisplays.id_rotated 	= new ScalarWorldDisplay(
-		new ScalarHeatDisplay( {scaling: true}),
+		new HeatmapRasterDisplay( {scaling: true}),
 		function (crust) {
 			var ids = Float32Raster(crust.grid);
 			Float32Raster.FromUint16Raster(crust.grid.vertex_ids, ids);
@@ -50,7 +50,7 @@ regressionTestDisplays.id_rotated 	= new ScalarWorldDisplay(
 
 // test for individual plate mask
 regressionTestDisplays.single_plate = new ScalarWorldDisplay(
-		new ScalarHeatDisplay( { min: '0.', max: '1.'}),  
+		new HeatmapRasterDisplay( { min: '0.', max: '1.'}),  
 		function (world) {
 			return world.plates[0].mask;
 		} 
@@ -59,7 +59,7 @@ regressionTestDisplays.single_plate = new ScalarWorldDisplay(
 
 
 regressionTestDisplays.add = new ScalarWorldDisplay(
-		new ScalarHeatDisplay(  { min: '4.', max: '0.'}),
+		new HeatmapRasterDisplay(  { min: '4.', max: '0.'}),
 		function (crust, result, scratch1) {
 			return ScalarField.add_field(
 				RasterUnitTests.distance(crust.grid.pos, {x:0,y:0,z:1}),
@@ -69,7 +69,7 @@ regressionTestDisplays.add = new ScalarWorldDisplay(
 	);
 
 regressionTestDisplays.mult = new ScalarWorldDisplay(
-		new ScalarHeatDisplay(  { min: '4.', max: '0.'}),
+		new HeatmapRasterDisplay(  { min: '4.', max: '0.'}),
 		function (crust, result, scratch1) {
 			return ScalarField.mult_field(
 				RasterUnitTests.distance(crust.grid.pos, {x:0,y:0,z:1}),
@@ -79,7 +79,7 @@ regressionTestDisplays.mult = new ScalarWorldDisplay(
 	);
 
 regressionTestDisplays.distance = new ScalarWorldDisplay(
-		new ScalarHeatDisplay(  {min: '1.', max: '0.'}),
+		new HeatmapRasterDisplay(  {min: '1.', max: '0.'}),
 		function (crust, result, scratch1) {
 			return RasterUnitTests.distance(crust.grid.pos, {x:0,y:0,z:1});
 		}
@@ -87,13 +87,13 @@ regressionTestDisplays.distance = new ScalarWorldDisplay(
 
 // test for binary morphology
 regressionTestDisplays.circle = new ScalarWorldDisplay(
-		new ScalarHeatDisplay(  {min: '1.', max: '0.'}),
+		new HeatmapRasterDisplay(  {min: '1.', max: '0.'}),
 		function (crust, result, scratch1) {
 			return RasterUnitTests.circle(crust.grid.pos, {x:0,y:0,z:1});
 		}
 	);
 regressionTestDisplays.union = new ScalarWorldDisplay(
-		new ScalarHeatDisplay(  {min: '1.', max: '0.'}),
+		new HeatmapRasterDisplay(  {min: '1.', max: '0.'}),
 		function (crust, flood_fill, scratch1) {
 			return BinaryMorphology.union(
 				RasterUnitTests.circle(crust.grid.pos, {x:0,y:0,z:1}),
@@ -102,7 +102,7 @@ regressionTestDisplays.union = new ScalarWorldDisplay(
 		}
 	);
 regressionTestDisplays.intersection = new ScalarWorldDisplay(
-		new ScalarHeatDisplay(  {min: '1.', max: '0.'}),
+		new HeatmapRasterDisplay(  {min: '1.', max: '0.'}),
 		function (crust, flood_fill, scratch1) {
 			return BinaryMorphology.intersection(
 				RasterUnitTests.circle(crust.grid.pos, {x:0,y:0,z:1}),
@@ -111,7 +111,7 @@ regressionTestDisplays.intersection = new ScalarWorldDisplay(
 		}
 	);
 regressionTestDisplays.difference = new ScalarWorldDisplay(
-		new ScalarHeatDisplay(  {min: '1.', max: '0.'}),
+		new HeatmapRasterDisplay(  {min: '1.', max: '0.'}),
 		function (crust, flood_fill, scratch1) {
 			return BinaryMorphology.difference(
 				RasterUnitTests.circle(crust.grid.pos, {x:0,y:0,z:1}),
@@ -120,13 +120,13 @@ regressionTestDisplays.difference = new ScalarWorldDisplay(
 		}
 	);
 regressionTestDisplays.dilation = new ScalarWorldDisplay(
-		new ScalarHeatDisplay(  {min: '1.', max: '0.'}),
+		new HeatmapRasterDisplay(  {min: '1.', max: '0.'}),
 		function (crust, flood_fill, scratch1) {
 			return BinaryMorphology.dilation(RasterUnitTests.circle(crust.grid.pos, {x:0,y:0,z:1}), 1);
 		}
 	);
 regressionTestDisplays.erosion = new ScalarWorldDisplay(
-		new ScalarHeatDisplay(  {min: '1.', max: '0.'}),
+		new HeatmapRasterDisplay(  {min: '1.', max: '0.'}),
 		function (crust, flood_fill, scratch1) {
 			return BinaryMorphology.erosion(RasterUnitTests.circle(crust.grid.pos, {x:0,y:0,z:1}), 1);
 		}
@@ -134,7 +134,7 @@ regressionTestDisplays.erosion = new ScalarWorldDisplay(
 
 // test for the flood fill algorithm, AKA "magic wand select"
 regressionTestDisplays.flood_fill1 = new ScalarWorldDisplay(
-		new ScalarHeatDisplay(  {min: '1.', max: '0.'}),
+		new HeatmapRasterDisplay(  {min: '1.', max: '0.'}),
 		function (crust, flood_fill, scratch1) {
 			// scratch represents pressure
 			var pressure = scratch1;
@@ -155,7 +155,7 @@ regressionTestDisplays.flood_fill1 = new ScalarWorldDisplay(
 	);
 // test for image segmentation algorithm
 regressionTestDisplays.flood_fill8 = new ScalarWorldDisplay(
-		new ScalarHeatDisplay(  {min: '8.', max: '0.'}),
+		new HeatmapRasterDisplay(  {min: '8.', max: '0.'}),
 		function (crust, flood_fill, scratch1) {
 			// scratch represents pressure
 			var pressure = scratch1;
