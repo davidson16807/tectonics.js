@@ -6,59 +6,60 @@ function RealisticDisplay(shader_return_value) {
 	this._fragmentShader = fragmentShaders.realistic
 		.replace('@UNCOVERED', shader_return_value);
 	this.chartDisplays = []; 
-	// this.mesh = undefined
+	this.mesh = undefined;
 }
-RealisticDisplay.prototype.createMesh = function(grid, options) {
-
-	var faces = grid.faces;
-	var geometry = THREE.BufferGeometryUtils.fromGeometry({
-		faces: grid.faces, 
-		vertices: grid.vertices, 
-		faceVertexUvs: [[]], // HACK: necessary for use with BufferGeometryUtils.fromGeometry
-	});
-	geometry.addAttribute('displacement', Float32Array, faces.length*3, 1);
-	geometry.addAttribute('ice_coverage', Float32Array, faces.length*3, 1);
-	geometry.addAttribute('plant_coverage', Float32Array, faces.length*3, 1);
-	geometry.addAttribute('insolation', Float32Array, faces.length*3, 1);
-	geometry.addAttribute('scalar', Float32Array, faces.length*3, 1);
-
-	var material = new THREE.ShaderMaterial({
-		attributes: {
-		  displacement: { type: 'f', value: null },
-		  ice_coverage: { type: 'f', value: null },
-		  plant_coverage: { type: 'f', value: null },
-		  insolation: { type: 'f', value: null },
-		  scalar: { type: 'f', value: null }
-		},
-		uniforms: {
-		  sealevel:     { type: 'f', value: 0 },
-		  sealevel_mod: { type: 'f', value: options.sealevel_mod },
-		  darkness_mod: { type: 'f', value: options.darkness_mod },
-		  ice_mod: 		{ type: 'f', value: options.ice_mod },
-		  insolation_max: { type: 'f', value: options.insolation_max },
-		  index: 		{ type: 'f', value: options.index },
-		},
-		blending: THREE.NoBlending,
-		vertexShader: options.vertexShader,
-		fragmentShader: this._fragmentShader
-	});
-	var mesh = new THREE.Mesh( geometry, material);
-
-	return mesh;
-};
 RealisticDisplay.prototype.upsert = function(scene, world, options) {
 
-};
-RealisticDisplay.prototype.remove = function(scene) {
+	if (this.mesh === void 0) {
+		var grid = world.grid;
+		var faces = grid.faces;
+		var geometry = THREE.BufferGeometryUtils.fromGeometry({
+			faces: grid.faces, 
+			vertices: grid.vertices, 
+			faceVertexUvs: [[]], // HACK: necessary for use with BufferGeometryUtils.fromGeometry
+		});
+		geometry.addAttribute('displacement', Float32Array, faces.length*3, 1);
+		geometry.addAttribute('ice_coverage', Float32Array, faces.length*3, 1);
+		geometry.addAttribute('plant_coverage', Float32Array, faces.length*3, 1);
+		geometry.addAttribute('insolation', Float32Array, faces.length*3, 1);
+		geometry.addAttribute('scalar', Float32Array, faces.length*3, 1);
 
-};
-RealisticDisplay.prototype.updateUniforms = function(material, world) {
+		var material = new THREE.ShaderMaterial({
+			attributes: {
+			  displacement: { type: 'f', value: null },
+			  ice_coverage: { type: 'f', value: null },
+			  plant_coverage: { type: 'f', value: null },
+			  insolation: { type: 'f', value: null },
+			  scalar: { type: 'f', value: null }
+			},
+			uniforms: {
+			  sealevel:     { type: 'f', value: 0 },
+			  sealevel_mod: { type: 'f', value: options.sealevel_mod },
+			  darkness_mod: { type: 'f', value: options.darkness_mod },
+			  ice_mod: 		{ type: 'f', value: options.ice_mod },
+			  insolation_max: { type: 'f', value: options.insolation_max },
+			  index: 		{ type: 'f', value: options.index },
+			},
+			blending: THREE.NoBlending,
+			vertexShader: options.vertexShader,
+			fragmentShader: this._fragmentShader
+		});
+		var mesh = new THREE.Mesh( geometry, material);
+		scene.add(mesh);
+
+		this.mesh = mesh;
+	}
+	
+	var mesh = this.mesh;
+	var material = mesh.material;
+	var geometry = mesh.geometry;
+
 	material.uniforms['sealevel'].value = world.hydrosphere.sealevel.value();
 	material.uniforms['sealevel'].needsUpdate = true;
+
 	material.uniforms['insolation_max'].value = Float32Dataset.max(world.atmosphere.average_insolation);
 	material.uniforms['insolation_max'].needsUpdate = true;
-};
-RealisticDisplay.prototype.updateAttributes = function(geometry, world) {
+
 	Float32Raster.get_ids(world.lithosphere.displacement.value(), view.grid.buffer_array_to_cell, geometry.attributes.displacement.array); 
 	geometry.attributes.displacement.needsUpdate = true;
 
@@ -70,8 +71,13 @@ RealisticDisplay.prototype.updateAttributes = function(geometry, world) {
 
 	Float32Raster.get_ids(world.biosphere.plant_coverage.value(), view.grid.buffer_array_to_cell, geometry.attributes.plant_coverage.array); 
 	geometry.attributes.plant_coverage.needsUpdate = true;
-
-}
+};
+RealisticDisplay.prototype.remove = function(scene) {
+	scene.remove(this.mesh);
+	this.mesh.geometry.dispose();
+	this.mesh.material.dispose();
+	this.mesh = undefined;
+};
 
 
 
@@ -84,22 +90,7 @@ function ScalarWorldDisplay(scalarRasterDisplay, getField) {
 	this.field = void 0;
 	this.scratch = void 0;
 }
-ScalarWorldDisplay.prototype.createMesh = function(grid, options) {
-	return this.scalarRasterDisplay.createMesh(grid, options)
-};
 ScalarWorldDisplay.prototype.upsert = function(scene, world, options) {
-	this.scalarRasterDisplay.upsert(scene, world, options);	
-};
-ScalarWorldDisplay.prototype.remove = function(scene) {
-	this.scalarRasterDisplay.remove(scene);
-};
-ScalarWorldDisplay.prototype.updateUniforms = function(material, world) {
-	material.uniforms['sealevel'].value = world.hydrosphere.sealevel.value();
-	material.uniforms['sealevel'].needsUpdate = true;
-};
-ScalarWorldDisplay.prototype.updateAttributes = function(geometry, world) {
-	Float32Raster.get_ids(world.lithosphere.displacement.value(), view.grid.buffer_array_to_cell, geometry.attributes.displacement.array); 
-	geometry.attributes.displacement.needsUpdate = true;
 
 	this.field = this.field || Float32Raster(world.grid);
 	this.scratch = this.scratch || Float32Raster(world.grid);
@@ -127,11 +118,23 @@ ScalarWorldDisplay.prototype.updateAttributes = function(geometry, world) {
 		return;
 	}
 	if (raster !== void 0) {
-		this.scalarRasterDisplay.updateAttributes(geometry, raster);
+		this.scalarRasterDisplay.upsert(scene, raster, options);	
 	} else {
 		this.field = void 0;
 	}
-}
+
+	var material = this.scalarRasterDisplay.mesh.material;
+	material.uniforms['sealevel'].value = world.hydrosphere.sealevel.value();
+	material.uniforms['sealevel'].needsUpdate = true;
+
+	var geometry = this.scalarRasterDisplay.mesh.geometry;
+	Float32Raster.get_ids(world.lithosphere.displacement.value(), view.grid.buffer_array_to_cell, geometry.attributes.displacement.array); 
+	geometry.attributes.displacement.needsUpdate = true;
+
+};
+ScalarWorldDisplay.prototype.remove = function(scene) {
+	this.scalarRasterDisplay.remove(scene);
+};
 
 
 function ScalarHeatDisplay(options) {
@@ -144,55 +147,63 @@ function ScalarHeatDisplay(options) {
 		.replace('@MIN', min)
 		.replace('@MAX', max);
 }
-ScalarHeatDisplay.prototype.createMesh = function(grid, options) {
-	var faces = grid.faces;
-	var geometry = THREE.BufferGeometryUtils.fromGeometry({
-		faces: grid.faces, 
-		vertices: grid.vertices, 
-		faceVertexUvs: [[]], // HACK: necessary for use with BufferGeometryUtils.fromGeometry
-	});
-	geometry.addAttribute('displacement', Float32Array, faces.length*3, 1);
-	geometry.addAttribute('ice_coverage', Float32Array, faces.length*3, 1);
-	geometry.addAttribute('plant_coverage', Float32Array, faces.length*3, 1);
-	geometry.addAttribute('insolation', Float32Array, faces.length*3, 1);
-	geometry.addAttribute('scalar', Float32Array, faces.length*3, 1);
+ScalarHeatDisplay.prototype.upsert = function(scene, raster, options) {
+	if (this.mesh === void 0) {
+		var grid = raster.grid;
+		var faces = grid.faces;
+		var geometry = THREE.BufferGeometryUtils.fromGeometry({
+			faces: grid.faces, 
+			vertices: grid.vertices, 
+			faceVertexUvs: [[]], // HACK: necessary for use with BufferGeometryUtils.fromGeometry
+		});
+		geometry.addAttribute('displacement', Float32Array, faces.length*3, 1);
+		geometry.addAttribute('ice_coverage', Float32Array, faces.length*3, 1);
+		geometry.addAttribute('plant_coverage', Float32Array, faces.length*3, 1);
+		geometry.addAttribute('insolation', Float32Array, faces.length*3, 1);
+		geometry.addAttribute('scalar', Float32Array, faces.length*3, 1);
 
-	var material = new THREE.ShaderMaterial({
-		attributes: {
-		  displacement: { type: 'f', value: null },
-		  ice_coverage: { type: 'f', value: null },
-		  plant_coverage: { type: 'f', value: null },
-		  insolation: { type: 'f', value: null },
-		  scalar: { type: 'f', value: null }
-		},
-		uniforms: {
-		  sealevel:     { type: 'f', value: 0 },
-		  sealevel_mod: { type: 'f', value: options.sealevel_mod },
-		  darkness_mod: { type: 'f', value: options.darkness_mod },
-		  ice_mod: 		{ type: 'f', value: options.ice_mod },
-		  insolation_max: { type: 'f', value: options.insolation_max },
-		  index: 		{ type: 'f', value: options.index },
-		},
-		blending: THREE.NoBlending,
-		vertexShader: options.vertexShader,
-		fragmentShader: this._fragmentShader
-	});
-	var mesh = new THREE.Mesh( geometry, material);
+		var material = new THREE.ShaderMaterial({
+			attributes: {
+			  displacement: { type: 'f', value: null },
+			  ice_coverage: { type: 'f', value: null },
+			  plant_coverage: { type: 'f', value: null },
+			  insolation: { type: 'f', value: null },
+			  scalar: { type: 'f', value: null }
+			},
+			uniforms: {
+			  sealevel:     { type: 'f', value: 0 },
+			  sealevel_mod: { type: 'f', value: options.sealevel_mod },
+			  darkness_mod: { type: 'f', value: options.darkness_mod },
+			  ice_mod: 		{ type: 'f', value: options.ice_mod },
+			  insolation_max: { type: 'f', value: options.insolation_max },
+			  index: 		{ type: 'f', value: options.index },
+			},
+			blending: THREE.NoBlending,
+			vertexShader: options.vertexShader,
+			fragmentShader: this._fragmentShader
+		});
+		var mesh = new THREE.Mesh( geometry, material);
+		scene.add(mesh);
 
-	return mesh;
-};
-ScalarHeatDisplay.prototype.upsert = function(scene, world, options) {
+		this.mesh = mesh;
+	}
 	
-};
-ScalarHeatDisplay.prototype.remove = function(scene) {
+	var mesh = this.mesh;
+	var material = mesh.material;
+	var geometry = mesh.geometry;
 
-};
-ScalarHeatDisplay.prototype.updateAttributes = function(geometry, raster) {
 	var max = this.scaling? Math.max.apply(null, raster) || 1 : 1;
 	ScalarField.div_scalar(raster, max, raster);
 	Float32Raster.get_ids(raster, view.grid.buffer_array_to_cell, geometry.attributes.scalar.array); 
 	geometry.attributes.scalar.needsUpdate = true;
-}
+
+};
+ScalarHeatDisplay.prototype.remove = function(scene) {
+	scene.remove(this.mesh);
+	this.mesh.geometry.dispose();
+	this.mesh.material.dispose();
+	this.mesh = undefined;
+};
 
 
 
@@ -216,53 +227,61 @@ function ScalarDisplay(options) {
 		.replace('@MIN', min)
 		.replace('@MAX', max);
 }
-ScalarDisplay.prototype.createMesh = function(grid, options) {
-	var faces = grid.faces;
-	var geometry = THREE.BufferGeometryUtils.fromGeometry({
-		faces: grid.faces, 
-		vertices: grid.vertices, 
-		faceVertexUvs: [[]], // HACK: necessary for use with BufferGeometryUtils.fromGeometry
-	});
-	geometry.addAttribute('displacement', Float32Array, faces.length*3, 1);
-	geometry.addAttribute('ice_coverage', Float32Array, faces.length*3, 1);
-	geometry.addAttribute('plant_coverage', Float32Array, faces.length*3, 1);
-	geometry.addAttribute('insolation', Float32Array, faces.length*3, 1);
-	geometry.addAttribute('scalar', Float32Array, faces.length*3, 1);
-
-	var material = new THREE.ShaderMaterial({
-		attributes: {
-		  displacement: { type: 'f', value: null },
-		  ice_coverage: { type: 'f', value: null },
-		  plant_coverage: { type: 'f', value: null },
-		  insolation: { type: 'f', value: null },
-		  scalar: { type: 'f', value: null }
-		},
-		uniforms: {
-		  sealevel:     { type: 'f', value: 0 },
-		  sealevel_mod: { type: 'f', value: options.sealevel_mod },
-		  darkness_mod: { type: 'f', value: options.darkness_mod },
-		  ice_mod: 		{ type: 'f', value: options.ice_mod },
-		  insolation_max: { type: 'f', value: options.insolation_max },
-		  index: 		{ type: 'f', value: options.index },
-		},
-		blending: THREE.NoBlending,
-		vertexShader: options.vertexShader,
-		fragmentShader: this._fragmentShader
-	});
-	var mesh = new THREE.Mesh( geometry, material);
-
-	return mesh;
-};
-ScalarHeatDisplay.prototype.upsert = function(scene, world, options) {
+ScalarDisplay.prototype.upsert = function(scene, raster, options) {
 	
-};
-ScalarHeatDisplay.prototype.remove = function(scene) {
+	if (this.mesh === void 0) {
+		var grid = raster.grid;
+		var faces = grid.faces;
+		var geometry = THREE.BufferGeometryUtils.fromGeometry({
+			faces: grid.faces, 
+			vertices: grid.vertices, 
+			faceVertexUvs: [[]], // HACK: necessary for use with BufferGeometryUtils.fromGeometry
+		});
+		geometry.addAttribute('displacement', Float32Array, faces.length*3, 1);
+		geometry.addAttribute('ice_coverage', Float32Array, faces.length*3, 1);
+		geometry.addAttribute('plant_coverage', Float32Array, faces.length*3, 1);
+		geometry.addAttribute('insolation', Float32Array, faces.length*3, 1);
+		geometry.addAttribute('scalar', Float32Array, faces.length*3, 1);
 
-};
-ScalarDisplay.prototype.updateAttributes = function(geometry, raster) {
+		var material = new THREE.ShaderMaterial({
+			attributes: {
+			  displacement: { type: 'f', value: null },
+			  ice_coverage: { type: 'f', value: null },
+			  plant_coverage: { type: 'f', value: null },
+			  insolation: { type: 'f', value: null },
+			  scalar: { type: 'f', value: null }
+			},
+			uniforms: {
+			  sealevel:     { type: 'f', value: 0 },
+			  sealevel_mod: { type: 'f', value: options.sealevel_mod },
+			  darkness_mod: { type: 'f', value: options.darkness_mod },
+			  ice_mod: 		{ type: 'f', value: options.ice_mod },
+			  insolation_max: { type: 'f', value: options.insolation_max },
+			  index: 		{ type: 'f', value: options.index },
+			},
+			blending: THREE.NoBlending,
+			vertexShader: options.vertexShader,
+			fragmentShader: this._fragmentShader
+		});
+		var mesh = new THREE.Mesh( geometry, material);
+		scene.add(mesh);
+
+		this.mesh = mesh;
+	}
+	
+	var mesh = this.mesh;
+	var material = mesh.material;
+	var geometry = mesh.geometry;
+
 	Float32Raster.get_ids(raster, view.grid.buffer_array_to_cell, geometry.attributes.scalar.array); 
 	geometry.attributes.scalar.needsUpdate = true;
-}
+};
+ScalarHeatDisplay.prototype.remove = function(scene) {
+	scene.remove(this.mesh);
+	this.mesh.geometry.dispose();
+	this.mesh.material.dispose();
+	this.mesh = undefined;
+};
 
 
 

@@ -6,17 +6,7 @@ function VectorWorldDisplay(options) {
 	this.vectorRasterDisplay = options['vectorRasterDisplay'] || new VectorFieldDisplay({});
 	this.getField = options['getField'];
 }
-VectorWorldDisplay.prototype.createMesh = function(grid, options) {
-	return this.vectorRasterDisplay.createMesh(grid, options)
-};
-VectorFieldDisplay.prototype.upsert = function(scene, world, options) {
-	this.vectorRasterDisplay.upsert(scene, world, options);
-};
-VectorFieldDisplay.prototype.remove = function(scene) {
-	this.vectorRasterDisplay.remove(scene);
-};
-VectorWorldDisplay.prototype.updateUniforms = function(material, world) {};
-VectorWorldDisplay.prototype.updateAttributes = function(geometry, world) {
+VectorWorldDisplay.prototype.upsert = function(scene, world, options) {
 	// run getField()
 	if (this.getField === void 0) {
 		log_once("VectorDisplay.getField is undefined.");
@@ -32,38 +22,46 @@ VectorWorldDisplay.prototype.updateAttributes = function(geometry, world) {
 		log_once("VectorDisplay.getField() did not return a VectorRaster.");
 		return;
 	}
-	this.vectorRasterDisplay.updateAttributes(geometry, raster);
-}
+
+	this.vectorRasterDisplay.upsert(scene, raster, options);
+};
+VectorWorldDisplay.prototype.remove = function(scene) {
+	this.vectorRasterDisplay.remove(scene);
+};
 
 
 
 function VectorFieldDisplay(options) {
 	this.max = options['max'];
+	this.mesh = undefined;
 }
+VectorFieldDisplay.prototype.upsert = function(scene, raster, options) {
 
-
-VectorFieldDisplay.prototype.createMesh = function(grid, options) {
-	var vector_field_geometry = new THREE.Geometry();
-	for (var i=0, li=grid.vertices.length; i<li; ++i) {
-	    vector_field_geometry.vertices.push( grid.vertices[i].clone() );
-	    vector_field_geometry.vertices.push( grid.vertices[i].clone() );
+	if (this.mesh === void 0) {
+		var grid = raster.grid;
+		var geometry = new THREE.Geometry();
+		for (var i=0, li=grid.vertices.length; i<li; ++i) {
+		    geometry.vertices.push( grid.vertices[i].clone() );
+		    geometry.vertices.push( grid.vertices[i].clone() );
+		}
+		var material = new THREE.ShaderMaterial({
+		        vertexShader: 	options.vertexShader,
+		        fragmentShader: fragmentShaders.vectorField,
+		        attributes: {
+		        },
+		        uniforms: { 
+			  		index: 		{ type: 'f', value: 1 }
+		        }
+		    });
+		var mesh = new THREE.Line( geometry, material, THREE.LinePieces);
+		scene.add(mesh);
+		this.mesh = mesh;
 	}
-	var vector_field_material = new THREE.ShaderMaterial({
-	        vertexShader: 	options.vertexShader,
-	        fragmentShader: fragmentShaders.vectorField,
-	        attributes: {
-	        },
-	        uniforms: { 
-		  		index: 		{ type: 'f', value: 1 }
-	        }
-	    });
-	var vector_field_mesh = new THREE.Line( vector_field_geometry, vector_field_material, THREE.LinePieces);
-	return vector_field_mesh;
-}
-VectorFieldDisplay.prototype.upsert = function(scene, world, options) {};
-VectorFieldDisplay.prototype.remove = function(scene) {};
-VectorFieldDisplay.prototype.updateUniforms = function(material, raster) {};
-VectorFieldDisplay.prototype.updateAttributes = function(geometry, raster) {
+
+	var mesh = this.mesh;
+	var material = mesh.material;
+	var geometry = mesh.geometry;
+
 	var offset_length = 1.02; 	// offset of arrow from surface of sphere, in radii
 	var max_arrow_length = 0.1; // max arrow length, in radii
 	var vector = geometry.vertices;
@@ -85,33 +83,18 @@ VectorFieldDisplay.prototype.updateAttributes = function(geometry, raster) {
 	}
 	// geometry.vertices.needsUpdate = true;
 	geometry.verticesNeedUpdate = true;
-}
+};
+VectorFieldDisplay.prototype.remove = function(scene) {
+	scene.remove(this.mesh);
+	this.mesh.geometry.dispose();
+	this.mesh.material.dispose();
+	this.mesh = undefined;
+};
 
 
 function DisabledVectorDisplay(options) {}
-DisabledVectorDisplay.prototype.createMesh = function(grid, options) {
-
-	var vector_field_geometry = new THREE.Geometry();
-	for (var i=0, li=grid.vertices.length; i<li; ++i) {
-	    vector_field_geometry.vertices.push( grid.vertices[i].clone() );
-	    vector_field_geometry.vertices.push( grid.vertices[i].clone() );
-	}
-	var vector_field_material = new THREE.ShaderMaterial({
-	        vertexShader: 	options.vertexShader,
-	        fragmentShader: fragmentShaders.vectorField,
-	        attributes: {
-	        },
-	        uniforms: { 
-		  		index: 		{ type: 'f', value: 1 }
-	        }
-	    });
-	var vector_field_mesh = new THREE.Line( vector_field_geometry, vector_field_material, THREE.LinePieces);
-	return vector_field_mesh;
-}
-DisabledVectorDisplay.prototype.upsert = function(scene, world, options) {};
+DisabledVectorDisplay.prototype.upsert = function(scene, model, options) {};
 DisabledVectorDisplay.prototype.remove = function(scene) {};
-DisabledVectorDisplay.prototype.updateUniforms = function(material, world) {}
-DisabledVectorDisplay.prototype.updateAttributes = function(geometry, world) {}
 
 
 

@@ -31,52 +31,6 @@ function View(innerWidth, innerHeight, grid, scalarDisplay, vectorDisplay, verte
 		ice_mod: 1.0,
 		insolation_max: 0,
 	};
-
-	var scalar_field_mesh = this._scalarDisplay.createMesh(
-		grid,
-		{
-			...this._uniforms, 
-			index: 1, 
-			vertexShader: this._vertexShader
-		}
-	);
-	this.scene.add(scalar_field_mesh);
-	this.scalar_field_mesh1 = scalar_field_mesh;
-
-	var scalar_field_mesh = this._scalarDisplay.createMesh(
-		grid,
-		{
-			...this._uniforms, 
-			index: -1, 
-			vertexShader: this._vertexShader
-		}
-	);
-	this.scene.add(scalar_field_mesh);
-	this.scalar_field_mesh2 = scalar_field_mesh;
-
-
-	var vector_field_mesh = this._vectorDisplay.createMesh(
-		grid,
-		{
-			...this._uniforms, 
-			index: 1, 
-			vertexShader: this._vertexShader
-		}
-	);
-	this.scene.add(vector_field_mesh);
-	this.vector_field_mesh1 = vector_field_mesh;
-
-
-	var vector_field_mesh = this._vectorDisplay.createMesh(
-		grid,
-		{
-			...this._uniforms, 
-			index: -1, 
-			vertexShader: this._vertexShader
-		}
-	);
-	this.scene.add(vector_field_mesh);
-	this.vector_field_mesh2 = vector_field_mesh;
 }
 
 View.prototype.render = function() {
@@ -89,22 +43,21 @@ View.prototype.displaySim = function(sim){
 }
 
 View.prototype.displayWorld = function(world){
-	this._scalarDisplay.updateUniforms(this.scalar_field_mesh1.material, world);
-	this._scalarDisplay.updateUniforms(this.scalar_field_mesh2.material, world);
-	this._scalarDisplay.updateAttributes(this.scalar_field_mesh1.geometry, world);
-	this._scalarDisplay.updateAttributes(this.scalar_field_mesh2.geometry, world);
-	
-	this._vectorDisplay.updateUniforms(this.vector_field_mesh1.material, world);
-	this._vectorDisplay.updateUniforms(this.vector_field_mesh2.material, world);
-	this._vectorDisplay.updateAttributes(this.vector_field_mesh1.geometry, world);	
-	this._vectorDisplay.updateAttributes(this.vector_field_mesh2.geometry, world);	
-}
-
-View.prototype.displayScalarRaster = function(raster){
-	this._scalarDisplay.updateAttributes(this.scalar_field_mesh1.geometry, raster);
-}
-View.prototype.displayVectorRaster = function(raster){
-	this._vectorDisplay.updateAttributes(this.vector_field_geometry, world);	
+	this.world = world;
+	this._scalarDisplay.upsert(this.scene, world, 
+			{
+				...this._uniforms, 
+				index: 0, 
+				vertexShader: this._vertexShader
+			}
+		);
+	this._vectorDisplay.upsert(this.scene, world, 
+			{
+				...this._uniforms, 
+				index: 0, 
+				vertexShader: this._vertexShader
+			}
+		);
 }
 
 View.prototype.getDomElement = function() {
@@ -120,39 +73,24 @@ View.prototype.setScalarDisplay = function(display) {
 		return;
 	}
 
-	this.scene.remove(this.scalar_field_mesh1);
-	this.scalar_field_mesh1.geometry.dispose();
-	this.scalar_field_mesh1.material.dispose();
-	this.scalar_field_mesh1 = undefined;
-
-	this.scene.remove(this.scalar_field_mesh2);
-	this.scalar_field_mesh2.geometry.dispose();
-	this.scalar_field_mesh2.material.dispose();
-	this.scalar_field_mesh2 = undefined;
-
+	this._scalarDisplay.remove(this.scene);
 	this._scalarDisplay = display;
 
-	var scalar_field_mesh = this._scalarDisplay.createMesh(
-		this.grid,
-		{
-			...this._uniforms, 
-			index: 1, 
-			vertexShader: this._vertexShader
-		}
-	);
-	this.scene.add(scalar_field_mesh);
-	this.scalar_field_mesh1 = scalar_field_mesh;
+	if(this._scalarDisplay === void 0){
+		return;
+	}
 
-	var scalar_field_mesh = this._scalarDisplay.createMesh(
-		this.grid,
-		{
-			...this._uniforms, 
-			index: -1, 
-			vertexShader: this._vertexShader
-		}
-	);
-	this.scene.add(scalar_field_mesh);
-	this.scalar_field_mesh2 = scalar_field_mesh;
+	if (this.world === void 0) {
+		return;
+	}
+
+	this._scalarDisplay.upsert(this.scene, this.world,
+			{
+				...this._uniforms, 
+				index: 0, 
+				vertexShader: this._vertexShader
+			}
+		);
 };
 
 View.prototype.setVectorDisplay = function(display) {
@@ -160,39 +98,24 @@ View.prototype.setVectorDisplay = function(display) {
 		return;
 	}
 
-	this.scene.remove(this.vector_field_mesh1);
-	this.vector_field_mesh1.geometry.dispose();
-	this.vector_field_mesh1.material.dispose();
-	this.vector_field_mesh1 = undefined;
-
-	this.scene.remove(this.vector_field_mesh2);
-	this.vector_field_mesh2.geometry.dispose();
-	this.vector_field_mesh2.material.dispose();
-	this.vector_field_mesh2 = undefined;
-
+	this._vectorDisplay.remove(this.scene);
 	this._vectorDisplay = display;
 
-	var vector_field_mesh = this._vectorDisplay.createMesh(
-		this.grid,
-		{
-			...this._uniforms, 
-			index: 1, 
-			vertexShader: this._vertexShader
-		}
-	);
-	this.scene.add(vector_field_mesh);
-	this.vector_field_mesh1 = vector_field_mesh;
+	if(this._vectorDisplay === void 0){
+		return;
+	}
+	
+	if (this.world === void 0) {
+		return;
+	}
 
-	var vector_field_mesh = this._vectorDisplay.createMesh(
-		this.grid,
-		{
-			...this._uniforms, 
-			index: -1, 
-			vertexShader: this._vertexShader
-		}
-	);
-	this.scene.add(vector_field_mesh);
-	this.vector_field_mesh2 = vector_field_mesh;
+	this._vectorDisplay.upsert(this.scene, this.world,
+			{
+				...this._uniforms, 
+				index: 0, 
+				vertexShader: this._vertexShader
+			}
+		);
 };
 
 View.prototype.vertexShader = function(vertexShader){
@@ -200,24 +123,20 @@ View.prototype.vertexShader = function(vertexShader){
 		return;
 	}
 	this._vertexShader = vertexShader;
-
-	var meshes, mesh;
-
-	mesh = this.scalar_field_mesh1
-	mesh.material.vertexShader = vertexShader;
-	mesh.material.needsUpdate = true;
-
-	mesh = this.scalar_field_mesh2;
-	mesh.material.vertexShader = vertexShader;
-	mesh.material.needsUpdate = true;
-
-	mesh = this.vector_field_mesh1;
-	mesh.material.vertexShader = vertexShader;
-	mesh.material.needsUpdate = true;
-
-	mesh = this.vector_field_mesh2;
-	mesh.material.vertexShader = vertexShader;
-	mesh.material.needsUpdate = true;
+	this._scalarDisplay.upsert(this.scene, this.world,
+			{
+				...this._uniforms, 
+				index: 0, 
+				vertexShader: this._vertexShader
+			}
+		);
+	this._vectorDisplay.upsert(this.scene, this.world,
+			{
+				...this._uniforms, 
+				index: 0, 
+				vertexShader: this._vertexShader
+			}
+		);
 }
 
 View.prototype.uniform = function(key, value){
@@ -226,30 +145,18 @@ View.prototype.uniform = function(key, value){
 	}
 	
 	this._uniforms[key] = value;
-
- 	var meshes, mesh;
-
- 	mesh = this.scalar_field_mesh1;
- 	if (mesh.material.uniforms[key] !== void 0) {
-	 	mesh.material.uniforms[key].value = value;
-	 	mesh.material.uniforms[key].needsUpdate = true;
- 	}
-
- 	mesh = this.scalar_field_mesh2;
- 	if (mesh.material.uniforms[key] !== void 0) {
-	 	mesh.material.uniforms[key].value = value;
-	 	mesh.material.uniforms[key].needsUpdate = true;
- 	}
-
- 	mesh = this.vector_field_mesh1;
- 	if (mesh.material.uniforms[key] !== void 0) {
- 		mesh.material.uniforms[key].value = value;
- 		mesh.material.uniforms[key].needsUpdate = true;
- 	}
-
- 	mesh = this.vector_field_mesh2;
- 	if (mesh.material.uniforms[key] !== void 0) {
-	 	mesh.material.uniforms[key].value = value;
-	 	mesh.material.uniforms[key].needsUpdate = true;
- 	}
+	this._scalarDisplay.upsert(this.scene, this.world,
+			{
+				...this._uniforms, 
+				index: 0, 
+				vertexShader: this._vertexShader
+			}
+		);
+	this._vectorDisplay.upsert(this.scene, this.world,
+			{
+				...this._uniforms, 
+				index: 0, 
+				vertexShader: this._vertexShader
+			}
+		);
 }
