@@ -100,4 +100,7 @@ function ColorscaleRasterView(options) {
 		mesh = void 0;
 		this.mesh = void 0;
 	};
+	this.clone = function() {
+		return new ColorscaleRasterView(options);
+	}
 }

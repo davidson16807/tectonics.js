@@ -1,7 +1,10 @@
 'use strict';
 
-function View(innerWidth, innerHeight, scalarWorldView, vectorWorldView, vertexShader) {
+function View(innerWidth, innerHeight, scalarWorldView1, vectorWorldView1, vertexShader) {
+	var scalarWorldView2 = scalarWorldView1.clone();
+	var vectorWorldView2 = vectorWorldView1.clone();
 
+	var this_ = this;
 	// create the renderer
 	this.renderer = new THREE.WebGLRenderer({
 		antialias		: true,	// to get smoother output
@@ -32,27 +35,48 @@ function View(innerWidth, innerHeight, scalarWorldView, vectorWorldView, vertexS
 		return this.renderer.render( this.scene, this.camera );
 	};
 
-	this.displaySim = function(sim){
-		// TODO: what if sim changed from last iteration?
-		this.displayWorld(sim.focus);
+	function update_world(world){
+		if(scalarWorldView1 !== void 0){
+			scalarWorldView1.upsert(this_.scene, world, 
+					{
+						...uniforms, 
+						index: 1, 
+						vertexShader: vertexShader
+					}
+				);
+		}
+		if(scalarWorldView2 !== void 0){
+			scalarWorldView2.upsert(this_.scene, world, 
+					{
+						...uniforms, 
+						index: -1, 
+						vertexShader: vertexShader
+					}
+				);
+		}
+		if(vectorWorldView1 !== void 0){
+			vectorWorldView1.upsert(this_.scene, world, 
+					{
+						...uniforms, 
+						index: 1, 
+						vertexShader: vertexShader
+					}
+				);
+		}
+		if(vectorWorldView2 !== void 0){
+			vectorWorldView2.upsert(this_.scene, world, 
+					{
+						...uniforms, 
+						index: -1, 
+						vertexShader: vertexShader
+					}
+				);
+		}
 	}
 
-	this.displayWorld = function(world){
-		this.world = world;
-		scalarWorldView.upsert(this.scene, world, 
-				{
-					...uniforms, 
-					index: 0, 
-					vertexShader: vertexShader
-				}
-			);
-		vectorWorldView.upsert(this.scene, world, 
-				{
-					...uniforms, 
-					index: 0, 
-					vertexShader: vertexShader
-				}
-			);
+	this.update = function(sim){
+		// TODO: what if sim changed from last iteration?
+		update_world(sim.focus);
 	}
 
 	this.getDomElement = function() {
@@ -63,68 +87,39 @@ function View(innerWidth, innerHeight, scalarWorldView, vectorWorldView, vertexS
 		return THREEx.Screenshot.toDataURL(this.renderer);
 	};
 
-	this.setScalarWorldView = function(display) {
-		if(scalarWorldView === display){
+	this.setScalarWorldView = function(value) {
+		if(scalarWorldView1 === value){
 			return;
 		}
-
-		scalarWorldView.remove(this.scene);
-		scalarWorldView = display;
-
-		if(scalarWorldView === void 0){
-			return;
+		if(scalarWorldView1 !== void 0){
+			scalarWorldView1.remove(this.scene);
 		}
-
-		if (this.world === void 0) {
-			return;
+		if(scalarWorldView2 !== void 0){
+			scalarWorldView2.remove(this.scene);
 		}
-
-		scalarWorldView.upsert(this.scene, this.world,
-				{
-					...uniforms, 
-					index: 0, 
-					vertexShader: vertexShader
-				}
-			);
+		scalarWorldView1 = value;
+		scalarWorldView2 = value.clone();
 	};
 
-	this.setVectorWorldView = function(display) {
-		if(vectorWorldView === display){
+	this.setVectorWorldView = function(value) {
+		if(vectorWorldView1 === value){
 			return;
 		}
-
-		vectorWorldView.remove(this.scene);
-		vectorWorldView = display;
-
-		if(vectorWorldView === void 0){
-			return;
+		if(vectorWorldView1 !== void 0){
+			vectorWorldView1.remove(this.scene);
 		}
-		
-		if (this.world === void 0) {
-			return;
+		if(vectorWorldView2 !== void 0){
+			vectorWorldView2.remove(this.scene);
 		}
-
-		vectorWorldView.upsert(this.scene, this.world,
-				{
-					...uniforms, 
-					index: 0, 
-					vertexShader: vertexShader
-				}
-			);
+		vectorWorldView1 = value;
+		vectorWorldView2 = value.clone();
 	};
 
 	this.vertexShader = function(value){
-		if(vertexShader === value){
-			return;
-		}
 		vertexShader = value;
 	}
 
 	this.uniform = function(key, value){
-		if(uniforms[key] === value){
-			return;
-		}
-		
 		uniforms[key] = value;
 	}
 

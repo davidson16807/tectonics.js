@@ -3,7 +3,6 @@
 // ScalarWorldRenderer takes as input a ScalarRasterRenderer, and a getField function, 
 // and uses it to View a raster from a given world 
 function ScalarWorldView(scalarRasterView, getField) {
-	this.scalarRasterView = scalarRasterView;
 	this.getField = getField;
 	this.field = void 0;
 	this.scratch = void 0;
@@ -36,12 +35,12 @@ function ScalarWorldView(scalarRasterView, getField) {
 			return;
 		}
 		if (raster !== void 0) {
-			this.scalarRasterView.upsert(scene, raster, options);	
+			scalarRasterView.upsert(scene, raster, options);	
 		} else {
 			this.field = void 0;
 		}
 
-		var mesh = this.scalarRasterView.mesh;
+		var mesh = scalarRasterView.mesh;
 		var material = mesh.material;
 		var geometry = mesh.geometry;
 
@@ -53,12 +52,15 @@ function ScalarWorldView(scalarRasterView, getField) {
 
 	};
 	this.remove = function(scene) {
-		this.scalarRasterView.remove(scene);
+		scalarRasterView.remove(scene);
 	};
 	this.vertexShader = function(vertexShader) {
-		this.scalarRasterView.vertexShader(vertexShader);
+		scalarRasterView.vertexShader(vertexShader);
 	}
 	this.uniform = function(key, value) {
-		this.scalarRasterView.uniform(key, value);
+		scalarRasterView.uniform(key, value);
+	}
+	this.clone = function() {
+		return new ScalarWorldView(scalarRasterView.clone(), getField);
 	}
 }

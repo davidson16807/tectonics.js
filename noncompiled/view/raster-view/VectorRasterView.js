@@ -75,4 +75,7 @@ function VectorRasterView(options) {
 		mesh = void 0;
 		this.mesh = void 0;
 	};
+	this.clone = function() {
+		return new VectorRasterView(options);
+	}
 }

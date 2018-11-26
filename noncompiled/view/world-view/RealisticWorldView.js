@@ -90,4 +90,7 @@ function RealisticWorldView(shader_return_value) {
 		mesh.material.dispose();
 		mesh = void 0;
 	};
+	this.clone = function() {
+		return new RealisticWorldView(shader_return_value);
+	}
 }

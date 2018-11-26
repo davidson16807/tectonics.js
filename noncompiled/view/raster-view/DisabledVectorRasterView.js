@@ -5,5 +5,8 @@ function DisabledVectorRasterView() {
 	this.remove = function(scene) {};
 	this.vertexShader = function(vertexShader) {}
 	this.uniform = function(key, value) {}
+	this.clone = function() {
+		return new DisabledVectorRasterView();
+	}
 }
 

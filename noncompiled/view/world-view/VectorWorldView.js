@@ -1,7 +1,7 @@
 'use strict';
 
 function VectorWorldView(options) {
-	this.vectorRasterView = options['vectorRasterView'] || new VectorRasterView({});
+	var vectorRasterView = options['vectorRasterView'] || new VectorRasterView({});
 	this.getField = options['getField'];
 	this.upsert = function(scene, world, options) {
 		// run getField()
@@ -20,15 +20,18 @@ function VectorWorldView(options) {
 			return;
 		}
 
-		this.vectorRasterView.upsert(scene, raster, options);
+		vectorRasterView.upsert(scene, raster, options);
 	};
 	this.remove = function(scene) {
-		this.vectorRasterView.remove(scene);
+		vectorRasterView.remove(scene);
 	};
 	this.vertexShader = function(vertexShader) {
-		this.vectorRasterView.vertexShader(vertexShader);
+		vectorRasterView.vertexShader(vertexShader);
 	}
 	this.uniform = function(key, value) {
-		this.vectorRasterView.uniform(key, value);
+		vectorRasterView.uniform(key, value);
+	}
+	this.clone = function() {
+		return new VectorWorldView({ vectorRasterView: vectorRasterView.clone() });
 	}
 }
