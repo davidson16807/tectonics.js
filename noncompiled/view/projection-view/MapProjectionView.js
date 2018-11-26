@@ -1,8 +1,6 @@
 'use strict';
 
 function MapProjectionView(vertexShader) {
-	console.trace();
-	console.log(vertexShader)
 	var subview1 = void 0;
 	var subview2 = void 0;
 

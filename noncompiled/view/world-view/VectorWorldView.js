@@ -26,6 +26,9 @@ function VectorWorldView(options) {
 		vectorRasterView.remove(scene);
 	};
 	this.clone = function() {
-		return new VectorWorldView({ vectorRasterView: vectorRasterView.clone() });
+		return new VectorWorldView({ 
+			vectorRasterView: vectorRasterView.clone(), 
+			getField: options.getField,
+		});
 	}
 }

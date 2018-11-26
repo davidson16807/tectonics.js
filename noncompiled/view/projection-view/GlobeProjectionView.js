@@ -2,8 +2,6 @@
 
 function GlobeProjectionView() {
 	var vertexShader = vertexShaders.orthographic;
-	console.trace();
-	console.log(vertexShader)
 	var subview = void 0;
 
 	this.upsert = function(scene, model, options) {

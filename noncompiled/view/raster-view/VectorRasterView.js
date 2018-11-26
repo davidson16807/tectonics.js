@@ -7,8 +7,9 @@ function VectorRasterView(options) {
 	this.mesh = void 0;
 	var mesh = void 0;
 	var vertexShader = void 0;
+	var uniforms = {};
 
-	function create_mesh(raster, options) {
+	function create_mesh(raster, options_) {
 		var grid = raster.grid;
 		var geometry = new THREE.Geometry();
 		for (var i=0, li=grid.vertices.length; i<li; ++i) {
@@ -16,12 +17,12 @@ function VectorRasterView(options) {
 		    geometry.vertices.push( grid.vertices[i].clone() );
 		}
 		var material = new THREE.ShaderMaterial({
-		        vertexShader: 	options.vertexShader,
+		        vertexShader: 	options_.vertexShader,
 		        fragmentShader: fragmentShaders.vectorField,
 		        attributes: {
 		        },
 		        uniforms: { 
-			  		index: 		{ type: 'f', value: 0 }
+			  		index: 		{ type: 'f', value: options_.index }
 		        }
 		    });
 		return new THREE.Line( geometry, material, THREE.LinePieces);
@@ -33,12 +34,20 @@ function VectorRasterView(options) {
 			mesh.material.needsUpdate = true; 
 		}
 	}
+	function update_uniform(key, value) {
+		if (uniforms[key] !== value) {
+			uniforms[key] = value;
+			mesh.material.uniforms[key].value = value;
+			mesh.material.uniforms[key].needsUpdate = true;
+		}
+	}
 
-	this.upsert = function(scene, raster, options) {
+	this.upsert = function(scene, raster, options_) {
 
 		if (mesh === void 0) {
-			mesh = create_mesh(raster, options);
-			vertexShader = options.vertexShader;
+			mesh = create_mesh(raster, options_);
+			vertexShader = options_.vertexShader;
+			uniforms = {...options_};
 			scene.add(mesh);
 
 			// HACK: we expose mesh here so WorldViews can modify as they see fit, 
@@ -46,7 +55,8 @@ function VectorRasterView(options) {
 			this.mesh = mesh; 
 		} 
 
-		update_vertex_shader(options.vertexShader);
+		update_vertex_shader(options_.vertexShader);
+		update_uniform('index',	options_.index);
 
 		var offset_length = 1.02; 	// offset of arrow from surface of sphere, in radii
 		var max_arrow_length = 0.1; // max arrow length, in radii
@@ -67,6 +77,7 @@ function VectorRasterView(options) {
 			end.z = raster.z[i] * scaling + start.z;
 		}
 		mesh.geometry.verticesNeedUpdate = true;
+
 	};
 	this.remove = function(scene) {
 		if (mesh !== void 0) {
