@@ -85,10 +85,12 @@ function RealisticWorldView(shader_return_value) {
 	};
 
 	this.remove = function(scene) {
-		scene.remove(mesh);
-		mesh.geometry.dispose();
-		mesh.material.dispose();
-		mesh = void 0;
+		if (mesh !== void 0) {
+			scene.remove(mesh);
+			mesh.geometry.dispose();
+			mesh.material.dispose();
+			mesh = void 0;
+		}
 	};
 	this.clone = function() {
 		return new RealisticWorldView(shader_return_value);

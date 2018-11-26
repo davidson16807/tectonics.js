@@ -1,8 +1,8 @@
 'use strict';
 
-function View(innerWidth, innerHeight, scalarWorldView1, vectorWorldView1, vertexShader) {
-	var scalarWorldView2 = scalarWorldView1.clone();
-	var vectorWorldView2 = vectorWorldView1.clone();
+function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
+	var scalarProjectionView = projectionView.clone();
+	var vectorProjectionView = projectionView.clone();
 
 	var this_ = this;
 	// create the renderer
@@ -36,42 +36,18 @@ function View(innerWidth, innerHeight, scalarWorldView1, vectorWorldView1, verte
 	};
 
 	function update_world(world){
-		if(scalarWorldView1 !== void 0){
-			scalarWorldView1.upsert(this_.scene, world, 
-					{
-						...uniforms, 
-						index: 1, 
-						vertexShader: vertexShader
-					}
-				);
-		}
-		if(scalarWorldView2 !== void 0){
-			scalarWorldView2.upsert(this_.scene, world, 
-					{
-						...uniforms, 
-						index: -1, 
-						vertexShader: vertexShader
-					}
-				);
-		}
-		if(vectorWorldView1 !== void 0){
-			vectorWorldView1.upsert(this_.scene, world, 
-					{
-						...uniforms, 
-						index: 1, 
-						vertexShader: vertexShader
-					}
-				);
-		}
-		if(vectorWorldView2 !== void 0){
-			vectorWorldView2.upsert(this_.scene, world, 
-					{
-						...uniforms, 
-						index: -1, 
-						vertexShader: vertexShader
-					}
-				);
-		}
+		scalarProjectionView.upsert(this_.scene, world, 
+				{
+					...uniforms, 
+					subview: scalarView
+				}
+			);
+		vectorProjectionView.upsert(this_.scene, world, 
+				{
+					...uniforms, 
+					subview: vectorView
+				}
+			);
 	}
 
 	this.update = function(sim){
@@ -87,36 +63,37 @@ function View(innerWidth, innerHeight, scalarWorldView1, vectorWorldView1, verte
 		return THREEx.Screenshot.toDataURL(this.renderer);
 	};
 
-	this.setScalarWorldView = function(value) {
-		if(scalarWorldView1 === value){
+	this.setScalarView = function(value) {
+		if(scalarView === value){
 			return;
 		}
-		if(scalarWorldView1 !== void 0){
-			scalarWorldView1.remove(this.scene);
+		if(scalarView !== void 0){
+			scalarView.remove(this.scene);
 		}
-		if(scalarWorldView2 !== void 0){
-			scalarWorldView2.remove(this.scene);
-		}
-		scalarWorldView1 = value;
-		scalarWorldView2 = value.clone();
+		scalarView = value;
 	};
 
-	this.setVectorWorldView = function(value) {
-		if(vectorWorldView1 === value){
+	this.setVectorView = function(value) {
+		if(vectorView === value){
 			return;
 		}
-		if(vectorWorldView1 !== void 0){
-			vectorWorldView1.remove(this.scene);
+		if(vectorView !== void 0){
+			vectorView.remove(this.scene);
 		}
-		if(vectorWorldView2 !== void 0){
-			vectorWorldView2.remove(this.scene);
-		}
-		vectorWorldView1 = value;
-		vectorWorldView2 = value.clone();
+		vectorView = value;
 	};
 
-	this.vertexShader = function(value){
-		vertexShader = value;
+	this.setProjectionView = function(value){
+		if(projectionView === value){
+			return;
+		}
+		if(projectionView !== void 0){
+			scalarProjectionView.remove(this.scene);
+			vectorProjectionView.remove(this.scene);
+		}
+		projectionView = value;
+		scalarProjectionView = value.clone();
+		vectorProjectionView = value.clone();
 	}
 
 	this.uniform = function(key, value){

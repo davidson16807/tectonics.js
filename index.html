@@ -80,8 +80,11 @@
 	<script src="noncompiled/view/world-view/RealisticWorldView.js"></script>
 	<script src="noncompiled/view/world-view/ScalarWorldView.js"></script>
 	<script src="noncompiled/view/world-view/VectorWorldView.js"></script>
+	<script src="noncompiled/view/projection-view/MapProjectionView.js"></script>
+	<script src="noncompiled/view/projection-view/GlobeProjectionView.js"></script>
 	<script src="noncompiled/view/ScalarViews.js"></script>
 	<script src="noncompiled/view/VectorViews.js"></script>
+	<script src="noncompiled/view/ProjectionViews.js"></script>
 	<script src="noncompiled/view/RegressionTestViews.js"></script>
 	<script src="noncompiled/view/ExperimentalViews.js"></script>
 	<!-- <script src="noncompiled/view/TestViews.js"></script> -->
@@ -404,7 +407,7 @@
 			window.innerHeight,
 			scalarViews.satellite, 
 			vectorViews.disabled, 
-			vertexShaders['orthographic'],
+			projectionViews.orthographic,
 		);
 		sim = new Simulation({
 			seed:  querystring['seed'] 			|| (new Date).getTime().toString(),
@@ -814,7 +817,7 @@
 	    setSelected: function(value) {
 	    	if (this.selected == value) { value = this.options[0].value; }
 	    	this.selected = value;
-	    	view.vertexShader(vertexShaders[value]);
+	    	view.setProjectionView(projectionViews[value]);
 	    },
 	    getClass: function(value, selected) {
 	    	return value == selected? 'active' : '';
@@ -838,7 +841,7 @@
 	    	if (this.selected == value) { value = this.options[0].value; }
 	  		var option = this.options.filter(x => x.value == value)[0];
 	  		this.selected = value;
-	  		view.setVectorWorldView(vectorViews[value]);
+	  		view.setVectorView(vectorViews[value]);
 	  	},
 	  	getClass: function(value, selected) {
 	  		return value == selected? 'active' : '';
@@ -877,7 +880,7 @@
 	    	if (this.selected == value) { value = this.options[0].value; }
 	  		var option = this.options.filter(x => x.value == value)[0];
 	    	this.selected = value;
-	    	view.setScalarWorldView(scalarViews[value]);
+	    	view.setScalarView(scalarViews[value]);
 	    },
 	    isSelected: function(value) {
 	    	return {

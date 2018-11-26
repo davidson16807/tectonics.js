@@ -25,12 +25,6 @@ function VectorWorldView(options) {
 	this.remove = function(scene) {
 		vectorRasterView.remove(scene);
 	};
-	this.vertexShader = function(vertexShader) {
-		vectorRasterView.vertexShader(vertexShader);
-	}
-	this.uniform = function(key, value) {
-		vectorRasterView.uniform(key, value);
-	}
 	this.clone = function() {
 		return new VectorWorldView({ vectorRasterView: vectorRasterView.clone() });
 	}

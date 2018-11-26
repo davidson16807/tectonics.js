@@ -54,12 +54,6 @@ function ScalarWorldView(scalarRasterView, getField) {
 	this.remove = function(scene) {
 		scalarRasterView.remove(scene);
 	};
-	this.vertexShader = function(vertexShader) {
-		scalarRasterView.vertexShader(vertexShader);
-	}
-	this.uniform = function(key, value) {
-		scalarRasterView.uniform(key, value);
-	}
 	this.clone = function() {
 		return new ScalarWorldView(scalarRasterView.clone(), getField);
 	}
