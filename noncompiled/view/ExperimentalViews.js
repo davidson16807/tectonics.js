@@ -17,7 +17,7 @@ experimentalViews.eliptic_ids = new ScalarWorldView(
 	    } 
 	 ); 
 experimentalViews.albedo 	= new ScalarWorldView(
-	new HeatmapRasterView( { min: '0.', max: '1.'}),  
+	new HeatmapRasterView( { min: 0., max: 1.}),  
 	function (world) {
 
 		// dependencies: sealevel, displacement, mean_anomaly, ice_fraction, precip, npp, lai, plant_fraction, land_fraction
@@ -77,20 +77,20 @@ experimentalViews.motion_test = new VectorWorldView( {
 
 
 experimentalViews.plate0 	= new ScalarWorldView(
-		new HeatmapRasterView( { min: '0.', max: '1.'}), 
+		new HeatmapRasterView( { min: 0., max: 1.}), 
 		function (world) {
 			return world.plates[0].mask;
 		} 	
 	);
 experimentalViews.buoyancy 	= new ScalarWorldView(
-		new HeatmapRasterView( { min: '-2.', max: '0.'}), 
+		new HeatmapRasterView( { min: -2., max: 0.}), 
 		function (world, buoyancy) {
 			Crust.get_buoyancy(world.density, world.material_density, world.surface_gravity, buoyancy);
 			return buoyancy;
 		}
 	);
 experimentalViews.buoyancy_smoothed 	= new ScalarWorldView(
-		new HeatmapRasterView( { min: '-2.', max: '0.'}), 
+		new HeatmapRasterView( { min: -2., max: 0.}), 
 		function (world, buoyancy) {
 			Crust.get_buoyancy(world.density, world.material_density, world.surface_gravity, buoyancy);
 			var pressure = TectonicsModeling.get_asthenosphere_pressure(buoyancy);
@@ -115,7 +115,7 @@ experimentalViews.angular_velocity = new VectorWorldView( {
     }
   } ); 
 experimentalViews.plates = new ScalarWorldView(
-		new HeatmapRasterView( { min: '0.', max: '7.'}), 
+		new HeatmapRasterView( { min: 0., max: 7.}), 
 		function (world) {
 			var buoyancy = Crust.get_buoyancy(world.density, world.material_density, world.surface_gravity);
 			var pressure = TectonicsModeling.get_asthenosphere_pressure(buoyancy);
@@ -136,7 +136,7 @@ experimentalViews.velocity = new VectorWorldView( {
     }
   } ); 
 experimentalViews.speed 	= new ScalarWorldView(
-		new HeatmapRasterView( { min: '0.', max: '1.'}), 
+		new HeatmapRasterView( { min: 0., max: 1.}), 
 		function (world, result) {
 			var plate = world.plates[0];
 
@@ -146,7 +146,7 @@ experimentalViews.speed 	= new ScalarWorldView(
 		} 	
 	);
 experimentalViews.insolation 	= new ScalarWorldView(
-		new HeatmapRasterView( { min: '0.', max: '400.'}), 
+		new HeatmapRasterView( { min: 0., max: 400.}), 
 		function (world, result) {
 			return world.atmosphere.average_insolation;
 		} 	

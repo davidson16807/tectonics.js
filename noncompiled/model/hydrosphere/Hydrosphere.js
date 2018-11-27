@@ -90,6 +90,7 @@ function Hydrosphere(grid, parameters) {
 		this.sealevel		.invalidate();
 		this.epipelagic		.invalidate();
 		this.mesopelagic	.invalidate();
+		this.elevation		.invalidate();
 		this.surface_height	.invalidate();
 		this.ocean_depth	.invalidate();
 		this.ice_coverage	.invalidate();

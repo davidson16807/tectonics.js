@@ -1,19 +1,20 @@
 'use strict';
 
 function HeatmapRasterView(options) {
-	var min = options['min'] || '0.';
-	var max = options['max'] || '1.';
+	var min = options['min'] || 0.;
+	var max = options['max'] || 1.;
 	var scaling = options['scaling'] || false;
 	this.chartViews = options['chartViews'] || [ new SpatialPdfChartView('land') ]; 
 	this.scaling = scaling;
 	var fragmentShader = fragmentShaders.heatmap
-		.replace('@MIN', min)
-		.replace('@MAX', max);
+		.replace('@MIN', '0.')
+		.replace('@MAX', '1.');
 
 	this.mesh = void 0;
 	var mesh = void 0;
 	var uniforms = {};
 	var vertexShader = void 0;
+	var scaled = void 0;
 
 	function create_mesh(raster, options) {
 		var grid = raster.grid;
@@ -62,9 +63,24 @@ function HeatmapRasterView(options) {
 	}
 
 	this.upsert = function(scene, raster, options) {
+		if (raster === void 0) {
+			this.remove(scene);
+		}
+
+		if (scaled === void 0 || scaled.grid !== raster.grid) {
+			scaled = Float32Raster(raster.grid);
+		}
+		
+		if (scaling) {
+			Float32Dataset.normalize(raster, scaled, 0., 1.);
+		} else {
+			ScalarField.sub_scalar(raster, min, 		scaled);
+			ScalarField.div_scalar(scaled, max-min, 	scaled);
+			ScalarField.add_scalar(scaled, min, 		scaled);
+		}
 
 		if (mesh === void 0) {
-			mesh = create_mesh(raster, options);
+			mesh = create_mesh(scaled, options);
 			uniforms = {...options};
 			vertexShader = options.vertexShader;
 			scene.add(mesh);
@@ -74,9 +90,7 @@ function HeatmapRasterView(options) {
 			this.mesh = mesh; 
 		} 
 
-		var max = this.scaling? Math.max.apply(null, raster) || 1 : 1;
-		ScalarField.div_scalar(raster, max, raster);
-		update_attribute('scalar', 			raster);
+		update_attribute('scalar', 			scaled);
 				
 		update_uniform('sealevel_mod',		options.sealevel_mod);
 		update_uniform('index',				options.index);
@@ -91,6 +105,7 @@ function HeatmapRasterView(options) {
 			mesh = void 0;
 			this.mesh = void 0;
 		} 
+		scaled = void 0;
 	};
 	this.clone = function() {
 		return new  HeatmapRasterView(options);
