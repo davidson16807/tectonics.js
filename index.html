@@ -66,7 +66,7 @@
 	<script src="noncompiled/model/biosphere/Biosphere.js"></script>
 	<script src="noncompiled/model/World.js"></script>
 	<script src="noncompiled/model/Simulation.js"></script> 
-	<script src="noncompiled/generators/EliasHeightMapGenerator.js"></script>
+	<script src="noncompiled/generators/EliasScalarRasterGenerator.js"></script>
 	<script src="noncompiled/generators/CrustGenerator.js"></script>
 	<script src="noncompiled/generators/NameGenerator.js"></script>
 	<script src="noncompiled/generators/NameCorpii.js"></script>
@@ -419,7 +419,7 @@
 		
 		var planet_name_corpus = NameGenerator.tokenize_corpus(NameCorpii.greek_mythological_names);
 		var get_planet_name = NameGenerator.get_length_distribution_generator(planet_name_corpus, 25, {5:1,6:3,7:11,8:3,9:1}, 100);
-		var focus_name = get_planet_name();
+		var focus_name = get_planet_name(sim.random);
 		
 		var geometry = new THREE.IcosahedronGeometry(1, resolution);
 		var universe = new Universe({
@@ -433,7 +433,7 @@
 				invariant_insolation: true,
 				body: {
 					type: 'star',
-					name: get_star_name(),
+					name: get_star_name(sim.random),
 					mass: Units.SOLAR_MASS,
 				},
 				children: [
@@ -478,10 +478,11 @@
 		});
 		var focus = universe.body_id_to_node_map[focus_name].body;
 		CrustGenerator.generate(
-			EliasHeightMapGenerator.generate(focus.grid), 
+			EliasScalarRasterGenerator.generate(focus.grid, sim.random), 
 			CrustGenerator.modern_earth_hypsography, 
 			CrustGenerator.modern_earth_control_points, 
-			focus.lithosphere.total_crust
+			focus.lithosphere.total_crust,
+			sim.random
 		);
 		sim.model(universe);
 		sim.focus = focus;

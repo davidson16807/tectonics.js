@@ -4,7 +4,7 @@ function SupercontinentCycle(lithosphere, parameters){
 	parameters = parameters || {};
 
 	this.getRandomDuration = function() { return 150 * Units.SECONDS_IN_MEGAYEAR; };
-		// function() { return sim.random.uniform(300, 500); };
+		// function() { return random.uniform(300, 500); };
 		// from wikipedia
 	
 	this.lithosphere = lithosphere;

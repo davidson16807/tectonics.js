@@ -10,9 +10,8 @@
 // Its a bit more sophisticated in that it uses a smooth function
 // instead of an immediate drop off between sides. 
 // This is done to produce smoother terrain using fewer iterations 
-var EliasHeightMapGenerator = {};
-EliasHeightMapGenerator.generate = function (grid, optional) {
-	var optional = {};
+var EliasScalarRasterGenerator = {};
+EliasScalarRasterGenerator.generate = function (grid, random) {
 	var exp = Math.exp;
 
 	function heaviside_approximation (x, k) {
@@ -27,7 +26,7 @@ EliasHeightMapGenerator.generate = function (grid, optional) {
 	// to find the z axis relative to the continent center 
 	var zDotMultipliers = [];
 	for (var i = 0; i < 1000; i++) {
-		zDotMultipliers.push(Sphere.random_point());
+		zDotMultipliers.push(Sphere.random_point_on_surface(random));
 	};
 
 	// Now, we iterate through the cells and find their "height rank".
@@ -44,6 +43,7 @@ EliasHeightMapGenerator.generate = function (grid, optional) {
 		Float32RasterInterpolation.smooth_heaviside(z, 300, z);
 		ScalarField.add_field(height_ranks, z, height_ranks);
 	}
+	Float32Dataset.normalize(height_ranks, height_ranks);
 
 	return height_ranks;
 }

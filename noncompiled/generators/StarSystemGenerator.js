@@ -47,7 +47,7 @@ StarSystemGenerator.generate = function (random, system_mass) {
 	    }
 	  }
 	  return function() {
-	    return table[Math.floor(Math.random() * table.length)];
+	    return table[Math.floor(random.random() * table.length)];
 	  }
 	}
 
@@ -56,7 +56,7 @@ StarSystemGenerator.generate = function (random, system_mass) {
 
 	// See Chabrier 2003
 	system_mass = system_mass || 
-		Units.SOLAR_MASS * exp(sim.random.normal(log(0.2), 0.6));
+		Units.SOLAR_MASS * exp(random.normal(log(0.2), 0.6));
 
 	// system_ref_frame = 
 
@@ -64,9 +64,9 @@ StarSystemGenerator.generate = function (random, system_mass) {
 	var galactic_sma = 
 
 	// 1/3 of binary stars have planets
-	if (sim.random.uniform(0,1) < 1/3){
+	if (random.uniform(0,1) < 1/3){
 		// mass of subsystem1 vs mass of other star
-		var system_mass_ratio = exp(sim.random.normal(log(0.2), 0.6)) / exp(sim.random.normal(log(0.2), 0.6)) 
+		var system_mass_ratio = exp(random.normal(log(0.2), 0.6)) / exp(random.normal(log(0.2), 0.6)) 
 		// mass of each subsystem vs total system mass
 		var subsystem1_mass_fraction = system_mass_ratio/(system_mass_ratio+1);
 		var subsystem2_mass_fraction = 1.-subsystem1_mass_fraction;
@@ -75,9 +75,9 @@ StarSystemGenerator.generate = function (random, system_mass) {
 		var subsystem2 = StarSystemGenerator.generate(random, system_mass*subsystem2_mass_fraction);
 
 		// eccentricity of subsystems orbiting themselves
-		var eccentricity = sim.random.uniform(0,1) // TODO: model this as a beta distribution
+		var eccentricity = random.uniform(0,1) // TODO: model this as a beta distribution
 		// semi major axis of subsystem1, from Malkov et al.
-		var subsystem1_sma = Units.ASTRONOMICAL_UNIT * exp(sim.random.normal(log(12), log(2))); 
+		var subsystem1_sma = Units.ASTRONOMICAL_UNIT * exp(random.normal(log(12), log(2))); 
 		// semi major axis of subsystem2, given conservation of momentum/center of mass
 		var subsystem2_sma = subsystem1_sma / system_mass_ratio;
 

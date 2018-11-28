@@ -1,6 +1,6 @@
 
 var CrustGenerator = {};
-CrustGenerator.generate = function (height_ranks, hypsography, control_points, crust) {
+CrustGenerator.generate = function (height_ranks, hypsography, control_points, crust, random) {
 	function clamp (x, minVal, maxVal) {
 		return Math.min(Math.max(x, minVal), maxVal);
 	}
@@ -23,7 +23,7 @@ CrustGenerator.generate = function (height_ranks, hypsography, control_points, c
 	// We sort the elevations and map each one to a cell from our height-rank sorted list.
 	heights = new Float32Array(cell_ids.length);
 	for (var i = 0, li = heights.length; i < li; i++) {
-		heights[i] = hypsography();
+		heights[i] = hypsography(random);
 	};
 	heights.sort(function(a,b) { return a-b; });
  	
@@ -51,17 +51,17 @@ CrustGenerator.generate = function (height_ranks, hypsography, control_points, c
 	};
 };
 
-CrustGenerator.early_earth_hypsography = function() {
+CrustGenerator.early_earth_hypsography = function(random) {
 	var water_fraction = 0.95; // Earth = 0.71
-	return sim.random.uniform(0,1) < water_fraction? 
-		sim.random.normal(-4019,1113) :
-		sim.random.normal(797,1169);
+	return random.uniform(0,1) < water_fraction? 
+		random.normal(-4019,1113) :
+		random.normal(797,1169);
 };
-CrustGenerator.modern_earth_hypsography = function() {
+CrustGenerator.modern_earth_hypsography = function(random) {
 	var water_fraction = 0.6; // 60% of earth's crust is oceanic
-	return sim.random.uniform(0,1) < water_fraction? 
-		sim.random.normal(-4019,1113) :
-		sim.random.normal(797,1169);
+	return random.uniform(0,1) < water_fraction? 
+		random.normal(-4019,1113) :
+		random.normal(797,1169);
 };
 CrustGenerator.modern_earth_control_points = [
 	//abyss
