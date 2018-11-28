@@ -1581,32 +1581,39 @@ Float32Dataset.weighted_average = function (dataset, weights) {
 };
 Float32Dataset.normalize = function(dataset, result, min_new, max_new) {
   result = result || Float32Raster(dataset.grid);
-  var min = Float32Dataset.min(dataset);
+  var min_old = Float32Dataset.min(dataset);
   min_new = min_new || 0;
-  var max = Float32Dataset.max(dataset);
+  var max_old = Float32Dataset.max(dataset);
   max_new = max_new || 1;
   if (!(dataset instanceof Float32Array)) { throw "dataset" + ' is not a ' + "Float32Array"; }
   if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
   if (!(typeof min_new == "number")) { throw "min_new" + ' is not a ' + "number"; }
   if (!(typeof max_new == "number")) { throw "max_new" + ' is not a ' + "number"; }
-  var range = max - min;
+  var range = max_old - min_old;
   var range_new = max_new - min_new;
   var scaling_factor = range_new / range;
   for (var i=0, li=dataset.length; i<li; ++i) {
-      result[i] = scaling_factor * (dataset[i] - min) + min_new;
+      result[i] = scaling_factor * (dataset[i] - min_old) + min_new;
   }
   return result;
 }
-Float32Dataset.rescale = function(dataset, result, max_new) {
+Float32Dataset.rescale = function(dataset, result, min_old, max_old, min_new, max_new) {
   result = result || Float32Raster(dataset.grid);
-  var max_new = max_new || 1;
-  var max = Float32Dataset.max(dataset) || max_new;
-  var scaling_factor = max_new / max;
+  var min_old = min_old || Float32Dataset.min(dataset);
+  min_new = min_new || 0;
+  var max_old = max_old || Float32Dataset.max(dataset);
+  max_new = max_new || 1;
   if (!(dataset instanceof Float32Array)) { throw "dataset" + ' is not a ' + "Float32Array"; }
   if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
+  if (!(typeof min_old == "number")) { throw "min_old" + ' is not a ' + "number"; }
+  if (!(typeof max_old == "number")) { throw "max_old" + ' is not a ' + "number"; }
+  if (!(typeof min_new == "number")) { throw "min_new" + ' is not a ' + "number"; }
   if (!(typeof max_new == "number")) { throw "max_new" + ' is not a ' + "number"; }
+  var range = max_old - min_old;
+  var range_new = max_new - min_new;
+  var scaling_factor = range_new / range;
   for (var i=0, li=dataset.length; i<li; ++i) {
-      result[i] = scaling_factor * dataset[i];
+      result[i] = scaling_factor * (dataset[i] - min_old) + min_new;
   }
   return result;
 }

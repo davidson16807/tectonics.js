@@ -13,7 +13,7 @@ void main() {
 	vec4 uncovered = mix( 
 		vec4(@MINCOLOR,1.), 
 		vec4(@MAXCOLOR,1.), 
-		smoothstep(0.0, 1.0, vScalar) 
+		vScalar
 	);
 	vec4 ocean = mix(vec4(0.), uncovered, 0.5);
 	vec4 sea_covered = vDisplacement < sealevel * sealevel_mod? ocean : uncovered;

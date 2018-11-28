@@ -75,9 +75,7 @@ function HeatmapRasterView(options) {
 		if (scaling) {
 			Float32Dataset.normalize(raster, scaled_raster, 0., 1.);
 		} else {
-			ScalarField.sub_scalar(raster, min, 		scaled_raster);
-			ScalarField.div_scalar(scaled_raster, max-min, 	scaled_raster);
-			ScalarField.add_scalar(scaled_raster, min, 		scaled_raster);
+			Float32Dataset.rescale(raster, scaled_raster, min, max, 0., 1.);
 		}
 
 		if (mesh === void 0) {

@@ -70,10 +70,10 @@ Float32Dataset.weighted_average = function (dataset, weights) {
 Float32Dataset.normalize = function(dataset, result, min_new, max_new) {
   result = result || Float32Raster(dataset.grid);
 
-  var min = Float32Dataset.min(dataset);
+  var min_old = Float32Dataset.min(dataset);
   min_new = min_new || 0;
   
-  var max = Float32Dataset.max(dataset);
+  var max_old = Float32Dataset.max(dataset);
   max_new = max_new || 1;
 
   ASSERT_IS_ARRAY(dataset, Float32Array)
@@ -81,30 +81,40 @@ Float32Dataset.normalize = function(dataset, result, min_new, max_new) {
   ASSERT_IS_TYPE(min_new, number)
   ASSERT_IS_TYPE(max_new, number)
 
-  var range = max - min;
+  var range = max_old - min_old;
   var range_new = max_new - min_new;
 
   var scaling_factor = range_new / range;
 
   for (var i=0, li=dataset.length; i<li; ++i) {
-      result[i] = scaling_factor * (dataset[i] - min) + min_new;
+      result[i] = scaling_factor * (dataset[i] - min_old) + min_new;
   }
   return result;
 }
 
-Float32Dataset.rescale = function(dataset, result, max_new) {
+Float32Dataset.rescale = function(dataset, result, min_old, max_old, min_new, max_new) {
   result = result || Float32Raster(dataset.grid);
 
-  var max_new = max_new || 1;
-  var max = Float32Dataset.max(dataset) || max_new;
-  var scaling_factor = max_new / max;
+  var min_old = min_old || Float32Dataset.min(dataset);
+  min_new = min_new || 0;
+  
+  var max_old = max_old || Float32Dataset.max(dataset);
+  max_new = max_new || 1;
 
   ASSERT_IS_ARRAY(dataset, Float32Array)
   ASSERT_IS_ARRAY(result, Float32Array)
+  ASSERT_IS_TYPE(min_old, number)
+  ASSERT_IS_TYPE(max_old, number)
+  ASSERT_IS_TYPE(min_new, number)
   ASSERT_IS_TYPE(max_new, number)
 
+  var range = max_old - min_old;
+  var range_new = max_new - min_new;
+
+  var scaling_factor = range_new / range;
+
   for (var i=0, li=dataset.length; i<li; ++i) {
-      result[i] = scaling_factor * dataset[i];
+      result[i] = scaling_factor * (dataset[i] - min_old) + min_new;
   }
   return result;
 }
