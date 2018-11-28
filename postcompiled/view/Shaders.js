@@ -1,6 +1,6 @@
 var vertexShaders = {};
 vertexShaders.equirectangular = `
-const float PI = 3.14;
+const float PI = 3.14159265358979;
 const float OCEAN = 0.0;
 const float LAND = 0.005;
 const float NONE = 0.0;
@@ -10,15 +10,18 @@ attribute float plant_coverage;
 attribute float ice_coverage;
 attribute float insolation;
 attribute float scalar;
+attribute float vector_fraction_traversed;
 attribute vec3 vector;
 varying float vDisplacement;
 varying float vPlantCoverage;
 varying float vIceCoverage;
 varying float vInsolation;
 varying float vScalar;
+varying float vVectorFractionTraversed;
 varying vec4 vPosition;
 uniform float sealevel;
 uniform float index;
+uniform float animation_phase_angle;
 float lon(vec3 pos) {
  return atan(-pos.z, pos.x) + PI;
 }
@@ -50,7 +53,7 @@ void main() {
 }
 `;
 vertexShaders.texture = `
-const float PI = 3.14;
+const float PI = 3.14159265358979;
 const float OCEAN = 0.0;
 const float LAND = 0.005;
 const float NONE = 0.0;
@@ -60,15 +63,18 @@ attribute float plant_coverage;
 attribute float ice_coverage;
 attribute float insolation;
 attribute float scalar;
+attribute float vector_fraction_traversed;
 attribute vec3 vector;
 varying float vDisplacement;
 varying float vPlantCoverage;
 varying float vIceCoverage;
 varying float vInsolation;
 varying float vScalar;
+varying float vVectorFractionTraversed;
 varying vec4 vPosition;
 uniform float sealevel;
 uniform float index;
+uniform float animation_phase_angle;
 uniform float insolation_max;
 float lon(vec3 pos) {
  return atan(-pos.z, pos.x) + PI;
@@ -97,7 +103,7 @@ void main() {
 }
 `;
 vertexShaders.orthographic = `
-const float PI = 3.14;
+const float PI = 3.14159265358979;
 const float OCEAN = 0.0;
 const float LAND = 0.005;
 const float NONE = 0.0;
@@ -107,21 +113,25 @@ attribute float plant_coverage;
 attribute float ice_coverage;
 attribute float insolation;
 attribute float scalar;
+attribute float vector_fraction_traversed;
 attribute vec3 vector;
 varying float vDisplacement;
 varying float vPlantCoverage;
 varying float vIceCoverage;
 varying float vInsolation;
 varying float vScalar;
+varying float vVectorFractionTraversed;
 varying vec4 vPosition;
 uniform float sealevel;
 uniform float index;
+uniform float animation_phase_angle;
 void main() {
  vDisplacement = displacement;
  vPlantCoverage = plant_coverage;
  vIceCoverage = ice_coverage;
  vInsolation = insolation;
  vScalar = scalar;
+ vVectorFractionTraversed = vector_fraction_traversed;
  vPosition = modelMatrix * vec4( position, 1.0 );
  float height = displacement > sealevel? (displacement-sealevel) / 6000e3 : OCEAN;
  vec4 displaced = vec4( ( position ) * (1.+height), 1.0 );
@@ -226,7 +236,11 @@ void main() {
 }
 `;
 fragmentShaders.vectorField = `
+const float PI = 3.14159265358979;
+uniform float animation_phase_angle;
+varying float vVectorFractionTraversed;
 void main() {
- gl_FragColor = vec4(1);
+ float state = sin(animation_phase_angle + vVectorFractionTraversed * 1.*PI );
+ gl_FragColor = vec4(state) * vec4(0.5,0.5,0.5,1) + 0.5;
 }
 `;

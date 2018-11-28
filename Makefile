@@ -1,6 +1,6 @@
 KNAME := $(shell uname)
 ifeq (Darwin,$(findstring Darwin,$(KNAME)))
-	CPP=g++-7
+	CPP=g++-8
 else
 	CPP=/usr/bin/cpp
 endif

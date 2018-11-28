@@ -1,4 +1,4 @@
-const float PI = 3.14;
+const float PI = 3.14159265358979;
 const float OCEAN = 0.0;
 const float LAND = 0.005;
 const float NONE = 0.0;
@@ -9,6 +9,7 @@ attribute float plant_coverage;
 attribute float ice_coverage;
 attribute float insolation;
 attribute float scalar;
+attribute float vector_fraction_traversed;
 attribute vec3 vector;
 
 varying float vDisplacement;
@@ -16,7 +17,9 @@ varying float vPlantCoverage;
 varying float vIceCoverage;
 varying float vInsolation;
 varying float vScalar;
+varying float vVectorFractionTraversed;
 varying vec4 vPosition;
 
 uniform float sealevel;
 uniform float index;
+uniform float animation_phase_angle;

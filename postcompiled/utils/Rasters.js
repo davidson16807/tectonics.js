@@ -1597,7 +1597,7 @@ Float32Dataset.normalize = function(dataset, result, min_new, max_new) {
   }
   return result;
 }
-Float32Dataset.rescale = function(dataset, result, min_old, max_old, min_new, max_new) {
+Float32Dataset.rescale = function(dataset, result, min_new, max_new, min_old, max_old) {
   result = result || Float32Raster(dataset.grid);
   var min_old = min_old || Float32Dataset.min(dataset);
   min_new = min_new || 0;

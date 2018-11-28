@@ -12,19 +12,23 @@ function VectorRasterView(options) {
 	function create_mesh(raster, options_) {
 		var grid = raster.grid;
 		var geometry = new THREE.Geometry();
-		for (var i=0, li=grid.vertices.length; i<li; ++i) {
-		    geometry.vertices.push( grid.vertices[i].clone() );
-		    geometry.vertices.push( grid.vertices[i].clone() );
-		}
 		var material = new THREE.ShaderMaterial({
 		        vertexShader: 	options_.vertexShader,
 		        fragmentShader: fragmentShaders.vectorField,
 		        attributes: {
+					vector_fraction_traversed: { type: 'f', value: [] },
 		        },
 		        uniforms: { 
-			  		index: 		{ type: 'f', value: options_.index }
+			  		index: 		{ type: 'f', value: options_.index },
+			  		animation_phase_angle: 		{ type: 'f', value: 0 }
 		        }
 		    });
+		for (var i=0, li=grid.vertices.length; i<li; ++i) {
+		    geometry.vertices.push( grid.vertices[i].clone() );
+		    geometry.vertices.push( grid.vertices[i].clone() );
+		    material.attributes.vector_fraction_traversed.value.push(0);
+		    material.attributes.vector_fraction_traversed.value.push(1);
+		}
 		return new THREE.Line( geometry, material, THREE.LinePieces);
 	}
 	function update_vertex_shader(value) {
@@ -57,6 +61,7 @@ function VectorRasterView(options) {
 
 		update_vertex_shader(options_.vertexShader);
 		update_uniform('index',	options_.index);
+		update_uniform('animation_phase_angle',	(mesh.material.uniforms.animation_phase_angle.value + 1e-1)%(2*3.14));
 
 		var offset_length = 1.02; 	// offset of arrow from surface of sphere, in radii
 		var max_arrow_length = 0.1; // max arrow length, in radii
