@@ -18,9 +18,7 @@ function ColorscaleRasterView(options) {
 	var maxColor_str = hex_color_to_glsl_string_color(maxColor);
 	var fragmentShader = fragmentShaders.monochromatic
 		.replace('@MINCOLOR', minColor_str)
-		.replace('@MAXCOLOR', maxColor_str)
-		.replace('@MIN', '0.')
-		.replace('@MAX', '1.');
+		.replace('@MAXCOLOR', maxColor_str);
 
 	this.mesh = void 0;
 	var mesh = void 0;
