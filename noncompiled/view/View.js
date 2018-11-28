@@ -55,6 +55,10 @@ function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
 		update_world(sim.focus);
 	}
 
+	this.updateChart = function(data, sim, options) {
+		scalarProjectionView.updateChart(data, sim.focus, options);
+	};
+
 	this.getDomElement = function() {
 		return this.renderer.domElement;
 	};

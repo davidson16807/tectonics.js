@@ -26,4 +26,7 @@ function MapProjectionView(vertexShader) {
 	this.clone = function() {
 		return new MapProjectionView(vertexShader);
 	}
+	this.updateChart = function(data, model, options) {
+		subview1.updateChart(data, model, options);
+	};
 }

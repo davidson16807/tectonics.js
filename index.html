@@ -72,7 +72,7 @@
 	<script src="noncompiled/generators/NameCorpii.js"></script>
 	<script src="noncompiled/file-io/JsonSerializer.js"></script>
 	<script src="noncompiled/file-io/CsvExporter.js"></script>
-	<script src="noncompiled/view/SpatialPdfChartView.js"></script>
+	<script src="noncompiled/view/PdfChartView.js"></script>
 	<script src="noncompiled/view/raster-view/ColorscaleRasterView.js"></script>
 	<script src="noncompiled/view/raster-view/HeatmapRasterView.js"></script>
 	<script src="noncompiled/view/raster-view/DisabledVectorRasterView.js"></script>
@@ -968,15 +968,15 @@
     const chartVue = new Vue({
         el: '#chart',
         data:{
-        	isEnabled: false,
-        	min: 0,
-        	max: 0,
-        	mean: 0,
-        	median: 0,
-        	stddev: 0,
-            x: [],
-            y: [],
-        	ocean_visibility: 1,
+			isEnabled: false,
+			min: 0,
+			max: 0,
+			mean: 0,
+			median: 0,
+			stddev: 0,
+			x: [],
+			y: [],
+        	sealevel_mod: 1,
             options: {
             	legend: {display: false}, 
             	animation : false,
@@ -1001,32 +1001,12 @@
 		created: function() {
 			var _this = this;
 			setInterval(function() {
-				var field = view._scalarView.field;
-				if (field === void 0) {
-					_this.isEnabled = false;
-					return;
-				}
-				_this.min = Float32Dataset.max(field);
-				_this.max = Float32Dataset.min(field);
-				_this.mean = Float32Dataset.average(field);
-				_this.median = Float32Dataset.median(field);
-				_this.stddev = Float32Dataset.standard_deviation(field);
-
-				var chart_view = view._scalarView.chartViews[0];
-				if (chart_view === void 0){
-					_this.isEnabled = false;
-					return;
-				}
-				var chart_data = chart_view.get_dynamic_data(field, { ocean_visibility: _this.ocean_visibility });
-
-				_this.isEnabled = true;
-				_this.$data.x = chart_data.x;
-				_this.$data.y = chart_data.y;
+				view.updateChart(_this.$data, sim, _this.$data);
 			}, 1000/2);
 		},
 		methods: {
 			setOceanVisibility(value){
-				this.ocean_visibility = value? 1:0;
+				this.sealevel_mod = value? 1:0;
 			},
 			round(x) {
 				return Math.round(x);

@@ -44,4 +44,7 @@ function VectorWorldView(options) {
 			getField: options.getField,
 		});
 	}
+	this.updateChart = function(data, world, options) {
+		data.isEnabled = false;
+	};
 }

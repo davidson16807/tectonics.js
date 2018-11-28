@@ -1,12 +1,13 @@
 'use strict';
 
 function ColorscaleRasterView(options) {
-	var minColor = options['minColor'] || 0x000000;
-	var maxColor = options['maxColor'] || 0xffffff;
-	var min = options['min'] || 0.;
-	var max = options['max'] || 1.;
-	var scaling = options['scaling'] || false;
-	this.chartViews = options['chartViews'] || [ new SpatialPdfChartView('land') ]; 
+	var invariant_options = options;
+	var minColor = invariant_options['minColor'] || 0x000000;
+	var maxColor = invariant_options['maxColor'] || 0xffffff;
+	var min = invariant_options['min'] || 0.;
+	var max = invariant_options['max'] || 1.;
+	var scaling = invariant_options['scaling'] || false;
+	var chartView = invariant_options['chartViews'] || new PdfChartView('land'); 
 	function hex_color_to_glsl_string_color(color) {
 		var rIntValue = ((color / 256 / 256) % 256) / 255.0;
 		var gIntValue = ((color / 256      ) % 256) / 255.0;
@@ -25,7 +26,7 @@ function ColorscaleRasterView(options) {
 	var mesh = void 0;
 	var uniforms = {};
 	var vertexShader = void 0;
-	var scaled = void 0;
+	var scaled_raster = void 0;
 
 	function create_mesh(raster, options) {
 		var grid = raster.grid;
@@ -74,24 +75,25 @@ function ColorscaleRasterView(options) {
 	}
 
 	this.upsert = function(scene, raster, options) {
+
 		if (raster === void 0) {
 			this.remove(scene);
 		}
 
-		if (scaled === void 0 || scaled.grid !== raster.grid) {
-			scaled = Float32Raster(raster.grid);
+		if (scaled_raster === void 0 || scaled_raster.grid !== raster.grid) {
+			scaled_raster = Float32Raster(raster.grid);
 		}
 
 		if (scaling) {
-			Float32Dataset.normalize(raster, scaled, 0., 1.);
+			Float32Dataset.normalize(raster, scaled_raster, 0., 1.);
 		} else {
-			ScalarField.sub_scalar(raster, min, 		scaled);
-			ScalarField.div_scalar(scaled, max-min, 	scaled);
-			ScalarField.add_scalar(scaled, min, 		scaled);
+			ScalarField.sub_scalar(raster, min, 		scaled_raster);
+			ScalarField.div_scalar(scaled_raster, max-min, 	scaled_raster);
+			ScalarField.add_scalar(scaled_raster, min, 		scaled_raster);
 		}
 
 		if (mesh === void 0) {
-			mesh = create_mesh(scaled, options);
+			mesh = create_mesh(scaled_raster, options);
 			uniforms = {...options};
 			vertexShader = options.vertexShader;
 			scene.add(mesh);
@@ -101,12 +103,19 @@ function ColorscaleRasterView(options) {
 			this.mesh = mesh; 
 		} 
 
-		update_attribute('scalar', 			scaled);
+		update_attribute('scalar', 			scaled_raster);
 				
 		update_uniform('sealevel_mod',		options.sealevel_mod);
 		update_uniform('index',				options.index);
 
 		update_vertex_shader(options.vertexShader);
+		
+		if (options.displacement !== void 0) {
+			update_attribute('displacement', options.displacement);
+		}
+		if (options.displacement !== void 0) {
+			update_uniform('sealevel', 		options.sealevel);
+		}
 	};
 	this.remove = function(scene) {
 		if (mesh !== void 0) {
@@ -116,9 +125,12 @@ function ColorscaleRasterView(options) {
 			mesh = void 0;
 			this.mesh = void 0;
 		}
-		scaled = void 0;
+		scaled_raster = void 0;
 	};
 	this.clone = function() {
-		return new ColorscaleRasterView(options);
+		return new ColorscaleRasterView(invariant_options);
+	}
+	this.updateChart = function(data, raster, options) {
+		chartView.updateChart(data, raster, options);
 	}
 }

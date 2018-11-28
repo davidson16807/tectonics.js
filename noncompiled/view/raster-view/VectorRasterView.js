@@ -91,4 +91,7 @@ function VectorRasterView(options) {
 	this.clone = function() {
 		return new VectorRasterView(options);
 	}
+	this.updateChart = function(data, raster, options) {
+		data.isEnabled = false;
+	};
 }

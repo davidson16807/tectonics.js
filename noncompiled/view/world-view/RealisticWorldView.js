@@ -95,4 +95,7 @@ function RealisticWorldView(shader_return_value) {
 	this.clone = function() {
 		return new RealisticWorldView(shader_return_value);
 	}
+	this.updateChart = function(data, world, options) {
+		data.isEnabled = false;
+	};
 }

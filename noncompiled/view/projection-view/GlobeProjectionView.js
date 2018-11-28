@@ -23,4 +23,7 @@ function GlobeProjectionView() {
 	this.clone = function() {
 		return new GlobeProjectionView();
 	}
+	this.updateChart = function(data, model, options) {
+		subview.updateChart(data, model, options);
+	};
 }
