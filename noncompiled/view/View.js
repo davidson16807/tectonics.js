@@ -50,6 +50,23 @@ function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
 				}
 			);
 	}
+	this.print = function(raster){
+		if (raster.x === void 0) {
+			scalarProjectionView.updateScene(this_.scene, raster, 
+					{
+						...options, 
+						subview: scalarView
+					}
+				);
+		} else {
+			vectorProjectionView.updateScene(this_.scene, raster, 
+					{
+						...options, 
+						subview: vectorView
+					}
+				);
+		}
+	}
 
 	this.updateChart = function(data, sim, options) {
 		scalarProjectionView.updateChart(data, sim.focus, options);
