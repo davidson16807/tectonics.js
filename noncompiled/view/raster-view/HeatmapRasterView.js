@@ -5,7 +5,7 @@ function HeatmapRasterView(options) {
 	var min = invariant_options['min'] || 0.;
 	var max = invariant_options['max'] || 1.;
 	var scaling = invariant_options['scaling'] || false;
-	var chartView = invariant_options['chartView'] || new PdfChartView('land'); 
+	var chartView = invariant_options['chartView'] || new PdfChartRasterView('land'); 
 	this.scaling = scaling;
 	var fragmentShader = fragmentShaders.heatmap
 		.replace('@MIN', '0.')
@@ -64,10 +64,10 @@ function HeatmapRasterView(options) {
 		mesh.geometry.attributes[key].needsUpdate = true;
 	}
 
-	this.upsert = function(scene, raster, options) {
+	this.updateScene = function(scene, raster, options) {
 
 		if (raster === void 0) {
-			this.remove(scene);
+			this.removeFromScene(scene);
 		}
 
 		if (scaled_raster === void 0 || scaled_raster.grid !== raster.grid) {
@@ -107,7 +107,7 @@ function HeatmapRasterView(options) {
 			update_uniform('sealevel', 		options.sealevel);
 		}
 	};
-	this.remove = function(scene) {
+	this.removeFromScene = function(scene) {
 		if (mesh !== void 0) {
 			scene.remove(mesh);
 			mesh.geometry.dispose();

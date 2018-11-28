@@ -7,7 +7,7 @@ function ScalarWorldView(scalarRasterView, getField) {
 	var preallocated = void 0;
 	var scratch = void 0;
 
-	this.upsert = function(scene, world, options) {
+	this.updateScene = function(scene, world, options) {
 
 		preallocated = preallocated || Float32Raster(world.grid);
 		scratch = scratch || Float32Raster(world.grid);
@@ -15,7 +15,7 @@ function ScalarWorldView(scalarRasterView, getField) {
 		// run getField()
 		if (this.getField === void 0) {
 			log_once("ScalarWorldView.getField is undefined.");
-			this.remove(scene);
+			this.removeFromScene(scene);
 			return;
 		}
 
@@ -23,7 +23,7 @@ function ScalarWorldView(scalarRasterView, getField) {
 
 		if (raster === void 0) {
 			log_once("ScalarWorldView.getField() returned undefined.");
-			this.remove(scene);
+			this.removeFromScene(scene);
 			return;
 		}
 		if (raster instanceof Uint8Array) {
@@ -34,11 +34,11 @@ function ScalarWorldView(scalarRasterView, getField) {
 		}
 		if (!(raster instanceof Float32Array)) { 
 			log_once("ScalarWorldView.getField() did not return a TypedArray.");
-			this.remove(scene);
+			this.removeFromScene(scene);
 			return;
 		}
 
-		scalarRasterView.upsert(scene, raster, { 
+		scalarRasterView.updateScene(scene, raster, { 
 			...options, 
 			sealevel: 		world.hydrosphere.sealevel.value(), 
 			displacement: 	world.lithosphere.displacement.value() 
@@ -46,8 +46,8 @@ function ScalarWorldView(scalarRasterView, getField) {
 
 		var mesh = scalarRasterView.mesh;
 	};
-	this.remove = function(scene) {
-		scalarRasterView.remove(scene);
+	this.removeFromScene = function(scene) {
+		scalarRasterView.removeFromScene(scene);
 		preallocated = void 0;
 		scratch = void 0;
 	};
@@ -59,7 +59,7 @@ function ScalarWorldView(scalarRasterView, getField) {
 		// run getField()
 		if (this.getField === void 0) {
 			log_once("ScalarWorldView.getField is undefined.");
-			this.remove(scene);
+			this.removeFromScene(scene);
 			return;
 		}
 
@@ -67,7 +67,7 @@ function ScalarWorldView(scalarRasterView, getField) {
 
 		if (raster === void 0) {
 			log_once("ScalarWorldView.getField() returned undefined.");
-			this.remove(scene);
+			this.removeFromScene(scene);
 			return;
 		}
 		if (raster instanceof Uint8Array) {
@@ -78,7 +78,7 @@ function ScalarWorldView(scalarRasterView, getField) {
 		}
 		if (!(raster instanceof Float32Array)) { 
 			log_once("ScalarWorldView.getField() did not return a TypedArray.");
-			this.remove(scene);
+			this.removeFromScene(scene);
 			return;
 		}
 

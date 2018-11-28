@@ -24,7 +24,7 @@ function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
 	this.scene = new THREE.Scene();
 	this.scene.add(this.camera);
 
-	var uniforms = {
+	var options = {
 		sealevel_mod: 1.0,
 		darkness_mod: 1.0,
 		ice_mod: 1.0,
@@ -35,24 +35,20 @@ function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
 		return this.renderer.render( this.scene, this.camera );
 	};
 
-	function update_world(world){
-		scalarProjectionView.upsert(this_.scene, world, 
+	this.update = function(sim){
+		// TODO: what if sim changed from last iteration?
+		scalarProjectionView.updateScene(this_.scene, sim.focus, 
 				{
-					...uniforms, 
+					...options, 
 					subview: scalarView
 				}
 			);
-		vectorProjectionView.upsert(this_.scene, world, 
+		vectorProjectionView.updateScene(this_.scene, sim.focus, 
 				{
-					...uniforms, 
+					...options, 
 					subview: vectorView
 				}
 			);
-	}
-
-	this.update = function(sim){
-		// TODO: what if sim changed from last iteration?
-		update_world(sim.focus);
 	}
 
 	this.updateChart = function(data, sim, options) {
@@ -72,7 +68,7 @@ function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
 			return;
 		}
 		if(scalarView !== void 0){
-			scalarView.remove(this.scene);
+			scalarView.removeFromScene(this.scene);
 		}
 		scalarView = value;
 	};
@@ -82,7 +78,7 @@ function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
 			return;
 		}
 		if(vectorView !== void 0){
-			vectorView.remove(this.scene);
+			vectorView.removeFromScene(this.scene);
 		}
 		vectorView = value;
 	};
@@ -92,8 +88,8 @@ function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
 			return;
 		}
 		if(projectionView !== void 0){
-			scalarProjectionView.remove(this.scene);
-			vectorProjectionView.remove(this.scene);
+			scalarProjectionView.removeFromScene(this.scene);
+			vectorProjectionView.removeFromScene(this.scene);
 		}
 		projectionView = value;
 		scalarProjectionView = value.clone();
@@ -101,7 +97,7 @@ function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
 	}
 
 	this.uniform = function(key, value){
-		uniforms[key] = value;
+		options[key] = value;
 	}
 
 }

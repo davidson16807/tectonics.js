@@ -42,7 +42,7 @@ function VectorRasterView(options) {
 		}
 	}
 
-	this.upsert = function(scene, raster, options_) {
+	this.updateScene = function(scene, raster, options_) {
 
 		if (mesh === void 0) {
 			mesh = create_mesh(raster, options_);
@@ -79,7 +79,7 @@ function VectorRasterView(options) {
 		mesh.geometry.verticesNeedUpdate = true;
 
 	};
-	this.remove = function(scene) {
+	this.removeFromScene = function(scene) {
 		if (mesh !== void 0) {
 			scene.remove(mesh);
 			mesh.geometry.dispose();

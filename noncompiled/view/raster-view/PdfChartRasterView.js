@@ -1,6 +1,6 @@
 'use strict';
 
-function PdfChartView(surface_type_focus, name) {
+function PdfChartRasterView(surface_type_focus, name) {
 	surface_type_focus = surface_type_focus || 'land';
 	this.name = name || '';
 

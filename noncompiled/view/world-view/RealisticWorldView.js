@@ -62,7 +62,7 @@ function RealisticWorldView(shader_return_value) {
 		Float32Raster.get_ids(raster, raster.grid.buffer_array_to_cell, mesh.geometry.attributes[key].array); 
 		mesh.geometry.attributes[key].needsUpdate = true;
 	}
-	this.upsert = function(scene, world, options) {
+	this.updateScene = function(scene, world, options) {
 
 		if (mesh === void 0) {
 			mesh = create_mesh(world, options);
@@ -84,7 +84,7 @@ function RealisticWorldView(shader_return_value) {
 		update_attribute('plant_coverage', 	world.biosphere.plant_coverage.value());
 	};
 
-	this.remove = function(scene) {
+	this.removeFromScene = function(scene) {
 		if (mesh !== void 0) {
 			scene.remove(mesh);
 			mesh.geometry.dispose();

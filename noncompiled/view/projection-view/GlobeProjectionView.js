@@ -4,20 +4,20 @@ function GlobeProjectionView() {
 	var vertexShader = vertexShaders.orthographic;
 	var subview = void 0;
 
-	this.upsert = function(scene, model, options) {
+	this.updateScene = function(scene, model, options) {
 		// update view if needed
 		if (subview !== options.subview) {
-			this.remove(scene);
+			this.removeFromScene(scene);
 			subview = options.subview;
 		}
 		// invoke subview if present
 		if (subview !== void 0) {
-			subview.upsert(scene, model, {...options, vertexShader:vertexShader, index: 0});
+			subview.updateScene(scene, model, {...options, vertexShader:vertexShader, index: 0});
 		}
 	};
-	this.remove = function(scene) {
+	this.removeFromScene = function(scene) {
 		if (subview !== void 0) {
-			subview.remove(scene);
+			subview.removeFromScene(scene);
 		}
 	};
 	this.clone = function() {
