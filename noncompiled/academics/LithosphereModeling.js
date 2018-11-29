@@ -219,12 +219,12 @@ LithosphereModeling.get_erosion = function(
 	Crust.reset(crust_delta);
 
 	// TODO: add consideration for surface_gravity
-	var precipitation = 0.0021 * Units.SECONDS_IN_DAY;
+	var precipitation = 1.05 / Units.SECONDS_IN_YEAR;
 	// ^^^ measured in meters of rain per million years
 	// global land average from wikipedia
-	var erosiveFactor = 1.8e-7 / Units.SECONDS_IN_MEGAYEAR; 
+	var erosiveFactor = 1.8e-7; 
 	// ^^^ the rate of erosion per the rate of rainfall in that place
-	// measured in fraction of height difference per meters of rain per million years
+	// measured in fraction of height difference per meters of rain
 
 	var outbound_height_transfer = scratchpad.getFloat32Raster(surface_height.grid);
 	Float32Raster.fill(outbound_height_transfer, 0);
