@@ -11,14 +11,14 @@ function Crust(parameters) {
     var buffer = parameters['buffer'] || new ArrayBuffer(8 * Float32Array.BYTES_PER_ELEMENT * length);
     this.buffer = buffer;
 
-    this.sediment 			= new Float32Array(buffer, 0 * Float32Array.BYTES_PER_ELEMENT * length, length);
-    this.sedimentary		= new Float32Array(buffer, 1 * Float32Array.BYTES_PER_ELEMENT * length, length);
-    this.metamorphic		= new Float32Array(buffer, 2 * Float32Array.BYTES_PER_ELEMENT * length, length);
-    this.felsic_plutonic 	= new Float32Array(buffer, 3 * Float32Array.BYTES_PER_ELEMENT * length, length);
-    this.felsic_volcanic 	= new Float32Array(buffer, 4 * Float32Array.BYTES_PER_ELEMENT * length, length);
-    this.mafic_volcanic 	= new Float32Array(buffer, 5 * Float32Array.BYTES_PER_ELEMENT * length, length);
-    this.mafic_plutonic 	= new Float32Array(buffer, 6 * Float32Array.BYTES_PER_ELEMENT * length, length);
-    this.age  				= new Float32Array(buffer, 7 * Float32Array.BYTES_PER_ELEMENT * length, length);
+    this.sediment 			= Float32Raster.FromBuffer(buffer, this.grid, 0 * Float32Array.BYTES_PER_ELEMENT * length);
+    this.sedimentary		= Float32Raster.FromBuffer(buffer, this.grid, 1 * Float32Array.BYTES_PER_ELEMENT * length);
+    this.metamorphic		= Float32Raster.FromBuffer(buffer, this.grid, 2 * Float32Array.BYTES_PER_ELEMENT * length);
+    this.felsic_plutonic 	= Float32Raster.FromBuffer(buffer, this.grid, 3 * Float32Array.BYTES_PER_ELEMENT * length);
+    this.felsic_volcanic 	= Float32Raster.FromBuffer(buffer, this.grid, 4 * Float32Array.BYTES_PER_ELEMENT * length);
+    this.mafic_volcanic 	= Float32Raster.FromBuffer(buffer, this.grid, 5 * Float32Array.BYTES_PER_ELEMENT * length);
+    this.mafic_plutonic 	= Float32Raster.FromBuffer(buffer, this.grid, 6 * Float32Array.BYTES_PER_ELEMENT * length);
+    this.age  				= Float32Raster.FromBuffer(buffer, this.grid, 7 * Float32Array.BYTES_PER_ELEMENT * length);
 
     this.conserved_array 	= new Float32Array(buffer, 0, 5 * length);
     this.mass_array 		= new Float32Array(buffer, 0, 7 * length);

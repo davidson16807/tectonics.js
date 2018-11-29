@@ -31,7 +31,7 @@ scalarViews.precip 	= new ScalarWorldView(
 	);
 scalarViews.age 	= new ScalarWorldView( 
 		new HeatmapRasterView( { min: 250., max: 0. }),
-		world => world.lithosphere.top_crust.age
+		(world, result) => ScalarField.div_scalar(world.lithosphere.top_crust.age, Units.SECONDS_IN_MEGAYEAR, result)
 	);
 scalarViews.mafic_volcanic 	= new ScalarWorldView( 
 		new HeatmapRasterView( { min: 0., max: 7000. }),
@@ -67,10 +67,10 @@ scalarViews.metamorphic 	= new ScalarWorldView(
 	);
 scalarViews.thickness 	= new ScalarWorldView( 
 		new HeatmapRasterView( { min: 0., max: 70000. }),
-		world => world.lithosphere.thickness
+		world => world.lithosphere.thickness.value()
 	);
 scalarViews.density 	= new ScalarWorldView( 
-		new HeatmapRasterView( { min: 2.700, max: 3.300 }),
+		new HeatmapRasterView( { min: 2500, max: 3300 }),
 		world => world.lithosphere.density.value()
 	);
 scalarViews.elevation 	= new ScalarWorldView( 

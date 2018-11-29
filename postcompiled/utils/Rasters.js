@@ -3922,8 +3922,9 @@ Float32Raster.OfLength = function(length, grid) {
  result.grid = grid;
  return result;
 }
-Uint16Raster.FromBuffer = function(buffer, grid) {
-  var result = new Float32Array(buffer, 0, grid.vertices.length);
+Float32Raster.FromBuffer = function(buffer, grid, start) {
+  start = start || 0;
+  var result = new Float32Array(buffer, start, grid.vertices.length);
   result.grid = grid;
   return result;
 }
