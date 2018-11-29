@@ -64,11 +64,11 @@ function VectorRasterView(options) {
 		update_uniform('animation_phase_angle',	(mesh.material.uniforms.animation_phase_angle.value + 1e-1)%(2*3.14));
 
 		var offset_length = 1.02; 	// offset of arrow from surface of sphere, in radii
-		var max_arrow_length = 0.1; // max arrow length, in radii
 		var vector = mesh.geometry.vertices;
 
+		var overlap_factor = 2;
 		var max = this.max ||  Math.max.apply(null, VectorField.magnitude(raster));
-		var scaling = max_arrow_length / max;
+		var scaling = overlap_factor * raster.grid.average_distance / max;
 
 		var pos = raster.grid.pos;
 		for(var i=0, li = raster.x.length; i<li; i++){
