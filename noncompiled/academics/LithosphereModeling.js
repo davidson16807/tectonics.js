@@ -138,10 +138,10 @@ LithosphereModeling.get_weathering = function(
   var grid = surface_height.grid;
   var scratch = Float32Raster(grid);
 
-  var precipitation = 0.0021 * Units.DAY; 
+  var precipitation = 1.05 / Units.YEAR;
   // ^^^ measured in meters of rain per million years 
   // global land average from wikipedia 
-  var weathering_factor = 1.8e-7 / Units.MEGAYEAR;  
+  var weathering_factor = 0;//1.8e-7;  
   // ^^^ the rate of weathering per the rate of rainfall in that place 
   // measured in fraction of height difference per meters of rain per million years 
   var critical_sediment_thickness = 1; 
