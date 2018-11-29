@@ -408,7 +408,7 @@
 		);
 		sim = new Simulation({
 			seed:  querystring['seed'] 			|| (new Date).getTime().toString(),
-			speed: parseInt(querystring['speed']	|| (1e6*Units.SECONDS_IN_YEAR).toString()),
+			speed: parseInt(querystring['speed']	|| (1e6*Units.YEAR).toString()),
 		});
 
 		var star_name_corpus = NameGenerator.tokenize_corpus(NameCorpii.arabic_star_names);
@@ -449,7 +449,7 @@
 								name: 'precession',
 								motion: { 
 									type: 'spin',
-									angular_speed: 2*Math.PI/(25860 * Units.SECONDS_IN_YEAR),
+									angular_speed: 2*Math.PI/(25860 * Units.YEAR),
 								},	
 								invariant_insolation: true,
 								children: [
@@ -580,7 +580,7 @@
 				};
 			}
 	function format_time (seconds) {
-		var formatted = format(seconds / Units.SECONDS_IN_YEAR, 1000, 3);
+		var formatted = format(seconds / Units.YEAR, 1000, 3);
 		return formatted.quantity + formatted.unit + 'y';
 	}
 
@@ -765,11 +765,11 @@
 			{	name:'1hr/s', 	scale: 60*60,						},
 			{	name:'1dy/s', 	scale: 60*60*24,					},
 			{	name:'1mo/s', 	scale: 60*60*24*31,					},
-			{	name:'1y/s', 	scale: 1  *Units.SECONDS_IN_YEAR,	},
-			{	name:'30y/s', 	scale: 30 *Units.SECONDS_IN_YEAR,	},
-			{	name:'1ky/s', 	scale: 1e3*Units.SECONDS_IN_YEAR,	},
-			{	name:'30ky/s', 	scale: 3e4*Units.SECONDS_IN_YEAR,	},
-			{	name:'1My/s', 	scale: 1e6*Units.SECONDS_IN_YEAR,	},
+			{	name:'1y/s', 	scale: 1  *Units.YEAR,	},
+			{	name:'30y/s', 	scale: 30 *Units.YEAR,	},
+			{	name:'1ky/s', 	scale: 1e3*Units.YEAR,	},
+			{	name:'30ky/s', 	scale: 3e4*Units.YEAR,	},
+			{	name:'1My/s', 	scale: 1e6*Units.YEAR,	},
 		],
 	  	elapsed_time: 0,
 	  	isSeasonVisible: true,
@@ -796,7 +796,7 @@
 			sim.speed = this.speeds[this.speed_i].scale;
 		},
 		format: function(time) {
-			return format(time/Units.SECONDS_IN_YEAR, 1000, 3)
+			return format(time/Units.YEAR, 1000, 3)
 		},
 	}
 	});

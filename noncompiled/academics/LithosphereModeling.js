@@ -138,10 +138,10 @@ LithosphereModeling.get_weathering = function(
   var grid = surface_height.grid;
   var scratch = Float32Raster(grid);
 
-  var precipitation = 0.0021 * Units.SECONDS_IN_DAY; 
+  var precipitation = 0.0021 * Units.DAY; 
   // ^^^ measured in meters of rain per million years 
   // global land average from wikipedia 
-  var weathering_factor = 1.8e-7 / Units.SECONDS_IN_MEGAYEAR;  
+  var weathering_factor = 1.8e-7 / Units.MEGAYEAR;  
   // ^^^ the rate of weathering per the rate of rainfall in that place 
   // measured in fraction of height difference per meters of rain per million years 
   var critical_sediment_thickness = 1; 
@@ -219,11 +219,11 @@ LithosphereModeling.get_erosion = function(
 	Crust.reset(crust_delta);
 
 	// TODO: add consideration for surface_gravity
-	var precipitation = 1.05 / Units.SECONDS_IN_YEAR;
+	var precipitation = 1.05 / Units.YEAR;
 	// ^^^ measured in meters of rain per million years
 	// global land average from wikipedia
 	var erosiveFactor = 1.8e-7; 
-	// ^^^ the rate of erosion per the rate of rainfall in that place
+	// ^^^ the rate of erosion per the kinetic energy of rainfall
 	// measured in fraction of height difference per meters of rain
 
 	var outbound_height_transfer = scratchpad.getFloat32Raster(surface_height.grid);
@@ -426,7 +426,7 @@ LithosphereModeling.get_plate_velocity = function(plate_mask, buoyancy, material
 	lateral_speed_per_force /= 18; 									// apply various unitless constants
 	lateral_speed_per_force *= shape_parameter; 					
 	lateral_speed_per_force /= slab_dip_angle_constant; 			
-	// lateral_speed_per_force *= Units.SECONDS_IN_MEGAYEAR; 		// convert to m/My per Newton
+	// lateral_speed_per_force *= Units.MEGAYEAR; 		// convert to m/My per Newton
 	lateral_speed_per_force /= world_radius;						// convert to radians/My per Newton
 
 	ScalarField.mult_scalar 		(buoyancy, lateral_speed_per_force, lateral_speed); // radians/My

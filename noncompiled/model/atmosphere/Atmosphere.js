@@ -20,7 +20,7 @@ function Atmosphere(grid, parameters) {
 		Float32Raster(grid),  
 		result => { 
 			var long_term_average_insolation = result; // double duty for performance
-			get_average_insolation(Units.SECONDS_IN_MEGAYEAR, long_term_average_insolation)
+			get_average_insolation(Units.MEGAYEAR, long_term_average_insolation)
 			var absorbed_radiation = this.scratch; // double duty for performance
 			ScalarField.mult_field( this.absorption.value(), long_term_average_insolation, absorbed_radiation );
 			var max_absorbed_radiation 	= Float32Dataset.max( absorbed_radiation );
@@ -153,7 +153,7 @@ function Atmosphere(grid, parameters) {
 		};
 		assert_dependencies();
 
-		if (this.sealevel_temp === void 0 || timestep > 7*Units.SECONDS_IN_DAY) {
+		if (this.sealevel_temp === void 0 || timestep > 7*Units.DAY) {
 			this.sealevel_temp = Float32Raster.copy(this.long_term_sealevel_temp.value(), 	this.sealevel_temp);
 		} else {
 			get_average_insolation(timestep, 											this.average_insolation);

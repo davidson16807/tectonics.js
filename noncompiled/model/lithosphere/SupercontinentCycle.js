@@ -3,7 +3,7 @@
 function SupercontinentCycle(lithosphere, parameters){
 	parameters = parameters || {};
 
-	this.getRandomDuration = function() { return 150 * Units.SECONDS_IN_MEGAYEAR; };
+	this.getRandomDuration = function() { return 150 * Units.MEGAYEAR; };
 		// function() { return random.uniform(300, 500); };
 		// from wikipedia
 	

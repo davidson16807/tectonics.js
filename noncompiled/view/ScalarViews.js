@@ -31,7 +31,7 @@ scalarViews.precip 	= new ScalarWorldView(
 	);
 scalarViews.age 	= new ScalarWorldView( 
 		new HeatmapRasterView( { min: 250., max: 0. }),
-		(world, result) => ScalarField.div_scalar(world.lithosphere.top_crust.age, Units.SECONDS_IN_MEGAYEAR, result)
+		(world, result) => ScalarField.div_scalar(world.lithosphere.top_crust.age, Units.MEGAYEAR, result)
 	);
 scalarViews.mafic_volcanic 	= new ScalarWorldView( 
 		new HeatmapRasterView( { min: 0., max: 7000. }),

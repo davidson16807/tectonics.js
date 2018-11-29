@@ -68,26 +68,26 @@ CrustGenerator.modern_earth_control_points = [
 	new RockColumn({
 		displacement: -11000,
 		mafic_volcanic: 		2890. * 7100, 
-		age: 		250 * Units.SECONDS_IN_MEGAYEAR,
+		age: 		250 * Units.MEGAYEAR,
 	}),
 	//deep_ocean
 	new RockColumn({
 		displacement: -6000,  
 		mafic_volcanic: 	 	2890. * 7100, // +/- 800, White McKenzie and O'nions 1992
-		age: 		200 * Units.SECONDS_IN_MEGAYEAR,
+		age: 		200 * Units.MEGAYEAR,
 	}),
 	//shallow_ocean
 	new RockColumn({
 		displacement: -3682,	 // Charette & Smith 2010
 		mafic_volcanic: 		2890. * 7100, // +/- 800, White McKenzie and O'nions 1992
-		age: 		0 * Units.SECONDS_IN_MEGAYEAR,
+		age: 		0 * Units.MEGAYEAR,
 	}),
 	//shelf_bottom
 	new RockColumn({
 		displacement: -3200,    // encyclopedia britannica, "continental slope"
 		mafic_volcanic: 		2890. * 7100,  // +/- 2900, estimate for shields, Zandt & Ammon 1995
 		sediment: 	2500. * 5,
-		age: 		100 * Units.SECONDS_IN_MEGAYEAR,
+		age: 		100 * Units.MEGAYEAR,
 	}),
 	//shelf_top
 	new RockColumn({
@@ -96,7 +96,7 @@ CrustGenerator.modern_earth_control_points = [
 		felsic_volcanic: 		2700. * 0.15 * 28300,  
 		// "28300m" is back-calculated using isostatic model and estimates from control point for land
 		sediment: 	2500. * 5,
-		age: 		100 * Units.SECONDS_IN_MEGAYEAR,
+		age: 		100 * Units.MEGAYEAR,
 	}),
 	//land
 	new RockColumn({
@@ -104,13 +104,13 @@ CrustGenerator.modern_earth_control_points = [
 		felsic_plutonic: 		2700. * 0.85 * 36900,  // +/- 2900, estimate for shields, Zandt & Ammon 1995
 		felsic_volcanic: 		2700. * 0.15 * 36900,  // +/- 2900, estimate for shields, Zandt & Ammon 1995
 		sediment: 	2500. * 5,
-		age: 		1000 * Units.SECONDS_IN_MEGAYEAR,
+		age: 		1000 * Units.MEGAYEAR,
 	}),
 	//mountain
 	new RockColumn({
 		displacement: 8848,
 		felsic_plutonic: 		2700. * 0.85 *70000,  // +/- 2900, estimate for shields, Zandt & Ammon 1995
 		felsic_volcanic: 		2700. * 0.15 *70000,  // +/- 2900, estimate for shields, Zandt & Ammon 1995
-		age: 		1000 * Units.SECONDS_IN_MEGAYEAR,
+		age: 		1000 * Units.MEGAYEAR,
 	})
 ];
