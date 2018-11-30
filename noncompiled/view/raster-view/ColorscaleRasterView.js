@@ -1,12 +1,12 @@
 'use strict';
 
 function ColorscaleRasterView(options) {
-	var invariant_options = options;
+	var invariant_options = options || {};
 	var minColor = invariant_options['minColor'] || 0x000000;
 	var maxColor = invariant_options['maxColor'] || 0xffffff;
 	var min = invariant_options['min'] || 0.;
 	var max = invariant_options['max'] || 1.;
-	var scaling = invariant_options['scaling'] || false;
+	var scaling = invariant_options['scaling'] || true;
 	var chartView = invariant_options['chartViews'] || new PdfChartRasterView('land'); 
 	function hex_color_to_glsl_string_color(color) {
 		var rIntValue = ((color / 256 / 256) % 256) / 255.0;
