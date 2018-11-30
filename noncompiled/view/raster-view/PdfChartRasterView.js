@@ -53,8 +53,8 @@ function PdfChartRasterView(surface_type_focus, name) {
 			y[i] = Math.round(bin_min * 1e3)/1e3;
 		}
 
-		data.min = Float32Dataset.max(raster);
-		data.max = Float32Dataset.min(raster);
+		data.min = Float32Dataset.min(raster);
+		data.max = Float32Dataset.max(raster);
 		data.mean = Float32Dataset.average(raster);
 		data.median = Float32Dataset.median(raster);
 		data.stddev = Float32Dataset.standard_deviation(raster);
