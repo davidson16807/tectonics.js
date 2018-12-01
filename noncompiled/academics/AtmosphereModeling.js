@@ -136,6 +136,7 @@ var AtmosphereModeling = (function() {
 
 		var heat_flow_field = result;
 		Float32Dataset.normalize(absorbed_radiation, result, -heat_flow, heat_flow);
+		ScalarTransport.fix_conserved_quantity_delta(result, 1e-5);
 		ScalarField.sub_field(absorbed_radiation, result, result);
 
 		return result;
