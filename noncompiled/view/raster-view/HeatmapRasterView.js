@@ -66,6 +66,14 @@ function HeatmapRasterView(options) {
 
 		if (raster === void 0) {
 			this.removeFromScene(scene);
+			return;
+		}
+
+		if (raster instanceof Uint8Array) {
+			raster = Float32Raster.FromUint8Raster(raster);
+		}
+		if (raster instanceof Uint16Array) {
+			raster = Float32Raster.FromUint16Raster(raster);
 		}
 
 		if (scaled_raster === void 0 || scaled_raster.grid !== raster.grid) {
