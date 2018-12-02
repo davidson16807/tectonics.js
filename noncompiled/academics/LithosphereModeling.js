@@ -322,7 +322,6 @@ LithosphereModeling.get_erosion = function(
 
 var coarse_grid = new Grid( 
 	new THREE.IcosahedronGeometry(1, 4),
-	{ voronoi_generator: VoronoiSphere.FromPos }
 );
 // gets surface pressure of the asthenosphere by smoothing a field representing buoyancy
 LithosphereModeling.get_asthenosphere_pressure = function(buoyancy, pressure, scratch) {

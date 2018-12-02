@@ -5,7 +5,7 @@
 function World(parameters) {
 	var this_ = this;
 	this.name = parameters.name;
-	this.grid = new Grid(parameters['grid'], { voronoi_generator: VoronoiSphere.FromPos }) || stop('missing parameter: "grid"');
+	this.grid = new Grid(parameters['grid']) || stop('missing parameter: "grid"');
 
 	// all heat capacities in Joules per Kelvin
 	this.material_heat_capacity = parameters['material_heat_capacity'] || {

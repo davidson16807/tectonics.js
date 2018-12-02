@@ -1,205 +1,152 @@
-//Data structure mapping coordinates on a sphere to the nearest neighbor
-//Retrievals from the map are of O(1) complexity. The result resembles a voronoi diagram, hence the name.
-function VoronoiSphere(sides, cell_half_width, raster_dim_size){
-	this.sides = sides;
-	this.xy = sides[0];
-	this.yz = sides[1];
-	this.zx = sides[2];
-	this.yx = sides[3];
-	this.zy = sides[4];
-	this.xz = sides[5];
-	this.cell_half_width = cell_half_width;
-	this.raster_dim_size = raster_dim_size;
-}
-VoronoiSphere.FromPos = function (pos, farthest_distance) {
-	//Feed locations into an integer lattice for fast lookups
-	points = [];
-	var x = pos.x;
-	var y = pos.y;
-	var z = pos.z;
-	for(var i=0, il = x.length; i<il; i++){
-		points.push({x:x[i], y:y[i], z:z[i], i:i});
-	}
-	var voronoiResolutionFactor = 2;
-	var getDistance = function(a,b) { 
-		return (a.x - b.x)*(a.x - b.x) +  (a.y - b.y)*(a.y - b.y) + (a.z - b.z)*(a.z - b.z); 
-	};
-
-	var lattice = new IntegerLattice(points, getDistance, farthest_distance);
-	var voronoiPointNum = Math.pow(voronoiResolutionFactor * Math.sqrt(points.length), 2);
+var VoronoiSphere = (function() {
 	
-	//Now feed that lattice into a Voronoi diagram for O(1) lookups
-	//If cached voronoi is already provided, use that
-	//If this seems like overkill, trust me - it's not
-	return VoronoiSphere.FromIntegerLattice(voronoiPointNum, lattice);
-}
-VoronoiSphere.FromIntegerLattice = function(pointsNum, lattice) {
-	var cells_per_point = 8;
-	var circumference = 2*Math.PI;
-	var raster_dim_size = (cells_per_point * Math.sqrt(pointsNum) / circumference) | 0;
-	var raster_size = raster_dim_size * raster_dim_size;
-	var cell_half_width = 2 / ((raster_dim_size - 1));
+	const OCTAHEDRON_SIDE_COUNT = 8;	// number of sides on the data cube
+	var OCTAHEDRON_SIDE_Z = VectorRaster.FromVectors([
+			Vector(-1,-1,-1),
+			Vector( 1,-1,-1),
+			Vector(-1, 1,-1),
+			Vector( 1, 1,-1),
+			Vector(-1,-1, 1),
+			Vector( 1,-1, 1),
+			Vector(-1, 1, 1),
+			Vector( 1, 1, 1)
+		]);
+	VectorField.normalize(OCTAHEDRON_SIDE_Z, OCTAHEDRON_SIDE_Z);
+	var OCTAHEDRON_SIDE_X = VectorField.cross_vector(OCTAHEDRON_SIDE_Z, Vector(0,0,1));
+	VectorField.normalize(OCTAHEDRON_SIDE_X, OCTAHEDRON_SIDE_X);
+	var OCTAHEDRON_SIDE_Y = VectorField.cross_vector_field(OCTAHEDRON_SIDE_Z, OCTAHEDRON_SIDE_X);
+	VectorField.normalize(OCTAHEDRON_SIDE_Y, OCTAHEDRON_SIDE_Y);
+	var OCTAHEDRON_SIDE_X = VectorRaster.ToArray(OCTAHEDRON_SIDE_X);
+	var OCTAHEDRON_SIDE_Y = VectorRaster.ToArray(OCTAHEDRON_SIDE_Y);
+	var OCTAHEDRON_SIDE_Z = VectorRaster.ToArray(OCTAHEDRON_SIDE_Z);
 
-	// names for Uint16Arrays follow naming conventions for 2-blades in geometric algebra
-	var xy = new Uint16Array(raster_size);
-	var yz = new Uint16Array(raster_size);
-	var zx = new Uint16Array(raster_size);
-	var yx = new Uint16Array(raster_size);
-	var zy = new Uint16Array(raster_size);
-	var xz = new Uint16Array(raster_size);
 
-	var sides = [
-		xy,
-		yz,
-		zx,
-		yx,
-		zy,
-		xz,
-	];
-	// population
-	var component_orders = [
-		// 0 indicates first dimension in grid
-		// 1 indicates second dimension in grid
-		// 2 indicates the dimension omitted from grid
-		[0,1,2],
-		[2,0,1],
-		[1,2,0],
-		[1,0,2],
-		[2,1,0],
-		[0,2,1],
-	];
-	var li = sides.length;
-	var lj = raster_dim_size;
-	var lk = raster_dim_size;
-	var pos = {x:0, y:0, z:0};
-	var raster = xy;
-	var raster_x = 0.0;
-	var raster_y = 0.0;
-	var raster_z = 0.0;
-	var raster_id = 0;
-	var nearest_id = 0;
-	var component_order = component_orders[0];
-	var raster_components = [];
-	var sqrt = Math.sqrt;
-	for (var i = 0; i < li; ++i) {
-		raster = sides[i];
-		component_order = component_orders[i];
-		for (var j = 0; j < lj; ++j) {
-			for (var k = 0; k < lk; ++k) {
-				// get position of the cell on the unit sphere
-				raster_x = j * cell_half_width - 1;
-				raster_y = k * cell_half_width - 1;
-				// reconstruct the dimension omitted from the grid using pythagorean theorem
-				raster_z = sqrt(1 - (raster_x * raster_x) - (raster_y * raster_y)) || 0;
-				raster_z *= i > 2? -1 : 1;
-				// translate from raster coordinates to absolute coordinates
-				raster_components = [raster_x, raster_y, raster_z];
-				pos = {x:0, y:0, z:0};
-				pos.x = raster_components[component_order[0]];
-				pos.y = raster_components[component_order[1]];
-				pos.z = raster_components[component_order[2]];
-				raster_id = j * raster_dim_size + k;
-				nearest_id = lattice.nearest(pos).i;
-				raster[raster_id] = nearest_id;
+	var cell_count = function (dimensions_x, dimensions_y){
+		return OCTAHEDRON_SIDE_COUNT * dimensions_x * dimensions_y;
+	}
+	var cell_id = function (side_id, xi, yi, dimensions_x, dimensions_y){
+		return  side_id * dimensions_x * dimensions_y
+			  + xi      * dimensions_y 
+			  + yi;
+	}
+
+	//Data structure mapping coordinates on a sphere to the nearest neighbor
+	//Retrievals from the map are of O(1) complexity. The result resembles a voronoi diagram, hence the name.
+	function VoronoiSphere(pos, cell_width, farthest_distance){
+		var dimension_x = Math.ceil(2./cell_width)+1;
+		var dimension_y = Math.ceil(2./cell_width)+1;
+		var cells = new Uint16Array(cell_count(dimension_x, dimension_y));
+
+		this.cell_width = cell_width;
+		this.dimension_x = dimension_x;
+		this.dimension_y = dimension_y;
+		this.cells = cells;
+
+		//Feed locations into an integer lattice for fast lookups
+		points = [];
+		var x = pos.x;
+		var y = pos.y;
+		var z = pos.z;
+		for(var i=0, il = x.length; i<il; i++){
+			points.push({x:x[i], y:y[i], z:z[i], i:i});
+		}
+		var getDistance = function(a,b) { 
+				return (a.x - b.x)*(a.x - b.x) +  (a.y - b.y)*(a.y - b.y) + (a.z - b.z)*(a.z - b.z); 
+			};
+		var lattice = new IntegerLattice(points, getDistance, farthest_distance);
+
+		var side_x = OCTAHEDRON_SIDE_X[0];
+		var side_y = OCTAHEDRON_SIDE_Y[0];
+		var side_z = OCTAHEDRON_SIDE_Z[0];
+		var cell_x = Vector();
+		var cell_y = Vector();
+		var cell_z = Vector();
+		var cell_pos = Vector();
+		var sqrt = Math.sqrt;
+		var max = Math.max;
+
+		// populate cells using the slower IntegerLattice implementation
+		for (var side_id = 0; side_id < OCTAHEDRON_SIDE_COUNT; side_id++)
+		{
+			for (var xi2d = 0; xi2d < dimension_x; xi2d++)
+			{
+				for (var yi2d = 0; yi2d < dimension_y; yi2d++)
+				{
+					// get position of the cell that's projected onto the 2d grid
+					x2d = xi2d * cell_width - 1.;
+					y2d = yi2d * cell_width - 1.;
+
+					// reconstruct the dimension omitted from the grid using pythagorean theorem
+					z2d = sqrt(max(1. - (x2d*x2d) - (y2d*y2d), 0.));
+					side_x = OCTAHEDRON_SIDE_X[side_id];
+					side_y = OCTAHEDRON_SIDE_Y[side_id];
+					side_z = OCTAHEDRON_SIDE_Z[side_id];
+
+					Vector.mult_scalar(side_x.x, side_x.y, side_x.z, x2d, cell_x);
+					Vector.mult_scalar(side_y.x, side_y.y, side_y.z, y2d, cell_y);
+					Vector.mult_scalar(side_z.x, side_z.y, side_z.z, z2d, cell_z);
+
+					// reset vector
+					cell_pos.x = 0;
+					cell_pos.y = 0;
+					cell_pos.z = 0;
+
+					Vector.add_vector(cell_pos.x, cell_pos.y, cell_pos.z, cell_x.x, cell_x.y, cell_x.z, cell_pos);
+					Vector.add_vector(cell_pos.x, cell_pos.y, cell_pos.z, cell_y.x, cell_y.y, cell_y.z, cell_pos);
+					Vector.add_vector(cell_pos.x, cell_pos.y, cell_pos.z, cell_z.x, cell_z.y, cell_z.z, cell_pos);
+					cells[cell_id(side_id, xi2d, yi2d, dimension_x, dimension_y)] =  lattice.nearest(cell_pos).i;
+				}
 			}
 		}
 	}
-	return new VoronoiSphere(sides, cell_half_width, raster_dim_size);
-}
-VoronoiSphere.FromJson = function (json) {
-	var xy = new Uint16Array(Base64.decode(json.xy));
-	var yz = new Uint16Array(Base64.decode(json.yz));
-	var zx = new Uint16Array(Base64.decode(json.zx));
-	var yx = new Uint16Array(Base64.decode(json.yx));
-	var zy = new Uint16Array(Base64.decode(json.zy));
-	var xz = new Uint16Array(Base64.decode(json.xz));
-	
-	var sides = [
-		xy,
-		yz,
-		zx,
-		yx,
-		zy,
-		xz,
-	];
+	VoronoiSphere.prototype.getNearestIds = function(pos_field, result) {
+		result = result || new Uint16Array(pos_field.x.length);
 
-	return new VoronoiSphere(sides, json.cell_half_width, json.raster_dim_size);
-}
-VoronoiSphere.prototype.toJson = function() {
-	var json = {};
-	json.xy	= Base64.encode(this.xy.buffer);
-	json.yz	= Base64.encode(this.yz.buffer);
-	json.zx	= Base64.encode(this.zx.buffer);
-	json.yx	= Base64.encode(this.yx.buffer);
-	json.zy	= Base64.encode(this.zy.buffer);
-	json.xz	= Base64.encode(this.xz.buffer);
-	json.cell_half_width = this.cell_half_width;
-	json.raster_dim_size = this.raster_dim_size;
-	return json;
-}
-VoronoiSphere.prototype.getNearestIds = function(pos_field, result) {
-	result = result || new Uint16Array(pos_field.x.length);
+		cell_width = this.cell_width;
+		dimension_x = this.dimension_x;
+		dimension_y = this.dimension_y;
+		cells = this.cells;
 
-	var x = pos_field.x;
-	var y = pos_field.y;
-	var z = pos_field.z;
+		var side_x = OCTAHEDRON_SIDE_X[0];
+		var side_y = OCTAHEDRON_SIDE_Y[0];
 
-	var xy = this.xy;
-	var yz = this.yz;
-	var zx = this.zx;
-	var yx = this.yx;
-	var zy = this.zy;
-	var xz = this.xz;
+		var projection_x = 0;
+		var projection_y = 0;
 
-	var cell_half_width = this.cell_half_width;
-	var raster_dim_size = this.raster_dim_size;
+		var grid_pos_x = 0;
+		var grid_pos_y = 0;
 
-	var xi = 0.0;
-	var yi = 0.0;
-	var zi = 0.0;
-	var raster = xy;
-	var raster_x = 0.0;
-	var raster_y = 0.0;
-	var raster_i = 0;
-	var raster_j = 0;
-	var raster_id = 0;
-	var threshold = Math.sqrt(1/3); // NOTE: on a unit sphere, the largest coordinate will always exceed this threshold
-	for (var i = 0, li = x.length; i<li; ++i){
-		xi = x[i];
-		yi = y[i];
-		zi = z[i];
+		var pos_field_xi = 0;
+		var pos_field_yi = 0;
+		var pos_field_zi = 0;
 
-		if (xi > threshold) {
-			raster = yz;
-			raster_x = yi;
-			raster_y = zi;
-		} else if (-xi > threshold) {
-			raster = zy;
-			raster_x = zi;
-			raster_y = yi;
-		} else if (yi > threshold) { 
-			raster = zx;
-			raster_x = zi;
-			raster_y = xi;
-		} else if (-yi > threshold)  {
-			raster = xz;
-			raster_x = xi;
-			raster_y = zi;
-		} else if (zi > threshold) { 
-			raster = xy;
-			raster_x = xi;
-			raster_y = yi;
-		} else { // if (-zi > threshold)
-			raster = yx;
-			raster_x = yi;
-			raster_y = xi;
+		var side_id = 0;
+
+		var dot = Vector.dot_vector;
+		var floor = Math.floor;
+		for (var i = 0, li = pos_field.x.length; i < li; i++)
+		{
+			pos_field_xi = pos_field.x[i];
+			pos_field_yi = pos_field.y[i];
+			pos_field_zi = pos_field.z[i];
+
+			var side_id = 
+			  (( pos_field_xi > 0)     ) +
+			  (( pos_field_yi > 0) << 1) +
+			  (( pos_field_zi > 0) << 2) ; 
+
+			side_x = OCTAHEDRON_SIDE_X[side_id];
+			side_y = OCTAHEDRON_SIDE_Y[side_id];
+
+			projection_x = dot( side_x.x, side_x.y, side_x.z, pos_field_xi, pos_field_yi, pos_field_zi );
+			projection_y = dot( side_y.x, side_y.y, side_y.z, pos_field_xi, pos_field_yi, pos_field_zi );
+
+			grid_pos_x = floor((projection_x + 1.) / cell_width);
+			grid_pos_y = floor((projection_y + 1.) / cell_width);
+
+			result[i] = cells[cell_id(side_id, grid_pos_x, grid_pos_y, dimension_x, dimension_y)];
 		}
-
-		raster_i = ((raster_x + 1) / cell_half_width) | 0;
-		raster_j = ((raster_y + 1) / cell_half_width) | 0;
-		raster_id = raster_i * raster_dim_size + raster_j;
-		result[i] = raster[raster_id];
+		return result;
 	}
-
-	return result;
-}
+	return VoronoiSphere;
+})();
