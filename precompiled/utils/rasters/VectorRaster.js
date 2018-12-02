@@ -42,16 +42,26 @@ VectorRaster.FromVectors = function(vectors, grid) {
   return result;
 }
 VectorRaster.FromArrays = function(x, y, z, grid) {
-	var result = VectorRaster.OfLength(x.length, grid);
-	var ox = result.x;
-	var oy = result.y;
-	var oz = result.z;
-	for (var i=0, li=x.length; i<li; ++i) {
-	    ox[i] = x[i];
-	    oy[i] = y[i];
-	    oz[i] = z[i];
-	}
-	return result;
+  var result = VectorRaster.OfLength(x.length, grid);
+  var ox = result.x;
+  var oy = result.y;
+  var oz = result.z;
+  for (var i=0, li=x.length; i<li; ++i) {
+      ox[i] = x[i];
+      oy[i] = y[i];
+      oz[i] = z[i];
+  }
+  return result;
+}
+VectorRaster.ToArray = function(vector_field) {
+  var result = [];
+  var x = vector_field.x;
+  var y = vector_field.y;
+  var z = vector_field.z;
+  for (var i=0, li=x.length; i<li; ++i) {
+      result.push(Vector(x[i], y[i], z[i])); 
+  }
+  return result;
 }
 
 VectorRaster.copy = function(vector_raster, output) {
