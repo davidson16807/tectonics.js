@@ -21,7 +21,6 @@ BinaryMorphology.empty = function(result) {
 }
 
 BinaryMorphology.union = function(field1, field2, result) {
-
 	result = result || Uint8Raster(field1.grid);
 	ASSERT_IS_ARRAY(field1, Uint8Array);
 	ASSERT_IS_ARRAY(field2, Uint8Array);

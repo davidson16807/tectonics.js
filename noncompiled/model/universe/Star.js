@@ -14,7 +14,7 @@ function Star(parameters) {
 	var solar_luminosities = Math.pow(solar_masses, 3.5);
 	this.luminosity	= solar_luminosities * Units.SOLAR_LUMINOSITY;
 
-	this.time_on_main_sequence = solar_masses/solar_luminosities * 10e9 * Units.SECONDS_IN_YEAR;
+	this.time_on_main_sequence = solar_masses/solar_luminosities * 10e9 * Units.YEAR;
 
 	var surface_area = Sphere.surface_area(this.radius);
 	var intensity = this.luminosity / surface_area;

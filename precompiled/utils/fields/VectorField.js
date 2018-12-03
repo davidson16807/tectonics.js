@@ -5,49 +5,8 @@ var VectorField = {};
 
 
 
-VectorField.add_vector_field_and_scalar_term = function(vector_field1, vector_field2, scalar, result) {
-	result = result || VectorRaster(vector_field1.grid);
-
-	ASSERT_IS_VECTOR_RASTER(vector_field1)
-	ASSERT_IS_VECTOR_RASTER(vector_field2)
-	ASSERT_IS_TYPE(scalar, number)
-	ASSERT_IS_VECTOR_RASTER(result)
-
-
-	var u = vector_field1.everything;
-	var v = vector_field2.everything;
-	var out = result.everything;
-
-	var length = scalar_field.length;
-	for (var i=0, li=u.length; i<li; ++i) {
-	    out[i] = u[i] + scalar * v[i];
-	}
-
-	return result;
-};
-
-VectorField.add_vector_field_and_scalar_field_term = function(vector_field1, vector_field2, scalar_field, result) {
-	result = result || VectorRaster(vector_field1.grid);
-
-	ASSERT_IS_VECTOR_RASTER(vector_field1)
-	ASSERT_IS_VECTOR_RASTER(vector_field2)
-	ASSERT_IS_ANY_ARRAY(scalar_field)
-	ASSERT_IS_VECTOR_RASTER(result)
-
-	var u = vector_field1.everything;
-	var v = vector_field2.everything;
-	var out = result.everything;
-
-	var length = scalar_field.length;
-	for (var i=0, li=u.length; i<li; ++i) {
-	    out[i] = u[i] + scalar_field[i%length] * v[i];
-	}
-
-	return result;
-};
-
 VectorField.add_vector_field = function(vector_field1, vector_field2, result) {
-	result = result || VectorRaster(vector_field1.grid);
+	result = result || VectorRaster.OfLength(vector_field1.x.length, vector_field1.grid);
 
 	ASSERT_IS_VECTOR_RASTER(vector_field1)
 	ASSERT_IS_VECTOR_RASTER(vector_field2)
@@ -65,7 +24,7 @@ VectorField.add_vector_field = function(vector_field1, vector_field2, result) {
 };
 
 VectorField.sub_vector_field = function(vector_field1, vector_field2, result) {
-	result = result || VectorRaster(vector_field1.grid);
+	result = result || VectorRaster.OfLength(vector_field1.x.length, vector_field1.grid);
 	
 	ASSERT_IS_VECTOR_RASTER(vector_field1)
 	ASSERT_IS_VECTOR_RASTER(vector_field2)
@@ -82,7 +41,7 @@ VectorField.sub_vector_field = function(vector_field1, vector_field2, result) {
 	return result;
 };
 VectorField.dot_vector_field = function(vector_field1, vector_field2, result) {
-	result = result || Float32Raster(vector_field1.grid);
+	result = result || Float32Raster.OfLength(vector_field1.x.length, vector_field1.grid);
 	
 	ASSERT_IS_VECTOR_RASTER(vector_field1)
 	ASSERT_IS_VECTOR_RASTER(vector_field2)
@@ -98,7 +57,7 @@ VectorField.dot_vector_field = function(vector_field1, vector_field2, result) {
 	return result;
 };
 VectorField.hadamard_vector_field = function(vector_field1, vector_field2, result) {
-	result = result || VectorRaster(vector_field1.grid);
+	result = result || VectorRaster.OfLength(vector_field1.x.length, vector_field1.grid);
 	
 	ASSERT_IS_VECTOR_RASTER(vector_field1)
 	ASSERT_IS_VECTOR_RASTER(vector_field2)
@@ -115,7 +74,7 @@ VectorField.hadamard_vector_field = function(vector_field1, vector_field2, resul
 	return result;
 };
 VectorField.cross_vector_field = function (vector_field1, vector_field2, result) {
-	result = result || VectorRaster(vector_field1.grid);
+	result = result || VectorRaster.OfLength(vector_field1.x.length, vector_field1.grid);
 	
 	ASSERT_IS_VECTOR_RASTER(vector_field1)
 	ASSERT_IS_VECTOR_RASTER(vector_field2)
@@ -157,11 +116,121 @@ VectorField.cross_vector_field = function (vector_field1, vector_field2, result)
 
 	return result;
 }
+VectorField.div_vector_field = function(vector_field1, vector_field2, result) {
+	result = result || VectorRaster.OfLength(vector_field1.x.length, vector_field1.grid);
+	
+	ASSERT_IS_VECTOR_RASTER(vector_field1)
+	ASSERT_IS_VECTOR_RASTER(vector_field2)
+	ASSERT_IS_VECTOR_RASTER(result)
 
+	var u = vector_field1.everything;
+	var v = vector_field2.everything;
+	var out = result.everything;
+
+	for (var i=0, li=u.length; i<li; ++i) {
+	    out[i] = u[i] / v[i];
+	}
+
+	return result;
+};
+VectorField.max_vector_field = function(vector_field1, vector_field2, result) {
+	result = result || VectorRaster.OfLength(vector_field1.x.length, vector_field1.grid);
+
+	ASSERT_IS_VECTOR_RASTER(vector_field1)
+	ASSERT_IS_VECTOR_RASTER(vector_field2)
+	ASSERT_IS_VECTOR_RASTER(result)
+
+	var ax = vector_field1.x;
+	var ay = vector_field1.y;
+	var az = vector_field1.z;
+
+	var bx = vector_field2.x;
+	var by = vector_field2.y;
+	var bz = vector_field2.z;
+
+	var cx = result.x;
+	var cy = result.y;
+	var cz = result.z;
+
+	var axi=0, ayi=0, azi=0;
+	var bxi=0, byi=0, bzi=0;
+	var a_mag = 0, b_mag = 0;
+	var is_a_bigger = false;
+
+	var sqrt = Math.sqrt;
+	for (var i = 0, li = ax.length; i<li; i++) {
+		axi = ax[i];
+		ayi = ay[i];
+		azi = az[i];
+		a_mag = sqrt(	axi * axi + 
+						ayi * ayi + 
+						azi * azi	  );
+
+		bxi = bx[i];
+		byi = by[i];
+		bzi = bz[i];
+		b_mag = sqrt(	bxi * bxi + 
+						byi * byi + 
+						bzi * bzi	  );
+
+		is_a_bigger = a_mag > b_mag;
+		cx[i] = is_a_bigger? axi : bxi;
+		cy[i] = is_a_bigger? ayi : byi;
+		cz[i] = is_a_bigger? azi : bzi;
+	}
+	return result;
+}
+VectorField.min_vector_field = function(vector_field1, vector_field2, result) {
+	result = result || VectorRaster.OfLength(vector_field1.x.length, vector_field1.grid);
+	
+	ASSERT_IS_VECTOR_RASTER(vector_field1)
+	ASSERT_IS_VECTOR_RASTER(vector_field2)
+	ASSERT_IS_VECTOR_RASTER(result)
+
+	var ax = vector_field1.x;
+	var ay = vector_field1.y;
+	var az = vector_field1.z;
+
+	var bx = vector_field2.x;
+	var by = vector_field2.y;
+	var bz = vector_field2.z;
+
+	var cx = result.x;
+	var cy = result.y;
+	var cz = result.z;
+
+	var axi=0, ayi=0, azi=0;
+	var bxi=0, byi=0, bzi=0;
+	var a_mag = 0, b_mag = 0;
+	var is_a_smaller = false;
+
+	var sqrt = Math.sqrt;
+	for (var i = 0, li = ax.length; i<li; i++) {
+		axi = ax[i];
+		ayi = ay[i];
+		azi = az[i];
+		a_mag = sqrt(	axi * axi + 
+						ayi * ayi + 
+						azi * azi	  );
+
+		bxi = bx[i];
+		byi = by[i];
+		bzi = bz[i];
+		b_mag = sqrt(	bxi * bxi + 
+						byi * byi + 
+						bzi * bzi	  );
+
+		is_a_smaller = a_mag < b_mag;
+		cx[i] = is_a_smaller? axi : bxi;
+		cy[i] = is_a_smaller? ayi : byi;
+		cz[i] = is_a_smaller? azi : bzi;
+	}
+	return result;
+}
 
 VectorField.add_vector = function(vector_field, vector, result) {
-	result = result || VectorRaster(vector_field.grid);
-	
+	result = result || VectorRaster.OfLength(vector_field.x.length, vector_field.grid);
+
 	ASSERT_IS_VECTOR_RASTER(vector_field)
 	ASSERT_IS_VECTOR_RASTER(result)
 
@@ -187,8 +256,8 @@ VectorField.add_vector = function(vector_field, vector, result) {
 };
 
 VectorField.sub_vector = function(vector_field, vector, result) {
-	result = result || VectorRaster(vector_field.grid);
-	
+	result = result || VectorRaster.OfLength(vector_field.x.length, vector_field.grid);
+
 	ASSERT_IS_VECTOR_RASTER(vector_field)
 	ASSERT_IS_VECTOR_RASTER(result)
 
@@ -213,7 +282,7 @@ VectorField.sub_vector = function(vector_field, vector, result) {
 	return result;
 };
 VectorField.dot_vector = function(vector_field, vector, result) {
-	result = result || Float32Raster(vector_field.grid);
+	result = result || Float32Raster.OfLength(vector_field.x.length, vector_field.grid);
 	
 	ASSERT_IS_VECTOR_RASTER(vector_field)
 	ASSERT_IS_ARRAY(result, Float32Array)
@@ -234,8 +303,8 @@ VectorField.dot_vector = function(vector_field, vector, result) {
 	return result;
 };
 VectorField.hadamard_vector = function(vector_field, vector, result) {
-	result = result || VectorRaster(vector_field.grid);
-	
+	result = result || VectorRaster.OfLength(vector_field.x.length, vector_field.grid);
+
 	ASSERT_IS_VECTOR_RASTER(vector_field)
 	ASSERT_IS_VECTOR_RASTER(result)
 
@@ -260,7 +329,7 @@ VectorField.hadamard_vector = function(vector_field, vector, result) {
 	return result;
 };
 VectorField.cross_vector = function (vector_field, vector, result)  {
-	result = result || VectorRaster(vector_field.grid);
+	result = result || VectorRaster.OfLength(vector_field.x.length, vector_field.grid);
 	
 	ASSERT_IS_VECTOR_RASTER(vector_field)
 	ASSERT_IS_VECTOR_RASTER(result)
@@ -292,12 +361,38 @@ VectorField.cross_vector = function (vector_field, vector, result)  {
 	}
 	return result;
 }
+VectorField.div_vector = function(vector_field, vector, result) {
+	result = result || VectorRaster.OfLength(vector_field.x.length, vector_field.grid);
+
+	ASSERT_IS_VECTOR_RASTER(vector_field)
+	ASSERT_IS_VECTOR_RASTER(result)
+
+	var x1 = vector_field.x;
+	var y1 = vector_field.y;
+	var z1 = vector_field.z;
+
+	var x2 = vector.x;
+	var y2 = vector.y;
+	var z2 = vector.z;
+
+	var x = result.x;
+	var y = result.y;
+	var z = result.z;
+
+	for (var i=0, li=x.length; i<li; ++i) {
+	    x[i] = x1[i] / x2;
+	    y[i] = y1[i] / y2;
+	    z[i] = z1[i] / z2;
+	}
+
+	return result;
+};
 
 // NOTE: matrix is structured to match the output of THREE.Matrix3.toArray()
 // i.e single array in column-major format
 VectorField.mult_matrix = function (vector_field, matrix, result)  {
-	result = result || VectorRaster(vector_field.grid);
-	
+	result = result || VectorRaster.OfLength(vector_field.x.length, vector_field.grid);
+
 	ASSERT_IS_VECTOR_RASTER(vector_field)
 	ASSERT_IS_3X3_MATRIX(matrix)
 	ASSERT_IS_VECTOR_RASTER(result)
@@ -332,8 +427,8 @@ VectorField.mult_matrix = function (vector_field, matrix, result)  {
 }
 
 VectorField.add_scalar_field = function(vector_field, scalar_field, result) {
-	result = result || VectorRaster(vector_field.grid);
-	
+	result = result || VectorRaster.OfLength(vector_field.x.length, vector_field.grid);
+
 	ASSERT_IS_VECTOR_RASTER(vector_field)
 	ASSERT_IS_ARRAY(scalar_field, Float32Array)
 	ASSERT_IS_VECTOR_RASTER(result)
@@ -349,8 +444,8 @@ VectorField.add_scalar_field = function(vector_field, scalar_field, result) {
 	return result;
 };
 VectorField.sub_scalar_field = function(vector_field, scalar_field, result) {
-	result = result || VectorRaster(vector_field.grid);
-	
+	result = result || VectorRaster.OfLength(vector_field.x.length, vector_field.grid);
+
 	ASSERT_IS_VECTOR_RASTER(vector_field)
 	ASSERT_IS_ARRAY(scalar_field, Float32Array)
 	ASSERT_IS_VECTOR_RASTER(result)
@@ -366,8 +461,8 @@ VectorField.sub_scalar_field = function(vector_field, scalar_field, result) {
 	return result;
 };
 VectorField.mult_scalar_field = function(vector_field, scalar_field, result) {
-	result = result || VectorRaster(vector_field.grid);
-	
+	result = result || VectorRaster.OfLength(vector_field.x.length, vector_field.grid);
+
 	ASSERT_IS_VECTOR_RASTER(vector_field)
 	ASSERT_IS_ARRAY(scalar_field, Float32Array)
 	ASSERT_IS_VECTOR_RASTER(result)
@@ -390,8 +485,8 @@ VectorField.mult_scalar_field = function(vector_field, scalar_field, result) {
 	return result;
 };
 VectorField.div_scalar_field = function(vector_field, scalar_field, result) {
-	result = result || VectorRaster(vector_field.grid);
-	
+	result = result || VectorRaster.OfLength(vector_field.x.length, vector_field.grid);
+
 	ASSERT_IS_VECTOR_RASTER(vector_field)
 	ASSERT_IS_ARRAY(scalar_field, Float32Array)
 	ASSERT_IS_VECTOR_RASTER(result)
@@ -409,8 +504,8 @@ VectorField.div_scalar_field = function(vector_field, scalar_field, result) {
 
 
 VectorField.add_scalar = function(vector_field, scalar, result) {
-	result = result || VectorRaster(vector_field.grid);
-	
+	result = result || VectorRaster.OfLength(vector_field.x.length, vector_field.grid);
+
 	ASSERT_IS_VECTOR_RASTER(vector_field)
 	ASSERT_IS_TYPE(scalar, number)
 	ASSERT_IS_VECTOR_RASTER(result)
@@ -425,8 +520,8 @@ VectorField.add_scalar = function(vector_field, scalar, result) {
 	return result;
 };
 VectorField.sub_scalar = function(vector_field, scalar, result) {
-	result = result || VectorRaster(vector_field.grid);
-	
+	result = result || VectorRaster.OfLength(vector_field.x.length, vector_field.grid);
+
 	ASSERT_IS_VECTOR_RASTER(vector_field)
 	ASSERT_IS_TYPE(scalar, number)
 	ASSERT_IS_VECTOR_RASTER(result)
@@ -441,8 +536,8 @@ VectorField.sub_scalar = function(vector_field, scalar, result) {
 	return result;
 };
 VectorField.mult_scalar = function(vector_field, scalar, result) {
-	result = result || VectorRaster(vector_field.grid);
-	
+	result = result || VectorRaster.OfLength(vector_field.x.length, vector_field.grid);
+
 	ASSERT_IS_VECTOR_RASTER(vector_field)
 	ASSERT_IS_TYPE(scalar, number)
 	ASSERT_IS_VECTOR_RASTER(result)
@@ -457,8 +552,8 @@ VectorField.mult_scalar = function(vector_field, scalar, result) {
 	return result;
 };
 VectorField.div_scalar = function(vector_field, scalar, result) {
-	result = result || VectorRaster(vector_field.grid);
-	
+	result = result || VectorRaster.OfLength(vector_field.x.length, vector_field.grid);
+
 	ASSERT_IS_VECTOR_RASTER(vector_field)
 	ASSERT_IS_TYPE(scalar, number)
 	ASSERT_IS_VECTOR_RASTER(result)
@@ -473,7 +568,7 @@ VectorField.div_scalar = function(vector_field, scalar, result) {
 	return result;
 };
 VectorField.vector_similarity = function(vector_field, vector, result) {
-	result = result || VectorRaster(vector_field.grid);
+	result = result || VectorRaster.OfLength(vector_field.x.length, vector_field.grid);
 
 	ASSERT_IS_VECTOR_RASTER(vector_field)
 	ASSERT_IS_ARRAY(result, Float32Array)
@@ -510,7 +605,7 @@ VectorField.vector_similarity = function(vector_field, vector, result) {
 
 
 VectorField.vector_field_similarity = function(vector_field1, vector_field2, result) {
-	result = result || VectorRaster(vector_field1.grid);
+	result = result || Float32Raster.OfLength(vector_field1.x.length, vector_field1.grid);
 
 	ASSERT_IS_VECTOR_RASTER(vector_field1)
 	ASSERT_IS_VECTOR_RASTER(vector_field2)
@@ -532,6 +627,7 @@ VectorField.vector_field_similarity = function(vector_field1, vector_field2, res
 	var byi = 0.;	
 	var bzi = 0.;
 
+	var sqrt = Math.sqrt;
 	for (var i=0, li=result.length; i<li; ++i) {
 		axi = ax[i]; 
 		ayi = ay[i]; 
@@ -554,7 +650,7 @@ VectorField.vector_field_similarity = function(vector_field1, vector_field2, res
 };
 
 VectorField.map = function(vector_field, fn, result) {
-	result = result || Float32Raster(vector_field.grid)
+	result = result || Float32Raster.OfLength(vector_field.x.length, vector_field.grid);
 	
 	ASSERT_IS_VECTOR_RASTER(vector_field)
 	ASSERT_IS_ARRAY(result, Float32Array)
@@ -569,9 +665,8 @@ VectorField.map = function(vector_field, fn, result) {
 	return result;
 };
 
-
 VectorField.magnitude = function(vector_field, result) {
-	result = result || Float32Raster(vector_field.grid);
+	result = result || Float32Raster.OfLength(vector_field.x.length, vector_field.grid);
 
 	ASSERT_IS_VECTOR_RASTER(vector_field)
 	ASSERT_IS_ARRAY(result, Float32Array)
@@ -594,7 +689,7 @@ VectorField.magnitude = function(vector_field, result) {
 }
 
 VectorField.normalize = function(vector_field, result) {
-	result = result || VectorRaster(vector_field.grid);
+	result = result || VectorRaster.OfLength(vector_field.x.length, vector_field.grid);
 
 	ASSERT_IS_VECTOR_RASTER(vector_field)
 	ASSERT_IS_VECTOR_RASTER(result)
@@ -672,7 +767,7 @@ VectorField.arrow_differential = function(vector_field, result) {
 //   find how the projection changes along that vector
 //   find the average change across all neighbors
 VectorField.divergence = function(vector_field, result) {
-	result = result || Float32Raster(vector_field.grid);
+	result = result || Float32Raster.OfLength(vector_field.x.length, vector_field.grid);
 	
 	ASSERT_IS_VECTOR_RASTER(vector_field)
 	ASSERT_IS_ARRAY(result, Float32Array)
@@ -706,6 +801,71 @@ VectorField.divergence = function(vector_field, result) {
 	var neighbor_count = vector_field.grid.neighbor_count;
 	for (var i = 0, li = neighbor_count.length; i < li; i++) {
 		result[i] /= neighbor_count[i] || 1;
+	}
+
+	return result;
+}
+
+// This function computes the curl of a 3d mesh. 
+// The curl can be thought of as the amount by which vectors curl around a point
+// By applying it to a surface, we mean it's only done for the 2d surface of a 3d object. 
+// This implementation does not have to assume all vertices are equidistant. 
+// 
+// Think of it as taking the average change in the vector rejection:
+// For each neighbor:
+//   draw a vector to the neighbor
+//   find the vector rejection between that vector and the field, 
+//   find how the vector rejection changes along that vector
+//   find the average change across all neighbors
+VectorField.curl = function(vector_field, result) {
+	result = result || VectorRaster.OfLength(vector_field.x.length, vector_field.grid);
+
+	ASSERT_IS_VECTOR_RASTER(vector_field)
+	ASSERT_IS_VECTOR_RASTER(result)
+
+	var dlength = vector_field.grid.pos_arrow_distances;
+
+	var arrows = vector_field.grid.arrows;
+
+	var curl_fx = result.x;
+	var curl_fy = result.y;
+	var curl_fz = result.z;
+
+	var fx = vector_field.x;
+	var fy = vector_field.y;
+	var fz = vector_field.z;
+
+	var arrow_pos_diff_normalized = vector_field.grid.pos_arrow_differential_normalized;
+	var dxhat = arrow_pos_diff_normalized.x;
+	var dyhat = arrow_pos_diff_normalized.y;
+	var dzhat = arrow_pos_diff_normalized.z;
+
+	var from = 0;
+	var to  = 0;
+	var dfx = 0;
+	var dfy = 0;
+	var dfz = 0;
+	Float32Raster.fill(curl_fx, 0);
+	Float32Raster.fill(curl_fy, 0);
+	Float32Raster.fill(curl_fz, 0);
+	for (var i = 0, li = arrows.length; i<li; i++) {
+		from = arrows[i][0];
+		to = arrows[i][1];
+
+		dfx = fx[to] - fx[from];
+		dfy = fy[to] - fy[from];
+		dfz = fz[to] - fz[from];
+
+		curl_fx[from] += dfx - (dfx * dxhat[i] / dlength[i]);
+		curl_fy[from] += dfy - (dfy * dyhat[i] / dlength[i]);
+		curl_fz[from] += dfz - (dfz * dzhat[i] / dlength[i]);
+	}
+
+	var neighbor_count = vector_field.grid.neighbor_count;
+	for (var i = 0, li = neighbor_count.length; i < li; i++) {
+		curl_fx[i] /= neighbor_count[i] || 1;
+		curl_fy[i] /= neighbor_count[i] || 1;
+		curl_fz[i] /= neighbor_count[i] || 1;
 	}
 
 	return result;

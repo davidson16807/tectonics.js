@@ -16,33 +16,33 @@ Sphere.spherical_to_cartesian = function(lat, lon){
 	   -Math.cos(lat) * Math.sin(lon)
 	);
 }
-Sphere.random_point = function() {
+Sphere.random_point_on_surface = function(random) {
 	return Sphere.spherical_to_cartesian(
-		Math.asin(2*sim.random.random() - 1),
-		2*Math.PI * sim.random.random()
+		Math.asin(2*random.random() - 1),
+		2*Math.PI * random.random()
 	);
 };
-Sphere.random_point_along_great_circle = function(eulerPole) {
+Sphere.random_point_on_great_circle = function(eulerPole, random) {
     var a = eulerPole;
     var b = Vector(0,0,1); 
     var c = Vector()
 
     // First, cross eulerPole with another vector to give a nonrandom point along great circle
-    Vector.cross	(a.x, a.y, a.z,  	b.x, b.y, b.z, 	c); 
-    Vector.normalize(c.x, c.y, c.z, 					c); 
+    Vector.cross_vector	(a.x, a.y, a.z,  	b.x, b.y, b.z, 	c); 
+    Vector.normalize	(c.x, c.y, c.z, 					c); 
 	
 	// then rotate by some random amount around the eulerPole
-	var random_rotation_matrix = Matrix.RotationAboutAxis(a.x, a.y, a.z, 2*Math.PI * sim.random.random());
+	var random_rotation_matrix = Matrix3x3.RotationAboutAxis(a.x, a.y, a.z, 2*Math.PI * random.random());
 	return Vector.mult_matrix(c.x, c.y, c.z,  random_rotation_matrix)
 };
-Sphere.random_basis = function () {
+Sphere.random_basis = function (random) {
     var up = Vector(0,0,1); 
     var a = Vector(); 
     var b = Vector(); 
-    var c = Sphere.random_point(); 
-    Vector.cross(c.x, c.y, c.z, up.x, up.y, up.z, a); 
-    Vector.normalize(a.x, a.y, a.z, a); 
-    Vector.cross(c.x, c.y, c.z, a.x, a.y, a.z, b); 
-    return Matrix.BasisVectors(a,b,c); 
+    var c = Sphere.random_point_on_surface(random); 
+    Vector.cross_vector	(c.x, c.y, c.z, up.x, up.y, up.z, a); 
+    Vector.normalize	(a.x, a.y, a.z, a); 
+    Vector.cross_vector	(c.x, c.y, c.z, a.x, a.y, a.z, b); 
+    return Matrix3x3.BasisVectors(a,b,c); 
 }
 

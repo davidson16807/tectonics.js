@@ -5,7 +5,7 @@
 function World(parameters) {
 	var this_ = this;
 	this.name = parameters.name;
-	this.grid = new Grid(parameters['grid'], { voronoi_generator: VoronoiSphere.FromPos }) || stop('missing parameter: "grid"');
+	this.grid = new Grid(parameters['grid']) || stop('missing parameter: "grid"');
 
 	// all heat capacities in Joules per Kelvin
 	this.material_heat_capacity = parameters['material_heat_capacity'] || {
@@ -14,25 +14,25 @@ function World(parameters) {
 	    air : 1e7, 	// heat capacity of 1m^2 air column on earth
 	}
 
-	// all viscosities in m/s per kiloPascal
+	// all viscosities in m/s per Pascal
 	this.material_viscosity = parameters['material_viscosity'] || {
-		mantle: 1.57e17, 
+		mantle: 1.57e20, 
 	};
 
-	// all densities in T/m^3
+	// all densities in kg/m^3
 	this.material_density = parameters['material_density'] || {
 		// most values are estimates from looking around wolfram alpha
-		fine_sediment: 1.500,
-		coarse_sediment: 1.500,
-		sediment: 1.500,
-		sedimentary: 2.600,
-		metamorphic: 2.800,
-		felsic_plutonic: 2.600,
-		felsic_volcanic: 2.600,
-		mafic_volcanic_min: 2.890, // Carlson & Raskin 1984
-		mafic_volcanic_max: 3.300,
-		mantle: 3.075, // derived empirically using isostatic model
-		ocean: 1.026,
+		fine_sediment: 1500.,
+		coarse_sediment: 1500.,
+		sediment: 1500.,
+		sedimentary: 2600.,
+		metamorphic: 2800.,
+		felsic_plutonic: 2600.,
+		felsic_volcanic: 2600.,
+		mafic_volcanic_min: 2890., // Carlson & Raskin 1984
+		mafic_volcanic_max: 3300.,
+		mantle: 3075., // derived empirically using isostatic model
+		ocean: 1026.,
 	};
 
 	this.material_reflectivity = parameters['material_reflectivity'] || {
@@ -84,7 +84,7 @@ function World(parameters) {
 	this.initialize = function() {
 		this.lithosphere.setDependencies({
 			'surface_gravity'		: this.surface_gravity,
-			'sealevel'				: this.hydrosphere.sealevel,
+			'surface_height'		: this.hydrosphere.surface_height,
 			'material_density'		: this.material_density,
 			'material_viscosity'	: this.material_viscosity,
 		});

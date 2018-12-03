@@ -9,10 +9,6 @@ varying vec4 vPosition;
 uniform float sealevel;
 uniform float sealevel_mod;
 
-float cosh (float x){
-	return exp(x)+exp(-x)/2.;
-}
-
 //converts float from 0-1 to a heat map visualtion
 //credit goes to Gaëtan Renaudeau: http://greweb.me/glsl.js/examples/heatmap/
 vec4 heat (float v) {

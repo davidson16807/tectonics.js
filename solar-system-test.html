@@ -173,7 +173,7 @@
 							new System({
 								name: 'Lunar Spin',
 								motion: new Spin({ 
-									angular_speed: 2*Math.PI/(Units.SECONDS_IN_DAY*27.322),
+									angular_speed: 2*Math.PI/(Units.DAY*27.322),
 								}),	
 								body: bodies['moon'],
 							}),
@@ -183,7 +183,7 @@
 					new System({
 						name: 'Earth Precession',
 						motion: new Spin({ 
-							angular_speed: 2*Math.PI/(10e3*Units.SECONDS_IN_YEAR),
+							angular_speed: 2*Math.PI/(10e3*Units.YEAR),
 						}),	
 						children: [
 							new System({

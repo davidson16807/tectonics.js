@@ -4,7 +4,6 @@
 // It is the lowest level data structure in the app - all raster operations under rasters/ depend on it
 function Grid(parameters, options){
  options = options || {};
- var voronoi_generator = options.voronoi_generator;
  var neighbor_lookup, face, points, vertex;
  this.parameters = parameters;
  // Precompute map between buffer array ids and grid cell ids
@@ -93,9 +92,7 @@ function Grid(parameters, options){
  VectorField.magnitude(this.pos_arrow_differential, this.pos_arrow_distances);
  this.average_distance = Float32Dataset.average(this.pos_arrow_distances);
  this.average_area = this.average_distance * this.average_distance;
- if (voronoi_generator){
-  this._voronoi = voronoi_generator(this.pos, Float32Dataset.max(this.pos_arrow_distances));
- }
+ this._voronoi = new VoronoiSphere(this.pos, Float32Dataset.min(this.pos_arrow_distances)/2, Float32Dataset.max(this.pos_arrow_distances));
 }
 Grid.prototype.getNearestId = function(vertex) {
  return this._voronoi.getNearestId(vertex);
@@ -107,7 +104,7 @@ Grid.prototype.getNearestIds = function(pos_field, result) {
 Grid.prototype.getNeighborIds = function(id) {
  return this.neighbor_lookup[id];
 }
-// Tectonics.js rolls its own Vector and Matrix libraries for two reasons:
+// Tectonics.js rolls its own Vector and Matrix3x3 libraries for two reasons:
 //   1.) performance
 //   2.) separation from volatile 3rd part libraries (Three.js)
 // 
@@ -116,37 +113,37 @@ Grid.prototype.getNeighborIds = function(id) {
 // 
 // Lists are used instead of params because performance gain over 
 // independant params is negligible for our purposes.
-function Matrix(){
+function Matrix3x3(){
   return new Float32Array([0,0,0,
                            0,0,0,
                            0,0,0]);
 }
-Matrix.Identity = function() {
+Matrix3x3.Identity = function() {
   return new Float32Array([1,0,0,
                            0,1,0,
                            0,0,1]);
 }
-Matrix.RowMajorOrder = function(list) {
+Matrix3x3.RowMajorOrder = function(list) {
  
   var xx = list[0]; var xy = list[1]; var xz = list[2];
   var yx = list[3]; var yy = list[4]; var yz = list[5];
   var zx = list[6]; var zy = list[7]; var zz = list[8];
-  var result = Matrix();
+  var result = Matrix3x3();
   result[0] = xx; result[4] = xy; result[8] = xz;
   result[1] = yx; result[5] = yy; result[9] = yz;
   result[2] = zx; result[6] = zy; result[10]= zz;
   return result;
 }
-Matrix.ColumnMajorOrder = function(list) {
+Matrix3x3.ColumnMajorOrder = function(list) {
  
   return new Float32Array(list); //matrices are standardized to column major order, already
 }
-Matrix.BasisVectors = function(a, b, c) {
+Matrix3x3.BasisVectors = function(a, b, c) {
   return new Float32Array([a.x, a.y, a.z,
                            b.x, b.y, b.z,
                            c.x, c.y, c.z ]);
 }
-Matrix.RotationAboutAxis = function(axis_x, axis_y, axis_z, angle) {
+Matrix3x3.RotationAboutAxis = function(axis_x, axis_y, axis_z, angle) {
   var θ = angle,
       x = axis_x,
       y = axis_y,
@@ -162,7 +159,7 @@ Matrix.RotationAboutAxis = function(axis_x, axis_y, axis_z, angle) {
     vθx*z+sθ*y, vθy*z-sθ*x, vθ*z*z+cθ
   ]);
 }
-Matrix.FromRotationVector = function(ωx, ωy, ωz) {
+Matrix3x3.FromRotationVector = function(ωx, ωy, ωz) {
   var axis = Vector.normalize(ωx, ωy, ωz);
   var θ = Vector.magnitude(ωx, ωy, ωz),
       x = axis.x,
@@ -179,8 +176,8 @@ Matrix.FromRotationVector = function(ωx, ωy, ωz) {
     vθx*z+sθ*y, vθy*z-sθ*x, vθ*z*z+cθ
   ]);
 }
-Matrix.invert = function(matrix, result) {
-    result = result || Matrix();
+Matrix3x3.invert = function(matrix, result) {
+    result = result || Matrix3x3();
    
    
     var A = matrix;
@@ -206,8 +203,46 @@ Matrix.invert = function(matrix, result) {
     B[ 2 ] = b31, B[ 5 ] = b32, B[ 8 ] = b33;
     return B;
 }
-Matrix.mult_scalar = function(matrix, scalar, result) {
-  var result = result || Matrix();
+Matrix3x3.add_scalar = function(matrix, scalar, result) {
+  var result = result || Matrix3x3();
+  var A = matrix;
+  var b = scalar;
+  var C = result;
+ 
+ 
+ 
+  C[0] = A[0]+b;
+  C[1] = A[1]+b;
+  C[2] = A[2]+b;
+  C[3] = A[3]+b;
+  C[4] = A[4]+b;
+  C[5] = A[5]+b;
+  C[6] = A[6]+b;
+  C[7] = A[7]+b;
+  C[8] = A[8]+b;
+  return C;
+}
+Matrix3x3.sub_scalar = function(matrix, scalar, result) {
+  var result = result || Matrix3x3();
+  var A = matrix;
+  var b = scalar;
+  var C = result;
+ 
+ 
+ 
+  C[0] = A[0]-b;
+  C[1] = A[1]-b;
+  C[2] = A[2]-b;
+  C[3] = A[3]-b;
+  C[4] = A[4]-b;
+  C[5] = A[5]-b;
+  C[6] = A[6]-b;
+  C[7] = A[7]-b;
+  C[8] = A[8]-b;
+  return C;
+}
+Matrix3x3.mult_scalar = function(matrix, scalar, result) {
+  var result = result || Matrix3x3();
   var A = matrix;
   var b = scalar;
   var C = result;
@@ -225,8 +260,8 @@ Matrix.mult_scalar = function(matrix, scalar, result) {
   C[8] = A[8]*b;
   return C;
 }
-Matrix.mult_matrix = function(A, B, result) {
-  var result = result || Matrix();
+Matrix3x3.mult_matrix = function(A, B, result) {
+  var result = result || Matrix3x3();
   var C = result;
  
  
@@ -246,6 +281,23 @@ Matrix.mult_matrix = function(A, B, result) {
   C[ 2 ] = a31 * b11 + a32 * b21 + a33 * b31;
   C[ 5 ] = a31 * b12 + a32 * b22 + a33 * b32;
   C[ 8 ] = a31 * b13 + a32 * b23 + a33 * b33;
+  return C;
+}
+Matrix3x3.hadamard_matrix = function(A, B, result) {
+  var result = result || Matrix3x3();
+  var C = result;
+ 
+ 
+ 
+  C[0] = A[0]*B[0];
+  C[1] = A[1]*B[1];
+  C[2] = A[2]*B[2];
+  C[3] = A[3]*B[3];
+  C[4] = A[4]*B[4];
+  C[5] = A[5]*B[5];
+  C[6] = A[6]*B[6];
+  C[7] = A[7]*B[7];
+  C[8] = A[8]*B[8];
   return C;
 }
 // NOTE:
@@ -296,11 +348,11 @@ Matrix4x4.identity = function(out) {
   return out;
 }
 /**
- * Copy the values from one mat4 to another
+ * Copy the values from one out to another
  *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the source matrix
- * @returns {mat4} out
+ * @param {out} out the receiving matrix
+ * @param {out} a the source matrix
+ * @returns {out} out
  */
 Matrix4x4.copy = function(a, out) {
   out = out || Matrix4x4();
@@ -385,11 +437,11 @@ Matrix4x4.row_major_order = function(
   return out;
 }
 /**
- * Transpose the values of a mat4
+ * Transpose the values of a out
  *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the source matrix
- * @returns {mat4} out
+ * @param {out} out the receiving matrix
+ * @param {out} a the source matrix
+ * @returns {out} out
  */
 Matrix4x4.transpose = function(a, out) {
   out = out || Matrix4x4();
@@ -431,11 +483,11 @@ Matrix4x4.transpose = function(a, out) {
   return out;
 }
 /**
- * Inverts a mat4
+ * Inverts a out
  *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the source matrix
- * @returns {mat4} out
+ * @param {out} out the receiving matrix
+ * @param {out} a the source matrix
+ * @returns {out} out
  */
 Matrix4x4.invert = function(a, out) {
   out = out || Matrix4x4();
@@ -480,11 +532,11 @@ Matrix4x4.invert = function(a, out) {
   return out;
 }
 /**
- * Calculates the adjugate of a mat4
+ * Calculates the adjugate of a out
  *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the source matrix
- * @returns {mat4} out
+ * @param {out} out the receiving matrix
+ * @param {out} a the source matrix
+ * @returns {out} out
  */
 Matrix4x4.adjoint = function(a, out) {
   out = out || Matrix4x4();
@@ -511,9 +563,9 @@ Matrix4x4.adjoint = function(a, out) {
   return out;
 }
 /**
- * Calculates the determinant of a mat4
+ * Calculates the determinant of a out
  *
- * @param {mat4} a the source matrix
+ * @param {out} a the source matrix
  * @returns {Number} determinant of a
  */
 Matrix4x4.determinant = function(a){
@@ -537,12 +589,12 @@ Matrix4x4.determinant = function(a){
   return b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
 }
 /**
- * Multiplies two mat4s
+ * Multiplies two outs
  *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the first operand
- * @param {mat4} b the second operand
- * @returns {mat4} out
+ * @param {out} out the receiving matrix
+ * @param {out} a the first operand
+ * @param {out} b the second operand
+ * @returns {out} out
  */
 Matrix4x4.mult_matrix = function(a, b, out) {
   out = out || Matrix4x4();
@@ -577,12 +629,12 @@ Matrix4x4.mult_matrix = function(a, b, out) {
  * Creates a matrix from a vector translation
  * This is equivalent to (but much faster than):
  *
- *     mat4.identity(dest);
- *     mat4.translate(dest, dest, vec);
+ *     out.identity(dest);
+ *     out.translate(dest, dest, vec);
  *
- * @param {mat4} out mat4 receiving operation result
+ * @param {out} out out receiving operation result
  * @param {vec3} v Translation vector
- * @returns {mat4} out
+ * @returns {out} out
  */
 Matrix4x4.from_translation = function( x, y, z, out) {
   out = out || Matrix4x4();
@@ -608,12 +660,12 @@ Matrix4x4.from_translation = function( x, y, z, out) {
  * Creates a matrix from a vector scaling
  * This is equivalent to (but much faster than):
  *
- *     mat4.identity(dest);
- *     mat4.scale(dest, dest, vec);
+ *     out.identity(dest);
+ *     out.scale(dest, dest, vec);
  *
- * @param {mat4} out mat4 receiving operation result
+ * @param {out} out out receiving operation result
  * @param {vec3} v Scaling vector
- * @returns {mat4} out
+ * @returns {out} out
  */
 Matrix4x4.from_scaling = function( x, y, z, out) {
   out = out || Matrix4x4();
@@ -639,13 +691,13 @@ Matrix4x4.from_scaling = function( x, y, z, out) {
  * Creates a matrix from a given angle around a given axis
  * This is equivalent to (but much faster than):
  *
- *     mat4.identity(dest);
- *     mat4.rotate(dest, dest, rad, axis);
+ *     out.identity(dest);
+ *     out.rotate(dest, dest, rad, axis);
  *
- * @param {mat4} out mat4 receiving operation result
+ * @param {out} out out receiving operation result
  * @param {Number} rad the angle to rotate the matrix by
  * @param {vec3} axis the axis to rotate around
- * @returns {mat4} out
+ * @returns {out} out
  */
 Matrix4x4.from_rotation = function( x, y, z, rad, out) {
   out = out || Matrix4x4();
@@ -680,11 +732,11 @@ Matrix4x4.from_rotation = function( x, y, z, rad, out) {
   return out;
 }
 /**
- * Creates a new mat4 from a dual quat.
+ * Creates a new out from a dual quat.
  *
- * @param {mat4} out Matrix
+ * @param {out} out Matrix
  * @param {quat2} a Dual Quaternion
- * @returns {mat4} mat4 receiving operation result
+ * @returns {out} out receiving operation result
  */
 Matrix4x4.from_dual_quaternion = function(a, out) {
   out = out || Matrix4x4();
@@ -712,7 +764,7 @@ Matrix4x4.from_dual_quaternion = function(a, out) {
  *  the returned vector will be the same as the translation vector
  *  originally supplied.
  * @param  {vec3} out Vector to receive translation component
- * @param  {mat4} mat Matrix to be decomposed (input)
+ * @param  {out} mat Matrix to be decomposed (input)
  * @return {vec3} out
  */
 Matrix4x4.get_translation = function( mat, out) {
@@ -729,7 +781,7 @@ Matrix4x4.get_translation = function( mat, out) {
  *  the same as the scaling vector
  *  originally supplied.
  * @param  {vec3} out Vector to receive scaling factor component
- * @param  {mat4} mat Matrix to be decomposed (input)
+ * @param  {out} mat Matrix to be decomposed (input)
  * @return {vec3} out
  */
 Matrix4x4.get_scaling = function( mat, out) {
@@ -754,7 +806,7 @@ Matrix4x4.get_scaling = function( mat, out) {
  *  fromRotationTranslation, the returned quaternion will be the
  *  same as the quaternion originally supplied.
  * @param {quat} out Quaternion to receive the rotation component
- * @param {mat4} mat Matrix to be decomposed (input)
+ * @param {out} mat Matrix to be decomposed (input)
  * @return {quat} out
  */
 Matrix4x4.get_quaternion = function( mat, out) {
@@ -792,10 +844,10 @@ Matrix4x4.get_quaternion = function( mat, out) {
 /**
  * Calculates a 4x4 matrix from the given quaternion
  *
- * @param {mat4} out mat4 receiving operation result
+ * @param {out} out out receiving operation result
  * @param {quat} q Quaternion to create matrix from
  *
- * @returns {mat4} out
+ * @returns {out} out
  */
 Matrix4x4.from_quaternion = function( q, out) {
   out = out || Matrix4x4();
@@ -833,14 +885,14 @@ Matrix4x4.from_quaternion = function( q, out) {
 /**
  * Generates a frustum matrix with the given bounds
  *
- * @param {mat4} out mat4 frustum matrix will be written into
+ * @param {out} out out frustum matrix will be written into
  * @param {Number} left Left bound of the frustum
  * @param {Number} right Right bound of the frustum
  * @param {Number} bottom Bottom bound of the frustum
  * @param {Number} top Top bound of the frustum
  * @param {Number} near Near bound of the frustum
  * @param {Number} far Far bound of the frustum
- * @returns {mat4} out
+ * @returns {out} out
  */
 Matrix4x4.from_frustum = function( left, right, bottom, top, near, far, out) {
   out = out || Matrix4x4();
@@ -868,12 +920,12 @@ Matrix4x4.from_frustum = function( left, right, bottom, top, near, far, out) {
 /**
  * Generates a perspective projection matrix with the given bounds
  *
- * @param {mat4} out mat4 frustum matrix will be written into
+ * @param {out} out out frustum matrix will be written into
  * @param {number} fovy Vertical field of view in radians
  * @param {number} aspect Aspect ratio. typically viewport width/height
  * @param {number} near Near bound of the frustum
  * @param {number} far Far bound of the frustum
- * @returns {mat4} out
+ * @returns {out} out
  */
 Matrix4x4.from_perspective = function( fovy, aspect, near, far, out) {
   out = out || Matrix4x4();
@@ -902,11 +954,11 @@ Matrix4x4.from_perspective = function( fovy, aspect, near, far, out) {
  * This is primarily useful for generating projection matrices to be used
  * with the still experiemental WebVR API.
  *
- * @param {mat4} out mat4 frustum matrix will be written into
+ * @param {out} out out frustum matrix will be written into
  * @param {Object} fov Object containing the following values: upDegrees, downDegrees, leftDegrees, rightDegrees
  * @param {number} near Near bound of the frustum
  * @param {number} far Far bound of the frustum
- * @returns {mat4} out
+ * @returns {out} out
  */
 Matrix4x4.from_field_of_view_perspective = function( fov, near, far, out) {
   out = out || Matrix4x4();
@@ -937,14 +989,14 @@ Matrix4x4.from_field_of_view_perspective = function( fov, near, far, out) {
 /**
  * Generates a orthogonal projection matrix with the given bounds
  *
- * @param {mat4} out mat4 frustum matrix will be written into
+ * @param {out} out out frustum matrix will be written into
  * @param {number} left Left bound of the frustum
  * @param {number} right Right bound of the frustum
  * @param {number} bottom Bottom bound of the frustum
  * @param {number} top Top bound of the frustum
  * @param {number} near Near bound of the frustum
  * @param {number} far Far bound of the frustum
- * @returns {mat4} out
+ * @returns {out} out
  */
 Matrix4x4.ortho = function( left, right, bottom, top, near, far, out) {
   out = out || Matrix4x4();
@@ -973,11 +1025,11 @@ Matrix4x4.ortho = function( left, right, bottom, top, near, far, out) {
  * Generates a look-at matrix with the given eye position, focal point, and up axis. 
  * If you want a matrix that actually makes an object look at another object, you should use targetTo instead.
  *
- * @param {mat4} out mat4 frustum matrix will be written into
+ * @param {out} out out frustum matrix will be written into
  * @param {vec3} eye Position of the viewer
  * @param {vec3} center Point the viewer is looking at
  * @param {vec3} up vec3 pointing up
- * @returns {mat4} out
+ * @returns {out} out
  */
 Matrix4x4.look_at = function( eye, center, up, out) {
   out = out || Matrix4x4();
@@ -1053,11 +1105,11 @@ Matrix4x4.look_at = function( eye, center, up, out) {
 /**
  * Generates a matrix that makes something look at something else.
  *
- * @param {mat4} out mat4 frustum matrix will be written into
+ * @param {out} out out frustum matrix will be written into
  * @param {vec3} eye Position of the viewer
  * @param {vec3} center Point the viewer is looking at
  * @param {vec3} up vec3 pointing up
- * @returns {mat4} out
+ * @returns {out} out
  */
 Matrix4x4.target_to = function( eye, target, up, out) {
   out = out || Matrix4x4();
@@ -1106,33 +1158,33 @@ Matrix4x4.target_to = function( eye, target, up, out) {
   return out;
 };
 /**
- * Returns a string representation of a mat4
+ * Returns a string representation of a out
  *
- * @param {mat4} a matrix to represent as a string
+ * @param {out} a matrix to represent as a string
  * @returns {String} string representation of the matrix
  */
 Matrix4x4.to_string = function(a) {
-  return 'mat4(' + a[0] + ', ' + a[1] + ', ' + a[2] + ', ' + a[3] + ', ' +
+  return 'out(' + a[0] + ', ' + a[1] + ', ' + a[2] + ', ' + a[3] + ', ' +
           a[4] + ', ' + a[5] + ', ' + a[6] + ', ' + a[7] + ', ' +
           a[8] + ', ' + a[9] + ', ' + a[10] + ', ' + a[11] + ', ' +
           a[12] + ', ' + a[13] + ', ' + a[14] + ', ' + a[15] + ')';
 }
 /**
- * Returns Frobenius norm of a mat4
+ * Returns Frobenius norm of a out
  *
- * @param {mat4} a the matrix to calculate Frobenius norm of
+ * @param {out} a the matrix to calculate Frobenius norm of
  * @returns {Number} Frobenius norm
  */
 Matrix4x4.frobenius = function(a) {
   return(Math.sqrt(Math.pow(a[0], 2) + Math.pow(a[1], 2) + Math.pow(a[2], 2) + Math.pow(a[3], 2) + Math.pow(a[4], 2) + Math.pow(a[5], 2) + Math.pow(a[6], 2) + Math.pow(a[7], 2) + Math.pow(a[8], 2) + Math.pow(a[9], 2) + Math.pow(a[10], 2) + Math.pow(a[11], 2) + Math.pow(a[12], 2) + Math.pow(a[13], 2) + Math.pow(a[14], 2) + Math.pow(a[15], 2) ))
 }
 /**
- * Adds two mat4's
+ * Adds two out's
  *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the first operand
- * @param {mat4} b the second operand
- * @returns {mat4} out
+ * @param {out} out the receiving matrix
+ * @param {out} a the first operand
+ * @param {out} b the second operand
+ * @returns {out} out
  */
 Matrix4x4.add_matrix = function(a, b, out) {
   out = out || Matrix4x4();
@@ -1157,10 +1209,10 @@ Matrix4x4.add_matrix = function(a, b, out) {
 /**
  * Subtracts matrix b from matrix a
  *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the first operand
- * @param {mat4} b the second operand
- * @returns {mat4} out
+ * @param {out} out the receiving matrix
+ * @param {out} a the first operand
+ * @param {out} b the second operand
+ * @returns {out} out
  */
 Matrix4x4.sub_matrix = function(a, b, out) {
   out = out || Matrix4x4();
@@ -1185,10 +1237,10 @@ Matrix4x4.sub_matrix = function(a, b, out) {
 /**
  * Multiply each element of the matrix by a scalar.
  *
- * @param {mat4} out the receiving matrix
- * @param {mat4} a the matrix to scale
+ * @param {out} out the receiving matrix
+ * @param {out} a the matrix to scale
  * @param {Number} b amount to scale the matrix's elements by
- * @returns {mat4} out
+ * @returns {out} out
  */
 Matrix4x4.mult_scalar = function(a, b, out) {
   out = out || Matrix4x4();
@@ -1211,13 +1263,13 @@ Matrix4x4.mult_scalar = function(a, b, out) {
   return out;
 }
 /**
- * Adds two mat4's after multing each element of the second operand by a scalar value.
+ * Adds two out's after multing each element of the second operand by a scalar value.
  *
- * @param {mat4} out the receiving vector
- * @param {mat4} a the first operand
- * @param {mat4} b the second operand
+ * @param {out} out the receiving vector
+ * @param {out} a the first operand
+ * @param {out} b the second operand
  * @param {Number} scale the amount to scale b's elements by before adding
- * @returns {mat4} out
+ * @returns {out} out
  */
 Matrix4x4.mult_scalar_term = function(a, b, scale, out) {
   out = out || Matrix4x4();
@@ -1242,8 +1294,8 @@ Matrix4x4.mult_scalar_term = function(a, b, scale, out) {
 /**
  * Returns whether or not the matrices have approximately the same elements in the same position.
  *
- * @param {mat4} a The first matrix.
- * @param {mat4} b The second matrix.
+ * @param {out} a The first matrix.
+ * @param {out} b The second matrix.
  * @returns {Boolean} True if the matrices are equal, false otherwise.
  */
 Matrix4x4.equals = function(a, b) {
@@ -1297,43 +1349,44 @@ Vector.FromArray = function(array) {
     z: array[2] || 0,
   };
 }
-Vector.similarity = function(ax, ay, az, bx, by, bz) {
-  var sqrt = Math.sqrt;
-  return (ax*bx +
-          ay*by +
-          az*bz) / ( sqrt(ax*ax+
-                              ay*ay+
-                              az*az) * sqrt(bx*bx+
-                                          by*by+
-                                          bz*bz) );
-}
-Vector.dot = function(ax, ay, az, bx, by, bz) {
-  var sqrt = Math.sqrt;
-  return (ax*bx + ay*by + az*bz);
-}
-Vector.magnitude = function(x, y, z) {
-  return Math.sqrt(x*x + y*y + z*z);
-}
-Vector.normalize = function(x, y, z, result) {
+Vector.add_vector = function(ax, ay, az, bx, by, bz, result) {
   result = result || Vector()
-  var magnitude = Math.sqrt(x*x + y*y + z*z);
-  result.x = x/(magnitude||1);
-  result.y = y/(magnitude||1);
-  result.z = z/(magnitude||1);
+  result.x = ax + bx;
+  result.y = ay + by;
+  result.z = az + bz;
   return result;
 }
-Vector.cross = function(ax, ay, az, bx, by, bz, result) {
+Vector.sub_vector = function(ax, ay, az, bx, by, bz, result) {
+  result = result || Vector()
+  result.x = ax - bx;
+  result.y = ay - by;
+  result.z = az - bz;
+  return result;
+}
+// TODO: rename to "cross_vector" 
+Vector.cross_vector = function(ax, ay, az, bx, by, bz, result) {
   result = result || Vector()
   result.x = ay*bz - az*by;
   result.y = az*bx - ax*bz;
   result.z = ax*by - ay*bx;
   return result;
 }
+Vector.dot_vector = function(ax, ay, az, bx, by, bz) {
+  var sqrt = Math.sqrt;
+  return (ax*bx + ay*by + az*bz);
+}
 Vector.mult_scalar = function(x, y, z, scalar, result) {
   result = result || Vector();
   result.x = x * scalar;
   result.y = y * scalar;
   result.z = z * scalar;
+  return result;
+}
+Vector.div_scalar = function(x, y, z, scalar, result) {
+  result = result || Vector();
+  result.x = x / scalar;
+  result.y = y / scalar;
+  result.z = z / scalar;
   return result;
 }
 Vector.mult_matrix = function(x, y, z, matrix, result) {
@@ -1344,6 +1397,27 @@ Vector.mult_matrix = function(x, y, z, matrix, result) {
   result.x = x * xx + y * xy + z * xz;
   result.y = x * yx + y * yy + z * yz;
   result.z = x * zx + y * zy + z * zz;
+  return result;
+}
+Vector.similarity = function(ax, ay, az, bx, by, bz) {
+  var sqrt = Math.sqrt;
+  return (ax*bx +
+          ay*by +
+          az*bz) / ( sqrt(ax*ax+
+                              ay*ay+
+                              az*az) * sqrt(bx*bx+
+                                          by*by+
+                                          bz*bz) );
+}
+Vector.magnitude = function(x, y, z) {
+  return Math.sqrt(x*x + y*y + z*z);
+}
+Vector.normalize = function(x, y, z, result) {
+  result = result || Vector()
+  var magnitude = Math.sqrt(x*x + y*y + z*z);
+  result.x = x/(magnitude||1);
+  result.y = y/(magnitude||1);
+  result.z = z/(magnitude||1);
   return result;
 }
 // Raster based methods often need to create temporary rasters that the calling function never sees
@@ -1504,32 +1578,39 @@ Float32Dataset.weighted_average = function (dataset, weights) {
 };
 Float32Dataset.normalize = function(dataset, result, min_new, max_new) {
   result = result || Float32Raster(dataset.grid);
-  var min = Float32Dataset.min(dataset);
+  var min_old = Float32Dataset.min(dataset);
   min_new = min_new || 0;
-  var max = Float32Dataset.max(dataset);
+  var max_old = Float32Dataset.max(dataset);
   max_new = max_new || 1;
  
  
  
  
-  var range = max - min;
+  var range = max_old - min_old;
   var range_new = max_new - min_new;
   var scaling_factor = range_new / range;
   for (var i=0, li=dataset.length; i<li; ++i) {
-      result[i] = scaling_factor * (dataset[i] - min) + min_new;
+      result[i] = scaling_factor * (dataset[i] - min_old) + min_new;
   }
   return result;
 }
-Float32Dataset.rescale = function(dataset, result, max_new) {
+Float32Dataset.rescale = function(dataset, result, min_new, max_new, min_old, max_old) {
   result = result || Float32Raster(dataset.grid);
-  var max_new = max_new || 1;
-  var max = Float32Dataset.max(dataset) || max_new;
-  var scaling_factor = max_new / max;
+  var min_old = min_old || Float32Dataset.min(dataset);
+  min_new = min_new || 0;
+  var max_old = max_old || Float32Dataset.max(dataset);
+  max_new = max_new || 1;
  
  
  
+ 
+ 
+ 
+  var range = max_old - min_old;
+  var range_new = max_new - min_new;
+  var scaling_factor = range_new / range;
   for (var i=0, li=dataset.length; i<li; ++i) {
-      result[i] = scaling_factor * dataset[i];
+      result[i] = scaling_factor * (dataset[i] - min_old) + min_new;
   }
   return result;
 }
@@ -1756,13 +1837,15 @@ ScalarField.gt_field = function (scalar_field1, scalar_field2, result) {
   }
   return result;
 };
-ScalarField.gte_field = function (scalar_field1, scalar_field2, result) {
+ScalarField.gte_field = function (scalar_field1, scalar_field2, result, threshold) {
+  threshold = threshold || 1e-4;
   result = result || Uint8Raster(scalar_field1.grid);
  
  
  
+ 
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = scalar_field1[i] >= scalar_field2[i]? 1:0;
+    result[i] = scalar_field1[i] >= scalar_field2[i]-threshold? 1:0;
   }
   return result;
 };
@@ -1776,35 +1859,39 @@ ScalarField.lt_field = function (scalar_field1, scalar_field2, result) {
   }
   return result;
 };
-ScalarField.lte_field = function (scalar_field1, scalar_field2, result) {
+ScalarField.lte_field = function (scalar_field1, scalar_field2, result, threshold) {
+  threshold = threshold || 1e-4;
   result = result || Uint8Raster(scalar_field1.grid);
  
  
  
+ 
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = scalar_field1[i] <= scalar_field2[i]? 1:0;
+    result[i] = scalar_field1[i] <= scalar_field2[i]+threshold? 1:0;
   }
   return result;
 };
-ScalarField.eq_field = function (scalar_field1, scalar_field2, threshold, result) {
+ScalarField.eq_field = function (scalar_field1, scalar_field2, result, threshold) {
+  threshold = threshold || 1e-4;
   result = result || Uint8Raster(scalar_field1.grid);
  
  
  
  
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = scalar_field1[i] < scalar_field2[i] + threshold || scalar_field1[i] > scalar_field2[i] - threshold ? 1:0;
+    result[i] = scalar_field1[i] <= (scalar_field2[i] + threshold) && scalar_field1[i] >= (scalar_field2[i] - threshold) ? 1:0;
   }
   return result;
 };
-ScalarField.ne_field = function (scalar_field1, scalar_field2, threshold, result) {
+ScalarField.ne_field = function (scalar_field1, scalar_field2, result, threshold) {
+  threshold = threshold || 1e-4;
   result = result || Uint8Raster(scalar_field1.grid);
  
  
  
  
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = scalar_field1[i] > scalar_field2[i] + threshold || scalar_field1[i] < scalar_field2[i] - threshold ? 1:0;
+    result[i] = scalar_field1[i] > (scalar_field2[i] + threshold) || scalar_field1[i] < (scalar_field2[i] - threshold) ? 1:0;
   }
   return result;
 };
@@ -1838,13 +1925,15 @@ ScalarField.gt_scalar = function (scalar_field1, scalar, result) {
   }
   return result;
 };
-ScalarField.gte_scalar = function (scalar_field1, scalar, result) {
+ScalarField.gte_scalar = function (scalar_field1, scalar, result, threshold) {
+  threshold = threshold || 1e-4;
   result = result || Uint8Raster(scalar_field1.grid);
  
  
  
+ 
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = scalar_field1[i] >= scalar? 1:0;
+    result[i] = scalar_field1[i] >= scalar - threshold? 1:0;
   }
   return result;
 };
@@ -1858,13 +1947,15 @@ ScalarField.lt_scalar = function (scalar_field1, scalar, result) {
   }
   return result;
 };
-ScalarField.lte_scalar = function (scalar_field1, scalar, result) {
+ScalarField.lte_scalar = function (scalar_field1, scalar, result, threshold) {
+  threshold = threshold || 1e-4;
   result = result || Uint8Raster(scalar_field1.grid);
  
  
  
+ 
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = scalar_field1[i] <= scalar? 1:0;
+    result[i] = scalar_field1[i] <= scalar + threshold? 1:0;
   }
   return result;
 };
@@ -1879,25 +1970,27 @@ ScalarField.between_scalars = function (scalar_field1, scalar1, scalar2, result)
   }
   return result;
 };
-ScalarField.eq_scalar = function (scalar_field1, scalar, threshold, result) {
+ScalarField.eq_scalar = function (scalar_field1, scalar, result, threshold) {
+  threshold = threshold || 1e-4;
   result = result || Uint8Raster(scalar_field1.grid);
  
  
  
  
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = scalar_field1[i] < scalar + threshold || scalar_field1[i] > scalar - threshold ? 1:0;
+    result[i] = scalar_field1[i] < (scalar + threshold) && scalar_field1[i] > (scalar - threshold) ? 1:0;
   }
   return result;
 };
 ScalarField.ne_scalar = function (scalar_field1, scalar, threshold, result) {
+  threshold = threshold || 1e-4;
   result = result || Uint8Raster(scalar_field1.grid);
  
  
  
  
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = scalar_field1[i] > scalar + threshold || scalar_field1[i] < scalar - threshold ? 1:0;
+    result[i] = scalar_field1[i] > (scalar + threshold) || scalar_field1[i] < (scalar - threshold) ? 1:0;
   }
   return result;
 };
@@ -1987,7 +2080,7 @@ ScalarField.div_field = function (scalar_field1, scalar_field2, result) {
   return result;
 };
 ScalarField.inv_field = function (scalar_field, result) {
-  result = result || Float32Raster(scalar_field1.grid);
+  result = result || Float32Raster(scalar_field.grid);
  
  
   for (var i = 0, li = result.length; i < li; i++) {
@@ -1996,7 +2089,7 @@ ScalarField.inv_field = function (scalar_field, result) {
   return result;
 };
 ScalarField.sqrt_field = function (scalar_field, result) {
-  result = result || Float32Raster(scalar_field1.grid);
+  result = result || Float32Raster(scalar_field.grid);
   var sqrt = Math.sqrt;
  
  
@@ -2963,38 +3056,8 @@ Uint8Field.gradient = function (scalar_field, result) {
 // The VectorField namespace provides operations over mathematical vector fields.
 // All fields are represented on raster objects, e.g. VectorRaster or Float32Raster
 var VectorField = {};
-VectorField.add_vector_field_and_scalar_term = function(vector_field1, vector_field2, scalar, result) {
- result = result || VectorRaster(vector_field1.grid);
-
-
-
-
- var u = vector_field1.everything;
- var v = vector_field2.everything;
- var out = result.everything;
- var length = scalar_field.length;
- for (var i=0, li=u.length; i<li; ++i) {
-     out[i] = u[i] + scalar * v[i];
- }
- return result;
-};
-VectorField.add_vector_field_and_scalar_field_term = function(vector_field1, vector_field2, scalar_field, result) {
- result = result || VectorRaster(vector_field1.grid);
-
-
-
-
- var u = vector_field1.everything;
- var v = vector_field2.everything;
- var out = result.everything;
- var length = scalar_field.length;
- for (var i=0, li=u.length; i<li; ++i) {
-     out[i] = u[i] + scalar_field[i%length] * v[i];
- }
- return result;
-};
 VectorField.add_vector_field = function(vector_field1, vector_field2, result) {
- result = result || VectorRaster(vector_field1.grid);
+ result = result || VectorRaster.OfLength(vector_field1.x.length, vector_field1.grid);
 
 
 
@@ -3007,7 +3070,7 @@ VectorField.add_vector_field = function(vector_field1, vector_field2, result) {
  return result;
 };
 VectorField.sub_vector_field = function(vector_field1, vector_field2, result) {
- result = result || VectorRaster(vector_field1.grid);
+ result = result || VectorRaster.OfLength(vector_field1.x.length, vector_field1.grid);
 
 
 
@@ -3020,7 +3083,7 @@ VectorField.sub_vector_field = function(vector_field1, vector_field2, result) {
  return result;
 };
 VectorField.dot_vector_field = function(vector_field1, vector_field2, result) {
- result = result || Float32Raster(vector_field1.grid);
+ result = result || Float32Raster.OfLength(vector_field1.x.length, vector_field1.grid);
 
 
 
@@ -3033,7 +3096,7 @@ VectorField.dot_vector_field = function(vector_field1, vector_field2, result) {
  return result;
 };
 VectorField.hadamard_vector_field = function(vector_field1, vector_field2, result) {
- result = result || VectorRaster(vector_field1.grid);
+ result = result || VectorRaster.OfLength(vector_field1.x.length, vector_field1.grid);
 
 
 
@@ -3046,7 +3109,7 @@ VectorField.hadamard_vector_field = function(vector_field1, vector_field2, resul
  return result;
 };
 VectorField.cross_vector_field = function (vector_field1, vector_field2, result) {
- result = result || VectorRaster(vector_field1.grid);
+ result = result || VectorRaster.OfLength(vector_field1.x.length, vector_field1.grid);
 
 
 
@@ -3078,8 +3141,99 @@ VectorField.cross_vector_field = function (vector_field1, vector_field2, result)
  }
  return result;
 }
+VectorField.div_vector_field = function(vector_field1, vector_field2, result) {
+ result = result || VectorRaster.OfLength(vector_field1.x.length, vector_field1.grid);
+
+
+
+ var u = vector_field1.everything;
+ var v = vector_field2.everything;
+ var out = result.everything;
+ for (var i=0, li=u.length; i<li; ++i) {
+     out[i] = u[i] / v[i];
+ }
+ return result;
+};
+VectorField.max_vector_field = function(vector_field1, vector_field2, result) {
+ result = result || VectorRaster.OfLength(vector_field1.x.length, vector_field1.grid);
+
+
+
+ var ax = vector_field1.x;
+ var ay = vector_field1.y;
+ var az = vector_field1.z;
+ var bx = vector_field2.x;
+ var by = vector_field2.y;
+ var bz = vector_field2.z;
+ var cx = result.x;
+ var cy = result.y;
+ var cz = result.z;
+ var axi=0, ayi=0, azi=0;
+ var bxi=0, byi=0, bzi=0;
+ var a_mag = 0, b_mag = 0;
+ var is_a_bigger = false;
+ var sqrt = Math.sqrt;
+ for (var i = 0, li = ax.length; i<li; i++) {
+  axi = ax[i];
+  ayi = ay[i];
+  azi = az[i];
+  a_mag = sqrt( axi * axi +
+      ayi * ayi +
+      azi * azi );
+  bxi = bx[i];
+  byi = by[i];
+  bzi = bz[i];
+  b_mag = sqrt( bxi * bxi +
+      byi * byi +
+      bzi * bzi );
+  is_a_bigger = a_mag > b_mag;
+  cx[i] = is_a_bigger? axi : bxi;
+  cy[i] = is_a_bigger? ayi : byi;
+  cz[i] = is_a_bigger? azi : bzi;
+ }
+ return result;
+}
+VectorField.min_vector_field = function(vector_field1, vector_field2, result) {
+ result = result || VectorRaster.OfLength(vector_field1.x.length, vector_field1.grid);
+
+
+
+ var ax = vector_field1.x;
+ var ay = vector_field1.y;
+ var az = vector_field1.z;
+ var bx = vector_field2.x;
+ var by = vector_field2.y;
+ var bz = vector_field2.z;
+ var cx = result.x;
+ var cy = result.y;
+ var cz = result.z;
+ var axi=0, ayi=0, azi=0;
+ var bxi=0, byi=0, bzi=0;
+ var a_mag = 0, b_mag = 0;
+ var is_a_smaller = false;
+ var sqrt = Math.sqrt;
+ for (var i = 0, li = ax.length; i<li; i++) {
+  axi = ax[i];
+  ayi = ay[i];
+  azi = az[i];
+  a_mag = sqrt( axi * axi +
+      ayi * ayi +
+      azi * azi );
+  bxi = bx[i];
+  byi = by[i];
+  bzi = bz[i];
+  b_mag = sqrt( bxi * bxi +
+      byi * byi +
+      bzi * bzi );
+  is_a_smaller = a_mag < b_mag;
+  cx[i] = is_a_smaller? axi : bxi;
+  cy[i] = is_a_smaller? ayi : byi;
+  cz[i] = is_a_smaller? azi : bzi;
+ }
+ return result;
+}
 VectorField.add_vector = function(vector_field, vector, result) {
- result = result || VectorRaster(vector_field.grid);
+ result = result || VectorRaster.OfLength(vector_field.x.length, vector_field.grid);
 
 
  var x1 = vector_field.x;
@@ -3099,7 +3253,7 @@ VectorField.add_vector = function(vector_field, vector, result) {
  return result;
 };
 VectorField.sub_vector = function(vector_field, vector, result) {
- result = result || VectorRaster(vector_field.grid);
+ result = result || VectorRaster.OfLength(vector_field.x.length, vector_field.grid);
 
 
  var x1 = vector_field.x;
@@ -3119,7 +3273,7 @@ VectorField.sub_vector = function(vector_field, vector, result) {
  return result;
 };
 VectorField.dot_vector = function(vector_field, vector, result) {
- result = result || Float32Raster(vector_field.grid);
+ result = result || Float32Raster.OfLength(vector_field.x.length, vector_field.grid);
 
 
  var x1 = vector_field.x;
@@ -3136,7 +3290,7 @@ VectorField.dot_vector = function(vector_field, vector, result) {
  return result;
 };
 VectorField.hadamard_vector = function(vector_field, vector, result) {
- result = result || VectorRaster(vector_field.grid);
+ result = result || VectorRaster.OfLength(vector_field.x.length, vector_field.grid);
 
 
  var x1 = vector_field.x;
@@ -3156,7 +3310,7 @@ VectorField.hadamard_vector = function(vector_field, vector, result) {
  return result;
 };
 VectorField.cross_vector = function (vector_field, vector, result) {
- result = result || VectorRaster(vector_field.grid);
+ result = result || VectorRaster.OfLength(vector_field.x.length, vector_field.grid);
 
 
  var ax = vector_field.x;
@@ -3181,10 +3335,30 @@ VectorField.cross_vector = function (vector_field, vector, result) {
  }
  return result;
 }
+VectorField.div_vector = function(vector_field, vector, result) {
+ result = result || VectorRaster.OfLength(vector_field.x.length, vector_field.grid);
+
+
+ var x1 = vector_field.x;
+ var y1 = vector_field.y;
+ var z1 = vector_field.z;
+ var x2 = vector.x;
+ var y2 = vector.y;
+ var z2 = vector.z;
+ var x = result.x;
+ var y = result.y;
+ var z = result.z;
+ for (var i=0, li=x.length; i<li; ++i) {
+     x[i] = x1[i] / x2;
+     y[i] = y1[i] / y2;
+     z[i] = z1[i] / z2;
+ }
+ return result;
+};
 // NOTE: matrix is structured to match the output of THREE.Matrix3.toArray()
 // i.e single array in column-major format
 VectorField.mult_matrix = function (vector_field, matrix, result) {
- result = result || VectorRaster(vector_field.grid);
+ result = result || VectorRaster.OfLength(vector_field.x.length, vector_field.grid);
 
 
 
@@ -3211,7 +3385,7 @@ VectorField.mult_matrix = function (vector_field, matrix, result) {
  return result;
 }
 VectorField.add_scalar_field = function(vector_field, scalar_field, result) {
- result = result || VectorRaster(vector_field.grid);
+ result = result || VectorRaster.OfLength(vector_field.x.length, vector_field.grid);
 
 
 
@@ -3224,7 +3398,7 @@ VectorField.add_scalar_field = function(vector_field, scalar_field, result) {
  return result;
 };
 VectorField.sub_scalar_field = function(vector_field, scalar_field, result) {
- result = result || VectorRaster(vector_field.grid);
+ result = result || VectorRaster.OfLength(vector_field.x.length, vector_field.grid);
 
 
 
@@ -3237,7 +3411,7 @@ VectorField.sub_scalar_field = function(vector_field, scalar_field, result) {
  return result;
 };
 VectorField.mult_scalar_field = function(vector_field, scalar_field, result) {
- result = result || VectorRaster(vector_field.grid);
+ result = result || VectorRaster.OfLength(vector_field.x.length, vector_field.grid);
 
 
 
@@ -3255,7 +3429,7 @@ VectorField.mult_scalar_field = function(vector_field, scalar_field, result) {
  return result;
 };
 VectorField.div_scalar_field = function(vector_field, scalar_field, result) {
- result = result || VectorRaster(vector_field.grid);
+ result = result || VectorRaster.OfLength(vector_field.x.length, vector_field.grid);
 
 
 
@@ -3268,7 +3442,7 @@ VectorField.div_scalar_field = function(vector_field, scalar_field, result) {
  return result;
 };
 VectorField.add_scalar = function(vector_field, scalar, result) {
- result = result || VectorRaster(vector_field.grid);
+ result = result || VectorRaster.OfLength(vector_field.x.length, vector_field.grid);
 
 
 
@@ -3280,7 +3454,7 @@ VectorField.add_scalar = function(vector_field, scalar, result) {
  return result;
 };
 VectorField.sub_scalar = function(vector_field, scalar, result) {
- result = result || VectorRaster(vector_field.grid);
+ result = result || VectorRaster.OfLength(vector_field.x.length, vector_field.grid);
 
 
 
@@ -3292,7 +3466,7 @@ VectorField.sub_scalar = function(vector_field, scalar, result) {
  return result;
 };
 VectorField.mult_scalar = function(vector_field, scalar, result) {
- result = result || VectorRaster(vector_field.grid);
+ result = result || VectorRaster.OfLength(vector_field.x.length, vector_field.grid);
 
 
 
@@ -3304,7 +3478,7 @@ VectorField.mult_scalar = function(vector_field, scalar, result) {
  return result;
 };
 VectorField.div_scalar = function(vector_field, scalar, result) {
- result = result || VectorRaster(vector_field.grid);
+ result = result || VectorRaster.OfLength(vector_field.x.length, vector_field.grid);
 
 
 
@@ -3316,7 +3490,7 @@ VectorField.div_scalar = function(vector_field, scalar, result) {
  return result;
 };
 VectorField.vector_similarity = function(vector_field, vector, result) {
- result = result || VectorRaster(vector_field.grid);
+ result = result || VectorRaster.OfLength(vector_field.x.length, vector_field.grid);
 
 
  var ax = vector_field.x;
@@ -3345,7 +3519,7 @@ VectorField.vector_similarity = function(vector_field, vector, result) {
  return result;
 };
 VectorField.vector_field_similarity = function(vector_field1, vector_field2, result) {
- result = result || VectorRaster(vector_field1.grid);
+ result = result || Float32Raster.OfLength(vector_field1.x.length, vector_field1.grid);
 
 
 
@@ -3361,6 +3535,7 @@ VectorField.vector_field_similarity = function(vector_field1, vector_field2, res
  var bxi = 0.;
  var byi = 0.;
  var bzi = 0.;
+ var sqrt = Math.sqrt;
  for (var i=0, li=result.length; i<li; ++i) {
   axi = ax[i];
   ayi = ay[i];
@@ -3380,7 +3555,7 @@ VectorField.vector_field_similarity = function(vector_field1, vector_field2, res
  return result;
 };
 VectorField.map = function(vector_field, fn, result) {
- result = result || Float32Raster(vector_field.grid)
+ result = result || Float32Raster.OfLength(vector_field.x.length, vector_field.grid);
 
 
  var x = vector_field.x;
@@ -3392,7 +3567,7 @@ VectorField.map = function(vector_field, fn, result) {
  return result;
 };
 VectorField.magnitude = function(vector_field, result) {
- result = result || Float32Raster(vector_field.grid);
+ result = result || Float32Raster.OfLength(vector_field.x.length, vector_field.grid);
 
 
  var x = vector_field.x;
@@ -3411,7 +3586,7 @@ VectorField.magnitude = function(vector_field, result) {
  return result;
 }
 VectorField.normalize = function(vector_field, result) {
- result = result || VectorRaster(vector_field.grid);
+ result = result || VectorRaster.OfLength(vector_field.x.length, vector_field.grid);
 
 
  var x = vector_field.x;
@@ -3480,7 +3655,7 @@ VectorField.arrow_differential = function(vector_field, result) {
 //   find how the projection changes along that vector
 //   find the average change across all neighbors
 VectorField.divergence = function(vector_field, result) {
- result = result || Float32Raster(vector_field.grid);
+ result = result || Float32Raster.OfLength(vector_field.x.length, vector_field.grid);
 
 
  var dlength = vector_field.grid.pos_arrow_distances;
@@ -3506,6 +3681,59 @@ VectorField.divergence = function(vector_field, result) {
  var neighbor_count = vector_field.grid.neighbor_count;
  for (var i = 0, li = neighbor_count.length; i < li; i++) {
   result[i] /= neighbor_count[i] || 1;
+ }
+ return result;
+}
+// This function computes the curl of a 3d mesh. 
+// The curl can be thought of as the amount by which vectors curl around a point
+// By applying it to a surface, we mean it's only done for the 2d surface of a 3d object. 
+// This implementation does not have to assume all vertices are equidistant. 
+// 
+// Think of it as taking the average change in the vector rejection:
+// For each neighbor:
+//   draw a vector to the neighbor
+//   find the vector rejection between that vector and the field, 
+//   find how the vector rejection changes along that vector
+//   find the average change across all neighbors
+VectorField.curl = function(vector_field, result) {
+ result = result || VectorRaster.OfLength(vector_field.x.length, vector_field.grid);
+
+
+ var dlength = vector_field.grid.pos_arrow_distances;
+ var arrows = vector_field.grid.arrows;
+ var curl_fx = result.x;
+ var curl_fy = result.y;
+ var curl_fz = result.z;
+ var fx = vector_field.x;
+ var fy = vector_field.y;
+ var fz = vector_field.z;
+ var arrow_pos_diff_normalized = vector_field.grid.pos_arrow_differential_normalized;
+ var dxhat = arrow_pos_diff_normalized.x;
+ var dyhat = arrow_pos_diff_normalized.y;
+ var dzhat = arrow_pos_diff_normalized.z;
+ var from = 0;
+ var to = 0;
+ var dfx = 0;
+ var dfy = 0;
+ var dfz = 0;
+ Float32Raster.fill(curl_fx, 0);
+ Float32Raster.fill(curl_fy, 0);
+ Float32Raster.fill(curl_fz, 0);
+ for (var i = 0, li = arrows.length; i<li; i++) {
+  from = arrows[i][0];
+  to = arrows[i][1];
+  dfx = fx[to] - fx[from];
+  dfy = fy[to] - fy[from];
+  dfz = fz[to] - fz[from];
+  curl_fx[from] += dfx - (dfx * dxhat[i] / dlength[i]);
+  curl_fy[from] += dfy - (dfy * dyhat[i] / dlength[i]);
+  curl_fz[from] += dfz - (dfz * dzhat[i] / dlength[i]);
+ }
+ var neighbor_count = vector_field.grid.neighbor_count;
+ for (var i = 0, li = neighbor_count.length; i < li; i++) {
+  curl_fx[i] /= neighbor_count[i] || 1;
+  curl_fy[i] /= neighbor_count[i] || 1;
+  curl_fz[i] /= neighbor_count[i] || 1;
  }
  return result;
 }
@@ -3691,8 +3919,14 @@ Float32Raster.OfLength = function(length, grid) {
  result.grid = grid;
  return result;
 }
-Uint16Raster.FromBuffer = function(buffer, grid) {
-  var result = new Uint16Array(buffer, 0, grid.vertices.length);
+Float32Raster.FromBuffer = function(buffer, grid, start) {
+  start = start || 0;
+  var result = new Float32Array(buffer, start, grid.vertices.length);
+  result.grid = grid;
+  return result;
+}
+Float32Raster.FromArray = function(array, grid) {
+  var result = new Float32Array(array);
   result.grid = grid;
   return result;
 }
@@ -4122,16 +4356,38 @@ VectorRaster.OfLength = function(length, grid) {
   };
 }
 VectorRaster.FromVectors = function(vectors, grid) {
- var result = VectorRaster.OfLength(vectors.length, grid);
- var x = result.x;
- var y = result.y;
- var z = result.z;
- for (var i=0, li=vectors.length; i<li; ++i) {
-     x[i] = vectors[i].x;
-     y[i] = vectors[i].y;
-     z[i] = vectors[i].z;
- }
- return result;
+  var result = VectorRaster.OfLength(vectors.length, grid);
+  var x = result.x;
+  var y = result.y;
+  var z = result.z;
+  for (var i=0, li=vectors.length; i<li; ++i) {
+      x[i] = vectors[i].x;
+      y[i] = vectors[i].y;
+      z[i] = vectors[i].z;
+  }
+  return result;
+}
+VectorRaster.FromArrays = function(x, y, z, grid) {
+  var result = VectorRaster.OfLength(x.length, grid);
+  var ox = result.x;
+  var oy = result.y;
+  var oz = result.z;
+  for (var i=0, li=x.length; i<li; ++i) {
+      ox[i] = x[i];
+      oy[i] = y[i];
+      oz[i] = z[i];
+  }
+  return result;
+}
+VectorRaster.ToArray = function(vector_field) {
+  var result = [];
+  var x = vector_field.x;
+  var y = vector_field.y;
+  var z = vector_field.z;
+  for (var i=0, li=x.length; i<li; ++i) {
+      result.push(Vector(x[i], y[i], z[i]));
+  }
+  return result;
 }
 VectorRaster.copy = function(vector_raster, output) {
   var output = output || VectorRaster(vector_raster.grid);

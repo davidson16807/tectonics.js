@@ -17,7 +17,7 @@ var LithosphereModeling = {};
 //    geothermal temperature model
 //    geostatic pressure
 LithosphereModeling.get_lithification = function(
-		displacement, sealevel, timestep,
+		surface_height, seconds,
 		material_density, surface_gravity,
 		top_crust, crust_delta, crust_scratch){
 	var grid = top_crust.grid;
@@ -35,13 +35,13 @@ LithosphereModeling.get_lithification = function(
 	ScalarField.add_scalar_term	(overpressure, top_crust.sediment, surface_gravity, overpressure);
 
 	var excess_overpressure = scratchpad.getFloat32Raster(grid); 
-	ScalarField.sub_scalar(overpressure, 2.2e3, excess_overpressure); 
-	// NOTE: 2.2e3 kiloPascals is the pressure equivalent of 500ft of sediment @ 1500T/m^3 density
+	ScalarField.sub_scalar(overpressure, 2.2e6, excess_overpressure); 
+	// NOTE: 2.2e6 Pascals is the pressure equivalent of 500ft of sediment @ 1500kg/m^3 density
   	// 500ft from http://wiki.aapg.org/Sandstone_diagenetic_processes
   	// TODO: rephrase in terms of lithostatic pressure + geothermal gradient
 
-	// convert excess_overpressure to tons
-	// this represents the number of tons of sediment that have lithified
+	// convert excess_overpressure to kg
+	// this represents the number of kg of sediment that have lithified
 	var lithified_meters = scratchpad.getFloat32Raster(grid); 
 	ScalarField.div_scalar	(excess_overpressure, surface_gravity, 	lithified_meters);
 
@@ -58,7 +58,7 @@ LithosphereModeling.get_lithification = function(
 
 
 LithosphereModeling.get_metamorphosis = function(
-		displacement, sealevel, timestep,
+		surface_height, seconds,
 		material_density, surface_gravity,
 		top_crust, crust_delta, crust_scratch){
 
@@ -71,20 +71,20 @@ LithosphereModeling.get_metamorphosis = function(
     // Crust.mult_profile(top_crust, [2500, 2700, 2700, 2700, 2890, 0], crust_scratch);
 
 	// TODO: include overpressure from ocean water
-	var overpressure = scratchpad.getFloat32Raster(grid); // NOTE: in kiloPascals
+	var overpressure = scratchpad.getFloat32Raster(grid); // NOTE: in Pascals
 	Float32Raster.fill 			(overpressure, 0);
 	// TODO: simply math now that we're using mass, not thickness
 	ScalarField.add_scalar_term	(overpressure, top_crust.sediment, 		surface_gravity, 	overpressure);
 	ScalarField.add_scalar_term	(overpressure, top_crust.sedimentary, 	surface_gravity, 	overpressure);
 	//TODO: convert igneous to metamorphic
 	var excess_overpressure = scratchpad.getFloat32Raster(grid); // pressure at bottom of the layer that's beyond which is necessary to metamorphose 
-	ScalarField.sub_scalar(overpressure, 300e3, excess_overpressure); 
-	// NOTE: 300e3 Pascals is the pressure equivalent of 11km of sedimentary rock @ 2700kg/m^3 density
+	ScalarField.sub_scalar(overpressure, 300e6, excess_overpressure); 
+	// NOTE: 300e6 Pascals is the pressure equivalent of 11km of sedimentary rock @ 2700kg/m^3 density
   	// 300 MPa from https://www.tulane.edu/~sanelson/eens212/typesmetamorph.htm
   	// TODO: rephrase in terms of lithostatic pressure + geothermal gradient
 
-	// convert excess_overpressure to tons
-	// this represents the number of tons of sediment that have lithified
+	// convert excess_overpressure to kg
+	// this represents the number of kg of sediment that have lithified
 	var metamorphosed_meters = scratchpad.getFloat32Raster(grid);  
 	ScalarField.div_scalar	(excess_overpressure, surface_gravity, metamorphosed_meters);
 
@@ -132,16 +132,16 @@ LithosphereModeling.get_metamorphosis = function(
 
 // "weathering" is the process by which rock is converted to sediment 
 LithosphereModeling.get_weathering = function(
-		displacement, sealevel, timestep,
+		surface_height, seconds,
 		material_density, surface_gravity,
 		top_crust, crust_delta, crust_scratch){
-  var grid = displacement.grid;
+  var grid = surface_height.grid;
   var scratch = Float32Raster(grid);
 
-  var precipitation = 7.8e5; 
+  var precipitation = 1.05 / Units.YEAR;
   // ^^^ measured in meters of rain per million years 
   // global land average from wikipedia 
-  var weathering_factor = 1.8e-7;  
+  var weathering_factor = 0;//1.8e-7;  
   // ^^^ the rate of weathering per the rate of rainfall in that place 
   // measured in fraction of height difference per meters of rain per million years 
   var critical_sediment_thickness = 1; 
@@ -149,11 +149,7 @@ LithosphereModeling.get_weathering = function(
  
   var earth_surface_gravity = 9.8; // m/s^2 
    
-  var water_height = scratch;
-  ScalarField.sub_scalar(displacement, sealevel, 	water_height);
-  ScalarField.max_scalar(water_height, 0, 			water_height);
-
-  var average_difference = ScalarField.average_difference(water_height); 
+  var average_difference = ScalarField.average_difference(surface_height); 
   var weathering = scratch;
   // NOTE: result array does double duty for performance reasons 
  
@@ -161,7 +157,7 @@ LithosphereModeling.get_weathering = function(
     average_difference,  
     weathering_factor *       	// apply weathering factor to get height change per unit precip  
     precipitation *         	// apply precip to get height change 
-    timestep *         			// 
+    seconds *         			// 
     material_density.felsic_plutonic *      	// apply density to get mass converted to sediment 
     surface_gravity/earth_surface_gravity, //correct for planet's gravity 
     weathering) 
@@ -208,7 +204,7 @@ LithosphereModeling.get_weathering = function(
 
 
 LithosphereModeling.get_erosion = function(
-		displacement, sealevel, timestep,
+		surface_height, seconds,
 		material_density, surface_gravity,
 		top_crust, crust_delta, crust_scratch){
   	var scratchpad = RasterStackBuffer.scratchpad;
@@ -217,40 +213,36 @@ LithosphereModeling.get_erosion = function(
 	var sediment 		= top_crust.sediment;
 	var sedimentary 	= top_crust.sedimentary;
 	var metamorphic 	= top_crust.metamorphic;
-	var felsic_plutonic 		 	= top_crust.felsic_plutonic;
-	var felsic_volcanic 		 	= top_crust.felsic_volcanic;
+	var felsic_plutonic = top_crust.felsic_plutonic;
+	var felsic_volcanic = top_crust.felsic_volcanic;
 	
 	Crust.reset(crust_delta);
 
 	// TODO: add consideration for surface_gravity
-	var precipitation = 7.8e5;
+	var precipitation = 1.05 / Units.YEAR;
 	// ^^^ measured in meters of rain per million years
 	// global land average from wikipedia
 	var erosiveFactor = 1.8e-7; 
-	// ^^^ the rate of erosion per the rate of rainfall in that place
-	// measured in fraction of height difference per meters of rain per million years
+	// ^^^ the rate of erosion per the kinetic energy of rainfall
+	// measured in fraction of height difference per meters of rain
 
-	var water_height = scratchpad.getFloat32Raster(displacement.grid);
-	ScalarField.sub_scalar(displacement, sealevel, 	water_height);
-	ScalarField.max_scalar(water_height, 0, 			water_height);
-
-	var outbound_height_transfer = scratchpad.getFloat32Raster(displacement.grid);
+	var outbound_height_transfer = scratchpad.getFloat32Raster(surface_height.grid);
 	Float32Raster.fill(outbound_height_transfer, 0);
 
-	var arrows = displacement.grid.arrows;
+	var arrows = surface_height.grid.arrows;
 	var arrow;
 	var from = 0;
 	var to = 0;
 	var height_difference = 0.0;
 	var outbound_height_transfer_i = 0.0;
-  	var neighbor_count = displacement.grid.neighbor_count;
+  	var neighbor_count = surface_height.grid.neighbor_count;
 
 	for (var i=0, li=arrows.length; i<li; ++i) {
 	    arrow = arrows[i];
 	    from = arrow[0];
 	    to = arrow[1];
-	    height_difference = water_height[from] - water_height[to];
-	    outbound_height_transfer[from] += height_difference > 0? height_difference * precipitation * timestep * erosiveFactor * material_density.felsic_plutonic : 0;
+	    height_difference = surface_height[from] - surface_height[to];
+	    outbound_height_transfer[from] += height_difference > 0? height_difference * precipitation * seconds * erosiveFactor * material_density.felsic_plutonic : 0;
 	}
 
 	var outbound_sediment_fraction = crust_scratch.sediment;
@@ -301,8 +293,8 @@ LithosphereModeling.get_erosion = function(
 	    arrow = arrows[i];
 	    from = arrow[0];
 	    to = arrow[1];
-	    height_difference = water_height[from] - water_height[to];
-	    outbound_height_transfer_i = height_difference > 0? height_difference * precipitation * timestep * erosiveFactor * material_density.felsic_plutonic : 0;
+	    height_difference = surface_height[from] - surface_height[to];
+	    outbound_height_transfer_i = height_difference > 0? height_difference * precipitation * seconds * erosiveFactor * material_density.felsic_plutonic : 0;
 
 	    transfer = outbound_height_transfer_i * outbound_sediment_fraction[from];
 	    sediment_delta[from] -= transfer;
@@ -330,7 +322,6 @@ LithosphereModeling.get_erosion = function(
 
 var coarse_grid = new Grid( 
 	new THREE.IcosahedronGeometry(1, 4),
-	{ voronoi_generator: VoronoiSphere.FromPos }
 );
 // gets surface pressure of the asthenosphere by smoothing a field representing buoyancy
 LithosphereModeling.get_asthenosphere_pressure = function(buoyancy, pressure, scratch) {
@@ -419,30 +410,29 @@ LithosphereModeling.get_plate_velocity = function(plate_mask, buoyancy, material
 	// TODO: commit Schellart 2010 to the research folder!
 	// TODO: REMOVE HARDCODED CONSTANTS!
 	// TODO: make width dependant on the size of subducting region!
-	var width = 5000e3; // meters 
+	var width = 300e3; // meters 
 	var length = 600e3; // meters
 	var thickness = 100e3; // meters
 	var effective_area = Math.pow(thickness * length * width, 2/3); // m^2
 	var shape_parameter = 0.725; // unitless
 	var slab_dip_angle_constant = 4.025; // unitless
-	var SECONDS_PER_MILLION_EARTH_YEARS = 60*60*365.25*1e6; // seconds/My
 	var world_radius = 6367e3; // meters
 
 	var lateral_speed = scratchpad.getFloat32Raster(grid); 				
 	var lateral_speed_per_force  = 1;
 	lateral_speed_per_force *= effective_area; 						// start with m^2
-	lateral_speed_per_force /= material_viscosity.mantle; 			// convert to m/s per kiloNewton
+	lateral_speed_per_force /= material_viscosity.mantle; 			// convert to m/s per Newton
 	lateral_speed_per_force /= 18; 									// apply various unitless constants
 	lateral_speed_per_force *= shape_parameter; 					
 	lateral_speed_per_force /= slab_dip_angle_constant; 			
-	lateral_speed_per_force *= SECONDS_PER_MILLION_EARTH_YEARS; 	// convert to m/My per kiloNewton
-	lateral_speed_per_force /= world_radius;						// convert to radians/My per kiloNewton
+	// lateral_speed_per_force *= Units.MEGAYEAR; 		// convert to m/My per Newton
+	lateral_speed_per_force /= world_radius;						// convert to radians/My per Newton
 
 	ScalarField.mult_scalar 		(buoyancy, lateral_speed_per_force, lateral_speed); // radians/My
  	// 	scratchpad.deallocate('get_plate_velocity');
 	// return lateral_speed;
 
-	// find slab pull force field (kiloNewtons/m^3)
+	// find slab pull force field (Newtons/m^3)
 	// buoyancy = slab_pull * normalize(gradient(mask))
 	// lateral_velocity = buoyancy * normalize(gradient(mask))
 	// NOTE: result does double duty for performance reasons
@@ -473,7 +463,7 @@ LithosphereModeling.get_plate_center_of_mass = function(mass, plate_mask, scratc
 	return center_of_plate;
 }
 
-LithosphereModeling.get_plate_rotation_matrix = function(plate_velocity, center_of_plate, timestep) {
+LithosphereModeling.get_plate_rotation_matrix = function(plate_velocity, center_of_plate, seconds) {
 
   	var scratchpad = RasterStackBuffer.scratchpad;
   	scratchpad.allocate('get_plate_rotation_matrix');
@@ -490,47 +480,46 @@ LithosphereModeling.get_plate_rotation_matrix = function(plate_velocity, center_
 
 	// find distance to center of plate
 	var center_of_world_offset = grid.pos;
-	var center_of_world_distance2 = scratchpad.getFloat32Raster(grid);
-	VectorField.dot_vector_field 	(center_of_world_offset, center_of_world_offset, center_of_world_distance2);
-
 	var center_of_plate_offset = scratchpad.getVectorRaster(grid);
 	var center_of_plate_distance2 = scratchpad.getFloat32Raster(grid);
-	VectorField.dot_vector_field 	(center_of_plate_offset, center_of_plate_offset, center_of_plate_distance2);
+//	var center_of_world_distance2 = scratchpad.getFloat32Raster(grid); // NOTE: center_of_world_distance2 is not effectively used
 
-	VectorField.sub_vector 			(grid.pos, center_of_plate,			center_of_plate_offset);
+//	VectorField.fill 				(center_of_world_distance2, 1); // NOTE: center_of_world_distance2 is not effectively used
+	VectorField.sub_vector 			(center_of_world_offset, center_of_plate,			center_of_plate_offset);
+	VectorField.dot_vector_field 	(center_of_plate_offset, center_of_plate_offset, 	center_of_plate_distance2);
 
 	var center_of_plate_angular_velocity = scratchpad.getVectorRaster(grid);
-	VectorField.cross_vector_field 	(plate_velocity, center_of_plate_offset, 	center_of_plate_angular_velocity);
+	VectorField.cross_vector_field 	(plate_velocity, center_of_plate_offset, 			center_of_plate_angular_velocity);
 	VectorField.div_scalar_field 	(center_of_plate_angular_velocity, center_of_plate_distance2, center_of_plate_angular_velocity);
 
 	var center_of_world_angular_velocity = scratchpad.getVectorRaster(grid);
-	VectorField.cross_vector_field 	(plate_velocity, center_of_world_offset, 	center_of_world_angular_velocity);
-	VectorField.div_scalar_field 	(center_of_world_angular_velocity, center_of_world_distance2, center_of_world_angular_velocity);
+	VectorField.cross_vector_field 	(plate_velocity, center_of_world_offset, 			center_of_world_angular_velocity);
+//	VectorField.div_scalar_field 	(center_of_world_angular_velocity, center_of_world_distance2, center_of_world_angular_velocity); // NOTE: equivalent to division by 1
 
 	var plate_velocity_magnitude = scratchpad.getFloat32Raster(grid);
 	VectorField.magnitude 			(plate_velocity, 					plate_velocity_magnitude);
 	var is_pulled = scratchpad.getUint8Raster(grid);
-	ScalarField.gt_scalar 			(plate_velocity_magnitude, 1e-4,	is_pulled);
+	ScalarField.gt_scalar 			(plate_velocity_magnitude, 3e-18,	is_pulled);
 // console.log(Uint8Dataset.sum(is_pulled))
 
 	var center_of_plate_angular_velocity_average = VectorDataset.weighted_average(center_of_plate_angular_velocity, is_pulled);
 	var center_of_world_angular_velocity_average = VectorDataset.weighted_average(center_of_world_angular_velocity, is_pulled);
 
-	var center_of_plate_rotation_vector = Vector.mult_scalar(center_of_plate_angular_velocity_average.x, center_of_plate_angular_velocity_average.y, center_of_plate_angular_velocity_average.z, timestep);
-	var center_of_world_rotation_vector = Vector.mult_scalar(center_of_world_angular_velocity_average.x, center_of_world_angular_velocity_average.y, center_of_world_angular_velocity_average.z, timestep);
+	var center_of_plate_rotation_vector = Vector.mult_scalar(center_of_plate_angular_velocity_average.x, center_of_plate_angular_velocity_average.y, center_of_plate_angular_velocity_average.z, seconds);
+	var center_of_world_rotation_vector = Vector.mult_scalar(center_of_world_angular_velocity_average.x, center_of_world_angular_velocity_average.y, center_of_world_angular_velocity_average.z, seconds);
 // debugger;
 
 	// TODO: negation shouldn't theoretically be needed! find out where the discrepancy lies and fix it the proper way! 
-	var center_of_plate_rotation_matrix = Matrix.FromRotationVector(-center_of_plate_rotation_vector.x, -center_of_plate_rotation_vector.y, -center_of_plate_rotation_vector.z);
+	var center_of_plate_rotation_matrix = Matrix3x3.FromRotationVector(-center_of_plate_rotation_vector.x, -center_of_plate_rotation_vector.y, -center_of_plate_rotation_vector.z);
 	if (isNaN(center_of_plate_rotation_matrix[0])) {
-		center_of_plate_rotation_matrix = Matrix.Identity();
+		center_of_plate_rotation_matrix = Matrix3x3.Identity();
 	}
-	var center_of_world_rotation_matrix = Matrix.FromRotationVector(-center_of_world_rotation_vector.x, -center_of_world_rotation_vector.y, -center_of_world_rotation_vector.z);
+	var center_of_world_rotation_matrix = Matrix3x3.FromRotationVector(-center_of_world_rotation_vector.x, -center_of_world_rotation_vector.y, -center_of_world_rotation_vector.z);
 	if (isNaN(center_of_world_rotation_matrix[0])) {
-		center_of_world_rotation_matrix = Matrix.Identity();
+		center_of_world_rotation_matrix = Matrix3x3.Identity();
 	}
 
-	var rotation_matrix = Matrix.mult_matrix(center_of_plate_rotation_matrix, center_of_world_rotation_matrix);
+	var rotation_matrix = Matrix3x3.mult_matrix(center_of_plate_rotation_matrix, center_of_world_rotation_matrix);
 
   	scratchpad.deallocate('get_plate_rotation_matrix');
 

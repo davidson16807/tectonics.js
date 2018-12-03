@@ -36,14 +36,16 @@ ScalarField.gt_field = function (scalar_field1, scalar_field2, result) {
   }
   return result;
 };
-ScalarField.gte_field = function (scalar_field1, scalar_field2, result) {
+ScalarField.gte_field = function (scalar_field1, scalar_field2, result, threshold) {
+  threshold = threshold || 1e-4;
   result = result || Uint8Raster(scalar_field1.grid);
   ASSERT_IS_ARRAY(scalar_field1, Float32Array)
   ASSERT_IS_ARRAY(scalar_field2, Float32Array)
+  ASSERT_IS_SCALAR(threshold)
   ASSERT_IS_ARRAY(result, Uint8Array)
 
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = scalar_field1[i] >= scalar_field2[i]? 1:0;
+    result[i] = scalar_field1[i] >= scalar_field2[i]-threshold? 1:0;
   }
   return result;
 };
@@ -58,18 +60,8 @@ ScalarField.lt_field = function (scalar_field1, scalar_field2, result) {
   }
   return result;
 };
-ScalarField.lte_field = function (scalar_field1, scalar_field2, result) {
-  result = result || Uint8Raster(scalar_field1.grid);
-  ASSERT_IS_ARRAY(scalar_field1, Float32Array)
-  ASSERT_IS_ARRAY(scalar_field2, Float32Array)
-  ASSERT_IS_ARRAY(result, Uint8Array)
-
-  for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = scalar_field1[i] <= scalar_field2[i]? 1:0;
-  }
-  return result;
-};
-ScalarField.eq_field = function (scalar_field1, scalar_field2, threshold, result) {
+ScalarField.lte_field = function (scalar_field1, scalar_field2, result, threshold) {
+  threshold = threshold || 1e-4;
   result = result || Uint8Raster(scalar_field1.grid);
   ASSERT_IS_ARRAY(scalar_field1, Float32Array)
   ASSERT_IS_ARRAY(scalar_field2, Float32Array)
@@ -77,11 +69,12 @@ ScalarField.eq_field = function (scalar_field1, scalar_field2, threshold, result
   ASSERT_IS_ARRAY(result, Uint8Array)
 
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = scalar_field1[i] < scalar_field2[i] + threshold || scalar_field1[i] > scalar_field2[i] - threshold ? 1:0;
+    result[i] = scalar_field1[i] <= scalar_field2[i]+threshold? 1:0;
   }
   return result;
 };
-ScalarField.ne_field = function (scalar_field1, scalar_field2, threshold, result) {
+ScalarField.eq_field = function (scalar_field1, scalar_field2, result, threshold) {
+  threshold = threshold || 1e-4;
   result = result || Uint8Raster(scalar_field1.grid);
   ASSERT_IS_ARRAY(scalar_field1, Float32Array)
   ASSERT_IS_ARRAY(scalar_field2, Float32Array)
@@ -89,7 +82,20 @@ ScalarField.ne_field = function (scalar_field1, scalar_field2, threshold, result
   ASSERT_IS_ARRAY(result, Uint8Array)
 
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = scalar_field1[i] > scalar_field2[i] + threshold || scalar_field1[i] < scalar_field2[i] - threshold ? 1:0;
+    result[i] = scalar_field1[i] <= (scalar_field2[i] + threshold) && scalar_field1[i] >= (scalar_field2[i] - threshold) ? 1:0;
+  }
+  return result;
+};
+ScalarField.ne_field = function (scalar_field1, scalar_field2, result, threshold) {
+  threshold = threshold || 1e-4;
+  result = result || Uint8Raster(scalar_field1.grid);
+  ASSERT_IS_ARRAY(scalar_field1, Float32Array)
+  ASSERT_IS_ARRAY(scalar_field2, Float32Array)
+  ASSERT_IS_SCALAR(threshold)
+  ASSERT_IS_ARRAY(result, Uint8Array)
+
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = scalar_field1[i] > (scalar_field2[i] + threshold) || scalar_field1[i] < (scalar_field2[i] - threshold) ? 1:0;
   }
   return result;
 };
@@ -125,13 +131,15 @@ ScalarField.gt_scalar = function (scalar_field1, scalar, result) {
   }
   return result;
 };
-ScalarField.gte_scalar = function (scalar_field1, scalar, result) {
+ScalarField.gte_scalar = function (scalar_field1, scalar, result, threshold) {
+  threshold = threshold || 1e-4;
   result = result || Uint8Raster(scalar_field1.grid);
   ASSERT_IS_ARRAY(scalar_field1, Float32Array)
   ASSERT_IS_SCALAR(scalar)
+  ASSERT_IS_SCALAR(threshold)
   ASSERT_IS_ARRAY(result, Uint8Array)
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = scalar_field1[i] >= scalar? 1:0;
+    result[i] = scalar_field1[i] >= scalar - threshold? 1:0;
   }
   return result;
 };
@@ -145,13 +153,15 @@ ScalarField.lt_scalar = function (scalar_field1, scalar, result) {
   }
   return result;
 };
-ScalarField.lte_scalar = function (scalar_field1, scalar, result) {
+ScalarField.lte_scalar = function (scalar_field1, scalar, result, threshold) {
+  threshold = threshold || 1e-4;
   result = result || Uint8Raster(scalar_field1.grid);
   ASSERT_IS_ARRAY(scalar_field1, Float32Array)
   ASSERT_IS_SCALAR(scalar)
+  ASSERT_IS_SCALAR(threshold)
   ASSERT_IS_ARRAY(result, Uint8Array)
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = scalar_field1[i] <= scalar? 1:0;
+    result[i] = scalar_field1[i] <= scalar + threshold? 1:0;
   }
   return result;
 };
@@ -166,25 +176,27 @@ ScalarField.between_scalars = function (scalar_field1, scalar1, scalar2, result)
   }
   return result;
 };
-ScalarField.eq_scalar = function (scalar_field1, scalar, threshold, result) {
+ScalarField.eq_scalar = function (scalar_field1, scalar, result, threshold) {
+  threshold = threshold || 1e-4;
   result = result || Uint8Raster(scalar_field1.grid);
   ASSERT_IS_ARRAY(scalar_field1, Float32Array)
   ASSERT_IS_SCALAR(scalar)
   ASSERT_IS_SCALAR(threshold)
   ASSERT_IS_ARRAY(result, Uint8Array)
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = scalar_field1[i] < scalar + threshold || scalar_field1[i] > scalar - threshold ? 1:0;
+    result[i] = scalar_field1[i] < (scalar + threshold) && scalar_field1[i] > (scalar - threshold) ? 1:0;
   }
   return result;
 };
 ScalarField.ne_scalar = function (scalar_field1, scalar, threshold, result) {
+  threshold = threshold || 1e-4;
   result = result || Uint8Raster(scalar_field1.grid);
   ASSERT_IS_ARRAY(scalar_field1, Float32Array)
   ASSERT_IS_SCALAR(scalar)
   ASSERT_IS_SCALAR(threshold)
   ASSERT_IS_ARRAY(result, Uint8Array)
   for (var i = 0, li = result.length; i < li; i++) {
-    result[i] = scalar_field1[i] > scalar + threshold || scalar_field1[i] < scalar - threshold ? 1:0;
+    result[i] = scalar_field1[i] > (scalar + threshold) || scalar_field1[i] < (scalar - threshold) ? 1:0;
   }
   return result;
 };
@@ -275,7 +287,7 @@ ScalarField.div_field = function (scalar_field1, scalar_field2, result) {
   return result;
 };
 ScalarField.inv_field = function (scalar_field, result) {
-  result = result || Float32Raster(scalar_field1.grid);
+  result = result || Float32Raster(scalar_field.grid);
   ASSERT_IS_ARRAY(scalar_field, Float32Array)
   ASSERT_IS_ARRAY(result, Float32Array)
   for (var i = 0, li = result.length; i < li; i++) {
@@ -284,7 +296,7 @@ ScalarField.inv_field = function (scalar_field, result) {
   return result;
 };
 ScalarField.sqrt_field = function (scalar_field, result) {
-  result = result || Float32Raster(scalar_field1.grid);
+  result = result || Float32Raster(scalar_field.grid);
   var sqrt = Math.sqrt;
   ASSERT_IS_ARRAY(scalar_field, Float32Array)
   ASSERT_IS_ARRAY(result, Float32Array)

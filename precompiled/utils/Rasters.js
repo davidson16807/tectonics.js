@@ -59,7 +59,7 @@
 #endif
 
 #include "precompiled/utils/Grid.js"
-#include "precompiled/utils/Matrix.js"
+#include "precompiled/utils/Matrix3x3.js"
 #include "precompiled/utils/Matrix4x4.js"
 #include "precompiled/utils/Vector.js"
 #include "precompiled/utils/RasterStackBuffer.js"

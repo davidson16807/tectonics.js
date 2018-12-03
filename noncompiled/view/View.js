@@ -1,7 +1,10 @@
 'use strict';
 
-function View(innerWidth, innerHeight, grid, scalarDisplay, vectorDisplay, vertexShader) {
+function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
+	var scalarProjectionView = projectionView.clone();
+	var vectorProjectionView = projectionView.clone();
 
+	var this_ = this;
 	// create the renderer
 	this.renderer = new THREE.WebGLRenderer({
 		antialias		: true,	// to get smoother output
@@ -21,223 +24,97 @@ function View(innerWidth, innerHeight, grid, scalarDisplay, vectorDisplay, verte
 	this.scene = new THREE.Scene();
 	this.scene.add(this.camera);
 
-	this.grid = grid;
-	this._vertexShader = vertexShader;
-	this._scalarDisplay = scalarDisplay;
-	this._vectorDisplay = vectorDisplay;
-	this._uniforms = {
+	var options = {
 		sealevel_mod: 1.0,
 		darkness_mod: 1.0,
 		ice_mod: 1.0,
 		insolation_max: 0,
 	};
 
-	var faces, scalar_field_geometry, scalar_field_mesh, scalar_field_material;
-	var faces = this.grid.faces;
-	var scalar_field_geometry = THREE.BufferGeometryUtils.fromGeometry({
-		faces: this.grid.faces, 
-		vertices: this.grid.vertices, 
-		faceVertexUvs: [[]], // HACK: necessary for use with BufferGeometryUtils.fromGeometry
-	});
+	this.render = function() {
+		return this.renderer.render( this.scene, this.camera );
+	};
 
-	scalar_field_geometry.addAttribute('displacement', Float32Array, faces.length*3, 1);
-	scalar_field_geometry.addAttribute('ice_coverage', Float32Array, faces.length*3, 1);
-	scalar_field_geometry.addAttribute('plant_coverage', Float32Array, faces.length*3, 1);
-	scalar_field_geometry.addAttribute('insolation', Float32Array, faces.length*3, 1);
-	scalar_field_geometry.addAttribute('scalar', Float32Array, faces.length*3, 1);
-	this.scalar_field_geometry = scalar_field_geometry;
-
-	scalar_field_material = new THREE.ShaderMaterial({
-		attributes: {
-		  displacement: { type: 'f', value: null },
-		  ice_coverage: { type: 'f', value: null },
-		  plant_coverage: { type: 'f', value: null },
-		  insolation: { type: 'f', value: null },
-		  scalar: { type: 'f', value: null }
-		},
-		uniforms: {
-		  sealevel:     { type: 'f', value: 0 },
-		  sealevel_mod: { type: 'f', value: this._uniforms.sealevel_mod },
-		  darkness_mod: { type: 'f', value: this._uniforms.darkness_mod },
-		  ice_mod: 		{ type: 'f', value: this._uniforms.ice_mod },
-		  insolation_max: { type: 'f', value: this._uniforms.insolation_max },
-		  index: 		{ type: 'f', value: -1 },
-		},
-		blending: THREE.NoBlending,
-		vertexShader: this._vertexShader,
-		fragmentShader: this._scalarDisplay._fragmentShader
-	});
-	scalar_field_mesh = new THREE.Mesh( scalar_field_geometry, scalar_field_material);
-	this.scene.add(scalar_field_mesh);
-	this.scalar_field_mesh1 = scalar_field_mesh;
-
-	scalar_field_material = new THREE.ShaderMaterial({
-		attributes: {
-		  displacement: { type: 'f', value: null },
-		  ice_coverage: { type: 'f', value: null },
-		  plant_coverage: { type: 'f', value: null },
-		  insolation: { type: 'f', value: null },
-		  scalar: { type: 'f', value: null }
-		},
-		uniforms: {
-		  sealevel:     { type: 'f', value: 0 },
-		  sealevel_mod: { type: 'f', value: this._uniforms.sealevel_mod },
-		  darkness_mod: { type: 'f', value: this._uniforms.darkness_mod },
-		  ice_mod: 		{ type: 'f', value: this._uniforms.ice_mod },
-		  insolation_max: { type: 'f', value: this._uniforms.insolation_max },
-		  index: 		{ type: 'f', value: 1 },
-		},
-		blending: THREE.NoBlending,
-		vertexShader: this._vertexShader,
-		fragmentShader: this._scalarDisplay._fragmentShader
-	});
-	scalar_field_mesh = new THREE.Mesh( scalar_field_geometry, scalar_field_material);
-	this.scene.add(scalar_field_mesh);
-	this.scalar_field_mesh2 = scalar_field_mesh;
-
-
-	var vector_field_geometry = new THREE.Geometry();
-	for (var i=0, li=grid.vertices.length; i<li; ++i) {
-	    vector_field_geometry.vertices.push( grid.vertices[i].clone() );
-	    vector_field_geometry.vertices.push( grid.vertices[i].clone() );
-	    // vector_field_material.attributes.vector.value.push( new THREE.Vector3() );
-	    // vector_field_material.attributes.vector.value.push( new THREE.Vector3() );
+	this.update = function(sim){
+		// TODO: what if sim changed from last iteration?
+		scalarProjectionView.updateScene(this_.scene, sim.focus, 
+				{
+					...options, 
+					subview: scalarView
+				}
+			);
+		vectorProjectionView.updateScene(this_.scene, sim.focus, 
+				{
+					...options, 
+					subview: vectorView
+				}
+			);
 	}
-	this.vector_field_geometry = vector_field_geometry;
-
-	var vector_field_material, vector_field_mesh;
-	var positions = grid.pos;
-
-	vector_field_material = new THREE.ShaderMaterial({
-	        vertexShader: 	this._vertexShader,
-	        fragmentShader: fragmentShaders.vectorField,
-	        attributes: {
-	        },
-	        uniforms: { 
-		  		index: 		{ type: 'f', value: -1 }
-	        }
-	    });
-	vector_field_mesh = new THREE.Line( vector_field_geometry, vector_field_material, THREE.LinePieces);
-	this.scene.add(vector_field_mesh);
-	this.vector_field_mesh1 = vector_field_mesh;
-
-	vector_field_material = new THREE.ShaderMaterial({
-	        vertexShader: 	this._vertexShader,
-	        fragmentShader: fragmentShaders.vectorField,
-	        attributes: {
-	        },
-	        uniforms: { 
-		  		index: 		{ type: 'f', value: 1 }
-	        }
-	    });
-	vector_field_mesh = new THREE.Line( vector_field_geometry, vector_field_material, THREE.LinePieces);
-	this.scene.add(vector_field_mesh);
-	this.vector_field_mesh2 = vector_field_mesh;
-}
-
-View.prototype.render = function() {
-	return this.renderer.render( this.scene, this.camera );
-};
-
-View.prototype.update = function(sim){
-	var world = sim.focus;
-
-	this.uniform('sealevel', world.hydrosphere.sealevel.value()); 
-	this.uniform('insolation_max', Float32Dataset.max(world.atmosphere.average_insolation)); 
-
-	this._scalarDisplay.updateAttributes(this.scalar_field_geometry, world);
-	this._vectorDisplay.updateAttributes(this.vector_field_geometry, world);
-}
-
-View.prototype.getDomElement = function() {
-	return this.renderer.domElement;
-};
-
-View.prototype.getScreenshotDataURL = function() {
-	return THREEx.Screenshot.toDataURL(this.renderer);
-};
-
-View.prototype.setScalarDisplay = function(display) {
-	if(this._scalarDisplay === display){
-		return;
+	this.print = function(raster){
+		if (raster.x === void 0) {
+			scalarProjectionView.updateScene(this_.scene, raster, 
+					{
+						...options, 
+						subview: scalarView
+					}
+				);
+		} else {
+			vectorProjectionView.updateScene(this_.scene, raster, 
+					{
+						...options, 
+						subview: vectorView
+					}
+				);
+		}
 	}
-	this._scalarDisplay.removeFrom(this.scalar_field_mesh1);
-	this._scalarDisplay.removeFrom(this.scalar_field_mesh2);
 
-	this._scalarDisplay = display;
+	this.updateChart = function(data, sim, options) {
+		scalarProjectionView.updateChart(data, sim.focus, options);
+	};
 
-	this._scalarDisplay.addTo(this.scalar_field_mesh1);
-	this._scalarDisplay.addTo(this.scalar_field_mesh2);
-};
+	this.getDomElement = function() {
+		return this.renderer.domElement;
+	};
 
-View.prototype.setVectorDisplay = function(display) {
-	if(this._vectorDisplay === display){
-		return;
+	this.getScreenshotDataURL = function() {
+		return THREEx.Screenshot.toDataURL(this.renderer);
+	};
+
+	this.setScalarView = function(value) {
+		if(scalarView === value){
+			return;
+		}
+		if(scalarView !== void 0){
+			scalarView.removeFromScene(this.scene);
+		}
+		scalarView = value;
+	};
+
+	this.setVectorView = function(value) {
+		if(vectorView === value){
+			return;
+		}
+		if(vectorView !== void 0){
+			vectorView.removeFromScene(this.scene);
+		}
+		vectorView = value;
+	};
+
+	this.setProjectionView = function(value){
+		if(projectionView === value){
+			return;
+		}
+		if(projectionView !== void 0){
+			scalarProjectionView.removeFromScene(this.scene);
+			vectorProjectionView.removeFromScene(this.scene);
+		}
+		projectionView = value;
+		scalarProjectionView = value.clone();
+		vectorProjectionView = value.clone();
 	}
-	this._vectorDisplay.removeFrom(this.vector_field_mesh1);
-	this._vectorDisplay.removeFrom(this.vector_field_mesh2);
 
-	this._vectorDisplay = display;
-
-	this._vectorDisplay.addTo(this.vector_field_mesh1);
-	this._vectorDisplay.addTo(this.vector_field_mesh2);
-};
-
-View.prototype.vertexShader = function(vertexShader){
-	if(this._vertexShader === vertexShader){
-		return;
+	this.uniform = function(key, value){
+		options[key] = value;
 	}
-	this._vertexShader = vertexShader;
 
-	var meshes, mesh;
-
-	mesh = this.scalar_field_mesh1
-	mesh.material.vertexShader = vertexShader;
-	mesh.material.needsUpdate = true;
-
-	mesh = this.scalar_field_mesh2;
-	mesh.material.vertexShader = vertexShader;
-	mesh.material.needsUpdate = true;
-
-	mesh = this.vector_field_mesh1;
-	mesh.material.vertexShader = vertexShader;
-	mesh.material.needsUpdate = true;
-
-	mesh = this.vector_field_mesh2;
-	mesh.material.vertexShader = vertexShader;
-	mesh.material.needsUpdate = true;
-}
-
-View.prototype.uniform = function(key, value){
-	if(this._uniforms[key] === value){
-		return;
-	}
-	
-	this._uniforms[key] = value;
-
- 	var meshes, mesh;
-
- 	mesh = this.scalar_field_mesh1;
- 	if (mesh.material.uniforms[key] !== void 0) {
-	 	mesh.material.uniforms[key].value = value;
-	 	mesh.material.uniforms[key].needsUpdate = true;
- 	}
-
- 	mesh = this.scalar_field_mesh2;
- 	if (mesh.material.uniforms[key] !== void 0) {
-	 	mesh.material.uniforms[key].value = value;
-	 	mesh.material.uniforms[key].needsUpdate = true;
- 	}
-
- 	mesh = this.vector_field_mesh1;
- 	if (mesh.material.uniforms[key] !== void 0) {
- 		mesh.material.uniforms[key].value = value;
- 		mesh.material.uniforms[key].needsUpdate = true;
- 	}
-
- 	mesh = this.vector_field_mesh2;
- 	if (mesh.material.uniforms[key] !== void 0) {
-	 	mesh.material.uniforms[key].value = value;
-	 	mesh.material.uniforms[key].needsUpdate = true;
- 	}
 }

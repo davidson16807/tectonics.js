@@ -24,32 +24,26 @@ Vector.FromArray = function(array) {
     z: array[2] || 0,
   };
 }
-Vector.similarity = function(ax, ay, az, bx, by, bz) {
-  var sqrt = Math.sqrt;
-  return (ax*bx + 
-          ay*by + 
-          az*bz)   /   ( sqrt(ax*ax+
-                              ay*ay+
-                              az*az)   *   sqrt(bx*bx+
-                                          by*by+
-                                          bz*bz) );
-}
-Vector.dot = function(ax, ay, az, bx, by, bz) {
-  var sqrt = Math.sqrt;
-  return (ax*bx + ay*by + az*bz);
-}
-Vector.magnitude = function(x, y, z) {
-  return Math.sqrt(x*x + y*y + z*z);
-}
-Vector.normalize = function(x, y, z, result) {
+Vector.add_vector = function(ax, ay, az, bx, by, bz, result) { 
   result = result || Vector()
-  var magnitude = Math.sqrt(x*x + y*y + z*z);
-  result.x = x/(magnitude||1);
-  result.y = y/(magnitude||1);
-  result.z = z/(magnitude||1);
+
+  result.x = ax + bx;
+  result.y = ay + by;
+  result.z = az + bz;
+
   return result;
-}
-Vector.cross = function(ax, ay, az, bx, by, bz, result) { 
+} 
+Vector.sub_vector = function(ax, ay, az, bx, by, bz, result) { 
+  result = result || Vector()
+
+  result.x = ax - bx;
+  result.y = ay - by;
+  result.z = az - bz;
+
+  return result;
+} 
+// TODO: rename to "cross_vector" 
+Vector.cross_vector = function(ax, ay, az, bx, by, bz, result) { 
   result = result || Vector()
 
   result.x = ay*bz   -   az*by; 
@@ -58,12 +52,25 @@ Vector.cross = function(ax, ay, az, bx, by, bz, result) {
 
   return result;
 } 
+Vector.dot_vector = function(ax, ay, az, bx, by, bz) {
+  var sqrt = Math.sqrt;
+  return (ax*bx + ay*by + az*bz);
+}
 Vector.mult_scalar = function(x, y, z, scalar, result) {
   result = result || Vector();
 
   result.x = x * scalar;
   result.y = y * scalar;
   result.z = z * scalar;
+
+  return result;
+}
+Vector.div_scalar = function(x, y, z, scalar, result) {
+  result = result || Vector();
+
+  result.x = x / scalar;
+  result.y = y / scalar;
+  result.z = z / scalar;
 
   return result;
 }
@@ -78,5 +85,26 @@ Vector.mult_matrix = function(x, y, z, matrix, result) {
   result.y = x * yx    + y * yy     + z * yz;
   result.z = x * zx    + y * zy     + z * zz;
 
+  return result;
+}
+Vector.similarity = function(ax, ay, az, bx, by, bz) {
+  var sqrt = Math.sqrt;
+  return (ax*bx + 
+          ay*by + 
+          az*bz)   /   ( sqrt(ax*ax+
+                              ay*ay+
+                              az*az)   *   sqrt(bx*bx+
+                                          by*by+
+                                          bz*bz) );
+}
+Vector.magnitude = function(x, y, z) {
+  return Math.sqrt(x*x + y*y + z*z);
+}
+Vector.normalize = function(x, y, z, result) {
+  result = result || Vector()
+  var magnitude = Math.sqrt(x*x + y*y + z*z);
+  result.x = x/(magnitude||1);
+  result.y = y/(magnitude||1);
+  result.z = z/(magnitude||1);
   return result;
 }

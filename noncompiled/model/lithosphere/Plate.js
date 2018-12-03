@@ -7,11 +7,11 @@ function Plate(grid, parameters)
 
 	this.crust = new Crust({grid: grid, buffer: parameters['crust']});
 	this.mask = Uint8Raster.FromBuffer(parameters['mask'], grid);
-	this.local_to_global_matrix = Matrix.Identity();
+	this.local_to_global_matrix = Matrix3x3.Identity();
 	if (parameters['local_to_global_matrix'] !== void 0) {
 		this.local_to_global_matrix.set(parameters['local_to_global_matrix'])
 	}
-	this.global_to_local_matrix = Matrix.invert(this.local_to_global_matrix);
+	this.global_to_local_matrix = Matrix3x3.invert(this.local_to_global_matrix);
 
 	this.getParameters = function() {
 		return { 
@@ -40,7 +40,7 @@ function Plate(grid, parameters)
 		Float32Raster(grid),  
 		result => Crust.get_total_mass(self.crust, result)
 	); 
-	// the average density of the crust, in T/m^3
+	// the average density of the crust, in kg/m^3
 	this.density = new Memo(  
 		Float32Raster(grid),  
 		result => Crust.get_density(self.total_mass.value(), self.thickness.value(),	material_density.mafic_volcanic_min, result)
@@ -92,15 +92,15 @@ function Plate(grid, parameters)
 		this.center_of_mass.invalidate();
 	}
 	
-	this.move = function(timestep){
+	this.move = function(megayears){
 		assert_dependencies();
 
 		var world = this.world;
 
-		var rotation_matrix = LithosphereModeling.get_plate_rotation_matrix(this.velocity.value(), this.center_of_mass.value(), timestep);
+		var rotation_matrix = LithosphereModeling.get_plate_rotation_matrix(this.velocity.value(), this.center_of_mass.value(), megayears);
 
-		Matrix.mult_matrix(this.local_to_global_matrix, rotation_matrix, this.local_to_global_matrix);
-		Matrix.invert(this.local_to_global_matrix, this.global_to_local_matrix);
+		Matrix3x3.mult_matrix(this.local_to_global_matrix, rotation_matrix, this.local_to_global_matrix);
+		Matrix3x3.invert(this.local_to_global_matrix, this.global_to_local_matrix);
 
 		// for each cell in the master's grid, this raster indicates the id of the corresponding cell in the plate's grid
 		// this is used to convert between global and local coordinate systems

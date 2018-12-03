@@ -1,31 +1,20 @@
 KNAME := $(shell uname)
 ifeq (Darwin,$(findstring Darwin,$(KNAME)))
-    CPP=g++-7
+	CPP=g++-8
 else
-    CPP=/usr/bin/cpp
+	CPP=/usr/bin/cpp
 endif
-OUT=postcompiled/utils/Rasters.js postcompiled/view/FragmentShaders.js postcompiled/view/VertexShaders.js
+OUT=postcompiled/utils/Rasters.js postcompiled/view/Shaders.js
+SCRIPTS = $(shell find precompiled/utils/ -type f -name '*.js')
+SHADERS = $(shell find precompiled/view/ -type f -name '*.glsl.c')
 
 all: $(OUT)
 
-postcompiled/utils/Rasters.js : precompiled/utils/Rasters.js
+postcompiled/utils/Rasters.js : precompiled/utils/Rasters.js $(SCRIPTS)
 	$(CPP) -E -P -I. -xc -Wundef -std=c99 -nostdinc -Wtrigraphs -fdollars-in-identifiers -C $< > $@
 
-postcompiled/view/FragmentShaders.js : precompiled/view/fragment/FragmentShaders.template.js
-	cat $< | \
-    sed '/GENERIC.GLSL.C/ r precompiled/view/fragment/generic.glsl.c' | \
-    sed '/REALISTIC.GLSL.C/ r precompiled/view/fragment/realistic.glsl.c' | \
-    sed '/DEBUG.GLSL.C/ r precompiled/view/fragment/debug.glsl.c' | \
-    sed '/VECTOR_FIELD.GLSL.C/ r precompiled/view/fragment/vector_field.glsl.c' \
-    > postcompiled/view/FragmentShaders.js
-
-postcompiled/view/VertexShaders.js : precompiled/view/vertex/VertexShaders.template.js
-	cat $< | \
-    sed '/TEMPLATE.GLSL.C/ r precompiled/view/vertex/template.glsl.c' | \
-    sed '/EQUIRECTANGULAR.GLSL.C/ r precompiled/view/vertex/equirectangular.glsl.c' | \
-    sed '/TEXTURE.GLSL.C/ r precompiled/view/vertex/texture.glsl.c' | \
-    sed '/ORTHOGRAPHIC.GLSL.C/ r precompiled/view/vertex/orthographic.glsl.c' \
-    > postcompiled/view/VertexShaders.js
+postcompiled/view/Shaders.js : precompiled/view/Shaders.js $(SHADERS)
+	$(CPP) -E -P -I. -xc -Wundef -std=c99 -nostdinc -Wtrigraphs -fdollars-in-identifiers -C precompiled/view/Shaders.js > $@
 
 clean:
 	rm -f $(OUT)

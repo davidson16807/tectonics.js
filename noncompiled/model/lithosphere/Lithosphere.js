@@ -17,7 +17,7 @@ function Lithosphere(grid, parameters) {
 
 	var material_viscosity = undefined;
 	var material_density = undefined;
-	var sealevel = undefined;
+	var surface_height = undefined;
 	var surface_gravity = undefined;
 
 	this.rifting_crust =
@@ -40,12 +40,12 @@ function Lithosphere(grid, parameters) {
 		Float32Raster(grid),  
 		result => Crust.get_thickness(self.total_crust, material_density, result)
 	); 
-	// total mass of the crust in tons
+	// total mass of the crust in kg
 	this.total_mass = new Memo(  
 		Float32Raster(grid),  
 		result => Crust.get_total_mass(self.total_crust, result)
 	); 
-	// the average density of the crust, in T/m^3
+	// the average density of the crust, in kg/m^3
 	this.density = new Memo(
 		Float32Raster(grid),  
 		result => Crust.get_density(self.total_mass.value(), self.thickness.value(),	material_density.mafic_volcanic_min, result)
@@ -75,9 +75,9 @@ function Lithosphere(grid, parameters) {
 
 
 
-	function move_plates(plates, timestep) {
+	function move_plates(plates, seconds) {
 		for (var i=0, li=plates.length; i<li; ++i) {
-	 		plates[i].move(timestep, material_density, material_viscosity, surface_gravity);
+	 		plates[i].move(seconds, material_density, material_viscosity, surface_gravity);
 	 	}
 	}
 
@@ -298,49 +298,49 @@ function Lithosphere(grid, parameters) {
 
 	  	scratchpad.deallocate('update_subducted');
 	}
-	function calculate_deltas(world, timestep) {
+	function calculate_deltas(lithosphere, seconds) {
 
        	// CALCULATE DELTAS
 		LithosphereModeling.get_erosion(
-			world.displacement.value(), sealevel.value(), timestep,
+			surface_height.value(), seconds,
 			material_density, surface_gravity,
-			world.top_crust, world.erosion, world.crust_scratch
+			lithosphere.top_crust, lithosphere.erosion, lithosphere.crust_scratch
 		);
-		Crust.assert_conserved_transport_delta(world.erosion, 1e-2); 
+		Crust.assert_conserved_transport_delta(lithosphere.erosion, 1e-2); 
 
        	// CALCULATE DELTAS
 		LithosphereModeling.get_weathering(
-			world.displacement.value(), sealevel.value(), timestep,
+			surface_height.value(), seconds,
 			material_density, surface_gravity,
-			world.top_crust, world.weathering, world.crust_scratch
+			lithosphere.top_crust, lithosphere.weathering, lithosphere.crust_scratch
 		);
-		Crust.assert_conserved_reaction_delta(world.weathering, 1e-2); 
+		Crust.assert_conserved_reaction_delta(lithosphere.weathering, 1e-2); 
 
        	// CALCULATE DELTAS
 		LithosphereModeling.get_lithification(
-			world.displacement.value(), sealevel.value(), timestep,
+			surface_height.value(), seconds,
 			material_density, surface_gravity,
-			world.top_crust, world.lithification, world.crust_scratch
+			lithosphere.top_crust, lithosphere.lithification, lithosphere.crust_scratch
 		);
-		Crust.assert_conserved_reaction_delta(world.lithification, 1e-2); 
+		Crust.assert_conserved_reaction_delta(lithosphere.lithification, 1e-2); 
 
        	// CALCULATE DELTAS
 		LithosphereModeling.get_metamorphosis(
-			world.displacement.value(), sealevel.value(), timestep,
+			surface_height.value(), seconds,
 			material_density, surface_gravity,
-			world.top_crust, world.metamorphosis, world.crust_scratch
+			lithosphere.top_crust, lithosphere.metamorphosis, lithosphere.crust_scratch
 		);
-		Crust.assert_conserved_reaction_delta(world.metamorphosis, 1e-2); 
+		Crust.assert_conserved_reaction_delta(lithosphere.metamorphosis, 1e-2); 
 
 		// COMPILE DELTAS
-		var globalized_deltas = world.crust_delta;
+		var globalized_deltas = lithosphere.crust_delta;
 		Crust.reset 			(globalized_deltas);
-		Crust.add_delta 		(globalized_deltas, world.erosion, 						globalized_deltas);
-		Crust.add_delta 		(globalized_deltas, world.weathering, 					globalized_deltas);
-		Crust.add_delta 		(globalized_deltas, world.lithification,				globalized_deltas);
-		Crust.add_delta 		(globalized_deltas, world.metamorphosis,				globalized_deltas);
-		Crust.add_delta 		(globalized_deltas, world.accretion,					globalized_deltas);
-		ScalarField.add_scalar 	(globalized_deltas.age, timestep, 						globalized_deltas.age); // aging
+		Crust.add_delta 		(globalized_deltas, lithosphere.erosion, 				globalized_deltas);
+		Crust.add_delta 		(globalized_deltas, lithosphere.weathering, 			globalized_deltas);
+		Crust.add_delta 		(globalized_deltas, lithosphere.lithification,			globalized_deltas);
+		Crust.add_delta 		(globalized_deltas, lithosphere.metamorphosis,			globalized_deltas);
+		Crust.add_delta 		(globalized_deltas, lithosphere.accretion,				globalized_deltas);
+		ScalarField.add_scalar 	(globalized_deltas.age, seconds, 						globalized_deltas.age); // aging
 	}
 
 	function integrate_deltas(world, plates) { 
@@ -423,7 +423,7 @@ function Lithosphere(grid, parameters) {
 	};
 
 	function assert_dependencies() {
-		if (sealevel === void 0)	 		{ throw '"sealevel" not provided'; }
+		if (surface_height === void 0)	 		{ throw '"surface_height" not provided'; }
 		if (surface_gravity === void 0)	{ throw '"surface_gravity" not provided'; }
 		if (material_density === void 0)	{ throw '"material_density" not provided'; }
 		if (material_viscosity === void 0)	{ throw '"material_viscosity" not provided'; }
@@ -434,7 +434,7 @@ function Lithosphere(grid, parameters) {
 			this.plates[i].setDependencies(dependencies);
 		}
 
-		sealevel 			= dependencies['sealevel'] 			!== void 0? 	dependencies['sealevel'] 				: sealevel;
+		surface_height 			= dependencies['surface_height'] 			!== void 0? 	dependencies['surface_height'] 				: surface_height;
 		surface_gravity 	= dependencies['surface_gravity'] 	!== void 0? 	dependencies['surface_gravity'] 		: surface_gravity;
 		material_density 	= dependencies['material_density'] 	!== void 0? 	dependencies['material_density'] 		: material_density;
 		material_viscosity 	= dependencies['material_viscosity']!== void 0? 	dependencies['material_viscosity'] 		: material_viscosity;
@@ -458,21 +458,21 @@ function Lithosphere(grid, parameters) {
 		}
 	}
 
-	var mean_supercontinent_cycle_duration = 150;
+	var mean_supercontinent_cycle_duration = 150 * Units.MEGAYEAR;
 
-	this.calcChanges = function(timestep) {
-		var max_perceivable_duration = 60*60*24*30 * timestep; // 1 day worth of real time at 30fps
+	this.calcChanges = function(seconds) {
+		var max_perceivable_duration = 60*60*24*30 * seconds; // 1 day worth of real time at 30fps
 		if (mean_supercontinent_cycle_duration > max_perceivable_duration) {
 			return;
 		}
 		
 		assert_dependencies();
 
-		calculate_deltas		(this, timestep); 			// this creates a world map of all additions and subtractions to crust (e.g. from erosion, accretion, etc.)
+		calculate_deltas		(this, seconds); 			// this creates a world map of all additions and subtractions to crust (e.g. from erosion, accretion, etc.)
 	};
 
-	this.applyChanges = function(timestep){
-		var max_perceivable_duration = 60*60*24*30 * timestep; // 1 day worth of real time at 30fps
+	this.applyChanges = function(seconds){
+		var max_perceivable_duration = 60*60*24*30 * seconds; // 1 day worth of real time at 30fps
 		if (mean_supercontinent_cycle_duration > max_perceivable_duration) {
 			return;
 		}
@@ -481,8 +481,8 @@ function Lithosphere(grid, parameters) {
 
 		integrate_deltas 		(this, this.plates); 		// this uses the map above in order to add and subtract crust
 
-		move_plates 			(this.plates, timestep); 	// this performs the actual plate movement
-		this.supercontinentCycle.update(timestep); 			// this periodically splits the world into plates
+		move_plates 			(this.plates, seconds); 	// this performs the actual plate movement
+		this.supercontinentCycle.update(seconds); 			// this periodically splits the world into plates
 		merge_plates_to_master	(this.plates, this); 		// this stitches plates together to create a world map
 		update_rifting			(this, this.plates); 		// this identifies rifting regions on the world map and adds crust to plates where needed
 		update_subducted 		(this, this.plates); 		// this identifies detaching regions on the world map and then removes crust from plates where needed
