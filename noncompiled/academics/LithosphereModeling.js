@@ -480,22 +480,21 @@ LithosphereModeling.get_plate_rotation_matrix = function(plate_velocity, center_
 
 	// find distance to center of plate
 	var center_of_world_offset = grid.pos;
-	var center_of_world_distance2 = scratchpad.getFloat32Raster(grid);
-	VectorField.dot_vector_field 	(center_of_world_offset, center_of_world_offset, center_of_world_distance2);
-
 	var center_of_plate_offset = scratchpad.getVectorRaster(grid);
 	var center_of_plate_distance2 = scratchpad.getFloat32Raster(grid);
-	VectorField.dot_vector_field 	(center_of_plate_offset, center_of_plate_offset, center_of_plate_distance2);
+//	var center_of_world_distance2 = scratchpad.getFloat32Raster(grid); // NOTE: center_of_world_distance2 is not effectively used
 
-	VectorField.sub_vector 			(grid.pos, center_of_plate,			center_of_plate_offset);
+//	VectorField.fill 				(center_of_world_distance2, 1); // NOTE: center_of_world_distance2 is not effectively used
+	VectorField.sub_vector 			(center_of_world_offset, center_of_plate,			center_of_plate_offset);
+	VectorField.dot_vector_field 	(center_of_plate_offset, center_of_plate_offset, 	center_of_plate_distance2);
 
 	var center_of_plate_angular_velocity = scratchpad.getVectorRaster(grid);
-	VectorField.cross_vector_field 	(plate_velocity, center_of_plate_offset, 	center_of_plate_angular_velocity);
+	VectorField.cross_vector_field 	(plate_velocity, center_of_plate_offset, 			center_of_plate_angular_velocity);
 	VectorField.div_scalar_field 	(center_of_plate_angular_velocity, center_of_plate_distance2, center_of_plate_angular_velocity);
 
 	var center_of_world_angular_velocity = scratchpad.getVectorRaster(grid);
-	VectorField.cross_vector_field 	(plate_velocity, center_of_world_offset, 	center_of_world_angular_velocity);
-	VectorField.div_scalar_field 	(center_of_world_angular_velocity, center_of_world_distance2, center_of_world_angular_velocity);
+	VectorField.cross_vector_field 	(plate_velocity, center_of_world_offset, 			center_of_world_angular_velocity);
+//	VectorField.div_scalar_field 	(center_of_world_angular_velocity, center_of_world_distance2, center_of_world_angular_velocity); // NOTE: equivalent to division by 1
 
 	var plate_velocity_magnitude = scratchpad.getFloat32Raster(grid);
 	VectorField.magnitude 			(plate_velocity, 					plate_velocity_magnitude);
