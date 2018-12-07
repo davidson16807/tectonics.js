@@ -195,6 +195,11 @@ function Universe(parameters) {
 							8
 						)),
 				});
+				if (body_id_to_node_map[body.name].motion instanceof Spin) {
+					body.setDependencies({
+						angular_speed: body_id_to_node_map[body.name]
+					});
+				}
 			}
 		}
 		for(var node of nodes) {

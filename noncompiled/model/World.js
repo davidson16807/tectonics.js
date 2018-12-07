@@ -75,10 +75,22 @@ function World(parameters) {
 
 
 	this.setDependencies = function(dependencies) {
-		this.lithosphere.setDependencies(dependencies);
-		this.hydrosphere.setDependencies(dependencies);
-		this.atmosphere.setDependencies(dependencies);
-		this.biosphere.setDependencies(dependencies);
+		if (dependencies['get_average_insolation'] !== void 0) {
+			this.atmosphere.setDependencies(
+				{'get_average_insolation': dependencies.get_average_insolation}
+			);
+			this.biosphere.setDependencies(
+				{'get_average_insolation': dependencies.get_average_insolation}
+			);
+			this.hydrosphere.setDependencies(
+				{'get_average_insolation': dependencies.get_average_insolation}
+			);
+		}
+		if (dependencies['angular_speed'] !== void 0) {
+			this.atmosphere.setDependencies(
+				{'angular_speed': dependencies.angular_speed}
+			);
+		}
 	};
 
 	this.initialize = function() {
@@ -100,9 +112,6 @@ function World(parameters) {
 			'ice_coverage' 			: this.hydrosphere.ice_coverage,
 			'ocean_coverage'		: this.hydrosphere.ocean_coverage,
 			'plant_coverage'		: this.biosphere.plant_coverage,
-
-			// TODO: find a way to get rid of these dependencies!
-			'angular_speed' 		: Math.PI * 24.5/180,
 		});
 		this.biosphere.setDependencies({
 			'long_term_surface_temp'	: this.atmosphere.long_term_surface_temp,
