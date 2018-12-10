@@ -4,7 +4,7 @@ function HeatmapRasterView(options) {
 	var invariant_options = options || {};
 	var min = invariant_options['min'] || 0.;
 	var max = invariant_options['max'] || 1.;
-	var scaling = invariant_options['scaling'] || true;
+	var scaling = invariant_options['scaling'] || (!invariant_options['min'] && !invariant_options['max']);
 	var chartView = invariant_options['chartView'] || new PdfChartRasterView('land'); 
 	this.scaling = scaling;
 	var fragmentShader = fragmentShaders.heatmap;

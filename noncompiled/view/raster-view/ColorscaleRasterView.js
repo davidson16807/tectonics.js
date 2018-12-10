@@ -6,7 +6,7 @@ function ColorscaleRasterView(options) {
 	var maxColor = invariant_options['maxColor'] || 0xffffff;
 	var min = invariant_options['min'] || 0.;
 	var max = invariant_options['max'] || 1.;
-	var scaling = invariant_options['scaling'] || true;
+	var scaling = invariant_options['scaling'] || (!invariant_options['min'] && !invariant_options['max']);
 	var chartView = invariant_options['chartViews'] || new PdfChartRasterView('land'); 
 	function hex_color_to_glsl_string_color(color) {
 		var rIntValue = ((color / 256 / 256) % 256) / 255.0;
