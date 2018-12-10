@@ -259,7 +259,7 @@ Crust.get_thickness = function(crust, material_density, thickness) {
 	var scratch = Float32Raster(crust.grid);
 
 	var fraction_of_lifetime = scratch;
-	Float32RasterInterpolation.smoothstep	(0, 250, crust.age, fraction_of_lifetime);
+	Float32RasterInterpolation.smoothstep	(0* Units.MEGAYEAR, 250* Units.MEGAYEAR, crust.age, fraction_of_lifetime);
 	var mafic_density = scratch;
 	Float32RasterInterpolation.lerp			(material_density.mafic_volcanic_min, material_density.mafic_volcanic_max, fraction_of_lifetime, mafic_density);
 	var mafic_specific_volume = scratch;
