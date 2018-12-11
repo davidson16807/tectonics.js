@@ -42,7 +42,7 @@ function World(parameters) {
 	    ice:  		0.8,
 	};
 
-	this.surface_gravity = parameters['surface_gravity'] || 9.8; // m/s^2
+	this.surface_gravity = parameters['surface_gravity'] || (9.8 * Units.METER / (Units.SECOND*Units.SECOND)); // m/s^2
 
 	this.radius = parameters['radius'] || Units.EARTH_RADIUS; // meters
 

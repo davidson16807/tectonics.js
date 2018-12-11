@@ -53,7 +53,7 @@ var AtmosphereModeling = (function() {
 		result = result || Float32Raster(net_energy.grid);
 
 		var τ = infrared_optical_depth;
-		var σ = Optics.STEPHAN_BOLTZMANN_CONSTANT;
+		var σ = Thermodynamics.STEPHAN_BOLTZMANN_CONSTANT;
 		var pow = Math.pow;
 
 		for (var i = 0; i < net_energy.length; i++) {
@@ -153,10 +153,10 @@ var AtmosphereModeling = (function() {
 		var Ih = insolation_hot; 
 		var Ic = insolation_cold; 
 		var τ = infrared_optical_depth; 
-		var σ = Optics.STEPHAN_BOLTZMANN_CONSTANT; 
-		var Tguess = Optics.black_body_equilibrium_temperature_uniform(insolation_average); 
-		var Tmax = Optics.black_body_equilibrium_temperature_uniform(insolation_hot);
-		var Tmin = Optics.black_body_equilibrium_temperature_uniform(insolation_cold);
+		var σ = Thermodynamics.STEPHAN_BOLTZMANN_CONSTANT; 
+		var Tguess = Thermodynamics.black_body_equilibrium_temperature_uniform(insolation_average); 
+		var Tmax = Thermodynamics.black_body_equilibrium_temperature_uniform(insolation_hot);
+		var Tmin = Thermodynamics.black_body_equilibrium_temperature_uniform(insolation_cold);
 		var B = 4*σ * Tguess*Tguess*Tguess / (1+0.75*τ); // estimated change in emission with respect to temperature 
 
 		var ΔT = Tmax-Tmin; // temperature differential 
@@ -175,7 +175,7 @@ var AtmosphereModeling = (function() {
 		var Ih = insolation_hot;
 		var Ic = insolation_cold;
 		var τ = infrared_optical_depth;
-		var σ = Optics.STEPHAN_BOLTZMANN_CONSTANT;
+		var σ = Thermodynamics.STEPHAN_BOLTZMANN_CONSTANT;
 		// temperature given net energy flux
 
 		function T(E) {

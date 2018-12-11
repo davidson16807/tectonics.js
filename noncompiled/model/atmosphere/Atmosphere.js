@@ -42,7 +42,7 @@ function Atmosphere(grid, parameters) {
 				incoming_heat
 			);
 
-			Optics.black_body_equilibrium_temperature(incoming_heat, result, this.greenhouse_gas_factor);
+			Thermodynamics.black_body_equilibrium_temperature_field(incoming_heat, result, this.greenhouse_gas_factor);
 			return result;
 		}
 	);
@@ -175,7 +175,7 @@ function Atmosphere(grid, parameters) {
 				heat_flow_uniform, 
 				this.incoming_heat
 			);
-			Optics.black_body_radiation	(this.sealevel_temp, 								this.outgoing_heat);
+			Thermodynamics.black_body_radiation_field(this.sealevel_temp, 							this.outgoing_heat);
 			ScalarField.div_scalar 		( this.outgoing_heat, this.greenhouse_gas_factor, 	this.outgoing_heat);
 			AtmosphereModeling.heat_capacity(ocean_coverage.value(), material_heat_capacity, this.heat_capacity);
 			ScalarField.sub_field 		( this.incoming_heat, this.outgoing_heat, 			this.net_heat_gain );

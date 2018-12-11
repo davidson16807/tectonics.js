@@ -6,53 +6,16 @@
 var Optics = (function() {
 	var Optics = {};
 
-	Optics.STEPHAN_BOLTZMANN_CONSTANT = 5.670373e-8; // W/m^2 per K^4
+	Optics.SPEED_OF_LIGHT = 299792458 * Units.METER / Units.SECOND; 
+	Optics.PLANCK_CONSTANT = 6.62607004e-34 * Units.JOULE * Units.SECOND;
 
-	// TODO: figure out where to put above function
-	// maybe another namespace: "Heliosphere"? "StellarModeling"?
-
-	// This calculates the radiation (in watts/m^2) that's emitted by the surface of an object.
-	Optics.black_body_radiation = function(
-			temperature,
-			result
-		) {
-		result = result || Float32Raster(pos.grid);
-		Float32Raster.fill(result, 1);
-		ScalarField.mult_field	(result, 		temperature, 						result);
-		ScalarField.mult_field	(result, 		temperature, 						result);
-		ScalarField.mult_field	(result, 		temperature, 						result);
-		ScalarField.mult_field	(result, 		temperature, 						result);
-		ScalarField.mult_scalar	(result, 		Optics.STEPHAN_BOLTZMANN_CONSTANT, 	result);
-
-		return result;
-	}
-	// This calculates the uniform (non-field) temperature of a body given its luminosity 
-	// TODO: put this under a new namespace? "Thermodynamics"? 
-	Optics.black_body_equilibrium_temperature_uniform = function(heat) { 
-		return Math.pow(heat / Optics.STEPHAN_BOLTZMANN_CONSTANT, 1/4); 
-	} 
-	// This calculates the temperature of a body given its luminosity
-	// TODO: put this under a new namespace? "Thermodynamics"?
-	Optics.black_body_equilibrium_temperature = function(
-			luminosity,
-			result,
-			greenhouse_gas_factor
-		) {
-		greenhouse_gas_factor = greenhouse_gas_factor || 1.3;
-		result = result || Float32Raster(luminosity.grid);
-		ScalarField.mult_scalar	(luminosity, 	greenhouse_gas_factor / Optics.STEPHAN_BOLTZMANN_CONSTANT, 	result);
-		ScalarField.pow_scalar	(result, 		1/4, 														result);
-
-		return result;
-	}
-	
 	// This calculates the intensity of incident radiation (in Watts/m^2) 
 	// that's felt on the surface of an object from a circular light source 
 	// The function considers the following:
 	//  * the distance to the light (the "Inverse Square Law")
 	//  * the occlusion of light by the object itself
 	//  * the angle at which the light hits ("Lambert's Law")
-	Optics.incident_radiation = function(
+	Optics.incident_radiation_field = function(
 			// This is a vector raster indicating the surface normal of an object
 			surface_normal,
 			// This is a vector indicating the light's offset from the object

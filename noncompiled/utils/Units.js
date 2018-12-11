@@ -33,3 +33,11 @@ Units.WEEK = Units.DAY*7;					// seconds
 Units.MONTH = Units.DAY*29.53059;			// seconds
 Units.YEAR = Units.DAY*365.25;				// seconds
 Units.MEGAYEAR = Units.YEAR*1e6;			// seconds
+
+Units.KELVIN = 1;
+
+Units.NEWTON = Units.KILOGRAM * Units.METER / (Units.SECOND * Units.SECOND)
+Units.JOULE = Units.NEWTON * Units.METER;
+Units.WATT = Units.JOULE / Units.SECOND;
+
+Units.MOLE = 6.02e23

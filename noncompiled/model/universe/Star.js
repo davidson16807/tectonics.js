@@ -18,7 +18,7 @@ function Star(parameters) {
 
 	var surface_area = Sphere.surface_area(this.radius);
 	var intensity = this.luminosity / surface_area;
-	this.temperature = Math.pow(intensity / Optics.STEPHAN_BOLTZMANN_CONSTANT, 1/4);
+	this.temperature = Math.pow(intensity / Thermodynamics.STEPHAN_BOLTZMANN_CONSTANT, 1/4);
 
 	this.getParameters = function() {
 		return {
