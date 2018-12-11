@@ -56,11 +56,15 @@
 #define ASSERT_IS_3X3_MATRIX(INPUT)
 #endif
 
-#include "precompiled/utils/Grid.js"
+
 #include "precompiled/utils/Matrix3x3.js"
 #include "precompiled/utils/Matrix4x4.js"
 #include "precompiled/utils/Vector.js"
-#include "precompiled/utils/RasterStackBuffer.js"
+
+#include "precompiled/utils/rasters/Float32Raster.js"
+#include "precompiled/utils/rasters/Uint16Raster.js"
+#include "precompiled/utils/rasters/Uint8Raster.js"
+#include "precompiled/utils/rasters/VectorRaster.js"
 
 #include "precompiled/utils/datasets/Float32Dataset.js"
 #include "precompiled/utils/datasets/Uint16Dataset.js"
@@ -77,13 +81,13 @@
 #include "precompiled/utils/raster-graphics/Uint8RasterGraphics.js"
 #include "precompiled/utils/raster-graphics/VectorRasterGraphics.js"
 
-#include "precompiled/utils/rasters/Float32Raster.js"
-#include "precompiled/utils/rasters/Uint16Raster.js"
-#include "precompiled/utils/rasters/Uint8Raster.js"
-#include "precompiled/utils/rasters/VectorRaster.js"
-
 #include "precompiled/utils/interpolation/Float32RasterInterpolation.js"
 #include "precompiled/utils/trigonometry/Float32RasterTrigonometry.js"
 #include "precompiled/utils/scalar-transport/ScalarTransport.js"
 #include "precompiled/utils/image-analysis/VectorImageAnalysis.js"
 #include "precompiled/utils/morphology/BinaryMorphology.js"
+
+#include "precompiled/utils/IntegerLattice.js"
+#include "precompiled/utils/VoronoiSphere.js"
+#include "precompiled/utils/Grid.js"
+#include "precompiled/utils/RasterStackBuffer.js"

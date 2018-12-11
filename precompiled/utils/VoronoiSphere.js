@@ -43,7 +43,7 @@ var VoronoiSphere = (function() {
 		this.cells = cells;
 
 		//Feed locations into an integer lattice for fast lookups
-		points = [];
+		var points = [];
 		var x = pos.x;
 		var y = pos.y;
 		var z = pos.z;
@@ -65,6 +65,9 @@ var VoronoiSphere = (function() {
 		var sqrt = Math.sqrt;
 		var max = Math.max;
 
+		var x2d = 0.;
+		var y2d = 0.;
+		var z2d = 0.;
 		// populate cells using the slower IntegerLattice implementation
 		for (var side_id = 0; side_id < OCTAHEDRON_SIDE_COUNT; side_id++)
 		{
