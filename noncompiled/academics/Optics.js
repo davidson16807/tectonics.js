@@ -6,9 +6,6 @@
 var Optics = (function() {
 	var Optics = {};
 
-	Optics.SPEED_OF_LIGHT = 299792458 * Units.METER / Units.SECOND; 
-	Optics.PLANCK_CONSTANT = 6.62607004e-34 * Units.JOULE * Units.SECOND;
-
 	// This calculates the intensity of incident radiation (in Watts/m^2) 
 	// that's felt on the surface of an object from a circular light source 
 	// The function considers the following:

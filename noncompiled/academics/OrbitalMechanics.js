@@ -6,6 +6,7 @@
 var OrbitalMechanics = (function() {
 	var OrbitalMechanics = {};
 
+	OrbitalMechanics.GRAVITATIONAL_CONSTANT = 6.67408e-11; // m3 kg-1 s-2
 
 	OrbitalMechanics.get_period = function(semi_major_axis, effective_parent_mass) {
 		// TODO: move this logic to OrbitalMechanics
@@ -99,7 +100,6 @@ var OrbitalMechanics = (function() {
 		return E;
 	}
 
-	OrbitalMechanics.GRAVITATIONAL_CONSTANT = 6.67408e-11; // m3 kg-1 s-2
 
 
 

@@ -40,4 +40,4 @@ Units.NEWTON = Units.KILOGRAM * Units.METER / (Units.SECOND * Units.SECOND)
 Units.JOULE = Units.NEWTON * Units.METER;
 Units.WATT = Units.JOULE / Units.SECOND;
 
-Units.MOLE = 6.02e23
+Units.MOLE = 6.02214076e23;
