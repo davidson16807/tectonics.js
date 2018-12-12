@@ -1,3 +1,4 @@
+'use strict';
 
 // A "System" is a class representation of an isolated physical system
 // it is essentially a node in a scene graph 
@@ -6,7 +7,7 @@
 // and allows arbitrary nodes to be designated as the origin of a coordinate system.
 // Designating arbitrary nodes as the origin is meant to resolve floating point precision issues 
 // that commonly occur for very distant objects, A.K.A. the "Deep Space Kraken" of Kerbal Space Program
-function System(parent, parameters) {
+function System(parameters, parent) {
 	// name of the cycle induced by the system
 	this.name 		= parameters['name'];
 
@@ -33,6 +34,7 @@ function System(parent, parameters) {
 			stop('missing parameter: "body.type"');
 		}
 		this.body = {
+			undefined: () => parameters.body,
 			'world': () => new World(parameters.body),
 			'star': () => new Star(parameters.body),
 		}[parameters.body.type]();
@@ -45,7 +47,7 @@ function System(parent, parameters) {
 
 	// the child motions of the scene graph node (optional)
 	// the motions described by the children assume a coordinate basis that is designated by this node
-	this.children = (parameters.children || []).map(child_parameters => new System(this, child_parameters));
+	this.children = (parameters.children || []).map(child_parameters => new System(child_parameters, this));
 
 	// whether or not the insolation of child bodies will change throughout this system's motion
 	this.invariant_insolation = parameters['invariant_insolation'] || false;
@@ -93,17 +95,19 @@ function System(parent, parameters) {
 			if (parent !== origin) {
 				var parent_map = parent.get_body_matrices(config, this);
 				for(var key in parent_map){
-					map[key] = mult_matrix( this.motion.get_parent_to_child_matrix(system_config), parent_map[key] )
+					var parent_to_child_matrix = this.motion.get_parent_to_child_matrix(system_config)
+					map[key] = mult_matrix(parent_to_child_matrix , parent_map[key] )
 				}
 			}
 		}
-		for (child of children) {
+		for (var child of children) {
 			// NOTE: don't consider origin, or else an infinite recursive loop will result
 			if (child !== origin) {
 				var child_map = child.get_body_matrices(config, this);
 				var child_config = (config[child.name] || 0);
 				for(var key in child_map){
-					map[key] = mult_matrix( child.motion.get_child_to_parent_matrix(child_config), child_map[key] )
+					var child_to_parent_matrix = child.motion.get_child_to_parent_matrix(child_config);
+					map[key] = mult_matrix(child_to_parent_matrix, child_map[key] )
 				}
 			}
 		}

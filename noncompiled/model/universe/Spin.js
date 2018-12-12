@@ -1,3 +1,4 @@
+'use strict';
 
 function Spin(parameters) {
 	var self = this;

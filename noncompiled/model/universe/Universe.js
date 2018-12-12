@@ -51,7 +51,7 @@
 
 function Universe(parameters) {
 	this.config = parameters.config || {};
-	var system = new System(undefined, parameters.system || stop('missing parameter: "system"'));
+	var system = new System(parameters.system || stop('missing parameter: "system"'));
 
 	this.getParameters = function() {
 		return {
@@ -179,6 +179,12 @@ function Universe(parameters) {
 	}
 
 	function assert_dependencies() { }
+
+	this.body_matrices = function(config, body, star, insolation) {
+		var origin = body_id_to_node_map[body.name];
+		return origin.get_body_matrices(config);
+	}
+	this.advance = advance;
 
 	this.setDependencies = function(dependencies) {}
 
