@@ -1,27 +1,27 @@
 var vertexShaders = {};
 vertexShaders.equirectangular = `   
-#include "precompiled/view/vertex/template.glsl.c"
-#include "precompiled/view/vertex/equirectangular.glsl.c"
+#include "precompiled/shaders/vertex/template.glsl.c"
+#include "precompiled/shaders/vertex/equirectangular.glsl.c"
 `;
 vertexShaders.texture = `
-#include "precompiled/view/vertex/template.glsl.c"
-#include "precompiled/view/vertex/texture.glsl.c"
+#include "precompiled/shaders/vertex/template.glsl.c"
+#include "precompiled/shaders/vertex/texture.glsl.c"
 `;
 vertexShaders.orthographic = `   
-#include "precompiled/view/vertex/template.glsl.c"
-#include "precompiled/view/vertex/orthographic.glsl.c"
+#include "precompiled/shaders/vertex/template.glsl.c"
+#include "precompiled/shaders/vertex/orthographic.glsl.c"
 `;
 
 var fragmentShaders = {};
 fragmentShaders.realistic = `
-#include "precompiled/view/fragment/realistic.glsl.c"
+#include "precompiled/shaders/fragment/realistic.glsl.c"
 `;
 fragmentShaders.monochromatic = `
-#include "precompiled/view/fragment/monochromatic.glsl.c"
+#include "precompiled/shaders/fragment/monochromatic.glsl.c"
 `;
 fragmentShaders.heatmap = `
-#include "precompiled/view/fragment/heatmap.glsl.c"
+#include "precompiled/shaders/fragment/heatmap.glsl.c"
 `;
 fragmentShaders.vectorField = `
-#include "precompiled/view/fragment/vector_field.glsl.c"
+#include "precompiled/shaders/fragment/vector_field.glsl.c"
 `;
