@@ -16,6 +16,17 @@ var Thermodynamics = (function() {
 
 
 
+
+	Thermodynamics.get_black_body_fraction_of_emissive_radiation_below_wavelength = function(wavelength, temperature) {
+		
+	}
+	Thermodynamics.get_black_body_fraction_of_emissive_radiation_between_wavelengths = function(lo, hi, temperature) {
+		
+	}
+
+
+
+
 	// This calculates the radiation (in watts/m^2) that's emitted by a single object
 	Thermodynamics.get_black_body_emissive_radiation_flux = function(temperature) {
 		return Thermodynamics.STEPHAN_BOLTZMANN_CONSTANT * temperature * temperature * temperature * temperature;
