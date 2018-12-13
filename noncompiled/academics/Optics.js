@@ -13,7 +13,7 @@ var Optics = (function() {
 	//  * the distance to the light (the "Inverse Square Law")
 	//  * the occlusion of light by the object itself
 	//  * the angle at which the light hits ("Lambert's Law")
-	Optics.get_varying_incident_radiation = function(
+	Optics.get_incident_radiation_fluxes = function(
 			// This is a vector raster indicating the surface normal of an object
 			surface_normal,
 			// This is a vector indicating the light's offset from the object

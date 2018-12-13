@@ -14,7 +14,7 @@ var PlantBiology = {};
 //     * npp based on precip in perfect conditions 
 //     * npp based on temp in perfect conditions 
 // The lower of the two estimates is the right one. This is the law of the minimum.
-PlantBiology.net_primary_productivity = function(temp, precip, npp_max, result) {
+PlantBiology.net_primary_productivities = function(temp, precip, npp_max, result) {
 
 	result = result || Float32Raster(temp.grid);
 	var npp = result;
@@ -53,7 +53,7 @@ PlantBiology.net_primary_productivity = function(temp, precip, npp_max, result) 
 //  so if npp=npp_max, then lai=lai_max. This can be modeled as:
 //     npp/npp_max = (1 - exp(-c lai)) /
 //                   (1 - exp(-c lai_max))
-PlantBiology.leaf_area_index = function(npp, npp_max, lai_max, result, growth_factor) {
+PlantBiology.leaf_area_indices = function(npp, npp_max, lai_max, result, growth_factor) {
 	result = result || Float32Raster(npp.grid);
 	
 	var lai = result;

@@ -43,11 +43,11 @@ experimentalViews.get_varying_albedo 	= new ScalarWorldView(
 		);
 
 		var lat = Float32SphereRaster.latitude(world.grid.pos.y);
-		var precipitation = Climatology.guess_varying_precip(lat);
+		var precipitation = Climatology.guess_precipitation_fluxes(lat);
 		var npp_max = 1;
 		var lai_max = 10;
-		var npp = PlantBiology.net_primary_productivity(temp, precipitation, npp_max);
-		var lai = PlantBiology.leaf_area_index(npp, npp_max, lai_max);
+		var npp = PlantBiology.net_primary_productivities(temp, precipitation, npp_max);
+		var lai = PlantBiology.leaf_area_indices(npp, npp_max, lai_max);
 		var plant_fraction = Float32RasterInterpolation.smoothstep(0, 2, lai);
 		albedo = AtmosphericModeling.get_varying_albedo(land_fraction, ice_fraction, plant_fraction);
 		return albedo;

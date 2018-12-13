@@ -17,11 +17,11 @@ var Thermodynamics = (function() {
 
 
 	// This calculates the radiation (in watts/m^2) that's emitted by a single object
-	Thermodynamics.get_uniform_black_body_radiation = function(temperature) {
+	Thermodynamics.get_black_body_emissive_radiation_flux = function(temperature) {
 		return Thermodynamics.STEPHAN_BOLTZMANN_CONSTANT * temperature * temperature * temperature * temperature;
 	}
 	// This calculates the radiation (in watts/m^2) that's emitted by the surface of an object.
-	Thermodynamics.get_varying_black_body_radiation = function(
+	Thermodynamics.get_black_body_emissive_radiation_fluxes = function(
 			temperature,
 			result
 		) {
@@ -44,12 +44,12 @@ var Thermodynamics = (function() {
 
 	// This calculates the uniform (non-field) temperature of a body given its luminosity 
 	// TODO: put this under a new namespace? "Thermodynamics"? 
-	Thermodynamics.get_uniform_equilibrium_temperature = function(heat, emission_coefficient) { 
+	Thermodynamics.get_equilibrium_temperature = function(heat, emission_coefficient) { 
 		return Math.pow(emission_coefficient*heat/Thermodynamics.STEPHAN_BOLTZMANN_CONSTANT, 1/4); 
 	} 
 	// This calculates the temperature of a body given its luminosity
 	// TODO: put this under a new namespace? "Thermodynamics"?
-	Thermodynamics.get_varying_equilibrium_temperature = function(
+	Thermodynamics.get_equilibrium_temperatures = function(
 			luminosity,
 			result
 		) {
@@ -64,19 +64,19 @@ var Thermodynamics = (function() {
 
 	// calculates entropy given an energy and temperature,
 	// returns results in Joules per Kelvin
-	Thermodynamics.get_uniform_entropy = function(E, T) {
+	Thermodynamics.get_entropy = function(E, T) {
 		return E/(Thermodynamics.BOLTZMANN_CONSTANT * T);
 	}
 	// calculates entropy given an energy flux and two temperature extremes,
 	// returns results in Watts per Kelvin
-	Thermodynamics.get_uniform_entropy_production = function(F, Th, Tc) {
+	Thermodynamics.get_entropy_production = function(F, Th, Tc) {
 		return F/(Thermodynamics.BOLTZMANN_CONSTANT * (Th - Tc));
 	}
 
 
 
 
-	Thermodynamics.guess_varying_entropic_heat_flow = function(heat, heat_flow, result) {
+	Thermodynamics.guess_entropic_heat_flows = function(heat, heat_flow, result) {
 		result = result || Float32Raster(net_energy.grid);
 
 		var heat_flow_field = result;
@@ -91,7 +91,7 @@ var Thermodynamics = (function() {
 	// using the Max Entropy Production Principle and Gradient Descent
 	// for more information, see Lorenz et al. 2001: 
 	// "Titan, Mars and Earth : Entropy Production by Latitudinal Heat Transport"
-	Thermodynamics.solve_uniform_entropic_heat_flow = function(insolation_hot, insolation_cold, emission_coefficient, iterations) {
+	Thermodynamics.solve_entropic_heat_flow = function(insolation_hot, insolation_cold, emission_coefficient, iterations) {
 		iterations = iterations || 10;
 
 		var Ih = insolation_hot;
@@ -99,8 +99,8 @@ var Thermodynamics = (function() {
 		var β = emission_coefficient || 1.;
 		// temperature given net energy flux
 
-		var T = Thermodynamics.get_uniform_equilibrium_temperature;
-		var S = Thermodynamics.get_uniform_entropy_production;
+		var T = Thermodynamics.get_equilibrium_temperature;
+		var S = Thermodynamics.get_entropy_production;
 		// entropy production given heat flux
 		function N(F, Ih, Ic) {
 			return S(F, T((Ic+F)/β), T((Ih-F)/β));

@@ -28,7 +28,7 @@ var Climatology = (function() {
 	}
 
 	Climatology = {};
-	Climatology.guess_varying_surface_air_velocity = function(pos, pressure, angular_speed, velocity) {
+	Climatology.guess_surface_air_velocities = function(pos, pressure, angular_speed, velocity) {
 		velocity = velocity || VectorRaster(pos.grid);
 		ScalarField.gradient(pressure, velocity);
 		EARTH_RADIUS = 6.3e6; // meters
@@ -38,7 +38,7 @@ var Climatology = (function() {
 		VectorDataset.rescale(velocity, velocity, 15.65); //15.65 m/s is the fastest average wind speed on Earth, recorded at Mt. Washington
 		return velocity;
 	}
-	Climatology.guess_varying_surface_air_pressure = function(temperature, lat, material_heat_capacity, atmospheric_height, result, scratch) {
+	Climatology.guess_surface_air_pressures = function(temperature, lat, material_heat_capacity, atmospheric_height, result, scratch) {
 		result = result || Float32Raster(lat.grid);
 		scratch = scratch || Float32Raster(lat.grid);
 
@@ -52,7 +52,7 @@ var Climatology = (function() {
 
 		return result;
 	}
-	Climatology.guess_varying_precip = function(lat, result) {
+	Climatology.guess_precipitation_fluxes = function(lat, result) {
 	    result = result || Float32Raster(lat.grid);
 		//Mean annual precipitation over land, mm yr-1
 		//credits for original model go to /u/astrographer, 
@@ -74,7 +74,7 @@ var Climatology = (function() {
 		}
 		return result;
 	}
-	Climatology.get_varying_albedo = function(
+	Climatology.get_albedos = function(
 		ocean_fraction,
 		ice_fraction, 
 		plant_fraction,
@@ -101,7 +101,7 @@ var Climatology = (function() {
 		
 		return result;
 	}
-	Climatology.get_varying_heat_capacity = function(
+	Climatology.get_heat_capacities = function(
 		ocean_fraction,
 		material_heat_capacity,
 		result) {

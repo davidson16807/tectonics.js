@@ -11,7 +11,7 @@ var coarse_grid = new Grid(
 	new THREE.IcosahedronGeometry(1, 4),
 );
 // gets surface pressure of the asthenosphere by smoothing a field representing buoyancy
-FluidMechanics.get_varying_fluid_pressure = function(buoyancy, pressure, scratch) {
+FluidMechanics.get_fluid_pressures = function(buoyancy, pressure, scratch) {
 	var fine_grid = buoyancy.grid;
 	var fine_buoyancy = buoyancy;
 	var fine_pressure = pressure;
@@ -57,13 +57,13 @@ FluidMechanics.get_varying_fluid_pressure = function(buoyancy, pressure, scratch
 }
 
 // gets surface velocity of the asthenosphere as the gradient of pressure
-FluidMechanics.get_varying_fluid_velocity = function(pressure, velocity) {
+FluidMechanics.get_fluid_velocities = function(pressure, velocity) {
 	velocity = velocity || VectorRaster(pressure.grid);
 	ScalarField.gradient(pressure, velocity);
 	return velocity;
 }
 // gets displacement using an isostatic model
-FluidMechanics.get_varying_isostatic_displacement = function(thickness, density, material_density, displacement) {
+FluidMechanics.get_isostatic_displacements = function(thickness, density, material_density, displacement) {
  	var thickness_i, rootDepth;
  	var inverse_mantle_density = 1 / material_density.mantle;
  	for(var i=0, li = displacement.length; i<li; i++){

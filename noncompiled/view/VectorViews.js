@@ -8,7 +8,7 @@ vectorViews.asthenosphere_velocity = new VectorWorldView( {
 			var pressure = scratch1;
 			// flood_fill does double duty for performance reasons
 			var scratch2 = flood_fill;
-			var field = FluidMechanics.get_varying_fluid_pressure(world.lithosphere.density.value(), pressure, scratch2);
+			var field = FluidMechanics.get_fluid_pressures(world.lithosphere.density.value(), pressure, scratch2);
 			var gradient = ScalarField.gradient(field);
 			return gradient;
 		} 

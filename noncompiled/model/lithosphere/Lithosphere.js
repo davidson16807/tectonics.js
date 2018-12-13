@@ -33,7 +33,7 @@ function Lithosphere(grid, parameters) {
 	var self = this; 
 	this.displacement = new Memo(  
 		Float32Raster(grid),  
-		result => FluidMechanics.get_varying_isostatic_displacement(self.thickness.value(), self.density.value(), material_density, result) 
+		result => FluidMechanics.get_isostatic_displacements(self.thickness.value(), self.density.value(), material_density, result) 
 	); 
 	// the thickness of the crust in km
 	this.thickness = new Memo(  
@@ -394,8 +394,8 @@ function Lithosphere(grid, parameters) {
 
 	this.resetPlates = function() {
 		// get plate masks from image segmentation of asthenosphere velocity
-		var pressure = FluidMechanics.get_varying_fluid_pressure(this.buoyancy.value());
-		FluidMechanics.get_varying_fluid_velocity(pressure, this.asthenosphere_velocity);
+		var pressure = FluidMechanics.get_fluid_pressures(this.buoyancy.value());
+		FluidMechanics.get_fluid_velocities(pressure, this.asthenosphere_velocity);
 		var angular_velocity = VectorField.cross_vector_field(this.asthenosphere_velocity, grid.pos);
 		var top_plate_map = Tectonophysics.guess_plate_map(angular_velocity, 7, 200);
 		var plate_ids = Uint8Dataset.unique(top_plate_map);

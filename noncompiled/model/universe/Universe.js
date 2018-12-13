@@ -135,7 +135,7 @@ function Universe(parameters) {
 		var star_matrix = body_matrices[star.name];
 		var star_pos = Matrix4x4.get_translation(star_matrix);
 		// calculate insolation effects of a single star
-		Optics.get_varying_incident_radiation(
+		Optics.get_incident_radiation_fluxes(
 			surface_normal,
 			star_pos, 
 			star.luminosity,

@@ -5,13 +5,13 @@
 
 var Hydrology = {};
 
-Hydrology.get_varying_surface_height = function(displacement, sealevel, result) {
+Hydrology.get_surface_heights = function(displacement, sealevel, result) {
 	ScalarField.sub_scalar(displacement, sealevel, result);
 	ScalarField.max_scalar(result, 0, result);
 	return result;
 }
 
-Hydrology.get_varying_ocean_depth = function(displacement, sealevel, result) {
+Hydrology.get_ocean_depths = function(displacement, sealevel, result) {
 	ScalarField.sub_scalar(displacement, sealevel, result);
 	ScalarField.mult_scalar(result, -1, result);
 	ScalarField.max_scalar(result, 0, result);
@@ -19,7 +19,7 @@ Hydrology.get_varying_ocean_depth = function(displacement, sealevel, result) {
 }
 
 // solve for sealevel using iterative numerical approximation
-Hydrology.solve_uniform_sealevel = function(displacement, total_ocean_mass, ocean_density, scratch, iterations) {
+Hydrology.solve_sealevel = function(displacement, total_ocean_mass, ocean_density, scratch, iterations) {
 	iterations = iterations || 10;
 	scratch = scratch || Float32Raster(displacement.grid);
 
@@ -32,7 +32,7 @@ Hydrology.solve_uniform_sealevel = function(displacement, total_ocean_mass, ocea
 	// the value we get for total_ocean_mass when we plug in our guess for sealevel
 	var average_ocean_depth_guess = 0;
 
-	var get_ocean_depth = Hydrology.get_varying_ocean_depth;
+	var get_ocean_depth = Hydrology.get_ocean_depths;
 	var average = Float32Dataset.average;
 
 	var ocean_depth_guess = scratch;

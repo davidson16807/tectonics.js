@@ -29,7 +29,7 @@ function Atmosphere(grid, parameters) {
 
 			var infrared_optical_depth = 4/3;
 			// TODO: improve heat flow by modeling it as a vector field
-			var heat_flow_uniform = Thermodynamics.solve_uniform_entropic_heat_flow(
+			var heat_flow_uniform = Thermodynamics.solve_entropic_heat_flow(
 				max_absorbed_radiation, 
 				min_absorbed_radiation, 
 				1/this.greenhouse_gas_factor,
@@ -37,14 +37,14 @@ function Atmosphere(grid, parameters) {
 			);
 
 			var incoming_heat = result; // double duty for performance
-			Thermodynamics.guess_varying_entropic_heat_flow(
+			Thermodynamics.guess_entropic_heat_flows(
 				absorbed_radiation, 
 				heat_flow_uniform, 
 				incoming_heat
 			);
 
 			ScalarField.mult_scalar(incoming_heat, this.greenhouse_gas_factor, incoming_heat);
-			Thermodynamics.get_varying_equilibrium_temperature(incoming_heat, result);
+			Thermodynamics.get_equilibrium_temperatures(incoming_heat, result);
 			return result;
 		}
 	);
@@ -67,8 +67,8 @@ function Atmosphere(grid, parameters) {
 
 	this.get_varying_albedo = new Memo(
 		Float32Raster(grid),  
-		// result => Climatology.get_varying_albedo(ocean_coverage.value(), ice_coverage.value(), plant_coverage.value(), material_reflectivity, result),
-		// result => Climatology.get_varying_albedo(ocean_coverage.value(), undefined, plant_coverage.value(), material_reflectivity, result),
+		// result => Climatology.get_albedos(ocean_coverage.value(), ice_coverage.value(), plant_coverage.value(), material_reflectivity, result),
+		// result => Climatology.get_albedos(ocean_coverage.value(), undefined, plant_coverage.value(), material_reflectivity, result),
 		result => { Float32Raster.fill(result, 0.2); return result; },
 		false // assume everything gets absorbed initially to prevent circular dependencies
 	);
@@ -86,11 +86,11 @@ function Atmosphere(grid, parameters) {
 	); 
 	this.surface_pressure = new Memo(
 		Float32Raster(grid),  
-		result => Climatology.guess_varying_surface_air_pressure( this.surface_temp, lat.value(), material_heat_capacity, 100e3, result)
+		result => Climatology.guess_surface_air_pressures( this.surface_temp, lat.value(), material_heat_capacity, 100e3, result)
 	); 
 	this.surface_wind_velocity = new Memo(
 		VectorRaster(grid),  
-		result => Climatology.guess_varying_surface_air_velocity(
+		result => Climatology.guess_surface_air_velocities(
 			grid.pos, 
 			_this.surface_pressure.value(), 
 			angular_speed, 
@@ -99,7 +99,7 @@ function Atmosphere(grid, parameters) {
 	); 
 	this.precipitation = new Memo(
 		Float32Raster(grid),  
-		result => Climatology.guess_varying_precip(lat.value(), result)
+		result => Climatology.guess_precipitation_fluxes(lat.value(), result)
 	);
 
 	// private variables
@@ -166,20 +166,20 @@ function Atmosphere(grid, parameters) {
 			var mean_absorbed_radiation = Float32Dataset.average( this.absorbed_radiation );
 
 			// TODO: improve heat flow by modeling it as a vector field
-			var heat_flow_uniform = Thermodynamics.solve_uniform_entropic_heat_flow(
+			var heat_flow_uniform = Thermodynamics.solve_entropic_heat_flow(
 				max_absorbed_radiation, 
 				min_absorbed_radiation, 
 				1/this.greenhouse_gas_factor,
 				10
 			);
-			Thermodynamics.guess_varying_entropic_heat_flow(
+			Thermodynamics.guess_entropic_heat_flows(
 				this.absorbed_radiation, 
 				heat_flow_uniform, 
 				this.incoming_heat
 			);
-			Thermodynamics.get_varying_black_body_radiation(this.sealevel_temp, this.outgoing_heat);
+			Thermodynamics.get_black_body_emissive_radiation_fluxes(this.sealevel_temp, this.outgoing_heat);
 			ScalarField.div_scalar 		( this.outgoing_heat, this.greenhouse_gas_factor, 	this.outgoing_heat);
-			Climatology.get_varying_heat_capacity(ocean_coverage.value(), material_heat_capacity, this.get_varying_heat_capacity);
+			Climatology.get_heat_capacities(ocean_coverage.value(), material_heat_capacity, this.get_varying_heat_capacity);
 			ScalarField.sub_field 		( this.incoming_heat, this.outgoing_heat, 			this.net_heat_gain );
 			ScalarField.div_field 		( this.net_heat_gain, this.get_varying_heat_capacity, 			this.temperature_delta_rate );
 			ScalarField.mult_scalar 	( this.temperature_delta_rate, timestep, 			this.temperature_delta );

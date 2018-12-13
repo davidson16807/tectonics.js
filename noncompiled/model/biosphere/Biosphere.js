@@ -20,12 +20,12 @@ function Biosphere(grid, parameters) {
 	this.npp = new Memo(
 		Float32Raster(grid),  
 		result => {
-			return PlantBiology.net_primary_productivity(long_term_surface_temp.value(), precipitation.value(), npp_max, result)
+			return PlantBiology.net_primary_productivities(long_term_surface_temp.value(), precipitation.value(), npp_max, result)
 		}
 	); 
 	this.lai = new Memo(
 		Float32Raster(grid),  
-		result => PlantBiology.leaf_area_index(self.npp.value(), npp_max, lai_max, result, growth_factor)
+		result => PlantBiology.leaf_area_indices(self.npp.value(), npp_max, lai_max, result, growth_factor)
 	); 
 	this.plant_coverage = new Memo(
 		Float32Raster(grid),  

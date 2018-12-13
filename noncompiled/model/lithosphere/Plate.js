@@ -28,7 +28,7 @@ function Plate(grid, parameters)
 	// It is not called "elevation" because we want to emphasize that it is not relative to sea level
 	this.displacement = new Memo(
 		Float32Raster(grid),  
-		result => FluidMechanics.get_varying_isostatic_displacement(self.thickness.value(), self.density.value(), material_density, result) 
+		result => FluidMechanics.get_isostatic_displacements(self.thickness.value(), self.density.value(), material_density, result) 
 	); 
 	// the thickness of the crust in km
 	this.thickness = new Memo(  
