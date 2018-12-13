@@ -4,7 +4,7 @@ function Atmosphere(grid, parameters) {
 	// private variables
 	var grid = grid || stop('missing parameter: "grid"');
 	this.lapse_rate = parameters['lapse_rate'] || 3.5 / 1e3; // degrees Kelvin per meter
-	this.greenhouse_gas_factor = parameters['greenhouse_gas_factor'] || 1.3;
+	this.greenhouse_gas_factor = parameters['greenhouse_gas_factor'] || 1.2;
 
 	this.getParameters = function() {
 		return { 
