@@ -5,9 +5,9 @@ module.exports = function (config) {
 		browsers: [ 'ChromeHeadless' ],
 		frameworks: [ 'qunit' ],
 		files: [
-			'postcompiled/utils/Rasters.js',
+			'postcompiled/Rasters.js',
 			'tests/QUnitx.approx.js',
-			'tests/utils/Rasters.test.js'
+			'tests/Rasters.js'
 		],
 		autoWatch: false,
 		singleRun: true,
