@@ -142,7 +142,7 @@
 	var controls = new THREE.OrbitControls( view.camera, $("#container").get(0) );
 	var grid = new Grid(new THREE.IcosahedronGeometry(1, 5), { voronoi_generator: VoronoiSphere.FromPos });
 	var random = new Random();
-	var demo = EliasScalarRasterGenerator.generate(grid, random);
+	var demo = SphericalGeometry.get_random_surface_field(grid, random);
 	$('.controls').show();
 	$('#container').append(view.getDomElement());
 

@@ -35,7 +35,6 @@
 	<script src="libraries/base64-arraybuffer.js"></script>
 	<script src="postcompiled/view/Shaders.js"></script>
 	<script src="postcompiled/utils/Rasters.js"></script>
-	<script src="noncompiled/utils/Float32SphereRaster.js"></script>
 	<script src="noncompiled/utils/Units.js"></script>
 	<script src="noncompiled/Logging.js"></script>
 	<script src="noncompiled/academics/SphericalGeometry.js"></script>
@@ -64,7 +63,6 @@
 	<script src="noncompiled/model/biosphere/Biosphere.js"></script>
 	<script src="noncompiled/model/World.js"></script>
 	<script src="noncompiled/model/Simulation.js"></script> 
-	<script src="noncompiled/generators/EliasScalarRasterGenerator.js"></script>
 	<script src="noncompiled/generators/CrustGenerator.js"></script>
 	<script src="noncompiled/generators/NameGenerator.js"></script>
 	<script src="noncompiled/generators/NameCorpii.js"></script>
@@ -476,7 +474,7 @@
 		});
 		var focus = universe.body_id_to_node_map[focus_name].body;
 		CrustGenerator.generate(
-			EliasScalarRasterGenerator.generate(focus.grid, sim.random), 
+			SphericalGeometry.get_random_surface_field(focus.grid, sim.random), 
 			CrustGenerator.modern_earth_hypsography, 
 			CrustGenerator.modern_earth_control_points, 
 			focus.lithosphere.total_crust,

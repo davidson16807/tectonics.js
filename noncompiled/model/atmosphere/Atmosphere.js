@@ -82,7 +82,7 @@ function Atmosphere(grid, parameters) {
 	);
 	var lat = new Memo(
 		Float32Raster(grid),  
-		result => Float32SphereRaster.latitude(grid.pos.y, result)
+		result => SphericalGeometry.get_latitudes(grid.pos.y, result)
 	); 
 	this.surface_pressure = new Memo(
 		Float32Raster(grid),  

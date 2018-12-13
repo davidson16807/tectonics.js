@@ -16,7 +16,7 @@ function Star(parameters) {
 
 	this.time_on_main_sequence = solar_masses/solar_luminosities * 10e9 * Units.YEAR;
 
-	var surface_area = SphericalGeometry.surface_area(this.radius);
+	var surface_area = SphericalGeometry.get_surface_area(this.radius);
 	var intensity = this.luminosity / surface_area;
 	this.temperature = Math.pow(intensity / Thermodynamics.STEPHAN_BOLTZMANN_CONSTANT, 1/4);
 
