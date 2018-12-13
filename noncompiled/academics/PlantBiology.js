@@ -1,4 +1,9 @@
-var BiosphereModeling = {};
+// PlantBiology is a namespace isolating all business logic relating to... er... plant biology
+// This was written so I could decouple academic concerns (like how to model something mathematically) from architectural concerns (like how a model is represented through classes)
+// All functions within the namespace are static and have no side effects
+// The only data structures allowed are rasters and grid objects
+
+var PlantBiology = {};
 
 // Net Primary Productivity (NPP)
 // This is the net amount of carbon assimilated by plants
@@ -9,7 +14,7 @@ var BiosphereModeling = {};
 //     * npp based on precip in perfect conditions 
 //     * npp based on temp in perfect conditions 
 // The lower of the two estimates is the right one. This is the law of the minimum.
-BiosphereModeling.net_primary_productivity = function(temp, precip, npp_max, result) {
+PlantBiology.net_primary_productivity = function(temp, precip, npp_max, result) {
 
 	result = result || Float32Raster(temp.grid);
 	var npp = result;
@@ -48,7 +53,7 @@ BiosphereModeling.net_primary_productivity = function(temp, precip, npp_max, res
 //  so if npp=npp_max, then lai=lai_max. This can be modeled as:
 //     npp/npp_max = (1 - exp(-c lai)) /
 //                   (1 - exp(-c lai_max))
-BiosphereModeling.leaf_area_index = function(npp, npp_max, lai_max, result, growth_factor) {
+PlantBiology.leaf_area_index = function(npp, npp_max, lai_max, result, growth_factor) {
 	result = result || Float32Raster(npp.grid);
 	
 	var lai = result;

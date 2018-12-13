@@ -29,7 +29,7 @@ CsvExporter.world = function (world, options) {
 	var elevation = world.hydrosphere.elevation.value();
 	var top_plate_map = world.lithosphere.top_plate_map;
 	var surface_temp = world.atmosphere.surface_temp;
-	var precip = world.atmosphere.precip.value();
+	var precipitation = world.atmosphere.precipitation.value();
 
 	for (var i = 0, li = grid.vertices.length; i < li; i++) {
 		csv_text += [
@@ -37,8 +37,8 @@ CsvExporter.world = function (world, options) {
 			longitude[i] * 180/Math.PI,
 			elevation[i],
 			top_plate_map[i],
-			surface_temp[i] - AtmosphereModeling.WATER_FREEZING_POINT_STP,
-			precip[i],
+			surface_temp[i] - Units.STANDARD_TEMPERATURE,
+			precipitation[i],
 		].join() + '\n'
 	}
 

@@ -1,12 +1,17 @@
-var HydrosphereModeling = {};
+// Hydrology is a namespace isolating all business logic relating to the behavior of liquids on a planet
+// This was written so I could decouple academic concerns (like how to model something mathematically) from architectural concerns (like how a model is represented through classes)
+// All functions within the namespace are static and have no side effects
+// The only data structures allowed are rasters and grid objects
 
-HydrosphereModeling.get_surface_height = function(displacement, sealevel, result) {
+var Hydrology = {};
+
+Hydrology.get_varying_surface_height = function(displacement, sealevel, result) {
 	ScalarField.sub_scalar(displacement, sealevel, result);
 	ScalarField.max_scalar(result, 0, result);
 	return result;
 }
 
-HydrosphereModeling.get_ocean_depth = function(displacement, sealevel, result) {
+Hydrology.get_varying_ocean_depth = function(displacement, sealevel, result) {
 	ScalarField.sub_scalar(displacement, sealevel, result);
 	ScalarField.mult_scalar(result, -1, result);
 	ScalarField.max_scalar(result, 0, result);
@@ -14,7 +19,7 @@ HydrosphereModeling.get_ocean_depth = function(displacement, sealevel, result) {
 }
 
 // solve for sealevel using iterative numerical approximation
-HydrosphereModeling.solve_sealevel = function(displacement, total_ocean_mass, ocean_density, scratch, iterations) {
+Hydrology.solve_uniform_sealevel = function(displacement, total_ocean_mass, ocean_density, scratch, iterations) {
 	iterations = iterations || 10;
 	scratch = scratch || Float32Raster(displacement.grid);
 
@@ -27,7 +32,7 @@ HydrosphereModeling.solve_sealevel = function(displacement, total_ocean_mass, oc
 	// the value we get for total_ocean_mass when we plug in our guess for sealevel
 	var average_ocean_depth_guess = 0;
 
-	var get_ocean_depth = HydrosphereModeling.get_ocean_depth;
+	var get_ocean_depth = Hydrology.get_varying_ocean_depth;
 	var average = Float32Dataset.average;
 
 	var ocean_depth_guess = scratch;

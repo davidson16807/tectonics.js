@@ -115,7 +115,7 @@ function World(parameters) {
 		});
 		this.biosphere.setDependencies({
 			'long_term_surface_temp'	: this.atmosphere.long_term_surface_temp,
-			'precip'		: this.atmosphere.precip,
+			'precipitation'		: this.atmosphere.precipitation,
 		});
 
 		// WARNING: order matters! (sorry, I'm working on it!)

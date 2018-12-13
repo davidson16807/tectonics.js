@@ -1,3 +1,9 @@
+// SphericalGeometry is a namespace isolating all business logic relating to geometry on the surface of spheres
+// It assumes no knowledge of physics
+// This was written so I could decouple academic concerns (like how to model something mathematically) from architectural concerns (like how a model is represented through classes)
+// All functions within the namespace are static and have no side effects
+// The only data structures allowed are rasters and grid objects
+
 SphericalGeometry = {}
 
 SphericalGeometry.surface_area = function(radius) {

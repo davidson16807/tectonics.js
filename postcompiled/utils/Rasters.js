@@ -4784,10 +4784,10 @@ var VoronoiSphere = (function() {
  }
  VoronoiSphere.prototype.getNearestIds = function(pos_field, result) {
   result = result || new Uint16Array(pos_field.x.length);
-  cell_width = this.cell_width;
-  dimension_x = this.dimension_x;
-  dimension_y = this.dimension_y;
-  cells = this.cells;
+  var cell_width = this.cell_width;
+  var dimension_x = this.dimension_x;
+  var dimension_y = this.dimension_y;
+  var cells = this.cells;
   var side_x = OCTAHEDRON_SIDE_X[0];
   var side_y = OCTAHEDRON_SIDE_Y[0];
   var projection_x = 0;

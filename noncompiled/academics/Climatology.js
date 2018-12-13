@@ -1,5 +1,9 @@
+// Climatology is a namespace isolating all business logic relating to climate
+// This was written so I could decouple academic concerns (like how to model something mathematically) from architectural concerns (like how a model is represented through classes)
+// All functions within the namespace are static and have no side effects
+// The only data structures allowed are rasters and grid objects
 
-var AtmosphereModeling = (function() {
+var Climatology = (function() {
 
 	var surface_air_pressure_temperature_effect = function(temperature, material_heat_capacity, atmospheric_height, result) {
 		// NOTE: "volumetric_heat_capacity" is the energy required to heat a volume of air by 1 Kelvin
@@ -23,8 +27,8 @@ var AtmosphereModeling = (function() {
 		return effect;
 	}
 
-	AtmosphereModeling = {};
-	AtmosphereModeling.surface_air_velocity = function(pos, pressure, angular_speed, velocity) {
+	Climatology = {};
+	Climatology.guess_varying_surface_air_velocity = function(pos, pressure, angular_speed, velocity) {
 		velocity = velocity || VectorRaster(pos.grid);
 		ScalarField.gradient(pressure, velocity);
 		EARTH_RADIUS = 6.3e6; // meters
@@ -34,7 +38,7 @@ var AtmosphereModeling = (function() {
 		VectorDataset.rescale(velocity, velocity, 15.65); //15.65 m/s is the fastest average wind speed on Earth, recorded at Mt. Washington
 		return velocity;
 	}
-	AtmosphereModeling.surface_air_pressure = function(temperature, lat, material_heat_capacity, atmospheric_height, result, scratch) {
+	Climatology.guess_varying_surface_air_pressure = function(temperature, lat, material_heat_capacity, atmospheric_height, result, scratch) {
 		result = result || Float32Raster(lat.grid);
 		scratch = scratch || Float32Raster(lat.grid);
 
@@ -48,21 +52,7 @@ var AtmosphereModeling = (function() {
 
 		return result;
 	}
-	AtmosphereModeling.surface_air_temp = function(net_energy, infrared_optical_depth, result) {
-		infrared_optical_depth = infrared_optical_depth || Float32Raster(net_energy.grid);
-		result = result || Float32Raster(net_energy.grid);
-
-		var τ = infrared_optical_depth;
-		var σ = Thermodynamics.STEPHAN_BOLTZMANN_CONSTANT;
-		var pow = Math.pow;
-
-		for (var i = 0; i < net_energy.length; i++) {
-			result[i] = pow( (1+0.75*τ)*net_energy[i]/σ, 1/4 );
-		}
-
-		return result;
-	}
-	AtmosphereModeling.precip = function(lat, result) {
+	Climatology.guess_varying_precip = function(lat, result) {
 	    result = result || Float32Raster(lat.grid);
 		//Mean annual precipitation over land, mm yr-1
 		//credits for original model go to /u/astrographer, 
@@ -84,7 +74,7 @@ var AtmosphereModeling = (function() {
 		}
 		return result;
 	}
-	AtmosphereModeling.albedo = function(
+	Climatology.get_varying_albedo = function(
 		ocean_fraction,
 		ice_fraction, 
 		plant_fraction,
@@ -111,7 +101,7 @@ var AtmosphereModeling = (function() {
 		
 		return result;
 	}
-	AtmosphereModeling.heat_capacity = function(
+	Climatology.get_varying_heat_capacity = function(
 		ocean_fraction,
 		material_heat_capacity,
 		result) {
@@ -131,76 +121,5 @@ var AtmosphereModeling = (function() {
 
 
 
-	AtmosphereModeling.surface_air_heat = function(absorbed_radiation, heat_flow, result) {
-		result = result || Float32Raster(net_energy.grid);
-
-		var heat_flow_field = result;
-		Float32Dataset.normalize(absorbed_radiation, result, -heat_flow, heat_flow);
-		ScalarTransport.fix_conserved_quantity_delta(result, 1e-5);
-		ScalarField.sub_field(absorbed_radiation, result, result);
-
-		return result;
-	}
-	AtmosphereModeling.STEPHAN_BOLTZMANN_CONSTANT = 5.670373e-8; // W/m^2 per K^4
-	AtmosphereModeling.WATER_FREEZING_POINT_STP = 273.15; // Kelvin/Celcius
-	// TODO: generalize to scalar fields and arbitrary temperature cycles
-	AtmosphereModeling.get_scalar_equilibrium_temperature = function(E, τ) {
-		// var τ = infrared_optical_depth;
-		var σ = AtmosphereModeling.STEPHAN_BOLTZMANN_CONSTANT;
-		return Math.pow( (1+0.75*τ)*E/σ, 1/4 );
-	}
-	AtmosphereModeling.guess_heat_flow_uniform = function(insolation_hot, insolation_cold, insolation_average, infrared_optical_depth) { 
-		var Ih = insolation_hot; 
-		var Ic = insolation_cold; 
-		var τ = infrared_optical_depth; 
-		var σ = Thermodynamics.STEPHAN_BOLTZMANN_CONSTANT; 
-		var Tguess = Thermodynamics.black_body_equilibrium_temperature_uniform(insolation_average); 
-		var Tmax = Thermodynamics.black_body_equilibrium_temperature_uniform(insolation_hot);
-		var Tmin = Thermodynamics.black_body_equilibrium_temperature_uniform(insolation_cold);
-		var B = 4*σ * Tguess*Tguess*Tguess / (1+0.75*τ); // estimated change in emission with respect to temperature 
-
-		var ΔT = Tmax-Tmin; // temperature differential 
-		var D = B/4; // "meridional heat diffusion" discussed by North et al 1989 
-		var F = 2*D*ΔT; // F, starts with initial estimate described by Lorenz 2001 
-		return F; 
-	} 
-  	// calculates entropic heat flow within a 2 box temperature model  
-	// calculates heat flow within a 2 box temperature model 
-	// using the Max Entropy Production Principle and Gradient Descent
-	// for more information, see Lorenz et al. 2001: 
-	// "Titan, Mars and Earth : Entropy Production by Latitudinal Heat Transport"
-	AtmosphereModeling.solve_heat_flow_uniform = function(insolation_hot, insolation_cold, infrared_optical_depth, iterations) {
-		iterations = iterations || 10;
-
-		var Ih = insolation_hot;
-		var Ic = insolation_cold;
-		var τ = infrared_optical_depth;
-		var σ = Thermodynamics.STEPHAN_BOLTZMANN_CONSTANT;
-		// temperature given net energy flux
-
-		function T(E) {
-			return Math.pow( (1+0.75*τ)*E/σ, 1/4 );
-		}
-		// entropy production given heat flux
-		function N(F, Ih, Ic) {
-			return 2*F/T(Ic+F) - 2*F/T(Ih-2*F);
-		}
-
- 
-	    // heat flow 
-	    var F = (Ih-Ic)/4; 
-	    var dF = F/iterations; // "dF" is a measure for how much F changes with each iteration 
-	    // reduce step_size by this fraction for each iteration 
-	    var annealing_factor = 0.8; 
-		// amount to change F with each iteration
-		for (var i = 0; i < iterations; i++) {
-			// TODO: relax assumption that world must have earth-like rotation (e.g. tidally locked)
-			dN = ( N(F-dF, Ih, Ic) - N(F+dF, Ih, Ic) );
-			F -= dF * Math.sign(dN);
-			dF *= annealing_factor;
-		}
-		// console.log(T(Ih-2*F)-273.15, T(Ic+F)-273.15)
-		return F;
-	}
-	return AtmosphereModeling;
+	return Climatology;
 })();

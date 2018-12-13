@@ -20,12 +20,12 @@ function Biosphere(grid, parameters) {
 	this.npp = new Memo(
 		Float32Raster(grid),  
 		result => {
-			return BiosphereModeling.net_primary_productivity(long_term_surface_temp.value(), precip.value(), npp_max, result)
+			return PlantBiology.net_primary_productivity(long_term_surface_temp.value(), precipitation.value(), npp_max, result)
 		}
 	); 
 	this.lai = new Memo(
 		Float32Raster(grid),  
-		result => BiosphereModeling.leaf_area_index(self.npp.value(), npp_max, lai_max, result, growth_factor)
+		result => PlantBiology.leaf_area_index(self.npp.value(), npp_max, lai_max, result, growth_factor)
 	); 
 	this.plant_coverage = new Memo(
 		Float32Raster(grid),  
@@ -38,7 +38,7 @@ function Biosphere(grid, parameters) {
 	var plant_coverage_refresh = Float32Raster(grid);
 
 	var long_term_surface_temp = undefined;
-	var precip = undefined;
+	var precipitation = undefined;
 
 	function calculate_deltas(world, timestep) { }
 
@@ -46,12 +46,12 @@ function Biosphere(grid, parameters) {
 
 	function assert_dependencies() {
 		if (long_term_surface_temp === void 0)	{ throw '"long_term_surface_temp" not provided'; }
-		if (precip === void 0)	 		{ throw '"precip" not provided'; }
+		if (precipitation === void 0)	 		{ throw '"precipitation" not provided'; }
 	}
 
 	this.setDependencies = function(dependencies) {
 		long_term_surface_temp 	= dependencies['long_term_surface_temp'] 	!== void 0? 	dependencies['long_term_surface_temp'] 	: long_term_surface_temp;
-		precip 			= dependencies['precip'] 		!== void 0? 	dependencies['precip'] 			: precip;
+		precipitation 			= dependencies['precipitation'] 		!== void 0? 	dependencies['precipitation'] 			: precipitation;
 	}
 
 	this.initialize = function() {

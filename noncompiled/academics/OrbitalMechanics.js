@@ -1,4 +1,5 @@
 // OrbitalMechanics is a namespace isolating all business logic relating to orbital mechanics
+// It assumes no knowledge beyond classical physics
 // This was written so I could decouple academic concerns (like how to model something mathematically) from architectural concerns (like how a model is represented through classes)
 // All functions within the namespace are static and have no side effects
 // The only data structures allowed are rasters and grid objects

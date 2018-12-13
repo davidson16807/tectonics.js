@@ -27,22 +27,24 @@ function Atmosphere(grid, parameters) {
 			var min_absorbed_radiation 	= Float32Dataset.min( absorbed_radiation );
 			var mean_absorbed_radiation	= Float32Dataset.average( absorbed_radiation );
 
+			var infrared_optical_depth = 4/3;
 			// TODO: improve heat flow by modeling it as a vector field
-			var heat_flow_uniform = AtmosphereModeling.solve_heat_flow_uniform(
+			var heat_flow_uniform = Thermodynamics.solve_uniform_entropic_heat_flow(
 				max_absorbed_radiation, 
 				min_absorbed_radiation, 
-				4/3,
+				1/this.greenhouse_gas_factor,
 				10
 			);
 
 			var incoming_heat = result; // double duty for performance
-			AtmosphereModeling.surface_air_heat(
+			Thermodynamics.guess_varying_entropic_heat_flow(
 				absorbed_radiation, 
 				heat_flow_uniform, 
 				incoming_heat
 			);
 
-			Thermodynamics.black_body_equilibrium_temperature_field(incoming_heat, result, this.greenhouse_gas_factor);
+			ScalarField.mult_scalar(incoming_heat, this.greenhouse_gas_factor, incoming_heat);
+			Thermodynamics.get_varying_equilibrium_temperature(incoming_heat, result);
 			return result;
 		}
 	);
@@ -53,7 +55,7 @@ function Atmosphere(grid, parameters) {
 
 	this.average_insolation = Float32Raster(grid);
 	this.absorbed_radiation = Float32Raster(grid);
-	this.heat_capacity = Float32Raster(grid);
+	this.get_varying_heat_capacity = Float32Raster(grid);
 	this.incoming_heat = Float32Raster(grid);
 	this.outgoing_heat = Float32Raster(grid);
 	this.net_heat_gain = Float32Raster(grid);
@@ -63,17 +65,17 @@ function Atmosphere(grid, parameters) {
 	this.surface_temp = Float32Raster(grid);
 
 
-	this.albedo = new Memo(
+	this.get_varying_albedo = new Memo(
 		Float32Raster(grid),  
-		// result => AtmosphereModeling.albedo(ocean_coverage.value(), ice_coverage.value(), plant_coverage.value(), material_reflectivity, result),
-		// result => AtmosphereModeling.albedo(ocean_coverage.value(), undefined, plant_coverage.value(), material_reflectivity, result),
+		// result => Climatology.get_varying_albedo(ocean_coverage.value(), ice_coverage.value(), plant_coverage.value(), material_reflectivity, result),
+		// result => Climatology.get_varying_albedo(ocean_coverage.value(), undefined, plant_coverage.value(), material_reflectivity, result),
 		result => { Float32Raster.fill(result, 0.2); return result; },
 		false // assume everything gets absorbed initially to prevent circular dependencies
 	);
 	this.absorption = new Memo(
 		Float32Raster(grid),  
 		result => { 
-			ScalarField.mult_scalar	( this.albedo.value(), -1, result );
+			ScalarField.mult_scalar	( this.get_varying_albedo.value(), -1, result );
 			ScalarField.add_scalar 	( result, 1, result );
 			return result;
 		},
@@ -84,20 +86,20 @@ function Atmosphere(grid, parameters) {
 	); 
 	this.surface_pressure = new Memo(
 		Float32Raster(grid),  
-		result => AtmosphereModeling.surface_air_pressure( this.surface_temp, lat.value(), material_heat_capacity, 100e3, result)
+		result => Climatology.guess_varying_surface_air_pressure( this.surface_temp, lat.value(), material_heat_capacity, 100e3, result)
 	); 
 	this.surface_wind_velocity = new Memo(
 		VectorRaster(grid),  
-		result => AtmosphereModeling.surface_air_velocity(
+		result => Climatology.guess_varying_surface_air_velocity(
 			grid.pos, 
 			_this.surface_pressure.value(), 
 			angular_speed, 
 			result
 		)
 	); 
-	this.precip = new Memo(
+	this.precipitation = new Memo(
 		Float32Raster(grid),  
-		result => AtmosphereModeling.precip(lat.value(), result)
+		result => Climatology.guess_varying_precip(lat.value(), result)
 	);
 
 	// private variables
@@ -137,10 +139,10 @@ function Atmosphere(grid, parameters) {
 	}
 
 	this.invalidate = function() {
-		this.albedo.invalidate();
+		this.get_varying_albedo.invalidate();
 		this.surface_pressure .invalidate();
 		this.surface_wind_velocity.invalidate();
-		this.precip.invalidate();
+		this.precipitation.invalidate();
 	}
 
 	this.calcChanges = function(timestep) {
@@ -164,22 +166,22 @@ function Atmosphere(grid, parameters) {
 			var mean_absorbed_radiation = Float32Dataset.average( this.absorbed_radiation );
 
 			// TODO: improve heat flow by modeling it as a vector field
-			var heat_flow_uniform = AtmosphereModeling.solve_heat_flow_uniform(
+			var heat_flow_uniform = Thermodynamics.solve_uniform_entropic_heat_flow(
 				max_absorbed_radiation, 
 				min_absorbed_radiation, 
-				4/3,
+				1/this.greenhouse_gas_factor,
 				10
 			);
-			AtmosphereModeling.surface_air_heat(
+			Thermodynamics.guess_varying_entropic_heat_flow(
 				this.absorbed_radiation, 
 				heat_flow_uniform, 
 				this.incoming_heat
 			);
-			Thermodynamics.black_body_radiation_field(this.sealevel_temp, 							this.outgoing_heat);
+			Thermodynamics.get_varying_black_body_radiation(this.sealevel_temp, this.outgoing_heat);
 			ScalarField.div_scalar 		( this.outgoing_heat, this.greenhouse_gas_factor, 	this.outgoing_heat);
-			AtmosphereModeling.heat_capacity(ocean_coverage.value(), material_heat_capacity, this.heat_capacity);
+			Climatology.get_varying_heat_capacity(ocean_coverage.value(), material_heat_capacity, this.get_varying_heat_capacity);
 			ScalarField.sub_field 		( this.incoming_heat, this.outgoing_heat, 			this.net_heat_gain );
-			ScalarField.div_field 		( this.net_heat_gain, this.heat_capacity, 			this.temperature_delta_rate );
+			ScalarField.div_field 		( this.net_heat_gain, this.get_varying_heat_capacity, 			this.temperature_delta_rate );
 			ScalarField.mult_scalar 	( this.temperature_delta_rate, timestep, 			this.temperature_delta );
 			ScalarField.add_field 		( this.temperature_delta, this.sealevel_temp, 		this.sealevel_temp );
 		}

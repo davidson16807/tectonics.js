@@ -26,7 +26,7 @@ EliasScalarRasterGenerator.generate = function (grid, random) {
 	// to find the z axis relative to the continent center 
 	var zDotMultipliers = [];
 	for (var i = 0; i < 1000; i++) {
-		zDotMultipliers.push(Sphere.random_point_on_surface(random));
+		zDotMultipliers.push(SphericalGeometry.random_point_on_surface(random));
 	};
 
 	// Now, we iterate through the cells and find their "height rank".

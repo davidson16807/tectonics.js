@@ -1,4 +1,5 @@
-// Optics is a namespace isolating all business logic relating to the transfer of radiation
+// Optics is a namespace isolating all business logic relating to the propogation of light
+// It assumes no knowledge beyond classical physics
 // This was written so I could decouple academic concerns (like how to model something mathematically) from architectural concerns (like how a model is represented through classes)
 // All functions within the namespace are static and have no side effects
 // The only data structures allowed are rasters and grid objects
@@ -12,7 +13,7 @@ var Optics = (function() {
 	//  * the distance to the light (the "Inverse Square Law")
 	//  * the occlusion of light by the object itself
 	//  * the angle at which the light hits ("Lambert's Law")
-	Optics.incident_radiation_field = function(
+	Optics.get_varying_incident_radiation = function(
 			// This is a vector raster indicating the surface normal of an object
 			surface_normal,
 			// This is a vector indicating the light's offset from the object

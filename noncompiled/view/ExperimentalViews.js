@@ -16,7 +16,7 @@ experimentalViews.eliptic_ids = new ScalarWorldView(
 	      return Float32Raster.get_nearest_values(ids, pos); 
 	    } 
 	 ); 
-experimentalViews.albedo 	= new ScalarWorldView(
+experimentalViews.get_varying_albedo 	= new ScalarWorldView(
 	new HeatmapRasterView( { min: 0., max: 1.}),  
 	function (world) {
 
@@ -43,13 +43,13 @@ experimentalViews.albedo 	= new ScalarWorldView(
 		);
 
 		var lat = Float32SphereRaster.latitude(world.grid.pos.y);
-		var precip = AtmosphericModeling.precip(lat);
+		var precipitation = Climatology.guess_varying_precip(lat);
 		var npp_max = 1;
 		var lai_max = 10;
-		var npp = BiosphereModeling.net_primary_productivity(temp, precip, npp_max);
-		var lai = BiosphereModeling.leaf_area_index(npp, npp_max, lai_max);
+		var npp = PlantBiology.net_primary_productivity(temp, precipitation, npp_max);
+		var lai = PlantBiology.leaf_area_index(npp, npp_max, lai_max);
 		var plant_fraction = Float32RasterInterpolation.smoothstep(0, 2, lai);
-		albedo = AtmosphericModeling.albedo(land_fraction, ice_fraction, plant_fraction);
+		albedo = AtmosphericModeling.get_varying_albedo(land_fraction, ice_fraction, plant_fraction);
 		return albedo;
 	}
 );

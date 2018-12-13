@@ -28,7 +28,7 @@ function Plate(grid, parameters)
 	// It is not called "elevation" because we want to emphasize that it is not relative to sea level
 	this.displacement = new Memo(
 		Float32Raster(grid),  
-		result => LithosphereModeling.get_displacement(self.thickness.value(), self.density.value(), material_density, result) 
+		result => FluidMechanics.get_varying_isostatic_displacement(self.thickness.value(), self.density.value(), material_density, result) 
 	); 
 	// the thickness of the crust in km
 	this.thickness = new Memo(  
@@ -51,11 +51,11 @@ function Plate(grid, parameters)
 	); 
 	this.velocity = new Memo(  
 		VectorRaster(grid), 
-		result => LithosphereModeling.get_plate_velocity(self.mask, self.buoyancy.value(), material_viscosity, result)
+		result => Tectonophysics.guess_plate_velocity(self.mask, self.buoyancy.value(), material_viscosity, result)
 	); 
 	this.center_of_mass = new Memo(  
 		{ x:0, y:0, z:0 },
-		result => LithosphereModeling.get_plate_center_of_mass	(self.total_mass.value(), self.mask)
+		result => Tectonophysics.get_plate_center_of_mass	(self.total_mass.value(), self.mask)
 	); 
 
 
@@ -97,7 +97,7 @@ function Plate(grid, parameters)
 
 		var world = this.world;
 
-		var rotation_matrix = LithosphereModeling.get_plate_rotation_matrix(this.velocity.value(), this.center_of_mass.value(), megayears);
+		var rotation_matrix = Tectonophysics.get_plate_rotation_matrix3x3(this.velocity.value(), this.center_of_mass.value(), megayears);
 
 		Matrix3x3.mult_matrix(this.local_to_global_matrix, rotation_matrix, this.local_to_global_matrix);
 		Matrix3x3.invert(this.local_to_global_matrix, this.global_to_local_matrix);

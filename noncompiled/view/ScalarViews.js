@@ -25,9 +25,9 @@ scalarViews.temp 	= new ScalarWorldView(
 		new HeatmapRasterView( { min: -20., max: 30. }),
 		(world, result) => ScalarField.sub_scalar(world.atmosphere.surface_temp, 273.15, result)
 	);
-scalarViews.precip 	= new ScalarWorldView( 
+scalarViews.precipitation 	= new ScalarWorldView( 
 		new HeatmapRasterView( { min: 2000., max: 1. }),
-		world => world.atmosphere.precip.value()
+		world => world.atmosphere.precipitation.value()
 	);
 scalarViews.age 	= new ScalarWorldView( 
 		new HeatmapRasterView( { min: 250., max: 0. }),
@@ -101,7 +101,7 @@ scalarViews.asthenosphere_pressure = new ScalarWorldView(
 		function (world, output, scratch, iterations) {return TectonicsModeling.get_asthenosphere_pressure(world.lithosphere.density, output, scratch);}
 	);
 
-scalarViews.surface_air_pressure = new ScalarWorldView( 
+scalarViews.guess_varying_surface_air_pressure = new ScalarWorldView( 
 		new HeatmapRasterView( { min: 980000., max: 1030000. }),
 		world => world.atmosphere.surface_pressure.value()
 	);

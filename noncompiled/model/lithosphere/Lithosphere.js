@@ -33,7 +33,7 @@ function Lithosphere(grid, parameters) {
 	var self = this; 
 	this.displacement = new Memo(  
 		Float32Raster(grid),  
-		result => LithosphereModeling.get_displacement(self.thickness.value(), self.density.value(), material_density, result) 
+		result => FluidMechanics.get_varying_isostatic_displacement(self.thickness.value(), self.density.value(), material_density, result) 
 	); 
 	// the thickness of the crust in km
 	this.thickness = new Memo(  
@@ -301,7 +301,7 @@ function Lithosphere(grid, parameters) {
 	function calculate_deltas(lithosphere, seconds) {
 
        	// CALCULATE DELTAS
-		LithosphereModeling.get_erosion(
+		Lithology.model_erosion(
 			surface_height.value(), seconds,
 			material_density, surface_gravity,
 			lithosphere.top_crust, lithosphere.erosion, lithosphere.crust_scratch
@@ -309,7 +309,7 @@ function Lithosphere(grid, parameters) {
 		Crust.assert_conserved_transport_delta(lithosphere.erosion, 1e-2); 
 
        	// CALCULATE DELTAS
-		LithosphereModeling.get_weathering(
+		Lithology.model_weathering(
 			surface_height.value(), seconds,
 			material_density, surface_gravity,
 			lithosphere.top_crust, lithosphere.weathering, lithosphere.crust_scratch
@@ -317,7 +317,7 @@ function Lithosphere(grid, parameters) {
 		Crust.assert_conserved_reaction_delta(lithosphere.weathering, 1e-2); 
 
        	// CALCULATE DELTAS
-		LithosphereModeling.get_lithification(
+		Lithology.model_lithification(
 			surface_height.value(), seconds,
 			material_density, surface_gravity,
 			lithosphere.top_crust, lithosphere.lithification, lithosphere.crust_scratch
@@ -325,7 +325,7 @@ function Lithosphere(grid, parameters) {
 		Crust.assert_conserved_reaction_delta(lithosphere.lithification, 1e-2); 
 
        	// CALCULATE DELTAS
-		LithosphereModeling.get_metamorphosis(
+		Lithology.model_metamorphosis(
 			surface_height.value(), seconds,
 			material_density, surface_gravity,
 			lithosphere.top_crust, lithosphere.metamorphosis, lithosphere.crust_scratch
@@ -394,10 +394,10 @@ function Lithosphere(grid, parameters) {
 
 	this.resetPlates = function() {
 		// get plate masks from image segmentation of asthenosphere velocity
-		var pressure = LithosphereModeling.get_asthenosphere_pressure(this.buoyancy.value());
-		LithosphereModeling.get_asthenosphere_velocity(pressure, this.asthenosphere_velocity);
+		var pressure = FluidMechanics.get_varying_fluid_pressure(this.buoyancy.value());
+		FluidMechanics.get_varying_fluid_velocity(pressure, this.asthenosphere_velocity);
 		var angular_velocity = VectorField.cross_vector_field(this.asthenosphere_velocity, grid.pos);
-		var top_plate_map = LithosphereModeling.get_plate_map(angular_velocity, 7, 200);
+		var top_plate_map = Tectonophysics.guess_plate_map(angular_velocity, 7, 200);
 		var plate_ids = Uint8Dataset.unique(top_plate_map);
 		this.plates = [];
 

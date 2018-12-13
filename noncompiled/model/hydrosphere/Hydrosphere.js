@@ -10,7 +10,7 @@ function Hydrosphere(grid, parameters) {
 	var _this = this; 
 	this.sealevel = new Memo( 0,
 		current_value => 
-			HydrosphereModeling.solve_sealevel(
+			Hydrology.solve_uniform_sealevel(
 				displacement.value(), 
 				_this.average_ocean_depth, 
 				material_density.ocean, 
@@ -40,12 +40,12 @@ function Hydrosphere(grid, parameters) {
 	// "surface_height" is the height of the surface relative to sealevel - if elevation < 0, then surface_height = 0
 	this.surface_height = new Memo(
 		Float32Raster(grid),  
-		result => HydrosphereModeling.get_surface_height(displacement.value(), _this.sealevel.value(), result)
+		result => Hydrology.get_varying_surface_height(displacement.value(), _this.sealevel.value(), result)
 	); 
 	// "ocean_depth" is the depth of the ocean - if elevation > 0, then ocean_depth = 0; if elevation < 0, then ocean_depth > 0 
 	this.ocean_depth = new Memo(
 		Float32Raster(grid),  
-		result => HydrosphereModeling.get_ocean_depth(displacement.value(), _this.sealevel.value(), result)
+		result => Hydrology.get_varying_ocean_depth(displacement.value(), _this.sealevel.value(), result)
 	); 
 	this.ice_coverage = new Memo(
 		Float32Raster(grid),  

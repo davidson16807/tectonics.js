@@ -69,19 +69,19 @@ testViews.single_plate = new ScalarWorldView(
 		} 
 	);
 
-testViews.surface_air_pressure_lat_effect = new ScalarWorldView(
+testViews.guess_varying_surface_air_pressure_lat_effect = new ScalarWorldView(
 		new HeatmapRasterView( { min: -1., max: 1.}), 
 		function (world, effect, scratch) {
 			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
-			AtmosphericModeling.surface_air_pressure_lat_effect(lat, effect);
+			AtmosphericModeling.guess_varying_surface_air_pressure_lat_effect(lat, effect);
 			return effect;
 		} 
 	);
-testViews.surface_air_pressure_land_effect = new ScalarWorldView(
+testViews.guess_varying_surface_air_pressure_land_effect = new ScalarWorldView(
 		new HeatmapRasterView( { min: -1., max: 1.}), 
 		function (world, effect, scratch) {
 			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
-			AtmosphericModeling.surface_air_pressure_land_effect(world.displacement, lat, world.SEALEVEL, effect, scratch);
+			AtmosphericModeling.guess_varying_surface_air_pressure_land_effect(world.displacement, lat, world.SEALEVEL, effect, scratch);
 			return effect;
 		}
 	);
@@ -90,9 +90,9 @@ testViews.coriolis_effect = new VectorWorldView( {
 		getField: function (world) {
 			var lat = Float32SphereRaster.latitude(world.grid.pos.y);
 			var scratch = Float32Raster(world.grid);
-			var pressure = AtmosphericModeling.surface_air_pressure_lat_effect(lat);
+			var pressure = AtmosphericModeling.guess_varying_surface_air_pressure_lat_effect(lat);
 			var velocity = ScalarField.gradient(pressure);
-			var coriolis_effect = AtmosphericModeling.surface_air_velocity_coriolis_effect(world.grid.pos, velocity, ANGULAR_SPEED)
+			var coriolis_effect = AtmosphericModeling.guess_varying_surface_air_velocity_coriolis_effect(world.grid.pos, velocity, ANGULAR_SPEED)
 			return coriolis_effect;
 		} 
 	} );
