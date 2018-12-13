@@ -10,10 +10,10 @@ SHADERS = $(shell find precompiled/shaders/ -type f -name '*.glsl.c')
 
 all: $(OUT)
 
-postcompiled/Rasters.js : precompiled/rasters/Rasters.js $(SCRIPTS)
+postcompiled/Rasters.js : precompiled/rasters/Rasters.js $(SCRIPTS) Makefile
 	$(CPP) -E -P -I. -xc -Wundef -std=c99 -nostdinc -Wtrigraphs -fdollars-in-identifiers -C $< > $@
 
-postcompiled/Shaders.js : precompiled/shaders/Shaders.js $(SHADERS)
+postcompiled/Shaders.js : precompiled/shaders/Shaders.js $(SHADERS) Makefile
 	$(CPP) -E -P -I. -xc -Wundef -std=c99 -nostdinc -Wtrigraphs -fdollars-in-identifiers -C precompiled/shaders/Shaders.js > $@
 
 clean:
