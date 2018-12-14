@@ -73,9 +73,8 @@ var Thermodynamics = (function() {
 
 	// This calculates the uniform (non-field) temperature of a body given its luminosity 
 	// TODO: put this under a new namespace? "Thermodynamics"? 
-	Thermodynamics.get_equilibrium_temperature = function(heat, emission_coefficient) { 
-		emission_coefficient = emission_coefficient || 1.;
-		return Math.pow(emission_coefficient*heat/Thermodynamics.STEPHAN_BOLTZMANN_CONSTANT, 1/4); 
+	Thermodynamics.get_equilibrium_temperature = function(heat) { 
+		return Math.pow(heat/Thermodynamics.STEPHAN_BOLTZMANN_CONSTANT, 1/4); 
 	} 
 	// This calculates the temperature of a body given its luminosity
 	// TODO: put this under a new namespace? "Thermodynamics"?
@@ -84,7 +83,7 @@ var Thermodynamics = (function() {
 			result
 		) {
 		result = result || Float32Raster(luminosity.grid);
-		ScalarField.div_scalar	(luminosity, 	Thermodynamics.STEPHAN_BOLTZMANN_CONSTANT, 	result);
+		ScalarField.mult_scalar	(luminosity, 	1/Thermodynamics.STEPHAN_BOLTZMANN_CONSTANT,result);
 		ScalarField.pow_scalar	(result, 		1/4, 										result);
 
 		return result;
@@ -130,11 +129,11 @@ var Thermodynamics = (function() {
 
 		var T = Thermodynamics.get_equilibrium_temperature;
 		var S = Thermodynamics.get_entropy_production;
+
 		// entropy production given heat flux
 		function N(F, Ih, Ic) {
 			return S(F, T((Ic+F)/β), T((Ih-F)/β));
 		}
-
  
 	    // heat flow 
 	    var F = (Ih-Ic)/4; 
