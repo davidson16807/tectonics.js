@@ -15,6 +15,9 @@ var Thermodynamics = (function() {
 	Thermodynamics.MODERN_COSMIC_BACKGROUND_TEMPERATURE = 2.725 * Units.KELVIN;
 
 
+	Thermodynamics.get_energy_of_photon_at_wavelength = function(wavelength) {
+		return Thermodynamics.PLANCK_CONSTANT * SPEED_OF_LIGHT / wavelength;
+	}
 
 	// see Lawson 2004, "The Blackbody Fraction, Infinite Series and Spreadsheets"
 	Thermodynamics.solve_black_body_fraction_below_wavelength = function(wavelength, temperature, iterations){ 
