@@ -8,6 +8,11 @@ module.exports = function (config) {
 			'postcompiled/Rasters.js',
 			'tests/QUnitx.approx.js',
 			'tests/Rasters.js'
+
+  			'noncompiled/Units.js',
+  			'noncompiled/academics/SphericalGeometry.js',
+  			'noncompiled/academics/Thermodynamics.js',
+  			'tests/Academics.js',
 		],
 		autoWatch: false,
 		singleRun: true,

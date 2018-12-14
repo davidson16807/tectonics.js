@@ -6,6 +6,7 @@ Units.GRAM = 1e-3;							// kilograms
 Units.KILOGRAM = 1;							// kilograms
 Units.TON = 1000.;							// kilograms
 
+Units.NANOMETER = 1e-9;						// meter
 Units.MICROMETER = 1e-6;					// meter
 Units.MILLIMETER = 1e-3;					// meter
 Units.METER = 1;							// meter
@@ -17,6 +18,7 @@ Units.STANDARD_GRAVITY = 9.80665; 			// meters/second^2
 Units.STANDARD_TEMPERATURE = 273.15; 		// kelvin
 Units.STANDARD_PRESSURE = 101325; 			// pascals
 Units.ASTRONOMICAL_UNIT = 149597870700; 	// meters
+Units.GLOBAL_SOLAR_CONSTANT = 1361 			// watts/meter^2
 
 Units.JUPITER_MASS = 1.898e27; 				// kilograms
 Units.JUPITER_RADIUS = 71e6; 				// meters
@@ -24,7 +26,7 @@ Units.JUPITER_RADIUS = 71e6; 				// meters
 Units.SOLAR_MASS = 2e30 					// kilograms
 Units.SOLAR_RADIUS = 695.7e6 				// meters
 Units.SOLAR_LUMINOSITY = 3.828e26 			// watts
-Units.SOLAR_TEMPERATURE = 5800  			// kelvin
+Units.SOLAR_TEMPERATURE = 5772  			// kelvin
 
 Units.SECOND = 1;							// seconds
 Units.MINUTE = 60;							// seconds

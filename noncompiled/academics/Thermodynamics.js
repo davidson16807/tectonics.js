@@ -74,6 +74,7 @@ var Thermodynamics = (function() {
 	// This calculates the uniform (non-field) temperature of a body given its luminosity 
 	// TODO: put this under a new namespace? "Thermodynamics"? 
 	Thermodynamics.get_equilibrium_temperature = function(heat, emission_coefficient) { 
+		emission_coefficient = emission_coefficient || 1.;
 		return Math.pow(emission_coefficient*heat/Thermodynamics.STEPHAN_BOLTZMANN_CONSTANT, 1/4); 
 	} 
 	// This calculates the temperature of a body given its luminosity
