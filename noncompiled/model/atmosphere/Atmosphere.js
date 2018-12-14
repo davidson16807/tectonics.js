@@ -4,13 +4,13 @@ function Atmosphere(grid, parameters) {
 	// private variables
 	var grid = grid || stop('missing parameter: "grid"');
 	this.lapse_rate = parameters['lapse_rate'] || 3.5 / 1e3; // degrees Kelvin per meter
-	this.greenhouse_gas_factor = parameters['greenhouse_gas_factor'] || 1.2;
+	this.emission_coefficient = parameters['emission_coefficient'] || 0.83;
 
 	this.getParameters = function() {
 		return { 
 			//grid: 				grid. // TODO: add grid
 			lapse_rate: 			this.lapse_rate,
-			greenhouse_gas_factor: 	this.greenhouse_gas_factor,
+			emission_coefficient: 	this.emission_coefficient,
 		};
 	}
 
@@ -32,7 +32,7 @@ function Atmosphere(grid, parameters) {
 			var heat_flow_uniform = Thermodynamics.solve_entropic_heat_flow(
 				max_absorbed_radiation, 
 				min_absorbed_radiation, 
-				1/this.greenhouse_gas_factor,
+				this.emission_coefficient,
 				10
 			);
 
@@ -46,7 +46,7 @@ function Atmosphere(grid, parameters) {
 			var incoming_heat = result;// double duty for performance
 			ScalarField.add_field(absorbed_radiation, heat_flow, incoming_heat);
 
-			ScalarField.mult_scalar(incoming_heat, this.greenhouse_gas_factor, incoming_heat);
+			ScalarField.div_scalar(incoming_heat, this.emission_coefficient, incoming_heat);
 			Thermodynamics.get_equilibrium_temperatures(incoming_heat, result);
 			return result;
 		}
@@ -172,7 +172,7 @@ function Atmosphere(grid, parameters) {
 			var heat_flow_uniform = Thermodynamics.solve_entropic_heat_flow(
 				max_absorbed_radiation, 
 				min_absorbed_radiation, 
-				1/this.greenhouse_gas_factor,
+				this.emission_coefficient,
 				10
 			);
 
@@ -190,7 +190,7 @@ function Atmosphere(grid, parameters) {
 			);
 
 			Thermodynamics.get_black_body_emissive_radiation_fluxes(this.sealevel_temp, this.outgoing_heat);
-			ScalarField.div_scalar 		( this.outgoing_heat, this.greenhouse_gas_factor, 	this.outgoing_heat);
+			ScalarField.div_scalar 		( this.outgoing_heat, this.emission_coefficient, 	this.outgoing_heat);
 			Climatology.get_heat_capacities(ocean_coverage.value(), material_heat_capacity, this.get_varying_heat_capacity);
 			ScalarField.sub_field 		( this.incoming_heat, this.outgoing_heat, 			this.net_heat_gain );
 			ScalarField.div_field 		( this.net_heat_gain, this.get_varying_heat_capacity, 			this.temperature_delta_rate );
