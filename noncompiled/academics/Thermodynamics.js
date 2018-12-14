@@ -17,11 +17,29 @@ var Thermodynamics = (function() {
 
 
 
-	Thermodynamics.get_black_body_fraction_of_emissive_radiation_below_wavelength = function(wavelength, temperature) {
-		
+	// see Lawson 2004, "The Blackbody Fraction, Infinite Series and Spreadsheets"
+	Thermodynamics.solve_black_body_fraction_below_wavelength = function(wavelength, temperature){ 
+		var π = Math.PI;
+		var h = Thermodynamics.PLANCK_CONSTANT;
+		var k = Thermodynamics.BOLTZMANN_CONSTANT;
+		var c = SPEED_OF_LIGHT;
+		var λ = wavelength;
+		var T = temperature;
+		var C2 = h*c/k;
+		var z = C2 / (λ*T);
+		var z2 = z*z;
+		var z3 = z2*z;
+		var sum = 0;
+		for (var n=1, n2=0, n3=0; n < 5; n++) {
+			n2 = n*n;
+			n3 = n2*n;
+			sum += (z3 + 3*z2/n + 6*z/n2 + 6/n3) * Math.exp(-n*z) / n;
+		}
+		return 15*sum/(π*π*π*π);
 	}
-	Thermodynamics.get_black_body_fraction_of_emissive_radiation_between_wavelengths = function(lo, hi, temperature) {
-		
+	Thermodynamics.solve_black_body_fraction_between_wavelengths = function(lo, hi, temperature){
+		return 	Thermodynamics.solve_black_body_fraction_below_wavelength(hi, temperature) - 
+				Thermodynamics.solve_black_body_fraction_below_wavelength(lo, temperature);
 	}
 
 

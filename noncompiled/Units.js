@@ -24,6 +24,7 @@ Units.JUPITER_RADIUS = 71e6; 				// meters
 Units.SOLAR_MASS = 2e30 					// kilograms
 Units.SOLAR_RADIUS = 695.7e6 				// meters
 Units.SOLAR_LUMINOSITY = 3.828e26 			// watts
+Units.SOLAR_TEMPERATURE = 5800  			// kelvin
 
 Units.SECOND = 1;							// seconds
 Units.MINUTE = 60;							// seconds
