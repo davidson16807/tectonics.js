@@ -54,7 +54,7 @@ var Thermodynamics = (function() {
 			temperature,
 			result
 		) {
-		result = result || Float32Raster(pos.grid);
+		result = result || Float32Raster(temperature.grid);
 		Float32Raster.fill(result, 1);
 		ScalarField.mult_field	(result, 		temperature, 						result);
 		ScalarField.mult_field	(result, 		temperature, 						result);

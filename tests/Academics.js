@@ -214,13 +214,29 @@ test_value_is_between(
 var random = new Random();
 var grid = new Grid(new THREE.IcosahedronGeometry(1, 3), { voronoi_generator: VoronoiSphere.FromPos });
 
+test_values_are_between(
+	ScalarField.mult_scalar(
+		Thermodynamics.get_black_body_emissive_radiation_fluxes(
+			Float32Raster(grid, 5800*Units.KELVIN)
+		),
+		SphericalGeometry.get_surface_area(Units.SOLAR_RADIUS) / 
+		SphericalGeometry.get_surface_area(Units.ASTRONOMICAL_UNIT)
+	),
+	0.9*Units.GLOBAL_SOLAR_CONSTANT,
+	1.1*Units.GLOBAL_SOLAR_CONSTANT,
+	'Thermodynamics.get_black_body_emissive_radiation_fluxes',
+	"must predict the global solar constant to within 10%"
+);
+
 var insolation = SphericalGeometry.get_random_surface_field(grid, random);
 Float32Dataset.rescale(insolation, insolation, 0, EARTH_DAILY_AVERAGE_INSOLATION);
 var heat_flow = Thermodynamics.guess_entropic_heat_flows(insolation, earth_heat_flow_estimate)
+
 test_transport_is_conserved(
 	heat_flow,
 	'Thermodynamics.guess_entropic_heat_flows'
 );
+
 test_values_are_between(
 	Thermodynamics.get_equilibrium_temperatures(
 		ScalarField.div_scalar(
