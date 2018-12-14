@@ -84,6 +84,36 @@ test_between(
 
 var greenhouse_gas_factor = 1.5;
 var earth_heat_flow_estimate = Thermodynamics.solve_entropic_heat_flow(EARTH_DAILY_AVERAGE_INSOLATION, 0, greenhouse_gas_factor);
+// estimates from Lorenz 2001
+test_between( 
+	Thermodynamics.solve_entropic_heat_flow(
+			Thermodynamics.get_black_body_emissive_radiation_flux(Units.SOLAR_TEMPERATURE) * 
+				SphericalGeometry.get_surface_area(Units.SOLAR_RADIUS) / 
+				SphericalGeometry.get_surface_area(9.6*Units.ASTRONOMICAL_UNIT)/4, 
+			0, 1.
+		), 
+	0.3/1.8, 
+	0.3*1.8,
+	'Thermodynamics.solve_entropic_heat_flow',
+	"must predict latitudinal heat flow of titan's atmosphere to within a half order of magnitude"
+);
+test_between( 
+	Thermodynamics.solve_entropic_heat_flow(
+			Thermodynamics.get_black_body_emissive_radiation_flux(Units.SOLAR_TEMPERATURE) * 
+				SphericalGeometry.get_surface_area(Units.SOLAR_RADIUS) / 
+				SphericalGeometry.get_surface_area(1.5*Units.ASTRONOMICAL_UNIT)/4, 
+			0, 1.
+		), 
+	25/1.8, 
+	25*1.8,
+	'Thermodynamics.solve_entropic_heat_flow',
+	"must predict latitudinal heat flow of mars's atmosphere to within a half order of magnitude"
+);
+test_between( 
+	earth_heat_flow_estimate, 30/1.8, 30*1.8,
+	'Thermodynamics.solve_entropic_heat_flow',
+	"must predict latitudinal heat flow of earth's atmosphere to within a half order of magnitude"
+);
 test_between(
 	Thermodynamics.get_equilibrium_temperature(
 		EARTH_DAILY_AVERAGE_INSOLATION-earth_heat_flow_estimate, 
