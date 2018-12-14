@@ -120,21 +120,21 @@ function test_values_are_valid(field, op_name) {
 
 test_value_is_above(
 	Thermodynamics.solve_black_body_fraction_below_wavelength(
-		700*Units.NANOMETER, 
+		760*Units.NANOMETER, 
 		Units.SOLAR_TEMPERATURE
 	),
-	0.4,
+	0.5,
 	'Thermodynamics.solve_black_body_fraction_below_wavelength',
 	'must predict that the sun will return mostly visible light'
 );
 
 test_value_is_above(
 	Thermodynamics.solve_black_body_fraction_between_wavelengths(
-	 	400*Units.NANOMETER, 
-	 	700*Units.NANOMETER, 
+	 	380*Units.NANOMETER, 
+	 	760*Units.NANOMETER, 
 	 	Units.SOLAR_TEMPERATURE
  	),
-	0.3,
+	0.4,
 	'Thermodynamics.solve_black_body_fraction_between_wavelengths',
 	'must predict that the sun will return mostly visible light'
 );

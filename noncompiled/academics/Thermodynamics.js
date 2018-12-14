@@ -16,9 +16,9 @@ var Thermodynamics = (function() {
 
 
 
-
 	// see Lawson 2004, "The Blackbody Fraction, Infinite Series and Spreadsheets"
-	Thermodynamics.solve_black_body_fraction_below_wavelength = function(wavelength, temperature){ 
+	Thermodynamics.solve_black_body_fraction_below_wavelength = function(wavelength, temperature, iterations){ 
+		iterations = iterations || 5;
 		var π = Math.PI;
 		var h = Thermodynamics.PLANCK_CONSTANT;
 		var k = Thermodynamics.BOLTZMANN_CONSTANT;
@@ -30,7 +30,7 @@ var Thermodynamics = (function() {
 		var z2 = z*z;
 		var z3 = z2*z;
 		var sum = 0;
-		for (var n=1, n2=0, n3=0; n < 5; n++) {
+		for (var n=1, n2=0, n3=0; n < iterations; n++) {
 			n2 = n*n;
 			n3 = n2*n;
 			sum += (z3 + 3*z2/n + 6*z/n2 + 6/n3) * Math.exp(-n*z) / n;
