@@ -10,7 +10,7 @@ module.exports = function (config) {
 
 			'postcompiled/Rasters.js',
 			'tests/QUnitx.approx.js',
-			'tests/Rasters.js'
+			'tests/Rasters.js',
 
   			'noncompiled/Units.js',
   			'noncompiled/academics/SphericalGeometry.js',
