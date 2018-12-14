@@ -1338,10 +1338,16 @@ function Float32Raster(grid, fill) {
  }
  return result;
 };
+Float32Raster.FromExample = function(raster) {
+  if (!(raster instanceof Float32Array)) { throw "raster" + ' is not a ' + "Float32Array"; };
+  var result = new Float32Array(raster.length);
+  result.grid = raster.grid;
+  return result;
+}
 Float32Raster.OfLength = function(length, grid) {
- var result = new Float32Array(length);
- result.grid = grid;
- return result;
+  var result = new Float32Array(length);
+  result.grid = grid;
+  return result;
 }
 Float32Raster.FromBuffer = function(buffer, grid, start) {
   start = start || 0;

@@ -107,12 +107,11 @@ var Thermodynamics = (function() {
 
 
 	Thermodynamics.guess_entropic_heat_flows = function(heat, heat_flow, result) {
-		result = result || Float32Raster(net_energy.grid);
+		result = result || Float32Raster.FromExample(heat);
 
 		var heat_flow_field = result;
 		Float32Dataset.normalize(heat, result, -heat_flow, heat_flow);
 		ScalarTransport.fix_conserved_quantity_delta(result, 1e-5);
-		ScalarField.sub_field(heat, result, result);
 
 		return result;
 	}

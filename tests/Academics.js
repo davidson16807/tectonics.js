@@ -2,7 +2,7 @@
 QUnit.module('Rasters');
 
 function test_below(estimate, threshold, op_name, message) {
-	QUnit.test(`${op_name} tests`, function (assert) {
+	QUnit.test(`${op_name} range tests`, function (assert) {
 		assert.ok( 
 			estimate,
 			`${op_name}(...) must return a number`
@@ -14,7 +14,7 @@ function test_below(estimate, threshold, op_name, message) {
 	});
 }
 function test_above(estimate, threshold, op_name, message) {
-	QUnit.test(`${op_name} tests`, function (assert) {
+	QUnit.test(`${op_name} range tests`, function (assert) {
 		assert.ok( 
 			estimate,
 			`${op_name}(...) must return a number`
@@ -26,7 +26,7 @@ function test_above(estimate, threshold, op_name, message) {
 	});
 }
 function test_between(estimate, lo, hi, op_name, message) {
-	QUnit.test(`${op_name} tests`, function (assert) {
+	QUnit.test(`${op_name} range tests`, function (assert) {
 		assert.ok( 
 			estimate,
 			`${op_name}(...) must return a number`
@@ -35,6 +35,20 @@ function test_between(estimate, lo, hi, op_name, message) {
 			lo < estimate && 
 				 estimate < hi,
 			`${op_name}(...) ${message} (${lo.toFixed(2)} < ${estimate.toFixed(2)} < ${hi.toFixed(2)})`
+		);
+	});
+}
+function test_conserved_transport(field, op_name, tolerance) {
+	tolerance = tolerance || 1e-3;
+	var sum = Float32Dataset.sum(field);
+	QUnit.test(`${op_name} conservation tests`, function (assert) {
+		assert.ok( 
+			field,
+			`${op_name}(...) must return a field`
+		);
+		assert.ok( 
+			sum * sum < tolerance * tolerance,
+			`${op_name}(...) must return a conserved field (-${tolerance.toFixed(4)} < ${sum.toFixed(4)} < ${tolerance.toFixed(4)})`
 		);
 	});
 }
@@ -135,3 +149,14 @@ test_between(
 	"must predict temperatures at earth's poles to within a half order of magnitude"
 );
 
+
+// Now test behavior over fields
+var random = new Random();
+var grid = new Grid(new THREE.IcosahedronGeometry(1, 3), { voronoi_generator: VoronoiSphere.FromPos });
+
+var insolation = SphericalGeometry.get_random_surface_field(grid, random);
+Float32Dataset.rescale(insolation, insolation, 0, EARTH_DAILY_AVERAGE_INSOLATION);
+test_conserved_transport(
+	Thermodynamics.guess_entropic_heat_flows(insolation, earth_heat_flow_estimate),
+	'Thermodynamics.guess_entropic_heat_flows'
+);

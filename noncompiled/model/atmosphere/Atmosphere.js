@@ -36,12 +36,15 @@ function Atmosphere(grid, parameters) {
 				10
 			);
 
-			var incoming_heat = result; // double duty for performance
+			var heat_flow = result;// double duty for performance
 			Thermodynamics.guess_entropic_heat_flows(
 				absorbed_radiation, 
 				heat_flow_uniform, 
-				incoming_heat
+				heat_flow
 			);
+
+			var incoming_heat = result;// double duty for performance
+			ScalarField.add_field(absorbed_radiation, heat_flow, incoming_heat);
 
 			ScalarField.mult_scalar(incoming_heat, this.greenhouse_gas_factor, incoming_heat);
 			Thermodynamics.get_equilibrium_temperatures(incoming_heat, result);
@@ -172,11 +175,20 @@ function Atmosphere(grid, parameters) {
 				1/this.greenhouse_gas_factor,
 				10
 			);
+
+			var heat_flow = _this.scratch;// double duty for performance
 			Thermodynamics.guess_entropic_heat_flows(
 				this.absorbed_radiation, 
 				heat_flow_uniform, 
+				heat_flow
+			);
+
+			ScalarField.add_field(
+				this.absorbed_radiation, 
+				heat_flow, 
 				this.incoming_heat
 			);
+
 			Thermodynamics.get_black_body_emissive_radiation_fluxes(this.sealevel_temp, this.outgoing_heat);
 			ScalarField.div_scalar 		( this.outgoing_heat, this.greenhouse_gas_factor, 	this.outgoing_heat);
 			Climatology.get_heat_capacities(ocean_coverage.value(), material_heat_capacity, this.get_varying_heat_capacity);

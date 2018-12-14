@@ -5,6 +5,9 @@ module.exports = function (config) {
 		browsers: [ 'ChromeHeadless' ],
 		frameworks: [ 'qunit' ],
 		files: [
+			'libraries/random-0.26.js',
+			'libraries/three.js/Three.js',
+
 			'postcompiled/Rasters.js',
 			'tests/QUnitx.approx.js',
 			'tests/Rasters.js'
