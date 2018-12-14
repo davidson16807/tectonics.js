@@ -156,7 +156,13 @@ var grid = new Grid(new THREE.IcosahedronGeometry(1, 3), { voronoi_generator: Vo
 
 var insolation = SphericalGeometry.get_random_surface_field(grid, random);
 Float32Dataset.rescale(insolation, insolation, 0, EARTH_DAILY_AVERAGE_INSOLATION);
+var heat_flow = Thermodynamics.guess_entropic_heat_flows(insolation, earth_heat_flow_estimate)
 test_conserved_transport(
-	Thermodynamics.guess_entropic_heat_flows(insolation, earth_heat_flow_estimate),
+	heat_flow,
 	'Thermodynamics.guess_entropic_heat_flows'
 );
+//test_conserved_transport(
+//	Thermodynamics.get_equilibrium_temperatures(ScalarField.add_field(insolation, heat_flow), greenhouse_gas_factor),
+//	'Thermodynamics.get_equilibrium_temperatures',
+//	"must predict temperatures on earth to within half an order of magnitude"
+//);
