@@ -149,6 +149,7 @@ test_value_is_between(
 	'must predict the global solar constant to within 10%'
 );
 
+// estimates from Pashiardis 2017
 test_value_is_between(
 	Units.GLOBAL_SOLAR_CONSTANT * Thermodynamics.get_black_body_emissive_photons_per_watt_between_wavelengths(
 	 	400*Units.NANOMETER, 
