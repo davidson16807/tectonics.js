@@ -19,6 +19,22 @@ var Thermodynamics = (function() {
 		return Thermodynamics.PLANCK_CONSTANT * SPEED_OF_LIGHT / wavelength;
 	}
 
+	// returns photon flux density in moles of photons per square meter per second
+	Thermodynamics.get_black_body_emissive_photons_per_watt_between_wavelengths = function(lo, hi, temperature, sample_count, iterations_per_sample) {
+		sample_count = sample_count || 1;
+		iterations_per_sample = iterations_per_sample || 5;
+		var sum = 0;
+		var range = hi-lo;
+		var δλ = range / sample_count;
+		var T = temperature;
+		var F = Thermodynamics.solve_black_body_fraction_between_wavelengths;
+		var E = Thermodynamics.get_energy_of_photon_at_wavelength;
+		for (var λ = lo; λ < hi; λ += δλ) {
+			sum += F(λ, λ+δλ, T, iterations_per_sample) / E(λ+δλ/2);
+		}
+		return sum;
+	}
+
 	// see Lawson 2004, "The Blackbody Fraction, Infinite Series and Spreadsheets"
 	Thermodynamics.solve_black_body_fraction_below_wavelength = function(wavelength, temperature, iterations){ 
 		iterations = iterations || 5;
@@ -40,9 +56,10 @@ var Thermodynamics = (function() {
 		}
 		return 15*sum/(π*π*π*π);
 	}
-	Thermodynamics.solve_black_body_fraction_between_wavelengths = function(lo, hi, temperature){
-		return 	Thermodynamics.solve_black_body_fraction_below_wavelength(hi, temperature) - 
-				Thermodynamics.solve_black_body_fraction_below_wavelength(lo, temperature);
+	Thermodynamics.solve_black_body_fraction_between_wavelengths = function(lo, hi, temperature, iterations){
+		iterations = iterations || 5;
+		return 	Thermodynamics.solve_black_body_fraction_below_wavelength(hi, temperature, iterations) - 
+				Thermodynamics.solve_black_body_fraction_below_wavelength(lo, temperature, iterations);
 	}
 
 

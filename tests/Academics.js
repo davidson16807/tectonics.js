@@ -149,6 +149,18 @@ test_value_is_between(
 	'must predict the global solar constant to within 10%'
 );
 
+test_value_is_between(
+	Units.GLOBAL_SOLAR_CONSTANT * Thermodynamics.get_black_body_emissive_photons_per_watt_between_wavelengths(
+	 	400*Units.NANOMETER, 
+	 	700*Units.NANOMETER, 
+	 	Units.SOLAR_TEMPERATURE,
+	),
+	0.9 * 2443.3 * Units.MICROMOLE / (Units.METER*Units.METER*Units.SECOND),
+	1.1 * 2443.3 * Units.MICROMOLE / (Units.METER*Units.METER*Units.SECOND),
+	'Thermodynamics.get_black_body_emissive_photons_per_watt_between_wavelengths',
+	'must predict the global solar constant for photosynthetically active radiation to within 10%'
+);
+
 var EARTH_DAILY_AVERAGE_INSOLATION = Units.GLOBAL_SOLAR_CONSTANT/4;
 test_value_is_between(
 	Thermodynamics.get_equilibrium_temperature(EARTH_DAILY_AVERAGE_INSOLATION),
