@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>QUnit Example</title>
+
+  <!-- for unit testing -->
+  <link rel="stylesheet" href="https://code.jquery.com/qunit/qunit-1.23.1.css">
+  <script src="https://code.jquery.com/qunit/qunit-1.23.1.js"></script>
+
+  <!-- for spherical grid geometry -->
+  <script src="../libraries/three.js/Three.js"></script> 
+  <!-- for random surface fields and other test data -->
+  <script src="../libraries/random-0.26.js"></script>
+
+  <!-- for testing academics layer -->
+  <script src="../postcompiled/Rasters.js"></script>
+  <script src="../noncompiled/Units.js"></script>
+  <script src="../noncompiled/academics/SphericalGeometry.js"></script>
+  <script src="../noncompiled/academics/Thermodynamics.js"></script>
+  <script src="../tests/Academics.js"></script>
+  
+</head>
+<body>
+  <div id="qunit"></div>
+  <div id="qunit-fixture"></div>
+</body>
