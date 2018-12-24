@@ -7,7 +7,7 @@
 var OrbitalMechanics = (function() {
 	var OrbitalMechanics = {};
 
-	OrbitalMechanics.GRAVITATIONAL_CONSTANT = 6.67408e-11; // m3 kg-1 s-2
+	OrbitalMechanics.GRAVITATIONAL_CONSTANT = 6.6740831e-11; // m3 kg-1 s-2
 
 	OrbitalMechanics.get_period = function(semi_major_axis, effective_parent_mass) {
 		// TODO: move this logic to OrbitalMechanics
@@ -32,6 +32,7 @@ var OrbitalMechanics = (function() {
 
 	// gets the cartesian coordinates necessary to convert geocentric ecliptic coordinates to heliocentric ecliptic coordinates
 	// NOTE: for help understanding parameters to this function, go here: https://orbitalmechanics.info/
+	// NOTE: x is periapsis distance where inclination, argument of_periapsis, and longitude_of_ascending_node are 0
 	OrbitalMechanics.get_orbit_matrix4x4 = function(
 			// the phase angle (in radians) that indicates the point in time within an object's revolution. It varies linearly with time.
 			mean_anomaly,
@@ -53,11 +54,11 @@ var OrbitalMechanics = (function() {
 		var a = semi_major_axis;
 		var M = mean_anomaly;
 
-		var E = solve_eccentric_anomaly(M, e, 5);
+		var E = solve_eccentric_anomaly(M, e, 10);
 		var ecliptic_coordinates = get_2d_ecliptic_coordinates(E, a, e);
-		var translation_matrix = Matrix4x4.from_translation( ecliptic_coordinates.x, 0, ecliptic_coordinates.y );
+		var translation_matrix = Matrix4x4.from_translation( ecliptic_coordinates.p, 0, ecliptic_coordinates.q );
 		var ω_rotation_matrix = Matrix4x4.from_rotation(0,1,0, -ω);
-		var i_rotation_matrix = Matrix4x4.from_rotation(1,0,0, -i);
+		var i_rotation_matrix = Matrix4x4.from_rotation(0,0,1, -i);
 		var Ω_rotation_matrix = Matrix4x4.from_rotation(0,1,0, -Ω);
 
 		var conversion_matrix;
@@ -67,7 +68,14 @@ var OrbitalMechanics = (function() {
 
 		return conversion_matrix;
 	}
-	// gets the parent-centric ecliptic cartesian coordinates sampled along an orbit
+	// gets the parent-centric ecliptic cartesian coordinates (p,q) sampled along an orbit
+	//  where +p is towards periapsis and -p is apoapsis
+	//  when eccentric_anomaly = 0, the orbiting object is at periapsis
+	// 
+	// See here for more info:
+	//  https://space.stackexchange.com/questions/8911/determining-orbital-position-at-a-future-point-in-time
+	// Or here, in book form:
+	//  Fundamentals of Astrodynamics, by Bate, Mueller, and White
 	var get_2d_ecliptic_coordinates = function(
 			eccentric_anomaly,
 			semi_major_axis, 
@@ -83,8 +91,8 @@ var OrbitalMechanics = (function() {
 		var cos = Math.cos;
 		var sqrt = Math.sqrt;
 		return {
-			x: a*cos(E)-e,
-			y: a*sin(E)*sqrt(1-e*e)
+			p: a*(cos(E)-e),
+			q: -a*sin(E)*sqrt(1-e*e)
 		};
 	}
 	var solve_eccentric_anomaly = function(mean_anomaly, eccentricity, iterations) {

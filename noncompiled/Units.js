@@ -26,7 +26,7 @@ Units.HOUR = Units.MINUTE*60;				// seconds
 Units.DAY = Units.HOUR*24;					// seconds
 Units.WEEK = Units.DAY*7;					// seconds
 Units.MONTH = Units.DAY*29.53059;			// seconds
-Units.YEAR = Units.DAY*365.25;				// seconds
+Units.YEAR = Units.DAY*365.256363004;		// seconds
 Units.MEGAYEAR = Units.YEAR*1e6;			// seconds
 
 Units.NEWTON = Units.KILOGRAM * Units.METER / (Units.SECOND * Units.SECOND)

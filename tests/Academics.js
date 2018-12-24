@@ -38,6 +38,21 @@ function test_value_is_between(estimate, lo, hi, op_name, message) {
 		);
 	});
 }
+function test_value_is_to_within(estimate, target, precision, op_name, message) {
+	QUnit.test(`${op_name} range tests`, function (assert) {
+		assert.ok( 
+			estimate,
+			`${op_name}(...) must return a number`
+		);
+		var lo = target*(1-precision);
+		var hi = target*(1+precision);
+		assert.ok( 
+			lo < estimate && 
+				 estimate < hi,
+			`${op_name}(...) ${message} (${lo.toFixed(2)} < ${estimate.toFixed(2)} < ${hi.toFixed(2)})`
+		);
+	});
+}
 function test_transport_is_conserved(field, op_name, tolerance) {
 	tolerance = tolerance || 1e-3;
 	var sum = Float32Dataset.sum(field);
@@ -262,3 +277,123 @@ test_values_are_between(
 	'Thermodynamics.get_equilibrium_temperatures',
 	"must predict the high and low temperatures on earth to within half an order of magnitude"
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ORBITAL MECHANICS
+test_value_is_to_within(
+	OrbitalMechanics.get_period(Units.ASTRONOMICAL_UNIT, Units.SOLAR_MASS),
+	Units.YEAR,
+	0.01,
+	'OrbitalMechanics.get_period',
+	"must predict the length of earth's year to within 1%"
+);
+
+var earth_periapsis_estimate = Vector.mult_matrix4x4(0,0,0, 
+	OrbitalMechanics.get_orbit_matrix4x4(
+		0.0, Units.ASTRONOMICAL_UNIT, 0.0167, 0, 114.207*180/Math.PI, -11*180/Math.PI 
+	)
+);
+test_value_is_to_within(
+	Vector.magnitude(earth_periapsis_estimate.x, earth_periapsis_estimate.y, earth_periapsis_estimate.z),
+	0.98*Units.ASTRONOMICAL_UNIT,
+	0.01,
+	'OrbitalMechanics.get_orbit_matrix4x4',
+	"must predict the distance from the earth to the sun, at perihelion, to within 1%"
+);
+var earth_apoapsis_estimate = Vector.mult_matrix4x4(0,0,0, 
+	OrbitalMechanics.get_orbit_matrix4x4(
+		Math.PI, Units.ASTRONOMICAL_UNIT, 0.0167, 0, 114.207*180/Math.PI, -11*180/Math.PI 
+	)
+);
+test_value_is_to_within(
+	Vector.magnitude(earth_apoapsis_estimate.x, earth_apoapsis_estimate.y, earth_apoapsis_estimate.z),
+	1.017*Units.ASTRONOMICAL_UNIT,
+	0.01,
+	'OrbitalMechanics.get_orbit_matrix4x4',
+	"must predict the distance from the earth to the sun, at aphelion, to within 1%"
+);
+var earth_pos_estimate1 = Vector.mult_matrix4x4(0,0,0, 
+	OrbitalMechanics.get_orbit_matrix4x4(
+		1.5*Math.PI, 
+		Units.ASTRONOMICAL_UNIT, 0.0167, 0, 114.207*180/Math.PI, -11*180/Math.PI 
+	)
+);
+var earth_pos_estimate2 = Vector.mult_matrix4x4(0,0,0, 
+	OrbitalMechanics.get_orbit_matrix4x4(
+		1.5*Math.PI+2*Math.PI/Units.YEAR, 
+		Units.ASTRONOMICAL_UNIT, 0.0167, 0, 114.207*180/Math.PI, -11*180/Math.PI 
+	)
+);
+var earth_velocity_estimate = Vector.sub_vector(
+	earth_pos_estimate2.x, earth_pos_estimate2.y, earth_pos_estimate2.z,
+	earth_pos_estimate1.x, earth_pos_estimate1.y, earth_pos_estimate1.z, 
+);
+test_value_is_to_within(
+	Vector.magnitude(earth_velocity_estimate.x, earth_velocity_estimate.y, earth_velocity_estimate.z),
+	29.8*Units.KILOMETER/Units.SECOND,
+	0.01,
+	'OrbitalMechanics.get_orbit_matrix4x4',
+	"must predict the earth's average velocity to within 1%"
+);
+// NOTE: we now repeat our previous calculation with simpler orbital elements to better understand what 
+//  the acceptance criteria is for this test
+var earth_pos_estimate3 = Vector.mult_matrix4x4(0,0,0, 
+	OrbitalMechanics.get_orbit_matrix4x4(
+		0.*Math.PI, 
+		Units.ASTRONOMICAL_UNIT, 0, 0, 0, 0 
+	)
+);
+var earth_pos_estimate4 = Vector.mult_matrix4x4(0,0,0, 
+	OrbitalMechanics.get_orbit_matrix4x4(
+		0.*Math.PI+2*Math.PI/Units.YEAR, 
+		Units.ASTRONOMICAL_UNIT, 0, 0, 0, 0 
+	)
+);
+var earth_velocity_estimate2 = Vector.sub_vector(
+	earth_pos_estimate4.x, earth_pos_estimate4.y, earth_pos_estimate4.z,
+	earth_pos_estimate3.x, earth_pos_estimate3.y, earth_pos_estimate3.z, 
+);
+test_value_is_below(
+	earth_velocity_estimate2.z, 
+	0, 
+	'OrbitalMechanics.get_orbit_matrix4x4',
+	"must predict the earth moves in the right direction"
+)
+var earth_spin_pos_estimate1 = Vector.mult_matrix4x4(Units.EARTH_RADIUS,0,0, 
+	OrbitalMechanics.get_spin_matrix4x4(0, 0)
+);
+var earth_spin_pos_estimate2 = Vector.mult_matrix4x4(Units.EARTH_RADIUS,0,0, 
+	OrbitalMechanics.get_spin_matrix4x4(2*Math.PI/Units.DAY, 0)
+);
+var earth_spin_velocity_estimate = Vector.sub_vector(
+	earth_spin_pos_estimate2.x, earth_spin_pos_estimate2.y, earth_spin_pos_estimate2.z, 
+	earth_spin_pos_estimate1.x, earth_spin_pos_estimate1.y, earth_spin_pos_estimate1.z,
+);
+test_value_is_to_within(
+	Vector.magnitude(earth_spin_velocity_estimate.x, earth_spin_velocity_estimate.y, earth_spin_velocity_estimate.z),
+	460*Units.METER/Units.SECOND, 
+	0.01,
+	'OrbitalMechanics.get_spin_matrix4x4',
+	"must predict the earth spins the right way"
+)
+test_value_is_above(
+	earth_spin_velocity_estimate.z, 
+	0, 
+	'OrbitalMechanics.get_spin_matrix4x4',
+	"must predict the earth spins the right way"
+)

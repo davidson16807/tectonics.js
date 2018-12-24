@@ -1294,6 +1294,17 @@ Vector.mult_matrix = function(x, y, z, matrix, result) {
   result.z = x * zx + y * zy + z * zz;
   return result;
 }
+Vector.mult_matrix4x4 = function(x, y, z, matrix, result) {
+  result = result || Vector();
+  var xx = matrix[0]; var xy = matrix[4]; var xz = matrix[8]; var xw = matrix[12];
+  var yx = matrix[1]; var yy = matrix[5]; var yz = matrix[9]; var yw = matrix[13];
+  var zx = matrix[2]; var zy = matrix[6]; var zz = matrix[10]; var zw = matrix[14];
+  var wx = matrix[3]; var wy = matrix[7]; var wz = matrix[11]; var ww = matrix[15];
+  result.x = x * xx + y * xy + z * xz + xw;
+  result.y = x * yx + y * yy + z * yz + yw;
+  result.z = x * zx + y * zy + z * zz + zw;
+  return result;
+}
 Vector.similarity = function(ax, ay, az, bx, by, bz) {
   var sqrt = Math.sqrt;
   return (ax*bx +
