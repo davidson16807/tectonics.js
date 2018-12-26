@@ -29,6 +29,18 @@ VectorRaster.OfLength = function(length, grid) {
     grid: grid
   };
 }
+VectorRaster.FromExample = function(raster, grid) { 
+  var length = 0; 
+  if (raster instanceof Float32Array) { 
+    length = raster.length; 
+  } else if(raster.x instanceof Float32Array) { 
+    length = raster.x.length; 
+  } else { 
+    throw 'must supply a vector or scalar raster' 
+  } 
+  var result = VectorRaster.OfLength(length, raster.grid); 
+  return result; 
+} 
 VectorRaster.FromVectors = function(vectors, grid) {
   var result = VectorRaster.OfLength(vectors.length, grid);
   var x = result.x;

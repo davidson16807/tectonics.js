@@ -24,8 +24,15 @@ function Float32Raster(grid, fill) {
 	return result;
 };
 Float32Raster.FromExample = function(raster) {
-  ASSERT_IS_ARRAY(raster, Float32Array);
-  var result = new Float32Array(raster.length);
+  var length = 0; 
+  if (raster instanceof Float32Array) { 
+    length = raster.length; 
+  } else if(raster.x instanceof Float32Array) { 
+    length = raster.x.length; 
+  } else { 
+    throw 'must supply a vector or scalar raster' 
+  } 
+  var result = new Float32Array(length);
   result.grid = raster.grid;
   return result;
 }
