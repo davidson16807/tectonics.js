@@ -3,16 +3,16 @@ layout: default
 ---
 
 <h2>ABOUT</h2>
-<p>Tectonics.js is a 3d plate tectonics simulator written in pure javascript that allows you to create realistic fantasy worlds from your web browser. </p>
+<p>Tectonics.js is a 3d plate tectonics simulator written in javascript. It allows you to create realistic fantasy worlds from your web browser. </p>
 <p>Tectonics.js is a principled model. It aims to use simple yet scientifically defensible models that may be easily understood by nonexperts and modified by developers. A 3D framework is used to provide a solid foundation for modeling that is grounded in reality. Javascript is used so that the model is made available to anyone through a modern web browser.</p>
 <p>The model is open source and licensed under version 2.0 of the Creative Commons <a href="http://creativecommons.org/licenses/by-nc/2.0/">Non Commercial Attribution</a> License.</p>
 
-<h3 style="text-align:center"><a href="http://davidson16807.github.io/tectonics.js">To see the model for yourself, click here</a></h3>
+<h3 style="text-align:center">To see the model for yourself, click <a href="http://davidson16807.github.io/tectonics.js">here</a></h3>
 
 <h2>FREQUENTLY ASKED QUESTIONS</h2>
 <details>
 <summary>Why not use fractals?</summary>
-<p>Fractals generate superficially realistic terrain using processes that radically differ from reality. This enables them to operate many orders of magnitude faster than tectonic simulators, but this comes at a cost. A fractal world has no history - users cannot look at a landscape and say why or how that landscape formed the way it did, at least not in reference to real life processes. An author, for instance, would have a harder time breathing life into a fractal world because such details would have to be tacked on after the fact in a way that loosely conforms to what's already been generated. </p>
+<p>We do, for initialization, but we don't want to rely on them. Fractals generate superficially realistic terrain using processes that radically differ from reality. This allows them to operate many orders of magnitude faster than tectonic simulators, but this comes at a cost. A fractal world has no history - users cannot look at a landscape and say why or how that landscape formed the way it did, at least not in reference to real life processes. An author, for instance, would have a harder time breathing life into a fractal world because such details would have to be tacked on after the fact in a way that loosely conforms to what's already been generated. </p>
 </details>
 <details>
 <summary>Why 3D?</summary>
@@ -23,7 +23,7 @@ layout: default
 <details>
 <summary>Why a Web Browser?</summary>
 <p>Tectonics.js seeks to be accessible to a wide audience of world building enthusiasts. Many aspring storytellers and world building enthusiasts in general like the idea of using models that can form realistic landmasses for their worlds but lack the skill to develop their own. A web application allows just about anyone to type in a site and create their own imaginary worlds.</p>
-<p>Javascript is classically an odd choice for a simulator of any sort. It's a problem most have addressed in the past with faster languages like C or even FORTRAN. However, processing power continues to increase at an exponentiating rate. The speed problem is still tangeable, even today, but steps can be taken against it: parallel processing and graphics shaders already cut down processing time by many orders of magnitude, and as techniques such as transform buffers and general purpose graphics processing enter into the realm of web development, runtimes can be cut down even further. With some judicious optimization, planets with tens of thousands of grid cells are easily simulated, today. Instantaneous generation is currently out of the question, but you can still generate worlds in the time you'd be willing to sit in front of a computer. On occassion, I've fallen asleep and woke up to find a planet that's ten times older than the universe :)</p> 
+<p>Javascript is classically an odd choice for a simulator of any sort. It's a problem most have addressed in the past with faster languages like C or even FORTRAN. However, processing power continues to increase at an exponentiating rate. The speed problem is still tangeable, even today, but steps can be taken against it. The model foremost relies on data-oriented design, typed arrays, memoization, and graphics shaders to cut down processing time, right now. Just using these techniques alone is enough to simulate planets with tens of thousands of grid cells with reasonable framerates. Other techniques such as Web Workers and Web Assembly may be used in the future to cut down runtime even futher. Instantaneous generation is currently out of the question, but you can still generate worlds in the time you'd be willing to sit in front of a computer. On occassion, I've fallen asleep and woke up to find a planet that's several times older than the universe :)</p> 
 <p>If you're, say, writing a novel and want to emphasize the quality of worlds over quantity, then this project is meant for you.</p>
 </details>
 <details>
@@ -55,3 +55,6 @@ layout: default
 </ol>
 <p>If you do wind up building off the model I'd like to hear it, if only to know someone finds the work useful. Along the same lines, if you feel there's something you'd like to contribute without making your own distribution, give me a pull request - I'll work changes in and make sure your name appears on the credits list.</p>
 </details>
+
+<h2>SUPPORT</h2>
+<p>If all else fails, <a href="mailto:diadophus@gmail.com">drop me a line</a> and I'll try to get back to you as soon as I can: </p>

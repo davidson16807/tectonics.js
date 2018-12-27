@@ -31,27 +31,29 @@
 	<script src="libraries/threex/THREEx.Debug.js"></script>
 	<script src="libraries/random-0.26.js"></script>
 	<script src="libraries/base64-arraybuffer.js"></script>
-	<script src="postcompiled/view/Shaders.js"></script>
-	<script src="postcompiled/utils/Rasters.js"></script>
-	<script src="noncompiled/utils/Units.js"></script>
+	<script src="postcompiled/Shaders.js"></script>
+	<script src="postcompiled/Rasters.js"></script>
+	<script src="noncompiled/Units.js"></script>
 	<script src="noncompiled/Logging.js"></script>
 	<script src="noncompiled/IntegerLattice.js"></script>
 	<script src="noncompiled/VoronoiSphere.js"></script>
-	<script src="noncompiled/Sphere.js"></script>
 	<!-- NOTE: we include scripts from the academic layer because it deals exclusively with rasters -->
+	<script src="noncompiled/academics/SphericalGeometry.js"></script>
 	<script src="noncompiled/academics/Optics.js"></script>
+	<script src="noncompiled/academics/Thermodynamics.js"></script>
+	<script src="noncompiled/academics/FluidMechanics.js"></script>
 	<script src="noncompiled/academics/OrbitalMechanics.js"></script>
-	<script src="noncompiled/academics/LithosphereModeling.js"></script>
-	<script src="noncompiled/academics/HydrosphereModeling.js"></script>
-	<script src="noncompiled/academics/AtmosphereModeling.js"></script>
-	<script src="noncompiled/academics/BiosphereModeling.js"></script>
+	<script src="noncompiled/academics/Tectonophysics.js"></script>
+	<script src="noncompiled/academics/Lithology.js"></script>
+	<script src="noncompiled/academics/Hydrology.js"></script>
+	<script src="noncompiled/academics/PlantBiology.js"></script>
 	<script src="noncompiled/generators/EliasScalarRasterGenerator.js"></script>
 	<script src="noncompiled/file-io/JsonSerializer.js"></script>
-	<script src="noncompiled/view/raster-view/PdfChartRasterView.js"></script>
-	<script src="noncompiled/view/raster-view/HeatmapRasterView.js"></script>
-	<script src="noncompiled/view/raster-view/VectorRasterView.js"></script>
-	<script src="noncompiled/view/projection-view/GlobeProjectionView.js"></script>
-	<script src="noncompiled/view/View.js"></script>
+	<script src="noncompiled/views/raster-views/PdfChartRasterView.js"></script>
+	<script src="noncompiled/views/raster-views/HeatmapRasterView.js"></script>
+	<script src="noncompiled/views/raster-views/VectorRasterView.js"></script>
+	<script src="noncompiled/views/projection-views/GlobeProjectionView.js"></script>
+	<script src="noncompiled/views/View.js"></script>
 </head>
 <body>
 <!-- three.js container -->
@@ -140,7 +142,7 @@
 	var controls = new THREE.OrbitControls( view.camera, $("#container").get(0) );
 	var grid = new Grid(new THREE.IcosahedronGeometry(1, 5), { voronoi_generator: VoronoiSphere.FromPos });
 	var random = new Random();
-	var demo = EliasScalarRasterGenerator.generate(grid, random);
+	var demo = SphericalGeometry.get_random_surface_field(grid, random);
 	$('.controls').show();
 	$('#container').append(view.getDomElement());
 

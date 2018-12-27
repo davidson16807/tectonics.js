@@ -5,9 +5,17 @@ module.exports = function (config) {
 		browsers: [ 'ChromeHeadless' ],
 		frameworks: [ 'qunit' ],
 		files: [
-			'postcompiled/utils/Rasters.js',
+			'libraries/random-0.26.js',
+			'libraries/three.js/Three.js',
+
+			'postcompiled/Rasters.js',
 			'tests/QUnitx.approx.js',
-			'tests/utils/Rasters.test.js'
+			'tests/Rasters.js',
+
+  			'noncompiled/Units.js',
+  			'noncompiled/academics/SphericalGeometry.js',
+  			'noncompiled/academics/Thermodynamics.js',
+  			'tests/Academics.js',
 		],
 		autoWatch: false,
 		singleRun: true,

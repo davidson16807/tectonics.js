@@ -1,0 +1,464 @@
+<!doctype html>
+<html>
+<head>
+	<title>solar system test model</title>
+	<!--If using IE9 or lower, don't even bother - IE won't even parse three.js right-->
+	<!--[if lte IE 9]>
+		<meta http-equiv="refresh" content="0;url=ie.html" />
+	<![endif]-->
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+
+	<link rel="icon" type="text/css" href="blog/icon4.png">
+	<link rel="stylesheet" href="../styles/bootstrap.min.css">
+	<link rel="stylesheet" href="../styles/bootstrap.custom.css">
+	<link rel="stylesheet" href="../styles/main.css"/>
+	<link rel="stylesheet" href="../styles/modern.css"/>
+	<link rel="stylesheet" href="../styles/app.css"/>
+
+	<script src="../libraries/vue.js"></script>
+	<script src="../libraries/jquery-1.10.2.min.js"></script>
+	<script src="../libraries/bootstrap.js"></script>
+	<script src="../libraries/three.js/Three.js"></script>
+	<script src="../libraries/three.js/Detector.js"></script>
+	<script src="../libraries/three.js/Stats.js"></script>
+	<script src="../libraries/three.js/OrbitControls.js"></script>
+	<script src="../libraries/three.js/BufferGeometryUtils.js"></script>
+	<script src="../libraries/three.js/ConvexGeometry.js"></script>
+	<script src="../libraries/threex/THREEx.screenshot.js"></script>
+	<script src="../libraries/threex/THREEx.FullScreen.js"></script>
+	<script src="../libraries/threex/THREEx.WindowResize.js"></script>
+	<script src="../libraries/threex/THREEx.Debug.js"></script>
+	<script src="../libraries/random-0.26.js"></script>
+	<script src="../postcompiled/Rasters.js"></script>
+	<script src="../noncompiled/Units.js"></script>
+	<script src="../noncompiled/academics/OrbitalMechanics.js"></script>
+	<script src="../noncompiled/models/universe/Orbit.js"></script>
+	<script src="../noncompiled/models/universe/Spin.js"></script>
+	<script src="../noncompiled/models/universe/System.js"></script>
+	<script src="../noncompiled/models/universe/Universe.js"></script>
+</head>
+<body>
+<!-- three.js container -->
+<div id="container"></div>
+
+<div class="topright controls" id="season-sliders" style="width:200px;" >
+    <div class="input-group season-group" v-for="(value, key) in state">
+        <span class="input-group-addon">
+        	{{key}}
+        </span>
+        <span class="form-control input-sm">
+            <input type="range" min="0" max="6.28" step="0.01" 
+                v-model="state[key]" v-on:input="reset"/>
+        </span>
+    </div>
+</div>
+
+<script type="x-shader/x-vertex" id="particle-vertex-shader">
+	varying vec3 vColor;
+	varying vec3 vPosition;
+	attribute float radius;
+	attribute vec3 color;
+    const float sun_radius = 695e6; //meters
+
+	//USER_INPUT_GOES_HERE
+
+	void main() {
+		vPosition = position;
+		vColor = color;
+		gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.);
+		gl_PointSize = 10. * log(radius)/log(sun_radius);
+	}
+</script>
+<script type="x-shader/x-fragment" id="particle-fragment-shader">
+    const float PI = 3.1415926;
+
+    varying vec3 vPosition;
+    varying vec3 vColor;
+
+    //USER_INPUT_GOES_HERE
+
+    void main() {
+        gl_FragColor = vec4(vColor,1);
+    }
+</script> 
+<!-- logo -->
+<script type="text/javascript">
+	'use strict';
+	
+	var scene, renderer, composer, clock;
+	var camera, controls;
+	var renderStats;
+
+	// colors from http://colorhunt.co/blog/solar-system-stars-color-palettes/
+	var bodies = {
+		sun: 	{ name: 'sun',		color: 0xffff00,	radius: 695e6, },
+		mercury:{ name: 'mercury',	color: 0x888888,	radius: 2.4e6, },
+		venus: 	{ name: 'venus',	color: 0xeecb8b,	radius: 6.1e6, },
+		earth: 	{ name: 'earth',	color: 0x182A61,	radius: 6.3e6, },
+		moon: 	{ name: 'moon',		color: 0x888888,	radius: 1.7e6, },
+		mars: 	{ name: 'mars',		color: 0x4c0803,	radius: 3.4e6, },
+		jupiter:{ name: 'jupiter',	color: 0xc1844d,	radius:  71e6, },
+		saturn: { name: 'saturn',	color: 0xe0cdad,	radius:  60e6, },
+		uranus: { name: 'uranus',	color: 0xc7edf0,	radius:  25e6, },
+		neptune: { name: 'neptune',	color: 0x537cfe,	radius:  24e6, },
+	};
+	var universe = new Universe({
+		system: {
+			name: 'Galactic Orbit',
+			motion: { 
+				type: 'orbit',
+				semi_major_axis: 2.35e20,
+				effective_combined_mass: 1.22e56, // kg,  back calculated to achieve period of 250 million years
+			},
+			body: bodies['sun'],
+			children: [
+				{
+					name: 'Mercurial Orbit',
+					motion: {
+						type: 'orbit',
+						semi_major_axis: 0.387*Units.ASTRONOMICAL_UNIT,
+						eccentricity: 0.205,
+						inclination: Math.PI * 7./180,
+						longitude_of_ascending_node: Math.PI * 48/180,
+						effective_combined_mass: 2e30, // kg
+					},	
+					children: [
+						{
+							name: 'Mercurial Spin',
+							motion: { 
+								type: 'spin',
+								angular_speed: 2*Math.PI/(60*60*24*58.5),
+								axial_tilt: Math.PI * 0.01/180,
+							},	
+							body: bodies['mercury'],
+						},
+					],
+				},
+				{
+					name: 'Venerean Orbit',
+					motion: {
+						type: 'orbit',
+						semi_major_axis: 0.723*Units.ASTRONOMICAL_UNIT,
+						eccentricity: 0.0067,
+						inclination: Math.PI * 3.4/180,
+						longitude_of_ascending_node: Math.PI * 76/180,
+						effective_combined_mass: 2e30, // kg
+					},	
+					children: [
+						{
+							name: 'Venerean Spin',
+							motion: { 
+								type: 'spin',
+								angular_speed: 2*Math.PI/(60*60*24*243),
+								axial_tilt: Math.PI * 177.4/180,
+							},	
+							body: bodies['venus'],
+						},
+					],
+				},
+				{
+					name: 'Earth Orbit',
+					motion: {
+						type: 'orbit',
+						semi_major_axis: 1.*Units.ASTRONOMICAL_UNIT,
+						eccentricity: 0.0167,
+						inclination: Math.PI * 5e-5/180,
+						longitude_of_ascending_node: Math.PI * -11/180,
+						effective_combined_mass: 2e30, // kg
+					},	
+					children: [
+
+						{
+							name: 'Lunar Orbit',
+							motion: {
+								type: 'orbit',
+								semi_major_axis: 384.748e6,
+								eccentricity: 0.0554,
+								inclination: Math.PI * 5.16/180,
+								effective_combined_mass: 5.79e24, // kg
+							},	
+							children: [
+								{
+									name: 'Lunar Spin',
+									motion: { 
+										type: 'spin',
+										angular_speed: 2*Math.PI/(Units.DAY*27.322),
+									},	
+									body: bodies['moon'],
+								},
+							],
+						},
+
+						{
+							name: 'Earth Precession',
+							motion: { 
+								type: 'spin',
+								angular_speed: 2*Math.PI/(10e3*Units.YEAR),
+							},	
+							children: [
+								{
+									name: 'Earth Spin',
+									motion: { 
+										type: 'spin',
+										angular_speed: 2*Math.PI/(60*60*24),
+										axial_tilt: Math.PI * 23.5/180,
+									},	
+									body: bodies['earth'],
+								},
+							],
+						},
+					],
+				},
+				{
+					name: 'Martian Orbit',
+					motion: {
+						type: 'orbit',
+						semi_major_axis: 1.52*Units.ASTRONOMICAL_UNIT,
+						eccentricity: 0.093,
+						inclination: Math.PI * 1.85/180,
+						longitude_of_ascending_node: Math.PI * -49/180,
+						effective_combined_mass: 2e30, // kg
+					},	
+					children: [
+						{
+							name: 'Martian Spin',
+							motion: { 
+								type: 'spin',
+								angular_speed: 2*Math.PI/(60*60*24.6),
+								axial_tilt: Math.PI * 25.19/180,
+							},	
+							body: bodies['mars'],
+						},
+					],
+				},
+				{
+					name: 'Jovian Orbit',
+					motion: {
+						type: 'orbit',
+						semi_major_axis: 5.2*Units.ASTRONOMICAL_UNIT,
+						eccentricity: 0.048,
+						inclination: Math.PI * 1.3/180,
+						effective_combined_mass: 2e30, // kg
+						longitude_of_ascending_node: Math.PI * -100/180,
+					},	
+					children: [
+						{
+							name: 'Jovian Spin',
+							motion: { 
+								type: 'spin',
+								angular_speed: 2*Math.PI/(60*60*10),
+								axial_tilt: Math.PI * 3.13/180,
+							},	
+							body: bodies['jupiter'],
+						},
+					],
+				},
+				{
+					name: 'Saturnian Orbit',
+					motion: {
+						type: 'orbit',
+						semi_major_axis: 9.5*Units.ASTRONOMICAL_UNIT,
+						eccentricity: 0.054,
+						inclination: Math.PI * 2.48/180,
+						longitude_of_ascending_node: Math.PI * -113/180,
+						effective_combined_mass: 2e30, // kg
+					},	
+					children: [
+						{
+							name: 'Saturnian Spin',
+							motion: { 
+								type: 'spin',
+								angular_speed: 2*Math.PI/(60*60*10.8),
+								axial_tilt: Math.PI * 26.7/180,
+							},	
+							body: bodies['saturn'],
+						},
+					],
+				},
+				{
+					name: 'Uranian Orbit',
+					motion: {
+						type: 'orbit',
+						semi_major_axis: 19.19*Units.ASTRONOMICAL_UNIT,
+						eccentricity: 0.047,
+						inclination: Math.PI * 0.77/180,
+						effective_combined_mass: 2e30, // kg
+						longitude_of_ascending_node: Math.PI * -74/180,
+					},	
+					children: [
+						{
+							name: 'Uranian Spin',
+							motion: { 
+								type: 'spin',
+								angular_speed: 2*Math.PI/(60*60*17.25),
+								axial_tilt: Math.PI * 97.7/180,
+							},	
+							body: bodies['uranus'],
+						},
+					],
+				},
+				{
+					name: 'Neptunian Orbit',
+					motion: {
+						type: 'orbit',
+						semi_major_axis: 30.06*Units.ASTRONOMICAL_UNIT,
+						eccentricity: 0.008,
+						inclination: Math.PI * 1.77/180,
+						longitude_of_ascending_node: Math.PI * -131/180,
+						effective_combined_mass: 2e30, // kg
+					},	
+					children: [
+						{
+							name: 'Neptunian Spin',
+							motion: { 
+								type: 'spin',
+								angular_speed: 2*Math.PI/(60*60*16.11),
+								axial_tilt: Math.PI * 28.3/180,
+							},	
+							body: bodies['neptune'],
+						},
+					],
+				},
+			]
+		}
+	});
+
+
+	var particleGeometry	= new THREE.Geometry();
+    var particleShader = new THREE.ShaderMaterial({
+        vertexShader: $('#particle-vertex-shader').text(),
+        fragmentShader: $('#particle-fragment-shader').text(),
+        attributes: {
+        	radius:{
+        		type: 'f',
+        		value: []
+        	},
+        	color:{
+        		type: 'c',
+        		value: []
+        	},
+        },
+        uniforms: {},
+    });
+
+	var FOCUS = 'earth';
+	var body_matrix_map = universe.body_matrices({}, bodies[FOCUS]);
+	var body_index_map = {};
+	var i = 0;
+	for (var id in body_matrix_map) {
+		body_index_map[id] = i; i++;
+		var v = Matrix4x4.get_translation(body_matrix_map[id]);
+		particleGeometry.vertices.push( new THREE.Vector3( v.x, v.y, v.z ) );
+		particleShader.attributes.color.value.push(new THREE.Color(bodies[id].color));
+		particleShader.attributes.radius.value.push(bodies[id].radius);
+	}
+	var particleSystem = new THREE.ParticleSystem(particleGeometry, particleShader);
+
+	if( Detector.webgl ){
+		init();
+		animate();
+		update();
+	}
+
+	// init the scene
+	function init(){
+		clock = new THREE.Clock();
+
+		if( Detector.webgl ){
+			renderer = new THREE.WebGLRenderer({
+				antialias		: true,	// to get smoother output
+				preserveDrawingBuffer	: true	// to allow screenshot
+			});
+			renderer.setClearColor( 0x000000 );
+		}else{
+			Detector.addGetWebGLMessage();
+			return true;
+		}
+		var container = $("#container").get(0);
+		renderer.setSize( window.innerWidth, window.innerHeight );
+		$("#container").get(0).appendChild(renderer.domElement);
+
+		renderStats = new Stats();
+		$('#renderStats').append( renderStats.domElement );
+
+		// create a scene
+		scene = new THREE.Scene();
+
+		// put a camera in the scene
+		camera	= new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.01, 1e15 );
+		camera.position.set(0, 0, 400e6);
+		scene.add(camera);
+
+		// create a camera contol
+		controls	= new THREE.OrbitControls( camera, $("#container").get(0) );
+		controls.noPan = false;
+		controls.zoomSpeed = 5.0;
+		
+		// transparently support window resize
+		THREEx.WindowResize.bind(renderer, camera);
+		// allow 'p' to make screenshot
+		// THREEx.Screenshot.bindKey(renderer);
+
+		// here you add your objects
+		// - you will most likely replace this part by your own
+		var light	= new THREE.AmbientLight(  0xffffff );
+		scene.add( light );
+		scene.add( particleSystem );
+		// scene.add( vectorField );
+	}
+
+	// animation loop
+	function animate() {
+		// push to render queue and loop
+		// - it has to be at the begining of the function
+		// - to learn more: https://www.youtube.com/watch?v=8aGhZQkoFbQ
+		requestAnimationFrame( animate );
+
+		// update camera controls
+		controls.update();
+
+		// actually render the scene
+		renderer.render( scene, camera );
+
+		renderStats.update();
+	}
+
+	function update(){
+		
+		//model.update();
+		//view.cellUpdate(model.world()); 
+
+	}
+	var TIMESTEP = 60*60*24; // ~1 day per frame
+    const seasonVue = new Vue({
+        el: '#season-sliders',
+        data:{
+        	state:{
+        		'Solar System': 	0,
+        	}
+        },
+        created: function() {
+            var _this = this;
+            setInterval(function() {
+            	universe.advance(_this.state, TIMESTEP, _this.state);
+            	_this.reset();
+            }, 1000/30);
+        },
+        methods: {
+            reset(){
+				var body_matrix_map = universe.body_matrices(this.state, bodies[FOCUS]);
+				for (var id in body_matrix_map) {
+					var v = Matrix4x4.get_translation(body_matrix_map[id]);
+					particleGeometry.vertices[body_index_map[id]].x = v.x;
+					particleGeometry.vertices[body_index_map[id]].y = v.y;
+					particleGeometry.vertices[body_index_map[id]].z = v.z;
+					particleGeometry.verticesNeedUpdate = true;
+					particleGeometry.dynamic = true;
+				}
+            },
+        }
+    });
+</script>
+</body>
+</html>
