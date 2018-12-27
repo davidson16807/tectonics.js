@@ -13,61 +13,37 @@ var SphericalGeometry = (function() {
 	SphericalGeometry.get_volume = function(radius) {
 		return 4/3*Math.PI*radius*radius*radius;
 	}
-	SphericalGeometry.get_latitude = function(x,y,z){
-		// Note: vertical axis is classically Y in 3d gaming, but it's classically Z in the math
-		// We call it "height" to avoid confusion.
-		// see https://gamedev.stackexchange.com/questions/46225/why-is-y-up-in-many-games
-		return Math.asin(y/Math.sqrt(x*x+y*y+z*z));
+	SphericalGeometry.cartesian_to_spherical = function(x,y,z){
+		return {lat: Math.asin(y/Math.sqrt(x*x+y*y+z*z)), lon: Math.atan2(-z, x)};
 	}
-	SphericalGeometry.get_longitude = function(x,y,z){
-		return Math.atan2(-z, x);
-	}
-	SphericalGeometry.get_cartesian = function(lat, lon){
+	SphericalGeometry.spherical_to_cartesian = function(lat, lon){
 		return Vector(
 			Math.cos(lat) * Math.cos(lon),
 		    Math.sin(lat),
 		   -Math.cos(lat) * Math.sin(lon)
 		);
 	}
-	SphericalGeometry.get_cartesians = function(lats, lons, result){
-		var result = result || VectorRaster.FromExample(lats);
-		var x = result.x;
-		var y = result.y;
-		var z = result.z;
-		var cos = Math.cos;
-		var sin = Math.sin;
-		for (var i=0, li=lats.length; i<li; ++i) {
-		    x[i] =  cos(lats[i]) * cos(lons[i]);
-		}
-		for (var i=0, li=lats.length; i<li; ++i) {
-		    y[i] =  sin(lats[i]);
-		}
-		for (var i=0, li=lats.length; i<li; ++i) {
-		    z[i] = -cos(lats[i]) * sin(lons[i]);
-		}
-		return result;
-	}
-	SphericalGeometry.get_latitudes = function(cartesians, result) {
-		var result = result || Float32Raster.FromExample(cartesians);
+	SphericalGeometry.get_latitudes = function(height, lat) {
+		// Note: vertical axis is classically Y in 3d gaming, but it's classically Z in the math
+		// We call it "height" to avoid confusion.
+		// see https://gamedev.stackexchange.com/questions/46225/why-is-y-up-in-many-games
+		var lat = lat || Float32Raster(height.grid);
 		var asin = Math.asin;
-		var y = cartesians.y;
-		for (var i=0, li=y.length; i<li; ++i) {
-		    result[i] = asin(y[i]);
+		for (var i=0, li=height.length; i<li; ++i) {
+		    lat[i] = asin(height[i]);
 		}
-		return result;
+		return lat;
 	}
-	SphericalGeometry.get_longitudes = function(cartesians, result) {
-		var result = result || Float32Raster.FromExample(cartesians);
+	SphericalGeometry.get_longitudes = function(x, z, lon) {
+		var lon = lon || Float32Raster(x.grid);
 		var atan = Math.atan2;
-		var x = cartesians.x;
-		var z = cartesians.z;
 		for (var i=0, li=x.length; i<li; ++i) {
-			result[i] = atan(-z[i], x[i]);
+			lon[i] = atan(-z[i], x[i]);
 		}
-		return result;
+		return lon;
 	}
 	SphericalGeometry.get_random_point_on_surface = function(random) {
-		return SphericalGeometry.get_cartesian(
+		return SphericalGeometry.spherical_to_cartesian(
 			Math.asin(2*random.random() - 1),
 			2*Math.PI * random.random()
 		);
