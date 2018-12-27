@@ -27,7 +27,6 @@ function Atmosphere(grid, parameters) {
 			var min_absorbed_radiation 	= Float32Dataset.min( absorbed_radiation );
 			var mean_absorbed_radiation	= Float32Dataset.average( absorbed_radiation );
 
-			var infrared_optical_depth = 4/3;
 			// TODO: improve heat flow by modeling it as a vector field
 			var heat_flow_uniform = Thermodynamics.solve_entropic_heat_flow(
 				max_absorbed_radiation, 
@@ -190,7 +189,7 @@ function Atmosphere(grid, parameters) {
 			);
 
 			Thermodynamics.get_black_body_emissive_radiation_fluxes(this.sealevel_temp, this.outgoing_heat);
-			ScalarField.div_scalar 		( this.outgoing_heat, this.emission_coefficient, 	this.outgoing_heat);
+			ScalarField.mult_scalar 	( this.outgoing_heat, this.emission_coefficient, 	this.outgoing_heat);
 			Climatology.get_heat_capacities(ocean_coverage.value(), material_heat_capacity, this.get_varying_heat_capacity);
 			ScalarField.sub_field 		( this.incoming_heat, this.outgoing_heat, 			this.net_heat_gain );
 			ScalarField.div_field 		( this.net_heat_gain, this.get_varying_heat_capacity, 			this.temperature_delta_rate );
