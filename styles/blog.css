@@ -32,26 +32,26 @@ article h3, summary
 	font-size: 138%; 
     font-weight:bold;
 }
-details
+article details
 {
 	margin-top: 1.315%	
 }
-details p 
+article details p 
 { 
 	margin-left: 1.315%; 
 }
 
-img
+article img
 {
     border-style: none;
     text-decoration: none;
 }
 
-a {
+article a {
     color: #0A968C;
     text-decoration: initial;
 }
-a:hover {
+article a:hover {
     color: #0A5E68;
     text-decoration: initial;
 }
@@ -77,57 +77,5 @@ a:hover {
 	bottom		: -1em;
 	left		: -15%;
 	z-index		: -1;
-}
-.ads
-{
-    float: right;
-    width: 23.607%;
-	margin: 3.444% 5.573% 3.444% 3.444%;
-	padding: 0.813%;
-    border-color: #E0E0E0;
-    border-style: solid;
-}
-.ads img 
-{ 
-	max-height: 3em; 
-    max-width: 100%;
-    margin: 1.315%;
-}
-
-
-.ocean
-{
-    background-color:#0A0A32;
-    color:White;
-}
-.land
-{
-	background-color:#50721D;
-	color:#202020;
-}
-.tundra
-{
-	background-color:#444422;
-	color:#E0E0E0;
-}
-.shallow
-{
-	background-color:#0A968C;
-	color:Black;
-}
-.mountain
-{
-	background-color:#404040;
-	color:White;
-}
-.bright
-{
-	background-color:White;
-	color:Black;
-}
-.dark
-{
-	background-color:Black;
-	color:White;
 }
 
