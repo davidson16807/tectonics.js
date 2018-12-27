@@ -4,30 +4,30 @@
     margin: 0;
 }
 
-h1, h2, h3, summary
+article h1, h2, h3, summary
 {
 	font-family: Garamond, Hoefler Text, Free Serif, serif;
 }
-h1 a, h2 a, h3 a
+article h1 a, h2 a, h3 a
 {
 	color: black;
 	text-decoration: initial;
 }
-h1, h2
+article h1, h2
 { 
 	margin-left: -2.128%; 
 } 
-h3, h4
+article h3, h4
 { 
 	margin-left: -1.315%; 
 }
-h5, h6   
+article h5, h6   
 { 
 	margin-left: -0.813%; 
 } 
-h1 { font-size: 261%; margin-bottom: 0.813%; margin-top: 0.502%}
-h2 { font-size: 161%; }
-h3, summary
+article h1 { font-size: 261%; margin-bottom: 0.813%; margin-top: 0.502%}
+article h2 { font-size: 161%; }
+article h3, summary
 { 
 	font-size: 138%; 
     font-weight:bold;
