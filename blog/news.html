@@ -3,7 +3,7 @@ layout: default
 ---
 <h2>DEVELOPER'S WEB LOG</h2>
 {% for post in site.posts limit:10 %}
-	<h3><a href="{{ post.url }}">{{ post.title }}</a></h3>
+	<h3><a href="{{ site.url }}/tectonics.js/{{ post.url }}">{{ post.title }}</a></h3>
 	<p class="date">{{ post.date | date: "%B, %-d %Y" }}</p>
 	<div>
 		{{ post.content }}
