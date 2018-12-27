@@ -22,6 +22,9 @@ fragmentShaders.monochromatic = `
 fragmentShaders.heatmap = `
 #include "precompiled/shaders/fragment/heatmap.glsl.c"
 `;
+fragmentShaders.topographic = `
+#include "precompiled/shaders/fragment/topographic.glsl.c"
+`;
 fragmentShaders.vectorField = `
 #include "precompiled/shaders/fragment/vector_field.glsl.c"
 `;
