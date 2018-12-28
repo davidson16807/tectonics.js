@@ -1,14 +1,6 @@
 
 var CrustGenerator = {};
 CrustGenerator.generate = function (height_ranks, hypsography, control_points, crust, random) {
-	function clamp (x, minVal, maxVal) {
-		return Math.min(Math.max(x, minVal), maxVal);
-	}
-	function smoothstep (edge0, edge1, x) {
-		var fraction = (x - edge0) / (edge1 - edge0);
-		return clamp(fraction, 0.0, 1.0);
-    	// return t * t * (3.0 - 2.0 * t);
-	}
 
 	// order cells by this new found  "height rank"
 	var cell_ids = new Uint16Array(height_ranks.length);
