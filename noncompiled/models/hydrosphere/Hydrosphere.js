@@ -55,19 +55,19 @@ function Hydrosphere(grid, parameters) {
 				return result;
 			}
 			var freezing_point = 273.15; // TODO: move this to Atmosphere, and update this to reflect surface_pressure
-			Float32RasterInterpolation.lerp(
+			Float32RasterInterpolation.mix(
 					1, 0, 
-					Float32RasterInterpolation.smoothstep(freezing_point-5, freezing_point, surface_temp),
+					Float32RasterInterpolation.linearstep(freezing_point-5, freezing_point, surface_temp),
 					result
 				);
 			Float32RasterGraphics.fill_into_selection(
 				result, 0.,
 				ScalarField.lt_field(
 					displacement.value(), 
-					Float32RasterInterpolation.lerp(
+					Float32RasterInterpolation.mix(
 						_this.mesopelagic.value(), 
 						_this.epipelagic.value(),
-						Float32RasterInterpolation.smoothstep(freezing_point-5, freezing_point, surface_temp)
+						Float32RasterInterpolation.linearstep(freezing_point-5, freezing_point, surface_temp)
 					)
 				),
 				result
@@ -78,7 +78,7 @@ function Hydrosphere(grid, parameters) {
 	);
 	this.ocean_coverage = new Memo(
 		Float32Raster(grid),  
-		result => Float32RasterInterpolation.smoothstep(
+		result => Float32RasterInterpolation.linearstep(
 			_this.sealevel.value(), 
 			_this.epipelagic.value(), 
 			displacement.value(), 

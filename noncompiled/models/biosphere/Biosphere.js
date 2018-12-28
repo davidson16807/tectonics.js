@@ -29,7 +29,7 @@ function Biosphere(grid, parameters) {
 	); 
 	this.plant_coverage = new Memo(
 		Float32Raster(grid),  
-		result => Float32RasterInterpolation.smoothstep(0, 1, self.lai.value(), result)
+		result => Float32RasterInterpolation.linearstep(0, 1, self.lai.value(), result)
 	); 
 
 	// private variables

@@ -1353,7 +1353,7 @@ Float32Raster.FromExample = function(raster) {
   var length = 0;
   if (raster instanceof Float32Array) {
     length = raster.length;
-  } else if(raster.x instanceof Float32Array) {
+  } else if(raster !== void 0 && raster.x instanceof Float32Array) {
     length = raster.x.length;
   } else {
     throw 'must supply a vector or scalar raster'
@@ -1404,8 +1404,10 @@ Float32Raster.copy = function(raster, result) {
   return result;
 }
 Float32Raster.fill = function (raster, value) {
+  raster = raster || Float32Raster.FromExample(raster);
   if (!(raster instanceof Float32Array)) { throw "raster" + ' is not a ' + "Float32Array"; }
   raster.fill(value);
+  return raster;
 };
 Float32Raster.min_id = function (raster) {
   if (!(raster instanceof Float32Array)) { throw "raster" + ' is not a ' + "Float32Array"; }
@@ -1807,7 +1809,7 @@ VectorRaster.FromExample = function(raster, grid) {
   var length = 0;
   if (raster instanceof Float32Array) {
     length = raster.length;
-  } else if(raster.x instanceof Float32Array) {
+  } else if(raster !== void 0 && raster.x instanceof Float32Array) {
     length = raster.x.length;
   } else {
     throw 'must supply a vector or scalar raster'
@@ -1857,6 +1859,7 @@ VectorRaster.copy = function(vector_raster, output) {
   return output;
 }
 VectorRaster.fill = function (vector_raster, value) {
+  raster = raster || VectorRaster.FromExample(vector_raster);
   if ((vector_raster.everything === void 0) || !(vector_raster.everything instanceof Float32Array)) { throw "vector_raster" + ' is not a vector raster'; }
   vector_raster.x.fill(value.x);
   vector_raster.y.fill(value.y);
@@ -4311,29 +4314,29 @@ VectorRasterGraphics.fill_into_selection = function(vector_raster, fill, selecti
 // The FieldInterpolation namespaces provide operations commonly used in interpolation for computer graphics
 // All input are raster objects, e.g. VectorRaster or Float32Raster
 var Float32RasterInterpolation = {};
-Float32RasterInterpolation.lerp = function(a,b, x, result){
+Float32RasterInterpolation.mix = function(a,b, x, result){
     if (!(x instanceof Float32Array)) { throw "x" + ' is not a ' + "Float32Array"; }
-    result = result || Float32Raster(x.grid);
+    result = result || Float32Raster.FromExample(x);
     if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
     for (var i = 0, li = result.length; i < li; i++) {
         result[i] = a + x[i]*(b-a);
     }
     return result;
 }
-Float32RasterInterpolation.lerp_fsf = function(a,b, x, result){
+Float32RasterInterpolation.mix_fsf = function(a,b, x, result){
     if (!(a instanceof Float32Array)) { throw "a" + ' is not a ' + "Float32Array"; }
     if (!(x instanceof Float32Array)) { throw "x" + ' is not a ' + "Float32Array"; }
-    result = result || Float32Raster(x.grid);
+    result = result || Float32Raster.FromExample(x);
     if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
     for (var i = 0, li = result.length; i < li; i++) {
         result[i] = a[i] + x[i] * (b-a[i]);
     }
     return result;
 }
-Float32RasterInterpolation.lerp_sff = function(a,b, x, result){
+Float32RasterInterpolation.mix_sff = function(a,b, x, result){
     if (!(b instanceof Float32Array)) { throw "b" + ' is not a ' + "Float32Array"; }
     if (!(x instanceof Float32Array)) { throw "x" + ' is not a ' + "Float32Array"; }
-    result = result || Float32Raster(x.grid);
+    result = result || Float32Raster.FromExample(x);
     if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
     for (var i = 0, li = result.length; i < li; i++) {
         result[i] = a + x[i] * (b[i]-a);
@@ -4342,7 +4345,7 @@ Float32RasterInterpolation.lerp_sff = function(a,b, x, result){
 }
 Float32RasterInterpolation.clamp = function(x, min_value, max_value, result) {
     if (!(x instanceof Float32Array)) { throw "x" + ' is not a ' + "Float32Array"; }
-    result = result || Float32Raster(x.grid);
+    result = result || Float32Raster.FromExample(x);
     if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
     var x_i = 0.0;
     for (var i = 0, li = x.length; i < li; i++) {
@@ -4351,25 +4354,67 @@ Float32RasterInterpolation.clamp = function(x, min_value, max_value, result) {
     }
     return result;
 }
+Float32RasterInterpolation.step = function(edge, x, result) {
+    if (!(x instanceof Float32Array)) { throw "x" + ' is not a ' + "Float32Array"; }
+    result = result || Float32Raster.FromExample(x);
+    if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
+    for (var i = 0, li = x.length; i < li; i++) {
+        result[i] = x[i] > edge? 1. : 0.;
+    }
+    return result;
+}
+Float32RasterInterpolation.linearstep = function(edge0, edge1, x, result) {
+    if (!(x instanceof Float32Array)) { throw "x" + ' is not a ' + "Float32Array"; }
+    result = result || Float32Raster.FromExample(x);
+    if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
+    var fraction = 0.;
+    var inverse_edge_distance = 1 / (edge1 - edge0);
+    for (var i = 0, li = result.length; i < li; i++) {
+        fraction = (x[i] - edge0) * inverse_edge_distance;
+        result[i] = fraction > 1.0? 1.0 : fraction < 0.0? 0.0 : fraction;
+    }
+    return result;
+}
 Float32RasterInterpolation.smoothstep = function(edge0, edge1, x, result) {
     if (!(x instanceof Float32Array)) { throw "x" + ' is not a ' + "Float32Array"; }
-    result = result || Float32Raster(x.grid);
+    result = result || Float32Raster.FromExample(x);
     if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
- var fraction;
- var inverse_edge_distance = 1 / (edge1 - edge0);
+    var inverse_edge_distance = 1 / (edge1 - edge0);
+    var fraction = 0.;
+    var linearstep = 0.;
     for (var i = 0, li = result.length; i < li; i++) {
-  fraction = (x[i] - edge0) * inverse_edge_distance;
-  result[i] = fraction > 1.0? 1.0 : fraction < 0.0? 0.0 : fraction;
- }
- return result;
+        fraction = (x[i] - edge0) * inverse_edge_distance;
+        linearstep = fraction > 1.0? 1.0 : fraction < 0.0? 0.0 : fraction;
+        result[i] = linearstep*linearstep*(3-2*linearstep);
+    }
+    return result;
 }
-Float32RasterInterpolation.smooth_heaviside = function(x, k, result) {
-    result = result || Float32Raster(x.grid);
+// NOTE: you probably don't want to use this - you should use "smoothstep", instead
+// smoothstep is faster, and it uses more intuitive parameters
+// smoothstep2 is only here to support legacy behavior
+Float32RasterInterpolation.smoothstep2 = function(x, k, result) {
     if (!(x instanceof Float32Array)) { throw "x" + ' is not a ' + "Float32Array"; }
+    result = result || Float32Raster.FromExample(x);
     if (!(result instanceof Float32Array)) { throw "result" + ' is not a ' + "Float32Array"; }
     var exp = Math.exp;
     for (var i = 0, li = result.length; i < li; i++) {
     result[i] = 2 / (1 + exp(-k*x[i])) - 1;
+    }
+    return result;
+}
+// performs Linear piecewise intERPolation:
+// given a list of control points that map 1d space to 1d scalars, and a raster of 1d input, 
+// it returns a scalar field where each value maps to the corresponding value on the input field
+Float32RasterInterpolation.lerp = function(control_points_x, control_points_y, x, result, scratch) {
+    if (!(x instanceof Float32Array)) { throw "x" + ' is not a ' + "Float32Array"; }
+    result = result || Float32Raster.FromExample(x);
+    scratch = scratch || Float32Raster.FromExample(x);
+    var mix = Float32RasterInterpolation.mix_fsf;
+    var linearstep = Float32RasterInterpolation.linearstep;
+    Float32Raster.fill(result, control_points_y[0]);
+    for (var i = 1; i < control_points_x.length; i++) {
+        linearstep (control_points_x[i-1], control_points_x[i], x, scratch)
+        mix (result, control_points_y[i], scratch, result);
     }
     return result;
 }

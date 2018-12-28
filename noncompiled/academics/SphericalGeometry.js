@@ -111,7 +111,7 @@ var SphericalGeometry = (function() {
 		Float32Raster.fill(height_ranks, 0);
 		for (var j = 0, lj = zDotMultipliers.length; j < lj; j++) {
 			VectorField.dot_vector(pos, zDotMultipliers[j], z);
-			Float32RasterInterpolation.smooth_heaviside(z, 300, z);
+			Float32RasterInterpolation.smoothstep2(z, 300, z);
 			ScalarField.add_field(height_ranks, z, height_ranks);
 		}
 		Float32Dataset.normalize(height_ranks, height_ranks);

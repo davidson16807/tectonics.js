@@ -27,7 +27,7 @@ Float32Raster.FromExample = function(raster) {
   var length = 0; 
   if (raster instanceof Float32Array) { 
     length = raster.length; 
-  } else if(raster.x instanceof Float32Array) { 
+  } else if(raster !== void 0 && raster.x instanceof Float32Array) { 
     length = raster.x.length; 
   } else { 
     throw 'must supply a vector or scalar raster' 
@@ -78,8 +78,10 @@ Float32Raster.copy = function(raster, result) {
   return result;
 }
 Float32Raster.fill = function (raster, value) {
+  raster = raster || Float32Raster.FromExample(raster);
   ASSERT_IS_ARRAY(raster, Float32Array)
   raster.fill(value);
+  return raster;
 };
 
 Float32Raster.min_id = function (raster) {

@@ -143,6 +143,8 @@ Crust.get_density = function(mass, thickness, default_density, density) {
 	for (var i = 0, li = density.length; i < li; i++) { 
         density[i] = thickness[i] > 0? mass[i] / thickness[i] : default_density; 
     }
+
+
     return density;
 }
 
@@ -259,9 +261,9 @@ Crust.get_thickness = function(crust, material_density, thickness) {
 	var scratch = Float32Raster(crust.grid);
 
 	var fraction_of_lifetime = scratch;
-	Float32RasterInterpolation.smoothstep	(0* Units.MEGAYEAR, 250* Units.MEGAYEAR, crust.age, fraction_of_lifetime);
+	Float32RasterInterpolation.linearstep	(0* Units.MEGAYEAR, 250* Units.MEGAYEAR, crust.age, fraction_of_lifetime);
 	var mafic_density = scratch;
-	Float32RasterInterpolation.lerp			(material_density.mafic_volcanic_min, material_density.mafic_volcanic_max, fraction_of_lifetime, mafic_density);
+	Float32RasterInterpolation.mix			(material_density.mafic_volcanic_min, material_density.mafic_volcanic_max, fraction_of_lifetime, mafic_density);
 	var mafic_specific_volume = scratch;
 	ScalarField.inv_field 					(mafic_density, mafic_specific_volume);
 
