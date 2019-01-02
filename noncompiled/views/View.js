@@ -1,10 +1,7 @@
 'use strict';
 
-function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
-	var scalarProjectionView = projectionView.clone();
-	var vectorProjectionView = projectionView.clone();
-
-	var this_ = this;
+// This class encapsulates all state within Three.js
+function ThreeJsState() {
 	// create the renderer
 	this.renderer = new THREE.WebGLRenderer({
 		antialias		: true,	// to get smoother output
@@ -24,6 +21,16 @@ function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
 	this.scene = new THREE.Scene();
 	this.scene.add(this.camera);
 
+	// create a camera contol
+	this.controls = new THREE.OrbitControls( this.camera, this.renderer.domElement );
+}
+
+function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
+	var gl_state = new ThreeJsState();
+
+	var scalarProjectionView = projectionView.clone();
+	var vectorProjectionView = projectionView.clone();
+
 	var options = {
 		sealevel_mod: 1.0,
 		darkness_mod: 1.0,
@@ -32,18 +39,19 @@ function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
 	};
 
 	this.render = function() {
-		return this.renderer.render( this.scene, this.camera );
+		gl_state.controls.update();
+		return gl_state.renderer.render( gl_state.scene, gl_state.camera );
 	};
 
 	this.update = function(sim){
 		// TODO: what if sim changed from last iteration?
-		scalarProjectionView.updateScene(this_.scene, sim.focus, 
+		scalarProjectionView.updateScene(gl_state, sim.focus, 
 				{
 					...options, 
 					subview: scalarView
 				}
 			);
-		vectorProjectionView.updateScene(this_.scene, sim.focus, 
+		vectorProjectionView.updateScene(gl_state, sim.focus, 
 				{
 					...options, 
 					subview: vectorView
@@ -52,14 +60,14 @@ function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
 	}
 	this.print = function(raster){
 		if (raster.x === void 0) {
-			scalarProjectionView.updateScene(this_.scene, raster, 
+			scalarProjectionView.updateScene(gl_state, raster, 
 					{
 						...options, 
 						subview: scalarView
 					}
 				);
 		} else {
-			vectorProjectionView.updateScene(this_.scene, raster, 
+			vectorProjectionView.updateScene(gl_state, raster, 
 					{
 						...options, 
 						subview: vectorView
@@ -73,11 +81,11 @@ function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
 	};
 
 	this.getDomElement = function() {
-		return this.renderer.domElement;
+		return gl_state.renderer.domElement;
 	};
 
 	this.getScreenshotDataURL = function() {
-		return THREEx.Screenshot.toDataURL(this.renderer);
+		return THREEx.Screenshot.toDataURL(gl_state.renderer);
 	};
 
 	this.setScalarView = function(value) {
@@ -85,7 +93,7 @@ function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
 			return;
 		}
 		if(scalarView !== void 0){
-			scalarView.removeFromScene(this.scene);
+			scalarView.removeFromScene(gl_state);
 		}
 		scalarView = value;
 	};
@@ -95,7 +103,7 @@ function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
 			return;
 		}
 		if(vectorView !== void 0){
-			vectorView.removeFromScene(this.scene);
+			vectorView.removeFromScene(gl_state);
 		}
 		vectorView = value;
 	};
@@ -105,8 +113,8 @@ function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
 			return;
 		}
 		if(projectionView !== void 0){
-			scalarProjectionView.removeFromScene(this.scene);
-			vectorProjectionView.removeFromScene(this.scene);
+			scalarProjectionView.removeFromScene(gl_state);
+			vectorProjectionView.removeFromScene(gl_state);
 		}
 		projectionView = value;
 		scalarProjectionView = value.clone();

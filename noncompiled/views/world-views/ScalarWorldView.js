@@ -12,7 +12,7 @@ function ScalarWorldView(scalarRasterView, getField) {
 		// run getField()
 		if (this.getField === void 0) {
 			log_once("ScalarWorldView.getField is undefined.");
-			this.removeFromScene(scene);
+			this.removeFromScene(gl_state);
 			return;
 		}
 
@@ -20,7 +20,7 @@ function ScalarWorldView(scalarRasterView, getField) {
 
 		if (raster === void 0) {
 			log_once("ScalarWorldView.getField() returned undefined.");
-			this.removeFromScene(scene);
+			this.removeFromScene(gl_state);
 			return;
 		}
 		if (raster instanceof Uint8Array) {
@@ -31,13 +31,13 @@ function ScalarWorldView(scalarRasterView, getField) {
 		}
 		if (!(raster instanceof Float32Array)) { 
 			log_once("ScalarWorldView.getField() did not return a TypedArray.");
-			this.removeFromScene(scene);
+			this.removeFromScene(gl_state);
 			return;
 		}
 
 		scalarRasterView.updateChart(data, raster, options);
 	};
-	this.updateScene = function(scene, world, options) {
+	this.updateScene = function(gl_state, world, options) {
 
 		preallocated = preallocated || Float32Raster(world.grid);
 		scratch = scratch || Float32Raster(world.grid);
@@ -45,7 +45,7 @@ function ScalarWorldView(scalarRasterView, getField) {
 		// run getField()
 		if (this.getField === void 0) {
 			log_once("ScalarWorldView.getField is undefined.");
-			this.removeFromScene(scene);
+			this.removeFromScene(gl_state);
 			return;
 		}
 
@@ -53,7 +53,7 @@ function ScalarWorldView(scalarRasterView, getField) {
 
 		if (raster === void 0) {
 			log_once("ScalarWorldView.getField() returned undefined.");
-			this.removeFromScene(scene);
+			this.removeFromScene(gl_state);
 			return;
 		}
 		if (raster instanceof Uint8Array) {
@@ -64,11 +64,11 @@ function ScalarWorldView(scalarRasterView, getField) {
 		}
 		if (!(raster instanceof Float32Array)) { 
 			log_once("ScalarWorldView.getField() did not return a TypedArray.");
-			this.removeFromScene(scene);
+			this.removeFromScene(gl_state);
 			return;
 		}
 
-		scalarRasterView.updateScene(scene, raster, { 
+		scalarRasterView.updateScene(gl_state, raster, { 
 			...options, 
 			sealevel: 		world.hydrosphere.sealevel.value(), 
 			displacement: 	world.lithosphere.displacement.value() 
@@ -76,8 +76,8 @@ function ScalarWorldView(scalarRasterView, getField) {
 
 		var mesh = scalarRasterView.mesh;
 	};
-	this.removeFromScene = function(scene) {
-		scalarRasterView.removeFromScene(scene);
+	this.removeFromScene = function(gl_state) {
+		scalarRasterView.removeFromScene(gl_state);
 		preallocated = void 0;
 		scratch = void 0;
 	};

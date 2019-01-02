@@ -46,13 +46,13 @@ function VectorRasterView(options) {
 		}
 	}
 
-	this.updateScene = function(scene, raster, options_) {
+	this.updateScene = function(gl_state, raster, options_) {
 
 		if (mesh === void 0) {
 			mesh = create_mesh(raster, options_);
 			vertexShader = options_.vertexShader;
 			uniforms = {...options_};
-			scene.add(mesh);
+			gl_state.scene.add(mesh);
 
 			// HACK: we expose mesh here so WorldViews can modify as they see fit, 
 			// 	  namely for displacement and sealevel attributes
@@ -84,9 +84,9 @@ function VectorRasterView(options) {
 		mesh.geometry.verticesNeedUpdate = true;
 
 	};
-	this.removeFromScene = function(scene) {
+	this.removeFromScene = function(gl_state) {
 		if (mesh !== void 0) {
-			scene.remove(mesh);
+			gl_state.scene.remove(mesh);
 			mesh.geometry.dispose();
 			mesh.material.dispose();
 			mesh = void 0;

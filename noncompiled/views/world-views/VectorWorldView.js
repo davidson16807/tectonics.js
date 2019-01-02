@@ -4,12 +4,12 @@ function VectorWorldView(options) {
 	var vectorRasterView = options['vectorRasterView'] || new VectorRasterView({});
 	this.getField = options['getField'];
 
-	this.updateScene = function(scene, world, options) {
+	this.updateScene = function(gl_state, world, options) {
 
 		// run getField()
 		if (this.getField === void 0) {
 			log_once("VectorView.getField is undefined.");
-			this.removeFromScene(scene);
+			this.removeFromScene(gl_state);
 			return;
 		}
 
@@ -17,19 +17,19 @@ function VectorWorldView(options) {
 
 		if (raster === void 0) {
 			log_once("VectorView.getField() returned undefined.");
-			this.removeFromScene(scene);
+			this.removeFromScene(gl_state);
 			return;
 		}
 		if (!(raster.x !== void 0) && !(raster.x instanceof Float32Array)) { 
 			log_once("VectorView.getField() did not return a VectorRaster.");
-			this.removeFromScene(scene);
+			this.removeFromScene(gl_state);
 			return;
 		}
 
-		vectorRasterView.updateScene(scene, raster, options);
+		vectorRasterView.updateScene(gl_state, raster, options);
 	};
-	this.removeFromScene = function(scene) {
-		vectorRasterView.removeFromScene(scene);
+	this.removeFromScene = function(gl_state) {
+		vectorRasterView.removeFromScene(gl_state);
 	};
 	this.clone = function() {
 		return new VectorWorldView({ 

@@ -62,13 +62,13 @@ function RealisticWorldView(shader_return_value) {
 		Float32Raster.get_ids(raster, raster.grid.buffer_array_to_cell, mesh.geometry.attributes[key].array); 
 		mesh.geometry.attributes[key].needsUpdate = true;
 	}
-	this.updateScene = function(scene, world, options) {
+	this.updateScene = function(gl_state, world, options) {
 
 		if (mesh === void 0) {
 			mesh = create_mesh(world, options);
 			uniforms = {...options};
 			vertexShader = options.vertexShader;
-			scene.add(mesh);
+			gl_state.scene.add(mesh);
 		} 
 		
 		update_vertex_shader(options.vertexShader);
@@ -84,9 +84,9 @@ function RealisticWorldView(shader_return_value) {
 		update_attribute('plant_coverage', 	world.biosphere.plant_coverage.value());
 	};
 
-	this.removeFromScene = function(scene) {
+	this.removeFromScene = function(gl_state) {
 		if (mesh !== void 0) {
-			scene.remove(mesh);
+			gl_state.scene.remove(mesh);
 			mesh.geometry.dispose();
 			mesh.material.dispose();
 			mesh = void 0;

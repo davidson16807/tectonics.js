@@ -61,10 +61,10 @@ function TopographicRasterView(options) {
 		mesh.geometry.attributes[key].needsUpdate = true;
 	}
 
-	this.updateScene = function(scene, raster, options) {
+	this.updateScene = function(gl_state, raster, options) {
 
 		if (raster === void 0) {
-			this.removeFromScene(scene);
+			this.removeFromScene(gl_state);
 			return;
 		}
 
@@ -89,7 +89,7 @@ function TopographicRasterView(options) {
 			mesh = create_mesh(scaled_raster, options);
 			uniforms = {...options};
 			vertexShader = options.vertexShader;
-			scene.add(mesh);
+			gl_state.scene.add(mesh);
 
 			// HACK: we expose mesh here so WorldViews can modify as they see fit, 
 			// 	  namely for displacement and sealevel attributes
@@ -110,9 +110,9 @@ function TopographicRasterView(options) {
 			update_uniform('sealevel', 		options.sealevel);
 		}
 	};
-	this.removeFromScene = function(scene) {
+	this.removeFromScene = function(gl_state) {
 		if (mesh !== void 0) {
-			scene.remove(mesh);
+			gl_state.scene.remove(mesh);
 			mesh.geometry.dispose();
 			mesh.material.dispose();
 			mesh = void 0;

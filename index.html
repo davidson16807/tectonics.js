@@ -379,7 +379,7 @@
 	}
 
 	var sim, view;
-	var renderStats, updateStats, controls;
+	var renderStats, updateStats;
 	var IS_PROD = false;
 	var autosave_period;
 
@@ -503,8 +503,6 @@
 			$('.header').hide();
 		}
 
-		// create a camera contol
-		controls	= new THREE.OrbitControls( view.camera, $("#container").get(0) );
 	}
 
 	function autosave() {
@@ -520,8 +518,6 @@
 		// - to learn more: https://www.youtube.com/watch?v=8aGhZQkoFbQ
 		requestAnimationFrame( animate );
 
-		// update camera controls
-		controls.update();
 		view.render();
 
 		// actually render the scene

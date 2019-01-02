@@ -4,23 +4,23 @@ function MapProjectionView(vertexShader) {
 	var subview1 = void 0;
 	var subview2 = void 0;
 
-	this.updateScene = function(scene, model, options) {
+	this.updateScene = function(gl_state, model, options) {
 		// update view if needed
 		if (subview1 !== options.subview) {
-			this.removeFromScene(scene);
+			this.removeFromScene(gl_state);
 			subview1 = options.subview;
 			subview2 = options.subview.clone();
 		}
 		// invoke subview if present
 		if (subview1 !== void 0) {
-			subview1.updateScene(scene, model, {...options, vertexShader:vertexShader, index: -1});
-			subview2.updateScene(scene, model, {...options, vertexShader:vertexShader, index:  1});
+			subview1.updateScene(gl_state, model, {...options, vertexShader:vertexShader, index: -1});
+			subview2.updateScene(gl_state, model, {...options, vertexShader:vertexShader, index:  1});
 		}
 	};
-	this.removeFromScene = function(scene) {
+	this.removeFromScene = function(gl_state) {
 		if (subview1 !== void 0) {
-			subview1.removeFromScene(scene);
-			subview2.removeFromScene(scene);
+			subview1.removeFromScene(gl_state);
+			subview2.removeFromScene(gl_state);
 		}
 	};
 	this.clone = function() {
