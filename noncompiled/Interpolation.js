@@ -6,7 +6,7 @@ var Interpolation = (function() {
 	Interpolation.clamp = function (x, minVal, maxVal) {
 		return x > maxVal? maxVal : x < minVal? minVal : x;
 	}
-	Interpolation.linearstep = function(edge, x) {
+	Interpolation.linearstep = function(edge0, edge1, x) {
 		var fraction = (x - edge0) / (edge1 - edge0);
 		return fraction > 1.? 1.0 : fraction < 0.? 0. : fraction;
 	}
@@ -28,9 +28,9 @@ var Interpolation = (function() {
 	Interpolation.lerp = function(control_point_x, control_point_y, x) {
 		var mix = Interpolation.mix;
 		var linearstep = Interpolation.linearstep;
-		var result = control_points[0];
-		for (var i = 1; i < control_points.length; i++) {
-			result = mix(result, control_points[i], linearstep(control_points[i-1], control_points[i], x[i]));
+		var result = control_point_y[0];
+		for (var i = 1; i < control_point_x.length; i++) {
+			result = mix(result, control_point_y[i], linearstep(control_point_x[i-1], control_point_x[i], x));
 		}
 		return result;
 	}
