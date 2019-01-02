@@ -17,12 +17,17 @@ function ThreeJsState() {
 	// transparently support window resize
 	THREEx.WindowResize.bind(this.renderer, this.camera);
 
+	// create a camera contol
+	this.controls = new THREE.OrbitControls( this.camera, this.renderer.domElement );
+
 	// create a scene
 	this.scene = new THREE.Scene();
 	this.scene.add(this.camera);
 
-	// create a camera contol
-	this.controls = new THREE.OrbitControls( this.camera, this.renderer.domElement );
+	this.pass = new THREE.RenderPass(this.scene, this.camera);
+
+	this.composer = new THREE.EffectComposer(this.renderer);
+	this.composer.addPass(this.pass);
 }
 
 function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
@@ -40,7 +45,8 @@ function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
 
 	this.render = function() {
 		gl_state.controls.update();
-		return gl_state.renderer.render( gl_state.scene, gl_state.camera );
+		gl_state.pass.render(gl_state.renderer);
+		// gl_state.composer.render();
 	};
 
 	this.update = function(sim){
