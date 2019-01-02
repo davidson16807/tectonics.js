@@ -2,8 +2,8 @@
 <html>
 <head>
 	<title>Tectonics.js - 3d plate tectonics in your web browser</title>
-	<!--If using IE9 or lower, don't even bother - IE won't even parse three.js right-->
-	<!--[if lte IE 9]>
+	<!--If using any IE, don't even bother-->
+	<!--[if IE]>
 		<meta http-equiv="refresh" content="0;url=ie.html" />
 	<![endif]-->
 	<meta charset="utf-8">
@@ -22,15 +22,12 @@
 	<script src="libraries/jquery-1.10.2.min.js"></script>
 	<script src="libraries/bootstrap.js"></script>
 	<script src="libraries/three.js/Three.js"></script>
-	<script src="libraries/three.js/Detector.js"></script>
 	<script src="libraries/three.js/Stats.js"></script>
 	<script src="libraries/three.js/OrbitControls.js"></script>
 	<script src="libraries/three.js/BufferGeometryUtils.js"></script>
 	<script src="libraries/threex/THREEx.screenshot.js"></script>
 	<script src="libraries/threex/THREEx.FullScreen.js"></script>
 	<script src="libraries/threex/THREEx.WindowResize.js"></script>
-	<!-- <script src="libraries/threex/THREEx.QuickHull.js"></script> -->
-	<script src="libraries/threex/THREEx.Debug.js"></script>
 	<script src="libraries/random-0.26.js"></script>
 	<script src="libraries/base64-arraybuffer.js"></script>
 	<script src="postcompiled/Shaders.js"></script>
@@ -374,7 +371,7 @@
 	// all force is in Newtons (goes along with kg)
 	// all pressure is in Pascals (goes along with kg)
 
-	if( !Detector.webgl ){
+	if( !window.WebGLRenderingContext ){
 		process.exit(1);
 	}
 
@@ -661,7 +658,7 @@
 	  	isLoadingSave: false
 	  },
 	  created: function() {
-	  	this.isNoWebGl = Detector.webgl;
+	  	this.isNoWebGl = window.WebGLRenderingContext;
 	  },
 	});
 	
@@ -714,7 +711,7 @@
 	  	isEnabled: false,
 	  },
 	  created: function() {
-	  	this.isEnabled = Detector.webgl;
+	  	this.isEnabled = window.WebGLRenderingContext;
 	  },
 	  methods: {
 	  	capture(event) {

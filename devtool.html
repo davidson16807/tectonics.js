@@ -2,8 +2,8 @@
 <html>
 <head>
 	<title>Tectonics.js - 3d plate tectonics in your web browser</title>
-	<!--If using IE9 or lower, don't even bother - IE won't even parse three.js right-->
-	<!--[if lte IE 9]>
+	<!--If using any IE, don't even bother-->
+	<!--[if IE]>
 		<meta http-equiv="refresh" content="0;url=ie.html" />
 	<![endif]-->
 	<meta charset="utf-8">
@@ -16,27 +16,22 @@
 	<link rel="stylesheet" href="styles/modern.css"/>
 	<link rel="stylesheet" href="styles/app.css"/>
 
-	<script src="https://unpkg.com/vue"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.3.0/Chart.js"></script>
+	<script src="libraries/vue.js"></script>
+	<script src="libraries/Chart.js"></script>
 	<script src="libraries/vue-charts.js"></script>
 	<script src="libraries/jquery-1.10.2.min.js"></script>
 	<script src="libraries/bootstrap.js"></script>
 	<script src="libraries/three.js/Three.js"></script>
-	<script src="libraries/three.js/Detector.js"></script>
 	<script src="libraries/three.js/OrbitControls.js"></script>
 	<script src="libraries/three.js/BufferGeometryUtils.js"></script>
 	<script src="libraries/threex/THREEx.screenshot.js"></script>
 	<script src="libraries/threex/THREEx.WindowResize.js"></script>
-	<!-- <script src="libraries/threex/THREEx.QuickHull.js"></script> -->
-	<script src="libraries/threex/THREEx.Debug.js"></script>
 	<script src="libraries/random-0.26.js"></script>
 	<script src="libraries/base64-arraybuffer.js"></script>
 	<script src="postcompiled/Shaders.js"></script>
 	<script src="postcompiled/Rasters.js"></script>
 	<script src="noncompiled/Units.js"></script>
 	<script src="noncompiled/Logging.js"></script>
-	<script src="noncompiled/IntegerLattice.js"></script>
-	<script src="noncompiled/VoronoiSphere.js"></script>
 	<!-- NOTE: we include scripts from the academic layer because it deals exclusively with rasters -->
 	<script src="noncompiled/academics/SphericalGeometry.js"></script>
 	<script src="noncompiled/academics/Optics.js"></script>
@@ -44,10 +39,8 @@
 	<script src="noncompiled/academics/FluidMechanics.js"></script>
 	<script src="noncompiled/academics/OrbitalMechanics.js"></script>
 	<script src="noncompiled/academics/Tectonophysics.js"></script>
-	<script src="noncompiled/academics/Lithology.js"></script>
 	<script src="noncompiled/academics/Hydrology.js"></script>
 	<script src="noncompiled/academics/PlantBiology.js"></script>
-	<script src="noncompiled/generators/EliasScalarRasterGenerator.js"></script>
 	<script src="noncompiled/file-io/JsonSerializer.js"></script>
 	<script src="noncompiled/views/raster-views/PdfChartRasterView.js"></script>
 	<script src="noncompiled/views/raster-views/HeatmapRasterView.js"></script>
@@ -128,7 +121,7 @@
 <script type="text/javascript">
 	'use strict';
 	
-	if( !Detector.webgl ){
+	if( !window.WebGLRenderingContext ){
 		process.exit(1);
 	}
 
@@ -171,7 +164,7 @@
 	  	isEnabled: false,
 	  },
 	  created: function() {
-	  	this.isEnabled = Detector.webgl;
+	  	this.isEnabled = window.WebGLRenderingContext;
 	  },
 	  methods: {
 	  	capture(event) {
