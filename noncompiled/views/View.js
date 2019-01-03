@@ -10,6 +10,8 @@ function ThreeJsState() {
 	this.renderer.setClearColor( 0x000000, 1 );
 	this.renderer.setSize( innerWidth, innerHeight );
 
+	this.composer = new THREE.EffectComposer(this.renderer);
+
 	// put a camera in the scene
 	this.camera	= new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, .01, 10000 );
 	this.camera.position.set(0, 0, 5);
@@ -24,10 +26,35 @@ function ThreeJsState() {
 	this.scene = new THREE.Scene();
 	this.scene.add(this.camera);
 
-	this.pass = new THREE.RenderPass(this.scene, this.camera);
+	this.renderpass = new THREE.RenderPass(this.scene, this.camera);
+	this.composer.addPass(this.renderpass);
 
-	this.composer = new THREE.EffectComposer(this.renderer);
-	this.composer.addPass(this.pass);
+	this.shaderpass = new THREE.ShaderPass({
+		uniforms: {
+			"tDiffuse": { type: "t", value: null },
+			"amount":   { type: "f", value: 1.0 }
+		},
+		vertexShader: 
+		`
+			varying vec2 vUv;
+			void main() {
+				vUv = uv;
+				gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+			}
+		`,
+		fragmentShader: 
+		`
+			uniform float amount;
+			uniform sampler2D tDiffuse;
+			varying vec2 vUv;
+			void main() {
+				vec4 color = texture2D( tDiffuse, vUv );
+				gl_FragColor = color;
+			}
+		`,
+	});
+	this.shaderpass.renderToScreen = true;
+	this.composer.addPass(this.shaderpass);
 }
 
 function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
@@ -45,8 +72,7 @@ function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
 
 	this.render = function() {
 		gl_state.controls.update();
-		gl_state.pass.render(gl_state.renderer);
-		// gl_state.composer.render();
+		gl_state.composer.render();
 	};
 
 	this.update = function(sim){
