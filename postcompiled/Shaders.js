@@ -441,11 +441,23 @@ varying vec2 vUv;
 // we need to support multiple lights, since we need to render average insolation across millions of years
 uniform float star_temperature;
 uniform vec3 star_offset;
+// TODO: convert this to meters
 // minimum viable product:
 // support only one world, that being the model's focus
-uniform vec3 world_pos;
-uniform float world_radius;
-uniform float world_atmospheric_height;
+const vec3 world_pos = vec3(0, 0, 0);
+const float world_radius = 1.0; //6360e3 * METER;
+const float atmosphere_radius = 6420e3/6360e3;// * METER;
+// scattering coefficients at sea level (m)
+const vec3 betaR = vec3(5.5e-6, 13.0e-6, 22.4e-6); // Rayleigh 
+const vec3 betaM = vec3(21e-6); // Mie
+// scale height (m)
+// thickness of the atmosphere if its density were uniform
+const float hR = 7994.0; // Rayleigh
+const float hM = 1200.0; // Mie
+vec3 sun_dir = vec3(0, 1, 0);
+const float sun_power = 20.0;
+const int num_samples = 16;
+const int num_samples_light = 8;
 // TODO: try to get this to work with structs!
 // See: http://www.lighthouse3d.com/tutorials/maths/ray-sphere-intersection/
 bool try_get_ray_and_sphere_intersection_distances(
@@ -472,6 +484,25 @@ bool try_get_ray_and_sphere_intersection_distances(
  entrance_distance = ray_projection - intersection_distance;
  exit_distance = ray_projection + intersection_distance;
  return true;
+}
+void get_ray_for_pixel(
+ vec2 fragment_coordinates,
+ vec2 resolution,
+ float field_of_view,
+ vec3 camera_direction,
+ out vec3 ray_origin,
+ out vec3 ray_direction
+){
+ // TODO: figure out how this code works and annotate it better
+ vec2 aspect_ratio = vec2(resolution.x / resolution.y, 1);
+ float tan_field_of_view_ratio = tan(radians(field_of_view));
+ vec2 point_ndc = fragment_coordinates.xy / resolution.xy;
+ vec3 camera_local_point = vec3((2.0 * point_ndc - 1.0) * aspect_ratio * tan_field_of_view_ratio, -1.0);
+ vec3 fwd = camera_direction;
+ vec3 up = vec3(0, 1, 0);
+ vec3 right = cross(up, fwd);
+ up = cross(fwd, right);
+ ray_direction = normalize(fwd + up * camera_local_point.y + right * camera_local_point.x);
 }
 void main() {
  vec4 surface_color = texture2D( surface_light, vUv );
