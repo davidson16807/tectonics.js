@@ -13,8 +13,16 @@ function MapProjectionView(vertexShader) {
 		}
 		// invoke subview if present
 		if (subview1 !== void 0) {
-			subview1.updateScene(gl_state, model, {...options, vertexShader:vertexShader, index: -1});
-			subview2.updateScene(gl_state, model, {...options, vertexShader:vertexShader, index:  1});
+			subview1.updateScene(gl_state, model, {
+				...options, 
+				vertexShader: 		vertexShader, 
+				index: 				-1,
+			});
+			subview2.updateScene(gl_state, model, {
+				...options, 
+				vertexShader: 		vertexShader, 
+				index:  			1,
+			});
 		}
 	};
 	this.removeFromScene = function(gl_state) {

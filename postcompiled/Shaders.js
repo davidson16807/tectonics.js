@@ -138,6 +138,13 @@ void main() {
  gl_Position = projectionMatrix * modelViewMatrix * displaced;
 }
 `;
+vertexShaders.passthrough = `
+varying vec2 vUv;
+void main() {
+ vUv = uv;
+ gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+}
+`;
 var fragmentShaders = {};
 fragmentShaders.realistic = `
 varying float vDisplacement;
@@ -295,5 +302,186 @@ varying float vVectorFractionTraversed;
 void main() {
  float state = (cos(2.*PI*vVectorFractionTraversed - animation_phase_angle) + 1.) / 2.;
  gl_FragColor = vec4(state) * vec4(vec3(0.8),0.) + vec4(vec3(0.2),0.);
+}
+`;
+fragmentShaders.atmosphere = `
+const float KELVIN = 1.;
+const float MICROGRAM = 1e-9; // kilograms
+const float MILLIGRAM = 1e-6; // kilograms
+const float GRAM = 1e-3; // kilograms
+const float KILOGRAM = 1.; // kilograms
+const float TON = 1000.; // kilograms
+const float NANOMETER = 1e-9; // meter
+const float MICROMETER = 1e-6; // meter
+const float MILLIMETER = 1e-3; // meter
+const float METER = 1.; // meter
+const float KILOMETER = 1000.; // meter
+const float MOLE = 6.02214076e23;
+const float MILLIMOLE = MOLE / 1e3;
+const float MICROMOLE = MOLE / 1e6;
+const float NANOMOLE = MOLE / 1e9;
+const float FEMTOMOLE = MOLE / 1e12;
+const float SECOND = 1.; // seconds
+const float MINUTE = 60.; // seconds
+const float HOUR = MINUTE*60.; // seconds
+const float DAY = HOUR*24.; // seconds
+const float WEEK = DAY*7.; // seconds
+const float MONTH = DAY*29.53059; // seconds
+const float YEAR = DAY*365.256363004; // seconds
+const float MEGAYEAR = YEAR*1e6; // seconds
+const float NEWTON = KILOGRAM * METER / (SECOND * SECOND);
+const float JOULE = NEWTON * METER;
+const float WATT = JOULE / SECOND;
+const float EARTH_MASS = 5.972e24; // kilograms
+const float EARTH_RADIUS = 6.367e6; // meters
+const float STANDARD_GRAVITY = 9.80665; // meters/second^2
+const float STANDARD_TEMPERATURE = 273.15; // kelvin
+const float STANDARD_PRESSURE = 101325.; // pascals
+const float ASTRONOMICAL_UNIT = 149597870700.; // meters
+const float GLOBAL_SOLAR_CONSTANT = 1361.; // watts/meter^2
+const float JUPITER_MASS = 1.898e27; // kilograms
+const float JUPITER_RADIUS = 71e6; // meters
+const float SOLAR_MASS = 2e30; // kilograms
+const float SOLAR_RADIUS = 695.7e6; // meters
+const float SOLAR_LUMINOSITY = 3.828e26; // watts
+const float SOLAR_TEMPERATURE = 5772.; // kelvin
+const float PI = 3.14159265358979323846264338327950288419716939937510;
+const float SPEED_OF_LIGHT = 299792458. * METER / SECOND;
+const float BOLTZMANN_CONSTANT = 1.3806485279e-23 * JOULE / KELVIN;
+const float STEPHAN_BOLTZMANN_CONSTANT = 5.670373e-8 * WATT / (METER*METER* KELVIN*KELVIN*KELVIN*KELVIN);
+const float PLANCK_CONSTANT = 6.62607004e-34 * JOULE * SECOND;
+//EMISSION----------------------------------------------------------------------
+float get_rayleigh_phase_factor(float mu)
+{
+ return
+   3. * (1. + mu*mu)
+ / //------------------------
+    (16. * PI);
+}
+// Henyey-Greenstein phase function factor [-1, 1]
+// represents the average cosine of the scattered directions
+// 0 is isotropic scattering
+// > 1 is forward scattering, < 1 is backwards
+const float g = 0.76;
+float get_henyey_greenstein_phase_factor(float mu)
+{
+ return
+      (1. - g*g)
+ / //---------------------------------------------
+  ((4. + PI) * pow(1. + g*g - 2.*g*mu, 1.5));
+}
+// Schlick Phase Function factor
+// Pharr and  Humphreys [2004] equivalence to g above
+const float k = 1.55*g - 0.55 * (g*g*g);
+float get_schlick_phase_factor(float mu)
+{
+ return
+     (1. - k*k)
+ / //-------------------------------------------
+  (4. * PI * (1. + k*mu) * (1. + k*mu));
+}
+//RADIATION---------------------------------------------------------------------
+// This function determines the fraction of a black body's emission that fall 
+// under a certain wavelength
+// see Lawson 2004, "The Blackbody Fraction, Infinite Series and Spreadsheets"
+float solve_black_body_fraction_below_wavelength(float wavelength, float temperature){
+ const float iterations = 2.;
+ const float h = PLANCK_CONSTANT;
+ const float k = BOLTZMANN_CONSTANT;
+ const float c = SPEED_OF_LIGHT;
+ float L = wavelength;
+ float T = temperature;
+ float C2 = h*c/k;
+ float z = C2 / (L*T);
+ float z2 = z*z;
+ float z3 = z2*z;
+ float sum = (z3 + 3.*z2 + 6.*z + 6.) * exp(-z);
+ return 15.*sum/(PI*PI*PI*PI);
+}
+// This function determines the fraction of a black body's emission that fall 
+// within a certain range of wavelengths
+float solve_black_body_fraction_between_wavelengths(float lo, float hi, float temperature){
+ return solve_black_body_fraction_below_wavelength(hi, temperature) -
+   solve_black_body_fraction_below_wavelength(lo, temperature);
+}
+// This function calculates the radiation (in watts/m^2) that's emitted by
+// a single black body object using the Stephan-Boltzmann equation
+float get_black_body_emissive_flux(float temperature){
+    float T = temperature;
+    return STEPHAN_BOLTZMANN_CONSTANT * T*T*T*T;
+}
+// This function returns a rgb vector that quickly approximates a spectral "bump".
+// Adapted from GPU Gems and Alan Zucconi
+// from https://www.alanzucconi.com/2017/07/15/improving-the-rainbow/
+float bump (float x, float edge0, float edge1, float height)
+{
+    float center = (edge1 + edge0) / 2.;
+    float width = (edge1 - edge0) / 2.;
+    float offset = (x - center) / width;
+ return height * max(1. - offset * offset, 0.);
+}
+//HUMAN-PERCEPTION--------------------------------------------------------------
+// This function returns a rgb vector that best represents color at a given wavelength
+// It is from Alan Zucconi: https://www.alanzucconi.com/2017/07/15/improving-the-rainbow/
+// I've adapted the function so that coefficients are expressed in meters.
+vec3 get_rgb_signal_of_wavelength (float w)
+{
+ return vec3(
+        bump(w, 530e-9, 690e-9, 1.00)+
+        bump(w, 410e-9, 460e-9, 0.15),
+        bump(w, 465e-9, 635e-9, 0.75)+
+        bump(w, 420e-9, 700e-9, 0.15),
+        bump(w, 400e-9, 570e-9, 0.45)+
+        bump(w, 570e-9, 625e-9, 0.30)
+      );
+}
+uniform sampler2D surface_light;
+varying vec2 vUv;
+// minimum viable product:
+// we need to support multiple lights, since we need to render average insolation across millions of years
+uniform float star_temperature;
+uniform vec3 star_offset;
+// minimum viable product:
+// support only one world, that being the model's focus
+uniform vec3 world_pos;
+uniform float world_radius;
+uniform float world_atmospheric_height;
+// TODO: try to get this to work with structs!
+// See: http://www.lighthouse3d.com/tutorials/maths/ray-sphere-intersection/
+bool try_get_ray_and_sphere_intersection_distances(
+  vec3 ray_origin,
+  vec3 ray_direction, // NOTE: this must be a normalized vector!
+  vec3 sphere_origin,
+  float sphere_radius,
+  out float entrance_distance,
+  out float exit_distance
+ )
+{
+ // Find the vector projection (AKA "location of closest approach")
+ // and the vector rejection (AKA "distance of closest approach")
+ vec3 sphere_offset = sphere_origin - ray_origin;
+ float sphere_radius2 = sphere_radius * sphere_radius;
+ float ray_projection =
+  dot(sphere_offset, ray_direction);
+ float ray_rejection2 =
+  dot(sphere_offset, sphere_offset) - ray_projection * ray_projection;
+ // If the vector rejection is further out than 
+ if (ray_rejection2 > sphere_radius2) return false;
+ // Now use the pythagorean theorem 
+ float intersection_distance = sqrt(sphere_radius2 - ray_rejection2);
+ entrance_distance = ray_projection - intersection_distance;
+ exit_distance = ray_projection + intersection_distance;
+ return true;
+}
+void main() {
+ vec4 surface_color = texture2D( surface_light, vUv );
+ gl_FragColor = surface_color;
+}
+`;
+fragmentShaders.passthrough = `
+uniform sampler2D input_texture;
+varying vec2 vUv;
+void main() {
+ gl_FragColor = texture2D( input_texture, vUv );
 }
 `;

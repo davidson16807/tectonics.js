@@ -27,34 +27,17 @@ function ThreeJsState() {
 	this.scene.add(this.camera);
 
 	this.renderpass = new THREE.RenderPass(this.scene, this.camera);
-	this.composer.addPass(this.renderpass);
+	this.composer.passes.push(this.renderpass);
 
 	this.shaderpass = new THREE.ShaderPass({
 		uniforms: {
-			"tDiffuse": { type: "t", value: null },
-			"amount":   { type: "f", value: 1.0 }
+			"input_texture": { type: "t", value: null },
 		},
-		vertexShader: 
-		`
-			varying vec2 vUv;
-			void main() {
-				vUv = uv;
-				gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-			}
-		`,
-		fragmentShader: 
-		`
-			uniform float amount;
-			uniform sampler2D tDiffuse;
-			varying vec2 vUv;
-			void main() {
-				vec4 color = texture2D( tDiffuse, vUv );
-				gl_FragColor = color;
-			}
-		`,
-	});
+		vertexShader: vertexShaders.passthrough,
+		fragmentShader: fragmentShaders.passthrough,
+	}, 'input_texture');
 	this.shaderpass.renderToScreen = true;
-	this.composer.addPass(this.shaderpass);
+	this.composer.passes.push(this.shaderpass);
 }
 
 function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {

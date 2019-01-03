@@ -4,9 +4,18 @@ function RealisticWorldView(shader_return_value) {
 	var fragmentShader = fragmentShaders.realistic
 		.replace('@UNCOVERED', shader_return_value);
 	this.chartViews = []; 
+	var added = false;
 	var mesh = void 0;
 	var uniforms = {};
 	var vertexShader = void 0;
+	var shaderpass = new THREE.ShaderPass({
+		uniforms: {
+			"surface_light": { type: "t", value: null },
+		},
+		vertexShader: 	vertexShaders.passthrough,
+		fragmentShader: fragmentShaders.atmosphere,
+	}, 'surface_light');
+	shaderpass.renderToScreen = true;
 
 	function create_mesh(world, options) {
 		var grid = world.grid;
@@ -64,13 +73,18 @@ function RealisticWorldView(shader_return_value) {
 	}
 	this.updateScene = function(gl_state, world, options) {
 
-		if (mesh === void 0) {
+		if (!added) {
 			mesh = create_mesh(world, options);
 			uniforms = {...options};
 			vertexShader = options.vertexShader;
 			gl_state.scene.add(mesh);
+
+			gl_state.composer.passes.pop();
+			gl_state.composer.passes.push(shaderpass);
+
+			added = true;
 		} 
-		
+
 		update_vertex_shader(options.vertexShader);
 		update_uniform('sealevel_mod',		options.sealevel_mod);
 		update_uniform('darkness_mod',		options.darkness_mod);
@@ -85,11 +99,17 @@ function RealisticWorldView(shader_return_value) {
 	};
 
 	this.removeFromScene = function(gl_state) {
-		if (mesh !== void 0) {
+		if (added) {
+
 			gl_state.scene.remove(mesh);
 			mesh.geometry.dispose();
 			mesh.material.dispose();
 			mesh = void 0;
+
+			gl_state.composer.passes.pop();
+			gl_state.composer.passes.push(gl_state.shaderpass);
+
+			added = false;
 		}
 	};
 	this.clone = function() {
