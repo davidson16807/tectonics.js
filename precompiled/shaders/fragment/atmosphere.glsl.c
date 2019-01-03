@@ -64,6 +64,7 @@ void get_ray_for_pixel(
 	vec2 fragment_coordinates,
 	vec2 resolution,
 	float field_of_view,
+	vec3 camera_origin,
 	vec3 camera_direction,
 	out vec3 ray_origin,
 	out vec3 ray_direction
@@ -79,6 +80,7 @@ void get_ray_for_pixel(
 	vec3 right = cross(up, fwd);
 	up = cross(fwd, right);
 
+	ray_origin    = camera_origin;
 	ray_direction = normalize(fwd + up * camera_local_point.y + right * camera_local_point.x);
 }
 
@@ -86,4 +88,13 @@ void main() {
 
 	vec4 surface_color = texture2D( surface_light, vUv );
 	gl_FragColor = surface_color;
+
+	// get_ray_for_pixel()
+	// try_get_ray_and_sphere_intersection_distances()
+	// for each sample:
+	//     try_get_ray_and_sphere_intersection_distances()
+
+	// NOTES:
+	// solids are modeled as a gas where attenuation coefficient is super high
+	// space is   modeled as a gas where attenuation coefficient is super low
 }
