@@ -11,6 +11,7 @@ function RealisticWorldView(shader_return_value) {
 	var shaderpass = new THREE.ShaderPass({
 		uniforms: {
 			"surface_light": { type: "t", value: null },
+			"field_of_view": { type: "f", value: null },
 		},
 		vertexShader: 	vertexShaders.passthrough,
 		fragmentShader: fragmentShaders.atmosphere,
@@ -92,6 +93,7 @@ function RealisticWorldView(shader_return_value) {
 		update_uniform('darkness_mod',		options.darkness_mod);
 		update_uniform('ice_mod',			options.ice_mod);
 		update_uniform('index',				options.index);
+		update_uniform('field_of_view',		gl_state.camera.fov);
 		update_uniform('sealevel', 			world.hydrosphere.sealevel.value());
 		update_uniform('world_radius',		world.radius);
 		update_uniform('insolation_max', 	Float32Dataset.max(world.atmosphere.average_insolation));

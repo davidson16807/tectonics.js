@@ -44,6 +44,7 @@ function ThreeJsState() {
 
 function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
 	var gl_state = new ThreeJsState();
+	this.gl_state = gl_state;
 
 	var scalarProjectionView = projectionView.clone();
 	var vectorProjectionView = projectionView.clone();

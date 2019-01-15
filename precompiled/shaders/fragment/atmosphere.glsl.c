@@ -1,19 +1,30 @@
 #include "precompiled/shaders/academics/optics.glsl.c"
 
-uniform sampler2D surface_light;
-varying vec2 	vUv;
 
-// minimum viable product:
-// we need to support multiple lights, since we need to render average insolation across millions of years
-uniform float 	star_temperature;
-uniform vec3 	star_offset;
+varying vec2 vUv;
+uniform vec2 resolution;
+uniform float field_of_view;
+uniform mat4 modelViewMatrix;
 
 // TODO: convert this to meters
 // minimum viable product:
 // support only one world, that being the model's focus
-const vec3 		world_pos = vec3(0, 0, 0);
-const float 	world_radius = 1.0; //6360e3 * METER;
-const float 	atmosphere_radius = 6420e3/6360e3;// * METER;
+
+// radius of the world being rendered, in meters
+uniform float world_radius;
+// location for the center of the world,
+// currently stuck at 0. until we support multi-planet renders
+uniform vec3 world_position;
+// Determines the length of a unit of distance within the view, in meters, 
+// it is generally the radius of whatever planet's the focus for the scene.
+// The view uses different units for length to prevent certain issues with
+// floating point precision. 
+uniform float reference_distance;
+// minimum viable product:
+// we need to support multiple lights, since we need to render average insolation across millions of years
+uniform sampler2D surface_light;
+uniform float 	star_temperature;
+uniform vec3 	star_offset;
 
 // scattering coefficients at sea level (m)
 const vec3 betaR = vec3(5.5e-6, 13.0e-6, 22.4e-6); // Rayleigh 
@@ -64,7 +75,7 @@ void get_ray_for_pixel(
 	vec2 fragment_coordinates,
 	vec2 resolution,
 	float field_of_view, // NOTE: this is in radians, as with all angles! 
-	vec3 camera_origin,
+	vec3 camera_position,
 	vec3 camera_direction,
 	out vec3 ray_origin,
 	out vec3 ray_direction
@@ -80,26 +91,33 @@ void get_ray_for_pixel(
 	vec3 right = cross(up, fwd);
 	up = cross(fwd, right);
 
-	ray_origin    = camera_origin;
+	ray_origin    = camera_position;
 	ray_direction = normalize(fwd + up * camera_local_point.y + right * camera_local_point.x);
+}
+
+vec3 get_camera_direction_from_matrix(mat4 matrix){
+	return matrix[2].xyz;
 }
 
 void main() {
 
 	vec4 surface_color = texture2D( surface_light, vUv );
-	gl_FragColor = surface_color;
 
 	// TODO: add "resolution" uniform 
-	// TODO: add "camera_origin" uniform 
 	// TODO: add "camera_direction" uniform 
-//	vec3 ray_origin; 
-//	vec3 ray_direction;
-//	get_ray_for_pixel( 
-//		vUv, resolution, field_of_view, 
-//		camera_origin, 	camera_direction, 
-//		ray_origin,    	ray_direction, 
-//	); 
-//
+	vec3 camera_position = cameraPosition;
+	vec3 camera_direction = get_camera_direction_from_matrix(modelViewMatrix);
+
+	vec3 ray_origin; 
+	vec3 ray_direction;
+	get_ray_for_pixel(
+		vUv, resolution, field_of_view, 
+		camera_position, camera_direction, 
+		ray_origin,    	ray_direction 
+	); 
+	
+	gl_FragColor = surface_color;
+
 //	float entrance_distance;
 //	float exit_distance;
 //	bool is_intersection = try_get_ray_and_sphere_intersection_distances(
@@ -107,7 +125,6 @@ void main() {
 //		sphere_origin, 		sphere_radius,
 //		entrance_distance,	exit_distance
 //	);
-
 
 	// try_get_ray_and_sphere_intersection_distances()
 	// for each sample:
