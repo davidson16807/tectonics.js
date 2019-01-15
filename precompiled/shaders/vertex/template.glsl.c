@@ -18,6 +18,9 @@ varying float vVectorFractionTraversed;
 varying vec4 vPosition;
 
 uniform float sealevel;
+// radius of the world to be rendered
 uniform float world_radius;
+// radius of a reference world, generally the focus of the scene
+uniform float reference_distance;
 uniform float index;
 uniform float animation_phase_angle;

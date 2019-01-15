@@ -19,7 +19,9 @@ function VectorRasterView(options) {
 					vector_fraction_traversed: { type: 'f', value: [] },
 		        },
 		        uniforms: { 
+			  		reference_distance: { type: 'f', value: options.reference_distance || Units.EARTH_RADIUS },
 			  		world_radius: { type: 'f', value: options_.world_radius || Units.EARTH_RADIUS },
+			  		reference_radius: { type: 'f', value: options_.reference_radius || Units.EARTH_RADIUS },
 			  		index: 		{ type: 'f',   value: options_.index },
 			  		animation_phase_angle: 	{ type: 'f', value: 0 }
 		        }

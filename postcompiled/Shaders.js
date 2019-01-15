@@ -17,7 +17,10 @@ varying float vScalar;
 varying float vVectorFractionTraversed;
 varying vec4 vPosition;
 uniform float sealevel;
+// radius of the world to be rendered
 uniform float world_radius;
+// radius of a reference world, generally the focus of the scene
+uniform float reference_distance;
 uniform float index;
 uniform float animation_phase_angle;
 float lon(vec3 pos) {
@@ -43,10 +46,10 @@ void main() {
  vec4 displaced = vec4(
   lon_focused + index_offset,
   lat(modelPos.xyz), //+ (index*PI), 
-  length(position),
+  is_on_edge? 0. : length(position),
   1);
  mat4 scaleMatrix = mat4(1);
- scaleMatrix[3] = viewMatrix[3] / world_radius;
+ scaleMatrix[3] = viewMatrix[3] * reference_distance / world_radius;
  gl_Position = projectionMatrix * scaleMatrix * displaced;
 }
 `;
@@ -68,7 +71,10 @@ varying float vScalar;
 varying float vVectorFractionTraversed;
 varying vec4 vPosition;
 uniform float sealevel;
+// radius of the world to be rendered
 uniform float world_radius;
+// radius of a reference world, generally the focus of the scene
+uniform float reference_distance;
 uniform float index;
 uniform float animation_phase_angle;
 uniform float insolation_max;
@@ -116,7 +122,10 @@ varying float vScalar;
 varying float vVectorFractionTraversed;
 varying vec4 vPosition;
 uniform float sealevel;
+// radius of the world to be rendered
 uniform float world_radius;
+// radius of a reference world, generally the focus of the scene
+uniform float reference_distance;
 uniform float index;
 uniform float animation_phase_angle;
 void main() {
@@ -128,7 +137,7 @@ void main() {
  vVectorFractionTraversed = vector_fraction_traversed;
  vPosition = modelMatrix * vec4( position, 1.0 );
  float surface_height = max(displacement - sealevel, 0.);
- vec4 displacement = vec4( position * (world_radius + surface_height), 1.0 );
+ vec4 displacement = vec4( position * (world_radius + surface_height) / reference_distance, 1.0 );
  gl_Position = projectionMatrix * modelViewMatrix * displacement;
 }
 `;

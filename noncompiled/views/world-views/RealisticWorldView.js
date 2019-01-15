@@ -40,6 +40,7 @@ function RealisticWorldView(shader_return_value) {
 			  scalar: { type: 'f', value: null }
 			},
 			uniforms: {
+			  reference_distance: { type: 'f', value: world.radius },
 			  world_radius: { type: 'f', value: world.radius },
 			  sealevel:     { type: 'f', value: 0 },
 			  sealevel_mod: { type: 'f', value: options.sealevel_mod },

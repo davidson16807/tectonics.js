@@ -26,9 +26,9 @@ void main() {
 	vec4 displaced = vec4(
 		lon_focused + index_offset,
 		lat(modelPos.xyz), //+ (index*PI), 
-		length(position), 
+		is_on_edge? 0. : length(position), 
 		1);
 	mat4 scaleMatrix = mat4(1);
-	scaleMatrix[3] = viewMatrix[3] / world_radius;
+	scaleMatrix[3] = viewMatrix[3] * reference_distance / world_radius;
 	gl_Position = projectionMatrix * scaleMatrix * displaced;
 }

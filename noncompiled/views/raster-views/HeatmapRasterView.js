@@ -33,6 +33,7 @@ function HeatmapRasterView(options) {
 			  scalar: { type: 'f', value: null }
 			},
 			uniforms: {
+			  reference_distance: { type: 'f', value: options.reference_distance || Units.EARTH_RADIUS },
 	  		  world_radius: { type: 'f', value: options.world_radius || Units.EARTH_RADIUS },
 			  sealevel:     { type: 'f', value: 0 },
 			  sealevel_mod: { type: 'f', value: options.sealevel_mod },
