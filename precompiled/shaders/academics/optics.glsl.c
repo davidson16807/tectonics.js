@@ -1,6 +1,11 @@
 #include "precompiled/shaders/academics/units.glsl.c"
 
+// "GAMMA" is the constant that's used to map between 
+//   rgb signals sent to a monitor and their actual intensity
+const float GAMMA = 2.2;
+
 const float PI = 3.14159265358979323846264338327950288419716939937510;
+
 const float SPEED_OF_LIGHT = 299792458. * METER / SECOND;
 const float BOLTZMANN_CONSTANT = 1.3806485279e-23 * JOULE / KELVIN;
 const float STEPHAN_BOLTZMANN_CONSTANT = 5.670373e-8 * WATT / (METER*METER* KELVIN*KELVIN*KELVIN*KELVIN);
@@ -104,4 +109,22 @@ vec3 get_rgb_signal_of_wavelength (float w)
         bump(w, 400e-9, 570e-9, 0.45)+
         bump(w, 570e-9, 625e-9, 0.30)
       );
+}
+
+// ELECTRONICS
+vec3 get_rgb_intensity_of_rgb_signal(vec3 signal)
+{
+	return vec3(
+		pow(signal.x, GAMMA),
+		pow(signal.y, GAMMA),
+		pow(signal.z, GAMMA)
+	);
+}
+vec3 get_rgb_signal_of_rgb_intensity(vec3 intensity)
+{
+	return vec3(
+		pow(intensity.x, 1./GAMMA),
+		pow(intensity.y, 1./GAMMA),
+		pow(intensity.z, 1./GAMMA)
+	);
 }

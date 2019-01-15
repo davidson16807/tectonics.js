@@ -348,6 +348,9 @@ const float SOLAR_MASS = 2e30; // kilograms
 const float SOLAR_RADIUS = 695.7e6; // meters
 const float SOLAR_LUMINOSITY = 3.828e26; // watts
 const float SOLAR_TEMPERATURE = 5772.; // kelvin
+// "GAMMA" is the constant that's used to map between 
+//   rgb signals sent to a monitor and their actual intensity
+const float GAMMA = 2.2;
 const float PI = 3.14159265358979323846264338327950288419716939937510;
 const float SPEED_OF_LIGHT = 299792458. * METER / SECOND;
 const float BOLTZMANN_CONSTANT = 1.3806485279e-23 * JOULE / KELVIN;
@@ -438,10 +441,28 @@ vec3 get_rgb_signal_of_wavelength (float w)
         bump(w, 570e-9, 625e-9, 0.30)
       );
 }
+// ELECTRONICS
+vec3 get_rgb_intensity_of_rgb_signal(vec3 signal)
+{
+ return vec3(
+  pow(signal.x, GAMMA),
+  pow(signal.y, GAMMA),
+  pow(signal.z, GAMMA)
+ );
+}
+vec3 get_rgb_signal_of_rgb_intensity(vec3 intensity)
+{
+ return vec3(
+  pow(intensity.x, 1./GAMMA),
+  pow(intensity.y, 1./GAMMA),
+  pow(intensity.z, 1./GAMMA)
+ );
+}
 varying vec2 vUv;
-uniform vec2 resolution;
+uniform vec3 camera_position;
+uniform vec3 camera_focus;
+uniform float aspect_ratio;
 uniform float field_of_view;
-uniform mat4 modelViewMatrix;
 // TODO: convert this to meters
 // minimum viable product:
 // support only one world, that being the model's focus
@@ -499,8 +520,8 @@ bool try_get_ray_and_sphere_intersection_distances(
  return true;
 }
 void get_ray_for_pixel(
- vec2 fragment_coordinates,
- vec2 resolution,
+ vec2 screenspace,
+ float aspect_ratio,
  float field_of_view, // NOTE: this is in radians, as with all angles! 
  vec3 camera_position,
  vec3 camera_direction,
@@ -508,10 +529,9 @@ void get_ray_for_pixel(
  out vec3 ray_direction
 ){
  // TODO: figure out how this code works and annotate it better
- vec2 aspect_ratio = vec2(resolution.x / resolution.y, 1);
     float tan_field_of_view_ratio = tan(field_of_view);
- vec2 point_ndc = fragment_coordinates.xy / resolution.xy;
- vec3 camera_local_point = vec3((2.0 * point_ndc - 1.0) * aspect_ratio * tan_field_of_view_ratio, -1.0);
+    vec2 clipspace = 2.0 * screenspace - 1.0;
+ vec3 camera_local_point = vec3(clipspace * vec2(aspect_ratio, 1) * tan_field_of_view_ratio, -1.0);
  vec3 fwd = camera_direction;
  vec3 up = vec3(0, 1, 0);
  vec3 right = cross(up, fwd);
@@ -519,23 +539,19 @@ void get_ray_for_pixel(
  ray_origin = camera_position;
  ray_direction = normalize(fwd + up * camera_local_point.y + right * camera_local_point.x);
 }
-vec3 get_camera_direction_from_matrix(mat4 matrix){
- return matrix[2].xyz;
-}
 void main() {
  vec4 surface_color = texture2D( surface_light, vUv );
  // TODO: add "resolution" uniform 
  // TODO: add "camera_direction" uniform 
- vec3 camera_position = cameraPosition;
- vec3 camera_direction = get_camera_direction_from_matrix(modelViewMatrix);
+ vec3 camera_direction = normalize(camera_position - camera_focus);
  vec3 ray_origin;
  vec3 ray_direction;
  get_ray_for_pixel(
-  vUv, resolution, field_of_view,
+  vUv, aspect_ratio, field_of_view,
   camera_position, camera_direction,
   ray_origin, ray_direction
  );
- gl_FragColor = surface_color;
+ gl_FragColor = mix(surface_color, vec4(normalize(camera_direction),1), 0.5);// surface_color;
 //	float entrance_distance;
 //	float exit_distance;
 //	bool is_intersection = try_get_ray_and_sphere_intersection_distances(
