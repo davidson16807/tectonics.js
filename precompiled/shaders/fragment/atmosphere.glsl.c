@@ -34,7 +34,7 @@ const int num_samples_light = 8;
 // See: http://www.lighthouse3d.com/tutorials/maths/ray-sphere-intersection/
 bool try_get_ray_and_sphere_intersection_distances(
 		vec3  ray_origin, 
-		vec3  ray_direction, // NOTE: this must be a normalized vector!
+		vec3  ray_direction, // NOTE: this must be a *normalized* vector!
 		vec3  sphere_origin, 
 		float sphere_radius, 
 		out float entrance_distance, 
@@ -63,7 +63,7 @@ bool try_get_ray_and_sphere_intersection_distances(
 void get_ray_for_pixel(
 	vec2 fragment_coordinates,
 	vec2 resolution,
-	float field_of_view,
+	float field_of_view, // NOTE: this is in radians, as with all angles! 
 	vec3 camera_origin,
 	vec3 camera_direction,
 	out vec3 ray_origin,
@@ -71,7 +71,7 @@ void get_ray_for_pixel(
 ){
 	// TODO: figure out how this code works and annotate it better
 	vec2 aspect_ratio = vec2(resolution.x / resolution.y, 1);
-	float tan_field_of_view_ratio = tan(radians(field_of_view));
+    float tan_field_of_view_ratio = tan(field_of_view); 
 	vec2 point_ndc = fragment_coordinates.xy / resolution.xy;
 	vec3 camera_local_point = vec3((2.0 * point_ndc - 1.0) * aspect_ratio * tan_field_of_view_ratio, -1.0);
 
@@ -89,7 +89,26 @@ void main() {
 	vec4 surface_color = texture2D( surface_light, vUv );
 	gl_FragColor = surface_color;
 
-	// get_ray_for_pixel()
+	// TODO: add "resolution" uniform 
+	// TODO: add "camera_origin" uniform 
+	// TODO: add "camera_direction" uniform 
+//	vec3 ray_origin; 
+//	vec3 ray_direction;
+//	get_ray_for_pixel( 
+//		vUv, resolution, field_of_view, 
+//		camera_origin, 	camera_direction, 
+//		ray_origin,    	ray_direction, 
+//	); 
+//
+//	float entrance_distance;
+//	float exit_distance;
+//	bool is_intersection = try_get_ray_and_sphere_intersection_distances(
+//		ray_origin, 		ray_direction,
+//		sphere_origin, 		sphere_radius,
+//		entrance_distance,	exit_distance
+//	);
+
+
 	// try_get_ray_and_sphere_intersection_distances()
 	// for each sample:
 	//     try_get_ray_and_sphere_intersection_distances()

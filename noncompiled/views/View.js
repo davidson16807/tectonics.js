@@ -13,8 +13,9 @@ function ThreeJsState() {
 	this.composer = new THREE.EffectComposer(this.renderer);
 
 	// put a camera in the scene
-	this.camera	= new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, .01, 10000 );
-	this.camera.position.set(0, 0, 5);
+
+	this.camera	= new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, .01, Units.EARTH_RADIUS * 10 );
+	this.camera.position.set(0, 0, Units.EARTH_RADIUS * 5);
 
 	// transparently support window resize
 	THREEx.WindowResize.bind(this.renderer, this.camera);

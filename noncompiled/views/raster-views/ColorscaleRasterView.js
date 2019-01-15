@@ -43,6 +43,7 @@ function ColorscaleRasterView(options) {
 			  scalar: { type: 'f', value: null }
 			},
 			uniforms: {
+	  		  world_radius: { type: 'f', value: options.world_radius || Units.EARTH_RADIUS },
 			  sealevel:     { type: 'f', value: 0 },
 			  sealevel_mod: { type: 'f', value: options.sealevel_mod },
 			  index: 		{ type: 'f', value: options.index },
@@ -108,7 +109,7 @@ function ColorscaleRasterView(options) {
 		} 
 
 		update_attribute('scalar', 			scaled_raster);
-				
+		update_uniform('world_radius',		options.world_radius || Units.EARTH_RADIUS);
 		update_uniform('sealevel_mod',		options.sealevel_mod);
 		update_uniform('index',				options.index);
 

@@ -1,9 +1,6 @@
 var vertexShaders = {};
 vertexShaders.equirectangular = `
 const float PI = 3.14159265358979;
-const float OCEAN = 0.0;
-const float LAND = 0.005;
-const float NONE = 0.0;
 const float INDEX_SPACING = PI * 0.75; // anything from 0.0 to 2.*PI
 attribute float displacement;
 attribute float plant_coverage;
@@ -20,6 +17,7 @@ varying float vScalar;
 varying float vVectorFractionTraversed;
 varying vec4 vPosition;
 uniform float sealevel;
+uniform float world_radius;
 uniform float index;
 uniform float animation_phase_angle;
 float lon(vec3 pos) {
@@ -36,7 +34,7 @@ void main() {
  vScalar = scalar;
  vPosition = modelMatrix * vec4( position, 1.0 );
  vec4 modelPos = modelMatrix * vec4( ( position ), 1.0 );
- float height = displacement > sealevel? LAND : displacement > 1.0? OCEAN : NONE;
+ float height = displacement > sealevel? 0.005 : 0.0;
  float index_offset = INDEX_SPACING * index;
  float focus = lon(cameraPosition) + index_offset;
  float lon_focused = mod(lon(modelPos.xyz) - focus, 2.*PI) - PI;
@@ -45,18 +43,15 @@ void main() {
  vec4 displaced = vec4(
   lon_focused + index_offset,
   lat(modelPos.xyz), //+ (index*PI), 
-  is_on_edge? 0. : length(position),
+  length(position),
   1);
  mat4 scaleMatrix = mat4(1);
- scaleMatrix[3] = viewMatrix[3];
+ scaleMatrix[3] = viewMatrix[3] / world_radius;
  gl_Position = projectionMatrix * scaleMatrix * displaced;
 }
 `;
 vertexShaders.texture = `
 const float PI = 3.14159265358979;
-const float OCEAN = 0.0;
-const float LAND = 0.005;
-const float NONE = 0.0;
 const float INDEX_SPACING = PI * 0.75; // anything from 0.0 to 2.*PI
 attribute float displacement;
 attribute float plant_coverage;
@@ -73,6 +68,7 @@ varying float vScalar;
 varying float vVectorFractionTraversed;
 varying vec4 vPosition;
 uniform float sealevel;
+uniform float world_radius;
 uniform float index;
 uniform float animation_phase_angle;
 uniform float insolation_max;
@@ -94,7 +90,7 @@ void main() {
  float focus = lon(cameraPosition) + index_offset;
  float lon_focused = mod(lon(modelPos.xyz) - focus, 2.*PI) - PI + index_offset;
  float lat_focused = lat(modelPos.xyz); //+ (index*PI);
- float height = displacement > sealevel? LAND : displacement > 1.0? OCEAN : NONE;
+ float height = displacement > sealevel? 0.005 : 0.0;
  gl_Position = vec4(
         lon_focused / PI,
   lat_focused / (PI/2.),
@@ -104,9 +100,6 @@ void main() {
 `;
 vertexShaders.orthographic = `
 const float PI = 3.14159265358979;
-const float OCEAN = 0.0;
-const float LAND = 0.005;
-const float NONE = 0.0;
 const float INDEX_SPACING = PI * 0.75; // anything from 0.0 to 2.*PI
 attribute float displacement;
 attribute float plant_coverage;
@@ -123,6 +116,7 @@ varying float vScalar;
 varying float vVectorFractionTraversed;
 varying vec4 vPosition;
 uniform float sealevel;
+uniform float world_radius;
 uniform float index;
 uniform float animation_phase_angle;
 void main() {
@@ -133,9 +127,9 @@ void main() {
  vScalar = scalar;
  vVectorFractionTraversed = vector_fraction_traversed;
  vPosition = modelMatrix * vec4( position, 1.0 );
- float height = displacement > sealevel? (displacement-sealevel) / 6000e3 : OCEAN;
- vec4 displaced = vec4( ( position ) * (1.+height), 1.0 );
- gl_Position = projectionMatrix * modelViewMatrix * displaced;
+ float surface_height = max(displacement - sealevel, 0.);
+ vec4 displacement = vec4( position * (world_radius + surface_height), 1.0 );
+ gl_Position = projectionMatrix * modelViewMatrix * displacement;
 }
 `;
 vertexShaders.passthrough = `
@@ -462,7 +456,7 @@ const int num_samples_light = 8;
 // See: http://www.lighthouse3d.com/tutorials/maths/ray-sphere-intersection/
 bool try_get_ray_and_sphere_intersection_distances(
   vec3 ray_origin,
-  vec3 ray_direction, // NOTE: this must be a normalized vector!
+  vec3 ray_direction, // NOTE: this must be a *normalized* vector!
   vec3 sphere_origin,
   float sphere_radius,
   out float entrance_distance,
@@ -488,25 +482,51 @@ bool try_get_ray_and_sphere_intersection_distances(
 void get_ray_for_pixel(
  vec2 fragment_coordinates,
  vec2 resolution,
- float field_of_view,
+ float field_of_view, // NOTE: this is in radians, as with all angles! 
+ vec3 camera_origin,
  vec3 camera_direction,
  out vec3 ray_origin,
  out vec3 ray_direction
 ){
  // TODO: figure out how this code works and annotate it better
  vec2 aspect_ratio = vec2(resolution.x / resolution.y, 1);
- float tan_field_of_view_ratio = tan(radians(field_of_view));
+    float tan_field_of_view_ratio = tan(field_of_view);
  vec2 point_ndc = fragment_coordinates.xy / resolution.xy;
  vec3 camera_local_point = vec3((2.0 * point_ndc - 1.0) * aspect_ratio * tan_field_of_view_ratio, -1.0);
  vec3 fwd = camera_direction;
  vec3 up = vec3(0, 1, 0);
  vec3 right = cross(up, fwd);
  up = cross(fwd, right);
+ ray_origin = camera_origin;
  ray_direction = normalize(fwd + up * camera_local_point.y + right * camera_local_point.x);
 }
 void main() {
  vec4 surface_color = texture2D( surface_light, vUv );
  gl_FragColor = surface_color;
+ // TODO: add "resolution" uniform 
+ // TODO: add "camera_origin" uniform 
+ // TODO: add "camera_direction" uniform 
+//	vec3 ray_origin; 
+//	vec3 ray_direction;
+//	get_ray_for_pixel( 
+//		vUv, resolution, field_of_view, 
+//		camera_origin, 	camera_direction, 
+//		ray_origin,    	ray_direction, 
+//	); 
+//
+//	float entrance_distance;
+//	float exit_distance;
+//	bool is_intersection = try_get_ray_and_sphere_intersection_distances(
+//		ray_origin, 		ray_direction,
+//		sphere_origin, 		sphere_radius,
+//		entrance_distance,	exit_distance
+//	);
+ // try_get_ray_and_sphere_intersection_distances()
+ // for each sample:
+ //     try_get_ray_and_sphere_intersection_distances()
+ // NOTES:
+ // solids are modeled as a gas where attenuation coefficient is super high
+ // space is   modeled as a gas where attenuation coefficient is super low
 }
 `;
 fragmentShaders.passthrough = `

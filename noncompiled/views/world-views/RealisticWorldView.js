@@ -40,6 +40,7 @@ function RealisticWorldView(shader_return_value) {
 			  scalar: { type: 'f', value: null }
 			},
 			uniforms: {
+			  world_radius: { type: 'f', value: world.radius },
 			  sealevel:     { type: 'f', value: 0 },
 			  sealevel_mod: { type: 'f', value: options.sealevel_mod },
 			  darkness_mod: { type: 'f', value: options.darkness_mod },
@@ -91,6 +92,7 @@ function RealisticWorldView(shader_return_value) {
 		update_uniform('ice_mod',			options.ice_mod);
 		update_uniform('index',				options.index);
 		update_uniform('sealevel', 			world.hydrosphere.sealevel.value());
+		update_uniform('world_radius',		world.radius);
 		update_uniform('insolation_max', 	Float32Dataset.max(world.atmosphere.average_insolation));
 		update_attribute('displacement', 	world.lithosphere.displacement.value());
 		update_attribute('insolation', 		world.atmosphere.average_insolation);

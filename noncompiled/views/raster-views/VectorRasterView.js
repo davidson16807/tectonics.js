@@ -19,8 +19,9 @@ function VectorRasterView(options) {
 					vector_fraction_traversed: { type: 'f', value: [] },
 		        },
 		        uniforms: { 
-			  		index: 		{ type: 'f', value: options_.index },
-			  		animation_phase_angle: 		{ type: 'f', value: 0 }
+			  		world_radius: { type: 'f', value: options_.world_radius || Units.EARTH_RADIUS },
+			  		index: 		{ type: 'f',   value: options_.index },
+			  		animation_phase_angle: 	{ type: 'f', value: 0 }
 		        }
 		    });
 		for (var i=0, li=grid.vertices.length; i<li; ++i) {
@@ -60,6 +61,7 @@ function VectorRasterView(options) {
 		} 
 
 		update_vertex_shader(options_.vertexShader);
+		update_uniform('world_radius',	options_.world_radius || Units.EARTH_RADIUS);
 		update_uniform('index',	options_.index);
 		update_uniform('animation_phase_angle',	(mesh.material.uniforms.animation_phase_angle.value + 1e-1)%(2*3.14));
 

@@ -22,7 +22,7 @@ void main() {
 	float lon_focused = mod(lon(modelPos.xyz) - focus, 2.*PI) - PI + index_offset;
 	float lat_focused = lat(modelPos.xyz); //+ (index*PI);
 
-	float height = displacement > sealevel? LAND : displacement > 1.0? OCEAN : NONE;
+	float height = displacement > sealevel? 0.005 : 0.0;
 	gl_Position = vec4(
         lon_focused / PI,
 		lat_focused / (PI/2.), 

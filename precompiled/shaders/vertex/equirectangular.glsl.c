@@ -15,7 +15,7 @@ void main() {
 	vPosition = modelMatrix * vec4( position, 1.0 );
 	
 	vec4 modelPos = modelMatrix * vec4( ( position ), 1.0 );
-	float height = displacement > sealevel? LAND : displacement > 1.0? OCEAN : NONE;
+	float height = displacement > sealevel? 0.005 : 0.0;
 	
 	float index_offset = INDEX_SPACING * index;
 	float focus = lon(cameraPosition) + index_offset;
@@ -26,9 +26,9 @@ void main() {
 	vec4 displaced = vec4(
 		lon_focused + index_offset,
 		lat(modelPos.xyz), //+ (index*PI), 
-		is_on_edge? 0. : length(position), 
+		length(position), 
 		1);
 	mat4 scaleMatrix = mat4(1);
-	scaleMatrix[3] = viewMatrix[3];
+	scaleMatrix[3] = viewMatrix[3] / world_radius;
 	gl_Position = projectionMatrix * scaleMatrix * displaced;
 }

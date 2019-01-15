@@ -8,7 +8,7 @@ void main() {
 	vVectorFractionTraversed = vector_fraction_traversed;
 	vPosition = modelMatrix * vec4( position, 1.0 );
 	
-	float height = displacement > sealevel? (displacement-sealevel) / 6000e3 : OCEAN;
-	vec4 displaced = vec4( ( position ) * (1.+height), 1.0 );
-	gl_Position = projectionMatrix * modelViewMatrix * displaced;
+	float surface_height = max(displacement - sealevel, 0.);
+	vec4 displacement = vec4( position * (world_radius + surface_height), 1.0 );
+	gl_Position = projectionMatrix * modelViewMatrix * displacement;
 }
