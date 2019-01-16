@@ -537,15 +537,17 @@ void main() {
  vec2 screenspace = vUv;
     vec2 clipspace = 2.0 * screenspace - 1.0;
  vec3 ray_direction = normalize(view_matrix_inverse * projection_matrix_inverse * vec4(clipspace, 1, 1)).xyz;
- vec3 ray_origin = view_matrix_inverse[3].xyz;
- // ray_origin *= reference_distance;
+ vec3 ray_origin = view_matrix_inverse[3].xyz * reference_distance;
+ // ray_origin ;
+ // NOTE: 3 scale heights should capture 95% of the atmosphere's mass, 
+ //   enough to be aesthetically appealing.
  float atmosphere_height = 3. * max(scale_heights.x, scale_heights.y);
  // Determine relevant metrics for calculating optical depth.
  float distance_at_closest_approach2, distance_to_closest_approach;
  float distance_to_entrance, distance_to_exit;
  bool is_interaction = try_get_relation_between_ray_and_sphere(
   ray_origin, ray_direction,
-  vec3(0), 1.,
+  world_position, world_radius + atmosphere_height,
   distance_at_closest_approach2, distance_to_closest_approach,
   distance_to_entrance, distance_to_exit
  );
