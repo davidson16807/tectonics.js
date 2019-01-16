@@ -5,8 +5,6 @@
 
 
 varying vec2  vUv;
-uniform float aspect_ratio;
-uniform float field_of_view;
 uniform sampler2D surface_light;
 
 // Determines the length of a unit of distance within the view, in meters, 
@@ -17,8 +15,9 @@ uniform float reference_distance;
 
 // position of the camera, using reference_distance
 uniform vec3  camera_position;
-// position on which the camera is focusing, using reference_distance
-uniform vec3  camera_focus;
+
+uniform mat4  projection_matrix_inverse;
+uniform mat4  view_matrix_inverse;
 
 // location for the center of the world, in meters
 // currently stuck at 0. until we support multi-planet renders
@@ -52,41 +51,16 @@ const int SAMPLE_COUNT = 16;
 const int SAMPLE_COUNT_LIGHT = 8;
 
 
-void get_ray_for_pixel(
-	IN (vec2)  screenspace,
-	IN (float) aspect_ratio,
-	IN (float) field_of_view, // NOTE: this is in radians, as with all angles! 
-	IN (vec3)  camera_position,
-	IN (vec3)  camera_direction,
-	OUT(vec3)  ray_origin,
-	OUT(vec3)  ray_direction
-){
-	// TODO: figure out how this code works and annotate it better
-    vec2 clipspace = 2.0 * screenspace - 1.0;
-	vec2 camera_local_point = vec2(clipspace * vec2(aspect_ratio, 1.) * tan(field_of_view));
-
-	vec3 fwd = camera_direction;
-	vec3 up = vec3(0, 1, 0);
-	vec3 right = cross(up, fwd);
-	up = cross(fwd, right);
-
-	ray_origin    = camera_position;
-	ray_direction = normalize(fwd + up * camera_local_point.y + right * camera_local_point.x);
-}
 
 void main() {
 
 	vec4 surface_color = texture2D( surface_light, vUv );
 
-	vec3 camera_direction = normalize(camera_position - camera_focus);
+	vec2 screenspace   = vUv;
+    vec2 clipspace     = 2.0 * screenspace - 1.0;
+	vec3 ray_direction = normalize(view_matrix_inverse * projection_matrix_inverse * vec4(clipspace, 1, 1)).xyz;
+	vec3 ray_origin    = camera_position;
 
-	vec3 ray_origin; 
-	vec3 ray_direction;
-	get_ray_for_pixel(
-		vUv, aspect_ratio, field_of_view, 
-		camera_position,   camera_direction, 
-		ray_origin,        ray_direction 
-	); 
 	// ray_origin *= reference_distance;
 		
 	float atmosphere_height = 3. * max(scale_heights.x, scale_heights.y);
@@ -101,10 +75,14 @@ void main() {
 		distance_to_entrance, distance_to_exit
 	);
 
+
+	// gl_FragColor = mix(surface_color, vec4(normalize(ray_direction),1), 0.5);
+	// return;
 	if (!is_interaction) {
 		gl_FragColor = vec4(0);
 		return;
 	} else {
+		// gl_FragColor = vec4(1);
 		gl_FragColor = mix(surface_color, vec4(normalize(ray_direction),1), 0.5);// surface_color;
 	}
 
