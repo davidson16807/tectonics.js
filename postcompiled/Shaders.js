@@ -505,8 +505,6 @@ uniform sampler2D surface_light;
 // The view uses different units for length to prevent certain issues with
 // floating point precision. 
 uniform float reference_distance;
-// position of the camera, using reference_distance
-uniform vec3 camera_position;
 uniform mat4 projection_matrix_inverse;
 uniform mat4 view_matrix_inverse;
 // location for the center of the world, in meters
@@ -539,14 +537,14 @@ void main() {
  vec2 screenspace = vUv;
     vec2 clipspace = 2.0 * screenspace - 1.0;
  vec3 ray_direction = normalize(view_matrix_inverse * projection_matrix_inverse * vec4(clipspace, 1, 1)).xyz;
- vec3 ray_origin = camera_position;
+ vec3 ray_origin = view_matrix_inverse[3].xyz;
  // ray_origin *= reference_distance;
  float atmosphere_height = 3. * max(scale_heights.x, scale_heights.y);
  // Determine relevant metrics for calculating optical depth.
  float distance_at_closest_approach2, distance_to_closest_approach;
  float distance_to_entrance, distance_to_exit;
  bool is_interaction = try_get_relation_between_ray_and_sphere(
-  camera_position, ray_direction,
+  ray_origin, ray_direction,
   vec3(0), 1.,
   distance_at_closest_approach2, distance_to_closest_approach,
   distance_to_entrance, distance_to_exit
@@ -558,7 +556,7 @@ void main() {
   return;
  } else {
   // gl_FragColor = vec4(1);
-  gl_FragColor = mix(surface_color, vec4(normalize(ray_direction),1), 0.5);// surface_color;
+  gl_FragColor = mix(surface_color, vec4(normalize(ray_origin),1), 0.5);// surface_color;
  }
  // NOTES:
  // solids are modeled as a gas where attenuation coefficient is super high

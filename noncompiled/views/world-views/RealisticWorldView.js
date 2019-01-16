@@ -13,7 +13,6 @@ function RealisticWorldView(shader_return_value) {
 			"surface_light":  { type: "t", value: null },
 			"projection_matrix_inverse":{ type: "m4",value: new THREE.Matrix4() },
 			"view_matrix_inverse"      :{ type: "m4",value: new THREE.Matrix4() },
-			"camera_position":{ type: "v3",value: new THREE.Vector3() },
 			"world_position": { type: "v3",value: new THREE.Vector3() },
 			"world_radius":   { type: "f", value: Units.EARTH_RADIUS  },
 		},
@@ -108,7 +107,6 @@ function RealisticWorldView(shader_return_value) {
 		update_attribute(mesh.geometry, 'plant_coverage', 	world.biosphere.plant_coverage.value());
 
 		 gl_state.camera.projectionMatrix
-		update_uniform  (shaderpass,    'camera_position',			gl_state.camera.position);
 		update_uniform  (shaderpass,    'projection_matrix_inverse',new THREE.Matrix4().getInverse(gl_state.camera.projectionMatrix));
 		update_uniform  (shaderpass,    'view_matrix_inverse',		gl_state.camera.matrixWorld);
 		update_uniform  (shaderpass,    'world_position', 			new THREE.Vector3());
