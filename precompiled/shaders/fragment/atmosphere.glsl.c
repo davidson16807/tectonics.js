@@ -1,7 +1,13 @@
 #define GL_ES
-#include "precompiled/shaders/cross_platform_macros.glsl.c"
-#include "precompiled/shaders/academics/geometry.glsl.c"
-#include "precompiled/shaders/academics/optics.glsl.c"
+#include "precompiled/shaders/academics/cross_platform_macros.glsl.c"
+#include "precompiled/shaders/academics/units.glsl.c"
+#include "precompiled/shaders/academics/math/constants.glsl.c"
+#include "precompiled/shaders/academics/math/geometry.glsl.c"
+#include "precompiled/shaders/academics/physics/constants.glsl.c"
+#include "precompiled/shaders/academics/physics/emission.glsl.c"
+#include "precompiled/shaders/academics/physics/scattering.glsl.c"
+#include "precompiled/shaders/academics/psychophysics.glsl.c"
+#include "precompiled/shaders/academics/electronics.glsl.c"
 
 
 varying vec2  vUv;
@@ -47,7 +53,10 @@ const int SAMPLE_BUDGET = 128;
 const int SAMPLE_COUNT = 16;
 const int SAMPLE_COUNT_LIGHT = 8;
 
-
+vec3 get_rgb_intensity_of_light_through_atmosphere(
+){
+	return vec3(0);
+}
 
 void main() {
 
@@ -77,13 +86,14 @@ void main() {
 
 	// gl_FragColor = mix(surface_color, vec4(normalize(ray_direction),1), 0.5);
 	// return;
-	if (!is_interaction) {
-		gl_FragColor = vec4(0);
-		return;
-	} else {
-		// gl_FragColor = vec4(1);
-		gl_FragColor = mix(surface_color, vec4(normalize(ray_origin),1), 0.5);// surface_color;
-	}
+	// if (!is_interaction) {
+	// 	gl_FragColor = vec4(0);
+	// 	return;
+	// } 
+	// gl_FragColor = mix(surface_color, vec4(normalize(ray_origin),1), 0.5);
+	gl_FragColor = mix(surface_color, vec4(vec3(distance_to_exit/reference_distance/5.),1), 0.5);
+	// gl_FragColor = surface_color;
+
 
 	// NOTES:
 	// solids are modeled as a gas where attenuation coefficient is super high
