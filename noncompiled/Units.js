@@ -1,4 +1,6 @@
 var Units = {};
+Units.DEGREE = Math.PI/180.;
+Units.RADIAN = 1;
 
 Units.KELVIN = 1;
 

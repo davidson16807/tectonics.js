@@ -1,3 +1,6 @@
+const float DEGREE = 3.141592653589793238462643383279502884197169399/180.;
+const float RADIAN = 1.;
+
 const float KELVIN = 1.;
 
 const float MICROGRAM = 1e-9;					// kilograms
