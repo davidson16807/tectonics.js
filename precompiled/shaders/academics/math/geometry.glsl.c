@@ -38,7 +38,7 @@ VAR(bool) try_get_relation_between_ray_and_sphere(
 	);
 
 	VAR(float) sphere_radius2 = sphere_radius * sphere_radius;
-	if (distance_at_closest_approach2 > sphere_radius2) 
+	if (distance_at_closest_approach2 > sphere_radius2 && distance_to_closest_approach > 0.) 
 		return false;
 
 	VAR(float) distance_from_closest_approach_to_exit = sqrt(sphere_radius2 - distance_at_closest_approach2);

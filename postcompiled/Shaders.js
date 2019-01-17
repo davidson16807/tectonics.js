@@ -388,7 +388,7 @@ bool try_get_relation_between_ray_and_sphere(
   distance_at_closest_approach2, distance_to_closest_approach
  );
  float sphere_radius2 = sphere_radius * sphere_radius;
- if (distance_at_closest_approach2 > sphere_radius2)
+ if (distance_at_closest_approach2 > sphere_radius2 && distance_to_closest_approach > 0.)
   return false;
  float distance_from_closest_approach_to_exit = sqrt(sphere_radius2 - distance_at_closest_approach2);
  distance_to_entrance = distance_to_closest_approach - distance_from_closest_approach_to_exit;
@@ -528,10 +528,10 @@ uniform mat4 view_matrix_inverse;
 uniform vec3 world_position;
 // radius of the world being rendered, in meters
 uniform float world_radius;
-vec3 get_rgb_intensity_of_light_ray_through_atmosphere(
+vec3 get_rgb_intensity_of_sun_ray_through_atmosphere(
  vec3 view_origin, vec3 view_direction,
  vec3 world_position, float world_radius,
- vec3 light_direction, vec3 light_rgb_intensity,
+ vec3 sun_direction, vec3 sun_rgb_intensity,
  vec3 background_rgb_intensity,
  vec2 atmosphere_scale_heights,
  vec2 atmosphere_surface_densities,
@@ -539,33 +539,51 @@ vec3 get_rgb_intensity_of_light_ray_through_atmosphere(
 ){
  // NOTE: 3 scale heights should capture ~95% of the atmosphere's mass,  
  //   so this should be enough to be aesthetically appealing.
- float atmosphere_height = 3. * max(atmosphere_scale_heights.x, atmosphere_scale_heights.y);
+ float atmosphere_height = 4. * max(atmosphere_scale_heights.x, atmosphere_scale_heights.y);
+ bool view_is_obscured; // whether view ray will strike the surface of a world
+ bool view_is_obstructed; // whether view ray will strike the surface of a world
  float view_r_closest2; // distance ("radius") from the view ray to the center of the world at closest approach, squared; never used, but may in the future
  float view_x_closest; // distance along the view ray at which closest approach occurs; never used, but may in the future
  float view_x_enter; // distance along the view ray at which the ray enters the atmosphere, never used
  float view_x_exit; // distance along the view ray at which the ray exits the atmosphere
+ float view_x_strike; // distance along the view ray at which the ray strikes the surface of the world
  const float VIEW_STEP_COUNT = 16.;// number of steps taken while marching along the view ray
  float view_dx; // distance between steps while marching along the view ray
  float view_x; // distance traversed while marching along the view ray
  float view_h; // distance ("height") from the surface of the world while marching along the view ray
  vec3 view_pos; // absolute position while marching along the view ray
  vec2 view_sigma; // column densities for rayleigh and mie scattering, expressed as a ratio to surface density, found by marching along the view ray
- float light_r_closest2; // distance ("radius") from the light ray to the center of the world at closest approach, squared; never used, but may in the future
- float light_x_closest; // distance along the light ray at which closest approach occurs; never used, but may in the future
- float light_x_enter; // distance along the light ray at which the ray enters the atmosphere; never used
- float light_x_exit; // distance along the light ray at which the ray exits the atmosphere
- const float LIGHT_STEP_COUNT = 8.;// number of steps taken while marching along the light ray
- float light_dx; // distance between steps while marching along the light ray
- float light_x; // distance traversed while marching along the light ray
- float light_h; // distance ("height") from the surface of the world while marching along the light ray
- vec3 light_pos; // absolute position while marching along the light ray
- vec2 light_sigma; // column densities for rayleigh and mie scattering, expressed as a ratio to surface density, found by marching along the light ray
- bool is_interaction = try_get_relation_between_ray_and_sphere(
+ bool sun_is_obscured; // whether light ray will strike the surface of a world
+ bool sun_is_obstructed; // whether light ray will strike the surface of a world
+ float sun_r_closest2; // distance ("radius") from the light ray to the center of the world at closest approach, squared; never used, but may in the future
+ float sun_x_closest; // distance along the light ray at which closest approach occurs; never used, but may in the future
+ float sun_x_enter; // distance along the light ray at which the ray enters the atmosphere; never used
+ float sun_x_exit; // distance along the light ray at which the ray exits the atmosphere
+ float sun_x_strike; // distance along the light ray at which the ray strikes the surface of the world
+ const float sun_STEP_COUNT = 8.;// number of steps taken while marching along the light ray
+ float sun_dx; // distance between steps while marching along the light ray
+ float sun_x; // distance traversed while marching along the light ray
+ float sun_h; // distance ("height") from the surface of the world while marching along the light ray
+ vec3 sun_pos; // absolute position while marching along the light ray
+ vec2 sun_sigma; // column densities for rayleigh and mie scattering, expressed as a ratio to surface density, found by marching along the light ray
+ vec2 path_T; // transmittance of light while marching from the view to the light source
+ float unused1, unused2, unused3, unused4;
+ view_is_obscured = try_get_relation_between_ray_and_sphere(
   view_origin, view_direction,
   world_position, world_radius + atmosphere_height,
   view_r_closest2, view_x_closest,
   view_x_enter, view_x_exit
  );
+ view_is_obstructed = try_get_relation_between_ray_and_sphere(
+  view_origin, view_direction,
+  world_position, world_radius,
+  unused1, unused2,
+  view_x_strike, unused3
+ );
+ if (view_is_obstructed)
+ {
+  view_x_exit = view_x_strike;
+ }
  view_dx = (view_x_exit - view_x_enter) / VIEW_STEP_COUNT;
  view_x = view_x_enter + 0.5 * view_dx;
  view_sigma = vec2(0.);
@@ -573,31 +591,42 @@ vec3 get_rgb_intensity_of_light_ray_through_atmosphere(
  {
   view_pos = view_origin + view_direction * view_x;
   view_h = length(view_pos - world_position) - world_radius;
-  view_sigma += view_dx * atmosphere_surface_densities * exp(-light_h/atmosphere_scale_heights);
-  // NOTE: we do not capture the boolean return value since at this point we're always guaranteed to be in the atmosphere
-  try_get_relation_between_ray_and_sphere(
-   view_pos, light_direction,
+  view_sigma += view_dx * atmosphere_surface_densities * exp(-sun_h/atmosphere_scale_heights);
+  sun_is_obscured = try_get_relation_between_ray_and_sphere(
+   view_pos, sun_direction,
    world_position, world_radius + atmosphere_height,
-   light_r_closest2,light_x_closest,
-   light_x_enter, light_x_exit
+   sun_r_closest2, sun_x_closest,
+   sun_x_enter, sun_x_exit
   );
-     light_dx = light_x_exit / LIGHT_STEP_COUNT;
-  light_x = 0.5 * light_dx;
-  light_sigma = vec2(0.);
-  for (float j = 0.; j < LIGHT_STEP_COUNT; ++j)
+  sun_is_obstructed = try_get_relation_between_ray_and_sphere(
+   view_pos, sun_direction,
+   world_position, world_radius,
+   unused1, unused2,
+   unused3, unused4
+  );
+  // check if light will eventually intersect with the ground
+  if (sun_is_obstructed)
   {
-   light_pos = view_pos + light_direction * light_x;
-   light_h = length(light_pos - world_position) - world_radius;
-   light_sigma += light_dx * atmosphere_surface_densities * exp(-light_h/atmosphere_scale_heights);
-   light_x += light_dx;
+   continue;
   }
+     sun_dx = sun_x_exit / sun_STEP_COUNT;
+  sun_x = 0.5 * sun_dx;
+  sun_sigma = vec2(0.);
+  for (float j = 0.; j < sun_STEP_COUNT; ++j)
+  {
+   sun_pos = view_pos + sun_direction * sun_x;
+   sun_h = length(sun_pos - world_position) - world_radius;
+   sun_sigma += sun_dx * atmosphere_surface_densities * exp(-sun_h/atmosphere_scale_heights);
+   sun_x += sun_dx;
+  }
+  path_T += exp(-(view_sigma + sun_sigma));
   view_x += view_dx;
  }
- return vec3(view_sigma + light_sigma, 0);
+ return vec3(path_T.x + path_T.y, path_T.y, path_T.y);
 }
 //TODO: turn these into uniforms!
-const float star_temperature = SOLAR_TEMPERATURE;
-const vec3 star_direction = vec3(ASTRONOMICAL_UNIT,0,0);
+const float sun_temperature = SOLAR_TEMPERATURE;
+const vec3 sun_position = vec3(ASTRONOMICAL_UNIT,0,0);
 const float surface_gravity = 9.8*METER/(SECOND*SECOND);
 const float average_molecular_mass_of_air = 4.8e-26 * KILOGRAM;
 const float molecular_mass_of_water_vapor = 3.0e-26 * KILOGRAM;
@@ -622,18 +651,21 @@ void main() {
     vec2 clipspace = 2.0 * screenspace - 1.0;
  vec3 view_direction = normalize(view_matrix_inverse * projection_matrix_inverse * vec4(clipspace, 1, 1)).xyz;
  vec3 view_origin = view_matrix_inverse[3].xyz * reference_distance;
- vec3 star_rgb_intensity =
+ vec3 sun_offset = sun_position - world_position;
+ vec3 sun_direction = normalize(sun_offset);
+ float sun_distance = length(sun_offset);
+ vec3 sun_rgb_intensity =
     get_black_body_emissive_flux(SOLAR_TEMPERATURE)
-  * get_surface_area_of_sphere(SOLAR_RADIUS) / get_surface_area_of_sphere(ASTRONOMICAL_UNIT)
+  * get_surface_area_of_sphere(SOLAR_RADIUS) / get_surface_area_of_sphere(sun_distance)
   * vec3(
    solve_black_body_fraction_between_wavelengths(600e-9*METER, 700e-9*METER, SOLAR_TEMPERATURE),
    solve_black_body_fraction_between_wavelengths(500e-9*METER, 600e-9*METER, SOLAR_TEMPERATURE),
    solve_black_body_fraction_between_wavelengths(400e-9*METER, 500e-9*METER, SOLAR_TEMPERATURE)
     );
- vec3 rgb_intensity = get_rgb_intensity_of_light_ray_through_atmosphere(
+ vec3 rgb_intensity = get_rgb_intensity_of_sun_ray_through_atmosphere(
   view_origin, view_direction,
   world_position, world_radius,
-  normalize(star_direction), star_rgb_intensity, // light direction and rgb intensity
+  sun_direction, sun_rgb_intensity, // light direction and rgb intensity
   surface_color.xyz,
   atmosphere_scale_heights,
   atmosphere_surface_densities, // atmosphere surface density, kilograms
@@ -647,7 +679,7 @@ void main() {
  // } 
  // gl_FragColor = mix(surface_color, vec4(normalize(view_origin),1), 0.5);
  // gl_FragColor = mix(surface_color, vec4(vec3(distance_to_exit/reference_distance/5.),1), 0.5);
- gl_FragColor = mix(surface_color, vec4(0.000001*get_rgb_signal_of_rgb_intensity(rgb_intensity),1), 0.5);
+ gl_FragColor = mix(surface_color, vec4(1.*get_rgb_signal_of_rgb_intensity(rgb_intensity),1), 0.5);
  // gl_FragColor = surface_color;
  // NOTES:
  // solids are modeled as a gas where attenuation coefficient is super high
