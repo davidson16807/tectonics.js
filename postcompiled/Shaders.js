@@ -537,92 +537,91 @@ const vec3 betaM = vec3(21e-6); // Mie
 // scale height (m)
 // thickness of the atmosphere if its density were uniform
 // we use a vec2: x is rayleigh scattering, y is mie scattering
-const vec2 scale_heights = vec2(7994, 1200);
+const vec2 atmosphere_scale_heights = vec2(7994, 1200);
 vec3 get_rgb_intensity_of_light_ray_through_atmosphere(
  vec3 view_origin, vec3 view_direction,
  vec3 world_position, float world_radius,
  vec3 light_direction, vec3 light_rgb_intensity,
  vec3 background_rgb_intensity,
- vec2 atmosphere_scale_heights
+ vec2 atmosphere_scale_heights,
+ vec2 surface_densities,
+ vec2 mass_scattering_coefficients
 ){
+ return vec3(1);
+}
+void main() {
+ vec4 surface_color = texture2D( surface_light, vUv );
+ vec2 screenspace = vUv;
+    vec2 clipspace = 2.0 * screenspace - 1.0;
+ vec3 view_direction = normalize(view_matrix_inverse * projection_matrix_inverse * vec4(clipspace, 1, 1)).xyz;
+ vec3 view_origin = view_matrix_inverse[3].xyz * reference_distance;
+ vec3 light_direction = vec3(1,0,0);
+ vec2 surface_densities = vec2(0.1);
  // NOTE: 3 scale heights should capture ~95% of the atmosphere's mass, 
- //   this should be enough to be aesthetically appealing.
+ //   so this should be enough to be aesthetically appealing.
  float atmosphere_height = 3. * max(atmosphere_scale_heights.x, atmosphere_scale_heights.y);
- float view_r_closest2; // distance ("radius") from the view ray to the center of the world at closest approach, squared;
- float view_x_closest; // distance along the view ray at which closest approach occurs
- float view_x_enter; // distance along the view ray at which the ray enters the atmosphere
+ float view_r_closest2; // distance ("radius") from the view ray to the center of the world at closest approach, squared; never used, but may in the future
+ float view_x_closest; // distance along the view ray at which closest approach occurs; never used, but may in the future
+ float view_x_enter; // distance along the view ray at which the ray enters the atmosphere, never used
  float view_x_exit; // distance along the view ray at which the ray exits the atmosphere
- const float VIEW_MARCH_STEP_COUNT = 16.;// number of steps taken while marching along the view ray
- float view_march_dx; // distance between steps while marching along the view ray
- float view_march_x; // distance traversed while marching along the view ray
- float view_march_h; // distance ("height") from the surface of the world while marching along the view ray
- vec3 view_march_pos; // absolute position while marching along the view ray
- float light_r_closest2; // distance ("radius") from the light ray to the center of the world at closest approach, squared;
- float light_x_closest; // distance along the light ray at which closest approach occurs
- float light_x_enter; // distance along the light ray at which the ray enters the atmosphere, never used
+ const float VIEW_STEP_COUNT = 16.;// number of steps taken while marching along the view ray
+ float view_dx; // distance between steps while marching along the view ray
+ float view_x; // distance traversed while marching along the view ray
+ float view_h; // distance ("height") from the surface of the world while marching along the view ray
+ vec3 view_pos; // absolute position while marching along the view ray
+ vec2 view_sigma; // column densities for rayleigh and mie scattering, expressed as a ratio to surface density, found by marching along the view ray
+ float light_r_closest2; // distance ("radius") from the light ray to the center of the world at closest approach, squared; never used, but may in the future
+ float light_x_closest; // distance along the light ray at which closest approach occurs; never used, but may in the future
+ float light_x_enter; // distance along the light ray at which the ray enters the atmosphere; never used
  float light_x_exit; // distance along the light ray at which the ray exits the atmosphere
- const float LIGHT_MARCH_STEP_COUNT = 8.;// number of steps taken while marching along the light ray
- float light_march_dx; // distance between steps while marching along the light ray
- float light_march_x; // distance traversed while marching along the light ray
- float light_march_h; // distance ("height") from the surface of the world while marching along the light ray
- vec3 light_march_pos= vec3(0); // absolute position while marching along the light ray
+ const float LIGHT_STEP_COUNT = 8.;// number of steps taken while marching along the light ray
+ float light_dx; // distance between steps while marching along the light ray
+ float light_x; // distance traversed while marching along the light ray
+ float light_h; // distance ("height") from the surface of the world while marching along the light ray
+ vec3 light_pos; // absolute position while marching along the light ray
+ vec2 light_sigma; // column densities for rayleigh and mie scattering, expressed as a ratio to surface density, found by marching along the light ray
  bool is_interaction = try_get_relation_between_ray_and_sphere(
   view_origin, view_direction,
   world_position, world_radius + atmosphere_height,
   view_r_closest2, view_x_closest,
   view_x_enter, view_x_exit
  );
- view_march_dx = (view_x_exit - view_x_enter) / VIEW_MARCH_STEP_COUNT;
- view_march_x = view_x_enter + 0.5 * view_march_dx;
- for (float i = 0.; i < VIEW_MARCH_STEP_COUNT; ++i)
+ view_dx = (view_x_exit - view_x_enter) / VIEW_STEP_COUNT;
+ view_x = view_x_enter + 0.5 * view_dx;
+ view_sigma = vec2(0.);
+ for (float i = 0.; i < VIEW_STEP_COUNT; ++i)
  {
-  view_march_pos = view_origin + view_direction * view_march_x;
-  view_march_h = length(view_march_pos - world_position) - world_radius;
-  // NOTE: we do not capture the return value since at this point we're always guaranteed to be in the atmosphere
+  view_pos = view_origin + view_direction * view_x;
+  view_h = length(view_pos - world_position) - world_radius;
+  view_sigma += view_dx * surface_densities * exp(-light_h/atmosphere_scale_heights);
+  // NOTE: we do not capture the boolean return value since at this point we're always guaranteed to be in the atmosphere
   try_get_relation_between_ray_and_sphere(
-   view_march_pos, light_direction,
+   view_pos, light_direction,
    world_position, world_radius + atmosphere_height,
    light_r_closest2,light_x_closest,
    light_x_enter, light_x_exit
   );
-     light_march_dx = light_x_exit / LIGHT_MARCH_STEP_COUNT;
-  light_march_x = 0.5 * light_march_dx;
-  for (float j = 0.; j < LIGHT_MARCH_STEP_COUNT; ++j)
+     light_dx = light_x_exit / LIGHT_STEP_COUNT;
+  light_x = 0.5 * light_dx;
+  light_sigma = vec2(0.);
+  for (float j = 0.; j < LIGHT_STEP_COUNT; ++j)
   {
-   light_march_pos = view_march_pos + light_direction * light_march_x;
-   light_march_h = length(light_march_pos - world_position) - world_radius;
-   light_march_x += light_march_dx;
+   light_pos = view_pos + light_direction * light_x;
+   light_h = length(light_pos - world_position) - world_radius;
+   light_sigma += light_dx * surface_densities * exp(-light_h/atmosphere_scale_heights);
+   light_x += light_dx;
   }
-  view_march_x += view_march_dx;
+  view_x += view_dx;
  }
- return vec3(0);
-}
-void main() {
- vec4 surface_color = texture2D( surface_light, vUv );
- vec2 screenspace = vUv;
-    vec2 clipspace = 2.0 * screenspace - 1.0;
- vec3 ray_direction = normalize(view_matrix_inverse * projection_matrix_inverse * vec4(clipspace, 1, 1)).xyz;
- vec3 ray_origin = view_matrix_inverse[3].xyz * reference_distance;
- // NOTE: 3 scale heights should capture 95% of the atmosphere's mass, 
- //   enough to be aesthetically appealing.
- float atmosphere_height = 3. * max(scale_heights.x, scale_heights.y);
- // Determine relevant metrics for calculating optical depth.
- float distance_at_closest_approach2, distance_to_closest_approach;
- float distance_to_entrance, distance_to_exit;
- bool is_interaction = try_get_relation_between_ray_and_sphere(
-  ray_origin, ray_direction,
-  world_position, world_radius + atmosphere_height,
-  distance_at_closest_approach2, distance_to_closest_approach,
-  distance_to_entrance, distance_to_exit
- );
- // gl_FragColor = mix(surface_color, vec4(normalize(ray_direction),1), 0.5);
+ // gl_FragColor = mix(surface_color, vec4(normalize(view_direction),1), 0.5);
  // return;
  // if (!is_interaction) {
  // 	gl_FragColor = vec4(0);
  // 	return;
  // } 
- // gl_FragColor = mix(surface_color, vec4(normalize(ray_origin),1), 0.5);
- gl_FragColor = mix(surface_color, vec4(vec3(distance_to_exit/reference_distance/5.),1), 0.5);
+ // gl_FragColor = mix(surface_color, vec4(normalize(view_origin),1), 0.5);
+ // gl_FragColor = mix(surface_color, vec4(vec3(distance_to_exit/reference_distance/5.),1), 0.5);
+ gl_FragColor = mix(surface_color, vec4(0.0000001*(view_sigma+light_sigma), 0,1), 0.5);
  // gl_FragColor = surface_color;
  // NOTES:
  // solids are modeled as a gas where attenuation coefficient is super high
