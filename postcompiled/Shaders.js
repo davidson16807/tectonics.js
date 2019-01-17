@@ -352,6 +352,11 @@ const float SOLAR_RADIUS = 695.7e6; // meters
 const float SOLAR_LUMINOSITY = 3.828e26; // watts
 const float SOLAR_TEMPERATURE = 5772.; // kelvin
 const float PI = 3.14159265358979323846264338327950288419716939937510;
+float get_surface_area_of_sphere(
+ in float radius
+) {
+ return 4.*PI*radius*radius;
+}
 // TODO: try to get this to work with structs!
 // See: http://www.lighthouse3d.com/tutorials/maths/ray-sphere-intersection/
 void get_relation_between_ray_and_point(
@@ -523,31 +528,16 @@ uniform mat4 view_matrix_inverse;
 uniform vec3 world_position;
 // radius of the world being rendered, in meters
 uniform float world_radius;
-//TODO: turn these into uniforms!
-// temperature of the star, in kelvin
-const float star_temperature = SOLAR_TEMPERATURE;
-// location for the center of the star, in meters
-const vec3 star_position = vec3(1, 0, 0);
-// total power output of the star
-const float star_luminosity = SOLAR_LUMINOSITY;
-// scattering coefficients at sea level, in meters
-// we use vec3 to represent rgb color channels
-const vec3 betaR = vec3(5.5e-6, 13.0e-6, 22.4e-6); // Rayleigh 
-const vec3 betaM = vec3(21e-6); // Mie
-// scale height (m)
-// thickness of the atmosphere if its density were uniform
-// we use a vec2: x is rayleigh scattering, y is mie scattering
-const vec2 atmosphere_scale_heights = vec2(7994, 1200);
 vec3 get_rgb_intensity_of_light_ray_through_atmosphere(
  vec3 view_origin, vec3 view_direction,
  vec3 world_position, float world_radius,
  vec3 light_direction, vec3 light_rgb_intensity,
  vec3 background_rgb_intensity,
  vec2 atmosphere_scale_heights,
- vec2 surface_densities,
- vec2 mass_scattering_coefficients
+ vec2 atmosphere_surface_densities,
+ mat3 atmosphere_mass_scattering_coefficients
 ){
- // NOTE: 3 scale heights should capture ~95% of the atmosphere's mass, 
+ // NOTE: 3 scale heights should capture ~95% of the atmosphere's mass,  
  //   so this should be enough to be aesthetically appealing.
  float atmosphere_height = 3. * max(atmosphere_scale_heights.x, atmosphere_scale_heights.y);
  float view_r_closest2; // distance ("radius") from the view ray to the center of the world at closest approach, squared; never used, but may in the future
@@ -583,7 +573,7 @@ vec3 get_rgb_intensity_of_light_ray_through_atmosphere(
  {
   view_pos = view_origin + view_direction * view_x;
   view_h = length(view_pos - world_position) - world_radius;
-  view_sigma += view_dx * surface_densities * exp(-light_h/atmosphere_scale_heights);
+  view_sigma += view_dx * atmosphere_surface_densities * exp(-light_h/atmosphere_scale_heights);
   // NOTE: we do not capture the boolean return value since at this point we're always guaranteed to be in the atmosphere
   try_get_relation_between_ray_and_sphere(
    view_pos, light_direction,
@@ -598,27 +588,56 @@ vec3 get_rgb_intensity_of_light_ray_through_atmosphere(
   {
    light_pos = view_pos + light_direction * light_x;
    light_h = length(light_pos - world_position) - world_radius;
-   light_sigma += light_dx * surface_densities * exp(-light_h/atmosphere_scale_heights);
+   light_sigma += light_dx * atmosphere_surface_densities * exp(-light_h/atmosphere_scale_heights);
    light_x += light_dx;
   }
   view_x += view_dx;
  }
  return vec3(view_sigma + light_sigma, 0);
 }
+//TODO: turn these into uniforms!
+const float star_temperature = SOLAR_TEMPERATURE;
+const vec3 star_direction = vec3(ASTRONOMICAL_UNIT,0,0);
+const float surface_gravity = 9.8*METER/(SECOND*SECOND);
+const float average_molecular_mass_of_air = 4.8e-26 * KILOGRAM;
+const float molecular_mass_of_water_vapor = 3.0e-26 * KILOGRAM;
+const float atmosphere_temperature = 25. + STANDARD_TEMPERATURE;
+const vec2 atmosphere_scale_heights = vec2(
+ BOLTZMANN_CONSTANT * atmosphere_temperature / (surface_gravity * average_molecular_mass_of_air), // ~14km
+ BOLTZMANN_CONSTANT * atmosphere_temperature / (surface_gravity * molecular_mass_of_water_vapor) // ~9km
+);
+const vec2 atmosphere_surface_densities = vec2(
+ 1.217*KILOGRAM * (1.0 - 1.2e15/5.1e18), // earth's surface density times fraction of atmosphere that is not water vapor (by mass)
+ 1.217*KILOGRAM * ( 1.2e15/5.1e18) // earth's surface density times fraction of atmosphere that is water vapor (by mass)
+);
+const mat3 atmosphere_mass_scattering_coefficients = mat3(
+ // NOTE: lovingly stolen from Valentine Galena, here: https://www.shadertoy.com/view/XtBXDz
+ vec3(5.5e-6, 13.0e-6, 22.4e-6),
+ vec3(21e-6),
+ vec3(0) // NOTE: NOT USED
+);
 void main() {
  vec4 surface_color = texture2D( surface_light, vUv );
  vec2 screenspace = vUv;
     vec2 clipspace = 2.0 * screenspace - 1.0;
  vec3 view_direction = normalize(view_matrix_inverse * projection_matrix_inverse * vec4(clipspace, 1, 1)).xyz;
  vec3 view_origin = view_matrix_inverse[3].xyz * reference_distance;
+ vec3 star_rgb_intensity =
+    get_black_body_emissive_flux(SOLAR_TEMPERATURE)
+  * get_surface_area_of_sphere(SOLAR_RADIUS) / get_surface_area_of_sphere(ASTRONOMICAL_UNIT)
+  * vec3(
+   solve_black_body_fraction_between_wavelengths(600e-9*METER, 700e-9*METER, SOLAR_TEMPERATURE),
+   solve_black_body_fraction_between_wavelengths(500e-9*METER, 600e-9*METER, SOLAR_TEMPERATURE),
+   solve_black_body_fraction_between_wavelengths(400e-9*METER, 500e-9*METER, SOLAR_TEMPERATURE)
+    );
  vec3 rgb_intensity = get_rgb_intensity_of_light_ray_through_atmosphere(
   view_origin, view_direction,
   world_position, world_radius,
-  vec3(1,0,0), vec3(1321, 1321, 1321), // light direction and rgb intensity
+  normalize(star_direction), star_rgb_intensity, // light direction and rgb intensity
   surface_color.xyz,
   atmosphere_scale_heights,
-  vec2(1), // atmosphere surface density
-  vec2(1) // atmosphere mass scattering coefficient
+  atmosphere_surface_densities, // atmosphere surface density, kilograms
+  atmosphere_mass_scattering_coefficients // atmosphere mass scattering coefficient
  );
  // gl_FragColor = mix(surface_color, vec4(normalize(view_direction),1), 0.5);
  // return;

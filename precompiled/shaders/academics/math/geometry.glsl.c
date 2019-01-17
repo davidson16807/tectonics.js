@@ -1,3 +1,8 @@
+VAR(float) get_surface_area_of_sphere(
+	IN(float) radius
+) {
+	return 4.*PI*radius*radius;
+}
 
 // TODO: try to get this to work with structs!
 // See: http://www.lighthouse3d.com/tutorials/maths/ray-sphere-intersection/
