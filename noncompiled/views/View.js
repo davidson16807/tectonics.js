@@ -76,21 +76,30 @@ function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
 				}
 			);
 	}
-	this.print = function(raster){
-		if (raster.x === void 0) {
-			scalarProjectionView.updateScene(gl_state, raster, 
+	this.print = function(value, options){
+		if (value.x instanceof Float32Array || 
+			value.x instanceof Uint16Array  ||
+			value.x instanceof Uint8Array ) { // scalar raster
+			scalarProjectionView.updateScene(gl_state, value, 
 					{
 						...options, 
 						subview: scalarView
 					}
 				);
-		} else {
-			vectorProjectionView.updateScene(gl_state, raster, 
+		} else if (value.x instanceof Float32Array){ // vector raster
+			vectorProjectionView.updateScene(gl_state, value, 
 					{
 						...options, 
 						subview: vectorView
 					}
 				);
+		} else {
+			gl_state.scene.add(
+				new THREE.ArrowHelper( 
+					new THREE.Vector3(value[0] , value[1], value[2]), 
+					new THREE.Vector3(0 , 0, 0), 2, options.color || 0xffffff 
+				)
+			);
 		}
 	}
 
