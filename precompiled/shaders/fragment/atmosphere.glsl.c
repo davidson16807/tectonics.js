@@ -56,25 +56,6 @@ vec3 get_rgb_intensity_of_light_ray_through_atmosphere(
 	vec2 mass_scattering_coefficients
 ){
 
-	return vec3(1);
-}
-
-void main() {
-
-	vec4 surface_color = texture2D( surface_light, vUv );
-
-	vec2 screenspace   = vUv;
-    vec2 clipspace     = 2.0 * screenspace - 1.0;
-	vec3 view_direction = normalize(view_matrix_inverse * projection_matrix_inverse * vec4(clipspace, 1, 1)).xyz;
-	vec3 view_origin    = view_matrix_inverse[3].xyz * reference_distance;
-
-	vec3 light_direction = vec3(1,0,0);
-	vec2 surface_densities = vec2(0.1);
-
-
-
-
-
 	// NOTE: 3 scale heights should capture ~95% of the atmosphere's mass, 
 	//   so this should be enough to be aesthetically appealing.
 	float atmosphere_height = 3. * max(atmosphere_scale_heights.x, atmosphere_scale_heights.y);
@@ -147,6 +128,30 @@ void main() {
 		view_x += view_dx;
 	}
 
+	return vec3(view_sigma + light_sigma, 0);
+}
+
+void main() {
+
+	vec4 surface_color = texture2D( surface_light, vUv );
+
+	vec2 screenspace   = vUv;
+    vec2 clipspace     = 2.0 * screenspace - 1.0;
+	vec3 view_direction = normalize(view_matrix_inverse * projection_matrix_inverse * vec4(clipspace, 1, 1)).xyz;
+	vec3 view_origin    = view_matrix_inverse[3].xyz * reference_distance;
+
+	vec3 rgb_intensity = get_rgb_intensity_of_light_ray_through_atmosphere(
+		view_origin,     view_direction,
+		world_position,  world_radius,
+		vec3(1,0,0),     vec3(1321, 1321, 1321),  // light direction and rgb intensity
+		surface_color.xyz,
+		atmosphere_scale_heights,
+		vec2(1),  // atmosphere surface density
+		vec2(1)   // atmosphere mass scattering coefficient
+	);
+
+
+
 
 
 
@@ -160,7 +165,7 @@ void main() {
 	// } 
 	// gl_FragColor = mix(surface_color, vec4(normalize(view_origin),1), 0.5);
 	// gl_FragColor = mix(surface_color, vec4(vec3(distance_to_exit/reference_distance/5.),1), 0.5);
-	gl_FragColor = mix(surface_color, vec4(0.0000001*(view_sigma+light_sigma), 0,1), 0.5);
+	gl_FragColor = mix(surface_color, vec4(0.000001*get_rgb_signal_of_rgb_intensity(rgb_intensity),1), 0.5);
 	// gl_FragColor = surface_color;
 
 
