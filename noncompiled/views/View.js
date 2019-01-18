@@ -77,6 +77,7 @@ function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
 			);
 	}
 	this.print = function(value, options){
+		options = options || {};
 		if (value.x instanceof Float32Array || 
 			value.x instanceof Uint16Array  ||
 			value.x instanceof Uint8Array ) { // scalar raster
@@ -97,7 +98,9 @@ function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
 			gl_state.scene.add(
 				new THREE.ArrowHelper( 
 					new THREE.Vector3(value[0] , value[1], value[2]), 
-					new THREE.Vector3(0 , 0, 0), 2, options.color || 0xffffff 
+					new THREE.Vector3(0 , 0, 0), 
+					2, 
+					options.color || 0xffffff 
 				)
 			);
 		}
