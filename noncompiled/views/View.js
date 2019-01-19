@@ -22,7 +22,7 @@ function ThreeJsState() {
 
 	// create a camera contol
 	this.controls = new THREE.OrbitControls( this.camera, this.renderer.domElement );
-	this.minDistance = 1.1;
+	this.controls.noPan = false;
 
 	// create a scene
 	this.scene = new THREE.Scene();

@@ -28,6 +28,12 @@ uniform vec3  world_position;
 // radius of the world being rendered, in meters
 uniform float world_radius;
 
+vec3 get_density_ratios_at_height_in_atmosphere(
+	float height, 
+	vec3 atmosphere_scale_heights
+){
+	return exp(-height/atmosphere_scale_heights);
+}
 
 vec3 get_rgb_intensity_of_light_ray_through_atmosphere(
 	vec3 view_origin, vec3 view_direction,
@@ -36,7 +42,9 @@ vec3 get_rgb_intensity_of_light_ray_through_atmosphere(
 	vec3 background_rgb_intensity,
 	vec3 atmosphere_scale_heights,
 	vec3 atmosphere_surface_densities,
-	mat3 atmosphere_scattering_coefficients
+	vec3 beta_ray,
+	vec3 beta_mie,
+	vec3 beta_abs
 ){
 
 	float unused1, unused2, unused3, unused4;
@@ -57,46 +65,55 @@ vec3 get_rgb_intensity_of_light_ray_through_atmosphere(
 	vec3  view_pos;			  // absolute position while marching along the view ray
 	vec3  view_sigma;		  // column densities for rayleigh and mie scattering, expressed as a ratio to surface density, found by marching along the view ray
 
-	bool  light_is_obscured;    // whether light ray will strike the surface of a world
-	bool  light_is_obstructed;  // whether light ray will strike the surface of a world
-	float light_r_closest2;     // distance ("radius") from the light ray to the center of the world at closest approach, squared; never used, but may in the future
+	bool  light_is_obscured;  // whether light ray will strike the surface of a world
+	bool  light_is_obstructed;// whether light ray will strike the surface of a world
+	float light_r_closest2;   // distance ("radius") from the light ray to the center of the world at closest approach, squared; never used, but may in the future
 	float light_x_closest;	  // distance along the light ray at which closest approach occurs; never used, but may in the future
-	float light_x_enter;	      // distance along the light ray at which the ray enters the atmosphere; never used
+	float light_x_enter;	  // distance along the light ray at which the ray enters the atmosphere; never used
 	float light_x_exit;		  // distance along the light ray at which the ray exits the atmosphere
-	float light_x_strike;	      // distance along the light ray at which the ray strikes the surface of the world
+	float light_x_strike;	  // distance along the light ray at which the ray strikes the surface of the world
 
 	const float light_STEP_COUNT = 8.;// number of steps taken while marching along the light ray
 	float light_dx;			  // distance between steps while marching along the light ray
 	float light_x;			  // distance traversed while marching along the light ray
 	float light_h;			  // distance ("height") from the surface of the world while marching along the light ray
-	vec3  light_pos; 		      // absolute position while marching along the light ray
+	vec3  light_pos; 		  // absolute position while marching along the light ray
 	vec3  light_sigma;		  // column densities for rayleigh and mie scattering, expressed as a ratio to surface density, found by marching along the light ray
 
-	vec3  transmittances;     // transmittances of light for rayleigh and mie scattering while marching from the view to the light source
 
 	// cosine of angle between view and light directions
-	float path_mu = dot(view_direction, light_direction); 
+	float cos_scatter_angle = dot(view_direction, light_direction); 
 
-	// Rayleigh and Mie phase functions
-	// A black box indicating how light is interacting with the material
-	// Similar to BRDF except
-	// * it usually considers a single angle
-	//   (the phase angle between 2 directions)
-	// * integrates to 1 over the entire sphere of directions
-	vec3 phase_factors = vec3(
-		get_rayleigh_phase_factor(path_mu),
-		get_henyey_greenstein_phase_factor(path_mu),
-		0
+	// fraction of outgoing light transmitted across a given path
+	vec3 fraction_outgoing = vec3(0);
+
+	// fraction of incoming light transmitted across a given path
+	vec3 fraction_incoming   = vec3(0);
+
+	// total intensity for each color channel, found as the sum of light intensities for each path from the light source to the camera
+	vec3  total_rgb_intensity = vec3(0); 
+
+	// Rayleigh and Mie phase factors,
+	// A.K.A "gamma" from Alan Zucconi: https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-3/
+	// This factor indicates the fraction of sunlight scattered to a given angle (indicated by its cosine, A.K.A. "cos_scatter_angle").
+	// It only accounts for a portion of the sunlight that's lost during the scatter, which is irrespective of wavelength or density
+	// The rest of the fractional loss is accounted for by the variable "betas", which is dependant on wavelength, 
+	// and the density ratio, which is dependant on height
+	// So all together, the fraction of sunlight that scatters to a given angle is: beta(wavelength) * gamma(angle) * density_ratio(height)
+	vec3 gammas = vec3(
+		get_rayleigh_phase_factor(cos_scatter_angle),
+		get_henyey_greenstein_phase_factor(cos_scatter_angle),
+		0 // NOT USED, eventually intended to represent absorption
 	);
 
 	// NOTE: 3 scale heights should capture ~95% of the atmosphere's mass,  
 	//   so this should be enough to be aesthetically appealing.
-	float atmosphere_height = 4. * max(atmosphere_scale_heights.x, atmosphere_scale_heights.y);
+	float atmosphere_height = 15. * max(atmosphere_scale_heights.x, atmosphere_scale_heights.y);
 
 	view_is_obscured   = try_get_relation_between_ray_and_sphere(
 		view_origin,     view_direction,
 		world_position,  world_radius + atmosphere_height,
-		view_r_closest2, view_x_closest, 
+		unused1,         unused2, 
 		view_x_enter,    view_x_exit
 	);
 	view_is_obstructed = try_get_relation_between_ray_and_sphere(
@@ -160,20 +177,22 @@ vec3 get_rgb_intensity_of_light_ray_through_atmosphere(
 			light_x += light_dx;
 		}
 
-		transmittances += exp(-atmosphere_scattering_coefficients * (view_sigma + light_sigma));
+		fraction_outgoing = exp(-beta_ray * (view_sigma.x + light_sigma.x) - beta_abs * view_sigma.z);
+		fraction_incoming   = beta_ray * gammas.x * exp(-view_h/atmosphere_scale_heights.x);
+		total_rgb_intensity += light_rgb_intensity * fraction_incoming * fraction_outgoing;
+
+		fraction_outgoing = exp(-beta_mie * (view_sigma.y + light_sigma.y) - beta_abs * view_sigma.z);
+		fraction_incoming   = beta_mie * gammas.y * exp(-view_h/atmosphere_scale_heights.y);
+		total_rgb_intensity += light_rgb_intensity * fraction_incoming * fraction_outgoing;
 
 		view_x += view_dx;
 	}
 
-	vec3 temp = 
-		light_rgb_intensity * 					// this is the original intensity of sunlight
-		atmosphere_scattering_coefficients * 	// this is the fraction of light that's scattered away from the camera for each wavelength per unit transmittance
-		transmittances *		  				// this is an expression for the amount of matter 
-		phase_factors 	 						// this is the fraction of light that's scattered towards the camera
-	  // + background_rgb_intensity *				// this is the intensity of light as rendered by the previous render pass
-	  	// exp(-view_sigma.z) 						// this is the fraction of light that passes through unaltered
-	  	;
-	return temp;
+	//// now calculate intensity of light that traveled straight in from the background, and add it to the total
+	// fraction_outgoing = exp(-beta_abs * (view_sigma.p));
+	// total_rgb_intensity += background_rgb_intensity * fraction_outgoing;
+
+	return total_rgb_intensity;
 }
 
 //TODO: turn these into uniforms!
@@ -191,18 +210,9 @@ const vec3 atmosphere_scale_heights = vec3(
 const vec3 atmosphere_surface_densities = vec3(
 	1.217*KILOGRAM * (1.0 - 1.2e15/5.1e18), // earth's surface density times fraction of atmosphere that is not water vapor (by mass)
 	1.217*KILOGRAM * (      1.2e15/5.1e18), // earth's surface density times fraction of atmosphere that is water vapor (by mass)
-	0 // NOTE: NOT USED
-);
-const mat3 atmosphere_scattering_coefficients = mat3(
-	// NOTE: lovingly stolen from Valentine Galena, here: https://www.shadertoy.com/view/XtBXDz
-	vec3(5.5e-6, 13.0e-6, 22.4e-6),
-	vec3(21e-6),
-	vec3(0) // NOTE: NOT USED
+	0 // NOTE: NOT USED, intended to eventually represent absorption
 );
 void main() {
-
-	vec4  surface_color = texture2D( surface_light, vUv );
-
 	vec2  screenspace   = vUv;
     vec2  clipspace     = 2.0 * screenspace - 1.0;
 	vec3  view_direction = normalize(view_matrix_inverse * projection_matrix_inverse * vec4(clipspace, 1, 1)).xyz;
@@ -219,17 +229,24 @@ void main() {
 			solve_black_body_fraction_between_wavelengths(500e-9*METER, 600e-9*METER, SOLAR_TEMPERATURE),
 			solve_black_body_fraction_between_wavelengths(400e-9*METER, 500e-9*METER, SOLAR_TEMPERATURE)
 		  );
+
+	vec4  background_rgb_signal    = texture2D( surface_light, vUv );
+	vec3  background_rgb_intensity = get_rgb_intensity_of_rgb_signal(background_rgb_signal.rgb);
 		
 	vec3 rgb_intensity = get_rgb_intensity_of_light_ray_through_atmosphere(
 		view_origin,                view_direction,
 		world_position,             world_radius,
-		light_direction,             light_rgb_intensity,  // light direction and rgb intensity
-		surface_color.xyz,
+		light_direction,            light_rgb_intensity,  // light direction and rgb intensity
+		background_rgb_intensity,
 		atmosphere_scale_heights,
-		atmosphere_surface_densities,  // atmosphere surface density, kilograms
-		atmosphere_scattering_coefficients // atmosphere mass scattering coefficient
+		atmosphere_surface_densities,   // atmosphere surface density, kilograms
+		// vec3(5.5e-6, 13.0e-6, 22.4e-6), // atmosphere mass scattering coefficient
+		vec3(5.20e-6, 1.21e-5, 2.96e-5),
+		vec3(21e-6),
+		vec3(1e-6)
 	);
 
+	// rgb_intensity = 1.0 - exp2( rgb_intensity * -1.0 ); // simple tonemap
 
 
 
@@ -237,17 +254,17 @@ void main() {
 
 
 
-	// gl_FragColor = mix(surface_color, vec4(normalize(view_direction),1), 0.5);
+	// gl_FragColor = mix(background_rgb_signal, vec4(normalize(view_direction),1), 0.5);
 	// return;
 	// if (!is_interaction) {
 	// 	gl_FragColor = vec4(0);
 	// 	return;
 	// } 
-	// gl_FragColor = mix(surface_color, vec4(normalize(view_origin),1), 0.5);
-	// gl_FragColor = mix(surface_color, vec4(vec3(distance_to_exit/reference_distance/5.),1), 0.5);
-	gl_FragColor = mix(surface_color, vec4(1.0*get_rgb_signal_of_rgb_intensity(rgb_intensity),1), 0.5);
-	// gl_FragColor = vec4(1.0*get_rgb_signal_of_rgb_intensity(rgb_intensity),1);
-	// gl_FragColor = surface_color;
+	// gl_FragColor = mix(background_rgb_signal, vec4(normalize(view_origin),1), 0.5);
+	// gl_FragColor = mix(background_rgb_signal, vec4(vec3(distance_to_exit/reference_distance/5.),1), 0.5);
+	// gl_FragColor = mix(background_rgb_signal, vec4(10.0*get_rgb_signal_of_rgb_intensity(rgb_intensity),1), 0.5);
+	gl_FragColor = vec4(10.0*get_rgb_signal_of_rgb_intensity(rgb_intensity),1);
+	// gl_FragColor = background_rgb_signal;
 
 
 	// NOTES:
