@@ -41,7 +41,6 @@ vec3 get_rgb_intensity_of_light_ray_through_atmosphere(
 	vec3 light_direction, vec3 light_rgb_intensity,
 	vec3 background_rgb_intensity,
 	vec3 atmosphere_scale_heights,
-	vec3 atmosphere_surface_densities,
 	vec3 beta_ray,
 	vec3 beta_mie,
 	vec3 beta_abs
@@ -63,7 +62,7 @@ vec3 get_rgb_intensity_of_light_ray_through_atmosphere(
 	float view_x;			  // distance traversed while marching along the view ray
 	float view_h;			  // distance ("height") from the surface of the world while marching along the view ray
 	vec3  view_pos;			  // absolute position while marching along the view ray
-	vec3  view_sigma;		  // column densities for rayleigh and mie scattering, expressed as a ratio to surface density, found by marching along the view ray
+	vec3  view_sigma;		  // columnar density ratios for rayleigh and mie scattering, found by marching along the view ray. This expresses the quantity of air encountered along the view ray, relative to air density on the surface
 
 	bool  light_is_obscured;  // whether light ray will strike the surface of a world
 	bool  light_is_obstructed;// whether light ray will strike the surface of a world
@@ -78,7 +77,7 @@ vec3 get_rgb_intensity_of_light_ray_through_atmosphere(
 	float light_x;			  // distance traversed while marching along the light ray
 	float light_h;			  // distance ("height") from the surface of the world while marching along the light ray
 	vec3  light_pos; 		  // absolute position while marching along the light ray
-	vec3  light_sigma;		  // column densities for rayleigh and mie scattering, expressed as a ratio to surface density, found by marching along the light ray
+	vec3  light_sigma;		  // columnar density ratios for rayleigh and mie scattering, found by marching along the light ray. This expresses the quantity of air encountered along the light ray, relative to air density on the surface
 
 
 	// cosine of angle between view and light directions
@@ -137,7 +136,7 @@ vec3 get_rgb_intensity_of_light_ray_through_atmosphere(
 		view_pos = view_origin + view_direction * view_x;
 		view_h   = length(view_pos - world_position) - world_radius;
 
-		view_sigma += view_dx * atmosphere_surface_densities * exp(-light_h/atmosphere_scale_heights);
+		view_sigma += view_dx * exp(-light_h/atmosphere_scale_heights);
 
 		if (!view_is_obscured)
 		{
@@ -172,7 +171,7 @@ vec3 get_rgb_intensity_of_light_ray_through_atmosphere(
 			light_pos = view_pos + light_direction * light_x;
 			light_h   = length(light_pos - world_position) - world_radius;
 
-			light_sigma += light_dx * atmosphere_surface_densities * exp(-light_h/atmosphere_scale_heights);
+			light_sigma += light_dx * exp(-light_h/atmosphere_scale_heights);
 
 			light_x += light_dx;
 		}
@@ -189,8 +188,8 @@ vec3 get_rgb_intensity_of_light_ray_through_atmosphere(
 	}
 
 	//// now calculate intensity of light that traveled straight in from the background, and add it to the total
-	// fraction_outgoing = exp(-beta_abs * (view_sigma.p));
-	// total_rgb_intensity += background_rgb_intensity * fraction_outgoing;
+	fraction_outgoing = exp(-beta_abs * (view_sigma.z));
+	total_rgb_intensity += background_rgb_intensity * fraction_outgoing;
 
 	return total_rgb_intensity;
 }
@@ -237,13 +236,11 @@ void main() {
 		view_origin,                view_direction,
 		world_position,             world_radius,
 		light_direction,            light_rgb_intensity,  // light direction and rgb intensity
-		background_rgb_intensity,
+		3.*background_rgb_intensity,
 		atmosphere_scale_heights,
-		atmosphere_surface_densities,   // atmosphere surface density, kilograms
-		// vec3(5.5e-6, 13.0e-6, 22.4e-6), // atmosphere mass scattering coefficient
-		vec3(5.20e-6, 1.21e-5, 2.96e-5),
-		vec3(21e-6),
-		vec3(1e-6)
+		vec3(5.20e-6, 1.21e-5, 2.96e-5), // atmospheric scattering coefficients for the surface
+		vec3(2.1e-9),
+		vec3(0.)
 	);
 
 	// rgb_intensity = 1.0 - exp2( rgb_intensity * -1.0 ); // simple tonemap
@@ -263,7 +260,7 @@ void main() {
 	// gl_FragColor = mix(background_rgb_signal, vec4(normalize(view_origin),1), 0.5);
 	// gl_FragColor = mix(background_rgb_signal, vec4(vec3(distance_to_exit/reference_distance/5.),1), 0.5);
 	// gl_FragColor = mix(background_rgb_signal, vec4(10.0*get_rgb_signal_of_rgb_intensity(rgb_intensity),1), 0.5);
-	gl_FragColor = vec4(1.0*get_rgb_signal_of_rgb_intensity(rgb_intensity),1);
+	gl_FragColor = vec4(0.2*get_rgb_signal_of_rgb_intensity(rgb_intensity),1);
 	// gl_FragColor = background_rgb_signal;
 
 
