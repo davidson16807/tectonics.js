@@ -177,12 +177,12 @@ vec3 get_rgb_intensity_of_light_ray_through_atmosphere(
 			light_x += light_dx;
 		}
 
-		fraction_outgoing = exp(-beta_ray * (view_sigma.x + light_sigma.x) - beta_abs * view_sigma.z);
-		fraction_incoming   = beta_ray * gammas.x * exp(-view_h/atmosphere_scale_heights.x);
+		fraction_outgoing    = exp(-beta_ray * (view_sigma.x + light_sigma.x) - beta_abs * view_sigma.z);
+		fraction_incoming    = beta_ray * gammas.x * view_dx * exp(-view_h/atmosphere_scale_heights.x);
 		total_rgb_intensity += light_rgb_intensity * fraction_incoming * fraction_outgoing;
 
-		fraction_outgoing = exp(-beta_mie * (view_sigma.y + light_sigma.y) - beta_abs * view_sigma.z);
-		fraction_incoming   = beta_mie * gammas.y * exp(-view_h/atmosphere_scale_heights.y);
+		fraction_outgoing    = exp(-beta_mie * (view_sigma.y + light_sigma.y) - beta_abs * view_sigma.z);
+		fraction_incoming    = beta_mie * gammas.y * view_dx* exp(-view_h/atmosphere_scale_heights.y);
 		total_rgb_intensity += light_rgb_intensity * fraction_incoming * fraction_outgoing;
 
 		view_x += view_dx;
@@ -263,7 +263,7 @@ void main() {
 	// gl_FragColor = mix(background_rgb_signal, vec4(normalize(view_origin),1), 0.5);
 	// gl_FragColor = mix(background_rgb_signal, vec4(vec3(distance_to_exit/reference_distance/5.),1), 0.5);
 	// gl_FragColor = mix(background_rgb_signal, vec4(10.0*get_rgb_signal_of_rgb_intensity(rgb_intensity),1), 0.5);
-	gl_FragColor = vec4(10.0*get_rgb_signal_of_rgb_intensity(rgb_intensity),1);
+	gl_FragColor = vec4(1.0*get_rgb_signal_of_rgb_intensity(rgb_intensity),1);
 	// gl_FragColor = background_rgb_signal;
 
 
