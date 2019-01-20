@@ -99,15 +99,13 @@ vec3 get_rgb_intensity_of_light_ray_through_atmosphere(
 	// The rest of the fractional loss is accounted for by the variable "betas", which is dependant on wavelength, 
 	// and the density ratio, which is dependant on height
 	// So all together, the fraction of sunlight that scatters to a given angle is: beta(wavelength) * gamma(angle) * density_ratio(height)
-	vec3 gammas = vec3(
-		get_rayleigh_phase_factor(cos_scatter_angle),
-		get_henyey_greenstein_phase_factor(cos_scatter_angle),
-		0 // NOT USED, eventually intended to represent absorption
-	);
+	float gamma_ray = get_rayleigh_phase_factor(cos_scatter_angle);
+	float gamma_mie = get_henyey_greenstein_phase_factor(cos_scatter_angle);
+	float gamma_abs = 0.; // NOT USED YET
 
 	// NOTE: 3 scale heights should capture ~95% of the atmosphere's mass,  
 	//   so this should be enough to be aesthetically appealing.
-	float atmosphere_height = 15. * max(atmosphere_scale_heights.x, atmosphere_scale_heights.y);
+	float atmosphere_height = 10. * max(atmosphere_scale_heights.x, atmosphere_scale_heights.y);
 
 	view_is_obscured   = try_get_relation_between_ray_and_sphere(
 		view_origin,     view_direction,
@@ -177,11 +175,11 @@ vec3 get_rgb_intensity_of_light_ray_through_atmosphere(
 		}
 
 		fraction_outgoing    = exp(-beta_ray * (view_sigma.x + light_sigma.x) - beta_abs * view_sigma.z);
-		fraction_incoming    = beta_ray * gammas.x * view_dx * exp(-view_h/atmosphere_scale_heights.x);
+		fraction_incoming    = beta_ray * gamma_ray * view_dx * exp(-view_h/atmosphere_scale_heights.x);
 		total_rgb_intensity += light_rgb_intensity * fraction_incoming * fraction_outgoing;
 
 		fraction_outgoing    = exp(-beta_mie * (view_sigma.y + light_sigma.y) - beta_abs * view_sigma.z);
-		fraction_incoming    = beta_mie * gammas.y * view_dx* exp(-view_h/atmosphere_scale_heights.y);
+		fraction_incoming    = beta_mie * gamma_mie * view_dx* exp(-view_h/atmosphere_scale_heights.y);
 		total_rgb_intensity += light_rgb_intensity * fraction_incoming * fraction_outgoing;
 
 		view_x += view_dx;
@@ -229,14 +227,15 @@ void main() {
 			solve_black_body_fraction_between_wavelengths(400e-9*METER, 500e-9*METER, SOLAR_TEMPERATURE)
 		  );
 
+	float AESTHETIC_FACTOR1 = 0.3;
 	vec4  background_rgb_signal    = texture2D( surface_light, vUv );
-	vec3  background_rgb_intensity = get_rgb_intensity_of_rgb_signal(background_rgb_signal.rgb);
+	vec3  background_rgb_intensity = AESTHETIC_FACTOR1 * light_rgb_intensity * get_rgb_intensity_of_rgb_signal(background_rgb_signal.rgb);
 		
 	vec3 rgb_intensity = get_rgb_intensity_of_light_ray_through_atmosphere(
 		view_origin,                view_direction,
 		world_position,             world_radius,
 		light_direction,            light_rgb_intensity,  // light direction and rgb intensity
-		3.*background_rgb_intensity,
+		background_rgb_intensity,
 		atmosphere_scale_heights,
 		vec3(5.20e-6, 1.21e-5, 2.96e-5), // atmospheric scattering coefficients for the surface
 		vec3(2.1e-9),
@@ -260,7 +259,8 @@ void main() {
 	// gl_FragColor = mix(background_rgb_signal, vec4(normalize(view_origin),1), 0.5);
 	// gl_FragColor = mix(background_rgb_signal, vec4(vec3(distance_to_exit/reference_distance/5.),1), 0.5);
 	// gl_FragColor = mix(background_rgb_signal, vec4(10.0*get_rgb_signal_of_rgb_intensity(rgb_intensity),1), 0.5);
-	gl_FragColor = vec4(0.2*get_rgb_signal_of_rgb_intensity(rgb_intensity),1);
+	float AESTHETIC_FACTOR2 = 0.1;
+	gl_FragColor = vec4(AESTHETIC_FACTOR2*get_rgb_signal_of_rgb_intensity(rgb_intensity),1);
 	// gl_FragColor = background_rgb_signal;
 
 

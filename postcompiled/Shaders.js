@@ -150,6 +150,212 @@ void main() {
 `;
 var fragmentShaders = {};
 fragmentShaders.realistic = `
+// NOTE: these macros are here to allow porting the code between several languages
+const float DEGREE = 3.141592653589793238462643383279502884197169399/180.;
+const float RADIAN = 1.;
+const float KELVIN = 1.;
+const float MICROGRAM = 1e-9; // kilograms
+const float MILLIGRAM = 1e-6; // kilograms
+const float GRAM = 1e-3; // kilograms
+const float KILOGRAM = 1.; // kilograms
+const float TON = 1000.; // kilograms
+const float NANOMETER = 1e-9; // meter
+const float MICROMETER = 1e-6; // meter
+const float MILLIMETER = 1e-3; // meter
+const float METER = 1.; // meter
+const float KILOMETER = 1000.; // meter
+const float MOLE = 6.02214076e23;
+const float MILLIMOLE = MOLE / 1e3;
+const float MICROMOLE = MOLE / 1e6;
+const float NANOMOLE = MOLE / 1e9;
+const float FEMTOMOLE = MOLE / 1e12;
+const float SECOND = 1.; // seconds
+const float MINUTE = 60.; // seconds
+const float HOUR = MINUTE*60.; // seconds
+const float DAY = HOUR*24.; // seconds
+const float WEEK = DAY*7.; // seconds
+const float MONTH = DAY*29.53059; // seconds
+const float YEAR = DAY*365.256363004; // seconds
+const float MEGAYEAR = YEAR*1e6; // seconds
+const float NEWTON = KILOGRAM * METER / (SECOND * SECOND);
+const float JOULE = NEWTON * METER;
+const float WATT = JOULE / SECOND;
+const float EARTH_MASS = 5.972e24; // kilograms
+const float EARTH_RADIUS = 6.367e6; // meters
+const float STANDARD_GRAVITY = 9.80665; // meters/second^2
+const float STANDARD_TEMPERATURE = 273.15; // kelvin
+const float STANDARD_PRESSURE = 101325.; // pascals
+const float ASTRONOMICAL_UNIT = 149597870700.; // meters
+const float GLOBAL_SOLAR_CONSTANT = 1361.; // watts/meter^2
+const float JUPITER_MASS = 1.898e27; // kilograms
+const float JUPITER_RADIUS = 71e6; // meters
+const float SOLAR_MASS = 2e30; // kilograms
+const float SOLAR_RADIUS = 695.7e6; // meters
+const float SOLAR_LUMINOSITY = 3.828e26; // watts
+const float SOLAR_TEMPERATURE = 5772.; // kelvin
+const float PI = 3.14159265358979323846264338327950288419716939937510;
+float get_surface_area_of_sphere(
+ in float radius
+) {
+ return 4.*PI*radius*radius;
+}
+// TODO: try to get this to work with structs!
+// See: http://www.lighthouse3d.com/tutorials/maths/ray-sphere-intersection/
+void get_relation_between_ray_and_point(
+ in vec3 ray_origin,
+ in vec3 ray_direction,
+ in vec3 point_position,
+ out float distance_at_closest_approach2,
+ out float distance_to_closest_approach
+){
+ vec3 ray_to_point = point_position - ray_origin;
+ distance_to_closest_approach = dot(ray_to_point, ray_direction);
+ distance_at_closest_approach2 =
+  dot(ray_to_point, ray_to_point) -
+  distance_to_closest_approach * distance_to_closest_approach;
+}
+bool try_get_relation_between_ray_and_sphere(
+ in vec3 ray_origin,
+ in vec3 ray_direction,
+ in vec3 sphere_origin,
+ in float sphere_radius,
+ out float distance_at_closest_approach2,
+ out float distance_to_closest_approach,
+ out float distance_to_entrance,
+ out float distance_to_exit
+){
+ get_relation_between_ray_and_point(
+  ray_origin, ray_direction,
+  sphere_origin,
+  distance_at_closest_approach2, distance_to_closest_approach
+ );
+ float sphere_radius2 = sphere_radius * sphere_radius;
+ if (distance_at_closest_approach2 > sphere_radius2 && distance_to_closest_approach > 0.)
+  return false;
+ float distance_from_closest_approach_to_exit = sqrt(sphere_radius2 - distance_at_closest_approach2);
+ distance_to_entrance = distance_to_closest_approach - distance_from_closest_approach_to_exit;
+ distance_to_exit = distance_to_closest_approach + distance_from_closest_approach_to_exit;
+ return true;
+}
+const float SPEED_OF_LIGHT = 299792458. * METER / SECOND;
+const float BOLTZMANN_CONSTANT = 1.3806485279e-23 * JOULE / KELVIN;
+const float STEPHAN_BOLTZMANN_CONSTANT = 5.670373e-8 * WATT / (METER*METER* KELVIN*KELVIN*KELVIN*KELVIN);
+const float PLANCK_CONSTANT = 6.62607004e-34 * JOULE * SECOND;
+// see Lawson 2004, "The Blackbody Fraction, Infinite Series and Spreadsheets"
+// we only do a single iteration with n=1, because it doesn't have a noticeable effect on output
+float solve_black_body_fraction_below_wavelength(
+ in float wavelength,
+ in float temperature
+){
+ const float iterations = 2.;
+ const float h = PLANCK_CONSTANT;
+ const float k = BOLTZMANN_CONSTANT;
+ const float c = SPEED_OF_LIGHT;
+ float L = wavelength;
+ float T = temperature;
+ float C2 = h*c/k;
+ float z = C2 / (L*T);
+ float z2 = z*z;
+ float z3 = z2*z;
+ float sum = 0.;
+ float n2=0.;
+ float n3=0.;
+ for (float n=1.; n <= iterations; n++) {
+  n2 = n*n;
+  n3 = n2*n;
+  sum += (z3 + 3.*z2/n + 6.*z/n2 + 6./n3) * exp(-n*z) / n;
+ }
+ return 15.*sum/(PI*PI*PI*PI);
+}
+float solve_black_body_fraction_between_wavelengths(
+ in float lo,
+ in float hi,
+ in float temperature
+){
+ return solve_black_body_fraction_below_wavelength(hi, temperature) -
+   solve_black_body_fraction_below_wavelength(lo, temperature);
+}
+// This calculates the radiation (in watts/m^2) that's emitted 
+// by a single object using the Stephan-Boltzmann equation
+float get_black_body_emissive_flux(
+ in float temperature
+){
+    float T = temperature;
+    return STEPHAN_BOLTZMANN_CONSTANT * T*T*T*T;
+}
+float get_rayleigh_phase_factor(in float mu)
+{
+ return
+   3. * (1. + mu*mu)
+ / //------------------------
+    (16. * PI);
+}
+// Henyey-Greenstein phase function factor [-1, 1]
+// represents the average cosine of the scattered directions
+// 0 is isotropic scattering
+// > 1 is forward scattering, < 1 is backwards
+float get_henyey_greenstein_phase_factor(in float mu)
+{
+ const float g = 0.76;
+ return
+      (1. - g*g)
+ / //---------------------------------------------
+  ((4. + PI) * pow(1. + g*g - 2.*g*mu, 1.5));
+}
+// Schlick Phase Function factor
+// Pharr and  Humphreys [2004] equivalence to g above
+float get_schlick_phase_factor(in float mu)
+{
+ const float g = 0.76;
+ const float k = 1.55*g - 0.55 * (g*g*g);
+ return
+     (1. - k*k)
+ / //-------------------------------------------
+  (4. * PI * (1. + k*mu) * (1. + k*mu));
+}
+// This function returns a rgb vector that quickly approximates a spectral "bump".
+// Adapted from GPU Gems and Alan Zucconi
+// from https://www.alanzucconi.com/2017/07/15/improving-the-rainbow/
+float bump (in float x, in float edge0, in float edge1, in float height)
+{
+    float center = (edge1 + edge0) / 2.;
+    float width = (edge1 - edge0) / 2.;
+    float offset = (x - center) / width;
+ return height * max(1. - offset * offset, 0.);
+}
+// This function returns a rgb vector that best represents color at a given wavelength
+// It is from Alan Zucconi: https://www.alanzucconi.com/2017/07/15/improving-the-rainbow/
+// I've adapted the function so that coefficients are expressed in meters.
+vec3 get_rgb_signal_of_wavelength (in float w)
+{
+ return vec3(
+        bump(w, 530e-9, 690e-9, 1.00)+
+        bump(w, 410e-9, 460e-9, 0.15),
+        bump(w, 465e-9, 635e-9, 0.75)+
+        bump(w, 420e-9, 700e-9, 0.15),
+        bump(w, 400e-9, 570e-9, 0.45)+
+        bump(w, 570e-9, 625e-9, 0.30)
+      );
+}
+// "GAMMA" is the constant that's used to map between 
+//   rgb signals sent to a monitor and their actual intensity
+const float GAMMA = 2.2;
+vec3 get_rgb_intensity_of_rgb_signal(in vec3 signal)
+{
+ return vec3(
+  pow(signal.x, GAMMA),
+  pow(signal.y, GAMMA),
+  pow(signal.z, GAMMA)
+ );
+}
+vec3 get_rgb_signal_of_rgb_intensity(in vec3 intensity)
+{
+ return vec3(
+  pow(intensity.x, 1./GAMMA),
+  pow(intensity.y, 1./GAMMA),
+  pow(intensity.z, 1./GAMMA)
+ );
+}
 varying float vDisplacement;
 varying float vPlantCoverage;
 varying float vIceCoverage;
@@ -161,6 +367,7 @@ uniform float sealevel_mod;
 uniform float darkness_mod;
 uniform float ice_mod;
 uniform float insolation_max;
+const vec3 light_position = vec3(ASTRONOMICAL_UNIT,0,0);
 const vec4 NONE = vec4(0.0,0.0,0.0,0.0);
 const vec4 OCEAN = vec4(0.04,0.04,0.2,1.0);
 const vec4 SHALLOW = vec4(0.04,0.58,0.54,1.0);
@@ -186,6 +393,17 @@ void main() {
  float ice_coverage = vIceCoverage;
  float plant_coverage = vPlantCoverage * (vDisplacement > sealevel? 1. : 0.);
  float ocean_coverage = smoothstep(epipelagic * sealevel_mod, sealevel * sealevel_mod, vDisplacement);
+ vec3 light_offset = light_position; // - world_position;
+ vec3 light_direction = normalize(light_offset);
+ float light_distance = length(light_offset);
+ vec3 light_rgb_intensity =
+    get_black_body_emissive_flux(SOLAR_TEMPERATURE)
+  * get_surface_area_of_sphere(SOLAR_RADIUS) / get_surface_area_of_sphere(light_distance)
+  * vec3(
+   solve_black_body_fraction_between_wavelengths(600e-9*METER, 700e-9*METER, SOLAR_TEMPERATURE),
+   solve_black_body_fraction_between_wavelengths(500e-9*METER, 600e-9*METER, SOLAR_TEMPERATURE),
+   solve_black_body_fraction_between_wavelengths(400e-9*METER, 500e-9*METER, SOLAR_TEMPERATURE)
+    );
  float darkness_coverage = smoothstep(insolation_max, 0., vInsolation);
  vec4 ocean = mix(OCEAN, SHALLOW, ocean_coverage);
  vec4 bedrock = mix(MAFIC, FELSIC, felsic_coverage);
@@ -194,8 +412,8 @@ void main() {
  vec4 uncovered = @UNCOVERED;
  vec4 sea_covered = vDisplacement < sealevel * sealevel_mod? ocean : uncovered;
  vec4 ice_covered = mix(sea_covered, SNOW, ice_coverage*ice_mod);
- vec4 darkness_covered = mix(ice_covered, NONE, darkness_coverage*darkness_mod-0.01);
- gl_FragColor = darkness_covered;
+ vec3 surface_rgb_intensity = max(dot(vPosition.xyz, light_direction), 0.001) * ice_covered.xyz * light_rgb_intensity / 400.;
+ gl_FragColor = vec4(get_rgb_signal_of_rgb_intensity(surface_rgb_intensity),1);
 }
 `;
 fragmentShaders.monochromatic = `
@@ -586,14 +804,12 @@ vec3 get_rgb_intensity_of_light_ray_through_atmosphere(
  // The rest of the fractional loss is accounted for by the variable "betas", which is dependant on wavelength, 
  // and the density ratio, which is dependant on height
  // So all together, the fraction of sunlight that scatters to a given angle is: beta(wavelength) * gamma(angle) * density_ratio(height)
- vec3 gammas = vec3(
-  get_rayleigh_phase_factor(cos_scatter_angle),
-  get_henyey_greenstein_phase_factor(cos_scatter_angle),
-  0 // NOT USED, eventually intended to represent absorption
- );
+ float gamma_ray = get_rayleigh_phase_factor(cos_scatter_angle);
+ float gamma_mie = get_henyey_greenstein_phase_factor(cos_scatter_angle);
+ float gamma_abs = 0.; // NOT USED YET
  // NOTE: 3 scale heights should capture ~95% of the atmosphere's mass,  
  //   so this should be enough to be aesthetically appealing.
- float atmosphere_height = 15. * max(atmosphere_scale_heights.x, atmosphere_scale_heights.y);
+ float atmosphere_height = 10. * max(atmosphere_scale_heights.x, atmosphere_scale_heights.y);
  view_is_obscured = try_get_relation_between_ray_and_sphere(
   view_origin, view_direction,
   world_position, world_radius + atmosphere_height,
@@ -650,10 +866,10 @@ vec3 get_rgb_intensity_of_light_ray_through_atmosphere(
    light_x += light_dx;
   }
   fraction_outgoing = exp(-beta_ray * (view_sigma.x + light_sigma.x) - beta_abs * view_sigma.z);
-  fraction_incoming = beta_ray * gammas.x * view_dx * exp(-view_h/atmosphere_scale_heights.x);
+  fraction_incoming = beta_ray * gamma_ray * view_dx * exp(-view_h/atmosphere_scale_heights.x);
   total_rgb_intensity += light_rgb_intensity * fraction_incoming * fraction_outgoing;
   fraction_outgoing = exp(-beta_mie * (view_sigma.y + light_sigma.y) - beta_abs * view_sigma.z);
-  fraction_incoming = beta_mie * gammas.y * view_dx* exp(-view_h/atmosphere_scale_heights.y);
+  fraction_incoming = beta_mie * gamma_mie * view_dx* exp(-view_h/atmosphere_scale_heights.y);
   total_rgb_intensity += light_rgb_intensity * fraction_incoming * fraction_outgoing;
   view_x += view_dx;
  }
@@ -695,13 +911,14 @@ void main() {
    solve_black_body_fraction_between_wavelengths(500e-9*METER, 600e-9*METER, SOLAR_TEMPERATURE),
    solve_black_body_fraction_between_wavelengths(400e-9*METER, 500e-9*METER, SOLAR_TEMPERATURE)
     );
+ float AESTHETIC_FACTOR1 = 0.3;
  vec4 background_rgb_signal = texture2D( surface_light, vUv );
- vec3 background_rgb_intensity = get_rgb_intensity_of_rgb_signal(background_rgb_signal.rgb);
+ vec3 background_rgb_intensity = AESTHETIC_FACTOR1 * light_rgb_intensity * get_rgb_intensity_of_rgb_signal(background_rgb_signal.rgb);
  vec3 rgb_intensity = get_rgb_intensity_of_light_ray_through_atmosphere(
   view_origin, view_direction,
   world_position, world_radius,
   light_direction, light_rgb_intensity, // light direction and rgb intensity
-  3.*background_rgb_intensity,
+  background_rgb_intensity,
   atmosphere_scale_heights,
   vec3(5.20e-6, 1.21e-5, 2.96e-5), // atmospheric scattering coefficients for the surface
   vec3(2.1e-9),
@@ -717,7 +934,8 @@ void main() {
  // gl_FragColor = mix(background_rgb_signal, vec4(normalize(view_origin),1), 0.5);
  // gl_FragColor = mix(background_rgb_signal, vec4(vec3(distance_to_exit/reference_distance/5.),1), 0.5);
  // gl_FragColor = mix(background_rgb_signal, vec4(10.0*get_rgb_signal_of_rgb_intensity(rgb_intensity),1), 0.5);
- gl_FragColor = vec4(0.2*get_rgb_signal_of_rgb_intensity(rgb_intensity),1);
+ float AESTHETIC_FACTOR2 = 0.1;
+ gl_FragColor = vec4(AESTHETIC_FACTOR2*get_rgb_signal_of_rgb_intensity(rgb_intensity),1);
  // gl_FragColor = background_rgb_signal;
  // NOTES:
  // solids are modeled as a gas where attenuation coefficient is super high

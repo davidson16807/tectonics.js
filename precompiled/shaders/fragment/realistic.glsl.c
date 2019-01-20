@@ -1,3 +1,14 @@
+#define GL_ES
+#include "precompiled/shaders/academics/cross_platform_macros.glsl.c"
+#include "precompiled/shaders/academics/units.glsl.c"
+#include "precompiled/shaders/academics/math/constants.glsl.c"
+#include "precompiled/shaders/academics/math/geometry.glsl.c"
+#include "precompiled/shaders/academics/physics/constants.glsl.c"
+#include "precompiled/shaders/academics/physics/emission.glsl.c"
+#include "precompiled/shaders/academics/physics/scattering.glsl.c"
+#include "precompiled/shaders/academics/psychophysics.glsl.c"
+#include "precompiled/shaders/academics/electronics.glsl.c"
+
 
 varying float vDisplacement;
 varying float vPlantCoverage;
@@ -12,6 +23,8 @@ uniform float darkness_mod;
 uniform float ice_mod;
 
 uniform float insolation_max;
+
+const vec3  light_position = vec3(ASTRONOMICAL_UNIT,0,0);
 
 const vec4 NONE = vec4(0.0,0.0,0.0,0.0);
 const vec4 OCEAN = vec4(0.04,0.04,0.2,1.0);
@@ -42,6 +55,19 @@ void main() {
 	float ice_coverage 		= vIceCoverage;
 	float plant_coverage 	= vPlantCoverage * (vDisplacement > sealevel? 1. : 0.);
 	float ocean_coverage 	= smoothstep(epipelagic * sealevel_mod, sealevel * sealevel_mod, vDisplacement);
+
+	vec3  light_offset    = light_position; // - world_position;
+	vec3  light_direction = normalize(light_offset);
+	float light_distance  = length(light_offset);
+	vec3  light_rgb_intensity = 
+		  get_black_body_emissive_flux(SOLAR_TEMPERATURE)
+		* get_surface_area_of_sphere(SOLAR_RADIUS) / get_surface_area_of_sphere(light_distance)
+		* vec3(
+			solve_black_body_fraction_between_wavelengths(600e-9*METER, 700e-9*METER, SOLAR_TEMPERATURE),
+			solve_black_body_fraction_between_wavelengths(500e-9*METER, 600e-9*METER, SOLAR_TEMPERATURE),
+			solve_black_body_fraction_between_wavelengths(400e-9*METER, 500e-9*METER, SOLAR_TEMPERATURE)
+		  );
+
 	float darkness_coverage = smoothstep(insolation_max, 0., vInsolation);
 
 	vec4 ocean 		= mix(OCEAN, SHALLOW, ocean_coverage);
@@ -53,7 +79,7 @@ void main() {
 	vec4 sea_covered = vDisplacement < sealevel * sealevel_mod? ocean : uncovered;
 	vec4 ice_covered = mix(sea_covered, SNOW, ice_coverage*ice_mod);
 
-	vec4 darkness_covered = mix(ice_covered, NONE, darkness_coverage*darkness_mod-0.01);
+	vec3 surface_rgb_intensity = max(dot(vPosition.xyz, light_direction), 0.001) * ice_covered.xyz * light_rgb_intensity / 400.;
 
-	gl_FragColor = darkness_covered;
+	gl_FragColor = vec4(get_rgb_signal_of_rgb_intensity(surface_rgb_intensity),1);
 }
