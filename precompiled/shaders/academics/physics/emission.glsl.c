@@ -1,7 +1,7 @@
 
 // see Lawson 2004, "The Blackbody Fraction, Infinite Series and Spreadsheets"
 // we only do a single iteration with n=1, because it doesn't have a noticeable effect on output
-float solve_black_body_fraction_below_wavelength(
+FUNC(float) solve_black_body_fraction_below_wavelength(
 	IN(float) wavelength, 
 	IN(float) temperature
 ){ 
@@ -28,7 +28,7 @@ float solve_black_body_fraction_below_wavelength(
 	}
 	return 15.*sum/(PI*PI*PI*PI);
 }
-float solve_black_body_fraction_between_wavelengths(
+FUNC(float) solve_black_body_fraction_between_wavelengths(
 	IN(float) lo, 
 	IN(float) hi, 
 	IN(float) temperature
@@ -38,9 +38,19 @@ float solve_black_body_fraction_between_wavelengths(
 }
 // This calculates the radiation (in watts/m^2) that's emitted 
 // by a single object using the Stephan-Boltzmann equation
-float get_black_body_emissive_flux(
+FUNC(float) get_black_body_emissive_flux(
 	IN(float) temperature
 ){
     VAR(float) T = temperature;
     return STEPHAN_BOLTZMANN_CONSTANT * T*T*T*T;
+}
+FUNC(vec3) get_rgb_intensity_of_emitted_light_from_black_body(
+	IN(float) temperature
+){
+	return get_black_body_emissive_flux(SOLAR_TEMPERATURE)
+		 * vec3(
+			 solve_black_body_fraction_between_wavelengths(600e-9*METER, 700e-9*METER, SOLAR_TEMPERATURE),
+			 solve_black_body_fraction_between_wavelengths(500e-9*METER, 600e-9*METER, SOLAR_TEMPERATURE),
+			 solve_black_body_fraction_between_wavelengths(400e-9*METER, 500e-9*METER, SOLAR_TEMPERATURE)
+		   );
 }

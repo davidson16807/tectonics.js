@@ -6,6 +6,7 @@
 #define OUT(T) out T
 #define CONST(T) const T
 #define VAR(T) T
+#define FUNC(T) T
 #endif
 
 #ifdef CPP
@@ -14,12 +15,14 @@
 #define OUT(T) T&
 #define CONST(T) const T
 #define VAR(T) T
+#define FUNC(T) T
 #endif
 
 #ifdef JS
-#define IN(T) T
-#define INOUT(T) T
-#define OUT(T) T
+#define IN(T)
+#define INOUT(T)
+#define OUT(T)
 #define CONST(T) const T
 #define VAR(T) var T
+#define FUNC(T) function T
 #endif

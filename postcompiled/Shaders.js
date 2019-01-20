@@ -283,10 +283,18 @@ float get_black_body_emissive_flux(
     float T = temperature;
     return STEPHAN_BOLTZMANN_CONSTANT * T*T*T*T;
 }
-float get_rayleigh_phase_factor(in float mu)
+vec3 get_rgb_intensity_of_emitted_light_from_black_body(float temperature){
+ return get_black_body_emissive_flux(SOLAR_TEMPERATURE)
+   * vec3(
+    solve_black_body_fraction_between_wavelengths(600e-9*METER, 700e-9*METER, SOLAR_TEMPERATURE),
+    solve_black_body_fraction_between_wavelengths(500e-9*METER, 600e-9*METER, SOLAR_TEMPERATURE),
+    solve_black_body_fraction_between_wavelengths(400e-9*METER, 500e-9*METER, SOLAR_TEMPERATURE)
+     );
+}
+float get_rayleigh_phase_factor(in float cos_scatter_angle)
 {
  return
-   3. * (1. + mu*mu)
+   3. * (1. + cos_scatter_angle*cos_scatter_angle)
  / //------------------------
     (16. * PI);
 }
@@ -294,24 +302,24 @@ float get_rayleigh_phase_factor(in float mu)
 // represents the average cosine of the scattered directions
 // 0 is isotropic scattering
 // > 1 is forward scattering, < 1 is backwards
-float get_henyey_greenstein_phase_factor(in float mu)
+float get_henyey_greenstein_phase_factor(in float cos_scatter_angle)
 {
  const float g = 0.76;
  return
       (1. - g*g)
  / //---------------------------------------------
-  ((4. + PI) * pow(1. + g*g - 2.*g*mu, 1.5));
+  ((4. + PI) * pow(1. + g*g - 2.*g*cos_scatter_angle, 1.5));
 }
 // Schlick Phase Function factor
 // Pharr and  Humphreys [2004] equivalence to g above
-float get_schlick_phase_factor(in float mu)
+float get_schlick_phase_factor(in float cos_scatter_angle)
 {
  const float g = 0.76;
  const float k = 1.55*g - 0.55 * (g*g*g);
  return
      (1. - k*k)
  / //-------------------------------------------
-  (4. * PI * (1. + k*mu) * (1. + k*mu));
+  (4. * PI * (1. + k*cos_scatter_angle) * (1. + k*cos_scatter_angle));
 }
 // This function returns a rgb vector that quickly approximates a spectral "bump".
 // Adapted from GPU Gems and Alan Zucconi
@@ -368,19 +376,17 @@ uniform float darkness_mod;
 uniform float ice_mod;
 uniform float insolation_max;
 const vec3 light_position = vec3(ASTRONOMICAL_UNIT,0,0);
-const vec4 NONE = vec4(0.0,0.0,0.0,0.0);
-const vec4 OCEAN = vec4(0.04,0.04,0.2,1.0);
-const vec4 SHALLOW = vec4(0.04,0.58,0.54,1.0);
-const vec4 MAFIC = vec4(50,45,50,255)/255. // observed on lunar maria 
-                  * vec4(1,1,1,1); // aesthetic correction 
-const vec4 FELSIC = vec4(214,181,158,255)/255. // observed color of rhyolite sample
-                  * vec4(1,1,1,1); // aesthetic correction 
-//const vec4 SAND = vec4(255,230,155,255)/255.;
-const vec4 SAND = vec4(245,215,145,255)/255.;
-const vec4 PEAT = vec4(100,85,60,255)/255.;
-const vec4 SNOW = vec4(0.9, 0.9, 0.9, 0.9);
-const vec4 JUNGLE = vec4(30,50,10,255)/255.;
-//const vec4 JUNGLE = vec4(20,45,5,255)/255.;
+const vec3 NONE = vec3(0.0,0.0,0.0);
+const vec3 OCEAN = vec3(0.04,0.04,0.2);
+const vec3 SHALLOW = vec3(0.04,0.58,0.54);
+const vec3 MAFIC = vec3(50,45,50)/255.; // observed on lunar maria 
+const vec3 FELSIC = vec3(214,181,158)/255.; // observed color of rhyolite sample
+//const vec3 SAND 	= vec3(255,230,155)/255.;
+const vec3 SAND = vec3(245,215,145)/255.;
+const vec3 PEAT = vec3(100,85,60)/255.;
+const vec3 SNOW = vec3(0.9, 0.9, 0.9);
+const vec3 JUNGLE = vec3(30,50,10)/255.;
+//const vec3 JUNGLE	= vec3(20,45,5)/255.;
 void main() {
  float epipelagic = sealevel - 200.0;
  float mesopelagic = sealevel - 1000.0;
@@ -396,23 +402,15 @@ void main() {
  vec3 light_offset = light_position; // - world_position;
  vec3 light_direction = normalize(light_offset);
  float light_distance = length(light_offset);
- vec3 light_rgb_intensity =
-    get_black_body_emissive_flux(SOLAR_TEMPERATURE)
-  * get_surface_area_of_sphere(SOLAR_RADIUS) / get_surface_area_of_sphere(light_distance)
-  * vec3(
-   solve_black_body_fraction_between_wavelengths(600e-9*METER, 700e-9*METER, SOLAR_TEMPERATURE),
-   solve_black_body_fraction_between_wavelengths(500e-9*METER, 600e-9*METER, SOLAR_TEMPERATURE),
-   solve_black_body_fraction_between_wavelengths(400e-9*METER, 500e-9*METER, SOLAR_TEMPERATURE)
-    );
  float darkness_coverage = smoothstep(insolation_max, 0., vInsolation);
- vec4 ocean = mix(OCEAN, SHALLOW, ocean_coverage);
- vec4 bedrock = mix(MAFIC, FELSIC, felsic_coverage);
- vec4 soil = mix(bedrock, mix(SAND, PEAT, organic_coverage), mineral_coverage);
- vec4 canopy = mix(soil, JUNGLE, plant_coverage);
- vec4 uncovered = @UNCOVERED;
- vec4 sea_covered = vDisplacement < sealevel * sealevel_mod? ocean : uncovered;
- vec4 ice_covered = mix(sea_covered, SNOW, ice_coverage*ice_mod);
- vec3 surface_rgb_intensity = max(dot(vPosition.xyz, light_direction), 0.001) * ice_covered.xyz * light_rgb_intensity / 400.;
+ vec3 ocean = mix(OCEAN, SHALLOW, ocean_coverage);
+ vec3 bedrock = mix(MAFIC, FELSIC, felsic_coverage);
+ vec3 soil = mix(bedrock, mix(SAND, PEAT, organic_coverage), mineral_coverage);
+ vec3 canopy = mix(soil, JUNGLE, plant_coverage);
+ vec3 uncovered = @UNCOVERED;
+ vec3 sea_covered = vDisplacement < sealevel * sealevel_mod? ocean : uncovered;
+ vec3 ice_covered = mix(sea_covered, SNOW, ice_coverage*ice_mod);
+ vec3 surface_rgb_intensity = max(dot(vPosition.xyz, light_direction), 0.001) * get_rgb_intensity_of_rgb_signal(ice_covered);
  gl_FragColor = vec4(get_rgb_signal_of_rgb_intensity(surface_rgb_intensity),1);
 }
 `;
@@ -659,10 +657,18 @@ float get_black_body_emissive_flux(
     float T = temperature;
     return STEPHAN_BOLTZMANN_CONSTANT * T*T*T*T;
 }
-float get_rayleigh_phase_factor(in float mu)
+vec3 get_rgb_intensity_of_emitted_light_from_black_body(float temperature){
+ return get_black_body_emissive_flux(SOLAR_TEMPERATURE)
+   * vec3(
+    solve_black_body_fraction_between_wavelengths(600e-9*METER, 700e-9*METER, SOLAR_TEMPERATURE),
+    solve_black_body_fraction_between_wavelengths(500e-9*METER, 600e-9*METER, SOLAR_TEMPERATURE),
+    solve_black_body_fraction_between_wavelengths(400e-9*METER, 500e-9*METER, SOLAR_TEMPERATURE)
+     );
+}
+float get_rayleigh_phase_factor(in float cos_scatter_angle)
 {
  return
-   3. * (1. + mu*mu)
+   3. * (1. + cos_scatter_angle*cos_scatter_angle)
  / //------------------------
     (16. * PI);
 }
@@ -670,24 +676,24 @@ float get_rayleigh_phase_factor(in float mu)
 // represents the average cosine of the scattered directions
 // 0 is isotropic scattering
 // > 1 is forward scattering, < 1 is backwards
-float get_henyey_greenstein_phase_factor(in float mu)
+float get_henyey_greenstein_phase_factor(in float cos_scatter_angle)
 {
  const float g = 0.76;
  return
       (1. - g*g)
  / //---------------------------------------------
-  ((4. + PI) * pow(1. + g*g - 2.*g*mu, 1.5));
+  ((4. + PI) * pow(1. + g*g - 2.*g*cos_scatter_angle, 1.5));
 }
 // Schlick Phase Function factor
 // Pharr and  Humphreys [2004] equivalence to g above
-float get_schlick_phase_factor(in float mu)
+float get_schlick_phase_factor(in float cos_scatter_angle)
 {
  const float g = 0.76;
  const float k = 1.55*g - 0.55 * (g*g*g);
  return
      (1. - k*k)
  / //-------------------------------------------
-  (4. * PI * (1. + k*mu) * (1. + k*mu));
+  (4. * PI * (1. + k*cos_scatter_angle) * (1. + k*cos_scatter_angle));
 }
 // This function returns a rgb vector that quickly approximates a spectral "bump".
 // Adapted from GPU Gems and Alan Zucconi
@@ -752,7 +758,7 @@ vec3 get_density_ratios_at_height_in_atmosphere(
 ){
  return exp(-height/atmosphere_scale_heights);
 }
-vec3 get_rgb_intensity_of_light_ray_through_atmosphere(
+vec3 get_rgb_intensity_of_light_rays_through_atmosphere(
  vec3 view_origin, vec3 view_direction,
  vec3 world_position, float world_radius,
  vec3 light_direction, vec3 light_rgb_intensity,
@@ -904,17 +910,12 @@ void main() {
  vec3 light_direction = normalize(light_offset);
  float light_distance = length(light_offset);
  vec3 light_rgb_intensity =
-    get_black_body_emissive_flux(SOLAR_TEMPERATURE)
-  * get_surface_area_of_sphere(SOLAR_RADIUS) / get_surface_area_of_sphere(light_distance)
-  * vec3(
-   solve_black_body_fraction_between_wavelengths(600e-9*METER, 700e-9*METER, SOLAR_TEMPERATURE),
-   solve_black_body_fraction_between_wavelengths(500e-9*METER, 600e-9*METER, SOLAR_TEMPERATURE),
-   solve_black_body_fraction_between_wavelengths(400e-9*METER, 500e-9*METER, SOLAR_TEMPERATURE)
-    );
- float AESTHETIC_FACTOR1 = 0.3;
+    get_rgb_intensity_of_emitted_light_from_black_body(SOLAR_TEMPERATURE)
+  * get_surface_area_of_sphere(SOLAR_RADIUS) / get_surface_area_of_sphere(light_distance);
+ float AESTHETIC_FACTOR1 = 0.5;
  vec4 background_rgb_signal = texture2D( surface_light, vUv );
  vec3 background_rgb_intensity = AESTHETIC_FACTOR1 * light_rgb_intensity * get_rgb_intensity_of_rgb_signal(background_rgb_signal.rgb);
- vec3 rgb_intensity = get_rgb_intensity_of_light_ray_through_atmosphere(
+ vec3 rgb_intensity = get_rgb_intensity_of_light_rays_through_atmosphere(
   view_origin, view_direction,
   world_position, world_radius,
   light_direction, light_rgb_intensity, // light direction and rgb intensity

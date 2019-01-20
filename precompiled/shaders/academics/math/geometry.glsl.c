@@ -1,4 +1,4 @@
-VAR(float) get_surface_area_of_sphere(
+FUNC(float) get_surface_area_of_sphere(
 	IN(float) radius
 ) {
 	return 4.*PI*radius*radius;
@@ -6,7 +6,7 @@ VAR(float) get_surface_area_of_sphere(
 
 // TODO: try to get this to work with structs!
 // See: http://www.lighthouse3d.com/tutorials/maths/ray-sphere-intersection/
-VAR(void) get_relation_between_ray_and_point(
+FUNC(void) get_relation_between_ray_and_point(
 	IN(vec3)   ray_origin, 
 	IN(vec3)   ray_direction, 
 	IN(vec3)   point_position, 
@@ -21,7 +21,7 @@ VAR(void) get_relation_between_ray_and_point(
 		distance_to_closest_approach * distance_to_closest_approach;
 }
 
-VAR(bool) try_get_relation_between_ray_and_sphere(
+FUNC(bool) try_get_relation_between_ray_and_sphere(
 	IN(vec3)   ray_origin, 
 	IN(vec3)   ray_direction, 
 	IN(vec3)   sphere_origin, 

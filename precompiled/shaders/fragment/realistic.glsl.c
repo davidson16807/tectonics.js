@@ -26,20 +26,17 @@ uniform float insolation_max;
 
 const vec3  light_position = vec3(ASTRONOMICAL_UNIT,0,0);
 
-const vec4 NONE = vec4(0.0,0.0,0.0,0.0);
-const vec4 OCEAN = vec4(0.04,0.04,0.2,1.0);
-const vec4 SHALLOW = vec4(0.04,0.58,0.54,1.0);
-
-const vec4 MAFIC  = vec4(50,45,50,255)/255.			// observed on lunar maria 
-                  * vec4(1,1,1,1);					// aesthetic correction 
-const vec4 FELSIC = vec4(214,181,158,255)/255.		// observed color of rhyolite sample
-                  * vec4(1,1,1,1);					// aesthetic correction 
-//const vec4 SAND = vec4(255,230,155,255)/255.;
-const vec4 SAND = vec4(245,215,145,255)/255.;
-const vec4 PEAT = vec4(100,85,60,255)/255.;
-const vec4 SNOW  = vec4(0.9, 0.9, 0.9, 0.9); 
-const vec4 JUNGLE = vec4(30,50,10,255)/255.;
-//const vec4 JUNGLE = vec4(20,45,5,255)/255.;
+const vec3 NONE 	= vec3(0.0,0.0,0.0);
+const vec3 OCEAN 	= vec3(0.04,0.04,0.2);
+const vec3 SHALLOW 	= vec3(0.04,0.58,0.54);
+const vec3 MAFIC  	= vec3(50,45,50)/255.;		// observed on lunar maria 
+const vec3 FELSIC 	= vec3(214,181,158)/255.;		// observed color of rhyolite sample
+//const vec3 SAND 	= vec3(255,230,155)/255.;
+const vec3 SAND 	= vec3(245,215,145)/255.;
+const vec3 PEAT 	= vec3(100,85,60)/255.;
+const vec3 SNOW  	= vec3(0.9, 0.9, 0.9); 
+const vec3 JUNGLE 	= vec3(30,50,10)/255.;
+//const vec3 JUNGLE	= vec3(20,45,5)/255.;
 
 void main() {
 	float epipelagic = sealevel - 200.0;
@@ -59,27 +56,19 @@ void main() {
 	vec3  light_offset    = light_position; // - world_position;
 	vec3  light_direction = normalize(light_offset);
 	float light_distance  = length(light_offset);
-	vec3  light_rgb_intensity = 
-		  get_black_body_emissive_flux(SOLAR_TEMPERATURE)
-		* get_surface_area_of_sphere(SOLAR_RADIUS) / get_surface_area_of_sphere(light_distance)
-		* vec3(
-			solve_black_body_fraction_between_wavelengths(600e-9*METER, 700e-9*METER, SOLAR_TEMPERATURE),
-			solve_black_body_fraction_between_wavelengths(500e-9*METER, 600e-9*METER, SOLAR_TEMPERATURE),
-			solve_black_body_fraction_between_wavelengths(400e-9*METER, 500e-9*METER, SOLAR_TEMPERATURE)
-		  );
 
 	float darkness_coverage = smoothstep(insolation_max, 0., vInsolation);
 
-	vec4 ocean 		= mix(OCEAN, SHALLOW, ocean_coverage);
-	vec4 bedrock	= mix(MAFIC, FELSIC, felsic_coverage);
-	vec4 soil		= mix(bedrock, mix(SAND, PEAT, organic_coverage), mineral_coverage);
-	vec4 canopy 	= mix(soil, JUNGLE, plant_coverage);
+	vec3 ocean 		= mix(OCEAN, SHALLOW, ocean_coverage);
+	vec3 bedrock	= mix(MAFIC, FELSIC, felsic_coverage);
+	vec3 soil		= mix(bedrock, mix(SAND, PEAT, organic_coverage), mineral_coverage);
+	vec3 canopy 	= mix(soil, JUNGLE, plant_coverage);
 
-	vec4 uncovered = @UNCOVERED;
-	vec4 sea_covered = vDisplacement < sealevel * sealevel_mod? ocean : uncovered;
-	vec4 ice_covered = mix(sea_covered, SNOW, ice_coverage*ice_mod);
+	vec3 uncovered = @UNCOVERED;
+	vec3 sea_covered = vDisplacement < sealevel * sealevel_mod? ocean : uncovered;
+	vec3 ice_covered = mix(sea_covered, SNOW, ice_coverage*ice_mod);
 
-	vec3 surface_rgb_intensity = max(dot(vPosition.xyz, light_direction), 0.001) * ice_covered.xyz * light_rgb_intensity / 400.;
+	vec3 surface_rgb_intensity = max(dot(vPosition.xyz, light_direction), 0.001) * get_rgb_intensity_of_rgb_signal(ice_covered);
 
 	gl_FragColor = vec4(get_rgb_signal_of_rgb_intensity(surface_rgb_intensity),1);
 }

@@ -35,7 +35,7 @@ vec3 get_density_ratios_at_height_in_atmosphere(
 	return exp(-height/atmosphere_scale_heights);
 }
 
-vec3 get_rgb_intensity_of_light_ray_through_atmosphere(
+vec3 get_rgb_intensity_of_light_rays_through_atmosphere(
 	vec3 view_origin, vec3 view_direction,
 	vec3 world_position, float world_radius,
 	vec3 light_direction, vec3 light_rgb_intensity,
@@ -219,19 +219,14 @@ void main() {
 	vec3  light_direction = normalize(light_offset);
 	float light_distance  = length(light_offset);
 	vec3  light_rgb_intensity = 
-		  get_black_body_emissive_flux(SOLAR_TEMPERATURE)
-		* get_surface_area_of_sphere(SOLAR_RADIUS) / get_surface_area_of_sphere(light_distance)
-		* vec3(
-			solve_black_body_fraction_between_wavelengths(600e-9*METER, 700e-9*METER, SOLAR_TEMPERATURE),
-			solve_black_body_fraction_between_wavelengths(500e-9*METER, 600e-9*METER, SOLAR_TEMPERATURE),
-			solve_black_body_fraction_between_wavelengths(400e-9*METER, 500e-9*METER, SOLAR_TEMPERATURE)
-		  );
+		  get_rgb_intensity_of_emitted_light_from_black_body(SOLAR_TEMPERATURE)
+		* get_surface_area_of_sphere(SOLAR_RADIUS) / get_surface_area_of_sphere(light_distance);
 
-	float AESTHETIC_FACTOR1 = 0.3;
+	float AESTHETIC_FACTOR1 = 0.5;
 	vec4  background_rgb_signal    = texture2D( surface_light, vUv );
 	vec3  background_rgb_intensity = AESTHETIC_FACTOR1 * light_rgb_intensity * get_rgb_intensity_of_rgb_signal(background_rgb_signal.rgb);
 		
-	vec3 rgb_intensity = get_rgb_intensity_of_light_ray_through_atmosphere(
+	vec3 rgb_intensity = get_rgb_intensity_of_light_rays_through_atmosphere(
 		view_origin,                view_direction,
 		world_position,             world_radius,
 		light_direction,            light_rgb_intensity,  // light direction and rgb intensity
