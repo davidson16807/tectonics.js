@@ -3,7 +3,7 @@ void main() {
 	vDisplacement = displacement;
 	vPlantCoverage = plant_coverage;
 	vIceCoverage = ice_coverage;
-	vInsolation = insolation;
+	vSurfaceTemp = surface_temp;
 	vScalar = scalar;
 	vVectorFractionTraversed = vector_fraction_traversed;
 	vPosition = modelMatrix * vec4( position, 1.0 );

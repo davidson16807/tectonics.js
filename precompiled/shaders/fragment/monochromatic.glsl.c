@@ -2,7 +2,6 @@
 varying float vDisplacement;
 varying float vPlantCoverage;
 varying float vIceCoverage;
-varying float vInsolation;
 varying float vScalar;
 varying vec4 vPosition;
 

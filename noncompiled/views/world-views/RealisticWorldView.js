@@ -32,27 +32,27 @@ function RealisticWorldView(shader_return_value) {
 		});
 		geometry.addAttribute('displacement', Float32Array, faces.length*3, 1);
 		geometry.addAttribute('ice_coverage', Float32Array, faces.length*3, 1);
+		geometry.addAttribute('surface_temp', Float32Array, faces.length*3, 1);
 		geometry.addAttribute('plant_coverage', Float32Array, faces.length*3, 1);
-		geometry.addAttribute('insolation', Float32Array, faces.length*3, 1);
 		geometry.addAttribute('scalar', Float32Array, faces.length*3, 1);
 
 		var material = new THREE.ShaderMaterial({
 			attributes: {
 			  displacement: { type: 'f', value: null },
 			  ice_coverage: { type: 'f', value: null },
+			  surface_temp: { type: 'f', value: null },
 			  plant_coverage: { type: 'f', value: null },
-			  insolation: { type: 'f', value: null },
 			  scalar: { type: 'f', value: null }
 			},
 			uniforms: {
 			  field_of_view:      { type: 'f', value: 0 },
 			  aspect_ratio:       { type: 'f', value: 0 },
-			  reference_distance: { type: 'f', value: world.radius },
 			  world_radius:       { type: 'f', value: world.radius },
+			  reference_distance: { type: 'f', value: world.radius },
 			  sealevel:           { type: 'f', value: 0 },
 			  sealevel_mod:       { type: 'f', value: options.sealevel_mod },
-			  darkness_mod:       { type: 'f', value: options.darkness_mod },
 			  ice_mod: 		      { type: 'f', value: options.ice_mod },
+			  darkness_mod:       { type: 'f', value: options.darkness_mod },
 			  insolation_max:     { type: 'f', value: options.insolation_max },
 			  index: 		      { type: 'f', value: options.index },
 			},
@@ -99,13 +99,13 @@ function RealisticWorldView(shader_return_value) {
 		update_uniform  (mesh.material, 'darkness_mod',			options.darkness_mod);
 		update_uniform  (mesh.material, 'ice_mod',				options.ice_mod);
 		update_uniform  (mesh.material, 'index',				options.index);
-		update_uniform  (mesh.material, 'sealevel', 			world.hydrosphere.sealevel.value());
 		update_uniform  (mesh.material, 'world_radius',			world.radius);
 		update_uniform  (mesh.material, 'reference_distance',	world.radius);
+		update_uniform  (mesh.material, 'sealevel', 			world.hydrosphere.sealevel.value());
 		update_uniform  (mesh.material, 'insolation_max', 		Float32Dataset.max(world.atmosphere.average_insolation));
 		update_attribute(mesh.geometry, 'displacement', 		world.lithosphere.displacement.value());
-		update_attribute(mesh.geometry, 'insolation', 			world.atmosphere.average_insolation);
 		update_attribute(mesh.geometry, 'ice_coverage', 		world.hydrosphere.ice_coverage.value());
+		update_attribute(mesh.geometry, 'surface_temp', 		world.atmosphere.surface_temp);
 		update_attribute(mesh.geometry, 'plant_coverage', 		world.biosphere.plant_coverage.value());
 
 		 gl_state.camera.projectionMatrix
@@ -114,6 +114,7 @@ function RealisticWorldView(shader_return_value) {
 		update_uniform  (shaderpass,    'world_position', 			new THREE.Vector3());
 		update_uniform  (shaderpass,    'world_radius',				world.radius);
 		update_uniform  (shaderpass,    'reference_distance',		world.radius);
+		update_uniform  (shaderpass, 	'insolation_max', 			Float32Dataset.max(world.atmosphere.average_insolation));
 	};
 
 	this.removeFromScene = function(gl_state) {

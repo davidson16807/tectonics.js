@@ -13,8 +13,8 @@
 varying float vDisplacement;
 varying float vPlantCoverage;
 varying float vIceCoverage;
-varying float vInsolation;
 varying float vScalar;
+varying float vSurfaceTemp;
 varying vec4 vPosition;
 
 uniform float sealevel;
@@ -37,7 +37,10 @@ const vec3 PEAT 	= vec3(100,85,60)/255.;
 const vec3 SNOW  	= vec3(0.9, 0.9, 0.9); 
 const vec3 JUNGLE 	= vec3(30,50,10)/255.;
 //const vec3 JUNGLE	= vec3(20,45,5)/255.;
-
+bool isnan(float val)
+{
+  return (val <= 0.0 || 0.0 <= val) ? false : true;
+}
 void main() {
 	float epipelagic = sealevel - 200.0;
 	float mesopelagic = sealevel - 1000.0;
@@ -57,8 +60,6 @@ void main() {
 	vec3  light_direction = normalize(light_offset);
 	float light_distance  = length(light_offset);
 
-	float darkness_coverage = smoothstep(insolation_max, 0., vInsolation);
-
 	vec3 ocean 		= mix(OCEAN, SHALLOW, ocean_coverage);
 	vec3 bedrock	= mix(MAFIC, FELSIC, felsic_coverage);
 	vec3 soil		= mix(bedrock, mix(SAND, PEAT, organic_coverage), mineral_coverage);
@@ -68,7 +69,10 @@ void main() {
 	vec3 sea_covered = vDisplacement < sealevel * sealevel_mod? ocean : uncovered;
 	vec3 ice_covered = mix(sea_covered, SNOW, ice_coverage*ice_mod);
 
-	vec3 surface_rgb_intensity = max(dot(vPosition.xyz, light_direction), 0.001) * get_rgb_intensity_of_rgb_signal(ice_covered);
+	vec3 surface_rgb_intensity = 
+		max(dot(vPosition.xyz, light_direction), 0.001) * get_rgb_intensity_of_rgb_signal(ice_covered) +
+		get_rgb_intensity_of_emitted_light_from_black_body(vSurfaceTemp);
+		// get_rgb_intensity_of_emitted_light_from_black_body(vSurfaceTemp);
 
 	gl_FragColor = vec4(get_rgb_signal_of_rgb_intensity(surface_rgb_intensity),1);
 }

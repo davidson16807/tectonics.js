@@ -9,8 +9,8 @@ float lat(vec3 pos) {
 void main() {
 	vDisplacement = displacement;
 	vPlantCoverage = plant_coverage;
+	vSurfaceTemp = surface_temp;
 	vIceCoverage = ice_coverage;
-	vInsolation = insolation;
 	vScalar = scalar;
 	vPosition = modelMatrix * vec4( position, 1.0 );
 	

@@ -3,16 +3,16 @@ vertexShaders.equirectangular = `
 const float PI = 3.14159265358979;
 const float INDEX_SPACING = PI * 0.75; // anything from 0.0 to 2.*PI
 attribute float displacement;
-attribute float plant_coverage;
 attribute float ice_coverage;
-attribute float insolation;
+attribute float surface_temp;
+attribute float plant_coverage;
 attribute float scalar;
 attribute float vector_fraction_traversed;
 attribute vec3 vector;
 varying float vDisplacement;
-varying float vPlantCoverage;
 varying float vIceCoverage;
-varying float vInsolation;
+varying float vSurfaceTemp;
+varying float vPlantCoverage;
 varying float vScalar;
 varying float vVectorFractionTraversed;
 varying vec4 vPosition;
@@ -32,8 +32,8 @@ float lat(vec3 pos) {
 void main() {
  vDisplacement = displacement;
  vPlantCoverage = plant_coverage;
+ vSurfaceTemp = surface_temp;
  vIceCoverage = ice_coverage;
- vInsolation = insolation;
  vScalar = scalar;
  vPosition = modelMatrix * vec4( position, 1.0 );
  vec4 modelPos = modelMatrix * vec4( ( position ), 1.0 );
@@ -57,16 +57,16 @@ vertexShaders.texture = `
 const float PI = 3.14159265358979;
 const float INDEX_SPACING = PI * 0.75; // anything from 0.0 to 2.*PI
 attribute float displacement;
-attribute float plant_coverage;
 attribute float ice_coverage;
-attribute float insolation;
+attribute float surface_temp;
+attribute float plant_coverage;
 attribute float scalar;
 attribute float vector_fraction_traversed;
 attribute vec3 vector;
 varying float vDisplacement;
-varying float vPlantCoverage;
 varying float vIceCoverage;
-varying float vInsolation;
+varying float vSurfaceTemp;
+varying float vPlantCoverage;
 varying float vScalar;
 varying float vVectorFractionTraversed;
 varying vec4 vPosition;
@@ -77,7 +77,6 @@ uniform float world_radius;
 uniform float reference_distance;
 uniform float index;
 uniform float animation_phase_angle;
-uniform float insolation_max;
 float lon(vec3 pos) {
  return atan(-pos.z, pos.x) + PI;
 }
@@ -88,7 +87,7 @@ void main() {
  vDisplacement = displacement;
  vPlantCoverage = plant_coverage;
  vIceCoverage = ice_coverage;
- vInsolation = insolation_max; // always use "insolation_max" for textures
+ vSurfaceTemp = surface_temp;
  vScalar = scalar;
  vPosition = modelMatrix * vec4( position, 1.0 );
  vec4 modelPos = modelMatrix * vec4( ( position ), 1.0 );
@@ -108,16 +107,16 @@ vertexShaders.orthographic = `
 const float PI = 3.14159265358979;
 const float INDEX_SPACING = PI * 0.75; // anything from 0.0 to 2.*PI
 attribute float displacement;
-attribute float plant_coverage;
 attribute float ice_coverage;
-attribute float insolation;
+attribute float surface_temp;
+attribute float plant_coverage;
 attribute float scalar;
 attribute float vector_fraction_traversed;
 attribute vec3 vector;
 varying float vDisplacement;
-varying float vPlantCoverage;
 varying float vIceCoverage;
-varying float vInsolation;
+varying float vSurfaceTemp;
+varying float vPlantCoverage;
 varying float vScalar;
 varying float vVectorFractionTraversed;
 varying vec4 vPosition;
@@ -132,7 +131,7 @@ void main() {
  vDisplacement = displacement;
  vPlantCoverage = plant_coverage;
  vIceCoverage = ice_coverage;
- vInsolation = insolation;
+ vSurfaceTemp = surface_temp;
  vScalar = scalar;
  vVectorFractionTraversed = vector_fraction_traversed;
  vPosition = modelMatrix * vec4( position, 1.0 );
@@ -283,12 +282,14 @@ float get_black_body_emissive_flux(
     float T = temperature;
     return STEPHAN_BOLTZMANN_CONSTANT * T*T*T*T;
 }
-vec3 get_rgb_intensity_of_emitted_light_from_black_body(float temperature){
- return get_black_body_emissive_flux(SOLAR_TEMPERATURE)
+vec3 get_rgb_intensity_of_emitted_light_from_black_body(
+ in float temperature
+){
+ return get_black_body_emissive_flux(temperature)
    * vec3(
-    solve_black_body_fraction_between_wavelengths(600e-9*METER, 700e-9*METER, SOLAR_TEMPERATURE),
-    solve_black_body_fraction_between_wavelengths(500e-9*METER, 600e-9*METER, SOLAR_TEMPERATURE),
-    solve_black_body_fraction_between_wavelengths(400e-9*METER, 500e-9*METER, SOLAR_TEMPERATURE)
+    solve_black_body_fraction_between_wavelengths(600e-9*METER, 700e-9*METER, temperature),
+    solve_black_body_fraction_between_wavelengths(500e-9*METER, 600e-9*METER, temperature),
+    solve_black_body_fraction_between_wavelengths(400e-9*METER, 500e-9*METER, temperature)
      );
 }
 float get_rayleigh_phase_factor(in float cos_scatter_angle)
@@ -367,8 +368,8 @@ vec3 get_rgb_signal_of_rgb_intensity(in vec3 intensity)
 varying float vDisplacement;
 varying float vPlantCoverage;
 varying float vIceCoverage;
-varying float vInsolation;
 varying float vScalar;
+varying float vSurfaceTemp;
 varying vec4 vPosition;
 uniform float sealevel;
 uniform float sealevel_mod;
@@ -387,6 +388,10 @@ const vec3 PEAT = vec3(100,85,60)/255.;
 const vec3 SNOW = vec3(0.9, 0.9, 0.9);
 const vec3 JUNGLE = vec3(30,50,10)/255.;
 //const vec3 JUNGLE	= vec3(20,45,5)/255.;
+bool isnan(float val)
+{
+  return (val <= 0.0 || 0.0 <= val) ? false : true;
+}
 void main() {
  float epipelagic = sealevel - 200.0;
  float mesopelagic = sealevel - 1000.0;
@@ -402,7 +407,6 @@ void main() {
  vec3 light_offset = light_position; // - world_position;
  vec3 light_direction = normalize(light_offset);
  float light_distance = length(light_offset);
- float darkness_coverage = smoothstep(insolation_max, 0., vInsolation);
  vec3 ocean = mix(OCEAN, SHALLOW, ocean_coverage);
  vec3 bedrock = mix(MAFIC, FELSIC, felsic_coverage);
  vec3 soil = mix(bedrock, mix(SAND, PEAT, organic_coverage), mineral_coverage);
@@ -410,7 +414,10 @@ void main() {
  vec3 uncovered = @UNCOVERED;
  vec3 sea_covered = vDisplacement < sealevel * sealevel_mod? ocean : uncovered;
  vec3 ice_covered = mix(sea_covered, SNOW, ice_coverage*ice_mod);
- vec3 surface_rgb_intensity = max(dot(vPosition.xyz, light_direction), 0.001) * get_rgb_intensity_of_rgb_signal(ice_covered);
+ vec3 surface_rgb_intensity =
+  max(dot(vPosition.xyz, light_direction), 0.001) * get_rgb_intensity_of_rgb_signal(ice_covered) +
+  get_rgb_intensity_of_emitted_light_from_black_body(vSurfaceTemp);
+  // get_rgb_intensity_of_emitted_light_from_black_body(vSurfaceTemp);
  gl_FragColor = vec4(get_rgb_signal_of_rgb_intensity(surface_rgb_intensity),1);
 }
 `;
@@ -418,7 +425,6 @@ fragmentShaders.monochromatic = `
 varying float vDisplacement;
 varying float vPlantCoverage;
 varying float vIceCoverage;
-varying float vInsolation;
 varying float vScalar;
 varying vec4 vPosition;
 uniform float sealevel;
@@ -438,7 +444,6 @@ fragmentShaders.heatmap = `
 varying float vDisplacement;
 varying float vPlantCoverage;
 varying float vIceCoverage;
-varying float vInsolation;
 varying float vScalar;
 varying vec4 vPosition;
 uniform float sealevel;
@@ -465,7 +470,6 @@ fragmentShaders.topographic = `
 varying float vDisplacement;
 varying float vPlantCoverage;
 varying float vIceCoverage;
-varying float vInsolation;
 varying float vScalar;
 varying vec4 vPosition;
 uniform float sealevel;
@@ -657,12 +661,14 @@ float get_black_body_emissive_flux(
     float T = temperature;
     return STEPHAN_BOLTZMANN_CONSTANT * T*T*T*T;
 }
-vec3 get_rgb_intensity_of_emitted_light_from_black_body(float temperature){
- return get_black_body_emissive_flux(SOLAR_TEMPERATURE)
+vec3 get_rgb_intensity_of_emitted_light_from_black_body(
+ in float temperature
+){
+ return get_black_body_emissive_flux(temperature)
    * vec3(
-    solve_black_body_fraction_between_wavelengths(600e-9*METER, 700e-9*METER, SOLAR_TEMPERATURE),
-    solve_black_body_fraction_between_wavelengths(500e-9*METER, 600e-9*METER, SOLAR_TEMPERATURE),
-    solve_black_body_fraction_between_wavelengths(400e-9*METER, 500e-9*METER, SOLAR_TEMPERATURE)
+    solve_black_body_fraction_between_wavelengths(600e-9*METER, 700e-9*METER, temperature),
+    solve_black_body_fraction_between_wavelengths(500e-9*METER, 600e-9*METER, temperature),
+    solve_black_body_fraction_between_wavelengths(400e-9*METER, 500e-9*METER, temperature)
      );
 }
 float get_rayleigh_phase_factor(in float cos_scatter_angle)
