@@ -4927,6 +4927,7 @@ function Grid(parameters, options){
      vertex_ids[i] = i;
  }
  this.vertex_ids = vertex_ids;
+ this.vertex_ids.grid = this;
  this.pos = VectorRaster.FromVectors(this.vertices, this);
  var buffer_array_to_cell = new Uint16Array(faces.length * 3);
  for (var i=0, i3=0, li = faces.length; i<li; i++, i3+=3) {
@@ -4995,7 +4996,8 @@ function Grid(parameters, options){
  VectorField.magnitude(this.pos_arrow_differential, this.pos_arrow_distances);
  this.average_distance = Float32Dataset.average(this.pos_arrow_distances);
  this.average_area = this.average_distance * this.average_distance;
- this._voronoi = new VoronoiSphere(this.pos, Float32Dataset.min(this.pos_arrow_distances)/2, Float32Dataset.max(this.pos_arrow_distances));
+ const CELLS_PER_VERTEX = 8;
+ this._voronoi = new VoronoiSphere(this.pos, Float32Dataset.min(this.pos_arrow_distances)/CELLS_PER_VERTEX, Float32Dataset.max(this.pos_arrow_distances));
 }
 Grid.prototype.getNearestId = function(vertex) {
  return this._voronoi.getNearestId(vertex);
