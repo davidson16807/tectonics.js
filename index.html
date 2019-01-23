@@ -584,9 +584,9 @@
 		return formatted.quantity + formatted.unit + 'y';
 	}
 
-	function download(dataUrl, filename) {
+	function download(url, filename) {
 		$('#hidden-downloader')
-			.attr('href', dataUrl)
+			.attr('href', url)
 			.attr('download', filename)
 			[0].click();
 	}
@@ -686,11 +686,11 @@
 	  methods: {
 	  	save(event) {
 			var stringified = JsonSerializer.sim(sim);
-  			var dataUrl = `data:application/json;charset=utf-8,${stringified}`;
+  			var blob = new Blob([stringified], {type : 'application/json'});
+  			var blobUrl = URL.createObjectURL(blob);
   			var elapsed_time = format_time(sim.elapsed_time);
   			var filename = `${sim.focus.name}-${elapsed_time}.sim`;
-  			console.log(dataUrl, filename)
-  			download(dataUrl, filename);
+  			download(blobUrl, filename);
   		}
 	  }
 	});
