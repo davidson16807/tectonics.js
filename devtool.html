@@ -137,7 +137,7 @@
 			new GlobeProjectionView()
 		);
 	var controls = new THREE.OrbitControls( view.camera, $("#container").get(0) );
-	var grid = new Grid(new THREE.IcosahedronGeometry(1, 5), { voronoi_generator: VoronoiSphere.FromPos });
+	var grid = new Grid(new THREE.IcosahedronGeometry(1, 5));
 	var random = new Random();
 	var demo = SphericalGeometry.get_random_surface_field(grid, random);
 	$('.controls').show();

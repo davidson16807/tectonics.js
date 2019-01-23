@@ -203,9 +203,9 @@ Crust.get_ids = function(crust, id_raster, result_crust) {
 }
 Crust.add_values_to_ids = function(crust, id_raster, value_crust, result_crust) {
 	var f = Float32Raster.add_values_to_ids;
-	var crust_pools = crust.all_pools;
-	var value_pools = value_crust.all_pools;
-	var result_pools = result_crust.all_pools;
+	var crust_pools = crust.mass_pools;
+	var value_pools = value_crust.mass_pools;
+	var result_pools = result_crust.mass_pools;
 	for (var i = 0, li = crust_pools.length; i < li; ++i) {
 		f(crust_pools[i], id_raster, value_pools[i], result_pools[i]);
 	}

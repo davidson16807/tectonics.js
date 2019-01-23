@@ -340,10 +340,9 @@ function Lithosphere(grid, parameters) {
 		Crust.add_delta 		(globalized_deltas, lithosphere.lithification,			globalized_deltas);
 		Crust.add_delta 		(globalized_deltas, lithosphere.metamorphosis,			globalized_deltas);
 		Crust.add_delta 		(globalized_deltas, lithosphere.accretion,				globalized_deltas);
-		ScalarField.add_scalar 	(globalized_deltas.age, seconds, 						globalized_deltas.age); // aging
 	}
 
-	function integrate_deltas(world, plates) { 
+	function integrate_deltas(world, plates, seconds) { 
 		// INTEGRATE DELTAS
 
 
@@ -386,6 +385,12 @@ function Lithosphere(grid, parameters) {
         	// this method retains positive mass, and appears to give the best results of any method attempted so far
 			mult_crust 		(globalized_deltas, globalized_is_on_top, 					world.crust_scratch);
 			Crust.add_values_to_ids(plate.crust, local_ids_of_global_cells, world.crust_scratch, plate.crust);
+			// The only problem with the aforementioned method is it applies the delta in a "patchwork" manner. 
+			// This isn't a big problem for most fields, but it is very noticeable for the "age" and "density" field, 
+			// which ought to have very smooth gradients. 
+			// These fields are very important since they are used to derive the motions and borders of the plates.
+			// To get around this, we give the age field special treatment, and simply increment its values everywhere by the same timestep.
+			ScalarField.add_scalar(plate.crust.age,  seconds, plate.crust.age);
 		}
 
 	  	scratchpad.deallocate('integrate_deltas');
@@ -479,7 +484,7 @@ function Lithosphere(grid, parameters) {
 
 		assert_dependencies();
 
-		integrate_deltas 		(this, this.plates); 		// this uses the map above in order to add and subtract crust
+		integrate_deltas 		(this, this.plates, seconds);// this uses the map above in order to add and subtract crust
 
 		move_plates 			(this.plates, seconds); 	// this performs the actual plate movement
 		this.supercontinentCycle.update(seconds); 			// this periodically splits the world into plates
