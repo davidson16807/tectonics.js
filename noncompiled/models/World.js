@@ -96,7 +96,7 @@ function World(parameters) {
 	this.initialize = function() {
 		this.lithosphere.setDependencies({
 			'surface_gravity'		: this.surface_gravity,
-			'surface_height'		: this.hydrosphere.surface_height,
+			'sealevel'				: this.hydrosphere.sealevel,
 			'material_density'		: this.material_density,
 			'material_viscosity'	: this.material_viscosity,
 		});
@@ -108,7 +108,7 @@ function World(parameters) {
 		this.atmosphere.setDependencies({
 			'material_heat_capacity': this.material_heat_capacity,
 			'material_reflectivity'	: this.material_reflectivity,
-			'surface_height' 		: this.hydrosphere.surface_height,
+			'surface_height' 		: this.lithosphere.surface_height,
 			'ice_coverage' 			: this.hydrosphere.ice_coverage,
 			'ocean_coverage'		: this.hydrosphere.ocean_coverage,
 			'plant_coverage'		: this.biosphere.plant_coverage,

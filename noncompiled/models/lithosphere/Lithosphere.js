@@ -2,6 +2,7 @@
 
 
 function Lithosphere(grid, parameters) {
+	parameters = parameters || {}
 	var grid = grid || stop('missing parameter: "grid"');
 	this.supercontinentCycle = new SupercontinentCycle(this, parameters);
 	this.plates = (parameters['plates'] || []).map(plate_parameters => new Plate(grid, plate_parameters));
@@ -17,7 +18,7 @@ function Lithosphere(grid, parameters) {
 
 	var material_viscosity = undefined;
 	var material_density = undefined;
-	var surface_height = undefined;
+	var sealevel = undefined;
 	var surface_gravity = undefined;
 
 	this.rifting_crust =
@@ -31,6 +32,11 @@ function Lithosphere(grid, parameters) {
 	// "displacement is the height of the crust relative to an arbitrary datum level
 	// It is not called "elevation" because we want to emphasize that it is not relative to sea level
 	var self = this; 
+	// "surface_height" is the height of the surface relative to sealevel - if elevation < 0, then surface_height = 0
+	this.surface_height = new Memo(
+		Float32Raster(grid),  
+		result => Hydrology.get_surface_heights(this.displacement.value(), sealevel.value(), result)
+	); 
 	this.displacement = new Memo(  
 		Float32Raster(grid),  
 		result => FluidMechanics.get_isostatic_displacements(self.thickness.value(), self.density.value(), material_density, result) 
@@ -302,7 +308,7 @@ function Lithosphere(grid, parameters) {
 
        	// CALCULATE DELTAS
 		Crust.model_erosion(
-			surface_height.value(), seconds,
+			self.surface_height.value(), seconds,
 			material_density, surface_gravity,
 			lithosphere.top_crust, lithosphere.erosion, lithosphere.crust_scratch
 		);
@@ -310,7 +316,7 @@ function Lithosphere(grid, parameters) {
 
        	// CALCULATE DELTAS
 		Crust.model_weathering(
-			surface_height.value(), seconds,
+			self.surface_height.value(), seconds,
 			material_density, surface_gravity,
 			lithosphere.top_crust, lithosphere.weathering, lithosphere.crust_scratch
 		);
@@ -318,7 +324,7 @@ function Lithosphere(grid, parameters) {
 
        	// CALCULATE DELTAS
 		Crust.model_lithification(
-			surface_height.value(), seconds,
+			self.surface_height.value(), seconds,
 			material_density, surface_gravity,
 			lithosphere.top_crust, lithosphere.lithification, lithosphere.crust_scratch
 		);
@@ -326,7 +332,7 @@ function Lithosphere(grid, parameters) {
 
        	// CALCULATE DELTAS
 		Crust.model_metamorphosis(
-			surface_height.value(), seconds,
+			self.surface_height.value(), seconds,
 			material_density, surface_gravity,
 			lithosphere.top_crust, lithosphere.metamorphosis, lithosphere.crust_scratch
 		);
@@ -428,7 +434,7 @@ function Lithosphere(grid, parameters) {
 	};
 
 	function assert_dependencies() {
-		if (surface_height === void 0)	 		{ throw '"surface_height" not provided'; }
+		if (sealevel === void 0)	 		{ throw '"sealevel" not provided'; }
 		if (surface_gravity === void 0)	{ throw '"surface_gravity" not provided'; }
 		if (material_density === void 0)	{ throw '"material_density" not provided'; }
 		if (material_viscosity === void 0)	{ throw '"material_viscosity" not provided'; }
@@ -439,7 +445,7 @@ function Lithosphere(grid, parameters) {
 			this.plates[i].setDependencies(dependencies);
 		}
 
-		surface_height 			= dependencies['surface_height'] 			!== void 0? 	dependencies['surface_height'] 				: surface_height;
+		sealevel 			= dependencies['sealevel'] 			!== void 0? 	dependencies['sealevel'] 				: sealevel;
 		surface_gravity 	= dependencies['surface_gravity'] 	!== void 0? 	dependencies['surface_gravity'] 		: surface_gravity;
 		material_density 	= dependencies['material_density'] 	!== void 0? 	dependencies['material_density'] 		: material_density;
 		material_viscosity 	= dependencies['material_viscosity']!== void 0? 	dependencies['material_viscosity'] 		: material_viscosity;
@@ -453,6 +459,7 @@ function Lithosphere(grid, parameters) {
 
 	this.invalidate = function() {
 		this.displacement.invalidate();
+		this.surface_height.invalidate();
 		this.thickness	.invalidate();
 		this.total_mass	.invalidate();
 		this.density	.invalidate();

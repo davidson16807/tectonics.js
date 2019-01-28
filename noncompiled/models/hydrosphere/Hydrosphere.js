@@ -37,11 +37,6 @@ function Hydrosphere(grid, parameters) {
 		Float32Raster(grid),  
 		result => ScalarField.sub_scalar(displacement.value(), _this.sealevel.value(), result)
 	); 
-	// "surface_height" is the height of the surface relative to sealevel - if elevation < 0, then surface_height = 0
-	this.surface_height = new Memo(
-		Float32Raster(grid),  
-		result => Hydrology.get_surface_heights(displacement.value(), _this.sealevel.value(), result)
-	); 
 	// "ocean_depth" is the depth of the ocean - if elevation > 0, then ocean_depth = 0; if elevation < 0, then ocean_depth > 0 
 	this.ocean_depth = new Memo(
 		Float32Raster(grid),  
@@ -91,7 +86,6 @@ function Hydrosphere(grid, parameters) {
 		this.epipelagic		.invalidate();
 		this.mesopelagic	.invalidate();
 		this.elevation		.invalidate();
-		this.surface_height	.invalidate();
 		this.ocean_depth	.invalidate();
 		this.ice_coverage	.invalidate();
 		this.ocean_coverage	.invalidate();
