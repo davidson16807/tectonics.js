@@ -751,14 +751,20 @@ uniform sampler2D surface_light;
 // The view uses different units for length to prevent certain issues with
 // floating point precision. 
 uniform float reference_distance;
+// CAMERA PROPERTIES -----------------------------------------------------------
 uniform mat4 projection_matrix_inverse;
 uniform mat4 view_matrix_inverse;
+// WORLD PROPERTIES ------------------------------------------------------------
 // location for the center of the world, in meters
 // currently stuck at 0. until we support multi-planet renders
 uniform vec3 world_position;
 // radius of the world being rendered, in meters
 uniform float world_radius;
+// ATMOSPHERE PROPERTIES -------------------------------------------------------
 uniform vec3 atmosphere_scale_heights;
+uniform vec3 atmosphere_surface_rayleigh_scattering_coefficients;
+uniform vec3 atmosphere_surface_mie_scattering_coefficients;
+uniform vec3 atmosphere_surface_absorption_coefficients;
 vec3 get_density_ratios_at_height_in_atmosphere(
  float height,
  vec3 atmosphere_scale_heights
@@ -919,9 +925,12 @@ void main() {
   light_direction, light_rgb_intensity, // light direction and rgb intensity
   background_rgb_intensity,
   atmosphere_scale_heights,
-  vec3(5.20e-6, 1.21e-5, 2.96e-5), // atmospheric scattering coefficients for the surface
-  vec3(2.1e-8),
-  vec3(0.)
+  atmosphere_surface_rayleigh_scattering_coefficients,
+  // vec3(5.20e-6, 1.21e-5, 2.96e-5), // atmospheric scattering coefficients for the surface 
+  atmosphere_surface_mie_scattering_coefficients,
+        // vec3(2.1e-8),
+  // atmosphere_surface_absorption_coefficients 
+        vec3(0.)
  );
  // rgb_intensity = 1.0 - exp2( rgb_intensity * -1.0 ); // simple tonemap
  // gl_FragColor = mix(background_rgb_signal, vec4(normalize(view_direction),1), 0.5);

@@ -17,6 +17,9 @@ function RealisticWorldView(shader_return_value) {
 			"world_position": 			{ type: "v3",value: new THREE.Vector3() },
 			"world_radius":   			{ type: "f", value: Units.EARTH_RADIUS  },
 			"atmosphere_scale_heights": { type: "v3",value: new THREE.Vector3() },
+			"atmosphere_surface_rayleigh_scattering_coefficients": { type: "v3", value: new THREE.Vector3() },
+			"atmosphere_surface_mie_scattering_coefficients":      { type: "v3", value: new THREE.Vector3() },
+			"atmosphere_surface_absorption_coefficients":          { type: "v3", value: new THREE.Vector3() },
 		},
 		vertexShader: 	vertexShaders.passthrough,
 		fragmentShader: fragmentShaders.atmosphere,
@@ -126,6 +129,17 @@ function RealisticWorldView(shader_return_value) {
 			// absorptive compounds
 			0. 
 		));
+
+		// earth's surface density times fraction of atmosphere that is not water vapor (by mass)
+		var atmosphere_surface_rayleigh_scatterer_density = 1.217*Units.KILOGRAM * (1.0 - 1.2e15/5.1e18);
+		// earth's surface density times fraction of atmosphere that is water vapor (by mass)
+		var atmosphere_surface_mie_scatterer_density      = 1.217*Units.KILOGRAM * (      1.2e15/5.1e18);
+		// NOTE: NOT USED, intended to eventually represent absorption
+		var atmosphere_surface_absorber_density = 0;
+
+		update_uniform  (shaderpass, 'atmosphere_surface_rayleigh_scattering_coefficients',	new THREE.Vector3(5.20e-6, 1.21e-5, 2.96e-5));
+		update_uniform  (shaderpass, 'atmosphere_surface_mie_scattering_coefficients', 		new THREE.Vector3(2.1e-9,  2.1e-9,  2.1e-9 ));
+		update_uniform  (shaderpass, 'atmosphere_surface_absorption_coefficients', 			new THREE.Vector3(0));
 	};
 
 	this.removeFromScene = function(gl_state) {
