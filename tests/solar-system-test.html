@@ -88,7 +88,6 @@
 	
 	var scene, renderer, composer, clock;
 	var camera, controls;
-	var renderStats;
 
 	// colors from http://colorhunt.co/blog/solar-system-stars-color-palettes/
 	var bodies = {
@@ -379,8 +378,6 @@
 		renderer.setSize( window.innerWidth, window.innerHeight );
 		$("#container").get(0).appendChild(renderer.domElement);
 
-		renderStats = new Stats();
-		$('#renderStats').append( renderStats.domElement );
 
 		// create a scene
 		scene = new THREE.Scene();
@@ -420,8 +417,6 @@
 
 		// actually render the scene
 		renderer.render( scene, camera );
-
-		renderStats.update();
 	}
 
 	function update(){
