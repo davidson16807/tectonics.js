@@ -11,7 +11,7 @@ scalarViews.npp 	= new ScalarWorldView(
 	);
 scalarViews.alt 	= new ScalarWorldView( 
 		new ColorscaleRasterView( { minColor: 0x000000, maxColor: 0xffffff, scaling: true }),
-		(world, result, scratch, options) => (options.sealevel_mod > 0.5? world.hydrosphere.surface_height.value() : world.hydrosphere.elevation.value())
+		(world, result, scratch, options) => (options.sealevel_mod > 0.5? world.lithosphere.surface_height.value() : world.hydrosphere.elevation.value())
 	);
 scalarViews.topographic	= new ScalarWorldView( 
 		new TopographicRasterView( { scaling: true }),

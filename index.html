@@ -36,6 +36,7 @@
 	<script src="postcompiled/Shaders.js"></script>
 	<script src="postcompiled/Rasters.js"></script>
 	<script src="noncompiled/Units.js"></script>
+	<script src="noncompiled/Interpolation.js"></script>
 	<script src="noncompiled/Logging.js"></script>
 	<script src="noncompiled/academics/SphericalGeometry.js"></script>
 	<script src="noncompiled/academics/Optics.js"></script>
@@ -43,7 +44,6 @@
 	<script src="noncompiled/academics/FluidMechanics.js"></script>
 	<script src="noncompiled/academics/OrbitalMechanics.js"></script>
 	<script src="noncompiled/academics/Tectonophysics.js"></script>
-	<script src="noncompiled/academics/Lithology.js"></script>
 	<script src="noncompiled/academics/Hydrology.js"></script>
 	<script src="noncompiled/academics/Climatology.js"></script>
 	<script src="noncompiled/academics/PlantBiology.js"></script>
@@ -477,7 +477,7 @@
 		CrustGenerator.generate(
 			SphericalGeometry.get_random_surface_field(focus.grid, sim.random), 
 			CrustGenerator.modern_earth_hypsography, 
-			CrustGenerator.modern_earth_control_points, 
+			CrustGenerator.modern_earth_attribute_height_maps, 
 			focus.lithosphere.total_crust,
 			sim.random
 		);
@@ -584,9 +584,9 @@
 		return formatted.quantity + formatted.unit + 'y';
 	}
 
-	function download(dataUrl, filename) {
+	function download(url, filename) {
 		$('#hidden-downloader')
-			.attr('href', dataUrl)
+			.attr('href', url)
 			.attr('download', filename)
 			[0].click();
 	}
@@ -686,11 +686,11 @@
 	  methods: {
 	  	save(event) {
 			var stringified = JsonSerializer.sim(sim);
-  			var dataUrl = `data:application/json;charset=utf-8,${stringified}`;
+  			var blob = new Blob([stringified], {type : 'application/json'});
+  			var blobUrl = URL.createObjectURL(blob);
   			var elapsed_time = format_time(sim.elapsed_time);
   			var filename = `${sim.focus.name}-${elapsed_time}.sim`;
-  			console.log(dataUrl, filename)
-  			download(dataUrl, filename);
+  			download(blobUrl, filename);
   		}
 	  }
 	});

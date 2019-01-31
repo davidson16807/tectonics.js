@@ -1351,9 +1351,9 @@ function Float32Raster(grid, fill) {
 };
 Float32Raster.FromExample = function(raster) {
   var length = 0;
-  if (raster instanceof Float32Array) {
+  if (raster instanceof Float32Array || raster instanceof Uint8Array || raster instanceof Uint16Array) {
     length = raster.length;
-  } else if(raster.x instanceof Float32Array) {
+  } else if(raster !== void 0 && raster.x instanceof Float32Array) {
     length = raster.x.length;
   } else {
     throw 'must supply a vector or scalar raster'
@@ -1404,8 +1404,10 @@ Float32Raster.copy = function(raster, result) {
   return result;
 }
 Float32Raster.fill = function (raster, value) {
+  raster = raster || Float32Raster.FromExample(raster);
  
   raster.fill(value);
+  return raster;
 };
 Float32Raster.min_id = function (raster) {
  
@@ -1807,7 +1809,7 @@ VectorRaster.FromExample = function(raster, grid) {
   var length = 0;
   if (raster instanceof Float32Array) {
     length = raster.length;
-  } else if(raster.x instanceof Float32Array) {
+  } else if(raster !== void 0 && raster.x instanceof Float32Array) {
     length = raster.x.length;
   } else {
     throw 'must supply a vector or scalar raster'
@@ -1857,6 +1859,7 @@ VectorRaster.copy = function(vector_raster, output) {
   return output;
 }
 VectorRaster.fill = function (vector_raster, value) {
+  raster = raster || VectorRaster.FromExample(vector_raster);
  
   vector_raster.x.fill(value.x);
   vector_raster.y.fill(value.y);
@@ -4311,29 +4314,29 @@ VectorRasterGraphics.fill_into_selection = function(vector_raster, fill, selecti
 // The FieldInterpolation namespaces provide operations commonly used in interpolation for computer graphics
 // All input are raster objects, e.g. VectorRaster or Float32Raster
 var Float32RasterInterpolation = {};
-Float32RasterInterpolation.lerp = function(a,b, x, result){
+Float32RasterInterpolation.mix = function(a,b, x, result){
    
-    result = result || Float32Raster(x.grid);
+    result = result || Float32Raster.FromExample(x);
    
     for (var i = 0, li = result.length; i < li; i++) {
         result[i] = a + x[i]*(b-a);
     }
     return result;
 }
-Float32RasterInterpolation.lerp_fsf = function(a,b, x, result){
+Float32RasterInterpolation.mix_fsf = function(a,b, x, result){
    
    
-    result = result || Float32Raster(x.grid);
+    result = result || Float32Raster.FromExample(x);
    
     for (var i = 0, li = result.length; i < li; i++) {
         result[i] = a[i] + x[i] * (b-a[i]);
     }
     return result;
 }
-Float32RasterInterpolation.lerp_sff = function(a,b, x, result){
+Float32RasterInterpolation.mix_sff = function(a,b, x, result){
    
    
-    result = result || Float32Raster(x.grid);
+    result = result || Float32Raster.FromExample(x);
    
     for (var i = 0, li = result.length; i < li; i++) {
         result[i] = a + x[i] * (b[i]-a);
@@ -4342,7 +4345,7 @@ Float32RasterInterpolation.lerp_sff = function(a,b, x, result){
 }
 Float32RasterInterpolation.clamp = function(x, min_value, max_value, result) {
    
-    result = result || Float32Raster(x.grid);
+    result = result || Float32Raster.FromExample(x);
    
     var x_i = 0.0;
     for (var i = 0, li = x.length; i < li; i++) {
@@ -4351,25 +4354,67 @@ Float32RasterInterpolation.clamp = function(x, min_value, max_value, result) {
     }
     return result;
 }
+Float32RasterInterpolation.step = function(edge, x, result) {
+   
+    result = result || Float32Raster.FromExample(x);
+   
+    for (var i = 0, li = x.length; i < li; i++) {
+        result[i] = x[i] > edge? 1. : 0.;
+    }
+    return result;
+}
+Float32RasterInterpolation.linearstep = function(edge0, edge1, x, result) {
+   
+    result = result || Float32Raster.FromExample(x);
+   
+    var fraction = 0.;
+    var inverse_edge_distance = 1 / (edge1 - edge0);
+    for (var i = 0, li = result.length; i < li; i++) {
+        fraction = (x[i] - edge0) * inverse_edge_distance;
+        result[i] = fraction > 1.0? 1.0 : fraction < 0.0? 0.0 : fraction;
+    }
+    return result;
+}
 Float32RasterInterpolation.smoothstep = function(edge0, edge1, x, result) {
    
-    result = result || Float32Raster(x.grid);
+    result = result || Float32Raster.FromExample(x);
    
- var fraction;
- var inverse_edge_distance = 1 / (edge1 - edge0);
+    var inverse_edge_distance = 1 / (edge1 - edge0);
+    var fraction = 0.;
+    var linearstep = 0.;
     for (var i = 0, li = result.length; i < li; i++) {
-  fraction = (x[i] - edge0) * inverse_edge_distance;
-  result[i] = fraction > 1.0? 1.0 : fraction < 0.0? 0.0 : fraction;
- }
- return result;
+        fraction = (x[i] - edge0) * inverse_edge_distance;
+        linearstep = fraction > 1.0? 1.0 : fraction < 0.0? 0.0 : fraction;
+        result[i] = linearstep*linearstep*(3-2*linearstep);
+    }
+    return result;
 }
-Float32RasterInterpolation.smooth_heaviside = function(x, k, result) {
-    result = result || Float32Raster(x.grid);
+// NOTE: you probably don't want to use this - you should use "smoothstep", instead
+// smoothstep is faster, and it uses more intuitive parameters
+// smoothstep2 is only here to support legacy behavior
+Float32RasterInterpolation.smoothstep2 = function(x, k, result) {
    
+    result = result || Float32Raster.FromExample(x);
    
     var exp = Math.exp;
     for (var i = 0, li = result.length; i < li; i++) {
     result[i] = 2 / (1 + exp(-k*x[i])) - 1;
+    }
+    return result;
+}
+// performs Linear piecewise intERPolation:
+// given a list of control points that map 1d space to 1d scalars, and a raster of 1d input, 
+// it returns a scalar field where each value maps to the corresponding value on the input field
+Float32RasterInterpolation.lerp = function(control_points_x, control_points_y, x, result, scratch) {
+   
+    result = result || Float32Raster.FromExample(x);
+    scratch = scratch || Float32Raster.FromExample(x);
+    var mix = Float32RasterInterpolation.mix_fsf;
+    var linearstep = Float32RasterInterpolation.linearstep;
+    Float32Raster.fill(result, control_points_y[0]);
+    for (var i = 1; i < control_points_x.length; i++) {
+        linearstep (control_points_x[i-1], control_points_x[i], x, scratch)
+        mix (result, control_points_y[i], scratch, result);
     }
     return result;
 }
@@ -4383,15 +4428,33 @@ Float32RasterTrigonometry.cos = function(radians, result) {
   return result;
 }
 var ScalarTransport = {};
-ScalarTransport.assert_nonnegative_quantity = function(quantity) {
+ScalarTransport.is_nonnegative_quantity = function(quantity) {
  
+  var quantity_i = 0.0;
+  for (var i=0, li=quantity.length; i<li; ++i) {
+    if (quantity[i] < 0) {
+      return false;
+    }
+  }
+  return true;
 }
-ScalarTransport.assert_conserved_quantity_delta = function(delta, threshold) {
+ScalarTransport.is_conserved_quantity_delta = function(delta, threshold) {
  
+  var average = Float32Dataset.average(delta);
+  if (average * average > threshold * threshold) {
+    return false;
+  }
+  return true;
 }
-ScalarTransport.assert_nonnegative_quantity_delta = function(delta, quantity) {
+ScalarTransport.is_nonnegative_quantity_delta = function(delta, quantity) {
  
  
+  for (var i=0, li=delta.length; i<li; ++i) {
+    if (-delta[i] > quantity[i]) {
+      return false;
+    }
+  }
+  return true;
 }
 ScalarTransport.fix_nonnegative_quantity = function(quantity) {
  
@@ -4413,7 +4476,6 @@ ScalarTransport.fix_nonnegative_quantity_delta = function(delta, quantity) {
     }
   }
 }
-// NOTE: if anyone can find a shorter more intuitive name for this, I'm all ears
 ScalarTransport.fix_nonnegative_conserved_quantity_delta = function(delta, quantity, scratch) {
   return;
   var scratch = scratch || Float32Raster(delta.grid);
@@ -4867,6 +4929,7 @@ function Grid(parameters, options){
      vertex_ids[i] = i;
  }
  this.vertex_ids = vertex_ids;
+ this.vertex_ids.grid = this;
  this.pos = VectorRaster.FromVectors(this.vertices, this);
  var buffer_array_to_cell = new Uint16Array(faces.length * 3);
  for (var i=0, i3=0, li = faces.length; i<li; i++, i3+=3) {
@@ -4935,7 +4998,8 @@ function Grid(parameters, options){
  VectorField.magnitude(this.pos_arrow_differential, this.pos_arrow_distances);
  this.average_distance = Float32Dataset.average(this.pos_arrow_distances);
  this.average_area = this.average_distance * this.average_distance;
- this._voronoi = new VoronoiSphere(this.pos, Float32Dataset.min(this.pos_arrow_distances)/2, Float32Dataset.max(this.pos_arrow_distances));
+ const CELLS_PER_VERTEX = 8;
+ this._voronoi = new VoronoiSphere(this.pos, Float32Dataset.min(this.pos_arrow_distances)/CELLS_PER_VERTEX, Float32Dataset.max(this.pos_arrow_distances));
 }
 Grid.prototype.getNearestId = function(vertex) {
  return this._voronoi.getNearestId(vertex);

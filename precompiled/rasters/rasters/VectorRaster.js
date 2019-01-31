@@ -33,7 +33,7 @@ VectorRaster.FromExample = function(raster, grid) {
   var length = 0; 
   if (raster instanceof Float32Array) { 
     length = raster.length; 
-  } else if(raster.x instanceof Float32Array) { 
+  } else if(raster !== void 0 && raster.x instanceof Float32Array) { 
     length = raster.x.length; 
   } else { 
     throw 'must supply a vector or scalar raster' 
@@ -84,6 +84,7 @@ VectorRaster.copy = function(vector_raster, output) {
   return output;
 }
 VectorRaster.fill = function (vector_raster, value) {
+  raster = raster || VectorRaster.FromExample(vector_raster);
   ASSERT_IS_VECTOR_RASTER(vector_raster)
 
   vector_raster.x.fill(value.x);

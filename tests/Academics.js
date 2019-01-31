@@ -240,7 +240,7 @@ test_value_is_between(
 
 // Now test behavior over fields
 var random = new Random();
-var grid = new Grid(new THREE.IcosahedronGeometry(1, 3), { voronoi_generator: VoronoiSphere.FromPos });
+var grid = new Grid(new THREE.IcosahedronGeometry(1, 3), {});
 
 test_values_are_between(
 	ScalarField.mult_scalar(
