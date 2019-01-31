@@ -1351,7 +1351,7 @@ function Float32Raster(grid, fill) {
 };
 Float32Raster.FromExample = function(raster) {
   var length = 0;
-  if (raster instanceof Float32Array) {
+  if (raster instanceof Float32Array || raster instanceof Uint8Array || raster instanceof Uint16Array) {
     length = raster.length;
   } else if(raster !== void 0 && raster.x instanceof Float32Array) {
     length = raster.x.length;
@@ -4428,30 +4428,33 @@ Float32RasterTrigonometry.cos = function(radians, result) {
   return result;
 }
 var ScalarTransport = {};
-ScalarTransport.assert_nonnegative_quantity = function(quantity) {
+ScalarTransport.is_nonnegative_quantity = function(quantity) {
   if (!(quantity instanceof Float32Array)) { throw "quantity" + ' is not a ' + "Float32Array"; }
   var quantity_i = 0.0;
   for (var i=0, li=quantity.length; i<li; ++i) {
     if (quantity[i] < 0) {
-      debugger;
+      return false;
     }
   }
+  return true;
 }
-ScalarTransport.assert_conserved_quantity_delta = function(delta, threshold) {
+ScalarTransport.is_conserved_quantity_delta = function(delta, threshold) {
   if (!(delta instanceof Float32Array)) { throw "delta" + ' is not a ' + "Float32Array"; }
   var average = Float32Dataset.average(delta);
   if (average * average > threshold * threshold) {
-    debugger;
+    return false;
   }
+  return true;
 }
-ScalarTransport.assert_nonnegative_quantity_delta = function(delta, quantity) {
+ScalarTransport.is_nonnegative_quantity_delta = function(delta, quantity) {
   if (!(delta instanceof Float32Array)) { throw "delta" + ' is not a ' + "Float32Array"; }
   if (!(quantity instanceof Float32Array)) { throw "quantity" + ' is not a ' + "Float32Array"; }
   for (var i=0, li=delta.length; i<li; ++i) {
     if (-delta[i] > quantity[i]) {
-      debugger;
+      return false;
     }
   }
+  return true;
 }
 ScalarTransport.fix_nonnegative_quantity = function(quantity) {
   if (!(quantity instanceof Float32Array)) { throw "quantity" + ' is not a ' + "Float32Array"; }
@@ -4473,7 +4476,6 @@ ScalarTransport.fix_nonnegative_quantity_delta = function(delta, quantity) {
     }
   }
 }
-// NOTE: if anyone can find a shorter more intuitive name for this, I'm all ears
 ScalarTransport.fix_nonnegative_conserved_quantity_delta = function(delta, quantity, scratch) {
   return;
   var scratch = scratch || Float32Raster(delta.grid);

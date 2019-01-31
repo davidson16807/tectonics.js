@@ -312,7 +312,6 @@ function Lithosphere(grid, parameters) {
 			material_density, surface_gravity,
 			lithosphere.top_crust, lithosphere.erosion, lithosphere.crust_scratch
 		);
-		Crust.assert_conserved_transport_delta(lithosphere.erosion, 1e-2); 
 
        	// CALCULATE DELTAS
 		Crust.model_weathering(
@@ -320,7 +319,6 @@ function Lithosphere(grid, parameters) {
 			material_density, surface_gravity,
 			lithosphere.top_crust, lithosphere.weathering, lithosphere.crust_scratch
 		);
-		Crust.assert_conserved_reaction_delta(lithosphere.weathering, 1e-2); 
 
        	// CALCULATE DELTAS
 		Crust.model_lithification(
@@ -328,7 +326,6 @@ function Lithosphere(grid, parameters) {
 			material_density, surface_gravity,
 			lithosphere.top_crust, lithosphere.lithification, lithosphere.crust_scratch
 		);
-		Crust.assert_conserved_reaction_delta(lithosphere.lithification, 1e-2); 
 
        	// CALCULATE DELTAS
 		Crust.model_metamorphosis(
@@ -336,7 +333,6 @@ function Lithosphere(grid, parameters) {
 			material_density, surface_gravity,
 			lithosphere.top_crust, lithosphere.metamorphosis, lithosphere.crust_scratch
 		);
-		Crust.assert_conserved_reaction_delta(lithosphere.metamorphosis, 1e-2); 
 
 		// COMPILE DELTAS
 		var globalized_deltas = lithosphere.crust_delta;

@@ -108,9 +108,6 @@ Crust.mult_field = function(crust, field, result_crust) {
 Crust.add_delta = function(crust, crust_delta, result_crust) {
 	ScalarField.add_field(crust.everything, crust_delta.everything, result_crust.everything);
 }
-Crust.assert_conserved_delta = function(crust_delta, threshold) {
-	ScalarTransport.assert_conserved_quantity_delta(crust_delta.conserved_array, threshold);
-}
 
 Crust.get_average_conserved_per_cell = function(crust, thickness) {  
 	return Float32Dataset.sum(crust.conserved_array) / crust.grid.vertices.length
@@ -219,14 +216,20 @@ Crust.fix_delta = function(crust_delta, crust, scratch) {
 		f(delta_pools[i], crust_pools[i], scratch);
 	}
 }
-Crust.assert_conserved_transport_delta = function(crust_delta, threshold) {
-	var f = ScalarTransport.assert_conserved_quantity_delta;
-	var delta_pools = crust_delta.conserved_pools;
-	for (var i = 0, li = delta_pools.length; i < li; ++i) {
-		f(delta_pools[i], threshold);
-	}
+Crust.is_conserved_delta = function(crust_delta, threshold) {
+	return ScalarTransport.is_conserved_quantity_delta(crust_delta.conserved_array, threshold);
 }
-Crust.assert_conserved_reaction_delta = function(crust_delta, threshold, scratch) {
+Crust.is_conserved_transport_delta = function(crust_delta, threshold) {
+	var delta_pools = crust_delta.conserved_pools;
+	var is_conserved = true;
+	for (var i = 0, li = delta_pools.length; i < li; ++i) {
+		if (!ScalarTransport.is_conserved_quantity_delta(delta_pools[i], threshold)){
+			return false;
+		}
+	}
+	return true;
+}
+Crust.is_conserved_reaction_delta = function(crust_delta, threshold, scratch) {
 	var sum = scratch || Float32Raster(crust_delta.grid);
 	sum.fill(0);
 	var f = ScalarField.add_field;
@@ -235,16 +238,13 @@ Crust.assert_conserved_reaction_delta = function(crust_delta, threshold, scratch
 		f(sum, delta_pools[i], sum);
 	}
 	ScalarField.mult_field(sum, sum, sum);
-	var is_not_conserved = Uint8Dataset.sum(ScalarField.gt_scalar(sum, threshold * threshold));
-	if (is_not_conserved) {
-		debugger;
-	}
+	return Uint8Dataset.sum(ScalarField.gt_scalar(sum, threshold * threshold)) == 0;
 }
 
 
 
 // WARNING: 
-// The following functions require special attention when adding new mass pools!
+// Every function past this point requires special attention when adding new mass pools!
 
 Crust.overlap = function(crust1, crust2, crust2_exists, crust2_on_top, result_crust) {
 	// add current plate thickness to crust1 thickness wherever current plate exists

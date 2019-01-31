@@ -25,7 +25,7 @@ function Float32Raster(grid, fill) {
 };
 Float32Raster.FromExample = function(raster) {
   var length = 0; 
-  if (raster instanceof Float32Array) { 
+  if (raster instanceof Float32Array || raster instanceof Uint8Array || raster instanceof Uint16Array) { 
     length = raster.length; 
   } else if(raster !== void 0 && raster.x instanceof Float32Array) { 
     length = raster.x.length; 

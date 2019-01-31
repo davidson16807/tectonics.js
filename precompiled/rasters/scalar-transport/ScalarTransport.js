@@ -1,38 +1,35 @@
 var ScalarTransport = {};
 
-ScalarTransport.assert_nonnegative_quantity = function(quantity) {
+ScalarTransport.is_nonnegative_quantity = function(quantity) {
   ASSERT_IS_ARRAY(quantity, Float32Array)
 
-#ifndef IS_PROD
   var quantity_i = 0.0;
   for (var i=0, li=quantity.length; i<li; ++i) {
     if (quantity[i] < 0) {
-      debugger;
+      return false;
     }
   }
-#endif
+  return true;
 }
-ScalarTransport.assert_conserved_quantity_delta = function(delta, threshold) {
+ScalarTransport.is_conserved_quantity_delta = function(delta, threshold) {
   ASSERT_IS_ARRAY(delta, Float32Array)
 
-#ifndef IS_PROD
   var average = Float32Dataset.average(delta);
   if (average * average > threshold * threshold) {
-    debugger;
+    return false;
   }
-#endif
+  return true;
 }
-ScalarTransport.assert_nonnegative_quantity_delta = function(delta, quantity) {
+ScalarTransport.is_nonnegative_quantity_delta = function(delta, quantity) {
   ASSERT_IS_ARRAY(delta, Float32Array)
   ASSERT_IS_ARRAY(quantity, Float32Array)
   
-#ifndef IS_PROD
   for (var i=0, li=delta.length; i<li; ++i) {
     if (-delta[i] > quantity[i]) {
-      debugger;
+      return false;
     }
   }
-#endif
+  return true;
 }
 ScalarTransport.fix_nonnegative_quantity = function(quantity) {
   ASSERT_IS_ARRAY(quantity, Float32Array)
@@ -57,7 +54,6 @@ ScalarTransport.fix_nonnegative_quantity_delta = function(delta, quantity) {
     }
   }
 }
-// NOTE: if anyone can find a shorter more intuitive name for this, I'm all ears
 ScalarTransport.fix_nonnegative_conserved_quantity_delta = function(delta, quantity, scratch) {
   return;
 
