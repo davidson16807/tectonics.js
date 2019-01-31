@@ -61,7 +61,14 @@ var Thermodynamics = (function() {
 		return 	Thermodynamics.solve_black_body_fraction_below_wavelength(hi, temperature, iterations) - 
 				Thermodynamics.solve_black_body_fraction_below_wavelength(lo, temperature, iterations);
 	}
-
+	Thermodynamics.get_rgb_intensity_of_emitted_light_from_black_body = function(temperature){
+		var I = Thermodynamics.get_black_body_emissive_radiation_flux(temperature);
+		return Vector(
+				I * Thermodynamics.solve_black_body_fraction_between_wavelengths(600e-9*Units.METER, 700e-9*Units.METER, temperature),
+				I * Thermodynamics.solve_black_body_fraction_between_wavelengths(500e-9*Units.METER, 600e-9*Units.METER, temperature),
+				I * Thermodynamics.solve_black_body_fraction_between_wavelengths(400e-9*Units.METER, 500e-9*Units.METER, temperature)
+			);
+	}
 
 
 

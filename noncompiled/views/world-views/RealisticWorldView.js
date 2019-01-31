@@ -12,10 +12,16 @@ function RealisticWorldView(shader_return_value) {
 		uniforms: {
 			"surface_light":  			{ type: "t", value: null },
 			"projection_matrix_inverse":{ type: "m4",value: new THREE.Matrix4() },
+
 			"view_matrix_inverse"      :{ type: "m4",value: new THREE.Matrix4() },
 			"reference_distance": 		{ type: "f", value: Units.EARTH_RADIUS  },
+
+			"light_rgb_intensity": 		{ type: "v3",value: new THREE.Vector3() },
+			"light_direction": 			{ type: "v3",value: new THREE.Vector3() },
+
 			"world_position": 			{ type: "v3",value: new THREE.Vector3() },
 			"world_radius":   			{ type: "f", value: Units.EARTH_RADIUS  },
+
 			"atmosphere_scale_heights": { type: "v3",value: new THREE.Vector3() },
 			"atmosphere_surface_rayleigh_scattering_coefficients": { type: "v3", value: new THREE.Vector3() },
 			"atmosphere_surface_mie_scattering_coefficients":      { type: "v3", value: new THREE.Vector3() },
@@ -112,9 +118,27 @@ function RealisticWorldView(shader_return_value) {
 		update_attribute(mesh.geometry, 'surface_temp', 		world.atmosphere.surface_temp);
 		update_attribute(mesh.geometry, 'plant_coverage', 		world.biosphere.plant_coverage.value());
 
+
+
+		// SHADERPASS PROPERTIES -----------------------------------------------
+
 		update_uniform  (shaderpass,    'projection_matrix_inverse',new THREE.Matrix4().getInverse(gl_state.camera.projectionMatrix));
+
 		update_uniform  (shaderpass,    'view_matrix_inverse',		gl_state.camera.matrixWorld);
 		update_uniform  (shaderpass,    'reference_distance',		world.radius);
+
+		// vec3  light_offset    = light_position - world_position;
+		// vec3  light_direction = normalize(light_offset);
+		// float light_distance  = length(light_offset);
+		var light_rgb_intensity = Thermodynamics.get_rgb_intensity_of_emitted_light_from_black_body(Units.SOLAR_TEMPERATURE);
+		var light_attenuation = SphericalGeometry.get_surface_area(Units.SOLAR_RADIUS) / SphericalGeometry.get_surface_area(Units.ASTRONOMICAL_UNIT);
+		light_rgb_intensity.x *= light_attenuation;
+		light_rgb_intensity.y *= light_attenuation;
+		light_rgb_intensity.z *= light_attenuation;
+
+		update_uniform  (shaderpass,    'light_rgb_intensity',		new THREE.Vector3(light_rgb_intensity.x, light_rgb_intensity.y, light_rgb_intensity.z));
+		update_uniform  (shaderpass,    'light_direction',			new THREE.Vector3(1,0,0));
+
 		update_uniform  (shaderpass,    'world_position', 			new THREE.Vector3());
 		update_uniform  (shaderpass,    'world_radius',				world.radius);
 

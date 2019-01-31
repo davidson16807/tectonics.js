@@ -760,6 +760,9 @@ uniform mat4 view_matrix_inverse;
 uniform vec3 world_position;
 // radius of the world being rendered, in meters
 uniform float world_radius;
+// LIGHT SOURCE PROPERTIES -----------------------------------------------------
+uniform vec3 light_rgb_intensity;
+uniform vec3 light_direction;
 // ATMOSPHERE PROPERTIES -------------------------------------------------------
 uniform vec3 atmosphere_scale_heights;
 uniform vec3 atmosphere_surface_rayleigh_scattering_coefficients;
@@ -897,25 +900,11 @@ vec3 get_rgb_intensity_of_light_rays_through_atmosphere(
  total_rgb_intensity += background_rgb_intensity * fraction_outgoing;
  return total_rgb_intensity;
 }
-//TODO: turn these into uniforms!
-const float light_temperature = SOLAR_TEMPERATURE;
-const vec3 light_position = vec3(ASTRONOMICAL_UNIT,0,0);
-const vec3 atmosphere_surface_densities = vec3(
- 1.217*KILOGRAM * (1.0 - 1.2e15/5.1e18), // earth's surface density times fraction of atmosphere that is not water vapor (by mass)
- 1.217*KILOGRAM * ( 1.2e15/5.1e18), // earth's surface density times fraction of atmosphere that is water vapor (by mass)
- 0 // NOTE: NOT USED, intended to eventually represent absorption
-);
 void main() {
  vec2 screenspace = vUv;
     vec2 clipspace = 2.0 * screenspace - 1.0;
  vec3 view_direction = normalize(view_matrix_inverse * projection_matrix_inverse * vec4(clipspace, 1, 1)).xyz;
  vec3 view_origin = view_matrix_inverse[3].xyz * reference_distance;
- vec3 light_offset = light_position - world_position;
- vec3 light_direction = normalize(light_offset);
- float light_distance = length(light_offset);
- vec3 light_rgb_intensity =
-    get_rgb_intensity_of_emitted_light_from_black_body(SOLAR_TEMPERATURE)
-  * get_surface_area_of_sphere(SOLAR_RADIUS) / get_surface_area_of_sphere(light_distance);
  float AESTHETIC_FACTOR1 = 0.5;
  vec4 background_rgb_signal = texture2D( surface_light, vUv );
  vec3 background_rgb_intensity = AESTHETIC_FACTOR1 * light_rgb_intensity * get_rgb_intensity_of_rgb_signal(background_rgb_signal.rgb);
@@ -926,11 +915,8 @@ void main() {
   background_rgb_intensity,
   atmosphere_scale_heights,
   atmosphere_surface_rayleigh_scattering_coefficients,
-  // vec3(5.20e-6, 1.21e-5, 2.96e-5), // atmospheric scattering coefficients for the surface 
   atmosphere_surface_mie_scattering_coefficients,
-        // vec3(2.1e-8),
-  // atmosphere_surface_absorption_coefficients 
-        vec3(0.)
+  vec3(0.)// atmosphere_surface_absorption_coefficients 
  );
  // rgb_intensity = 1.0 - exp2( rgb_intensity * -1.0 ); // simple tonemap
  // gl_FragColor = mix(background_rgb_signal, vec4(normalize(view_direction),1), 0.5);
