@@ -27,6 +27,7 @@ uniform mat4  view_matrix_inverse;
 uniform vec3  world_position;
 // radius of the world being rendered, in meters
 uniform float world_radius;
+uniform vec3 atmosphere_scale_heights;
 
 vec3 get_density_ratios_at_height_in_atmosphere(
 	float height, 
@@ -195,16 +196,7 @@ vec3 get_rgb_intensity_of_light_rays_through_atmosphere(
 //TODO: turn these into uniforms!
 const float light_temperature =  SOLAR_TEMPERATURE;
 const vec3  light_position = vec3(ASTRONOMICAL_UNIT,0,0);
-const float surface_gravity = 9.8*METER/(SECOND*SECOND);
-const float average_molecular_mass_of_air = 4.8e-26 * KILOGRAM;
-const float molecular_mass_of_water_vapor = 3.0e-26 * KILOGRAM;
-const float atmosphere_temperature = 25. + STANDARD_TEMPERATURE;
-const vec3 atmosphere_scale_heights = vec3(
-	BOLTZMANN_CONSTANT * atmosphere_temperature / (surface_gravity * average_molecular_mass_of_air),  // ~14km
-	BOLTZMANN_CONSTANT * atmosphere_temperature / (surface_gravity * molecular_mass_of_water_vapor),  // ~9km
-	0 // NOTE: NOT USED
-);
-const vec3 atmosphere_surface_densities = vec3(
+const vec3  atmosphere_surface_densities = vec3(
 	1.217*KILOGRAM * (1.0 - 1.2e15/5.1e18), // earth's surface density times fraction of atmosphere that is not water vapor (by mass)
 	1.217*KILOGRAM * (      1.2e15/5.1e18), // earth's surface density times fraction of atmosphere that is water vapor (by mass)
 	0 // NOTE: NOT USED, intended to eventually represent absorption
@@ -233,7 +225,7 @@ void main() {
 		background_rgb_intensity,
 		atmosphere_scale_heights,
 		vec3(5.20e-6, 1.21e-5, 2.96e-5), // atmospheric scattering coefficients for the surface
-		vec3(2.1e-9),
+		vec3(2.1e-8),
 		vec3(0.)
 	);
 

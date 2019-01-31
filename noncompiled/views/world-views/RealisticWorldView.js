@@ -13,9 +13,10 @@ function RealisticWorldView(shader_return_value) {
 			"surface_light":  			{ type: "t", value: null },
 			"projection_matrix_inverse":{ type: "m4",value: new THREE.Matrix4() },
 			"view_matrix_inverse"      :{ type: "m4",value: new THREE.Matrix4() },
+			"reference_distance": 		{ type: "f", value: Units.EARTH_RADIUS  },
 			"world_position": 			{ type: "v3",value: new THREE.Vector3() },
 			"world_radius":   			{ type: "f", value: Units.EARTH_RADIUS  },
-			"reference_distance": 		{ type: "f", value: Units.EARTH_RADIUS  },
+			"atmosphere_scale_heights": { type: "v3",value: new THREE.Vector3() },
 		},
 		vertexShader: 	vertexShaders.passthrough,
 		fragmentShader: fragmentShaders.atmosphere,
@@ -108,13 +109,23 @@ function RealisticWorldView(shader_return_value) {
 		update_attribute(mesh.geometry, 'surface_temp', 		world.atmosphere.surface_temp);
 		update_attribute(mesh.geometry, 'plant_coverage', 		world.biosphere.plant_coverage.value());
 
-		 gl_state.camera.projectionMatrix
 		update_uniform  (shaderpass,    'projection_matrix_inverse',new THREE.Matrix4().getInverse(gl_state.camera.projectionMatrix));
 		update_uniform  (shaderpass,    'view_matrix_inverse',		gl_state.camera.matrixWorld);
+		update_uniform  (shaderpass,    'reference_distance',		world.radius);
 		update_uniform  (shaderpass,    'world_position', 			new THREE.Vector3());
 		update_uniform  (shaderpass,    'world_radius',				world.radius);
-		update_uniform  (shaderpass,    'reference_distance',		world.radius);
-		update_uniform  (shaderpass, 	'insolation_max', 			Float32Dataset.max(world.atmosphere.average_insolation));
+
+		var average_molecular_mass_of_air = 4.8e-26 * Units.KILOGRAM;
+		var molecular_mass_of_water_vapor = 3.0e-26 * Units.KILOGRAM;
+		var atmosphere_temperature = Float32Dataset.average(world.atmosphere.surface_temp);
+		update_uniform  (shaderpass,    'atmosphere_scale_heights', new THREE.Vector3(
+			// rayleigh scattering compounds
+			Thermodynamics.BOLTZMANN_CONSTANT * atmosphere_temperature / (world.surface_gravity * average_molecular_mass_of_air), 
+			// mie scattering compounds
+			Thermodynamics.BOLTZMANN_CONSTANT * atmosphere_temperature / (world.surface_gravity * molecular_mass_of_water_vapor), 
+			// absorptive compounds
+			0. 
+		));
 	};
 
 	this.removeFromScene = function(gl_state) {
