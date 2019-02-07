@@ -774,6 +774,35 @@ vec3 get_density_ratios_at_height_in_atmosphere(
 ){
  return exp(-height/atmosphere_scale_heights);
 }
+float get_h(float x, float xR, float z, float R){
+ float xfull = x + xR;
+ return sqrt(xfull*xfull + z*z) - R;
+}
+float get_dhdx(float x, float xR, float z){
+ float xfull = x + xR;
+ return xfull / sqrt(xfull*xfull + z*z);
+}
+float approx_h(float x, float xm, float xb, float xR, float z, float R){
+ return get_dhdx(xm,xR,z) * (x-xb) + get_h(xb,xR,z,R);
+}
+float approx_sigma1(float x, float xm, float xb, float xR, float z, float R, float H){
+ return -H/get_dhdx(xm,xR,z) * exp(-approx_h(x,xm,xb,xR,z,R)/H);
+}
+float approx_sigma2(float x, float x0, float dx, float xR, float z, float R, float H){
+ const float fm = 0.5;
+ const float fb = 0.3;
+ float xm = x0 + fm*dx;
+ float xb = x0 + fb*dx;
+ float x1 = x0 + dx;
+ return approx_sigma1(clamp(x,x0,x1), xm, xb, xR, z,R,H);
+}
+float approx_sigma3(float x, float z, float R, float H){
+ const float nH = 12.0;
+ float xR = z<R? sqrt(R*R - z*z) : 0.0;
+ float rtop = nH*H+R;
+ float xtop = sqrt(rtop*rtop - z*z) - xR;
+ return approx_sigma2(x, 0.0, 0.33*xtop, xR,z,R,H) + approx_sigma2(x, 0.33*xtop, 0.33*xtop, xR,z,R,H);
+}
 vec3 get_rgb_intensity_of_light_rays_through_atmosphere(
  vec3 view_origin, vec3 view_direction,
  vec3 world_position, float world_radius,
