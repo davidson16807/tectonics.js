@@ -201,9 +201,9 @@ float get_surface_area_of_sphere(
 // TODO: try to get this to work with structs!
 // See: http://www.lighthouse3d.com/tutorials/maths/ray-sphere-intersection/
 void get_relation_between_ray_and_point(
+ in vec3 point_position,
  in vec3 ray_origin,
  in vec3 ray_direction,
- in vec3 point_position,
  out float distance_at_closest_approach2,
  out float distance_to_closest_approach
 ){
@@ -214,20 +214,12 @@ void get_relation_between_ray_and_point(
   distance_to_closest_approach * distance_to_closest_approach;
 }
 bool try_get_relation_between_ray_and_sphere(
- in vec3 ray_origin,
- in vec3 ray_direction,
- in vec3 sphere_origin,
  in float sphere_radius,
- out float distance_at_closest_approach2,
- out float distance_to_closest_approach,
+ in float distance_at_closest_approach2,
+ in float distance_to_closest_approach,
  out float distance_to_entrance,
  out float distance_to_exit
 ){
- get_relation_between_ray_and_point(
-  ray_origin, ray_direction,
-  sphere_origin,
-  distance_at_closest_approach2, distance_to_closest_approach
- );
  float sphere_radius2 = sphere_radius * sphere_radius;
  float distance_from_closest_approach_to_exit = sqrt(max(sphere_radius2 - distance_at_closest_approach2, 1e-10));
  distance_to_entrance = distance_to_closest_approach - distance_from_closest_approach_to_exit;
@@ -578,9 +570,9 @@ float get_surface_area_of_sphere(
 // TODO: try to get this to work with structs!
 // See: http://www.lighthouse3d.com/tutorials/maths/ray-sphere-intersection/
 void get_relation_between_ray_and_point(
+ in vec3 point_position,
  in vec3 ray_origin,
  in vec3 ray_direction,
- in vec3 point_position,
  out float distance_at_closest_approach2,
  out float distance_to_closest_approach
 ){
@@ -591,20 +583,12 @@ void get_relation_between_ray_and_point(
   distance_to_closest_approach * distance_to_closest_approach;
 }
 bool try_get_relation_between_ray_and_sphere(
- in vec3 ray_origin,
- in vec3 ray_direction,
- in vec3 sphere_origin,
  in float sphere_radius,
- out float distance_at_closest_approach2,
- out float distance_to_closest_approach,
+ in float distance_at_closest_approach2,
+ in float distance_to_closest_approach,
  out float distance_to_entrance,
  out float distance_to_exit
 ){
- get_relation_between_ray_and_point(
-  ray_origin, ray_direction,
-  sphere_origin,
-  distance_at_closest_approach2, distance_to_closest_approach
- );
  float sphere_radius2 = sphere_radius * sphere_radius;
  float distance_from_closest_approach_to_exit = sqrt(max(sphere_radius2 - distance_at_closest_approach2, 1e-10));
  distance_to_entrance = distance_to_closest_approach - distance_from_closest_approach_to_exit;
@@ -775,15 +759,13 @@ bool isbig(float x)
 }
 // "get_h" gets the altitude at a point along the path
 //   for a ray traveling through the atmosphere.
-float get_h(float x, float xR, float z2, float R){
-    float xfull = x + xR;
-    return sqrt(max(xfull*xfull + z2,0.)) - R;
+float get_h(float x, float z2, float R){
+    return sqrt(max(x*x + z2, 0.)) - R;
 }
 // "get_dhdx" gets the rate at which altitude changes for a distance traveled along the path
 //   for a ray traveling through the atmosphere.
-float get_dhdx(float x, float xR, float z2){
-    float xfull = x + xR;
-    return xfull / sqrt(max(xfull*xfull + z2,0.));
+float get_dhdx(float x, float z2){
+    return x / sqrt(max(x*x + z2, 0.));
 }
 // "get_rho" gets the density ratio of an altitude within the atmosphere
 // the "density ratio" is density expressed as a fraction of a surface value
@@ -802,9 +784,9 @@ float get_rho(
 //   so we use a linear approximation for the altitude.
 // Our linear approximation gets its slope and intercept from sampling
 //   at points along the path (xm and xb respectively)
-float approx_sigma_from_samples(float x, float xm, float xb, float xR, float z2, float R, float H){
- float m = get_dhdx(xm,xR,z2);
- float b = get_h(xb,xR,z2,R);
+float approx_sigma_from_samples(float x, float xm, float xb, float z2, float R, float H){
+ float m = get_dhdx(xm,z2);
+ float b = get_h(xb,z2,R);
  float h = m*(x-xb) + b;
     return -H/m * exp(-h/H);
 }
@@ -812,13 +794,13 @@ float approx_sigma_from_samples(float x, float xm, float xb, float xR, float z2,
 //   which calculates sensible values of xm and xb for the user 
 //   given a specified range around which the approximation is valid.
 // The range is indicated by its lower bounds (xmin) and width (dx).
-float approx_sigma_for_segment(float x, float xmin, float dx, float xR, float z2, float R, float H){
+float approx_sigma_for_segment(float x, float xmin, float dx, float z2, float R, float H){
     const float fm = 0.5;
     const float fb = 0.2;
     float xm = xmin + fm*dx;
     float xb = xmin + fb*dx;
     float xmax = xmin + dx;
-    return approx_sigma_from_samples(clamp(x, xmin, xmax), xm, xb, xR, z2,R,H);
+    return approx_sigma_from_samples(clamp(x, xmin, xmax), xm, xb, z2,R,H);
 }
 // "approx_sigma_for_absx" is a convenience wrapper for approx_sigma_for_segment().
 // It returns a approximation of columnar density ratio that should be appropriate for any positive value of x.
@@ -828,6 +810,8 @@ float approx_sigma_for_segment(float x, float xmin, float dx, float xR, float z2
 // There is an additional parameter introduced, "sigma0",
 //   which is the columnar density ratio generated by this equation at x=0.
 // sigma0 is used to express values for columnar density ratio relative to the surface of the world
+// NOTE: unlike approx_sigma_from_samples() and approx_sigma_for_segment(), 
+//   all input distances are relative to the surface, not the world's center!
 float approx_sigma_for_absx(float x, float sigma0, float z2, float R, float H){
  // "nH" is the number of scale heights at which we encounter the "top" of the atmosphere.
     const float nH = 12.0;
@@ -842,8 +826,8 @@ float approx_sigma_for_absx(float x, float sigma0, float z2, float R, float H){
     // "absx" is the absolute value of x
     float absx = abs(x);
     return
-        approx_sigma_for_segment(absx, 0., dx, xR, z2,R,H) +
-        approx_sigma_for_segment(absx, dx, dx, xR, z2,R,H) -
+        approx_sigma_for_segment(xR+absx, xR, dx, z2,R,H) +
+        approx_sigma_for_segment(xR+absx, xR+dx, dx, z2,R,H) -
         sigma0;
 }
 // "approx_sigma0" is a convenience wrapper for approx_sigma_for_absx().
@@ -871,9 +855,9 @@ vec3 get_rgb_intensity_of_light_rays_through_atmosphere(
     float unused1, unused2, unused3, unused4;
     bool view_is_scattered; // whether view ray will enter the atmosphere
     bool view_is_obstructed; // whether view ray will enter the surface of a world
-    float view_z2; // distance ("radius") from the view ray to the center of the world at closest approach, squared; never used, but may in the future
+    float view_z2; // distance ("radius") from the view ray to the center of the world at closest approach, squared
     float view_x_z; // distance along the view ray at which closest approach occurs
-    float view_x_enter_atmo; // distance along the view ray at which the ray enters the atmosphere, never used
+    float view_x_enter_atmo; // distance along the view ray at which the ray enters the atmosphere
     float view_x_exit_atmo; // distance along the view ray at which the ray exits the atmosphere
     float view_x_enter_world; // distance along the view ray at which the ray enters the surface of the world
     const float VIEW_STEP_COUNT = 16.;// number of steps taken while marching along the view ray
@@ -890,12 +874,8 @@ vec3 get_rgb_intensity_of_light_rays_through_atmosphere(
     float light_x_enter_world;// distance along the light ray at which the ray enters the surface of the world
     float light_x_exit_atmo; // distance along the light ray at which the ray exits the atmosphere
     float light_x_exit_world; // distance along the light ray at which the ray would exit the world, if it could pass through
-    const float light_STEP_COUNT = 8.;// number of steps taken while marching along the light ray
-    float light_dx; // distance between steps while marching along the light ray
-    float light_x; // distance traversed while marching along the light ray
-    float light_h; // distance ("height") from the surface of the world while marching along the light ray
-    float light_sigma; // columnar density ratios for rayleigh and mie scattering, found by marching along the light ray. This expresses the quantity of air encountered along the light ray, relative to air density on the surface
-    vec3 light_pos; // absolute position while marching along the light ray
+    float light_sigma; // columnar density ratio encountered along the light ray. This expresses the quantity of air encountered along the light ray, relative to air density on the surface
+    float light_sigma0; // reference columnar density ratio for the light ray. This is used to calculate an approximation for the true column density ratio.
     // NOTE: "12." is the number of scale heights needed to reach the official edge of space on Earth.
     float atmosphere_height = 12. * atmosphere_scale_height;
     // "atmosphere_radius" is the distance from the center of the world to the top of the atmosphere
@@ -918,16 +898,19 @@ vec3 get_rgb_intensity_of_light_rays_through_atmosphere(
     float gamma_ray = get_rayleigh_phase_factor(cos_scatter_angle);
     float gamma_mie = get_henyey_greenstein_phase_factor(cos_scatter_angle);
     float gamma_abs = 0.; // NOT USED YET
+    get_relation_between_ray_and_point(
+  world_position,
+     view_origin, view_direction,
+  view_z2, view_x_z
+ );
     view_is_scattered = try_get_relation_between_ray_and_sphere(
-        view_origin, view_direction,
-        world_position, atmosphere_radius,
-        unused1, unused2,
+        atmosphere_radius,
+        view_z2, view_x_z,
         view_x_enter_atmo, view_x_exit_atmo
     );
     view_is_obstructed = try_get_relation_between_ray_and_sphere(
-        view_origin, view_direction,
-        world_position, world_radius,
-        unused1, unused2,
+        world_radius,
+        view_z2, view_x_z,
         view_x_enter_world, unused3
     );
     // if view does not interact with the atmosphere, 
@@ -948,31 +931,34 @@ vec3 get_rgb_intensity_of_light_rays_through_atmosphere(
         view_pos = view_origin + view_direction * view_x;
         view_h = length(view_pos - world_position) - world_radius;
         // If sample point lies inside the planet, 
-        //   then no light past this point will reach the camera.
+        //   then no light past this point will ever reach the camera.
         // NOTE: please consider this line if checking for multiple light sources 
-        //   within the same viewray raymarching loop, it could cause insidious problems
+        //   within the same viewray raymarching loop, since it could cause insidious problems
         if (view_h < 0.)
         {
             break;
         }
         view_sigma += view_dx * exp(-view_h/atmosphere_scale_height);
+     get_relation_between_ray_and_point(
+   world_position,
+      view_pos, light_direction,
+   light_z2, light_x_z
+  );
         light_is_scattered = try_get_relation_between_ray_and_sphere(
-            view_pos, light_direction,
-            world_position, world_radius + atmosphere_height,
-            light_z2, unused2,
+            world_radius + atmosphere_height,
+   light_z2, light_x_z,
             unused1, light_x_exit_atmo
         );
         light_is_obstructed = try_get_relation_between_ray_and_sphere(
-            view_pos, light_direction,
-            world_position, world_radius,
-            unused1, unused2,
+            world_radius,
+   light_z2, light_x_z,
             unused3, light_x_exit_world
         );
         if (light_is_obstructed)
         {
             continue;
         }
-        float light_sigma0 = approx_sigma0(light_z2, world_radius, atmosphere_scale_height);
+        light_sigma0 = approx_sigma0(light_z2, world_radius, atmosphere_scale_height);
         // REMEMBER: all values for x passed to approx_sigma() are 
         //   distances relative to the *surface*
         light_sigma =
