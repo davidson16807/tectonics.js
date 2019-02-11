@@ -38,12 +38,10 @@ FUNC(bool) try_get_relation_between_ray_and_sphere(
 	);
 
 	VAR(float) sphere_radius2 = sphere_radius * sphere_radius;
-	if (distance_at_closest_approach2 > sphere_radius2 && distance_to_closest_approach > 0.) 
-		return false;
 
-	VAR(float) distance_from_closest_approach_to_exit = sqrt(sphere_radius2 - distance_at_closest_approach2);
+	VAR(float) distance_from_closest_approach_to_exit = sqrt(max(sphere_radius2 - distance_at_closest_approach2, 1e-10));
 	distance_to_entrance = distance_to_closest_approach - distance_from_closest_approach_to_exit;
 	distance_to_exit     = distance_to_closest_approach + distance_from_closest_approach_to_exit;
 
-	return true;
+	return (distance_to_exit > 0. && distance_at_closest_approach2 < sphere_radius*sphere_radius);
 }
