@@ -35,17 +35,11 @@ uniform vec3 light_rgb_intensity;
 uniform vec3 light_direction;
 
 // ATMOSPHERE PROPERTIES -------------------------------------------------------
-uniform vec3 atmosphere_scale_heights;
-uniform vec3 atmosphere_surface_rayleigh_scattering_coefficients; 
-uniform vec3 atmosphere_surface_mie_scattering_coefficients; 
-uniform vec3 atmosphere_surface_absorption_coefficients; 
+uniform float atmosphere_scale_height;
+uniform vec3  atmosphere_surface_rayleigh_scattering_coefficients; 
+uniform vec3  atmosphere_surface_mie_scattering_coefficients; 
+uniform vec3  atmosphere_surface_absorption_coefficients; 
 
-vec3 get_density_ratios_at_height_in_atmosphere(
-    float height, 
-    vec3 atmosphere_scale_heights
-){
-    return exp(-height/atmosphere_scale_heights);
-}
 
 const float BIG = 1e50;
 bool isnan(float x)
@@ -69,9 +63,17 @@ float get_dhdx(float x, float xR, float z2){
     float xfull = x + xR;
     return xfull / sqrt(max(xfull*xfull + z2,0.));
 }
+// "get_rho" gets the density ratio of an altitude within the atmosphere
+// the "density ratio" is density expressed as a fraction of a surface value
+float get_rho(
+    float h, 
+    float H
+){
+    return exp(-h/H);
+}
 // "approx_sigma_from_samples" returns an approximation 
 //   for the columnar density ratio encountered by a ray traveling through the atmosphere.
-// It is the integral of density along the path of the ray, 
+// It is the integral of get_rho() along the path of the ray, 
 //   taking into account the altitude at every point along the path.
 // We can't solve the integral in the usual fashion due to singularities
 //   (see https://www.wolframalpha.com/input/?i=integrate+exp(-sqrt(x%5E2%2Bz%5E2)%2FH)+dx)
@@ -139,14 +141,14 @@ float approx_sigma(float x, float sigma0, float z2, float R, float H){
 }
 
 vec3 get_rgb_intensity_of_light_rays_through_atmosphere(
-    vec3 view_origin, vec3 view_direction,
-    vec3 world_position, float world_radius,
-    vec3 light_direction, vec3 light_rgb_intensity,
-    vec3 background_rgb_intensity,
-    vec3 atmosphere_scale_heights,
-    vec3 beta_ray,
-    vec3 beta_mie,
-    vec3 beta_abs
+    vec3  view_origin, vec3 view_direction,
+    vec3  world_position, float world_radius,
+    vec3  light_direction, vec3 light_rgb_intensity,
+    vec3  background_rgb_intensity,
+    float atmosphere_scale_height,
+    vec3  beta_ray,
+    vec3  beta_mie,
+    vec3  beta_abs
 ){
 
     float unused1, unused2, unused3, unused4;
@@ -164,8 +166,8 @@ vec3 get_rgb_intensity_of_light_rays_through_atmosphere(
     float view_dx;            // distance between steps while marching along the view ray
     float view_x;             // distance traversed while marching along the view ray
     float view_h;             // distance ("height") from the surface of the world while marching along the view ray
+    float view_sigma;         // columnar density ratios for rayleigh and mie scattering, found by marching along the view ray. This expresses the quantity of air encountered along the view ray, relative to air density on the surface
     vec3  view_pos;           // absolute position while marching along the view ray
-    vec3  view_sigma;         // columnar density ratios for rayleigh and mie scattering, found by marching along the view ray. This expresses the quantity of air encountered along the view ray, relative to air density on the surface
 
     bool  light_is_scattered; // whether light ray will enter the atmosphere
     bool  light_is_obstructed;// whether light ray will enter the surface of a world
@@ -180,12 +182,12 @@ vec3 get_rgb_intensity_of_light_rays_through_atmosphere(
     float light_dx;           // distance between steps while marching along the light ray
     float light_x;            // distance traversed while marching along the light ray
     float light_h;            // distance ("height") from the surface of the world while marching along the light ray
+    float light_sigma;        // columnar density ratios for rayleigh and mie scattering, found by marching along the light ray. This expresses the quantity of air encountered along the light ray, relative to air density on the surface
     vec3  light_pos;          // absolute position while marching along the light ray
-    vec3  light_sigma;        // columnar density ratios for rayleigh and mie scattering, found by marching along the light ray. This expresses the quantity of air encountered along the light ray, relative to air density on the surface
 
 
     // NOTE: "12." is the number of scale heights needed to reach the official edge of space on Earth.
-    float atmosphere_height = 12. * max(atmosphere_scale_heights.x, atmosphere_scale_heights.y);
+    float atmosphere_height = 12. * atmosphere_scale_height;
 
     // "atmosphere_radius" is the distance from the center of the world to the top of the atmosphere
     float atmosphere_radius = world_radius + atmosphere_height;
@@ -241,7 +243,7 @@ vec3 get_rgb_intensity_of_light_rays_through_atmosphere(
 
     view_dx = (view_x_exit_atmo - view_x_enter_atmo) / VIEW_STEP_COUNT;
     view_x  =  view_x_enter_atmo + 0.5 * view_dx;
-    view_sigma = vec3(0.);
+    view_sigma = 0.;
 
     for (float i = 0.; i < VIEW_STEP_COUNT; ++i)
     {
@@ -257,7 +259,7 @@ vec3 get_rgb_intensity_of_light_rays_through_atmosphere(
             break;
         }
 
-        view_sigma += view_dx * exp(-view_h/atmosphere_scale_heights);
+        view_sigma += view_dx * exp(-view_h/atmosphere_scale_height);
 
         light_is_scattered = try_get_relation_between_ray_and_sphere( 
             view_pos,            light_direction,
@@ -277,32 +279,26 @@ vec3 get_rgb_intensity_of_light_rays_through_atmosphere(
             continue;
         }
 
-        float sigma0x = approx_sigma0(light_z2, world_radius, atmosphere_scale_heights.x);
-        float sigma0y = approx_sigma0(light_z2, world_radius, atmosphere_scale_heights.y);
-        float sigma0z = approx_sigma0(light_z2, world_radius, atmosphere_scale_heights.z);
-        // REMEMBER: all values passed to approx_sigma() are 
+        float light_sigma0 = approx_sigma0(light_z2, world_radius, atmosphere_scale_height);
+        // REMEMBER: all values for x passed to approx_sigma() are 
         //   distances relative to the *surface*
-        light_sigma = vec3(
-            approx_sigma( light_x_exit_atmo -light_x_exit_world, sigma0x, light_z2, world_radius, atmosphere_scale_heights.x)-
-            approx_sigma(                   -light_x_exit_world, sigma0x, light_z2, world_radius, atmosphere_scale_heights.x),
-            approx_sigma( light_x_exit_atmo -light_x_exit_world, sigma0y, light_z2, world_radius, atmosphere_scale_heights.y)-
-            approx_sigma(                   -light_x_exit_world, sigma0y, light_z2, world_radius, atmosphere_scale_heights.y),
-            0.
-        );
+        light_sigma = 
+        	approx_sigma( light_x_exit_atmo -light_x_exit_world, light_sigma0, light_z2, world_radius, atmosphere_scale_height)-
+            approx_sigma(                   -light_x_exit_world, light_sigma0, light_z2, world_radius, atmosphere_scale_height);
 
-        fraction_outgoing    = exp(-beta_ray * (view_sigma.x + light_sigma.x) - beta_abs * view_sigma.z);
-        fraction_incoming    = beta_ray * gamma_ray * view_dx * exp(-view_h/atmosphere_scale_heights.x);
+        fraction_outgoing    = exp(-beta_ray * (view_sigma + light_sigma) - beta_abs * view_sigma);
+        fraction_incoming    = beta_ray * gamma_ray * view_dx * exp(-view_h/atmosphere_scale_height);
         total_rgb_intensity += light_rgb_intensity * fraction_incoming * fraction_outgoing;
 
-        fraction_outgoing    = exp(-beta_mie * (view_sigma.y + light_sigma.y) - beta_abs * view_sigma.z);
-        fraction_incoming    = beta_mie * gamma_mie * view_dx* exp(-view_h/atmosphere_scale_heights.y);
+        fraction_outgoing    = exp(-beta_mie * (view_sigma + light_sigma) - beta_abs * view_sigma);
+        fraction_incoming    = beta_mie * gamma_mie * view_dx* exp(-view_h/atmosphere_scale_height);
         total_rgb_intensity += light_rgb_intensity * fraction_incoming * fraction_outgoing;
 
         view_x += view_dx;
     }
 
     //// now calculate intensity of light that traveled straight in from the background, and add it to the total
-    fraction_outgoing = exp(-beta_abs * (view_sigma.z));
+    fraction_outgoing = exp(-beta_abs * view_sigma);
     total_rgb_intensity += background_rgb_intensity * fraction_outgoing;
 
     return total_rgb_intensity;
@@ -325,8 +321,8 @@ vec3 chart_scratch(vec2 screenspace){
     float z = 6.35e6;
     float z2 = z*z;
     float light_x_enter_world = sqrt(max(world_radius*world_radius - z2, 0.));
-    float sigma0 = approx_sigma0(z2, world_radius, atmosphere_scale_heights.x);
-    float closed_form_approximation = approx_sigma(chartspace.x, sigma0, z2, world_radius, atmosphere_scale_heights.x);
+    float sigma0 = approx_sigma0(z2, world_radius, atmosphere_scale_height);
+    float closed_form_approximation = approx_sigma(chartspace.x, sigma0, z2, world_radius, atmosphere_scale_height);
 
     const float LIGHT_STEP_COUNT = 8.;
     float light_dx = (chartspace.x) / LIGHT_STEP_COUNT;
@@ -337,7 +333,7 @@ vec3 chart_scratch(vec2 screenspace){
     {
         light_h = sqrt((light_x+light_x_enter_world)*(light_x+light_x_enter_world) + z2) - world_radius;
 
-        iterative_approximation += light_dx * exp(-light_h/atmosphere_scale_heights.x);
+        iterative_approximation += light_dx * exp(-light_h/atmosphere_scale_height);
 
         light_x += light_dx;
     }
@@ -365,7 +361,7 @@ void main() {
         world_position,             world_radius,
         light_direction,            light_rgb_intensity,  // light direction and rgb intensity
         background_rgb_intensity,
-        atmosphere_scale_heights,
+        atmosphere_scale_height,
         atmosphere_surface_rayleigh_scattering_coefficients, 
         atmosphere_surface_mie_scattering_coefficients, 
         vec3(0.)// atmosphere_surface_absorption_coefficients 

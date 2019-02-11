@@ -22,7 +22,7 @@ function RealisticWorldView(shader_return_value) {
 			"world_position": 			{ type: "v3",value: new THREE.Vector3() },
 			"world_radius":   			{ type: "f", value: Units.EARTH_RADIUS  },
 
-			"atmosphere_scale_heights": { type: "v3",value: new THREE.Vector3() },
+			"atmosphere_scale_height": { type: "f", value: 0. },
 			"atmosphere_surface_rayleigh_scattering_coefficients": { type: "v3", value: new THREE.Vector3() },
 			"atmosphere_surface_mie_scattering_coefficients":      { type: "v3", value: new THREE.Vector3() },
 			"atmosphere_surface_absorption_coefficients":          { type: "v3", value: new THREE.Vector3() },
@@ -145,14 +145,9 @@ function RealisticWorldView(shader_return_value) {
 		var average_molecular_mass_of_air = 4.8e-26 * Units.KILOGRAM;
 		var molecular_mass_of_water_vapor = 3.0e-26 * Units.KILOGRAM;
 		var atmosphere_temperature = Float32Dataset.average(world.atmosphere.surface_temp);
-		update_uniform  (shaderpass,    'atmosphere_scale_heights', new THREE.Vector3(
-			// rayleigh scattering compounds
-			Thermodynamics.BOLTZMANN_CONSTANT * atmosphere_temperature / (world.surface_gravity * average_molecular_mass_of_air), 
-			// mie scattering compounds
-			Thermodynamics.BOLTZMANN_CONSTANT * atmosphere_temperature / (world.surface_gravity * molecular_mass_of_water_vapor), 
-			// absorptive compounds
-			0. 
-		));
+		update_uniform  (shaderpass,    'atmosphere_scale_height', 
+			Thermodynamics.BOLTZMANN_CONSTANT * atmosphere_temperature / (world.surface_gravity * average_molecular_mass_of_air)
+		);
 
 		// earth's surface density times fraction of atmosphere that is not water vapor (by mass)
 		var atmosphere_surface_rayleigh_scatterer_density = 1.217*Units.KILOGRAM * (1.0 - 1.2e15/5.1e18);
