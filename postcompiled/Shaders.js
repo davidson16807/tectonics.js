@@ -860,7 +860,8 @@ vec3 get_rgb_intensity_of_light_rays_through_atmosphere(
     vec3 beta_mie,
     vec3 beta_abs
 ){
-    float unused1, unused2, unused3, unused4;
+    float unused1, unused2, unused3, unused4; // used for passing unused output parameters to functions
+    const float VIEW_STEP_COUNT = 16.;// number of steps taken while marching along the view ray
     bool view_is_scattered; // whether view ray will enter the atmosphere
     bool view_is_obstructed; // whether view ray will enter the surface of a world
     float view_z2; // distance ("radius") from the view ray to the center of the world at closest approach, squared
@@ -871,10 +872,6 @@ vec3 get_rgb_intensity_of_light_rays_through_atmosphere(
     float view_x_exit_world; // distance along the view ray at which the ray enters the surface of the world
     float view_x_start; // distance along the view ray at which scattering starts, either because it's the start of the ray or the start of the atmosphere 
     float view_x_stop; // distance along the view ray at which scattering no longer occurs, either due to hitting the world or leaving the atmosphere
-    float view_x_ref; // distance along the view ray at which the nearest ground reference occurs, either view_x_enter_world or view_x_exit_world
-    float view_x_world; // distance along the view ray from closest approach to the surface of the world
-    float view_x_atmo; // distance along the view ray from closest approach to top of atmosphere
-    const float VIEW_STEP_COUNT = 16.;// number of steps taken while marching along the view ray
     float view_dx; // distance between steps while marching along the view ray
     float view_x; // distance traversed while marching along the view ray
     float view_h; // distance ("height") from the surface of the world while marching along the view ray
@@ -885,8 +882,6 @@ vec3 get_rgb_intensity_of_light_rays_through_atmosphere(
     bool light_is_obstructed;// whether light ray will enter the surface of a world
     float light_z2; // distance ("radius") from the light ray to the center of the world at closest approach, squared
     float light_x_z; // distance along the light ray the point at which closest approach occurs
-    float light_x_enter_atmo; // distance along the light ray the point at which the ray enters the atmosphere
-    float light_x_enter_world;// distance along the light ray the point at which the ray enters the surface of the world
     float light_x_exit_atmo; // distance along the light ray the point at which the ray exits the atmosphere
     float light_x_exit_world; // distance along the light ray the point at which the ray would exit the world, if it could pass through
     float light_sigma; // columnar density ratio encountered along the light ray. This expresses the quantity of air encountered along the light ray, relative to air density on the surface
@@ -912,7 +907,6 @@ vec3 get_rgb_intensity_of_light_rays_through_atmosphere(
     // So all together, the fraction of sunlight that scatters to a given angle is: beta(wavelength) * gamma(angle) * density_ratio(height)
     float gamma_ray = get_rayleigh_phase_factor(cos_scatter_angle);
     float gamma_mie = get_henyey_greenstein_phase_factor(cos_scatter_angle);
-    float gamma_abs = 0.; // NOT USED YET
     get_relation_between_ray_and_point(
   world_position,
      view_origin, view_direction,
@@ -934,23 +928,10 @@ vec3 get_rgb_intensity_of_light_rays_through_atmosphere(
     {
      return background_rgb_intensity;
     }
-    // if view ray shoots towards world
-    else if (view_is_obstructed)
-    {
-     view_x_start = max(view_x_enter_atmo, 0.);
-     view_x_stop = view_x_enter_world;
-     view_x_ref = view_x_enter_world;
-    }
-    // if view ray shoots alongside or away from the world
-    else {
-     view_x_start = max(view_x_enter_atmo, 0.);
-     view_x_stop = view_x_exit_atmo;
-     view_x_ref = view_x_exit_world;
-    }
+ view_x_start = max(view_x_enter_atmo, 0.);
+    view_x_stop = view_is_obstructed? view_x_enter_world : view_x_exit_atmo;
     view_dx = (view_x_stop - view_x_start) / VIEW_STEP_COUNT;
     view_x = view_x_start + 0.5 * view_dx;
- view_x_world = view_x_exit_world - view_x_z;
- view_x_atmo = view_x_exit_atmo - view_x_z;
     view_sigma0 = approx_sigma0(
      view_x_exit_world - view_x_z, view_x_exit_atmo - view_x_z,
      view_z2, world_radius, atmosphere_scale_height
@@ -992,17 +973,22 @@ vec3 get_rgb_intensity_of_light_rays_through_atmosphere(
          light_x_exit_world -light_x_z, light_x_exit_atmo -light_x_z, light_sigma0,
          light_z2, world_radius, atmosphere_scale_height
      );
-        fraction_outgoing = exp(-beta_ray * (view_sigma + light_sigma) - beta_abs * view_sigma);
-        fraction_incoming = beta_ray * gamma_ray * view_dx * exp(-view_h/atmosphere_scale_height);
-        total_rgb_intensity += light_rgb_intensity * fraction_incoming * fraction_outgoing;
-        fraction_outgoing = exp(-beta_mie * (view_sigma + light_sigma) - beta_abs * view_sigma);
-        fraction_incoming = beta_mie * gamma_mie * view_dx* exp(-view_h/atmosphere_scale_height);
-        total_rgb_intensity += light_rgb_intensity * fraction_incoming * fraction_outgoing;
+        total_rgb_intensity += light_rgb_intensity
+         // incoming fraction: the fraction of light that scatters towards camera
+         * beta_ray * gamma_ray * view_dx * exp(-view_h/atmosphere_scale_height)
+         // outgoing fraction: the fraction of light that scatters away from camera
+         * exp(-(beta_ray + beta_mie + beta_abs) * (view_sigma + light_sigma));
+        total_rgb_intensity += light_rgb_intensity
+         // incoming fraction: the fraction of light that scatters towards camera
+         * beta_mie * gamma_mie * view_dx * exp(-view_h/atmosphere_scale_height)
+         // outgoing fraction: the fraction of light that scatters away from camera
+         * exp(-(beta_ray + beta_mie + beta_abs) * (view_sigma + light_sigma));
         view_x += view_dx;
     }
-    //// now calculate intensity of light that traveled straight in from the background, and add it to the total
-    fraction_outgoing = exp(-beta_abs * view_sigma);
-    total_rgb_intensity += background_rgb_intensity * fraction_outgoing;
+    // now calculate the intensity of light that traveled straight in from the background, and add it to the total
+    total_rgb_intensity += background_rgb_intensity
+        // outgoing fraction: the fraction of light that would travel straight towards camera, but gets diverted
+     * exp(-(beta_ray + beta_mie + beta_abs) * view_sigma);
     return total_rgb_intensity;
 }
 vec2 get_chartspace(vec2 bottomleft, vec2 topright, vec2 screenspace){
