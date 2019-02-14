@@ -16,6 +16,7 @@ varying float vPlantCoverage;
 varying float vScalar;
 varying float vVectorFractionTraversed;
 varying vec4 vPosition;
+varying vec3 vClipspace;
 uniform float sealevel;
 // radius of the world to be rendered
 uniform float world_radius;
@@ -51,6 +52,7 @@ void main() {
  mat4 scaleMatrix = mat4(1);
  scaleMatrix[3] = viewMatrix[3] * reference_distance / world_radius;
  gl_Position = projectionMatrix * scaleMatrix * displaced;
+ vClipspace = gl_Position.xyz / gl_Position.w; //perspective divide/normalize
 }
 `;
 vertexShaders.texture = `
@@ -70,6 +72,7 @@ varying float vPlantCoverage;
 varying float vScalar;
 varying float vVectorFractionTraversed;
 varying vec4 vPosition;
+varying vec3 vClipspace;
 uniform float sealevel;
 // radius of the world to be rendered
 uniform float world_radius;
@@ -101,6 +104,7 @@ void main() {
   lat_focused / (PI/2.),
   -height,
   1);
+ vClipspace = gl_Position.xyz / gl_Position.w; //perspective divide/normalize
 }
 `;
 vertexShaders.orthographic = `
@@ -120,6 +124,7 @@ varying float vPlantCoverage;
 varying float vScalar;
 varying float vVectorFractionTraversed;
 varying vec4 vPosition;
+varying vec3 vClipspace;
 uniform float sealevel;
 // radius of the world to be rendered
 uniform float world_radius;
@@ -138,6 +143,7 @@ void main() {
  float surface_height = max(displacement - sealevel, 0.);
  vec4 displacement = vec4( position * (world_radius + surface_height) / reference_distance, 1.0 );
  gl_Position = projectionMatrix * modelViewMatrix * displacement;
+ vClipspace = gl_Position.xyz / gl_Position.w; //perspective divide/normalize
 }
 `;
 vertexShaders.passthrough = `
@@ -361,12 +367,14 @@ varying float vIceCoverage;
 varying float vScalar;
 varying float vSurfaceTemp;
 varying vec4 vPosition;
+varying vec3 vClipspace;
 uniform float sealevel;
 uniform float sealevel_mod;
 uniform float darkness_mod;
 uniform float ice_mod;
 uniform float insolation_max;
-const vec3 light_position = vec3(ASTRONOMICAL_UNIT,0,0);
+uniform vec3 light_rgb_intensity;
+uniform vec3 light_direction;
 const vec3 NONE = vec3(0.0,0.0,0.0);
 const vec3 OCEAN = vec3(0.04,0.04,0.2);
 const vec3 SHALLOW = vec3(0.04,0.58,0.54);
@@ -378,11 +386,21 @@ const vec3 PEAT = vec3(100,85,60)/255.;
 const vec3 SNOW = vec3(0.9, 0.9, 0.9);
 const vec3 JUNGLE = vec3(30,50,10)/255.;
 //const vec3 JUNGLE	= vec3(20,45,5)/255.;
-bool isnan(float val)
-{
-  return (val <= 0.0 || 0.0 <= val) ? false : true;
-}
+// TODO: set these material values in a manner similar to color, above: 
+//   e.g. specular_reflection_coefficient of water vs forest
+const float WATER_CHARACTERISTIC_FRESNEL_REFLECTANCE = 0.5;
+// TODO: set back to this number, since it's physically accurate:
+// const float WATER_CHARACTERISTIC_FRESNEL_REFLECTANCE = 0.1;
+// NOTE: value for shininess was determined by aesthetics, 
+//   not sure if a physically based value can be found
+const float WATER_PHONG_SHININESS = 500.0;
+const float EPSILON = 0.001;
 void main() {
+    vec2 clipspace = vClipspace.xy;
+    // vec3  view_direction = normalize(view_matrix_inverse * projection_matrix_inverse * vec4(clipspace, 1, 1)).xyz;
+    // vec3  view_origin    = view_matrix_inverse[3].xyz * reference_distance;
+    gl_FragColor = vec4(clipspace, 0,1);
+    return;
  float epipelagic = sealevel - 200.0;
  float mesopelagic = sealevel - 1000.0;
  float abyssopelagic = sealevel - 4000.0;
@@ -394,9 +412,6 @@ void main() {
  float ice_coverage = vIceCoverage;
  float plant_coverage = vPlantCoverage * (vDisplacement > sealevel? 1. : 0.);
  float ocean_coverage = smoothstep(epipelagic * sealevel_mod, sealevel * sealevel_mod, vDisplacement);
- vec3 light_offset = light_position; // - world_position;
- vec3 light_direction = normalize(light_offset);
- float light_distance = length(light_offset);
  vec3 ocean = mix(OCEAN, SHALLOW, ocean_coverage);
  vec3 bedrock = mix(MAFIC, FELSIC, felsic_coverage);
  vec3 soil = mix(bedrock, mix(SAND, PEAT, organic_coverage), mineral_coverage);
@@ -404,10 +419,40 @@ void main() {
  vec3 uncovered = @UNCOVERED;
  vec3 sea_covered = vDisplacement < sealevel * sealevel_mod? ocean : uncovered;
  vec3 ice_covered = mix(sea_covered, SNOW, ice_coverage*ice_mod);
+ // TODO: express the above mentioned colors of sand, water, forest, etc. by absorption spectra, beer's law, etc.
+ // TODO: correct the above mentioned colors by values for sunlight to get absorption approximations where nothing else is available
+ // TODO: take component-wise product of reflected_rgb_intensity and light_rgb_intensity
+ vec3 fraction_reflected_rgb_intensity = get_rgb_intensity_of_rgb_signal(ice_covered);
+ // "F0" is the characteristic fresnel reflectance
+ // TODO: calculate this using Fresnel reflectance equation
+ //   from https://blog.selfshadow.com/publications/s2015-shading-course/hoffman/s2015_pbs_physics_math_slides.pdf
+ //   see also https://computergraphics.stackexchange.com/questions/1513/how-physically-based-is-the-diffuse-and-specular-distinction?newreg=853edb961d524a0994bbab4c6c1b5aaa
+ vec3 F0 = vec3(WATER_CHARACTERISTIC_FRESNEL_REFLECTANCE);
+ // "alpha" is the "shininess" of the object, as known within the Phong reflection model
+ float alpha = WATER_PHONG_SHININESS;
+ // "N" is the surface normal
+ // TODO: pass this in from an attribute so we can generalize this beyond spheres
+ vec3 N = vPosition.xyz;
+ // "L" is the normal vector indicating the direction to the light source
+ vec3 L = light_direction.xyz;
+ // "V" is the normal vector indicating the direction from the view
+ vec3 V = light_direction.xyz;
+ // "R" is the normal vector of a perfectly reflected ray of light
+ //   it is calculated as the reflection of L on a surface with normal N
+ vec3 R = 2.*dot(L,N)*N - L;
+ // NOTE: see here for more info:
+ //   https://en.wikipedia.org/wiki/Phong_reflection_model
+ // and here for some intuition:
+ //   http://olympus.magnet.fsu.edu/primer/java/reflection/specular/index.html
+ // TODO: express diffuse/specular coefficients 
+ //   so size of surface imperfection is compared to wavelength,
+ //   with small imperfections diffusing only short wavelengths
+ // TODO: incorporate learnings from this:
+ //   https://blog.selfshadow.com/publications/s2015-shading-course/hoffman/s2015_pbs_physics_math_slides.pdf
  vec3 surface_rgb_intensity =
-  max(dot(vPosition.xyz, light_direction), 0.001) * get_rgb_intensity_of_rgb_signal(ice_covered) +
+  max(dot(N,L), EPSILON) * (1.-F0) * fraction_reflected_rgb_intensity +
+  pow(dot(R,V), alpha) * F0 * fraction_reflected_rgb_intensity +
   get_rgb_intensity_of_emitted_light_from_black_body(vSurfaceTemp);
-  // get_rgb_intensity_of_emitted_light_from_black_body(vSurfaceTemp);
  gl_FragColor = vec4(get_rgb_signal_of_rgb_intensity(surface_rgb_intensity),1);
 }
 `;
@@ -939,7 +984,6 @@ vec3 get_rgb_intensity_of_light_rays_through_atmosphere(
     for (float i = 0.; i < VIEW_STEP_COUNT; ++i)
     {
         view_pos = view_origin + view_direction * view_x;
-        view_h = length(view_pos - world_position) - world_radius;
      get_relation_between_ray_and_point(
    world_position,
       view_pos, light_direction,
@@ -959,6 +1003,7 @@ vec3 get_rgb_intensity_of_light_rays_through_atmosphere(
         {
             continue;
         }
+        view_h = get_h(view_x-view_x_z, view_z2, world_radius);
         view_sigma = approx_sigma(
          view_x_start-view_x_z, view_x-view_x_z,
          view_x_exit_world - view_x_z, view_x_exit_atmo - view_x_z, view_sigma0,

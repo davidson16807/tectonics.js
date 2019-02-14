@@ -8,7 +8,7 @@ var FluidMechanics = (function() {
 var FluidMechanics = {};
 
 var coarse_grid = new Grid( 
-	new THREE.IcosahedronGeometry(1, 4),
+	new THREE.IcosahedronGeometry(1, 4)
 );
 // gets surface pressure of the asthenosphere by smoothing a field representing buoyancy
 FluidMechanics.get_fluid_pressures = function(buoyancy, pressure, scratch) {

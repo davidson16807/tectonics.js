@@ -15,7 +15,8 @@ varying float vSurfaceTemp;
 varying float vPlantCoverage;
 varying float vScalar;
 varying float vVectorFractionTraversed;
-varying vec4 vPosition;
+varying vec4  vPosition;
+varying vec3  vClipspace;
 
 uniform float sealevel;
 // radius of the world to be rendered

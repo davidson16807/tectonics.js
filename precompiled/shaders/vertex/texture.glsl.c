@@ -26,4 +26,6 @@ void main() {
 		lat_focused / (PI/2.), 
 		-height, 
 		1);
+	
+	vClipspace = gl_Position.xyz / gl_Position.w; //perspective divide/normalize
 }

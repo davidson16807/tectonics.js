@@ -10,22 +10,22 @@ function RealisticWorldView(shader_return_value) {
 	var vertexShader = void 0;
 	var shaderpass = new THREE.ShaderPass({
 		uniforms: {
-			"surface_light":  			{ type: "t", value: null },
-			"projection_matrix_inverse":{ type: "m4",value: new THREE.Matrix4() },
+			surface_light:  			{ type: "t", value: null },
+			projection_matrix_inverse:{ type: "m4",value: new THREE.Matrix4() },
 
-			"view_matrix_inverse"      :{ type: "m4",value: new THREE.Matrix4() },
-			"reference_distance": 		{ type: "f", value: Units.EARTH_RADIUS  },
+			view_matrix_inverse      :{ type: "m4",value: new THREE.Matrix4() },
+			reference_distance: 		{ type: "f", value: Units.EARTH_RADIUS  },
 
-			"light_rgb_intensity": 		{ type: "v3",value: new THREE.Vector3() },
-			"light_direction": 			{ type: "v3",value: new THREE.Vector3() },
+			light_rgb_intensity: 		{ type: "v3",value: new THREE.Vector3() },
+			light_direction: 			{ type: "v3",value: new THREE.Vector3() },
 
-			"world_position": 			{ type: "v3",value: new THREE.Vector3() },
-			"world_radius":   			{ type: "f", value: Units.EARTH_RADIUS  },
+			world_position: 			{ type: "v3",value: new THREE.Vector3() },
+			world_radius:   			{ type: "f", value: Units.EARTH_RADIUS  },
 
-			"atmosphere_scale_height": { type: "f", value: 0. },
-			"atmosphere_surface_rayleigh_scattering_coefficients": { type: "v3", value: new THREE.Vector3() },
-			"atmosphere_surface_mie_scattering_coefficients":      { type: "v3", value: new THREE.Vector3() },
-			"atmosphere_surface_absorption_coefficients":          { type: "v3", value: new THREE.Vector3() },
+			atmosphere_scale_height: { type: "f", value: 0. },
+			atmosphere_surface_rayleigh_scattering_coefficients: { type: "v3", value: new THREE.Vector3() },
+			atmosphere_surface_mie_scattering_coefficients:      { type: "v3", value: new THREE.Vector3() },
+			atmosphere_surface_absorption_coefficients:          { type: "v3", value: new THREE.Vector3() },
 		},
 		vertexShader: 	vertexShaders.passthrough,
 		fragmentShader: fragmentShaders.atmosphere,
@@ -65,6 +65,8 @@ function RealisticWorldView(shader_return_value) {
 			  darkness_mod:       { type: 'f', value: options.darkness_mod },
 			  insolation_max:     { type: 'f', value: options.insolation_max },
 			  index: 		      { type: 'f', value: options.index },
+			  light_rgb_intensity:{ type: "v3",value: new THREE.Vector3() },
+			  light_direction:    { type: "v3",value: new THREE.Vector3() },
 			},
 			blending: THREE.NoBlending,
 			vertexShader: options.vertexShader,
@@ -104,6 +106,16 @@ function RealisticWorldView(shader_return_value) {
 			added = true;
 		} 
 
+		// get intensity of sunlight
+		// vec3  light_offset    = light_position - world_position;
+		// vec3  light_direction = normalize(light_offset);
+		// float light_distance  = length(light_offset);
+		var light_rgb_intensity = Thermodynamics.get_rgb_intensity_of_emitted_light_from_black_body(Units.SOLAR_TEMPERATURE);
+		var light_attenuation = SphericalGeometry.get_surface_area(Units.SOLAR_RADIUS) / SphericalGeometry.get_surface_area(Units.ASTRONOMICAL_UNIT);
+		light_rgb_intensity.x *= light_attenuation;
+		light_rgb_intensity.y *= light_attenuation;
+		light_rgb_intensity.z *= light_attenuation;
+
 		update_vertex_shader(mesh.material, options.vertexShader);
 		update_uniform  (mesh.material, 'sealevel_mod',			options.sealevel_mod);
 		update_uniform  (mesh.material, 'darkness_mod',			options.darkness_mod);
@@ -113,6 +125,8 @@ function RealisticWorldView(shader_return_value) {
 		update_uniform  (mesh.material, 'reference_distance',	world.radius);
 		update_uniform  (mesh.material, 'sealevel', 			world.hydrosphere.sealevel.value());
 		update_uniform  (mesh.material, 'insolation_max', 		Float32Dataset.max(world.atmosphere.average_insolation));
+		update_uniform  (mesh.material, 'light_rgb_intensity',	new THREE.Vector3(light_rgb_intensity.x, light_rgb_intensity.y, light_rgb_intensity.z));
+		update_uniform  (mesh.material, 'light_direction',		new THREE.Vector3(1,0,0));
 		update_attribute(mesh.geometry, 'displacement', 		world.lithosphere.displacement.value());
 		update_attribute(mesh.geometry, 'ice_coverage', 		world.hydrosphere.ice_coverage.value());
 		update_attribute(mesh.geometry, 'surface_temp', 		world.atmosphere.surface_temp);
@@ -126,15 +140,6 @@ function RealisticWorldView(shader_return_value) {
 
 		update_uniform  (shaderpass,    'view_matrix_inverse',		gl_state.camera.matrixWorld);
 		update_uniform  (shaderpass,    'reference_distance',		world.radius);
-
-		// vec3  light_offset    = light_position - world_position;
-		// vec3  light_direction = normalize(light_offset);
-		// float light_distance  = length(light_offset);
-		var light_rgb_intensity = Thermodynamics.get_rgb_intensity_of_emitted_light_from_black_body(Units.SOLAR_TEMPERATURE);
-		var light_attenuation = SphericalGeometry.get_surface_area(Units.SOLAR_RADIUS) / SphericalGeometry.get_surface_area(Units.ASTRONOMICAL_UNIT);
-		light_rgb_intensity.x *= light_attenuation;
-		light_rgb_intensity.y *= light_attenuation;
-		light_rgb_intensity.z *= light_attenuation;
 
 		update_uniform  (shaderpass,    'light_rgb_intensity',		new THREE.Vector3(light_rgb_intensity.x, light_rgb_intensity.y, light_rgb_intensity.z));
 		update_uniform  (shaderpass,    'light_direction',			new THREE.Vector3(1,0,0));

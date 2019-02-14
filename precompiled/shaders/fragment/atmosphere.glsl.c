@@ -254,7 +254,6 @@ vec3 get_rgb_intensity_of_light_rays_through_atmosphere(
     for (float i = 0.; i < VIEW_STEP_COUNT; ++i)
     {
         view_pos = view_origin + view_direction * view_x;
-        view_h   = length(view_pos - world_position) - world_radius;
 
 	    get_relation_between_ray_and_point(
 			world_position, 
@@ -276,6 +275,8 @@ vec3 get_rgb_intensity_of_light_rays_through_atmosphere(
         {
             continue;
         }
+
+        view_h   = get_h(view_x-view_x_z, view_z2, world_radius);
 
         view_sigma = approx_sigma( 
         	view_x_start-view_x_z, view_x-view_x_z, 

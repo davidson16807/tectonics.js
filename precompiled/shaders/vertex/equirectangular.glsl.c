@@ -31,4 +31,6 @@ void main() {
 	mat4 scaleMatrix = mat4(1);
 	scaleMatrix[3] = viewMatrix[3] * reference_distance / world_radius;
 	gl_Position = projectionMatrix * scaleMatrix * displaced;
+	
+	vClipspace = gl_Position.xyz / gl_Position.w; //perspective divide/normalize
 }
