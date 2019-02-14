@@ -11,9 +11,9 @@ function RealisticWorldView(shader_return_value) {
 	var shaderpass = new THREE.ShaderPass({
 		uniforms: {
 			surface_light:  			{ type: "t", value: null },
-			projection_matrix_inverse:{ type: "m4",value: new THREE.Matrix4() },
-
-			view_matrix_inverse      :{ type: "m4",value: new THREE.Matrix4() },
+			
+			projection_matrix_inverse:  { type: "m4",value: new THREE.Matrix4() },
+			view_matrix_inverse:        { type: "m4",value: new THREE.Matrix4() },
 			reference_distance: 		{ type: "f", value: Units.EARTH_RADIUS  },
 
 			light_rgb_intensity: 		{ type: "v3",value: new THREE.Vector3() },
@@ -67,6 +67,8 @@ function RealisticWorldView(shader_return_value) {
 			  index: 		      { type: 'f', value: options.index },
 			  light_rgb_intensity:{ type: "v3",value: new THREE.Vector3() },
 			  light_direction:    { type: "v3",value: new THREE.Vector3() },
+			  projection_matrix_inverse:{ type: "m4",value: new THREE.Matrix4() },
+			  view_matrix_inverse:{ type: "m4",value: new THREE.Matrix4() },
 			},
 			blending: THREE.NoBlending,
 			vertexShader: options.vertexShader,
@@ -127,6 +129,8 @@ function RealisticWorldView(shader_return_value) {
 		update_uniform  (mesh.material, 'insolation_max', 		Float32Dataset.max(world.atmosphere.average_insolation));
 		update_uniform  (mesh.material, 'light_rgb_intensity',	new THREE.Vector3(light_rgb_intensity.x, light_rgb_intensity.y, light_rgb_intensity.z));
 		update_uniform  (mesh.material, 'light_direction',		new THREE.Vector3(1,0,0));
+		update_uniform  (mesh.material, 'projection_matrix_inverse',new THREE.Matrix4().getInverse(gl_state.camera.projectionMatrix));
+		update_uniform  (mesh.material, 'view_matrix_inverse',	gl_state.camera.matrixWorld);
 		update_attribute(mesh.geometry, 'displacement', 		world.lithosphere.displacement.value());
 		update_attribute(mesh.geometry, 'ice_coverage', 		world.hydrosphere.ice_coverage.value());
 		update_attribute(mesh.geometry, 'surface_temp', 		world.atmosphere.surface_temp);
@@ -137,7 +141,6 @@ function RealisticWorldView(shader_return_value) {
 		// SHADERPASS PROPERTIES -----------------------------------------------
 
 		update_uniform  (shaderpass,    'projection_matrix_inverse',new THREE.Matrix4().getInverse(gl_state.camera.projectionMatrix));
-
 		update_uniform  (shaderpass,    'view_matrix_inverse',		gl_state.camera.matrixWorld);
 		update_uniform  (shaderpass,    'reference_distance',		world.radius);
 

@@ -368,13 +368,17 @@ varying float vScalar;
 varying float vSurfaceTemp;
 varying vec4 vPosition;
 varying vec3 vClipspace;
+// CAMERA PROPERTIES -----------------------------------------------------------
+uniform mat4 projection_matrix_inverse;
+uniform mat4 view_matrix_inverse;
 uniform float sealevel;
 uniform float sealevel_mod;
 uniform float darkness_mod;
 uniform float ice_mod;
-uniform float insolation_max;
+// LIGHT SOURCE PROPERTIES -----------------------------------------------------
 uniform vec3 light_rgb_intensity;
 uniform vec3 light_direction;
+uniform float insolation_max;
 const vec3 NONE = vec3(0.0,0.0,0.0);
 const vec3 OCEAN = vec3(0.04,0.04,0.2);
 const vec3 SHALLOW = vec3(0.04,0.58,0.54);
@@ -388,19 +392,17 @@ const vec3 JUNGLE = vec3(30,50,10)/255.;
 //const vec3 JUNGLE	= vec3(20,45,5)/255.;
 // TODO: set these material values in a manner similar to color, above: 
 //   e.g. specular_reflection_coefficient of water vs forest
-const float WATER_CHARACTERISTIC_FRESNEL_REFLECTANCE = 0.5;
+const float WATER_CHARACTERISTIC_FRESNEL_REFLECTANCE = 0.9;
 // TODO: set back to this number, since it's physically accurate:
 // const float WATER_CHARACTERISTIC_FRESNEL_REFLECTANCE = 0.1;
 // NOTE: value for shininess was determined by aesthetics, 
 //   not sure if a physically based value can be found
-const float WATER_PHONG_SHININESS = 500.0;
+const float WATER_PHONG_SHININESS = 5.0;
 const float EPSILON = 0.001;
 void main() {
     vec2 clipspace = vClipspace.xy;
-    // vec3  view_direction = normalize(view_matrix_inverse * projection_matrix_inverse * vec4(clipspace, 1, 1)).xyz;
+    vec3 view_direction = normalize(view_matrix_inverse * projection_matrix_inverse * vec4(clipspace, 1, 1)).xyz;
     // vec3  view_origin    = view_matrix_inverse[3].xyz * reference_distance;
-    gl_FragColor = vec4(clipspace, 0,1);
-    return;
  float epipelagic = sealevel - 200.0;
  float mesopelagic = sealevel - 1000.0;
  float abyssopelagic = sealevel - 4000.0;
@@ -434,9 +436,9 @@ void main() {
  // TODO: pass this in from an attribute so we can generalize this beyond spheres
  vec3 N = vPosition.xyz;
  // "L" is the normal vector indicating the direction to the light source
- vec3 L = light_direction.xyz;
+ vec3 L = light_direction;
  // "V" is the normal vector indicating the direction from the view
- vec3 V = light_direction.xyz;
+ vec3 V = view_direction;
  // "R" is the normal vector of a perfectly reflected ray of light
  //   it is calculated as the reflection of L on a surface with normal N
  vec3 R = 2.*dot(L,N)*N - L;
