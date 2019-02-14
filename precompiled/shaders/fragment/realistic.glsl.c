@@ -46,7 +46,8 @@ const vec3 JUNGLE 	= vec3(30,50,10)/255.;
 
 // TODO: set these material values in a manner similar to color, above: 
 //   e.g. specular_reflection_coefficient of water vs forest
-const float WATER_CHARACTERISTIC_FRESNEL_REFLECTANCE = 0.9;
+const float WATER_CHARACTERISTIC_FRESNEL_REFLECTANCE = 0.1;
+const float LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE  = 0.01;
 // TODO: set back to this number, since it's physically accurate:
 // const float WATER_CHARACTERISTIC_FRESNEL_REFLECTANCE = 0.1;
 // NOTE: value for shininess was determined by aesthetics, 
@@ -91,7 +92,7 @@ void main() {
 	// TODO: calculate this using Fresnel reflectance equation
 	//   from https://blog.selfshadow.com/publications/s2015-shading-course/hoffman/s2015_pbs_physics_math_slides.pdf
 	//   see also https://computergraphics.stackexchange.com/questions/1513/how-physically-based-is-the-diffuse-and-specular-distinction?newreg=853edb961d524a0994bbab4c6c1b5aaa
-	vec3 F0 = vec3(WATER_CHARACTERISTIC_FRESNEL_REFLECTANCE);
+	vec3 F0 = vec3(vDisplacement < sealevel * sealevel_mod? WATER_CHARACTERISTIC_FRESNEL_REFLECTANCE : LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE);
 	// "alpha" is the "shininess" of the object, as known within the Phong reflection model
 	float alpha = WATER_PHONG_SHININESS;
 
@@ -103,7 +104,7 @@ void main() {
 	vec3 L = light_direction;
 
 	// "V" is the normal vector indicating the direction from the view
-	vec3 V = view_direction;
+	vec3 V = -view_direction;
 
 	// "R" is the normal vector of a perfectly reflected ray of light
 	//   it is calculated as the reflection of L on a surface with normal N
@@ -118,8 +119,8 @@ void main() {
 	// TODO: incorporate learnings from this:
 	//   https://blog.selfshadow.com/publications/s2015-shading-course/hoffman/s2015_pbs_physics_math_slides.pdf
 	vec3 surface_rgb_intensity = 
-		max(dot(N,L), EPSILON) * (1.-F0) * fraction_reflected_rgb_intensity +
-		pow(dot(R,V), alpha)   *     F0  * fraction_reflected_rgb_intensity +
+		max(dot(N,L), EPSILON)           * (1.-F0) * fraction_reflected_rgb_intensity +
+	pow(max(dot(R,V), EPSILON), alpha)   *     F0                                     +
 		get_rgb_intensity_of_emitted_light_from_black_body(vSurfaceTemp);
 
 	gl_FragColor = vec4(get_rgb_signal_of_rgb_intensity(surface_rgb_intensity),1);
