@@ -369,8 +369,8 @@ varying float vSurfaceTemp;
 varying vec4 vPosition;
 varying vec3 vClipspace;
 // CAMERA PROPERTIES -----------------------------------------------------------
-uniform mat4 projection_matrix_inverse;
-uniform mat4 view_matrix_inverse;
+uniform mat4 projection_matrix_inverse2;
+uniform mat4 view_matrix_inverse2;
 uniform float sealevel;
 uniform float sealevel_mod;
 uniform float darkness_mod;
@@ -402,8 +402,8 @@ const float WATER_PHONG_SHININESS = 5.0;
 const float EPSILON = 0.001;
 void main() {
     vec2 clipspace = vClipspace.xy;
-    vec3 view_direction = normalize(view_matrix_inverse * projection_matrix_inverse * vec4(clipspace, 1, 1)).xyz;
-    // vec3  view_origin    = view_matrix_inverse[3].xyz * reference_distance;
+    vec3 view_direction = normalize(view_matrix_inverse2 * projection_matrix_inverse2 * vec4(clipspace, 1, 1)).xyz;
+    // vec3  view_origin    = view_matrix_inverse2[3].xyz * reference_distance;
  float epipelagic = sealevel - 200.0;
  float mesopelagic = sealevel - 1000.0;
  float abyssopelagic = sealevel - 4000.0;
@@ -442,7 +442,7 @@ void main() {
  vec3 V = -view_direction;
  // "R" is the normal vector of a perfectly reflected ray of light
  //   it is calculated as the reflection of L on a surface with normal N
- vec3 R = 2.*dot(L,N)*N - L;
+ vec3 R = 2.*dot(N,L)*N - L;
  // NOTE: see here for more info:
  //   https://en.wikipedia.org/wiki/Phong_reflection_model
  // and here for some intuition:
