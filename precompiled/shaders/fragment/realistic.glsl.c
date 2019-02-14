@@ -46,17 +46,16 @@ const vec3 JUNGLE   = vec3(30,50,10)/255.;
 
 // TODO: set these material values in a manner similar to color, above: 
 //   e.g. specular_reflection_coefficient of water vs forest
-const float WATER_CHARACTERISTIC_FRESNEL_REFLECTANCE = 0.1;
-const float LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE  = 0.01;
-// TODO: set back to this number, since it's physically accurate:
-// const float WATER_CHARACTERISTIC_FRESNEL_REFLECTANCE = 0.1;
+const float WATER_CHARACTERISTIC_FRESNEL_REFLECTANCE = 0.02;
+const float LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE  = 0.04;
 // NOTE: value for shininess was determined by aesthetics, 
 //   not sure if a physically based value can be found
-const float WATER_PHONG_SHININESS = 10.0; 
+const float WATER_PHONG_SHININESS = 30.0; 
+const float LAND_PHONG_SHININESS  = 3.0; 
 const float AMBIENT_LIGHT_AESTHETIC_FACTOR = 0.002;
 
 void main() {
-    vec2  clipspace     = vClipspace.xy;
+    vec2  clipspace      = vClipspace.xy;
     vec3  view_direction = normalize(view_matrix_inverse * projection_matrix_inverse * vec4(clipspace, 1, 1)).xyz;
     // vec3  view_origin    = view_matrix_inverse[3].xyz * reference_distance;
 
@@ -74,13 +73,15 @@ void main() {
     float plant_coverage    = vPlantCoverage * (vDisplacement > sealevel? 1. : 0.);
     float ocean_coverage    = smoothstep(epipelagic * sealevel_mod, sealevel * sealevel_mod, vDisplacement);
 
+    bool is_ocean   = vDisplacement < sealevel * sealevel_mod;
+
     vec3 ocean      = mix(OCEAN, SHALLOW, ocean_coverage);
     vec3 bedrock    = mix(MAFIC, FELSIC, felsic_coverage);
     vec3 soil       = mix(bedrock, mix(SAND, PEAT, organic_coverage), mineral_coverage);
     vec3 canopy     = mix(soil, JUNGLE, plant_coverage);
 
     vec3 uncovered = @UNCOVERED;
-    vec3 sea_covered = vDisplacement < sealevel * sealevel_mod? ocean : uncovered;
+    vec3 sea_covered = is_ocean? ocean : uncovered;
     vec3 ice_covered = mix(sea_covered, SNOW, ice_coverage*ice_mod);
 
     // TODO: express the above mentioned colors of sand, water, forest, etc. by absorption spectra, beer's law, etc.
@@ -88,13 +89,24 @@ void main() {
     // TODO: take component-wise product of reflected_rgb_intensity and light_rgb_intensity
     vec3 fraction_reflected_rgb_intensity = get_rgb_intensity_of_rgb_signal(ice_covered);
 
-    // "F0" is the characteristic fresnel reflectance
+    // "I0" is the rgb Intensity of Incoming Incident light, A.K.A. "Insolation"
+    vec3 I0 = light_rgb_intensity;
+
+    // "Imax" is the maximum possible intensity within the viewing frame
+    // 
+    // for Earth, this would be the global solar constant 
+    float Imax = insolation_max;
+
+    // "E" is the rgb intensity of light emitted from the surface itself due to black body radiation
+    vec3 E = get_rgb_intensity_of_emitted_light_from_black_body(vSurfaceTemp);
+
+    // "F0" is the characteristic fresnel reflectance - the fraction that is immediately reflected from the surface
     // TODO: calculate this using Fresnel reflectance equation
     //   from https://blog.selfshadow.com/publications/s2015-shading-course/hoffman/s2015_pbs_physics_math_slides.pdf
     //   see also https://computergraphics.stackexchange.com/questions/1513/how-physically-based-is-the-diffuse-and-specular-distinction?newreg=853edb961d524a0994bbab4c6c1b5aaa
-    vec3 F0 = vec3(vDisplacement < sealevel * sealevel_mod? WATER_CHARACTERISTIC_FRESNEL_REFLECTANCE : LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE);
+    vec3 F0 = vec3(is_ocean? WATER_CHARACTERISTIC_FRESNEL_REFLECTANCE : LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE);
     // "alpha" is the "shininess" of the object, as known within the Phong reflection model
-    float alpha = WATER_PHONG_SHININESS;
+    float alpha =  is_ocean? WATER_PHONG_SHININESS : LAND_PHONG_SHININESS;
 
     // "N" is the surface normal
     // TODO: pass this in from an attribute so we can generalize this beyond spheres
@@ -126,11 +138,11 @@ void main() {
     //   https://blog.selfshadow.com/publications/s2015-shading-course/hoffman/s2015_pbs_physics_math_slides.pdf
     // TODO: calculate airglow for nightside using scattering equations from atmosphere.glsl.c, 
     //   also keep in mind this: https://en.wikipedia.org/wiki/Airglow
-    vec3 surface_rgb_intensity = 
-        light_rgb_intensity * pow(RV, alpha)   *     F0                                     + // specular fraction
-        light_rgb_intensity *     NL           * (1.-F0) * fraction_reflected_rgb_intensity + // diffuse  fraction
-        light_rgb_intensity *     AMBIENT_LIGHT_AESTHETIC_FACTOR * fraction_reflected_rgb_intensity + // ambient  fraction
-        get_rgb_intensity_of_emitted_light_from_black_body(vSurfaceTemp);
+    vec3 I = 
+        I0 * pow(RV, alpha)   *     F0                                         + // specular fraction
+        I0 *     NL           * (1.-F0)     * fraction_reflected_rgb_intensity + // diffuse  fraction
+        I0 * AMBIENT_LIGHT_AESTHETIC_FACTOR * fraction_reflected_rgb_intensity + // ambient  fraction
+        E;
 
-    gl_FragColor = vec4(get_rgb_signal_of_rgb_intensity(surface_rgb_intensity/insolation_max),1);
+    gl_FragColor = vec4(get_rgb_signal_of_rgb_intensity(I/Imax),1);
 }
