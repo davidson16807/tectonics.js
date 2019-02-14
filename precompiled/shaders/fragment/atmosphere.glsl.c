@@ -31,8 +31,9 @@ uniform vec3  world_position;
 uniform float world_radius;
 
 // LIGHT SOURCE PROPERTIES -----------------------------------------------------
-uniform vec3 light_rgb_intensity;
-uniform vec3 light_direction;
+uniform vec3  light_rgb_intensity;
+uniform vec3  light_direction;
+uniform float insolation_max;
 
 // ATMOSPHERE PROPERTIES -------------------------------------------------------
 uniform float atmosphere_scale_height;
@@ -348,7 +349,7 @@ void main() {
 
     float AESTHETIC_FACTOR1 = 0.5;
     vec4  background_rgb_signal    = texture2D( surface_light, vUv );
-    vec3  background_rgb_intensity = AESTHETIC_FACTOR1 * light_rgb_intensity * get_rgb_intensity_of_rgb_signal(background_rgb_signal.rgb);
+    vec3  background_rgb_intensity = AESTHETIC_FACTOR1 * insolation_max * get_rgb_intensity_of_rgb_signal(background_rgb_signal.rgb);
         
     vec3 rgb_intensity = get_rgb_intensity_of_light_rays_through_atmosphere(
         view_origin,                view_direction,
