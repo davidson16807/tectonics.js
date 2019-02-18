@@ -63,10 +63,15 @@ const vec3 SNOW     = vec3(0.9, 0.9, 0.9);
 const vec3 JUNGLE   = vec3(30,50,10)/255.;
 //const vec3 JUNGLE = vec3(20,45,5)/255.;
 
+// "SOLAR_RGB_INTENSITY" is the rgb intensity of earth's sun.
+//   It is used to convert the above true color values to absorption coefficients
+const vec3  SOLAR_RGB_INTENSITY = vec3(7247419., 8223259., 8121487.);
+
 // TODO: set these material values in a manner similar to color, above: 
 //   e.g. specular_reflection_coefficient of water vs forest
 const float WATER_CHARACTERISTIC_FRESNEL_REFLECTANCE = 0.02;
 const float LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE  = 0.04;
+
 // NOTE: value for shininess was determined by aesthetics, 
 //   not sure if a physically based value can be found
 const float WATER_PHONG_SHININESS = 30.0; 
@@ -99,14 +104,13 @@ void main() {
     vec3 soil       = mix(bedrock, mix(SAND, PEAT, organic_coverage), mineral_coverage);
     vec3 canopy     = mix(soil, JUNGLE, plant_coverage);
 
-    vec3 uncovered = @UNCOVERED;
+    vec3 uncovered  = @UNCOVERED;
     vec3 sea_covered = is_ocean? ocean : uncovered;
     vec3 ice_covered = mix(sea_covered, SNOW, ice_coverage*ice_mod);
 
     // TODO: express the above mentioned colors of sand, water, forest, etc. by absorption spectra, beer's law, etc.
-    // TODO: correct the above mentioned colors by values for sunlight to get absorption approximations where nothing else is available
-    // TODO: take component-wise product of reflected_rgb_intensity and light_rgb_intensity
-    vec3 fraction_reflected_rgb_intensity = get_rgb_intensity_of_rgb_signal(ice_covered);
+    // NOTE: We correct the color by SOLAR_RGB_INTENSITY to correct for distortion from Earth's 
+    vec3 fraction_reflected_rgb_intensity = get_rgb_intensity_of_rgb_signal(ice_covered) / normalize(SOLAR_RGB_INTENSITY);
 
     // "I0" is the rgb Intensity of Incoming Incident light, A.K.A. "Insolation"
     vec3 I0 = light_rgb_intensity;
@@ -115,9 +119,6 @@ void main() {
     // 
     // for Earth, this would be the global solar constant 
     float Imax = insolation_max;
-
-    // "E" is the rgb intensity of light emitted from the surface itself due to black body radiation
-    vec3 E = get_rgb_intensity_of_emitted_light_from_black_body(vSurfaceTemp);
 
     // "F0" is the characteristic fresnel reflectance - the fraction that is immediately reflected from the surface
     // TODO: calculate this using Fresnel reflectance equation
@@ -148,14 +149,16 @@ void main() {
     // "RV" is the dot product between R and V, with a correction (the "max()" part) to account for shadows
     float RV = max(dot(R,V), 0.);
 
+    // "E" is the rgb intensity of light emitted from the surface itself due to black body radiation
+    vec3 E = get_rgb_intensity_of_emitted_light_from_black_body(vSurfaceTemp);
+
     vec3  beta_ray = atmosphere_surface_rayleigh_scattering_coefficients;
     vec3  beta_mie = atmosphere_surface_mie_scattering_coefficients;
     vec3  beta_abs = atmosphere_surface_absorption_coefficients; 
 
     // NOTE: see here for more info:
     //   https://en.wikipedia.org/wiki/Phong_reflection_model
-    // TODO: express diffuse/specular coefficients 
-    //   so size of surface imperfection is compared to wavelength,
+    // TODO: express diffuse/specular coefficients so size of surface imperfection is compared to wavelength,
     //   with small imperfections diffusing only short wavelengths
     // TODO: incorporate learnings from this:
     //   https://blog.selfshadow.com/publications/s2015-shading-course/hoffman/s2015_pbs_physics_math_slides.pdf
@@ -163,7 +166,7 @@ void main() {
     //   also keep in mind this: https://en.wikipedia.org/wiki/Airglow
 
     float light_sigma  = approx_air_column_density_ratio_along_ray (
-        (1.01) * vPosition.xyz * reference_distance,  L, 
+        1.01 * vPosition.xyz * reference_distance,  L, 
         // NOTE: we nudge the origin of light ray by a small amount so that collision isn't detected with the planet
         world_position, world_radius, atmosphere_scale_height
     );
