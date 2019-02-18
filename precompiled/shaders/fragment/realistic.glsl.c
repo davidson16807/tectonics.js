@@ -6,9 +6,9 @@
 #include "precompiled/shaders/academics/physics/constants.glsl.c"
 #include "precompiled/shaders/academics/physics/emission.glsl.c"
 #include "precompiled/shaders/academics/physics/scattering.glsl.c"
+#include "precompiled/shaders/academics/raymarching.glsl.c"
 #include "precompiled/shaders/academics/psychophysics.glsl.c"
 #include "precompiled/shaders/academics/electronics.glsl.c"
-
 
 varying float vDisplacement;
 varying float vPlantCoverage;
@@ -17,6 +17,12 @@ varying float vScalar;
 varying float vSurfaceTemp;
 varying vec4 vPosition;
 varying vec3 vClipspace;
+
+// Determines the length of a unit of distance within the view, in meters, 
+// it is generally the radius of whatever planet's the focus for the scene.
+// The view uses different units for length to prevent certain issues with
+// floating point precision. 
+uniform float reference_distance;
 
 // CAMERA PROPERTIES -----------------------------------------------------------
 uniform mat4  projection_matrix_inverse;
@@ -31,6 +37,19 @@ uniform float ice_mod;
 uniform vec3  light_rgb_intensity;
 uniform vec3  light_direction;
 uniform float insolation_max;
+
+// ATMOSPHERE PROPERTIES -------------------------------------------------------
+uniform float atmosphere_scale_height;
+uniform vec3  atmosphere_surface_rayleigh_scattering_coefficients; 
+uniform vec3  atmosphere_surface_mie_scattering_coefficients; 
+uniform vec3  atmosphere_surface_absorption_coefficients; 
+
+// WORLD PROPERTIES ------------------------------------------------------------
+// location for the center of the world, in meters
+// currently stuck at 0. until we support multi-planet renders
+uniform vec3  world_position;
+// radius of the world being rendered, in meters
+uniform float world_radius;
 
 const vec3 NONE     = vec3(0.0,0.0,0.0);
 const vec3 OCEAN    = vec3(0.04,0.04,0.2);
@@ -129,6 +148,10 @@ void main() {
     // "RV" is the dot product between R and V, with a correction (the "max()" part) to account for shadows
     float RV = max(dot(R,V), 0.);
 
+    vec3  beta_ray = atmosphere_surface_rayleigh_scattering_coefficients;
+    vec3  beta_mie = atmosphere_surface_mie_scattering_coefficients;
+    vec3  beta_abs = atmosphere_surface_absorption_coefficients; 
+
     // NOTE: see here for more info:
     //   https://en.wikipedia.org/wiki/Phong_reflection_model
     // TODO: express diffuse/specular coefficients 
@@ -138,10 +161,22 @@ void main() {
     //   https://blog.selfshadow.com/publications/s2015-shading-course/hoffman/s2015_pbs_physics_math_slides.pdf
     // TODO: calculate airglow for nightside using scattering equations from atmosphere.glsl.c, 
     //   also keep in mind this: https://en.wikipedia.org/wiki/Airglow
+
+    float light_sigma  = approx_air_column_density_ratio_along_ray (
+        (1.01) * vPosition.xyz * reference_distance,  L, 
+        // NOTE: we nudge the origin of light ray by a small amount so that collision isn't detected with the planet
+        world_position, world_radius, atmosphere_scale_height
+    );
+
+    // calculate the intensity of light that reached the surface
+    vec3 I1 = I0 * exp(-(beta_ray + beta_mie + beta_abs) * light_sigma);
+    // vec3 I1 = I0 * exp(-beta_ray * light_sigma);
+
+    // calculate the intensity of light that reflects or emits from the surface
     vec3 I = 
-        I0 * pow(RV, alpha)   *     F0                                         + // specular fraction
-        I0 *     NL           * (1.-F0)     * fraction_reflected_rgb_intensity + // diffuse  fraction
-        I0 * AMBIENT_LIGHT_AESTHETIC_FACTOR * fraction_reflected_rgb_intensity + // ambient  fraction
+        I1 * pow(RV, alpha)   *     F0                                         + // specular fraction
+        I1 *     NL           * (1.-F0)     * fraction_reflected_rgb_intensity + // diffuse  fraction
+        I1 * AMBIENT_LIGHT_AESTHETIC_FACTOR * fraction_reflected_rgb_intensity + // ambient  fraction
         E;
 
     gl_FragColor = vec4(get_rgb_signal_of_rgb_intensity(I/Imax),1);
