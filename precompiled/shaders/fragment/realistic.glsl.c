@@ -52,31 +52,31 @@ uniform vec3  world_position;
 // radius of the world being rendered, in meters
 uniform float world_radius;
 
-const vec3 NONE     = vec3(0.0,0.0,0.0);
-const vec3 OCEAN    = vec3(0.04,0.04,0.2);
-const vec3 SHALLOW  = vec3(0.04,0.58,0.54);
-const vec3 MAFIC    = vec3(50,45,50)/255.;      // observed on lunar maria 
-const vec3 FELSIC   = vec3(214,181,158)/255.;       // observed color of rhyolite sample
-//const vec3 SAND   = vec3(255,230,155)/255.;
-const vec3 SAND     = vec3(245,215,145)/255.;
-const vec3 PEAT     = vec3(100,85,60)/255.;
-const vec3 SNOW     = vec3(0.9, 0.9, 0.9); 
-const vec3 JUNGLE   = vec3(30,50,10)/255.;
-//const vec3 JUNGLE = vec3(20,45,5)/255.;
 
 // "SOLAR_RGB_INTENSITY" is the rgb intensity of earth's sun.
 //   It is used to convert the above true color values to absorption coefficients
-const vec3  SOLAR_RGB_INTENSITY = vec3(7247419., 8223259., 8121487.);
+const vec3  SOLAR_RGB_INTENSITY    = vec3(7247419., 8223259., 8121487.);
 
 const float AIR_REFRACTIVE_INDEX   = 1.000277;
 
+const vec3  WATER_COLOR_DEEP       = vec3(0.04,0.04,0.2);
+const vec3  WATER_COLOR_SHALLOW    = vec3(0.04,0.58,0.54);
 const float WATER_REFRACTIVE_INDEX = 1.333;
-const float WATER_PHONG_SHININESS = 30.0; // NOTE: aesthetically determined, not sure if a real value can be found
+const float WATER_PHONG_SHININESS  = 30.0; // NOTE: aesthetically determined, not sure if a real value can be found
 
 // TODO: set these material values in a manner similar to color, above: 
 //   e.g. specular_reflection_coefficient of water vs forest
+const vec3  MAFIC_COLOR    = vec3(50,45,50)/255.;      // observed on lunar maria 
+const vec3  FELSIC_COLOR   = vec3(214,181,158)/255.;       // observed color of rhyolite sample
+const vec3  SAND_COLOR     = vec3(245,215,145)/255.;
+const vec3  PEAT_COLOR     = vec3(100,85,60)/255.;
+const vec3  JUNGLE_COLOR   = vec3(30,50,10)/255.;
 const float LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE  = 0.00001; // NOTE: aesthetically determined, not sure if real value can be found
 const float LAND_PHONG_SHININESS  = 1000.0; 
+
+const vec3  SNOW_COLOR            = vec3(0.9, 0.9, 0.9); 
+const float SNOW_REFRACTIVE_INDEX = 1.333; 
+const float SNOW_PHONG_SHININESS  = 30.0;
 
 const float AMBIENT_LIGHT_AESTHETIC_FACTOR = 0.00001;
 
@@ -101,14 +101,14 @@ void main() {
 
     bool is_ocean   = vDisplacement < sealevel * sealevel_mod;
 
-    vec3 ocean      = mix(OCEAN, SHALLOW, ocean_coverage);
-    vec3 bedrock    = mix(MAFIC, FELSIC, felsic_coverage);
-    vec3 soil       = mix(bedrock, mix(SAND, PEAT, organic_coverage), mineral_coverage);
-    vec3 canopy     = mix(soil, JUNGLE, plant_coverage);
+    vec3 ocean      = mix(WATER_COLOR_DEEP, WATER_COLOR_SHALLOW, ocean_coverage);
+    vec3 bedrock    = mix(MAFIC_COLOR, FELSIC_COLOR, felsic_coverage);
+    vec3 soil       = mix(bedrock, mix(SAND_COLOR, PEAT_COLOR, organic_coverage), mineral_coverage);
+    vec3 canopy     = mix(soil, JUNGLE_COLOR, plant_coverage);
 
     vec3 uncovered  = @UNCOVERED;
     vec3 sea_covered = is_ocean? ocean : uncovered;
-    vec3 ice_covered = mix(sea_covered, SNOW, ice_coverage*ice_mod);
+    vec3 ice_covered = mix(sea_covered, SNOW_COLOR, ice_coverage*ice_mod);
 
     // TODO: express the above mentioned colors of sand, water, forest, etc. by absorption spectra, beer's law, etc.
     // NOTE: We correct the color by SOLAR_RGB_INTENSITY to correct for distortion from Earth's 
@@ -139,11 +139,19 @@ void main() {
     // TODO: calculate this using Fresnel reflectance equation
     //   from https://blog.selfshadow.com/publications/s2015-shading-course/hoffman/s2015_pbs_physics_math_slides.pdf
     //   see also https://computergraphics.stackexchange.com/questions/1513/how-physically-based-is-the-diffuse-and-specular-distinction?newreg=853edb961d524a0994bbab4c6c1b5aaa
-    vec3 F0 = vec3(is_ocean? get_characteristic_reflectance(WATER_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX) : LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE);
+    vec3 F0 = vec3(mix(
+        is_ocean? get_characteristic_reflectance(WATER_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX) : LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE, 
+        get_characteristic_reflectance(SNOW_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX), 
+        ice_coverage*ice_mod
+    ));
     // "F" is the fresnel reflectance
     vec3 F  = get_schlick_reflectance(NL, F0);
     // "alpha" is the "shininess" of the object, as known within the Phong reflection model
-    float alpha =  is_ocean? WATER_PHONG_SHININESS : LAND_PHONG_SHININESS;
+    float alpha = mix(
+        is_ocean? WATER_PHONG_SHININESS : LAND_PHONG_SHININESS,
+        SNOW_PHONG_SHININESS, 
+        ice_coverage*ice_mod
+    );
 
     // "R" is the normal vector of a perfectly reflected ray of light
     //   it is calculated as the reflection of L on a surface with normal N

@@ -103,9 +103,10 @@ float approx_air_column_density_ratio_along_ray_2d (float x_start, float x_stop,
 //   for approx_air_column_density_ratio_along_ray_2d() and approx_reference_air_column_density_ratio_along_ray.
 // Just pass it the origin and direction of a 3d ray and it will find the column density ratio along its path, 
 //   or return false to indicate the ray passes through the surface of the world.
-float approx_air_column_density_ratio_along_ray (
-	vec3  ray_origin, 
-	vec3  ray_direction, 
+float approx_air_column_density_ratio_along_line_segment (
+	vec3  segment_origin, 
+    vec3  segment_direction,
+    float segment_length,
 	vec3  world_position, 
 	float world_radius, 
 	float atmosphere_scale_height
@@ -114,16 +115,11 @@ float approx_air_column_density_ratio_along_ray (
     float z2;  					// distance ("radius") from the ray to the center of the world at closest approach, squared
     float x_z; 					// distance from the origin at which closest approach occurs
 
-    bool  is_scattered;  		// whether ray will enter the atmosphere
     float x_enter_atmo;  		// distance from the origin at which the ray enters the atmosphere
     float x_exit_atmo;   		// distance from the origin at which the ray exits the atmosphere
 
-    bool  is_obstructed; 		// whether ray will strike the surface of a world
     float x_enter_world; 		// distance from the origin at which the ray strikes the surface of the world
     float x_exit_world;  		// distance from the origin at which the ray exits the world, assuming it could pass through
-
-    float x_stop;               // distance from the origin at which the ray either hits the world or exits the atmosphere
-    float sigma0;               // the column density ratio returned by approx_air_column_density_ratio_along_ray_for_absx() for the surface
 
     // "atmosphere_radius" is the distance from the center of the world to the top of the atmosphere
     // NOTE: "12." is the number of scale heights needed to reach the official edge of space on Earth.
@@ -132,35 +128,38 @@ float approx_air_column_density_ratio_along_ray (
 
     get_relation_between_ray_and_point(
 		world_position, 
-    	ray_origin, ray_direction, 
+    	segment_origin,  segment_direction, 
 		z2,			x_z 
 	);
-    is_obstructed = try_get_relation_between_ray_and_sphere(
+    try_get_relation_between_ray_and_sphere(
         world_radius,
         z2,            x_z,
         x_enter_world, x_exit_world 
     );
+
+    bool is_obstructed = 
+        0. < x_exit_world && x_exit_world < segment_length &&
+        z2 < world_radius*world_radius;
 
     if (is_obstructed)
     {
     	return BIG;
     }
 
-    is_scattered   = try_get_relation_between_ray_and_sphere(
+    try_get_relation_between_ray_and_sphere(
         atmosphere_radius,
         z2,            x_z, 
         x_enter_atmo,  x_exit_atmo
     );
     
-    x_stop  = is_obstructed? x_enter_world : x_exit_atmo;
-
-    sigma0 = approx_reference_air_column_density_ratio_along_ray(
+    // NOTE: "sigma0" the column density ratio returned by approx_air_column_density_ratio_along_ray_for_absx() for the surface
+    float sigma0 = approx_reference_air_column_density_ratio_along_ray(
     	x_exit_world-x_z, x_exit_atmo-x_z, 
     	z2, world_radius, atmosphere_scale_height
 	);
 
     return approx_air_column_density_ratio_along_ray_2d( 
-    	-x_z,             x_stop-x_z, 
+    	0.-x_z,           segment_length-x_z, 
     	x_exit_world-x_z, x_exit_atmo-x_z, sigma0, 
     	z2, world_radius, atmosphere_scale_height 
 	);

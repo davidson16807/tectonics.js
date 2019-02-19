@@ -87,11 +87,9 @@ vec3 get_rgb_intensity_of_light_rays_through_atmosphere(
     float light_h;            // distance ("height") from the surface of the world while marching along the view ray
     float light_sigma;        // columnar density ratio encountered along the light ray. This expresses the quantity of air encountered along the light ray, relative to air density on the surface
 
-    // NOTE: "12." is the number of scale heights needed to reach the official edge of space on Earth.
-    float atmosphere_height = 12. * atmosphere_scale_height;
-
     // "atmosphere_radius" is the distance from the center of the world to the top of the atmosphere
-    float atmosphere_radius = world_radius + atmosphere_height;
+    //   We only set it to 3 scale heights because we are using this parameter for raymarching, and not a closed form solution
+    float atmosphere_radius = world_radius + 12. * atmosphere_scale_height;
 
     // cosine of angle between view and light directions
     float cos_scatter_angle = dot(view_direction, light_direction); 
@@ -148,13 +146,13 @@ vec3 get_rgb_intensity_of_light_rays_through_atmosphere(
         light_origin = view_origin + view_direction * view_x;
         light_h      = get_height_along_ray_over_world(view_x-view_x_z, view_z2, world_radius);
 
-    	view_sigma  = approx_air_column_density_ratio_along_ray (
-			light_origin,  -view_direction,
+    	view_sigma  = approx_air_column_density_ratio_along_line_segment (
+			view_origin,    view_direction,  view_x,
 			world_position, world_radius, atmosphere_scale_height
 		);
 
-    	light_sigma  = approx_air_column_density_ratio_along_ray (
-			light_origin,   light_direction,
+    	light_sigma  = approx_air_column_density_ratio_along_line_segment (
+			light_origin,   light_direction, 3.*world_radius,
 			world_position, world_radius, atmosphere_scale_height
 		);
 

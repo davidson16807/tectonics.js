@@ -445,53 +445,53 @@ float approx_air_column_density_ratio_along_ray_2d (float x_start, float x_stop,
 //   for approx_air_column_density_ratio_along_ray_2d() and approx_reference_air_column_density_ratio_along_ray.
 // Just pass it the origin and direction of a 3d ray and it will find the column density ratio along its path, 
 //   or return false to indicate the ray passes through the surface of the world.
-float approx_air_column_density_ratio_along_ray (
- vec3 ray_origin,
- vec3 ray_direction,
+float approx_air_column_density_ratio_along_line_segment (
+ vec3 segment_origin,
+    vec3 segment_direction,
+    float segment_length,
  vec3 world_position,
  float world_radius,
  float atmosphere_scale_height
 ){
     float z2; // distance ("radius") from the ray to the center of the world at closest approach, squared
     float x_z; // distance from the origin at which closest approach occurs
-    bool is_scattered; // whether ray will enter the atmosphere
     float x_enter_atmo; // distance from the origin at which the ray enters the atmosphere
     float x_exit_atmo; // distance from the origin at which the ray exits the atmosphere
-    bool is_obstructed; // whether ray will strike the surface of a world
     float x_enter_world; // distance from the origin at which the ray strikes the surface of the world
     float x_exit_world; // distance from the origin at which the ray exits the world, assuming it could pass through
-    float x_stop; // distance from the origin at which the ray either hits the world or exits the atmosphere
-    float sigma0; // the column density ratio returned by approx_air_column_density_ratio_along_ray_for_absx() for the surface
     // "atmosphere_radius" is the distance from the center of the world to the top of the atmosphere
     // NOTE: "12." is the number of scale heights needed to reach the official edge of space on Earth.
     // It should be sufficiently high to work for any world
     float atmosphere_radius = world_radius + 12. * atmosphere_scale_height;
     get_relation_between_ray_and_point(
   world_position,
-     ray_origin, ray_direction,
+     segment_origin, segment_direction,
   z2, x_z
  );
-    is_obstructed = try_get_relation_between_ray_and_sphere(
+    try_get_relation_between_ray_and_sphere(
         world_radius,
         z2, x_z,
         x_enter_world, x_exit_world
     );
+    bool is_obstructed =
+        0. < x_exit_world && x_exit_world < segment_length &&
+        z2 < world_radius*world_radius;
     if (is_obstructed)
     {
      return BIG;
     }
-    is_scattered = try_get_relation_between_ray_and_sphere(
+    try_get_relation_between_ray_and_sphere(
         atmosphere_radius,
         z2, x_z,
         x_enter_atmo, x_exit_atmo
     );
-    x_stop = is_obstructed? x_enter_world : x_exit_atmo;
-    sigma0 = approx_reference_air_column_density_ratio_along_ray(
+    // NOTE: "sigma0" the column density ratio returned by approx_air_column_density_ratio_along_ray_for_absx() for the surface
+    float sigma0 = approx_reference_air_column_density_ratio_along_ray(
      x_exit_world-x_z, x_exit_atmo-x_z,
      z2, world_radius, atmosphere_scale_height
  );
     return approx_air_column_density_ratio_along_ray_2d(
-     -x_z, x_stop-x_z,
+     0.-x_z, segment_length-x_z,
      x_exit_world-x_z, x_exit_atmo-x_z, sigma0,
      z2, world_radius, atmosphere_scale_height
  );
@@ -573,28 +573,27 @@ uniform vec3 atmosphere_surface_absorption_coefficients;
 uniform vec3 world_position;
 // radius of the world being rendered, in meters
 uniform float world_radius;
-const vec3 NONE = vec3(0.0,0.0,0.0);
-const vec3 OCEAN = vec3(0.04,0.04,0.2);
-const vec3 SHALLOW = vec3(0.04,0.58,0.54);
-const vec3 MAFIC = vec3(50,45,50)/255.; // observed on lunar maria 
-const vec3 FELSIC = vec3(214,181,158)/255.; // observed color of rhyolite sample
-//const vec3 SAND   = vec3(255,230,155)/255.;
-const vec3 SAND = vec3(245,215,145)/255.;
-const vec3 PEAT = vec3(100,85,60)/255.;
-const vec3 SNOW = vec3(0.9, 0.9, 0.9);
-const vec3 JUNGLE = vec3(30,50,10)/255.;
-//const vec3 JUNGLE = vec3(20,45,5)/255.;
 // "SOLAR_RGB_INTENSITY" is the rgb intensity of earth's sun.
 //   It is used to convert the above true color values to absorption coefficients
 const vec3 SOLAR_RGB_INTENSITY = vec3(7247419., 8223259., 8121487.);
 const float AIR_REFRACTIVE_INDEX = 1.000277;
+const vec3 WATER_COLOR_DEEP = vec3(0.04,0.04,0.2);
+const vec3 WATER_COLOR_SHALLOW = vec3(0.04,0.58,0.54);
 const float WATER_REFRACTIVE_INDEX = 1.333;
 const float WATER_PHONG_SHININESS = 30.0; // NOTE: aesthetically determined, not sure if a real value can be found
 // TODO: set these material values in a manner similar to color, above: 
 //   e.g. specular_reflection_coefficient of water vs forest
-const float LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE = 0.001; // NOTE: this is a representative value found for most diffusive objects like plastics
-const float LAND_PHONG_SHININESS = 300.0;
-const float AMBIENT_LIGHT_AESTHETIC_FACTOR = 0.002;
+const vec3 MAFIC_COLOR = vec3(50,45,50)/255.; // observed on lunar maria 
+const vec3 FELSIC_COLOR = vec3(214,181,158)/255.; // observed color of rhyolite sample
+const vec3 SAND_COLOR = vec3(245,215,145)/255.;
+const vec3 PEAT_COLOR = vec3(100,85,60)/255.;
+const vec3 JUNGLE_COLOR = vec3(30,50,10)/255.;
+const float LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE = 0.00001; // NOTE: aesthetically determined, not sure if real value can be found
+const float LAND_PHONG_SHININESS = 1000.0;
+const vec3 SNOW_COLOR = vec3(0.9, 0.9, 0.9);
+const float SNOW_REFRACTIVE_INDEX = 1.333;
+const float SNOW_PHONG_SHININESS = 30.0;
+const float AMBIENT_LIGHT_AESTHETIC_FACTOR = 0.00001;
 void main() {
     vec2 clipspace = vClipspace.xy;
     vec3 view_direction = normalize(view_matrix_inverse * projection_matrix_inverse * vec4(clipspace, 1, 1)).xyz;
@@ -611,13 +610,13 @@ void main() {
     float plant_coverage = vPlantCoverage * (vDisplacement > sealevel? 1. : 0.);
     float ocean_coverage = smoothstep(epipelagic * sealevel_mod, sealevel * sealevel_mod, vDisplacement);
     bool is_ocean = vDisplacement < sealevel * sealevel_mod;
-    vec3 ocean = mix(OCEAN, SHALLOW, ocean_coverage);
-    vec3 bedrock = mix(MAFIC, FELSIC, felsic_coverage);
-    vec3 soil = mix(bedrock, mix(SAND, PEAT, organic_coverage), mineral_coverage);
-    vec3 canopy = mix(soil, JUNGLE, plant_coverage);
+    vec3 ocean = mix(WATER_COLOR_DEEP, WATER_COLOR_SHALLOW, ocean_coverage);
+    vec3 bedrock = mix(MAFIC_COLOR, FELSIC_COLOR, felsic_coverage);
+    vec3 soil = mix(bedrock, mix(SAND_COLOR, PEAT_COLOR, organic_coverage), mineral_coverage);
+    vec3 canopy = mix(soil, JUNGLE_COLOR, plant_coverage);
     vec3 uncovered = @UNCOVERED;
     vec3 sea_covered = is_ocean? ocean : uncovered;
-    vec3 ice_covered = mix(sea_covered, SNOW, ice_coverage*ice_mod);
+    vec3 ice_covered = mix(sea_covered, SNOW_COLOR, ice_coverage*ice_mod);
     // TODO: express the above mentioned colors of sand, water, forest, etc. by absorption spectra, beer's law, etc.
     // NOTE: We correct the color by SOLAR_RGB_INTENSITY to correct for distortion from Earth's 
     vec3 fraction_reflected_rgb_intensity = get_rgb_intensity_of_rgb_signal(ice_covered) / normalize(SOLAR_RGB_INTENSITY);
@@ -640,14 +639,21 @@ void main() {
     // TODO: calculate this using Fresnel reflectance equation
     //   from https://blog.selfshadow.com/publications/s2015-shading-course/hoffman/s2015_pbs_physics_math_slides.pdf
     //   see also https://computergraphics.stackexchange.com/questions/1513/how-physically-based-is-the-diffuse-and-specular-distinction?newreg=853edb961d524a0994bbab4c6c1b5aaa
-    vec3 F0 = vec3(is_ocean? get_characteristic_reflectance(WATER_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX) : LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE);
+    vec3 F0 = vec3(mix(
+        is_ocean? get_characteristic_reflectance(WATER_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX) : LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE,
+        get_characteristic_reflectance(SNOW_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX),
+        ice_coverage*ice_mod
+    ));
     // "F" is the fresnel reflectance
     vec3 F = get_schlick_reflectance(NL, F0);
     // "alpha" is the "shininess" of the object, as known within the Phong reflection model
-    float alpha = is_ocean? WATER_PHONG_SHININESS : LAND_PHONG_SHININESS;
+    float alpha = mix(
+        is_ocean? WATER_PHONG_SHININESS : LAND_PHONG_SHININESS,
+        SNOW_PHONG_SHININESS,
+        ice_coverage*ice_mod
+    );
     // "R" is the normal vector of a perfectly reflected ray of light
     //   it is calculated as the reflection of L on a surface with normal N
-    //   with a correction (the first "NL" part) to account for shadows
     vec3 R = (2.*NL*N - L);
     // "RV" is the dot product between R and V, with a correction (the "max()" part) to account for shadows
     float RV = max(dot(R,V), 0.);
@@ -664,19 +670,18 @@ void main() {
     //   https://blog.selfshadow.com/publications/s2015-shading-course/hoffman/s2015_pbs_physics_math_slides.pdf
     // TODO: calculate airglow for nightside using scattering equations from atmosphere.glsl.c, 
     //   also keep in mind this: https://en.wikipedia.org/wiki/Airglow
-    float light_sigma = approx_air_column_density_ratio_along_ray (
-        1.01 * vPosition.xyz * reference_distance, L,
+    float light_sigma = approx_air_column_density_ratio_along_line_segment (
+        1.01 * vPosition.xyz * reference_distance, L, 3.*world_radius,
         // NOTE: we nudge the origin of light ray by a small amount so that collision isn't detected with the planet
         world_position, world_radius, atmosphere_scale_height
     );
     // calculate the intensity of light that reached the surface
     vec3 I1 = I0 * exp(-(beta_ray + beta_mie + beta_abs) * light_sigma);
-    // vec3 I1 = I0 * exp(-beta_ray * light_sigma);
     // calculate the intensity of light that reflects or emits from the surface
     vec3 I =
         I1 * pow(RV, alpha) * F + // specular fraction
         I1 * NL * (1.-F) * fraction_reflected_rgb_intensity + // diffuse  fraction
-        I1 * AMBIENT_LIGHT_AESTHETIC_FACTOR * fraction_reflected_rgb_intensity + // ambient  fraction
+        I0 * AMBIENT_LIGHT_AESTHETIC_FACTOR * fraction_reflected_rgb_intensity + // ambient  fraction
         E;
     gl_FragColor = vec4(get_rgb_signal_of_rgb_intensity(I/Imax),1);
 }
@@ -1078,53 +1083,53 @@ float approx_air_column_density_ratio_along_ray_2d (float x_start, float x_stop,
 //   for approx_air_column_density_ratio_along_ray_2d() and approx_reference_air_column_density_ratio_along_ray.
 // Just pass it the origin and direction of a 3d ray and it will find the column density ratio along its path, 
 //   or return false to indicate the ray passes through the surface of the world.
-float approx_air_column_density_ratio_along_ray (
- vec3 ray_origin,
- vec3 ray_direction,
+float approx_air_column_density_ratio_along_line_segment (
+ vec3 segment_origin,
+    vec3 segment_direction,
+    float segment_length,
  vec3 world_position,
  float world_radius,
  float atmosphere_scale_height
 ){
     float z2; // distance ("radius") from the ray to the center of the world at closest approach, squared
     float x_z; // distance from the origin at which closest approach occurs
-    bool is_scattered; // whether ray will enter the atmosphere
     float x_enter_atmo; // distance from the origin at which the ray enters the atmosphere
     float x_exit_atmo; // distance from the origin at which the ray exits the atmosphere
-    bool is_obstructed; // whether ray will strike the surface of a world
     float x_enter_world; // distance from the origin at which the ray strikes the surface of the world
     float x_exit_world; // distance from the origin at which the ray exits the world, assuming it could pass through
-    float x_stop; // distance from the origin at which the ray either hits the world or exits the atmosphere
-    float sigma0; // the column density ratio returned by approx_air_column_density_ratio_along_ray_for_absx() for the surface
     // "atmosphere_radius" is the distance from the center of the world to the top of the atmosphere
     // NOTE: "12." is the number of scale heights needed to reach the official edge of space on Earth.
     // It should be sufficiently high to work for any world
     float atmosphere_radius = world_radius + 12. * atmosphere_scale_height;
     get_relation_between_ray_and_point(
   world_position,
-     ray_origin, ray_direction,
+     segment_origin, segment_direction,
   z2, x_z
  );
-    is_obstructed = try_get_relation_between_ray_and_sphere(
+    try_get_relation_between_ray_and_sphere(
         world_radius,
         z2, x_z,
         x_enter_world, x_exit_world
     );
+    bool is_obstructed =
+        0. < x_exit_world && x_exit_world < segment_length &&
+        z2 < world_radius*world_radius;
     if (is_obstructed)
     {
      return BIG;
     }
-    is_scattered = try_get_relation_between_ray_and_sphere(
+    try_get_relation_between_ray_and_sphere(
         atmosphere_radius,
         z2, x_z,
         x_enter_atmo, x_exit_atmo
     );
-    x_stop = is_obstructed? x_enter_world : x_exit_atmo;
-    sigma0 = approx_reference_air_column_density_ratio_along_ray(
+    // NOTE: "sigma0" the column density ratio returned by approx_air_column_density_ratio_along_ray_for_absx() for the surface
+    float sigma0 = approx_reference_air_column_density_ratio_along_ray(
      x_exit_world-x_z, x_exit_atmo-x_z,
      z2, world_radius, atmosphere_scale_height
  );
     return approx_air_column_density_ratio_along_ray_2d(
-     -x_z, x_stop-x_z,
+     0.-x_z, segment_length-x_z,
      x_exit_world-x_z, x_exit_atmo-x_z, sigma0,
      z2, world_radius, atmosphere_scale_height
  );
@@ -1233,10 +1238,9 @@ vec3 get_rgb_intensity_of_light_rays_through_atmosphere(
     vec3 light_origin; // absolute position while marching along the view ray
     float light_h; // distance ("height") from the surface of the world while marching along the view ray
     float light_sigma; // columnar density ratio encountered along the light ray. This expresses the quantity of air encountered along the light ray, relative to air density on the surface
-    // NOTE: "12." is the number of scale heights needed to reach the official edge of space on Earth.
-    float atmosphere_height = 12. * atmosphere_scale_height;
     // "atmosphere_radius" is the distance from the center of the world to the top of the atmosphere
-    float atmosphere_radius = world_radius + atmosphere_height;
+    //   We only set it to 3 scale heights because we are using this parameter for raymarching, and not a closed form solution
+    float atmosphere_radius = world_radius + 12. * atmosphere_scale_height;
     // cosine of angle between view and light directions
     float cos_scatter_angle = dot(view_direction, light_direction);
     // fraction of outgoing light transmitted across a given path
@@ -1283,12 +1287,12 @@ vec3 get_rgb_intensity_of_light_rays_through_atmosphere(
     {
         light_origin = view_origin + view_direction * view_x;
         light_h = get_height_along_ray_over_world(view_x-view_x_z, view_z2, world_radius);
-     view_sigma = approx_air_column_density_ratio_along_ray (
-   light_origin, -view_direction,
+     view_sigma = approx_air_column_density_ratio_along_line_segment (
+   view_origin, view_direction, view_x,
    world_position, world_radius, atmosphere_scale_height
   );
-     light_sigma = approx_air_column_density_ratio_along_ray (
-   light_origin, light_direction,
+     light_sigma = approx_air_column_density_ratio_along_line_segment (
+   light_origin, light_direction, 3.*world_radius,
    world_position, world_radius, atmosphere_scale_height
   );
         total_rgb_intensity += light_rgb_intensity
