@@ -6,6 +6,7 @@
 #include "precompiled/shaders/academics/physics/constants.glsl.c"
 #include "precompiled/shaders/academics/physics/emission.glsl.c"
 #include "precompiled/shaders/academics/physics/scattering.glsl.c"
+#include "precompiled/shaders/academics/physics/reflectance.glsl.c"
 #include "precompiled/shaders/academics/raymarching.glsl.c"
 #include "precompiled/shaders/academics/psychophysics.glsl.c"
 #include "precompiled/shaders/academics/electronics.glsl.c"

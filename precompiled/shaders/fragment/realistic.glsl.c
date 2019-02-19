@@ -6,6 +6,7 @@
 #include "precompiled/shaders/academics/physics/constants.glsl.c"
 #include "precompiled/shaders/academics/physics/emission.glsl.c"
 #include "precompiled/shaders/academics/physics/scattering.glsl.c"
+#include "precompiled/shaders/academics/physics/reflectance.glsl.c"
 #include "precompiled/shaders/academics/raymarching.glsl.c"
 #include "precompiled/shaders/academics/psychophysics.glsl.c"
 #include "precompiled/shaders/academics/electronics.glsl.c"
@@ -67,15 +68,16 @@ const vec3 JUNGLE   = vec3(30,50,10)/255.;
 //   It is used to convert the above true color values to absorption coefficients
 const vec3  SOLAR_RGB_INTENSITY = vec3(7247419., 8223259., 8121487.);
 
+const float AIR_REFRACTIVE_INDEX   = 1.000277;
+
+const float WATER_REFRACTIVE_INDEX = 1.333;
+const float WATER_PHONG_SHININESS = 30.0; // NOTE: aesthetically determined, not sure if a real value can be found
+
 // TODO: set these material values in a manner similar to color, above: 
 //   e.g. specular_reflection_coefficient of water vs forest
-const float WATER_CHARACTERISTIC_FRESNEL_REFLECTANCE = 0.02;
-const float LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE  = 0.04;
+const float LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE  = 0.001; // NOTE: aesthetically determined, not sure if real value can be found
+const float LAND_PHONG_SHININESS  = 300.0; 
 
-// NOTE: value for shininess was determined by aesthetics, 
-//   not sure if a physically based value can be found
-const float WATER_PHONG_SHININESS = 30.0; 
-const float LAND_PHONG_SHININESS  = 3.0; 
 const float AMBIENT_LIGHT_AESTHETIC_FACTOR = 0.002;
 
 void main() {
@@ -120,14 +122,6 @@ void main() {
     // for Earth, this would be the global solar constant 
     float Imax = insolation_max;
 
-    // "F0" is the characteristic fresnel reflectance - the fraction that is immediately reflected from the surface
-    // TODO: calculate this using Fresnel reflectance equation
-    //   from https://blog.selfshadow.com/publications/s2015-shading-course/hoffman/s2015_pbs_physics_math_slides.pdf
-    //   see also https://computergraphics.stackexchange.com/questions/1513/how-physically-based-is-the-diffuse-and-specular-distinction?newreg=853edb961d524a0994bbab4c6c1b5aaa
-    vec3 F0 = vec3(is_ocean? WATER_CHARACTERISTIC_FRESNEL_REFLECTANCE : LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE);
-    // "alpha" is the "shininess" of the object, as known within the Phong reflection model
-    float alpha =  is_ocean? WATER_PHONG_SHININESS : LAND_PHONG_SHININESS;
-
     // "N" is the surface normal
     // TODO: pass this in from an attribute so we can generalize this beyond spheres
     vec3 N = vPosition.xyz;
@@ -141,10 +135,19 @@ void main() {
     // "NL" is the dot product between N and L, with a correction (the "max()" part) to account for shadows
     float NL = max(dot(N,L), 0.);
 
+    // "F0" is the characteristic fresnel reflectance - the fraction that is immediately reflected from the surface, given a parallel surface normal
+    // TODO: calculate this using Fresnel reflectance equation
+    //   from https://blog.selfshadow.com/publications/s2015-shading-course/hoffman/s2015_pbs_physics_math_slides.pdf
+    //   see also https://computergraphics.stackexchange.com/questions/1513/how-physically-based-is-the-diffuse-and-specular-distinction?newreg=853edb961d524a0994bbab4c6c1b5aaa
+    vec3 F0 = vec3(is_ocean? get_characteristic_reflectance(WATER_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX) : LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE);
+    // "F" is the fresnel reflectance
+    vec3 F  = get_schlick_reflectance(NL, F0);
+    // "alpha" is the "shininess" of the object, as known within the Phong reflection model
+    float alpha =  is_ocean? WATER_PHONG_SHININESS : LAND_PHONG_SHININESS;
+
     // "R" is the normal vector of a perfectly reflected ray of light
     //   it is calculated as the reflection of L on a surface with normal N
-    //   with a correction (the "pow()" part) to account for shadows
-    vec3 R = pow(NL, 0.2) * (2.*NL*N - L);
+    vec3 R = (2.*NL*N - L);
 
     // "RV" is the dot product between R and V, with a correction (the "max()" part) to account for shadows
     float RV = max(dot(R,V), 0.);
@@ -177,8 +180,8 @@ void main() {
 
     // calculate the intensity of light that reflects or emits from the surface
     vec3 I = 
-        I1 * pow(RV, alpha)   *     F0                                         + // specular fraction
-        I1 *     NL           * (1.-F0)     * fraction_reflected_rgb_intensity + // diffuse  fraction
+        I1 * pow(RV, alpha)   *     F                                          + // specular fraction
+        I1 *     NL           * (1.-F)      * fraction_reflected_rgb_intensity + // diffuse  fraction
         I1 * AMBIENT_LIGHT_AESTHETIC_FACTOR * fraction_reflected_rgb_intensity + // ambient  fraction
         E;
 

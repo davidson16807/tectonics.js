@@ -318,6 +318,32 @@ float get_schlick_phase_factor(in float cos_scatter_angle)
  / //-------------------------------------------
   (4. * PI * (1. + k*cos_scatter_angle) * (1. + k*cos_scatter_angle));
 }
+// "get_characteristic_reflectance" finds the fraction of light that's reflected by the boundary between materials
+//   order of refractive indices does not matter
+float get_characteristic_reflectance(in float refractivate_index1, in float refractivate_index2)
+{
+ float n1 = refractivate_index1;
+ float n2 = refractivate_index2;
+ float sqrtR0 = ((n1-n2)/(n1+n2));
+ float R0 = sqrtR0 * sqrtR0;
+ return R0;
+}
+// "get_schlick_reflectance" Schlick's approximation for reflectance
+// https://en.wikipedia.org/wiki/Schlick%27s_approximation
+float get_schlick_reflectance(in float cos_incident_angle, in float characteristic_reflectance)
+{
+ float R0 = characteristic_reflectance;
+ float _1_cos_theta = 1.-cos_incident_angle;
+ return R0 + (1.-R0) * _1_cos_theta*_1_cos_theta*_1_cos_theta*_1_cos_theta*_1_cos_theta;
+}
+// "get_schlick_reflectance" Schlick's approximation for reflectance
+// https://en.wikipedia.org/wiki/Schlick%27s_approximation
+vec3 get_schlick_reflectance(in float cos_incident_angle, in vec3 characteristic_reflectance)
+{
+ vec3 R0 = characteristic_reflectance;
+ float _1_cos_theta = 1.-cos_incident_angle;
+ return R0 + (1.-R0) * _1_cos_theta*_1_cos_theta*_1_cos_theta*_1_cos_theta*_1_cos_theta;
+}
 const float BIG = 1e20;
 const float SMALL = 1e-20;
 // "get_height_along_ray_over_world" gets the height at a point along the path
@@ -561,14 +587,13 @@ const vec3 JUNGLE = vec3(30,50,10)/255.;
 // "SOLAR_RGB_INTENSITY" is the rgb intensity of earth's sun.
 //   It is used to convert the above true color values to absorption coefficients
 const vec3 SOLAR_RGB_INTENSITY = vec3(7247419., 8223259., 8121487.);
+const float AIR_REFRACTIVE_INDEX = 1.000277;
+const float WATER_REFRACTIVE_INDEX = 1.333;
+const float WATER_PHONG_SHININESS = 30.0; // NOTE: aesthetically determined, not sure if a real value can be found
 // TODO: set these material values in a manner similar to color, above: 
 //   e.g. specular_reflection_coefficient of water vs forest
-const float WATER_CHARACTERISTIC_FRESNEL_REFLECTANCE = 0.02;
-const float LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE = 0.04;
-// NOTE: value for shininess was determined by aesthetics, 
-//   not sure if a physically based value can be found
-const float WATER_PHONG_SHININESS = 30.0;
-const float LAND_PHONG_SHININESS = 3.0;
+const float LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE = 0.001; // NOTE: this is a representative value found for most diffusive objects like plastics
+const float LAND_PHONG_SHININESS = 300.0;
 const float AMBIENT_LIGHT_AESTHETIC_FACTOR = 0.002;
 void main() {
     vec2 clipspace = vClipspace.xy;
@@ -602,13 +627,6 @@ void main() {
     // 
     // for Earth, this would be the global solar constant 
     float Imax = insolation_max;
-    // "F0" is the characteristic fresnel reflectance - the fraction that is immediately reflected from the surface
-    // TODO: calculate this using Fresnel reflectance equation
-    //   from https://blog.selfshadow.com/publications/s2015-shading-course/hoffman/s2015_pbs_physics_math_slides.pdf
-    //   see also https://computergraphics.stackexchange.com/questions/1513/how-physically-based-is-the-diffuse-and-specular-distinction?newreg=853edb961d524a0994bbab4c6c1b5aaa
-    vec3 F0 = vec3(is_ocean? WATER_CHARACTERISTIC_FRESNEL_REFLECTANCE : LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE);
-    // "alpha" is the "shininess" of the object, as known within the Phong reflection model
-    float alpha = is_ocean? WATER_PHONG_SHININESS : LAND_PHONG_SHININESS;
     // "N" is the surface normal
     // TODO: pass this in from an attribute so we can generalize this beyond spheres
     vec3 N = vPosition.xyz;
@@ -618,10 +636,19 @@ void main() {
     vec3 V = -view_direction;
     // "NL" is the dot product between N and L, with a correction (the "max()" part) to account for shadows
     float NL = max(dot(N,L), 0.);
+    // "F0" is the characteristic fresnel reflectance - the fraction that is immediately reflected from the surface, given a parallel surface normal
+    // TODO: calculate this using Fresnel reflectance equation
+    //   from https://blog.selfshadow.com/publications/s2015-shading-course/hoffman/s2015_pbs_physics_math_slides.pdf
+    //   see also https://computergraphics.stackexchange.com/questions/1513/how-physically-based-is-the-diffuse-and-specular-distinction?newreg=853edb961d524a0994bbab4c6c1b5aaa
+    vec3 F0 = vec3(is_ocean? get_characteristic_reflectance(WATER_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX) : LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE);
+    // "F" is the fresnel reflectance
+    vec3 F = get_schlick_reflectance(NL, F0);
+    // "alpha" is the "shininess" of the object, as known within the Phong reflection model
+    float alpha = is_ocean? WATER_PHONG_SHININESS : LAND_PHONG_SHININESS;
     // "R" is the normal vector of a perfectly reflected ray of light
     //   it is calculated as the reflection of L on a surface with normal N
-    //   with a correction (the "pow()" part) to account for shadows
-    vec3 R = pow(NL, 0.2) * (2.*NL*N - L);
+    //   with a correction (the first "NL" part) to account for shadows
+    vec3 R = (2.*NL*N - L);
     // "RV" is the dot product between R and V, with a correction (the "max()" part) to account for shadows
     float RV = max(dot(R,V), 0.);
     // "E" is the rgb intensity of light emitted from the surface itself due to black body radiation
@@ -647,8 +674,8 @@ void main() {
     // vec3 I1 = I0 * exp(-beta_ray * light_sigma);
     // calculate the intensity of light that reflects or emits from the surface
     vec3 I =
-        I1 * pow(RV, alpha) * F0 + // specular fraction
-        I1 * NL * (1.-F0) * fraction_reflected_rgb_intensity + // diffuse  fraction
+        I1 * pow(RV, alpha) * F + // specular fraction
+        I1 * NL * (1.-F) * fraction_reflected_rgb_intensity + // diffuse  fraction
         I1 * AMBIENT_LIGHT_AESTHETIC_FACTOR * fraction_reflected_rgb_intensity + // ambient  fraction
         E;
     gl_FragColor = vec4(get_rgb_signal_of_rgb_intensity(I/Imax),1);
@@ -923,6 +950,32 @@ float get_schlick_phase_factor(in float cos_scatter_angle)
      (1. - k*k)
  / //-------------------------------------------
   (4. * PI * (1. + k*cos_scatter_angle) * (1. + k*cos_scatter_angle));
+}
+// "get_characteristic_reflectance" finds the fraction of light that's reflected by the boundary between materials
+//   order of refractive indices does not matter
+float get_characteristic_reflectance(in float refractivate_index1, in float refractivate_index2)
+{
+ float n1 = refractivate_index1;
+ float n2 = refractivate_index2;
+ float sqrtR0 = ((n1-n2)/(n1+n2));
+ float R0 = sqrtR0 * sqrtR0;
+ return R0;
+}
+// "get_schlick_reflectance" Schlick's approximation for reflectance
+// https://en.wikipedia.org/wiki/Schlick%27s_approximation
+float get_schlick_reflectance(in float cos_incident_angle, in float characteristic_reflectance)
+{
+ float R0 = characteristic_reflectance;
+ float _1_cos_theta = 1.-cos_incident_angle;
+ return R0 + (1.-R0) * _1_cos_theta*_1_cos_theta*_1_cos_theta*_1_cos_theta*_1_cos_theta;
+}
+// "get_schlick_reflectance" Schlick's approximation for reflectance
+// https://en.wikipedia.org/wiki/Schlick%27s_approximation
+vec3 get_schlick_reflectance(in float cos_incident_angle, in vec3 characteristic_reflectance)
+{
+ vec3 R0 = characteristic_reflectance;
+ float _1_cos_theta = 1.-cos_incident_angle;
+ return R0 + (1.-R0) * _1_cos_theta*_1_cos_theta*_1_cos_theta*_1_cos_theta*_1_cos_theta;
 }
 const float BIG = 1e20;
 const float SMALL = 1e-20;
