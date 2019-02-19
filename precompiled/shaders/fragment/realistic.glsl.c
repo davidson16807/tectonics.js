@@ -75,10 +75,10 @@ const float WATER_PHONG_SHININESS = 30.0; // NOTE: aesthetically determined, not
 
 // TODO: set these material values in a manner similar to color, above: 
 //   e.g. specular_reflection_coefficient of water vs forest
-const float LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE  = 0.001; // NOTE: aesthetically determined, not sure if real value can be found
-const float LAND_PHONG_SHININESS  = 300.0; 
+const float LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE  = 0.00001; // NOTE: aesthetically determined, not sure if real value can be found
+const float LAND_PHONG_SHININESS  = 1000.0; 
 
-const float AMBIENT_LIGHT_AESTHETIC_FACTOR = 0.002;
+const float AMBIENT_LIGHT_AESTHETIC_FACTOR = 0.00001;
 
 void main() {
     vec2  clipspace      = vClipspace.xy;
@@ -168,21 +168,20 @@ void main() {
     // TODO: calculate airglow for nightside using scattering equations from atmosphere.glsl.c, 
     //   also keep in mind this: https://en.wikipedia.org/wiki/Airglow
 
-    float light_sigma  = approx_air_column_density_ratio_along_ray (
-        1.01 * vPosition.xyz * reference_distance,  L, 
+    float light_sigma  = approx_air_column_density_ratio_along_line_segment (
+        1.01 * vPosition.xyz * reference_distance, L, 3.*world_radius,
         // NOTE: we nudge the origin of light ray by a small amount so that collision isn't detected with the planet
         world_position, world_radius, atmosphere_scale_height
     );
 
     // calculate the intensity of light that reached the surface
     vec3 I1 = I0 * exp(-(beta_ray + beta_mie + beta_abs) * light_sigma);
-    // vec3 I1 = I0 * exp(-beta_ray * light_sigma);
 
     // calculate the intensity of light that reflects or emits from the surface
     vec3 I = 
         I1 * pow(RV, alpha)   *     F                                          + // specular fraction
         I1 *     NL           * (1.-F)      * fraction_reflected_rgb_intensity + // diffuse  fraction
-        I1 * AMBIENT_LIGHT_AESTHETIC_FACTOR * fraction_reflected_rgb_intensity + // ambient  fraction
+        I0 * AMBIENT_LIGHT_AESTHETIC_FACTOR * fraction_reflected_rgb_intensity + // ambient  fraction
         E;
 
     gl_FragColor = vec4(get_rgb_signal_of_rgb_intensity(I/Imax),1);
