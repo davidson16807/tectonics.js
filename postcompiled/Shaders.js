@@ -328,16 +328,18 @@ float get_characteristic_reflectance(in float refractivate_index1, in float refr
  float R0 = sqrtR0 * sqrtR0;
  return R0;
 }
-// "get_schlick_reflectance" Schlick's approximation for reflectance
-// https://en.wikipedia.org/wiki/Schlick%27s_approximation
+// "get_schlick_reflectance" Schlick's approximation for Fresnel reflectance
+//   for floats
+//   https://en.wikipedia.org/wiki/Schlick%27s_approximation
 float get_schlick_reflectance(in float cos_incident_angle, in float characteristic_reflectance)
 {
  float R0 = characteristic_reflectance;
  float _1_cos_theta = 1.-cos_incident_angle;
  return R0 + (1.-R0) * _1_cos_theta*_1_cos_theta*_1_cos_theta*_1_cos_theta*_1_cos_theta;
 }
-// "get_schlick_reflectance" Schlick's approximation for reflectance
-// https://en.wikipedia.org/wiki/Schlick%27s_approximation
+// "get_schlick_reflectance" Schlick's approximation for Fresnel reflectance
+//   for vectors
+//   https://en.wikipedia.org/wiki/Schlick%27s_approximation
 vec3 get_schlick_reflectance(in float cos_incident_angle, in vec3 characteristic_reflectance)
 {
  vec3 R0 = characteristic_reflectance;
@@ -633,8 +635,13 @@ void main() {
     vec3 L = light_direction;
     // "V" is the normal vector indicating the direction from the view
     vec3 V = -view_direction;
-    // "NL" is the dot product between N and L, with a correction (the "max()" part) to account for shadows
+    // "H" is the halfway vector between normal and view
+    //   it represents the normal of a surface 
+    vec3 H = V+L / (length(V+L));
     float NL = max(dot(N,L), 0.);
+    float NV = max(dot(N,V), 0.);
+    float NH = max(dot(N,H), 0.);
+    float VH = max(dot(V,H), 0.);
     // "F0" is the characteristic fresnel reflectance - the fraction that is immediately reflected from the surface, given a parallel surface normal
     // TODO: calculate this using Fresnel reflectance equation
     //   from https://blog.selfshadow.com/publications/s2015-shading-course/hoffman/s2015_pbs_physics_math_slides.pdf
@@ -646,6 +653,12 @@ void main() {
     ));
     // "F" is the fresnel reflectance
     vec3 F = get_schlick_reflectance(NL, F0);
+    // "G" is the fraction of reflected light that is lost due to masking and shadowing
+    float G = min(1., min(2.*NH*NV/VH, 2.*NH*NL/VH));
+    float m = 0.4;
+    // "D" is the fraction of microfacet normals on the surface which are aligned to reflect light to the view
+    float tan2_angle_m2 = (1.-NH*NH)/(NH*NH*m*m);
+    float D = exp(-tan2_angle_m2)/(NH*NH*NH*NH*m*m);
     // "alpha" is the "shininess" of the object, as known within the Phong reflection model
     float alpha = mix(
         is_ocean? WATER_PHONG_SHININESS : LAND_PHONG_SHININESS,
@@ -679,6 +692,7 @@ void main() {
     vec3 I1 = I0 * exp(-(beta_ray + beta_mie + beta_abs) * light_sigma);
     // calculate the intensity of light that reflects or emits from the surface
     vec3 I =
+        // I1 * F      * D*G/(PI*NL*NV)                                           + // specular fraction
         I1 * pow(RV, alpha) * F + // specular fraction
         I1 * NL * (1.-F) * fraction_reflected_rgb_intensity + // diffuse  fraction
         I0 * AMBIENT_LIGHT_AESTHETIC_FACTOR * fraction_reflected_rgb_intensity + // ambient  fraction
@@ -966,16 +980,18 @@ float get_characteristic_reflectance(in float refractivate_index1, in float refr
  float R0 = sqrtR0 * sqrtR0;
  return R0;
 }
-// "get_schlick_reflectance" Schlick's approximation for reflectance
-// https://en.wikipedia.org/wiki/Schlick%27s_approximation
+// "get_schlick_reflectance" Schlick's approximation for Fresnel reflectance
+//   for floats
+//   https://en.wikipedia.org/wiki/Schlick%27s_approximation
 float get_schlick_reflectance(in float cos_incident_angle, in float characteristic_reflectance)
 {
  float R0 = characteristic_reflectance;
  float _1_cos_theta = 1.-cos_incident_angle;
  return R0 + (1.-R0) * _1_cos_theta*_1_cos_theta*_1_cos_theta*_1_cos_theta*_1_cos_theta;
 }
-// "get_schlick_reflectance" Schlick's approximation for reflectance
-// https://en.wikipedia.org/wiki/Schlick%27s_approximation
+// "get_schlick_reflectance" Schlick's approximation for Fresnel reflectance
+//   for vectors
+//   https://en.wikipedia.org/wiki/Schlick%27s_approximation
 vec3 get_schlick_reflectance(in float cos_incident_angle, in vec3 characteristic_reflectance)
 {
  vec3 R0 = characteristic_reflectance;

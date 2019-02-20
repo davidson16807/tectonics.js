@@ -8,16 +8,18 @@ FUNC(float) get_characteristic_reflectance(IN(float) refractivate_index1, IN(flo
 	VAR(float) R0 = sqrtR0 * sqrtR0;
 	return R0;
 }
-// "get_schlick_reflectance" Schlick's approximation for reflectance
-// https://en.wikipedia.org/wiki/Schlick%27s_approximation
+// "get_schlick_reflectance" Schlick's approximation for Fresnel reflectance
+//   for floats
+//   https://en.wikipedia.org/wiki/Schlick%27s_approximation
 FUNC(float) get_schlick_reflectance(IN(float) cos_incident_angle, IN(float) characteristic_reflectance)
 {
 	VAR(float) R0 = characteristic_reflectance;
 	VAR(float) _1_cos_theta = 1.-cos_incident_angle;
 	return R0 + (1.-R0) * _1_cos_theta*_1_cos_theta*_1_cos_theta*_1_cos_theta*_1_cos_theta;
 }
-// "get_schlick_reflectance" Schlick's approximation for reflectance
-// https://en.wikipedia.org/wiki/Schlick%27s_approximation
+// "get_schlick_reflectance" Schlick's approximation for Fresnel reflectance
+//   for vectors
+//   https://en.wikipedia.org/wiki/Schlick%27s_approximation
 FUNC(vec3) get_schlick_reflectance(IN(float) cos_incident_angle, IN(vec3) characteristic_reflectance)
 {
 	VAR(vec3) R0 = characteristic_reflectance;

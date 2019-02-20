@@ -1,0 +1,34 @@
+find . -name "*.js" -exec sed -i  \
+-e 's/.black_body_radiation_uniform/.get_uniform_black_body_radiation/g'  \
+-e 's/.black_body_radiation_field/.get_varying_black_body_radiation/g'  \
+-e 's/.black_body_equilibrium_temperature_uniform/.get_uniform_equilibrium_temperature/g'  \
+-e 's/.black_body_equilibrium_temperature_field/.get_varying_equilibrium_temperature/g'  \
+-e 's/.incident_radiation_field/.get_varying_incident_radiation/g'  \
+-e 's/LithosphereModeling.get_lithification/Lithology.model_lithification/g' \
+-e 's/LithosphereModeling.get_metamorphosis/Lithology.model_metamorphosis/g' \
+-e 's/LithosphereModeling.get_weathering/Lithology.model_weathering/g' \
+-e 's/LithosphereModeling.get_erosion/Lithology.model_erosion/g' \
+-e 's/LithosphereModeling.get_asthenosphere_velocity/FluidMechanics.get_varying_fluid_velocity/g' \
+-e 's/LithosphereModeling.get_asthenosphere_pressure/FluidMechanics.get_varying_fluid_pressure/g' \
+-e 's/LithosphereModeling.get_displacement/FluidMechanics.get_varying_isostatic_displacement/g' \
+-e 's/LithosphereModeling.get_plate_velocity/Tectonophysics.guess_plate_velocity/g' \
+-e 's/LithosphereModeling.get_plate_center_of_mass/Tectonophysics.get_plate_center_of_mass/g' \
+-e 's/LithosphereModeling.get_plate_rotation_matrix/Tectonophysics.get_plate_rotation_matrix3x3/g' \
+-e 's/LithosphereModeling.get_plate_map/Tectonophysics.guess_plate_map/g' \
+-e 's/AtmosphereModeling.WATER_FREEZING_POINT_STP/Units.STANDARD_TEMPERATURE/g'  \
+-e 's/AtmosphereModeling.surface_air_heat/Thermodynamics.guess_varying_entropic_heat_flow/g'  \
+-e 's/AtmosphereModeling.solve_heat_flow_uniform/Thermodynamics.solve_uniform_entropic_heat_flow/g' \
+-e 's/AtmosphereModeling.STEPHAN_BOLTZMANN_CONSTANT/Thermodynamics.STEPHAN_BOLTZMANN_CONSTANT/g' \
+-e 's/AtmosphereModeling.surface_air_temp/Thermodynamics.get_varying_equilibrium_temperature/g' \
+-e 's/\.surface_air_pressure/.guess_varying_surface_air_pressure/g' \
+-e 's/\.surface_air_velocity/.guess_varying_surface_air_velocity/g' \
+-e 's/\.heat_capacity/.get_varying_heat_capacity/g' \
+-e 's/\.albedo/.get_varying_albedo/g' \
+-e 's/\.precip/.guess_varying_precip/g' \
+-e 's/\.solve_sealevel/.solve_uniform_sealevel/g' \
+-e 's/\.get_surface_height/.get_varying_surface_height/g' \
+-e 's/\.get_ocean_depth/.get_varying_ocean_depth/g' \
+-e 's/AtmosphereModeling/Climatology/g' \
+-e 's/BiosphereModeling/PlantBiology/g' \
+-e 's/HydrosphereModeling/Hydrology/g' \
+{} \;
