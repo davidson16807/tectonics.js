@@ -78,7 +78,7 @@ const vec3  SNOW_COLOR            = vec3(0.9, 0.9, 0.9);
 const float SNOW_REFRACTIVE_INDEX = 1.333; 
 const float SNOW_PHONG_SHININESS  = 30.0;
 
-const float AMBIENT_LIGHT_AESTHETIC_FACTOR = 0.00001;
+const float AMBIENT_LIGHT_AESTHETIC_FACTOR = 0.003;
 
 void main() {
     vec2  clipspace      = vClipspace.xy;
@@ -132,10 +132,19 @@ void main() {
     // "V" is the normal vector indicating the direction from the view
     vec3 V = -view_direction;
 
+    float NL = max(dot(N,L), 0.);
+
     // "H" is the halfway vector between normal and view
     //   it represents the normal of a surface 
-    vec3 H = V+L / (length(V+L));
-    float NL = max(dot(N,L), 0.);
+    vec3 H = V+L/2.;
+
+    float HL = max(dot(H,L), 0.);
+
+    // "R" is the normal vector of a perfectly reflected ray of light
+    //   it is calculated as the reflection of L on a surface with normal N
+    vec3 R = (2.*NL*N - L);
+
+    float RV = max(dot(R,V), 0.);
     float NV = max(dot(N,V), 0.);
     float NH = max(dot(N,H), 0.);
     float VH = max(dot(V,H), 0.);
@@ -150,16 +159,16 @@ void main() {
         ice_coverage*ice_mod
     ));
     // "F" is the fresnel reflectance
-    vec3 F  = get_schlick_reflectance(NH, F0);
+    vec3 F  = get_schlick_reflectance(NL, F0);
 
     // "G" is the fraction of reflected light that is lost due to masking and shadowing
     // TODO: replace with smith masking function
     float G = min(1., min(2.*NH*NV/VH, 2.*NH*NL/VH));
 
-    float m = 0.4;
+    float m = 1.0;
     // "D" is the fraction of microfacet normals on the surface which are aligned to reflect light to the view
     float tan2_angle_m2 = (1.-NH*NH)/(NH*NH*m*m);
-    float D = exp(-tan2_angle_m2)/(NH*NH*NH*NH*m*m);
+    float D = exp(-tan2_angle_m2)/(PI*NH*NH*NH*NH*m*m);
 
     // "alpha" is the "shininess" of the object, as known within the Phong reflection model
     float alpha = mix(
@@ -167,13 +176,6 @@ void main() {
         SNOW_PHONG_SHININESS, 
         ice_coverage*ice_mod
     );
-
-    // "R" is the normal vector of a perfectly reflected ray of light
-    //   it is calculated as the reflection of L on a surface with normal N
-    vec3 R = (2.*NL*N - L);
-
-    // "RV" is the dot product between R and V, with a correction (the "max()" part) to account for shadows
-    float RV = max(dot(R,V), 0.);
 
     // "E" is the rgb intensity of light emitted from the surface itself due to black body radiation
     vec3 E = get_rgb_intensity_of_emitted_light_from_black_body(vSurfaceTemp);
@@ -202,10 +204,11 @@ void main() {
 
     // calculate the intensity of light that reflects or emits from the surface
     vec3 I = 
-        I1 * F      * G*D/(4.*NL*NV)                                           + // specular fraction
-        // I1 * pow(RV, alpha)   *     F                                          + // specular fraction
-        I1 *     NL           * (1.-F)      * fraction_reflected_rgb_intensity + // diffuse  fraction
-        I0 * AMBIENT_LIGHT_AESTHETIC_FACTOR * fraction_reflected_rgb_intensity + // ambient  fraction
+        // I1 *  F      * G*D/(4.*NL*NV)                                          + // full specular fraction
+        I1 *  F      * D                                                          + // beckmann specular fraction
+        // I1 *  F      * pow(RV, alpha)                                          + // phong specular fraction
+        I1 * (1.-F)  * NL                   * fraction_reflected_rgb_intensity    + // diffuse  fraction
+        I0 * AMBIENT_LIGHT_AESTHETIC_FACTOR * fraction_reflected_rgb_intensity    + // ambient  fraction
         E;
 
     gl_FragColor = vec4(get_rgb_signal_of_rgb_intensity(I/Imax),1);
