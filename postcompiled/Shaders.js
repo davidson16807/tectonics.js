@@ -591,11 +591,11 @@ const vec3 SAND_COLOR = vec3(245,215,145)/255.;
 const vec3 PEAT_COLOR = vec3(100,85,60)/255.;
 const vec3 JUNGLE_COLOR = vec3(30,50,10)/255.;
 const float LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE = 0.00001; // NOTE: aesthetically determined, not sure if real value can be found
-const float LAND_PHONG_SHININESS = 1000.0;
+const float LAND_PHONG_SHININESS = 5.0;
 const vec3 SNOW_COLOR = vec3(0.9, 0.9, 0.9);
 const float SNOW_REFRACTIVE_INDEX = 1.333;
 const float SNOW_PHONG_SHININESS = 30.0;
-const float AMBIENT_LIGHT_AESTHETIC_FACTOR = 0.003;
+const float AMBIENT_LIGHT_AESTHETIC_FACTOR = 0.001;
 void main() {
     vec2 clipspace = vClipspace.xy;
     vec3 view_direction = normalize(view_matrix_inverse * projection_matrix_inverse * vec4(clipspace, 1, 1)).xyz;
@@ -694,8 +694,8 @@ void main() {
     // calculate the intensity of light that reflects or emits from the surface
     vec3 I =
         // I1 *  F      * G*D/(4.*NL*NV)                                          + // full specular fraction
-        I1 * F * D + // beckmann specular fraction
-        // I1 *  F      * pow(RV, alpha)                                          + // phong specular fraction
+        // I1 *  F      * D                                                          + // beckmann specular fraction
+        I1 * F * G*pow(RV, alpha) + // phong specular fraction
         I1 * (1.-F) * NL * fraction_reflected_rgb_intensity + // diffuse  fraction
         I0 * AMBIENT_LIGHT_AESTHETIC_FACTOR * fraction_reflected_rgb_intensity + // ambient  fraction
         E;
