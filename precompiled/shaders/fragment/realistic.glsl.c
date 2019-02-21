@@ -150,9 +150,10 @@ void main() {
         ice_coverage*ice_mod
     ));
     // "F" is the fresnel reflectance
-    vec3 F  = get_schlick_reflectance(NL, F0);
+    vec3 F  = get_schlick_reflectance(NH, F0);
 
     // "G" is the fraction of reflected light that is lost due to masking and shadowing
+    // TODO: replace with smith masking function
     float G = min(1., min(2.*NH*NV/VH, 2.*NH*NL/VH));
 
     float m = 0.4;
@@ -201,8 +202,8 @@ void main() {
 
     // calculate the intensity of light that reflects or emits from the surface
     vec3 I = 
-        // I1 * F      * D*G/(PI*NL*NV)                                           + // specular fraction
-        I1 * pow(RV, alpha)   *     F                                          + // specular fraction
+        I1 * F      * G*D/(4.*NL*NV)                                           + // specular fraction
+        // I1 * pow(RV, alpha)   *     F                                          + // specular fraction
         I1 *     NL           * (1.-F)      * fraction_reflected_rgb_intensity + // diffuse  fraction
         I0 * AMBIENT_LIGHT_AESTHETIC_FACTOR * fraction_reflected_rgb_intensity + // ambient  fraction
         E;
