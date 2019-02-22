@@ -178,13 +178,12 @@ void main() {
 
     // "G" is the fraction of reflected light that is lost due to masking and shadowing
     // TODO: replace with smith masking function
-    // float Lambda = -1.+sqrt(1.+a)
-    // float G = 1./(()*(1.+Lambda));
-    float G = min(1., min(2.*NH*NV/HV, 2.*NH*NL/HV));
+    float m = is_ocean? 0.4 : 1.0;
+    float k = sqrt(2.*m*m/PI);
+    float G = NV/(NV-k*NV+k);
+    // float G = min(1., min(2.*NH*NV/HV, 2.*NH*NL/HV));
 
     // "D" is the fraction of microfacet normals on the surface which are aligned to reflect light to the view
-    // float m = 1.0; // "m" is the "roughness" of the object, as known within the Beckmann surface normal distribution model
-    // float tan2_angle_m2 = (1.-NH*NH)/(NH*NH*m*m);                    // Beckmann
     // float D = exp(-tan2_angle_m2)/(NH*NH*NH*NH*m*m);                 // Beckmann
     float D = pow(RV, alpha);                                           // Phong
 
