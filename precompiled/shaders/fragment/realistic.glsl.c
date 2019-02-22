@@ -63,6 +63,7 @@ const vec3  WATER_COLOR_DEEP       = vec3(0.04,0.04,0.2);
 const vec3  WATER_COLOR_SHALLOW    = vec3(0.04,0.58,0.54);
 const float WATER_REFRACTIVE_INDEX = 1.333;
 const float WATER_PHONG_SHININESS  = 30.0; // NOTE: aesthetically determined, not sure if a real value can be found
+const float WATER_ROUGHNESS = 0.3;
 
 // TODO: set these material values in a manner similar to color, above: 
 //   e.g. specular_reflection_coefficient of water vs forest
@@ -71,14 +72,15 @@ const vec3  FELSIC_COLOR   = vec3(214,181,158)/255.;       // observed color of 
 const vec3  SAND_COLOR     = vec3(245,215,145)/255.;
 const vec3  PEAT_COLOR     = vec3(100,85,60)/255.;
 const vec3  JUNGLE_COLOR   = vec3(30,50,10)/255.;
-const float LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE  = 0.00001; // NOTE: aesthetically determined, not sure if real value can be found
-const float LAND_PHONG_SHININESS  = 5.0; 
+const float LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE  = 0.04; // NOTE: aesthetically determined, not sure if real value can be found
+const float LAND_PHONG_SHININESS  = 100.0; 
+const float LAND_ROUGHNESS = 1.0;
 
 const vec3  SNOW_COLOR            = vec3(0.9, 0.9, 0.9); 
 const float SNOW_REFRACTIVE_INDEX = 1.333; 
 const float SNOW_PHONG_SHININESS  = 30.0;
 
-const float AMBIENT_LIGHT_AESTHETIC_FACTOR = 0.0001;
+const float AMBIENT_LIGHT_AESTHETIC_FACTOR = 0.00001;
 
 void main() {
     vec2  clipspace      = vClipspace.xy;
@@ -132,22 +134,35 @@ void main() {
     // "V" is the normal vector indicating the direction from the view
     vec3 V = -view_direction;
 
+    float NV = max(dot(N,V), 0.);
     float NL = max(dot(N,L), 0.);
-
-    // "H" is the halfway vector between normal and view
-    //   it represents the normal of a surface 
-    vec3 H = V+L/2.;
-
-    float HL = max(dot(H,L), 0.);
 
     // "R" is the normal vector of a perfectly reflected ray of light
     //   it is calculated as the reflection of L on a surface with normal N
     vec3 R = (2.*NL*N - L);
 
     float RV = max(dot(R,V), 0.);
-    float NV = max(dot(N,V), 0.);
+
+    // "H" is the halfway vector between normal and view
+    //   it represents the normal of a surface 
+    vec3 H = normalize(V+L);
+
     float NH = max(dot(N,H), 0.);
-    float VH = max(dot(V,H), 0.);
+    float HL = max(dot(H,L), 0.);
+    float HV = max(dot(V,H), 0.);
+
+
+    // "alpha" is the "shininess" of the object, as known within the Phong surface normal distribution model
+    float alpha = mix(
+        is_ocean? WATER_PHONG_SHININESS : LAND_PHONG_SHININESS,
+        SNOW_PHONG_SHININESS, 
+        ice_coverage*ice_mod
+    );
+
+    // "beta_*" variables are the scattering coefficients for the atmosphere at sea level
+    vec3  beta_ray = atmosphere_surface_rayleigh_scattering_coefficients;
+    vec3  beta_mie = atmosphere_surface_mie_scattering_coefficients;
+    vec3  beta_abs = atmosphere_surface_absorption_coefficients; 
 
     // "F0" is the characteristic fresnel reflectance - the fraction that is immediately reflected from the surface, given a parallel surface normal
     // TODO: calculate this using Fresnel reflectance equation
@@ -159,40 +174,27 @@ void main() {
         ice_coverage*ice_mod
     ));
     // "F" is the fresnel reflectance
-    vec3 F  = get_schlick_reflectance(NH, F0);
+    vec3 F  = get_schlick_reflectance(HV, F0);
 
     // "G" is the fraction of reflected light that is lost due to masking and shadowing
     // TODO: replace with smith masking function
-    float G = min(1., min(2.*NH*NV/VH, 2.*NH*NL/VH));
-
-    // "m" is the "roughness" of the object, as known within the Beckmann normal distribution model
-    float m = 1.0;
-
-    // "alpha" is the "shininess" of the object, as known within the Phong normal distribution model
-    float alpha = mix(
-        is_ocean? WATER_PHONG_SHININESS : LAND_PHONG_SHININESS,
-        SNOW_PHONG_SHININESS, 
-        ice_coverage*ice_mod
-    );
+    // float Lambda = -1.+sqrt(1.+a)
+    // float G = 1./(()*(1.+Lambda));
+    float G = min(1., min(2.*NH*NV/HV, 2.*NH*NL/HV));
 
     // "D" is the fraction of microfacet normals on the surface which are aligned to reflect light to the view
-    // float tan2_angle_m2 = (1.-NH*NH)/(NH*NH*m*m);
-    // float D = exp(-tan2_angle_m2)/(PI*NH*NH*NH*NH*m*m); // Beckmann
-    float D = pow(RV, alpha); // Phong
+    // float m = 1.0; // "m" is the "roughness" of the object, as known within the Beckmann surface normal distribution model
+    // float tan2_angle_m2 = (1.-NH*NH)/(NH*NH*m*m);                    // Beckmann
+    // float D = exp(-tan2_angle_m2)/(NH*NH*NH*NH*m*m);                 // Beckmann
+    float D = pow(RV, alpha);                                           // Phong
 
     // "E" is the rgb intensity of light emitted from the surface itself due to black body radiation
     vec3 E = get_rgb_intensity_of_emitted_light_from_black_body(vSurfaceTemp);
-
-    vec3  beta_ray = atmosphere_surface_rayleigh_scattering_coefficients;
-    vec3  beta_mie = atmosphere_surface_mie_scattering_coefficients;
-    vec3  beta_abs = atmosphere_surface_absorption_coefficients; 
 
     // NOTE: see here for more info:
     //   https://en.wikipedia.org/wiki/Phong_reflection_model
     // TODO: express diffuse/specular coefficients so size of surface imperfection is compared to wavelength,
     //   with small imperfections diffusing only short wavelengths
-    // TODO: incorporate learnings from this:
-    //   https://blog.selfshadow.com/publications/s2015-shading-course/hoffman/s2015_pbs_physics_math_slides.pdf
     // TODO: calculate airglow for nightside using scattering equations from atmosphere.glsl.c, 
     //   also keep in mind this: https://en.wikipedia.org/wiki/Airglow
 
@@ -207,7 +209,7 @@ void main() {
 
     // calculate the intensity of light that reflects or emits from the surface
     vec3 I = 
-        I1 *  F      * G*D                                                        + // specular fraction
+        I1 *  F      * G*D                                        + // specular fraction
         I1 * (1.-F)  * NL                   * fraction_reflected_rgb_intensity    + // diffuse  fraction
         I0 * AMBIENT_LIGHT_AESTHETIC_FACTOR * fraction_reflected_rgb_intensity    + // ambient  fraction
         E;
