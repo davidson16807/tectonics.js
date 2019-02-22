@@ -595,7 +595,7 @@ const float LAND_PHONG_SHININESS = 5.0;
 const vec3 SNOW_COLOR = vec3(0.9, 0.9, 0.9);
 const float SNOW_REFRACTIVE_INDEX = 1.333;
 const float SNOW_PHONG_SHININESS = 30.0;
-const float AMBIENT_LIGHT_AESTHETIC_FACTOR = 0.001;
+const float AMBIENT_LIGHT_AESTHETIC_FACTOR = 0.0001;
 void main() {
     vec2 clipspace = vClipspace.xy;
     vec3 view_direction = normalize(view_matrix_inverse * projection_matrix_inverse * vec4(clipspace, 1, 1)).xyz;
@@ -657,20 +657,22 @@ void main() {
         ice_coverage*ice_mod
     ));
     // "F" is the fresnel reflectance
-    vec3 F = get_schlick_reflectance(NL, F0);
+    vec3 F = get_schlick_reflectance(NH, F0);
     // "G" is the fraction of reflected light that is lost due to masking and shadowing
     // TODO: replace with smith masking function
     float G = min(1., min(2.*NH*NV/VH, 2.*NH*NL/VH));
+    // "m" is the "roughness" of the object, as known within the Beckmann normal distribution model
     float m = 1.0;
-    // "D" is the fraction of microfacet normals on the surface which are aligned to reflect light to the view
-    float tan2_angle_m2 = (1.-NH*NH)/(NH*NH*m*m);
-    float D = exp(-tan2_angle_m2)/(PI*NH*NH*NH*NH*m*m);
-    // "alpha" is the "shininess" of the object, as known within the Phong reflection model
+    // "alpha" is the "shininess" of the object, as known within the Phong normal distribution model
     float alpha = mix(
         is_ocean? WATER_PHONG_SHININESS : LAND_PHONG_SHININESS,
         SNOW_PHONG_SHININESS,
         ice_coverage*ice_mod
     );
+    // "D" is the fraction of microfacet normals on the surface which are aligned to reflect light to the view
+    // float tan2_angle_m2 = (1.-NH*NH)/(NH*NH*m*m);
+    // float D = exp(-tan2_angle_m2)/(PI*NH*NH*NH*NH*m*m); // Beckmann
+    float D = pow(RV, alpha); // Phong
     // "E" is the rgb intensity of light emitted from the surface itself due to black body radiation
     vec3 E = get_rgb_intensity_of_emitted_light_from_black_body(vSurfaceTemp);
     vec3 beta_ray = atmosphere_surface_rayleigh_scattering_coefficients;
@@ -693,9 +695,7 @@ void main() {
     vec3 I1 = I0 * exp(-(beta_ray + beta_mie + beta_abs) * light_sigma);
     // calculate the intensity of light that reflects or emits from the surface
     vec3 I =
-        // I1 *  F      * G*D/(4.*NL*NV)                                          + // full specular fraction
-        // I1 *  F      * D                                                          + // beckmann specular fraction
-        I1 * F * G*pow(RV, alpha) + // phong specular fraction
+        I1 * F * G*D + // specular fraction
         I1 * (1.-F) * NL * fraction_reflected_rgb_intensity + // diffuse  fraction
         I0 * AMBIENT_LIGHT_AESTHETIC_FACTOR * fraction_reflected_rgb_intensity + // ambient  fraction
         E;
