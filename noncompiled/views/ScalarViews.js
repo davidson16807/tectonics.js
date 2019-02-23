@@ -1,9 +1,9 @@
 'use strict';
 
 var scalarViews = {};
-scalarViews.satellite = new RealisticWorldView('canopy');
-scalarViews.soil = new RealisticWorldView('soil');
-scalarViews.bedrock = new RealisticWorldView('bedrock');
+scalarViews.satellite = new RealisticWorldView('canopy_color');
+scalarViews.soil = new RealisticWorldView('soil_color');
+scalarViews.bedrock = new RealisticWorldView('bedrock_color');
 
 scalarViews.npp 	= new ScalarWorldView( 
 		new ColorscaleRasterView( { minColor: 0xffffff, maxColor: 0x00ff00, min: 0., max: 1. }),

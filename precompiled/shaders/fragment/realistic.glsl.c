@@ -53,34 +53,33 @@ uniform vec3  world_position;
 uniform float world_radius;
 
 
-// "SOLAR_RGB_INTENSITY" is the rgb intensity of earth's sun.
+// "SOLAR_RGB_LUMINOSITY" is the rgb luminosity of earth's sun, in Watts
 //   It is used to convert the above true color values to absorption coefficients
-const vec3  SOLAR_RGB_INTENSITY    = vec3(7247419., 8223259., 8121487.);
+const vec3  SOLAR_RGB_LUMINOSITY    = vec3(7247419., 8223259., 8121487.);
 
 const float AIR_REFRACTIVE_INDEX   = 1.000277;
 
 const vec3  WATER_COLOR_DEEP       = vec3(0.04,0.04,0.2);
 const vec3  WATER_COLOR_SHALLOW    = vec3(0.04,0.58,0.54);
 const float WATER_REFRACTIVE_INDEX = 1.333;
-const float WATER_PHONG_SHININESS  = 30.0; // NOTE: aesthetically determined, not sure if a real value can be found
-const float WATER_ROUGHNESS = 0.3;
+const float WATER_ROUGHNESS = 0.18;
 
-// TODO: set these material values in a manner similar to color, above: 
-//   e.g. specular_reflection_coefficient of water vs forest
-const vec3  MAFIC_COLOR    = vec3(50,45,50)/255.;      // observed on lunar maria 
-const vec3  FELSIC_COLOR   = vec3(214,181,158)/255.;       // observed color of rhyolite sample
-const vec3  SAND_COLOR     = vec3(245,215,145)/255.;
-const vec3  PEAT_COLOR     = vec3(100,85,60)/255.;
+const vec3  LAND_COLOR_MAFIC    = vec3(50,45,50)/255.;      // observed on lunar maria 
+const vec3  LAND_COLOR_FELSIC   = vec3(214,181,158)/255.;       // observed color of rhyolite sample
+const vec3  LAND_COLOR_SAND     = vec3(245,215,145)/255.;
+const vec3  LAND_COLOR_PEAT     = vec3(100,85,60)/255.;
+const float LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE  = 0.04; // NOTE: "0.04" is a representative value for plastics and other diffuse reflectors
+const float LAND_ROUGHNESS = 0.2;
+
 const vec3  JUNGLE_COLOR   = vec3(30,50,10)/255.;
-const float LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE  = 0.04; // NOTE: aesthetically determined, not sure if real value can be found
-const float LAND_PHONG_SHININESS  = 100.0; 
-const float LAND_ROUGHNESS = 1.0;
+const float JUNGLE_ROUGHNESS = 30.0;
 
 const vec3  SNOW_COLOR            = vec3(0.9, 0.9, 0.9); 
 const float SNOW_REFRACTIVE_INDEX = 1.333; 
-const float SNOW_PHONG_SHININESS  = 30.0;
 
-const float AMBIENT_LIGHT_AESTHETIC_FACTOR = 0.00001;
+// TODO: calculate airglow for nightside using scattering equations from atmosphere.glsl.c, 
+//   also keep in mind this: https://en.wikipedia.org/wiki/Airglow
+const float AMBIENT_LIGHT_AESTHETIC_FACTOR = 0.002;
 
 void main() {
     vec2  clipspace      = vClipspace.xy;
@@ -103,26 +102,43 @@ void main() {
 
     bool is_ocean   = vDisplacement < sealevel * sealevel_mod;
 
-    vec3 ocean      = mix(WATER_COLOR_DEEP, WATER_COLOR_SHALLOW, ocean_coverage);
-    vec3 bedrock    = mix(MAFIC_COLOR, FELSIC_COLOR, felsic_coverage);
-    vec3 soil       = mix(bedrock, mix(SAND_COLOR, PEAT_COLOR, organic_coverage), mineral_coverage);
-    vec3 canopy     = mix(soil, JUNGLE_COLOR, plant_coverage);
+    vec3 ocean_color      = mix(WATER_COLOR_DEEP, WATER_COLOR_SHALLOW, ocean_coverage);
+    vec3 bedrock_color    = mix(LAND_COLOR_MAFIC, LAND_COLOR_FELSIC, felsic_coverage);
+    vec3 soil_color       = mix(bedrock_color, mix(LAND_COLOR_SAND, LAND_COLOR_PEAT, organic_coverage), mineral_coverage);
+    vec3 canopy_color     = mix(soil_color, JUNGLE_COLOR, plant_coverage);
 
-    vec3 uncovered  = @UNCOVERED;
-    vec3 sea_covered = is_ocean? ocean : uncovered;
-    vec3 ice_covered = mix(sea_covered, SNOW_COLOR, ice_coverage*ice_mod);
+    vec3 color_when_uncovered  = @UNCOVERED;
+    vec3 color_with_sea = is_ocean? ocean_color : color_when_uncovered;
+    vec3 color_with_ice = mix(color_with_sea, SNOW_COLOR, ice_coverage*ice_mod);
+
+    // "m" is the "roughness", the root mean square of the slope of all microfacets 
+    // see https://www.desmos.com/calculator/1wmykeptcs for a way to estimate it using a function to describe the surface
+    float m = is_ocean? WATER_ROUGHNESS : mix(LAND_ROUGHNESS, JUNGLE_ROUGHNESS, plant_coverage);
+
+    // "beta_*" variables are the scattering coefficients for the atmosphere at sea level
+    vec3  beta_ray = atmosphere_surface_rayleigh_scattering_coefficients;
+    vec3  beta_mie = atmosphere_surface_mie_scattering_coefficients;
+    vec3  beta_abs = atmosphere_surface_absorption_coefficients; 
+
+
+    // "F0" is the characteristic fresnel reflectance.
+    //   it is the fraction of light that's immediately reflected when striking the surface head on.
+    vec3 F0 = vec3(mix(
+        is_ocean? get_characteristic_reflectance(WATER_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX) : LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE, 
+        get_characteristic_reflectance(SNOW_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX), 
+        ice_coverage*ice_mod
+    ));
 
     // TODO: express the above mentioned colors of sand, water, forest, etc. by absorption spectra, beer's law, etc.
-    // NOTE: We correct the color by SOLAR_RGB_INTENSITY to correct for distortion from Earth's 
-    vec3 fraction_reflected_rgb_intensity = get_rgb_intensity_of_rgb_signal(ice_covered) / normalize(SOLAR_RGB_INTENSITY);
+    // NOTE: We correct the color by SOLAR_RGB_LUMINOSITY to correct for distortion from Earth's 
+    vec3 fraction_reflected_rgb_intensity = get_rgb_intensity_of_rgb_signal(color_with_ice) / normalize(SOLAR_RGB_LUMINOSITY);
 
-    // "I0" is the rgb Intensity of Incoming Incident light, A.K.A. "Insolation"
-    vec3 I0 = light_rgb_intensity;
+    // "I_sun" is the rgb Intensity of Incoming Incident light, A.K.A. "Insolation"
+    vec3 I_sun = light_rgb_intensity;
 
-    // "Imax" is the maximum possible intensity within the viewing frame
-    // 
-    // for Earth, this would be the global solar constant 
-    float Imax = insolation_max;
+    // "I_max" is the maximum possible intensity within the viewing frame
+    //   for Earth, this would be the global solar constant 
+    float I_max = insolation_max;
 
     // "N" is the surface normal
     // TODO: pass this in from an attribute so we can generalize this beyond spheres
@@ -134,84 +150,55 @@ void main() {
     // "V" is the normal vector indicating the direction from the view
     vec3 V = -view_direction;
 
-    float NV = max(dot(N,V), 0.);
-    float NL = max(dot(N,L), 0.);
-
-    // "R" is the normal vector of a perfectly reflected ray of light
-    //   it is calculated as the reflection of L on a surface with normal N
-    vec3 R = (2.*NL*N - L);
-
-    float RV = max(dot(R,V), 0.);
-
     // "H" is the halfway vector between normal and view
-    //   it represents the normal of a surface 
+    //   it represents the surface normal that's needed to cause reflection
     vec3 H = normalize(V+L);
 
+    // Here we setup  several useful dot products of unit vectors
+    //   we can think of them as the cosines of the angles formed between them,
+    //   or their "cosine similarity": https://en.wikipedia.org/wiki/Cosine_similarity
+    float NV = max(dot(N,V), 0.);
+    float NL = max(dot(N,L), 0.);
     float NH = max(dot(N,H), 0.);
-    float HL = max(dot(H,L), 0.);
     float HV = max(dot(V,H), 0.);
 
-
-    // "alpha" is the "shininess" of the object, as known within the Phong surface normal distribution model
-    float alpha = mix(
-        is_ocean? WATER_PHONG_SHININESS : LAND_PHONG_SHININESS,
-        SNOW_PHONG_SHININESS, 
-        ice_coverage*ice_mod
+    // "sigma" is the column density of air, relative to the surface of the world, that's along the light's path of travel,
+    //   we use it to estimate the amount of light that's filtered by the atmosphere before reaching the surface
+    //   see https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-1/ for an awesome introduction
+    float sigma  = approx_air_column_density_ratio_along_line_segment (
+        // NOTE: we nudge the origin of light ray by a small amount so that collision isn't detected with the planet
+        1.01 * vPosition.xyz * reference_distance, L, 3.*world_radius,
+        world_position, world_radius, atmosphere_scale_height
     );
-
-    // "beta_*" variables are the scattering coefficients for the atmosphere at sea level
-    vec3  beta_ray = atmosphere_surface_rayleigh_scattering_coefficients;
-    vec3  beta_mie = atmosphere_surface_mie_scattering_coefficients;
-    vec3  beta_abs = atmosphere_surface_absorption_coefficients; 
-
-    // "F0" is the characteristic fresnel reflectance - the fraction that is immediately reflected from the surface, given a parallel surface normal
-    // TODO: calculate this using Fresnel reflectance equation
-    //   from https://blog.selfshadow.com/publications/s2015-shading-course/hoffman/s2015_pbs_physics_math_slides.pdf
-    //   see also https://computergraphics.stackexchange.com/questions/1513/how-physically-based-is-the-diffuse-and-specular-distinction?newreg=853edb961d524a0994bbab4c6c1b5aaa
-    vec3 F0 = vec3(mix(
-        is_ocean? get_characteristic_reflectance(WATER_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX) : LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE, 
-        get_characteristic_reflectance(SNOW_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX), 
-        ice_coverage*ice_mod
-    ));
-    // "F" is the fresnel reflectance
+    
+    // "F" is the fresnel reflectance, the fraction of light that's immediately reflected upon striking the surface
+    //   see Hoffmann 2015 for a gentle introduction to the concept
+    //   here, we use Schlick's fast approximation of the Fresnel equation
+    //   see Schlick (1994) for more details.
     vec3 F  = get_schlick_reflectance(HV, F0);
 
     // "G" is the fraction of reflected light that is lost due to masking and shadowing
-    // TODO: replace with smith masking function
-    float m = is_ocean? 0.4 : 1.0;
-    float k = sqrt(2.*m*m/PI);
-    float G = NV/(NV-k*NV+k);
-    // float G = min(1., min(2.*NH*NV/HV, 2.*NH*NL/HV));
+    //   see Hoffmann 2015 for a gentle introduction to the concept
+    //   here, we use Schlick's fast approximation of Smith
+    //   see Schlick (1994) for more details.
+    float k_G = sqrt(2.*m*m/PI);
+    float G = NV/(NV-k_G*NV+k_G); 
 
-    // "D" is the fraction of microfacet normals on the surface which are aligned to reflect light to the view
-    // float D = exp(-tan2_angle_m2)/(NH*NH*NH*NH*m*m);                 // Beckmann
-    float D = pow(RV, alpha);                                           // Phong
+    // "D" is the fraction of microfacet surface normals that are aligned to reflect light to the view
+    float D = exp((NH*NH-1.)/(m*m*NH*NH))/(m*m*NH*NH*NH*NH); // Beckmann
 
-    // "E" is the rgb intensity of light emitted from the surface itself due to black body radiation
-    vec3 E = get_rgb_intensity_of_emitted_light_from_black_body(vSurfaceTemp);
-
-    // NOTE: see here for more info:
-    //   https://en.wikipedia.org/wiki/Phong_reflection_model
-    // TODO: express diffuse/specular coefficients so size of surface imperfection is compared to wavelength,
-    //   with small imperfections diffusing only short wavelengths
-    // TODO: calculate airglow for nightside using scattering equations from atmosphere.glsl.c, 
-    //   also keep in mind this: https://en.wikipedia.org/wiki/Airglow
-
-    float light_sigma  = approx_air_column_density_ratio_along_line_segment (
-        1.01 * vPosition.xyz * reference_distance, L, 3.*world_radius,
-        // NOTE: we nudge the origin of light ray by a small amount so that collision isn't detected with the planet
-        world_position, world_radius, atmosphere_scale_height
-    );
+    // "E_surface" is the rgb intensity of light emitted from the surface itself due to black body radiation
+    vec3 E_surface = get_rgb_intensity_of_emitted_light_from_black_body(vSurfaceTemp);
 
     // calculate the intensity of light that reached the surface
-    vec3 I1 = I0 * exp(-(beta_ray + beta_mie + beta_abs) * light_sigma);
+    vec3 I_surface = I_sun * exp(-(beta_ray + beta_mie + beta_abs) * sigma);
 
     // calculate the intensity of light that reflects or emits from the surface
     vec3 I = 
-        I1 *  F      * G*D                                        + // specular fraction
-        I1 * (1.-F)  * NL                   * fraction_reflected_rgb_intensity    + // diffuse  fraction
-        I0 * AMBIENT_LIGHT_AESTHETIC_FACTOR * fraction_reflected_rgb_intensity    + // ambient  fraction
-        E;
+        I_surface *  F     * G * D / (4.*PI)                                          + // specular fraction
+        I_surface * (1.-F) * NL                    * fraction_reflected_rgb_intensity + // diffuse  fraction
+        I_sun     * AMBIENT_LIGHT_AESTHETIC_FACTOR * fraction_reflected_rgb_intensity + // ambient  fraction
+        E_surface;
 
-    gl_FragColor = vec4(get_rgb_signal_of_rgb_intensity(I/Imax),1);
+    gl_FragColor = vec4(get_rgb_signal_of_rgb_intensity(I/I_max),1);
 }
