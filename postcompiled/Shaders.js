@@ -17,6 +17,7 @@ varying float vScalar;
 varying float vVectorFractionTraversed;
 varying vec4 vPosition;
 varying vec3 vClipspace;
+varying vec4 vNormal;
 uniform float sealevel;
 // radius of the world to be rendered
 uniform float world_radius;
@@ -73,6 +74,7 @@ varying float vScalar;
 varying float vVectorFractionTraversed;
 varying vec4 vPosition;
 varying vec3 vClipspace;
+varying vec4 vNormal;
 uniform float sealevel;
 // radius of the world to be rendered
 uniform float world_radius;
@@ -125,6 +127,7 @@ varying float vScalar;
 varying float vVectorFractionTraversed;
 varying vec4 vPosition;
 varying vec3 vClipspace;
+varying vec4 vNormal;
 uniform float sealevel;
 // radius of the world to be rendered
 uniform float world_radius;
@@ -238,7 +241,7 @@ const float STEPHAN_BOLTZMANN_CONSTANT = 5.670373e-8 * WATT / (METER*METER* KELV
 const float PLANCK_CONSTANT = 6.62607004e-34 * JOULE * SECOND;
 // see Lawson 2004, "The Blackbody Fraction, Infinite Series and Spreadsheets"
 // we only do a single iteration with n=1, because it doesn't have a noticeable effect on output
-float solve_black_body_fraction_below_wavelength(
+float solve_fraction_of_light_emitted_by_black_body_below_wavelength(
  in float wavelength,
  in float temperature
 ){
@@ -262,30 +265,30 @@ float solve_black_body_fraction_below_wavelength(
  }
  return 15.*sum/(PI*PI*PI*PI);
 }
-float solve_black_body_fraction_between_wavelengths(
+float solve_fraction_of_light_emitted_by_black_body_between_wavelengths(
  in float lo,
  in float hi,
  in float temperature
 ){
- return solve_black_body_fraction_below_wavelength(hi, temperature) -
-   solve_black_body_fraction_below_wavelength(lo, temperature);
+ return solve_fraction_of_light_emitted_by_black_body_below_wavelength(hi, temperature) -
+   solve_fraction_of_light_emitted_by_black_body_below_wavelength(lo, temperature);
 }
 // This calculates the radiation (in watts/m^2) that's emitted 
 // by a single object using the Stephan-Boltzmann equation
-float get_black_body_emissive_flux(
+float get_intensity_of_light_emitted_by_black_body(
  in float temperature
 ){
     float T = temperature;
     return STEPHAN_BOLTZMANN_CONSTANT * T*T*T*T;
 }
-vec3 get_rgb_intensity_of_emitted_light_from_black_body(
+vec3 get_rgb_intensity_of_light_emitted_by_black_body(
  in float temperature
 ){
- return get_black_body_emissive_flux(temperature)
+ return get_intensity_of_light_emitted_by_black_body(temperature)
    * vec3(
-    solve_black_body_fraction_between_wavelengths(600e-9*METER, 700e-9*METER, temperature),
-    solve_black_body_fraction_between_wavelengths(500e-9*METER, 600e-9*METER, temperature),
-    solve_black_body_fraction_between_wavelengths(400e-9*METER, 500e-9*METER, temperature)
+    solve_fraction_of_light_emitted_by_black_body_between_wavelengths(600e-9*METER, 700e-9*METER, temperature),
+    solve_fraction_of_light_emitted_by_black_body_between_wavelengths(500e-9*METER, 600e-9*METER, temperature),
+    solve_fraction_of_light_emitted_by_black_body_between_wavelengths(400e-9*METER, 500e-9*METER, temperature)
      );
 }
 float get_rayleigh_phase_factor(in float cos_scatter_angle)
@@ -318,8 +321,9 @@ float get_schlick_phase_factor(in float cos_scatter_angle)
  / //-------------------------------------------
   (4. * PI * (1. + k*cos_scatter_angle) * (1. + k*cos_scatter_angle));
 }
-// "get_characteristic_reflectance" finds the fraction of light that's reflected by the boundary between materials
-//   order of refractive indices does not matter
+// "get_characteristic_reflectance" finds the fraction of light that's reflected
+//   by a boundary between materials when striking head on.
+//   The refractive indices can be provided as parameters in any order.
 float get_characteristic_reflectance(in float refractivate_index1, in float refractivate_index2)
 {
  float n1 = refractivate_index1;
@@ -328,23 +332,52 @@ float get_characteristic_reflectance(in float refractivate_index1, in float refr
  float R0 = sqrtR0 * sqrtR0;
  return R0;
 }
-// "get_schlick_reflectance" Schlick's approximation for Fresnel reflectance
-//   for floats
-//   https://en.wikipedia.org/wiki/Schlick%27s_approximation
-float get_schlick_reflectance(in float cos_incident_angle, in float characteristic_reflectance)
+// "get_fraction_of_light_reflected_on_surface" returns Fresnel reflectance.
+//   Fresnel reflectance is the fraction of light that's immediately reflected upon striking the surface.
+//   It is the fraction of light that causes specular reflection.
+//   Here, we use Schlick's fast approximation for Fresnel reflectance.
+//   see https://en.wikipedia.org/wiki/Schlick%27s_approximation for a summary 
+//   see Hoffmann 2015 for a gentle introduction to the concept
+//   see Schlick (1994) for implementation details
+float get_fraction_of_light_reflected_on_surface(in float cos_incident_angle, in float characteristic_reflectance)
 {
  float R0 = characteristic_reflectance;
- float _1_cos_theta = 1.-cos_incident_angle;
- return R0 + (1.-R0) * _1_cos_theta*_1_cos_theta*_1_cos_theta*_1_cos_theta*_1_cos_theta;
+ float _1_u = 1.-cos_incident_angle;
+ return R0 + (1.-R0) * _1_u*_1_u*_1_u*_1_u*_1_u;
 }
-// "get_schlick_reflectance" Schlick's approximation for Fresnel reflectance
-//   for vectors
-//   https://en.wikipedia.org/wiki/Schlick%27s_approximation
-vec3 get_schlick_reflectance(in float cos_incident_angle, in vec3 characteristic_reflectance)
+// "get_rgb_fraction_of_light_reflected_on_surface" returns Fresnel reflectance for each color channel.
+//   Fresnel reflectance is the fraction of light that's immediately reflected upon striking the surface.
+//   It is the fraction of light that causes specular reflection.
+//   Here, we use Schlick's fast approximation for Fresnel reflectance.
+//   see https://en.wikipedia.org/wiki/Schlick%27s_approximation for a summary 
+//   see Hoffmann 2015 for a gentle introduction to the concept
+//   see Schlick (1994) for implementation details
+vec3 get_rgb_fraction_of_light_reflected_on_surface(in float cos_incident_angle, in vec3 characteristic_reflectance)
 {
  vec3 R0 = characteristic_reflectance;
- float _1_cos_theta = 1.-cos_incident_angle;
- return R0 + (1.-R0) * _1_cos_theta*_1_cos_theta*_1_cos_theta*_1_cos_theta*_1_cos_theta;
+ float _1_u = 1.-cos_incident_angle;
+ return R0 + (1.-R0) * _1_u*_1_u*_1_u*_1_u*_1_u;
+}
+// "get_fraction_of_reflected_light_masked_or_shaded" is Schlick's fast approximation for Smith's function
+//   see Hoffmann 2015 for a gentle introduction to the concept
+//   see Schlick (1994) for even more details.
+float get_fraction_of_reflected_light_masked_or_shaded(in float cos_view_angle, in float root_mean_slope_squared)
+{
+ float m = root_mean_slope_squared;
+ float v = cos_view_angle;
+ float k = sqrt(2.*m*m/PI);
+    return v/(v-k*v+k);
+}
+// "get_fraction_of_microfacets_with_angle" 
+//   This is also known as the Beckmann Surface Normal Distribution Function.
+//   This is the probability of finding a microfacet whose surface normal deviates from the average by a certain angle.
+//   see Hoffmann 2015 for a gentle introduction to the concept.
+//   see Schlick (1994) for even more details.
+float get_fraction_of_microfacets_with_angle(in float cos_angle_of_deviation, in float root_mean_slope_squared)
+{
+ float m = root_mean_slope_squared;
+ float t = cos_angle_of_deviation;
+    return exp((t*t-1.)/(m*m*t*t))/(m*m*t*t*t*t);
 }
 const float BIG = 1e20;
 const float SMALL = 1e-20;
@@ -498,6 +531,104 @@ float approx_air_column_density_ratio_along_line_segment (
      z2, world_radius, atmosphere_scale_height
  );
 }
+vec3 get_rgb_intensity_of_light_rays_through_atmosphere(
+    vec3 view_origin, vec3 view_direction,
+    vec3 world_position, float world_radius,
+    vec3 light_direction, vec3 light_rgb_intensity,
+    vec3 background_rgb_intensity,
+    float atmosphere_scale_height,
+    vec3 beta_ray,
+    vec3 beta_mie,
+    vec3 beta_abs
+){
+    float unused1, unused2, unused3, unused4; // used for passing unused output parameters to functions
+    const float VIEW_STEP_COUNT = 16.;// number of steps taken while marching along the view ray
+    bool view_is_scattered; // whether view ray will enter the atmosphere
+    bool view_is_obstructed; // whether view ray will enter the surface of a world
+    float view_z2; // distance ("radius") from the view ray to the center of the world at closest approach, squared
+    float view_x_z; // distance along the view ray at which closest approach occurs
+    float view_x_enter_atmo; // distance along the view ray at which the ray enters the atmosphere
+    float view_x_exit_atmo; // distance along the view ray at which the ray exits the atmosphere
+    float view_x_enter_world; // distance along the view ray at which the ray enters the surface of the world
+    float view_x_exit_world; // distance along the view ray at which the ray enters the surface of the world
+    float view_x_start; // distance along the view ray at which scattering starts, either because it's the start of the ray or the start of the atmosphere 
+    float view_x_stop; // distance along the view ray at which scattering no longer occurs, either due to hitting the world or leaving the atmosphere
+    float view_dx; // distance between steps while marching along the view ray
+    float view_x; // distance traversed while marching along the view ray
+    float view_sigma; // columnar density ratios for rayleigh and mie scattering, found by marching along the view ray. This expresses the quantity of air encountered along the view ray, relative to air density on the surface
+    vec3 light_origin; // absolute position while marching along the view ray
+    float light_h; // distance ("height") from the surface of the world while marching along the view ray
+    float light_sigma; // columnar density ratio encountered along the light ray. This expresses the quantity of air encountered along the light ray, relative to air density on the surface
+    // "atmosphere_radius" is the distance from the center of the world to the top of the atmosphere
+    //   We only set it to 3 scale heights because we are using this parameter for raymarching, and not a closed form solution
+    float atmosphere_radius = world_radius + 12. * atmosphere_scale_height;
+    // cosine of angle between view and light directions
+    float cos_scatter_angle = dot(view_direction, light_direction);
+    // fraction of outgoing light transmitted across a given path
+    vec3 fraction_outgoing = vec3(0);
+    // fraction of incoming light transmitted across a given path
+    vec3 fraction_incoming = vec3(0);
+    // total intensity for each color channel, found as the sum of light intensities for each path from the light source to the camera
+    vec3 total_rgb_intensity = vec3(0);
+    // Rayleigh and Mie phase factors,
+    // A.K.A "gamma" from Alan Zucconi: https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-3/
+    // This factor indicates the fraction of sunlight scattered to a given angle (indicated by its cosine, A.K.A. "cos_scatter_angle").
+    // It only accounts for a portion of the sunlight that's lost during the scatter, which is irrespective of wavelength or density
+    // The rest of the fractional loss is accounted for by the variable "betas", which is dependant on wavelength, 
+    // and the density ratio, which is dependant on height
+    // So all together, the fraction of sunlight that scatters to a given angle is: beta(wavelength) * gamma(angle) * density_ratio(height)
+    float gamma_ray = get_rayleigh_phase_factor(cos_scatter_angle);
+    float gamma_mie = get_henyey_greenstein_phase_factor(cos_scatter_angle);
+    get_relation_between_ray_and_point(
+        world_position,
+        view_origin, view_direction,
+        view_z2, view_x_z
+    );
+    view_is_scattered = try_get_relation_between_ray_and_sphere(
+        atmosphere_radius,
+        view_z2, view_x_z,
+        view_x_enter_atmo, view_x_exit_atmo
+    );
+    view_is_obstructed = try_get_relation_between_ray_and_sphere(
+        world_radius,
+        view_z2, view_x_z,
+        view_x_enter_world, view_x_exit_world
+    );
+    // if view ray does not interact with the atmosphere
+    // don't bother running the raymarch algorithm
+    if (!view_is_scattered)
+    {
+        return background_rgb_intensity;
+    }
+    view_x_start = max(view_x_enter_atmo, 0.);
+    view_x_stop = view_is_obstructed? view_x_enter_world : view_x_exit_atmo;
+    view_dx = (view_x_stop - view_x_start) / VIEW_STEP_COUNT;
+    view_x = view_x_start + 0.5 * view_dx;
+    for (float i = 0.; i < VIEW_STEP_COUNT; ++i)
+    {
+        light_origin = view_origin + view_direction * view_x;
+        light_h = get_height_along_ray_over_world(view_x-view_x_z, view_z2, world_radius);
+        view_sigma = approx_air_column_density_ratio_along_line_segment (
+            view_origin, view_direction, view_x,
+            world_position, world_radius, atmosphere_scale_height
+        );
+        light_sigma = approx_air_column_density_ratio_along_line_segment (
+            light_origin, light_direction, 3.*world_radius,
+            world_position, world_radius, atmosphere_scale_height
+        );
+        total_rgb_intensity += light_rgb_intensity
+            // outgoing fraction: the fraction of light that scatters away from camera
+            * exp(-(beta_ray + beta_mie + beta_abs) * (view_sigma + light_sigma))
+            // incoming fraction: the fraction of light that scatters towards camera
+            * view_dx * exp(-light_h/atmosphere_scale_height) * (beta_ray * gamma_ray + beta_mie * gamma_mie);
+        view_x += view_dx;
+    }
+    // now calculate the intensity of light that traveled straight in from the background, and add it to the total
+    total_rgb_intensity += background_rgb_intensity
+        // outgoing fraction: the fraction of light that would travel straight towards camera, but gets diverted
+        * exp(-(beta_ray + beta_mie + beta_abs) * view_sigma);
+    return total_rgb_intensity;
+}
 // This function returns a rgb vector that quickly approximates a spectral "bump".
 // Adapted from GPU Gems and Alan Zucconi
 // from https://www.alanzucconi.com/2017/07/15/improving-the-rainbow/
@@ -582,15 +713,15 @@ const float AIR_REFRACTIVE_INDEX = 1.000277;
 const vec3 WATER_COLOR_DEEP = vec3(0.04,0.04,0.2);
 const vec3 WATER_COLOR_SHALLOW = vec3(0.04,0.58,0.54);
 const float WATER_REFRACTIVE_INDEX = 1.333;
-const float WATER_ROUGHNESS = 0.18;
+const float WATER_ROOT_MEAN_SLOPE_SQUARED = 0.18;
 const vec3 LAND_COLOR_MAFIC = vec3(50,45,50)/255.; // observed on lunar maria 
 const vec3 LAND_COLOR_FELSIC = vec3(214,181,158)/255.; // observed color of rhyolite sample
 const vec3 LAND_COLOR_SAND = vec3(245,215,145)/255.;
 const vec3 LAND_COLOR_PEAT = vec3(100,85,60)/255.;
 const float LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE = 0.04; // NOTE: "0.04" is a representative value for plastics and other diffuse reflectors
-const float LAND_ROUGHNESS = 0.2;
+const float LAND_ROOT_MEAN_SLOPE_SQUARED = 0.2;
 const vec3 JUNGLE_COLOR = vec3(30,50,10)/255.;
-const float JUNGLE_ROUGHNESS = 30.0;
+const float JUNGLE_ROOT_MEAN_SLOPE_SQUARED = 30.0;
 const vec3 SNOW_COLOR = vec3(0.9, 0.9, 0.9);
 const float SNOW_REFRACTIVE_INDEX = 1.333;
 // TODO: calculate airglow for nightside using scattering equations from atmosphere.glsl.c, 
@@ -619,15 +750,16 @@ void main() {
     vec3 color_when_uncovered = @UNCOVERED;
     vec3 color_with_sea = is_ocean? ocean_color : color_when_uncovered;
     vec3 color_with_ice = mix(color_with_sea, SNOW_COLOR, ice_coverage*ice_mod);
-    // "m" is the "roughness", the root mean square of the slope of all microfacets 
-    // see https://www.desmos.com/calculator/1wmykeptcs for a way to estimate it using a function to describe the surface
-    float m = is_ocean? WATER_ROUGHNESS : mix(LAND_ROUGHNESS, JUNGLE_ROUGHNESS, plant_coverage);
     // "beta_*" variables are the scattering coefficients for the atmosphere at sea level
     vec3 beta_ray = atmosphere_surface_rayleigh_scattering_coefficients;
     vec3 beta_mie = atmosphere_surface_mie_scattering_coefficients;
     vec3 beta_abs = atmosphere_surface_absorption_coefficients;
+    // "m" is the "ROOT_MEAN_SLOPE_SQUARED", the root mean square of the slope of all microfacets 
+    // see https://www.desmos.com/calculator/0tqwgsjcje for a way to estimate it using a function to describe the surface
+    float m = is_ocean? WATER_ROOT_MEAN_SLOPE_SQUARED : mix(LAND_ROOT_MEAN_SLOPE_SQUARED, JUNGLE_ROOT_MEAN_SLOPE_SQUARED, plant_coverage);
     // "F0" is the characteristic fresnel reflectance.
     //   it is the fraction of light that's immediately reflected when striking the surface head on.
+    // TODO: model refractive index as a function of wavelength
     vec3 F0 = vec3(mix(
         is_ocean? get_characteristic_reflectance(WATER_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX) : LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE,
         get_characteristic_reflectance(SNOW_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX),
@@ -668,21 +800,17 @@ void main() {
     );
     // "F" is the fresnel reflectance, the fraction of light that's immediately reflected upon striking the surface
     //   see Hoffmann 2015 for a gentle introduction to the concept
-    //   here, we use Schlick's fast approximation of the Fresnel equation
-    //   see Schlick (1994) for more details.
-    vec3 F = get_schlick_reflectance(HV, F0);
+    vec3 F = get_rgb_fraction_of_light_reflected_on_surface(HV, F0);
     // "G" is the fraction of reflected light that is lost due to masking and shadowing
     //   see Hoffmann 2015 for a gentle introduction to the concept
-    //   here, we use Schlick's fast approximation of Smith
-    //   see Schlick (1994) for more details.
-    float k_G = sqrt(2.*m*m/PI);
-    float G = NV/(NV-k_G*NV+k_G);
+    float G = get_fraction_of_reflected_light_masked_or_shaded(NV, m);
     // "D" is the fraction of microfacet surface normals that are aligned to reflect light to the view
-    float D = exp((NH*NH-1.)/(m*m*NH*NH))/(m*m*NH*NH*NH*NH); // Beckmann
-    // "E_surface" is the rgb intensity of light emitted from the surface itself due to black body radiation
-    vec3 E_surface = get_rgb_intensity_of_emitted_light_from_black_body(vSurfaceTemp);
-    // calculate the intensity of light that reached the surface
+    //   see Hoffmann 2015 for a gentle introduction to the concept
+    float D = get_fraction_of_microfacets_with_angle(NH, m);
+    // "I_surface" is the intensity of light that reaches the surface after being filtered by atmosphere
     vec3 I_surface = I_sun * exp(-(beta_ray + beta_mie + beta_abs) * sigma);
+    // "E_surface" is the rgb intensity of light emitted from the surface itself due to black body radiation
+    vec3 E_surface = get_rgb_intensity_of_light_emitted_by_black_body(vSurfaceTemp);
     // calculate the intensity of light that reflects or emits from the surface
     vec3 I =
         I_surface * F * G * D / (4.*PI) + // specular fraction
@@ -882,7 +1010,7 @@ const float STEPHAN_BOLTZMANN_CONSTANT = 5.670373e-8 * WATT / (METER*METER* KELV
 const float PLANCK_CONSTANT = 6.62607004e-34 * JOULE * SECOND;
 // see Lawson 2004, "The Blackbody Fraction, Infinite Series and Spreadsheets"
 // we only do a single iteration with n=1, because it doesn't have a noticeable effect on output
-float solve_black_body_fraction_below_wavelength(
+float solve_fraction_of_light_emitted_by_black_body_below_wavelength(
  in float wavelength,
  in float temperature
 ){
@@ -906,30 +1034,30 @@ float solve_black_body_fraction_below_wavelength(
  }
  return 15.*sum/(PI*PI*PI*PI);
 }
-float solve_black_body_fraction_between_wavelengths(
+float solve_fraction_of_light_emitted_by_black_body_between_wavelengths(
  in float lo,
  in float hi,
  in float temperature
 ){
- return solve_black_body_fraction_below_wavelength(hi, temperature) -
-   solve_black_body_fraction_below_wavelength(lo, temperature);
+ return solve_fraction_of_light_emitted_by_black_body_below_wavelength(hi, temperature) -
+   solve_fraction_of_light_emitted_by_black_body_below_wavelength(lo, temperature);
 }
 // This calculates the radiation (in watts/m^2) that's emitted 
 // by a single object using the Stephan-Boltzmann equation
-float get_black_body_emissive_flux(
+float get_intensity_of_light_emitted_by_black_body(
  in float temperature
 ){
     float T = temperature;
     return STEPHAN_BOLTZMANN_CONSTANT * T*T*T*T;
 }
-vec3 get_rgb_intensity_of_emitted_light_from_black_body(
+vec3 get_rgb_intensity_of_light_emitted_by_black_body(
  in float temperature
 ){
- return get_black_body_emissive_flux(temperature)
+ return get_intensity_of_light_emitted_by_black_body(temperature)
    * vec3(
-    solve_black_body_fraction_between_wavelengths(600e-9*METER, 700e-9*METER, temperature),
-    solve_black_body_fraction_between_wavelengths(500e-9*METER, 600e-9*METER, temperature),
-    solve_black_body_fraction_between_wavelengths(400e-9*METER, 500e-9*METER, temperature)
+    solve_fraction_of_light_emitted_by_black_body_between_wavelengths(600e-9*METER, 700e-9*METER, temperature),
+    solve_fraction_of_light_emitted_by_black_body_between_wavelengths(500e-9*METER, 600e-9*METER, temperature),
+    solve_fraction_of_light_emitted_by_black_body_between_wavelengths(400e-9*METER, 500e-9*METER, temperature)
      );
 }
 float get_rayleigh_phase_factor(in float cos_scatter_angle)
@@ -962,8 +1090,9 @@ float get_schlick_phase_factor(in float cos_scatter_angle)
  / //-------------------------------------------
   (4. * PI * (1. + k*cos_scatter_angle) * (1. + k*cos_scatter_angle));
 }
-// "get_characteristic_reflectance" finds the fraction of light that's reflected by the boundary between materials
-//   order of refractive indices does not matter
+// "get_characteristic_reflectance" finds the fraction of light that's reflected
+//   by a boundary between materials when striking head on.
+//   The refractive indices can be provided as parameters in any order.
 float get_characteristic_reflectance(in float refractivate_index1, in float refractivate_index2)
 {
  float n1 = refractivate_index1;
@@ -972,23 +1101,52 @@ float get_characteristic_reflectance(in float refractivate_index1, in float refr
  float R0 = sqrtR0 * sqrtR0;
  return R0;
 }
-// "get_schlick_reflectance" Schlick's approximation for Fresnel reflectance
-//   for floats
-//   https://en.wikipedia.org/wiki/Schlick%27s_approximation
-float get_schlick_reflectance(in float cos_incident_angle, in float characteristic_reflectance)
+// "get_fraction_of_light_reflected_on_surface" returns Fresnel reflectance.
+//   Fresnel reflectance is the fraction of light that's immediately reflected upon striking the surface.
+//   It is the fraction of light that causes specular reflection.
+//   Here, we use Schlick's fast approximation for Fresnel reflectance.
+//   see https://en.wikipedia.org/wiki/Schlick%27s_approximation for a summary 
+//   see Hoffmann 2015 for a gentle introduction to the concept
+//   see Schlick (1994) for implementation details
+float get_fraction_of_light_reflected_on_surface(in float cos_incident_angle, in float characteristic_reflectance)
 {
  float R0 = characteristic_reflectance;
- float _1_cos_theta = 1.-cos_incident_angle;
- return R0 + (1.-R0) * _1_cos_theta*_1_cos_theta*_1_cos_theta*_1_cos_theta*_1_cos_theta;
+ float _1_u = 1.-cos_incident_angle;
+ return R0 + (1.-R0) * _1_u*_1_u*_1_u*_1_u*_1_u;
 }
-// "get_schlick_reflectance" Schlick's approximation for Fresnel reflectance
-//   for vectors
-//   https://en.wikipedia.org/wiki/Schlick%27s_approximation
-vec3 get_schlick_reflectance(in float cos_incident_angle, in vec3 characteristic_reflectance)
+// "get_rgb_fraction_of_light_reflected_on_surface" returns Fresnel reflectance for each color channel.
+//   Fresnel reflectance is the fraction of light that's immediately reflected upon striking the surface.
+//   It is the fraction of light that causes specular reflection.
+//   Here, we use Schlick's fast approximation for Fresnel reflectance.
+//   see https://en.wikipedia.org/wiki/Schlick%27s_approximation for a summary 
+//   see Hoffmann 2015 for a gentle introduction to the concept
+//   see Schlick (1994) for implementation details
+vec3 get_rgb_fraction_of_light_reflected_on_surface(in float cos_incident_angle, in vec3 characteristic_reflectance)
 {
  vec3 R0 = characteristic_reflectance;
- float _1_cos_theta = 1.-cos_incident_angle;
- return R0 + (1.-R0) * _1_cos_theta*_1_cos_theta*_1_cos_theta*_1_cos_theta*_1_cos_theta;
+ float _1_u = 1.-cos_incident_angle;
+ return R0 + (1.-R0) * _1_u*_1_u*_1_u*_1_u*_1_u;
+}
+// "get_fraction_of_reflected_light_masked_or_shaded" is Schlick's fast approximation for Smith's function
+//   see Hoffmann 2015 for a gentle introduction to the concept
+//   see Schlick (1994) for even more details.
+float get_fraction_of_reflected_light_masked_or_shaded(in float cos_view_angle, in float root_mean_slope_squared)
+{
+ float m = root_mean_slope_squared;
+ float v = cos_view_angle;
+ float k = sqrt(2.*m*m/PI);
+    return v/(v-k*v+k);
+}
+// "get_fraction_of_microfacets_with_angle" 
+//   This is also known as the Beckmann Surface Normal Distribution Function.
+//   This is the probability of finding a microfacet whose surface normal deviates from the average by a certain angle.
+//   see Hoffmann 2015 for a gentle introduction to the concept.
+//   see Schlick (1994) for even more details.
+float get_fraction_of_microfacets_with_angle(in float cos_angle_of_deviation, in float root_mean_slope_squared)
+{
+ float m = root_mean_slope_squared;
+ float t = cos_angle_of_deviation;
+    return exp((t*t-1.)/(m*m*t*t))/(m*m*t*t*t*t);
 }
 const float BIG = 1e20;
 const float SMALL = 1e-20;
@@ -1142,6 +1300,104 @@ float approx_air_column_density_ratio_along_line_segment (
      z2, world_radius, atmosphere_scale_height
  );
 }
+vec3 get_rgb_intensity_of_light_rays_through_atmosphere(
+    vec3 view_origin, vec3 view_direction,
+    vec3 world_position, float world_radius,
+    vec3 light_direction, vec3 light_rgb_intensity,
+    vec3 background_rgb_intensity,
+    float atmosphere_scale_height,
+    vec3 beta_ray,
+    vec3 beta_mie,
+    vec3 beta_abs
+){
+    float unused1, unused2, unused3, unused4; // used for passing unused output parameters to functions
+    const float VIEW_STEP_COUNT = 16.;// number of steps taken while marching along the view ray
+    bool view_is_scattered; // whether view ray will enter the atmosphere
+    bool view_is_obstructed; // whether view ray will enter the surface of a world
+    float view_z2; // distance ("radius") from the view ray to the center of the world at closest approach, squared
+    float view_x_z; // distance along the view ray at which closest approach occurs
+    float view_x_enter_atmo; // distance along the view ray at which the ray enters the atmosphere
+    float view_x_exit_atmo; // distance along the view ray at which the ray exits the atmosphere
+    float view_x_enter_world; // distance along the view ray at which the ray enters the surface of the world
+    float view_x_exit_world; // distance along the view ray at which the ray enters the surface of the world
+    float view_x_start; // distance along the view ray at which scattering starts, either because it's the start of the ray or the start of the atmosphere 
+    float view_x_stop; // distance along the view ray at which scattering no longer occurs, either due to hitting the world or leaving the atmosphere
+    float view_dx; // distance between steps while marching along the view ray
+    float view_x; // distance traversed while marching along the view ray
+    float view_sigma; // columnar density ratios for rayleigh and mie scattering, found by marching along the view ray. This expresses the quantity of air encountered along the view ray, relative to air density on the surface
+    vec3 light_origin; // absolute position while marching along the view ray
+    float light_h; // distance ("height") from the surface of the world while marching along the view ray
+    float light_sigma; // columnar density ratio encountered along the light ray. This expresses the quantity of air encountered along the light ray, relative to air density on the surface
+    // "atmosphere_radius" is the distance from the center of the world to the top of the atmosphere
+    //   We only set it to 3 scale heights because we are using this parameter for raymarching, and not a closed form solution
+    float atmosphere_radius = world_radius + 12. * atmosphere_scale_height;
+    // cosine of angle between view and light directions
+    float cos_scatter_angle = dot(view_direction, light_direction);
+    // fraction of outgoing light transmitted across a given path
+    vec3 fraction_outgoing = vec3(0);
+    // fraction of incoming light transmitted across a given path
+    vec3 fraction_incoming = vec3(0);
+    // total intensity for each color channel, found as the sum of light intensities for each path from the light source to the camera
+    vec3 total_rgb_intensity = vec3(0);
+    // Rayleigh and Mie phase factors,
+    // A.K.A "gamma" from Alan Zucconi: https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-3/
+    // This factor indicates the fraction of sunlight scattered to a given angle (indicated by its cosine, A.K.A. "cos_scatter_angle").
+    // It only accounts for a portion of the sunlight that's lost during the scatter, which is irrespective of wavelength or density
+    // The rest of the fractional loss is accounted for by the variable "betas", which is dependant on wavelength, 
+    // and the density ratio, which is dependant on height
+    // So all together, the fraction of sunlight that scatters to a given angle is: beta(wavelength) * gamma(angle) * density_ratio(height)
+    float gamma_ray = get_rayleigh_phase_factor(cos_scatter_angle);
+    float gamma_mie = get_henyey_greenstein_phase_factor(cos_scatter_angle);
+    get_relation_between_ray_and_point(
+        world_position,
+        view_origin, view_direction,
+        view_z2, view_x_z
+    );
+    view_is_scattered = try_get_relation_between_ray_and_sphere(
+        atmosphere_radius,
+        view_z2, view_x_z,
+        view_x_enter_atmo, view_x_exit_atmo
+    );
+    view_is_obstructed = try_get_relation_between_ray_and_sphere(
+        world_radius,
+        view_z2, view_x_z,
+        view_x_enter_world, view_x_exit_world
+    );
+    // if view ray does not interact with the atmosphere
+    // don't bother running the raymarch algorithm
+    if (!view_is_scattered)
+    {
+        return background_rgb_intensity;
+    }
+    view_x_start = max(view_x_enter_atmo, 0.);
+    view_x_stop = view_is_obstructed? view_x_enter_world : view_x_exit_atmo;
+    view_dx = (view_x_stop - view_x_start) / VIEW_STEP_COUNT;
+    view_x = view_x_start + 0.5 * view_dx;
+    for (float i = 0.; i < VIEW_STEP_COUNT; ++i)
+    {
+        light_origin = view_origin + view_direction * view_x;
+        light_h = get_height_along_ray_over_world(view_x-view_x_z, view_z2, world_radius);
+        view_sigma = approx_air_column_density_ratio_along_line_segment (
+            view_origin, view_direction, view_x,
+            world_position, world_radius, atmosphere_scale_height
+        );
+        light_sigma = approx_air_column_density_ratio_along_line_segment (
+            light_origin, light_direction, 3.*world_radius,
+            world_position, world_radius, atmosphere_scale_height
+        );
+        total_rgb_intensity += light_rgb_intensity
+            // outgoing fraction: the fraction of light that scatters away from camera
+            * exp(-(beta_ray + beta_mie + beta_abs) * (view_sigma + light_sigma))
+            // incoming fraction: the fraction of light that scatters towards camera
+            * view_dx * exp(-light_h/atmosphere_scale_height) * (beta_ray * gamma_ray + beta_mie * gamma_mie);
+        view_x += view_dx;
+    }
+    // now calculate the intensity of light that traveled straight in from the background, and add it to the total
+    total_rgb_intensity += background_rgb_intensity
+        // outgoing fraction: the fraction of light that would travel straight towards camera, but gets diverted
+        * exp(-(beta_ray + beta_mie + beta_abs) * view_sigma);
+    return total_rgb_intensity;
+}
 // This function returns a rgb vector that quickly approximates a spectral "bump".
 // Adapted from GPU Gems and Alan Zucconi
 // from https://www.alanzucconi.com/2017/07/15/improving-the-rainbow/
@@ -1217,104 +1473,6 @@ bool isnan(float x)
 bool isbig(float x)
 {
  return abs(x)>BIG;
-}
-vec3 get_rgb_intensity_of_light_rays_through_atmosphere(
-    vec3 view_origin, vec3 view_direction,
-    vec3 world_position, float world_radius,
-    vec3 light_direction, vec3 light_rgb_intensity,
-    vec3 background_rgb_intensity,
-    float atmosphere_scale_height,
-    vec3 beta_ray,
-    vec3 beta_mie,
-    vec3 beta_abs
-){
-    float unused1, unused2, unused3, unused4; // used for passing unused output parameters to functions
-    const float VIEW_STEP_COUNT = 16.;// number of steps taken while marching along the view ray
-    bool view_is_scattered; // whether view ray will enter the atmosphere
-    bool view_is_obstructed; // whether view ray will enter the surface of a world
-    float view_z2; // distance ("radius") from the view ray to the center of the world at closest approach, squared
-    float view_x_z; // distance along the view ray at which closest approach occurs
-    float view_x_enter_atmo; // distance along the view ray at which the ray enters the atmosphere
-    float view_x_exit_atmo; // distance along the view ray at which the ray exits the atmosphere
-    float view_x_enter_world; // distance along the view ray at which the ray enters the surface of the world
-    float view_x_exit_world; // distance along the view ray at which the ray enters the surface of the world
-    float view_x_start; // distance along the view ray at which scattering starts, either because it's the start of the ray or the start of the atmosphere 
-    float view_x_stop; // distance along the view ray at which scattering no longer occurs, either due to hitting the world or leaving the atmosphere
-    float view_dx; // distance between steps while marching along the view ray
-    float view_x; // distance traversed while marching along the view ray
-    float view_sigma; // columnar density ratios for rayleigh and mie scattering, found by marching along the view ray. This expresses the quantity of air encountered along the view ray, relative to air density on the surface
-    vec3 light_origin; // absolute position while marching along the view ray
-    float light_h; // distance ("height") from the surface of the world while marching along the view ray
-    float light_sigma; // columnar density ratio encountered along the light ray. This expresses the quantity of air encountered along the light ray, relative to air density on the surface
-    // "atmosphere_radius" is the distance from the center of the world to the top of the atmosphere
-    //   We only set it to 3 scale heights because we are using this parameter for raymarching, and not a closed form solution
-    float atmosphere_radius = world_radius + 12. * atmosphere_scale_height;
-    // cosine of angle between view and light directions
-    float cos_scatter_angle = dot(view_direction, light_direction);
-    // fraction of outgoing light transmitted across a given path
-    vec3 fraction_outgoing = vec3(0);
-    // fraction of incoming light transmitted across a given path
-    vec3 fraction_incoming = vec3(0);
-    // total intensity for each color channel, found as the sum of light intensities for each path from the light source to the camera
-    vec3 total_rgb_intensity = vec3(0);
-    // Rayleigh and Mie phase factors,
-    // A.K.A "gamma" from Alan Zucconi: https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-3/
-    // This factor indicates the fraction of sunlight scattered to a given angle (indicated by its cosine, A.K.A. "cos_scatter_angle").
-    // It only accounts for a portion of the sunlight that's lost during the scatter, which is irrespective of wavelength or density
-    // The rest of the fractional loss is accounted for by the variable "betas", which is dependant on wavelength, 
-    // and the density ratio, which is dependant on height
-    // So all together, the fraction of sunlight that scatters to a given angle is: beta(wavelength) * gamma(angle) * density_ratio(height)
-    float gamma_ray = get_rayleigh_phase_factor(cos_scatter_angle);
-    float gamma_mie = get_henyey_greenstein_phase_factor(cos_scatter_angle);
-    get_relation_between_ray_and_point(
-  world_position,
-     view_origin, view_direction,
-  view_z2, view_x_z
- );
-    view_is_scattered = try_get_relation_between_ray_and_sphere(
-        atmosphere_radius,
-        view_z2, view_x_z,
-        view_x_enter_atmo, view_x_exit_atmo
-    );
-    view_is_obstructed = try_get_relation_between_ray_and_sphere(
-        world_radius,
-        view_z2, view_x_z,
-        view_x_enter_world, view_x_exit_world
-    );
-    // if view ray does not interact with the atmosphere
-    // don't bother running the raymarch algorithm
-    if (!view_is_scattered)
-    {
-     return background_rgb_intensity;
-    }
- view_x_start = max(view_x_enter_atmo, 0.);
-    view_x_stop = view_is_obstructed? view_x_enter_world : view_x_exit_atmo;
-    view_dx = (view_x_stop - view_x_start) / VIEW_STEP_COUNT;
-    view_x = view_x_start + 0.5 * view_dx;
-    for (float i = 0.; i < VIEW_STEP_COUNT; ++i)
-    {
-        light_origin = view_origin + view_direction * view_x;
-        light_h = get_height_along_ray_over_world(view_x-view_x_z, view_z2, world_radius);
-     view_sigma = approx_air_column_density_ratio_along_line_segment (
-   view_origin, view_direction, view_x,
-   world_position, world_radius, atmosphere_scale_height
-  );
-     light_sigma = approx_air_column_density_ratio_along_line_segment (
-   light_origin, light_direction, 3.*world_radius,
-   world_position, world_radius, atmosphere_scale_height
-  );
-        total_rgb_intensity += light_rgb_intensity
-         // outgoing fraction: the fraction of light that scatters away from camera
-         * exp(-(beta_ray + beta_mie + beta_abs) * (view_sigma + light_sigma))
-         // incoming fraction: the fraction of light that scatters towards camera
-         * view_dx * exp(-light_h/atmosphere_scale_height) * (beta_ray * gamma_ray + beta_mie * gamma_mie);
-        view_x += view_dx;
-    }
-    // now calculate the intensity of light that traveled straight in from the background, and add it to the total
-    total_rgb_intensity += background_rgb_intensity
-        // outgoing fraction: the fraction of light that would travel straight towards camera, but gets diverted
-     * exp(-(beta_ray + beta_mie + beta_abs) * view_sigma);
-    return total_rgb_intensity;
 }
 vec2 get_chartspace(vec2 bottomleft, vec2 topright, vec2 screenspace){
     return screenspace * abs(topright - bottomleft) + bottomleft;

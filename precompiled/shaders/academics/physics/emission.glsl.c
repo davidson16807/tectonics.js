@@ -1,7 +1,7 @@
 
 // see Lawson 2004, "The Blackbody Fraction, Infinite Series and Spreadsheets"
 // we only do a single iteration with n=1, because it doesn't have a noticeable effect on output
-FUNC(float) solve_black_body_fraction_below_wavelength(
+FUNC(float) solve_fraction_of_light_emitted_by_black_body_below_wavelength(
 	IN(float) wavelength, 
 	IN(float) temperature
 ){ 
@@ -28,29 +28,29 @@ FUNC(float) solve_black_body_fraction_below_wavelength(
 	}
 	return 15.*sum/(PI*PI*PI*PI);
 }
-FUNC(float) solve_black_body_fraction_between_wavelengths(
+FUNC(float) solve_fraction_of_light_emitted_by_black_body_between_wavelengths(
 	IN(float) lo, 
 	IN(float) hi, 
 	IN(float) temperature
 ){
-	return 	solve_black_body_fraction_below_wavelength(hi, temperature) - 
-			solve_black_body_fraction_below_wavelength(lo, temperature);
+	return 	solve_fraction_of_light_emitted_by_black_body_below_wavelength(hi, temperature) - 
+			solve_fraction_of_light_emitted_by_black_body_below_wavelength(lo, temperature);
 }
 // This calculates the radiation (in watts/m^2) that's emitted 
 // by a single object using the Stephan-Boltzmann equation
-FUNC(float) get_black_body_emissive_flux(
+FUNC(float) get_intensity_of_light_emitted_by_black_body(
 	IN(float) temperature
 ){
     VAR(float) T = temperature;
     return STEPHAN_BOLTZMANN_CONSTANT * T*T*T*T;
 }
-FUNC(vec3) get_rgb_intensity_of_emitted_light_from_black_body(
+FUNC(vec3) get_rgb_intensity_of_light_emitted_by_black_body(
 	IN(float) temperature
 ){
-	return get_black_body_emissive_flux(temperature)
+	return get_intensity_of_light_emitted_by_black_body(temperature)
 		 * vec3(
-			 solve_black_body_fraction_between_wavelengths(600e-9*METER, 700e-9*METER, temperature),
-			 solve_black_body_fraction_between_wavelengths(500e-9*METER, 600e-9*METER, temperature),
-			 solve_black_body_fraction_between_wavelengths(400e-9*METER, 500e-9*METER, temperature)
+			 solve_fraction_of_light_emitted_by_black_body_between_wavelengths(600e-9*METER, 700e-9*METER, temperature),
+			 solve_fraction_of_light_emitted_by_black_body_between_wavelengths(500e-9*METER, 600e-9*METER, temperature),
+			 solve_fraction_of_light_emitted_by_black_body_between_wavelengths(400e-9*METER, 500e-9*METER, temperature)
 		   );
 }

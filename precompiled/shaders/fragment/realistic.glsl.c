@@ -62,17 +62,17 @@ const float AIR_REFRACTIVE_INDEX   = 1.000277;
 const vec3  WATER_COLOR_DEEP       = vec3(0.04,0.04,0.2);
 const vec3  WATER_COLOR_SHALLOW    = vec3(0.04,0.58,0.54);
 const float WATER_REFRACTIVE_INDEX = 1.333;
-const float WATER_ROUGHNESS = 0.18;
+const float WATER_ROOT_MEAN_SLOPE_SQUARED = 0.18;
 
 const vec3  LAND_COLOR_MAFIC    = vec3(50,45,50)/255.;      // observed on lunar maria 
 const vec3  LAND_COLOR_FELSIC   = vec3(214,181,158)/255.;       // observed color of rhyolite sample
 const vec3  LAND_COLOR_SAND     = vec3(245,215,145)/255.;
 const vec3  LAND_COLOR_PEAT     = vec3(100,85,60)/255.;
 const float LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE  = 0.04; // NOTE: "0.04" is a representative value for plastics and other diffuse reflectors
-const float LAND_ROUGHNESS = 0.2;
+const float LAND_ROOT_MEAN_SLOPE_SQUARED = 0.2;
 
 const vec3  JUNGLE_COLOR   = vec3(30,50,10)/255.;
-const float JUNGLE_ROUGHNESS = 30.0;
+const float JUNGLE_ROOT_MEAN_SLOPE_SQUARED = 30.0;
 
 const vec3  SNOW_COLOR            = vec3(0.9, 0.9, 0.9); 
 const float SNOW_REFRACTIVE_INDEX = 1.333; 
@@ -111,18 +111,18 @@ void main() {
     vec3 color_with_sea = is_ocean? ocean_color : color_when_uncovered;
     vec3 color_with_ice = mix(color_with_sea, SNOW_COLOR, ice_coverage*ice_mod);
 
-    // "m" is the "roughness", the root mean square of the slope of all microfacets 
-    // see https://www.desmos.com/calculator/1wmykeptcs for a way to estimate it using a function to describe the surface
-    float m = is_ocean? WATER_ROUGHNESS : mix(LAND_ROUGHNESS, JUNGLE_ROUGHNESS, plant_coverage);
-
     // "beta_*" variables are the scattering coefficients for the atmosphere at sea level
     vec3  beta_ray = atmosphere_surface_rayleigh_scattering_coefficients;
     vec3  beta_mie = atmosphere_surface_mie_scattering_coefficients;
     vec3  beta_abs = atmosphere_surface_absorption_coefficients; 
 
+    // "m" is the "ROOT_MEAN_SLOPE_SQUARED", the root mean square of the slope of all microfacets 
+    // see https://www.desmos.com/calculator/0tqwgsjcje for a way to estimate it using a function to describe the surface
+    float m = is_ocean? WATER_ROOT_MEAN_SLOPE_SQUARED : mix(LAND_ROOT_MEAN_SLOPE_SQUARED, JUNGLE_ROOT_MEAN_SLOPE_SQUARED, plant_coverage);
 
     // "F0" is the characteristic fresnel reflectance.
     //   it is the fraction of light that's immediately reflected when striking the surface head on.
+    // TODO: model refractive index as a function of wavelength
     vec3 F0 = vec3(mix(
         is_ocean? get_characteristic_reflectance(WATER_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX) : LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE, 
         get_characteristic_reflectance(SNOW_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX), 
@@ -170,28 +170,24 @@ void main() {
         1.01 * vPosition.xyz * reference_distance, L, 3.*world_radius,
         world_position, world_radius, atmosphere_scale_height
     );
-    
+
     // "F" is the fresnel reflectance, the fraction of light that's immediately reflected upon striking the surface
     //   see Hoffmann 2015 for a gentle introduction to the concept
-    //   here, we use Schlick's fast approximation of the Fresnel equation
-    //   see Schlick (1994) for more details.
-    vec3 F  = get_schlick_reflectance(HV, F0);
+    vec3 F  = get_rgb_fraction_of_light_reflected_on_surface(HV, F0);
 
     // "G" is the fraction of reflected light that is lost due to masking and shadowing
     //   see Hoffmann 2015 for a gentle introduction to the concept
-    //   here, we use Schlick's fast approximation of Smith
-    //   see Schlick (1994) for more details.
-    float k_G = sqrt(2.*m*m/PI);
-    float G = NV/(NV-k_G*NV+k_G); 
+    float G = get_fraction_of_reflected_light_masked_or_shaded(NV, m);
 
     // "D" is the fraction of microfacet surface normals that are aligned to reflect light to the view
-    float D = exp((NH*NH-1.)/(m*m*NH*NH))/(m*m*NH*NH*NH*NH); // Beckmann
+    //   see Hoffmann 2015 for a gentle introduction to the concept
+    float D = get_fraction_of_microfacets_with_angle(NH, m); 
+
+    // "I_surface" is the intensity of light that reaches the surface after being filtered by atmosphere
+    vec3 I_surface = I_sun * exp(-(beta_ray + beta_mie + beta_abs) * sigma);
 
     // "E_surface" is the rgb intensity of light emitted from the surface itself due to black body radiation
-    vec3 E_surface = get_rgb_intensity_of_emitted_light_from_black_body(vSurfaceTemp);
-
-    // calculate the intensity of light that reached the surface
-    vec3 I_surface = I_sun * exp(-(beta_ray + beta_mie + beta_abs) * sigma);
+    vec3 E_surface = get_rgb_intensity_of_light_emitted_by_black_body(vSurfaceTemp);
 
     // calculate the intensity of light that reflects or emits from the surface
     vec3 I = 
