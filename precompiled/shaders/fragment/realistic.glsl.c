@@ -79,7 +79,7 @@ const float SNOW_REFRACTIVE_INDEX = 1.333;
 
 // TODO: calculate airglow for nightside using scattering equations from atmosphere.glsl.c, 
 //   also keep in mind this: https://en.wikipedia.org/wiki/Airglow
-const float AMBIENT_LIGHT_AESTHETIC_FACTOR = 0.002;
+const float AMBIENT_LIGHT_AESTHETIC_FACTOR = 0.000001;
 
 void main() {
     vec2  clipspace      = vClipspace.xy;
@@ -159,7 +159,7 @@ void main() {
     //   or their "cosine similarity": https://en.wikipedia.org/wiki/Cosine_similarity
     float NV = max(dot(N,V), 0.);
     float NL = max(dot(N,L), 0.);
-    float NH = max(dot(N,H), 0.);
+    float NH =    (dot(N,H));
     float HV = max(dot(V,H), 0.);
 
     // "sigma" is the column density of air, relative to the surface of the world, that's along the light's path of travel,
@@ -167,7 +167,7 @@ void main() {
     //   see https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-1/ for an awesome introduction
     float sigma  = approx_air_column_density_ratio_along_line_segment (
         // NOTE: we nudge the origin of light ray by a small amount so that collision isn't detected with the planet
-        1.01 * vPosition.xyz * reference_distance, L, 3.*world_radius,
+        1.0003 * vPosition.xyz * reference_distance, L, 3.*world_radius,
         world_position, world_radius, atmosphere_scale_height
     );
 
