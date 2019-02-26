@@ -217,13 +217,13 @@ vec3 get_rgb_intensity_of_light_rays_through_atmosphere(
 
     // Rayleigh and Mie phase factors,
     // A.K.A "gamma" from Alan Zucconi: https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-3/
-    // This factor indicates the fraction of sunlight scattered to a given angle (indicated by its cosine, A.K.A. "cos_scatter_angle").
+    // This factor indicates the fraction of scattered sunlight that scatters to a given angle (indicated by its cosine, A.K.A. "cos_scatter_angle").
     // It only accounts for a portion of the sunlight that's lost during the scatter, which is irrespective of wavelength or density
     // The rest of the fractional loss is accounted for by the variable "betas", which is dependant on wavelength, 
     // and the density ratio, which is dependant on height
     // So all together, the fraction of sunlight that scatters to a given angle is: beta(wavelength) * gamma(angle) * density_ratio(height)
-    float gamma_ray = get_rayleigh_phase_factor(cos_scatter_angle);
-    float gamma_mie = get_henyey_greenstein_phase_factor(cos_scatter_angle);
+    float gamma_ray = get_fraction_of_rayleigh_scattered_light_scattered_by_angle(cos_scatter_angle);
+    float gamma_mie = get_fraction_of_mie_scattered_light_scattered_by_angle(cos_scatter_angle);
 
     get_relation_between_ray_and_point(
         world_position, 

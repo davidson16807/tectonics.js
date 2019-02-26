@@ -1,5 +1,6 @@
 
-FUNC(float) get_rayleigh_phase_factor(IN(float) cos_scatter_angle)
+// Rayleigh phase function factor [-1, 1]
+FUNC(float) get_fraction_of_rayleigh_scattered_light_scattered_by_angle(IN(float) cos_scatter_angle)
 {
 	return
 			3. * (1. + cos_scatter_angle*cos_scatter_angle)
@@ -11,7 +12,7 @@ FUNC(float) get_rayleigh_phase_factor(IN(float) cos_scatter_angle)
 // represents the average cosine of the scattered directions
 // 0 is isotropic scattering
 // > 1 is forward scattering, < 1 is backwards
-FUNC(float) get_henyey_greenstein_phase_factor(IN(float) cos_scatter_angle)
+FUNC(float) get_fraction_of_mie_scattered_light_scattered_by_angle(IN(float) cos_scatter_angle)
 {
 	CONST(float) g = 0.76;
 	return
@@ -21,7 +22,7 @@ FUNC(float) get_henyey_greenstein_phase_factor(IN(float) cos_scatter_angle)
 }
 
 
-// Schlick Phase Function factor
+// Schlick's fast approximation to the Henyey-Greenstein phase function factor
 // Pharr and  Humphreys [2004] equivalence to g above
 FUNC(float) get_schlick_phase_factor(IN(float) cos_scatter_angle)
 {

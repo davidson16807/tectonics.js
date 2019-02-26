@@ -300,7 +300,8 @@ vec3 get_rgb_intensity_of_light_emitted_by_black_body(
     solve_fraction_of_light_emitted_by_black_body_between_wavelengths(400e-9*METER, 500e-9*METER, temperature)
      );
 }
-float get_rayleigh_phase_factor(in float cos_scatter_angle)
+// Rayleigh phase function factor [-1, 1]
+float get_fraction_of_rayleigh_scattered_light_scattered_by_angle(in float cos_scatter_angle)
 {
  return
    3. * (1. + cos_scatter_angle*cos_scatter_angle)
@@ -311,7 +312,7 @@ float get_rayleigh_phase_factor(in float cos_scatter_angle)
 // represents the average cosine of the scattered directions
 // 0 is isotropic scattering
 // > 1 is forward scattering, < 1 is backwards
-float get_henyey_greenstein_phase_factor(in float cos_scatter_angle)
+float get_fraction_of_mie_scattered_light_scattered_by_angle(in float cos_scatter_angle)
 {
  const float g = 0.76;
  return
@@ -319,7 +320,7 @@ float get_henyey_greenstein_phase_factor(in float cos_scatter_angle)
  / //---------------------------------------------
   ((4. + PI) * pow(1. + g*g - 2.*g*cos_scatter_angle, 1.5));
 }
-// Schlick Phase Function factor
+// Schlick's fast approximation to the Henyey-Greenstein phase function factor
 // Pharr and  Humphreys [2004] equivalence to g above
 float get_schlick_phase_factor(in float cos_scatter_angle)
 {
@@ -581,13 +582,13 @@ vec3 get_rgb_intensity_of_light_rays_through_atmosphere(
     vec3 total_rgb_intensity = vec3(0);
     // Rayleigh and Mie phase factors,
     // A.K.A "gamma" from Alan Zucconi: https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-3/
-    // This factor indicates the fraction of sunlight scattered to a given angle (indicated by its cosine, A.K.A. "cos_scatter_angle").
+    // This factor indicates the fraction of scattered sunlight that scatters to a given angle (indicated by its cosine, A.K.A. "cos_scatter_angle").
     // It only accounts for a portion of the sunlight that's lost during the scatter, which is irrespective of wavelength or density
     // The rest of the fractional loss is accounted for by the variable "betas", which is dependant on wavelength, 
     // and the density ratio, which is dependant on height
     // So all together, the fraction of sunlight that scatters to a given angle is: beta(wavelength) * gamma(angle) * density_ratio(height)
-    float gamma_ray = get_rayleigh_phase_factor(cos_scatter_angle);
-    float gamma_mie = get_henyey_greenstein_phase_factor(cos_scatter_angle);
+    float gamma_ray = get_fraction_of_rayleigh_scattered_light_scattered_by_angle(cos_scatter_angle);
+    float gamma_mie = get_fraction_of_mie_scattered_light_scattered_by_angle(cos_scatter_angle);
     get_relation_between_ray_and_point(
         world_position,
         view_origin, view_direction,
@@ -697,6 +698,7 @@ uniform float reference_distance;
 // CAMERA PROPERTIES -----------------------------------------------------------
 uniform mat4 projection_matrix_inverse;
 uniform mat4 view_matrix_inverse;
+// VIEW SETTINGS ---------------------------------------------------------------
 uniform float sealevel;
 uniform float sealevel_mod;
 uniform float darkness_mod;
@@ -716,8 +718,9 @@ uniform vec3 atmosphere_surface_absorption_coefficients;
 uniform vec3 world_position;
 // radius of the world being rendered, in meters
 uniform float world_radius;
-// "SOLAR_RGB_LUMINOSITY" is the rgb luminosity of earth's sun, in Watts
-//   It is used to convert the above true color values to absorption coefficients
+// "SOLAR_RGB_LUMINOSITY" is the rgb luminosity of earth's sun, in Watts.
+//   It is used to convert the above true color values to absorption coefficients.
+//   You can also generate these numbers by calling get_rgb_intensity_of_light_emitted_by_black_body(SOLAR_TEMPERATURE)
 const vec3 SOLAR_RGB_LUMINOSITY = vec3(7247419., 8223259., 8121487.);
 const float AIR_REFRACTIVE_INDEX = 1.000277;
 const vec3 WATER_COLOR_DEEP = vec3(0.04,0.04,0.2);
@@ -741,29 +744,25 @@ void main() {
     vec2 clipspace = vClipspace.xy;
     vec3 view_direction = normalize(view_matrix_inverse * projection_matrix_inverse * vec4(clipspace, 1, 1)).xyz;
     // vec3  view_origin    = view_matrix_inverse[3].xyz * reference_distance;
-    float epipelagic = sealevel - 200.0;
-    float mesopelagic = sealevel - 1000.0;
-    float abyssopelagic = sealevel - 4000.0;
-    float maxheight = sealevel + 10000.0;
-    float lat = (asin(abs(vPosition.y)));
-    float felsic_coverage = smoothstep(abyssopelagic, sealevel+5000., vDisplacement);
-    float mineral_coverage = vDisplacement > sealevel? smoothstep(maxheight, sealevel, vDisplacement) : 0.;
-    float organic_coverage = degrees(lat)/90.; // smoothstep(30., -30., temp); 
+    bool is_ocean = vDisplacement < sealevel * sealevel_mod;
+    float ocean_depth = max(sealevel*sealevel_mod - vDisplacement, 0.);
+    float surface_height = max(vDisplacement - sealevel*sealevel_mod, 0.);
+    float latitude = (asin(abs(vPosition.y)));
+    // TODO: pass felsic_coverage in from attribute
+    // we currently guess how much rock is felsic depending on displacement
+    float felsic_coverage = smoothstep(sealevel - 4000., sealevel+5000., vDisplacement);
+    float mineral_coverage = vDisplacement > sealevel? smoothstep(sealevel + 10000., sealevel, vDisplacement) : 0.;
+    float organic_coverage = smoothstep(30., -30., vSurfaceTemp); // degrees(latitude)/90.;
     float ice_coverage = vIceCoverage;
     float plant_coverage = vPlantCoverage * (vDisplacement > sealevel? 1. : 0.);
-    float ocean_coverage = smoothstep(epipelagic * sealevel_mod, sealevel * sealevel_mod, vDisplacement);
-    bool is_ocean = vDisplacement < sealevel * sealevel_mod;
-    vec3 ocean_color = mix(WATER_COLOR_DEEP, WATER_COLOR_SHALLOW, ocean_coverage);
-    vec3 bedrock_color = mix(LAND_COLOR_MAFIC, LAND_COLOR_FELSIC, felsic_coverage);
-    vec3 soil_color = mix(bedrock_color, mix(LAND_COLOR_SAND, LAND_COLOR_PEAT, organic_coverage), mineral_coverage);
-    vec3 canopy_color = mix(soil_color, JUNGLE_COLOR, plant_coverage);
-    vec3 color_when_uncovered = @UNCOVERED;
-    vec3 color_with_sea = is_ocean? ocean_color : color_when_uncovered;
-    vec3 color_with_ice = mix(color_with_sea, SNOW_COLOR, ice_coverage*ice_mod);
-    // "beta_*" variables are the scattering coefficients for the atmosphere at sea level
-    vec3 beta_ray = atmosphere_surface_rayleigh_scattering_coefficients;
-    vec3 beta_mie = atmosphere_surface_mie_scattering_coefficients;
-    vec3 beta_abs = atmosphere_surface_absorption_coefficients;
+    // "beta_sea_*" variables are the scattering coefficients for seawater
+    vec3 beta_sea_ray = vec3(0); // sea_rayleigh_scattering_coefficients;
+    vec3 beta_sea_mie = vec3(0); // sea_mie_scattering_coefficients;
+    vec3 beta_sea_abs = vec3(3e-1, 1e-1, 2e-2); // sea_absorption_coefficients; 
+    // "beta_air_*" variables are the scattering coefficients for the atmosphere at sea level
+    vec3 beta_air_ray = atmosphere_surface_rayleigh_scattering_coefficients;
+    vec3 beta_air_mie = atmosphere_surface_mie_scattering_coefficients;
+    vec3 beta_air_abs = atmosphere_surface_absorption_coefficients;
     // "m" is the "ROOT_MEAN_SLOPE_SQUARED", the root mean square of the slope of all microfacets 
     // see https://www.desmos.com/calculator/0tqwgsjcje for a way to estimate it using a function to describe the surface
     float m = is_ocean? WATER_ROOT_MEAN_SLOPE_SQUARED : mix(LAND_ROOT_MEAN_SLOPE_SQUARED, JUNGLE_ROOT_MEAN_SLOPE_SQUARED, plant_coverage);
@@ -775,14 +774,11 @@ void main() {
         get_characteristic_reflectance(SNOW_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX),
         ice_coverage*ice_mod
     ));
-    // TODO: express the above mentioned colors of sand, water, forest, etc. by absorption spectra, beer's law, etc.
-    // NOTE: We correct the color by SOLAR_RGB_LUMINOSITY to correct for distortion from Earth's 
-    vec3 fraction_reflected_rgb_intensity = get_rgb_intensity_of_rgb_signal(color_with_ice) / normalize(SOLAR_RGB_LUMINOSITY);
-    // "I_sun" is the rgb Intensity of Incoming Incident light, A.K.A. "Insolation"
-    vec3 I_sun = light_rgb_intensity;
     // "I_max" is the maximum possible intensity within the viewing frame
     //   for Earth, this would be the global solar constant 
     float I_max = insolation_max;
+    // "I_sun" is the rgb Intensity of Incoming Incident light, A.K.A. "Insolation"
+    vec3 I_sun = light_rgb_intensity;
     // "N" is the surface normal
     float NORMAL_MAP_AESTHETIC_EXAGGERATION_FACTOR = 1.0;
     vec3 N = normalize(normalize(vPosition.xyz) + NORMAL_MAP_AESTHETIC_EXAGGERATION_FACTOR*vGradient);
@@ -796,18 +792,33 @@ void main() {
     // Here we setup  several useful dot products of unit vectors
     //   we can think of them as the cosines of the angles formed between them,
     //   or their "cosine similarity": https://en.wikipedia.org/wiki/Cosine_similarity
+    float LV = (dot(L,V));
     float NV = max(dot(N,V), 0.);
     float NL = max(dot(N,L), 0.);
     float NH = (dot(N,H));
     float HV = max(dot(V,H), 0.);
-    // "sigma" is the column density of air, relative to the surface of the world, that's along the light's path of travel,
+    // "gamma_*" variables indicate the fraction of scattered sunlight that scatters to a given angle (indicated by its cosine).
+    // it is also known as the "phase factor"
+    // It varies
+    // see mention of "gamma" by Alan Zucconi: https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-3/
+    float gamma_ray = get_fraction_of_rayleigh_scattered_light_scattered_by_angle(LV);
+    float gamma_mie = get_fraction_of_mie_scattered_light_scattered_by_angle(LV);
+    // "sigma_air_in" is the column density of air, relative to the surface of the world, that's along the light's path of travel,
     //   we use it to estimate the amount of light that's filtered by the atmosphere before reaching the surface
     //   see https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-1/ for an awesome introduction
-    float sigma = approx_air_column_density_ratio_along_line_segment (
+    float sigma_air_in = approx_air_column_density_ratio_along_line_segment (
         // NOTE: we nudge the origin of light ray by a small amount so that collision isn't detected with the planet
         1.0003 * vPosition.xyz * reference_distance, L, 3.*world_radius,
         world_position, world_radius, atmosphere_scale_height
     );
+    // "sigma_sea_in"  is the column density, relative to the surface, that's along the light's incoming path of travel.
+    // "sigma_sea_out" is the column density, relative to the surface, that's along the light's outgoing path of travel.
+    // "sigma_sea_ratio" is the column density ratio of the full path of light relative to the distance along the incoming path
+    // Since water is treated as incompressible, the density remains constant, 
+    //   so they are effectively the distances traveled along their respective paths.
+    float sigma_sea_in = ocean_depth / NV;
+    float sigma_sea_out = ocean_depth / NL;
+    float sigma_sea_ratio = 1. + NV/NL;
     // "F" is the fresnel reflectance, the fraction of light that's immediately reflected upon striking the surface
     //   see Hoffmann 2015 for a gentle introduction to the concept
     vec3 F = get_rgb_fraction_of_light_reflected_on_surface(HV, F0);
@@ -817,17 +828,39 @@ void main() {
     // "D" is the fraction of microfacet surface normals that are aligned to reflect light to the view
     //   see Hoffmann 2015 for a gentle introduction to the concept
     float D = get_fraction_of_microfacets_with_angle(NH, m);
-    // "I_surface" is the intensity of light that reaches the surface after being filtered by atmosphere
-    vec3 I_surface = I_sun * exp(-(beta_ray + beta_mie + beta_abs) * sigma);
-    // "E_surface" is the rgb intensity of light emitted from the surface itself due to black body radiation
-    vec3 E_surface = get_rgb_intensity_of_light_emitted_by_black_body(vSurfaceTemp);
-    // calculate the intensity of light that reflects or emits from the surface
-    vec3 I =
-        I_surface * F * G * D / (4.*PI) + // specular fraction
-        I_surface * (1.-F) * NL * fraction_reflected_rgb_intensity + // diffuse  fraction
+    float PROD = 0.;
+    // "I_sea" is the intensity of light that reaches the surface after being filtered by atmosphere
+    vec3 I_sea = I_sun * exp(-sigma_air_in * (beta_air_ray + beta_air_mie + beta_air_abs));
+    // "I_soil" is the intensity of light that reaches the ground after being filtered by air and sea
+    vec3 I_soil = I_sea * exp(-sigma_sea_in * (beta_sea_ray + beta_sea_mie + beta_sea_abs));
+    vec3 bedrock_color = mix(LAND_COLOR_MAFIC, LAND_COLOR_FELSIC, felsic_coverage);
+    vec3 soil_color = mix(bedrock_color, mix(LAND_COLOR_SAND, LAND_COLOR_PEAT, organic_coverage), mineral_coverage);
+    vec3 canopy_color = mix(soil_color, JUNGLE_COLOR, plant_coverage);
+    vec3 color_when_uncovered = @UNCOVERED;
+    vec3 color_with_ice = mix(color_when_uncovered, SNOW_COLOR, ice_coverage*ice_mod);
+    // NOTE: "color_with_ice" only represents the color of the surface as it appears on earth,
+    //   We correct the color by SOLAR_RGB_LUMINOSITY to correct for distortion from the sun's unique color spectrum
+    vec3 fraction_reflected_rgb_intensity = get_rgb_intensity_of_rgb_signal(color_with_ice) / normalize(SOLAR_RGB_LUMINOSITY);
+    // "E_heat" is the rgb intensity of light emitted from the surface itself due to black body radiation
+    vec3 E_heat = get_rgb_intensity_of_light_emitted_by_black_body(vSurfaceTemp);
+    // "E_soil" is the rgb intensity of light that reflects or emits from the surface
+    vec3 E_soil =
+        I_soil * F * G * D / (4.*PI) + // specular fraction
+        I_soil * (1.-F) * NL * fraction_reflected_rgb_intensity + // diffuse  fraction
         I_sun * AMBIENT_LIGHT_AESTHETIC_BRIGHTNESS_FACTOR * fraction_reflected_rgb_intensity + // ambient  fraction
-        E_surface;
-    gl_FragColor = vec4(get_rgb_signal_of_rgb_intensity(I/I_max),1);
+        E_heat;
+    vec3 E_sea_scattered = I_sea
+        // incoming fraction: the fraction of light that scatters towards camera
+        * (beta_sea_ray * gamma_ray + beta_sea_mie * gamma_mie)
+        // outgoing fraction: the fraction of light that scatters away from camera
+        * exp(-sigma_sea_in * sigma_sea_ratio * (beta_sea_ray + beta_sea_mie + beta_sea_abs))
+        / (-sigma_sea_ratio * (beta_sea_ray + beta_sea_mie + beta_sea_abs));
+    vec3 E_sea =
+        E_soil * exp(-sigma_sea_out * (beta_sea_ray + beta_sea_mie + beta_sea_abs)) +
+        PROD*E_sea_scattered;
+    // NOTE: we do not filter E_sea by atmospheric scattering
+    //   that job is done by the atmospheric shader pass, in "atmosphere.glsl.c"
+    gl_FragColor = vec4(get_rgb_signal_of_rgb_intensity(E_sea/I_max),1);
     // // CODE to generate a tangent-space normal map:
     // vec3 n = normalize(vPosition.xyz);
     // vec3 y = vec3(0,1,0);
@@ -1078,7 +1111,8 @@ vec3 get_rgb_intensity_of_light_emitted_by_black_body(
     solve_fraction_of_light_emitted_by_black_body_between_wavelengths(400e-9*METER, 500e-9*METER, temperature)
      );
 }
-float get_rayleigh_phase_factor(in float cos_scatter_angle)
+// Rayleigh phase function factor [-1, 1]
+float get_fraction_of_rayleigh_scattered_light_scattered_by_angle(in float cos_scatter_angle)
 {
  return
    3. * (1. + cos_scatter_angle*cos_scatter_angle)
@@ -1089,7 +1123,7 @@ float get_rayleigh_phase_factor(in float cos_scatter_angle)
 // represents the average cosine of the scattered directions
 // 0 is isotropic scattering
 // > 1 is forward scattering, < 1 is backwards
-float get_henyey_greenstein_phase_factor(in float cos_scatter_angle)
+float get_fraction_of_mie_scattered_light_scattered_by_angle(in float cos_scatter_angle)
 {
  const float g = 0.76;
  return
@@ -1097,7 +1131,7 @@ float get_henyey_greenstein_phase_factor(in float cos_scatter_angle)
  / //---------------------------------------------
   ((4. + PI) * pow(1. + g*g - 2.*g*cos_scatter_angle, 1.5));
 }
-// Schlick Phase Function factor
+// Schlick's fast approximation to the Henyey-Greenstein phase function factor
 // Pharr and  Humphreys [2004] equivalence to g above
 float get_schlick_phase_factor(in float cos_scatter_angle)
 {
@@ -1359,13 +1393,13 @@ vec3 get_rgb_intensity_of_light_rays_through_atmosphere(
     vec3 total_rgb_intensity = vec3(0);
     // Rayleigh and Mie phase factors,
     // A.K.A "gamma" from Alan Zucconi: https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-3/
-    // This factor indicates the fraction of sunlight scattered to a given angle (indicated by its cosine, A.K.A. "cos_scatter_angle").
+    // This factor indicates the fraction of scattered sunlight that scatters to a given angle (indicated by its cosine, A.K.A. "cos_scatter_angle").
     // It only accounts for a portion of the sunlight that's lost during the scatter, which is irrespective of wavelength or density
     // The rest of the fractional loss is accounted for by the variable "betas", which is dependant on wavelength, 
     // and the density ratio, which is dependant on height
     // So all together, the fraction of sunlight that scatters to a given angle is: beta(wavelength) * gamma(angle) * density_ratio(height)
-    float gamma_ray = get_rayleigh_phase_factor(cos_scatter_angle);
-    float gamma_mie = get_henyey_greenstein_phase_factor(cos_scatter_angle);
+    float gamma_ray = get_fraction_of_rayleigh_scattered_light_scattered_by_angle(cos_scatter_angle);
+    float gamma_mie = get_fraction_of_mie_scattered_light_scattered_by_angle(cos_scatter_angle);
     get_relation_between_ray_and_point(
         world_position,
         view_origin, view_direction,
