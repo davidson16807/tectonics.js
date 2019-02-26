@@ -3,13 +3,15 @@ vertexShaders.equirectangular = `
 const float PI = 3.14159265358979;
 const float INDEX_SPACING = PI * 0.75; // anything from 0.0 to 2.*PI
 attribute float displacement;
+attribute vec3 gradient;
 attribute float ice_coverage;
 attribute float surface_temp;
 attribute float plant_coverage;
 attribute float scalar;
-attribute float vector_fraction_traversed;
 attribute vec3 vector;
+attribute float vector_fraction_traversed;
 varying float vDisplacement;
+varying vec3 vGradient;
 varying float vIceCoverage;
 varying float vSurfaceTemp;
 varying float vPlantCoverage;
@@ -33,6 +35,7 @@ float lat(vec3 pos) {
 }
 void main() {
  vDisplacement = displacement;
+ vGradient = gradient;
  vPlantCoverage = plant_coverage;
  vSurfaceTemp = surface_temp;
  vIceCoverage = ice_coverage;
@@ -60,13 +63,15 @@ vertexShaders.texture = `
 const float PI = 3.14159265358979;
 const float INDEX_SPACING = PI * 0.75; // anything from 0.0 to 2.*PI
 attribute float displacement;
+attribute vec3 gradient;
 attribute float ice_coverage;
 attribute float surface_temp;
 attribute float plant_coverage;
 attribute float scalar;
-attribute float vector_fraction_traversed;
 attribute vec3 vector;
+attribute float vector_fraction_traversed;
 varying float vDisplacement;
+varying vec3 vGradient;
 varying float vIceCoverage;
 varying float vSurfaceTemp;
 varying float vPlantCoverage;
@@ -90,6 +95,7 @@ float lat(vec3 pos) {
 }
 void main() {
  vDisplacement = displacement;
+ vGradient = gradient;
  vPlantCoverage = plant_coverage;
  vIceCoverage = ice_coverage;
  vSurfaceTemp = surface_temp;
@@ -113,13 +119,15 @@ vertexShaders.orthographic = `
 const float PI = 3.14159265358979;
 const float INDEX_SPACING = PI * 0.75; // anything from 0.0 to 2.*PI
 attribute float displacement;
+attribute vec3 gradient;
 attribute float ice_coverage;
 attribute float surface_temp;
 attribute float plant_coverage;
 attribute float scalar;
-attribute float vector_fraction_traversed;
 attribute vec3 vector;
+attribute float vector_fraction_traversed;
 varying float vDisplacement;
+varying vec3 vGradient;
 varying float vIceCoverage;
 varying float vSurfaceTemp;
 varying float vPlantCoverage;
@@ -137,6 +145,7 @@ uniform float index;
 uniform float animation_phase_angle;
 void main() {
  vDisplacement = displacement;
+ vGradient = gradient;
  vPlantCoverage = plant_coverage;
  vIceCoverage = ice_coverage;
  vSurfaceTemp = surface_temp;
@@ -673,6 +682,7 @@ vec3 get_rgb_signal_of_rgb_intensity(in vec3 intensity)
  );
 }
 varying float vDisplacement;
+varying vec3 vGradient;
 varying float vPlantCoverage;
 varying float vIceCoverage;
 varying float vScalar;
@@ -726,7 +736,7 @@ const vec3 SNOW_COLOR = vec3(0.9, 0.9, 0.9);
 const float SNOW_REFRACTIVE_INDEX = 1.333;
 // TODO: calculate airglow for nightside using scattering equations from atmosphere.glsl.c, 
 //   also keep in mind this: https://en.wikipedia.org/wiki/Airglow
-const float AMBIENT_LIGHT_AESTHETIC_FACTOR = 0.000001;
+const float AMBIENT_LIGHT_AESTHETIC_BRIGHTNESS_FACTOR = 0.000001;
 void main() {
     vec2 clipspace = vClipspace.xy;
     vec3 view_direction = normalize(view_matrix_inverse * projection_matrix_inverse * vec4(clipspace, 1, 1)).xyz;
@@ -774,8 +784,8 @@ void main() {
     //   for Earth, this would be the global solar constant 
     float I_max = insolation_max;
     // "N" is the surface normal
-    // TODO: pass this in from an attribute so we can generalize this beyond spheres
-    vec3 N = vPosition.xyz;
+    float NORMAL_MAP_AESTHETIC_EXAGGERATION_FACTOR = 1.0;
+    vec3 N = normalize(normalize(vPosition.xyz) + NORMAL_MAP_AESTHETIC_EXAGGERATION_FACTOR*vGradient);
     // "L" is the normal vector indicating the direction to the light source
     vec3 L = light_direction;
     // "V" is the normal vector indicating the direction from the view
@@ -815,9 +825,17 @@ void main() {
     vec3 I =
         I_surface * F * G * D / (4.*PI) + // specular fraction
         I_surface * (1.-F) * NL * fraction_reflected_rgb_intensity + // diffuse  fraction
-        I_sun * AMBIENT_LIGHT_AESTHETIC_FACTOR * fraction_reflected_rgb_intensity + // ambient  fraction
+        I_sun * AMBIENT_LIGHT_AESTHETIC_BRIGHTNESS_FACTOR * fraction_reflected_rgb_intensity + // ambient  fraction
         E_surface;
     gl_FragColor = vec4(get_rgb_signal_of_rgb_intensity(I/I_max),1);
+    // // CODE to generate a tangent-space normal map:
+    // vec3 n = normalize(vPosition.xyz);
+    // vec3 y = vec3(0,1,0);
+    // vec3 u = normalize(cross(n, y));
+    // vec3 v = normalize(cross(n, u));
+    // vec3 w = n;
+    // vec3 g = normalize(vGradient);
+    // gl_FragColor = vec4((2.*vec3(dot(N, u), dot(N, v), dot(N, w))-1.), 1);
 }
 `;
 fragmentShaders.monochromatic = `
@@ -1495,9 +1513,8 @@ void main() {
     vec2 clipspace = 2.0 * screenspace - 1.0;
     vec3 view_direction = normalize(view_matrix_inverse * projection_matrix_inverse * vec4(clipspace, 1, 1)).xyz;
     vec3 view_origin = view_matrix_inverse[3].xyz * reference_distance;
-    float AESTHETIC_FACTOR1 = 0.5;
     vec4 background_rgb_signal = texture2D( surface_light, vUv );
-    vec3 background_rgb_intensity = AESTHETIC_FACTOR1 * insolation_max * get_rgb_intensity_of_rgb_signal(background_rgb_signal.rgb);
+    vec3 background_rgb_intensity = insolation_max * get_rgb_intensity_of_rgb_signal(background_rgb_signal.rgb);
     vec3 rgb_intensity = get_rgb_intensity_of_light_rays_through_atmosphere(
         view_origin, view_direction,
         world_position, world_radius,
@@ -1508,18 +1525,10 @@ void main() {
         atmosphere_surface_mie_scattering_coefficients,
         atmosphere_surface_absorption_coefficients
     );
-    // rgb_intensity = 1.0 - exp2( rgb_intensity * -1.0 ); // simple tonemap
-    // gl_FragColor = mix(background_rgb_signal, vec4(normalize(view_direction),1), 0.5);
-    // return;
-    // if (!is_interaction) {
-    //  gl_FragColor = vec4(0);
-    //  return;
-    // } 
-    // gl_FragColor = mix(background_rgb_signal, vec4(normalize(view_origin),1), 0.5);
-    // gl_FragColor = mix(background_rgb_signal, vec4(vec3(distance_to_exit/reference_distance/5.),1), 0.5);
-    // gl_FragColor = mix(background_rgb_signal, vec4(10.0*get_rgb_signal_of_rgb_intensity(rgb_intensity),1), 0.5);
-    float AESTHETIC_FACTOR2 = 0.1;
-    gl_FragColor = vec4(AESTHETIC_FACTOR2*get_rgb_signal_of_rgb_intensity(rgb_intensity),1);
+    // see https://learnopengl.com/Advanced-Lighting/HDR for an intro to tone mapping
+    float exposure_intensity = 150.; // Watts/m^2
+    vec3 ldr_tone_map = 1.0 - exp(-rgb_intensity/exposure_intensity);
+    gl_FragColor = vec4(get_rgb_signal_of_rgb_intensity(ldr_tone_map), 1);
     // gl_FragColor = background_rgb_signal;
 }
 `;

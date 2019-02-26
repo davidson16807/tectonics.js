@@ -12,6 +12,7 @@
 #include "precompiled/shaders/academics/electronics.glsl.c"
 
 varying float vDisplacement;
+varying vec3  vGradient;
 varying float vPlantCoverage;
 varying float vIceCoverage;
 varying float vScalar;
@@ -29,6 +30,7 @@ uniform float reference_distance;
 uniform mat4  projection_matrix_inverse;
 uniform mat4  view_matrix_inverse;
 
+// VIEW SETTINGS ---------------------------------------------------------------
 uniform float sealevel;
 uniform float sealevel_mod;
 uniform float darkness_mod;
@@ -79,7 +81,7 @@ const float SNOW_REFRACTIVE_INDEX = 1.333;
 
 // TODO: calculate airglow for nightside using scattering equations from atmosphere.glsl.c, 
 //   also keep in mind this: https://en.wikipedia.org/wiki/Airglow
-const float AMBIENT_LIGHT_AESTHETIC_FACTOR = 0.000001;
+const float AMBIENT_LIGHT_AESTHETIC_BRIGHTNESS_FACTOR = 0.000001;
 
 void main() {
     vec2  clipspace      = vClipspace.xy;
@@ -141,8 +143,8 @@ void main() {
     float I_max = insolation_max;
 
     // "N" is the surface normal
-    // TODO: pass this in from an attribute so we can generalize this beyond spheres
-    vec3 N = vPosition.xyz;
+    float NORMAL_MAP_AESTHETIC_EXAGGERATION_FACTOR = 1.0;
+    vec3 N = normalize(normalize(vPosition.xyz) + NORMAL_MAP_AESTHETIC_EXAGGERATION_FACTOR*vGradient);
 
     // "L" is the normal vector indicating the direction to the light source
     vec3 L = light_direction;
@@ -193,8 +195,17 @@ void main() {
     vec3 I = 
         I_surface *  F     * G * D / (4.*PI)                                          + // specular fraction
         I_surface * (1.-F) * NL                    * fraction_reflected_rgb_intensity + // diffuse  fraction
-        I_sun     * AMBIENT_LIGHT_AESTHETIC_FACTOR * fraction_reflected_rgb_intensity + // ambient  fraction
+        I_sun     * AMBIENT_LIGHT_AESTHETIC_BRIGHTNESS_FACTOR * fraction_reflected_rgb_intensity + // ambient  fraction
         E_surface;
 
     gl_FragColor = vec4(get_rgb_signal_of_rgb_intensity(I/I_max),1);
+
+    // // CODE to generate a tangent-space normal map:
+    // vec3 n = normalize(vPosition.xyz);
+    // vec3 y = vec3(0,1,0);
+    // vec3 u = normalize(cross(n, y));
+    // vec3 v = normalize(cross(n, u));
+    // vec3 w = n;
+    // vec3 g = normalize(vGradient);
+    // gl_FragColor = vec4((2.*vec3(dot(N, u), dot(N, v), dot(N, w))-1.), 1);
 }

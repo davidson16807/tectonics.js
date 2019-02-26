@@ -7,6 +7,7 @@ float lat(vec3 pos) {
 
 void main() {
 	vDisplacement = displacement;
+	vGradient = gradient;
 	vPlantCoverage = plant_coverage;
 	vIceCoverage = ice_coverage;
 	vSurfaceTemp = surface_temp;

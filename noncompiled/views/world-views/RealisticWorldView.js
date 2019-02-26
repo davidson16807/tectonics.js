@@ -42,15 +42,17 @@ function RealisticWorldView(shader_return_value) {
             vertices: grid.vertices, 
             faceVertexUvs: [[]], // HACK: necessary for use with BufferGeometryUtils.fromGeometry
         });
-        geometry.addAttribute('displacement', Float32Array, faces.length*3, 1);
-        geometry.addAttribute('ice_coverage', Float32Array, faces.length*3, 1);
-        geometry.addAttribute('surface_temp', Float32Array, faces.length*3, 1);
-        geometry.addAttribute('plant_coverage', Float32Array, faces.length*3, 1);
-        geometry.addAttribute('scalar', Float32Array, faces.length*3, 1);
+        geometry.addAttribute('displacement',   Float32Array, faces.length*3,   1);
+        geometry.addAttribute('gradient',       Float32Array, faces.length*3*3, 1);
+        geometry.addAttribute('ice_coverage',   Float32Array, faces.length*3,   1);
+        geometry.addAttribute('surface_temp',   Float32Array, faces.length*3,   1);
+        geometry.addAttribute('plant_coverage', Float32Array, faces.length*3,   1);
+        geometry.addAttribute('scalar',         Float32Array, faces.length*3,   1);
 
         var material = new THREE.ShaderMaterial({
             attributes: {
               displacement: { type: 'f', value: null },
+              gradient:     { type: 'v3',value: null },
               ice_coverage: { type: 'f', value: null },
               surface_temp: { type: 'f', value: null },
               plant_coverage: { type: 'f', value: null },
@@ -112,6 +114,24 @@ function RealisticWorldView(shader_return_value) {
         Float32Raster.get_ids(raster, raster.grid.buffer_array_to_cell, mesh.geometry.attributes[key].array); 
         mesh.geometry.attributes[key].needsUpdate = true;
     }
+    function update_renderpass_vector_attribute(key, raster) {
+        var x = raster.x;
+        var y = raster.y;
+        var z = raster.z;
+        var array = mesh.geometry.attributes[key].array;
+        var buffer_array_to_cell = raster.grid.buffer_array_to_cell;
+        for (var i = 0, li = buffer_array_to_cell.length; i < li; i++) {
+
+            // array[3*i+0] = x[buffer_array_to_cell[i]];
+            // array[3*i+1] = y[buffer_array_to_cell[i]];
+            // array[3*i+2] = z[buffer_array_to_cell[i]];
+
+            array[i+li*0] = x[buffer_array_to_cell[i]];
+            array[i+li*1] = y[buffer_array_to_cell[i]];
+            array[i+li*2] = z[buffer_array_to_cell[i]];
+        }
+        mesh.geometry.attributes[key].needsUpdate = true;
+    }
     this.updateScene = function(gl_state, world, options) {
 
         if (!added) {
@@ -155,6 +175,8 @@ function RealisticWorldView(shader_return_value) {
         // NOTE: NOT USED, intended to eventually represent absorption
         var atmosphere_surface_absorber_density = 0;
 
+        var gradient = ScalarField.gradient(world.lithosphere.surface_height.value());
+        VectorField.div_scalar(gradient, world.radius, gradient);
 
         update_renderpass_vertex_shader(options.vertexShader);
         update_renderpass_uniform  ('projection_matrix_inverse',projection_matrix_inverse);
@@ -171,8 +193,8 @@ function RealisticWorldView(shader_return_value) {
         update_renderpass_uniform  ('index',                options.index);
         update_renderpass_uniform  ('sealevel',             world.hydrosphere.sealevel.value());
 
-        update_renderpass_uniform  ('world_position',           new THREE.Vector3());
-        update_renderpass_uniform  ('world_radius',             world.radius);
+        update_renderpass_uniform  ('world_position',       new THREE.Vector3());
+        update_renderpass_uniform  ('world_radius',         world.radius);
 
         update_renderpass_uniform  ('atmosphere_scale_height', atmosphere_scale_height  );
         update_renderpass_uniform  ('atmosphere_surface_rayleigh_scattering_coefficients', new THREE.Vector3(5.20e-6, 1.21e-5, 2.96e-5));
@@ -184,6 +206,8 @@ function RealisticWorldView(shader_return_value) {
         update_renderpass_attribute('surface_temp',         world.atmosphere.surface_temp);
         update_renderpass_attribute('plant_coverage',       world.biosphere.plant_coverage.value());
 
+        //TODO: reenable this!
+        update_renderpass_vector_attribute('gradient',      gradient);
 
 
         // SHADERPASS PROPERTIES -----------------------------------------------
@@ -199,7 +223,7 @@ function RealisticWorldView(shader_return_value) {
         update_shaderpass_uniform  ('world_position',           new THREE.Vector3());
         update_shaderpass_uniform  ('world_radius',             world.radius);
 
-        update_shaderpass_uniform  ('atmosphere_scale_height', atmosphere_scale_height  );
+        update_shaderpass_uniform  ('atmosphere_scale_height',  atmosphere_scale_height  );
         update_shaderpass_uniform  ('atmosphere_surface_rayleigh_scattering_coefficients', new THREE.Vector3(5.20e-6, 1.21e-5, 2.96e-5));
         update_shaderpass_uniform  ('atmosphere_surface_mie_scattering_coefficients',      new THREE.Vector3(2.1e-9,  2.1e-9,  2.1e-9 ));
         update_shaderpass_uniform  ('atmosphere_surface_absorption_coefficients',          new THREE.Vector3(0));

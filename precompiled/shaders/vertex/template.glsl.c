@@ -2,14 +2,16 @@ const float PI = 3.14159265358979;
 const float INDEX_SPACING = PI * 0.75; // anything from 0.0 to 2.*PI
 
 attribute float displacement;
+attribute vec3  gradient;
 attribute float ice_coverage;
 attribute float surface_temp;
 attribute float plant_coverage;
 attribute float scalar;
+attribute vec3  vector;
 attribute float vector_fraction_traversed;
-attribute vec3 vector;
 
 varying float vDisplacement;
+varying vec3  vGradient;
 varying float vIceCoverage;
 varying float vSurfaceTemp;
 varying float vPlantCoverage;

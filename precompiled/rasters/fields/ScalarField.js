@@ -470,15 +470,15 @@ ScalarField.gradient = function (scalar_field, result, scratch, scratch2) {
   Float32Raster.fill(x, 0);
   Float32Raster.fill(y, 0);
   Float32Raster.fill(z, 0);
-  var average_value = 0;
+  var difference = 0;
   for (var i = 0, li = arrows.length; i < li; i++) { 
     arrow = arrows[i]; 
     from = arrow[0]; 
     to = arrow[1]; 
-    average_value = (scalar_field[to] - scalar_field[from]); 
-    x[from] += average_value * dxhat[i] * PI * dlength[i]/neighbor_count[from]; 
-    y[from] += average_value * dyhat[i] * PI * dlength[i]/neighbor_count[from]; 
-    z[from] += average_value * dzhat[i] * PI * dlength[i]/neighbor_count[from]; 
+    difference = (scalar_field[to] - scalar_field[from]);             
+    x[from] += difference * dxhat[i] * dlength[i]/neighbor_count[from] * PI;
+    y[from] += difference * dyhat[i] * dlength[i]/neighbor_count[from] * PI;
+    z[from] += difference * dzhat[i] * dlength[i]/neighbor_count[from] * PI;
   } 
   var inverse_volume = 1 / (PI * (average_distance/2) * (average_distance/2)); 
   for (var i = 0, li = scalar_field.length; i < li; i++) { 

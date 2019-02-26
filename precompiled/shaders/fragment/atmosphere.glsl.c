@@ -81,9 +81,8 @@ void main() {
     vec3  view_direction = normalize(view_matrix_inverse * projection_matrix_inverse * vec4(clipspace, 1, 1)).xyz;
     vec3  view_origin    = view_matrix_inverse[3].xyz * reference_distance;
 
-    float AESTHETIC_FACTOR1 = 0.5;
     vec4  background_rgb_signal    = texture2D( surface_light, vUv );
-    vec3  background_rgb_intensity = AESTHETIC_FACTOR1 * insolation_max * get_rgb_intensity_of_rgb_signal(background_rgb_signal.rgb);
+    vec3  background_rgb_intensity = insolation_max * get_rgb_intensity_of_rgb_signal(background_rgb_signal.rgb);
         
     vec3 rgb_intensity = get_rgb_intensity_of_light_rays_through_atmosphere(
         view_origin,                view_direction,
@@ -96,18 +95,10 @@ void main() {
         atmosphere_surface_absorption_coefficients 
     );
 
-    // rgb_intensity = 1.0 - exp2( rgb_intensity * -1.0 ); // simple tonemap
+    // see https://learnopengl.com/Advanced-Lighting/HDR for an intro to tone mapping
+    float exposure_intensity = 150.; // Watts/m^2
+    vec3  ldr_tone_map = 1.0 - exp(-rgb_intensity/exposure_intensity);
 
-    // gl_FragColor = mix(background_rgb_signal, vec4(normalize(view_direction),1), 0.5);
-    // return;
-    // if (!is_interaction) {
-    //  gl_FragColor = vec4(0);
-    //  return;
-    // } 
-    // gl_FragColor = mix(background_rgb_signal, vec4(normalize(view_origin),1), 0.5);
-    // gl_FragColor = mix(background_rgb_signal, vec4(vec3(distance_to_exit/reference_distance/5.),1), 0.5);
-    // gl_FragColor = mix(background_rgb_signal, vec4(10.0*get_rgb_signal_of_rgb_intensity(rgb_intensity),1), 0.5);
-    float AESTHETIC_FACTOR2 = 0.1;
-    gl_FragColor = vec4(AESTHETIC_FACTOR2*get_rgb_signal_of_rgb_intensity(rgb_intensity),1);
+    gl_FragColor = vec4(get_rgb_signal_of_rgb_intensity(ldr_tone_map), 1);
     // gl_FragColor = background_rgb_signal;
 }
