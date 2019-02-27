@@ -739,7 +739,7 @@ const vec3 SNOW_COLOR = vec3(0.9, 0.9, 0.9);
 const float SNOW_REFRACTIVE_INDEX = 1.333;
 // TODO: calculate airglow for nightside using scattering equations from atmosphere.glsl.c, 
 //   also keep in mind this: https://en.wikipedia.org/wiki/Airglow
-const float AMBIENT_LIGHT_AESTHETIC_BRIGHTNESS_FACTOR = 0.000001;
+const float AMBIENT_LIGHT_AESTHETIC_BRIGHTNESS_FACTOR = 0.001;
 void main() {
     vec2 clipspace = vClipspace.xy;
     vec3 view_direction = normalize(view_matrix_inverse * projection_matrix_inverse * vec4(clipspace, 1, 1)).xyz;
@@ -756,8 +756,8 @@ void main() {
     float ice_coverage = vIceCoverage;
     float plant_coverage = vPlantCoverage * (vDisplacement > sealevel? 1. : 0.);
     // "beta_sea_*" variables are the scattering coefficients for seawater
-    vec3 beta_sea_ray = vec3(0); // sea_rayleigh_scattering_coefficients;
-    vec3 beta_sea_mie = vec3(0); // sea_mie_scattering_coefficients;
+    vec3 beta_sea_ray = vec3(0.03); // sea_rayleigh_scattering_coefficients;
+    vec3 beta_sea_mie = vec3(0.0); // sea_mie_scattering_coefficients;
     vec3 beta_sea_abs = vec3(3e-1, 1e-1, 2e-2); // sea_absorption_coefficients; 
     // "beta_air_*" variables are the scattering coefficients for the atmosphere at sea level
     vec3 beta_air_ray = atmosphere_surface_rayleigh_scattering_coefficients;
@@ -819,7 +819,9 @@ void main() {
     float sigma_sea_in = ocean_depth / NV;
     float sigma_sea_out = ocean_depth / NL;
     float sigma_sea_ratio = 1. + NV/NL;
-    // "F" is the fresnel reflectance, the fraction of light that's immediately reflected upon striking the surface
+    // "F" is the fraction of light that's immediately reflected 
+    //   upon striking a microfacet that's best aligned for reflection.
+    //   A.K.A. "fresnel reflectance" for the halfway vector.
     //   see Hoffmann 2015 for a gentle introduction to the concept
     vec3 F = get_rgb_fraction_of_light_reflected_on_surface(HV, F0);
     // "G" is the fraction of reflected light that is lost due to masking and shadowing
@@ -828,39 +830,45 @@ void main() {
     // "D" is the fraction of microfacet surface normals that are aligned to reflect light to the view
     //   see Hoffmann 2015 for a gentle introduction to the concept
     float D = get_fraction_of_microfacets_with_angle(NH, m);
-    float PROD = 0.;
     // "I_sea" is the intensity of light that reaches the surface after being filtered by atmosphere
-    vec3 I_sea = I_sun * exp(-sigma_air_in * (beta_air_ray + beta_air_mie + beta_air_abs));
-    // "I_soil" is the intensity of light that reaches the ground after being filtered by air and sea
-    vec3 I_soil = I_sea * exp(-sigma_sea_in * (beta_sea_ray + beta_sea_mie + beta_sea_abs));
-    vec3 bedrock_color = mix(LAND_COLOR_MAFIC, LAND_COLOR_FELSIC, felsic_coverage);
-    vec3 soil_color = mix(bedrock_color, mix(LAND_COLOR_SAND, LAND_COLOR_PEAT, organic_coverage), mineral_coverage);
-    vec3 canopy_color = mix(soil_color, JUNGLE_COLOR, plant_coverage);
-    vec3 color_when_uncovered = @UNCOVERED;
-    vec3 color_with_ice = mix(color_when_uncovered, SNOW_COLOR, ice_coverage*ice_mod);
-    // NOTE: "color_with_ice" only represents the color of the surface as it appears on earth,
-    //   We correct the color by SOLAR_RGB_LUMINOSITY to correct for distortion from the sun's unique color spectrum
-    vec3 fraction_reflected_rgb_intensity = get_rgb_intensity_of_rgb_signal(color_with_ice) / normalize(SOLAR_RGB_LUMINOSITY);
-    // "E_heat" is the rgb intensity of light emitted from the surface itself due to black body radiation
-    vec3 E_heat = get_rgb_intensity_of_light_emitted_by_black_body(vSurfaceTemp);
-    // "E_soil" is the rgb intensity of light that reflects or emits from the surface
-    vec3 E_soil =
-        I_soil * F * G * D / (4.*PI) + // specular fraction
-        I_soil * (1.-F) * NL * fraction_reflected_rgb_intensity + // diffuse  fraction
-        I_sun * AMBIENT_LIGHT_AESTHETIC_BRIGHTNESS_FACTOR * fraction_reflected_rgb_intensity + // ambient  fraction
-        E_heat;
-    vec3 E_sea_scattered = I_sea
+    vec3 I_surface = I_sun
+        * exp(-sigma_air_in * (beta_air_ray + beta_air_mie + beta_air_abs));
+    vec3 E_surface_reflected = I_surface * F * G * D / (4.*PI);
+    vec3 I_surface_refracted =
+        I_surface * (1.-F) +
+        I_sun * AMBIENT_LIGHT_AESTHETIC_BRIGHTNESS_FACTOR;
+    vec3 E_surface_emitted = get_rgb_intensity_of_light_emitted_by_black_body(vSurfaceTemp);
+    // if sea is present, "E_sea_scattered" is the rgb intensity of light 
+    //   scattered by the sea towards the camera. Otherwise, it equals 0.
+    vec3 E_sea_scattered = I_surface_refracted
         // incoming fraction: the fraction of light that scatters towards camera
         * (beta_sea_ray * gamma_ray + beta_sea_mie * gamma_mie)
         // outgoing fraction: the fraction of light that scatters away from camera
-        * exp(-sigma_sea_in * sigma_sea_ratio * (beta_sea_ray + beta_sea_mie + beta_sea_abs))
+        * (exp(-sigma_sea_in * sigma_sea_ratio * (beta_sea_ray + beta_sea_mie + beta_sea_abs)) - 1.)
         / (-sigma_sea_ratio * (beta_sea_ray + beta_sea_mie + beta_sea_abs));
-    vec3 E_sea =
-        E_soil * exp(-sigma_sea_out * (beta_sea_ray + beta_sea_mie + beta_sea_abs)) +
-        PROD*E_sea_scattered;
-    // NOTE: we do not filter E_sea by atmospheric scattering
+    // if sea is present, "I_sea_trasmitted" is the rgb intensity of light 
+    //   that reaches the ground after being filtered by air and sea. Otherwise, it equals I_surface_refracted.
+    vec3 I_sea_trasmitted= I_surface_refracted
+        * exp(-sigma_sea_in * (beta_sea_ray + beta_sea_mie + beta_sea_abs));
+    vec3 bedrock_color = mix(LAND_COLOR_MAFIC, LAND_COLOR_FELSIC, felsic_coverage);
+    vec3 soil_color = mix(bedrock_color, mix(LAND_COLOR_SAND, LAND_COLOR_PEAT, organic_coverage), mineral_coverage);
+    vec3 canopy_color = mix(soil_color, JUNGLE_COLOR, plant_coverage);
+    vec3 color = get_rgb_intensity_of_rgb_signal(@UNCOVERED);
+    // "E_surface_diffused" is diffuse reflection, a la the lambertian model of reflectance
+    vec3 E_surface_diffused = I_sea_trasmitted * NL * color;
+    // if sea is present, "E_sea_transmitted" is the fraction 
+    //   of E_surface_diffused that makes it out of the sea. Otheriwse, it equals E_surface_diffused
+    vec3 E_sea_transmitted = E_surface_diffused
+        * exp(-sigma_sea_out * (beta_sea_ray + beta_sea_mie + beta_sea_abs));
+    vec3 E_ice_diffused = mix(E_sea_transmitted, I_surface_refracted * NL * SNOW_COLOR, ice_coverage*ice_coverage*ice_coverage*ice_mod);
+    // NOTE: we do not filter E_total by atmospheric scattering
     //   that job is done by the atmospheric shader pass, in "atmosphere.glsl.c"
-    gl_FragColor = vec4(get_rgb_signal_of_rgb_intensity(E_sea/I_max),1);
+    vec3 E_total =
+          E_surface_reflected
+        + E_surface_emitted
+        + E_sea_scattered
+        + E_ice_diffused;
+    gl_FragColor = vec4(get_rgb_signal_of_rgb_intensity(E_total/I_max),1);
     // // CODE to generate a tangent-space normal map:
     // vec3 n = normalize(vPosition.xyz);
     // vec3 y = vec3(0,1,0);
