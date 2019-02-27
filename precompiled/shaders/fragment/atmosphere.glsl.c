@@ -95,10 +95,11 @@ void main() {
         atmosphere_surface_absorption_coefficients 
     );
 
+    // TODO: move this to a separate shader pass!
     // see https://learnopengl.com/Advanced-Lighting/HDR for an intro to tone mapping
     float exposure_intensity = 150.; // Watts/m^2
     vec3  ldr_tone_map = 1.0 - exp(-rgb_intensity/exposure_intensity);
 
     gl_FragColor = vec4(get_rgb_signal_of_rgb_intensity(ldr_tone_map), 1);
-    // gl_FragColor = background_rgb_signal;
+    // gl_FragColor = 3.*background_rgb_signal;
 }

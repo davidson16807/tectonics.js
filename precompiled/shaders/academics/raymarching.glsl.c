@@ -165,6 +165,9 @@ float approx_air_column_density_ratio_along_line_segment (
 	);
 }
 
+// TODO: multiple light sources
+// TODO: multiple scattering events
+// TODO: support for light sources from within atmosphere
 vec3 get_rgb_intensity_of_light_rays_through_atmosphere(
     vec3  view_origin, vec3 view_direction,
     vec3  world_position, float world_radius,
