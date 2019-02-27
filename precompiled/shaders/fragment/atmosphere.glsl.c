@@ -84,7 +84,7 @@ void main() {
     vec4  background_rgb_signal    = texture2D( surface_light, vUv );
     vec3  background_rgb_intensity = insolation_max * get_rgb_intensity_of_rgb_signal(background_rgb_signal.rgb);
         
-    vec3 rgb_intensity = get_rgb_intensity_of_light_rays_through_atmosphere(
+    vec3 rgb_intensity = get_rgb_intensity_of_light_scattered_from_atmosphere(
         view_origin,                view_direction,
         world_position,             world_radius,
         light_direction,            light_rgb_intensity,  // light direction and rgb intensity

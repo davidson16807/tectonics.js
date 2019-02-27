@@ -168,7 +168,7 @@ float approx_air_column_density_ratio_along_line_segment (
 // TODO: multiple light sources
 // TODO: multiple scattering events
 // TODO: support for light sources from within atmosphere
-vec3 get_rgb_intensity_of_light_rays_through_atmosphere(
+vec3 get_rgb_intensity_of_light_scattered_from_atmosphere(
     vec3  view_origin, vec3 view_direction,
     vec3  world_position, float world_radius,
     vec3  light_direction, vec3 light_rgb_intensity,
@@ -286,4 +286,56 @@ vec3 get_rgb_intensity_of_light_rays_through_atmosphere(
         * exp(-(beta_ray + beta_mie + beta_abs) * view_sigma);
 
     return total_rgb_intensity;
+}
+
+vec3 get_rgb_intensity_of_light_scattered_from_fluid(
+    float cos_view_angle, 
+    float cos_light_angle, 
+    float cos_scatter_angle, 
+    float ocean_depth,
+    vec3  refracted_light_rgb_intensity,
+    vec3  beta_ray,
+    vec3  beta_mie,
+    vec3  beta_abs
+){
+    float NV = cos_view_angle;
+    float NL = cos_light_angle;
+    float LV = cos_scatter_angle;
+
+    vec3 I = refracted_light_rgb_intensity;
+
+    // "gamma_*" variables indicate the fraction of scattered sunlight that scatters to a given angle (indicated by its cosine).
+    // it is also known as the "phase factor"
+    // It varies
+    // see mention of "gamma" by Alan Zucconi: https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-3/
+    float gamma_ray = get_fraction_of_rayleigh_scattered_light_scattered_by_angle(LV);
+    float gamma_mie = get_fraction_of_mie_scattered_light_scattered_by_angle(LV);
+
+    // "sigma_V"  is the column density, relative to the surface, that's along the view ray.
+    // "sigma_L" is the column density, relative to the surface, that's along the light ray.
+    // "sigma_ratio" is the column density ratio of the full path of light relative to the distance along the incoming path
+    // Since water is treated as incompressible, the density remains constant, 
+    //   so they are effectively the distances traveled along their respective paths.
+    // TODO: model vector of refracted light within water
+    float sigma_V  = ocean_depth / NV;
+    float sigma_L = ocean_depth / NL;
+    float sigma_ratio = 1. + NV/NL;
+
+    return I 
+        // incoming fraction: the fraction of light that scatters towards camera
+        *     (beta_ray * gamma_ray + beta_mie * gamma_mie) 
+        // outgoing fraction: the fraction of light that scatters away from camera
+        * (exp(-sigma_V * sigma_ratio * (beta_ray + beta_mie + beta_abs)) - 1.)
+        /                (-sigma_ratio * (beta_ray + beta_mie + beta_abs));
+}
+
+vec3 get_rgb_fraction_of_refracted_light_transmitted_through_fluid(
+    float cos_incident_angle, 
+    float ocean_depth,
+    vec3  beta_ray,
+    vec3  beta_mie,
+    vec3  beta_abs
+){
+    float sigma  = ocean_depth / cos_incident_angle;
+    return exp(-sigma * (beta_ray + beta_mie + beta_abs));
 }

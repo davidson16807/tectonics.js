@@ -543,7 +543,8 @@ float approx_air_column_density_ratio_along_line_segment (
 }
 // TODO: multiple light sources
 // TODO: multiple scattering events
-vec3 get_rgb_intensity_of_light_rays_through_atmosphere(
+// TODO: support for light sources from within atmosphere
+vec3 get_rgb_intensity_of_light_scattered_from_atmosphere(
     vec3 view_origin, vec3 view_direction,
     vec3 world_position, float world_radius,
     vec3 light_direction, vec3 light_rgb_intensity,
@@ -640,6 +641,52 @@ vec3 get_rgb_intensity_of_light_rays_through_atmosphere(
         // outgoing fraction: the fraction of light that would travel straight towards camera, but gets diverted
         * exp(-(beta_ray + beta_mie + beta_abs) * view_sigma);
     return total_rgb_intensity;
+}
+vec3 get_rgb_intensity_of_light_scattered_from_fluid(
+    float cos_view_angle,
+    float cos_light_angle,
+    float cos_scatter_angle,
+    float ocean_depth,
+    vec3 refracted_light_rgb_intensity,
+    vec3 beta_ray,
+    vec3 beta_mie,
+    vec3 beta_abs
+){
+    float NV = cos_view_angle;
+    float NL = cos_light_angle;
+    float LV = cos_scatter_angle;
+    vec3 I = refracted_light_rgb_intensity;
+    // "gamma_*" variables indicate the fraction of scattered sunlight that scatters to a given angle (indicated by its cosine).
+    // it is also known as the "phase factor"
+    // It varies
+    // see mention of "gamma" by Alan Zucconi: https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-3/
+    float gamma_ray = get_fraction_of_rayleigh_scattered_light_scattered_by_angle(LV);
+    float gamma_mie = get_fraction_of_mie_scattered_light_scattered_by_angle(LV);
+    // "sigma_in"  is the column density, relative to the surface, that's along the light's incoming path of travel.
+    // "sigma_out" is the column density, relative to the surface, that's along the light's outgoing path of travel.
+    // "sigma_ratio" is the column density ratio of the full path of light relative to the distance along the incoming path
+    // Since water is treated as incompressible, the density remains constant, 
+    //   so they are effectively the distances traveled along their respective paths.
+    // TODO: model vector of refracted light within water
+    float sigma_in = ocean_depth / NV;
+    float sigma_out = ocean_depth / NL;
+    float sigma_ratio = 1. + NV/NL;
+    return I
+        // incoming fraction: the fraction of light that scatters towards camera
+        * (beta_ray * gamma_ray + beta_mie * gamma_mie)
+        // outgoing fraction: the fraction of light that scatters away from camera
+        * (exp(-sigma_in * sigma_ratio * (beta_ray + beta_mie + beta_abs)) - 1.)
+        / (-sigma_ratio * (beta_ray + beta_mie + beta_abs));
+}
+vec3 get_rgb_fraction_of_refracted_light_transmitted_through_fluid(
+    float cos_incident_angle,
+    float ocean_depth,
+    vec3 beta_ray,
+    vec3 beta_mie,
+    vec3 beta_abs
+){
+    float sigma = ocean_depth / cos_incident_angle;
+    return exp(-sigma * (beta_ray + beta_mie + beta_abs));
 }
 // This function returns a rgb vector that quickly approximates a spectral "bump".
 // Adapted from GPU Gems and Alan Zucconi
@@ -801,12 +848,6 @@ void main() {
     float NL = max(dot(N,L), 0.);
     float NH = (dot(N,H));
     float HV = max(dot(V,H), 0.);
-    // "gamma_*" variables indicate the fraction of scattered sunlight that scatters to a given angle (indicated by its cosine).
-    // it is also known as the "phase factor"
-    // It varies
-    // see mention of "gamma" by Alan Zucconi: https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-3/
-    float gamma_ray = get_fraction_of_rayleigh_scattered_light_scattered_by_angle(LV);
-    float gamma_mie = get_fraction_of_mie_scattered_light_scattered_by_angle(LV);
     // "sigma_air_in" is the column density of air, relative to the surface of the world, that's along the light's path of travel,
     //   we use it to estimate the amount of light that's filtered by the atmosphere before reaching the surface
     //   see https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-1/ for an awesome introduction
@@ -815,14 +856,6 @@ void main() {
         1.0003 * vPosition.xyz * reference_distance, L, 3.*world_radius,
         world_position, world_radius, atmosphere_scale_height
     );
-    // "sigma_sea_in"  is the column density, relative to the surface, that's along the light's incoming path of travel.
-    // "sigma_sea_out" is the column density, relative to the surface, that's along the light's outgoing path of travel.
-    // "sigma_sea_ratio" is the column density ratio of the full path of light relative to the distance along the incoming path
-    // Since water is treated as incompressible, the density remains constant, 
-    //   so they are effectively the distances traveled along their respective paths.
-    float sigma_sea_in = ocean_depth / NV;
-    float sigma_sea_out = ocean_depth / NL;
-    float sigma_sea_ratio = 1. + NV/NL;
     // "F" is the fraction of light that's immediately reflected 
     //   upon striking a microfacet that's best aligned for reflection.
     // It is also known as the "fresnel reflectance".
@@ -857,16 +890,14 @@ void main() {
     vec3 E_surface_emitted = get_rgb_intensity_of_light_emitted_by_black_body(vSurfaceTemp);
     // If sea is present, "E_sea_scattered" is the rgb intensity of light 
     //   scattered by the sea towards the camera. Otherwise, it equals 0.
-    vec3 E_sea_scattered = I_surface_refracted
-        // incoming fraction: the fraction of light that scatters towards camera
-        * (beta_sea_ray * gamma_ray + beta_sea_mie * gamma_mie)
-        // outgoing fraction: the fraction of light that scatters away from camera
-        * (exp(-sigma_sea_in * sigma_sea_ratio * (beta_sea_ray + beta_sea_mie + beta_sea_abs)) - 1.)
-        / (-sigma_sea_ratio * (beta_sea_ray + beta_sea_mie + beta_sea_abs));
+    vec3 E_sea_scattered = get_rgb_intensity_of_light_scattered_from_fluid(
+        NV, NL, LV, ocean_depth, I_surface_refracted,
+        beta_sea_ray, beta_sea_mie, beta_sea_abs
+    );
     // if sea is present, "I_sea_trasmitted" is the rgb intensity of light 
     //   that reaches the ground after being filtered by air and sea. Otherwise, it equals I_surface_refracted.
     vec3 I_sea_trasmitted= I_surface_refracted
-        * exp(-sigma_sea_in * (beta_sea_ray + beta_sea_mie + beta_sea_abs));
+        * get_rgb_fraction_of_refracted_light_transmitted_through_fluid(NL, ocean_depth, beta_sea_ray, beta_sea_mie, beta_sea_abs);
     vec3 bedrock_color = mix(LAND_COLOR_MAFIC, LAND_COLOR_FELSIC, felsic_coverage);
     vec3 soil_color = mix(bedrock_color, mix(LAND_COLOR_SAND, LAND_COLOR_PEAT, organic_coverage), mineral_coverage);
     vec3 canopy_color = mix(soil_color, JUNGLE_COLOR, plant_coverage);
@@ -877,7 +908,7 @@ void main() {
     // if sea is present, "E_sea_transmitted" is the fraction 
     //   of E_bottom_diffused that makes it out of the sea. Otheriwse, it equals E_bottom_diffused
     vec3 E_sea_transmitted = E_bottom_diffused
-        * exp(-sigma_sea_out * (beta_sea_ray + beta_sea_mie + beta_sea_abs));
+        * get_rgb_fraction_of_refracted_light_transmitted_through_fluid(NV, ocean_depth, beta_sea_ray, beta_sea_mie, beta_sea_abs);
     vec3 E_surface_diffused =
         mix(E_sea_transmitted + E_sea_scattered,
             I_surface_refracted * NL * SNOW_COLOR,
@@ -1382,7 +1413,8 @@ float approx_air_column_density_ratio_along_line_segment (
 }
 // TODO: multiple light sources
 // TODO: multiple scattering events
-vec3 get_rgb_intensity_of_light_rays_through_atmosphere(
+// TODO: support for light sources from within atmosphere
+vec3 get_rgb_intensity_of_light_scattered_from_atmosphere(
     vec3 view_origin, vec3 view_direction,
     vec3 world_position, float world_radius,
     vec3 light_direction, vec3 light_rgb_intensity,
@@ -1479,6 +1511,52 @@ vec3 get_rgb_intensity_of_light_rays_through_atmosphere(
         // outgoing fraction: the fraction of light that would travel straight towards camera, but gets diverted
         * exp(-(beta_ray + beta_mie + beta_abs) * view_sigma);
     return total_rgb_intensity;
+}
+vec3 get_rgb_intensity_of_light_scattered_from_fluid(
+    float cos_view_angle,
+    float cos_light_angle,
+    float cos_scatter_angle,
+    float ocean_depth,
+    vec3 refracted_light_rgb_intensity,
+    vec3 beta_ray,
+    vec3 beta_mie,
+    vec3 beta_abs
+){
+    float NV = cos_view_angle;
+    float NL = cos_light_angle;
+    float LV = cos_scatter_angle;
+    vec3 I = refracted_light_rgb_intensity;
+    // "gamma_*" variables indicate the fraction of scattered sunlight that scatters to a given angle (indicated by its cosine).
+    // it is also known as the "phase factor"
+    // It varies
+    // see mention of "gamma" by Alan Zucconi: https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-3/
+    float gamma_ray = get_fraction_of_rayleigh_scattered_light_scattered_by_angle(LV);
+    float gamma_mie = get_fraction_of_mie_scattered_light_scattered_by_angle(LV);
+    // "sigma_in"  is the column density, relative to the surface, that's along the light's incoming path of travel.
+    // "sigma_out" is the column density, relative to the surface, that's along the light's outgoing path of travel.
+    // "sigma_ratio" is the column density ratio of the full path of light relative to the distance along the incoming path
+    // Since water is treated as incompressible, the density remains constant, 
+    //   so they are effectively the distances traveled along their respective paths.
+    // TODO: model vector of refracted light within water
+    float sigma_in = ocean_depth / NV;
+    float sigma_out = ocean_depth / NL;
+    float sigma_ratio = 1. + NV/NL;
+    return I
+        // incoming fraction: the fraction of light that scatters towards camera
+        * (beta_ray * gamma_ray + beta_mie * gamma_mie)
+        // outgoing fraction: the fraction of light that scatters away from camera
+        * (exp(-sigma_in * sigma_ratio * (beta_ray + beta_mie + beta_abs)) - 1.)
+        / (-sigma_ratio * (beta_ray + beta_mie + beta_abs));
+}
+vec3 get_rgb_fraction_of_refracted_light_transmitted_through_fluid(
+    float cos_incident_angle,
+    float ocean_depth,
+    vec3 beta_ray,
+    vec3 beta_mie,
+    vec3 beta_abs
+){
+    float sigma = ocean_depth / cos_incident_angle;
+    return exp(-sigma * (beta_ray + beta_mie + beta_abs));
 }
 // This function returns a rgb vector that quickly approximates a spectral "bump".
 // Adapted from GPU Gems and Alan Zucconi
@@ -1579,7 +1657,7 @@ void main() {
     vec3 view_origin = view_matrix_inverse[3].xyz * reference_distance;
     vec4 background_rgb_signal = texture2D( surface_light, vUv );
     vec3 background_rgb_intensity = insolation_max * get_rgb_intensity_of_rgb_signal(background_rgb_signal.rgb);
-    vec3 rgb_intensity = get_rgb_intensity_of_light_rays_through_atmosphere(
+    vec3 rgb_intensity = get_rgb_intensity_of_light_scattered_from_atmosphere(
         view_origin, view_direction,
         world_position, world_radius,
         light_direction, light_rgb_intensity, // light direction and rgb intensity
@@ -1589,6 +1667,7 @@ void main() {
         atmosphere_surface_mie_scattering_coefficients,
         atmosphere_surface_absorption_coefficients
     );
+    // TODO: move this to a separate shader pass!
     // see https://learnopengl.com/Advanced-Lighting/HDR for an intro to tone mapping
     float exposure_intensity = 150.; // Watts/m^2
     vec3 ldr_tone_map = 1.0 - exp(-rgb_intensity/exposure_intensity);
