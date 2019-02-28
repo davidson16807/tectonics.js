@@ -1,42 +1,6 @@
 const float BIG = 1e20;
 const float SMALL = 1e-20;
 
-// "get_height_along_ray_over_world" gets the height at a point along the path
-//   for a ray traveling over a world.
-// NOTE: all input distances are relative to closest approach!
-float get_height_along_ray_over_world(float x, float z2, float R){
-    return sqrt(max(x*x + z2, 0.)) - R;
-}
-// "get_height_change_rate_along_ray_over_world" gets the rate at which height changes for a distance traveled along the path
-//   for a ray traveling through the atmosphere.
-// NOTE: all input distances are relative to closest approach!
-float get_height_change_rate_along_ray_over_world(float x, float z2){
-    return x / sqrt(max(x*x + z2, 0.));
-}
-// "get_air_density_ratio_at_height" gets the density ratio of an height within the atmosphere
-// the "density ratio" is density expressed as a fraction of a surface value
-float get_air_density_ratio_at_height(
-    float h, 
-    float H
-){
-    return exp(-h/H);
-}
-// "approx_air_column_density_ratio_along_ray_from_samples" returns an approximation 
-//   for the columnar density ratio encountered by a ray traveling through the atmosphere.
-// It is the integral of get_air_density_ratio_at_height() along the path of the ray, 
-//   taking into account the height at every point along the path.
-// We can't solve the integral in the usual fashion due to singularities
-//   (see https://www.wolframalpha.com/input/?i=integrate+exp(-sqrt(x%5E2%2Bz%5E2)%2FH)+dx)
-//   so we use a linear approximation for the height.
-// Our linear approximation gets its slope and intercept from sampling
-//   at points along the path (xm and xb respectively)
-// NOTE: all input distances are relative to closest approach!
-float approx_air_column_density_ratio_along_ray_from_samples(float x, float xm, float xb, float z2, float R, float H){
-	float m = get_height_change_rate_along_ray_over_world(xm,z2);
-	float b = get_height_along_ray_over_world(xb,z2,R);
-	float h = m*(x-xb) + b;
-    return -H/m * exp(-h/H);
-}
 // "approx_air_column_density_ratio_along_ray_for_segment" is a convenience wrapper for approx_air_column_density_ratio_along_ray_from_samples(), 
 //   which calculates sensible values of xm and xb for the user 
 //   given a specified range around which the approximation must be valid.
@@ -50,7 +14,10 @@ float approx_air_column_density_ratio_along_ray_for_segment(float x, float xmin,
     float xb   = xmin + fb*dx;
     float xmax = xmin +    dx;
 
-    return approx_air_column_density_ratio_along_ray_from_samples(clamp(x, xmin, xmax), xm, xb, z2,R,H);
+    float m = xm / sqrt(max(xm*xm + z2, 0.));
+    float b = sqrt(max(xb*xb + z2, 0.)) - R;
+    float h = m*(clamp(x, xmin, xmax)-xb) + b;
+    return -H/m * exp(-h/H);
 }
 // "approx_air_column_density_ratio_along_ray_for_absx" is a convenience wrapper for approx_air_column_density_ratio_along_ray_for_segment().
 // It returns an approximation of columnar density ratio encountered from 
@@ -235,7 +202,7 @@ vec3 get_rgb_intensity_of_light_scattered_from_atmosphere(
     );
     //   We only set it to 3 scale heights because we are using this parameter for raymarching, and not a closed form solution
     is_scattered   = try_get_relation_between_ray_and_sphere(
-        R + 4.*H, z2, xz, 
+        R + 6.*H, z2, xz, 
         x_in_atmo,  x_out_atmo
     );
     is_obstructed = try_get_relation_between_ray_and_sphere(
@@ -258,9 +225,9 @@ vec3 get_rgb_intensity_of_light_scattered_from_atmosphere(
     for (float i = 0.; i < STEP_COUNT; ++i)
     {
         P_i = P + V * x;
-        h_i      = get_height_along_ray_over_world(x-xz, z2, R);
-        sigma_V  = approx_air_column_density_ratio_along_line_segment (P_i, -V, x, O, R, H);
-        sigma_L  = approx_air_column_density_ratio_along_line_segment (P_i, L, 3.*R, O, R, H);
+        h_i      = sqrt((x-xz)*(x-xz)+z2) - R;
+        sigma_V  = approx_air_column_density_ratio_along_line_segment (P_i, -V, x,    O, R, H);
+        sigma_L  = approx_air_column_density_ratio_along_line_segment (P_i,  L, 3.*R, O, R, H);
 
         E += I_sun
             // incoming fraction: the fraction of light that scatters towards camera

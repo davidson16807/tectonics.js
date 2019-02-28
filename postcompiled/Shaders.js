@@ -391,42 +391,6 @@ float get_fraction_of_microfacets_with_angle(in float cos_angle_of_deviation, in
 }
 const float BIG = 1e20;
 const float SMALL = 1e-20;
-// "get_height_along_ray_over_world" gets the height at a point along the path
-//   for a ray traveling over a world.
-// NOTE: all input distances are relative to closest approach!
-float get_height_along_ray_over_world(float x, float z2, float R){
-    return sqrt(max(x*x + z2, 0.)) - R;
-}
-// "get_height_change_rate_along_ray_over_world" gets the rate at which height changes for a distance traveled along the path
-//   for a ray traveling through the atmosphere.
-// NOTE: all input distances are relative to closest approach!
-float get_height_change_rate_along_ray_over_world(float x, float z2){
-    return x / sqrt(max(x*x + z2, 0.));
-}
-// "get_air_density_ratio_at_height" gets the density ratio of an height within the atmosphere
-// the "density ratio" is density expressed as a fraction of a surface value
-float get_air_density_ratio_at_height(
-    float h,
-    float H
-){
-    return exp(-h/H);
-}
-// "approx_air_column_density_ratio_along_ray_from_samples" returns an approximation 
-//   for the columnar density ratio encountered by a ray traveling through the atmosphere.
-// It is the integral of get_air_density_ratio_at_height() along the path of the ray, 
-//   taking into account the height at every point along the path.
-// We can't solve the integral in the usual fashion due to singularities
-//   (see https://www.wolframalpha.com/input/?i=integrate+exp(-sqrt(x%5E2%2Bz%5E2)%2FH)+dx)
-//   so we use a linear approximation for the height.
-// Our linear approximation gets its slope and intercept from sampling
-//   at points along the path (xm and xb respectively)
-// NOTE: all input distances are relative to closest approach!
-float approx_air_column_density_ratio_along_ray_from_samples(float x, float xm, float xb, float z2, float R, float H){
- float m = get_height_change_rate_along_ray_over_world(xm,z2);
- float b = get_height_along_ray_over_world(xb,z2,R);
- float h = m*(x-xb) + b;
-    return -H/m * exp(-h/H);
-}
 // "approx_air_column_density_ratio_along_ray_for_segment" is a convenience wrapper for approx_air_column_density_ratio_along_ray_from_samples(), 
 //   which calculates sensible values of xm and xb for the user 
 //   given a specified range around which the approximation must be valid.
@@ -438,7 +402,11 @@ float approx_air_column_density_ratio_along_ray_for_segment(float x, float xmin,
     float xm = xmin + fm*dx;
     float xb = xmin + fb*dx;
     float xmax = xmin + dx;
-    return approx_air_column_density_ratio_along_ray_from_samples(clamp(x, xmin, xmax), xm, xb, z2,R,H);
+          x = clamp(x, xmin, xmax);
+    float m = xm / sqrt(max(xm*xm + z2, 0.));
+    float b = sqrt(max(xb*xb + z2, 0.)) - R;
+    float h = m*(x-xb) + b;
+    return -H/m * exp(-h/H);
 }
 // "approx_air_column_density_ratio_along_ray_for_absx" is a convenience wrapper for approx_air_column_density_ratio_along_ray_for_segment().
 // It returns an approximation of columnar density ratio encountered from 
@@ -563,18 +531,18 @@ vec3 get_rgb_intensity_of_light_scattered_from_atmosphere(
     float H = atmosphere_scale_height;
     float unused1, unused2, unused3, unused4; // used for passing unused output parameters to functions
     const float STEP_COUNT = 16.;// number of steps taken while marching along the view ray
-    bool V_is_scattered; // whether view ray will enter the atmosphere
-    bool V_is_obstructed; // whether view ray will enter the surface of a world
-    float z_V2; // distance ("radius") from the view ray to the center of the world at closest approach, squared
-    float x_Vz; // distance along the view ray at which closest approach occurs
-    float x_V_in_atmo; // distance along the view ray at which the ray enters the atmosphere
-    float x_V_out_atmo; // distance along the view ray at which the ray exits the atmosphere
-    float x_V_in_world; // distance along the view ray at which the ray enters the surface of the world
-    float x_V_out_world; // distance along the view ray at which the ray enters the surface of the world
-    float x_V_start; // distance along the view ray at which scattering starts, either because it's the start of the ray or the start of the atmosphere 
-    float x_V_stop; // distance along the view ray at which scattering no longer occurs, either due to hitting the world or leaving the atmosphere
-    float dx_V; // distance between steps while marching along the view ray
-    float x_V; // distance traversed while marching along the view ray
+    bool is_scattered; // whether view ray will enter the atmosphere
+    bool is_obstructed; // whether view ray will enter the surface of a world
+    float z2; // distance ("radius") from the view ray to the center of the world at closest approach, squared
+    float xz; // distance along the view ray at which closest approach occurs
+    float x_in_atmo; // distance along the view ray at which the ray enters the atmosphere
+    float x_out_atmo; // distance along the view ray at which the ray exits the atmosphere
+    float x_in_world; // distance along the view ray at which the ray enters the surface of the world
+    float x_out_world; // distance along the view ray at which the ray enters the surface of the world
+    float x_start; // distance along the view ray at which scattering starts, either because it's the start of the ray or the start of the atmosphere 
+    float x_stop; // distance along the view ray at which scattering no longer occurs, either due to hitting the world or leaving the atmosphere
+    float dx; // distance between steps while marching along the view ray
+    float x; // distance traversed while marching along the view ray
     float sigma_V; // columnar density ratios for rayleigh and mie scattering, found by marching along the view ray. This expresses the quantity of air encountered along the view ray, relative to air density on the surface
     vec3 P_i; // absolute position while marching along the view ray
     float h_i; // distance ("height") from the surface of the world while marching along the view ray
@@ -596,39 +564,39 @@ vec3 get_rgb_intensity_of_light_scattered_from_atmosphere(
     vec3 beta_sum = beta_ray + beta_mie + beta_abs;
     get_relation_between_ray_and_point(
         O, P, V,
-        z_V2, x_Vz
+        z2, xz
     );
     //   We only set it to 3 scale heights because we are using this parameter for raymarching, and not a closed form solution
-    V_is_scattered = try_get_relation_between_ray_and_sphere(
-        R + 4.*H, z_V2, x_Vz,
-        x_V_in_atmo, x_V_out_atmo
+    is_scattered = try_get_relation_between_ray_and_sphere(
+        R + 6.*H, z2, xz,
+        x_in_atmo, x_out_atmo
     );
-    V_is_obstructed = try_get_relation_between_ray_and_sphere(
-        R, z_V2, x_Vz,
-        x_V_in_world, x_V_out_world
+    is_obstructed = try_get_relation_between_ray_and_sphere(
+        R, z2, xz,
+        x_in_world, x_out_world
     );
     // if view ray does not interact with the atmosphere
     // don't bother running the raymarch algorithm
-    if (!V_is_scattered)
+    if (!is_scattered)
     {
         return I_back;
     }
-    x_V_start = max(x_V_in_atmo, 0.);
-    x_V_stop = V_is_obstructed? x_V_in_world : x_V_out_atmo;
-    dx_V = (x_V_stop - x_V_start) / STEP_COUNT;
-    x_V = x_V_start + 0.5 * dx_V;
+    x_start = max(x_in_atmo, 0.);
+    x_stop = is_obstructed? x_in_world : x_out_atmo;
+    dx = (x_stop - x_start) / STEP_COUNT;
+    x = x_start + 0.5 * dx;
     for (float i = 0.; i < STEP_COUNT; ++i)
     {
-        P_i = P + V * x_V;
-        h_i = get_height_along_ray_over_world(x_V-x_Vz, z_V2, R);
-        sigma_V = approx_air_column_density_ratio_along_line_segment (P_i, -V, x_V, O, R, H);
+        P_i = P + V * x;
+        h_i = sqrt((x-xz)*(x-xz)+z2) - R;
+        sigma_V = approx_air_column_density_ratio_along_line_segment (P_i, -V, x, O, R, H);
         sigma_L = approx_air_column_density_ratio_along_line_segment (P_i, L, 3.*R, O, R, H);
         E += I_sun
             // incoming fraction: the fraction of light that scatters towards camera
-            * exp(-h_i/H) * beta_gamma * dx_V
+            * exp(-h_i/H) * beta_gamma * dx
             // outgoing fraction: the fraction of light that scatters away from camera
             * exp(-beta_sum * (sigma_V + sigma_L));
-        x_V += dx_V;
+        x += dx;
     }
     // now calculate the intensity of light that traveled straight in from the background, and add it to the total
     E += I_back * exp(-beta_sum * sigma_V);
@@ -1252,42 +1220,6 @@ float get_fraction_of_microfacets_with_angle(in float cos_angle_of_deviation, in
 }
 const float BIG = 1e20;
 const float SMALL = 1e-20;
-// "get_height_along_ray_over_world" gets the height at a point along the path
-//   for a ray traveling over a world.
-// NOTE: all input distances are relative to closest approach!
-float get_height_along_ray_over_world(float x, float z2, float R){
-    return sqrt(max(x*x + z2, 0.)) - R;
-}
-// "get_height_change_rate_along_ray_over_world" gets the rate at which height changes for a distance traveled along the path
-//   for a ray traveling through the atmosphere.
-// NOTE: all input distances are relative to closest approach!
-float get_height_change_rate_along_ray_over_world(float x, float z2){
-    return x / sqrt(max(x*x + z2, 0.));
-}
-// "get_air_density_ratio_at_height" gets the density ratio of an height within the atmosphere
-// the "density ratio" is density expressed as a fraction of a surface value
-float get_air_density_ratio_at_height(
-    float h,
-    float H
-){
-    return exp(-h/H);
-}
-// "approx_air_column_density_ratio_along_ray_from_samples" returns an approximation 
-//   for the columnar density ratio encountered by a ray traveling through the atmosphere.
-// It is the integral of get_air_density_ratio_at_height() along the path of the ray, 
-//   taking into account the height at every point along the path.
-// We can't solve the integral in the usual fashion due to singularities
-//   (see https://www.wolframalpha.com/input/?i=integrate+exp(-sqrt(x%5E2%2Bz%5E2)%2FH)+dx)
-//   so we use a linear approximation for the height.
-// Our linear approximation gets its slope and intercept from sampling
-//   at points along the path (xm and xb respectively)
-// NOTE: all input distances are relative to closest approach!
-float approx_air_column_density_ratio_along_ray_from_samples(float x, float xm, float xb, float z2, float R, float H){
- float m = get_height_change_rate_along_ray_over_world(xm,z2);
- float b = get_height_along_ray_over_world(xb,z2,R);
- float h = m*(x-xb) + b;
-    return -H/m * exp(-h/H);
-}
 // "approx_air_column_density_ratio_along_ray_for_segment" is a convenience wrapper for approx_air_column_density_ratio_along_ray_from_samples(), 
 //   which calculates sensible values of xm and xb for the user 
 //   given a specified range around which the approximation must be valid.
@@ -1299,7 +1231,11 @@ float approx_air_column_density_ratio_along_ray_for_segment(float x, float xmin,
     float xm = xmin + fm*dx;
     float xb = xmin + fb*dx;
     float xmax = xmin + dx;
-    return approx_air_column_density_ratio_along_ray_from_samples(clamp(x, xmin, xmax), xm, xb, z2,R,H);
+          x = clamp(x, xmin, xmax);
+    float m = xm / sqrt(max(xm*xm + z2, 0.));
+    float b = sqrt(max(xb*xb + z2, 0.)) - R;
+    float h = m*(x-xb) + b;
+    return -H/m * exp(-h/H);
 }
 // "approx_air_column_density_ratio_along_ray_for_absx" is a convenience wrapper for approx_air_column_density_ratio_along_ray_for_segment().
 // It returns an approximation of columnar density ratio encountered from 
@@ -1424,18 +1360,18 @@ vec3 get_rgb_intensity_of_light_scattered_from_atmosphere(
     float H = atmosphere_scale_height;
     float unused1, unused2, unused3, unused4; // used for passing unused output parameters to functions
     const float STEP_COUNT = 16.;// number of steps taken while marching along the view ray
-    bool V_is_scattered; // whether view ray will enter the atmosphere
-    bool V_is_obstructed; // whether view ray will enter the surface of a world
-    float z_V2; // distance ("radius") from the view ray to the center of the world at closest approach, squared
-    float x_Vz; // distance along the view ray at which closest approach occurs
-    float x_V_in_atmo; // distance along the view ray at which the ray enters the atmosphere
-    float x_V_out_atmo; // distance along the view ray at which the ray exits the atmosphere
-    float x_V_in_world; // distance along the view ray at which the ray enters the surface of the world
-    float x_V_out_world; // distance along the view ray at which the ray enters the surface of the world
-    float x_V_start; // distance along the view ray at which scattering starts, either because it's the start of the ray or the start of the atmosphere 
-    float x_V_stop; // distance along the view ray at which scattering no longer occurs, either due to hitting the world or leaving the atmosphere
-    float dx_V; // distance between steps while marching along the view ray
-    float x_V; // distance traversed while marching along the view ray
+    bool is_scattered; // whether view ray will enter the atmosphere
+    bool is_obstructed; // whether view ray will enter the surface of a world
+    float z2; // distance ("radius") from the view ray to the center of the world at closest approach, squared
+    float xz; // distance along the view ray at which closest approach occurs
+    float x_in_atmo; // distance along the view ray at which the ray enters the atmosphere
+    float x_out_atmo; // distance along the view ray at which the ray exits the atmosphere
+    float x_in_world; // distance along the view ray at which the ray enters the surface of the world
+    float x_out_world; // distance along the view ray at which the ray enters the surface of the world
+    float x_start; // distance along the view ray at which scattering starts, either because it's the start of the ray or the start of the atmosphere 
+    float x_stop; // distance along the view ray at which scattering no longer occurs, either due to hitting the world or leaving the atmosphere
+    float dx; // distance between steps while marching along the view ray
+    float x; // distance traversed while marching along the view ray
     float sigma_V; // columnar density ratios for rayleigh and mie scattering, found by marching along the view ray. This expresses the quantity of air encountered along the view ray, relative to air density on the surface
     vec3 P_i; // absolute position while marching along the view ray
     float h_i; // distance ("height") from the surface of the world while marching along the view ray
@@ -1457,39 +1393,39 @@ vec3 get_rgb_intensity_of_light_scattered_from_atmosphere(
     vec3 beta_sum = beta_ray + beta_mie + beta_abs;
     get_relation_between_ray_and_point(
         O, P, V,
-        z_V2, x_Vz
+        z2, xz
     );
     //   We only set it to 3 scale heights because we are using this parameter for raymarching, and not a closed form solution
-    V_is_scattered = try_get_relation_between_ray_and_sphere(
-        R + 4.*H, z_V2, x_Vz,
-        x_V_in_atmo, x_V_out_atmo
+    is_scattered = try_get_relation_between_ray_and_sphere(
+        R + 6.*H, z2, xz,
+        x_in_atmo, x_out_atmo
     );
-    V_is_obstructed = try_get_relation_between_ray_and_sphere(
-        R, z_V2, x_Vz,
-        x_V_in_world, x_V_out_world
+    is_obstructed = try_get_relation_between_ray_and_sphere(
+        R, z2, xz,
+        x_in_world, x_out_world
     );
     // if view ray does not interact with the atmosphere
     // don't bother running the raymarch algorithm
-    if (!V_is_scattered)
+    if (!is_scattered)
     {
         return I_back;
     }
-    x_V_start = max(x_V_in_atmo, 0.);
-    x_V_stop = V_is_obstructed? x_V_in_world : x_V_out_atmo;
-    dx_V = (x_V_stop - x_V_start) / STEP_COUNT;
-    x_V = x_V_start + 0.5 * dx_V;
+    x_start = max(x_in_atmo, 0.);
+    x_stop = is_obstructed? x_in_world : x_out_atmo;
+    dx = (x_stop - x_start) / STEP_COUNT;
+    x = x_start + 0.5 * dx;
     for (float i = 0.; i < STEP_COUNT; ++i)
     {
-        P_i = P + V * x_V;
-        h_i = get_height_along_ray_over_world(x_V-x_Vz, z_V2, R);
-        sigma_V = approx_air_column_density_ratio_along_line_segment (P_i, -V, x_V, O, R, H);
+        P_i = P + V * x;
+        h_i = sqrt((x-xz)*(x-xz)+z2) - R;
+        sigma_V = approx_air_column_density_ratio_along_line_segment (P_i, -V, x, O, R, H);
         sigma_L = approx_air_column_density_ratio_along_line_segment (P_i, L, 3.*R, O, R, H);
         E += I_sun
             // incoming fraction: the fraction of light that scatters towards camera
-            * exp(-h_i/H) * beta_gamma * dx_V
+            * exp(-h_i/H) * beta_gamma * dx
             // outgoing fraction: the fraction of light that scatters away from camera
             * exp(-beta_sum * (sigma_V + sigma_L));
-        x_V += dx_V;
+        x += dx;
     }
     // now calculate the intensity of light that traveled straight in from the background, and add it to the total
     E += I_back * exp(-beta_sum * sigma_V);
