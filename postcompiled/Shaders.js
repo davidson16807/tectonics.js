@@ -391,31 +391,19 @@ float get_fraction_of_microfacets_with_angle(in float cos_angle_of_deviation, in
 }
 const float BIG = 1e20;
 const float SMALL = 1e-20;
-// "approx_air_column_density_ratio_along_ray_for_segment" is a convenience wrapper for approx_air_column_density_ratio_along_ray_from_samples(), 
-//   which calculates sensible values of xm and xb for the user 
-//   given a specified range around which the approximation must be valid.
-// The range is indicated by its lower bounds (xmin) and width (dx).
-// NOTE: all input distances are relative to closest approach!
-float approx_air_column_density_ratio_along_ray_for_segment(float x, float xmin, float dx, float z2, float R, float H){
-    const float fm = 0.5;
-    const float fb = 0.2;
-    float xm = xmin + fm*dx;
-    float xb = xmin + fb*dx;
-    float xmax = xmin + dx;
-          x = clamp(x, xmin, xmax);
-    float m = xm / sqrt(max(xm*xm + z2, 0.));
-    float b = sqrt(max(xb*xb + z2, 0.)) - R;
-    float h = m*(x-xb) + b;
-    return -H/m * exp(-h/H);
+// "approx_air_column_density_ratio_along_ray_for_flat_world" 
+//   calculates column density ratio of air for a ray emitted from given height to a desired lateral distance, 
+//   assumes height varies linearly along the path, i.e. the world is flat.
+float approx_air_column_density_ratio_along_ray_for_flat_world(float h0, float dhdx, float dx, float H){
+    float h = h0 + dhdx * dx;
+    return -H/dhdx * exp(-h/H);
 }
-// "approx_air_column_density_ratio_along_ray_for_absx" is a convenience wrapper for approx_air_column_density_ratio_along_ray_for_segment().
-// It returns an approximation of columnar density ratio encountered from 
-//   the surface of a world to a given upper bound, "x"
-// Unlike approx_air_column_density_ratio_along_ray_from_samples() and approx_air_column_density_ratio_along_ray_for_segment(), 
-//   it should be appropriate for any value of x, no matter if it's positive or negative.
+// "approx_air_column_density_ratio_along_ray_for_curved_world" 
+//   calculates column density ratio of air for a ray emitted from the surface of a world to a desired distance, 
+//   taking into account the curvature of the world.
 // It does this by making two linear approximations for height:
 //   one for the lower atmosphere, one for the upper atmosphere.
-// These are represented by the two call outs to approx_air_column_density_ratio_along_ray_for_segment().
+// These are represented by the two call outs to approx_air_column_density_ratio_along_ray_for_flat_world().
 // "x" is the distance along the ray from closest approach to the upper bound (always positive),
 //   or from the closest approach to the upper bound, if there is no intersection.
 // "x_atmo" is the distance along the ray from closest approach to the top of the atmosphere (always positive)
@@ -424,7 +412,7 @@ float approx_air_column_density_ratio_along_ray_for_segment(float x, float xmin,
 //   it is used to express values for columnar density ratio relative to the surface of the world.
 // "z2" is the closest distance from the ray to the center of the world, squared.
 // NOTE: all input distances are relative to closest approach!
-float approx_air_column_density_ratio_along_ray_for_absx(float x, float x_world, float x_atmo, float sigma0, float z2, float R, float H){
+float approx_air_column_density_ratio_along_ray_for_curved_world(float x, float x_world, float x_atmo, float sigma0, float z2, float R, float H){
     // sanitize x_world so it's always positive
     x_world = abs(x_world);
     // sanitize x_atmo so it's always positive
@@ -433,26 +421,37 @@ float approx_air_column_density_ratio_along_ray_for_absx(float x, float x_world,
     x = max(abs(x)-x_world, 0.) + x_world;
     // "dx" is the width of the bounds covered by our linear approximations
     float dx = (x_atmo-x_world)/3.;
+    // fraction along segment to sample for slope and intercept of linear height approximation
+    const float fm = 0.5;
+    const float fb = 0.2;
+    float xm1 = x_world + 0. + fm*dx;
+    float xb1 = x_world + 0. + fb*dx;
+    float m1 = xm1 / sqrt(max(xm1*xm1 + z2, 0.));
+    float b1 = sqrt(max(xb1*xb1 + z2, 0.)) - R;
+    float xm2 = x_world + dx + fm*dx;
+    float xb2 = x_world + dx + fb*dx;
+    float m2 = xm2 / sqrt(max(xm2*xm2 + z2, 0.));
+    float b2 = sqrt(max(xb2*xb2 + z2, 0.)) - R;
     return
-        approx_air_column_density_ratio_along_ray_for_segment(x, x_world, dx, z2,R,H)
-      + approx_air_column_density_ratio_along_ray_for_segment(x, x_world+dx, dx, z2,R,H)
+        approx_air_column_density_ratio_along_ray_for_flat_world(b1, m1, clamp(x-xb1, 0., dx), H)
+      + approx_air_column_density_ratio_along_ray_for_flat_world(b2, m2, clamp(x-xb2, 0., dx), H)
       - sigma0;
 }
-// "approx_reference_air_column_density_ratio_along_ray" is a convenience wrapper for approx_air_column_density_ratio_along_ray_for_absx().
+// "approx_reference_air_column_density_ratio_along_ray" is a convenience wrapper for approx_air_column_density_ratio_along_ray_for_curved_world().
 // It returns a reference value that can be passed to approx_air_column_density_ratio_along_ray_2d().
 // NOTE: all input distances are relative to closest approach!
 float approx_reference_air_column_density_ratio_along_ray(float x_world, float x_atmo, float z2, float R, float H){
-    return approx_air_column_density_ratio_along_ray_for_absx(x_world, x_world, x_atmo, 0., z2, R, H);
+    return approx_air_column_density_ratio_along_ray_for_curved_world(x_world, x_world, x_atmo, 0., z2, R, H);
 }
-// "approx_air_column_density_ratio_along_ray_2d" is a convenience wrapper for approx_air_column_density_ratio_along_ray_for_absx().
+// "approx_air_column_density_ratio_along_ray_2d" is a convenience wrapper for approx_air_column_density_ratio_along_ray_for_curved_world().
 // It returns a approximation of columnar density ratio that should be appropriate for any value of x.
 // NOTE: all input distances are relative to closest approach!
 float approx_air_column_density_ratio_along_ray_2d (float x_start, float x_stop, float x_world, float x_atmo, float sigma0, float z2, float R, float H){
     // NOTE: we clamp the result to prevent the generation of inifinities and nans, 
     // which can cause graphical artifacts.
     return
-        sign(x_stop) * min(approx_air_column_density_ratio_along_ray_for_absx(x_stop, x_world, x_atmo, sigma0, z2, R, H), BIG) -
-     sign(x_start) * min(approx_air_column_density_ratio_along_ray_for_absx(x_start, x_world, x_atmo, sigma0, z2, R, H), BIG);
+        sign(x_stop) * min(approx_air_column_density_ratio_along_ray_for_curved_world(x_stop, x_world, x_atmo, sigma0, z2, R, H), BIG) -
+     sign(x_start) * min(approx_air_column_density_ratio_along_ray_for_curved_world(x_start, x_world, x_atmo, sigma0, z2, R, H), BIG);
 }
 // "try_approx_air_column_density_ratio_along_ray" is an all-in-one convenience wrapper 
 //   for approx_air_column_density_ratio_along_ray_2d() and approx_reference_air_column_density_ratio_along_ray.
@@ -499,7 +498,7 @@ float approx_air_column_density_ratio_along_line_segment (
         z2, x_z,
         x_in_atmo, x_out_atmo
     );
-    // NOTE: "sigma0" the column density ratio returned by approx_air_column_density_ratio_along_ray_for_absx() for the surface
+    // NOTE: "sigma0" the column density ratio returned by approx_air_column_density_ratio_along_ray_for_curved_world() for the surface
     float sigma0 = approx_reference_air_column_density_ratio_along_ray(
      x_out_world-x_z, x_out_atmo-x_z,
      z2, R, H
@@ -1220,31 +1219,19 @@ float get_fraction_of_microfacets_with_angle(in float cos_angle_of_deviation, in
 }
 const float BIG = 1e20;
 const float SMALL = 1e-20;
-// "approx_air_column_density_ratio_along_ray_for_segment" is a convenience wrapper for approx_air_column_density_ratio_along_ray_from_samples(), 
-//   which calculates sensible values of xm and xb for the user 
-//   given a specified range around which the approximation must be valid.
-// The range is indicated by its lower bounds (xmin) and width (dx).
-// NOTE: all input distances are relative to closest approach!
-float approx_air_column_density_ratio_along_ray_for_segment(float x, float xmin, float dx, float z2, float R, float H){
-    const float fm = 0.5;
-    const float fb = 0.2;
-    float xm = xmin + fm*dx;
-    float xb = xmin + fb*dx;
-    float xmax = xmin + dx;
-          x = clamp(x, xmin, xmax);
-    float m = xm / sqrt(max(xm*xm + z2, 0.));
-    float b = sqrt(max(xb*xb + z2, 0.)) - R;
-    float h = m*(x-xb) + b;
-    return -H/m * exp(-h/H);
+// "approx_air_column_density_ratio_along_ray_for_flat_world" 
+//   calculates column density ratio of air for a ray emitted from given height to a desired lateral distance, 
+//   assumes height varies linearly along the path, i.e. the world is flat.
+float approx_air_column_density_ratio_along_ray_for_flat_world(float h0, float dhdx, float dx, float H){
+    float h = h0 + dhdx * dx;
+    return -H/dhdx * exp(-h/H);
 }
-// "approx_air_column_density_ratio_along_ray_for_absx" is a convenience wrapper for approx_air_column_density_ratio_along_ray_for_segment().
-// It returns an approximation of columnar density ratio encountered from 
-//   the surface of a world to a given upper bound, "x"
-// Unlike approx_air_column_density_ratio_along_ray_from_samples() and approx_air_column_density_ratio_along_ray_for_segment(), 
-//   it should be appropriate for any value of x, no matter if it's positive or negative.
+// "approx_air_column_density_ratio_along_ray_for_curved_world" 
+//   calculates column density ratio of air for a ray emitted from the surface of a world to a desired distance, 
+//   taking into account the curvature of the world.
 // It does this by making two linear approximations for height:
 //   one for the lower atmosphere, one for the upper atmosphere.
-// These are represented by the two call outs to approx_air_column_density_ratio_along_ray_for_segment().
+// These are represented by the two call outs to approx_air_column_density_ratio_along_ray_for_flat_world().
 // "x" is the distance along the ray from closest approach to the upper bound (always positive),
 //   or from the closest approach to the upper bound, if there is no intersection.
 // "x_atmo" is the distance along the ray from closest approach to the top of the atmosphere (always positive)
@@ -1253,7 +1240,7 @@ float approx_air_column_density_ratio_along_ray_for_segment(float x, float xmin,
 //   it is used to express values for columnar density ratio relative to the surface of the world.
 // "z2" is the closest distance from the ray to the center of the world, squared.
 // NOTE: all input distances are relative to closest approach!
-float approx_air_column_density_ratio_along_ray_for_absx(float x, float x_world, float x_atmo, float sigma0, float z2, float R, float H){
+float approx_air_column_density_ratio_along_ray_for_curved_world(float x, float x_world, float x_atmo, float sigma0, float z2, float R, float H){
     // sanitize x_world so it's always positive
     x_world = abs(x_world);
     // sanitize x_atmo so it's always positive
@@ -1262,26 +1249,37 @@ float approx_air_column_density_ratio_along_ray_for_absx(float x, float x_world,
     x = max(abs(x)-x_world, 0.) + x_world;
     // "dx" is the width of the bounds covered by our linear approximations
     float dx = (x_atmo-x_world)/3.;
+    // fraction along segment to sample for slope and intercept of linear height approximation
+    const float fm = 0.5;
+    const float fb = 0.2;
+    float xm1 = x_world + 0. + fm*dx;
+    float xb1 = x_world + 0. + fb*dx;
+    float m1 = xm1 / sqrt(max(xm1*xm1 + z2, 0.));
+    float b1 = sqrt(max(xb1*xb1 + z2, 0.)) - R;
+    float xm2 = x_world + dx + fm*dx;
+    float xb2 = x_world + dx + fb*dx;
+    float m2 = xm2 / sqrt(max(xm2*xm2 + z2, 0.));
+    float b2 = sqrt(max(xb2*xb2 + z2, 0.)) - R;
     return
-        approx_air_column_density_ratio_along_ray_for_segment(x, x_world, dx, z2,R,H)
-      + approx_air_column_density_ratio_along_ray_for_segment(x, x_world+dx, dx, z2,R,H)
+        approx_air_column_density_ratio_along_ray_for_flat_world(b1, m1, clamp(x-xb1, 0., dx), H)
+      + approx_air_column_density_ratio_along_ray_for_flat_world(b2, m2, clamp(x-xb2, 0., dx), H)
       - sigma0;
 }
-// "approx_reference_air_column_density_ratio_along_ray" is a convenience wrapper for approx_air_column_density_ratio_along_ray_for_absx().
+// "approx_reference_air_column_density_ratio_along_ray" is a convenience wrapper for approx_air_column_density_ratio_along_ray_for_curved_world().
 // It returns a reference value that can be passed to approx_air_column_density_ratio_along_ray_2d().
 // NOTE: all input distances are relative to closest approach!
 float approx_reference_air_column_density_ratio_along_ray(float x_world, float x_atmo, float z2, float R, float H){
-    return approx_air_column_density_ratio_along_ray_for_absx(x_world, x_world, x_atmo, 0., z2, R, H);
+    return approx_air_column_density_ratio_along_ray_for_curved_world(x_world, x_world, x_atmo, 0., z2, R, H);
 }
-// "approx_air_column_density_ratio_along_ray_2d" is a convenience wrapper for approx_air_column_density_ratio_along_ray_for_absx().
+// "approx_air_column_density_ratio_along_ray_2d" is a convenience wrapper for approx_air_column_density_ratio_along_ray_for_curved_world().
 // It returns a approximation of columnar density ratio that should be appropriate for any value of x.
 // NOTE: all input distances are relative to closest approach!
 float approx_air_column_density_ratio_along_ray_2d (float x_start, float x_stop, float x_world, float x_atmo, float sigma0, float z2, float R, float H){
     // NOTE: we clamp the result to prevent the generation of inifinities and nans, 
     // which can cause graphical artifacts.
     return
-        sign(x_stop) * min(approx_air_column_density_ratio_along_ray_for_absx(x_stop, x_world, x_atmo, sigma0, z2, R, H), BIG) -
-     sign(x_start) * min(approx_air_column_density_ratio_along_ray_for_absx(x_start, x_world, x_atmo, sigma0, z2, R, H), BIG);
+        sign(x_stop) * min(approx_air_column_density_ratio_along_ray_for_curved_world(x_stop, x_world, x_atmo, sigma0, z2, R, H), BIG) -
+     sign(x_start) * min(approx_air_column_density_ratio_along_ray_for_curved_world(x_start, x_world, x_atmo, sigma0, z2, R, H), BIG);
 }
 // "try_approx_air_column_density_ratio_along_ray" is an all-in-one convenience wrapper 
 //   for approx_air_column_density_ratio_along_ray_2d() and approx_reference_air_column_density_ratio_along_ray.
@@ -1328,7 +1326,7 @@ float approx_air_column_density_ratio_along_line_segment (
         z2, x_z,
         x_in_atmo, x_out_atmo
     );
-    // NOTE: "sigma0" the column density ratio returned by approx_air_column_density_ratio_along_ray_for_absx() for the surface
+    // NOTE: "sigma0" the column density ratio returned by approx_air_column_density_ratio_along_ray_for_curved_world() for the surface
     float sigma0 = approx_reference_air_column_density_ratio_along_ray(
      x_out_world-x_z, x_out_atmo-x_z,
      z2, R, H
