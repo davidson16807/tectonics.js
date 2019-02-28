@@ -84,17 +84,20 @@ void main() {
     vec4  background_rgb_signal    = texture2D( surface_light, vUv );
     vec3  background_rgb_intensity = insolation_max * get_rgb_intensity_of_rgb_signal(background_rgb_signal.rgb);
         
-    vec3 rgb_intensity = get_rgb_intensity_of_light_scattered_from_atmosphere(
-        view_origin,                view_direction,
-        world_position,             world_radius,
-        light_direction,            light_rgb_intensity,  // light direction and rgb intensity
-        background_rgb_intensity,
-        atmosphere_scale_height,
-        atmosphere_surface_rayleigh_scattering_coefficients, 
-        atmosphere_surface_mie_scattering_coefficients, 
-        atmosphere_surface_absorption_coefficients 
-    );
+    // "beta_air_*" variables are the scattering coefficients for the atmosphere at sea level
+    vec3  beta_ray = atmosphere_surface_rayleigh_scattering_coefficients;
+    vec3  beta_mie = atmosphere_surface_mie_scattering_coefficients;
+    vec3  beta_abs = atmosphere_surface_absorption_coefficients; 
 
+    vec3 rgb_intensity = 
+        get_rgb_intensity_of_light_scattered_from_atmosphere(
+            view_origin,                view_direction,
+            world_position,             world_radius,
+            light_direction,            light_rgb_intensity,  
+            background_rgb_intensity,
+            atmosphere_scale_height,    beta_ray,       beta_mie,          beta_abs
+        );
+        
     // TODO: move this to a separate shader pass!
     // see https://learnopengl.com/Advanced-Lighting/HDR for an intro to tone mapping
     float exposure_intensity = 150.; // Watts/m^2

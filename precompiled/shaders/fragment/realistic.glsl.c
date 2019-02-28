@@ -132,8 +132,7 @@ void main() {
     ));
 
     // "N" is the surface normal
-    float NORMAL_MAP_AESTHETIC_EXAGGERATION_FACTOR = 1.0;
-    vec3 N = normalize(normalize(vPosition.xyz) + NORMAL_MAP_AESTHETIC_EXAGGERATION_FACTOR*vGradient);
+    vec3 N = normalize(normalize(vPosition.xyz) + vGradient);
 
     // "L" is the normal vector indicating the direction to the light source
     vec3 L = light_direction;
@@ -156,29 +155,6 @@ void main() {
     float NH =    (dot(N,H));
     float HV = max(dot(V,H), 0.);
 
-    // "F" is the fraction of light that's immediately reflected 
-    //   upon striking a microfacet that's best aligned for reflection.
-    // It is also known as the "fresnel reflectance".
-    // See Hoffmann 2015 for a gentle introduction to the concept.
-    // TODO: characteristic reflectance should change dependant on microfacet surface normal,
-    //   e.g. to simulate a snowy boulder field, or mangrove swamp, where water partially covers rocks and vegetation
-    vec3  F  = get_rgb_fraction_of_light_reflected_on_surface(HV, F0);
-
-    // "G" is the fraction of reflected light that is lost due to masking and shadowing
-    //   see Hoffmann 2015 for a gentle introduction to the concept
-    float G = get_fraction_of_reflected_light_masked_or_shaded(NV, m);
-
-    // "D" is the fraction of microfacet surface normals that are aligned to reflect light to the view
-    //   see Hoffmann 2015 for a gentle introduction to the concept
-    float D = get_fraction_of_microfacets_with_angle(NH, m); 
-
-    // "d" is the fraction of light that is not immediately reflected, 
-    //   but refracts into the material, either to be absorbed, scattered away, 
-    //   or scattered back to the view as diffuse reflection.
-    // Unlike "F", it does not strike the ideal microfacet for reflection ("H"), 
-    //   but strikes the most common one ("N").
-    vec3  d  = 1. - get_rgb_fraction_of_light_reflected_on_surface(NV, F0);
-
     // "I_max" is the maximum possible intensity within the viewing frame.
     // For Earth, this would be the global solar constant.
     float I_max = insolation_max;
@@ -189,35 +165,44 @@ void main() {
     // "I_surface" is the intensity of light that reaches the surface after being filtered by atmosphere
     vec3 I_surface = I_sun 
         * get_rgb_fraction_of_refracted_light_transmitted_through_atmosphere(
+            // NOTE: we nudge the origin of light ray by a small amount so that collision isn't detected with the planet
             1.0003 * vPosition.xyz * reference_distance, L, 3.*world_radius,
-            world_position, world_radius, atmosphere_scale_height,
-            beta_air_ray,   beta_air_mie, beta_air_abs
+            world_position, world_radius, atmosphere_scale_height, beta_air_ray, beta_air_mie, beta_air_abs
         );
 
-    vec3 E_surface_reflected = I_surface * F * G * D / (4.*PI);
+    vec3 E_surface_reflected = I_surface 
+        * get_rgb_fraction_of_light_reflected_on_surface(HV, F0)
+        * get_fraction_of_reflected_light_masked_or_shaded(NV, m) 
+        * get_fraction_of_microfacets_with_angle(NH, m)
+        / (4.*PI);
 
+    // "I_surface_refracted" is the fraction of light that is not immediately reflected, 
+    //   but penetrates into the material, either to be absorbed, scattered away, 
+    //   or scattered back to the view as diffuse reflection.
+    // Unlike I_surface_reflected, we do not consider it striking 
+    //     the ideal microfacet for reflection ("HV"), but instead the most common one ("NV").
     vec3 I_surface_refracted = 
-        I_surface * d + 
-        I_sun     * AMBIENT_LIGHT_AESTHETIC_BRIGHTNESS_FACTOR;
-
-    vec3 E_surface_emitted = get_rgb_intensity_of_light_emitted_by_black_body(vSurfaceTemp);
+        I_surface * (1. - get_rgb_fraction_of_light_reflected_on_surface(NV, F0)) + 
+        I_sun     *  AMBIENT_LIGHT_AESTHETIC_BRIGHTNESS_FACTOR;
 
     // If sea is present, "E_sea_scattered" is the rgb intensity of light 
     //   scattered by the sea towards the camera. Otherwise, it equals 0.
-    vec3 E_sea_scattered = get_rgb_intensity_of_light_scattered_from_fluid(
-        NV, NL, LV, ocean_depth, I_surface_refracted, 
-        beta_sea_ray, beta_sea_mie, beta_sea_abs
-    );
+    vec3 E_sea_scattered = 
+        get_rgb_intensity_of_light_scattered_from_fluid(
+            NV, NL, LV, ocean_depth, I_surface_refracted, 
+            beta_sea_ray, beta_sea_mie, beta_sea_abs
+        );
 
     // if sea is present, "I_sea_trasmitted" is the rgb intensity of light 
     //   that reaches the ground after being filtered by air and sea. Otherwise, it equals I_surface_refracted.
     vec3 I_sea_trasmitted= I_surface_refracted
         * get_rgb_fraction_of_refracted_light_transmitted_through_fluid(NL, ocean_depth, beta_sea_ray, beta_sea_mie, beta_sea_abs);
 
+    // TODO: more sensible microfacet model
     vec3 bedrock_color   = mix(LAND_COLOR_MAFIC, LAND_COLOR_FELSIC, felsic_coverage);
     vec3 soil_color      = mix(bedrock_color, mix(LAND_COLOR_SAND, LAND_COLOR_PEAT, organic_coverage), mineral_coverage);
     vec3 canopy_color    = mix(soil_color, JUNGLE_COLOR, plant_coverage);
-    vec3 bottom_color  = get_rgb_intensity_of_rgb_signal(@UNCOVERED);
+    vec3 bottom_color    = get_rgb_intensity_of_rgb_signal(@UNCOVERED);
 
     // "E_bottom_diffused" is diffuse reflection of any nontrasparent component beneath the transparent surface,
     // It effectively describes diffuse reflection as understood within the phong model of reflectance.
@@ -232,6 +217,8 @@ void main() {
         mix(E_sea_transmitted + E_sea_scattered, 
             I_surface_refracted * NL * SNOW_COLOR, 
             ice_coverage*ice_coverage*ice_coverage*ice_mod);
+
+    vec3 E_surface_emitted = get_rgb_intensity_of_light_emitted_by_black_body(vSurfaceTemp);
 
     // NOTE: we do not filter E_total by atmospheric scattering
     //   that job is done by the atmospheric shader pass, in "atmosphere.glsl.c"
