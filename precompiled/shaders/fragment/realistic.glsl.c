@@ -156,15 +156,6 @@ void main() {
     float NH =    (dot(N,H));
     float HV = max(dot(V,H), 0.);
 
-    // "sigma_air_in" is the column density of air, relative to the surface of the world, that's along the light's path of travel,
-    //   we use it to estimate the amount of light that's filtered by the atmosphere before reaching the surface
-    //   see https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-1/ for an awesome introduction
-    float sigma_air_in  = approx_air_column_density_ratio_along_line_segment (
-        // NOTE: we nudge the origin of light ray by a small amount so that collision isn't detected with the planet
-        1.0003 * vPosition.xyz * reference_distance, L, 3.*world_radius,
-        world_position, world_radius, atmosphere_scale_height
-    );
-
     // "F" is the fraction of light that's immediately reflected 
     //   upon striking a microfacet that's best aligned for reflection.
     // It is also known as the "fresnel reflectance".
@@ -195,9 +186,13 @@ void main() {
     // "I_sun" is the rgb Intensity of Incoming Incident light, A.K.A. "Insolation"
     vec3 I_sun = light_rgb_intensity;
 
-    // "I_sea" is the intensity of light that reaches the surface after being filtered by atmosphere
+    // "I_surface" is the intensity of light that reaches the surface after being filtered by atmosphere
     vec3 I_surface = I_sun 
-        * exp(-sigma_air_in * (beta_air_ray + beta_air_mie + beta_air_abs));
+        * get_rgb_fraction_of_refracted_light_transmitted_through_atmosphere(
+            1.0003 * vPosition.xyz * reference_distance, L, 3.*world_radius,
+            world_position, world_radius, atmosphere_scale_height,
+            beta_air_ray,   beta_air_mie, beta_air_abs
+        );
 
     vec3 E_surface_reflected = I_surface * F * G * D / (4.*PI);
 

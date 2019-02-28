@@ -662,20 +662,20 @@ vec3 get_rgb_intensity_of_light_scattered_from_fluid(
     // see mention of "gamma" by Alan Zucconi: https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-3/
     float gamma_ray = get_fraction_of_rayleigh_scattered_light_scattered_by_angle(LV);
     float gamma_mie = get_fraction_of_mie_scattered_light_scattered_by_angle(LV);
-    // "sigma_in"  is the column density, relative to the surface, that's along the light's incoming path of travel.
-    // "sigma_out" is the column density, relative to the surface, that's along the light's outgoing path of travel.
+    // "sigma_V"  is the column density, relative to the surface, that's along the view ray.
+    // "sigma_L" is the column density, relative to the surface, that's along the light ray.
     // "sigma_ratio" is the column density ratio of the full path of light relative to the distance along the incoming path
     // Since water is treated as incompressible, the density remains constant, 
     //   so they are effectively the distances traveled along their respective paths.
     // TODO: model vector of refracted light within water
-    float sigma_in = ocean_depth / NV;
-    float sigma_out = ocean_depth / NL;
+    float sigma_V = ocean_depth / NV;
+    float sigma_L = ocean_depth / NL;
     float sigma_ratio = 1. + NV/NL;
     return I
         // incoming fraction: the fraction of light that scatters towards camera
         * (beta_ray * gamma_ray + beta_mie * gamma_mie)
         // outgoing fraction: the fraction of light that scatters away from camera
-        * (exp(-sigma_in * sigma_ratio * (beta_ray + beta_mie + beta_abs)) - 1.)
+        * (exp(-sigma_V * sigma_ratio * (beta_ray + beta_mie + beta_abs)) - 1.)
         / (-sigma_ratio * (beta_ray + beta_mie + beta_abs));
 }
 vec3 get_rgb_fraction_of_refracted_light_transmitted_through_fluid(
@@ -686,6 +686,22 @@ vec3 get_rgb_fraction_of_refracted_light_transmitted_through_fluid(
     vec3 beta_abs
 ){
     float sigma = ocean_depth / cos_incident_angle;
+    return exp(-sigma * (beta_ray + beta_mie + beta_abs));
+}
+vec3 get_rgb_fraction_of_refracted_light_transmitted_through_atmosphere(
+    vec3 segment_origin, vec3 segment_direction, float segment_length,
+    vec3 world_position, float world_radius, float atmosphere_scale_height,
+    vec3 beta_ray, vec3 beta_mie, vec3 beta_abs
+){
+    // "sigma" is the column density of air, relative to the surface of the world, that's along the light's path of travel,
+    //   we use it to estimate the amount of light that's filtered by the atmosphere before reaching the surface
+    //   see https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-1/ for an awesome introduction
+    float sigma = approx_air_column_density_ratio_along_line_segment (
+        // NOTE: we nudge the origin of light ray by a small amount so that collision isn't detected with the planet
+        segment_origin, segment_direction, segment_length,
+        world_position, world_radius, atmosphere_scale_height
+    );
+    // "I_surface" is the intensity of light that reaches the surface after being filtered by atmosphere
     return exp(-sigma * (beta_ray + beta_mie + beta_abs));
 }
 // This function returns a rgb vector that quickly approximates a spectral "bump".
@@ -848,14 +864,6 @@ void main() {
     float NL = max(dot(N,L), 0.);
     float NH = (dot(N,H));
     float HV = max(dot(V,H), 0.);
-    // "sigma_air_in" is the column density of air, relative to the surface of the world, that's along the light's path of travel,
-    //   we use it to estimate the amount of light that's filtered by the atmosphere before reaching the surface
-    //   see https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-1/ for an awesome introduction
-    float sigma_air_in = approx_air_column_density_ratio_along_line_segment (
-        // NOTE: we nudge the origin of light ray by a small amount so that collision isn't detected with the planet
-        1.0003 * vPosition.xyz * reference_distance, L, 3.*world_radius,
-        world_position, world_radius, atmosphere_scale_height
-    );
     // "F" is the fraction of light that's immediately reflected 
     //   upon striking a microfacet that's best aligned for reflection.
     // It is also known as the "fresnel reflectance".
@@ -880,9 +888,13 @@ void main() {
     float I_max = insolation_max;
     // "I_sun" is the rgb Intensity of Incoming Incident light, A.K.A. "Insolation"
     vec3 I_sun = light_rgb_intensity;
-    // "I_sea" is the intensity of light that reaches the surface after being filtered by atmosphere
+    // "I_surface" is the intensity of light that reaches the surface after being filtered by atmosphere
     vec3 I_surface = I_sun
-        * exp(-sigma_air_in * (beta_air_ray + beta_air_mie + beta_air_abs));
+        * get_rgb_fraction_of_refracted_light_transmitted_through_atmosphere(
+            1.0003 * vPosition.xyz * reference_distance, L, 3.*world_radius,
+            world_position, world_radius, atmosphere_scale_height,
+            beta_air_ray, beta_air_mie, beta_air_abs
+        );
     vec3 E_surface_reflected = I_surface * F * G * D / (4.*PI);
     vec3 I_surface_refracted =
         I_surface * d +
@@ -1532,20 +1544,20 @@ vec3 get_rgb_intensity_of_light_scattered_from_fluid(
     // see mention of "gamma" by Alan Zucconi: https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-3/
     float gamma_ray = get_fraction_of_rayleigh_scattered_light_scattered_by_angle(LV);
     float gamma_mie = get_fraction_of_mie_scattered_light_scattered_by_angle(LV);
-    // "sigma_in"  is the column density, relative to the surface, that's along the light's incoming path of travel.
-    // "sigma_out" is the column density, relative to the surface, that's along the light's outgoing path of travel.
+    // "sigma_V"  is the column density, relative to the surface, that's along the view ray.
+    // "sigma_L" is the column density, relative to the surface, that's along the light ray.
     // "sigma_ratio" is the column density ratio of the full path of light relative to the distance along the incoming path
     // Since water is treated as incompressible, the density remains constant, 
     //   so they are effectively the distances traveled along their respective paths.
     // TODO: model vector of refracted light within water
-    float sigma_in = ocean_depth / NV;
-    float sigma_out = ocean_depth / NL;
+    float sigma_V = ocean_depth / NV;
+    float sigma_L = ocean_depth / NL;
     float sigma_ratio = 1. + NV/NL;
     return I
         // incoming fraction: the fraction of light that scatters towards camera
         * (beta_ray * gamma_ray + beta_mie * gamma_mie)
         // outgoing fraction: the fraction of light that scatters away from camera
-        * (exp(-sigma_in * sigma_ratio * (beta_ray + beta_mie + beta_abs)) - 1.)
+        * (exp(-sigma_V * sigma_ratio * (beta_ray + beta_mie + beta_abs)) - 1.)
         / (-sigma_ratio * (beta_ray + beta_mie + beta_abs));
 }
 vec3 get_rgb_fraction_of_refracted_light_transmitted_through_fluid(
@@ -1556,6 +1568,22 @@ vec3 get_rgb_fraction_of_refracted_light_transmitted_through_fluid(
     vec3 beta_abs
 ){
     float sigma = ocean_depth / cos_incident_angle;
+    return exp(-sigma * (beta_ray + beta_mie + beta_abs));
+}
+vec3 get_rgb_fraction_of_refracted_light_transmitted_through_atmosphere(
+    vec3 segment_origin, vec3 segment_direction, float segment_length,
+    vec3 world_position, float world_radius, float atmosphere_scale_height,
+    vec3 beta_ray, vec3 beta_mie, vec3 beta_abs
+){
+    // "sigma" is the column density of air, relative to the surface of the world, that's along the light's path of travel,
+    //   we use it to estimate the amount of light that's filtered by the atmosphere before reaching the surface
+    //   see https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-1/ for an awesome introduction
+    float sigma = approx_air_column_density_ratio_along_line_segment (
+        // NOTE: we nudge the origin of light ray by a small amount so that collision isn't detected with the planet
+        segment_origin, segment_direction, segment_length,
+        world_position, world_radius, atmosphere_scale_height
+    );
+    // "I_surface" is the intensity of light that reaches the surface after being filtered by atmosphere
     return exp(-sigma * (beta_ray + beta_mie + beta_abs));
 }
 // This function returns a rgb vector that quickly approximates a spectral "bump".

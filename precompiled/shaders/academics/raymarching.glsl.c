@@ -339,3 +339,20 @@ vec3 get_rgb_fraction_of_refracted_light_transmitted_through_fluid(
     float sigma  = ocean_depth / cos_incident_angle;
     return exp(-sigma * (beta_ray + beta_mie + beta_abs));
 }
+
+vec3 get_rgb_fraction_of_refracted_light_transmitted_through_atmosphere(
+    vec3  segment_origin, vec3  segment_direction, float segment_length,
+    vec3  world_position, float world_radius,      float atmosphere_scale_height,
+    vec3  beta_ray,       vec3  beta_mie,          vec3  beta_abs
+){
+    // "sigma" is the column density of air, relative to the surface of the world, that's along the light's path of travel,
+    //   we use it to estimate the amount of light that's filtered by the atmosphere before reaching the surface
+    //   see https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-1/ for an awesome introduction
+    float sigma  = approx_air_column_density_ratio_along_line_segment (
+        // NOTE: we nudge the origin of light ray by a small amount so that collision isn't detected with the planet
+        segment_origin, segment_direction, segment_length,
+        world_position, world_radius,      atmosphere_scale_height
+    );
+    // "I_surface" is the intensity of light that reaches the surface after being filtered by atmosphere
+    return exp(-sigma * (beta_ray + beta_mie + beta_abs));
+}
