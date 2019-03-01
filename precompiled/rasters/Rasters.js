@@ -1,5 +1,6 @@
 'use strict';
 
+#define IS_PROD 1
 
 #ifndef IS_PROD
 #define ASSERT_IS_NOT_EQUAL(INPUT1, INPUT2) \
