@@ -105,7 +105,7 @@ scalarViews.asthenosphere_pressure = new ScalarWorldView(
 		function (world, output, scratch, iterations) {return TectonicsModeling.get_asthenosphere_pressure(world.lithosphere.density, output, scratch);}
 	);
 
-scalarViews.guess_varying_surface_air_pressure = new ScalarWorldView( 
+scalarViews.surface_air_pressure = new ScalarWorldView( 
 		new HeatmapRasterView( { min: 980000., max: 1030000. }),
 		world => world.atmosphere.surface_pressure.value()
 	);
