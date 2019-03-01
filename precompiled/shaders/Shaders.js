@@ -28,6 +28,9 @@ fragmentShaders.heatmap = `
 fragmentShaders.topographic = `
 #include "precompiled/shaders/fragment/topographic.glsl.c"
 `;
+fragmentShaders.surface_normal_map = `
+#include "precompiled/shaders/fragment/surface_normal_map.glsl.c"
+`;
 fragmentShaders.vectorField = `
 #include "precompiled/shaders/fragment/vector_field.glsl.c"
 `;

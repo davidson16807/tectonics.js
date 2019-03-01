@@ -747,7 +747,7 @@ void main() {
     vec2 clipspace = vClipspace.xy;
     vec3 view_direction = normalize(view_matrix_inverse * projection_matrix_inverse * vec4(clipspace, 1, 1)).xyz;
     // vec3  view_origin    = view_matrix_inverse[3].xyz * reference_distance;
-    bool is_ocean = vDisplacement < sealevel * sealevel_mod;
+    bool is_ocean = sealevel * sealevel_mod > vDisplacement;
     float ocean_depth = max(sealevel*sealevel_mod - vDisplacement, 0.);
     float surface_height = max(vDisplacement - sealevel*sealevel_mod, 0.);
     // TODO: pass felsic_coverage in from attribute
@@ -758,7 +758,7 @@ void main() {
     float mineral_coverage = vDisplacement > sealevel? smoothstep(sealevel + 10000., sealevel, vDisplacement) : 0.;
     float organic_coverage = smoothstep(30., -30., vSurfaceTemp);
     float ice_coverage = vIceCoverage;
-    float plant_coverage = vPlantCoverage * (vDisplacement > sealevel? 1. : 0.);
+    float plant_coverage = vPlantCoverage * (!is_ocean? 1. : 0.);
     // "beta_sea_*" variables are the scattering coefficients for seawater
     vec3 beta_sea_ray = sea_rayleigh_scattering_coefficients;
     vec3 beta_sea_mie = sea_mie_scattering_coefficients;
@@ -962,6 +962,29 @@ void main() {
         smoothstep(0.75, 1., vScalar)
     );
  gl_FragColor = vec4(color, 1.);
+}
+`;
+fragmentShaders.surface_normal_map = `
+varying float vDisplacement;
+varying vec3 vGradient;
+varying vec4 vPosition;
+uniform float sealevel;
+uniform float sealevel_mod;
+void main() {
+    // CODE to generate a tangent-space normal map:
+ // "n" is the surface normal for a perfectly smooth sphere
+    vec3 n = normalize(vPosition.xyz);
+    // "N" is the actual surface normal as reported by the gradient of displacement
+    vec3 N = normalize(n + vGradient);
+    // "j" is coordinate basis for the y axis
+    vec3 j = vec3(0,1,0);
+    // "u" is the left/right axis on a uv map
+    vec3 u = normalize(cross(n, j));
+    // "v" is the up/down axis on a uv map
+    vec3 v = normalize(cross(n, u));
+    // to find the tangent-space normal map, we simply have to map N to the u/v/n coordinate space
+    // in other words, we take the dot product between n and the respective u/v/n coordinate bases.
+    gl_FragColor = vec4((2.*vec3(dot(N, u), dot(N, v), dot(N, n))-1.), 1);
 }
 `;
 fragmentShaders.vectorField = `

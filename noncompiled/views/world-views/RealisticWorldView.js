@@ -125,11 +125,6 @@ function RealisticWorldView(shader_return_value) {
         var array = mesh.geometry.attributes[key].array;
         var buffer_array_to_cell = raster.grid.buffer_array_to_cell;
         for (var i = 0, li = buffer_array_to_cell.length; i < li; i++) {
-
-            // array[3*i+0] = x[buffer_array_to_cell[i]];
-            // array[3*i+1] = y[buffer_array_to_cell[i]];
-            // array[3*i+2] = z[buffer_array_to_cell[i]];
-
             array[i+li*0] = x[buffer_array_to_cell[i]];
             array[i+li*1] = y[buffer_array_to_cell[i]];
             array[i+li*2] = z[buffer_array_to_cell[i]];

@@ -94,7 +94,7 @@ void main() {
     vec3  view_direction = normalize(view_matrix_inverse * projection_matrix_inverse * vec4(clipspace, 1, 1)).xyz;
     // vec3  view_origin    = view_matrix_inverse[3].xyz * reference_distance;
 
-    bool  is_ocean   = vDisplacement < sealevel * sealevel_mod;
+    bool  is_ocean       = sealevel * sealevel_mod > vDisplacement;
     float ocean_depth    = max(sealevel*sealevel_mod - vDisplacement, 0.);
     float surface_height = max(vDisplacement - sealevel*sealevel_mod, 0.);
     
@@ -106,7 +106,7 @@ void main() {
     float mineral_coverage  = vDisplacement > sealevel? smoothstep(sealevel + 10000., sealevel, vDisplacement) : 0.;
     float organic_coverage  = smoothstep(30., -30., vSurfaceTemp); 
     float ice_coverage      = vIceCoverage;
-    float plant_coverage    = vPlantCoverage * (vDisplacement > sealevel? 1. : 0.);
+    float plant_coverage    = vPlantCoverage * (!is_ocean? 1. : 0.);
 
     // "beta_sea_*" variables are the scattering coefficients for seawater
     vec3  beta_sea_ray = sea_rayleigh_scattering_coefficients;
