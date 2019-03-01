@@ -4,9 +4,8 @@ const float SMALL = 1e-20;
 // "approx_air_column_density_ratio_along_ray_for_flat_world" 
 //   calculates column density ratio of air for a ray emitted from given height to a desired lateral distance, 
 //   assumes height varies linearly along the path, i.e. the world is flat.
-float approx_air_column_density_ratio_along_ray_for_flat_world(float h0, float dhdx, float dx, float H){
-    float h = h0 + dhdx * dx;
-    return -H/dhdx * exp(-h/H);
+float approx_air_column_density_ratio_along_ray_for_flat_world(float b, float m, float x, float H){
+    return -H/m * exp(-(m*x+b)/H);
 }
 // "approx_air_column_density_ratio_along_ray_for_curved_world" 
 //   calculates column density ratio of air for a ray emitted from the surface of a world to a desired distance, 
@@ -22,52 +21,54 @@ float approx_air_column_density_ratio_along_ray_for_flat_world(float h0, float d
 //   it is used to express values for columnar density ratio relative to the surface of the world.
 // "z2" is the closest distance from the ray to the center of the world, squared.
 // NOTE: all input distances are relative to closest approach!
-float approx_air_column_density_ratio_along_ray_for_curved_world(float x, float x_world, float x_atmo, float sigma0, float z2, float R, float H){
-    // sanitize x_world so it's always positive
-    x_world = abs(x_world);
-    // sanitize x_atmo so it's always positive
-    x_atmo  = abs(x_atmo);
-    // sanitize x so it's always positive and greater than x_world
-    x = max(abs(x)-x_world, 0.) + x_world;
-    // "dx" is the width of the bounds covered by our linear approximations
-    float dx = (x_atmo-x_world)/3.;
+float approx_air_column_density_ratio_along_ray_for_curved_world(float x_start, float x_stop, float z2, float R, float H){
+    float RT  = R + 12.*H;
+    float xRT = sqrt(max(RT*RT-z2, 0.));
+    float xR  = sqrt(max(R *R -z2, 0.));
+    float dx  = xRT - xR;
 
-    // fraction along segment to sample for slope and intercept of linear height approximation
-    const float fm = 0.5;
-    const float fb = 0.2;
+    float f0  = 0.00*0.33;
+    float f0b = 0.20*0.33;
+    float f0m = 0.50*0.33;
+    float f1  = 1.00*0.33;
+    float f1b = 1.20*0.33;
+    float f1m = 1.50*0.33;
 
-    float xm1   = x_world + 0. + fm*dx;
-    float xb1   = x_world + 0. + fb*dx;
+    float x0  = xR + dx*f0 ;
+    float x0b = xR + dx*f0b;
+    float x0m = xR + dx*f0m;
+    float x1  = xR + dx*f1 ;
+    float x1b = xR + dx*f1b;
+    float x1m = xR + dx*f1m;
 
-    float xm2   = x_world + dx + fm*dx;
-    float xb2   = x_world + dx + fb*dx;
+    float m0  = x0m / sqrt(x0m*x0m + z2);
+    float b0  = sqrt(x0b*x0b + z2) - R;
 
-    float m1 = xm1 / sqrt(max(xm1*xm1 + z2, 0.));
-    float b1 = sqrt(max(xb1*xb1 + z2, 0.)) - R;
+    float m1 = x1m / sqrt(x1m*x1m + z2);
+    float b1 = sqrt(x1b*x1b + z2) - R;
+    
+    float sigma_reference =
+        approx_air_column_density_ratio_along_ray_for_flat_world(b0, m0, x0-x0b, H)
+      + approx_air_column_density_ratio_along_ray_for_flat_world(b1, m1, x1-x1b, H);
 
-    float m2 = xm2 / sqrt(max(xm2*xm2 + z2, 0.));
-    float b2 = sqrt(max(xb2*xb2 + z2, 0.)) - R;
+    float abs_x_stop = abs(x_stop);
+    float sign_x_stop = sign(x_stop);
+    float abs_sigma_stop =
+        approx_air_column_density_ratio_along_ray_for_flat_world(b0, m0, clamp(abs_x_stop,  x0, x1)-x0b, H)
+      + approx_air_column_density_ratio_along_ray_for_flat_world(b1, m1, max  (abs_x_stop,  x1)    -x1b, H)
+      - sigma_reference;
 
-    return
-        approx_air_column_density_ratio_along_ray_for_flat_world(b1, m1, clamp(x-xb1, 0., dx), H)
-      + approx_air_column_density_ratio_along_ray_for_flat_world(b2, m2, clamp(x-xb2, 0., dx), H)
-      - sigma0;
-}
-// "approx_reference_air_column_density_ratio_along_ray" is a convenience wrapper for approx_air_column_density_ratio_along_ray_for_curved_world().
-// It returns a reference value that can be passed to approx_air_column_density_ratio_along_ray_2d().
-// NOTE: all input distances are relative to closest approach!
-float approx_reference_air_column_density_ratio_along_ray(float x_world, float x_atmo, float z2, float R, float H){
-    return approx_air_column_density_ratio_along_ray_for_curved_world(x_world, x_world, x_atmo, 0., z2, R, H);
-}
-// "approx_air_column_density_ratio_along_ray_2d" is a convenience wrapper for approx_air_column_density_ratio_along_ray_for_curved_world().
-// It returns a approximation of columnar density ratio that should be appropriate for any value of x.
-// NOTE: all input distances are relative to closest approach!
-float approx_air_column_density_ratio_along_ray_2d (float x_start, float x_stop, float x_world, float x_atmo, float sigma0, float z2, float R, float H){
+    float abs_x_start = abs(x_start);
+    float sign_x_start = sign(x_start);
+    float abs_sigma_start =
+        approx_air_column_density_ratio_along_ray_for_flat_world(b0, m0, clamp(abs_x_start, x0, x1)-x0b, H)
+      + approx_air_column_density_ratio_along_ray_for_flat_world(b1, m1, max  (abs_x_start, x1)    -x1b, H)
+      - sigma_reference;
+
     // NOTE: we clamp the result to prevent the generation of inifinities and nans, 
     // which can cause graphical artifacts.
-    return 
-        sign(x_stop)  * min(approx_air_column_density_ratio_along_ray_for_curved_world(x_stop,  x_world, x_atmo, sigma0, z2, R, H), BIG) -
-    	sign(x_start) * min(approx_air_column_density_ratio_along_ray_for_curved_world(x_start, x_world, x_atmo, sigma0, z2, R, H), BIG); 
+    return sign_x_stop  * min(abs_sigma_stop,  BIG) 
+         - sign_x_start * min(abs_sigma_start, BIG);
 }
 // "try_approx_air_column_density_ratio_along_ray" is an all-in-one convenience wrapper 
 //   for approx_air_column_density_ratio_along_ray_2d() and approx_reference_air_column_density_ratio_along_ray.
@@ -88,9 +89,6 @@ float approx_air_column_density_ratio_along_line_segment (
     float z2;  			 // distance ("radius") from the ray to the center of the world at closest approach, squared
     float x_z; 			 // distance from the origin at which closest approach occurs
 
-    float x_in_atmo;  // distance from the origin at which the ray enters the atmosphere
-    float x_out_atmo;   // distance from the origin at which the ray exits the atmosphere
-
     float x_in_world; // distance from the origin at which the ray strikes the surface of the world
     float x_out_world;  // distance from the origin at which the ray exits the world, assuming it could pass through
 
@@ -99,40 +97,8 @@ float approx_air_column_density_ratio_along_line_segment (
     	segment_origin,  segment_direction, 
 		z2,			x_z 
 	);
-    try_get_relation_between_ray_and_sphere(
-        world_radius,
-        z2,            x_z,
-        x_in_world, x_out_world 
-    );
 
-    bool is_obstructed = 
-        0. < x_out_world && x_out_world < segment_length &&
-        z2 < world_radius*world_radius;
-
-    if (is_obstructed)
-    {
-    	return BIG;
-    }
-
-    // NOTE: "12." is the number of scale heights needed to reach the official edge of space on Earth.
-    // It should be sufficiently high to work for any world
-    try_get_relation_between_ray_and_sphere(
-        R + 12. * H,
-        z2,            x_z, 
-        x_in_atmo,  x_out_atmo
-    );
-    
-    // NOTE: "sigma0" the column density ratio returned by approx_air_column_density_ratio_along_ray_for_curved_world() for the surface
-    float sigma0 = approx_reference_air_column_density_ratio_along_ray(
-    	x_out_world-x_z, x_out_atmo-x_z, 
-    	z2, R, H
-	);
-
-    return approx_air_column_density_ratio_along_ray_2d( 
-    	0.-x_z,           segment_length-x_z, 
-    	x_out_world-x_z, x_out_atmo-x_z, sigma0, 
-    	z2, R, H 
-	);
+    return approx_air_column_density_ratio_along_ray_for_curved_world( 0.-x_z, segment_length-x_z, z2, R, H );
 }
 
 // TODO: multiple light sources
@@ -205,7 +171,7 @@ vec3 get_rgb_intensity_of_light_scattered_from_atmosphere(
     );
     //   We only set it to 3 scale heights because we are using this parameter for raymarching, and not a closed form solution
     is_scattered   = try_get_relation_between_ray_and_sphere(
-        R + 6.*H, z2, xz, 
+        R + 12.*H, z2, xz, 
         x_in_atmo,  x_out_atmo
     );
     is_obstructed = try_get_relation_between_ray_and_sphere(

@@ -14,7 +14,7 @@ function ThreeJsState() {
 
 	// put a camera in the scene
 
-	this.camera	= new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, .01, 1000 );
+	this.camera	= new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, .01, 100000 );
 	this.camera.position.set(0, 0, 5);
 
 	// transparently support window resize
@@ -153,6 +153,10 @@ function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
 
 	this.uniform = function(key, value){
 		options[key] = value;
+	}
+
+	this.toggleControls = function() {
+		
 	}
 
 }
