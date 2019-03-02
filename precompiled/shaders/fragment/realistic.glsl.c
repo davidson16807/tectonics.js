@@ -155,11 +155,13 @@ void main() {
     // "I_sun" is the rgb Intensity of Incoming Incident light, A.K.A. "Insolation"
     vec3 I_sun = light_rgb_intensity;
 
+    vec3 position = normalize(vPosition.xyz) * (world_radius + surface_height);
+
     // "I_surface" is the intensity of light that reaches the surface after being filtered by atmosphere
     vec3 I_surface = I_sun 
         * get_rgb_fraction_of_refracted_light_transmitted_through_atmosphere(
             // NOTE: we nudge the origin of light ray by a small amount so that collision isn't detected with the planet
-            1.0003 * vPosition.xyz * reference_distance, L, 3.*world_radius,
+            1.000001 * position, L, 3.*world_radius,
             world_position, world_radius, atmosphere_scale_height, beta_air_ray, beta_air_mie, beta_air_abs
         );
 
