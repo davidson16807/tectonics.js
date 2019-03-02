@@ -121,7 +121,7 @@ function SurfaceNormalMapRasterView(options) {
 		}
 	};
 	this.clone = function() {
-		return new ColorscaleRasterView(invariant_options);
+		return new SurfaceNormalMapRasterView(invariant_options);
 	}
 	this.updateChart = function(data, raster, options) {}
 }
