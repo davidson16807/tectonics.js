@@ -3,6 +3,9 @@
 function VectorRasterView(options) {
 	this.max = options['max'];
 
+	this.clone = function() {
+		return new VectorRasterView(options);
+	}
 
 	this.mesh = void 0;
 	var mesh = void 0;
@@ -97,9 +100,6 @@ function VectorRasterView(options) {
 			this.mesh = void 0;
 		}
 	};
-	this.clone = function() {
-		return new VectorRasterView(options);
-	}
 	this.updateChart = function(data, raster, options) {
 		data.isEnabled = false;
 	};

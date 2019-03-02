@@ -2,6 +2,9 @@
 
 function ColorscaleRasterView(options) {
 	var invariant_options = options || {};
+	this.clone = function() {
+		return new ColorscaleRasterView(invariant_options);
+	}
 	var minColor = invariant_options['minColor'] || 0x000000;
 	var maxColor = invariant_options['maxColor'] || 0xffffff;
 	var min = invariant_options['min'] || 0.;
@@ -133,9 +136,6 @@ function ColorscaleRasterView(options) {
 		}
 		scaled_raster = void 0;
 	};
-	this.clone = function() {
-		return new ColorscaleRasterView(invariant_options);
-	}
 	this.updateChart = function(data, raster, options) {
 		chartView.updateChart(data, raster, options);
 	}

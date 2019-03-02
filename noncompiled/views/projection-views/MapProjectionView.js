@@ -3,6 +3,9 @@
 function MapProjectionView(vertexShader) {
 	var subview1 = void 0;
 	var subview2 = void 0;
+	this.clone = function() {
+		return new MapProjectionView(vertexShader);
+	}
 
 	this.updateScene = function(gl_state, model, options) {
 		// update view if needed
@@ -31,9 +34,6 @@ function MapProjectionView(vertexShader) {
 			subview2.removeFromScene(gl_state);
 		}
 	};
-	this.clone = function() {
-		return new MapProjectionView(vertexShader);
-	}
 	this.updateChart = function(data, model, options) {
 		subview1.updateChart(data, model, options);
 	};

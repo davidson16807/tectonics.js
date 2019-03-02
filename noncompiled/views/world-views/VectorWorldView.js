@@ -4,6 +4,12 @@ function VectorWorldView(options) {
 	var vectorRasterView = options['vectorRasterView'] || new VectorRasterView({});
 	this.getField = options['getField'];
 
+	this.clone = function() {
+		return new VectorWorldView({ 
+			vectorRasterView: vectorRasterView.clone(), 
+			getField: options.getField,
+		});
+	}
 	this.updateScene = function(gl_state, world, options) {
 
 		// run getField()
@@ -31,12 +37,6 @@ function VectorWorldView(options) {
 	this.removeFromScene = function(gl_state) {
 		vectorRasterView.removeFromScene(gl_state);
 	};
-	this.clone = function() {
-		return new VectorWorldView({ 
-			vectorRasterView: vectorRasterView.clone(), 
-			getField: options.getField,
-		});
-	}
 	this.updateChart = function(data, world, options) {
 		data.isEnabled = false;
 	};

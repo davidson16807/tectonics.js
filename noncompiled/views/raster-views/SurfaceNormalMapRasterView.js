@@ -2,6 +2,9 @@
 
 function SurfaceNormalMapRasterView(options) {
 	var invariant_options = options || {};
+	this.clone = function() {
+		return new SurfaceNormalMapRasterView(invariant_options);
+	}
 	var exaggeration_factor = invariant_options['exaggeration_factor'] || 100.0;
 	var fragmentShader = fragmentShaders.surface_normal_map;
 
@@ -120,8 +123,5 @@ function SurfaceNormalMapRasterView(options) {
 			this.mesh = void 0;
 		}
 	};
-	this.clone = function() {
-		return new SurfaceNormalMapRasterView(invariant_options);
-	}
 	this.updateChart = function(data, raster, options) {}
 }

@@ -3,6 +3,9 @@
 function GlobeProjectionView() {
 	var vertexShader = vertexShaders.orthographic;
 	var subview = void 0;
+	this.clone = function() {
+		return new GlobeProjectionView();
+	}
 
 	this.updateScene = function(gl_state, model, options) {
 		// update view if needed
@@ -25,9 +28,6 @@ function GlobeProjectionView() {
 			subview.removeFromScene(gl_state);
 		}
 	};
-	this.clone = function() {
-		return new GlobeProjectionView();
-	}
 	this.updateChart = function(data, model, options) {
 		subview.updateChart(data, model, options);
 	};

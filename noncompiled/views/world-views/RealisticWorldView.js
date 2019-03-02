@@ -1,8 +1,13 @@
 'use strict';
 
 function RealisticWorldView(shader_return_value) {
+    this.clone = function() {
+        return new RealisticWorldView(shader_return_value);
+    }
+
     var fragmentShader = fragmentShaders.realistic
         .replace('@UNCOVERED', shader_return_value);
+        
     this.chartViews = []; 
     var added = false;
     var mesh = void 0;
@@ -247,9 +252,6 @@ function RealisticWorldView(shader_return_value) {
             added = false;
         }
     };
-    this.clone = function() {
-        return new RealisticWorldView(shader_return_value);
-    }
     this.updateChart = function(data, world, options) {
         data.isEnabled = false;
     };

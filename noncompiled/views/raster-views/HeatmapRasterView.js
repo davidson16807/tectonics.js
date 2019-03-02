@@ -2,6 +2,9 @@
 
 function HeatmapRasterView(options) {
 	var invariant_options = options || {};
+	this.clone = function() {
+		return new  HeatmapRasterView(invariant_options);
+	}
 	var min = invariant_options['min'] || 0.;
 	var max = invariant_options['max'] || 1.;
 	var scaling = invariant_options['scaling'] || (!invariant_options['min'] && !invariant_options['max']);
@@ -124,9 +127,6 @@ function HeatmapRasterView(options) {
 		} 
 		scaled_raster = void 0;
 	};
-	this.clone = function() {
-		return new  HeatmapRasterView(invariant_options);
-	}
 	this.updateChart = function(data, raster, options) {
 		chartView.updateChart(data, raster, options);
 	}

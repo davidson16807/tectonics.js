@@ -2,6 +2,9 @@
 
 function TopographicRasterView(options) {
 	var invariant_options = options || {};
+	this.clone = function() {
+		return new  TopographicRasterView(invariant_options);
+	}
 	var max = invariant_options['max'] || 1.;
 	var scaling = invariant_options['scaling'] || (!invariant_options['max']);
 	var chartView = invariant_options['chartView'] || new PdfChartRasterView('land'); 
@@ -123,9 +126,6 @@ function TopographicRasterView(options) {
 		} 
 		scaled_raster = void 0;
 	};
-	this.clone = function() {
-		return new  TopographicRasterView(invariant_options);
-	}
 	this.updateChart = function(data, raster, options) {
 		chartView.updateChart(data, raster, options);
 	}

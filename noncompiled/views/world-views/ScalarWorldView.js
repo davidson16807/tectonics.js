@@ -7,6 +7,9 @@ function ScalarWorldView(scalarRasterView, getField) {
 	var preallocated = void 0;
 	var scratch = void 0;
 
+	this.clone = function() {
+		return new ScalarWorldView(scalarRasterView.clone(), getField);
+	}
 	this.updateChart = function(data, world, options) {
 
 		// run getField()
@@ -82,7 +85,4 @@ function ScalarWorldView(scalarRasterView, getField) {
 		preallocated = void 0;
 		scratch = void 0;
 	};
-	this.clone = function() {
-		return new ScalarWorldView(scalarRasterView.clone(), getField);
-	}
 }
