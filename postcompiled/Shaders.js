@@ -59,7 +59,7 @@ void main() {
  mat4 scaleMatrix = mat4(1);
  scaleMatrix[3] = viewMatrix[3] * reference_distance / world_radius;
  gl_Position = projectionMatrix * scaleMatrix * displaced;
-    vViewDirection = -cameraPosition.xyz;
+    vViewDirection = -modelPos.xyz;
     vViewDirection.y = 0.;
     vViewDirection = normalize(vViewDirection);
     vViewOrigin = view_matrix_inverse[3].xyz * reference_distance;
@@ -123,7 +123,7 @@ void main() {
         lat_focused / (PI/2.),
         -height,
         1);
-    vViewDirection = -cameraPosition.xyz;
+    vViewDirection = -modelPos.xyz;
     vViewDirection.y = 0.;
     vViewDirection = normalize(vViewDirection);
     vViewOrigin = view_matrix_inverse[3].xyz * reference_distance;
@@ -817,11 +817,12 @@ void main() {
     float I_max = insolation_max;
     // "I_sun" is the rgb Intensity of Incoming Incident light, A.K.A. "Insolation"
     vec3 I_sun = light_rgb_intensity;
+    vec3 position = normalize(vPosition.xyz) * (world_radius + surface_height);
     // "I_surface" is the intensity of light that reaches the surface after being filtered by atmosphere
     vec3 I_surface = I_sun
         * get_rgb_fraction_of_refracted_light_transmitted_through_atmosphere(
             // NOTE: we nudge the origin of light ray by a small amount so that collision isn't detected with the planet
-            1.0003 * vPosition.xyz * reference_distance, L, 3.*world_radius,
+            1.000001 * position, L, 3.*world_radius,
             world_position, world_radius, atmosphere_scale_height, beta_air_ray, beta_air_mie, beta_air_abs
         );
     vec3 E_surface_reflected = I_surface

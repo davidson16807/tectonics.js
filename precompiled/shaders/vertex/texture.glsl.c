@@ -28,7 +28,7 @@ void main() {
         -height, 
         1);
     
-    vViewDirection = -cameraPosition.xyz;
+    vViewDirection = -modelPos.xyz;
     vViewDirection.y = 0.;
     vViewDirection = normalize(vViewDirection);
     

@@ -33,7 +33,7 @@ void main() {
 	scaleMatrix[3] = viewMatrix[3] * reference_distance / world_radius;
 	gl_Position = projectionMatrix * scaleMatrix * displaced;
 	
-    vViewDirection = -cameraPosition.xyz;
+    vViewDirection = -modelPos.xyz;
     vViewDirection.y = 0.;
     vViewDirection = normalize(vViewDirection);
     
