@@ -15,6 +15,7 @@ function GlobeProjectionView() {
 			subview.updateScene(gl_state, model, {
 				...options, 
 				vertexShader: 	vertexShader, 
+				shaderpass_mod: 1,
 				index: 			0,
 			});
 		}

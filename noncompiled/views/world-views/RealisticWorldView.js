@@ -11,6 +11,7 @@ function RealisticWorldView(shader_return_value) {
     var vertexShader = void 0;
     var shaderpass = new THREE.ShaderPass({
         uniforms: {
+            shaderpass_mod:             { type: 'f', value: 0 },
             surface_light:              { type: "t", value: null },
             
             projection_matrix_inverse:  { type: "m4",value: new THREE.Matrix4()         },
@@ -213,6 +214,7 @@ function RealisticWorldView(shader_return_value) {
 
 
         // SHADERPASS PROPERTIES -----------------------------------------------
+        update_shaderpass_uniform  ('shaderpass_mod',           options.shaderpass_mod);
 
         update_shaderpass_uniform  ('projection_matrix_inverse',projection_matrix_inverse);
         update_shaderpass_uniform  ('view_matrix_inverse',      gl_state.camera.matrixWorld);

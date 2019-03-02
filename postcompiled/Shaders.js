@@ -1529,6 +1529,7 @@ vec3 get_rgb_signal_of_rgb_intensity(in vec3 intensity)
 }
 varying vec2 vUv;
 uniform sampler2D surface_light;
+uniform float shaderpass_mod;
 // Determines the length of a unit of distance within the view, in meters, 
 // it is generally the radius of whatever planet's the focus for the scene.
 // The view uses different units for length to prevent certain issues with
@@ -1595,6 +1596,7 @@ void main() {
             background_rgb_intensity,
             atmosphere_scale_height, beta_ray, beta_mie, beta_abs
         );
+    rgb_intensity = mix(background_rgb_intensity, rgb_intensity, shaderpass_mod);
     // TODO: move this to a separate shader pass!
     // see https://learnopengl.com/Advanced-Lighting/HDR for an intro to tone mapping
     float exposure_intensity = 150.; // Watts/m^2
