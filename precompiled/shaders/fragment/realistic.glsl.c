@@ -18,17 +18,13 @@ varying float vIceCoverage;
 varying float vScalar;
 varying float vSurfaceTemp;
 varying vec4  vPosition;
-varying vec3  vClipspace;
+varying vec3  vViewDirection;
 
 // Determines the length of a unit of distance within the view, in meters, 
 // it is generally the radius of whatever planet's the focus for the scene.
 // The view uses different units for length to prevent certain issues with
 // floating point precision. 
 uniform float reference_distance;
-
-// CAMERA PROPERTIES -----------------------------------------------------------
-uniform mat4  projection_matrix_inverse;
-uniform mat4  view_matrix_inverse;
 
 // VIEW SETTINGS ---------------------------------------------------------------
 uniform float sealevel;
@@ -90,9 +86,6 @@ const float SNOW_REFRACTIVE_INDEX = 1.333;
 const float AMBIENT_LIGHT_AESTHETIC_BRIGHTNESS_FACTOR = 0.000001;
 
 void main() {
-    vec2  clipspace      = vClipspace.xy;
-    vec3  view_direction = normalize(view_matrix_inverse * projection_matrix_inverse * vec4(clipspace, 1, 1)).xyz;
-    // vec3  view_origin    = view_matrix_inverse[3].xyz * reference_distance;
 
     bool  is_ocean       = sealevel * sealevel_mod > vDisplacement;
     float ocean_depth    = max(sealevel*sealevel_mod - vDisplacement, 0.);
@@ -138,7 +131,7 @@ void main() {
     vec3 L = light_direction;
 
     // "V" is the normal vector indicating the direction from the view
-    vec3 V = -view_direction;
+    vec3 V = -vViewDirection;
 
     // "H" is the halfway vector between normal and view.
     // It represents the surface normal that's needed to cause reflection.

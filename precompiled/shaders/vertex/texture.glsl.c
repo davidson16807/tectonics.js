@@ -1,32 +1,38 @@
 float lon(vec3 pos) {
-	return atan(-pos.z, pos.x) + PI;
+    return atan(-pos.z, pos.x) + PI;
 }
 float lat(vec3 pos) {
-	return asin(pos.y / length(pos));
+    return asin(pos.y / length(pos));
 }
 
 void main() {
-	vDisplacement = displacement;
-	vGradient = gradient;
-	vPlantCoverage = plant_coverage;
-	vIceCoverage = ice_coverage;
-	vSurfaceTemp = surface_temp;
-	vScalar = scalar;
-	vPosition = modelMatrix * vec4( position, 1.0 );
-	
-	vec4 modelPos = modelMatrix * vec4( ( position ), 1.0 );
-	
-	float index_offset = INDEX_SPACING * index;
-	float focus = lon(cameraPosition) + index_offset;
-	float lon_focused = mod(lon(modelPos.xyz) - focus, 2.*PI) - PI + index_offset;
-	float lat_focused = lat(modelPos.xyz); //+ (index*PI);
+    vDisplacement = displacement;
+    vGradient = gradient;
+    vPlantCoverage = plant_coverage;
+    vIceCoverage = ice_coverage;
+    vSurfaceTemp = surface_temp;
+    vScalar = scalar;
+    vPosition = modelMatrix * vec4( position, 1.0 );
+    
+    vec4 modelPos = modelMatrix * vec4( ( position ), 1.0 );
+    
+    float index_offset = INDEX_SPACING * index;
+    float focus = lon(cameraPosition) + index_offset;
+    float lon_focused = mod(lon(modelPos.xyz) - focus, 2.*PI) - PI + index_offset;
+    float lat_focused = lat(modelPos.xyz); //+ (index*PI);
 
-	float height = displacement > sealevel? 0.005 : 0.0;
-	gl_Position = vec4(
+    float height = displacement > sealevel? 0.005 : 0.0;
+    gl_Position = vec4(
         lon_focused / PI,
-		lat_focused / (PI/2.), 
-		-height, 
-		1);
-	
-	vClipspace = gl_Position.xyz / gl_Position.w; //perspective divide/normalize
+        lat_focused / (PI/2.), 
+        -height, 
+        1);
+    
+    vViewDirection = -cameraPosition.xyz;
+    vViewDirection.y = 0.;
+    vViewDirection = normalize(vViewDirection);
+    
+    vViewOrigin = view_matrix_inverse[3].xyz * reference_distance;
+    vViewOrigin.y = 0.;
+    vViewOrigin = normalize(vViewOrigin);
 }

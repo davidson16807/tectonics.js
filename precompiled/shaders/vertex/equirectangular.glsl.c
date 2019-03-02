@@ -14,7 +14,7 @@ void main() {
 	vIceCoverage = ice_coverage;
 	vScalar = scalar;
 	vPosition = modelMatrix * vec4( position, 1.0 );
-	
+
 	vec4 modelPos = modelMatrix * vec4( ( position ), 1.0 );
 	float height = displacement > sealevel? 0.005 : 0.0;
 	
@@ -33,5 +33,11 @@ void main() {
 	scaleMatrix[3] = viewMatrix[3] * reference_distance / world_radius;
 	gl_Position = projectionMatrix * scaleMatrix * displaced;
 	
-	vClipspace = gl_Position.xyz / gl_Position.w; //perspective divide/normalize
+    vViewDirection = -cameraPosition.xyz;
+    vViewDirection.y = 0.;
+    vViewDirection = normalize(vViewDirection);
+    
+    vViewOrigin = view_matrix_inverse[3].xyz * reference_distance;
+    vViewOrigin.y = 0.;
+    vViewOrigin = normalize(vViewOrigin);
 }

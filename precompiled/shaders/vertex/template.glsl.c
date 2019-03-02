@@ -1,6 +1,10 @@
 const float PI = 3.14159265358979;
 const float INDEX_SPACING = PI * 0.75; // anything from 0.0 to 2.*PI
 
+// CAMERA PROPERTIES -----------------------------------------------------------
+uniform mat4  projection_matrix_inverse;
+uniform mat4  view_matrix_inverse;
+
 attribute float displacement;
 attribute vec3  gradient;
 attribute float ice_coverage;
@@ -17,9 +21,9 @@ varying float vSurfaceTemp;
 varying float vPlantCoverage;
 varying float vScalar;
 varying float vVectorFractionTraversed;
+varying vec3  vViewDirection;
+varying vec3  vViewOrigin;
 varying vec4  vPosition;
-varying vec3  vClipspace;
-varying vec4  vNormal;
 
 uniform float sealevel;
 // radius of the world to be rendered

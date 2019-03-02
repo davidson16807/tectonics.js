@@ -2,6 +2,9 @@ var vertexShaders = {};
 vertexShaders.equirectangular = `
 const float PI = 3.14159265358979;
 const float INDEX_SPACING = PI * 0.75; // anything from 0.0 to 2.*PI
+// CAMERA PROPERTIES -----------------------------------------------------------
+uniform mat4 projection_matrix_inverse;
+uniform mat4 view_matrix_inverse;
 attribute float displacement;
 attribute vec3 gradient;
 attribute float ice_coverage;
@@ -17,9 +20,9 @@ varying float vSurfaceTemp;
 varying float vPlantCoverage;
 varying float vScalar;
 varying float vVectorFractionTraversed;
+varying vec3 vViewDirection;
+varying vec3 vViewOrigin;
 varying vec4 vPosition;
-varying vec3 vClipspace;
-varying vec4 vNormal;
 uniform float sealevel;
 // radius of the world to be rendered
 uniform float world_radius;
@@ -56,12 +59,20 @@ void main() {
  mat4 scaleMatrix = mat4(1);
  scaleMatrix[3] = viewMatrix[3] * reference_distance / world_radius;
  gl_Position = projectionMatrix * scaleMatrix * displaced;
- vClipspace = gl_Position.xyz / gl_Position.w; //perspective divide/normalize
+    vViewDirection = -cameraPosition.xyz;
+    vViewDirection.y = 0.;
+    vViewDirection = normalize(vViewDirection);
+    vViewOrigin = view_matrix_inverse[3].xyz * reference_distance;
+    vViewOrigin.y = 0.;
+    vViewOrigin = normalize(vViewOrigin);
 }
 `;
 vertexShaders.texture = `
 const float PI = 3.14159265358979;
 const float INDEX_SPACING = PI * 0.75; // anything from 0.0 to 2.*PI
+// CAMERA PROPERTIES -----------------------------------------------------------
+uniform mat4 projection_matrix_inverse;
+uniform mat4 view_matrix_inverse;
 attribute float displacement;
 attribute vec3 gradient;
 attribute float ice_coverage;
@@ -77,9 +88,9 @@ varying float vSurfaceTemp;
 varying float vPlantCoverage;
 varying float vScalar;
 varying float vVectorFractionTraversed;
+varying vec3 vViewDirection;
+varying vec3 vViewOrigin;
 varying vec4 vPosition;
-varying vec3 vClipspace;
-varying vec4 vNormal;
 uniform float sealevel;
 // radius of the world to be rendered
 uniform float world_radius;
@@ -88,36 +99,44 @@ uniform float reference_distance;
 uniform float index;
 uniform float animation_phase_angle;
 float lon(vec3 pos) {
- return atan(-pos.z, pos.x) + PI;
+    return atan(-pos.z, pos.x) + PI;
 }
 float lat(vec3 pos) {
- return asin(pos.y / length(pos));
+    return asin(pos.y / length(pos));
 }
 void main() {
- vDisplacement = displacement;
- vGradient = gradient;
- vPlantCoverage = plant_coverage;
- vIceCoverage = ice_coverage;
- vSurfaceTemp = surface_temp;
- vScalar = scalar;
- vPosition = modelMatrix * vec4( position, 1.0 );
- vec4 modelPos = modelMatrix * vec4( ( position ), 1.0 );
- float index_offset = INDEX_SPACING * index;
- float focus = lon(cameraPosition) + index_offset;
- float lon_focused = mod(lon(modelPos.xyz) - focus, 2.*PI) - PI + index_offset;
- float lat_focused = lat(modelPos.xyz); //+ (index*PI);
- float height = displacement > sealevel? 0.005 : 0.0;
- gl_Position = vec4(
+    vDisplacement = displacement;
+    vGradient = gradient;
+    vPlantCoverage = plant_coverage;
+    vIceCoverage = ice_coverage;
+    vSurfaceTemp = surface_temp;
+    vScalar = scalar;
+    vPosition = modelMatrix * vec4( position, 1.0 );
+    vec4 modelPos = modelMatrix * vec4( ( position ), 1.0 );
+    float index_offset = INDEX_SPACING * index;
+    float focus = lon(cameraPosition) + index_offset;
+    float lon_focused = mod(lon(modelPos.xyz) - focus, 2.*PI) - PI + index_offset;
+    float lat_focused = lat(modelPos.xyz); //+ (index*PI);
+    float height = displacement > sealevel? 0.005 : 0.0;
+    gl_Position = vec4(
         lon_focused / PI,
-  lat_focused / (PI/2.),
-  -height,
-  1);
- vClipspace = gl_Position.xyz / gl_Position.w; //perspective divide/normalize
+        lat_focused / (PI/2.),
+        -height,
+        1);
+    vViewDirection = -cameraPosition.xyz;
+    vViewDirection.y = 0.;
+    vViewDirection = normalize(vViewDirection);
+    vViewOrigin = view_matrix_inverse[3].xyz * reference_distance;
+    vViewOrigin.y = 0.;
+    vViewOrigin = normalize(vViewOrigin);
 }
 `;
 vertexShaders.orthographic = `
 const float PI = 3.14159265358979;
 const float INDEX_SPACING = PI * 0.75; // anything from 0.0 to 2.*PI
+// CAMERA PROPERTIES -----------------------------------------------------------
+uniform mat4 projection_matrix_inverse;
+uniform mat4 view_matrix_inverse;
 attribute float displacement;
 attribute vec3 gradient;
 attribute float ice_coverage;
@@ -133,9 +152,9 @@ varying float vSurfaceTemp;
 varying float vPlantCoverage;
 varying float vScalar;
 varying float vVectorFractionTraversed;
+varying vec3 vViewDirection;
+varying vec3 vViewOrigin;
 varying vec4 vPosition;
-varying vec3 vClipspace;
-varying vec4 vNormal;
 uniform float sealevel;
 // radius of the world to be rendered
 uniform float world_radius;
@@ -155,7 +174,9 @@ void main() {
  float surface_height = max(displacement - sealevel, 0.);
  vec4 displacement = vec4( position * (world_radius + surface_height) / reference_distance, 1.0 );
  gl_Position = projectionMatrix * modelViewMatrix * displacement;
- vClipspace = gl_Position.xyz / gl_Position.w; //perspective divide/normalize
+    vec2 clipspace = gl_Position.xy / gl_Position.w;
+    vViewDirection = normalize(view_matrix_inverse * projection_matrix_inverse * vec4(clipspace, 1, 1)).xyz;
+    vViewOrigin = view_matrix_inverse[3].xyz * reference_distance;
 }
 `;
 vertexShaders.passthrough = `
@@ -688,15 +709,12 @@ varying float vIceCoverage;
 varying float vScalar;
 varying float vSurfaceTemp;
 varying vec4 vPosition;
-varying vec3 vClipspace;
+varying vec3 vViewDirection;
 // Determines the length of a unit of distance within the view, in meters, 
 // it is generally the radius of whatever planet's the focus for the scene.
 // The view uses different units for length to prevent certain issues with
 // floating point precision. 
 uniform float reference_distance;
-// CAMERA PROPERTIES -----------------------------------------------------------
-uniform mat4 projection_matrix_inverse;
-uniform mat4 view_matrix_inverse;
 // VIEW SETTINGS ---------------------------------------------------------------
 uniform float sealevel;
 uniform float sealevel_mod;
@@ -744,9 +762,6 @@ const float SNOW_REFRACTIVE_INDEX = 1.333;
 //   also keep in mind this: https://en.wikipedia.org/wiki/Airglow
 const float AMBIENT_LIGHT_AESTHETIC_BRIGHTNESS_FACTOR = 0.000001;
 void main() {
-    vec2 clipspace = vClipspace.xy;
-    vec3 view_direction = normalize(view_matrix_inverse * projection_matrix_inverse * vec4(clipspace, 1, 1)).xyz;
-    // vec3  view_origin    = view_matrix_inverse[3].xyz * reference_distance;
     bool is_ocean = sealevel * sealevel_mod > vDisplacement;
     float ocean_depth = max(sealevel*sealevel_mod - vDisplacement, 0.);
     float surface_height = max(vDisplacement - sealevel*sealevel_mod, 0.);
@@ -783,7 +798,7 @@ void main() {
     // "L" is the normal vector indicating the direction to the light source
     vec3 L = light_direction;
     // "V" is the normal vector indicating the direction from the view
-    vec3 V = -view_direction;
+    vec3 V = -vViewDirection;
     // "H" is the halfway vector between normal and view.
     // It represents the surface normal that's needed to cause reflection.
     // It can also be thought of as the surface normal of a microfacet that's 
