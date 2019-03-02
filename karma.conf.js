@@ -7,16 +7,19 @@ module.exports = function (config) {
 		files: [
 			'libraries/random-0.26.js',
 			'libraries/three.js/Three.js',
+			
+			'tests/scripts/QUnitx.approx.js',
+			'tests/scripts/AlgebraHelpers.js',
+  			'tests/scripts/RangeHelpers.js',
 
 			'postcompiled/Rasters.js',
-			'tests/QUnitx.approx.js',
-			'tests/Rasters.js',
+			'tests/scripts/Rasters.js',
 
   			'noncompiled/Units.js',
   			'noncompiled/academics/SphericalGeometry.js',
   			'noncompiled/academics/Thermodynamics.js',
   			'noncompiled/academics/OrbitalMechanics.js',
-  			'tests/Academics.js',
+  			'tests/scripts/Academics.js',
 
   			'noncompiled/models/Memo.js',
   			'noncompiled/generators/CrustGenerator.js',
@@ -28,7 +31,7 @@ module.exports = function (config) {
   			'noncompiled/models/lithosphere/Crust.js',
   			'noncompiled/models/lithosphere/Plate.js',
   			'noncompiled/models/lithosphere/SupercontinentCycle.js',
-  			'tests/Lithosphere.js',
+  			'tests/scripts/Lithosphere.js',
 		],
 		autoWatch: false,
 		singleRun: true,

@@ -4,7 +4,7 @@ layout: default
 ---
 I've done some work to improve world initialization. Long time users will recall how the model always initialized with a single perfectly circular seed continent. 
 
-![](http://davidson16807.github.io/tectonics.js/blog/images/original.png)
+![](http://davidson16807.github.io/tectonics.js/blog/images/worldgen/original.png)
 
 It now initializes worlds with continents of arbitrary shape.  The world nevertheless maintains a [hypsography](https://en.wikipedia.org/wiki/Elevation#Hypsography) similar to that of Earth. 
 
@@ -16,7 +16,7 @@ How does it do this? With 2D models there are an abundance of algorithms used fo
 
 The more iterations, the better it looks.
 
-| ![1 iteration](http://davidson16807.github.io/tectonics.js/blog/images/1i.png) | ![10 iterations](http://davidson16807.github.io/tectonics.js/blog/images/10i.png) |
+| ![1 iteration](http://davidson16807.github.io/tectonics.js/blog/images/worldgen/1i.png) | ![10 iterations](http://davidson16807.github.io/tectonics.js/blog/images/worldgen/10i.png) |
 |--------------|---------------|
 | 1 iteration | 10 iterations |
 
@@ -40,7 +40,7 @@ There are a few commonly cited problems with this algorithm. One problem occurs 
 
 You can mask this by increasing the number of iterations, but it still looks jagged - almost as if the world has no erosion. 
 
-| ![50 iterations](http://davidson16807.github.io/tectonics.js/blog/images/50i.png) | ![500 iterations](http://davidson16807.github.io/tectonics.js/blog/images/500i.png) |
+| ![50 iterations](http://davidson16807.github.io/tectonics.js/blog/images/worldgen/50i.png) | ![500 iterations](http://davidson16807.github.io/tectonics.js/blog/images/worldgen/500i.png) |
 |--------------|---------------|
 | 50 iterations | 500 iterations |
 
@@ -50,7 +50,7 @@ This problem has a rather obvious solution - use a smoother function. In my mode
 
 <p>A larger value for k corresponds to a sharper transition. For my model, I set `k ~~ 300`. This is suitable for use with a unit sphere where `-1 < x_z < 1`. </p>
 
-| ![k = 50](http://davidson16807.github.io/tectonics.js/blog/images/50k.png) | ![k = 300](http://davidson16807.github.io/tectonics.js/blog/images/300k.png) |
+| ![k = 50](http://davidson16807.github.io/tectonics.js/blog/images/worldgen/50k.png) | ![k = 300](http://davidson16807.github.io/tectonics.js/blog/images/worldgen/300k.png) |
 |--------------|---------------|
 | k = 50 | k = 300 |
 
@@ -82,7 +82,7 @@ If we sort our grid cells by height rank, we get a sense for which cells are hig
 
 The technique is remarkably flexible. I can generate a planet similar to Earth, or Mars, or any other planet for which the hypsographic curve is known. I can also decompose Earth's hypsographic curve, seperating curves for ocean and land. I can combine these curves in any ratio to produce a planet with a specific percentage of ocean cover. 
 
-![](http://davidson16807.github.io/tectonics.js/blog/images/land_fraction0.05.png)
+![](http://davidson16807.github.io/tectonics.js/blog/images/worldgen/land_fraction0.05.png)
 
 The technique is also easily abstracted. It's apparent the method works equally well for any terrain generation algorithm, but it goes beyond that. It can work for any procedural algorithm that describes a scalar field, and it works particularly well when that procedural algorithm can't reproduce a probability distribution found in nature. 
 

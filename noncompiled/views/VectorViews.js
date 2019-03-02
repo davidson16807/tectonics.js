@@ -30,7 +30,7 @@ vectorViews.aesthenosphere_velocity	= new VectorWorldView( {
 		getField: world => world.lithosphere.aesthenosphere_velocity.value()
 	} );
 
-vectorViews.guess_varying_surface_air_velocity = new VectorWorldView( {
+vectorViews.surface_air_velocity = new VectorWorldView( {
 		getField: world => world.atmosphere.surface_wind_velocity.value()
 	} );
 
