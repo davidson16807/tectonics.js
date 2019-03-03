@@ -1,25 +1,30 @@
-const float BIG = 1e20;
-const float SMALL = 1e-20;
+CONST(float) BIG = 1e20;
+CONST(float) SMALL = 1e-20;
 
-// "approx_air_column_density_ratio_along_ray_for_flat_world" 
+// "get_air_column_density_ratio_along_2d_ray_for_flat_world" 
 //   calculates column density ratio of air for a ray emitted from given height to a desired lateral distance, 
 //   assumes height varies linearly along the path, i.e. the world is flat.
-float approx_air_column_density_ratio_along_ray_for_flat_world(float b, float m, float x, float H){
+FUNC(float) get_air_column_density_ratio_along_2d_ray_for_flat_world(
+    IN(float) b, // intercept of linear height approximation
+    IN(float) m, // slope of linear height approximation
+    IN(float) x, // distance along the ray
+    IN(float) H  // scale height of the atmosphere
+){
     return -H/m * exp(-(m*x+b)/H);
 }
-// "approx_air_column_density_ratio_along_ray_for_curved_world" 
+// "approx_air_column_density_ratio_along_2d_ray_for_curved_world" 
 //   calculates column density ratio of air for a ray emitted from the surface of a world to a desired distance, 
 //   taking into account the curvature of the world.
 // It does this by making two linear approximations for height:
 //   one for the lower atmosphere, one for the upper atmosphere.
-// These are represented by the two call outs to approx_air_column_density_ratio_along_ray_for_flat_world().
+// These are represented by the two call outs to get_air_column_density_ratio_along_2d_ray_for_flat_world().
 // "x_start" and "x_stop" are distances along the ray from closest approach.
 //   If there is no intersection, they are the distances from the closest approach to the upper bound.
 //   Negative numbers indicate the rays are firing towards the ground.
 // "z2" is the closest distance from the ray to the center of the world, squared.
 // "R" is the radius of the world.
 // "H" is the scale height of the atmosphere.
-float approx_air_column_density_ratio_along_ray_for_curved_world(float x_start, float x_stop, float z2, float R, float H){
+FUNC(float) approx_air_column_density_ratio_along_2d_ray_for_curved_world(IN(float) x_start, IN(float) x_stop, IN(float) z2, IN(float) R, IN(float) H){
 
     // guide to variable names:
     //  "f*" fraction of travel distance through atmosphere, "dx"
@@ -31,10 +36,10 @@ float approx_air_column_density_ratio_along_ray_for_curved_world(float x_start, 
     //  "*1" variable at which linear height approximation switches from first to second
     //  "*2" variable at which the top of the atmosphere occurs
 
-    float R2  = R + 12.*H;
-    float x2  = sqrt(max(R2*R2-z2, 0.));
-    float x0  = sqrt(max(R *R -z2, 0.));
-    float dx  = x2 - x0;
+    VAR(float) R2  = R + 12.*H;
+    VAR(float) x2  = sqrt(max(R2*R2-z2, 0.));
+    VAR(float) x0  = sqrt(max(R *R -z2, 0.));
+    VAR(float) dx  = x2 - x0;
 
     // if ray is obstructed
     if (x_start < x0 && -x0 < x_stop && z2 < R*R)
@@ -43,41 +48,41 @@ float approx_air_column_density_ratio_along_ray_for_curved_world(float x_start, 
         return BIG;
     }
 
-    float f0  = 0.00*0.33;
-    float f0b = 0.20*0.33;
-    float f0m = 0.50*0.33;
-    float f1  = 1.00*0.33;
-    float f1b = 1.20*0.33;
-    float f1m = 1.50*0.33;
+    VAR(float) f0  = 0.00*0.33;
+    VAR(float) f0b = 0.20*0.33;
+    VAR(float) f0m = 0.50*0.33;
+    VAR(float) f1  = 1.00*0.33;
+    VAR(float) f1b = 1.20*0.33;
+    VAR(float) f1m = 1.50*0.33;
 
-    float x0b = x0 + dx*f0b;
-    float x0m = x0 + dx*f0m;
-    float x1  = x0 + dx*f1 ;
-    float x1b = x0 + dx*f1b;
-    float x1m = x0 + dx*f1m;
+    VAR(float) x0b = x0 + dx*f0b;
+    VAR(float) x0m = x0 + dx*f0m;
+    VAR(float) x1  = x0 + dx*f1 ;
+    VAR(float) x1b = x0 + dx*f1b;
+    VAR(float) x1m = x0 + dx*f1m;
 
-    float m0  = x0m / sqrt(x0m*x0m + z2);
-    float b0  = sqrt(x0b*x0b + z2) - R;
+    VAR(float) m0  = x0m / sqrt(x0m*x0m + z2);
+    VAR(float) b0  = sqrt(x0b*x0b + z2) - R;
 
-    float m1 = x1m / sqrt(x1m*x1m + z2);
-    float b1 = sqrt(x1b*x1b + z2) - R;
+    VAR(float) m1 = x1m / sqrt(x1m*x1m + z2);
+    VAR(float) b1 = sqrt(x1b*x1b + z2) - R;
     
-    float sigma_reference =
-        approx_air_column_density_ratio_along_ray_for_flat_world(b0, m0, x0-x0b, H)
-      + approx_air_column_density_ratio_along_ray_for_flat_world(b1, m1, x1-x1b, H);
+    VAR(float) sigma_reference =
+        get_air_column_density_ratio_along_2d_ray_for_flat_world(b0, m0, x0-x0b, H)
+      + get_air_column_density_ratio_along_2d_ray_for_flat_world(b1, m1, x1-x1b, H);
 
-    float abs_x_stop = abs(x_stop);
-    float sign_x_stop = sign(x_stop);
-    float abs_sigma_stop =
-        approx_air_column_density_ratio_along_ray_for_flat_world(b0, m0, clamp(abs_x_stop,  x0, x1)-x0b, H)
-      + approx_air_column_density_ratio_along_ray_for_flat_world(b1, m1, max  (abs_x_stop,  x1)    -x1b, H)
+    VAR(float) abs_x_stop = abs(x_stop);
+    VAR(float) sign_x_stop = sign(x_stop);
+    VAR(float) abs_sigma_stop =
+        get_air_column_density_ratio_along_2d_ray_for_flat_world(b0, m0, clamp(abs_x_stop,  x0, x1)-x0b, H)
+      + get_air_column_density_ratio_along_2d_ray_for_flat_world(b1, m1, max  (abs_x_stop,  x1)    -x1b, H)
       - sigma_reference;
 
-    float abs_x_start = abs(x_start);
-    float sign_x_start = sign(x_start);
-    float abs_sigma_start =
-        approx_air_column_density_ratio_along_ray_for_flat_world(b0, m0, clamp(abs_x_start, x0, x1)-x0b, H)
-      + approx_air_column_density_ratio_along_ray_for_flat_world(b1, m1, max  (abs_x_start, x1)    -x1b, H)
+    VAR(float) abs_x_start = abs(x_start);
+    VAR(float) sign_x_start = sign(x_start);
+    VAR(float) abs_sigma_start =
+        get_air_column_density_ratio_along_2d_ray_for_flat_world(b0, m0, clamp(abs_x_start, x0, x1)-x0b, H)
+      + get_air_column_density_ratio_along_2d_ray_for_flat_world(b1, m1, max  (abs_x_start, x1)    -x1b, H)
       - sigma_reference;
 
     // NOTE: we clamp the result to prevent the generation of inifinities and nans, 
@@ -89,20 +94,20 @@ float approx_air_column_density_ratio_along_ray_for_curved_world(float x_start, 
 //   for approx_air_column_density_ratio_along_ray_2d() and approx_reference_air_column_density_ratio_along_ray.
 // Just pass it the origin and direction of a 3d ray and it will find the column density ratio along its path, 
 //   or return false to indicate the ray passes through the surface of the world.
-float approx_air_column_density_ratio_along_line_segment (
-    vec3  segment_origin, 
-    vec3  segment_direction,
-    float segment_length,
-    vec3  world_position, 
-    float world_radius, 
-    float atmosphere_scale_height
+FUNC(float) approx_air_column_density_ratio_along_3d_ray_for_curved_world (
+    IN(vec3)  segment_origin, 
+    IN(vec3)  segment_direction,
+    IN(float) segment_length,
+    IN(vec3)  world_position, 
+    IN(float) world_radius, 
+    IN(float) atmosphere_scale_height
 ){
-    vec3  O = world_position;
-    float R = world_radius;
-    float H = atmosphere_scale_height;
+    VAR(vec3)  O = world_position;
+    VAR(float) R = world_radius;
+    VAR(float) H = atmosphere_scale_height;
 
-    float z2;               // distance ("radius") from the ray to the center of the world at closest approach, squared
-    float x_z;              // distance from the origin at which closest approach occurs
+    VAR(float) z2;               // distance ("radius") from the ray to the center of the world at closest approach, squared
+    VAR(float) x_z;              // distance from the origin at which closest approach occurs
 
     get_relation_between_ray_and_point(
         world_position, 
@@ -110,59 +115,59 @@ float approx_air_column_density_ratio_along_line_segment (
         z2,            x_z 
     );
 
-    return approx_air_column_density_ratio_along_ray_for_curved_world( 0.-x_z, segment_length-x_z, z2, R, H );
+    return approx_air_column_density_ratio_along_2d_ray_for_curved_world( 0.-x_z, segment_length-x_z, z2, R, H );
 }
 
 // TODO: multiple light sources
 // TODO: multiple scattering events
 // TODO: support for light sources from within atmosphere
-vec3 get_rgb_intensity_of_light_scattered_from_atmosphere(
-    vec3  view_origin, vec3 view_direction,
-    vec3  world_position, float world_radius,
-    vec3  light_direction, vec3 light_rgb_intensity,
-    vec3  background_rgb_intensity,
-    float atmosphere_scale_height,
-    vec3  beta_ray,       vec3  beta_mie,          vec3  beta_abs
+FUNC(vec3) get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
+    IN(vec3)  view_origin,     IN(vec3) view_direction,
+    IN(vec3)  world_position,  IN(float) world_radius,
+    IN(vec3)  light_direction, IN(vec3) light_rgb_intensity,
+    IN(vec3)  background_rgb_intensity,
+    IN(float) atmosphere_scale_height,
+    IN(vec3)  beta_ray,        IN(vec3)  beta_mie,           IN(vec3)  beta_abs
 ){
-    vec3  P = view_origin;
-    vec3  V = view_direction;
+    VAR(vec3)  P = view_origin;
+    VAR(vec3)  V = view_direction;
 
-    vec3  L = light_direction;
-    vec3  I_sun  = light_rgb_intensity;
-    vec3  I_back = background_rgb_intensity;
+    VAR(vec3)  L = light_direction;
+    VAR(vec3)  I_sun  = light_rgb_intensity;
+    VAR(vec3)  I_back = background_rgb_intensity;
 
-    vec3  O = world_position;
-    float R = world_radius;
-    float H = atmosphere_scale_height;
+    VAR(vec3)  O = world_position;
+    VAR(float) R = world_radius;
+    VAR(float) H = atmosphere_scale_height;
 
-    float unused1, unused2, unused3, unused4; // used for passing unused output parameters to functions
+    VAR(float) unused1, unused2, unused3, unused4; // used for passing unused output parameters to functions
 
-    const float STEP_COUNT = 16.;// number of steps taken while marching along the view ray
+    const VAR(float) STEP_COUNT = 16.;// number of steps taken while marching along the view ray
 
     bool  is_scattered;   // whether view ray will enter the atmosphere
     bool  is_obstructed;  // whether view ray will enter the surface of a world
-    float z2;             // distance ("radius") from the view ray to the center of the world at closest approach, squared
-    float xz;             // distance along the view ray at which closest approach occurs
-    float x_in_atmo;      // distance along the view ray at which the ray enters the atmosphere
-    float x_out_atmo;     // distance along the view ray at which the ray exits the atmosphere
-    float x_in_world;     // distance along the view ray at which the ray enters the surface of the world
-    float x_out_world;    // distance along the view ray at which the ray enters the surface of the world
-    float x_start;        // distance along the view ray at which scattering starts, either because it's the start of the ray or the start of the atmosphere 
-    float x_stop;         // distance along the view ray at which scattering no longer occurs, either due to hitting the world or leaving the atmosphere
+    VAR(float) z2;             // distance ("radius") from the view ray to the center of the world at closest approach, squared
+    VAR(float) xz;             // distance along the view ray at which closest approach occurs
+    VAR(float) x_in_atmo;      // distance along the view ray at which the ray enters the atmosphere
+    VAR(float) x_out_atmo;     // distance along the view ray at which the ray exits the atmosphere
+    VAR(float) x_in_world;     // distance along the view ray at which the ray enters the surface of the world
+    VAR(float) x_out_world;    // distance along the view ray at which the ray enters the surface of the world
+    VAR(float) x_start;        // distance along the view ray at which scattering starts, either because it's the start of the ray or the start of the atmosphere 
+    VAR(float) x_stop;         // distance along the view ray at which scattering no longer occurs, either due to hitting the world or leaving the atmosphere
     
-    float dx;             // distance between steps while marching along the view ray
-    float x;              // distance traversed while marching along the view ray
-    float sigma_V;        // columnar density ratios for rayleigh and mie scattering, found by marching along the view ray. This expresses the quantity of air encountered along the view ray, relative to air density on the surface
+    VAR(float) dx;             // distance between steps while marching along the view ray
+    VAR(float) x;              // distance traversed while marching along the view ray
+    VAR(float) sigma_V;        // columnar density ratios for rayleigh and mie scattering, found by marching along the view ray. This expresses the quantity of air encountered along the view ray, relative to air density on the surface
 
-    vec3  P_i;            // absolute position while marching along the view ray
-    float h_i;            // distance ("height") from the surface of the world while marching along the view ray
-    float sigma_L;        // columnar density ratio encountered along the light ray. This expresses the quantity of air encountered along the light ray, relative to air density on the surface
+    VAR(vec3)  P_i;            // absolute position while marching along the view ray
+    VAR(float) h_i;            // distance ("height") from the surface of the world while marching along the view ray
+    VAR(float) sigma_L;        // columnar density ratio encountered along the light ray. This expresses the quantity of air encountered along the light ray, relative to air density on the surface
 
     // cosine of angle between view and light directions
-    float VL = dot(V, L); 
+    VAR(float) VL = dot(V, L); 
 
     // total intensity for each color channel, found as the sum of light intensities for each path from the light source to the camera
-    vec3  E = vec3(0); 
+    VAR(vec3)  E = vec3(0); 
 
     // Rayleigh and Mie phase factors,
     // A.K.A "gamma" from Alan Zucconi: https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-3/
@@ -171,11 +176,11 @@ vec3 get_rgb_intensity_of_light_scattered_from_atmosphere(
     // The rest of the fractional loss is accounted for by the variable "betas", which is dependant on wavelength, 
     // and the density ratio, which is dependant on height
     // So all together, the fraction of sunlight that scatters to a given angle is: beta(wavelength) * gamma(angle) * density_ratio(height)
-    float gamma_ray = get_fraction_of_rayleigh_scattered_light_scattered_by_angle(VL);
-    float gamma_mie = get_fraction_of_mie_scattered_light_scattered_by_angle(VL);
+    VAR(float) gamma_ray = get_fraction_of_rayleigh_scattered_light_scattered_by_angle(VL);
+    VAR(float) gamma_mie = get_fraction_of_mie_scattered_light_scattered_by_angle(VL);
 
-    vec3  beta_gamma = beta_ray * gamma_ray + beta_mie * gamma_mie;
-    vec3  beta_sum   = beta_ray + beta_mie + beta_abs;
+    VAR(vec3)  beta_gamma = beta_ray * gamma_ray + beta_mie * gamma_mie;
+    VAR(vec3)  beta_sum   = beta_ray + beta_mie + beta_abs;
 
     get_relation_between_ray_and_point(
         O, P, V, 
@@ -203,12 +208,12 @@ vec3 get_rgb_intensity_of_light_scattered_from_atmosphere(
     dx = (x_stop - x_start) / STEP_COUNT;
     x  =  x_start + 0.5 * dx;
 
-    for (float i = 0.; i < STEP_COUNT; ++i)
+    for (VAR(float) i = 0.; i < STEP_COUNT; ++i)
     {
         P_i = P + V * x;
         h_i      = sqrt((x-xz)*(x-xz)+z2) - R;
-        sigma_V  = approx_air_column_density_ratio_along_line_segment (P_i, -V, x,    O, R, H);
-        sigma_L  = approx_air_column_density_ratio_along_line_segment (P_i,  L, 3.*R, O, R, H);
+        sigma_V  = approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i, -V, x,    O, R, H);
+        sigma_L  = approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i,  L, 3.*R, O, R, H);
 
         E += I_sun
             // incoming fraction: the fraction of light that scatters towards camera
@@ -226,45 +231,45 @@ vec3 get_rgb_intensity_of_light_scattered_from_atmosphere(
 }
 
 
-vec3 get_rgb_fraction_of_refracted_light_transmitted_through_atmosphere(
-    vec3  segment_origin, vec3  segment_direction, float segment_length,
-    vec3  world_position, float world_radius,      float atmosphere_scale_height,
-    vec3  beta_ray,       vec3  beta_mie,          vec3  beta_abs
+FUNC(vec3) get_rgb_fraction_of_light_transmitted_through_air_for_curved_world(
+    IN(vec3)  segment_origin, IN(vec3)  segment_direction, IN(float) segment_length,
+    IN(vec3)  world_position, IN(float) world_radius,      IN(float) atmosphere_scale_height,
+    IN(vec3)  beta_ray,       IN(vec3)  beta_mie,          IN(vec3)  beta_abs
 ){
-    vec3  O = world_position;
-    float R = world_radius;
-    float H = atmosphere_scale_height;
+    VAR(vec3)  O = world_position;
+    VAR(float) R = world_radius;
+    VAR(float) H = atmosphere_scale_height;
     // "sigma" is the column density of air, relative to the surface of the world, that's along the light's path of travel,
     //   we use it to estimate the amount of light that's filtered by the atmosphere before reaching the surface
     //   see https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-1/ for an awesome introduction
-    float sigma  = approx_air_column_density_ratio_along_line_segment (segment_origin, segment_direction, segment_length, O, R, H);
+    VAR(float) sigma  = approx_air_column_density_ratio_along_3d_ray_for_curved_world (segment_origin, segment_direction, segment_length, O, R, H);
     // "I_surface" is the intensity of light that reaches the surface after being filtered by atmosphere
     return exp(-sigma * (beta_ray + beta_mie + beta_abs));
 }
 
-vec3 get_rgb_intensity_of_light_scattered_from_fluid(
-    float cos_view_angle, 
-    float cos_light_angle, 
-    float cos_scatter_angle, 
-    float ocean_depth,
-    vec3  refracted_light_rgb_intensity,
-    vec3  beta_ray,       vec3  beta_mie,          vec3  beta_abs
+FUNC(vec3) get_rgb_intensity_of_light_scattered_from_fluid_for_flat_world(
+    IN(float) cos_view_angle, 
+    IN(float) cos_light_angle, 
+    IN(float) cos_scatter_angle, 
+    IN(float) ocean_depth,
+    IN(vec3)  refracted_light_rgb_intensity,
+    IN(vec3)  beta_ray,       IN(vec3)  beta_mie,          IN(vec3)  beta_abs
 ){
-    float NV = cos_view_angle;
-    float NL = cos_light_angle;
-    float LV = cos_scatter_angle;
+    VAR(float) NV = cos_view_angle;
+    VAR(float) NL = cos_light_angle;
+    VAR(float) LV = cos_scatter_angle;
 
-    vec3 I = refracted_light_rgb_intensity;
+    VAR(vec3) I = refracted_light_rgb_intensity;
 
     // "gamma_*" variables indicate the fraction of scattered sunlight that scatters to a given angle (indicated by its cosine).
     // it is also known as the "phase factor"
     // It varies
     // see mention of "gamma" by Alan Zucconi: https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-3/
-    float gamma_ray = get_fraction_of_rayleigh_scattered_light_scattered_by_angle(LV);
-    float gamma_mie = get_fraction_of_mie_scattered_light_scattered_by_angle(LV);
+    VAR(float) gamma_ray = get_fraction_of_rayleigh_scattered_light_scattered_by_angle(LV);
+    VAR(float) gamma_mie = get_fraction_of_mie_scattered_light_scattered_by_angle(LV);
 
-    vec3  beta_gamma = beta_ray * gamma_ray + beta_mie * gamma_mie;
-    vec3  beta_sum   = beta_ray + beta_mie + beta_abs;
+    VAR(vec3)  beta_gamma = beta_ray * gamma_ray + beta_mie * gamma_mie;
+    VAR(vec3)  beta_sum   = beta_ray + beta_mie + beta_abs;
 
     // "sigma_V"  is the column density, relative to the surface, that's along the view ray.
     // "sigma_L" is the column density, relative to the surface, that's along the light ray.
@@ -272,9 +277,9 @@ vec3 get_rgb_intensity_of_light_scattered_from_fluid(
     // Since water is treated as incompressible, the density remains constant, 
     //   so they are effectively the distances traveled along their respective paths.
     // TODO: model vector of refracted light within ocean
-    float sigma_V  = ocean_depth / NV;
-    float sigma_L = ocean_depth / NL;
-    float sigma_ratio = 1. + NV/NL;
+    VAR(float) sigma_V  = ocean_depth / NV;
+    VAR(float) sigma_L = ocean_depth / NL;
+    VAR(float) sigma_ratio = 1. + NV/NL;
 
     return I 
         // incoming fraction: the fraction of light that scatters towards camera
@@ -284,10 +289,10 @@ vec3 get_rgb_intensity_of_light_scattered_from_fluid(
         /               (-sigma_ratio * beta_sum);
 }
 
-vec3 get_rgb_fraction_of_refracted_light_transmitted_through_fluid(
-    float cos_incident_angle, float ocean_depth,
-    vec3  beta_ray,       vec3  beta_mie,          vec3  beta_abs
+FUNC(vec3) get_rgb_fraction_of_light_transmitted_through_fluid_for_flat_world(
+    IN(float) cos_incident_angle, IN(float) ocean_depth,
+    IN(vec3)  beta_ray,           IN(vec3)  beta_mie,          IN(vec3)  beta_abs
 ){
-    float sigma  = ocean_depth / cos_incident_angle;
+    VAR(float) sigma  = ocean_depth / cos_incident_angle;
     return exp(-sigma * (beta_ray + beta_mie + beta_abs));
 }

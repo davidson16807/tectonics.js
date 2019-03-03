@@ -23,6 +23,6 @@
 #define INOUT(T)
 #define OUT(T)
 #define CONST(T) const T
-#define VAR(T) var T
+#define VAR(T) let T
 #define FUNC(T) function T
 #endif

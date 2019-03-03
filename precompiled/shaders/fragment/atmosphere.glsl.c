@@ -89,7 +89,7 @@ void main() {
     vec3  beta_abs = surface_air_absorption_coefficients; 
 
     vec3 rgb_intensity = 
-        get_rgb_intensity_of_light_scattered_from_atmosphere(
+        get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
             view_origin,                view_direction,
             world_position,             world_radius,
             light_direction,            light_rgb_intensity,  

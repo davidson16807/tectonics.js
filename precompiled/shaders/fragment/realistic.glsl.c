@@ -160,7 +160,7 @@ void main() {
 
     // "I_surface" is the intensity of light that reaches the surface after being filtered by atmosphere
     vec3 I_surface = I_sun 
-      * get_rgb_fraction_of_refracted_light_transmitted_through_atmosphere(
+      * get_rgb_fraction_of_light_transmitted_through_air_for_curved_world(
             // NOTE: we nudge the origin of light ray by a small amount so that collision isn't detected with the world
             1.000001 * position, L, 3.*world_radius,
             world_position, world_radius, atmosphere_scale_height, beta_air_ray, beta_air_mie, beta_air_abs
@@ -187,7 +187,7 @@ void main() {
     // If sea is present, "E_ocean_scattered" is the rgb intensity of light 
     //   scattered by the sea towards the camera. Otherwise, it equals 0.
     vec3 E_ocean_scattered = 
-        get_rgb_intensity_of_light_scattered_from_fluid(
+        get_rgb_intensity_of_light_scattered_from_fluid_for_flat_world(
             NV, NL, LV, ocean_depth, I_surface_refracted, 
             beta_ocean_ray, beta_ocean_mie, beta_ocean_abs
         );
@@ -195,7 +195,7 @@ void main() {
     // if sea is present, "I_ocean_trasmitted" is the rgb intensity of light 
     //   that reaches the ground after being filtered by air and sea. Otherwise, it equals I_surface_refracted.
     vec3 I_ocean_trasmitted= I_surface_refracted
-        * get_rgb_fraction_of_refracted_light_transmitted_through_fluid(NL, ocean_depth, beta_ocean_ray, beta_ocean_mie, beta_ocean_abs);
+        * get_rgb_fraction_of_light_transmitted_through_fluid_for_flat_world(NL, ocean_depth, beta_ocean_ray, beta_ocean_mie, beta_ocean_abs);
 
     // TODO: more sensible microfacet model
     vec3 color_of_bedrock    = mix(LAND_COLOR_MAFIC, LAND_COLOR_FELSIC, felsic_coverage);
@@ -209,7 +209,7 @@ void main() {
     // if sea is present, "E_ocean_transmitted" is the fraction 
     //   of E_diffuse that makes it out of the sea. Otheriwse, it equals E_diffuse
     vec3 E_ocean_transmitted  = E_diffuse 
-        * get_rgb_fraction_of_refracted_light_transmitted_through_fluid(NV, ocean_depth, beta_ocean_ray, beta_ocean_mie, beta_ocean_abs);
+        * get_rgb_fraction_of_light_transmitted_through_fluid_for_flat_world(NV, ocean_depth, beta_ocean_ray, beta_ocean_mie, beta_ocean_abs);
 
     vec3 E_surface_diffused = 
         mix(E_ocean_transmitted + E_ocean_scattered, 

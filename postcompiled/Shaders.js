@@ -31,33 +31,33 @@ uniform float animation_phase_angle;
 attribute float vector_fraction_traversed;
 varying float vector_fraction_traversed_v;
 float lon(vec3 pos) {
- return atan(-pos.z, pos.x) + PI;
+    return atan(-pos.z, pos.x) + PI;
 }
 float lat(vec3 pos) {
- return asin(pos.y / length(pos));
+    return asin(pos.y / length(pos));
 }
 void main() {
- displacement_v = displacement;
- gradient_v = gradient;
- plant_coverage_v = plant_coverage;
- surface_temperature_v = surface_temperature;
- snow_coverage_v = snow_coverage;
- scalar_v = scalar;
- position_v = modelMatrix * vec4( position, 1.0 );
- float height = displacement > sealevel? 0.005 : 0.0;
- float index_offset = map_projection_offset;
- float focus = lon(cameraPosition) + index_offset;
- float lon_focused = mod(lon(position_v.xyz) - focus, 2.*PI) - PI;
- float lat_focused = lat(position_v.xyz); //+ (map_projection_offset*PI);
- bool is_on_edge = lon_focused > PI*0.9 || lon_focused < -PI*0.9;
- vec4 displaced = vec4(
-  lon_focused + index_offset,
-  lat(position_v.xyz), //+ (map_projection_offset*PI), 
-  is_on_edge? 0. : length(position),
-  1);
- mat4 scaleMatrix = mat4(1);
- scaleMatrix[3] = viewMatrix[3] * reference_distance / world_radius;
- gl_Position = projectionMatrix * scaleMatrix * displaced;
+    displacement_v = displacement;
+    gradient_v = gradient;
+    plant_coverage_v = plant_coverage;
+    surface_temperature_v = surface_temperature;
+    snow_coverage_v = snow_coverage;
+    scalar_v = scalar;
+    position_v = modelMatrix * vec4( position, 1.0 );
+    float height = displacement > sealevel? 0.005 : 0.0;
+    float index_offset = map_projection_offset;
+    float focus = lon(cameraPosition) + index_offset;
+    float lon_focused = mod(lon(position_v.xyz) - focus, 2.*PI) - PI;
+    float lat_focused = lat(position_v.xyz); //+ (map_projection_offset*PI);
+    bool is_on_edge = lon_focused > PI*0.9 || lon_focused < -PI*0.9;
+    vec4 displaced = vec4(
+        lon_focused + index_offset,
+        lat(position_v.xyz), //+ (map_projection_offset*PI), 
+        is_on_edge? 0. : length(position),
+        1);
+    mat4 scaleMatrix = mat4(1);
+    scaleMatrix[3] = viewMatrix[3] * reference_distance / world_radius;
+    gl_Position = projectionMatrix * scaleMatrix * displaced;
     view_direction_v = -position_v.xyz;
     view_direction_v.y = 0.;
     view_direction_v = normalize(view_direction_v);
@@ -161,17 +161,17 @@ uniform float animation_phase_angle;
 attribute float vector_fraction_traversed;
 varying float vector_fraction_traversed_v;
 void main() {
- displacement_v = displacement;
- gradient_v = gradient;
- plant_coverage_v = plant_coverage;
- snow_coverage_v = snow_coverage;
- surface_temperature_v = surface_temperature;
- scalar_v = scalar;
- vector_fraction_traversed_v = vector_fraction_traversed;
- position_v = modelMatrix * vec4( position, 1.0 );
- float surface_height = max(displacement - sealevel, 0.);
- vec4 displacement = vec4( position * (world_radius + surface_height) / reference_distance, 1.0 );
- gl_Position = projectionMatrix * modelViewMatrix * displacement;
+    displacement_v = displacement;
+    gradient_v = gradient;
+    plant_coverage_v = plant_coverage;
+    snow_coverage_v = snow_coverage;
+    surface_temperature_v = surface_temperature;
+    scalar_v = scalar;
+    vector_fraction_traversed_v = vector_fraction_traversed;
+    position_v = modelMatrix * vec4( position, 1.0 );
+    float surface_height = max(displacement - sealevel, 0.);
+    vec4 displacement = vec4( position * (world_radius + surface_height) / reference_distance, 1.0 );
+    gl_Position = projectionMatrix * modelViewMatrix * displacement;
     vec2 clipspace = gl_Position.xy / gl_Position.w;
     view_direction_v = normalize(view_matrix_inverse * projection_matrix_inverse * vec4(clipspace, 1, 1)).xyz;
     view_origin_v = view_matrix_inverse[3].xyz * reference_distance;
@@ -210,8 +210,8 @@ attribute float vector_fraction_traversed;
 varying float vector_fraction_traversed_v;
 varying vec2 vUv;
 void main() {
- vUv = uv;
- gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
 }
 `;
 var fragmentShaders = {};
@@ -261,37 +261,37 @@ const float SOLAR_LUMINOSITY = 3.828e26; // watts
 const float SOLAR_TEMPERATURE = 5772.; // kelvin
 const float PI = 3.14159265358979323846264338327950288419716939937510;
 float get_surface_area_of_sphere(
- in float radius
+    in float radius
 ) {
- return 4.*PI*radius*radius;
+    return 4.*PI*radius*radius;
 }
 // TODO: try to get this to work with structs!
 // See: http://www.lighthouse3d.com/tutorials/maths/ray-sphere-intersection/
 void get_relation_between_ray_and_point(
- in vec3 point_position,
- in vec3 ray_origin,
- in vec3 ray_direction,
- out float distance_at_closest_approach2,
- out float distance_to_closest_approach
+    in vec3 point_position,
+    in vec3 ray_origin,
+    in vec3 ray_direction,
+    out float distance_at_closest_approach2,
+    out float distance_to_closest_approach
 ){
- vec3 ray_to_point = point_position - ray_origin;
- distance_to_closest_approach = dot(ray_to_point, ray_direction);
- distance_at_closest_approach2 =
-  dot(ray_to_point, ray_to_point) -
-  distance_to_closest_approach * distance_to_closest_approach;
+    vec3 ray_to_point = point_position - ray_origin;
+    distance_to_closest_approach = dot(ray_to_point, ray_direction);
+    distance_at_closest_approach2 =
+        dot(ray_to_point, ray_to_point) -
+        distance_to_closest_approach * distance_to_closest_approach;
 }
 bool try_get_relation_between_ray_and_sphere(
- in float sphere_radius,
- in float distance_at_closest_approach2,
- in float distance_to_closest_approach,
- out float distance_to_entrance,
- out float distance_to_exit
+    in float sphere_radius,
+    in float distance_at_closest_approach2,
+    in float distance_to_closest_approach,
+    out float distance_to_entrance,
+    out float distance_to_exit
 ){
- float sphere_radius2 = sphere_radius * sphere_radius;
- float distance_from_closest_approach_to_exit = sqrt(max(sphere_radius2 - distance_at_closest_approach2, 1e-10));
- distance_to_entrance = distance_to_closest_approach - distance_from_closest_approach_to_exit;
- distance_to_exit = distance_to_closest_approach + distance_from_closest_approach_to_exit;
- return (distance_to_exit > 0. && distance_at_closest_approach2 < sphere_radius*sphere_radius);
+    float sphere_radius2 = sphere_radius * sphere_radius;
+    float distance_from_closest_approach_to_exit = sqrt(max(sphere_radius2 - distance_at_closest_approach2, 1e-10));
+    distance_to_entrance = distance_to_closest_approach - distance_from_closest_approach_to_exit;
+    distance_to_exit = distance_to_closest_approach + distance_from_closest_approach_to_exit;
+    return (distance_to_exit > 0. && distance_at_closest_approach2 < sphere_radius*sphere_radius);
 }
 const float SPEED_OF_LIGHT = 299792458. * METER / SECOND;
 const float BOLTZMANN_CONSTANT = 1.3806485279e-23 * JOULE / KELVIN;
@@ -300,62 +300,62 @@ const float PLANCK_CONSTANT = 6.62607004e-34 * JOULE * SECOND;
 // see Lawson 2004, "The Blackbody Fraction, Infinite Series and Spreadsheets"
 // we only do a single iteration with n=1, because it doesn't have a noticeable effect on output
 float solve_fraction_of_light_emitted_by_black_body_below_wavelength(
- in float wavelength,
- in float temperature
+    in float wavelength,
+    in float temperature
 ){
- const float iterations = 2.;
- const float h = PLANCK_CONSTANT;
- const float k = BOLTZMANN_CONSTANT;
- const float c = SPEED_OF_LIGHT;
- float L = wavelength;
- float T = temperature;
- float C2 = h*c/k;
- float z = C2 / (L*T);
- float z2 = z*z;
- float z3 = z2*z;
- float sum = 0.;
- float n2=0.;
- float n3=0.;
- for (float n=1.; n <= iterations; n++) {
-  n2 = n*n;
-  n3 = n2*n;
-  sum += (z3 + 3.*z2/n + 6.*z/n2 + 6./n3) * exp(-n*z) / n;
- }
- return 15.*sum/(PI*PI*PI*PI);
+    const float iterations = 2.;
+    const float h = PLANCK_CONSTANT;
+    const float k = BOLTZMANN_CONSTANT;
+    const float c = SPEED_OF_LIGHT;
+    float L = wavelength;
+    float T = temperature;
+    float C2 = h*c/k;
+    float z = C2 / (L*T);
+    float z2 = z*z;
+    float z3 = z2*z;
+    float sum = 0.;
+    float n2=0.;
+    float n3=0.;
+    for (float n=1.; n <= iterations; n++) {
+        n2 = n*n;
+        n3 = n2*n;
+        sum += (z3 + 3.*z2/n + 6.*z/n2 + 6./n3) * exp(-n*z) / n;
+    }
+    return 15.*sum/(PI*PI*PI*PI);
 }
 float solve_fraction_of_light_emitted_by_black_body_between_wavelengths(
- in float lo,
- in float hi,
- in float temperature
+    in float lo,
+    in float hi,
+    in float temperature
 ){
- return solve_fraction_of_light_emitted_by_black_body_below_wavelength(hi, temperature) -
-   solve_fraction_of_light_emitted_by_black_body_below_wavelength(lo, temperature);
+    return solve_fraction_of_light_emitted_by_black_body_below_wavelength(hi, temperature) -
+            solve_fraction_of_light_emitted_by_black_body_below_wavelength(lo, temperature);
 }
 // This calculates the radiation (in watts/m^2) that's emitted 
 // by a single object using the Stephan-Boltzmann equation
 float get_intensity_of_light_emitted_by_black_body(
- in float temperature
+    in float temperature
 ){
     float T = temperature;
     return STEPHAN_BOLTZMANN_CONSTANT * T*T*T*T;
 }
 vec3 get_rgb_intensity_of_light_emitted_by_black_body(
- in float temperature
+    in float temperature
 ){
- return get_intensity_of_light_emitted_by_black_body(temperature)
-   * vec3(
-    solve_fraction_of_light_emitted_by_black_body_between_wavelengths(600e-9*METER, 700e-9*METER, temperature),
-    solve_fraction_of_light_emitted_by_black_body_between_wavelengths(500e-9*METER, 600e-9*METER, temperature),
-    solve_fraction_of_light_emitted_by_black_body_between_wavelengths(400e-9*METER, 500e-9*METER, temperature)
-     );
+    return get_intensity_of_light_emitted_by_black_body(temperature)
+         * vec3(
+             solve_fraction_of_light_emitted_by_black_body_between_wavelengths(600e-9*METER, 700e-9*METER, temperature),
+             solve_fraction_of_light_emitted_by_black_body_between_wavelengths(500e-9*METER, 600e-9*METER, temperature),
+             solve_fraction_of_light_emitted_by_black_body_between_wavelengths(400e-9*METER, 500e-9*METER, temperature)
+           );
 }
 // Rayleigh phase function factor [-1, 1]
 float get_fraction_of_rayleigh_scattered_light_scattered_by_angle(in float cos_scatter_angle)
 {
- return
-   3. * (1. + cos_scatter_angle*cos_scatter_angle)
- / //------------------------
-    (16. * PI);
+    return
+            3. * (1. + cos_scatter_angle*cos_scatter_angle)
+    / //------------------------
+                (16. * PI);
 }
 // Henyey-Greenstein phase function factor [-1, 1]
 // represents the average cosine of the scattered directions
@@ -363,33 +363,33 @@ float get_fraction_of_rayleigh_scattered_light_scattered_by_angle(in float cos_s
 // > 1 is forward scattering, < 1 is backwards
 float get_fraction_of_mie_scattered_light_scattered_by_angle(in float cos_scatter_angle)
 {
- const float g = 0.76;
- return
-      (1. - g*g)
- / //---------------------------------------------
-  ((4. + PI) * pow(1. + g*g - 2.*g*cos_scatter_angle, 1.5));
+    const float g = 0.76;
+    return
+                        (1. - g*g)
+    / //---------------------------------------------
+        ((4. + PI) * pow(1. + g*g - 2.*g*cos_scatter_angle, 1.5));
 }
 // Schlick's fast approximation to the Henyey-Greenstein phase function factor
 // Pharr and  Humphreys [2004] equivalence to g above
 float get_schlick_phase_factor(in float cos_scatter_angle)
 {
- const float g = 0.76;
- const float k = 1.55*g - 0.55 * (g*g*g);
- return
-     (1. - k*k)
- / //-------------------------------------------
-  (4. * PI * (1. + k*cos_scatter_angle) * (1. + k*cos_scatter_angle));
+    const float g = 0.76;
+    const float k = 1.55*g - 0.55 * (g*g*g);
+    return
+                    (1. - k*k)
+    / //-------------------------------------------
+        (4. * PI * (1. + k*cos_scatter_angle) * (1. + k*cos_scatter_angle));
 }
 // "get_characteristic_reflectance" finds the fraction of light that's reflected
 //   by a boundary between materials when striking head on.
 //   The refractive indices can be provided as parameters in any order.
 float get_characteristic_reflectance(in float refractivate_index1, in float refractivate_index2)
 {
- float n1 = refractivate_index1;
- float n2 = refractivate_index2;
- float sqrtR0 = ((n1-n2)/(n1+n2));
- float R0 = sqrtR0 * sqrtR0;
- return R0;
+    float n1 = refractivate_index1;
+    float n2 = refractivate_index2;
+    float sqrtR0 = ((n1-n2)/(n1+n2));
+    float R0 = sqrtR0 * sqrtR0;
+    return R0;
 }
 // "get_fraction_of_light_reflected_on_surface" returns Fresnel reflectance.
 //   Fresnel reflectance is the fraction of light that's immediately reflected upon striking the surface.
@@ -400,9 +400,9 @@ float get_characteristic_reflectance(in float refractivate_index1, in float refr
 //   see Schlick (1994) for implementation details
 float get_fraction_of_light_reflected_on_surface(in float cos_incident_angle, in float characteristic_reflectance)
 {
- float R0 = characteristic_reflectance;
- float _1_u = 1.-cos_incident_angle;
- return R0 + (1.-R0) * _1_u*_1_u*_1_u*_1_u*_1_u;
+    float R0 = characteristic_reflectance;
+    float _1_u = 1.-cos_incident_angle;
+    return R0 + (1.-R0) * _1_u*_1_u*_1_u*_1_u*_1_u;
 }
 // "get_rgb_fraction_of_light_reflected_on_surface" returns Fresnel reflectance for each color channel.
 //   Fresnel reflectance is the fraction of light that's immediately reflected upon striking the surface.
@@ -413,18 +413,18 @@ float get_fraction_of_light_reflected_on_surface(in float cos_incident_angle, in
 //   see Schlick (1994) for implementation details
 vec3 get_rgb_fraction_of_light_reflected_on_surface(in float cos_incident_angle, in vec3 characteristic_reflectance)
 {
- vec3 R0 = characteristic_reflectance;
- float _1_u = 1.-cos_incident_angle;
- return R0 + (1.-R0) * _1_u*_1_u*_1_u*_1_u*_1_u;
+    vec3 R0 = characteristic_reflectance;
+    float _1_u = 1.-cos_incident_angle;
+    return R0 + (1.-R0) * _1_u*_1_u*_1_u*_1_u*_1_u;
 }
 // "get_fraction_of_reflected_light_masked_or_shaded" is Schlick's fast approximation for Smith's function
 //   see Hoffmann 2015 for a gentle introduction to the concept
 //   see Schlick (1994) for even more details.
 float get_fraction_of_reflected_light_masked_or_shaded(in float cos_view_angle, in float root_mean_slope_squared)
 {
- float m = root_mean_slope_squared;
- float v = cos_view_angle;
- float k = sqrt(2.*m*m/PI);
+    float m = root_mean_slope_squared;
+    float v = cos_view_angle;
+    float k = sqrt(2.*m*m/PI);
     return v/(v-k*v+k);
 }
 // "get_fraction_of_microfacets_with_angle" 
@@ -434,31 +434,36 @@ float get_fraction_of_reflected_light_masked_or_shaded(in float cos_view_angle, 
 //   see Schlick (1994) for even more details.
 float get_fraction_of_microfacets_with_angle(in float cos_angle_of_deviation, in float root_mean_slope_squared)
 {
- float m = root_mean_slope_squared;
- float t = cos_angle_of_deviation;
+    float m = root_mean_slope_squared;
+    float t = cos_angle_of_deviation;
     return exp((t*t-1.)/(m*m*t*t))/(m*m*t*t*t*t);
 }
 const float BIG = 1e20;
 const float SMALL = 1e-20;
-// "approx_air_column_density_ratio_along_ray_for_flat_world" 
+// "get_air_column_density_ratio_along_2d_ray_for_flat_world" 
 //   calculates column density ratio of air for a ray emitted from given height to a desired lateral distance, 
 //   assumes height varies linearly along the path, i.e. the world is flat.
-float approx_air_column_density_ratio_along_ray_for_flat_world(float b, float m, float x, float H){
+float get_air_column_density_ratio_along_2d_ray_for_flat_world(
+    in float b, // intercept of linear height approximation
+    in float m, // slope of linear height approximation
+    in float x, // distance along the ray
+    in float H // scale height of the atmosphere
+){
     return -H/m * exp(-(m*x+b)/H);
 }
-// "approx_air_column_density_ratio_along_ray_for_curved_world" 
+// "approx_air_column_density_ratio_along_2d_ray_for_curved_world" 
 //   calculates column density ratio of air for a ray emitted from the surface of a world to a desired distance, 
 //   taking into account the curvature of the world.
 // It does this by making two linear approximations for height:
 //   one for the lower atmosphere, one for the upper atmosphere.
-// These are represented by the two call outs to approx_air_column_density_ratio_along_ray_for_flat_world().
+// These are represented by the two call outs to get_air_column_density_ratio_along_2d_ray_for_flat_world().
 // "x_start" and "x_stop" are distances along the ray from closest approach.
 //   If there is no intersection, they are the distances from the closest approach to the upper bound.
 //   Negative numbers indicate the rays are firing towards the ground.
 // "z2" is the closest distance from the ray to the center of the world, squared.
 // "R" is the radius of the world.
 // "H" is the scale height of the atmosphere.
-float approx_air_column_density_ratio_along_ray_for_curved_world(float x_start, float x_stop, float z2, float R, float H){
+float approx_air_column_density_ratio_along_2d_ray_for_curved_world(in float x_start, in float x_stop, in float z2, in float R, in float H){
     // guide to variable names:
     //  "f*" fraction of travel distance through atmosphere, "dx"
     //  "x*" distance along the ray from closest approach
@@ -494,19 +499,19 @@ float approx_air_column_density_ratio_along_ray_for_curved_world(float x_start, 
     float m1 = x1m / sqrt(x1m*x1m + z2);
     float b1 = sqrt(x1b*x1b + z2) - R;
     float sigma_reference =
-        approx_air_column_density_ratio_along_ray_for_flat_world(b0, m0, x0-x0b, H)
-      + approx_air_column_density_ratio_along_ray_for_flat_world(b1, m1, x1-x1b, H);
+        get_air_column_density_ratio_along_2d_ray_for_flat_world(b0, m0, x0-x0b, H)
+      + get_air_column_density_ratio_along_2d_ray_for_flat_world(b1, m1, x1-x1b, H);
     float abs_x_stop = abs(x_stop);
     float sign_x_stop = sign(x_stop);
     float abs_sigma_stop =
-        approx_air_column_density_ratio_along_ray_for_flat_world(b0, m0, clamp(abs_x_stop, x0, x1)-x0b, H)
-      + approx_air_column_density_ratio_along_ray_for_flat_world(b1, m1, max (abs_x_stop, x1) -x1b, H)
+        get_air_column_density_ratio_along_2d_ray_for_flat_world(b0, m0, clamp(abs_x_stop, x0, x1)-x0b, H)
+      + get_air_column_density_ratio_along_2d_ray_for_flat_world(b1, m1, max (abs_x_stop, x1) -x1b, H)
       - sigma_reference;
     float abs_x_start = abs(x_start);
     float sign_x_start = sign(x_start);
     float abs_sigma_start =
-        approx_air_column_density_ratio_along_ray_for_flat_world(b0, m0, clamp(abs_x_start, x0, x1)-x0b, H)
-      + approx_air_column_density_ratio_along_ray_for_flat_world(b1, m1, max (abs_x_start, x1) -x1b, H)
+        get_air_column_density_ratio_along_2d_ray_for_flat_world(b0, m0, clamp(abs_x_start, x0, x1)-x0b, H)
+      + get_air_column_density_ratio_along_2d_ray_for_flat_world(b1, m1, max (abs_x_start, x1) -x1b, H)
       - sigma_reference;
     // NOTE: we clamp the result to prevent the generation of inifinities and nans, 
     // which can cause graphical artifacts.
@@ -517,13 +522,13 @@ float approx_air_column_density_ratio_along_ray_for_curved_world(float x_start, 
 //   for approx_air_column_density_ratio_along_ray_2d() and approx_reference_air_column_density_ratio_along_ray.
 // Just pass it the origin and direction of a 3d ray and it will find the column density ratio along its path, 
 //   or return false to indicate the ray passes through the surface of the world.
-float approx_air_column_density_ratio_along_line_segment (
- vec3 segment_origin,
-    vec3 segment_direction,
-    float segment_length,
- vec3 world_position,
- float world_radius,
- float atmosphere_scale_height
+float approx_air_column_density_ratio_along_3d_ray_for_curved_world (
+    in vec3 segment_origin,
+    in vec3 segment_direction,
+    in float segment_length,
+    in vec3 world_position,
+    in float world_radius,
+    in float atmosphere_scale_height
 ){
     vec3 O = world_position;
     float R = world_radius;
@@ -531,22 +536,22 @@ float approx_air_column_density_ratio_along_line_segment (
     float z2; // distance ("radius") from the ray to the center of the world at closest approach, squared
     float x_z; // distance from the origin at which closest approach occurs
     get_relation_between_ray_and_point(
-  world_position,
-     segment_origin, segment_direction,
-  z2, x_z
- );
-    return approx_air_column_density_ratio_along_ray_for_curved_world( 0.-x_z, segment_length-x_z, z2, R, H );
+        world_position,
+        segment_origin, segment_direction,
+        z2, x_z
+    );
+    return approx_air_column_density_ratio_along_2d_ray_for_curved_world( 0.-x_z, segment_length-x_z, z2, R, H );
 }
 // TODO: multiple light sources
 // TODO: multiple scattering events
 // TODO: support for light sources from within atmosphere
-vec3 get_rgb_intensity_of_light_scattered_from_atmosphere(
-    vec3 view_origin, vec3 view_direction,
-    vec3 world_position, float world_radius,
-    vec3 light_direction, vec3 light_rgb_intensity,
-    vec3 background_rgb_intensity,
-    float atmosphere_scale_height,
-    vec3 beta_ray, vec3 beta_mie, vec3 beta_abs
+vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
+    in vec3 view_origin, in vec3 view_direction,
+    in vec3 world_position, in float world_radius,
+    in vec3 light_direction, in vec3 light_rgb_intensity,
+    in vec3 background_rgb_intensity,
+    in float atmosphere_scale_height,
+    in vec3 beta_ray, in vec3 beta_mie, in vec3 beta_abs
 ){
     vec3 P = view_origin;
     vec3 V = view_direction;
@@ -616,8 +621,8 @@ vec3 get_rgb_intensity_of_light_scattered_from_atmosphere(
     {
         P_i = P + V * x;
         h_i = sqrt((x-xz)*(x-xz)+z2) - R;
-        sigma_V = approx_air_column_density_ratio_along_line_segment (P_i, -V, x, O, R, H);
-        sigma_L = approx_air_column_density_ratio_along_line_segment (P_i, L, 3.*R, O, R, H);
+        sigma_V = approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i, -V, x, O, R, H);
+        sigma_L = approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i, L, 3.*R, O, R, H);
         E += I_sun
             // incoming fraction: the fraction of light that scatters towards camera
             * exp(-h_i/H) * beta_gamma * dx
@@ -629,10 +634,10 @@ vec3 get_rgb_intensity_of_light_scattered_from_atmosphere(
     E += I_back * exp(-beta_sum * sigma_V);
     return E;
 }
-vec3 get_rgb_fraction_of_refracted_light_transmitted_through_atmosphere(
-    vec3 segment_origin, vec3 segment_direction, float segment_length,
-    vec3 world_position, float world_radius, float atmosphere_scale_height,
-    vec3 beta_ray, vec3 beta_mie, vec3 beta_abs
+vec3 get_rgb_fraction_of_light_transmitted_through_air_for_curved_world(
+    in vec3 segment_origin, in vec3 segment_direction, in float segment_length,
+    in vec3 world_position, in float world_radius, in float atmosphere_scale_height,
+    in vec3 beta_ray, in vec3 beta_mie, in vec3 beta_abs
 ){
     vec3 O = world_position;
     float R = world_radius;
@@ -640,17 +645,17 @@ vec3 get_rgb_fraction_of_refracted_light_transmitted_through_atmosphere(
     // "sigma" is the column density of air, relative to the surface of the world, that's along the light's path of travel,
     //   we use it to estimate the amount of light that's filtered by the atmosphere before reaching the surface
     //   see https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-1/ for an awesome introduction
-    float sigma = approx_air_column_density_ratio_along_line_segment (segment_origin, segment_direction, segment_length, O, R, H);
+    float sigma = approx_air_column_density_ratio_along_3d_ray_for_curved_world (segment_origin, segment_direction, segment_length, O, R, H);
     // "I_surface" is the intensity of light that reaches the surface after being filtered by atmosphere
     return exp(-sigma * (beta_ray + beta_mie + beta_abs));
 }
-vec3 get_rgb_intensity_of_light_scattered_from_fluid(
-    float cos_view_angle,
-    float cos_light_angle,
-    float cos_scatter_angle,
-    float ocean_depth,
-    vec3 refracted_light_rgb_intensity,
-    vec3 beta_ray, vec3 beta_mie, vec3 beta_abs
+vec3 get_rgb_intensity_of_light_scattered_from_fluid_for_flat_world(
+    in float cos_view_angle,
+    in float cos_light_angle,
+    in float cos_scatter_angle,
+    in float ocean_depth,
+    in vec3 refracted_light_rgb_intensity,
+    in vec3 beta_ray, in vec3 beta_mie, in vec3 beta_abs
 ){
     float NV = cos_view_angle;
     float NL = cos_light_angle;
@@ -680,9 +685,9 @@ vec3 get_rgb_intensity_of_light_scattered_from_fluid(
         * (exp(-sigma_V * sigma_ratio * beta_sum) - 1.)
         / (-sigma_ratio * beta_sum);
 }
-vec3 get_rgb_fraction_of_refracted_light_transmitted_through_fluid(
-    float cos_incident_angle, float ocean_depth,
-    vec3 beta_ray, vec3 beta_mie, vec3 beta_abs
+vec3 get_rgb_fraction_of_light_transmitted_through_fluid_for_flat_world(
+    in float cos_incident_angle, in float ocean_depth,
+    in vec3 beta_ray, in vec3 beta_mie, in vec3 beta_abs
 ){
     float sigma = ocean_depth / cos_incident_angle;
     return exp(-sigma * (beta_ray + beta_mie + beta_abs));
@@ -695,14 +700,14 @@ float bump (in float x, in float edge0, in float edge1, in float height)
     float center = (edge1 + edge0) / 2.;
     float width = (edge1 - edge0) / 2.;
     float offset = (x - center) / width;
- return height * max(1. - offset * offset, 0.);
+    return height * max(1. - offset * offset, 0.);
 }
 // This function returns a rgb vector that best represents color at a given wavelength
 // It is from Alan Zucconi: https://www.alanzucconi.com/2017/07/15/improving-the-rainbow/
 // I've adapted the function so that coefficients are expressed in meters.
 vec3 get_rgb_signal_of_wavelength (in float w)
 {
- return vec3(
+    return vec3(
         bump(w, 530e-9, 690e-9, 1.00)+
         bump(w, 410e-9, 460e-9, 0.15),
         bump(w, 465e-9, 635e-9, 0.75)+
@@ -716,19 +721,19 @@ vec3 get_rgb_signal_of_wavelength (in float w)
 const float GAMMA = 2.2;
 vec3 get_rgb_intensity_of_rgb_signal(in vec3 signal)
 {
- return vec3(
-  pow(signal.x, GAMMA),
-  pow(signal.y, GAMMA),
-  pow(signal.z, GAMMA)
- );
+    return vec3(
+        pow(signal.x, GAMMA),
+        pow(signal.y, GAMMA),
+        pow(signal.z, GAMMA)
+    );
 }
 vec3 get_rgb_signal_of_rgb_intensity(in vec3 intensity)
 {
- return vec3(
-  pow(intensity.x, 1./GAMMA),
-  pow(intensity.y, 1./GAMMA),
-  pow(intensity.z, 1./GAMMA)
- );
+    return vec3(
+        pow(intensity.x, 1./GAMMA),
+        pow(intensity.y, 1./GAMMA),
+        pow(intensity.z, 1./GAMMA)
+    );
 }
 varying vec2 vUv;
 uniform sampler2D background_rgb_signal_texture;
@@ -755,11 +760,11 @@ uniform vec3 surface_air_mie_scattering_coefficients;
 uniform vec3 surface_air_absorption_coefficients;
 bool isnan(float x)
 {
- return !(0. <= x || x <= 0.);
+    return !(0. <= x || x <= 0.);
 }
 bool isbig(float x)
 {
- return abs(x)>BIG;
+    return abs(x)>BIG;
 }
 vec2 get_chartspace(vec2 bottomleft, vec2 topright, vec2 screenspace){
     return screenspace * abs(topright - bottomleft) + bottomleft;
@@ -789,7 +794,7 @@ void main() {
     vec3 beta_mie = surface_air_mie_scattering_coefficients;
     vec3 beta_abs = surface_air_absorption_coefficients;
     vec3 rgb_intensity =
-        get_rgb_intensity_of_light_scattered_from_atmosphere(
+        get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
             view_origin, view_direction,
             world_position, world_radius,
             light_direction, light_rgb_intensity,
@@ -816,18 +821,18 @@ uniform float ocean_visibility;
 //converts float from 0-1 to a heat map visualtion
 //credit goes to Gaëtan Renaudeau: http://greweb.me/glsl.js/examples/heatmap/
 vec4 heat (float v) {
- float value = 1.-v;
- return (0.5+0.5*smoothstep(0.0, 0.1, value))*vec4(
-  smoothstep(0.5, 0.3, value),
-  value < 0.3 ? smoothstep(0.0, 0.3, value) : smoothstep(1.0, 0.6, value),
-  smoothstep(0.4, 0.6, value),
-  1
- );
+    float value = 1.-v;
+    return (0.5+0.5*smoothstep(0.0, 0.1, value))*vec4(
+        smoothstep(0.5, 0.3, value),
+        value < 0.3 ? smoothstep(0.0, 0.3, value) : smoothstep(1.0, 0.6, value),
+        smoothstep(0.4, 0.6, value),
+        1
+    );
 }
 void main() {
- vec4 color_without_ocean = heat( scalar_v );
- vec4 color_with_ocean = displacement_v < sealevel * ocean_visibility? mix(vec4(0.), color_without_ocean, 0.5) : color_without_ocean;
- gl_FragColor = color_with_ocean;
+    vec4 color_without_ocean = heat( scalar_v );
+    vec4 color_with_ocean = displacement_v < sealevel * ocean_visibility? mix(vec4(0.), color_without_ocean, 0.5) : color_without_ocean;
+    gl_FragColor = color_with_ocean;
 }
 `;
 fragmentShaders.monochromatic = `
@@ -841,20 +846,20 @@ uniform float ocean_visibility;
 uniform float min_color;
 uniform float max_color;
 void main() {
- vec4 color_without_ocean = mix(
-  vec4(min_color,1.),
-  vec4(max_color,1.),
-  scalar_v
- );
- vec4 color_with_ocean = displacement_v < sealevel * ocean_visibility? mix(vec4(0.), color_without_ocean, 0.5) : color_without_ocean;
- gl_FragColor = color_with_ocean;
+    vec4 color_without_ocean = mix(
+        vec4(min_color,1.),
+        vec4(max_color,1.),
+        scalar_v
+    );
+    vec4 color_with_ocean = displacement_v < sealevel * ocean_visibility? mix(vec4(0.), color_without_ocean, 0.5) : color_without_ocean;
+    gl_FragColor = color_with_ocean;
 }
 `;
 fragmentShaders.passthrough = `
 uniform sampler2D input_texture;
 varying vec2 vUv;
 void main() {
- gl_FragColor = texture2D( input_texture, vUv );
+    gl_FragColor = texture2D( input_texture, vUv );
 }
 `;
 fragmentShaders.realistic = `
@@ -903,37 +908,37 @@ const float SOLAR_LUMINOSITY = 3.828e26; // watts
 const float SOLAR_TEMPERATURE = 5772.; // kelvin
 const float PI = 3.14159265358979323846264338327950288419716939937510;
 float get_surface_area_of_sphere(
- in float radius
+    in float radius
 ) {
- return 4.*PI*radius*radius;
+    return 4.*PI*radius*radius;
 }
 // TODO: try to get this to work with structs!
 // See: http://www.lighthouse3d.com/tutorials/maths/ray-sphere-intersection/
 void get_relation_between_ray_and_point(
- in vec3 point_position,
- in vec3 ray_origin,
- in vec3 ray_direction,
- out float distance_at_closest_approach2,
- out float distance_to_closest_approach
+    in vec3 point_position,
+    in vec3 ray_origin,
+    in vec3 ray_direction,
+    out float distance_at_closest_approach2,
+    out float distance_to_closest_approach
 ){
- vec3 ray_to_point = point_position - ray_origin;
- distance_to_closest_approach = dot(ray_to_point, ray_direction);
- distance_at_closest_approach2 =
-  dot(ray_to_point, ray_to_point) -
-  distance_to_closest_approach * distance_to_closest_approach;
+    vec3 ray_to_point = point_position - ray_origin;
+    distance_to_closest_approach = dot(ray_to_point, ray_direction);
+    distance_at_closest_approach2 =
+        dot(ray_to_point, ray_to_point) -
+        distance_to_closest_approach * distance_to_closest_approach;
 }
 bool try_get_relation_between_ray_and_sphere(
- in float sphere_radius,
- in float distance_at_closest_approach2,
- in float distance_to_closest_approach,
- out float distance_to_entrance,
- out float distance_to_exit
+    in float sphere_radius,
+    in float distance_at_closest_approach2,
+    in float distance_to_closest_approach,
+    out float distance_to_entrance,
+    out float distance_to_exit
 ){
- float sphere_radius2 = sphere_radius * sphere_radius;
- float distance_from_closest_approach_to_exit = sqrt(max(sphere_radius2 - distance_at_closest_approach2, 1e-10));
- distance_to_entrance = distance_to_closest_approach - distance_from_closest_approach_to_exit;
- distance_to_exit = distance_to_closest_approach + distance_from_closest_approach_to_exit;
- return (distance_to_exit > 0. && distance_at_closest_approach2 < sphere_radius*sphere_radius);
+    float sphere_radius2 = sphere_radius * sphere_radius;
+    float distance_from_closest_approach_to_exit = sqrt(max(sphere_radius2 - distance_at_closest_approach2, 1e-10));
+    distance_to_entrance = distance_to_closest_approach - distance_from_closest_approach_to_exit;
+    distance_to_exit = distance_to_closest_approach + distance_from_closest_approach_to_exit;
+    return (distance_to_exit > 0. && distance_at_closest_approach2 < sphere_radius*sphere_radius);
 }
 const float SPEED_OF_LIGHT = 299792458. * METER / SECOND;
 const float BOLTZMANN_CONSTANT = 1.3806485279e-23 * JOULE / KELVIN;
@@ -942,62 +947,62 @@ const float PLANCK_CONSTANT = 6.62607004e-34 * JOULE * SECOND;
 // see Lawson 2004, "The Blackbody Fraction, Infinite Series and Spreadsheets"
 // we only do a single iteration with n=1, because it doesn't have a noticeable effect on output
 float solve_fraction_of_light_emitted_by_black_body_below_wavelength(
- in float wavelength,
- in float temperature
+    in float wavelength,
+    in float temperature
 ){
- const float iterations = 2.;
- const float h = PLANCK_CONSTANT;
- const float k = BOLTZMANN_CONSTANT;
- const float c = SPEED_OF_LIGHT;
- float L = wavelength;
- float T = temperature;
- float C2 = h*c/k;
- float z = C2 / (L*T);
- float z2 = z*z;
- float z3 = z2*z;
- float sum = 0.;
- float n2=0.;
- float n3=0.;
- for (float n=1.; n <= iterations; n++) {
-  n2 = n*n;
-  n3 = n2*n;
-  sum += (z3 + 3.*z2/n + 6.*z/n2 + 6./n3) * exp(-n*z) / n;
- }
- return 15.*sum/(PI*PI*PI*PI);
+    const float iterations = 2.;
+    const float h = PLANCK_CONSTANT;
+    const float k = BOLTZMANN_CONSTANT;
+    const float c = SPEED_OF_LIGHT;
+    float L = wavelength;
+    float T = temperature;
+    float C2 = h*c/k;
+    float z = C2 / (L*T);
+    float z2 = z*z;
+    float z3 = z2*z;
+    float sum = 0.;
+    float n2=0.;
+    float n3=0.;
+    for (float n=1.; n <= iterations; n++) {
+        n2 = n*n;
+        n3 = n2*n;
+        sum += (z3 + 3.*z2/n + 6.*z/n2 + 6./n3) * exp(-n*z) / n;
+    }
+    return 15.*sum/(PI*PI*PI*PI);
 }
 float solve_fraction_of_light_emitted_by_black_body_between_wavelengths(
- in float lo,
- in float hi,
- in float temperature
+    in float lo,
+    in float hi,
+    in float temperature
 ){
- return solve_fraction_of_light_emitted_by_black_body_below_wavelength(hi, temperature) -
-   solve_fraction_of_light_emitted_by_black_body_below_wavelength(lo, temperature);
+    return solve_fraction_of_light_emitted_by_black_body_below_wavelength(hi, temperature) -
+            solve_fraction_of_light_emitted_by_black_body_below_wavelength(lo, temperature);
 }
 // This calculates the radiation (in watts/m^2) that's emitted 
 // by a single object using the Stephan-Boltzmann equation
 float get_intensity_of_light_emitted_by_black_body(
- in float temperature
+    in float temperature
 ){
     float T = temperature;
     return STEPHAN_BOLTZMANN_CONSTANT * T*T*T*T;
 }
 vec3 get_rgb_intensity_of_light_emitted_by_black_body(
- in float temperature
+    in float temperature
 ){
- return get_intensity_of_light_emitted_by_black_body(temperature)
-   * vec3(
-    solve_fraction_of_light_emitted_by_black_body_between_wavelengths(600e-9*METER, 700e-9*METER, temperature),
-    solve_fraction_of_light_emitted_by_black_body_between_wavelengths(500e-9*METER, 600e-9*METER, temperature),
-    solve_fraction_of_light_emitted_by_black_body_between_wavelengths(400e-9*METER, 500e-9*METER, temperature)
-     );
+    return get_intensity_of_light_emitted_by_black_body(temperature)
+         * vec3(
+             solve_fraction_of_light_emitted_by_black_body_between_wavelengths(600e-9*METER, 700e-9*METER, temperature),
+             solve_fraction_of_light_emitted_by_black_body_between_wavelengths(500e-9*METER, 600e-9*METER, temperature),
+             solve_fraction_of_light_emitted_by_black_body_between_wavelengths(400e-9*METER, 500e-9*METER, temperature)
+           );
 }
 // Rayleigh phase function factor [-1, 1]
 float get_fraction_of_rayleigh_scattered_light_scattered_by_angle(in float cos_scatter_angle)
 {
- return
-   3. * (1. + cos_scatter_angle*cos_scatter_angle)
- / //------------------------
-    (16. * PI);
+    return
+            3. * (1. + cos_scatter_angle*cos_scatter_angle)
+    / //------------------------
+                (16. * PI);
 }
 // Henyey-Greenstein phase function factor [-1, 1]
 // represents the average cosine of the scattered directions
@@ -1005,33 +1010,33 @@ float get_fraction_of_rayleigh_scattered_light_scattered_by_angle(in float cos_s
 // > 1 is forward scattering, < 1 is backwards
 float get_fraction_of_mie_scattered_light_scattered_by_angle(in float cos_scatter_angle)
 {
- const float g = 0.76;
- return
-      (1. - g*g)
- / //---------------------------------------------
-  ((4. + PI) * pow(1. + g*g - 2.*g*cos_scatter_angle, 1.5));
+    const float g = 0.76;
+    return
+                        (1. - g*g)
+    / //---------------------------------------------
+        ((4. + PI) * pow(1. + g*g - 2.*g*cos_scatter_angle, 1.5));
 }
 // Schlick's fast approximation to the Henyey-Greenstein phase function factor
 // Pharr and  Humphreys [2004] equivalence to g above
 float get_schlick_phase_factor(in float cos_scatter_angle)
 {
- const float g = 0.76;
- const float k = 1.55*g - 0.55 * (g*g*g);
- return
-     (1. - k*k)
- / //-------------------------------------------
-  (4. * PI * (1. + k*cos_scatter_angle) * (1. + k*cos_scatter_angle));
+    const float g = 0.76;
+    const float k = 1.55*g - 0.55 * (g*g*g);
+    return
+                    (1. - k*k)
+    / //-------------------------------------------
+        (4. * PI * (1. + k*cos_scatter_angle) * (1. + k*cos_scatter_angle));
 }
 // "get_characteristic_reflectance" finds the fraction of light that's reflected
 //   by a boundary between materials when striking head on.
 //   The refractive indices can be provided as parameters in any order.
 float get_characteristic_reflectance(in float refractivate_index1, in float refractivate_index2)
 {
- float n1 = refractivate_index1;
- float n2 = refractivate_index2;
- float sqrtR0 = ((n1-n2)/(n1+n2));
- float R0 = sqrtR0 * sqrtR0;
- return R0;
+    float n1 = refractivate_index1;
+    float n2 = refractivate_index2;
+    float sqrtR0 = ((n1-n2)/(n1+n2));
+    float R0 = sqrtR0 * sqrtR0;
+    return R0;
 }
 // "get_fraction_of_light_reflected_on_surface" returns Fresnel reflectance.
 //   Fresnel reflectance is the fraction of light that's immediately reflected upon striking the surface.
@@ -1042,9 +1047,9 @@ float get_characteristic_reflectance(in float refractivate_index1, in float refr
 //   see Schlick (1994) for implementation details
 float get_fraction_of_light_reflected_on_surface(in float cos_incident_angle, in float characteristic_reflectance)
 {
- float R0 = characteristic_reflectance;
- float _1_u = 1.-cos_incident_angle;
- return R0 + (1.-R0) * _1_u*_1_u*_1_u*_1_u*_1_u;
+    float R0 = characteristic_reflectance;
+    float _1_u = 1.-cos_incident_angle;
+    return R0 + (1.-R0) * _1_u*_1_u*_1_u*_1_u*_1_u;
 }
 // "get_rgb_fraction_of_light_reflected_on_surface" returns Fresnel reflectance for each color channel.
 //   Fresnel reflectance is the fraction of light that's immediately reflected upon striking the surface.
@@ -1055,18 +1060,18 @@ float get_fraction_of_light_reflected_on_surface(in float cos_incident_angle, in
 //   see Schlick (1994) for implementation details
 vec3 get_rgb_fraction_of_light_reflected_on_surface(in float cos_incident_angle, in vec3 characteristic_reflectance)
 {
- vec3 R0 = characteristic_reflectance;
- float _1_u = 1.-cos_incident_angle;
- return R0 + (1.-R0) * _1_u*_1_u*_1_u*_1_u*_1_u;
+    vec3 R0 = characteristic_reflectance;
+    float _1_u = 1.-cos_incident_angle;
+    return R0 + (1.-R0) * _1_u*_1_u*_1_u*_1_u*_1_u;
 }
 // "get_fraction_of_reflected_light_masked_or_shaded" is Schlick's fast approximation for Smith's function
 //   see Hoffmann 2015 for a gentle introduction to the concept
 //   see Schlick (1994) for even more details.
 float get_fraction_of_reflected_light_masked_or_shaded(in float cos_view_angle, in float root_mean_slope_squared)
 {
- float m = root_mean_slope_squared;
- float v = cos_view_angle;
- float k = sqrt(2.*m*m/PI);
+    float m = root_mean_slope_squared;
+    float v = cos_view_angle;
+    float k = sqrt(2.*m*m/PI);
     return v/(v-k*v+k);
 }
 // "get_fraction_of_microfacets_with_angle" 
@@ -1076,31 +1081,36 @@ float get_fraction_of_reflected_light_masked_or_shaded(in float cos_view_angle, 
 //   see Schlick (1994) for even more details.
 float get_fraction_of_microfacets_with_angle(in float cos_angle_of_deviation, in float root_mean_slope_squared)
 {
- float m = root_mean_slope_squared;
- float t = cos_angle_of_deviation;
+    float m = root_mean_slope_squared;
+    float t = cos_angle_of_deviation;
     return exp((t*t-1.)/(m*m*t*t))/(m*m*t*t*t*t);
 }
 const float BIG = 1e20;
 const float SMALL = 1e-20;
-// "approx_air_column_density_ratio_along_ray_for_flat_world" 
+// "get_air_column_density_ratio_along_2d_ray_for_flat_world" 
 //   calculates column density ratio of air for a ray emitted from given height to a desired lateral distance, 
 //   assumes height varies linearly along the path, i.e. the world is flat.
-float approx_air_column_density_ratio_along_ray_for_flat_world(float b, float m, float x, float H){
+float get_air_column_density_ratio_along_2d_ray_for_flat_world(
+    in float b, // intercept of linear height approximation
+    in float m, // slope of linear height approximation
+    in float x, // distance along the ray
+    in float H // scale height of the atmosphere
+){
     return -H/m * exp(-(m*x+b)/H);
 }
-// "approx_air_column_density_ratio_along_ray_for_curved_world" 
+// "approx_air_column_density_ratio_along_2d_ray_for_curved_world" 
 //   calculates column density ratio of air for a ray emitted from the surface of a world to a desired distance, 
 //   taking into account the curvature of the world.
 // It does this by making two linear approximations for height:
 //   one for the lower atmosphere, one for the upper atmosphere.
-// These are represented by the two call outs to approx_air_column_density_ratio_along_ray_for_flat_world().
+// These are represented by the two call outs to get_air_column_density_ratio_along_2d_ray_for_flat_world().
 // "x_start" and "x_stop" are distances along the ray from closest approach.
 //   If there is no intersection, they are the distances from the closest approach to the upper bound.
 //   Negative numbers indicate the rays are firing towards the ground.
 // "z2" is the closest distance from the ray to the center of the world, squared.
 // "R" is the radius of the world.
 // "H" is the scale height of the atmosphere.
-float approx_air_column_density_ratio_along_ray_for_curved_world(float x_start, float x_stop, float z2, float R, float H){
+float approx_air_column_density_ratio_along_2d_ray_for_curved_world(in float x_start, in float x_stop, in float z2, in float R, in float H){
     // guide to variable names:
     //  "f*" fraction of travel distance through atmosphere, "dx"
     //  "x*" distance along the ray from closest approach
@@ -1136,19 +1146,19 @@ float approx_air_column_density_ratio_along_ray_for_curved_world(float x_start, 
     float m1 = x1m / sqrt(x1m*x1m + z2);
     float b1 = sqrt(x1b*x1b + z2) - R;
     float sigma_reference =
-        approx_air_column_density_ratio_along_ray_for_flat_world(b0, m0, x0-x0b, H)
-      + approx_air_column_density_ratio_along_ray_for_flat_world(b1, m1, x1-x1b, H);
+        get_air_column_density_ratio_along_2d_ray_for_flat_world(b0, m0, x0-x0b, H)
+      + get_air_column_density_ratio_along_2d_ray_for_flat_world(b1, m1, x1-x1b, H);
     float abs_x_stop = abs(x_stop);
     float sign_x_stop = sign(x_stop);
     float abs_sigma_stop =
-        approx_air_column_density_ratio_along_ray_for_flat_world(b0, m0, clamp(abs_x_stop, x0, x1)-x0b, H)
-      + approx_air_column_density_ratio_along_ray_for_flat_world(b1, m1, max (abs_x_stop, x1) -x1b, H)
+        get_air_column_density_ratio_along_2d_ray_for_flat_world(b0, m0, clamp(abs_x_stop, x0, x1)-x0b, H)
+      + get_air_column_density_ratio_along_2d_ray_for_flat_world(b1, m1, max (abs_x_stop, x1) -x1b, H)
       - sigma_reference;
     float abs_x_start = abs(x_start);
     float sign_x_start = sign(x_start);
     float abs_sigma_start =
-        approx_air_column_density_ratio_along_ray_for_flat_world(b0, m0, clamp(abs_x_start, x0, x1)-x0b, H)
-      + approx_air_column_density_ratio_along_ray_for_flat_world(b1, m1, max (abs_x_start, x1) -x1b, H)
+        get_air_column_density_ratio_along_2d_ray_for_flat_world(b0, m0, clamp(abs_x_start, x0, x1)-x0b, H)
+      + get_air_column_density_ratio_along_2d_ray_for_flat_world(b1, m1, max (abs_x_start, x1) -x1b, H)
       - sigma_reference;
     // NOTE: we clamp the result to prevent the generation of inifinities and nans, 
     // which can cause graphical artifacts.
@@ -1159,13 +1169,13 @@ float approx_air_column_density_ratio_along_ray_for_curved_world(float x_start, 
 //   for approx_air_column_density_ratio_along_ray_2d() and approx_reference_air_column_density_ratio_along_ray.
 // Just pass it the origin and direction of a 3d ray and it will find the column density ratio along its path, 
 //   or return false to indicate the ray passes through the surface of the world.
-float approx_air_column_density_ratio_along_line_segment (
- vec3 segment_origin,
-    vec3 segment_direction,
-    float segment_length,
- vec3 world_position,
- float world_radius,
- float atmosphere_scale_height
+float approx_air_column_density_ratio_along_3d_ray_for_curved_world (
+    in vec3 segment_origin,
+    in vec3 segment_direction,
+    in float segment_length,
+    in vec3 world_position,
+    in float world_radius,
+    in float atmosphere_scale_height
 ){
     vec3 O = world_position;
     float R = world_radius;
@@ -1173,22 +1183,22 @@ float approx_air_column_density_ratio_along_line_segment (
     float z2; // distance ("radius") from the ray to the center of the world at closest approach, squared
     float x_z; // distance from the origin at which closest approach occurs
     get_relation_between_ray_and_point(
-  world_position,
-     segment_origin, segment_direction,
-  z2, x_z
- );
-    return approx_air_column_density_ratio_along_ray_for_curved_world( 0.-x_z, segment_length-x_z, z2, R, H );
+        world_position,
+        segment_origin, segment_direction,
+        z2, x_z
+    );
+    return approx_air_column_density_ratio_along_2d_ray_for_curved_world( 0.-x_z, segment_length-x_z, z2, R, H );
 }
 // TODO: multiple light sources
 // TODO: multiple scattering events
 // TODO: support for light sources from within atmosphere
-vec3 get_rgb_intensity_of_light_scattered_from_atmosphere(
-    vec3 view_origin, vec3 view_direction,
-    vec3 world_position, float world_radius,
-    vec3 light_direction, vec3 light_rgb_intensity,
-    vec3 background_rgb_intensity,
-    float atmosphere_scale_height,
-    vec3 beta_ray, vec3 beta_mie, vec3 beta_abs
+vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
+    in vec3 view_origin, in vec3 view_direction,
+    in vec3 world_position, in float world_radius,
+    in vec3 light_direction, in vec3 light_rgb_intensity,
+    in vec3 background_rgb_intensity,
+    in float atmosphere_scale_height,
+    in vec3 beta_ray, in vec3 beta_mie, in vec3 beta_abs
 ){
     vec3 P = view_origin;
     vec3 V = view_direction;
@@ -1258,8 +1268,8 @@ vec3 get_rgb_intensity_of_light_scattered_from_atmosphere(
     {
         P_i = P + V * x;
         h_i = sqrt((x-xz)*(x-xz)+z2) - R;
-        sigma_V = approx_air_column_density_ratio_along_line_segment (P_i, -V, x, O, R, H);
-        sigma_L = approx_air_column_density_ratio_along_line_segment (P_i, L, 3.*R, O, R, H);
+        sigma_V = approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i, -V, x, O, R, H);
+        sigma_L = approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i, L, 3.*R, O, R, H);
         E += I_sun
             // incoming fraction: the fraction of light that scatters towards camera
             * exp(-h_i/H) * beta_gamma * dx
@@ -1271,10 +1281,10 @@ vec3 get_rgb_intensity_of_light_scattered_from_atmosphere(
     E += I_back * exp(-beta_sum * sigma_V);
     return E;
 }
-vec3 get_rgb_fraction_of_refracted_light_transmitted_through_atmosphere(
-    vec3 segment_origin, vec3 segment_direction, float segment_length,
-    vec3 world_position, float world_radius, float atmosphere_scale_height,
-    vec3 beta_ray, vec3 beta_mie, vec3 beta_abs
+vec3 get_rgb_fraction_of_light_transmitted_through_air_for_curved_world(
+    in vec3 segment_origin, in vec3 segment_direction, in float segment_length,
+    in vec3 world_position, in float world_radius, in float atmosphere_scale_height,
+    in vec3 beta_ray, in vec3 beta_mie, in vec3 beta_abs
 ){
     vec3 O = world_position;
     float R = world_radius;
@@ -1282,17 +1292,17 @@ vec3 get_rgb_fraction_of_refracted_light_transmitted_through_atmosphere(
     // "sigma" is the column density of air, relative to the surface of the world, that's along the light's path of travel,
     //   we use it to estimate the amount of light that's filtered by the atmosphere before reaching the surface
     //   see https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-1/ for an awesome introduction
-    float sigma = approx_air_column_density_ratio_along_line_segment (segment_origin, segment_direction, segment_length, O, R, H);
+    float sigma = approx_air_column_density_ratio_along_3d_ray_for_curved_world (segment_origin, segment_direction, segment_length, O, R, H);
     // "I_surface" is the intensity of light that reaches the surface after being filtered by atmosphere
     return exp(-sigma * (beta_ray + beta_mie + beta_abs));
 }
-vec3 get_rgb_intensity_of_light_scattered_from_fluid(
-    float cos_view_angle,
-    float cos_light_angle,
-    float cos_scatter_angle,
-    float ocean_depth,
-    vec3 refracted_light_rgb_intensity,
-    vec3 beta_ray, vec3 beta_mie, vec3 beta_abs
+vec3 get_rgb_intensity_of_light_scattered_from_fluid_for_flat_world(
+    in float cos_view_angle,
+    in float cos_light_angle,
+    in float cos_scatter_angle,
+    in float ocean_depth,
+    in vec3 refracted_light_rgb_intensity,
+    in vec3 beta_ray, in vec3 beta_mie, in vec3 beta_abs
 ){
     float NV = cos_view_angle;
     float NL = cos_light_angle;
@@ -1322,9 +1332,9 @@ vec3 get_rgb_intensity_of_light_scattered_from_fluid(
         * (exp(-sigma_V * sigma_ratio * beta_sum) - 1.)
         / (-sigma_ratio * beta_sum);
 }
-vec3 get_rgb_fraction_of_refracted_light_transmitted_through_fluid(
-    float cos_incident_angle, float ocean_depth,
-    vec3 beta_ray, vec3 beta_mie, vec3 beta_abs
+vec3 get_rgb_fraction_of_light_transmitted_through_fluid_for_flat_world(
+    in float cos_incident_angle, in float ocean_depth,
+    in vec3 beta_ray, in vec3 beta_mie, in vec3 beta_abs
 ){
     float sigma = ocean_depth / cos_incident_angle;
     return exp(-sigma * (beta_ray + beta_mie + beta_abs));
@@ -1337,14 +1347,14 @@ float bump (in float x, in float edge0, in float edge1, in float height)
     float center = (edge1 + edge0) / 2.;
     float width = (edge1 - edge0) / 2.;
     float offset = (x - center) / width;
- return height * max(1. - offset * offset, 0.);
+    return height * max(1. - offset * offset, 0.);
 }
 // This function returns a rgb vector that best represents color at a given wavelength
 // It is from Alan Zucconi: https://www.alanzucconi.com/2017/07/15/improving-the-rainbow/
 // I've adapted the function so that coefficients are expressed in meters.
 vec3 get_rgb_signal_of_wavelength (in float w)
 {
- return vec3(
+    return vec3(
         bump(w, 530e-9, 690e-9, 1.00)+
         bump(w, 410e-9, 460e-9, 0.15),
         bump(w, 465e-9, 635e-9, 0.75)+
@@ -1358,19 +1368,19 @@ vec3 get_rgb_signal_of_wavelength (in float w)
 const float GAMMA = 2.2;
 vec3 get_rgb_intensity_of_rgb_signal(in vec3 signal)
 {
- return vec3(
-  pow(signal.x, GAMMA),
-  pow(signal.y, GAMMA),
-  pow(signal.z, GAMMA)
- );
+    return vec3(
+        pow(signal.x, GAMMA),
+        pow(signal.y, GAMMA),
+        pow(signal.z, GAMMA)
+    );
 }
 vec3 get_rgb_signal_of_rgb_intensity(in vec3 intensity)
 {
- return vec3(
-  pow(intensity.x, 1./GAMMA),
-  pow(intensity.y, 1./GAMMA),
-  pow(intensity.z, 1./GAMMA)
- );
+    return vec3(
+        pow(intensity.x, 1./GAMMA),
+        pow(intensity.y, 1./GAMMA),
+        pow(intensity.z, 1./GAMMA)
+    );
 }
 // Determines the length of a unit of distance within the view, in meters, 
 // it is generally the radius of whatever world's the focus for the scene.
@@ -1490,7 +1500,7 @@ void main() {
     vec3 position = n * (world_radius + surface_height);
     // "I_surface" is the intensity of light that reaches the surface after being filtered by atmosphere
     vec3 I_surface = I_sun
-      * get_rgb_fraction_of_refracted_light_transmitted_through_atmosphere(
+      * get_rgb_fraction_of_light_transmitted_through_air_for_curved_world(
             // NOTE: we nudge the origin of light ray by a small amount so that collision isn't detected with the world
             1.000001 * position, L, 3.*world_radius,
             world_position, world_radius, atmosphere_scale_height, beta_air_ray, beta_air_mie, beta_air_abs
@@ -1512,14 +1522,14 @@ void main() {
     // If sea is present, "E_ocean_scattered" is the rgb intensity of light 
     //   scattered by the sea towards the camera. Otherwise, it equals 0.
     vec3 E_ocean_scattered =
-        get_rgb_intensity_of_light_scattered_from_fluid(
+        get_rgb_intensity_of_light_scattered_from_fluid_for_flat_world(
             NV, NL, LV, ocean_depth, I_surface_refracted,
             beta_ocean_ray, beta_ocean_mie, beta_ocean_abs
         );
     // if sea is present, "I_ocean_trasmitted" is the rgb intensity of light 
     //   that reaches the ground after being filtered by air and sea. Otherwise, it equals I_surface_refracted.
     vec3 I_ocean_trasmitted= I_surface_refracted
-        * get_rgb_fraction_of_refracted_light_transmitted_through_fluid(NL, ocean_depth, beta_ocean_ray, beta_ocean_mie, beta_ocean_abs);
+        * get_rgb_fraction_of_light_transmitted_through_fluid_for_flat_world(NL, ocean_depth, beta_ocean_ray, beta_ocean_mie, beta_ocean_abs);
     // TODO: more sensible microfacet model
     vec3 color_of_bedrock = mix(LAND_COLOR_MAFIC, LAND_COLOR_FELSIC, felsic_coverage);
     vec3 color_with_sediment = mix(color_of_bedrock, mix(LAND_COLOR_SAND, LAND_COLOR_PEAT, organic_coverage), mineral_coverage * sediment_visibility);
@@ -1530,7 +1540,7 @@ void main() {
     // if sea is present, "E_ocean_transmitted" is the fraction 
     //   of E_diffuse that makes it out of the sea. Otheriwse, it equals E_diffuse
     vec3 E_ocean_transmitted = E_diffuse
-        * get_rgb_fraction_of_refracted_light_transmitted_through_fluid(NV, ocean_depth, beta_ocean_ray, beta_ocean_mie, beta_ocean_abs);
+        * get_rgb_fraction_of_light_transmitted_through_fluid_for_flat_world(NV, ocean_depth, beta_ocean_ray, beta_ocean_mie, beta_ocean_abs);
     vec3 E_surface_diffused =
         mix(E_ocean_transmitted + E_ocean_scattered,
             I_surface_refracted * NL * SNOW_COLOR,
@@ -1553,7 +1563,7 @@ uniform float sealevel;
 uniform float ocean_visibility;
 void main() {
     // CODE to generate a tangent-space normal map:
- // "n" is the surface normal for a perfectly smooth sphere
+    // "n" is the surface normal for a perfectly smooth sphere
     vec3 n = normalize(position_v.xyz);
     // "N" is the actual surface normal as reported by the gradient of displacement
     vec3 N = normalize(n + gradient_v);
@@ -1617,7 +1627,7 @@ void main() {
         vec3(0.95),
         smoothstep(0.75, 1., scalar_v)
     );
- gl_FragColor = vec4(color, 1.);
+    gl_FragColor = vec4(color, 1.);
 }
 `;
 fragmentShaders.vector_field = `
@@ -1625,7 +1635,7 @@ const float PI = 3.14159265358979;
 uniform float animation_phase_angle;
 varying float vector_fraction_traversed_v;
 void main() {
- float state = (cos(2.*PI*vector_fraction_traversed_v - animation_phase_angle) + 1.) / 2.;
- gl_FragColor = vec4(state) * vec4(vec3(0.8),0.) + vec4(vec3(0.2),0.);
+    float state = (cos(2.*PI*vector_fraction_traversed_v - animation_phase_angle) + 1.) / 2.;
+    gl_FragColor = vec4(state) * vec4(vec3(0.8),0.) + vec4(vec3(0.2),0.);
 }
 `;
