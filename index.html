@@ -190,7 +190,7 @@
 						v-if="isSelected('satellite')"
 						v-bind:class="{active: sediment}" 
 						v-on:click="setSediment(!sediment? 1:0)">
-						<img src="icons/rock.svg" height="16em" width="16em"/>
+						<img src="icons/dirt.svg" height="16em" width="16em"/>
 						Sediment
 					</button>
 				</li>
@@ -200,8 +200,8 @@
 						v-if="isSelected('satellite')"
 						v-bind:class="{active: plant}" 
 						v-on:click="setPlant(!plant? 1:0)">
-						<img src="icons/dirt.svg" height="16em" width="16em"/>
-						Canopy
+						<img src="icons/leaf.svg" height="16em" width="16em"/>
+						Plants
 					</button>
 				</li>
 				<li role="separator" class="divider"></li> 
@@ -882,16 +882,16 @@
 	    vectorView: 'disabled',
 	    options: [
 	      {name: 'Satellite', value: 'satellite', icon: 'icons/satellite-variant.svg' },
-	      {name: 'Height map', value: 'alt', icon: 'icons/terrain.svg'},
 	      {name: 'Topographic map', value: 'topographic', icon: 'icons/terrain.svg'},
-	      {name: 'Normal map', value: 'surface_normal_map', icon: 'icons/terrain.svg'},
+	      {name: 'Height map', value: 'alt', icon: 'icons/terrain-length.svg'},
+	      {name: 'Normal map', value: 'surface_normal_map', icon: 'icons/terrain-arrows.svg'},
 	      {name: 'Plant Productivity', value: 'npp', icon: 'icons/leaf.svg'},
-	      {name: 'Air Temperature', value: 'temp', icon: 'icons/thermometer.svg' },
+	      {name: 'Air Temperature', value: 'temp', icon: 'icons/air-temperature.svg' },
 	      {name: 'Air Pressure', value: 'surface_air_pressure', icon: 'icons/air-pressure.svg' },
 	      {name: 'Precipitation', value: 'precipitation', icon: 'icons/weather-raining.svg'},
-	      {name: 'Crust Age', value: 'age', icon: 'icons/clock.svg'},
-	      {name: 'Crust Density', value: 'density', icon: 'icons/scale.svg'},
-	      {name: 'Crust Thickness', value: 'thickness', icon: 'icons/ruler.svg'},
+	      {name: 'Crust Age', value: 'age', icon: 'icons/rock-age.svg'},
+	      {name: 'Crust Density', value: 'density', icon: 'icons/rock-scale.svg'},
+	      {name: 'Crust Thickness', value: 'thickness', icon: 'icons/rock-length.svg'},
 	      {name: 'Plates', value: 'plates', icon: 'icons/puzzle.svg'},
 	    ],
 	  },

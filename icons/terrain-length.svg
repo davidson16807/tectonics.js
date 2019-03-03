@@ -12,8 +12,8 @@
    height="48"
    viewBox="0 0 48 48"
    id="svg2"
-   inkscape:version="0.91 r"
-   sodipodi:docname="combo-icons.svg">
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="terrain-length.svg">
   <metadata
      id="metadata10">
     <rdf:RDF>
@@ -37,17 +37,17 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1024"
-     inkscape:window-height="1253"
+     inkscape:window-width="1248"
+     inkscape:window-height="1028"
      id="namedview6"
      showgrid="false"
-     inkscape:zoom="4.9166667"
-     inkscape:cx="62.267522"
-     inkscape:cy="30.600346"
-     inkscape:window-x="1024"
-     inkscape:window-y="0"
-     inkscape:window-maximized="1"
-     inkscape:current-layer="layer13"
+     inkscape:zoom="9.8333333"
+     inkscape:cx="20.662897"
+     inkscape:cy="28.946592"
+     inkscape:window-x="1312"
+     inkscape:window-y="24"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer14"
      inkscape:snap-grids="true" />
   <g
      inkscape:groupmode="layer"
@@ -71,6 +71,15 @@
        d="M 25.889613,18.207722 C 10.223632,22.047866 8.4378757,34.182349 4.8172938,44.109123 l 3.2898557,1.267248 1.6536311,-4.416166 c 0.8355194,0.326411 1.7058524,0.576021 2.3324894,0.576021 19.147309,0 20.773844,-33.3603202 20.773844,-33.3603202 C 31.126451,12.01605 22.537258,13.215161 13.833936,15.135233 5.1306133,17.055305 1.6492846,25.215611 1.6492846,29.055758 c 0,3.840143 3.0461627,7.200269 3.0461627,7.200269 C 10.352607,18.495359 25.889613,18.207722 25.889613,18.207722 Z"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="ccccscsscc" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer14"
+     inkscape:label="terrain"
+     style="display:inline">
+    <path
+       d="M 24.119141 11.529297 L 16.382812 21.84375 L 22.261719 29.683594 L 18.960938 32.160156 C 15.474174 27.518015 9.6777344 19.78125 9.6777344 19.78125 L 0.23242188 32.710938 L 0.31445312 36.337891 L 31.216797 36.300781 C 31.221472 31.201802 31.226325 26.103113 31.224609 21.003906 L 24.119141 11.529297 z "
+       id="path4234" />
   </g>
   <g
      style="display:none"
@@ -266,7 +275,7 @@
      inkscape:groupmode="layer"
      id="layer5"
      inkscape:label="length"
-     style="display:none">
+     style="display:inline">
     <g
        id="g3415"
        transform="matrix(1.0711212,0,0,1.0711212,-1.9840037,-5.1510665)">
@@ -279,7 +288,7 @@
   <g
      inkscape:groupmode="layer"
      id="layer2"
-     inkscape:label="temp"
+     inkscape:label="temperature"
      style="display:none">
     <path
        transform="translate(-0.19604053,0.18149737)"
@@ -290,7 +299,7 @@
   </g>
   <g
      style="display:none"
-     inkscape:label="water_sub copy"
+     inkscape:label="water_sub mask"
      id="g3479"
      inkscape:groupmode="layer">
     <g
@@ -310,7 +319,7 @@
   </g>
   <g
      style="display:none"
-     inkscape:label="age copy"
+     inkscape:label="age mask"
      id="g3478"
      inkscape:groupmode="layer">
     <path
@@ -325,7 +334,7 @@
   </g>
   <g
      style="display:none"
-     inkscape:label="scale copy"
+     inkscape:label="scale mask"
      id="g3472"
      inkscape:groupmode="layer">
     <path
@@ -340,22 +349,16 @@
   </g>
   <g
      style="display:none"
-     inkscape:label="length copy"
+     inkscape:label="length mask"
      id="g3466"
      inkscape:groupmode="layer">
     <g
        transform="matrix(1.0711212,0,0,1.0711212,-1.9840037,-5.1510665)"
-       id="g3468">
-      <path
-         style="fill:#999999"
-         d="m 30.990234,6.2480469 c 0.02091,14.8416071 0.02764,29.6914341 -0.0059,44.5332031 4.595858,-1.290861 14.834276,3.060838 14.660156,-3 0,-14.513021 0,-29.026042 0,-43.5390625 C 41.892488,5.5449583 31.136229,1.609898 30.990234,6.2480469 Z"
-         id="path3470"
-         inkscape:connector-curvature="0" />
-    </g>
+       id="g3468" />
   </g>
   <g
      style="display:none"
-     inkscape:label="temp copy"
+     inkscape:label="temperature mask"
      id="g3462"
      inkscape:groupmode="layer">
     <path
@@ -367,7 +370,7 @@
   </g>
   <g
      style="display:none"
-     inkscape:label="dino copy"
+     inkscape:label="dino mask"
      id="g3549"
      inkscape:groupmode="layer">
     <path
@@ -378,7 +381,7 @@
   </g>
   <g
      style="display:none"
-     inkscape:label="plant copy"
+     inkscape:label="plant mask"
      id="g3567"
      inkscape:groupmode="layer">
     <path
@@ -388,9 +391,21 @@
        inkscape:connector-curvature="0" />
   </g>
   <g
+     style="display:none"
+     inkscape:label="terrain copy"
+     id="g4243"
+     inkscape:groupmode="layer">
+    <path
+       d="M 22.519234,10.330078 13.882515,21.84375 9.6793899,16.447266 -6.699516,38.287109 l 53.384766,0 L 24.118844,8.1953125 Z"
+       id="path4245"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccccc"
+       style="fill:#999999;fill-opacity:1" />
+  </g>
+  <g
      inkscape:groupmode="layer"
      id="g3420"
-     inkscape:label="dirt copy"
+     inkscape:label="dirt mask"
      style="display:none">
     <g
        transform="matrix(0.0961263,0,0,0.0961263,0.05646795,-0.51068414)"
@@ -406,7 +421,7 @@
   </g>
   <g
      style="display:none"
-     inkscape:label="water copy"
+     inkscape:label="water mask"
      id="g3394"
      inkscape:groupmode="layer">
     <g
@@ -444,7 +459,7 @@
   </g>
   <g
      style="display:none"
-     inkscape:label="air copy"
+     inkscape:label="air mask"
      id="g3377"
      inkscape:groupmode="layer">
     <g
@@ -476,7 +491,7 @@
   </g>
   <g
      style="display:none"
-     inkscape:label="fire copy"
+     inkscape:label="fire mask"
      id="g3412"
      inkscape:groupmode="layer">
     <g
@@ -497,7 +512,7 @@
   </g>
   <g
      style="display:none"
-     inkscape:label="earth copy"
+     inkscape:label="earth mask"
      id="g3422"
      inkscape:groupmode="layer">
     <g

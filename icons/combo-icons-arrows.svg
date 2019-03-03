@@ -12,7 +12,7 @@
    height="48"
    viewBox="0 0 48 48"
    id="svg2"
-   inkscape:version="0.91 r"
+   inkscape:version="0.91 r13725"
    sodipodi:docname="arrow-combo-icons.svg">
   <metadata
      id="metadata10">
@@ -22,12 +22,22 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
   <defs
-     id="defs8" />
+     id="defs8">
+    <filter
+       style="color-interpolation-filters:sRGB"
+       id="filter6396"
+       inkscape:label="filter1">
+      <feMorphology
+         id="feMorphology6398"
+         operator="dilate"
+         radius="5" />
+    </filter>
+  </defs>
   <sodipodi:namedview
      pagecolor="#ffffff"
      bordercolor="#666666"
@@ -37,22 +47,22 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1024"
-     inkscape:window-height="613"
+     inkscape:window-width="2074"
+     inkscape:window-height="1028"
      id="namedview6"
      showgrid="false"
-     inkscape:zoom="3.4766083"
-     inkscape:cx="8.6396088"
-     inkscape:cy="21.972444"
-     inkscape:window-x="1024"
-     inkscape:window-y="640"
+     inkscape:zoom="13.906433"
+     inkscape:cx="12.571199"
+     inkscape:cy="18.617013"
+     inkscape:window-x="486"
+     inkscape:window-y="24"
      inkscape:window-maximized="0"
-     inkscape:current-layer="layer2" />
+     inkscape:current-layer="g6427" />
   <g
      inkscape:groupmode="layer"
      id="layer2"
-     inkscape:label="div"
-     style="display:none">
+     inkscape:label="divergence"
+     style="display:none;opacity:1">
     <g
        id="g3394"
        transform="matrix(0.98194847,0,0,0.98194847,0.55075658,0.5126723)">
@@ -60,6 +70,20 @@
          id="path3527-6"
          d="m 47.799604,2.622599 -9.028668,9.02867 7.20287,0 0,4.012742 -14.044595,0 0,-14.044598 4.012742,0 0,7.2028734 9.028668,-9.02867043 2.828983,2.82898303 m -47.80259723,42.551413 9.02866803,-9.028671 -7.202871,0 0,-4.012742 14.0445962,0 0,14.044599 -4.012742,0 0,-7.202873 -9.0286692,9.02867 -2.82898203,-2.828983 m 44.97361423,3.439152 -9.02867,-9.028668 0,7.202871 -4.012742,0 0,-14.044597 14.044598,0 0,4.012742 -7.202873,0 9.02867,9.02867 -2.828983,2.828982 M 2.868136,-0.16423724 l 9.02867,9.02866894 0,-7.2028713 4.012742,0 0,14.0445966 -14.0445976,0 0,-4.012742 7.2028721,0 L 0.03915276,2.6647454 2.868136,-0.16423724"
          inkscape:connector-curvature="0" />
+    </g>
+  </g>
+  <g
+     style="display:none;opacity:1"
+     inkscape:label="convergence"
+     id="g4181"
+     inkscape:groupmode="layer">
+    <g
+       transform="matrix(0.98194847,0,0,0.98194847,0.55075658,0.5126723)"
+       id="g4183">
+      <path
+         inkscape:connector-curvature="0"
+         d="m 47.799604,2.622599 -9.028668,9.02867 7.20287,0 0,4.012742 -14.044595,0 0,-14.044598 4.012742,0 0,7.2028734 9.028668,-9.02867043 2.828983,2.82898303 m -47.80259723,42.551413 9.02866803,-9.028671 -7.202871,0 0,-4.012742 14.0445962,0 0,14.044599 -4.012742,0 0,-7.202873 -9.0286692,9.02867 -2.82898203,-2.828983 m 44.97361423,3.439152 -9.02867,-9.028668 0,7.202871 -4.012742,0 0,-14.044597 14.044598,0 0,4.012742 -7.202873,0 9.02867,9.02867 -2.828983,2.828982 M 2.868136,-0.16423724 l 9.02867,9.02866894 0,-7.2028713 4.012742,0 0,14.0445966 -14.0445976,0 0,-4.012742 7.2028721,0 L 0.03915276,2.6647454 2.868136,-0.16423724"
+         id="path4185" />
     </g>
   </g>
   <g
@@ -113,6 +137,28 @@
          id="path3429"
          inkscape:connector-curvature="0" />
     </g>
+  </g>
+  <g
+     inkscape:label="terrain copy"
+     id="g6427"
+     inkscape:groupmode="layer"
+     style="display:none">
+    <path
+       inkscape:connector-curvature="0"
+       d="m 28.194547,17.577033 -7.696833,10.262443 5.849593,7.799457 -3.283982,2.462987 C 19.594619,33.48382 13.827127,25.786987 13.827127,25.786987 l -12.3149323,16.41991 45.1547503,0 -18.472398,-24.629864 z"
+       id="path6431" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer6"
+     inkscape:label="terrain"
+     style="display:none">
+    <path
+       d="M 26.595703,16.375 18,27.839844 13.824219,22.455078 -2.4882812,44.207031 l 53.1542972,0 -22.470704,-29.964843 z"
+       id="path6414"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccccc"
+       style="fill:#999999;fill-opacity:1" />
   </g>
   <g
      style="display:none"
