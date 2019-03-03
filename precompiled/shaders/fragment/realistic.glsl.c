@@ -18,11 +18,11 @@
 
 // VIEW SETTINGS ---------------------------------------------------------------
 uniform float reference_distance;
-uniform float sealevel_mod;
-uniform float sediment_mod;
-uniform float plant_mod;
-uniform float ice_mod;
-uniform float darkness_mod;
+uniform float sealevel_visibility;
+uniform float sediment_visibility;
+uniform float plant_visibility;
+uniform float ice_visibility;
+uniform float darkness_visibility;
 
 // LIGHT SOURCE PROPERTIES -----------------------------------------------------
 uniform vec3  light_rgb_intensity;
@@ -85,9 +85,9 @@ const float AMBIENT_LIGHT_AESTHETIC_BRIGHTNESS_FACTOR = 0.000001;
 void main() {
 
     bool  is_ocean         = sealevel > vDisplacement;
-    bool  is_visible_ocean = sealevel * sealevel_mod > vDisplacement;
-    float ocean_depth      = max(sealevel*sealevel_mod - vDisplacement, 0.);
-    float surface_height   = max(vDisplacement - sealevel*sealevel_mod, 0.);
+    bool  is_visible_ocean = sealevel * sealevel_visibility > vDisplacement;
+    float ocean_depth      = max(sealevel*sealevel_visibility - vDisplacement, 0.);
+    float surface_height   = max(vDisplacement - sealevel*sealevel_visibility, 0.);
     
     // TODO: pass felsic_coverage in from attribute
     // we currently guess how much rock is felsic depending on displacement
@@ -119,7 +119,7 @@ void main() {
     vec3 F0 = vec3(mix(
         is_visible_ocean? get_characteristic_reflectance(WATER_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX) : LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE, 
         get_characteristic_reflectance(SNOW_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX), 
-        ice_coverage*ice_mod
+        ice_coverage*ice_visibility
     ));
 
     // "n" is the surface normal for a perfectly smooth sphere
@@ -129,7 +129,7 @@ void main() {
     vec3 N = normalize(n + vGradient);
 
     // "L" is the normal vector indicating the direction to the light source
-    vec3 L = normalize(mix(n, light_direction, darkness_mod));
+    vec3 L = normalize(mix(n, light_direction, darkness_visibility));
 
     // "V" is the normal vector indicating the direction from the view
     vec3 V = -vViewDirection;
@@ -170,7 +170,7 @@ void main() {
         * get_rgb_fraction_of_light_reflected_on_surface(HV, F0)
         * get_fraction_of_reflected_light_masked_or_shaded(NV, m) 
         * get_fraction_of_microfacets_with_angle(NH, m)
-        * darkness_mod // turn off specular reflection if darkness is disabled
+        * darkness_visibility // turn off specular reflection if darkness is disabled
         / (4.*PI);
 
 
@@ -199,8 +199,8 @@ void main() {
 
     // TODO: more sensible microfacet model
     vec3 color_of_bedrock    = mix(LAND_COLOR_MAFIC, LAND_COLOR_FELSIC, felsic_coverage);
-    vec3 color_with_sediment = mix(color_of_bedrock, mix(LAND_COLOR_SAND, LAND_COLOR_PEAT, organic_coverage), mineral_coverage * sediment_mod);
-    vec3 color_with_plants   = mix(color_with_sediment, JUNGLE_COLOR, !is_ocean? plant_coverage * plant_mod * sediment_mod : 0.);
+    vec3 color_with_sediment = mix(color_of_bedrock, mix(LAND_COLOR_SAND, LAND_COLOR_PEAT, organic_coverage), mineral_coverage * sediment_visibility);
+    vec3 color_with_plants   = mix(color_with_sediment, JUNGLE_COLOR, !is_ocean? plant_coverage * plant_visibility * sediment_visibility : 0.);
 
     // "E_diffuse" is diffuse reflection of any nontrasparent component beneath the transparent surface,
     // It effectively describes diffuse reflection as understood within the phong model of reflectance.
@@ -214,7 +214,7 @@ void main() {
     vec3 E_surface_diffused = 
         mix(E_sea_transmitted + E_sea_scattered, 
             I_surface_refracted * NL * SNOW_COLOR, 
-            ice_coverage*ice_coverage*ice_coverage*ice_mod);
+            ice_coverage*ice_coverage*ice_coverage*ice_visibility);
 
     vec3 E_surface_emitted = get_rgb_intensity_of_light_emitted_by_black_body(vSurfaceTemp);
 

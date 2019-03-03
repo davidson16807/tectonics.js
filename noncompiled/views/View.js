@@ -50,11 +50,11 @@ function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
 	var vectorProjectionView = projectionView.clone();
 
 	var options = {
-		sealevel_mod: 1.0,
-		sediment_mod: 1.0,
-		plant_mod: 1.0,
-		ice_mod: 1.0,
-		darkness_mod: 1.0,
+		sealevel_visibility: 1.0,
+		sediment_visibility: 1.0,
+		plant_visibility: 1.0,
+		ice_visibility: 1.0,
+		darkness_visibility: 1.0,
 		insolation_max: 0,
 	};
 

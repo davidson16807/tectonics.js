@@ -15,7 +15,7 @@ function RealisticWorldView(shader_return_value) {
     var vertexShader = void 0;
     var shaderpass = new THREE.ShaderPass({
         uniforms: {
-            shaderpass_mod:             { type: 'f', value: 0 },
+            shaderpass_visibility:             { type: 'f', value: 0 },
             surface_light:              { type: "t", value: null },
             
             projection_matrix_inverse:  { type: "m4",value: new THREE.Matrix4()         },
@@ -69,11 +69,11 @@ function RealisticWorldView(shader_return_value) {
               view_matrix_inverse:        { type: "m4",value: new THREE.Matrix4() },
               reference_distance: { type: 'f', value: world.radius },
               index:              { type: 'f', value: options.index },
-              sealevel_mod:       { type: 'f', value: options.sealevel_mod },
-              sediment_mod:       { type: 'f', value: options.sediment_mod },
-              plant_mod:          { type: 'f', value: options.plant_mod },
-              ice_mod:            { type: 'f', value: options.ice_mod },
-              darkness_mod:       { type: 'f', value: options.darkness_mod },
+              sealevel_visibility:       { type: 'f', value: options.sealevel_visibility },
+              sediment_visibility:       { type: 'f', value: options.sediment_visibility },
+              plant_visibility:          { type: 'f', value: options.plant_visibility },
+              ice_visibility:            { type: 'f', value: options.ice_visibility },
+              darkness_visibility:       { type: 'f', value: options.darkness_visibility },
 
               // LIGHT PROPERTIES
               light_rgb_intensity:{ type: "v3",value: new THREE.Vector3() },
@@ -194,11 +194,11 @@ function RealisticWorldView(shader_return_value) {
         update_renderpass_uniform  ('projection_matrix_inverse',projection_matrix_inverse);
         update_renderpass_uniform  ('view_matrix_inverse',  gl_state.camera.matrixWorld);
         update_renderpass_uniform  ('reference_distance',   world.radius);
-        update_renderpass_uniform  ('sealevel_mod',         options.sealevel_mod);
-        update_renderpass_uniform  ('sediment_mod',         options.sediment_mod);
-        update_renderpass_uniform  ('plant_mod',            options.plant_mod);
-        update_renderpass_uniform  ('ice_mod',              options.ice_mod);
-        update_renderpass_uniform  ('darkness_mod',         options.darkness_mod);
+        update_renderpass_uniform  ('sealevel_visibility',         options.sealevel_visibility);
+        update_renderpass_uniform  ('sediment_visibility',         options.sediment_visibility);
+        update_renderpass_uniform  ('plant_visibility',            options.plant_visibility);
+        update_renderpass_uniform  ('ice_visibility',              options.ice_visibility);
+        update_renderpass_uniform  ('darkness_visibility',         options.darkness_visibility);
         update_renderpass_uniform  ('index',                options.index);
 
         // LIGHT PROPERTIES
@@ -234,7 +234,7 @@ function RealisticWorldView(shader_return_value) {
         update_shaderpass_uniform  ('projection_matrix_inverse',projection_matrix_inverse);
         update_shaderpass_uniform  ('view_matrix_inverse',      gl_state.camera.matrixWorld);
         update_shaderpass_uniform  ('reference_distance',       world.radius);
-        update_shaderpass_uniform  ('shaderpass_mod',          (options.shaderpass_mod * options.darkness_mod) || 0);
+        update_shaderpass_uniform  ('shaderpass_visibility',          (options.shaderpass_visibility * options.darkness_visibility) || 0);
 
         // LIGHT PROPERTIES
         update_shaderpass_uniform  ('light_rgb_intensity',      light_rgb_intensity_threejs);

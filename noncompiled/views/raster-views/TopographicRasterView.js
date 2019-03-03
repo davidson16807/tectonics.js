@@ -38,7 +38,7 @@ function TopographicRasterView(options) {
 	  		  reference_distance: { type: 'f', value: options.reference_distance || Units.EARTH_RADIUS },
 	  		  world_radius: { type: 'f', value: options.world_radius || Units.EARTH_RADIUS },
 			  sealevel:     { type: 'f', value: 0 },
-			  sealevel_mod: { type: 'f', value: options.sealevel_mod },
+			  sealevel_visibility: { type: 'f', value: options.sealevel_visibility },
 			  index: 		{ type: 'f', value: options.index },
 			},
 			blending: THREE.NoBlending,
@@ -104,7 +104,7 @@ function TopographicRasterView(options) {
 		update_attribute('scalar', 			scaled_raster);
 				
 		update_uniform('world_radius',		options.world_radius || Units.EARTH_RADIUS);
-		update_uniform('sealevel_mod',		options.sealevel_mod);
+		update_uniform('sealevel_visibility',		options.sealevel_visibility);
 		update_uniform('index',				options.index);
 
 		update_vertex_shader(options.vertexShader);

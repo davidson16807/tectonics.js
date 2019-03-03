@@ -6,7 +6,7 @@ varying float vScalar;
 varying vec4 vPosition;
 
 uniform float sealevel;
-uniform float sealevel_mod;
+uniform float sealevel_visibility;
 
 //converts float from 0-1 to a heat map visualtion
 //credit goes to Gaëtan Renaudeau: http://greweb.me/glsl.js/examples/heatmap/
@@ -23,6 +23,6 @@ vec4 heat (float v) {
 void main() {
 	vec4 uncovered 		= heat( vScalar );
 	vec4 ocean 			= mix(vec4(0.), uncovered, 0.5);
-	vec4 sea_covered 	= vDisplacement < sealevel * sealevel_mod? ocean : uncovered;
+	vec4 sea_covered 	= vDisplacement < sealevel * sealevel_visibility? ocean : uncovered;
 	gl_FragColor = sea_covered;
 }

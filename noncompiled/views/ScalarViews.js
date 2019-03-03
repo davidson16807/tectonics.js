@@ -1,9 +1,9 @@
 'use strict';
 
 var scalarViews = {};
-scalarViews.satellite = new RealisticWorldView({canopy_mod: 1, sediment_mod: 1});
-scalarViews.soil      = new RealisticWorldView({canopy_mod: 0, sediment_mod: 1});
-scalarViews.bedrock   = new RealisticWorldView({canopy_mod: 0, sediment_mod: 0});
+scalarViews.satellite = new RealisticWorldView({canopy_visibility: 1, sediment_visibility: 1});
+scalarViews.soil      = new RealisticWorldView({canopy_visibility: 0, sediment_visibility: 1});
+scalarViews.bedrock   = new RealisticWorldView({canopy_visibility: 0, sediment_visibility: 0});
 
 scalarViews.npp 	= new ScalarWorldView( 
 		new ColorscaleRasterView( { minColor: 0xffffff, maxColor: 0x00ff00, min: 0., max: 1. }),
@@ -11,11 +11,11 @@ scalarViews.npp 	= new ScalarWorldView(
 	);
 scalarViews.alt 	= new ScalarWorldView( 
 		new ColorscaleRasterView( { minColor: 0x000000, maxColor: 0xffffff, scaling: true }),
-		(world, result, scratch, options) => (options.sealevel_mod > 0.5? world.lithosphere.surface_height.value() : world.hydrosphere.elevation.value())
+		(world, result, scratch, options) => (options.sealevel_visibility > 0.5? world.lithosphere.surface_height.value() : world.hydrosphere.elevation.value())
 	);
 scalarViews.surface_normal_map 	= new ScalarWorldView( 
 		new SurfaceNormalMapRasterView({}),
-		(world, result, scratch, options) => (options.sealevel_mod > 0.5? world.lithosphere.surface_height.value() : world.lithosphere.displacement.value())
+		(world, result, scratch, options) => (options.sealevel_visibility > 0.5? world.lithosphere.surface_height.value() : world.lithosphere.displacement.value())
 	);
 scalarViews.topographic	= new ScalarWorldView( 
 		new TopographicRasterView( { scaling: true }),

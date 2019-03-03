@@ -924,7 +924,7 @@
 	    		  clearInterval(timer); 
 	    		  v.ocean = v.ocean_target;
 	    		}
-	    		view.uniform('sealevel_mod', (v.ocean)?(1.0):(-0.2));
+	    		view.uniform('sealevel_visibility', (v.ocean)?(1.0):(-0.2));
 	    	}, timestep);
 	    },
 	    setNight: function(value) {
@@ -941,7 +941,7 @@
 	    		  clearInterval(timer); 
 	    		  v.night = v.night_target;
 	    		}
-	    		view.uniform('darkness_mod', (v.night)?(1.0):(0.0));
+	    		view.uniform('darkness_visibility', (v.night)?(1.0):(0.0));
 	    	}, timestep);
 	    },
 	    setSnow: function(value) {
@@ -958,7 +958,7 @@
 	    		  clearInterval(timer); 
 	    		  v.snow = v.snow_target;
 	    		}
-	    		view.uniform('ice_mod', (v.snow)?(1.0):(0.0));
+	    		view.uniform('ice_visibility', (v.snow)?(1.0):(0.0));
 	    	}, timestep);
 	    },
 	    setSediment: function(value) {
@@ -976,7 +976,7 @@
 	    		  clearInterval(timer); 
 	    		  v.sediment = v.sediment_target;
 	    		}
-	    		view.uniform('sediment_mod', (v.sediment)?(1.0):(0.0));
+	    		view.uniform('sediment_visibility', (v.sediment)?(1.0):(0.0));
 	    	}, timestep);
 	    },
 	    setPlant: function(value) {
@@ -993,7 +993,7 @@
 	    		  clearInterval(timer); 
 	    		  v.plant = v.plant_target;
 	    		}
-	    		view.uniform('plant_mod', (v.plant)?(1.0):(0.0));
+	    		view.uniform('plant_visibility', (v.plant)?(1.0):(0.0));
 	    	}, timestep);
 	    },
 	    getClass: function(value, selected) {
@@ -1031,7 +1031,7 @@
 			stddev: 0,
 			x: [],
 			y: [],
-        	sealevel_mod: 1,
+        	sealevel_visibility: 1,
             options: {
             	legend: {display: false}, 
             	animation : false,
@@ -1061,7 +1061,7 @@
 		},
 		methods: {
 			setOceanVisibility(value){
-				this.sealevel_mod = value? 1:0;
+				this.sealevel_visibility = value? 1:0;
 			},
 			round(x) {
 				return Math.round(x);

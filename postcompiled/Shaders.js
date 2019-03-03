@@ -706,11 +706,11 @@ vec3 get_rgb_signal_of_rgb_intensity(in vec3 intensity)
 // floating point precision. 
 // VIEW SETTINGS ---------------------------------------------------------------
 uniform float reference_distance;
-uniform float sealevel_mod;
-uniform float sediment_mod;
-uniform float plant_mod;
-uniform float ice_mod;
-uniform float darkness_mod;
+uniform float sealevel_visibility;
+uniform float sediment_visibility;
+uniform float plant_visibility;
+uniform float ice_visibility;
+uniform float darkness_visibility;
 // LIGHT SOURCE PROPERTIES -----------------------------------------------------
 uniform vec3 light_rgb_intensity;
 uniform vec3 light_direction;
@@ -758,9 +758,9 @@ const float SNOW_REFRACTIVE_INDEX = 1.333;
 const float AMBIENT_LIGHT_AESTHETIC_BRIGHTNESS_FACTOR = 0.000001;
 void main() {
     bool is_ocean = sealevel > vDisplacement;
-    bool is_visible_ocean = sealevel * sealevel_mod > vDisplacement;
-    float ocean_depth = max(sealevel*sealevel_mod - vDisplacement, 0.);
-    float surface_height = max(vDisplacement - sealevel*sealevel_mod, 0.);
+    bool is_visible_ocean = sealevel * sealevel_visibility > vDisplacement;
+    float ocean_depth = max(sealevel*sealevel_visibility - vDisplacement, 0.);
+    float surface_height = max(vDisplacement - sealevel*sealevel_visibility, 0.);
     // TODO: pass felsic_coverage in from attribute
     // we currently guess how much rock is felsic depending on displacement
     // Absorption coefficients are physically based.
@@ -787,14 +787,14 @@ void main() {
     vec3 F0 = vec3(mix(
         is_visible_ocean? get_characteristic_reflectance(WATER_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX) : LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE,
         get_characteristic_reflectance(SNOW_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX),
-        ice_coverage*ice_mod
+        ice_coverage*ice_visibility
     ));
     // "n" is the surface normal for a perfectly smooth sphere
     vec3 n = normalize(vPosition.xyz);
     // "N" is the surface normal
     vec3 N = normalize(n + vGradient);
     // "L" is the normal vector indicating the direction to the light source
-    vec3 L = normalize(mix(n, light_direction, darkness_mod));
+    vec3 L = normalize(mix(n, light_direction, darkness_visibility));
     // "V" is the normal vector indicating the direction from the view
     vec3 V = -vViewDirection;
     // "H" is the halfway vector between normal and view.
@@ -827,7 +827,7 @@ void main() {
         * get_rgb_fraction_of_light_reflected_on_surface(HV, F0)
         * get_fraction_of_reflected_light_masked_or_shaded(NV, m)
         * get_fraction_of_microfacets_with_angle(NH, m)
-        * darkness_mod // turn off specular reflection if darkness is disabled
+        * darkness_visibility // turn off specular reflection if darkness is disabled
         / (4.*PI);
     // "I_surface_refracted" is the fraction of light that is not immediately reflected, 
     //   but penetrates into the material, either to be absorbed, scattered away, 
@@ -850,8 +850,8 @@ void main() {
         * get_rgb_fraction_of_refracted_light_transmitted_through_fluid(NL, ocean_depth, beta_sea_ray, beta_sea_mie, beta_sea_abs);
     // TODO: more sensible microfacet model
     vec3 color_of_bedrock = mix(LAND_COLOR_MAFIC, LAND_COLOR_FELSIC, felsic_coverage);
-    vec3 color_with_sediment = mix(color_of_bedrock, mix(LAND_COLOR_SAND, LAND_COLOR_PEAT, organic_coverage), mineral_coverage * sediment_mod);
-    vec3 color_with_plants = mix(color_with_sediment, JUNGLE_COLOR, !is_ocean? plant_coverage * plant_mod * sediment_mod : 0.);
+    vec3 color_with_sediment = mix(color_of_bedrock, mix(LAND_COLOR_SAND, LAND_COLOR_PEAT, organic_coverage), mineral_coverage * sediment_visibility);
+    vec3 color_with_plants = mix(color_with_sediment, JUNGLE_COLOR, !is_ocean? plant_coverage * plant_visibility * sediment_visibility : 0.);
     // "E_diffuse" is diffuse reflection of any nontrasparent component beneath the transparent surface,
     // It effectively describes diffuse reflection as understood within the phong model of reflectance.
     vec3 E_diffuse = I_sea_trasmitted * NL * get_rgb_intensity_of_rgb_signal(color_with_plants);
@@ -862,7 +862,7 @@ void main() {
     vec3 E_surface_diffused =
         mix(E_sea_transmitted + E_sea_scattered,
             I_surface_refracted * NL * SNOW_COLOR,
-            ice_coverage*ice_coverage*ice_coverage*ice_mod);
+            ice_coverage*ice_coverage*ice_coverage*ice_visibility);
     vec3 E_surface_emitted = get_rgb_intensity_of_light_emitted_by_black_body(vSurfaceTemp);
     // NOTE: we do not filter E_total by atmospheric scattering
     //   that job is done by the atmospheric shader pass, in "atmosphere.glsl.c"
@@ -880,7 +880,7 @@ varying float vIceCoverage;
 varying float vScalar;
 varying vec4 vPosition;
 uniform float sealevel;
-uniform float sealevel_mod;
+uniform float sealevel_visibility;
 void main() {
  vec4 uncovered = mix(
   vec4(@MINCOLOR,1.),
@@ -888,7 +888,7 @@ void main() {
   vScalar
  );
  vec4 ocean = mix(vec4(0.), uncovered, 0.5);
- vec4 sea_covered = vDisplacement < sealevel * sealevel_mod? ocean : uncovered;
+ vec4 sea_covered = vDisplacement < sealevel * sealevel_visibility? ocean : uncovered;
  gl_FragColor = sea_covered;
 }
 `;
@@ -899,7 +899,7 @@ varying float vIceCoverage;
 varying float vScalar;
 varying vec4 vPosition;
 uniform float sealevel;
-uniform float sealevel_mod;
+uniform float sealevel_visibility;
 //converts float from 0-1 to a heat map visualtion
 //credit goes to Gaëtan Renaudeau: http://greweb.me/glsl.js/examples/heatmap/
 vec4 heat (float v) {
@@ -914,7 +914,7 @@ vec4 heat (float v) {
 void main() {
  vec4 uncovered = heat( vScalar );
  vec4 ocean = mix(vec4(0.), uncovered, 0.5);
- vec4 sea_covered = vDisplacement < sealevel * sealevel_mod? ocean : uncovered;
+ vec4 sea_covered = vDisplacement < sealevel * sealevel_visibility? ocean : uncovered;
  gl_FragColor = sea_covered;
 }
 `;
@@ -925,7 +925,7 @@ varying float vIceCoverage;
 varying float vScalar;
 varying vec4 vPosition;
 uniform float sealevel;
-uniform float sealevel_mod;
+uniform float sealevel_visibility;
 //converts a float ranging from [-1,1] to a topographic map visualization
 //credit goes to Gaëtan Renaudeau: http://greweb.me/glsl.js/examples/heatmap/
 void main() {
@@ -975,7 +975,7 @@ varying float vDisplacement;
 varying vec3 vGradient;
 varying vec4 vPosition;
 uniform float sealevel;
-uniform float sealevel_mod;
+uniform float sealevel_visibility;
 void main() {
     // CODE to generate a tangent-space normal map:
  // "n" is the surface normal for a perfectly smooth sphere
@@ -1519,7 +1519,7 @@ vec3 get_rgb_signal_of_rgb_intensity(in vec3 intensity)
 }
 varying vec2 vUv;
 uniform sampler2D surface_light;
-uniform float shaderpass_mod;
+uniform float shaderpass_visibility;
 // Determines the length of a unit of distance within the view, in meters, 
 // it is generally the radius of whatever planet's the focus for the scene.
 // The view uses different units for length to prevent certain issues with
@@ -1586,7 +1586,7 @@ void main() {
             background_rgb_intensity,
             atmosphere_scale_height, beta_ray, beta_mie, beta_abs
         );
-    rgb_intensity = mix(background_rgb_intensity, rgb_intensity, shaderpass_mod);
+    rgb_intensity = mix(background_rgb_intensity, rgb_intensity, shaderpass_visibility);
     // TODO: move this to a separate shader pass!
     // see https://learnopengl.com/Advanced-Lighting/HDR for an intro to tone mapping
     float exposure_intensity = 150.; // Watts/m^2

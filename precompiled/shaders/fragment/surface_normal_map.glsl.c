@@ -4,7 +4,7 @@ varying vec3  vGradient;
 varying vec4  vPosition;
 
 uniform float sealevel;
-uniform float sealevel_mod;
+uniform float sealevel_visibility;
 
 void main() {
     // CODE to generate a tangent-space normal map:

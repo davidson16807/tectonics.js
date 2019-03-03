@@ -6,7 +6,7 @@ varying float vScalar;
 varying vec4 vPosition;
 
 uniform float sealevel;
-uniform float sealevel_mod;
+uniform float sealevel_visibility;
 
 //converts a float ranging from [-1,1] to a topographic map visualization
 //credit goes to Gaëtan Renaudeau: http://greweb.me/glsl.js/examples/heatmap/

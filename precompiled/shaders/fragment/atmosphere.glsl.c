@@ -15,7 +15,7 @@
 varying vec2  vUv;
 uniform sampler2D surface_light;
 
-uniform float shaderpass_mod;
+uniform float shaderpass_visibility;
 
 // Determines the length of a unit of distance within the view, in meters, 
 // it is generally the radius of whatever planet's the focus for the scene.
@@ -100,7 +100,7 @@ void main() {
             atmosphere_scale_height,    beta_ray,       beta_mie,          beta_abs
         );
 
-    rgb_intensity = mix(background_rgb_intensity, rgb_intensity, shaderpass_mod);
+    rgb_intensity = mix(background_rgb_intensity, rgb_intensity, shaderpass_visibility);
 
     // TODO: move this to a separate shader pass!
     // see https://learnopengl.com/Advanced-Lighting/HDR for an intro to tone mapping

@@ -6,7 +6,7 @@ varying float vScalar;
 varying vec4 vPosition;
 
 uniform float sealevel;
-uniform float sealevel_mod;
+uniform float sealevel_visibility;
 
 //converts float from 0-1 to a heat map visualtion
 //credit goes to Gaëtan Renaudeau: http://greweb.me/glsl.js/examples/heatmap/
