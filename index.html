@@ -184,6 +184,26 @@
 						Snow
 					</button>
 				</li>
+				<li>
+					<button type="button" 
+						class="btn btn-default btn-xs" 
+						v-if="isSelected('satellite')"
+						v-bind:class="{active: sediment}" 
+						v-on:click="setSediment(!sediment? 1:0)">
+						<img src="icons/rock.svg" height="16em" width="16em"/>
+						Sediment
+					</button>
+				</li>
+				<li>
+					<button type="button" 
+						class="btn btn-default btn-xs" 
+						v-if="isSelected('satellite')"
+						v-bind:class="{active: plant}" 
+						v-on:click="setPlant(!plant? 1:0)">
+						<img src="icons/dirt.svg" height="16em" width="16em"/>
+						Canopy
+					</button>
+				</li>
 				<li role="separator" class="divider"></li> 
 				<li v-for="option in options">
 					<button type="button" 
@@ -854,12 +874,14 @@
 	    night_target: 1,
 	    snow: 1,
 	    snow_target: 1,
+	    sediment: 1,
+	    sediment_target: 1,
+	    plant: 1,
+	    plant_target: 1,
 	    selected: 'satellite',
 	    vectorView: 'disabled',
 	    options: [
 	      {name: 'Satellite', value: 'satellite', icon: 'icons/satellite-variant.svg' },
-	      {name: 'Sediment', value: 'soil', icon: 'icons/dirt.svg'},
-	      {name: 'Bedrock', value: 'bedrock', icon: 'icons/rock.svg'},
 	      {name: 'Height map', value: 'alt', icon: 'icons/terrain.svg'},
 	      {name: 'Topographic map', value: 'topographic', icon: 'icons/terrain.svg'},
 	      {name: 'Normal map', value: 'surface_normal_map', icon: 'icons/terrain.svg'},
@@ -893,7 +915,7 @@
 	    	// TODO: hook this up to actual fps
 	    	var fps = 30
 	    	var timestep = 1000/fps; 	//milliseconds
-	    	var duration = 500; 		//milliseconds
+	    	var duration = 250; 		//milliseconds
 	    	var increment = timestep/duration;
 	    	chartVue.setOceanVisibility(value);
 	    	var timer = setInterval(function() {
@@ -902,7 +924,7 @@
 	    		  clearInterval(timer); 
 	    		  v.ocean = v.ocean_target;
 	    		}
-	    		view.uniform('sealevel_mod', (v.ocean)?(1.0):(-1.0));
+	    		view.uniform('sealevel_mod', (v.ocean)?(1.0):(-0.2));
 	    	}, timestep);
 	    },
 	    setNight: function(value) {
@@ -911,7 +933,7 @@
 	    	// TODO: hook this up to actual fps
 	    	var fps = 30
 	    	var timestep = 1000/fps; 	//milliseconds
-	    	var duration = 500; 		//milliseconds
+	    	var duration = 250; 		//milliseconds
 	    	var increment = timestep/duration;
 	    	var timer = setInterval(function() {
 	    		v.night += Math.sign(v.night_target - v.night) * increment
@@ -928,7 +950,7 @@
 	    	// TODO: hook this up to actual fps
 	    	var fps 		= 30
 	    	var timestep 	= 1000/fps;	//milliseconds
-	    	var duration 	= 500; 		//milliseconds
+	    	var duration 	= 250; 		//milliseconds
 	    	var increment = timestep/duration;
 	    	var timer = setInterval(function() {
 	    		v.snow += Math.sign(v.snow_target - v.snow) * increment
@@ -937,6 +959,41 @@
 	    		  v.snow = v.snow_target;
 	    		}
 	    		view.uniform('ice_mod', (v.snow)?(1.0):(0.0));
+	    	}, timestep);
+	    },
+	    setSediment: function(value) {
+	    	this.sediment_target = value;
+	    	var v = this;
+	    	// TODO: hook this up to actual fps
+	    	var fps 		= 30
+	    	var timestep 	= 1000/fps;	//milliseconds
+	    	var duration 	= 250; 		//milliseconds
+	    	var increment = timestep/duration;
+	    	v.setPlant(0);
+	    	var timer = setInterval(function() {
+	    		v.sediment += Math.sign(v.sediment_target - v.sediment) * increment
+	    		if (Math.abs(v.sediment_target - v.sediment) < 2*increment) {
+	    		  clearInterval(timer); 
+	    		  v.sediment = v.sediment_target;
+	    		}
+	    		view.uniform('sediment_mod', (v.sediment)?(1.0):(0.0));
+	    	}, timestep);
+	    },
+	    setPlant: function(value) {
+	    	this.plant_target = value;
+	    	var v = this;
+	    	// TODO: hook this up to actual fps
+	    	var fps 		= 30
+	    	var timestep 	= 1000/fps;	//milliseconds
+	    	var duration 	= 250; 		//milliseconds
+	    	var increment = timestep/duration;
+	    	var timer = setInterval(function() {
+	    		v.plant += Math.sign(v.plant_target - v.plant) * increment
+	    		if (Math.abs(v.plant_target - v.plant) < 2*increment) {
+	    		  clearInterval(timer); 
+	    		  v.plant = v.plant_target;
+	    		}
+	    		view.uniform('plant_mod', (v.plant)?(1.0):(0.0));
 	    	}, timestep);
 	    },
 	    getClass: function(value, selected) {

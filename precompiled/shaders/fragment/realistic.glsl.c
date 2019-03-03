@@ -84,9 +84,10 @@ const float AMBIENT_LIGHT_AESTHETIC_BRIGHTNESS_FACTOR = 0.000001;
 
 void main() {
 
-    bool  is_ocean       = sealevel * sealevel_mod > vDisplacement;
-    float ocean_depth    = max(sealevel*sealevel_mod - vDisplacement, 0.);
-    float surface_height = max(vDisplacement - sealevel*sealevel_mod, 0.);
+    bool  is_ocean         = sealevel > vDisplacement;
+    bool  is_visible_ocean = sealevel * sealevel_mod > vDisplacement;
+    float ocean_depth      = max(sealevel*sealevel_mod - vDisplacement, 0.);
+    float surface_height   = max(vDisplacement - sealevel*sealevel_mod, 0.);
     
     // TODO: pass felsic_coverage in from attribute
     // we currently guess how much rock is felsic depending on displacement
@@ -96,7 +97,7 @@ void main() {
     float mineral_coverage  = vDisplacement > sealevel? smoothstep(sealevel + 10000., sealevel, vDisplacement) : 0.;
     float organic_coverage  = smoothstep(30., -30., vSurfaceTemp); 
     float ice_coverage      = vIceCoverage;
-    float plant_coverage    = vPlantCoverage * (!is_ocean? 1. : 0.);
+    float plant_coverage    = vPlantCoverage * (!is_visible_ocean? 1. : 0.);
 
     // "beta_sea_*" variables are the scattering coefficients for seawater
     vec3  beta_sea_ray = sea_rayleigh_scattering_coefficients;
@@ -110,13 +111,13 @@ void main() {
 
     // "m" is the "ROOT_MEAN_SLOPE_SQUARED", the root mean square of the slope of all microfacets 
     // see https://www.desmos.com/calculator/0tqwgsjcje for a way to estimate it using a function to describe the surface
-    float m = is_ocean? WATER_ROOT_MEAN_SLOPE_SQUARED : mix(LAND_ROOT_MEAN_SLOPE_SQUARED, JUNGLE_ROOT_MEAN_SLOPE_SQUARED, plant_coverage);
+    float m = is_visible_ocean? WATER_ROOT_MEAN_SLOPE_SQUARED : mix(LAND_ROOT_MEAN_SLOPE_SQUARED, JUNGLE_ROOT_MEAN_SLOPE_SQUARED, plant_coverage);
 
     // "F0" is the characteristic fresnel reflectance.
     //   it is the fraction of light that's immediately reflected when striking the surface head on.
     // TODO: model refractive index as a function of wavelength
     vec3 F0 = vec3(mix(
-        is_ocean? get_characteristic_reflectance(WATER_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX) : LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE, 
+        is_visible_ocean? get_characteristic_reflectance(WATER_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX) : LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE, 
         get_characteristic_reflectance(SNOW_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX), 
         ice_coverage*ice_mod
     ));
