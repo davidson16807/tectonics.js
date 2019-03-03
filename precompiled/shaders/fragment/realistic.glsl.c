@@ -125,7 +125,7 @@ void main() {
     vec3 N = normalize(normalize(vPosition.xyz) + vGradient);
 
     // "L" is the normal vector indicating the direction to the light source
-    vec3 L = light_direction;
+    vec3 L = normalize(mix(N, light_direction, darkness_mod));
 
     // "V" is the normal vector indicating the direction from the view
     vec3 V = -vViewDirection;
@@ -156,7 +156,7 @@ void main() {
 
     // "I_surface" is the intensity of light that reaches the surface after being filtered by atmosphere
     vec3 I_surface = I_sun 
-        * get_rgb_fraction_of_refracted_light_transmitted_through_atmosphere(
+      * get_rgb_fraction_of_refracted_light_transmitted_through_atmosphere(
             // NOTE: we nudge the origin of light ray by a small amount so that collision isn't detected with the planet
             1.000001 * position, L, 3.*world_radius,
             world_position, world_radius, atmosphere_scale_height, beta_air_ray, beta_air_mie, beta_air_abs
@@ -166,7 +166,10 @@ void main() {
         * get_rgb_fraction_of_light_reflected_on_surface(HV, F0)
         * get_fraction_of_reflected_light_masked_or_shaded(NV, m) 
         * get_fraction_of_microfacets_with_angle(NH, m)
+        * darkness_mod // turn off specular reflection if darkness is disabled
         / (4.*PI);
+
+
 
     // "I_surface_refracted" is the fraction of light that is not immediately reflected, 
     //   but penetrates into the material, either to be absorbed, scattered away, 
@@ -219,13 +222,4 @@ void main() {
         + E_surface_diffused;
 
     gl_FragColor = vec4(get_rgb_signal_of_rgb_intensity(E_total/I_max),1);
-
-    // // CODE to generate a tangent-space normal map:
-    // vec3 n = normalize(vPosition.xyz);
-    // vec3 y = vec3(0,1,0);
-    // vec3 u = normalize(cross(n, y));
-    // vec3 v = normalize(cross(n, u));
-    // vec3 w = n;
-    // vec3 g = normalize(vGradient);
-    // gl_FragColor = vec4((2.*vec3(dot(N, u), dot(N, v), dot(N, w))-1.), 1);
 }

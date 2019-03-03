@@ -234,7 +234,7 @@ function RealisticWorldView(shader_return_value) {
         update_shaderpass_uniform  ('projection_matrix_inverse',projection_matrix_inverse);
         update_shaderpass_uniform  ('view_matrix_inverse',      gl_state.camera.matrixWorld);
         update_shaderpass_uniform  ('reference_distance',       world.radius);
-        update_shaderpass_uniform  ('shaderpass_mod',           options.shaderpass_mod);
+        update_shaderpass_uniform  ('shaderpass_mod',           options.shaderpass_mod * options.darkness_mod);
 
         // LIGHT PROPERTIES
         update_shaderpass_uniform  ('light_rgb_intensity',      light_rgb_intensity_threejs);
