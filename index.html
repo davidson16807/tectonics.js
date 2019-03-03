@@ -169,9 +169,9 @@
 						class="btn btn-default btn-xs" 
 						v-if="isSelected('satellite')"
 						v-bind:class="{active: night}" 
-						v-on:click="setNight(!night? 1:0)">
+						v-on:click="setShadows(!night? 1:0)">
 						<img src="icons/weather-night.svg" height="16em" width="16em"/>
-						Night
+						Shadows
 					</button>
 				</li>
 				<li>
@@ -924,10 +924,10 @@
 	    		  clearInterval(timer); 
 	    		  v.ocean = v.ocean_target;
 	    		}
-	    		view.uniform('sealevel_visibility', (v.ocean)?(1.0):(-0.2));
+	    		view.uniform('ocean_visibility', (v.ocean)?(1.0):(-0.2));
 	    	}, timestep);
 	    },
-	    setNight: function(value) {
+	    setShadows: function(value) {
 	    	this.night_target = value;
 	    	var v = this;
 	    	// TODO: hook this up to actual fps
@@ -941,7 +941,7 @@
 	    		  clearInterval(timer); 
 	    		  v.night = v.night_target;
 	    		}
-	    		view.uniform('darkness_visibility', (v.night)?(1.0):(0.0));
+	    		view.uniform('shadow_visibility', (v.night)?(1.0):(0.0));
 	    	}, timestep);
 	    },
 	    setSnow: function(value) {
@@ -958,7 +958,7 @@
 	    		  clearInterval(timer); 
 	    		  v.snow = v.snow_target;
 	    		}
-	    		view.uniform('ice_visibility', (v.snow)?(1.0):(0.0));
+	    		view.uniform('snow_visibility', (v.snow)?(1.0):(0.0));
 	    	}, timestep);
 	    },
 	    setSediment: function(value) {
@@ -1031,7 +1031,7 @@
 			stddev: 0,
 			x: [],
 			y: [],
-        	sealevel_visibility: 1,
+        	ocean_visibility: 1,
             options: {
             	legend: {display: false}, 
             	animation : false,
@@ -1061,7 +1061,7 @@
 		},
 		methods: {
 			setOceanVisibility(value){
-				this.sealevel_visibility = value? 1:0;
+				this.ocean_visibility = value? 1:0;
 			},
 			round(x) {
 				return Math.round(x);

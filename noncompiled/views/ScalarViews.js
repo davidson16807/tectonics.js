@@ -11,11 +11,11 @@ scalarViews.npp 	= new ScalarWorldView(
 	);
 scalarViews.alt 	= new ScalarWorldView( 
 		new ColorscaleRasterView( { minColor: 0x000000, maxColor: 0xffffff, scaling: true }),
-		(world, result, scratch, options) => (options.sealevel_visibility > 0.5? world.lithosphere.surface_height.value() : world.hydrosphere.elevation.value())
+		(world, result, scratch, options) => (options.ocean_visibility > 0.5? world.lithosphere.surface_height.value() : world.hydrosphere.elevation.value())
 	);
 scalarViews.surface_normal_map 	= new ScalarWorldView( 
 		new SurfaceNormalMapRasterView({}),
-		(world, result, scratch, options) => (options.sealevel_visibility > 0.5? world.lithosphere.surface_height.value() : world.lithosphere.displacement.value())
+		(world, result, scratch, options) => (options.ocean_visibility > 0.5? world.lithosphere.surface_height.value() : world.lithosphere.displacement.value())
 	);
 scalarViews.topographic	= new ScalarWorldView( 
 		new TopographicRasterView( { scaling: true }),

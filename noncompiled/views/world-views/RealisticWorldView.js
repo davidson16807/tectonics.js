@@ -16,7 +16,7 @@ function RealisticWorldView(shader_return_value) {
     var shaderpass = new THREE.ShaderPass({
         uniforms: {
             shaderpass_visibility:             { type: 'f', value: 0 },
-            surface_light:              { type: "t", value: null },
+            background_rgb_intensity_texture:  { type: "t", value: null },
             
             projection_matrix_inverse:  { type: "m4",value: new THREE.Matrix4()         },
             view_matrix_inverse:        { type: "m4",value: new THREE.Matrix4()         },
@@ -30,13 +30,13 @@ function RealisticWorldView(shader_return_value) {
             world_radius:               { type: "f", value: Units.EARTH_RADIUS          },
 
             atmosphere_scale_height: { type: "f", value: 0. },
-            atmosphere_surface_rayleigh_scattering_coefficients: { type: "v3", value: new THREE.Vector3() },
-            atmosphere_surface_mie_scattering_coefficients:      { type: "v3", value: new THREE.Vector3() },
-            atmosphere_surface_absorption_coefficients:          { type: "v3", value: new THREE.Vector3() },
+            surface_air_rayleigh_scattering_coefficients: { type: "v3", value: new THREE.Vector3() },
+            surface_air_mie_scattering_coefficients:      { type: "v3", value: new THREE.Vector3() },
+            surface_air_absorption_coefficients:          { type: "v3", value: new THREE.Vector3() },
         },
         vertexShader:   vertexShaders.passthrough,
         fragmentShader: fragmentShaders.atmosphere,
-    }, 'surface_light');
+    }, 'background_rgb_intensity_texture');
     shaderpass.renderToScreen = true;
 
     function create_mesh(world, options) {
@@ -68,12 +68,12 @@ function RealisticWorldView(shader_return_value) {
               projection_matrix_inverse:  { type: "m4",value: new THREE.Matrix4() },
               view_matrix_inverse:        { type: "m4",value: new THREE.Matrix4() },
               reference_distance: { type: 'f', value: world.radius },
-              index:              { type: 'f', value: options.index },
-              sealevel_visibility:       { type: 'f', value: options.sealevel_visibility },
+              map_projection_offset:              { type: 'f', value: options.map_projection_offset },
+              ocean_visibility:       { type: 'f', value: options.ocean_visibility },
               sediment_visibility:       { type: 'f', value: options.sediment_visibility },
               plant_visibility:          { type: 'f', value: options.plant_visibility },
-              ice_visibility:            { type: 'f', value: options.ice_visibility },
-              darkness_visibility:       { type: 'f', value: options.darkness_visibility },
+              snow_visibility:            { type: 'f', value: options.snow_visibility },
+              shadow_visibility:       { type: 'f', value: options.shadow_visibility },
 
               // LIGHT PROPERTIES
               light_rgb_intensity:{ type: "v3",value: new THREE.Vector3() },
@@ -86,15 +86,15 @@ function RealisticWorldView(shader_return_value) {
 
               // ATMOSPHERE PROPERTIES
               atmosphere_scale_height: { type: "f", value: 0. },
-              atmosphere_surface_rayleigh_scattering_coefficients: { type: "v3", value: new THREE.Vector3() },
-              atmosphere_surface_mie_scattering_coefficients:      { type: "v3", value: new THREE.Vector3() },
-              atmosphere_surface_absorption_coefficients:          { type: "v3", value: new THREE.Vector3() },
+              surface_air_rayleigh_scattering_coefficients: { type: "v3", value: new THREE.Vector3() },
+              surface_air_mie_scattering_coefficients:      { type: "v3", value: new THREE.Vector3() },
+              surface_air_absorption_coefficients:          { type: "v3", value: new THREE.Vector3() },
 
               // SEA PROPERTIES
               sealevel:           { type: 'f', value: 0 },
-              sea_rayleigh_scattering_coefficients: { type: "v3", value: new THREE.Vector3() },
-              sea_mie_scattering_coefficients:      { type: "v3", value: new THREE.Vector3() },
-              sea_absorption_coefficients:          { type: "v3", value: new THREE.Vector3() },
+              ocean_rayleigh_scattering_coefficients: { type: "v3", value: new THREE.Vector3() },
+              ocean_mie_scattering_coefficients:      { type: "v3", value: new THREE.Vector3() },
+              ocean_absorption_coefficients:          { type: "v3", value: new THREE.Vector3() },
 
             },
             blending: THREE.NoBlending,
@@ -178,11 +178,11 @@ function RealisticWorldView(shader_return_value) {
             Thermodynamics.BOLTZMANN_CONSTANT * atmosphere_temperature / (world.surface_gravity * average_molecular_mass_of_air);
 
         // earth's surface density times fraction of atmosphere that is not water vapor (by mass)
-        var atmosphere_surface_rayleigh_scatterer_density = 1.217*Units.KILOGRAM * (1.0 - 1.2e15/5.1e18);
+        var surface_air_rayleigh_scatterer_density = 1.217*Units.KILOGRAM * (1.0 - 1.2e15/5.1e18);
         // earth's surface density times fraction of atmosphere that is water vapor (by mass)
-        var atmosphere_surface_mie_scatterer_density      = 1.217*Units.KILOGRAM * (      1.2e15/5.1e18);
+        var surface_air_mie_scatterer_density      = 1.217*Units.KILOGRAM * (      1.2e15/5.1e18);
         // NOTE: NOT USED, intended to eventually represent absorption
-        var atmosphere_surface_absorber_density = 0;
+        var surface_air_absorber_density = 0;
 
         var gradient = ScalarField.gradient(world.lithosphere.surface_height.value());
         VectorField.div_scalar(gradient, world.radius, gradient);
@@ -194,12 +194,12 @@ function RealisticWorldView(shader_return_value) {
         update_renderpass_uniform  ('projection_matrix_inverse',projection_matrix_inverse);
         update_renderpass_uniform  ('view_matrix_inverse',  gl_state.camera.matrixWorld);
         update_renderpass_uniform  ('reference_distance',   world.radius);
-        update_renderpass_uniform  ('sealevel_visibility',         options.sealevel_visibility);
+        update_renderpass_uniform  ('ocean_visibility',         options.ocean_visibility);
         update_renderpass_uniform  ('sediment_visibility',         options.sediment_visibility);
         update_renderpass_uniform  ('plant_visibility',            options.plant_visibility);
-        update_renderpass_uniform  ('ice_visibility',              options.ice_visibility);
-        update_renderpass_uniform  ('darkness_visibility',         options.darkness_visibility);
-        update_renderpass_uniform  ('index',                options.index);
+        update_renderpass_uniform  ('snow_visibility',              options.snow_visibility);
+        update_renderpass_uniform  ('shadow_visibility',         options.shadow_visibility);
+        update_renderpass_uniform  ('map_projection_offset',                options.map_projection_offset);
 
         // LIGHT PROPERTIES
         update_renderpass_uniform  ('light_rgb_intensity',  light_rgb_intensity_threejs);
@@ -217,15 +217,15 @@ function RealisticWorldView(shader_return_value) {
 
         // ATMOSPHERE PROPERTIES
         update_renderpass_uniform  ('atmosphere_scale_height', atmosphere_scale_height  );
-        update_renderpass_uniform  ('atmosphere_surface_rayleigh_scattering_coefficients', new THREE.Vector3(5.20e-6, 1.21e-5, 2.96e-5));
-        update_renderpass_uniform  ('atmosphere_surface_mie_scattering_coefficients',      new THREE.Vector3(2.1e-8,  2.1e-8,  2.1e-8 ));
-        update_renderpass_uniform  ('atmosphere_surface_absorption_coefficients',          new THREE.Vector3(0));
+        update_renderpass_uniform  ('surface_air_rayleigh_scattering_coefficients', new THREE.Vector3(5.20e-6, 1.21e-5, 2.96e-5));
+        update_renderpass_uniform  ('surface_air_mie_scattering_coefficients',      new THREE.Vector3(2.1e-8,  2.1e-8,  2.1e-8 ));
+        update_renderpass_uniform  ('surface_air_absorption_coefficients',          new THREE.Vector3(0));
 
         // SEA PROPERTIES
         update_renderpass_uniform  ('sealevel',             world.hydrosphere.sealevel.value());
-        update_renderpass_uniform  ('sea_rayleigh_scattering_coefficients', new THREE.Vector3(0.005, 0.01, 0.03));
-        update_renderpass_uniform  ('sea_mie_scattering_coefficients',      new THREE.Vector3(0));
-        update_renderpass_uniform  ('sea_absorption_coefficients',          new THREE.Vector3(3e-1, 1e-1, 2e-2));
+        update_renderpass_uniform  ('ocean_rayleigh_scattering_coefficients', new THREE.Vector3(0.005, 0.01, 0.03));
+        update_renderpass_uniform  ('ocean_mie_scattering_coefficients',      new THREE.Vector3(0));
+        update_renderpass_uniform  ('ocean_absorption_coefficients',          new THREE.Vector3(3e-1, 1e-1, 2e-2));
 
 
         // SHADERPASS PROPERTIES -----------------------------------------------
@@ -234,7 +234,7 @@ function RealisticWorldView(shader_return_value) {
         update_shaderpass_uniform  ('projection_matrix_inverse',projection_matrix_inverse);
         update_shaderpass_uniform  ('view_matrix_inverse',      gl_state.camera.matrixWorld);
         update_shaderpass_uniform  ('reference_distance',       world.radius);
-        update_shaderpass_uniform  ('shaderpass_visibility',          (options.shaderpass_visibility * options.darkness_visibility) || 0);
+        update_shaderpass_uniform  ('shaderpass_visibility',          (options.shaderpass_visibility * options.shadow_visibility) || 0);
 
         // LIGHT PROPERTIES
         update_shaderpass_uniform  ('light_rgb_intensity',      light_rgb_intensity_threejs);
@@ -247,9 +247,9 @@ function RealisticWorldView(shader_return_value) {
 
         // ATMOSPHERE PROPERTIES
         update_shaderpass_uniform  ('atmosphere_scale_height',  atmosphere_scale_height  );
-        update_shaderpass_uniform  ('atmosphere_surface_rayleigh_scattering_coefficients', new THREE.Vector3(5.20e-6, 1.21e-5, 2.96e-5));
-        update_shaderpass_uniform  ('atmosphere_surface_mie_scattering_coefficients',      new THREE.Vector3(2.1e-8,  2.1e-8,  2.1e-8 ));
-        update_shaderpass_uniform  ('atmosphere_surface_absorption_coefficients',          new THREE.Vector3(0));
+        update_shaderpass_uniform  ('surface_air_rayleigh_scattering_coefficients', new THREE.Vector3(5.20e-6, 1.21e-5, 2.96e-5));
+        update_shaderpass_uniform  ('surface_air_mie_scattering_coefficients',      new THREE.Vector3(2.1e-8,  2.1e-8,  2.1e-8 ));
+        update_shaderpass_uniform  ('surface_air_absorption_coefficients',          new THREE.Vector3(0));
     };
 
     this.removeFromScene = function(gl_state) {

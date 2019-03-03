@@ -19,12 +19,12 @@ function MapProjectionView(vertexShader) {
 			subview1.updateScene(gl_state, model, {
 				...options, 
 				vertexShader: 		vertexShader, 
-				index: 				-1,
+				map_projection_offset: 				-1,
 			});
 			subview2.updateScene(gl_state, model, {
 				...options, 
 				vertexShader: 		vertexShader, 
-				index:  			1,
+				map_projection_offset:  			1,
 			});
 		}
 	};

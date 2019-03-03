@@ -7,16 +7,16 @@ uniform mat4 projection_matrix_inverse;
 uniform mat4 view_matrix_inverse;
 attribute float displacement;
 attribute vec3 gradient;
-attribute float ice_coverage;
 attribute float surface_temperature;
+attribute float ice_coverage;
 attribute float plant_coverage;
 attribute float scalar;
 attribute vec3 vector;
 attribute float vector_fraction_traversed;
 varying float displacement_v;
 varying vec3 gradient_v;
-varying float ice_coverage_v;
 varying float surface_temperature_v;
+varying float ice_coverage_v;
 varying float plant_coverage_v;
 varying float scalar_v;
 varying float vector_fraction_traversed_v;
@@ -28,7 +28,7 @@ uniform float sealevel;
 uniform float world_radius;
 // radius of a reference world, generally the focus of the scene
 uniform float reference_distance;
-uniform float index;
+uniform float map_projection_offset;
 uniform float animation_phase_angle;
 float lon(vec3 pos) {
  return atan(-pos.z, pos.x) + PI;
@@ -45,14 +45,14 @@ void main() {
  scalar_v = scalar;
  position_v = modelMatrix * vec4( position, 1.0 );
  float height = displacement > sealevel? 0.005 : 0.0;
- float index_offset = INDEX_SPACING * index;
+ float index_offset = INDEX_SPACING * map_projection_offset;
  float focus = lon(cameraPosition) + index_offset;
  float lon_focused = mod(lon(position_v.xyz) - focus, 2.*PI) - PI;
- float lat_focused = lat(position_v.xyz); //+ (index*PI);
+ float lat_focused = lat(position_v.xyz); //+ (map_projection_offset*PI);
  bool is_on_edge = lon_focused > PI*0.9 || lon_focused < -PI*0.9;
  vec4 displaced = vec4(
   lon_focused + index_offset,
-  lat(position_v.xyz), //+ (index*PI), 
+  lat(position_v.xyz), //+ (map_projection_offset*PI), 
   is_on_edge? 0. : length(position),
   1);
  mat4 scaleMatrix = mat4(1);
@@ -74,16 +74,16 @@ uniform mat4 projection_matrix_inverse;
 uniform mat4 view_matrix_inverse;
 attribute float displacement;
 attribute vec3 gradient;
-attribute float ice_coverage;
 attribute float surface_temperature;
+attribute float ice_coverage;
 attribute float plant_coverage;
 attribute float scalar;
 attribute vec3 vector;
 attribute float vector_fraction_traversed;
 varying float displacement_v;
 varying vec3 gradient_v;
-varying float ice_coverage_v;
 varying float surface_temperature_v;
+varying float ice_coverage_v;
 varying float plant_coverage_v;
 varying float scalar_v;
 varying float vector_fraction_traversed_v;
@@ -95,7 +95,7 @@ uniform float sealevel;
 uniform float world_radius;
 // radius of a reference world, generally the focus of the scene
 uniform float reference_distance;
-uniform float index;
+uniform float map_projection_offset;
 uniform float animation_phase_angle;
 float lon(vec3 pos) {
     return atan(-pos.z, pos.x) + PI;
@@ -111,10 +111,10 @@ void main() {
     surface_temperature_v = surface_temperature;
     scalar_v = scalar;
     position_v = modelMatrix * vec4( position, 1.0 );
-    float index_offset = INDEX_SPACING * index;
+    float index_offset = INDEX_SPACING * map_projection_offset;
     float focus = lon(cameraPosition) + index_offset;
     float lon_focused = mod(lon(position_v.xyz) - focus, 2.*PI) - PI + index_offset;
-    float lat_focused = lat(position_v.xyz); //+ (index*PI);
+    float lat_focused = lat(position_v.xyz); //+ (map_projection_offset*PI);
     float height = displacement > sealevel? 0.005 : 0.0;
     gl_Position = vec4(
         lon_focused / PI,
@@ -137,16 +137,16 @@ uniform mat4 projection_matrix_inverse;
 uniform mat4 view_matrix_inverse;
 attribute float displacement;
 attribute vec3 gradient;
-attribute float ice_coverage;
 attribute float surface_temperature;
+attribute float ice_coverage;
 attribute float plant_coverage;
 attribute float scalar;
 attribute vec3 vector;
 attribute float vector_fraction_traversed;
 varying float displacement_v;
 varying vec3 gradient_v;
-varying float ice_coverage_v;
 varying float surface_temperature_v;
+varying float ice_coverage_v;
 varying float plant_coverage_v;
 varying float scalar_v;
 varying float vector_fraction_traversed_v;
@@ -158,7 +158,7 @@ uniform float sealevel;
 uniform float world_radius;
 // radius of a reference world, generally the focus of the scene
 uniform float reference_distance;
-uniform float index;
+uniform float map_projection_offset;
 uniform float animation_phase_angle;
 void main() {
  displacement_v = displacement;
@@ -706,25 +706,25 @@ vec3 get_rgb_signal_of_rgb_intensity(in vec3 intensity)
 // floating point precision. 
 // VIEW SETTINGS ---------------------------------------------------------------
 uniform float reference_distance;
-uniform float sealevel_visibility;
+uniform float ocean_visibility;
 uniform float sediment_visibility;
 uniform float plant_visibility;
-uniform float ice_visibility;
-uniform float darkness_visibility;
+uniform float snow_visibility;
+uniform float shadow_visibility;
 // LIGHT SOURCE PROPERTIES -----------------------------------------------------
 uniform vec3 light_rgb_intensity;
 uniform vec3 light_direction;
 uniform float insolation_max;
 // ATMOSPHERE PROPERTIES -------------------------------------------------------
 uniform float atmosphere_scale_height;
-uniform vec3 atmosphere_surface_rayleigh_scattering_coefficients;
-uniform vec3 atmosphere_surface_mie_scattering_coefficients;
-uniform vec3 atmosphere_surface_absorption_coefficients;
+uniform vec3 surface_air_rayleigh_scattering_coefficients;
+uniform vec3 surface_air_mie_scattering_coefficients;
+uniform vec3 surface_air_absorption_coefficients;
 // SEA PROPERTIES -------------------------------------------------------
 uniform float sealevel;
-uniform vec3 sea_rayleigh_scattering_coefficients;
-uniform vec3 sea_mie_scattering_coefficients;
-uniform vec3 sea_absorption_coefficients;
+uniform vec3 ocean_rayleigh_scattering_coefficients;
+uniform vec3 ocean_mie_scattering_coefficients;
+uniform vec3 ocean_absorption_coefficients;
 // WORLD PROPERTIES ------------------------------------------------------------
 uniform vec3 world_position; // location for the center of the world, in meters
 uniform float world_radius; // radius of the world being rendered, in meters
@@ -758,9 +758,9 @@ const float SNOW_REFRACTIVE_INDEX = 1.333;
 const float AMBIENT_LIGHT_AESTHETIC_BRIGHTNESS_FACTOR = 0.000001;
 void main() {
     bool is_ocean = sealevel > displacement_v;
-    bool is_visible_ocean = sealevel * sealevel_visibility > displacement_v;
-    float ocean_depth = max(sealevel*sealevel_visibility - displacement_v, 0.);
-    float surface_height = max(displacement_v - sealevel*sealevel_visibility, 0.);
+    bool is_visible_ocean = sealevel * ocean_visibility > displacement_v;
+    float ocean_depth = max(sealevel*ocean_visibility - displacement_v, 0.);
+    float surface_height = max(displacement_v - sealevel*ocean_visibility, 0.);
     // TODO: pass felsic_coverage in from attribute
     // we currently guess how much rock is felsic depending on displacement
     // Absorption coefficients are physically based.
@@ -770,14 +770,14 @@ void main() {
     float organic_coverage = smoothstep(30., -30., surface_temperature_v);
     float ice_coverage = ice_coverage_v;
     float plant_coverage = plant_coverage_v * (!is_visible_ocean? 1. : 0.);
-    // "beta_sea_*" variables are the scattering coefficients for seawater
-    vec3 beta_sea_ray = sea_rayleigh_scattering_coefficients;
-    vec3 beta_sea_mie = sea_mie_scattering_coefficients;
-    vec3 beta_sea_abs = sea_absorption_coefficients;
+    // "beta_ocean_*" variables are the scattering coefficients for seawater
+    vec3 beta_ocean_ray = ocean_rayleigh_scattering_coefficients;
+    vec3 beta_ocean_mie = ocean_mie_scattering_coefficients;
+    vec3 beta_ocean_abs = ocean_absorption_coefficients;
     // "beta_air_*" variables are the scattering coefficients for the atmosphere at sea level
-    vec3 beta_air_ray = atmosphere_surface_rayleigh_scattering_coefficients;
-    vec3 beta_air_mie = atmosphere_surface_mie_scattering_coefficients;
-    vec3 beta_air_abs = atmosphere_surface_absorption_coefficients;
+    vec3 beta_air_ray = surface_air_rayleigh_scattering_coefficients;
+    vec3 beta_air_mie = surface_air_mie_scattering_coefficients;
+    vec3 beta_air_abs = surface_air_absorption_coefficients;
     // "m" is the "ROOT_MEAN_SLOPE_SQUARED", the root mean square of the slope of all microfacets 
     // see https://www.desmos.com/calculator/0tqwgsjcje for a way to estimate it using a function to describe the surface
     float m = is_visible_ocean? WATER_ROOT_MEAN_SLOPE_SQUARED : mix(LAND_ROOT_MEAN_SLOPE_SQUARED, JUNGLE_ROOT_MEAN_SLOPE_SQUARED, plant_coverage);
@@ -787,14 +787,14 @@ void main() {
     vec3 F0 = vec3(mix(
         is_visible_ocean? get_characteristic_reflectance(WATER_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX) : LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE,
         get_characteristic_reflectance(SNOW_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX),
-        ice_coverage*ice_visibility
+        ice_coverage*snow_visibility
     ));
     // "n" is the surface normal for a perfectly smooth sphere
     vec3 n = normalize(position_v.xyz);
     // "N" is the surface normal
     vec3 N = normalize(n + gradient_v);
     // "L" is the normal vector indicating the direction to the light source
-    vec3 L = normalize(mix(n, light_direction, darkness_visibility));
+    vec3 L = normalize(mix(n, light_direction, shadow_visibility));
     // "V" is the normal vector indicating the direction from the view
     vec3 V = -view_direction_v;
     // "H" is the halfway vector between normal and view.
@@ -827,7 +827,7 @@ void main() {
         * get_rgb_fraction_of_light_reflected_on_surface(HV, F0)
         * get_fraction_of_reflected_light_masked_or_shaded(NV, m)
         * get_fraction_of_microfacets_with_angle(NH, m)
-        * darkness_visibility // turn off specular reflection if darkness is disabled
+        * shadow_visibility // turn off specular reflection if darkness is disabled
         / (4.*PI);
     // "I_surface_refracted" is the fraction of light that is not immediately reflected, 
     //   but penetrates into the material, either to be absorbed, scattered away, 
@@ -837,32 +837,32 @@ void main() {
     vec3 I_surface_refracted =
         I_surface * (1. - get_rgb_fraction_of_light_reflected_on_surface(NV, F0)) +
         I_sun * AMBIENT_LIGHT_AESTHETIC_BRIGHTNESS_FACTOR;
-    // If sea is present, "E_sea_scattered" is the rgb intensity of light 
+    // If sea is present, "E_ocean_scattered" is the rgb intensity of light 
     //   scattered by the sea towards the camera. Otherwise, it equals 0.
-    vec3 E_sea_scattered =
+    vec3 E_ocean_scattered =
         get_rgb_intensity_of_light_scattered_from_fluid(
             NV, NL, LV, ocean_depth, I_surface_refracted,
-            beta_sea_ray, beta_sea_mie, beta_sea_abs
+            beta_ocean_ray, beta_ocean_mie, beta_ocean_abs
         );
-    // if sea is present, "I_sea_trasmitted" is the rgb intensity of light 
+    // if sea is present, "I_ocean_trasmitted" is the rgb intensity of light 
     //   that reaches the ground after being filtered by air and sea. Otherwise, it equals I_surface_refracted.
-    vec3 I_sea_trasmitted= I_surface_refracted
-        * get_rgb_fraction_of_refracted_light_transmitted_through_fluid(NL, ocean_depth, beta_sea_ray, beta_sea_mie, beta_sea_abs);
+    vec3 I_ocean_trasmitted= I_surface_refracted
+        * get_rgb_fraction_of_refracted_light_transmitted_through_fluid(NL, ocean_depth, beta_ocean_ray, beta_ocean_mie, beta_ocean_abs);
     // TODO: more sensible microfacet model
     vec3 color_of_bedrock = mix(LAND_COLOR_MAFIC, LAND_COLOR_FELSIC, felsic_coverage);
     vec3 color_with_sediment = mix(color_of_bedrock, mix(LAND_COLOR_SAND, LAND_COLOR_PEAT, organic_coverage), mineral_coverage * sediment_visibility);
     vec3 color_with_plants = mix(color_with_sediment, JUNGLE_COLOR, !is_ocean? plant_coverage * plant_visibility * sediment_visibility : 0.);
     // "E_diffuse" is diffuse reflection of any nontrasparent component beneath the transparent surface,
     // It effectively describes diffuse reflection as understood within the phong model of reflectance.
-    vec3 E_diffuse = I_sea_trasmitted * NL * get_rgb_intensity_of_rgb_signal(color_with_plants);
-    // if sea is present, "E_sea_transmitted" is the fraction 
+    vec3 E_diffuse = I_ocean_trasmitted * NL * get_rgb_intensity_of_rgb_signal(color_with_plants);
+    // if sea is present, "E_ocean_transmitted" is the fraction 
     //   of E_diffuse that makes it out of the sea. Otheriwse, it equals E_diffuse
-    vec3 E_sea_transmitted = E_diffuse
-        * get_rgb_fraction_of_refracted_light_transmitted_through_fluid(NV, ocean_depth, beta_sea_ray, beta_sea_mie, beta_sea_abs);
+    vec3 E_ocean_transmitted = E_diffuse
+        * get_rgb_fraction_of_refracted_light_transmitted_through_fluid(NV, ocean_depth, beta_ocean_ray, beta_ocean_mie, beta_ocean_abs);
     vec3 E_surface_diffused =
-        mix(E_sea_transmitted + E_sea_scattered,
+        mix(E_ocean_transmitted + E_ocean_scattered,
             I_surface_refracted * NL * SNOW_COLOR,
-            ice_coverage*ice_coverage*ice_coverage*ice_visibility);
+            ice_coverage*ice_coverage*ice_coverage*snow_visibility);
     vec3 E_surface_emitted = get_rgb_intensity_of_light_emitted_by_black_body(surface_temperature_v);
     // NOTE: we do not filter E_total by atmospheric scattering
     //   that job is done by the atmospheric shader pass, in "atmosphere.glsl.c"
@@ -880,16 +880,15 @@ varying float ice_coverage_v;
 varying float scalar_v;
 varying vec4 position_v;
 uniform float sealevel;
-uniform float sealevel_visibility;
+uniform float ocean_visibility;
 void main() {
- vec4 uncovered = mix(
+ vec4 color_without_ocean = mix(
   vec4(@MINCOLOR,1.),
   vec4(@MAXCOLOR,1.),
   scalar_v
  );
- vec4 ocean = mix(vec4(0.), uncovered, 0.5);
- vec4 sea_covered = displacement_v < sealevel * sealevel_visibility? ocean : uncovered;
- gl_FragColor = sea_covered;
+ vec4 color_with_ocean = displacement_v < sealevel * ocean_visibility? mix(vec4(0.), color_without_ocean, 0.5) : color_without_ocean;
+ gl_FragColor = color_with_ocean;
 }
 `;
 fragmentShaders.heatmap = `
@@ -899,7 +898,7 @@ varying float ice_coverage_v;
 varying float scalar_v;
 varying vec4 position_v;
 uniform float sealevel;
-uniform float sealevel_visibility;
+uniform float ocean_visibility;
 //converts float from 0-1 to a heat map visualtion
 //credit goes to Gaëtan Renaudeau: http://greweb.me/glsl.js/examples/heatmap/
 vec4 heat (float v) {
@@ -912,10 +911,9 @@ vec4 heat (float v) {
  );
 }
 void main() {
- vec4 uncovered = heat( scalar_v );
- vec4 ocean = mix(vec4(0.), uncovered, 0.5);
- vec4 sea_covered = displacement_v < sealevel * sealevel_visibility? ocean : uncovered;
- gl_FragColor = sea_covered;
+ vec4 color_without_ocean = heat( scalar_v );
+ vec4 color_with_ocean = displacement_v < sealevel * ocean_visibility? mix(vec4(0.), color_without_ocean, 0.5) : color_without_ocean;
+ gl_FragColor = color_with_ocean;
 }
 `;
 fragmentShaders.topographic = `
@@ -925,7 +923,7 @@ varying float ice_coverage_v;
 varying float scalar_v;
 varying vec4 position_v;
 uniform float sealevel;
-uniform float sealevel_visibility;
+uniform float ocean_visibility;
 //converts a float ranging from [-1,1] to a topographic map visualization
 //credit goes to Gaëtan Renaudeau: http://greweb.me/glsl.js/examples/heatmap/
 void main() {
@@ -975,7 +973,7 @@ varying float displacement_v;
 varying vec3 gradient_v;
 varying vec4 position_v;
 uniform float sealevel;
-uniform float sealevel_visibility;
+uniform float ocean_visibility;
 void main() {
     // CODE to generate a tangent-space normal map:
  // "n" is the surface normal for a perfectly smooth sphere
@@ -1518,7 +1516,7 @@ vec3 get_rgb_signal_of_rgb_intensity(in vec3 intensity)
  );
 }
 varying vec2 vUv;
-uniform sampler2D surface_light;
+uniform sampler2D background_rgb_intensity;
 uniform float shaderpass_visibility;
 // Determines the length of a unit of distance within the view, in meters, 
 // it is generally the radius of whatever planet's the focus for the scene.
@@ -1540,9 +1538,9 @@ uniform vec3 light_direction;
 uniform float insolation_max;
 // ATMOSPHERE PROPERTIES -------------------------------------------------------
 uniform float atmosphere_scale_height;
-uniform vec3 atmosphere_surface_rayleigh_scattering_coefficients;
-uniform vec3 atmosphere_surface_mie_scattering_coefficients;
-uniform vec3 atmosphere_surface_absorption_coefficients;
+uniform vec3 surface_air_rayleigh_scattering_coefficients;
+uniform vec3 surface_air_mie_scattering_coefficients;
+uniform vec3 surface_air_absorption_coefficients;
 bool isnan(float x)
 {
  return !(0. <= x || x <= 0.);
@@ -1572,12 +1570,12 @@ void main() {
     vec2 clipspace = 2.0 * screenspace - 1.0;
     vec3 view_direction = normalize(view_matrix_inverse * projection_matrix_inverse * vec4(clipspace, 1, 1)).xyz;
     vec3 view_origin = view_matrix_inverse[3].xyz * reference_distance;
-    vec4 background_rgb_signal = texture2D( surface_light, vUv );
+    vec4 background_rgb_signal = texture2D( background_rgb_intensity, vUv );
     vec3 background_rgb_intensity = insolation_max * get_rgb_intensity_of_rgb_signal(background_rgb_signal.rgb);
     // "beta_air_*" variables are the scattering coefficients for the atmosphere at sea level
-    vec3 beta_ray = atmosphere_surface_rayleigh_scattering_coefficients;
-    vec3 beta_mie = atmosphere_surface_mie_scattering_coefficients;
-    vec3 beta_abs = atmosphere_surface_absorption_coefficients;
+    vec3 beta_ray = surface_air_rayleigh_scattering_coefficients;
+    vec3 beta_mie = surface_air_mie_scattering_coefficients;
+    vec3 beta_abs = surface_air_absorption_coefficients;
     vec3 rgb_intensity =
         get_rgb_intensity_of_light_scattered_from_atmosphere(
             view_origin, view_direction,

@@ -49,8 +49,8 @@ function ColorscaleRasterView(options) {
 			  reference_distance: { type: 'f', value: options.reference_distance || Units.EARTH_RADIUS },
 	  		  world_radius: { type: 'f', value: options.world_radius || Units.EARTH_RADIUS },
 			  sealevel:     { type: 'f', value: 0 },
-			  sealevel_visibility: { type: 'f', value: options.sealevel_visibility },
-			  index: 		{ type: 'f', value: options.index },
+			  ocean_visibility: { type: 'f', value: options.ocean_visibility },
+			  map_projection_offset: 		{ type: 'f', value: options.map_projection_offset },
 			},
 			blending: THREE.NoBlending,
 			vertexShader: options.vertexShader,
@@ -114,8 +114,8 @@ function ColorscaleRasterView(options) {
 
 		update_attribute('scalar', 			scaled_raster);
 		update_uniform('world_radius',		options.world_radius || Units.EARTH_RADIUS);
-		update_uniform('sealevel_visibility',		options.sealevel_visibility);
-		update_uniform('index',				options.index);
+		update_uniform('ocean_visibility',		options.ocean_visibility);
+		update_uniform('map_projection_offset',				options.map_projection_offset);
 
 		update_vertex_shader(options.vertexShader);
 		

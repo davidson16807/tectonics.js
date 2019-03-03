@@ -30,5 +30,5 @@ uniform float sealevel;
 uniform float world_radius;
 // radius of a reference world, generally the focus of the scene
 uniform float reference_distance;
-uniform float index;
+uniform float map_projection_offset;
 uniform float animation_phase_angle;

@@ -25,7 +25,7 @@ function VectorRasterView(options) {
 			  		reference_distance: { type: 'f', value: options.reference_distance || Units.EARTH_RADIUS },
 			  		world_radius: { type: 'f', value: options_.world_radius || Units.EARTH_RADIUS },
 			  		reference_radius: { type: 'f', value: options_.reference_radius || Units.EARTH_RADIUS },
-			  		index: 		{ type: 'f',   value: options_.index },
+			  		map_projection_offset: 		{ type: 'f',   value: options_.map_projection_offset },
 			  		animation_phase_angle: 	{ type: 'f', value: 0 }
 		        }
 		    });
@@ -67,7 +67,7 @@ function VectorRasterView(options) {
 
 		update_vertex_shader(options_.vertexShader);
 		update_uniform('world_radius',	options_.world_radius || Units.EARTH_RADIUS);
-		update_uniform('index',	options_.index);
+		update_uniform('map_projection_offset',	options_.map_projection_offset);
 		update_uniform('animation_phase_angle',	(mesh.material.uniforms.animation_phase_angle.value + 1e-1)%(2*3.14));
 
 		var offset_length = 1.02; 	// offset of arrow from surface of sphere, in radii

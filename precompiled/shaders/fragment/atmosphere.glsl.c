@@ -13,7 +13,7 @@
 
 
 varying vec2  vUv;
-uniform sampler2D surface_light;
+uniform sampler2D background_rgb_signal_texture;
 
 uniform float shaderpass_visibility;
 
@@ -41,9 +41,9 @@ uniform float insolation_max;
 
 // ATMOSPHERE PROPERTIES -------------------------------------------------------
 uniform float atmosphere_scale_height;
-uniform vec3  atmosphere_surface_rayleigh_scattering_coefficients; 
-uniform vec3  atmosphere_surface_mie_scattering_coefficients; 
-uniform vec3  atmosphere_surface_absorption_coefficients; 
+uniform vec3  surface_air_rayleigh_scattering_coefficients; 
+uniform vec3  surface_air_mie_scattering_coefficients; 
+uniform vec3  surface_air_absorption_coefficients; 
 
 
 bool isnan(float x)
@@ -83,13 +83,13 @@ void main() {
     vec3  view_direction = normalize(view_matrix_inverse * projection_matrix_inverse * vec4(clipspace, 1, 1)).xyz;
     vec3  view_origin    = view_matrix_inverse[3].xyz * reference_distance;
 
-    vec4  background_rgb_signal    = texture2D( surface_light, vUv );
+    vec4  background_rgb_signal    = texture2D( background_rgb_signal_texture, vUv );
     vec3  background_rgb_intensity = insolation_max * get_rgb_intensity_of_rgb_signal(background_rgb_signal.rgb);
         
     // "beta_air_*" variables are the scattering coefficients for the atmosphere at sea level
-    vec3  beta_ray = atmosphere_surface_rayleigh_scattering_coefficients;
-    vec3  beta_mie = atmosphere_surface_mie_scattering_coefficients;
-    vec3  beta_abs = atmosphere_surface_absorption_coefficients; 
+    vec3  beta_ray = surface_air_rayleigh_scattering_coefficients;
+    vec3  beta_mie = surface_air_mie_scattering_coefficients;
+    vec3  beta_abs = surface_air_absorption_coefficients; 
 
     vec3 rgb_intensity = 
         get_rgb_intensity_of_light_scattered_from_atmosphere(

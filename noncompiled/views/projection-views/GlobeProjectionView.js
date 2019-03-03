@@ -19,7 +19,7 @@ function GlobeProjectionView() {
 				...options, 
 				vertexShader: 	vertexShader, 
 				shaderpass_visibility: 1,
-				index: 			0,
+				map_projection_offset: 			0,
 			});
 		}
 	};

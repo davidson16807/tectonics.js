@@ -18,11 +18,11 @@
 
 // VIEW SETTINGS ---------------------------------------------------------------
 uniform float reference_distance;
-uniform float sealevel_visibility;
+uniform float ocean_visibility;
 uniform float sediment_visibility;
 uniform float plant_visibility;
-uniform float ice_visibility;
-uniform float darkness_visibility;
+uniform float snow_visibility;
+uniform float shadow_visibility;
 
 // LIGHT SOURCE PROPERTIES -----------------------------------------------------
 uniform vec3  light_rgb_intensity;
@@ -31,15 +31,15 @@ uniform float insolation_max;
 
 // ATMOSPHERE PROPERTIES -------------------------------------------------------
 uniform float atmosphere_scale_height;
-uniform vec3  atmosphere_surface_rayleigh_scattering_coefficients; 
-uniform vec3  atmosphere_surface_mie_scattering_coefficients; 
-uniform vec3  atmosphere_surface_absorption_coefficients; 
+uniform vec3  surface_air_rayleigh_scattering_coefficients; 
+uniform vec3  surface_air_mie_scattering_coefficients; 
+uniform vec3  surface_air_absorption_coefficients; 
 
 // SEA PROPERTIES -------------------------------------------------------
 uniform float sealevel;
-uniform vec3  sea_rayleigh_scattering_coefficients; 
-uniform vec3  sea_mie_scattering_coefficients; 
-uniform vec3  sea_absorption_coefficients; 
+uniform vec3  ocean_rayleigh_scattering_coefficients; 
+uniform vec3  ocean_mie_scattering_coefficients; 
+uniform vec3  ocean_absorption_coefficients; 
 
 // WORLD PROPERTIES ------------------------------------------------------------
 uniform vec3  world_position; // location for the center of the world, in meters
@@ -85,9 +85,9 @@ const float AMBIENT_LIGHT_AESTHETIC_BRIGHTNESS_FACTOR = 0.000001;
 void main() {
 
     bool  is_ocean         = sealevel > displacement_v;
-    bool  is_visible_ocean = sealevel * sealevel_visibility > displacement_v;
-    float ocean_depth      = max(sealevel*sealevel_visibility - displacement_v, 0.);
-    float surface_height   = max(displacement_v - sealevel*sealevel_visibility, 0.);
+    bool  is_visible_ocean = sealevel * ocean_visibility > displacement_v;
+    float ocean_depth      = max(sealevel*ocean_visibility - displacement_v, 0.);
+    float surface_height   = max(displacement_v - sealevel*ocean_visibility, 0.);
     
     // TODO: pass felsic_coverage in from attribute
     // we currently guess how much rock is felsic depending on displacement
@@ -99,15 +99,15 @@ void main() {
     float ice_coverage      = ice_coverage_v;
     float plant_coverage    = plant_coverage_v * (!is_visible_ocean? 1. : 0.);
 
-    // "beta_sea_*" variables are the scattering coefficients for seawater
-    vec3  beta_sea_ray = sea_rayleigh_scattering_coefficients;
-    vec3  beta_sea_mie = sea_mie_scattering_coefficients;
-    vec3  beta_sea_abs = sea_absorption_coefficients; 
+    // "beta_ocean_*" variables are the scattering coefficients for seawater
+    vec3  beta_ocean_ray = ocean_rayleigh_scattering_coefficients;
+    vec3  beta_ocean_mie = ocean_mie_scattering_coefficients;
+    vec3  beta_ocean_abs = ocean_absorption_coefficients; 
 
     // "beta_air_*" variables are the scattering coefficients for the atmosphere at sea level
-    vec3  beta_air_ray = atmosphere_surface_rayleigh_scattering_coefficients;
-    vec3  beta_air_mie = atmosphere_surface_mie_scattering_coefficients;
-    vec3  beta_air_abs = atmosphere_surface_absorption_coefficients; 
+    vec3  beta_air_ray = surface_air_rayleigh_scattering_coefficients;
+    vec3  beta_air_mie = surface_air_mie_scattering_coefficients;
+    vec3  beta_air_abs = surface_air_absorption_coefficients; 
 
     // "m" is the "ROOT_MEAN_SLOPE_SQUARED", the root mean square of the slope of all microfacets 
     // see https://www.desmos.com/calculator/0tqwgsjcje for a way to estimate it using a function to describe the surface
@@ -119,7 +119,7 @@ void main() {
     vec3 F0 = vec3(mix(
         is_visible_ocean? get_characteristic_reflectance(WATER_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX) : LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE, 
         get_characteristic_reflectance(SNOW_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX), 
-        ice_coverage*ice_visibility
+        ice_coverage*snow_visibility
     ));
 
     // "n" is the surface normal for a perfectly smooth sphere
@@ -129,7 +129,7 @@ void main() {
     vec3 N = normalize(n + gradient_v);
 
     // "L" is the normal vector indicating the direction to the light source
-    vec3 L = normalize(mix(n, light_direction, darkness_visibility));
+    vec3 L = normalize(mix(n, light_direction, shadow_visibility));
 
     // "V" is the normal vector indicating the direction from the view
     vec3 V = -view_direction_v;
@@ -170,7 +170,7 @@ void main() {
         * get_rgb_fraction_of_light_reflected_on_surface(HV, F0)
         * get_fraction_of_reflected_light_masked_or_shaded(NV, m) 
         * get_fraction_of_microfacets_with_angle(NH, m)
-        * darkness_visibility // turn off specular reflection if darkness is disabled
+        * shadow_visibility // turn off specular reflection if darkness is disabled
         / (4.*PI);
 
 
@@ -184,18 +184,18 @@ void main() {
         I_surface * (1. - get_rgb_fraction_of_light_reflected_on_surface(NV, F0)) + 
         I_sun     *  AMBIENT_LIGHT_AESTHETIC_BRIGHTNESS_FACTOR;
 
-    // If sea is present, "E_sea_scattered" is the rgb intensity of light 
+    // If sea is present, "E_ocean_scattered" is the rgb intensity of light 
     //   scattered by the sea towards the camera. Otherwise, it equals 0.
-    vec3 E_sea_scattered = 
+    vec3 E_ocean_scattered = 
         get_rgb_intensity_of_light_scattered_from_fluid(
             NV, NL, LV, ocean_depth, I_surface_refracted, 
-            beta_sea_ray, beta_sea_mie, beta_sea_abs
+            beta_ocean_ray, beta_ocean_mie, beta_ocean_abs
         );
 
-    // if sea is present, "I_sea_trasmitted" is the rgb intensity of light 
+    // if sea is present, "I_ocean_trasmitted" is the rgb intensity of light 
     //   that reaches the ground after being filtered by air and sea. Otherwise, it equals I_surface_refracted.
-    vec3 I_sea_trasmitted= I_surface_refracted
-        * get_rgb_fraction_of_refracted_light_transmitted_through_fluid(NL, ocean_depth, beta_sea_ray, beta_sea_mie, beta_sea_abs);
+    vec3 I_ocean_trasmitted= I_surface_refracted
+        * get_rgb_fraction_of_refracted_light_transmitted_through_fluid(NL, ocean_depth, beta_ocean_ray, beta_ocean_mie, beta_ocean_abs);
 
     // TODO: more sensible microfacet model
     vec3 color_of_bedrock    = mix(LAND_COLOR_MAFIC, LAND_COLOR_FELSIC, felsic_coverage);
@@ -204,17 +204,17 @@ void main() {
 
     // "E_diffuse" is diffuse reflection of any nontrasparent component beneath the transparent surface,
     // It effectively describes diffuse reflection as understood within the phong model of reflectance.
-    vec3 E_diffuse = I_sea_trasmitted * NL * get_rgb_intensity_of_rgb_signal(color_with_plants); 
+    vec3 E_diffuse = I_ocean_trasmitted * NL * get_rgb_intensity_of_rgb_signal(color_with_plants); 
 
-    // if sea is present, "E_sea_transmitted" is the fraction 
+    // if sea is present, "E_ocean_transmitted" is the fraction 
     //   of E_diffuse that makes it out of the sea. Otheriwse, it equals E_diffuse
-    vec3 E_sea_transmitted  = E_diffuse 
-        * get_rgb_fraction_of_refracted_light_transmitted_through_fluid(NV, ocean_depth, beta_sea_ray, beta_sea_mie, beta_sea_abs);
+    vec3 E_ocean_transmitted  = E_diffuse 
+        * get_rgb_fraction_of_refracted_light_transmitted_through_fluid(NV, ocean_depth, beta_ocean_ray, beta_ocean_mie, beta_ocean_abs);
 
     vec3 E_surface_diffused = 
-        mix(E_sea_transmitted + E_sea_scattered, 
+        mix(E_ocean_transmitted + E_ocean_scattered, 
             I_surface_refracted * NL * SNOW_COLOR, 
-            ice_coverage*ice_coverage*ice_coverage*ice_visibility);
+            ice_coverage*ice_coverage*ice_coverage*snow_visibility);
 
     vec3 E_surface_emitted = get_rgb_intensity_of_light_emitted_by_black_body(surface_temperature_v);
 

@@ -17,15 +17,15 @@ void main() {
 
 	float height = displacement > sealevel? 0.005 : 0.0;
 	
-	float index_offset = INDEX_SPACING * index;
+	float index_offset = INDEX_SPACING * map_projection_offset;
 	float focus = lon(cameraPosition) + index_offset;
 	float lon_focused = mod(lon(position_v.xyz) - focus, 2.*PI) - PI;
-	float lat_focused = lat(position_v.xyz); //+ (index*PI);
+	float lat_focused = lat(position_v.xyz); //+ (map_projection_offset*PI);
 	bool is_on_edge = lon_focused >  PI*0.9 || lon_focused < -PI*0.9;
 	
 	vec4 displaced = vec4(
 		lon_focused + index_offset,
-		lat(position_v.xyz), //+ (index*PI), 
+		lat(position_v.xyz), //+ (map_projection_offset*PI), 
 		is_on_edge? 0. : length(position), 
 		1);
 	mat4 scaleMatrix = mat4(1);

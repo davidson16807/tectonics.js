@@ -6,15 +6,14 @@ varying float scalar_v;
 varying vec4 position_v;
 
 uniform float sealevel;
-uniform float sealevel_visibility;
+uniform float ocean_visibility;
 
 void main() {
-	vec4 uncovered = mix( 
+	vec4 color_without_ocean = mix( 
 		vec4(@MINCOLOR,1.), 
 		vec4(@MAXCOLOR,1.), 
 		scalar_v
 	);
-	vec4 ocean = mix(vec4(0.), uncovered, 0.5);
-	vec4 sea_covered = displacement_v < sealevel * sealevel_visibility? ocean : uncovered;
-	gl_FragColor = sea_covered;
+	vec4 color_with_ocean = displacement_v < sealevel * ocean_visibility? mix(vec4(0.), color_without_ocean, 0.5) : color_without_ocean;
+	gl_FragColor = color_with_ocean;
 }

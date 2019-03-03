@@ -191,7 +191,7 @@
 			stddev: 0,
 			x: [],
 			y: [],
-        	sealevel_visibility: 1,
+        	ocean_visibility: 1,
             options: {
             	legend: {display: false}, 
             	animation : false,
@@ -221,7 +221,7 @@
 		},
 		methods: {
 			setOceanVisibility(value){
-				this.sealevel_visibility = value? 1:0;
+				this.ocean_visibility = value? 1:0;
 			},
 			round(x) {
 				return Math.round(x);

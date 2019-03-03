@@ -14,10 +14,10 @@ void main() {
     scalar_v = scalar;
     position_v = modelMatrix * vec4( position, 1.0 );
     
-    float index_offset = INDEX_SPACING * index;
+    float index_offset = INDEX_SPACING * map_projection_offset;
     float focus = lon(cameraPosition) + index_offset;
     float lon_focused = mod(lon(position_v.xyz) - focus, 2.*PI) - PI + index_offset;
-    float lat_focused = lat(position_v.xyz); //+ (index*PI);
+    float lat_focused = lat(position_v.xyz); //+ (map_projection_offset*PI);
 
     float height = displacement > sealevel? 0.005 : 0.0;
     gl_Position = vec4(
