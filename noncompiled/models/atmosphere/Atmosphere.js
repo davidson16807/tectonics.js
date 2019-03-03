@@ -188,7 +188,7 @@ function Atmosphere(grid, parameters) {
                 this.incoming_heat
             );
 
-            Thermodynamics.get_black_body_emissive_radiation_fluxes(this.sealevel_temperature, this.outgoing_heat);
+            Thermodynamics.get_intensity_of_light_emitted_by_black_bodies(this.sealevel_temperature, this.outgoing_heat);
             ScalarField.mult_scalar     ( this.outgoing_heat, this.emission_coefficient,     this.outgoing_heat);
             Climatology.get_heat_capacities(ocean_coverage.value(), material_heat_capacity, this.get_varying_heat_capacity);
             ScalarField.sub_field         ( this.incoming_heat, this.outgoing_heat,             this.net_heat_gain );

@@ -161,7 +161,7 @@ function RealisticWorldView(shader_return_value) {
         // vec3  light_offset    = light_position - world_position;
         // vec3  light_direction = normalize(light_offset);
         // float light_distance  = length(light_offset);
-        var light_rgb_intensity = Thermodynamics.get_rgb_intensity_of_emitted_light_from_black_body(Units.SOLAR_TEMPERATURE);
+        var light_rgb_intensity = Thermodynamics.solve_rgb_intensity_of_light_emitted_by_black_body(Units.SOLAR_TEMPERATURE);
         var light_attenuation = SphericalGeometry.get_surface_area(Units.SOLAR_RADIUS) / SphericalGeometry.get_surface_area(Units.ASTRONOMICAL_UNIT);
         light_rgb_intensity.x *= light_attenuation;
         light_rgb_intensity.y *= light_attenuation;

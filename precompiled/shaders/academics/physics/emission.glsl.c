@@ -33,7 +33,7 @@ FUNC(float) solve_fraction_of_light_emitted_by_black_body_between_wavelengths(
     IN(float) hi, 
     IN(float) temperature
 ){
-    return     solve_fraction_of_light_emitted_by_black_body_below_wavelength(hi, temperature) - 
+    return  solve_fraction_of_light_emitted_by_black_body_below_wavelength(hi, temperature) - 
             solve_fraction_of_light_emitted_by_black_body_below_wavelength(lo, temperature);
 }
 // This calculates the radiation (in watts/m^2) that's emitted 
@@ -44,7 +44,7 @@ FUNC(float) get_intensity_of_light_emitted_by_black_body(
     VAR(float) T = temperature;
     return STEPHAN_BOLTZMANN_CONSTANT * T*T*T*T;
 }
-FUNC(vec3) get_rgb_intensity_of_light_emitted_by_black_body(
+FUNC(vec3) solve_rgb_intensity_of_light_emitted_by_black_body(
     IN(float) temperature
 ){
     return get_intensity_of_light_emitted_by_black_body(temperature)

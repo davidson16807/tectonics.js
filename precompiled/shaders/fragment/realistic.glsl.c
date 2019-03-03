@@ -57,7 +57,7 @@ varying vec3  view_direction_v;
 
 // "SOLAR_RGB_LUMINOSITY" is the rgb luminosity of earth's sun, in Watts.
 //   It is used to convert the above true color values to absorption coefficients.
-//   You can also generate these numbers by calling get_rgb_intensity_of_light_emitted_by_black_body(SOLAR_TEMPERATURE)
+//   You can also generate these numbers by calling solve_rgb_intensity_of_light_emitted_by_black_body(SOLAR_TEMPERATURE)
 const vec3  SOLAR_RGB_LUMINOSITY    = vec3(7247419., 8223259., 8121487.);
 
 const float AIR_REFRACTIVE_INDEX   = 1.000277;
@@ -117,8 +117,8 @@ void main() {
     //   it is the fraction of light that's immediately reflected when striking the surface head on.
     // TODO: model refractive index as a function of wavelength
     vec3 F0 = vec3(mix(
-        is_visible_ocean? get_characteristic_reflectance(WATER_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX) : LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE, 
-        get_characteristic_reflectance(SNOW_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX), 
+        is_visible_ocean? get_fraction_of_light_reflected_on_surface_head_on(WATER_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX) : LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE, 
+        get_fraction_of_light_reflected_on_surface_head_on(SNOW_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX), 
         snow_coverage*snow_visibility
     ));
 
@@ -168,7 +168,7 @@ void main() {
 
     vec3 E_surface_reflected = I_surface 
         * get_rgb_fraction_of_light_reflected_on_surface(HV, F0)
-        * get_fraction_of_reflected_light_masked_or_shaded(NV, m) 
+        * get_fraction_of_light_masked_or_shaded_by_surface(NV, m) 
         * get_fraction_of_microfacets_with_angle(NH, m)
         * shadow_visibility // turn off specular reflection if darkness is disabled
         / (4.*PI);
@@ -216,7 +216,7 @@ void main() {
             I_surface_refracted * NL * SNOW_COLOR, 
             snow_coverage*snow_coverage*snow_coverage*snow_visibility);
 
-    vec3 E_surface_emitted = get_rgb_intensity_of_light_emitted_by_black_body(surface_temperature_v);
+    vec3 E_surface_emitted = solve_rgb_intensity_of_light_emitted_by_black_body(surface_temperature_v);
 
     // NOTE: we do not filter E_total by atmospheric scattering
     //   that job is done by the atmospheric shader pass, in "atmosphere.glsl.c"

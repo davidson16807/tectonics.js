@@ -225,11 +225,11 @@ const float MILLIGRAM = 1e-6; // kilograms
 const float GRAM = 1e-3; // kilograms
 const float KILOGRAM = 1.; // kilograms
 const float TON = 1000.; // kilograms
-const float NANOMETER = 1e-9; // meter
-const float MICROMETER = 1e-6; // meter
-const float MILLIMETER = 1e-3; // meter
-const float METER = 1.; // meter
-const float KILOMETER = 1000.; // meter
+const float NANOMETER = 1e-9; // meters
+const float MICROMETER = 1e-6; // meters
+const float MILLIMETER = 1e-3; // meters
+const float METER = 1.; // meters
+const float KILOMETER = 1000.; // meters
 const float MOLE = 6.02214076e23;
 const float MILLIMOLE = MOLE / 1e3;
 const float MICROMOLE = MOLE / 1e6;
@@ -251,7 +251,7 @@ const float EARTH_RADIUS = 6.367e6; // meters
 const float STANDARD_GRAVITY = 9.80665; // meters/second^2
 const float STANDARD_TEMPERATURE = 273.15; // kelvin
 const float STANDARD_PRESSURE = 101325.; // pascals
-const float ASTRONOMICAL_UNIT = 149597870700.; // meters
+const float ASTRONOMICAL_UNIT = 149597870700.;// meters
 const float GLOBAL_SOLAR_CONSTANT = 1361.; // watts/meter^2
 const float JUPITER_MASS = 1.898e27; // kilograms
 const float JUPITER_RADIUS = 71e6; // meters
@@ -339,7 +339,7 @@ float get_intensity_of_light_emitted_by_black_body(
     float T = temperature;
     return STEPHAN_BOLTZMANN_CONSTANT * T*T*T*T;
 }
-vec3 get_rgb_intensity_of_light_emitted_by_black_body(
+vec3 solve_rgb_intensity_of_light_emitted_by_black_body(
     in float temperature
 ){
     return get_intensity_of_light_emitted_by_black_body(temperature)
@@ -350,8 +350,9 @@ vec3 get_rgb_intensity_of_light_emitted_by_black_body(
            );
 }
 // Rayleigh phase function factor [-1, 1]
-float get_fraction_of_rayleigh_scattered_light_scattered_by_angle(in float cos_scatter_angle)
-{
+float get_fraction_of_rayleigh_scattered_light_scattered_by_angle(
+    in float cos_scatter_angle
+){
     return
             3. * (1. + cos_scatter_angle*cos_scatter_angle)
     / //------------------------
@@ -361,8 +362,9 @@ float get_fraction_of_rayleigh_scattered_light_scattered_by_angle(in float cos_s
 // represents the average cosine of the scattered directions
 // 0 is isotropic scattering
 // > 1 is forward scattering, < 1 is backwards
-float get_fraction_of_mie_scattered_light_scattered_by_angle(in float cos_scatter_angle)
-{
+float get_fraction_of_mie_scattered_light_scattered_by_angle(
+    in float cos_scatter_angle
+){
     const float g = 0.76;
     return
                         (1. - g*g)
@@ -371,8 +373,9 @@ float get_fraction_of_mie_scattered_light_scattered_by_angle(in float cos_scatte
 }
 // Schlick's fast approximation to the Henyey-Greenstein phase function factor
 // Pharr and  Humphreys [2004] equivalence to g above
-float get_schlick_phase_factor(in float cos_scatter_angle)
-{
+float approx_fraction_of_mie_scattered_light_scattered_by_angle_fast(
+    in float cos_scatter_angle
+){
     const float g = 0.76;
     const float k = 1.55*g - 0.55 * (g*g*g);
     return
@@ -380,11 +383,14 @@ float get_schlick_phase_factor(in float cos_scatter_angle)
     / //-------------------------------------------
         (4. * PI * (1. + k*cos_scatter_angle) * (1. + k*cos_scatter_angle));
 }
-// "get_characteristic_reflectance" finds the fraction of light that's reflected
+// "get_fraction_of_light_reflected_on_surface_head_on" finds the fraction of light that's reflected
 //   by a boundary between materials when striking head on.
+//   It is also known as the "characteristic reflectance" within the fresnel reflectance equation.
 //   The refractive indices can be provided as parameters in any order.
-float get_characteristic_reflectance(in float refractivate_index1, in float refractivate_index2)
-{
+float get_fraction_of_light_reflected_on_surface_head_on(
+    in float refractivate_index1,
+    in float refractivate_index2
+){
     float n1 = refractivate_index1;
     float n2 = refractivate_index2;
     float sqrtR0 = ((n1-n2)/(n1+n2));
@@ -398,8 +404,10 @@ float get_characteristic_reflectance(in float refractivate_index1, in float refr
 //   see https://en.wikipedia.org/wiki/Schlick%27s_approximation for a summary 
 //   see Hoffmann 2015 for a gentle introduction to the concept
 //   see Schlick (1994) for implementation details
-float get_fraction_of_light_reflected_on_surface(in float cos_incident_angle, in float characteristic_reflectance)
-{
+float get_fraction_of_light_reflected_on_surface(
+    in float cos_incident_angle,
+    in float characteristic_reflectance
+){
     float R0 = characteristic_reflectance;
     float _1_u = 1.-cos_incident_angle;
     return R0 + (1.-R0) * _1_u*_1_u*_1_u*_1_u*_1_u;
@@ -411,17 +419,21 @@ float get_fraction_of_light_reflected_on_surface(in float cos_incident_angle, in
 //   see https://en.wikipedia.org/wiki/Schlick%27s_approximation for a summary 
 //   see Hoffmann 2015 for a gentle introduction to the concept
 //   see Schlick (1994) for implementation details
-vec3 get_rgb_fraction_of_light_reflected_on_surface(in float cos_incident_angle, in vec3 characteristic_reflectance)
-{
+vec3 get_rgb_fraction_of_light_reflected_on_surface(
+    in float cos_incident_angle,
+    in vec3 characteristic_reflectance
+){
     vec3 R0 = characteristic_reflectance;
     float _1_u = 1.-cos_incident_angle;
     return R0 + (1.-R0) * _1_u*_1_u*_1_u*_1_u*_1_u;
 }
-// "get_fraction_of_reflected_light_masked_or_shaded" is Schlick's fast approximation for Smith's function
+// "get_fraction_of_light_masked_or_shaded_by_surface" is Schlick's fast approximation for Smith's function
 //   see Hoffmann 2015 for a gentle introduction to the concept
 //   see Schlick (1994) for even more details.
-float get_fraction_of_reflected_light_masked_or_shaded(in float cos_view_angle, in float root_mean_slope_squared)
-{
+float get_fraction_of_light_masked_or_shaded_by_surface(
+    in float cos_view_angle,
+    in float root_mean_slope_squared
+){
     float m = root_mean_slope_squared;
     float v = cos_view_angle;
     float k = sqrt(2.*m*m/PI);
@@ -432,8 +444,10 @@ float get_fraction_of_reflected_light_masked_or_shaded(in float cos_view_angle, 
 //   This is the probability of finding a microfacet whose surface normal deviates from the average by a certain angle.
 //   see Hoffmann 2015 for a gentle introduction to the concept.
 //   see Schlick (1994) for even more details.
-float get_fraction_of_microfacets_with_angle(in float cos_angle_of_deviation, in float root_mean_slope_squared)
-{
+float get_fraction_of_microfacets_with_angle(
+    in float cos_angle_of_deviation,
+    in float root_mean_slope_squared
+){
     float m = root_mean_slope_squared;
     float t = cos_angle_of_deviation;
     return exp((t*t-1.)/(m*m*t*t))/(m*m*t*t*t*t);
@@ -463,7 +477,13 @@ float get_air_column_density_ratio_along_2d_ray_for_flat_world(
 // "z2" is the closest distance from the ray to the center of the world, squared.
 // "R" is the radius of the world.
 // "H" is the scale height of the atmosphere.
-float approx_air_column_density_ratio_along_2d_ray_for_curved_world(in float x_start, in float x_stop, in float z2, in float R, in float H){
+float approx_air_column_density_ratio_along_2d_ray_for_curved_world(
+    in float x_start,
+    in float x_stop,
+    in float z2,
+    in float R,
+    in float H
+){
     // guide to variable names:
     //  "f*" fraction of travel distance through atmosphere, "dx"
     //  "x*" distance along the ray from closest approach
@@ -695,8 +715,12 @@ vec3 get_rgb_fraction_of_light_transmitted_through_fluid_for_flat_world(
 // This function returns a rgb vector that quickly approximates a spectral "bump".
 // Adapted from GPU Gems and Alan Zucconi
 // from https://www.alanzucconi.com/2017/07/15/improving-the-rainbow/
-float bump (in float x, in float edge0, in float edge1, in float height)
-{
+float bump (
+    in float x,
+    in float edge0,
+    in float edge1,
+    in float height
+){
     float center = (edge1 + edge0) / 2.;
     float width = (edge1 - edge0) / 2.;
     float offset = (x - center) / width;
@@ -705,8 +729,9 @@ float bump (in float x, in float edge0, in float edge1, in float height)
 // This function returns a rgb vector that best represents color at a given wavelength
 // It is from Alan Zucconi: https://www.alanzucconi.com/2017/07/15/improving-the-rainbow/
 // I've adapted the function so that coefficients are expressed in meters.
-vec3 get_rgb_signal_of_wavelength (in float w)
-{
+vec3 get_rgb_signal_of_wavelength (
+    in float w
+){
     return vec3(
         bump(w, 530e-9, 690e-9, 1.00)+
         bump(w, 410e-9, 460e-9, 0.15),
@@ -719,16 +744,16 @@ vec3 get_rgb_signal_of_wavelength (in float w)
 // "GAMMA" is the constant that's used to map between 
 //   rgb signals sent to a monitor and their actual intensity
 const float GAMMA = 2.2;
-vec3 get_rgb_intensity_of_rgb_signal(in vec3 signal)
-{
+vec3 get_rgb_intensity_of_rgb_signal(in vec3 signal
+){
     return vec3(
         pow(signal.x, GAMMA),
         pow(signal.y, GAMMA),
         pow(signal.z, GAMMA)
     );
 }
-vec3 get_rgb_signal_of_rgb_intensity(in vec3 intensity)
-{
+vec3 get_rgb_signal_of_rgb_intensity(in vec3 intensity
+){
     return vec3(
         pow(intensity.x, 1./GAMMA),
         pow(intensity.y, 1./GAMMA),
@@ -872,11 +897,11 @@ const float MILLIGRAM = 1e-6; // kilograms
 const float GRAM = 1e-3; // kilograms
 const float KILOGRAM = 1.; // kilograms
 const float TON = 1000.; // kilograms
-const float NANOMETER = 1e-9; // meter
-const float MICROMETER = 1e-6; // meter
-const float MILLIMETER = 1e-3; // meter
-const float METER = 1.; // meter
-const float KILOMETER = 1000.; // meter
+const float NANOMETER = 1e-9; // meters
+const float MICROMETER = 1e-6; // meters
+const float MILLIMETER = 1e-3; // meters
+const float METER = 1.; // meters
+const float KILOMETER = 1000.; // meters
 const float MOLE = 6.02214076e23;
 const float MILLIMOLE = MOLE / 1e3;
 const float MICROMOLE = MOLE / 1e6;
@@ -898,7 +923,7 @@ const float EARTH_RADIUS = 6.367e6; // meters
 const float STANDARD_GRAVITY = 9.80665; // meters/second^2
 const float STANDARD_TEMPERATURE = 273.15; // kelvin
 const float STANDARD_PRESSURE = 101325.; // pascals
-const float ASTRONOMICAL_UNIT = 149597870700.; // meters
+const float ASTRONOMICAL_UNIT = 149597870700.;// meters
 const float GLOBAL_SOLAR_CONSTANT = 1361.; // watts/meter^2
 const float JUPITER_MASS = 1.898e27; // kilograms
 const float JUPITER_RADIUS = 71e6; // meters
@@ -986,7 +1011,7 @@ float get_intensity_of_light_emitted_by_black_body(
     float T = temperature;
     return STEPHAN_BOLTZMANN_CONSTANT * T*T*T*T;
 }
-vec3 get_rgb_intensity_of_light_emitted_by_black_body(
+vec3 solve_rgb_intensity_of_light_emitted_by_black_body(
     in float temperature
 ){
     return get_intensity_of_light_emitted_by_black_body(temperature)
@@ -997,8 +1022,9 @@ vec3 get_rgb_intensity_of_light_emitted_by_black_body(
            );
 }
 // Rayleigh phase function factor [-1, 1]
-float get_fraction_of_rayleigh_scattered_light_scattered_by_angle(in float cos_scatter_angle)
-{
+float get_fraction_of_rayleigh_scattered_light_scattered_by_angle(
+    in float cos_scatter_angle
+){
     return
             3. * (1. + cos_scatter_angle*cos_scatter_angle)
     / //------------------------
@@ -1008,8 +1034,9 @@ float get_fraction_of_rayleigh_scattered_light_scattered_by_angle(in float cos_s
 // represents the average cosine of the scattered directions
 // 0 is isotropic scattering
 // > 1 is forward scattering, < 1 is backwards
-float get_fraction_of_mie_scattered_light_scattered_by_angle(in float cos_scatter_angle)
-{
+float get_fraction_of_mie_scattered_light_scattered_by_angle(
+    in float cos_scatter_angle
+){
     const float g = 0.76;
     return
                         (1. - g*g)
@@ -1018,8 +1045,9 @@ float get_fraction_of_mie_scattered_light_scattered_by_angle(in float cos_scatte
 }
 // Schlick's fast approximation to the Henyey-Greenstein phase function factor
 // Pharr and  Humphreys [2004] equivalence to g above
-float get_schlick_phase_factor(in float cos_scatter_angle)
-{
+float approx_fraction_of_mie_scattered_light_scattered_by_angle_fast(
+    in float cos_scatter_angle
+){
     const float g = 0.76;
     const float k = 1.55*g - 0.55 * (g*g*g);
     return
@@ -1027,11 +1055,14 @@ float get_schlick_phase_factor(in float cos_scatter_angle)
     / //-------------------------------------------
         (4. * PI * (1. + k*cos_scatter_angle) * (1. + k*cos_scatter_angle));
 }
-// "get_characteristic_reflectance" finds the fraction of light that's reflected
+// "get_fraction_of_light_reflected_on_surface_head_on" finds the fraction of light that's reflected
 //   by a boundary between materials when striking head on.
+//   It is also known as the "characteristic reflectance" within the fresnel reflectance equation.
 //   The refractive indices can be provided as parameters in any order.
-float get_characteristic_reflectance(in float refractivate_index1, in float refractivate_index2)
-{
+float get_fraction_of_light_reflected_on_surface_head_on(
+    in float refractivate_index1,
+    in float refractivate_index2
+){
     float n1 = refractivate_index1;
     float n2 = refractivate_index2;
     float sqrtR0 = ((n1-n2)/(n1+n2));
@@ -1045,8 +1076,10 @@ float get_characteristic_reflectance(in float refractivate_index1, in float refr
 //   see https://en.wikipedia.org/wiki/Schlick%27s_approximation for a summary 
 //   see Hoffmann 2015 for a gentle introduction to the concept
 //   see Schlick (1994) for implementation details
-float get_fraction_of_light_reflected_on_surface(in float cos_incident_angle, in float characteristic_reflectance)
-{
+float get_fraction_of_light_reflected_on_surface(
+    in float cos_incident_angle,
+    in float characteristic_reflectance
+){
     float R0 = characteristic_reflectance;
     float _1_u = 1.-cos_incident_angle;
     return R0 + (1.-R0) * _1_u*_1_u*_1_u*_1_u*_1_u;
@@ -1058,17 +1091,21 @@ float get_fraction_of_light_reflected_on_surface(in float cos_incident_angle, in
 //   see https://en.wikipedia.org/wiki/Schlick%27s_approximation for a summary 
 //   see Hoffmann 2015 for a gentle introduction to the concept
 //   see Schlick (1994) for implementation details
-vec3 get_rgb_fraction_of_light_reflected_on_surface(in float cos_incident_angle, in vec3 characteristic_reflectance)
-{
+vec3 get_rgb_fraction_of_light_reflected_on_surface(
+    in float cos_incident_angle,
+    in vec3 characteristic_reflectance
+){
     vec3 R0 = characteristic_reflectance;
     float _1_u = 1.-cos_incident_angle;
     return R0 + (1.-R0) * _1_u*_1_u*_1_u*_1_u*_1_u;
 }
-// "get_fraction_of_reflected_light_masked_or_shaded" is Schlick's fast approximation for Smith's function
+// "get_fraction_of_light_masked_or_shaded_by_surface" is Schlick's fast approximation for Smith's function
 //   see Hoffmann 2015 for a gentle introduction to the concept
 //   see Schlick (1994) for even more details.
-float get_fraction_of_reflected_light_masked_or_shaded(in float cos_view_angle, in float root_mean_slope_squared)
-{
+float get_fraction_of_light_masked_or_shaded_by_surface(
+    in float cos_view_angle,
+    in float root_mean_slope_squared
+){
     float m = root_mean_slope_squared;
     float v = cos_view_angle;
     float k = sqrt(2.*m*m/PI);
@@ -1079,8 +1116,10 @@ float get_fraction_of_reflected_light_masked_or_shaded(in float cos_view_angle, 
 //   This is the probability of finding a microfacet whose surface normal deviates from the average by a certain angle.
 //   see Hoffmann 2015 for a gentle introduction to the concept.
 //   see Schlick (1994) for even more details.
-float get_fraction_of_microfacets_with_angle(in float cos_angle_of_deviation, in float root_mean_slope_squared)
-{
+float get_fraction_of_microfacets_with_angle(
+    in float cos_angle_of_deviation,
+    in float root_mean_slope_squared
+){
     float m = root_mean_slope_squared;
     float t = cos_angle_of_deviation;
     return exp((t*t-1.)/(m*m*t*t))/(m*m*t*t*t*t);
@@ -1110,7 +1149,13 @@ float get_air_column_density_ratio_along_2d_ray_for_flat_world(
 // "z2" is the closest distance from the ray to the center of the world, squared.
 // "R" is the radius of the world.
 // "H" is the scale height of the atmosphere.
-float approx_air_column_density_ratio_along_2d_ray_for_curved_world(in float x_start, in float x_stop, in float z2, in float R, in float H){
+float approx_air_column_density_ratio_along_2d_ray_for_curved_world(
+    in float x_start,
+    in float x_stop,
+    in float z2,
+    in float R,
+    in float H
+){
     // guide to variable names:
     //  "f*" fraction of travel distance through atmosphere, "dx"
     //  "x*" distance along the ray from closest approach
@@ -1342,8 +1387,12 @@ vec3 get_rgb_fraction_of_light_transmitted_through_fluid_for_flat_world(
 // This function returns a rgb vector that quickly approximates a spectral "bump".
 // Adapted from GPU Gems and Alan Zucconi
 // from https://www.alanzucconi.com/2017/07/15/improving-the-rainbow/
-float bump (in float x, in float edge0, in float edge1, in float height)
-{
+float bump (
+    in float x,
+    in float edge0,
+    in float edge1,
+    in float height
+){
     float center = (edge1 + edge0) / 2.;
     float width = (edge1 - edge0) / 2.;
     float offset = (x - center) / width;
@@ -1352,8 +1401,9 @@ float bump (in float x, in float edge0, in float edge1, in float height)
 // This function returns a rgb vector that best represents color at a given wavelength
 // It is from Alan Zucconi: https://www.alanzucconi.com/2017/07/15/improving-the-rainbow/
 // I've adapted the function so that coefficients are expressed in meters.
-vec3 get_rgb_signal_of_wavelength (in float w)
-{
+vec3 get_rgb_signal_of_wavelength (
+    in float w
+){
     return vec3(
         bump(w, 530e-9, 690e-9, 1.00)+
         bump(w, 410e-9, 460e-9, 0.15),
@@ -1366,16 +1416,16 @@ vec3 get_rgb_signal_of_wavelength (in float w)
 // "GAMMA" is the constant that's used to map between 
 //   rgb signals sent to a monitor and their actual intensity
 const float GAMMA = 2.2;
-vec3 get_rgb_intensity_of_rgb_signal(in vec3 signal)
-{
+vec3 get_rgb_intensity_of_rgb_signal(in vec3 signal
+){
     return vec3(
         pow(signal.x, GAMMA),
         pow(signal.y, GAMMA),
         pow(signal.z, GAMMA)
     );
 }
-vec3 get_rgb_signal_of_rgb_intensity(in vec3 intensity)
-{
+vec3 get_rgb_signal_of_rgb_intensity(in vec3 intensity
+){
     return vec3(
         pow(intensity.x, 1./GAMMA),
         pow(intensity.y, 1./GAMMA),
@@ -1420,7 +1470,7 @@ varying vec4 position_v;
 varying vec3 view_direction_v;
 // "SOLAR_RGB_LUMINOSITY" is the rgb luminosity of earth's sun, in Watts.
 //   It is used to convert the above true color values to absorption coefficients.
-//   You can also generate these numbers by calling get_rgb_intensity_of_light_emitted_by_black_body(SOLAR_TEMPERATURE)
+//   You can also generate these numbers by calling solve_rgb_intensity_of_light_emitted_by_black_body(SOLAR_TEMPERATURE)
 const vec3 SOLAR_RGB_LUMINOSITY = vec3(7247419., 8223259., 8121487.);
 const float AIR_REFRACTIVE_INDEX = 1.000277;
 const float WATER_REFRACTIVE_INDEX = 1.333;
@@ -1467,8 +1517,8 @@ void main() {
     //   it is the fraction of light that's immediately reflected when striking the surface head on.
     // TODO: model refractive index as a function of wavelength
     vec3 F0 = vec3(mix(
-        is_visible_ocean? get_characteristic_reflectance(WATER_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX) : LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE,
-        get_characteristic_reflectance(SNOW_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX),
+        is_visible_ocean? get_fraction_of_light_reflected_on_surface_head_on(WATER_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX) : LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE,
+        get_fraction_of_light_reflected_on_surface_head_on(SNOW_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX),
         snow_coverage*snow_visibility
     ));
     // "n" is the surface normal for a perfectly smooth sphere
@@ -1507,7 +1557,7 @@ void main() {
         );
     vec3 E_surface_reflected = I_surface
         * get_rgb_fraction_of_light_reflected_on_surface(HV, F0)
-        * get_fraction_of_reflected_light_masked_or_shaded(NV, m)
+        * get_fraction_of_light_masked_or_shaded_by_surface(NV, m)
         * get_fraction_of_microfacets_with_angle(NH, m)
         * shadow_visibility // turn off specular reflection if darkness is disabled
         / (4.*PI);
@@ -1545,7 +1595,7 @@ void main() {
         mix(E_ocean_transmitted + E_ocean_scattered,
             I_surface_refracted * NL * SNOW_COLOR,
             snow_coverage*snow_coverage*snow_coverage*snow_visibility);
-    vec3 E_surface_emitted = get_rgb_intensity_of_light_emitted_by_black_body(surface_temperature_v);
+    vec3 E_surface_emitted = solve_rgb_intensity_of_light_emitted_by_black_body(surface_temperature_v);
     // NOTE: we do not filter E_total by atmospheric scattering
     //   that job is done by the atmospheric shader pass, in "atmosphere.glsl.c"
     vec3 E_total =

@@ -20,14 +20,14 @@ var Thermodynamics = (function() {
     }
 
     // returns photon flux density in moles of photons per square meter per second
-    Thermodynamics.get_black_body_emissive_photons_per_watt_between_wavelengths = function(lo, hi, temperature, sample_count, iterations_per_sample) {
+    Thermodynamics.get_photons_per_watt_emitted_by_black_body_between_wavelengths = function(lo, hi, temperature, sample_count, iterations_per_sample) {
         sample_count = sample_count || 1;
         iterations_per_sample = iterations_per_sample || 5;
         var sum = 0;
         var range = hi-lo;
         var δλ = range / sample_count;
         var T = temperature;
-        var F = Thermodynamics.solve_black_body_fraction_between_wavelengths;
+        var F = Thermodynamics.solve_fraction_of_light_emitted_by_black_body_between_wavelengths;
         var E = Thermodynamics.get_energy_of_photon_at_wavelength;
         for (var λ = lo; λ < hi; λ += δλ) {
             sum += F(λ, λ+δλ, T, iterations_per_sample) / E(λ+δλ/2);
@@ -36,7 +36,7 @@ var Thermodynamics = (function() {
     }
 
     // see Lawson 2004, "The Blackbody Fraction, Infinite Series and Spreadsheets"
-    Thermodynamics.solve_black_body_fraction_below_wavelength = function(wavelength, temperature, iterations){ 
+    Thermodynamics.solve_fraction_of_light_emitted_by_black_body_below_wavelength = function(wavelength, temperature, iterations){ 
         iterations = iterations || 5;
         var π = Math.PI;
         var h = Thermodynamics.PLANCK_CONSTANT;
@@ -56,28 +56,28 @@ var Thermodynamics = (function() {
         }
         return 15*sum/(π*π*π*π);
     }
-    Thermodynamics.solve_black_body_fraction_between_wavelengths = function(lo, hi, temperature, iterations){
+    Thermodynamics.solve_fraction_of_light_emitted_by_black_body_between_wavelengths = function(lo, hi, temperature, iterations){
         iterations = iterations || 5;
-        return     Thermodynamics.solve_black_body_fraction_below_wavelength(hi, temperature, iterations) - 
-                Thermodynamics.solve_black_body_fraction_below_wavelength(lo, temperature, iterations);
+        return     Thermodynamics.solve_fraction_of_light_emitted_by_black_body_below_wavelength(hi, temperature, iterations) - 
+                Thermodynamics.solve_fraction_of_light_emitted_by_black_body_below_wavelength(lo, temperature, iterations);
     }
-    Thermodynamics.get_rgb_intensity_of_emitted_light_from_black_body = function(temperature){
-        var I = Thermodynamics.get_black_body_emissive_radiation_flux(temperature);
+    Thermodynamics.solve_rgb_intensity_of_light_emitted_by_black_body = function(temperature){
+        var I = Thermodynamics.get_intensity_of_light_emitted_by_black_body(temperature);
         return Vector(
-                I * Thermodynamics.solve_black_body_fraction_between_wavelengths(600e-9*Units.METER, 700e-9*Units.METER, temperature),
-                I * Thermodynamics.solve_black_body_fraction_between_wavelengths(500e-9*Units.METER, 600e-9*Units.METER, temperature),
-                I * Thermodynamics.solve_black_body_fraction_between_wavelengths(400e-9*Units.METER, 500e-9*Units.METER, temperature)
+                I * Thermodynamics.solve_fraction_of_light_emitted_by_black_body_between_wavelengths(600e-9*Units.METER, 700e-9*Units.METER, temperature),
+                I * Thermodynamics.solve_fraction_of_light_emitted_by_black_body_between_wavelengths(500e-9*Units.METER, 600e-9*Units.METER, temperature),
+                I * Thermodynamics.solve_fraction_of_light_emitted_by_black_body_between_wavelengths(400e-9*Units.METER, 500e-9*Units.METER, temperature)
             );
     }
 
 
 
     // This calculates the radiation (in watts/m^2) that's emitted by a single object
-    Thermodynamics.get_black_body_emissive_radiation_flux = function(temperature) {
+    Thermodynamics.get_intensity_of_light_emitted_by_black_body = function(temperature) {
         return Thermodynamics.STEPHAN_BOLTZMANN_CONSTANT * temperature * temperature * temperature * temperature;
     }
     // This calculates the radiation (in watts/m^2) that's emitted by the surface of an object.
-    Thermodynamics.get_black_body_emissive_radiation_fluxes = function(
+    Thermodynamics.get_intensity_of_light_emitted_by_black_bodies = function(
             temperature,
             result
         ) {

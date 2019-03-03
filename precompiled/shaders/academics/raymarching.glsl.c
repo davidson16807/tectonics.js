@@ -24,7 +24,13 @@ FUNC(float) get_air_column_density_ratio_along_2d_ray_for_flat_world(
 // "z2" is the closest distance from the ray to the center of the world, squared.
 // "R" is the radius of the world.
 // "H" is the scale height of the atmosphere.
-FUNC(float) approx_air_column_density_ratio_along_2d_ray_for_curved_world(IN(float) x_start, IN(float) x_stop, IN(float) z2, IN(float) R, IN(float) H){
+FUNC(float) approx_air_column_density_ratio_along_2d_ray_for_curved_world(
+    IN(float) x_start, 
+    IN(float) x_stop, 
+    IN(float) z2, 
+    IN(float) R, 
+    IN(float) H
+){
 
     // guide to variable names:
     //  "f*" fraction of travel distance through atmosphere, "dx"

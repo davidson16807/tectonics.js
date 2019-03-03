@@ -5,46 +5,46 @@ QUnit.module('Rasters');
 // from https://www.reddit.com/r/askscience/comments/2gerkk/how_much_of_the_heat_from_the_sun_comes_from/
 
 test_value_is_above(
-    Thermodynamics.solve_black_body_fraction_below_wavelength(
+    Thermodynamics.solve_fraction_of_light_emitted_by_black_body_below_wavelength(
         760*Units.NANOMETER, 
         Units.SOLAR_TEMPERATURE
     ),
     0.5,
-    'Thermodynamics.solve_black_body_fraction_below_wavelength',
+    'Thermodynamics.solve_fraction_of_light_emitted_by_black_body_below_wavelength',
     'must predict that the sun will return mostly visible light'
 );
 
 test_value_is_above(
-    Thermodynamics.solve_black_body_fraction_between_wavelengths(
+    Thermodynamics.solve_fraction_of_light_emitted_by_black_body_between_wavelengths(
          380*Units.NANOMETER, 
          760*Units.NANOMETER, 
          Units.SOLAR_TEMPERATURE
      ),
     0.4,
-    'Thermodynamics.solve_black_body_fraction_between_wavelengths',
+    'Thermodynamics.solve_fraction_of_light_emitted_by_black_body_between_wavelengths',
     'must predict that the sun will return mostly visible light'
 );
 
 test_value_is_between(
-    Thermodynamics.get_black_body_emissive_radiation_flux(Units.SOLAR_TEMPERATURE) * 
+    Thermodynamics.get_intensity_of_light_emitted_by_black_body(Units.SOLAR_TEMPERATURE) * 
         SphericalGeometry.get_surface_area(Units.SOLAR_RADIUS) / 
         SphericalGeometry.get_surface_area(Units.ASTRONOMICAL_UNIT),
     0.99*Units.GLOBAL_SOLAR_CONSTANT,
     1.01*Units.GLOBAL_SOLAR_CONSTANT,
-    'Thermodynamics.get_black_body_emissive_radiation_flux',
+    'Thermodynamics.get_intensity_of_light_emitted_by_black_body',
     'must predict the global solar constant to within 10%'
 );
 
 // estimates from Pashiardis 2017
 test_value_is_between(
-    Units.GLOBAL_SOLAR_CONSTANT * Thermodynamics.get_black_body_emissive_photons_per_watt_between_wavelengths(
+    Units.GLOBAL_SOLAR_CONSTANT * Thermodynamics.get_photons_per_watt_emitted_by_black_body_between_wavelengths(
          400*Units.NANOMETER, 
          700*Units.NANOMETER, 
          Units.SOLAR_TEMPERATURE,
     ),
     0.9 * 2443.3 * Units.MICROMOLE / (Units.METER*Units.METER*Units.SECOND),
     1.1 * 2443.3 * Units.MICROMOLE / (Units.METER*Units.METER*Units.SECOND),
-    'Thermodynamics.get_black_body_emissive_photons_per_watt_between_wavelengths',
+    'Thermodynamics.get_photons_per_watt_emitted_by_black_body_between_wavelengths',
     'must predict the global solar constant for photosynthetically active radiation to within 10%'
 );
 
@@ -62,7 +62,7 @@ var earth_heat_flow_estimate = Thermodynamics.solve_entropic_heat_flow(EARTH_DAI
 // estimates from Lorenz 2001
 test_value_is_between( 
     Thermodynamics.solve_entropic_heat_flow(
-            Thermodynamics.get_black_body_emissive_radiation_flux(Units.SOLAR_TEMPERATURE) * 
+            Thermodynamics.get_intensity_of_light_emitted_by_black_body(Units.SOLAR_TEMPERATURE) * 
                 SphericalGeometry.get_surface_area(Units.SOLAR_RADIUS) / 
                 SphericalGeometry.get_surface_area(9.6*Units.ASTRONOMICAL_UNIT)/4, 
             0, 1.
@@ -74,7 +74,7 @@ test_value_is_between(
 );
 test_value_is_between( 
     Thermodynamics.solve_entropic_heat_flow(
-            Thermodynamics.get_black_body_emissive_radiation_flux(Units.SOLAR_TEMPERATURE) * 
+            Thermodynamics.get_intensity_of_light_emitted_by_black_body(Units.SOLAR_TEMPERATURE) * 
                 SphericalGeometry.get_surface_area(Units.SOLAR_RADIUS) / 
                 SphericalGeometry.get_surface_area(1.5*Units.ASTRONOMICAL_UNIT)/4, 
             0, 1.
@@ -115,7 +115,7 @@ var grid = new Grid(new THREE.IcosahedronGeometry(1, 3), {});
 
 test_values_are_between(
     ScalarField.mult_scalar(
-        Thermodynamics.get_black_body_emissive_radiation_fluxes(
+        Thermodynamics.get_intensity_of_light_emitted_by_black_bodies(
             Float32Raster(grid, 5800*Units.KELVIN)
         ),
         SphericalGeometry.get_surface_area(Units.SOLAR_RADIUS) / 
@@ -123,7 +123,7 @@ test_values_are_between(
     ),
     0.9*Units.GLOBAL_SOLAR_CONSTANT,
     1.1*Units.GLOBAL_SOLAR_CONSTANT,
-    'Thermodynamics.get_black_body_emissive_radiation_fluxes',
+    'Thermodynamics.get_intensity_of_light_emitted_by_black_bodies',
     "must predict the global solar constant to within 10%"
 );
 
