@@ -1516,7 +1516,7 @@ vec3 get_rgb_signal_of_rgb_intensity(in vec3 intensity)
  );
 }
 varying vec2 vUv;
-uniform sampler2D background_rgb_intensity;
+uniform sampler2D background_rgb_signal_texture;
 uniform float shaderpass_visibility;
 // Determines the length of a unit of distance within the view, in meters, 
 // it is generally the radius of whatever planet's the focus for the scene.
@@ -1570,7 +1570,7 @@ void main() {
     vec2 clipspace = 2.0 * screenspace - 1.0;
     vec3 view_direction = normalize(view_matrix_inverse * projection_matrix_inverse * vec4(clipspace, 1, 1)).xyz;
     vec3 view_origin = view_matrix_inverse[3].xyz * reference_distance;
-    vec4 background_rgb_signal = texture2D( background_rgb_intensity, vUv );
+    vec4 background_rgb_signal = texture2D( background_rgb_signal_texture, vUv );
     vec3 background_rgb_intensity = insolation_max * get_rgb_intensity_of_rgb_signal(background_rgb_signal.rgb);
     // "beta_air_*" variables are the scattering coefficients for the atmosphere at sea level
     vec3 beta_ray = surface_air_rayleigh_scattering_coefficients;
