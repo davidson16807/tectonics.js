@@ -76,7 +76,7 @@ var Climatology = (function() {
 	}
 	Climatology.get_albedos = function(
 		ocean_fraction,
-		ice_fraction, 
+		snow_fraction, 
 		plant_fraction,
 		material_reflectivity,
 		result) {
@@ -89,15 +89,15 @@ var Climatology = (function() {
 	    var ocean_albedo 	= material_reflectivity.ocean || 0.06;
 	    var land_albedo 	= material_reflectivity.felsic || 0.27;
 	    var plant_albedo 	= material_reflectivity.forest || 0.1;
-	    var ice_albedo 		= material_reflectivity.ice || 0.9;
+	    var snow_albedo 		= material_reflectivity.snow || 0.9;
 
 	    var mix_fsf = Float32RasterInterpolation.mix_fsf;
 	    var mix_sff = Float32RasterInterpolation.mix_sff;
-	    // albedo hierarchy: cloud, ice, ocean, plant, soil
+	    // albedo hierarchy: cloud, snow, ocean, plant, sediment
 	    Float32Raster.fill(albedo, land_albedo);
 		if (plant_fraction !== void 0) {	mix_fsf(albedo, 	plant_albedo, 	plant_fraction, albedo);	}
 		if (ocean_fraction !== void 0) {	mix_fsf(albedo, 	ocean_albedo, 	ocean_fraction, albedo);	}
-		if (ice_fraction !== void 0)   {	mix_fsf(albedo, 	ice_albedo, 	ice_fraction, 	albedo);	}
+		if (snow_fraction !== void 0)   {	mix_fsf(albedo, 	snow_albedo, 	snow_fraction, 	albedo);	}
 		
 		return result;
 	}

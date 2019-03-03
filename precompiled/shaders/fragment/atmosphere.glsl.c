@@ -15,23 +15,20 @@
 varying vec2  vUv;
 uniform sampler2D background_rgb_signal_texture;
 
-uniform float shaderpass_visibility;
 
 // Determines the length of a unit of distance within the view, in meters, 
 // it is generally the radius of whatever world's the focus for the scene.
 // The view uses different units for length to prevent certain issues with
 // floating point precision. 
-uniform float reference_distance;
 
-// CAMERA PROPERTIES -----------------------------------------------------------
+// VIEW PROPERTIES -----------------------------------------------------------
 uniform mat4  projection_matrix_inverse;
 uniform mat4  view_matrix_inverse;
+uniform float reference_distance;
+uniform float shaderpass_visibility;
 
 // WORLD PROPERTIES ------------------------------------------------------------
-// location for the center of the world, in meters
-// currently stuck at 0. until we support multi-world renders
 uniform vec3  world_position;
-// radius of the world being rendered, in meters
 uniform float world_radius;
 
 // LIGHT SOURCE PROPERTIES -----------------------------------------------------

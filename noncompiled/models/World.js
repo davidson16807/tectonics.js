@@ -39,7 +39,7 @@ function World(parameters) {
 	    ocean:  	0.06,
 	    felsic:  	0.27,
 	    forest:  	0.1,
-	    ice:  		0.8,
+	    snow:  		0.8,
 	};
 
 	this.surface_gravity = parameters['surface_gravity'] || (9.8 * Units.METER / (Units.SECOND*Units.SECOND)); // m/s^2
@@ -109,7 +109,7 @@ function World(parameters) {
 			'material_heat_capacity': this.material_heat_capacity,
 			'material_reflectivity'	: this.material_reflectivity,
 			'surface_height' 		: this.lithosphere.surface_height,
-			'ice_coverage' 			: this.hydrosphere.ice_coverage,
+			'snow_coverage' 			: this.hydrosphere.snow_coverage,
 			'ocean_coverage'		: this.hydrosphere.ocean_coverage,
 			'plant_coverage'		: this.biosphere.plant_coverage,
 		});

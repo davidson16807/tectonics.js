@@ -12,7 +12,7 @@ void main() {
 	gradient_v = gradient;
 	plant_coverage_v = plant_coverage;
 	surface_temperature_v = surface_temperature;
-	ice_coverage_v = ice_coverage;
+	snow_coverage_v = snow_coverage;
 	scalar_v = scalar;
 	position_v = modelMatrix * vec4( position, 1.0 );
 

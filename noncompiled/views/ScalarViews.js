@@ -1,9 +1,7 @@
 'use strict';
 
 var scalarViews = {};
-scalarViews.satellite = new RealisticWorldView({canopy_visibility: 1, sediment_visibility: 1});
-scalarViews.soil      = new RealisticWorldView({canopy_visibility: 0, sediment_visibility: 1});
-scalarViews.bedrock   = new RealisticWorldView({canopy_visibility: 0, sediment_visibility: 0});
+scalarViews.satellite = new RealisticWorldView();
 
 scalarViews.npp 	= new ScalarWorldView( 
 		new ColorscaleRasterView( { minColor: 0xffffff, maxColor: 0x00ff00, min: 0., max: 1. }),
@@ -88,9 +86,9 @@ scalarViews.elevation 	= new ScalarWorldView(
 				world.lithosphere.elevation.value();
 		}
 	);
-scalarViews.ice_coverage = new ScalarWorldView( 
+scalarViews.snow_coverage = new ScalarWorldView( 
 		new HeatmapRasterView( { min: 0., max: 1. }),
-		world => world.hydrosphere.ice_coverage.value()
+		world => world.hydrosphere.snow_coverage.value()
 	);
 scalarViews.land_coverage = new ScalarWorldView( 
 		new HeatmapRasterView( { min: 0., max: 1. }),

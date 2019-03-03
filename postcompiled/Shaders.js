@@ -15,14 +15,14 @@ uniform float world_radius;
 attribute float displacement;
 attribute vec3 gradient;
 attribute float surface_temperature;
-attribute float ice_coverage;
+attribute float snow_coverage;
 attribute float plant_coverage;
 attribute float scalar;
 attribute vec3 vector;
 varying float displacement_v;
 varying vec3 gradient_v;
 varying float surface_temperature_v;
-varying float ice_coverage_v;
+varying float snow_coverage_v;
 varying float plant_coverage_v;
 varying float scalar_v;
 // MISCELLANEOUS PROPERTIES
@@ -41,7 +41,7 @@ void main() {
  gradient_v = gradient;
  plant_coverage_v = plant_coverage;
  surface_temperature_v = surface_temperature;
- ice_coverage_v = ice_coverage;
+ snow_coverage_v = snow_coverage;
  scalar_v = scalar;
  position_v = modelMatrix * vec4( position, 1.0 );
  float height = displacement > sealevel? 0.005 : 0.0;
@@ -82,14 +82,14 @@ uniform float world_radius;
 attribute float displacement;
 attribute vec3 gradient;
 attribute float surface_temperature;
-attribute float ice_coverage;
+attribute float snow_coverage;
 attribute float plant_coverage;
 attribute float scalar;
 attribute vec3 vector;
 varying float displacement_v;
 varying vec3 gradient_v;
 varying float surface_temperature_v;
-varying float ice_coverage_v;
+varying float snow_coverage_v;
 varying float plant_coverage_v;
 varying float scalar_v;
 // MISCELLANEOUS PROPERTIES
@@ -107,7 +107,7 @@ void main() {
     displacement_v = displacement;
     gradient_v = gradient;
     plant_coverage_v = plant_coverage;
-    ice_coverage_v = ice_coverage;
+    snow_coverage_v = snow_coverage;
     surface_temperature_v = surface_temperature;
     scalar_v = scalar;
     position_v = modelMatrix * vec4( position, 1.0 );
@@ -145,14 +145,14 @@ uniform float world_radius;
 attribute float displacement;
 attribute vec3 gradient;
 attribute float surface_temperature;
-attribute float ice_coverage;
+attribute float snow_coverage;
 attribute float plant_coverage;
 attribute float scalar;
 attribute vec3 vector;
 varying float displacement_v;
 varying vec3 gradient_v;
 varying float surface_temperature_v;
-varying float ice_coverage_v;
+varying float snow_coverage_v;
 varying float plant_coverage_v;
 varying float scalar_v;
 // MISCELLANEOUS PROPERTIES
@@ -164,7 +164,7 @@ void main() {
  displacement_v = displacement;
  gradient_v = gradient;
  plant_coverage_v = plant_coverage;
- ice_coverage_v = ice_coverage;
+ snow_coverage_v = snow_coverage;
  surface_temperature_v = surface_temperature;
  scalar_v = scalar;
  vector_fraction_traversed_v = vector_fraction_traversed;
@@ -193,14 +193,14 @@ uniform float world_radius;
 attribute float displacement;
 attribute vec3 gradient;
 attribute float surface_temperature;
-attribute float ice_coverage;
+attribute float snow_coverage;
 attribute float plant_coverage;
 attribute float scalar;
 attribute vec3 vector;
 varying float displacement_v;
 varying vec3 gradient_v;
 varying float surface_temperature_v;
-varying float ice_coverage_v;
+varying float snow_coverage_v;
 varying float plant_coverage_v;
 varying float scalar_v;
 // MISCELLANEOUS PROPERTIES
@@ -732,20 +732,17 @@ vec3 get_rgb_signal_of_rgb_intensity(in vec3 intensity)
 }
 varying vec2 vUv;
 uniform sampler2D background_rgb_signal_texture;
-uniform float shaderpass_visibility;
 // Determines the length of a unit of distance within the view, in meters, 
 // it is generally the radius of whatever world's the focus for the scene.
 // The view uses different units for length to prevent certain issues with
 // floating point precision. 
-uniform float reference_distance;
-// CAMERA PROPERTIES -----------------------------------------------------------
+// VIEW PROPERTIES -----------------------------------------------------------
 uniform mat4 projection_matrix_inverse;
 uniform mat4 view_matrix_inverse;
+uniform float reference_distance;
+uniform float shaderpass_visibility;
 // WORLD PROPERTIES ------------------------------------------------------------
-// location for the center of the world, in meters
-// currently stuck at 0. until we support multi-world renders
 uniform vec3 world_position;
-// radius of the world being rendered, in meters
 uniform float world_radius;
 // LIGHT SOURCE PROPERTIES -----------------------------------------------------
 uniform vec3 light_rgb_intensity;
@@ -811,7 +808,7 @@ void main() {
 fragmentShaders.heatmap = `
 varying float displacement_v;
 varying float plant_coverage_v;
-varying float ice_coverage_v;
+varying float snow_coverage_v;
 varying float scalar_v;
 varying vec4 position_v;
 uniform float sealevel;
@@ -836,15 +833,17 @@ void main() {
 fragmentShaders.monochromatic = `
 varying float displacement_v;
 varying float plant_coverage_v;
-varying float ice_coverage_v;
+varying float snow_coverage_v;
 varying float scalar_v;
 varying vec4 position_v;
 uniform float sealevel;
 uniform float ocean_visibility;
+uniform float min_color;
+uniform float max_color;
 void main() {
  vec4 color_without_ocean = mix(
-  vec4(@MINCOLOR,1.),
-  vec4(@MAXCOLOR,1.),
+  vec4(min_color,1.),
+  vec4(max_color,1.),
   scalar_v
  );
  vec4 color_with_ocean = displacement_v < sealevel * ocean_visibility? mix(vec4(0.), color_without_ocean, 0.5) : color_without_ocean;
@@ -1404,7 +1403,7 @@ uniform float world_radius; // radius of the world being rendered, in meters
 varying float displacement_v;
 varying vec3 gradient_v;
 varying float plant_coverage_v;
-varying float ice_coverage_v;
+varying float snow_coverage_v;
 varying float scalar_v;
 varying float surface_temperature_v;
 varying vec4 position_v;
@@ -1441,7 +1440,7 @@ void main() {
     float felsic_coverage = smoothstep(sealevel - 4000., sealevel+5000., displacement_v);
     float mineral_coverage = displacement_v > sealevel? smoothstep(sealevel + 10000., sealevel, displacement_v) : 0.;
     float organic_coverage = smoothstep(30., -30., surface_temperature_v);
-    float ice_coverage = ice_coverage_v;
+    float snow_coverage = snow_coverage_v;
     float plant_coverage = plant_coverage_v * (!is_visible_ocean? 1. : 0.);
     // "beta_ocean_*" variables are the scattering coefficients for seawater
     vec3 beta_ocean_ray = ocean_rayleigh_scattering_coefficients;
@@ -1460,7 +1459,7 @@ void main() {
     vec3 F0 = vec3(mix(
         is_visible_ocean? get_characteristic_reflectance(WATER_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX) : LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE,
         get_characteristic_reflectance(SNOW_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX),
-        ice_coverage*snow_visibility
+        snow_coverage*snow_visibility
     ));
     // "n" is the surface normal for a perfectly smooth sphere
     vec3 n = normalize(position_v.xyz);
@@ -1535,7 +1534,7 @@ void main() {
     vec3 E_surface_diffused =
         mix(E_ocean_transmitted + E_ocean_scattered,
             I_surface_refracted * NL * SNOW_COLOR,
-            ice_coverage*ice_coverage*ice_coverage*snow_visibility);
+            snow_coverage*snow_coverage*snow_coverage*snow_visibility);
     vec3 E_surface_emitted = get_rgb_intensity_of_light_emitted_by_black_body(surface_temperature_v);
     // NOTE: we do not filter E_total by atmospheric scattering
     //   that job is done by the atmospheric shader pass, in "atmosphere.glsl.c"
@@ -1572,7 +1571,7 @@ void main() {
 fragmentShaders.topographic = `
 varying float displacement_v;
 varying float plant_coverage_v;
-varying float ice_coverage_v;
+varying float snow_coverage_v;
 varying float scalar_v;
 varying vec4 position_v;
 uniform float sealevel;

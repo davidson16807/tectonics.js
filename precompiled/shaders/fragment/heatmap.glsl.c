@@ -1,7 +1,7 @@
 
 varying float displacement_v;
 varying float plant_coverage_v;
-varying float ice_coverage_v;
+varying float snow_coverage_v;
 varying float scalar_v;
 varying vec4 position_v;
 

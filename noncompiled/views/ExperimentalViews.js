@@ -20,17 +20,17 @@ experimentalViews.get_varying_albedo 	= new ScalarWorldView(
 	new HeatmapRasterView( { min: 0., max: 1.}),  
 	function (world) {
 
-		// dependencies: sealevel, displacement, mean_anomaly, ice_fraction, precip, npp, lai, plant_fraction, land_fraction
+		// dependencies: sealevel, displacement, mean_anomaly, snow_fraction, precip, npp, lai, plant_fraction, land_fraction
 		var sealevel = world.hydrosphere.sealevel;
 		var land_fraction = Float32RasterInterpolation.linearstep(sealevel-200, sealevel, world.displacement);
 		var temp = AtmosphericModeling.surface_air_temperature(world.grid.pos, world.meanAnomaly, Math.PI*23.5/180);
 
-		var ice_fraction = Float32RasterInterpolation.mix( 
+		var snow_fraction = Float32RasterInterpolation.mix( 
 				1, 0, 
 				Float32RasterInterpolation.linearstep(273.15-10, 273.15, temp)
 			);
 		Float32RasterGraphics.fill_into_selection(
-			ice_fraction, 0.,
+			snow_fraction, 0.,
 			ScalarField.lt_field(
 				world.displacement, 
 				Float32RasterInterpolation.mix(
@@ -39,7 +39,7 @@ experimentalViews.get_varying_albedo 	= new ScalarWorldView(
 					Float32RasterInterpolation.linearstep(273.15-10, 273.15, temp)
 				)
 			),
-			ice_fraction
+			snow_fraction
 		);
 
 		var lat = Float32SphereRaster.latitude(world.grid.pos.y);
@@ -49,7 +49,7 @@ experimentalViews.get_varying_albedo 	= new ScalarWorldView(
 		var npp = PlantBiology.net_primary_productivities(temp, precipitation, npp_max);
 		var lai = PlantBiology.leaf_area_indices(npp, npp_max, lai_max);
 		var plant_fraction = Float32RasterInterpolation.linearstep(0, 2, lai);
-		albedo = AtmosphericModeling.get_varying_albedo(land_fraction, ice_fraction, plant_fraction);
+		albedo = AtmosphericModeling.get_varying_albedo(land_fraction, snow_fraction, plant_fraction);
 		return albedo;
 	}
 );

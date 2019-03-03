@@ -42,7 +42,7 @@ function Hydrosphere(grid, parameters) {
 		Float32Raster(grid),  
 		result => Hydrology.get_ocean_depths(displacement.value(), _this.sealevel.value(), result)
 	); 
-	this.ice_coverage = new Memo(
+	this.snow_coverage = new Memo(
 		Float32Raster(grid),  
 		result => { 
 			if (surface_temperature === void 0) {
@@ -87,7 +87,7 @@ function Hydrosphere(grid, parameters) {
 		this.mesopelagic	.invalidate();
 		this.elevation		.invalidate();
 		this.ocean_depth	.invalidate();
-		this.ice_coverage	.invalidate();
+		this.snow_coverage	.invalidate();
 		this.ocean_coverage	.invalidate();
 	}
 

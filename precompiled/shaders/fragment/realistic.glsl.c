@@ -48,7 +48,7 @@ uniform float world_radius;   // radius of the world being rendered, in meters
 varying float displacement_v;
 varying vec3  gradient_v;
 varying float plant_coverage_v;
-varying float ice_coverage_v;
+varying float snow_coverage_v;
 varying float scalar_v;
 varying float surface_temperature_v;
 varying vec4  position_v;
@@ -96,7 +96,7 @@ void main() {
     float felsic_coverage   = smoothstep(sealevel - 4000., sealevel+5000., displacement_v);
     float mineral_coverage  = displacement_v > sealevel? smoothstep(sealevel + 10000., sealevel, displacement_v) : 0.;
     float organic_coverage  = smoothstep(30., -30., surface_temperature_v); 
-    float ice_coverage      = ice_coverage_v;
+    float snow_coverage      = snow_coverage_v;
     float plant_coverage    = plant_coverage_v * (!is_visible_ocean? 1. : 0.);
 
     // "beta_ocean_*" variables are the scattering coefficients for seawater
@@ -119,7 +119,7 @@ void main() {
     vec3 F0 = vec3(mix(
         is_visible_ocean? get_characteristic_reflectance(WATER_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX) : LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE, 
         get_characteristic_reflectance(SNOW_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX), 
-        ice_coverage*snow_visibility
+        snow_coverage*snow_visibility
     ));
 
     // "n" is the surface normal for a perfectly smooth sphere
@@ -214,7 +214,7 @@ void main() {
     vec3 E_surface_diffused = 
         mix(E_ocean_transmitted + E_ocean_scattered, 
             I_surface_refracted * NL * SNOW_COLOR, 
-            ice_coverage*ice_coverage*ice_coverage*snow_visibility);
+            snow_coverage*snow_coverage*snow_coverage*snow_visibility);
 
     vec3 E_surface_emitted = get_rgb_intensity_of_light_emitted_by_black_body(surface_temperature_v);
 

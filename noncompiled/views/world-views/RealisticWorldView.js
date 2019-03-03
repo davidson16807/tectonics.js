@@ -49,7 +49,7 @@ function RealisticWorldView(shader_return_value) {
         });
         geometry.addAttribute('displacement',   Float32Array, faces.length*3,   1);
         geometry.addAttribute('gradient',       Float32Array, faces.length*3*3, 1);
-        geometry.addAttribute('ice_coverage',   Float32Array, faces.length*3,   1);
+        geometry.addAttribute('snow_coverage',   Float32Array, faces.length*3,   1);
         geometry.addAttribute('surface_temperature',   Float32Array, faces.length*3,   1);
         geometry.addAttribute('plant_coverage', Float32Array, faces.length*3,   1);
         geometry.addAttribute('scalar',         Float32Array, faces.length*3,   1);
@@ -58,7 +58,7 @@ function RealisticWorldView(shader_return_value) {
             attributes: {
               displacement: { type: 'f', value: null },
               gradient:     { type: 'v3',value: null },
-              ice_coverage: { type: 'f', value: null },
+              snow_coverage: { type: 'f', value: null },
               surface_temperature: { type: 'f', value: null },
               plant_coverage: { type: 'f', value: null },
               scalar: { type: 'f', value: null }
@@ -211,7 +211,7 @@ function RealisticWorldView(shader_return_value) {
         update_renderpass_uniform  ('world_radius',         world.radius);
         update_renderpass_attribute('displacement',         world.lithosphere.displacement.value());
         update_renderpass_attribute('surface_temperature',         world.atmosphere.surface_temperature);
-        update_renderpass_attribute('ice_coverage',         world.hydrosphere.ice_coverage.value());
+        update_renderpass_attribute('snow_coverage',         world.hydrosphere.snow_coverage.value());
         update_renderpass_attribute('plant_coverage',       world.biosphere.plant_coverage.value());
         update_renderpass_vector_attribute('gradient',      gradient);
 

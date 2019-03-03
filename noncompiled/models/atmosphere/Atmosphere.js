@@ -69,7 +69,7 @@ function Atmosphere(grid, parameters) {
 
 	this.get_varying_albedo = new Memo(
 		Float32Raster(grid),  
-		// result => Climatology.get_albedos(ocean_coverage.value(), ice_coverage.value(), plant_coverage.value(), material_reflectivity, result),
+		// result => Climatology.get_albedos(ocean_coverage.value(), snow_coverage.value(), plant_coverage.value(), material_reflectivity, result),
 		// result => Climatology.get_albedos(ocean_coverage.value(), undefined, plant_coverage.value(), material_reflectivity, result),
 		result => { Float32Raster.fill(result, 0.2); return result; },
 		false // assume everything gets absorbed initially to prevent circular dependencies
@@ -110,7 +110,7 @@ function Atmosphere(grid, parameters) {
 	var material_reflectivity = undefined;
 	var surface_height 	= undefined;
 	var ocean_coverage 	= undefined;
-	var ice_coverage 	= undefined;
+	var snow_coverage 	= undefined;
 	var plant_coverage 	= undefined;
 	var angular_speed 	= undefined;
 
@@ -120,7 +120,7 @@ function Atmosphere(grid, parameters) {
 		if (material_reflectivity === void 0) { throw '"material_reflectivity" not provided'; }
 		if (surface_height === void 0)	 { throw '"surface_height" not provided'; }
 		if (ocean_coverage === void 0)	 { throw '"ocean_coverage" not provided'; }
-		if (ice_coverage === void 0)	 { throw '"ice_coverage" not provided'; }
+		if (snow_coverage === void 0)	 { throw '"snow_coverage" not provided'; }
 		if (plant_coverage === void 0)	 { throw '"plant_coverage" not provided'; }
 		if (angular_speed === void 0)	 { throw '"angular_speed" not provided'; }
 	}
@@ -131,7 +131,7 @@ function Atmosphere(grid, parameters) {
 		material_reflectivity = dependencies['material_reflectivity'] !== void 0? 	dependencies['material_reflectivity'] 	: material_reflectivity;		
 		surface_height 		= dependencies['surface_height'] 	!== void 0? 	dependencies['surface_height'] 	: surface_height;		
 		ocean_coverage 		= dependencies['ocean_coverage']!== void 0? 	dependencies['ocean_coverage'] 	: ocean_coverage;		
-		ice_coverage 		= dependencies['ice_coverage'] 	!== void 0? 	dependencies['ice_coverage'] 	: ice_coverage;		
+		snow_coverage 		= dependencies['snow_coverage'] 	!== void 0? 	dependencies['snow_coverage'] 	: snow_coverage;		
 		plant_coverage 		= dependencies['plant_coverage']!== void 0? 	dependencies['plant_coverage'] 	: plant_coverage;	
 		angular_speed 		= dependencies['angular_speed'] !== void 0? 	dependencies['angular_speed'] 	: angular_speed;	
 	};
