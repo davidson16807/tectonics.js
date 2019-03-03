@@ -16,7 +16,7 @@ function Atmosphere(grid, parameters) {
 
 	var _this = this;
 	this.scratch = Float32Raster(grid);
-	this.long_term_sealevel_temp = new Memo(
+	this.long_term_sealevel_temperature = new Memo(
 		Float32Raster(grid),  
 		result => { 
 			var long_term_average_insolation = result; // double duty for performance
@@ -50,9 +50,9 @@ function Atmosphere(grid, parameters) {
 			return result;
 		}
 	);
-	this.long_term_surface_temp = new Memo(
+	this.long_term_surface_temperature = new Memo(
 		Float32Raster(grid),  
-		result => ScalarField.sub_scalar_term ( this.long_term_sealevel_temp.value(), surface_height.value(), this.lapse_rate, result ),
+		result => ScalarField.sub_scalar_term ( this.long_term_sealevel_temperature.value(), surface_height.value(), this.lapse_rate, result ),
 	);
 
 	this.average_insolation = Float32Raster(grid);
@@ -63,7 +63,7 @@ function Atmosphere(grid, parameters) {
 	this.net_heat_gain = Float32Raster(grid);
 	this.temperature_delta_rate = Float32Raster(grid);
 	this.temperature_delta = Float32Raster(grid);
-	this.sealevel_temp = undefined;
+	this.sealevel_temperature = undefined;
 	this.surface_temperature = Float32Raster(grid);
 
 
@@ -157,8 +157,8 @@ function Atmosphere(grid, parameters) {
 		};
 		assert_dependencies();
 
-		if (this.sealevel_temp === void 0 || timestep > 7*Units.DAY) {
-			this.sealevel_temp = Float32Raster.copy(this.long_term_sealevel_temp.value(), 	this.sealevel_temp);
+		if (this.sealevel_temperature === void 0 || timestep > 7*Units.DAY) {
+			this.sealevel_temperature = Float32Raster.copy(this.long_term_sealevel_temperature.value(), 	this.sealevel_temperature);
 		} else {
 			get_average_insolation(timestep, 											this.average_insolation);
 			ScalarField.mult_field( this.absorption.value(), this.average_insolation, 	this.absorbed_radiation );
@@ -188,18 +188,18 @@ function Atmosphere(grid, parameters) {
 				this.incoming_heat
 			);
 
-			Thermodynamics.get_black_body_emissive_radiation_fluxes(this.sealevel_temp, this.outgoing_heat);
+			Thermodynamics.get_black_body_emissive_radiation_fluxes(this.sealevel_temperature, this.outgoing_heat);
 			ScalarField.mult_scalar 	( this.outgoing_heat, this.emission_coefficient, 	this.outgoing_heat);
 			Climatology.get_heat_capacities(ocean_coverage.value(), material_heat_capacity, this.get_varying_heat_capacity);
 			ScalarField.sub_field 		( this.incoming_heat, this.outgoing_heat, 			this.net_heat_gain );
 			ScalarField.div_field 		( this.net_heat_gain, this.get_varying_heat_capacity, 			this.temperature_delta_rate );
 			ScalarField.mult_scalar 	( this.temperature_delta_rate, timestep, 			this.temperature_delta );
-			ScalarField.add_field 		( this.temperature_delta, this.sealevel_temp, 		this.sealevel_temp );
+			ScalarField.add_field 		( this.temperature_delta, this.sealevel_temperature, 		this.sealevel_temperature );
 		}
 
-		ScalarField.diffusion_by_constant(this.sealevel_temp, 0.2, this.sealevel_temp);
+		ScalarField.diffusion_by_constant(this.sealevel_temperature, 0.2, this.sealevel_temperature);
 
- 		ScalarField.sub_scalar_term ( this.sealevel_temp, surface_height.value(), this.lapse_rate, this.surface_temperature );
+ 		ScalarField.sub_scalar_term ( this.sealevel_temperature, surface_height.value(), this.lapse_rate, this.surface_temperature );
 
 		// TODO: rename "scalar" to "uniform" across all raster namespaces
 

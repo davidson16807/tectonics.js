@@ -20,15 +20,15 @@ PlantBiology.net_primary_productivities = function(temp, precip, npp_max, result
 	var npp = result;
 
 	// TODO: perf improvements
-	var npp_temp = 0;
+	var npp_temperature = 0;
 	var npp_precip = 0;
 
 	var exp = Math.exp;
 	var min = Math.min;
 	for (var i=0, li=temp.length; i<li; ++i) {
-	    npp_temp 	= 1./(1. + exp(1.315 - (0.5/4.) * (temp[i]-273.15))); 				//temperature limited npp
+	    npp_temperature 	= 1./(1. + exp(1.315 - (0.5/4.) * (temp[i]-273.15))); 				//temperature limited npp
 	    npp_precip 	= (1. - exp(-(precip[i])/800.)); 							//drought limited npp
-	    npp[i] 		= min(npp_temp, npp_precip); 		//realized npp, the most conservative of the two estimates
+	    npp[i] 		= min(npp_temperature, npp_precip); 		//realized npp, the most conservative of the two estimates
 	}
 
 	return result;

@@ -23,7 +23,7 @@ experimentalViews.get_varying_albedo 	= new ScalarWorldView(
 		// dependencies: sealevel, displacement, mean_anomaly, ice_fraction, precip, npp, lai, plant_fraction, land_fraction
 		var sealevel = world.hydrosphere.sealevel;
 		var land_fraction = Float32RasterInterpolation.linearstep(sealevel-200, sealevel, world.displacement);
-		var temp = AtmosphericModeling.surface_air_temp(world.grid.pos, world.meanAnomaly, Math.PI*23.5/180);
+		var temp = AtmosphericModeling.surface_air_temperature(world.grid.pos, world.meanAnomaly, Math.PI*23.5/180);
 
 		var ice_fraction = Float32RasterInterpolation.mix( 
 				1, 0, 

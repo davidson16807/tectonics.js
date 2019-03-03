@@ -114,7 +114,7 @@ function World(parameters) {
 			'plant_coverage'		: this.biosphere.plant_coverage,
 		});
 		this.biosphere.setDependencies({
-			'long_term_surface_temp'	: this.atmosphere.long_term_surface_temp,
+			'long_term_surface_temperature'	: this.atmosphere.long_term_surface_temperature,
 			'precipitation'		: this.atmosphere.precipitation,
 		});
 
