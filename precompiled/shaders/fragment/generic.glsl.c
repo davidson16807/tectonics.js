@@ -1,9 +1,9 @@
 
-varying float vDisplacement;
-varying float vPlantCoverage;
-varying float vIceCoverage;
-varying float vScalar;
-varying vec4 vPosition;
+varying float displacement_v;
+varying float plant_coverage_v;
+varying float ice_coverage_v;
+varying float scalar_v;
+varying vec4 position_v;
 
 uniform float sealevel;
 uniform float sealevel_visibility;

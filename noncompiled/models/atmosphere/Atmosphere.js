@@ -64,7 +64,7 @@ function Atmosphere(grid, parameters) {
 	this.temperature_delta_rate = Float32Raster(grid);
 	this.temperature_delta = Float32Raster(grid);
 	this.sealevel_temp = undefined;
-	this.surface_temp = Float32Raster(grid);
+	this.surface_temperature = Float32Raster(grid);
 
 
 	this.get_varying_albedo = new Memo(
@@ -88,7 +88,7 @@ function Atmosphere(grid, parameters) {
 	); 
 	this.surface_pressure = new Memo(
 		Float32Raster(grid),  
-		result => Climatology.guess_surface_air_pressures( this.surface_temp, lat.value(), material_heat_capacity, 100e3, result)
+		result => Climatology.guess_surface_air_pressures( this.surface_temperature, lat.value(), material_heat_capacity, 100e3, result)
 	); 
 	this.surface_wind_velocity = new Memo(
 		VectorRaster(grid),  
@@ -199,7 +199,7 @@ function Atmosphere(grid, parameters) {
 
 		ScalarField.diffusion_by_constant(this.sealevel_temp, 0.2, this.sealevel_temp);
 
- 		ScalarField.sub_scalar_term ( this.sealevel_temp, surface_height.value(), this.lapse_rate, this.surface_temp );
+ 		ScalarField.sub_scalar_term ( this.sealevel_temp, surface_height.value(), this.lapse_rate, this.surface_temperature );
 
 		// TODO: rename "scalar" to "uniform" across all raster namespaces
 

@@ -45,14 +45,14 @@ uniform vec3  sea_absorption_coefficients;
 uniform vec3  world_position; // location for the center of the world, in meters
 uniform float world_radius;   // radius of the world being rendered, in meters
 
-varying float vDisplacement;
-varying vec3  vGradient;
-varying float vPlantCoverage;
-varying float vIceCoverage;
-varying float vScalar;
-varying float vSurfaceTemp;
-varying vec4  vPosition;
-varying vec3  vViewDirection;
+varying float displacement_v;
+varying vec3  gradient_v;
+varying float plant_coverage_v;
+varying float ice_coverage_v;
+varying float scalar_v;
+varying float surface_temperature_v;
+varying vec4  position_v;
+varying vec3  view_direction_v;
 
 
 // "SOLAR_RGB_LUMINOSITY" is the rgb luminosity of earth's sun, in Watts.
@@ -84,20 +84,20 @@ const float AMBIENT_LIGHT_AESTHETIC_BRIGHTNESS_FACTOR = 0.000001;
 
 void main() {
 
-    bool  is_ocean         = sealevel > vDisplacement;
-    bool  is_visible_ocean = sealevel * sealevel_visibility > vDisplacement;
-    float ocean_depth      = max(sealevel*sealevel_visibility - vDisplacement, 0.);
-    float surface_height   = max(vDisplacement - sealevel*sealevel_visibility, 0.);
+    bool  is_ocean         = sealevel > displacement_v;
+    bool  is_visible_ocean = sealevel * sealevel_visibility > displacement_v;
+    float ocean_depth      = max(sealevel*sealevel_visibility - displacement_v, 0.);
+    float surface_height   = max(displacement_v - sealevel*sealevel_visibility, 0.);
     
     // TODO: pass felsic_coverage in from attribute
     // we currently guess how much rock is felsic depending on displacement
     // Absorption coefficients are physically based.
     // Scattering coefficients have been determined aesthetically.
-    float felsic_coverage   = smoothstep(sealevel - 4000., sealevel+5000., vDisplacement);
-    float mineral_coverage  = vDisplacement > sealevel? smoothstep(sealevel + 10000., sealevel, vDisplacement) : 0.;
-    float organic_coverage  = smoothstep(30., -30., vSurfaceTemp); 
-    float ice_coverage      = vIceCoverage;
-    float plant_coverage    = vPlantCoverage * (!is_visible_ocean? 1. : 0.);
+    float felsic_coverage   = smoothstep(sealevel - 4000., sealevel+5000., displacement_v);
+    float mineral_coverage  = displacement_v > sealevel? smoothstep(sealevel + 10000., sealevel, displacement_v) : 0.;
+    float organic_coverage  = smoothstep(30., -30., surface_temperature_v); 
+    float ice_coverage      = ice_coverage_v;
+    float plant_coverage    = plant_coverage_v * (!is_visible_ocean? 1. : 0.);
 
     // "beta_sea_*" variables are the scattering coefficients for seawater
     vec3  beta_sea_ray = sea_rayleigh_scattering_coefficients;
@@ -123,16 +123,16 @@ void main() {
     ));
 
     // "n" is the surface normal for a perfectly smooth sphere
-    vec3 n = normalize(vPosition.xyz);
+    vec3 n = normalize(position_v.xyz);
 
     // "N" is the surface normal
-    vec3 N = normalize(n + vGradient);
+    vec3 N = normalize(n + gradient_v);
 
     // "L" is the normal vector indicating the direction to the light source
     vec3 L = normalize(mix(n, light_direction, darkness_visibility));
 
     // "V" is the normal vector indicating the direction from the view
-    vec3 V = -vViewDirection;
+    vec3 V = -view_direction_v;
 
     // "H" is the halfway vector between normal and view.
     // It represents the surface normal that's needed to cause reflection.
@@ -216,7 +216,7 @@ void main() {
             I_surface_refracted * NL * SNOW_COLOR, 
             ice_coverage*ice_coverage*ice_coverage*ice_visibility);
 
-    vec3 E_surface_emitted = get_rgb_intensity_of_light_emitted_by_black_body(vSurfaceTemp);
+    vec3 E_surface_emitted = get_rgb_intensity_of_light_emitted_by_black_body(surface_temperature_v);
 
     // NOTE: we do not filter E_total by atmospheric scattering
     //   that job is done by the atmospheric shader pass, in "atmosphere.glsl.c"

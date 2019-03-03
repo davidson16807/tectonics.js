@@ -28,7 +28,7 @@ CsvExporter.world = function (world, options) {
 	var longitude = SphericalGeometry.get_longitudes(grid.pos, 	Float32Raster(world.grid));
 	var elevation = world.hydrosphere.elevation.value();
 	var top_plate_map = world.lithosphere.top_plate_map;
-	var surface_temp = world.atmosphere.surface_temp;
+	var surface_temperature = world.atmosphere.surface_temperature;
 	var precipitation = world.atmosphere.precipitation.value();
 
 	for (var i = 0, li = grid.vertices.length; i < li; i++) {
@@ -37,7 +37,7 @@ CsvExporter.world = function (world, options) {
 			longitude[i] * 180/Math.PI,
 			elevation[i],
 			top_plate_map[i],
-			surface_temp[i] - Units.STANDARD_TEMPERATURE,
+			surface_temperature[i] - Units.STANDARD_TEMPERATURE,
 			precipitation[i],
 		].join() + '\n'
 	}

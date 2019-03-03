@@ -8,21 +8,21 @@ uniform mat4 view_matrix_inverse;
 attribute float displacement;
 attribute vec3 gradient;
 attribute float ice_coverage;
-attribute float surface_temp;
+attribute float surface_temperature;
 attribute float plant_coverage;
 attribute float scalar;
 attribute vec3 vector;
 attribute float vector_fraction_traversed;
-varying float vDisplacement;
-varying vec3 vGradient;
-varying float vIceCoverage;
-varying float vSurfaceTemp;
-varying float vPlantCoverage;
-varying float vScalar;
-varying float vVectorFractionTraversed;
-varying vec3 vViewDirection;
-varying vec3 vViewOrigin;
-varying vec4 vPosition;
+varying float displacement_v;
+varying vec3 gradient_v;
+varying float ice_coverage_v;
+varying float surface_temperature_v;
+varying float plant_coverage_v;
+varying float scalar_v;
+varying float vector_fraction_traversed_v;
+varying vec3 view_direction_v;
+varying vec3 view_origin_v;
+varying vec4 position_v;
 uniform float sealevel;
 // radius of the world to be rendered
 uniform float world_radius;
@@ -37,33 +37,33 @@ float lat(vec3 pos) {
  return asin(pos.y / length(pos));
 }
 void main() {
- vDisplacement = displacement;
- vGradient = gradient;
- vPlantCoverage = plant_coverage;
- vSurfaceTemp = surface_temp;
- vIceCoverage = ice_coverage;
- vScalar = scalar;
- vPosition = modelMatrix * vec4( position, 1.0 );
+ displacement_v = displacement;
+ gradient_v = gradient;
+ plant_coverage_v = plant_coverage;
+ surface_temperature_v = surface_temperature;
+ ice_coverage_v = ice_coverage;
+ scalar_v = scalar;
+ position_v = modelMatrix * vec4( position, 1.0 );
  float height = displacement > sealevel? 0.005 : 0.0;
  float index_offset = INDEX_SPACING * index;
  float focus = lon(cameraPosition) + index_offset;
- float lon_focused = mod(lon(vPosition.xyz) - focus, 2.*PI) - PI;
- float lat_focused = lat(vPosition.xyz); //+ (index*PI);
+ float lon_focused = mod(lon(position_v.xyz) - focus, 2.*PI) - PI;
+ float lat_focused = lat(position_v.xyz); //+ (index*PI);
  bool is_on_edge = lon_focused > PI*0.9 || lon_focused < -PI*0.9;
  vec4 displaced = vec4(
   lon_focused + index_offset,
-  lat(vPosition.xyz), //+ (index*PI), 
+  lat(position_v.xyz), //+ (index*PI), 
   is_on_edge? 0. : length(position),
   1);
  mat4 scaleMatrix = mat4(1);
  scaleMatrix[3] = viewMatrix[3] * reference_distance / world_radius;
  gl_Position = projectionMatrix * scaleMatrix * displaced;
-    vViewDirection = -vPosition.xyz;
-    vViewDirection.y = 0.;
-    vViewDirection = normalize(vViewDirection);
-    vViewOrigin = view_matrix_inverse[3].xyz * reference_distance;
-    vViewOrigin.y = 0.;
-    vViewOrigin = normalize(vViewOrigin);
+    view_direction_v = -position_v.xyz;
+    view_direction_v.y = 0.;
+    view_direction_v = normalize(view_direction_v);
+    view_origin_v = view_matrix_inverse[3].xyz * reference_distance;
+    view_origin_v.y = 0.;
+    view_origin_v = normalize(view_origin_v);
 }
 `;
 vertexShaders.texture = `
@@ -75,21 +75,21 @@ uniform mat4 view_matrix_inverse;
 attribute float displacement;
 attribute vec3 gradient;
 attribute float ice_coverage;
-attribute float surface_temp;
+attribute float surface_temperature;
 attribute float plant_coverage;
 attribute float scalar;
 attribute vec3 vector;
 attribute float vector_fraction_traversed;
-varying float vDisplacement;
-varying vec3 vGradient;
-varying float vIceCoverage;
-varying float vSurfaceTemp;
-varying float vPlantCoverage;
-varying float vScalar;
-varying float vVectorFractionTraversed;
-varying vec3 vViewDirection;
-varying vec3 vViewOrigin;
-varying vec4 vPosition;
+varying float displacement_v;
+varying vec3 gradient_v;
+varying float ice_coverage_v;
+varying float surface_temperature_v;
+varying float plant_coverage_v;
+varying float scalar_v;
+varying float vector_fraction_traversed_v;
+varying vec3 view_direction_v;
+varying vec3 view_origin_v;
+varying vec4 position_v;
 uniform float sealevel;
 // radius of the world to be rendered
 uniform float world_radius;
@@ -104,29 +104,29 @@ float lat(vec3 pos) {
     return asin(pos.y / length(pos));
 }
 void main() {
-    vDisplacement = displacement;
-    vGradient = gradient;
-    vPlantCoverage = plant_coverage;
-    vIceCoverage = ice_coverage;
-    vSurfaceTemp = surface_temp;
-    vScalar = scalar;
-    vPosition = modelMatrix * vec4( position, 1.0 );
+    displacement_v = displacement;
+    gradient_v = gradient;
+    plant_coverage_v = plant_coverage;
+    ice_coverage_v = ice_coverage;
+    surface_temperature_v = surface_temperature;
+    scalar_v = scalar;
+    position_v = modelMatrix * vec4( position, 1.0 );
     float index_offset = INDEX_SPACING * index;
     float focus = lon(cameraPosition) + index_offset;
-    float lon_focused = mod(lon(vPosition.xyz) - focus, 2.*PI) - PI + index_offset;
-    float lat_focused = lat(vPosition.xyz); //+ (index*PI);
+    float lon_focused = mod(lon(position_v.xyz) - focus, 2.*PI) - PI + index_offset;
+    float lat_focused = lat(position_v.xyz); //+ (index*PI);
     float height = displacement > sealevel? 0.005 : 0.0;
     gl_Position = vec4(
         lon_focused / PI,
         lat_focused / (PI/2.),
         -height,
         1);
-    vViewDirection = -vPosition.xyz;
-    vViewDirection.y = 0.;
-    vViewDirection = normalize(vViewDirection);
-    vViewOrigin = view_matrix_inverse[3].xyz * reference_distance;
-    vViewOrigin.y = 0.;
-    vViewOrigin = normalize(vViewOrigin);
+    view_direction_v = -position_v.xyz;
+    view_direction_v.y = 0.;
+    view_direction_v = normalize(view_direction_v);
+    view_origin_v = view_matrix_inverse[3].xyz * reference_distance;
+    view_origin_v.y = 0.;
+    view_origin_v = normalize(view_origin_v);
 }
 `;
 vertexShaders.orthographic = `
@@ -138,21 +138,21 @@ uniform mat4 view_matrix_inverse;
 attribute float displacement;
 attribute vec3 gradient;
 attribute float ice_coverage;
-attribute float surface_temp;
+attribute float surface_temperature;
 attribute float plant_coverage;
 attribute float scalar;
 attribute vec3 vector;
 attribute float vector_fraction_traversed;
-varying float vDisplacement;
-varying vec3 vGradient;
-varying float vIceCoverage;
-varying float vSurfaceTemp;
-varying float vPlantCoverage;
-varying float vScalar;
-varying float vVectorFractionTraversed;
-varying vec3 vViewDirection;
-varying vec3 vViewOrigin;
-varying vec4 vPosition;
+varying float displacement_v;
+varying vec3 gradient_v;
+varying float ice_coverage_v;
+varying float surface_temperature_v;
+varying float plant_coverage_v;
+varying float scalar_v;
+varying float vector_fraction_traversed_v;
+varying vec3 view_direction_v;
+varying vec3 view_origin_v;
+varying vec4 position_v;
 uniform float sealevel;
 // radius of the world to be rendered
 uniform float world_radius;
@@ -161,20 +161,20 @@ uniform float reference_distance;
 uniform float index;
 uniform float animation_phase_angle;
 void main() {
- vDisplacement = displacement;
- vGradient = gradient;
- vPlantCoverage = plant_coverage;
- vIceCoverage = ice_coverage;
- vSurfaceTemp = surface_temp;
- vScalar = scalar;
- vVectorFractionTraversed = vector_fraction_traversed;
- vPosition = modelMatrix * vec4( position, 1.0 );
+ displacement_v = displacement;
+ gradient_v = gradient;
+ plant_coverage_v = plant_coverage;
+ ice_coverage_v = ice_coverage;
+ surface_temperature_v = surface_temperature;
+ scalar_v = scalar;
+ vector_fraction_traversed_v = vector_fraction_traversed;
+ position_v = modelMatrix * vec4( position, 1.0 );
  float surface_height = max(displacement - sealevel, 0.);
  vec4 displacement = vec4( position * (world_radius + surface_height) / reference_distance, 1.0 );
  gl_Position = projectionMatrix * modelViewMatrix * displacement;
     vec2 clipspace = gl_Position.xy / gl_Position.w;
-    vViewDirection = normalize(view_matrix_inverse * projection_matrix_inverse * vec4(clipspace, 1, 1)).xyz;
-    vViewOrigin = view_matrix_inverse[3].xyz * reference_distance;
+    view_direction_v = normalize(view_matrix_inverse * projection_matrix_inverse * vec4(clipspace, 1, 1)).xyz;
+    view_origin_v = view_matrix_inverse[3].xyz * reference_distance;
 }
 `;
 vertexShaders.passthrough = `
@@ -728,14 +728,14 @@ uniform vec3 sea_absorption_coefficients;
 // WORLD PROPERTIES ------------------------------------------------------------
 uniform vec3 world_position; // location for the center of the world, in meters
 uniform float world_radius; // radius of the world being rendered, in meters
-varying float vDisplacement;
-varying vec3 vGradient;
-varying float vPlantCoverage;
-varying float vIceCoverage;
-varying float vScalar;
-varying float vSurfaceTemp;
-varying vec4 vPosition;
-varying vec3 vViewDirection;
+varying float displacement_v;
+varying vec3 gradient_v;
+varying float plant_coverage_v;
+varying float ice_coverage_v;
+varying float scalar_v;
+varying float surface_temperature_v;
+varying vec4 position_v;
+varying vec3 view_direction_v;
 // "SOLAR_RGB_LUMINOSITY" is the rgb luminosity of earth's sun, in Watts.
 //   It is used to convert the above true color values to absorption coefficients.
 //   You can also generate these numbers by calling get_rgb_intensity_of_light_emitted_by_black_body(SOLAR_TEMPERATURE)
@@ -757,19 +757,19 @@ const float SNOW_REFRACTIVE_INDEX = 1.333;
 //   also keep in mind this: https://en.wikipedia.org/wiki/Airglow
 const float AMBIENT_LIGHT_AESTHETIC_BRIGHTNESS_FACTOR = 0.000001;
 void main() {
-    bool is_ocean = sealevel > vDisplacement;
-    bool is_visible_ocean = sealevel * sealevel_visibility > vDisplacement;
-    float ocean_depth = max(sealevel*sealevel_visibility - vDisplacement, 0.);
-    float surface_height = max(vDisplacement - sealevel*sealevel_visibility, 0.);
+    bool is_ocean = sealevel > displacement_v;
+    bool is_visible_ocean = sealevel * sealevel_visibility > displacement_v;
+    float ocean_depth = max(sealevel*sealevel_visibility - displacement_v, 0.);
+    float surface_height = max(displacement_v - sealevel*sealevel_visibility, 0.);
     // TODO: pass felsic_coverage in from attribute
     // we currently guess how much rock is felsic depending on displacement
     // Absorption coefficients are physically based.
     // Scattering coefficients have been determined aesthetically.
-    float felsic_coverage = smoothstep(sealevel - 4000., sealevel+5000., vDisplacement);
-    float mineral_coverage = vDisplacement > sealevel? smoothstep(sealevel + 10000., sealevel, vDisplacement) : 0.;
-    float organic_coverage = smoothstep(30., -30., vSurfaceTemp);
-    float ice_coverage = vIceCoverage;
-    float plant_coverage = vPlantCoverage * (!is_visible_ocean? 1. : 0.);
+    float felsic_coverage = smoothstep(sealevel - 4000., sealevel+5000., displacement_v);
+    float mineral_coverage = displacement_v > sealevel? smoothstep(sealevel + 10000., sealevel, displacement_v) : 0.;
+    float organic_coverage = smoothstep(30., -30., surface_temperature_v);
+    float ice_coverage = ice_coverage_v;
+    float plant_coverage = plant_coverage_v * (!is_visible_ocean? 1. : 0.);
     // "beta_sea_*" variables are the scattering coefficients for seawater
     vec3 beta_sea_ray = sea_rayleigh_scattering_coefficients;
     vec3 beta_sea_mie = sea_mie_scattering_coefficients;
@@ -790,13 +790,13 @@ void main() {
         ice_coverage*ice_visibility
     ));
     // "n" is the surface normal for a perfectly smooth sphere
-    vec3 n = normalize(vPosition.xyz);
+    vec3 n = normalize(position_v.xyz);
     // "N" is the surface normal
-    vec3 N = normalize(n + vGradient);
+    vec3 N = normalize(n + gradient_v);
     // "L" is the normal vector indicating the direction to the light source
     vec3 L = normalize(mix(n, light_direction, darkness_visibility));
     // "V" is the normal vector indicating the direction from the view
-    vec3 V = -vViewDirection;
+    vec3 V = -view_direction_v;
     // "H" is the halfway vector between normal and view.
     // It represents the surface normal that's needed to cause reflection.
     // It can also be thought of as the surface normal of a microfacet that's 
@@ -863,7 +863,7 @@ void main() {
         mix(E_sea_transmitted + E_sea_scattered,
             I_surface_refracted * NL * SNOW_COLOR,
             ice_coverage*ice_coverage*ice_coverage*ice_visibility);
-    vec3 E_surface_emitted = get_rgb_intensity_of_light_emitted_by_black_body(vSurfaceTemp);
+    vec3 E_surface_emitted = get_rgb_intensity_of_light_emitted_by_black_body(surface_temperature_v);
     // NOTE: we do not filter E_total by atmospheric scattering
     //   that job is done by the atmospheric shader pass, in "atmosphere.glsl.c"
     vec3 E_total =
@@ -874,30 +874,30 @@ void main() {
 }
 `;
 fragmentShaders.monochromatic = `
-varying float vDisplacement;
-varying float vPlantCoverage;
-varying float vIceCoverage;
-varying float vScalar;
-varying vec4 vPosition;
+varying float displacement_v;
+varying float plant_coverage_v;
+varying float ice_coverage_v;
+varying float scalar_v;
+varying vec4 position_v;
 uniform float sealevel;
 uniform float sealevel_visibility;
 void main() {
  vec4 uncovered = mix(
   vec4(@MINCOLOR,1.),
   vec4(@MAXCOLOR,1.),
-  vScalar
+  scalar_v
  );
  vec4 ocean = mix(vec4(0.), uncovered, 0.5);
- vec4 sea_covered = vDisplacement < sealevel * sealevel_visibility? ocean : uncovered;
+ vec4 sea_covered = displacement_v < sealevel * sealevel_visibility? ocean : uncovered;
  gl_FragColor = sea_covered;
 }
 `;
 fragmentShaders.heatmap = `
-varying float vDisplacement;
-varying float vPlantCoverage;
-varying float vIceCoverage;
-varying float vScalar;
-varying vec4 vPosition;
+varying float displacement_v;
+varying float plant_coverage_v;
+varying float ice_coverage_v;
+varying float scalar_v;
+varying vec4 position_v;
 uniform float sealevel;
 uniform float sealevel_visibility;
 //converts float from 0-1 to a heat map visualtion
@@ -912,18 +912,18 @@ vec4 heat (float v) {
  );
 }
 void main() {
- vec4 uncovered = heat( vScalar );
+ vec4 uncovered = heat( scalar_v );
  vec4 ocean = mix(vec4(0.), uncovered, 0.5);
- vec4 sea_covered = vDisplacement < sealevel * sealevel_visibility? ocean : uncovered;
+ vec4 sea_covered = displacement_v < sealevel * sealevel_visibility? ocean : uncovered;
  gl_FragColor = sea_covered;
 }
 `;
 fragmentShaders.topographic = `
-varying float vDisplacement;
-varying float vPlantCoverage;
-varying float vIceCoverage;
-varying float vScalar;
-varying vec4 vPosition;
+varying float displacement_v;
+varying float plant_coverage_v;
+varying float ice_coverage_v;
+varying float scalar_v;
+varying vec4 position_v;
 uniform float sealevel;
 uniform float sealevel_visibility;
 //converts a float ranging from [-1,1] to a topographic map visualization
@@ -935,53 +935,53 @@ void main() {
     color = mix(
         color,
         vec3(0.5,0.5,1),
-        smoothstep(-1., -0.01, vScalar)
+        smoothstep(-1., -0.01, scalar_v)
     );
     //lowland
     color = mix(
         color,
         vec3(0,0.55,0),
-        smoothstep(-0.01, 0.01, vScalar)
+        smoothstep(-0.01, 0.01, scalar_v)
     );
     //highland
     color = mix(
         color,
         vec3(0.95,0.95,0),
-        smoothstep(0., 0.45, vScalar)
+        smoothstep(0., 0.45, scalar_v)
     );
     //mountain
     color = mix(
         color,
         vec3(0.5,0.5,0),
-        smoothstep(0.2, 0.7, vScalar)
+        smoothstep(0.2, 0.7, scalar_v)
     );
     //mountain
     color = mix(
         color,
         vec3(0.5,0.5,0.5),
-        smoothstep(0.4, 0.8, vScalar)
+        smoothstep(0.4, 0.8, scalar_v)
     );
     //snow cap
     color = mix(
         color,
         vec3(0.95),
-        smoothstep(0.75, 1., vScalar)
+        smoothstep(0.75, 1., scalar_v)
     );
  gl_FragColor = vec4(color, 1.);
 }
 `;
 fragmentShaders.surface_normal_map = `
-varying float vDisplacement;
-varying vec3 vGradient;
-varying vec4 vPosition;
+varying float displacement_v;
+varying vec3 gradient_v;
+varying vec4 position_v;
 uniform float sealevel;
 uniform float sealevel_visibility;
 void main() {
     // CODE to generate a tangent-space normal map:
  // "n" is the surface normal for a perfectly smooth sphere
-    vec3 n = normalize(vPosition.xyz);
+    vec3 n = normalize(position_v.xyz);
     // "N" is the actual surface normal as reported by the gradient of displacement
-    vec3 N = normalize(n + vGradient);
+    vec3 N = normalize(n + gradient_v);
     // "j" is coordinate basis for the y axis
     vec3 j = vec3(0,1,0);
     // "u" is the left/right axis on a uv map
@@ -996,9 +996,9 @@ void main() {
 fragmentShaders.vectorField = `
 const float PI = 3.14159265358979;
 uniform float animation_phase_angle;
-varying float vVectorFractionTraversed;
+varying float vector_fraction_traversed_v;
 void main() {
- float state = (cos(2.*PI*vVectorFractionTraversed - animation_phase_angle) + 1.) / 2.;
+ float state = (cos(2.*PI*vector_fraction_traversed_v - animation_phase_angle) + 1.) / 2.;
  gl_FragColor = vec4(state) * vec4(vec3(0.8),0.) + vec4(vec3(0.2),0.);
 }
 `;

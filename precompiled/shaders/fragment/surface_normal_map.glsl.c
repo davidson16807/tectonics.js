@@ -1,7 +1,7 @@
 
-varying float vDisplacement;
-varying vec3  vGradient;
-varying vec4  vPosition;
+varying float displacement_v;
+varying vec3  gradient_v;
+varying vec4  position_v;
 
 uniform float sealevel;
 uniform float sealevel_visibility;
@@ -10,9 +10,9 @@ void main() {
     // CODE to generate a tangent-space normal map:
 
 	// "n" is the surface normal for a perfectly smooth sphere
-    vec3 n = normalize(vPosition.xyz);
+    vec3 n = normalize(position_v.xyz);
     // "N" is the actual surface normal as reported by the gradient of displacement
-    vec3 N = normalize(n + vGradient);
+    vec3 N = normalize(n + gradient_v);
     // "j" is coordinate basis for the y axis
     vec3 j = vec3(0,1,0);
     // "u" is the left/right axis on a uv map

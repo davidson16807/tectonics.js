@@ -1,9 +1,9 @@
 
-varying float vDisplacement;
-varying float vPlantCoverage;
-varying float vIceCoverage;
-varying float vScalar;
-varying vec4 vPosition;
+varying float displacement_v;
+varying float plant_coverage_v;
+varying float ice_coverage_v;
+varying float scalar_v;
+varying vec4 position_v;
 
 uniform float sealevel;
 uniform float sealevel_visibility;
@@ -18,37 +18,37 @@ void main() {
     color = mix(
         color,
         vec3(0.5,0.5,1),
-        smoothstep(-1., -0.01, vScalar)
+        smoothstep(-1., -0.01, scalar_v)
     );
     //lowland
     color = mix(
         color,
         vec3(0,0.55,0),
-        smoothstep(-0.01, 0.01, vScalar)
+        smoothstep(-0.01, 0.01, scalar_v)
     );
     //highland
     color = mix(
         color,
         vec3(0.95,0.95,0),
-        smoothstep(0., 0.45, vScalar)
+        smoothstep(0., 0.45, scalar_v)
     );
     //mountain
     color = mix(
         color,
         vec3(0.5,0.5,0),
-        smoothstep(0.2, 0.7, vScalar)
+        smoothstep(0.2, 0.7, scalar_v)
     );
     //mountain
     color = mix(
         color,
         vec3(0.5,0.5,0.5),
-        smoothstep(0.4, 0.8, vScalar)
+        smoothstep(0.4, 0.8, scalar_v)
     );
     //snow cap
     color = mix(
         color,
         vec3(0.95),
-        smoothstep(0.75, 1., vScalar)
+        smoothstep(0.75, 1., scalar_v)
     );
 	gl_FragColor = vec4(color, 1.);
 }

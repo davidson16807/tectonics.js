@@ -7,23 +7,23 @@ uniform mat4  view_matrix_inverse;
 
 attribute float displacement;
 attribute vec3  gradient;
+attribute float surface_temperature;
 attribute float ice_coverage;
-attribute float surface_temp;
 attribute float plant_coverage;
 attribute float scalar;
 attribute vec3  vector;
 attribute float vector_fraction_traversed;
 
-varying float vDisplacement;
-varying vec3  vGradient;
-varying float vIceCoverage;
-varying float vSurfaceTemp;
-varying float vPlantCoverage;
-varying float vScalar;
-varying float vVectorFractionTraversed;
-varying vec3  vViewDirection;
-varying vec3  vViewOrigin;
-varying vec4  vPosition;
+varying float displacement_v;
+varying vec3  gradient_v;
+varying float surface_temperature_v;
+varying float ice_coverage_v;
+varying float plant_coverage_v;
+varying float scalar_v;
+varying float vector_fraction_traversed_v;
+varying vec3  view_direction_v;
+varying vec3  view_origin_v;
+varying vec4  position_v;
 
 uniform float sealevel;
 // radius of the world to be rendered

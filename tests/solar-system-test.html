@@ -52,7 +52,7 @@
 
 <script type="x-shader/x-vertex" id="particle-vertex-shader">
 	varying vec3 vColor;
-	varying vec3 vPosition;
+	varying vec3 position_v;
 	attribute float radius;
 	attribute vec3 color;
     const float sun_radius = 695e6; //meters
@@ -60,7 +60,7 @@
 	//USER_INPUT_GOES_HERE
 
 	void main() {
-		vPosition = position;
+		position_v = position;
 		vColor = color;
 		gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.);
 		gl_PointSize = 10. * log(radius)/log(sun_radius);
@@ -69,7 +69,7 @@
 <script type="x-shader/x-fragment" id="particle-fragment-shader">
     const float PI = 3.1415926;
 
-    varying vec3 vPosition;
+    varying vec3 position_v;
     varying vec3 vColor;
 
     //USER_INPUT_GOES_HERE

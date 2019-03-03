@@ -45,14 +45,14 @@ function Hydrosphere(grid, parameters) {
 	this.ice_coverage = new Memo(
 		Float32Raster(grid),  
 		result => { 
-			if (surface_temp === void 0) {
+			if (surface_temperature === void 0) {
 				Float32Raster.fill(result, 0);
 				return result;
 			}
 			var freezing_point = 273.15; // TODO: move this to Atmosphere, and update this to reflect surface_pressure
 			Float32RasterInterpolation.mix(
 					1, 0, 
-					Float32RasterInterpolation.linearstep(freezing_point-5, freezing_point, surface_temp),
+					Float32RasterInterpolation.linearstep(freezing_point-5, freezing_point, surface_temperature),
 					result
 				);
 			Float32RasterGraphics.fill_into_selection(
@@ -62,7 +62,7 @@ function Hydrosphere(grid, parameters) {
 					Float32RasterInterpolation.mix(
 						_this.mesopelagic.value(), 
 						_this.epipelagic.value(),
-						Float32RasterInterpolation.linearstep(freezing_point-5, freezing_point, surface_temp)
+						Float32RasterInterpolation.linearstep(freezing_point-5, freezing_point, surface_temperature)
 					)
 				),
 				result
@@ -92,19 +92,19 @@ function Hydrosphere(grid, parameters) {
 	}
 
 	// private variables
-	var surface_temp = undefined;
+	var surface_temperature = undefined;
 	var displacement = undefined;
 	var material_density = undefined;
 
 	function assert_dependencies() {
-		// NOTE: surface_temp is not a strict requirement
-		// if (surface_temp === void 0)	 { throw '"surface_temp" not provided'; }
+		// NOTE: surface_temperature is not a strict requirement
+		// if (surface_temperature === void 0)	 { throw '"surface_temperature" not provided'; }
 		if (displacement === void 0)	 { throw '"displacement" not provided'; }
 		if (material_density === void 0) { throw '"material_density" not provided'; }
 	}
 
 	this.setDependencies = function(dependencies) {
-		surface_temp 	= dependencies['surface_temp'] 		!== void 0? dependencies['surface_temp'] 		: surface_temp;
+		surface_temperature 	= dependencies['surface_temperature'] 		!== void 0? dependencies['surface_temperature'] 		: surface_temperature;
 		displacement 	= dependencies['displacement'] 		!== void 0? dependencies['displacement'] 		: displacement;
 		material_density= dependencies['material_density'] 	!== void 0? dependencies['material_density'] 	: material_density;
 	}

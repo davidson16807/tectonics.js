@@ -31,7 +31,7 @@ scalarViews.plate_count 	= new ScalarWorldView(
 	);
 scalarViews.temp 	= new ScalarWorldView( 
 		new HeatmapRasterView( { min: -20., max: 30. }),
-		(world, result) => ScalarField.sub_scalar(world.atmosphere.surface_temp, 273.15, result)
+		(world, result) => ScalarField.sub_scalar(world.atmosphere.surface_temperature, 273.15, result)
 	);
 scalarViews.precipitation 	= new ScalarWorldView( 
 		new HeatmapRasterView( { min: 2000., max: 1. }),
