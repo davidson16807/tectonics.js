@@ -16,7 +16,7 @@ function RealisticWorldView(shader_return_value) {
     var shaderpass = new THREE.ShaderPass({
         uniforms: {
             shaderpass_visibility:             { type: 'f', value: 0 },
-            background_rgb_intensity_texture:  { type: "t", value: null },
+            background_rgb_signal_texture:  { type: "t", value: null },
             
             projection_matrix_inverse:  { type: "m4",value: new THREE.Matrix4()         },
             view_matrix_inverse:        { type: "m4",value: new THREE.Matrix4()         },
@@ -36,7 +36,7 @@ function RealisticWorldView(shader_return_value) {
         },
         vertexShader:   vertexShaders.passthrough,
         fragmentShader: fragmentShaders.atmosphere,
-    }, 'background_rgb_intensity_texture');
+    }, 'background_rgb_signal_texture');
     shaderpass.renderToScreen = true;
 
     function create_mesh(world, options) {
@@ -177,9 +177,9 @@ function RealisticWorldView(shader_return_value) {
         var atmosphere_scale_height = 
             Thermodynamics.BOLTZMANN_CONSTANT * atmosphere_temperature / (world.surface_gravity * average_molecular_mass_of_air);
 
-        // earth's surface density times fraction of atmosphere that is not water vapor (by mass)
+        // earth's surface density times fraction of atmosphere that is not ocean vapor (by mass)
         var surface_air_rayleigh_scatterer_density = 1.217*Units.KILOGRAM * (1.0 - 1.2e15/5.1e18);
-        // earth's surface density times fraction of atmosphere that is water vapor (by mass)
+        // earth's surface density times fraction of atmosphere that is ocean vapor (by mass)
         var surface_air_mie_scatterer_density      = 1.217*Units.KILOGRAM * (      1.2e15/5.1e18);
         // NOTE: NOT USED, intended to eventually represent absorption
         var surface_air_absorber_density = 0;

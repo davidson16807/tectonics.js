@@ -1,3 +1,4 @@
+#include "precompiled/shaders/vertex/template.glsl.c"
 
 float lon(vec3 pos) {
 	return atan(-pos.z, pos.x) + PI;

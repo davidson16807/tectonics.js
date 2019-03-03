@@ -17,7 +17,7 @@ function VectorRasterView(options) {
 		var geometry = new THREE.Geometry();
 		var material = new THREE.ShaderMaterial({
 		        vertexShader: 	options_.vertexShader,
-		        fragmentShader: fragmentShaders.vectorField,
+		        fragmentShader: fragmentShaders.vector_field,
 		        attributes: {
 					vector_fraction_traversed: { type: 'f', value: [] },
 		        },

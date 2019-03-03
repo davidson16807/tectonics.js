@@ -1,3 +1,4 @@
+#include "precompiled/shaders/vertex/template.glsl.c"
 
 void main() {
 	displacement_v = displacement;

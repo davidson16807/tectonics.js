@@ -12,7 +12,7 @@
 #include "precompiled/shaders/academics/electronics.glsl.c"
 
 // Determines the length of a unit of distance within the view, in meters, 
-// it is generally the radius of whatever planet's the focus for the scene.
+// it is generally the radius of whatever world's the focus for the scene.
 // The view uses different units for length to prevent certain issues with
 // floating point precision. 
 
@@ -161,7 +161,7 @@ void main() {
     // "I_surface" is the intensity of light that reaches the surface after being filtered by atmosphere
     vec3 I_surface = I_sun 
       * get_rgb_fraction_of_refracted_light_transmitted_through_atmosphere(
-            // NOTE: we nudge the origin of light ray by a small amount so that collision isn't detected with the planet
+            // NOTE: we nudge the origin of light ray by a small amount so that collision isn't detected with the world
             1.000001 * position, L, 3.*world_radius,
             world_position, world_radius, atmosphere_scale_height, beta_air_ray, beta_air_mie, beta_air_abs
         );

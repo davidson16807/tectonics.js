@@ -93,7 +93,7 @@ var Climatology = (function() {
 
 	    var mix_fsf = Float32RasterInterpolation.mix_fsf;
 	    var mix_sff = Float32RasterInterpolation.mix_sff;
-	    // albedo hierarchy: cloud, ice, water, plant, soil
+	    // albedo hierarchy: cloud, ice, ocean, plant, soil
 	    Float32Raster.fill(albedo, land_albedo);
 		if (plant_fraction !== void 0) {	mix_fsf(albedo, 	plant_albedo, 	plant_fraction, albedo);	}
 		if (ocean_fraction !== void 0) {	mix_fsf(albedo, 	ocean_albedo, 	ocean_fraction, albedo);	}
@@ -108,7 +108,7 @@ var Climatology = (function() {
 
 	    result = result || Float32Raster(ocean_fraction.grid);
 
-	    var ocean_heat_capacity 	= material_heat_capacity.ocean || 30e7; // heat capacity of 1m^2 of 75m water column, the ocean's "mixing layer"
+	    var ocean_heat_capacity 	= material_heat_capacity.ocean || 30e7; // heat capacity of 1m^2 of 75m ocean column, the ocean's "mixing layer"
 	    var land_heat_capacity		= material_heat_capacity.felsic || 1e7; // heat capacity of 1m^2 air column on earth
 
 	    var mix_fsf = Float32RasterInterpolation.mix_fsf;

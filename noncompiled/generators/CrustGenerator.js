@@ -41,14 +41,14 @@ CrustGenerator.generate = function (height_ranks, hypsography, attribute_height_
 };
 
 CrustGenerator.early_earth_hypsography = function(random) {
-	var water_fraction = 0.95; // Earth = 0.71
-	return random.uniform(0,1) < water_fraction? 
+	var ocean_fraction = 0.95; // Earth = 0.71
+	return random.uniform(0,1) < ocean_fraction? 
 		random.normal(-4019,1113) :
 		random.normal(797,1169);
 };
 CrustGenerator.modern_earth_hypsography = function(random) {
-	var water_fraction = 0.6; // 60% of earth's crust is oceanic
-	return random.uniform(0,1) < water_fraction? 
+	var ocean_fraction = 0.6; // 60% of earth's crust is oceanic
+	return random.uniform(0,1) < ocean_fraction? 
 		random.normal(-4019,1113) :
 		random.normal(797,1169);
 };

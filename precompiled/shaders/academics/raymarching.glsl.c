@@ -271,7 +271,7 @@ vec3 get_rgb_intensity_of_light_scattered_from_fluid(
     // "sigma_ratio" is the column density ratio of the full path of light relative to the distance along the incoming path
     // Since water is treated as incompressible, the density remains constant, 
     //   so they are effectively the distances traveled along their respective paths.
-    // TODO: model vector of refracted light within water
+    // TODO: model vector of refracted light within ocean
     float sigma_V  = ocean_depth / NV;
     float sigma_L = ocean_depth / NL;
     float sigma_ratio = 1. + NV/NL;

@@ -9,7 +9,7 @@ function World(parameters) {
 
 	// all heat capacities in Joules per Kelvin
 	this.material_heat_capacity = parameters['material_heat_capacity'] || {
-	    ocean  : 30e7, 	// heat capacity of 1m^2 of 75m water column, the ocean's "mixing layer"
+	    ocean  : 30e7, 	// heat capacity of 1m^2 of 75m ocean column, the ocean's "mixing layer"
 	    felsic : 1e7, 	// heat capacity of 1m^2 air column on earth
 	    air : 1e7, 	// heat capacity of 1m^2 air column on earth
 	}

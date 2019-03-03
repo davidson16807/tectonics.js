@@ -74,7 +74,7 @@ function Crust(parameters) {
 	// this is due to a few reasons:
 	//    1.) it's not performant
 	//    2.) mafic is not conserved, so it's not as important to get right
-	//    3.) mafic remains underwater most of the time so it isn't very noticeable
+	//    3.) mafic remains underocean most of the time so it isn't very noticeable
 	//
 	// "volcanic" rock is rock that was created by volcanic resurfacing
 	// "plutonic" rock is rock that has 
@@ -316,7 +316,7 @@ Crust.model_lithification = function(
   	// TODO: maybe...
     // Crust.mult_profile(top_crust, [2500, 2700, 2700, 2700, 2890, 0], crust_scratch);
 
-	// TODO: include overpressure from ocean water
+	// TODO: include overpressure from ocean ocean
 	var overpressure = scratchpad.getFloat32Raster(grid); // NOTE: in Pascals
 	Float32Raster.fill 			(overpressure, 0);
 	// TODO: simply math now that we're using mass, not thickness
@@ -358,7 +358,7 @@ Crust.model_metamorphosis = function(
   	// TODO: maybe...
     // Crust.mult_profile(top_crust, [2500, 2700, 2700, 2700, 2890, 0], crust_scratch);
 
-	// TODO: include overpressure from ocean water
+	// TODO: include overpressure from ocean ocean
 	var overpressure = scratchpad.getFloat32Raster(grid); // NOTE: in Pascals
 	Float32Raster.fill 			(overpressure, 0);
 	// TODO: simply math now that we're using mass, not thickness
