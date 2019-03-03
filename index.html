@@ -967,7 +967,9 @@
             var timestep     = 1000/fps;    //milliseconds
             var duration     = 250;         //milliseconds
             var increment = timestep/duration;
-            v.setPlant(0);
+            if (v.plant_target > v.sediment_target) {
+                v.setPlant(v.sediment_target);
+            }
             var timer = setInterval(function() {
                 v.sediment += Math.sign(v.sediment_target - v.sediment) * increment
                 if (Math.abs(v.sediment_target - v.sediment) < 2*increment) {
@@ -985,6 +987,9 @@
             var timestep     = 1000/fps;    //milliseconds
             var duration     = 250;         //milliseconds
             var increment = timestep/duration;
+            if (v.plant_target > v.sediment_target) {
+                v.setSediment(v.plant_target);
+            }
             var timer = setInterval(function() {
                 v.plant += Math.sign(v.plant_target - v.plant) * increment
                 if (Math.abs(v.plant_target - v.plant) < 2*increment) {
