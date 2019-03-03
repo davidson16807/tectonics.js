@@ -702,24 +702,17 @@ vec3 get_rgb_signal_of_rgb_intensity(in vec3 intensity)
   pow(intensity.z, 1./GAMMA)
  );
 }
-varying float vDisplacement;
-varying vec3 vGradient;
-varying float vPlantCoverage;
-varying float vIceCoverage;
-varying float vScalar;
-varying float vSurfaceTemp;
-varying vec4 vPosition;
-varying vec3 vViewDirection;
 // Determines the length of a unit of distance within the view, in meters, 
 // it is generally the radius of whatever planet's the focus for the scene.
 // The view uses different units for length to prevent certain issues with
 // floating point precision. 
-uniform float reference_distance;
 // VIEW SETTINGS ---------------------------------------------------------------
-uniform float sealevel;
+uniform float reference_distance;
 uniform float sealevel_mod;
-uniform float darkness_mod;
+uniform float sediment_mod;
+uniform float plant_mod;
 uniform float ice_mod;
+uniform float darkness_mod;
 // LIGHT SOURCE PROPERTIES -----------------------------------------------------
 uniform vec3 light_rgb_intensity;
 uniform vec3 light_direction;
@@ -730,22 +723,26 @@ uniform vec3 atmosphere_surface_rayleigh_scattering_coefficients;
 uniform vec3 atmosphere_surface_mie_scattering_coefficients;
 uniform vec3 atmosphere_surface_absorption_coefficients;
 // SEA PROPERTIES -------------------------------------------------------
+uniform float sealevel;
 uniform vec3 sea_rayleigh_scattering_coefficients;
 uniform vec3 sea_mie_scattering_coefficients;
 uniform vec3 sea_absorption_coefficients;
 // WORLD PROPERTIES ------------------------------------------------------------
-// location for the center of the world, in meters
-// currently stuck at 0. until we support multi-planet renders
-uniform vec3 world_position;
-// radius of the world being rendered, in meters
-uniform float world_radius;
+uniform vec3 world_position; // location for the center of the world, in meters
+uniform float world_radius; // radius of the world being rendered, in meters
+varying float vDisplacement;
+varying vec3 vGradient;
+varying float vPlantCoverage;
+varying float vIceCoverage;
+varying float vScalar;
+varying float vSurfaceTemp;
+varying vec4 vPosition;
+varying vec3 vViewDirection;
 // "SOLAR_RGB_LUMINOSITY" is the rgb luminosity of earth's sun, in Watts.
 //   It is used to convert the above true color values to absorption coefficients.
 //   You can also generate these numbers by calling get_rgb_intensity_of_light_emitted_by_black_body(SOLAR_TEMPERATURE)
 const vec3 SOLAR_RGB_LUMINOSITY = vec3(7247419., 8223259., 8121487.);
 const float AIR_REFRACTIVE_INDEX = 1.000277;
-const vec3 WATER_COLOR_DEEP = vec3(0.04,0.04,0.2);
-const vec3 WATER_COLOR_SHALLOW = vec3(0.04,0.58,0.54);
 const float WATER_REFRACTIVE_INDEX = 1.333;
 const float WATER_ROOT_MEAN_SLOPE_SQUARED = 0.18;
 const vec3 LAND_COLOR_MAFIC = vec3(50,45,50)/255.; // observed on lunar maria 
@@ -850,16 +847,15 @@ void main() {
     vec3 I_sea_trasmitted= I_surface_refracted
         * get_rgb_fraction_of_refracted_light_transmitted_through_fluid(NL, ocean_depth, beta_sea_ray, beta_sea_mie, beta_sea_abs);
     // TODO: more sensible microfacet model
-    vec3 bedrock_color = mix(LAND_COLOR_MAFIC, LAND_COLOR_FELSIC, felsic_coverage);
-    vec3 soil_color = mix(bedrock_color, mix(LAND_COLOR_SAND, LAND_COLOR_PEAT, organic_coverage), mineral_coverage);
-    vec3 canopy_color = mix(soil_color, JUNGLE_COLOR, plant_coverage);
-    vec3 bottom_color = get_rgb_intensity_of_rgb_signal(@UNCOVERED);
-    // "E_bottom_diffused" is diffuse reflection of any nontrasparent component beneath the transparent surface,
+    vec3 color_of_bedrock = mix(LAND_COLOR_MAFIC, LAND_COLOR_FELSIC, felsic_coverage);
+    vec3 color_with_sediment = mix(color_of_bedrock, mix(LAND_COLOR_SAND, LAND_COLOR_PEAT, organic_coverage), mineral_coverage * sediment_mod);
+    vec3 color_with_plants = mix(color_with_sediment, JUNGLE_COLOR, !is_ocean? plant_coverage * plant_mod * sediment_mod : 0.);
+    // "E_diffuse" is diffuse reflection of any nontrasparent component beneath the transparent surface,
     // It effectively describes diffuse reflection as understood within the phong model of reflectance.
-    vec3 E_bottom_diffused = I_sea_trasmitted * NL * bottom_color;
+    vec3 E_diffuse = I_sea_trasmitted * NL * get_rgb_intensity_of_rgb_signal(color_with_plants);
     // if sea is present, "E_sea_transmitted" is the fraction 
-    //   of E_bottom_diffused that makes it out of the sea. Otheriwse, it equals E_bottom_diffused
-    vec3 E_sea_transmitted = E_bottom_diffused
+    //   of E_diffuse that makes it out of the sea. Otheriwse, it equals E_diffuse
+    vec3 E_sea_transmitted = E_diffuse
         * get_rgb_fraction_of_refracted_light_transmitted_through_fluid(NV, ocean_depth, beta_sea_ray, beta_sea_mie, beta_sea_abs);
     vec3 E_surface_diffused =
         mix(E_sea_transmitted + E_sea_scattered,

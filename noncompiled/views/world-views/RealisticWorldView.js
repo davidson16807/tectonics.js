@@ -5,8 +5,7 @@ function RealisticWorldView(shader_return_value) {
         return new RealisticWorldView(shader_return_value);
     }
 
-    var fragmentShader = fragmentShaders.realistic
-        .replace('@UNCOVERED', shader_return_value);
+    var fragmentShader = fragmentShaders.realistic;
         
     this.chartViews = []; 
     var added = false;
@@ -65,29 +64,34 @@ function RealisticWorldView(shader_return_value) {
               scalar: { type: 'f', value: null }
             },
             uniforms: {
+              // VIEW PROPERTIES
               projection_matrix_inverse:  { type: "m4",value: new THREE.Matrix4() },
               view_matrix_inverse:        { type: "m4",value: new THREE.Matrix4() },
-              field_of_view:      { type: 'f', value: 0 },
-              aspect_ratio:       { type: 'f', value: 0 },
               reference_distance: { type: 'f', value: world.radius },
-              sealevel:           { type: 'f', value: 0 },
+              index:              { type: 'f', value: options.index },
               sealevel_mod:       { type: 'f', value: options.sealevel_mod },
+              sediment_mod:       { type: 'f', value: options.sediment_mod },
+              plant_mod:          { type: 'f', value: options.plant_mod },
               ice_mod:            { type: 'f', value: options.ice_mod },
               darkness_mod:       { type: 'f', value: options.darkness_mod },
-              index:              { type: 'f', value: options.index },
 
-              world_position:     { type: "v3",value: new THREE.Vector3() },
-              world_radius:       { type: "f", value: Units.EARTH_RADIUS  },
-
+              // LIGHT PROPERTIES
               light_rgb_intensity:{ type: "v3",value: new THREE.Vector3() },
               light_direction:    { type: "v3",value: new THREE.Vector3() },
               insolation_max:     { type: 'f', value: Units.GLOBAL_SOLAR_CONSTANT },
 
+              // WORLD PROPERTIES
+              world_position:     { type: "v3",value: new THREE.Vector3() },
+              world_radius:       { type: "f", value: Units.EARTH_RADIUS  },
+
+              // ATMOSPHERE PROPERTIES
               atmosphere_scale_height: { type: "f", value: 0. },
               atmosphere_surface_rayleigh_scattering_coefficients: { type: "v3", value: new THREE.Vector3() },
               atmosphere_surface_mie_scattering_coefficients:      { type: "v3", value: new THREE.Vector3() },
               atmosphere_surface_absorption_coefficients:          { type: "v3", value: new THREE.Vector3() },
 
+              // SEA PROPERTIES
+              sealevel:           { type: 'f', value: 0 },
               sea_rayleigh_scattering_coefficients: { type: "v3", value: new THREE.Vector3() },
               sea_mie_scattering_coefficients:      { type: "v3", value: new THREE.Vector3() },
               sea_absorption_coefficients:          { type: "v3", value: new THREE.Vector3() },
@@ -183,55 +187,65 @@ function RealisticWorldView(shader_return_value) {
         var gradient = ScalarField.gradient(world.lithosphere.surface_height.value());
         VectorField.div_scalar(gradient, world.radius, gradient);
 
+        // RENDERPASS PROPERTIES -----------------------------------------------
+
+        // VIEW PROPERTIES
         update_renderpass_vertex_shader(options.vertexShader);
         update_renderpass_uniform  ('projection_matrix_inverse',projection_matrix_inverse);
         update_renderpass_uniform  ('view_matrix_inverse',  gl_state.camera.matrixWorld);
         update_renderpass_uniform  ('reference_distance',   world.radius);
+        update_renderpass_uniform  ('sealevel_mod',         options.sealevel_mod);
+        update_renderpass_uniform  ('sediment_mod',         options.sediment_mod);
+        update_renderpass_uniform  ('plant_mod',            options.plant_mod);
+        update_renderpass_uniform  ('ice_mod',              options.ice_mod);
+        update_renderpass_uniform  ('darkness_mod',         options.darkness_mod);
+        update_renderpass_uniform  ('index',                options.index);
 
+        // LIGHT PROPERTIES
         update_renderpass_uniform  ('light_rgb_intensity',  light_rgb_intensity_threejs);
         update_renderpass_uniform  ('light_direction',      new THREE.Vector3(1,0,0));
         update_renderpass_uniform  ('insolation_max',       insolation_max);
-        
-        update_renderpass_uniform  ('sealevel_mod',         options.sealevel_mod);
-        update_renderpass_uniform  ('darkness_mod',         options.darkness_mod);
-        update_renderpass_uniform  ('ice_mod',              options.ice_mod);
-        update_renderpass_uniform  ('index',                options.index);
-        update_renderpass_uniform  ('sealevel',             world.hydrosphere.sealevel.value());
 
+        // WORLD PROPERTIES
         update_renderpass_uniform  ('world_position',       new THREE.Vector3());
         update_renderpass_uniform  ('world_radius',         world.radius);
+        update_renderpass_attribute('displacement',         world.lithosphere.displacement.value());
+        update_renderpass_attribute('surface_temp',         world.atmosphere.surface_temp);
+        update_renderpass_attribute('ice_coverage',         world.hydrosphere.ice_coverage.value());
+        update_renderpass_attribute('plant_coverage',       world.biosphere.plant_coverage.value());
+        update_renderpass_vector_attribute('gradient',      gradient);
 
+        // ATMOSPHERE PROPERTIES
         update_renderpass_uniform  ('atmosphere_scale_height', atmosphere_scale_height  );
         update_renderpass_uniform  ('atmosphere_surface_rayleigh_scattering_coefficients', new THREE.Vector3(5.20e-6, 1.21e-5, 2.96e-5));
         update_renderpass_uniform  ('atmosphere_surface_mie_scattering_coefficients',      new THREE.Vector3(2.1e-8,  2.1e-8,  2.1e-8 ));
         update_renderpass_uniform  ('atmosphere_surface_absorption_coefficients',          new THREE.Vector3(0));
 
+        // SEA PROPERTIES
+        update_renderpass_uniform  ('sealevel',             world.hydrosphere.sealevel.value());
         update_renderpass_uniform  ('sea_rayleigh_scattering_coefficients', new THREE.Vector3(0.005, 0.01, 0.03));
         update_renderpass_uniform  ('sea_mie_scattering_coefficients',      new THREE.Vector3(0));
         update_renderpass_uniform  ('sea_absorption_coefficients',          new THREE.Vector3(3e-1, 1e-1, 2e-2));
 
-        update_renderpass_attribute('displacement',         world.lithosphere.displacement.value());
-        update_renderpass_attribute('ice_coverage',         world.hydrosphere.ice_coverage.value());
-        update_renderpass_attribute('surface_temp',         world.atmosphere.surface_temp);
-        update_renderpass_attribute('plant_coverage',       world.biosphere.plant_coverage.value());
-
-        update_renderpass_vector_attribute('gradient',      gradient);
-
 
         // SHADERPASS PROPERTIES -----------------------------------------------
-        update_shaderpass_uniform  ('shaderpass_mod',           options.shaderpass_mod);
 
+        // VIEW PROPERTIES
         update_shaderpass_uniform  ('projection_matrix_inverse',projection_matrix_inverse);
         update_shaderpass_uniform  ('view_matrix_inverse',      gl_state.camera.matrixWorld);
         update_shaderpass_uniform  ('reference_distance',       world.radius);
+        update_shaderpass_uniform  ('shaderpass_mod',           options.shaderpass_mod);
 
+        // LIGHT PROPERTIES
         update_shaderpass_uniform  ('light_rgb_intensity',      light_rgb_intensity_threejs);
         update_shaderpass_uniform  ('light_direction',          new THREE.Vector3(1,0,0));
         update_shaderpass_uniform  ('insolation_max',           insolation_max);
 
+        // WORLD PROPERTIES
         update_shaderpass_uniform  ('world_position',           new THREE.Vector3());
         update_shaderpass_uniform  ('world_radius',             world.radius);
 
+        // ATMOSPHERE PROPERTIES
         update_shaderpass_uniform  ('atmosphere_scale_height',  atmosphere_scale_height  );
         update_shaderpass_uniform  ('atmosphere_surface_rayleigh_scattering_coefficients', new THREE.Vector3(5.20e-6, 1.21e-5, 2.96e-5));
         update_shaderpass_uniform  ('atmosphere_surface_mie_scattering_coefficients',      new THREE.Vector3(2.1e-8,  2.1e-8,  2.1e-8 ));
