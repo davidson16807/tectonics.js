@@ -121,11 +121,14 @@ void main() {
         ice_coverage*ice_mod
     ));
 
+    // "n" is the surface normal for a perfectly smooth sphere
+    vec3 n = normalize(vPosition.xyz);
+
     // "N" is the surface normal
-    vec3 N = normalize(normalize(vPosition.xyz) + vGradient);
+    vec3 N = normalize(n + vGradient);
 
     // "L" is the normal vector indicating the direction to the light source
-    vec3 L = normalize(mix(N, light_direction, darkness_mod));
+    vec3 L = normalize(mix(n, light_direction, darkness_mod));
 
     // "V" is the normal vector indicating the direction from the view
     vec3 V = -vViewDirection;
@@ -152,7 +155,7 @@ void main() {
     // "I_sun" is the rgb Intensity of Incoming Incident light, A.K.A. "Insolation"
     vec3 I_sun = light_rgb_intensity;
 
-    vec3 position = normalize(vPosition.xyz) * (world_radius + surface_height);
+    vec3 position = n * (world_radius + surface_height);
 
     // "I_surface" is the intensity of light that reaches the surface after being filtered by atmosphere
     vec3 I_surface = I_sun 

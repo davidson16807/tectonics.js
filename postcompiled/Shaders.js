@@ -44,22 +44,21 @@ void main() {
  vIceCoverage = ice_coverage;
  vScalar = scalar;
  vPosition = modelMatrix * vec4( position, 1.0 );
- vec4 modelPos = modelMatrix * vec4( ( position ), 1.0 );
  float height = displacement > sealevel? 0.005 : 0.0;
  float index_offset = INDEX_SPACING * index;
  float focus = lon(cameraPosition) + index_offset;
- float lon_focused = mod(lon(modelPos.xyz) - focus, 2.*PI) - PI;
- float lat_focused = lat(modelPos.xyz); //+ (index*PI);
+ float lon_focused = mod(lon(vPosition.xyz) - focus, 2.*PI) - PI;
+ float lat_focused = lat(vPosition.xyz); //+ (index*PI);
  bool is_on_edge = lon_focused > PI*0.9 || lon_focused < -PI*0.9;
  vec4 displaced = vec4(
   lon_focused + index_offset,
-  lat(modelPos.xyz), //+ (index*PI), 
+  lat(vPosition.xyz), //+ (index*PI), 
   is_on_edge? 0. : length(position),
   1);
  mat4 scaleMatrix = mat4(1);
  scaleMatrix[3] = viewMatrix[3] * reference_distance / world_radius;
  gl_Position = projectionMatrix * scaleMatrix * displaced;
-    vViewDirection = -modelPos.xyz;
+    vViewDirection = -vPosition.xyz;
     vViewDirection.y = 0.;
     vViewDirection = normalize(vViewDirection);
     vViewOrigin = view_matrix_inverse[3].xyz * reference_distance;
@@ -112,18 +111,17 @@ void main() {
     vSurfaceTemp = surface_temp;
     vScalar = scalar;
     vPosition = modelMatrix * vec4( position, 1.0 );
-    vec4 modelPos = modelMatrix * vec4( ( position ), 1.0 );
     float index_offset = INDEX_SPACING * index;
     float focus = lon(cameraPosition) + index_offset;
-    float lon_focused = mod(lon(modelPos.xyz) - focus, 2.*PI) - PI + index_offset;
-    float lat_focused = lat(modelPos.xyz); //+ (index*PI);
+    float lon_focused = mod(lon(vPosition.xyz) - focus, 2.*PI) - PI + index_offset;
+    float lat_focused = lat(vPosition.xyz); //+ (index*PI);
     float height = displacement > sealevel? 0.005 : 0.0;
     gl_Position = vec4(
         lon_focused / PI,
         lat_focused / (PI/2.),
         -height,
         1);
-    vViewDirection = -modelPos.xyz;
+    vViewDirection = -vPosition.xyz;
     vViewDirection.y = 0.;
     vViewDirection = normalize(vViewDirection);
     vViewOrigin = view_matrix_inverse[3].xyz * reference_distance;
@@ -790,10 +788,12 @@ void main() {
         get_characteristic_reflectance(SNOW_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX),
         ice_coverage*ice_mod
     ));
+    // "n" is the surface normal for a perfectly smooth sphere
+    vec3 n = normalize(vPosition.xyz);
     // "N" is the surface normal
-    vec3 N = normalize(normalize(vPosition.xyz) + vGradient);
+    vec3 N = normalize(n + vGradient);
     // "L" is the normal vector indicating the direction to the light source
-    vec3 L = normalize(mix(N, light_direction, darkness_mod));
+    vec3 L = normalize(mix(n, light_direction, darkness_mod));
     // "V" is the normal vector indicating the direction from the view
     vec3 V = -vViewDirection;
     // "H" is the halfway vector between normal and view.
@@ -814,7 +814,7 @@ void main() {
     float I_max = insolation_max;
     // "I_sun" is the rgb Intensity of Incoming Incident light, A.K.A. "Insolation"
     vec3 I_sun = light_rgb_intensity;
-    vec3 position = normalize(vPosition.xyz) * (world_radius + surface_height);
+    vec3 position = n * (world_radius + surface_height);
     // "I_surface" is the intensity of light that reaches the surface after being filtered by atmosphere
     vec3 I_surface = I_sun
       * get_rgb_fraction_of_refracted_light_transmitted_through_atmosphere(
