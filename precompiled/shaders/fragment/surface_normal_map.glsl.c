@@ -9,7 +9,7 @@ uniform float ocean_visibility;
 void main() {
     // CODE to generate a tangent-space normal map:
 
-	// "n" is the surface normal for a perfectly smooth sphere
+    // "n" is the surface normal for a perfectly smooth sphere
     vec3 n = normalize(position_v.xyz);
     // "N" is the actual surface normal as reported by the gradient of displacement
     vec3 N = normalize(n + gradient_v);

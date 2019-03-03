@@ -50,5 +50,5 @@ void main() {
         vec3(0.95),
         smoothstep(0.75, 1., scalar_v)
     );
-	gl_FragColor = vec4(color, 1.);
+    gl_FragColor = vec4(color, 1.);
 }

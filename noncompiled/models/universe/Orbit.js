@@ -11,52 +11,52 @@
 //    Since this requires knowledge of all celestial objects in the universe, 
 //    We only handle this logic in the "Universe" class. 
 function Orbit(parameters) {
-	var self = this;
+    var self = this;
 
-	// the average between apoapsis and periapsis
-	var semi_major_axis					= parameters['semi_major_axis'] 				|| stop('missing parameter: "semi_major_axis"');
-	// the shape of the orbit, where 0 is a circular orbit and >1 is a hyperbolic orbit
-	var eccentricity					= parameters['eccentricity'] 					|| 0.;
-	// the angle (in radians) between the orbital plane and the reference plane (the intersection being known as the "ascending node")
-	var inclination						= parameters['inclination'] 					|| 0.;
-	// the angle (in radians) between the ascending node and the periapsis
-	var argument_of_periapsis			= parameters['argument_of_periapsis'] 			|| 0.;
-	// the angle (in radians) between the prime meridian of the parent and the "ascending node" - the intersection between the orbital plane and the reference plane
-	var longitude_of_ascending_node		= parameters['longitude_of_ascending_node'] 	|| 0.;
-	// effective mass of the parent and child bodies
-	// We say it is "effective" because sometimes no parent body exists (i.e. galaxies)
-	// It is not typically included in textbooks amongst orbital parameters,
-	// but it allows us to make statements that concern timing: velocity, period, etc.
-	var effective_combined_mass  		= parameters['effective_combined_mass'] 			|| 0.;
+    // the average between apoapsis and periapsis
+    var semi_major_axis                    = parameters['semi_major_axis']                 || stop('missing parameter: "semi_major_axis"');
+    // the shape of the orbit, where 0 is a circular orbit and >1 is a hyperbolic orbit
+    var eccentricity                    = parameters['eccentricity']                     || 0.;
+    // the angle (in radians) between the orbital plane and the reference plane (the intersection being known as the "ascending node")
+    var inclination                        = parameters['inclination']                     || 0.;
+    // the angle (in radians) between the ascending node and the periapsis
+    var argument_of_periapsis            = parameters['argument_of_periapsis']             || 0.;
+    // the angle (in radians) between the prime meridian of the parent and the "ascending node" - the intersection between the orbital plane and the reference plane
+    var longitude_of_ascending_node        = parameters['longitude_of_ascending_node']     || 0.;
+    // effective mass of the parent and child bodies
+    // We say it is "effective" because sometimes no parent body exists (i.e. galaxies)
+    // It is not typically included in textbooks amongst orbital parameters,
+    // but it allows us to make statements that concern timing: velocity, period, etc.
+    var effective_combined_mass          = parameters['effective_combined_mass']             || 0.;
 
-	this.getParameters = function() {
-		return {
-			type: 'orbit',
-			semi_major_axis: 				semi_major_axis,
-			eccentricity: 					eccentricity,
-			inclination: 					inclination,
-			argument_of_periapsis: 			argument_of_periapsis,
-			longitude_of_ascending_node: 	longitude_of_ascending_node,
-			effective_combined_mass: 		effective_combined_mass,
-		};
-	}
+    this.getParameters = function() {
+        return {
+            type: 'orbit',
+            semi_major_axis:                 semi_major_axis,
+            eccentricity:                     eccentricity,
+            inclination:                     inclination,
+            argument_of_periapsis:             argument_of_periapsis,
+            longitude_of_ascending_node:     longitude_of_ascending_node,
+            effective_combined_mass:         effective_combined_mass,
+        };
+    }
 
-	this.period = function() {
-		return OrbitalMechanics.get_period(semi_major_axis, effective_combined_mass);
-	}
+    this.period = function() {
+        return OrbitalMechanics.get_period(semi_major_axis, effective_combined_mass);
+    }
 
-	// "position" returns the position vector that is represented by an orbit 
-	this.get_child_to_parent_matrix = function(mean_anomaly) {
-		return OrbitalMechanics.get_orbit_matrix4x4(
-				mean_anomaly,
-				semi_major_axis, 
-				eccentricity, 
-				inclination,
-				argument_of_periapsis,
-				longitude_of_ascending_node
-			);
-	}
-	this.get_parent_to_child_matrix = function(mean_anomaly) {
-		return Matrix4x4.invert(this.get_child_to_parent_matrix(mean_anomaly));
-	}
+    // "position" returns the position vector that is represented by an orbit 
+    this.get_child_to_parent_matrix = function(mean_anomaly) {
+        return OrbitalMechanics.get_orbit_matrix4x4(
+                mean_anomaly,
+                semi_major_axis, 
+                eccentricity, 
+                inclination,
+                argument_of_periapsis,
+                longitude_of_ascending_node
+            );
+    }
+    this.get_parent_to_child_matrix = function(mean_anomaly) {
+        return Matrix4x4.invert(this.get_child_to_parent_matrix(mean_anomaly));
+    }
 }

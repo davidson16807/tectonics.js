@@ -16,22 +16,22 @@ var PlantBiology = {};
 // The lower of the two estimates is the right one. This is the law of the minimum.
 PlantBiology.net_primary_productivities = function(temp, precip, npp_max, result) {
 
-	result = result || Float32Raster(temp.grid);
-	var npp = result;
+    result = result || Float32Raster(temp.grid);
+    var npp = result;
 
-	// TODO: perf improvements
-	var npp_temperature = 0;
-	var npp_precip = 0;
+    // TODO: perf improvements
+    var npp_temperature = 0;
+    var npp_precip = 0;
 
-	var exp = Math.exp;
-	var min = Math.min;
-	for (var i=0, li=temp.length; i<li; ++i) {
-	    npp_temperature 	= 1./(1. + exp(1.315 - (0.5/4.) * (temp[i]-273.15))); 				//temperature limited npp
-	    npp_precip 	= (1. - exp(-(precip[i])/800.)); 							//drought limited npp
-	    npp[i] 		= min(npp_temperature, npp_precip); 		//realized npp, the most conservative of the two estimates
-	}
+    var exp = Math.exp;
+    var min = Math.min;
+    for (var i=0, li=temp.length; i<li; ++i) {
+        npp_temperature     = 1./(1. + exp(1.315 - (0.5/4.) * (temp[i]-273.15)));                 //temperature limited npp
+        npp_precip     = (1. - exp(-(precip[i])/800.));                             //drought limited npp
+        npp[i]         = min(npp_temperature, npp_precip);         //realized npp, the most conservative of the two estimates
+    }
 
-	return result;
+    return result;
 }
 // Leaf area index (LAI)
 // This is the amount of photosynthetically active leaf area per unit of ground surface area
@@ -41,35 +41,35 @@ PlantBiology.net_primary_productivities = function(temp, precip, npp_max, result
 // Explanation of model:
 // 
 // assume the following relation between LAI and light interception (P)
-// 	   P = Pmax (1 - exp(-c lai))
+//        P = Pmax (1 - exp(-c lai))
 //  (TODO: I got this equation from wikipedia, but there's no citation
 //   find refs for this equation
 //   https://en.wikipedia.org/wiki/Leaf_area_index)
 //  
 // assume P∝npp. This means:
-// 	   k npp = 1 - exp(-c lai)
+//        k npp = 1 - exp(-c lai)
 // 
 // assume there are max values for npp and lai: "npp_max" and "lai_max"
 //  so if npp=npp_max, then lai=lai_max. This can be modeled as:
 //     npp/npp_max = (1 - exp(-c lai)) /
 //                   (1 - exp(-c lai_max))
 PlantBiology.leaf_area_indices = function(npp, npp_max, lai_max, result, growth_factor) {
-	result = result || Float32Raster(npp.grid);
-	
-	var lai = result;
+    result = result || Float32Raster(npp.grid);
+    
+    var lai = result;
 
     //  This is a growth factor I haven't bothered parameterizing.
     //  If c=1/∞, then npp∝lai
-	var c = growth_factor || 1;
+    var c = growth_factor || 1;
 
-	var exp = Math.exp;
-	var ln = Math.log;
+    var exp = Math.exp;
+    var ln = Math.log;
 
-	// this is the factor we introduce so that npp=npp_max when lai=lai_max
-	var k = 1-exp(-c*lai_max) / npp_max;
+    // this is the factor we introduce so that npp=npp_max when lai=lai_max
+    var k = 1-exp(-c*lai_max) / npp_max;
 
-	for (var i=0, li=lai.length; i<li; ++i) {
-		lai[i] = -ln(1 - k * npp[i])/c;
-	}
-	return lai;
+    for (var i=0, li=lai.length; i<li; ++i) {
+        lai[i] = -ln(1 - k * npp[i])/c;
+    }
+    return lai;
 }

@@ -6,39 +6,39 @@
 
 article h1, h2, h3, summary
 {
-	font-family: Garamond, Hoefler Text, Free Serif, serif;
+    font-family: Garamond, Hoefler Text, Free Serif, serif;
 }
 article h1 a, h2 a, h3 a
 {
-	color: black;
-	text-decoration: initial;
+    color: black;
+    text-decoration: initial;
 }
 article h1, h2
 { 
-	margin-left: -2.128%; 
+    margin-left: -2.128%; 
 } 
 article h3, h4
 { 
-	margin-left: -1.315%; 
+    margin-left: -1.315%; 
 }
 article h5, h6   
 { 
-	margin-left: -0.813%; 
+    margin-left: -0.813%; 
 } 
 article h1 { font-size: 261%; margin-bottom: 0.813%; margin-top: 0.502%}
 article h2 { font-size: 161%; }
 article h3, summary
 { 
-	font-size: 138%; 
+    font-size: 138%; 
     font-weight:bold;
 }
 article details
 {
-	margin-top: 1.315%	
+    margin-top: 1.315%    
 }
 article details p 
 { 
-	margin-left: 1.315%; 
+    margin-left: 1.315%; 
 }
 
 article img
@@ -58,24 +58,24 @@ article a:hover {
 
 .quotation
 {
-	display:list-item;
-	list-style:none;
-	font-style:italic;
-	text-align:center;
+    display:list-item;
+    list-style:none;
+    font-style:italic;
+    text-align:center;
 }
 .attribution
 {
-	display:list-item;
-	list-style:none;
-	font-style:normal;
-	text-indent:61%
+    display:list-item;
+    list-style:none;
+    font-style:normal;
+    text-indent:61%
 }
 .icon
 {
-	position	: fixed;
-	width       : 40%;
-	bottom		: -1em;
-	left		: -15%;
-	z-index		: -1;
+    position    : fixed;
+    width       : 40%;
+    bottom        : -1em;
+    left        : -15%;
+    z-index        : -1;
 }
 

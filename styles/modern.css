@@ -1,55 +1,55 @@
 summary { 
-	font-size: 138%; 
+    font-size: 138%; 
     font-weight:bold;
 }
 details {
-	margin-top: 1.315%	
+    margin-top: 1.315%    
 }
 details p { 
-	margin-left: 1.315%; 
+    margin-left: 1.315%; 
 }
 
 .topleft {
-	position	: fixed;
-	top		    : 1em;
-	left		: 1em;
+    position    : fixed;
+    top            : 1em;
+    left        : 1em;
 }
 .topright {
-	position	: fixed;
-	top		    : 1em;
-	right		: 1em;
+    position    : fixed;
+    top            : 1em;
+    right        : 1em;
 }
 .bottomright {
-	position	: fixed;
-	bottom		: 1em;
-	right		: 1em;
+    position    : fixed;
+    bottom        : 1em;
+    right        : 1em;
 }
 .bottomleft {
-	position	: fixed;
-	bottom		: 1em;
-	left		: 1em;
+    position    : fixed;
+    bottom        : 1em;
+    left        : 1em;
 }
 .hcenter {
-	width: 61.8%;
-	margin-left: auto;
-	margin-right: auto;
+    width: 61.8%;
+    margin-left: auto;
+    margin-right: auto;
 }
 .hcenter h2{
-	text-align:center;
+    text-align:center;
 }
 .vcenter {
-	position: absolute;
-	top: 23.6%;
+    position: absolute;
+    top: 23.6%;
 }
 .hidden {
-	display:none;
+    display:none;
 }
 
 .article{
-	position: absolute;
-	top:   23%;
-	right: 3.44%;
-	width: 61.8%;
-	padding: 3.44%;
-	border-radius: 1em;
+    position: absolute;
+    top:   23%;
+    right: 3.44%;
+    width: 61.8%;
+    padding: 3.44%;
+    border-radius: 1em;
 }

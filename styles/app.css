@@ -1,68 +1,68 @@
 body {
-	overflow	: hidden;
+    overflow    : hidden;
 }
 
 .controls {
-	width:61%;
+    width:61%;
 }
 .controls select, 
 .controls button, 
 .controls input{
-	color: black;
+    color: black;
 }
 
 .time-menu {
-	width: 210px;
-	float: right;
+    width: 210px;
+    float: right;
 }
 .file-menu {
-	float: right;
+    float: right;
 }
 .view-menu {
-	float: right;
+    float: right;
 }
 
 .instructions {
-	color: grey;
-	font-style: italic;
-	font-size: 61%;
-	padding-left:1em;
+    color: grey;
+    font-style: italic;
+    font-size: 61%;
+    padding-left:1em;
 }
 
 #chart{
-	width: 300px;
+    width: 300px;
 }
 #chart canvas{
-	padding: 1em;
+    padding: 1em;
 }
 #chart .stat {
-	float: right;
-	margin: 1em;
+    float: right;
+    margin: 1em;
 }
 #chart .stat .name{
-	margin: 1em;
-	text-align: left;
+    margin: 1em;
+    text-align: left;
 }
 #chart .stat .value{
-	margin: 1em;
-	text-align: right;
+    margin: 1em;
+    text-align: right;
 }
 #hidden-downloader{
-	display: none;
+    display: none;
 }
 #drop-dialog {
-	position	: absolute;
-	top		    : 23%;
-	left		: 23%;
-	bottom		: 23%;
-	right		: 23%;
-	padding 	: 5.57%;
-	text-align  : center;
-	border-style: dashed;
+    position    : absolute;
+    top            : 23%;
+    left        : 23%;
+    bottom        : 23%;
+    right        : 23%;
+    padding     : 5.57%;
+    text-align  : center;
+    border-style: dashed;
 }
 .dialog {
-	color: black;
-	background-color: white;
-	padding: 3.44%;
-	border-radius: 1em;
+    color: black;
+    background-color: white;
+    padding: 3.44%;
+    border-radius: 1em;
 }

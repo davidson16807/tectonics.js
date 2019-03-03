@@ -1,8 +1,8 @@
 
 // Float32Raster represents a grid where each cell contains a 32 bit floating point value
 // A Float32Raster is composed of two parts:
-// 		The first is a object of type Grid, representing a collection of vertices that are connected by edges
-//  	The second is a typed array, representing a value for each vertex within the grid
+//         The first is a object of type Grid, representing a collection of vertices that are connected by edges
+//      The second is a typed array, representing a value for each vertex within the grid
 // 
 // Float32Raster should theoretically work for any graph of vertices given the appropriate grid object,
 // However tectonics.js only uses them with spherical grids.
@@ -16,12 +16,12 @@
 // I want raster objects to be as bare as possible, functioning more like primitive datatypes.
 
 function Float32Raster(grid, fill) {
-	var result = new Float32Array(grid.vertices.length);
-	result.grid = grid;
-	if (fill !== void 0) { 
+    var result = new Float32Array(grid.vertices.length);
+    result.grid = grid;
+    if (fill !== void 0) { 
     result.fill(fill);
-	}
-	return result;
+    }
+    return result;
 };
 Float32Raster.FromExample = function(raster) {
   var length = 0; 

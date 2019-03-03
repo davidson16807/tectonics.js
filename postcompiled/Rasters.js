@@ -1328,8 +1328,8 @@ Vector.normalize = function(x, y, z, result) {
 }
 // Float32Raster represents a grid where each cell contains a 32 bit floating point value
 // A Float32Raster is composed of two parts:
-// 		The first is a object of type Grid, representing a collection of vertices that are connected by edges
-//  	The second is a typed array, representing a value for each vertex within the grid
+//         The first is a object of type Grid, representing a collection of vertices that are connected by edges
+//      The second is a typed array, representing a value for each vertex within the grid
 // 
 // Float32Raster should theoretically work for any graph of vertices given the appropriate grid object,
 // However tectonics.js only uses them with spherical grids.
@@ -1779,8 +1779,8 @@ Uint8Raster.set_ids_to_values = function(raster, id_array, value_array) {
 }
 // VectorRaster represents a grid where each cell contains a vector value. It is a specific kind of a multibanded raster.
 // A VectorRaster is composed of two parts
-// 		The first is a object of type Grid, representing a collection of vertices that are connected by edges
-//  	The second is a structure of arrays (SoA), representing a vector for each vertex within the grid. 
+//         The first is a object of type Grid, representing a collection of vertices that are connected by edges
+//      The second is a structure of arrays (SoA), representing a vector for each vertex within the grid. 
 // 
 // VectorRaster should theoretically work for any graph of vertices given the appropriate grid object,
 // However tectonics.js only uses them with spherical grids.

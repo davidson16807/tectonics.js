@@ -1,76 +1,76 @@
 <!doctype html>
 <html>
 <head>
-	<title>Tectonics.js - 3d plate tectonics in your web browser</title>
-	<!--If using any IE, don't even bother-->
-	<!--[if IE]>
-		<meta http-equiv="refresh" content="0;url=ie.html" />
-	<![endif]-->
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <title>Tectonics.js - 3d plate tectonics in your web browser</title>
+    <!--If using any IE, don't even bother-->
+    <!--[if IE]>
+        <meta http-equiv="refresh" content="0;url=ie.html" />
+    <![endif]-->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 
-	<link rel="icon" type="text/css" href="../blog/icon5.png">
-	<link rel="stylesheet" href="../styles/bootstrap.min.css">
-	<link rel="stylesheet" href="../styles/bootstrap.custom.css">
-	<link rel="stylesheet" href="../styles/main.css"/>
-	<link rel="stylesheet" href="../styles/modern.css"/>
-	<link rel="stylesheet" href="../styles/app.css"/>
+    <link rel="icon" type="text/css" href="../blog/icon5.png">
+    <link rel="stylesheet" href="../styles/bootstrap.min.css">
+    <link rel="stylesheet" href="../styles/bootstrap.custom.css">
+    <link rel="stylesheet" href="../styles/main.css"/>
+    <link rel="stylesheet" href="../styles/modern.css"/>
+    <link rel="stylesheet" href="../styles/app.css"/>
 
-	<script src="../libraries/vue.js"></script>
-	<script src="../libraries/Chart.js"></script>
-	<script src="../libraries/vue-charts.js"></script>
-	<script src="../libraries/jquery-1.10.2.min.js"></script>
-	<script src="../libraries/bootstrap.js"></script>
-	<script src="../libraries/three.js/Three.js"></script>
-	<script src="../libraries/three.js/OrbitControls.js"></script>
-	<script src="../libraries/three.js/BufferGeometryUtils.js"></script>
-	<script src="../libraries/three.js/CopyShader.js"></script>
-	<script src="../libraries/three.js/EffectComposer.js"></script>
-	<script src="../libraries/three.js/RenderPass.js"></script>
-	<script src="../libraries/three.js/ShaderPass.js"></script>
-	<script src="../libraries/threex/THREEx.screenshot.js"></script>
-	<script src="../libraries/threex/THREEx.WindowResize.js"></script>
-	<script src="../libraries/random-0.26.js"></script>
-	<script src="../libraries/base64-arraybuffer.js"></script>
-	<script src="../postcompiled/Shaders.js"></script>
-	<script src="../postcompiled/Rasters.js"></script>
-	<script src="../noncompiled/Units.js"></script>
-	<script src="../noncompiled/Logging.js"></script>
-	<!-- NOTE: we include scripts from the academic layer because it deals exclusively with rasters -->
-	<script src="../noncompiled/academics/SphericalGeometry.js"></script>
-	<script src="../noncompiled/academics/Optics.js"></script>
-	<script src="../noncompiled/academics/Thermodynamics.js"></script>
-	<script src="../noncompiled/academics/FluidMechanics.js"></script>
-	<script src="../noncompiled/academics/OrbitalMechanics.js"></script>
-	<script src="../noncompiled/academics/Tectonophysics.js"></script>
-	<script src="../noncompiled/academics/Hydrology.js"></script>
-	<script src="../noncompiled/academics/PlantBiology.js"></script>
-	<script src="../noncompiled/file-io/JsonSerializer.js"></script>
-	<script src="../noncompiled/views/raster-views/PdfChartRasterView.js"></script>
-	<script src="../noncompiled/views/raster-views/HeatmapRasterView.js"></script>
-	<script src="../noncompiled/views/raster-views/VectorRasterView.js"></script>
-	<script src="../noncompiled/views/projection-views/GlobeProjectionView.js"></script>
-	<script src="../noncompiled/views/View.js"></script>
+    <script src="../libraries/vue.js"></script>
+    <script src="../libraries/Chart.js"></script>
+    <script src="../libraries/vue-charts.js"></script>
+    <script src="../libraries/jquery-1.10.2.min.js"></script>
+    <script src="../libraries/bootstrap.js"></script>
+    <script src="../libraries/three.js/Three.js"></script>
+    <script src="../libraries/three.js/OrbitControls.js"></script>
+    <script src="../libraries/three.js/BufferGeometryUtils.js"></script>
+    <script src="../libraries/three.js/CopyShader.js"></script>
+    <script src="../libraries/three.js/EffectComposer.js"></script>
+    <script src="../libraries/three.js/RenderPass.js"></script>
+    <script src="../libraries/three.js/ShaderPass.js"></script>
+    <script src="../libraries/threex/THREEx.screenshot.js"></script>
+    <script src="../libraries/threex/THREEx.WindowResize.js"></script>
+    <script src="../libraries/random-0.26.js"></script>
+    <script src="../libraries/base64-arraybuffer.js"></script>
+    <script src="../postcompiled/Shaders.js"></script>
+    <script src="../postcompiled/Rasters.js"></script>
+    <script src="../noncompiled/Units.js"></script>
+    <script src="../noncompiled/Logging.js"></script>
+    <!-- NOTE: we include scripts from the academic layer because it deals exclusively with rasters -->
+    <script src="../noncompiled/academics/SphericalGeometry.js"></script>
+    <script src="../noncompiled/academics/Optics.js"></script>
+    <script src="../noncompiled/academics/Thermodynamics.js"></script>
+    <script src="../noncompiled/academics/FluidMechanics.js"></script>
+    <script src="../noncompiled/academics/OrbitalMechanics.js"></script>
+    <script src="../noncompiled/academics/Tectonophysics.js"></script>
+    <script src="../noncompiled/academics/Hydrology.js"></script>
+    <script src="../noncompiled/academics/PlantBiology.js"></script>
+    <script src="../noncompiled/file-io/JsonSerializer.js"></script>
+    <script src="../noncompiled/views/raster-views/PdfChartRasterView.js"></script>
+    <script src="../noncompiled/views/raster-views/HeatmapRasterView.js"></script>
+    <script src="../noncompiled/views/raster-views/VectorRasterView.js"></script>
+    <script src="../noncompiled/views/projection-views/GlobeProjectionView.js"></script>
+    <script src="../noncompiled/views/View.js"></script>
 </head>
 <body>
 <!-- three.js container -->
 <div id="container"></div>
 <!-- logo -->
 <div class="topleft header">
-	<h3><a href="blog/">Tectonics Dev Tool</a></h3>
-	<div class="navigation">
-		open the dev console and call view.print(demo)
-	</div>
+    <h3><a href="blog/">Tectonics Dev Tool</a></h3>
+    <div class="navigation">
+        open the dev console and call view.print(demo)
+    </div>
 </div>
 <!-- info on screen display -->
 <div class="topright collapse collapsible controls" >
-	<div class="view-menu btn-group-vertical">
-		<button id="screenshot" v-if="isEnabled" type="button" class="btn btn-default btn-xs" v-on:click="capture" v-on:keyup.p="capture">
-			<img src="icons/camera.svg" height="16em">
-			Screenshot
-			<span class="instructions">p</span>
-		</button>
-	</div>
+    <div class="view-menu btn-group-vertical">
+        <button id="screenshot" v-if="isEnabled" type="button" class="btn btn-default btn-xs" v-on:click="capture" v-on:keyup.p="capture">
+            <img src="icons/camera.svg" height="16em">
+            Screenshot
+            <span class="instructions">p</span>
+        </button>
+    </div>
 </div>
 
 <a id="hidden-downloader" href="dataUrl" download="filename"></a>
@@ -78,158 +78,158 @@
 <div class="bottomleft">
 </div>
 <div class="bottomright">
-	<div id="chart" v-if="isEnabled">
-		<table class="stat">
-			<tr>
-				<td class="name">min</td>
-				<td class="value">{{round(min)}}</td>
-			</tr>
-			<tr>
-				<td class="name">max</td>
-				<td class="value">{{round(max)}}</td>
-			</tr>
-		</table>
+    <div id="chart" v-if="isEnabled">
+        <table class="stat">
+            <tr>
+                <td class="name">min</td>
+                <td class="value">{{round(min)}}</td>
+            </tr>
+            <tr>
+                <td class="name">max</td>
+                <td class="value">{{round(max)}}</td>
+            </tr>
+        </table>
 
-		<table class="stat">
-			<tr>
-				<td class="name">mean</td>
-				<td class="value">{{round(mean)}}</td>
-			</tr>
-			<tr>
-				<td class="name">median</td>
-				<td class="value">{{round(median)}}</td>
-			</tr>
-		</table>
-		<table class="stat">
-			<tr>
-				<td class="name">S.D.</td>
-				<td class="value">{{round(stddev)}}</td>
-			</tr>
-		</table>
-		<chartjs-line :width="200" :height="100" 
-			:data="x" 
-			:labels="y" 
-			:bind="true"
-			:pointbackgroundcolor="'rgba(255,255,255,0.2)'"
-			:pointhoverbackgroundcolor="'rgba(255,255,255,0.2)'"
-			:pointbordercolor="'rgba(255,255,255,0.2)'"
-			:pointhoverbordercolor="'rgba(255,255,255,0.2)'"
-			:bordercolor="'rgba(255,255,255,0.5)'"
-			:backgroundcolor="'rgba(255,255,255,0.5)'" 
-			:fill="true"
-			:option="options">
-		</chartjs-line>
-	</div>
+        <table class="stat">
+            <tr>
+                <td class="name">mean</td>
+                <td class="value">{{round(mean)}}</td>
+            </tr>
+            <tr>
+                <td class="name">median</td>
+                <td class="value">{{round(median)}}</td>
+            </tr>
+        </table>
+        <table class="stat">
+            <tr>
+                <td class="name">S.D.</td>
+                <td class="value">{{round(stddev)}}</td>
+            </tr>
+        </table>
+        <chartjs-line :width="200" :height="100" 
+            :data="x" 
+            :labels="y" 
+            :bind="true"
+            :pointbackgroundcolor="'rgba(255,255,255,0.2)'"
+            :pointhoverbackgroundcolor="'rgba(255,255,255,0.2)'"
+            :pointbordercolor="'rgba(255,255,255,0.2)'"
+            :pointhoverbordercolor="'rgba(255,255,255,0.2)'"
+            :bordercolor="'rgba(255,255,255,0.5)'"
+            :backgroundcolor="'rgba(255,255,255,0.5)'" 
+            :fill="true"
+            :option="options">
+        </chartjs-line>
+    </div>
 </div>
 
 <script type="text/javascript">
-	'use strict';
-	
-	if( !window.WebGLRenderingContext ){
-		process.exit(1);
-	}
+    'use strict';
+    
+    if( !window.WebGLRenderingContext ){
+        process.exit(1);
+    }
 
-	var view = new View(
-			window.innerWidth, 
-			window.innerHeight,
-			new HeatmapRasterView( { scaling: true }),
-			new VectorRasterView({}), 
-			new GlobeProjectionView()
-		);
-	var controls = new THREE.OrbitControls( view.camera, $("#container").get(0) );
-	var grid = new Grid(new THREE.IcosahedronGeometry(1, 5));
-	var random = new Random();
-	var demo = SphericalGeometry.get_random_surface_field(grid, random);
-	$('.controls').show();
-	$('#container').append(view.getDomElement());
+    var view = new View(
+            window.innerWidth, 
+            window.innerHeight,
+            new HeatmapRasterView( { scaling: true }),
+            new VectorRasterView({}), 
+            new GlobeProjectionView()
+        );
+    var controls = new THREE.OrbitControls( view.camera, $("#container").get(0) );
+    var grid = new Grid(new THREE.IcosahedronGeometry(1, 5));
+    var random = new Random();
+    var demo = SphericalGeometry.get_random_surface_field(grid, random);
+    $('.controls').show();
+    $('#container').append(view.getDomElement());
 
-	// animation loop
-	function animate() {
-		// push to render queue and loop
-		// - it has to be at the begining of the function
-		// - to learn more: https://www.youtube.com/watch?v=8aGhZQkoFbQ
-		requestAnimationFrame( animate );
+    // animation loop
+    function animate() {
+        // push to render queue and loop
+        // - it has to be at the begining of the function
+        // - to learn more: https://www.youtube.com/watch?v=8aGhZQkoFbQ
+        requestAnimationFrame( animate );
 
-		// update camera controls
-		controls.update();
-		view.render();
-	}
+        // update camera controls
+        controls.update();
+        view.render();
+    }
 
-	function download(dataUrl, filename) {
-		$('#hidden-downloader')
-			.attr('href', dataUrl)
-			.attr('download', filename)
-			[0].click();
-	}
+    function download(dataUrl, filename) {
+        $('#hidden-downloader')
+            .attr('href', dataUrl)
+            .attr('download', filename)
+            [0].click();
+    }
 
-	var screenshotVue = new Vue({
-	  el: '#screenshot',
-	  data: {
-	  	isEnabled: false,
-	  },
-	  created: function() {
-	  	this.isEnabled = window.WebGLRenderingContext;
-	  },
-	  methods: {
-	  	capture(event) {
-  			var dataUrl = view.getScreenshotDataURL();
-  			var filename = 'raster.png';
-  			download(dataUrl, filename);
-  		}
-	  }
-	});
+    var screenshotVue = new Vue({
+      el: '#screenshot',
+      data: {
+          isEnabled: false,
+      },
+      created: function() {
+          this.isEnabled = window.WebGLRenderingContext;
+      },
+      methods: {
+          capture(event) {
+              var dataUrl = view.getScreenshotDataURL();
+              var filename = 'raster.png';
+              download(dataUrl, filename);
+          }
+      }
+    });
 
-	Vue.use(VueCharts);
+    Vue.use(VueCharts);
     const chartVue = new Vue({
         el: '#chart',
         data:{
-			isEnabled: false,
-			min: 0,
-			max: 0,
-			mean: 0,
-			median: 0,
-			stddev: 0,
-			x: [],
-			y: [],
-        	ocean_visibility: 1,
+            isEnabled: false,
+            min: 0,
+            max: 0,
+            mean: 0,
+            median: 0,
+            stddev: 0,
+            x: [],
+            y: [],
+            ocean_visibility: 1,
             options: {
-            	legend: {display: false}, 
-            	animation : false,
-            	scales: {
-					xAxes: [{
-						ticks: {
-						  fontColor: '#FFFFFF'
-						}
-					}],
-					yAxes: [{
-						scaleLabel: {
-							display: true,
-							labelString: '% surface'
-						},
-						ticks: {
-						  fontColor: '#FFFFFF'
-						},
-					}]
-				}
+                legend: {display: false}, 
+                animation : false,
+                scales: {
+                    xAxes: [{
+                        ticks: {
+                          fontColor: '#FFFFFF'
+                        }
+                    }],
+                    yAxes: [{
+                        scaleLabel: {
+                            display: true,
+                            labelString: '% surface'
+                        },
+                        ticks: {
+                          fontColor: '#FFFFFF'
+                        },
+                    }]
+                }
             }
         },
-		created: function() {
-			var _this = this;
-			setInterval(function() {
-				//view.updateChart(_this.$data, raster, _this.$data);
-			}, 1000/2);
-		},
-		methods: {
-			setOceanVisibility(value){
-				this.ocean_visibility = value? 1:0;
-			},
-			round(x) {
-				return Math.round(x);
-			}
-		}
+        created: function() {
+            var _this = this;
+            setInterval(function() {
+                //view.updateChart(_this.$data, raster, _this.$data);
+            }, 1000/2);
+        },
+        methods: {
+            setOceanVisibility(value){
+                this.ocean_visibility = value? 1:0;
+            },
+            round(x) {
+                return Math.round(x);
+            }
+        }
     });
     
-	animate();
+    animate();
 </script>
 </body>
 </html>

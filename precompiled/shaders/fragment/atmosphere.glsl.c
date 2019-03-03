@@ -45,11 +45,11 @@ uniform vec3  surface_air_absorption_coefficients;
 
 bool isnan(float x)
 {
-	return !(0. <= x || x <= 0.);
+    return !(0. <= x || x <= 0.);
 }
 bool isbig(float x)
 {
-	return abs(x)>BIG;
+    return abs(x)>BIG;
 }
 
 vec2 get_chartspace(vec2 bottomleft, vec2 topright, vec2 screenspace){

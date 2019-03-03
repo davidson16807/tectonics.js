@@ -90,25 +90,25 @@ float approx_air_column_density_ratio_along_ray_for_curved_world(float x_start, 
 // Just pass it the origin and direction of a 3d ray and it will find the column density ratio along its path, 
 //   or return false to indicate the ray passes through the surface of the world.
 float approx_air_column_density_ratio_along_line_segment (
-	vec3  segment_origin, 
+    vec3  segment_origin, 
     vec3  segment_direction,
     float segment_length,
-	vec3  world_position, 
-	float world_radius, 
-	float atmosphere_scale_height
+    vec3  world_position, 
+    float world_radius, 
+    float atmosphere_scale_height
 ){
     vec3  O = world_position;
     float R = world_radius;
     float H = atmosphere_scale_height;
 
-    float z2;  			 // distance ("radius") from the ray to the center of the world at closest approach, squared
-    float x_z; 			 // distance from the origin at which closest approach occurs
+    float z2;               // distance ("radius") from the ray to the center of the world at closest approach, squared
+    float x_z;              // distance from the origin at which closest approach occurs
 
     get_relation_between_ray_and_point(
-		world_position, 
-    	segment_origin,  segment_direction, 
-		z2,			x_z 
-	);
+        world_position, 
+        segment_origin,  segment_direction, 
+        z2,            x_z 
+    );
 
     return approx_air_column_density_ratio_along_ray_for_curved_world( 0.-x_z, segment_length-x_z, z2, R, H );
 }

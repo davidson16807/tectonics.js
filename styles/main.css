@@ -1,47 +1,47 @@
 @font-face
 {
-	font-family: Garogier;
-	src: url(../fonts/Garogier_unhinted.otf);
+    font-family: Garogier;
+    src: url(../fonts/Garogier_unhinted.otf);
 }
 
 body {
-	padding		: 0;
-	margin		: 0;
+    padding        : 0;
+    margin        : 0;
 
-	color       : white;
-	background-color: black;
-	font-family : Helvetica, Arial, sans-serif;
-	font-size	: 100%;
+    color       : white;
+    background-color: black;
+    font-family : Helvetica, Arial, sans-serif;
+    font-size    : 100%;
 }
 
 h1,h2,h3 {
-	font-family: Garamond, Garogier, serif;
+    font-family: Garamond, Garogier, serif;
 }
 h1 {
-	margin-bottom: 0.502%; 
-	margin-top: 0.502%;
+    margin-bottom: 0.502%; 
+    margin-top: 0.502%;
 }
 
 .header {
     font-weight:bold;
 }
 .header a {
-	color : white;
-	text-decoration	: none;
+    color : white;
+    text-decoration    : none;
 }
 .header a:hover {
-	text-decoration	: none;
+    text-decoration    : none;
 }
 .navigation
 {
-	margin-left: 23.6%;
-	width: 161%;
+    margin-left: 23.6%;
+    width: 161%;
 }
 .navigation a:hover {
-	color: grey;
-	text-decoration	: none;
+    color: grey;
+    text-decoration    : none;
 }
 .article{
-	color: black;
-	background-color: white;
+    color: black;
+    background-color: white;
 }
