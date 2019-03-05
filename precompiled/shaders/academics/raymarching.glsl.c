@@ -22,17 +22,16 @@ FUNC(float) approx_air_column_density_ratio_along_2d_ray_for_curved_world(
 ){
 
     // guide to variable names:
-    //  "f*" fraction of travel distance through atmosphere, "dx"
     //  "x*" distance along the ray from closest approach
     //  "R*" distance from the center of the world
-    //  "*m" variable at which the slope of linear height approximation is calculated
-    //  "*b" variable at which the intercept of linear height approximation is calculated
+    //  "*m" variable at which the slope of the height approximation is calculated
+    //  "*b" variable at which the intercept of the height approximation is calculated
     //  "*0" variable at which the surface of the world occurs
     //  "*1" variable at which the top of the atmosphere occurs
 
-    CONST(float) a = 0.80;
-    CONST(float) b = 0.35;
-    CONST(float) m = 0.50;
+    CONST(float) a = 0.9;
+    CONST(float) b = 0.3;
+    CONST(float) m = 0.5;
 
     VAR(float) R1 = R + 6.*H;
     VAR(float) x1 = sqrt(max(R1*R1-z2, 0.));

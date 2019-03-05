@@ -474,16 +474,15 @@ float approx_air_column_density_ratio_along_2d_ray_for_curved_world(
     in float H
 ){
     // guide to variable names:
-    //  "f*" fraction of travel distance through atmosphere, "dx"
     //  "x*" distance along the ray from closest approach
     //  "R*" distance from the center of the world
-    //  "*m" variable at which the slope of linear height approximation is calculated
-    //  "*b" variable at which the intercept of linear height approximation is calculated
+    //  "*m" variable at which the slope of the height approximation is calculated
+    //  "*b" variable at which the intercept of the height approximation is calculated
     //  "*0" variable at which the surface of the world occurs
     //  "*1" variable at which the top of the atmosphere occurs
-    const float a = 0.80;
-    const float b = 0.35;
-    const float m = 0.50;
+    const float a = 0.9;
+    const float b = 0.3;
+    const float m = 0.5;
     float R1 = R + 6.*H;
     float x1 = sqrt(max(R1*R1-z2, 0.));
     float x0 = sqrt(max(R *R -z2, 0.));
@@ -1121,16 +1120,15 @@ float approx_air_column_density_ratio_along_2d_ray_for_curved_world(
     in float H
 ){
     // guide to variable names:
-    //  "f*" fraction of travel distance through atmosphere, "dx"
     //  "x*" distance along the ray from closest approach
     //  "R*" distance from the center of the world
-    //  "*m" variable at which the slope of linear height approximation is calculated
-    //  "*b" variable at which the intercept of linear height approximation is calculated
+    //  "*m" variable at which the slope of the height approximation is calculated
+    //  "*b" variable at which the intercept of the height approximation is calculated
     //  "*0" variable at which the surface of the world occurs
     //  "*1" variable at which the top of the atmosphere occurs
-    const float a = 0.80;
-    const float b = 0.35;
-    const float m = 0.50;
+    const float a = 0.9;
+    const float b = 0.3;
+    const float m = 0.5;
     float R1 = R + 6.*H;
     float x1 = sqrt(max(R1*R1-z2, 0.));
     float x0 = sqrt(max(R *R -z2, 0.));
