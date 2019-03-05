@@ -134,7 +134,7 @@ FUNC(vec3) get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     
     VAR(float) dx;             // distance between steps while marching along the view ray
     VAR(float) x;              // distance traversed while marching along the view ray
-    VAR(float) sigma_V;        // columnar density ratios for rayleigh and mie scattering, found by marching along the view ray. This expresses the quantity of air encountered along the view ray, relative to air density on the surface
+    VAR(float) sigma;          // columnar density ratios for rayleigh and mie scattering, found by marching along the full path of light. This expresses the quantity of air encountered by light, relative to air density on the surface
 
     VAR(vec3)  P_i;            // absolute position while marching along the view ray
     VAR(float) h_i;            // distance ("height") from the surface of the world while marching along the view ray
@@ -188,21 +188,23 @@ FUNC(vec3) get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     for (VAR(float) i = 0.; i < STEP_COUNT; ++i)
     {
         P_i = P + V * x;
-        h_i      = sqrt((x-xz)*(x-xz)+z2) - R;
-        sigma_V  = approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i, -V, x,    O, R, H);
-        sigma_L  = approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i,  L, 3.*R, O, R, H);
+        h_i = sqrt((x-xz)*(x-xz)+z2) - R;
+        sigma = 
+            approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i, -V, x,    O, R, H)
+          + approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i,  L, 3.*R, O, R, H);
 
         E += I_sun
             // incoming fraction: the fraction of light that scatters towards camera
             * exp(-h_i/H) * beta_gamma * dx
             // outgoing fraction: the fraction of light that scatters away from camera
-            * exp(-beta_sum * (sigma_V + sigma_L));
+            * exp(-beta_sum * (sigma));
 
         x += dx;
     }
 
     // now calculate the intensity of light that traveled straight in from the background, and add it to the total
-    E += I_back * exp(-beta_sum * sigma_V);
+    sigma  = approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i, -V, 3.*R,     O, R, H);
+    E += I_back * exp(-beta_sum * sigma);
 
     return E;
 }
