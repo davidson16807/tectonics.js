@@ -506,8 +506,8 @@ float approx_air_column_density_ratio_along_2d_ray_for_curved_world(
     float h_start = (0.5 * a * d2hdx2 * dx_start + dhdx) * dx_start + hb;
     float rho0 = exp(-h0/H);
     float sigma =
-        sign(x_stop ) * H/dhdx * (rho0 - exp(-h_stop /H))
-      - sign(x_start) * H/dhdx * (rho0 - exp(-h_start/H));
+        sign(x_stop ) * max(H/dhdx * (rho0 - exp(-h_stop /H)), 0.)
+      - sign(x_start) * max(H/dhdx * (rho0 - exp(-h_start/H)), 0.);
     // NOTE: we clamp the result to prevent the generation of inifinities and nans, 
     // which can cause graphical artifacts.
     return clamp(sigma, -BIG, BIG);
@@ -594,7 +594,7 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     );
     //   We only set it to 3 scale heights because we are using this parameter for raymarching, and not a closed form solution
     is_scattered = try_get_relation_between_ray_and_sphere(
-        R + 12.*H, z2, xz,
+        R + 20.*H, z2, xz,
         x_in_atmo, x_out_atmo
     );
     is_obstructed = try_get_relation_between_ray_and_sphere(
@@ -1152,8 +1152,8 @@ float approx_air_column_density_ratio_along_2d_ray_for_curved_world(
     float h_start = (0.5 * a * d2hdx2 * dx_start + dhdx) * dx_start + hb;
     float rho0 = exp(-h0/H);
     float sigma =
-        sign(x_stop ) * H/dhdx * (rho0 - exp(-h_stop /H))
-      - sign(x_start) * H/dhdx * (rho0 - exp(-h_start/H));
+        sign(x_stop ) * max(H/dhdx * (rho0 - exp(-h_stop /H)), 0.)
+      - sign(x_start) * max(H/dhdx * (rho0 - exp(-h_start/H)), 0.);
     // NOTE: we clamp the result to prevent the generation of inifinities and nans, 
     // which can cause graphical artifacts.
     return clamp(sigma, -BIG, BIG);
@@ -1240,7 +1240,7 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     );
     //   We only set it to 3 scale heights because we are using this parameter for raymarching, and not a closed form solution
     is_scattered = try_get_relation_between_ray_and_sphere(
-        R + 12.*H, z2, xz,
+        R + 20.*H, z2, xz,
         x_in_atmo, x_out_atmo
     );
     is_obstructed = try_get_relation_between_ray_and_sphere(

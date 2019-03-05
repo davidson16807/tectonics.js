@@ -60,8 +60,8 @@ FUNC(float) approx_air_column_density_ratio_along_2d_ray_for_curved_world(
 
     VAR(float) rho0  = exp(-h0/H);
     VAR(float) sigma = 
-        sign(x_stop ) * H/dhdx * (rho0 - exp(-h_stop /H)) 
-      - sign(x_start) * H/dhdx * (rho0 - exp(-h_start/H));
+        sign(x_stop ) * max(H/dhdx * (rho0 - exp(-h_stop /H)), 0.) 
+      - sign(x_start) * max(H/dhdx * (rho0 - exp(-h_start/H)), 0.);
 
     // NOTE: we clamp the result to prevent the generation of inifinities and nans, 
     // which can cause graphical artifacts.
