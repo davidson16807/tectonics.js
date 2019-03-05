@@ -1,17 +1,6 @@
 CONST(float) BIG = 1e20;
 CONST(float) SMALL = 1e-20;
 
-// "get_air_column_density_ratio_along_2d_ray_for_flat_world" 
-//   calculates column density ratio of air for a ray emitted from given height to a desired lateral distance, 
-//   assumes height varies linearly along the path, i.e. the world is flat.
-FUNC(float) get_air_column_density_ratio_along_2d_ray_for_flat_world(
-    IN(float) b, // intercept of linear height approximation
-    IN(float) m, // slope of linear height approximation
-    IN(float) x, // distance along the ray
-    IN(float) H  // scale height of the atmosphere
-){
-    return -H/m * exp(-(m*x+b)/H);
-}
 // "approx_air_column_density_ratio_along_2d_ray_for_curved_world" 
 //   calculates column density ratio of air for a ray emitted from the surface of a world to a desired distance, 
 //   taking into account the curvature of the world.
@@ -39,13 +28,17 @@ FUNC(float) approx_air_column_density_ratio_along_2d_ray_for_curved_world(
     //  "*m" variable at which the slope of linear height approximation is calculated
     //  "*b" variable at which the intercept of linear height approximation is calculated
     //  "*0" variable at which the surface of the world occurs
-    //  "*1" variable at which linear height approximation switches from first to second
-    //  "*2" variable at which the top of the atmosphere occurs
+    //  "*1" variable at which the top of the atmosphere occurs
 
-    VAR(float) R2  = R + 12.*H;
-    VAR(float) x2  = sqrt(max(R2*R2-z2, 0.));
-    VAR(float) x0  = sqrt(max(R *R -z2, 0.));
-    VAR(float) dx  = x2 - x0;
+    CONST(float) a = 0.80;
+    CONST(float) b = 0.35;
+    CONST(float) m = 0.50;
+
+    VAR(float) R1 = R + 6.*H;
+    VAR(float) x1 = sqrt(max(R1*R1-z2, 0.));
+    VAR(float) x0 = sqrt(max(R *R -z2, 0.));
+    VAR(float) xb = x0+(x1-x0)*b;
+    VAR(float) xm = x0+(x1-x0)*m;
 
     // if ray is obstructed
     if (x_start < x0 && -x0 < x_stop && z2 < R*R)
@@ -54,47 +47,26 @@ FUNC(float) approx_air_column_density_ratio_along_2d_ray_for_curved_world(
         return BIG;
     }
 
-    VAR(float) f0  = 0.00*0.33;
-    VAR(float) f0b = 0.20*0.33;
-    VAR(float) f0m = 0.50*0.33;
-    VAR(float) f1  = 1.00*0.33;
-    VAR(float) f1b = 1.20*0.33;
-    VAR(float) f1m = 1.50*0.33;
+    VAR(float) dx0      = x0          -xb;
+    VAR(float) dx_stop  = abs(x_stop )-xb;
+    VAR(float) dx_start = abs(x_start)-xb;
 
-    VAR(float) x0b = x0 + dx*f0b;
-    VAR(float) x0m = x0 + dx*f0m;
-    VAR(float) x1  = x0 + dx*f1 ;
-    VAR(float) x1b = x0 + dx*f1b;
-    VAR(float) x1m = x0 + dx*f1m;
+    VAR(float) xm2_z2  = xm*xm + z2;
+    VAR(float) d2hdx2  = z2 / sqrt(xm2_z2*xm2_z2*xm2_z2);
+    VAR(float) dhdx    = xm / sqrt(xm2_z2); 
+    VAR(float) hb      = sqrt(xb*xb + z2) - R;
+    VAR(float) h0      = (0.5 * a * d2hdx2 * dx0      + dhdx) * dx0      + hb;
+    VAR(float) h_stop  = (0.5 * a * d2hdx2 * dx_stop  + dhdx) * dx_stop  + hb;
+    VAR(float) h_start = (0.5 * a * d2hdx2 * dx_start + dhdx) * dx_start + hb;
 
-    VAR(float) m0  = x0m / sqrt(x0m*x0m + z2);
-    VAR(float) b0  = sqrt(x0b*x0b + z2) - R;
-
-    VAR(float) m1 = x1m / sqrt(x1m*x1m + z2);
-    VAR(float) b1 = sqrt(x1b*x1b + z2) - R;
-    
-    VAR(float) sigma_reference =
-        get_air_column_density_ratio_along_2d_ray_for_flat_world(b0, m0, x0-x0b, H)
-      + get_air_column_density_ratio_along_2d_ray_for_flat_world(b1, m1, x1-x1b, H);
-
-    VAR(float) abs_x_stop = abs(x_stop);
-    VAR(float) sign_x_stop = sign(x_stop);
-    VAR(float) abs_sigma_stop =
-        get_air_column_density_ratio_along_2d_ray_for_flat_world(b0, m0, clamp(abs_x_stop,  x0, x1)-x0b, H)
-      + get_air_column_density_ratio_along_2d_ray_for_flat_world(b1, m1, max  (abs_x_stop,  x1)    -x1b, H)
-      - sigma_reference;
-
-    VAR(float) abs_x_start = abs(x_start);
-    VAR(float) sign_x_start = sign(x_start);
-    VAR(float) abs_sigma_start =
-        get_air_column_density_ratio_along_2d_ray_for_flat_world(b0, m0, clamp(abs_x_start, x0, x1)-x0b, H)
-      + get_air_column_density_ratio_along_2d_ray_for_flat_world(b1, m1, max  (abs_x_start, x1)    -x1b, H)
-      - sigma_reference;
+    VAR(float) rho0  = exp(-h0/H);
+    VAR(float) sigma = 
+        sign(x_stop ) * H/dhdx * (rho0 - exp(-h_stop /H)) 
+      - sign(x_start) * H/dhdx * (rho0 - exp(-h_start/H));
 
     // NOTE: we clamp the result to prevent the generation of inifinities and nans, 
     // which can cause graphical artifacts.
-    return sign_x_stop  * min(abs_sigma_stop,  BIG) 
-         - sign_x_start * min(abs_sigma_start, BIG);
+    return clamp(sigma, -BIG, BIG);
 }
 // "try_approx_air_column_density_ratio_along_ray" is an all-in-one convenience wrapper 
 //   for approx_air_column_density_ratio_along_ray_2d() and approx_reference_air_column_density_ratio_along_ray.
@@ -148,7 +120,7 @@ FUNC(vec3) get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
 
     VAR(float) unused1, unused2, unused3, unused4; // used for passing unused output parameters to functions
 
-    const VAR(float) STEP_COUNT = 16.;// number of steps taken while marching along the view ray
+    const VAR(float) STEP_COUNT = 32.;// number of steps taken while marching along the view ray
 
     bool  is_scattered;   // whether view ray will enter the atmosphere
     bool  is_obstructed;  // whether view ray will enter the surface of a world

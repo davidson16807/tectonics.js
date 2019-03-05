@@ -454,17 +454,6 @@ float get_fraction_of_microfacets_with_angle(
 }
 const float BIG = 1e20;
 const float SMALL = 1e-20;
-// "get_air_column_density_ratio_along_2d_ray_for_flat_world" 
-//   calculates column density ratio of air for a ray emitted from given height to a desired lateral distance, 
-//   assumes height varies linearly along the path, i.e. the world is flat.
-float get_air_column_density_ratio_along_2d_ray_for_flat_world(
-    in float b, // intercept of linear height approximation
-    in float m, // slope of linear height approximation
-    in float x, // distance along the ray
-    in float H // scale height of the atmosphere
-){
-    return -H/m * exp(-(m*x+b)/H);
-}
 // "approx_air_column_density_ratio_along_2d_ray_for_curved_world" 
 //   calculates column density ratio of air for a ray emitted from the surface of a world to a desired distance, 
 //   taking into account the curvature of the world.
@@ -491,52 +480,38 @@ float approx_air_column_density_ratio_along_2d_ray_for_curved_world(
     //  "*m" variable at which the slope of linear height approximation is calculated
     //  "*b" variable at which the intercept of linear height approximation is calculated
     //  "*0" variable at which the surface of the world occurs
-    //  "*1" variable at which linear height approximation switches from first to second
-    //  "*2" variable at which the top of the atmosphere occurs
-    float R2 = R + 12.*H;
-    float x2 = sqrt(max(R2*R2-z2, 0.));
+    //  "*1" variable at which the top of the atmosphere occurs
+    const float a = 0.80;
+    const float b = 0.35;
+    const float m = 0.50;
+    float R1 = R + 6.*H;
+    float x1 = sqrt(max(R1*R1-z2, 0.));
     float x0 = sqrt(max(R *R -z2, 0.));
-    float dx = x2 - x0;
+    float xb = x0+(x1-x0)*b;
+    float xm = x0+(x1-x0)*m;
     // if ray is obstructed
     if (x_start < x0 && -x0 < x_stop && z2 < R*R)
     {
         // return ludicrously big number to represent obstruction
         return BIG;
     }
-    float f0 = 0.00*0.33;
-    float f0b = 0.20*0.33;
-    float f0m = 0.50*0.33;
-    float f1 = 1.00*0.33;
-    float f1b = 1.20*0.33;
-    float f1m = 1.50*0.33;
-    float x0b = x0 + dx*f0b;
-    float x0m = x0 + dx*f0m;
-    float x1 = x0 + dx*f1 ;
-    float x1b = x0 + dx*f1b;
-    float x1m = x0 + dx*f1m;
-    float m0 = x0m / sqrt(x0m*x0m + z2);
-    float b0 = sqrt(x0b*x0b + z2) - R;
-    float m1 = x1m / sqrt(x1m*x1m + z2);
-    float b1 = sqrt(x1b*x1b + z2) - R;
-    float sigma_reference =
-        get_air_column_density_ratio_along_2d_ray_for_flat_world(b0, m0, x0-x0b, H)
-      + get_air_column_density_ratio_along_2d_ray_for_flat_world(b1, m1, x1-x1b, H);
-    float abs_x_stop = abs(x_stop);
-    float sign_x_stop = sign(x_stop);
-    float abs_sigma_stop =
-        get_air_column_density_ratio_along_2d_ray_for_flat_world(b0, m0, clamp(abs_x_stop, x0, x1)-x0b, H)
-      + get_air_column_density_ratio_along_2d_ray_for_flat_world(b1, m1, max (abs_x_stop, x1) -x1b, H)
-      - sigma_reference;
-    float abs_x_start = abs(x_start);
-    float sign_x_start = sign(x_start);
-    float abs_sigma_start =
-        get_air_column_density_ratio_along_2d_ray_for_flat_world(b0, m0, clamp(abs_x_start, x0, x1)-x0b, H)
-      + get_air_column_density_ratio_along_2d_ray_for_flat_world(b1, m1, max (abs_x_start, x1) -x1b, H)
-      - sigma_reference;
+    float dx0 = x0 -xb;
+    float dx_stop = abs(x_stop )-xb;
+    float dx_start = abs(x_start)-xb;
+    float xm2_z2 = xm*xm + z2;
+    float d2hdx2 = z2 / sqrt(xm2_z2*xm2_z2*xm2_z2);
+    float dhdx = xm / sqrt(xm2_z2);
+    float hb = sqrt(xb*xb + z2) - R;
+    float h0 = (0.5 * a * d2hdx2 * dx0 + dhdx) * dx0 + hb;
+    float h_stop = (0.5 * a * d2hdx2 * dx_stop + dhdx) * dx_stop + hb;
+    float h_start = (0.5 * a * d2hdx2 * dx_start + dhdx) * dx_start + hb;
+    float rho0 = exp(-h0/H);
+    float sigma =
+        sign(x_stop ) * H/dhdx * (rho0 - exp(-h_stop /H))
+      - sign(x_start) * H/dhdx * (rho0 - exp(-h_start/H));
     // NOTE: we clamp the result to prevent the generation of inifinities and nans, 
     // which can cause graphical artifacts.
-    return sign_x_stop * min(abs_sigma_stop, BIG)
-         - sign_x_start * min(abs_sigma_start, BIG);
+    return clamp(sigma, -BIG, BIG);
 }
 // "try_approx_air_column_density_ratio_along_ray" is an all-in-one convenience wrapper 
 //   for approx_air_column_density_ratio_along_ray_2d() and approx_reference_air_column_density_ratio_along_ray.
@@ -582,7 +557,7 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     float R = world_radius;
     float H = atmosphere_scale_height;
     float unused1, unused2, unused3, unused4; // used for passing unused output parameters to functions
-    const float STEP_COUNT = 16.;// number of steps taken while marching along the view ray
+    const float STEP_COUNT = 32.;// number of steps taken while marching along the view ray
     bool is_scattered; // whether view ray will enter the atmosphere
     bool is_obstructed; // whether view ray will enter the surface of a world
     float z2; // distance ("radius") from the view ray to the center of the world at closest approach, squared
@@ -1126,17 +1101,6 @@ float get_fraction_of_microfacets_with_angle(
 }
 const float BIG = 1e20;
 const float SMALL = 1e-20;
-// "get_air_column_density_ratio_along_2d_ray_for_flat_world" 
-//   calculates column density ratio of air for a ray emitted from given height to a desired lateral distance, 
-//   assumes height varies linearly along the path, i.e. the world is flat.
-float get_air_column_density_ratio_along_2d_ray_for_flat_world(
-    in float b, // intercept of linear height approximation
-    in float m, // slope of linear height approximation
-    in float x, // distance along the ray
-    in float H // scale height of the atmosphere
-){
-    return -H/m * exp(-(m*x+b)/H);
-}
 // "approx_air_column_density_ratio_along_2d_ray_for_curved_world" 
 //   calculates column density ratio of air for a ray emitted from the surface of a world to a desired distance, 
 //   taking into account the curvature of the world.
@@ -1163,52 +1127,38 @@ float approx_air_column_density_ratio_along_2d_ray_for_curved_world(
     //  "*m" variable at which the slope of linear height approximation is calculated
     //  "*b" variable at which the intercept of linear height approximation is calculated
     //  "*0" variable at which the surface of the world occurs
-    //  "*1" variable at which linear height approximation switches from first to second
-    //  "*2" variable at which the top of the atmosphere occurs
-    float R2 = R + 12.*H;
-    float x2 = sqrt(max(R2*R2-z2, 0.));
+    //  "*1" variable at which the top of the atmosphere occurs
+    const float a = 0.80;
+    const float b = 0.35;
+    const float m = 0.50;
+    float R1 = R + 6.*H;
+    float x1 = sqrt(max(R1*R1-z2, 0.));
     float x0 = sqrt(max(R *R -z2, 0.));
-    float dx = x2 - x0;
+    float xb = x0+(x1-x0)*b;
+    float xm = x0+(x1-x0)*m;
     // if ray is obstructed
     if (x_start < x0 && -x0 < x_stop && z2 < R*R)
     {
         // return ludicrously big number to represent obstruction
         return BIG;
     }
-    float f0 = 0.00*0.33;
-    float f0b = 0.20*0.33;
-    float f0m = 0.50*0.33;
-    float f1 = 1.00*0.33;
-    float f1b = 1.20*0.33;
-    float f1m = 1.50*0.33;
-    float x0b = x0 + dx*f0b;
-    float x0m = x0 + dx*f0m;
-    float x1 = x0 + dx*f1 ;
-    float x1b = x0 + dx*f1b;
-    float x1m = x0 + dx*f1m;
-    float m0 = x0m / sqrt(x0m*x0m + z2);
-    float b0 = sqrt(x0b*x0b + z2) - R;
-    float m1 = x1m / sqrt(x1m*x1m + z2);
-    float b1 = sqrt(x1b*x1b + z2) - R;
-    float sigma_reference =
-        get_air_column_density_ratio_along_2d_ray_for_flat_world(b0, m0, x0-x0b, H)
-      + get_air_column_density_ratio_along_2d_ray_for_flat_world(b1, m1, x1-x1b, H);
-    float abs_x_stop = abs(x_stop);
-    float sign_x_stop = sign(x_stop);
-    float abs_sigma_stop =
-        get_air_column_density_ratio_along_2d_ray_for_flat_world(b0, m0, clamp(abs_x_stop, x0, x1)-x0b, H)
-      + get_air_column_density_ratio_along_2d_ray_for_flat_world(b1, m1, max (abs_x_stop, x1) -x1b, H)
-      - sigma_reference;
-    float abs_x_start = abs(x_start);
-    float sign_x_start = sign(x_start);
-    float abs_sigma_start =
-        get_air_column_density_ratio_along_2d_ray_for_flat_world(b0, m0, clamp(abs_x_start, x0, x1)-x0b, H)
-      + get_air_column_density_ratio_along_2d_ray_for_flat_world(b1, m1, max (abs_x_start, x1) -x1b, H)
-      - sigma_reference;
+    float dx0 = x0 -xb;
+    float dx_stop = abs(x_stop )-xb;
+    float dx_start = abs(x_start)-xb;
+    float xm2_z2 = xm*xm + z2;
+    float d2hdx2 = z2 / sqrt(xm2_z2*xm2_z2*xm2_z2);
+    float dhdx = xm / sqrt(xm2_z2);
+    float hb = sqrt(xb*xb + z2) - R;
+    float h0 = (0.5 * a * d2hdx2 * dx0 + dhdx) * dx0 + hb;
+    float h_stop = (0.5 * a * d2hdx2 * dx_stop + dhdx) * dx_stop + hb;
+    float h_start = (0.5 * a * d2hdx2 * dx_start + dhdx) * dx_start + hb;
+    float rho0 = exp(-h0/H);
+    float sigma =
+        sign(x_stop ) * H/dhdx * (rho0 - exp(-h_stop /H))
+      - sign(x_start) * H/dhdx * (rho0 - exp(-h_start/H));
     // NOTE: we clamp the result to prevent the generation of inifinities and nans, 
     // which can cause graphical artifacts.
-    return sign_x_stop * min(abs_sigma_stop, BIG)
-         - sign_x_start * min(abs_sigma_start, BIG);
+    return clamp(sigma, -BIG, BIG);
 }
 // "try_approx_air_column_density_ratio_along_ray" is an all-in-one convenience wrapper 
 //   for approx_air_column_density_ratio_along_ray_2d() and approx_reference_air_column_density_ratio_along_ray.
@@ -1254,7 +1204,7 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     float R = world_radius;
     float H = atmosphere_scale_height;
     float unused1, unused2, unused3, unused4; // used for passing unused output parameters to functions
-    const float STEP_COUNT = 16.;// number of steps taken while marching along the view ray
+    const float STEP_COUNT = 32.;// number of steps taken while marching along the view ray
     bool is_scattered; // whether view ray will enter the atmosphere
     bool is_obstructed; // whether view ray will enter the surface of a world
     float z2; // distance ("radius") from the view ray to the center of the world at closest approach, squared
