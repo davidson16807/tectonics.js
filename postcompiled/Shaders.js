@@ -476,18 +476,20 @@ float approx_air_column_density_ratio_along_2d_ray_for_curved_world(
     // guide to variable names:
     //  "x*" distance along the ray from closest approach
     //  "R*" distance from the center of the world
-    //  "*m" variable at which the slope of the height approximation is calculated
+    //  "*b" variable at which the slope of the height approximation is calculated
     //  "*b" variable at which the intercept of the height approximation is calculated
     //  "*0" variable at which the surface of the world occurs
     //  "*1" variable at which the top of the atmosphere occurs
-    const float a = 0.9;
-    const float b = 0.3;
-    const float m = 0.5;
+    // "a" is the factor by which we "stretch out" the quadratic height approximation
+    //   this is done to ensure we do not divide by zero when we perform integration by substitution
+    const float a = 0.45;
+    // "b" is the fraction along the path from the surface to the top of the atmosphere 
+    //   at which we sample for the slope and intercept of our height approximation
+    const float b = 0.45;
     float R1 = R + 6.*H;
     float x1 = sqrt(max(R1*R1-z2, 0.));
     float x0 = sqrt(max(R *R -z2, 0.));
     float xb = x0+(x1-x0)*b;
-    float xm = x0+(x1-x0)*m;
     // if ray is obstructed
     if (x_start < x0 && -x0 < x_stop && z2 < R*R)
     {
@@ -497,9 +499,9 @@ float approx_air_column_density_ratio_along_2d_ray_for_curved_world(
     float dx0 = x0 -xb;
     float dx_stop = abs(x_stop )-xb;
     float dx_start = abs(x_start)-xb;
-    float xm2_z2 = xm*xm + z2;
-    float d2hdx2 = z2 / sqrt(xm2_z2*xm2_z2*xm2_z2);
-    float dhdx = xm / sqrt(xm2_z2);
+    float xb2_z2 = xb*xb + z2;
+    float d2hdx2 = z2 / sqrt(xb2_z2*xb2_z2*xb2_z2);
+    float dhdx = xb / sqrt(xb2_z2);
     float hb = sqrt(xb*xb + z2) - R;
     float h0 = (0.5 * a * d2hdx2 * dx0 + dhdx) * dx0 + hb;
     float h_stop = (0.5 * a * d2hdx2 * dx_stop + dhdx) * dx_stop + hb;
@@ -510,7 +512,7 @@ float approx_air_column_density_ratio_along_2d_ray_for_curved_world(
       - sign(x_start) * max(H/dhdx * (rho0 - exp(-h_start/H)), 0.);
     // NOTE: we clamp the result to prevent the generation of inifinities and nans, 
     // which can cause graphical artifacts.
-    return clamp(sigma, -BIG, BIG);
+    return min(abs(sigma),BIG);
 }
 // "try_approx_air_column_density_ratio_along_ray" is an all-in-one convenience wrapper 
 //   for approx_air_column_density_ratio_along_ray_2d() and approx_reference_air_column_density_ratio_along_ray.
@@ -1124,18 +1126,20 @@ float approx_air_column_density_ratio_along_2d_ray_for_curved_world(
     // guide to variable names:
     //  "x*" distance along the ray from closest approach
     //  "R*" distance from the center of the world
-    //  "*m" variable at which the slope of the height approximation is calculated
+    //  "*b" variable at which the slope of the height approximation is calculated
     //  "*b" variable at which the intercept of the height approximation is calculated
     //  "*0" variable at which the surface of the world occurs
     //  "*1" variable at which the top of the atmosphere occurs
-    const float a = 0.9;
-    const float b = 0.3;
-    const float m = 0.5;
+    // "a" is the factor by which we "stretch out" the quadratic height approximation
+    //   this is done to ensure we do not divide by zero when we perform integration by substitution
+    const float a = 0.45;
+    // "b" is the fraction along the path from the surface to the top of the atmosphere 
+    //   at which we sample for the slope and intercept of our height approximation
+    const float b = 0.45;
     float R1 = R + 6.*H;
     float x1 = sqrt(max(R1*R1-z2, 0.));
     float x0 = sqrt(max(R *R -z2, 0.));
     float xb = x0+(x1-x0)*b;
-    float xm = x0+(x1-x0)*m;
     // if ray is obstructed
     if (x_start < x0 && -x0 < x_stop && z2 < R*R)
     {
@@ -1145,9 +1149,9 @@ float approx_air_column_density_ratio_along_2d_ray_for_curved_world(
     float dx0 = x0 -xb;
     float dx_stop = abs(x_stop )-xb;
     float dx_start = abs(x_start)-xb;
-    float xm2_z2 = xm*xm + z2;
-    float d2hdx2 = z2 / sqrt(xm2_z2*xm2_z2*xm2_z2);
-    float dhdx = xm / sqrt(xm2_z2);
+    float xb2_z2 = xb*xb + z2;
+    float d2hdx2 = z2 / sqrt(xb2_z2*xb2_z2*xb2_z2);
+    float dhdx = xb / sqrt(xb2_z2);
     float hb = sqrt(xb*xb + z2) - R;
     float h0 = (0.5 * a * d2hdx2 * dx0 + dhdx) * dx0 + hb;
     float h_stop = (0.5 * a * d2hdx2 * dx_stop + dhdx) * dx_stop + hb;
@@ -1158,7 +1162,7 @@ float approx_air_column_density_ratio_along_2d_ray_for_curved_world(
       - sign(x_start) * max(H/dhdx * (rho0 - exp(-h_start/H)), 0.);
     // NOTE: we clamp the result to prevent the generation of inifinities and nans, 
     // which can cause graphical artifacts.
-    return clamp(sigma, -BIG, BIG);
+    return min(abs(sigma),BIG);
 }
 // "try_approx_air_column_density_ratio_along_ray" is an all-in-one convenience wrapper 
 //   for approx_air_column_density_ratio_along_ray_2d() and approx_reference_air_column_density_ratio_along_ray.

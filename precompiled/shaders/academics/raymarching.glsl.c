@@ -24,20 +24,21 @@ FUNC(float) approx_air_column_density_ratio_along_2d_ray_for_curved_world(
     // guide to variable names:
     //  "x*" distance along the ray from closest approach
     //  "R*" distance from the center of the world
-    //  "*m" variable at which the slope of the height approximation is calculated
-    //  "*b" variable at which the intercept of the height approximation is calculated
+    //  "*b" variable at which the slope and intercept of the height approximation
     //  "*0" variable at which the surface of the world occurs
     //  "*1" variable at which the top of the atmosphere occurs
 
-    CONST(float) a = 0.9;
-    CONST(float) b = 0.3;
-    CONST(float) m = 0.5;
+    // "a" is the factor by which we "stretch out" the quadratic height approximation
+    //   this is done to ensure we do not divide by zero when we perform integration by substitution
+    CONST(float) a = 0.45;
+    // "b" is the fraction along the path from the surface to the top of the atmosphere 
+    //   at which we sample for the slope and intercept of our height approximation
+    CONST(float) b = 0.45;
 
     VAR(float) R1 = R + 6.*H;
     VAR(float) x1 = sqrt(max(R1*R1-z2, 0.));
     VAR(float) x0 = sqrt(max(R *R -z2, 0.));
     VAR(float) xb = x0+(x1-x0)*b;
-    VAR(float) xm = x0+(x1-x0)*m;
 
     // if ray is obstructed
     if (x_start < x0 && -x0 < x_stop && z2 < R*R)
@@ -50,9 +51,9 @@ FUNC(float) approx_air_column_density_ratio_along_2d_ray_for_curved_world(
     VAR(float) dx_stop  = abs(x_stop )-xb;
     VAR(float) dx_start = abs(x_start)-xb;
 
-    VAR(float) xm2_z2  = xm*xm + z2;
-    VAR(float) d2hdx2  = z2 / sqrt(xm2_z2*xm2_z2*xm2_z2);
-    VAR(float) dhdx    = xm / sqrt(xm2_z2); 
+    VAR(float) xb2_z2  = xb*xb + z2;
+    VAR(float) d2hdx2  = z2 / sqrt(xb2_z2*xb2_z2*xb2_z2);
+    VAR(float) dhdx    = xb / sqrt(xb2_z2); 
     VAR(float) hb      = sqrt(xb*xb + z2) - R;
     VAR(float) h0      = (0.5 * a * d2hdx2 * dx0      + dhdx) * dx0      + hb;
     VAR(float) h_stop  = (0.5 * a * d2hdx2 * dx_stop  + dhdx) * dx_stop  + hb;
@@ -65,7 +66,7 @@ FUNC(float) approx_air_column_density_ratio_along_2d_ray_for_curved_world(
 
     // NOTE: we clamp the result to prevent the generation of inifinities and nans, 
     // which can cause graphical artifacts.
-    return clamp(sigma, -BIG, BIG);
+    return min(abs(sigma),BIG);
 }
 // "try_approx_air_column_density_ratio_along_ray" is an all-in-one convenience wrapper 
 //   for approx_air_column_density_ratio_along_ray_2d() and approx_reference_air_column_density_ratio_along_ray.
@@ -119,7 +120,7 @@ FUNC(vec3) get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
 
     VAR(float) unused1, unused2, unused3, unused4; // used for passing unused output parameters to functions
 
-    const VAR(float) STEP_COUNT = 32.;// number of steps taken while marching along the view ray
+    const VAR(float) STEP_COUNT = 64.;// number of steps taken while marching along the view ray
 
     bool  is_scattered;   // whether view ray will enter the atmosphere
     bool  is_obstructed;  // whether view ray will enter the surface of a world
