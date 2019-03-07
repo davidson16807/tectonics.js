@@ -556,7 +556,7 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     float R = world_radius;
     float H = atmosphere_scale_height;
     float unused1, unused2, unused3, unused4; // used for passing unused output parameters to functions
-    const float STEP_COUNT = 32.;// number of steps taken while marching along the view ray
+    const float STEP_COUNT = 16.;// number of steps taken while marching along the view ray
     bool is_scattered; // whether view ray will enter the atmosphere
     bool is_obstructed; // whether view ray will enter the surface of a world
     float z2; // distance ("radius") from the view ray to the center of the world at closest approach, squared
@@ -611,6 +611,9 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     x_stop = is_obstructed? x_in_world : x_out_atmo;
     dx = (x_stop - x_start) / STEP_COUNT;
     x = x_start + 0.5 * dx;
+    vec3 T = vec3(0);
+    vec3 T_nudged = vec3(0);
+    float sigma_nudged = 0.;
     for (float i = 0.; i < STEP_COUNT; ++i)
     {
         P_i = P + V * x;
@@ -618,13 +621,18 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
         sigma =
             approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i, -V, x, O, R, H)
           + approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i, L, 3.*R, O, R, H);
-        E += I_sun
-            // incoming fraction: the fraction of light that scatters towards camera
-            * exp(-h_i/H) * beta_gamma * dx
-            // outgoing fraction: the fraction of light that scatters away from camera
-            * exp(-beta_sum * (sigma));
-        x += dx;
+        T = -h_i/H -beta_sum*sigma;
+        x += 0.1 * dx;
+        P_i = P + V * x;
+        h_i = sqrt((x-xz)*(x-xz)+z2) - R;
+        sigma_nudged =
+            approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i, -V, x, O, R, H)
+          + approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i, L, 3.*R, O, R, H);
+        T_nudged = -h_i/H -beta_sum*sigma;
+        E += (exp(T_nudged)-exp(T))/((T_nudged-T)/(0.1*dx));
+        x = x_start + (i+0.5) * dx;
     }
+    E *= I_sun * beta_gamma;
     // now calculate the intensity of light that traveled straight in from the background, and add it to the total
     sigma = approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i, -V, 3.*R, O, R, H);
     E += I_back * exp(-beta_sum * sigma);
@@ -1204,7 +1212,7 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     float R = world_radius;
     float H = atmosphere_scale_height;
     float unused1, unused2, unused3, unused4; // used for passing unused output parameters to functions
-    const float STEP_COUNT = 32.;// number of steps taken while marching along the view ray
+    const float STEP_COUNT = 16.;// number of steps taken while marching along the view ray
     bool is_scattered; // whether view ray will enter the atmosphere
     bool is_obstructed; // whether view ray will enter the surface of a world
     float z2; // distance ("radius") from the view ray to the center of the world at closest approach, squared
@@ -1259,6 +1267,9 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     x_stop = is_obstructed? x_in_world : x_out_atmo;
     dx = (x_stop - x_start) / STEP_COUNT;
     x = x_start + 0.5 * dx;
+    vec3 T = vec3(0);
+    vec3 T_nudged = vec3(0);
+    float sigma_nudged = 0.;
     for (float i = 0.; i < STEP_COUNT; ++i)
     {
         P_i = P + V * x;
@@ -1266,13 +1277,18 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
         sigma =
             approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i, -V, x, O, R, H)
           + approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i, L, 3.*R, O, R, H);
-        E += I_sun
-            // incoming fraction: the fraction of light that scatters towards camera
-            * exp(-h_i/H) * beta_gamma * dx
-            // outgoing fraction: the fraction of light that scatters away from camera
-            * exp(-beta_sum * (sigma));
-        x += dx;
+        T = -h_i/H -beta_sum*sigma;
+        x += 0.1 * dx;
+        P_i = P + V * x;
+        h_i = sqrt((x-xz)*(x-xz)+z2) - R;
+        sigma_nudged =
+            approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i, -V, x, O, R, H)
+          + approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i, L, 3.*R, O, R, H);
+        T_nudged = -h_i/H -beta_sum*sigma;
+        E += (exp(T_nudged)-exp(T))/((T_nudged-T)/(0.1*dx));
+        x = x_start + (i+0.5) * dx;
     }
+    E *= I_sun * beta_gamma;
     // now calculate the intensity of light that traveled straight in from the background, and add it to the total
     sigma = approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i, -V, 3.*R, O, R, H);
     E += I_back * exp(-beta_sum * sigma);
