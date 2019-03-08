@@ -452,7 +452,7 @@ float get_fraction_of_microfacets_with_angle(
 }
 const float BIG = 1e20;
 const float SMALL = 1e-20;
-const int MAX_LIGHT_COUNT = 6;
+const int MAX_LIGHT_COUNT = 1;
 // "approx_air_column_density_ratio_along_2d_ray_for_curved_world" 
 //   calculates column density ratio of air for a ray emitted from the surface of a world to a desired distance, 
 //   taking into account the curvature of the world.
@@ -570,13 +570,11 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     //  "*_abs"  property of absorption
     vec3 P = view_origin - world_position;
     vec3 V = view_direction;
-    vec3 L = light_directions[0];
-    vec3 I = light_rgb_intensities[0];
     vec3 I_back = background_rgb_intensity;
     float r = world_radius;
     float H = atmosphere_scale_height;
     const float STEP_COUNT = 16.;// number of steps taken while marching along the view ray
-    float xv = dot(-P,V); // distance along the view ray at which closest approach occurs
+    float xv = dot(-P,V); // distance from view ray origin to closest approach
     float zv2 = dot( P,P) - xv * xv; // squared distance from the view ray to the center of the world at closest approach
     float xv_in_air; // distance along the view ray at which the ray enters the atmosphere
     float xv_out_air; // distance along the view ray at which the ray exits the atmosphere
@@ -589,47 +587,56 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     // don't bother running the raymarch algorithm
     if (!is_scattered){ return I_back; }
     // cosine of angle between view and light directions
-    float VL = dot(V, L);
-    // Rayleigh and Mie phase factors,
-    // This factor indicates the fraction of scattered sunlight that scatters to a given angle (indicated by its cosine, A.K.A. "VL").
+    float VL;
+    // "gamma_*" indicates the fraction of scattered sunlight that scatters to a given angle (indicated by its cosine, A.K.A. "VL").
     // It only accounts for a portion of the sunlight that's lost during the scatter, which is irrespective of wavelength or density
-    // The rest of the fractional loss is accounted for by the variable "betas", which is dependant on wavelength, 
-    // and the density ratio, which is dependant on height
+    float gamma_ray;
+    float gamma_mie;
+    // "beta_*" indicates the rest of the fractional loss.
+    // it is dependant on wavelength, and the density ratio, which is dependant on height
     // So all together, the fraction of sunlight that scatters to a given angle is: beta(wavelength) * gamma(angle) * density_ratio(height)
-    float gamma_ray = get_fraction_of_rayleigh_scattered_light_scattered_by_angle(VL);
-    float gamma_mie = get_fraction_of_mie_scattered_light_scattered_by_angle(VL);
-    vec3 beta_gamma = beta_ray * gamma_ray + beta_mie * gamma_mie;
     vec3 beta_sum = beta_ray + beta_mie + beta_abs;
+    vec3 beta_gamma;
     float xv_start = max(xv_in_air, 0.);
     float xv_stop = is_obstructed? xv_in_world : xv_out_air;
     float dx = (xv_stop - xv_start) / STEP_COUNT;
-    float dxl = dx*dot(V,-L);
-    float xv_i = xv_start - xv + 0.5 * dx;
-    float xl_i = dot(P+V*(xv_i+xv),-L);
-    float zl2_i; // squared distance ("radius") of the light ray at closest for a single iteration of the view ray march
-    float r2_i; // squared distance ("radius") from the center of the world for a single iteration of the view ray march
-    float h_i; // distance ("height") from the surface of the world for a single iteration of the view ray march
-    float sigma; // columnar density ratios for rayleigh and mie scattering, found by marching along the full path of light. This expresses the quantity of air encountered by light, relative to air density on the surface
+    float xvi = xv_start - xv + 0.5 * dx;
+    vec3 L; // unit vector pointing to light source
+    vec3 I; // vector indicating intensity of light source for each color channel
+    float xl; // distance from light ray origin to closest approach
+    float zl2; // squared distance ("radius") of the light ray at closest for a single iteration of the view ray march
+    float r2; // squared distance ("radius") from the center of the world for a single iteration of the view ray march
+    float h; // distance ("height") from the surface of the world for a single iteration of the view ray march
+    float sigma_v; // columnar density encountered along the view ray,  relative to surface density
+    float sigma_l; // columnar density encountered along the light ray, relative to surface density
     vec3 E = vec3(0); // total intensity for each color channel, found as the sum of light intensities for each path from the light source to the camera
     for (float i = 0.; i < STEP_COUNT; ++i)
     {
-        r2_i = xv_i*xv_i+zv2;
-        h_i = sqrt(r2_i) - r;
-        zl2_i = r2_i - xl_i*xl_i; // distance from the origin at which closest approach occurs
-        sigma =
-            approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xv, xv_i, zv2, r, H )
-          + approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xl_i, 3.*r, zl2_i, r, H );
-        E += I
-            // incoming fraction: the fraction of light that scatters towards camera
-            * exp(-h_i/H) * beta_gamma * dx
-            // outgoing fraction: the fraction of light that scatters away from camera
-            * exp(-beta_sum * (sigma));
-        xl_i += dxl;
-        xv_i += dx;
+        r2 = xvi*xvi+zv2;
+        h = sqrt(r2) - r;
+        sigma_v = approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xv, xvi, zv2, r, H );
+        for (int j = 0; j < MAX_LIGHT_COUNT; ++j)
+        {
+            L = light_directions[0];
+            I = light_rgb_intensities[0];
+            VL = dot(V, L);
+            xl = dot(P+V*(xvi+xv),-L);
+            zl2 = r2 - xl*xl;
+            sigma_l = approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xl, 3.*r, zl2, r, H );
+            gamma_ray = get_fraction_of_rayleigh_scattered_light_scattered_by_angle(VL);
+            gamma_mie = get_fraction_of_mie_scattered_light_scattered_by_angle(VL);
+            beta_gamma= beta_ray * gamma_ray + beta_mie * gamma_mie;
+            E += I
+                // incoming fraction: the fraction of light that scatters towards camera
+                * exp(-h/H) * beta_gamma * dx
+                // outgoing fraction: the fraction of light that scatters away from camera
+                * exp(-beta_sum * (sigma_l + sigma_v));
+        }
+        xvi += dx;
     }
     // now calculate the intensity of light that traveled straight in from the background, and add it to the total
-    sigma = approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xv, xv_stop-xv_start-xv, zv2, r, H );
-    E += I_back * exp(-beta_sum * sigma);
+    sigma_v = approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xv, xv_stop-xv_start-xv, zv2, r, H );
+    E += I_back * exp(-beta_sum * sigma_v);
     return E;
 }
 vec3 get_rgb_fraction_of_light_transmitted_through_air_for_curved_world(
@@ -667,20 +674,20 @@ vec3 get_rgb_intensity_of_light_scattered_from_fluid_for_flat_world(
     float gamma_mie = get_fraction_of_mie_scattered_light_scattered_by_angle(LV);
     vec3 beta_gamma = beta_ray * gamma_ray + beta_mie * gamma_mie;
     vec3 beta_sum = beta_ray + beta_mie + beta_abs;
-    // "sigma_V"  is the column density, relative to the surface, that's along the view ray.
-    // "sigma_L" is the column density, relative to the surface, that's along the light ray.
+    // "sigma_v"  is the column density, relative to the surface, that's along the view ray.
+    // "sigma_l" is the column density, relative to the surface, that's along the light ray.
     // "sigma_ratio" is the column density ratio of the full path of light relative to the distance along the incoming path
     // Since water is treated as incompressible, the density remains constant, 
     //   so they are effectively the distances traveled along their respective paths.
     // TODO: model vector of refracted light within ocean
-    float sigma_V = ocean_depth / NV;
-    float sigma_L = ocean_depth / NL;
+    float sigma_v = ocean_depth / NV;
+    float sigma_l = ocean_depth / NL;
     float sigma_ratio = 1. + NV/NL;
     return I
         // incoming fraction: the fraction of light that scatters towards camera
         * beta_gamma
         // outgoing fraction: the fraction of light that scatters away from camera
-        * (exp(-sigma_V * sigma_ratio * beta_sum) - 1.)
+        * (exp(-sigma_v * sigma_ratio * beta_sum) - 1.)
         / (-sigma_ratio * beta_sum);
 }
 vec3 get_rgb_fraction_of_light_transmitted_through_fluid_for_flat_world(
@@ -1104,7 +1111,7 @@ float get_fraction_of_microfacets_with_angle(
 }
 const float BIG = 1e20;
 const float SMALL = 1e-20;
-const int MAX_LIGHT_COUNT = 6;
+const int MAX_LIGHT_COUNT = 1;
 // "approx_air_column_density_ratio_along_2d_ray_for_curved_world" 
 //   calculates column density ratio of air for a ray emitted from the surface of a world to a desired distance, 
 //   taking into account the curvature of the world.
@@ -1222,13 +1229,11 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     //  "*_abs"  property of absorption
     vec3 P = view_origin - world_position;
     vec3 V = view_direction;
-    vec3 L = light_directions[0];
-    vec3 I = light_rgb_intensities[0];
     vec3 I_back = background_rgb_intensity;
     float r = world_radius;
     float H = atmosphere_scale_height;
     const float STEP_COUNT = 16.;// number of steps taken while marching along the view ray
-    float xv = dot(-P,V); // distance along the view ray at which closest approach occurs
+    float xv = dot(-P,V); // distance from view ray origin to closest approach
     float zv2 = dot( P,P) - xv * xv; // squared distance from the view ray to the center of the world at closest approach
     float xv_in_air; // distance along the view ray at which the ray enters the atmosphere
     float xv_out_air; // distance along the view ray at which the ray exits the atmosphere
@@ -1241,47 +1246,56 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     // don't bother running the raymarch algorithm
     if (!is_scattered){ return I_back; }
     // cosine of angle between view and light directions
-    float VL = dot(V, L);
-    // Rayleigh and Mie phase factors,
-    // This factor indicates the fraction of scattered sunlight that scatters to a given angle (indicated by its cosine, A.K.A. "VL").
+    float VL;
+    // "gamma_*" indicates the fraction of scattered sunlight that scatters to a given angle (indicated by its cosine, A.K.A. "VL").
     // It only accounts for a portion of the sunlight that's lost during the scatter, which is irrespective of wavelength or density
-    // The rest of the fractional loss is accounted for by the variable "betas", which is dependant on wavelength, 
-    // and the density ratio, which is dependant on height
+    float gamma_ray;
+    float gamma_mie;
+    // "beta_*" indicates the rest of the fractional loss.
+    // it is dependant on wavelength, and the density ratio, which is dependant on height
     // So all together, the fraction of sunlight that scatters to a given angle is: beta(wavelength) * gamma(angle) * density_ratio(height)
-    float gamma_ray = get_fraction_of_rayleigh_scattered_light_scattered_by_angle(VL);
-    float gamma_mie = get_fraction_of_mie_scattered_light_scattered_by_angle(VL);
-    vec3 beta_gamma = beta_ray * gamma_ray + beta_mie * gamma_mie;
     vec3 beta_sum = beta_ray + beta_mie + beta_abs;
+    vec3 beta_gamma;
     float xv_start = max(xv_in_air, 0.);
     float xv_stop = is_obstructed? xv_in_world : xv_out_air;
     float dx = (xv_stop - xv_start) / STEP_COUNT;
-    float dxl = dx*dot(V,-L);
-    float xv_i = xv_start - xv + 0.5 * dx;
-    float xl_i = dot(P+V*(xv_i+xv),-L);
-    float zl2_i; // squared distance ("radius") of the light ray at closest for a single iteration of the view ray march
-    float r2_i; // squared distance ("radius") from the center of the world for a single iteration of the view ray march
-    float h_i; // distance ("height") from the surface of the world for a single iteration of the view ray march
-    float sigma; // columnar density ratios for rayleigh and mie scattering, found by marching along the full path of light. This expresses the quantity of air encountered by light, relative to air density on the surface
+    float xvi = xv_start - xv + 0.5 * dx;
+    vec3 L; // unit vector pointing to light source
+    vec3 I; // vector indicating intensity of light source for each color channel
+    float xl; // distance from light ray origin to closest approach
+    float zl2; // squared distance ("radius") of the light ray at closest for a single iteration of the view ray march
+    float r2; // squared distance ("radius") from the center of the world for a single iteration of the view ray march
+    float h; // distance ("height") from the surface of the world for a single iteration of the view ray march
+    float sigma_v; // columnar density encountered along the view ray,  relative to surface density
+    float sigma_l; // columnar density encountered along the light ray, relative to surface density
     vec3 E = vec3(0); // total intensity for each color channel, found as the sum of light intensities for each path from the light source to the camera
     for (float i = 0.; i < STEP_COUNT; ++i)
     {
-        r2_i = xv_i*xv_i+zv2;
-        h_i = sqrt(r2_i) - r;
-        zl2_i = r2_i - xl_i*xl_i; // distance from the origin at which closest approach occurs
-        sigma =
-            approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xv, xv_i, zv2, r, H )
-          + approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xl_i, 3.*r, zl2_i, r, H );
-        E += I
-            // incoming fraction: the fraction of light that scatters towards camera
-            * exp(-h_i/H) * beta_gamma * dx
-            // outgoing fraction: the fraction of light that scatters away from camera
-            * exp(-beta_sum * (sigma));
-        xl_i += dxl;
-        xv_i += dx;
+        r2 = xvi*xvi+zv2;
+        h = sqrt(r2) - r;
+        sigma_v = approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xv, xvi, zv2, r, H );
+        for (int j = 0; j < MAX_LIGHT_COUNT; ++j)
+        {
+            L = light_directions[0];
+            I = light_rgb_intensities[0];
+            VL = dot(V, L);
+            xl = dot(P+V*(xvi+xv),-L);
+            zl2 = r2 - xl*xl;
+            sigma_l = approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xl, 3.*r, zl2, r, H );
+            gamma_ray = get_fraction_of_rayleigh_scattered_light_scattered_by_angle(VL);
+            gamma_mie = get_fraction_of_mie_scattered_light_scattered_by_angle(VL);
+            beta_gamma= beta_ray * gamma_ray + beta_mie * gamma_mie;
+            E += I
+                // incoming fraction: the fraction of light that scatters towards camera
+                * exp(-h/H) * beta_gamma * dx
+                // outgoing fraction: the fraction of light that scatters away from camera
+                * exp(-beta_sum * (sigma_l + sigma_v));
+        }
+        xvi += dx;
     }
     // now calculate the intensity of light that traveled straight in from the background, and add it to the total
-    sigma = approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xv, xv_stop-xv_start-xv, zv2, r, H );
-    E += I_back * exp(-beta_sum * sigma);
+    sigma_v = approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xv, xv_stop-xv_start-xv, zv2, r, H );
+    E += I_back * exp(-beta_sum * sigma_v);
     return E;
 }
 vec3 get_rgb_fraction_of_light_transmitted_through_air_for_curved_world(
@@ -1319,20 +1333,20 @@ vec3 get_rgb_intensity_of_light_scattered_from_fluid_for_flat_world(
     float gamma_mie = get_fraction_of_mie_scattered_light_scattered_by_angle(LV);
     vec3 beta_gamma = beta_ray * gamma_ray + beta_mie * gamma_mie;
     vec3 beta_sum = beta_ray + beta_mie + beta_abs;
-    // "sigma_V"  is the column density, relative to the surface, that's along the view ray.
-    // "sigma_L" is the column density, relative to the surface, that's along the light ray.
+    // "sigma_v"  is the column density, relative to the surface, that's along the view ray.
+    // "sigma_l" is the column density, relative to the surface, that's along the light ray.
     // "sigma_ratio" is the column density ratio of the full path of light relative to the distance along the incoming path
     // Since water is treated as incompressible, the density remains constant, 
     //   so they are effectively the distances traveled along their respective paths.
     // TODO: model vector of refracted light within ocean
-    float sigma_V = ocean_depth / NV;
-    float sigma_L = ocean_depth / NL;
+    float sigma_v = ocean_depth / NV;
+    float sigma_l = ocean_depth / NL;
     float sigma_ratio = 1. + NV/NL;
     return I
         // incoming fraction: the fraction of light that scatters towards camera
         * beta_gamma
         // outgoing fraction: the fraction of light that scatters away from camera
-        * (exp(-sigma_V * sigma_ratio * beta_sum) - 1.)
+        * (exp(-sigma_v * sigma_ratio * beta_sum) - 1.)
         / (-sigma_ratio * beta_sum);
 }
 vec3 get_rgb_fraction_of_light_transmitted_through_fluid_for_flat_world(

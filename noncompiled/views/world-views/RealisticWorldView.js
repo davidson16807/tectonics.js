@@ -76,8 +76,8 @@ function RealisticWorldView(shader_return_value) {
               shadow_visibility:         { type: 'f', value: options.shadow_visibility },
 
               // LIGHT PROPERTIES
-              light_rgb_intensities:     { type: "v3v",  value: [new THREE.Vector3()] },
-              light_directions:          { type: "v3v",  value: [new THREE.Vector3()] },
+              light_rgb_intensities:     { type: "v3v", value: [new THREE.Vector3()]       },
+              light_directions:          { type: "v3v", value: [new THREE.Vector3()]       },
               insolation_max:            { type: 'f',   value: Units.GLOBAL_SOLAR_CONSTANT },
 
               // WORLD PROPERTIES
