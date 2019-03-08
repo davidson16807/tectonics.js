@@ -11,25 +11,26 @@ CONST(float) SMALL = 1e-20;
 //   If there is no intersection, they are the distances from the closest approach to the upper bound.
 //   Negative numbers indicate the rays are firing towards the ground.
 // "z2" is the closest distance from the ray to the center of the world, squared.
-// "R" is the radius of the world.
+// "r" is the radius of the world.
 // "H" is the scale height of the atmosphere.
 FUNC(float) approx_air_column_density_ratio_along_2d_ray_for_curved_world(
     IN(float) x_start, 
     IN(float) x_stop, 
     IN(float) z2, 
-    IN(float) R, 
+    IN(float) r, 
     IN(float) H
 ){
 
-    // guide to variable names:
+    // GUIDE TO VARIABLE NAMES:
     //  "x*" distance along the ray from closest approach
     //  "z*" distance from the center of the world at closest approach
-    //  "R*" distance from the center of the world
-    //  "*b" variable at which the slope and intercept of the height approximation
+    //  "r*" distance ("radius") from the center of the world
+    //  "h*" distance ("height") from the center of the world
+    //  "*b" variable at which the slope and intercept of the height approximation is sampled
     //  "*0" variable at which the surface of the world occurs
     //  "*1" variable at which the top of the atmosphere occurs
     //  "*2" the square of a variable
-    //  "d*dx" a derivative, a rate of change along the ray
+    //  "d*dx" a derivative, a rate of change over distance along the ray
 
     // "a" is the factor by which we "stretch out" the quadratic height approximation
     //   this is done to ensure we do not divide by zero when we perform integration by substitution
@@ -38,22 +39,22 @@ FUNC(float) approx_air_column_density_ratio_along_2d_ray_for_curved_world(
     //   at which we sample for the slope and intercept of our height approximation
     CONST(float) b = 0.45;
 
-    VAR(float) x0 = sqrt(max(R *R -z2, 0.));
+    VAR(float) x0 = sqrt(max(r *r -z2, 0.));
     // if ray is obstructed
-    if (x_start < x0 && -x0 < x_stop && z2 < R*R)
+    if (x_start < x0 && -x0 < x_stop && z2 < r*r)
     {
         // return ludicrously big number to represent obstruction
         return BIG;
     }
     
-    VAR(float) R1      = R + 6.*H;
-    VAR(float) x1      = sqrt(max(R1*R1-z2, 0.));
+    VAR(float) r1      = r + 6.*H;
+    VAR(float) x1      = sqrt(max(r1*r1-z2, 0.));
     VAR(float) xb      = x0+(x1-x0)*b;
     VAR(float) rb2     = xb*xb + z2;
     VAR(float) rb      = sqrt(rb2);
     VAR(float) d2hdx2  = z2 / sqrt(rb2*rb2*rb2);
     VAR(float) dhdx    = xb / rb; 
-    VAR(float) hb      = rb - R;
+    VAR(float) hb      = rb - r;
     VAR(float) dx0     = x0          -xb;
     VAR(float) dx_stop = abs(x_stop )-xb;
     VAR(float) dx_start= abs(x_start)-xb;
@@ -78,12 +79,12 @@ FUNC(float) approx_air_column_density_ratio_along_3d_ray_for_curved_world (
     IN(vec3)  P, 
     IN(vec3)  V,
     IN(float) x,
-    IN(float) R, 
+    IN(float) r, 
     IN(float) H
 ){
     VAR(float) xz = dot(-P,V);           // distance ("radius") from the ray to the center of the world at closest approach, squared
     VAR(float) z2 = dot( P,P) - xz * xz; // distance from the origin at which closest approach occurs
-    return approx_air_column_density_ratio_along_2d_ray_for_curved_world( 0.-xz, x-xz, z2, R, H );
+    return approx_air_column_density_ratio_along_2d_ray_for_curved_world( 0.-xz, x-xz, z2, r, H );
 }
 
 // TODO: multiple light sources
@@ -97,48 +98,62 @@ FUNC(vec3) get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     IN(float) atmosphere_scale_height,
     IN(vec3)  beta_ray,        IN(vec3)  beta_mie,           IN(vec3)  beta_abs
 ){
-    // NOTE: we are only using geocentric coordinates within this function!
+    // For an excellent introduction to what we're try to do here, see Alan Zucconi: 
+    //   https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-3/
+    // We will be using most of the same terminology and variable names.
+
+    // GUIDE TO VARIABLE NAMES:
+    //  Uppercase letters indicate vectors.
+    //  Lowercase letters indicate scalars.
+    //  Going for terseness because I tried longhand names and trust me, you can't read them.
+    //  "x*"     distance along a ray, either from the ray origin or from closest approach
+    //  "z*"     distance from the center of the world to closest approach
+    //  "r*"     a distance ("radius") from the center of the world
+    //  "h*"     a distance ("height") from the surface of the world
+    //  "*v*"    property of the view ray, the ray cast from the viewer to the object being viewed
+    //  "*l*"    property of the light ray, the ray cast from the object to the light source
+    //  "*2"     the square of a variable
+    //  "*_i"    property of an iteration within the raymarch
+    //  "beta*"  a scattering coefficient, the number of e-foldings in light intensity per unit distance
+    //  "gamma*" a phase factor, the fraction of light that's scattered in a certain direction
+    //  "rho*"   a density ratio, the density of air relative to surface density
+    //  "sigma*" a column density ratio, the density of a column of air relative to surface density
+    //  "I*"     intensity of source lighting for each color channel
+    //  "E*"     intensity of light cast towards the viewer for each color channel
+    //  "*_ray"  property of rayleigh scattering
+    //  "*_mie"  property of mie scattering
+    //  "*_abs"  property of absorption
+
     VAR(vec3)  P = view_origin - world_position;
     VAR(vec3)  V = view_direction;
-
     VAR(vec3)  L = light_direction;
     VAR(vec3)  I_sun  = light_rgb_intensity;
     VAR(vec3)  I_back = background_rgb_intensity;
-
-    VAR(float) R = world_radius;
+    VAR(float) r = world_radius;
     VAR(float) H = atmosphere_scale_height;
 
     const VAR(float) STEP_COUNT = 512.;// number of steps taken while marching along the view ray
 
-    bool  is_scattered;      // whether view ray will enter the atmosphere
-    bool  is_obstructed;     // whether view ray will enter the surface of a world
-    VAR(float) zv2;          // distance ("radius") from the view ray to the center of the world at closest approach, squared
-    VAR(float) xv;           // distance along the view ray at which closest approach occurs
-    VAR(float) xv_in_atmo;   // distance along the view ray at which the ray enters the atmosphere
-    VAR(float) xv_out_atmo;  // distance along the view ray at which the ray exits the atmosphere
-    VAR(float) xv_in_world;  // distance along the view ray at which the ray enters the surface of the world
-    VAR(float) xv_out_world; // distance along the view ray at which the ray enters the surface of the world
-    VAR(float) xv_start;     // distance along the view ray at which scattering starts, either because it's the start of the ray or the start of the atmosphere 
-    VAR(float) xv_stop;      // distance along the view ray at which scattering no longer occurs, either due to hitting the world or leaving the atmosphere
-    
-    VAR(float) dx;          // distance between steps while marching along the view ray
-    VAR(float) xv_i;        // distance to closest approach while marching along the view ray
-    VAR(float) r2_i;        // squared distance ("radius") from the center of the world while marching along the view ray
-    VAR(float) h_i;         // distance ("height") from the surface of the world while marching along the view ray
-    VAR(float) sigma;       // columnar density ratios for rayleigh and mie scattering, found by marching along the full path of light. This expresses the quantity of air encountered by light, relative to air density on the surface
+    VAR(float) xv  = dot(-P,V);           // distance along the view ray at which closest approach occurs
+    VAR(float) zv2 = dot( P,P) - xv * xv; // squared distance from the view ray to the center of the world at closest approach
 
-    VAR(float) dxl;        // distance by which the start of the light ray changes over a single a single step within the view ray march
-    VAR(float) zl2_i;      // squared distance from the light ray to the center of the world at closest approach
-    VAR(float) xl_i;       // distance along the light ray at which closest approach occurs
+    VAR(float) xv_in_air;      // distance along the view ray at which the ray enters the atmosphere
+    VAR(float) xv_out_air;     // distance along the view ray at which the ray exits the atmosphere
+    VAR(float) xv_in_world;    // distance along the view ray at which the ray enters the surface of the world
+    VAR(float) xv_out_world;   // distance along the view ray at which the ray enters the surface of the world
+
+    //   We only set it to 3 scale heights because we are using this parameter for raymarching, and not a closed form solution
+    bool is_scattered   = try_get_relation_between_ray_and_sphere(r + 12.*H, zv2, xv, xv_in_air,  xv_out_air   );
+    bool is_obstructed = try_get_relation_between_ray_and_sphere (r,         zv2, xv, xv_in_world, xv_out_world);
+
+    // if view ray does not interact with the atmosphere
+    // don't bother running the raymarch algorithm
+    if (!is_scattered){ return I_back; }
 
     // cosine of angle between view and light directions
     VAR(float) VL = dot(V, L); 
 
-    // total intensity for each color channel, found as the sum of light intensities for each path from the light source to the camera
-    VAR(vec3)  E = vec3(0); 
-
     // Rayleigh and Mie phase factors,
-    // A.K.A "gamma" from Alan Zucconi: https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-3/
     // This factor indicates the fraction of scattered sunlight that scatters to a given angle (indicated by its cosine, A.K.A. "VL").
     // It only accounts for a portion of the sunlight that's lost during the scatter, which is irrespective of wavelength or density
     // The rest of the fractional loss is accounted for by the variable "betas", which is dependant on wavelength, 
@@ -149,42 +164,28 @@ FUNC(vec3) get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
 
     VAR(vec3)  beta_gamma = beta_ray * gamma_ray + beta_mie * gamma_mie;
     VAR(vec3)  beta_sum   = beta_ray + beta_mie + beta_abs;
-
-    xv  = dot(-P,V);
-    zv2 = dot( P,P) - xv * xv;
-
-    //   We only set it to 3 scale heights because we are using this parameter for raymarching, and not a closed form solution
-    is_scattered   = try_get_relation_between_ray_and_sphere(
-        R + 12.*H, zv2, xv, 
-        xv_in_atmo,  xv_out_atmo
-    );
-    is_obstructed = try_get_relation_between_ray_and_sphere(
-        R,         zv2, xv,
-        xv_in_world, xv_out_world 
-    );
-
-    // if view ray does not interact with the atmosphere
-    // don't bother running the raymarch algorithm
-    if (!is_scattered)
-    {
-        return I_back;
-    }
     
-    xv_start = max(xv_in_atmo, 0.);
-    xv_stop  = is_obstructed? xv_in_world : xv_out_atmo;
-    dx       = (xv_stop - xv_start) / STEP_COUNT;
-    dxl      = dx*dot(V,-L);
-    xv_i     = xv_start - xv + 0.5 * dx;
-    xl_i     = dot(P+V*(xv_i+xv),-L);
+    VAR(float) xv_start = max(xv_in_air, 0.);
+    VAR(float) xv_stop  = is_obstructed? xv_in_world : xv_out_air;
+    VAR(float) dx       = (xv_stop - xv_start) / STEP_COUNT;
+    VAR(float) dxl      = dx*dot(V,-L);
+    VAR(float) xv_i     = xv_start - xv + 0.5 * dx;
+    VAR(float) xl_i     = dot(P+V*(xv_i+xv),-L);
+
+    VAR(float) zl2_i;       // squared distance ("radius") of the light ray at closest for a single iteration of the view ray march
+    VAR(float) r2_i;        // squared distance ("radius") from the center of the world for a single iteration of the view ray march
+    VAR(float) h_i;         // distance ("height") from the surface of the world for a single iteration of the view ray march
+    VAR(float) sigma;       // columnar density ratios for rayleigh and mie scattering, found by marching along the full path of light. This expresses the quantity of air encountered by light, relative to air density on the surface
+    VAR(vec3)  E = vec3(0); // total intensity for each color channel, found as the sum of light intensities for each path from the light source to the camera
 
     for (VAR(float) i = 0.; i < STEP_COUNT; ++i)
     {
         r2_i  = xv_i*xv_i+zv2;
-        h_i   = sqrt(r2_i) - R;
+        h_i   = sqrt(r2_i) - r;
         zl2_i = r2_i - xl_i*xl_i; // distance from the origin at which closest approach occurs
         sigma = 
-            approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xv,   xv_i, zv2,   R, H )
-          + approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xl_i, 3.*R, zl2_i, R, H );
+            approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xv,   xv_i, zv2,   r, H )
+          + approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xl_i, 3.*r, zl2_i, r, H );
 
         E += I_sun
             // incoming fraction: the fraction of light that scatters towards camera
@@ -197,7 +198,7 @@ FUNC(vec3) get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     }
 
     // now calculate the intensity of light that traveled straight in from the background, and add it to the total
-    sigma  = approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xv, xv_stop-xv_start-xv, zv2, R, H );
+    sigma  = approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xv, xv_stop-xv_start-xv, zv2, r, H );
     E += I_back * exp(-beta_sum * sigma);
 
     return E;
@@ -210,12 +211,12 @@ FUNC(vec3) get_rgb_fraction_of_light_transmitted_through_air_for_curved_world(
     IN(vec3)  beta_ray,       IN(vec3)  beta_mie,          IN(vec3)  beta_abs
 ){
     VAR(vec3)  O = world_position;
-    VAR(float) R = world_radius;
+    VAR(float) r = world_radius;
     VAR(float) H = atmosphere_scale_height;
     // "sigma" is the column density of air, relative to the surface of the world, that's along the light's path of travel,
     //   we use it to estimate the amount of light that's filtered by the atmosphere before reaching the surface
     //   see https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-1/ for an awesome introduction
-    VAR(float) sigma  = approx_air_column_density_ratio_along_3d_ray_for_curved_world (segment_origin-world_position, segment_direction, segment_length, R, H);
+    VAR(float) sigma  = approx_air_column_density_ratio_along_3d_ray_for_curved_world (segment_origin-world_position, segment_direction, segment_length, r, H);
     // "I_surface" is the intensity of light that reaches the surface after being filtered by atmosphere
     return exp(-sigma * (beta_ray + beta_mie + beta_abs));
 }
