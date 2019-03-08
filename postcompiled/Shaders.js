@@ -467,6 +467,8 @@ const float SMALL = 1e-20;
 float approx_air_column_density_ratio_along_2d_ray_for_curved_world(
     in float x_start,
     in float x_stop,
+    in float x0,
+    in float x1,
     in float z2,
     in float r,
     in float H
@@ -487,15 +489,12 @@ float approx_air_column_density_ratio_along_2d_ray_for_curved_world(
     // "b" is the fraction along the path from the surface to the top of the atmosphere 
     //   at which we sample for the slope and intercept of our height approximation
     const float b = 0.45;
-    float x0 = sqrt(max(r *r -z2, 0.));
     // if ray is obstructed
     if (x_start < x0 && -x0 < x_stop && z2 < r*r)
     {
         // return ludicrously big number to represent obstruction
         return BIG;
     }
-    float r1 = r + 6.*H;
-    float x1 = sqrt(max(r1*r1-z2, 0.));
     float xb = x0+(x1-x0)*b;
     float rb2 = xb*xb + z2;
     float rb = sqrt(rb2);
@@ -529,7 +528,10 @@ float approx_air_column_density_ratio_along_3d_ray_for_curved_world (
 ){
     float xz = dot(-P,V); // distance ("radius") from the ray to the center of the world at closest approach, squared
     float z2 = dot( P,P) - xz * xz; // distance from the origin at which closest approach occurs
-    return approx_air_column_density_ratio_along_2d_ray_for_curved_world( 0.-xz, x-xz, z2, r, H );
+    float x0 = sqrt(max(r *r -z2, 0.));
+    float r1 = r + 6.*H;
+    float x1 = sqrt(max(r1*r1-z2, 0.));
+    return approx_air_column_density_ratio_along_2d_ray_for_curved_world( 0.-xz, x-xz, x0, x1, z2, r, H );
 }
 // TODO: multiple light sources
 // TODO: multiple scattering events
@@ -609,14 +611,22 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     float h_i; // distance ("height") from the surface of the world for a single iteration of the view ray march
     float sigma; // columnar density ratios for rayleigh and mie scattering, found by marching along the full path of light. This expresses the quantity of air encountered by light, relative to air density on the surface
     vec3 E = vec3(0); // total intensity for each color channel, found as the sum of light intensities for each path from the light source to the camera
+    float xv0 = sqrt(max(r *r -zv2, 0.));
+    float r1 = r + 6.*H;
+    float xv1 = sqrt(max(r1*r1-zv2, 0.));
+    float xl0 = 0.;
+    float rl1 = 0.;
+    float xl1 = 0.;
     for (float i = 0.; i < STEP_COUNT; ++i)
     {
         r2_i = xv_i*xv_i+zv2;
         h_i = sqrt(r2_i) - r;
         zl2_i = r2_i - xl_i*xl_i; // distance from the origin at which closest approach occurs
+        xl0 = sqrt(max(r *r -zl2_i, 0.));
+        xl1 = sqrt(max(r1*r1-zl2_i, 0.));
         sigma =
-            approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xv, xv_i, zv2, r, H )
-          + approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xl_i, 3.*r, zl2_i, r, H );
+            approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xv, xv_i, xv0, xv1, zv2, r, H )
+          + approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xl_i, 3.*r, xl0, xl1, zl2_i, r, H );
         E += I_sun
             // incoming fraction: the fraction of light that scatters towards camera
             * exp(-h_i/H) * beta_gamma * dx
@@ -626,7 +636,7 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
         xv_i += dx;
     }
     // now calculate the intensity of light that traveled straight in from the background, and add it to the total
-    sigma = approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xv, xv_stop-xv_start-xv, zv2, r, H );
+    sigma = approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xv, xv_stop-xv_start-xv, xv0, xv1, zv2, r, H );
     E += I_back * exp(-beta_sum * sigma);
     return E;
 }
@@ -1115,6 +1125,8 @@ const float SMALL = 1e-20;
 float approx_air_column_density_ratio_along_2d_ray_for_curved_world(
     in float x_start,
     in float x_stop,
+    in float x0,
+    in float x1,
     in float z2,
     in float r,
     in float H
@@ -1135,15 +1147,12 @@ float approx_air_column_density_ratio_along_2d_ray_for_curved_world(
     // "b" is the fraction along the path from the surface to the top of the atmosphere 
     //   at which we sample for the slope and intercept of our height approximation
     const float b = 0.45;
-    float x0 = sqrt(max(r *r -z2, 0.));
     // if ray is obstructed
     if (x_start < x0 && -x0 < x_stop && z2 < r*r)
     {
         // return ludicrously big number to represent obstruction
         return BIG;
     }
-    float r1 = r + 6.*H;
-    float x1 = sqrt(max(r1*r1-z2, 0.));
     float xb = x0+(x1-x0)*b;
     float rb2 = xb*xb + z2;
     float rb = sqrt(rb2);
@@ -1177,7 +1186,10 @@ float approx_air_column_density_ratio_along_3d_ray_for_curved_world (
 ){
     float xz = dot(-P,V); // distance ("radius") from the ray to the center of the world at closest approach, squared
     float z2 = dot( P,P) - xz * xz; // distance from the origin at which closest approach occurs
-    return approx_air_column_density_ratio_along_2d_ray_for_curved_world( 0.-xz, x-xz, z2, r, H );
+    float x0 = sqrt(max(r *r -z2, 0.));
+    float r1 = r + 6.*H;
+    float x1 = sqrt(max(r1*r1-z2, 0.));
+    return approx_air_column_density_ratio_along_2d_ray_for_curved_world( 0.-xz, x-xz, x0, x1, z2, r, H );
 }
 // TODO: multiple light sources
 // TODO: multiple scattering events
@@ -1257,14 +1269,22 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     float h_i; // distance ("height") from the surface of the world for a single iteration of the view ray march
     float sigma; // columnar density ratios for rayleigh and mie scattering, found by marching along the full path of light. This expresses the quantity of air encountered by light, relative to air density on the surface
     vec3 E = vec3(0); // total intensity for each color channel, found as the sum of light intensities for each path from the light source to the camera
+    float xv0 = sqrt(max(r *r -zv2, 0.));
+    float r1 = r + 6.*H;
+    float xv1 = sqrt(max(r1*r1-zv2, 0.));
+    float xl0 = 0.;
+    float rl1 = 0.;
+    float xl1 = 0.;
     for (float i = 0.; i < STEP_COUNT; ++i)
     {
         r2_i = xv_i*xv_i+zv2;
         h_i = sqrt(r2_i) - r;
         zl2_i = r2_i - xl_i*xl_i; // distance from the origin at which closest approach occurs
+        xl0 = sqrt(max(r *r -zl2_i, 0.));
+        xl1 = sqrt(max(r1*r1-zl2_i, 0.));
         sigma =
-            approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xv, xv_i, zv2, r, H )
-          + approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xl_i, 3.*r, zl2_i, r, H );
+            approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xv, xv_i, xv0, xv1, zv2, r, H )
+          + approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xl_i, 3.*r, xl0, xl1, zl2_i, r, H );
         E += I_sun
             // incoming fraction: the fraction of light that scatters towards camera
             * exp(-h_i/H) * beta_gamma * dx
@@ -1274,7 +1294,7 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
         xv_i += dx;
     }
     // now calculate the intensity of light that traveled straight in from the background, and add it to the total
-    sigma = approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xv, xv_stop-xv_start-xv, zv2, r, H );
+    sigma = approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xv, xv_stop-xv_start-xv, xv0, xv1, zv2, r, H );
     E += I_back * exp(-beta_sum * sigma);
     return E;
 }
