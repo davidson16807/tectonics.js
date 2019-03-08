@@ -193,29 +193,30 @@ function RealisticWorldView(shader_return_value) {
 
         // VIEW PROPERTIES
         update_renderpass_vertex_shader(options.vertexShader);
-        update_renderpass_uniform  ('projection_matrix_inverse',projection_matrix_inverse);
-        update_renderpass_uniform  ('view_matrix_inverse',  gl_state.camera.matrixWorld);
-        update_renderpass_uniform  ('reference_distance',   world.radius);
-        update_renderpass_uniform  ('ocean_visibility',         options.ocean_visibility);
-        update_renderpass_uniform  ('sediment_visibility',         options.sediment_visibility);
-        update_renderpass_uniform  ('plant_visibility',            options.plant_visibility);
-        update_renderpass_uniform  ('snow_visibility',              options.snow_visibility);
+        update_renderpass_uniform  ('projection_matrix_inverse', projection_matrix_inverse);
+        update_renderpass_uniform  ('view_matrix_inverse',       gl_state.camera.matrixWorld);
+        update_renderpass_uniform  ('reference_distance',        world.radius);
+        update_renderpass_uniform  ('ocean_visibility',          options.ocean_visibility);
+        update_renderpass_uniform  ('sediment_visibility',       options.sediment_visibility);
+        update_renderpass_uniform  ('plant_visibility',          options.plant_visibility);
+        update_renderpass_uniform  ('snow_visibility',           options.snow_visibility);
         update_renderpass_uniform  ('shadow_visibility',         options.shadow_visibility);
-        update_renderpass_uniform  ('map_projection_offset',                options.map_projection_offset);
+        update_renderpass_uniform  ('map_projection_offset',     options.map_projection_offset);
 
         // LIGHT PROPERTIES
-        update_renderpass_uniform  ('light_rgb_intensities', [light_rgb_intensities_threejs]);
-        update_renderpass_uniform  ('light_directions',      [new THREE.Vector3(1,0,0)]);
-        update_renderpass_uniform  ('insolation_max',        insolation_max);
+        update_renderpass_uniform  ('light_rgb_intensities',     [light_rgb_intensities_threejs, light_rgb_intensities_threejs]);
+        update_renderpass_uniform  ('light_directions',          [new THREE.Vector3(1,0,0), new THREE.Vector3(-1,0,0)]);
+        update_renderpass_uniform  ('light_count',               2);
+        update_renderpass_uniform  ('insolation_max',            insolation_max);
 
         // WORLD PROPERTIES
-        update_renderpass_uniform  ('world_position',       new THREE.Vector3());
-        update_renderpass_uniform  ('world_radius',         world.radius);
-        update_renderpass_attribute('displacement',         world.lithosphere.displacement.value());
-        update_renderpass_attribute('surface_temperature',  world.atmosphere.surface_temperature);
-        update_renderpass_attribute('snow_coverage',        world.hydrosphere.snow_coverage.value());
-        update_renderpass_attribute('plant_coverage',       world.biosphere.plant_coverage.value());
-        update_renderpass_vector_attribute('gradient',      gradient);
+        update_renderpass_uniform  ('world_position',            new THREE.Vector3());
+        update_renderpass_uniform  ('world_radius',              world.radius);
+        update_renderpass_attribute('displacement',              world.lithosphere.displacement.value());
+        update_renderpass_attribute('surface_temperature',       world.atmosphere.surface_temperature);
+        update_renderpass_attribute('snow_coverage',             world.hydrosphere.snow_coverage.value());
+        update_renderpass_attribute('plant_coverage',            world.biosphere.plant_coverage.value());
+        update_renderpass_vector_attribute('gradient',           gradient);
 
         // ATMOSPHERE PROPERTIES
         update_renderpass_uniform  ('atmosphere_scale_height', atmosphere_scale_height  );
@@ -236,11 +237,12 @@ function RealisticWorldView(shader_return_value) {
         update_shaderpass_uniform  ('projection_matrix_inverse',projection_matrix_inverse);
         update_shaderpass_uniform  ('view_matrix_inverse',      gl_state.camera.matrixWorld);
         update_shaderpass_uniform  ('reference_distance',       world.radius);
-        update_shaderpass_uniform  ('shaderpass_visibility',          (options.shaderpass_visibility * options.shadow_visibility) || 0);
+        update_shaderpass_uniform  ('shaderpass_visibility',    (options.shaderpass_visibility * options.shadow_visibility) || 0);
 
         // LIGHT PROPERTIES
-        update_shaderpass_uniform  ('light_rgb_intensities',    [light_rgb_intensities_threejs]);
-        update_shaderpass_uniform  ('light_directions',         [new THREE.Vector3(1,0,0)]);
+        update_shaderpass_uniform  ('light_rgb_intensities',    [light_rgb_intensities_threejs, light_rgb_intensities_threejs]);
+        update_shaderpass_uniform  ('light_directions',         [new THREE.Vector3(1,0,0), new THREE.Vector3(-1,0,0)]);
+        update_shaderpass_uniform  ('light_count',              2);
         update_shaderpass_uniform  ('insolation_max',           insolation_max);
 
         // WORLD PROPERTIES
