@@ -550,8 +550,8 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     const float STEP_COUNT = 64.;// number of steps taken while marching along the view ray
     bool is_scattered; // whether view ray will enter the atmosphere
     bool is_obstructed; // whether view ray will enter the surface of a world
-    float z2; // distance ("radius") from the view ray to the center of the world at closest approach, squared
-    float xz; // distance along the view ray at which closest approach occurs
+    float zv2; // distance ("radius") from the view ray to the center of the world at closest approach, squared
+    float xvz; // distance along the view ray at which closest approach occurs
     float x_in_atmo; // distance along the view ray at which the ray enters the atmosphere
     float x_out_atmo; // distance along the view ray at which the ray exits the atmosphere
     float x_in_world; // distance along the view ray at which the ray enters the surface of the world
@@ -564,6 +564,8 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     vec3 P_i; // absolute position while marching along the view ray
     float h_i; // distance ("height") from the surface of the world while marching along the view ray
     float sigma_L; // columnar density ratio encountered along the light ray. This expresses the quantity of air encountered along the light ray, relative to air density on the surface
+    float zl2; // distance ("radius") from the light ray to the center of the world at closest approach, squared
+    float xlz; // distance along the light ray at which closest approach occurs
     // cosine of angle between view and light directions
     float VL = dot(V, L);
     // total intensity for each color channel, found as the sum of light intensities for each path from the light source to the camera
@@ -579,15 +581,15 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     float gamma_mie = get_fraction_of_mie_scattered_light_scattered_by_angle(VL);
     vec3 beta_gamma = beta_ray * gamma_ray + beta_mie * gamma_mie;
     vec3 beta_sum = beta_ray + beta_mie + beta_abs;
-    xz = dot(-P,V);
-    z2 = dot( P,P) - xz * xz;
+    xvz = dot(-P,V);
+    zv2 = dot( P,P) - xvz * xvz;
     //   We only set it to 3 scale heights because we are using this parameter for raymarching, and not a closed form solution
     is_scattered = try_get_relation_between_ray_and_sphere(
-        R + 12.*H, z2, xz,
+        R + 12.*H, zv2, xvz,
         x_in_atmo, x_out_atmo
     );
     is_obstructed = try_get_relation_between_ray_and_sphere(
-        R, z2, xz,
+        R, zv2, xvz,
         x_in_world, x_out_world
     );
     // if view ray does not interact with the atmosphere
@@ -603,10 +605,12 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     for (float i = 0.; i < STEP_COUNT; ++i)
     {
         P_i = P + V * x;
-        h_i = sqrt((x-xz)*(x-xz)+z2) - R;
+        h_i = sqrt((x-xvz)*(x-xvz)+zv2) - R;
+        xlz = dot(-P_i,L); // distance ("radius") from the ray to the center of the world at closest approach, squared
+        zl2 = dot( P_i,P_i) - xlz * xlz; // distance from the origin at which closest approach occurs
         sigma =
-            approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i, -V, x, R, H)
-          + approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i, L, 3.*R, R, H);
+            approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xvz, x -xvz, zv2, R, H )
+          + approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xlz, 3.*R-xlz, zl2, R, H );
         E += I_sun
             // incoming fraction: the fraction of light that scatters towards camera
             * exp(-h_i/H) * beta_gamma * dx
@@ -615,7 +619,7 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
         x += dx;
     }
     // now calculate the intensity of light that traveled straight in from the background, and add it to the total
-    sigma = approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i, -V, 3.*R, R, H);
+    sigma = approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xvz, x_stop-x_start-xvz, zv2, R, H );
     E += I_back * exp(-beta_sum * sigma);
     return E;
 }
@@ -1187,8 +1191,8 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     const float STEP_COUNT = 64.;// number of steps taken while marching along the view ray
     bool is_scattered; // whether view ray will enter the atmosphere
     bool is_obstructed; // whether view ray will enter the surface of a world
-    float z2; // distance ("radius") from the view ray to the center of the world at closest approach, squared
-    float xz; // distance along the view ray at which closest approach occurs
+    float zv2; // distance ("radius") from the view ray to the center of the world at closest approach, squared
+    float xvz; // distance along the view ray at which closest approach occurs
     float x_in_atmo; // distance along the view ray at which the ray enters the atmosphere
     float x_out_atmo; // distance along the view ray at which the ray exits the atmosphere
     float x_in_world; // distance along the view ray at which the ray enters the surface of the world
@@ -1201,6 +1205,8 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     vec3 P_i; // absolute position while marching along the view ray
     float h_i; // distance ("height") from the surface of the world while marching along the view ray
     float sigma_L; // columnar density ratio encountered along the light ray. This expresses the quantity of air encountered along the light ray, relative to air density on the surface
+    float zl2; // distance ("radius") from the light ray to the center of the world at closest approach, squared
+    float xlz; // distance along the light ray at which closest approach occurs
     // cosine of angle between view and light directions
     float VL = dot(V, L);
     // total intensity for each color channel, found as the sum of light intensities for each path from the light source to the camera
@@ -1216,15 +1222,15 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     float gamma_mie = get_fraction_of_mie_scattered_light_scattered_by_angle(VL);
     vec3 beta_gamma = beta_ray * gamma_ray + beta_mie * gamma_mie;
     vec3 beta_sum = beta_ray + beta_mie + beta_abs;
-    xz = dot(-P,V);
-    z2 = dot( P,P) - xz * xz;
+    xvz = dot(-P,V);
+    zv2 = dot( P,P) - xvz * xvz;
     //   We only set it to 3 scale heights because we are using this parameter for raymarching, and not a closed form solution
     is_scattered = try_get_relation_between_ray_and_sphere(
-        R + 12.*H, z2, xz,
+        R + 12.*H, zv2, xvz,
         x_in_atmo, x_out_atmo
     );
     is_obstructed = try_get_relation_between_ray_and_sphere(
-        R, z2, xz,
+        R, zv2, xvz,
         x_in_world, x_out_world
     );
     // if view ray does not interact with the atmosphere
@@ -1240,10 +1246,12 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     for (float i = 0.; i < STEP_COUNT; ++i)
     {
         P_i = P + V * x;
-        h_i = sqrt((x-xz)*(x-xz)+z2) - R;
+        h_i = sqrt((x-xvz)*(x-xvz)+zv2) - R;
+        xlz = dot(-P_i,L); // distance ("radius") from the ray to the center of the world at closest approach, squared
+        zl2 = dot( P_i,P_i) - xlz * xlz; // distance from the origin at which closest approach occurs
         sigma =
-            approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i, -V, x, R, H)
-          + approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i, L, 3.*R, R, H);
+            approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xvz, x -xvz, zv2, R, H )
+          + approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xlz, 3.*R-xlz, zl2, R, H );
         E += I_sun
             // incoming fraction: the fraction of light that scatters towards camera
             * exp(-h_i/H) * beta_gamma * dx
@@ -1252,7 +1260,7 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
         x += dx;
     }
     // now calculate the intensity of light that traveled straight in from the background, and add it to the total
-    sigma = approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i, -V, 3.*R, R, H);
+    sigma = approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xvz, x_stop-x_start-xvz, zv2, R, H );
     E += I_back * exp(-beta_sum * sigma);
     return E;
 }
