@@ -1,5 +1,6 @@
 CONST(float) BIG = 1e20;
 CONST(float) SMALL = 1e-20;
+CONST(int)   MAX_LIGHT_COUNT = 6;
 
 // "approx_air_column_density_ratio_along_2d_ray_for_curved_world" 
 //   calculates column density ratio of air for a ray emitted from the surface of a world to a desired distance, 
@@ -93,8 +94,9 @@ FUNC(float) approx_air_column_density_ratio_along_3d_ray_for_curved_world (
 FUNC(vec3) get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     IN(vec3)  view_origin,     IN(vec3) view_direction,
     IN(vec3)  world_position,  IN(float) world_radius,
-    IN(vec3)  light_direction, IN(vec3) light_rgb_intensity,
-    IN(vec3)  background_rgb_intensity,
+    IN(vec3 [MAX_LIGHT_COUNT]) light_directions, 
+    IN(vec3 [MAX_LIGHT_COUNT]) light_rgb_intensities,
+    IN(vec3) background_rgb_intensity,
     IN(float) atmosphere_scale_height,
     IN(vec3)  beta_ray,        IN(vec3)  beta_mie,           IN(vec3)  beta_abs
 ){
@@ -126,13 +128,13 @@ FUNC(vec3) get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
 
     VAR(vec3)  P = view_origin - world_position;
     VAR(vec3)  V = view_direction;
-    VAR(vec3)  L = light_direction;
-    VAR(vec3)  I_sun  = light_rgb_intensity;
+    VAR(vec3)  L = light_directions[0];
+    VAR(vec3)  I = light_rgb_intensities[0];
     VAR(vec3)  I_back = background_rgb_intensity;
     VAR(float) r = world_radius;
     VAR(float) H = atmosphere_scale_height;
 
-    const VAR(float) STEP_COUNT = 512.;// number of steps taken while marching along the view ray
+    const VAR(float) STEP_COUNT = 16.;// number of steps taken while marching along the view ray
 
     VAR(float) xv  = dot(-P,V);           // distance along the view ray at which closest approach occurs
     VAR(float) zv2 = dot( P,P) - xv * xv; // squared distance from the view ray to the center of the world at closest approach
@@ -143,8 +145,8 @@ FUNC(vec3) get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     VAR(float) xv_out_world;   // distance along the view ray at which the ray enters the surface of the world
 
     //   We only set it to 3 scale heights because we are using this parameter for raymarching, and not a closed form solution
-    bool is_scattered   = try_get_relation_between_ray_and_sphere(r + 12.*H, zv2, xv, xv_in_air,  xv_out_air   );
-    bool is_obstructed = try_get_relation_between_ray_and_sphere (r,         zv2, xv, xv_in_world, xv_out_world);
+    bool is_scattered  = try_get_relation_between_ray_and_sphere(r + 12.*H, zv2, xv, xv_in_air,   xv_out_air  );
+    bool is_obstructed = try_get_relation_between_ray_and_sphere(r,         zv2, xv, xv_in_world, xv_out_world);
 
     // if view ray does not interact with the atmosphere
     // don't bother running the raymarch algorithm
@@ -187,7 +189,7 @@ FUNC(vec3) get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
             approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xv,   xv_i, zv2,   r, H )
           + approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xl_i, 3.*r, zl2_i, r, H );
 
-        E += I_sun
+        E += I
             // incoming fraction: the fraction of light that scatters towards camera
             * exp(-h_i/H) * beta_gamma * dx
             // outgoing fraction: the fraction of light that scatters away from camera

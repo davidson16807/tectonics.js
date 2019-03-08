@@ -18,18 +18,18 @@ function RealisticWorldView(shader_return_value) {
             shaderpass_visibility:             { type: 'f', value: 0 },
             background_rgb_signal_texture:  { type: "t", value: null },
             
-            projection_matrix_inverse:  { type: "m4",value: new THREE.Matrix4()         },
-            view_matrix_inverse:        { type: "m4",value: new THREE.Matrix4()         },
-            reference_distance:         { type: "f", value: Units.EARTH_RADIUS          },
+            projection_matrix_inverse:  { type: "m4",  value: new THREE.Matrix4()         },
+            view_matrix_inverse:        { type: "m4",  value: new THREE.Matrix4()         },
+            reference_distance:         { type: "f",   value: Units.EARTH_RADIUS          },
 
-            light_rgb_intensity:        { type: "v3",value: new THREE.Vector3()         },
-            light_direction:            { type: "v3",value: new THREE.Vector3()         },
-            insolation_max:             { type: 'f', value: Units.GLOBAL_SOLAR_CONSTANT },
+            light_rgb_intensities:      { type: "v3v", value: [new THREE.Vector3()]       },
+            light_directions:           { type: "v3v", value: [new THREE.Vector3()]       },
+            insolation_max:             { type: 'f',   value: Units.GLOBAL_SOLAR_CONSTANT },
 
-            world_position:             { type: "v3",value: new THREE.Vector3()         },
-            world_radius:               { type: "f", value: Units.EARTH_RADIUS          },
+            world_position:             { type: "v3",  value: new THREE.Vector3()         },
+            world_radius:               { type: "f",   value: Units.EARTH_RADIUS          },
 
-            atmosphere_scale_height: { type: "f", value: 0. },
+            atmosphere_scale_height:    { type: "f", value: 0. },
             surface_air_rayleigh_scattering_coefficients: { type: "v3", value: new THREE.Vector3() },
             surface_air_mie_scattering_coefficients:      { type: "v3", value: new THREE.Vector3() },
             surface_air_absorption_coefficients:          { type: "v3", value: new THREE.Vector3() },
@@ -65,36 +65,36 @@ function RealisticWorldView(shader_return_value) {
             },
             uniforms: {
               // VIEW PROPERTIES
-              projection_matrix_inverse:  { type: "m4",value: new THREE.Matrix4() },
-              view_matrix_inverse:        { type: "m4",value: new THREE.Matrix4() },
-              reference_distance: { type: 'f', value: world.radius },
-              map_projection_offset:              { type: 'f', value: options.map_projection_offset },
-              ocean_visibility:       { type: 'f', value: options.ocean_visibility },
+              projection_matrix_inverse: { type: "m4",value: new THREE.Matrix4() },
+              view_matrix_inverse:       { type: "m4",value: new THREE.Matrix4() },
+              reference_distance:        { type: 'f', value: world.radius },
+              map_projection_offset:     { type: 'f', value: options.map_projection_offset },
+              ocean_visibility:          { type: 'f', value: options.ocean_visibility },
               sediment_visibility:       { type: 'f', value: options.sediment_visibility },
               plant_visibility:          { type: 'f', value: options.plant_visibility },
-              snow_visibility:            { type: 'f', value: options.snow_visibility },
-              shadow_visibility:       { type: 'f', value: options.shadow_visibility },
+              snow_visibility:           { type: 'f', value: options.snow_visibility },
+              shadow_visibility:         { type: 'f', value: options.shadow_visibility },
 
               // LIGHT PROPERTIES
-              light_rgb_intensity:{ type: "v3",value: new THREE.Vector3() },
-              light_direction:    { type: "v3",value: new THREE.Vector3() },
-              insolation_max:     { type: 'f', value: Units.GLOBAL_SOLAR_CONSTANT },
+              light_rgb_intensities:     { type: "v3v",  value: [new THREE.Vector3()] },
+              light_directions:          { type: "v3v",  value: [new THREE.Vector3()] },
+              insolation_max:            { type: 'f',   value: Units.GLOBAL_SOLAR_CONSTANT },
 
               // WORLD PROPERTIES
-              world_position:     { type: "v3",value: new THREE.Vector3() },
-              world_radius:       { type: "f", value: Units.EARTH_RADIUS  },
+              world_position:            { type: "v3",value: new THREE.Vector3() },
+              world_radius:              { type: "f", value: Units.EARTH_RADIUS  },
 
               // ATMOSPHERE PROPERTIES
-              atmosphere_scale_height: { type: "f", value: 0. },
+              atmosphere_scale_height:                      { type: "f", value: 0. },
               surface_air_rayleigh_scattering_coefficients: { type: "v3", value: new THREE.Vector3() },
               surface_air_mie_scattering_coefficients:      { type: "v3", value: new THREE.Vector3() },
               surface_air_absorption_coefficients:          { type: "v3", value: new THREE.Vector3() },
 
               // SEA PROPERTIES
-              sealevel:           { type: 'f', value: 0 },
-              ocean_rayleigh_scattering_coefficients: { type: "v3", value: new THREE.Vector3() },
-              ocean_mie_scattering_coefficients:      { type: "v3", value: new THREE.Vector3() },
-              ocean_absorption_coefficients:          { type: "v3", value: new THREE.Vector3() },
+              sealevel:                                     { type: 'f', value: 0 },
+              ocean_rayleigh_scattering_coefficients:       { type: "v3", value: new THREE.Vector3() },
+              ocean_mie_scattering_coefficients:            { type: "v3", value: new THREE.Vector3() },
+              ocean_absorption_coefficients:                { type: "v3", value: new THREE.Vector3() },
 
             },
             blending: THREE.NoBlending,
@@ -159,14 +159,14 @@ function RealisticWorldView(shader_return_value) {
 
         // get intensity of sunlight
         // vec3  light_offset    = light_position - world_position;
-        // vec3  light_direction = normalize(light_offset);
+        // vec3  light_directions = normalize(light_offset);
         // float light_distance  = length(light_offset);
-        var light_rgb_intensity = Thermodynamics.solve_rgb_intensity_of_light_emitted_by_black_body(Units.SOLAR_TEMPERATURE);
+        var light_rgb_intensities = Thermodynamics.solve_rgb_intensity_of_light_emitted_by_black_body(Units.SOLAR_TEMPERATURE);
         var light_attenuation = SphericalGeometry.get_surface_area(Units.SOLAR_RADIUS) / SphericalGeometry.get_surface_area(Units.ASTRONOMICAL_UNIT);
-        light_rgb_intensity.x *= light_attenuation;
-        light_rgb_intensity.y *= light_attenuation;
-        light_rgb_intensity.z *= light_attenuation;
-        var light_rgb_intensity_threejs = new THREE.Vector3(light_rgb_intensity.x, light_rgb_intensity.y, light_rgb_intensity.z);
+        light_rgb_intensities.x *= light_attenuation;
+        light_rgb_intensities.y *= light_attenuation;
+        light_rgb_intensities.z *= light_attenuation;
+        var light_rgb_intensities_threejs = new THREE.Vector3(light_rgb_intensities.x, light_rgb_intensities.y, light_rgb_intensities.z);
         var insolation_max = Units.GLOBAL_SOLAR_CONSTANT; // Float32Dataset.max(world.atmosphere.average_insolation);
 
 
@@ -202,16 +202,16 @@ function RealisticWorldView(shader_return_value) {
         update_renderpass_uniform  ('map_projection_offset',                options.map_projection_offset);
 
         // LIGHT PROPERTIES
-        update_renderpass_uniform  ('light_rgb_intensity',  light_rgb_intensity_threejs);
-        update_renderpass_uniform  ('light_direction',      new THREE.Vector3(1,0,0));
-        update_renderpass_uniform  ('insolation_max',       insolation_max);
+        update_renderpass_uniform  ('light_rgb_intensities', [light_rgb_intensities_threejs]);
+        update_renderpass_uniform  ('light_directions',      [new THREE.Vector3(1,0,0)]);
+        update_renderpass_uniform  ('insolation_max',        insolation_max);
 
         // WORLD PROPERTIES
         update_renderpass_uniform  ('world_position',       new THREE.Vector3());
         update_renderpass_uniform  ('world_radius',         world.radius);
         update_renderpass_attribute('displacement',         world.lithosphere.displacement.value());
-        update_renderpass_attribute('surface_temperature',         world.atmosphere.surface_temperature);
-        update_renderpass_attribute('snow_coverage',         world.hydrosphere.snow_coverage.value());
+        update_renderpass_attribute('surface_temperature',  world.atmosphere.surface_temperature);
+        update_renderpass_attribute('snow_coverage',        world.hydrosphere.snow_coverage.value());
         update_renderpass_attribute('plant_coverage',       world.biosphere.plant_coverage.value());
         update_renderpass_vector_attribute('gradient',      gradient);
 
@@ -237,8 +237,8 @@ function RealisticWorldView(shader_return_value) {
         update_shaderpass_uniform  ('shaderpass_visibility',          (options.shaderpass_visibility * options.shadow_visibility) || 0);
 
         // LIGHT PROPERTIES
-        update_shaderpass_uniform  ('light_rgb_intensity',      light_rgb_intensity_threejs);
-        update_shaderpass_uniform  ('light_direction',          new THREE.Vector3(1,0,0));
+        update_shaderpass_uniform  ('light_rgb_intensities',    [light_rgb_intensities_threejs]);
+        update_shaderpass_uniform  ('light_directions',         [new THREE.Vector3(1,0,0)]);
         update_shaderpass_uniform  ('insolation_max',           insolation_max);
 
         // WORLD PROPERTIES

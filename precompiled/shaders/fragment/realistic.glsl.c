@@ -25,8 +25,8 @@ uniform float snow_visibility;
 uniform float shadow_visibility;
 
 // LIGHT SOURCE PROPERTIES -----------------------------------------------------
-uniform vec3  light_rgb_intensity;
-uniform vec3  light_direction;
+uniform vec3  light_rgb_intensities [MAX_LIGHT_COUNT];
+uniform vec3  light_directions [MAX_LIGHT_COUNT];
 uniform float insolation_max;
 
 // ATMOSPHERE PROPERTIES -------------------------------------------------------
@@ -129,7 +129,7 @@ void main() {
     vec3 N = normalize(n + gradient_v);
 
     // "L" is the normal vector indicating the direction to the light source
-    vec3 L = normalize(mix(n, light_direction, shadow_visibility));
+    vec3 L = normalize(mix(n, light_directions[0], shadow_visibility));
 
     // "V" is the normal vector indicating the direction from the view
     vec3 V = -view_direction_v;
@@ -154,7 +154,7 @@ void main() {
     float I_max = insolation_max;
 
     // "I_sun" is the rgb Intensity of Incoming Incident light, A.K.A. "Insolation"
-    vec3 I_sun = light_rgb_intensity;
+    vec3 I_sun = light_rgb_intensities[0];
 
     vec3 position = n * (world_radius + surface_height);
 

@@ -452,6 +452,7 @@ float get_fraction_of_microfacets_with_angle(
 }
 const float BIG = 1e20;
 const float SMALL = 1e-20;
+const int MAX_LIGHT_COUNT = 6;
 // "approx_air_column_density_ratio_along_2d_ray_for_curved_world" 
 //   calculates column density ratio of air for a ray emitted from the surface of a world to a desired distance, 
 //   taking into account the curvature of the world.
@@ -537,7 +538,8 @@ float approx_air_column_density_ratio_along_3d_ray_for_curved_world (
 vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     in vec3 view_origin, in vec3 view_direction,
     in vec3 world_position, in float world_radius,
-    in vec3 light_direction, in vec3 light_rgb_intensity,
+    in vec3 [MAX_LIGHT_COUNT] light_directions,
+    in vec3 [MAX_LIGHT_COUNT] light_rgb_intensities,
     in vec3 background_rgb_intensity,
     in float atmosphere_scale_height,
     in vec3 beta_ray, in vec3 beta_mie, in vec3 beta_abs
@@ -568,12 +570,12 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     //  "*_abs"  property of absorption
     vec3 P = view_origin - world_position;
     vec3 V = view_direction;
-    vec3 L = light_direction;
-    vec3 I_sun = light_rgb_intensity;
+    vec3 L = light_directions[0];
+    vec3 I = light_rgb_intensities[0];
     vec3 I_back = background_rgb_intensity;
     float r = world_radius;
     float H = atmosphere_scale_height;
-    const float STEP_COUNT = 512.;// number of steps taken while marching along the view ray
+    const float STEP_COUNT = 16.;// number of steps taken while marching along the view ray
     float xv = dot(-P,V); // distance along the view ray at which closest approach occurs
     float zv2 = dot( P,P) - xv * xv; // squared distance from the view ray to the center of the world at closest approach
     float xv_in_air; // distance along the view ray at which the ray enters the atmosphere
@@ -582,7 +584,7 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     float xv_out_world; // distance along the view ray at which the ray enters the surface of the world
     //   We only set it to 3 scale heights because we are using this parameter for raymarching, and not a closed form solution
     bool is_scattered = try_get_relation_between_ray_and_sphere(r + 12.*H, zv2, xv, xv_in_air, xv_out_air );
-    bool is_obstructed = try_get_relation_between_ray_and_sphere (r, zv2, xv, xv_in_world, xv_out_world);
+    bool is_obstructed = try_get_relation_between_ray_and_sphere(r, zv2, xv, xv_in_world, xv_out_world);
     // if view ray does not interact with the atmosphere
     // don't bother running the raymarch algorithm
     if (!is_scattered){ return I_back; }
@@ -617,7 +619,7 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
         sigma =
             approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xv, xv_i, zv2, r, H )
           + approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xl_i, 3.*r, zl2_i, r, H );
-        E += I_sun
+        E += I
             // incoming fraction: the fraction of light that scatters towards camera
             * exp(-h_i/H) * beta_gamma * dx
             // outgoing fraction: the fraction of light that scatters away from camera
@@ -751,8 +753,8 @@ uniform float shaderpass_visibility;
 uniform vec3 world_position;
 uniform float world_radius;
 // LIGHT SOURCE PROPERTIES -----------------------------------------------------
-uniform vec3 light_rgb_intensity;
-uniform vec3 light_direction;
+uniform vec3 light_rgb_intensities [MAX_LIGHT_COUNT];
+uniform vec3 light_directions [MAX_LIGHT_COUNT];
 uniform float insolation_max;
 // ATMOSPHERE PROPERTIES -------------------------------------------------------
 uniform float atmosphere_scale_height;
@@ -798,9 +800,11 @@ void main() {
         get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
             view_origin, view_direction,
             world_position, world_radius,
-            light_direction, light_rgb_intensity,
+            light_directions, // rgb vectors indicating intensities of light sources
+            light_rgb_intensities, // unit vectors indicating directions to light sources
             background_rgb_intensity,
-            atmosphere_scale_height, beta_ray, beta_mie, beta_abs
+            atmosphere_scale_height,
+            beta_ray, beta_mie, beta_abs
         );
     rgb_intensity = mix(background_rgb_intensity, rgb_intensity, shaderpass_visibility);
     // TODO: move this to a separate shader pass!
@@ -1100,6 +1104,7 @@ float get_fraction_of_microfacets_with_angle(
 }
 const float BIG = 1e20;
 const float SMALL = 1e-20;
+const int MAX_LIGHT_COUNT = 6;
 // "approx_air_column_density_ratio_along_2d_ray_for_curved_world" 
 //   calculates column density ratio of air for a ray emitted from the surface of a world to a desired distance, 
 //   taking into account the curvature of the world.
@@ -1185,7 +1190,8 @@ float approx_air_column_density_ratio_along_3d_ray_for_curved_world (
 vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     in vec3 view_origin, in vec3 view_direction,
     in vec3 world_position, in float world_radius,
-    in vec3 light_direction, in vec3 light_rgb_intensity,
+    in vec3 [MAX_LIGHT_COUNT] light_directions,
+    in vec3 [MAX_LIGHT_COUNT] light_rgb_intensities,
     in vec3 background_rgb_intensity,
     in float atmosphere_scale_height,
     in vec3 beta_ray, in vec3 beta_mie, in vec3 beta_abs
@@ -1216,12 +1222,12 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     //  "*_abs"  property of absorption
     vec3 P = view_origin - world_position;
     vec3 V = view_direction;
-    vec3 L = light_direction;
-    vec3 I_sun = light_rgb_intensity;
+    vec3 L = light_directions[0];
+    vec3 I = light_rgb_intensities[0];
     vec3 I_back = background_rgb_intensity;
     float r = world_radius;
     float H = atmosphere_scale_height;
-    const float STEP_COUNT = 512.;// number of steps taken while marching along the view ray
+    const float STEP_COUNT = 16.;// number of steps taken while marching along the view ray
     float xv = dot(-P,V); // distance along the view ray at which closest approach occurs
     float zv2 = dot( P,P) - xv * xv; // squared distance from the view ray to the center of the world at closest approach
     float xv_in_air; // distance along the view ray at which the ray enters the atmosphere
@@ -1230,7 +1236,7 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     float xv_out_world; // distance along the view ray at which the ray enters the surface of the world
     //   We only set it to 3 scale heights because we are using this parameter for raymarching, and not a closed form solution
     bool is_scattered = try_get_relation_between_ray_and_sphere(r + 12.*H, zv2, xv, xv_in_air, xv_out_air );
-    bool is_obstructed = try_get_relation_between_ray_and_sphere (r, zv2, xv, xv_in_world, xv_out_world);
+    bool is_obstructed = try_get_relation_between_ray_and_sphere(r, zv2, xv, xv_in_world, xv_out_world);
     // if view ray does not interact with the atmosphere
     // don't bother running the raymarch algorithm
     if (!is_scattered){ return I_back; }
@@ -1265,7 +1271,7 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
         sigma =
             approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xv, xv_i, zv2, r, H )
           + approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xl_i, 3.*r, zl2_i, r, H );
-        E += I_sun
+        E += I
             // incoming fraction: the fraction of light that scatters towards camera
             * exp(-h_i/H) * beta_gamma * dx
             // outgoing fraction: the fraction of light that scatters away from camera
@@ -1396,8 +1402,8 @@ uniform float plant_visibility;
 uniform float snow_visibility;
 uniform float shadow_visibility;
 // LIGHT SOURCE PROPERTIES -----------------------------------------------------
-uniform vec3 light_rgb_intensity;
-uniform vec3 light_direction;
+uniform vec3 light_rgb_intensities [MAX_LIGHT_COUNT];
+uniform vec3 light_directions [MAX_LIGHT_COUNT];
 uniform float insolation_max;
 // ATMOSPHERE PROPERTIES -------------------------------------------------------
 uniform float atmosphere_scale_height;
@@ -1478,7 +1484,7 @@ void main() {
     // "N" is the surface normal
     vec3 N = normalize(n + gradient_v);
     // "L" is the normal vector indicating the direction to the light source
-    vec3 L = normalize(mix(n, light_direction, shadow_visibility));
+    vec3 L = normalize(mix(n, light_directions[0], shadow_visibility));
     // "V" is the normal vector indicating the direction from the view
     vec3 V = -view_direction_v;
     // "H" is the halfway vector between normal and view.
@@ -1498,7 +1504,7 @@ void main() {
     // For Earth, this would be the global solar constant.
     float I_max = insolation_max;
     // "I_sun" is the rgb Intensity of Incoming Incident light, A.K.A. "Insolation"
-    vec3 I_sun = light_rgb_intensity;
+    vec3 I_sun = light_rgb_intensities[0];
     vec3 position = n * (world_radius + surface_height);
     // "I_surface" is the intensity of light that reaches the surface after being filtered by atmosphere
     vec3 I_surface = I_sun

@@ -32,8 +32,8 @@ uniform vec3  world_position;
 uniform float world_radius;
 
 // LIGHT SOURCE PROPERTIES -----------------------------------------------------
-uniform vec3  light_rgb_intensity;
-uniform vec3  light_direction;
+uniform vec3  light_rgb_intensities [MAX_LIGHT_COUNT];
+uniform vec3  light_directions      [MAX_LIGHT_COUNT];
 uniform float insolation_max;
 
 // ATMOSPHERE PROPERTIES -------------------------------------------------------
@@ -90,11 +90,13 @@ void main() {
 
     vec3 rgb_intensity = 
         get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
-            view_origin,                view_direction,
-            world_position,             world_radius,
-            light_direction,            light_rgb_intensity,  
+            view_origin,    view_direction,
+            world_position, world_radius,
+            light_directions,      // rgb vectors indicating intensities of light sources
+            light_rgb_intensities, // unit vectors indicating directions to light sources
             background_rgb_intensity,
-            atmosphere_scale_height,    beta_ray,       beta_mie,          beta_abs
+            atmosphere_scale_height,
+            beta_ray, beta_mie, beta_abs
         );
 
     rgb_intensity = mix(background_rgb_intensity, rgb_intensity, shaderpass_visibility);
