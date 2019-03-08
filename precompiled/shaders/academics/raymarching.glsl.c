@@ -23,6 +23,7 @@ FUNC(float) approx_air_column_density_ratio_along_2d_ray_for_curved_world(
 
     // guide to variable names:
     //  "x*" distance along the ray from closest approach
+    //  "z*" distance from the center of the world at closest approach
     //  "R*" distance from the center of the world
     //  "*b" variable at which the slope and intercept of the height approximation
     //  "*0" variable at which the surface of the world occurs
@@ -73,25 +74,16 @@ FUNC(float) approx_air_column_density_ratio_along_2d_ray_for_curved_world(
 // Just pass it the origin and direction of a 3d ray and it will find the column density ratio along its path, 
 //   or return false to indicate the ray passes through the surface of the world.
 FUNC(float) approx_air_column_density_ratio_along_3d_ray_for_curved_world (
-    IN(vec3)  segment_origin, 
-    IN(vec3)  segment_direction,
-    IN(float) segment_length,
-    IN(float) world_radius, 
-    IN(float) atmosphere_scale_height
+    IN(vec3)  P, 
+    IN(vec3)  V,
+    IN(float) x,
+    IN(float) R, 
+    IN(float) H
 ){
-    VAR(float) R = world_radius;
-    VAR(float) H = atmosphere_scale_height;
+    VAR(float) xz = dot(-P,V);           // distance ("radius") from the ray to the center of the world at closest approach, squared
+    VAR(float) z2 = dot( P,P) - xz * xz; // distance from the origin at which closest approach occurs
 
-    VAR(float) z2;               // distance ("radius") from the ray to the center of the world at closest approach, squared
-    VAR(float) x_z;              // distance from the origin at which closest approach occurs
-
-    get_relation_between_ray_and_point(
-        vec3(0), 
-        segment_origin,  segment_direction, 
-        z2,            x_z 
-    );
-
-    return approx_air_column_density_ratio_along_2d_ray_for_curved_world( 0.-x_z, segment_length-x_z, z2, R, H );
+    return approx_air_column_density_ratio_along_2d_ray_for_curved_world( 0.-xz, x-xz, z2, R, H );
 }
 
 // TODO: multiple light sources
@@ -158,10 +150,9 @@ FUNC(vec3) get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     VAR(vec3)  beta_gamma = beta_ray * gamma_ray + beta_mie * gamma_mie;
     VAR(vec3)  beta_sum   = beta_ray + beta_mie + beta_abs;
 
-    get_relation_between_ray_and_point(
-        vec3(0), P, V, 
-        z2, xz 
-    );
+    xz = dot(-P,V);
+    z2 = dot( P,P) - xz * xz;
+
     //   We only set it to 3 scale heights because we are using this parameter for raymarching, and not a closed form solution
     is_scattered   = try_get_relation_between_ray_and_sphere(
         R + 12.*H, z2, xz, 
@@ -183,6 +174,7 @@ FUNC(vec3) get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     x_stop  = is_obstructed? x_in_world : x_out_atmo;
     dx = (x_stop - x_start) / STEP_COUNT;
     x  =  x_start + 0.5 * dx;
+
 
     for (VAR(float) i = 0.; i < STEP_COUNT; ++i)
     {
