@@ -34,6 +34,7 @@ uniform float world_radius;
 // LIGHT SOURCE PROPERTIES -----------------------------------------------------
 uniform vec3  light_rgb_intensities [MAX_LIGHT_COUNT];
 uniform vec3  light_directions      [MAX_LIGHT_COUNT];
+uniform int   light_count;
 uniform float insolation_max;
 
 // ATMOSPHERE PROPERTIES -------------------------------------------------------
@@ -94,6 +95,7 @@ void main() {
             world_position, world_radius,
             light_directions,      // rgb vectors indicating intensities of light sources
             light_rgb_intensities, // unit vectors indicating directions to light sources
+            light_count,
             background_rgb_intensity,
             atmosphere_scale_height,
             beta_ray, beta_mie, beta_abs

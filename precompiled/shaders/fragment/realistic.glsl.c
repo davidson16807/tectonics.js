@@ -27,6 +27,7 @@ uniform float shadow_visibility;
 // LIGHT SOURCE PROPERTIES -----------------------------------------------------
 uniform vec3  light_rgb_intensities [MAX_LIGHT_COUNT];
 uniform vec3  light_directions [MAX_LIGHT_COUNT];
+uniform int   light_count;
 uniform float insolation_max;
 
 // ATMOSPHERE PROPERTIES -------------------------------------------------------

@@ -1,6 +1,6 @@
 CONST(float) BIG = 1e20;
 CONST(float) SMALL = 1e-20;
-CONST(int)   MAX_LIGHT_COUNT = 1;
+CONST(int)   MAX_LIGHT_COUNT = 6;
 
 // "approx_air_column_density_ratio_along_2d_ray_for_curved_world" 
 //   calculates column density ratio of air for a ray emitted from the surface of a world to a desired distance, 
@@ -96,6 +96,7 @@ FUNC(vec3) get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     IN(vec3)  world_position,  IN(float) world_radius,
     IN(vec3 [MAX_LIGHT_COUNT]) light_directions, 
     IN(vec3 [MAX_LIGHT_COUNT]) light_rgb_intensities,
+    IN(int)                    light_count,
     IN(vec3) background_rgb_intensity,
     IN(float) atmosphere_scale_height,
     IN(vec3)  beta_ray,        IN(vec3)  beta_mie,           IN(vec3)  beta_abs
@@ -186,8 +187,9 @@ FUNC(vec3) get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
 
         for (VAR(int) j = 0; j < MAX_LIGHT_COUNT; ++j)
         {
-            L   = light_directions[0];
-            I   = light_rgb_intensities[0];
+            if (j >= light_count) { break; }
+            L   = light_directions[j];
+            I   = light_rgb_intensities[j];
             VL  = dot(V, L);
             xl  = dot(P+V*(xvi+xv),-L);
             zl2 = r2 - xl*xl; 

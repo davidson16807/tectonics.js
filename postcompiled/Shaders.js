@@ -452,7 +452,7 @@ float get_fraction_of_microfacets_with_angle(
 }
 const float BIG = 1e20;
 const float SMALL = 1e-20;
-const int MAX_LIGHT_COUNT = 1;
+const int MAX_LIGHT_COUNT = 6;
 // "approx_air_column_density_ratio_along_2d_ray_for_curved_world" 
 //   calculates column density ratio of air for a ray emitted from the surface of a world to a desired distance, 
 //   taking into account the curvature of the world.
@@ -540,6 +540,7 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     in vec3 world_position, in float world_radius,
     in vec3 [MAX_LIGHT_COUNT] light_directions,
     in vec3 [MAX_LIGHT_COUNT] light_rgb_intensities,
+    in int light_count,
     in vec3 background_rgb_intensity,
     in float atmosphere_scale_height,
     in vec3 beta_ray, in vec3 beta_mie, in vec3 beta_abs
@@ -617,8 +618,9 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
         sigma_v = approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xv, xvi, zv2, r, H );
         for (int j = 0; j < MAX_LIGHT_COUNT; ++j)
         {
-            L = light_directions[0];
-            I = light_rgb_intensities[0];
+            if (j >= light_count) { break; }
+            L = light_directions[j];
+            I = light_rgb_intensities[j];
             VL = dot(V, L);
             xl = dot(P+V*(xvi+xv),-L);
             zl2 = r2 - xl*xl;
@@ -762,6 +764,7 @@ uniform float world_radius;
 // LIGHT SOURCE PROPERTIES -----------------------------------------------------
 uniform vec3 light_rgb_intensities [MAX_LIGHT_COUNT];
 uniform vec3 light_directions [MAX_LIGHT_COUNT];
+uniform int light_count;
 uniform float insolation_max;
 // ATMOSPHERE PROPERTIES -------------------------------------------------------
 uniform float atmosphere_scale_height;
@@ -809,6 +812,7 @@ void main() {
             world_position, world_radius,
             light_directions, // rgb vectors indicating intensities of light sources
             light_rgb_intensities, // unit vectors indicating directions to light sources
+            light_count,
             background_rgb_intensity,
             atmosphere_scale_height,
             beta_ray, beta_mie, beta_abs
@@ -1111,7 +1115,7 @@ float get_fraction_of_microfacets_with_angle(
 }
 const float BIG = 1e20;
 const float SMALL = 1e-20;
-const int MAX_LIGHT_COUNT = 1;
+const int MAX_LIGHT_COUNT = 6;
 // "approx_air_column_density_ratio_along_2d_ray_for_curved_world" 
 //   calculates column density ratio of air for a ray emitted from the surface of a world to a desired distance, 
 //   taking into account the curvature of the world.
@@ -1199,6 +1203,7 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     in vec3 world_position, in float world_radius,
     in vec3 [MAX_LIGHT_COUNT] light_directions,
     in vec3 [MAX_LIGHT_COUNT] light_rgb_intensities,
+    in int light_count,
     in vec3 background_rgb_intensity,
     in float atmosphere_scale_height,
     in vec3 beta_ray, in vec3 beta_mie, in vec3 beta_abs
@@ -1276,8 +1281,9 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
         sigma_v = approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xv, xvi, zv2, r, H );
         for (int j = 0; j < MAX_LIGHT_COUNT; ++j)
         {
-            L = light_directions[0];
-            I = light_rgb_intensities[0];
+            if (j >= light_count) { break; }
+            L = light_directions[j];
+            I = light_rgb_intensities[j];
             VL = dot(V, L);
             xl = dot(P+V*(xvi+xv),-L);
             zl2 = r2 - xl*xl;
@@ -1418,6 +1424,7 @@ uniform float shadow_visibility;
 // LIGHT SOURCE PROPERTIES -----------------------------------------------------
 uniform vec3 light_rgb_intensities [MAX_LIGHT_COUNT];
 uniform vec3 light_directions [MAX_LIGHT_COUNT];
+uniform int light_count;
 uniform float insolation_max;
 // ATMOSPHERE PROPERTIES -------------------------------------------------------
 uniform float atmosphere_scale_height;

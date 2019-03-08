@@ -24,6 +24,7 @@ function RealisticWorldView(shader_return_value) {
 
             light_rgb_intensities:      { type: "v3v", value: [new THREE.Vector3()]       },
             light_directions:           { type: "v3v", value: [new THREE.Vector3()]       },
+            light_count:                { type: "i",   value: 1                           },
             insolation_max:             { type: 'f',   value: Units.GLOBAL_SOLAR_CONSTANT },
 
             world_position:             { type: "v3",  value: new THREE.Vector3()         },
@@ -78,6 +79,7 @@ function RealisticWorldView(shader_return_value) {
               // LIGHT PROPERTIES
               light_rgb_intensities:     { type: "v3v", value: [new THREE.Vector3()]       },
               light_directions:          { type: "v3v", value: [new THREE.Vector3()]       },
+              light_count:               { type: "i",   value: 1                           },
               insolation_max:            { type: 'f',   value: Units.GLOBAL_SOLAR_CONSTANT },
 
               // WORLD PROPERTIES
