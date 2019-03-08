@@ -76,11 +76,9 @@ FUNC(float) approx_air_column_density_ratio_along_3d_ray_for_curved_world (
     IN(vec3)  segment_origin, 
     IN(vec3)  segment_direction,
     IN(float) segment_length,
-    IN(vec3)  world_position, 
     IN(float) world_radius, 
     IN(float) atmosphere_scale_height
 ){
-    VAR(vec3)  O = world_position;
     VAR(float) R = world_radius;
     VAR(float) H = atmosphere_scale_height;
 
@@ -88,7 +86,7 @@ FUNC(float) approx_air_column_density_ratio_along_3d_ray_for_curved_world (
     VAR(float) x_z;              // distance from the origin at which closest approach occurs
 
     get_relation_between_ray_and_point(
-        world_position, 
+        vec3(0), 
         segment_origin,  segment_direction, 
         z2,            x_z 
     );
@@ -107,14 +105,14 @@ FUNC(vec3) get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     IN(float) atmosphere_scale_height,
     IN(vec3)  beta_ray,        IN(vec3)  beta_mie,           IN(vec3)  beta_abs
 ){
-    VAR(vec3)  P = view_origin;
+    // NOTE: we are only using geocentric coordinates within this function!
+    VAR(vec3)  P = view_origin - world_position;
     VAR(vec3)  V = view_direction;
 
     VAR(vec3)  L = light_direction;
     VAR(vec3)  I_sun  = light_rgb_intensity;
     VAR(vec3)  I_back = background_rgb_intensity;
 
-    VAR(vec3)  O = world_position;
     VAR(float) R = world_radius;
     VAR(float) H = atmosphere_scale_height;
 
@@ -161,7 +159,7 @@ FUNC(vec3) get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     VAR(vec3)  beta_sum   = beta_ray + beta_mie + beta_abs;
 
     get_relation_between_ray_and_point(
-        O, P, V, 
+        vec3(0), P, V, 
         z2, xz 
     );
     //   We only set it to 3 scale heights because we are using this parameter for raymarching, and not a closed form solution
@@ -191,8 +189,8 @@ FUNC(vec3) get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
         P_i = P + V * x;
         h_i = sqrt((x-xz)*(x-xz)+z2) - R;
         sigma = 
-            approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i, -V, x,    O, R, H)
-          + approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i,  L, 3.*R, O, R, H);
+            approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i, -V, x,    R, H)
+          + approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i,  L, 3.*R, R, H);
 
         E += I_sun
             // incoming fraction: the fraction of light that scatters towards camera
@@ -204,7 +202,7 @@ FUNC(vec3) get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     }
 
     // now calculate the intensity of light that traveled straight in from the background, and add it to the total
-    sigma  = approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i, -V, 3.*R,     O, R, H);
+    sigma  = approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i, -V, 3.*R, R, H);
     E += I_back * exp(-beta_sum * sigma);
 
     return E;
@@ -222,7 +220,7 @@ FUNC(vec3) get_rgb_fraction_of_light_transmitted_through_air_for_curved_world(
     // "sigma" is the column density of air, relative to the surface of the world, that's along the light's path of travel,
     //   we use it to estimate the amount of light that's filtered by the atmosphere before reaching the surface
     //   see https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-1/ for an awesome introduction
-    VAR(float) sigma  = approx_air_column_density_ratio_along_3d_ray_for_curved_world (segment_origin, segment_direction, segment_length, O, R, H);
+    VAR(float) sigma  = approx_air_column_density_ratio_along_3d_ray_for_curved_world (segment_origin-world_position, segment_direction, segment_length, R, H);
     // "I_surface" is the intensity of light that reaches the surface after being filtered by atmosphere
     return exp(-sigma * (beta_ray + beta_mie + beta_abs));
 }

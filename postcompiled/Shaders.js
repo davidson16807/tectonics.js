@@ -270,28 +270,26 @@ float get_surface_area_of_sphere(
 void get_relation_between_ray_and_point(
     in vec3 point_position,
     in vec3 ray_origin,
-    in vec3 ray_direction,
-    out float distance_at_closest_approach2,
-    out float distance_to_closest_approach
+    in vec3 V,
+    out float z2,
+    out float xz
 ){
-    vec3 ray_to_point = point_position - ray_origin;
-    distance_to_closest_approach = dot(ray_to_point, ray_direction);
-    distance_at_closest_approach2 =
-        dot(ray_to_point, ray_to_point) -
-        distance_to_closest_approach * distance_to_closest_approach;
+    vec3 P = point_position - ray_origin;
+    xz = dot(P, V);
+    z2 = dot(P, P) - xz * xz;
 }
 bool try_get_relation_between_ray_and_sphere(
     in float sphere_radius,
-    in float distance_at_closest_approach2,
-    in float distance_to_closest_approach,
+    in float z2,
+    in float xz,
     out float distance_to_entrance,
     out float distance_to_exit
 ){
     float sphere_radius2 = sphere_radius * sphere_radius;
-    float distance_from_closest_approach_to_exit = sqrt(max(sphere_radius2 - distance_at_closest_approach2, 1e-10));
-    distance_to_entrance = distance_to_closest_approach - distance_from_closest_approach_to_exit;
-    distance_to_exit = distance_to_closest_approach + distance_from_closest_approach_to_exit;
-    return (distance_to_exit > 0. && distance_at_closest_approach2 < sphere_radius*sphere_radius);
+    float distance_from_closest_approach_to_exit = sqrt(max(sphere_radius2 - z2, 1e-10));
+    distance_to_entrance = xz - distance_from_closest_approach_to_exit;
+    distance_to_exit = xz + distance_from_closest_approach_to_exit;
+    return (distance_to_exit > 0. && z2 < sphere_radius*sphere_radius);
 }
 const float SPEED_OF_LIGHT = 299792458. * METER / SECOND;
 const float BOLTZMANN_CONSTANT = 1.3806485279e-23 * JOULE / KELVIN;
@@ -476,8 +474,7 @@ float approx_air_column_density_ratio_along_2d_ray_for_curved_world(
     // guide to variable names:
     //  "x*" distance along the ray from closest approach
     //  "R*" distance from the center of the world
-    //  "*b" variable at which the slope of the height approximation is calculated
-    //  "*b" variable at which the intercept of the height approximation is calculated
+    //  "*b" variable at which the slope and intercept of the height approximation
     //  "*0" variable at which the surface of the world occurs
     //  "*1" variable at which the top of the atmosphere occurs
     // "a" is the factor by which we "stretch out" the quadratic height approximation
@@ -522,17 +519,15 @@ float approx_air_column_density_ratio_along_3d_ray_for_curved_world (
     in vec3 segment_origin,
     in vec3 segment_direction,
     in float segment_length,
-    in vec3 world_position,
     in float world_radius,
     in float atmosphere_scale_height
 ){
-    vec3 O = world_position;
     float R = world_radius;
     float H = atmosphere_scale_height;
     float z2; // distance ("radius") from the ray to the center of the world at closest approach, squared
     float x_z; // distance from the origin at which closest approach occurs
     get_relation_between_ray_and_point(
-        world_position,
+        vec3(0),
         segment_origin, segment_direction,
         z2, x_z
     );
@@ -549,16 +544,16 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     in float atmosphere_scale_height,
     in vec3 beta_ray, in vec3 beta_mie, in vec3 beta_abs
 ){
-    vec3 P = view_origin;
+    // NOTE: we are only using geocentric coordinates within this function!
+    vec3 P = view_origin - world_position;
     vec3 V = view_direction;
     vec3 L = light_direction;
     vec3 I_sun = light_rgb_intensity;
     vec3 I_back = background_rgb_intensity;
-    vec3 O = world_position;
     float R = world_radius;
     float H = atmosphere_scale_height;
     float unused1, unused2, unused3, unused4; // used for passing unused output parameters to functions
-    const float STEP_COUNT = 32.;// number of steps taken while marching along the view ray
+    const float STEP_COUNT = 64.;// number of steps taken while marching along the view ray
     bool is_scattered; // whether view ray will enter the atmosphere
     bool is_obstructed; // whether view ray will enter the surface of a world
     float z2; // distance ("radius") from the view ray to the center of the world at closest approach, squared
@@ -591,7 +586,7 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     vec3 beta_gamma = beta_ray * gamma_ray + beta_mie * gamma_mie;
     vec3 beta_sum = beta_ray + beta_mie + beta_abs;
     get_relation_between_ray_and_point(
-        O, P, V,
+        vec3(0), P, V,
         z2, xz
     );
     //   We only set it to 3 scale heights because we are using this parameter for raymarching, and not a closed form solution
@@ -618,8 +613,8 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
         P_i = P + V * x;
         h_i = sqrt((x-xz)*(x-xz)+z2) - R;
         sigma =
-            approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i, -V, x, O, R, H)
-          + approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i, L, 3.*R, O, R, H);
+            approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i, -V, x, R, H)
+          + approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i, L, 3.*R, R, H);
         E += I_sun
             // incoming fraction: the fraction of light that scatters towards camera
             * exp(-h_i/H) * beta_gamma * dx
@@ -628,7 +623,7 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
         x += dx;
     }
     // now calculate the intensity of light that traveled straight in from the background, and add it to the total
-    sigma = approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i, -V, 3.*R, O, R, H);
+    sigma = approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i, -V, 3.*R, R, H);
     E += I_back * exp(-beta_sum * sigma);
     return E;
 }
@@ -643,7 +638,7 @@ vec3 get_rgb_fraction_of_light_transmitted_through_air_for_curved_world(
     // "sigma" is the column density of air, relative to the surface of the world, that's along the light's path of travel,
     //   we use it to estimate the amount of light that's filtered by the atmosphere before reaching the surface
     //   see https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-1/ for an awesome introduction
-    float sigma = approx_air_column_density_ratio_along_3d_ray_for_curved_world (segment_origin, segment_direction, segment_length, O, R, H);
+    float sigma = approx_air_column_density_ratio_along_3d_ray_for_curved_world (segment_origin-world_position, segment_direction, segment_length, R, H);
     // "I_surface" is the intensity of light that reaches the surface after being filtered by atmosphere
     return exp(-sigma * (beta_ray + beta_mie + beta_abs));
 }
@@ -920,28 +915,26 @@ float get_surface_area_of_sphere(
 void get_relation_between_ray_and_point(
     in vec3 point_position,
     in vec3 ray_origin,
-    in vec3 ray_direction,
-    out float distance_at_closest_approach2,
-    out float distance_to_closest_approach
+    in vec3 V,
+    out float z2,
+    out float xz
 ){
-    vec3 ray_to_point = point_position - ray_origin;
-    distance_to_closest_approach = dot(ray_to_point, ray_direction);
-    distance_at_closest_approach2 =
-        dot(ray_to_point, ray_to_point) -
-        distance_to_closest_approach * distance_to_closest_approach;
+    vec3 P = point_position - ray_origin;
+    xz = dot(P, V);
+    z2 = dot(P, P) - xz * xz;
 }
 bool try_get_relation_between_ray_and_sphere(
     in float sphere_radius,
-    in float distance_at_closest_approach2,
-    in float distance_to_closest_approach,
+    in float z2,
+    in float xz,
     out float distance_to_entrance,
     out float distance_to_exit
 ){
     float sphere_radius2 = sphere_radius * sphere_radius;
-    float distance_from_closest_approach_to_exit = sqrt(max(sphere_radius2 - distance_at_closest_approach2, 1e-10));
-    distance_to_entrance = distance_to_closest_approach - distance_from_closest_approach_to_exit;
-    distance_to_exit = distance_to_closest_approach + distance_from_closest_approach_to_exit;
-    return (distance_to_exit > 0. && distance_at_closest_approach2 < sphere_radius*sphere_radius);
+    float distance_from_closest_approach_to_exit = sqrt(max(sphere_radius2 - z2, 1e-10));
+    distance_to_entrance = xz - distance_from_closest_approach_to_exit;
+    distance_to_exit = xz + distance_from_closest_approach_to_exit;
+    return (distance_to_exit > 0. && z2 < sphere_radius*sphere_radius);
 }
 const float SPEED_OF_LIGHT = 299792458. * METER / SECOND;
 const float BOLTZMANN_CONSTANT = 1.3806485279e-23 * JOULE / KELVIN;
@@ -1126,8 +1119,7 @@ float approx_air_column_density_ratio_along_2d_ray_for_curved_world(
     // guide to variable names:
     //  "x*" distance along the ray from closest approach
     //  "R*" distance from the center of the world
-    //  "*b" variable at which the slope of the height approximation is calculated
-    //  "*b" variable at which the intercept of the height approximation is calculated
+    //  "*b" variable at which the slope and intercept of the height approximation
     //  "*0" variable at which the surface of the world occurs
     //  "*1" variable at which the top of the atmosphere occurs
     // "a" is the factor by which we "stretch out" the quadratic height approximation
@@ -1172,17 +1164,15 @@ float approx_air_column_density_ratio_along_3d_ray_for_curved_world (
     in vec3 segment_origin,
     in vec3 segment_direction,
     in float segment_length,
-    in vec3 world_position,
     in float world_radius,
     in float atmosphere_scale_height
 ){
-    vec3 O = world_position;
     float R = world_radius;
     float H = atmosphere_scale_height;
     float z2; // distance ("radius") from the ray to the center of the world at closest approach, squared
     float x_z; // distance from the origin at which closest approach occurs
     get_relation_between_ray_and_point(
-        world_position,
+        vec3(0),
         segment_origin, segment_direction,
         z2, x_z
     );
@@ -1199,16 +1189,16 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     in float atmosphere_scale_height,
     in vec3 beta_ray, in vec3 beta_mie, in vec3 beta_abs
 ){
-    vec3 P = view_origin;
+    // NOTE: we are only using geocentric coordinates within this function!
+    vec3 P = view_origin - world_position;
     vec3 V = view_direction;
     vec3 L = light_direction;
     vec3 I_sun = light_rgb_intensity;
     vec3 I_back = background_rgb_intensity;
-    vec3 O = world_position;
     float R = world_radius;
     float H = atmosphere_scale_height;
     float unused1, unused2, unused3, unused4; // used for passing unused output parameters to functions
-    const float STEP_COUNT = 32.;// number of steps taken while marching along the view ray
+    const float STEP_COUNT = 64.;// number of steps taken while marching along the view ray
     bool is_scattered; // whether view ray will enter the atmosphere
     bool is_obstructed; // whether view ray will enter the surface of a world
     float z2; // distance ("radius") from the view ray to the center of the world at closest approach, squared
@@ -1241,7 +1231,7 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     vec3 beta_gamma = beta_ray * gamma_ray + beta_mie * gamma_mie;
     vec3 beta_sum = beta_ray + beta_mie + beta_abs;
     get_relation_between_ray_and_point(
-        O, P, V,
+        vec3(0), P, V,
         z2, xz
     );
     //   We only set it to 3 scale heights because we are using this parameter for raymarching, and not a closed form solution
@@ -1268,8 +1258,8 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
         P_i = P + V * x;
         h_i = sqrt((x-xz)*(x-xz)+z2) - R;
         sigma =
-            approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i, -V, x, O, R, H)
-          + approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i, L, 3.*R, O, R, H);
+            approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i, -V, x, R, H)
+          + approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i, L, 3.*R, R, H);
         E += I_sun
             // incoming fraction: the fraction of light that scatters towards camera
             * exp(-h_i/H) * beta_gamma * dx
@@ -1278,7 +1268,7 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
         x += dx;
     }
     // now calculate the intensity of light that traveled straight in from the background, and add it to the total
-    sigma = approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i, -V, 3.*R, O, R, H);
+    sigma = approx_air_column_density_ratio_along_3d_ray_for_curved_world (P_i, -V, 3.*R, R, H);
     E += I_back * exp(-beta_sum * sigma);
     return E;
 }
@@ -1293,7 +1283,7 @@ vec3 get_rgb_fraction_of_light_transmitted_through_air_for_curved_world(
     // "sigma" is the column density of air, relative to the surface of the world, that's along the light's path of travel,
     //   we use it to estimate the amount of light that's filtered by the atmosphere before reaching the surface
     //   see https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-1/ for an awesome introduction
-    float sigma = approx_air_column_density_ratio_along_3d_ray_for_curved_world (segment_origin, segment_direction, segment_length, O, R, H);
+    float sigma = approx_air_column_density_ratio_along_3d_ray_for_curved_world (segment_origin-world_position, segment_direction, segment_length, R, H);
     // "I_surface" is the intensity of light that reaches the surface after being filtered by atmosphere
     return exp(-sigma * (beta_ray + beta_mie + beta_abs));
 }
