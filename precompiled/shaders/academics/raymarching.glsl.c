@@ -88,7 +88,6 @@ FUNC(float) approx_air_column_density_ratio_along_3d_ray_for_curved_world (
     return approx_air_column_density_ratio_along_2d_ray_for_curved_world( 0.-xz, x-xz, z2, r, H );
 }
 
-// TODO: multiple light sources
 // TODO: multiple scattering events
 // TODO: support for light sources from within atmosphere
 FUNC(vec3) get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
@@ -99,7 +98,7 @@ FUNC(vec3) get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     IN(int)                    light_count,
     IN(vec3) background_rgb_intensity,
     IN(float) atmosphere_scale_height,
-    IN(vec3)  beta_ray,        IN(vec3)  beta_mie,           IN(vec3)  beta_abs
+    IN(vec3) beta_ray, IN(vec3) beta_mie, IN(vec3)  beta_abs
 ){
     // For an excellent introduction to what we're try to do here, see Alan Zucconi: 
     //   https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-3/
