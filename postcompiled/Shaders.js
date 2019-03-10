@@ -1598,10 +1598,6 @@ void main() {
     vec3 color_with_plants = mix(color_with_sediment, JUNGLE_COLOR, !is_ocean? plant_coverage * plant_visibility * sediment_visibility : 0.);
     // "n" is the surface normal for a perfectly smooth sphere
     vec3 n = normalize(position_v.xyz);
-    vec3 light_direction =
-        normalize(mix(n, light_directions[0], shadow_visibility));
-    vec3 light_rgb_intensity =
-        light_rgb_intensities[0];
     vec3 surface_position =
         n * (world_radius + surface_height);
     vec3 surface_normal =
@@ -1623,31 +1619,39 @@ void main() {
             snow_coverage*snow_visibility
         ));
     float ocean_visible_depth = ocean_depth; //mix(ocean_depth, 0., snow_coverage*snow_coverage*snow_coverage*snow_visibility);
-    vec3 E_surface_reemitted = get_rgb_intensity_of_light_from_surface_of_world(
-        // light properties
-        light_direction,
-        light_rgb_intensity,
-        // atmosphere properties
-        world_radius,
-        atmosphere_scale_height,
-        surface_air_rayleigh_scattering_coefficients,
-        surface_air_mie_scattering_coefficients,
-        surface_air_absorption_coefficients,
-        AMBIENT_LIGHT_AESTHETIC_BRIGHTNESS_FACTOR,
-        // surface properties
-        surface_position,
-        surface_normal,
-        surface_slope_root_mean_squared,
-        surface_diffuse_color_rgb_fraction,
-        surface_specular_color_rgb_fraction,
-        // ocean properties
-        ocean_visible_depth,
-        ocean_rayleigh_scattering_coefficients,
-        ocean_mie_scattering_coefficients,
-        ocean_absorption_coefficients,
-        // view properties
-        -view_direction_v
-    );
+    vec3 E_surface_reemitted = vec3(0);
+    for (int i = 0; i < MAX_LIGHT_COUNT; ++i)
+    {
+        if (i >= light_count){ break; }
+        vec3 light_direction = normalize(mix(n, light_directions[i], shadow_visibility));
+        vec3 light_rgb_intensity = light_rgb_intensities[i];
+        E_surface_reemitted +=
+            get_rgb_intensity_of_light_from_surface_of_world(
+                // light properties
+                light_direction,
+                light_rgb_intensity,
+                // atmosphere properties
+                world_radius,
+                atmosphere_scale_height,
+                surface_air_rayleigh_scattering_coefficients,
+                surface_air_mie_scattering_coefficients,
+                surface_air_absorption_coefficients,
+                AMBIENT_LIGHT_AESTHETIC_BRIGHTNESS_FACTOR,
+                // surface properties
+                surface_position,
+                surface_normal,
+                surface_slope_root_mean_squared,
+                surface_diffuse_color_rgb_fraction,
+                surface_specular_color_rgb_fraction,
+                // ocean properties
+                ocean_visible_depth,
+                ocean_rayleigh_scattering_coefficients,
+                ocean_mie_scattering_coefficients,
+                ocean_absorption_coefficients,
+                // view properties
+                -view_direction_v
+            );
+    }
     vec3 E_surface_emitted = solve_rgb_intensity_of_light_emitted_by_black_body(surface_temperature_v);
     // NOTE: we do not filter E_total by atmospheric scattering
     //   that job is done by the atmospheric shader pass, in "atmosphere.glsl.c"
