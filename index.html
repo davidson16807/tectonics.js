@@ -463,7 +463,14 @@
 										body: { 
 											type: 'world',
 											name: focus_name,
-											grid: geometry,
+											grid: {
+                                                faces:   geometry.faces.map(f => { 
+                                                    return {a: f.a, b: f.b, c: f.c, vertexNormals: f.vertexNormals} 
+                                                    }),
+                                                vertices:geometry.vertices.map(v => { 
+                                                    return {x: v.x, y: v.y, z: v.z} 
+                                                    }),
+                                            },
 										},
 									},
 							 	],

@@ -4920,7 +4920,7 @@ function Grid(parameters, options){
  this.vertices = vertices;
  this.getParameters = function(){
   return {
-   faces: faces .map(f => { return {a: f.a, b: f.b, c: f.c} } ),
+   faces: faces .map(f => { return {a: f.a, b: f.b, c: f.c, vertexNormals: f.vertexNormals} } ),
    vertices: vertices.map(v => { return {x: v.x, y: v.y, z: v.z} } ),
   };
  }

@@ -23,9 +23,11 @@ function VectorRasterView(options) {
 			  		animation_phase_angle: 		{ type: 'f', value: 0 }
 		        }
 		    });
+		var v = {x:0, y:0, z:0};
 		for (var i=0, li=grid.vertices.length; i<li; ++i) {
-		    geometry.vertices.push( grid.vertices[i].clone() );
-		    geometry.vertices.push( grid.vertices[i].clone() );
+			v = grid.vertices[i];
+		    geometry.vertices.push({x:v.x, y:v.y, z:v.z});
+		    geometry.vertices.push({x:v.x, y:v.y, z:v.z});
 		    material.attributes.vector_fraction_traversed.value.push(0);
 		    material.attributes.vector_fraction_traversed.value.push(1);
 		}
