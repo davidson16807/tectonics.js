@@ -38,32 +38,20 @@ function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
 	this.update = function(sim){
 		// TODO: what if sim changed from last iteration?
 		scalarProjectionView.updateScene(this_.scene, sim.focus, 
-				{
-					...options, 
-					subview: scalarView
-				}
+			 	Object.assign({subview: scalarView}, options)
 			);
 		vectorProjectionView.updateScene(this_.scene, sim.focus, 
-				{
-					...options, 
-					subview: vectorView
-				}
+			 	Object.assign({subview: vectorView}, options)
 			);
 	}
 	this.print = function(raster){
 		if (raster.x === void 0) {
 			scalarProjectionView.updateScene(this_.scene, raster, 
-					{
-						...options, 
-						subview: scalarView
-					}
+			 		Object.assign({subview: scalarView}, options)
 				);
 		} else {
 			vectorProjectionView.updateScene(this_.scene, raster, 
-					{
-						...options, 
-						subview: vectorView
-					}
+				 	Object.assign({subview: vectorView}, options)
 				);
 		}
 	}

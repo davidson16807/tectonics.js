@@ -53,7 +53,7 @@ function VectorRasterView(options) {
 		if (mesh === void 0) {
 			mesh = create_mesh(raster, options_);
 			vertexShader = options_.vertexShader;
-			uniforms = {...options_};
+			uniforms = Object.assign({}, options_);
 			scene.add(mesh);
 
 			// HACK: we expose mesh here so WorldViews can modify as they see fit, 
