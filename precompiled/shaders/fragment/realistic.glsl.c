@@ -138,10 +138,10 @@ FUNC(vec3) get_rgb_intensity_of_light_from_surface_of_world(
     // Here we setup  several useful dot products of unit vectors
     //   we can think of them as the cosines of the angles formed between them,
     //   or their "cosine similarity": https://en.wikipedia.org/wiki/Cosine_similarity
-    float LV =    (dot(L,V));
-    float NV = max(dot(N,V), 0.);
-    float NL = max(dot(N,L), 0.);
-    float NH =    (dot(N,H));
+    float LV =     dot(L,V);
+    float NV = abs(dot(N,V));
+    float NL = abs(dot(N,L));
+    float NH =     dot(N,H);
     float HV = max(dot(V,H), 0.);
 
     // "F0" is the characteristic fresnel reflectance.
