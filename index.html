@@ -700,10 +700,11 @@
 	  methods: {
 	  	csv(event) {
 			var content = CsvExporter.world(sim.focus);
-  			var dataUrl = `data:application/json;charset=utf-8,${content}`;
-  			var elapsed_time = format_time(sim.elapsed_time);
-  			var filename = `${sim.focus.name}-${elapsed_time}.csv`;
-  			download(dataUrl, filename);
+            var blob = new Blob([content], {type : 'text/csv'});
+            var blobUrl = URL.createObjectURL(blob);
+            var elapsed_time = format_time(sim.elapsed_time);
+            var filename = `${sim.focus.name}-${elapsed_time}.csv`;
+            download(blobUrl, filename);
   		}
 	  }
 	});
