@@ -87,7 +87,7 @@ function TopographicRasterView(options) {
 
 		if (mesh === void 0) {
 			mesh = create_mesh(scaled_raster, options);
-			uniforms = {...options};
+			uniforms = Object.assign({}, options);
 			vertexShader = options.vertexShader;
 			scene.add(mesh);
 
