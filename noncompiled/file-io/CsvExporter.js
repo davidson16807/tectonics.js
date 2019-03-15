@@ -24,8 +24,8 @@ CsvExporter.world = function (world, options) {
 	].join() + '\n'
 
 	var grid = world.grid;
-	var latitude = SphericalGeometry.get_latitudes(grid.pos, 	Float32Raster(world.grid));
-	var longitude = SphericalGeometry.get_longitudes(grid.pos, 	Float32Raster(world.grid));
+	var latitude = SphericalGeometry.get_latitudes(grid.pos.y, Float32Raster(world.grid));
+	var longitude = SphericalGeometry.get_longitudes(grid.pos.x, grid.pos.z, Float32Raster(world.grid));
 	var elevation = world.hydrosphere.elevation.value();
 	var top_plate_map = world.lithosphere.top_plate_map;
 	var surface_temp = world.atmosphere.surface_temp;
