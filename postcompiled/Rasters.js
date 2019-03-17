@@ -4918,12 +4918,12 @@ function Grid(parameters, options){
     this.faces = faces;
     var vertices = this.parameters.vertices;
     this.vertices = vertices;
-    this.getParameters = function(){
-        return {
-            faces: faces .map(f => { return {a: f.a, b: f.b, c: f.c} } ),
-            vertices: vertices.map(v => { return {x: v.x, y: v.y, z: v.z} } ),
-        };
-    }
+ this.getParameters = function(){
+  return {
+   faces: faces .map(f => { return {a: f.a, b: f.b, c: f.c, vertexNormals: f.vertexNormals} } ),
+   vertices: vertices.map(v => { return {x: v.x, y: v.y, z: v.z} } ),
+  };
+ }
     var vertex_ids = new Uint16Array(this.vertices.length);
     for (var i=0, li=vertex_ids.length; i<li; ++i) {
         vertex_ids[i] = i;

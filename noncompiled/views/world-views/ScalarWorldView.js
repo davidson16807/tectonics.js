@@ -71,12 +71,11 @@ function ScalarWorldView(scalarRasterView, getField) {
             return;
         }
 
-        scalarRasterView.updateScene(gl_state, raster, { 
-            ...options, 
-            sealevel:         world.hydrosphere.sealevel.value(), 
-            displacement:     world.lithosphere.displacement.value(),
-            world_radius:   world.radius,
-        });    
+		scalarRasterView.updateScene(gl_state, raster, Object.assign({
+			sealevel: world.hydrosphere.sealevel.value(),
+			displacement: world.lithosphere.displacement.value(),
+            world_radius: world.radius,
+		}, options));	
 
         var mesh = scalarRasterView.mesh;
     };

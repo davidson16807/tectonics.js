@@ -15,12 +15,13 @@ function GlobeProjectionView() {
         }
         // invoke subview if present
         if (subview !== void 0) {
-            subview.updateScene(gl_state, model, {
-                ...options, 
-                vertexShader:     vertexShader, 
-                shaderpass_visibility: 1,
-                map_projection_offset:             0,
-            });
+            subview.updateScene(gl_state, model, 
+                Object.assign({
+                    vertexShader:     vertexShader, 
+                    shaderpass_visibility: 1,
+                    map_projection_offset: 0,
+                }, options), 
+            );
         }
     };
     this.removeFromScene = function(gl_state) {

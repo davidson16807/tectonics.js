@@ -37,7 +37,7 @@ function TopographicRasterView(options) {
             uniforms: {
                 reference_distance: { type: 'f', value: options.reference_distance || Units.EARTH_RADIUS },
                 world_radius: { type: 'f', value: options.world_radius || Units.EARTH_RADIUS },
-              sealevel:     { type: 'f', value: 0 },
+              sealevel:     { type: 'f', value: options.sealevel },
               ocean_visibility: { type: 'f', value: options.ocean_visibility },
               map_projection_offset:         { type: 'f', value: options.map_projection_offset },
             },
@@ -92,7 +92,7 @@ function TopographicRasterView(options) {
 
         if (mesh === void 0) {
             mesh = create_mesh(scaled_raster, options);
-            uniforms = {...options};
+            uniforms = Object.assign({}, options);
             vertexShader = options.vertexShader;
             gl_state.scene.add(mesh);
 

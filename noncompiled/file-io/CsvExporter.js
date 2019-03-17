@@ -23,13 +23,13 @@ CsvExporter.world = function (world, options) {
         'millimeters/year'
     ].join() + '\n'
 
-    var grid = world.grid;
-    var latitude = SphericalGeometry.get_latitudes(grid.pos,     Float32Raster(world.grid));
-    var longitude = SphericalGeometry.get_longitudes(grid.pos,     Float32Raster(world.grid));
-    var elevation = world.hydrosphere.elevation.value();
-    var top_plate_map = world.lithosphere.top_plate_map;
+	var grid = world.grid;
+	var latitude = SphericalGeometry.get_latitudes(grid.pos.y, Float32Raster(world.grid));
+	var longitude = SphericalGeometry.get_longitudes(grid.pos.x, grid.pos.z, Float32Raster(world.grid));
+	var elevation = world.hydrosphere.elevation.value();
+	var top_plate_map = world.lithosphere.top_plate_map;
+	var precipitation = world.atmosphere.precipitation.value();
     var surface_temperature = world.atmosphere.surface_temperature;
-    var precipitation = world.atmosphere.precipitation.value();
 
     for (var i = 0, li = grid.vertices.length; i < li; i++) {
         csv_text += [

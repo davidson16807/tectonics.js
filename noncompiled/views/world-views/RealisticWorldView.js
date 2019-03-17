@@ -148,7 +148,7 @@ function RealisticWorldView(shader_return_value) {
 
         if (!added) {
             mesh = create_mesh(world, options);
-            renderpass_uniforms = {...options};
+            renderpass_uniforms = Object.assign({}, options);
             vertexShader = options.vertexShader;
             gl_state.scene.add(mesh);
 

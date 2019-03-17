@@ -485,7 +485,14 @@
                                         body: { 
                                             type: 'world',
                                             name: focus_name,
-                                            grid: geometry,
+                                            grid: { 
+                                                faces:   geometry.faces.map(f => {  
+                                                    return {a: f.a, b: f.b, c: f.c, vertexNormals: f.vertexNormals}  
+                                                    }), 
+                                                vertices:geometry.vertices.map(v => {  
+                                                    return {x: v.x, y: v.y, z: v.z}  
+                                                    }), 
+                                            }, 
                                         },
                                     },
                                  ],
@@ -713,18 +720,19 @@
       }
     });
 
-    var exportVue = new Vue({
-      el: '#export',
-      methods: {
-          csv(event) {
-            var content = CsvExporter.world(sim.focus);
-              var dataUrl = `data:application/json;charset=utf-8,${content}`;
-              var elapsed_time = format_time(sim.elapsed_time);
-              var filename = `${sim.focus.name}-${elapsed_time}.csv`;
-              download(dataUrl, filename);
-          }
-      }
-    });
+	var exportVue = new Vue({
+	  el: '#export',
+	  methods: {
+	  	csv(event) {
+			var content = CsvExporter.world(sim.focus);
+            var blob = new Blob([content], {type : 'text/csv'});
+            var blobUrl = URL.createObjectURL(blob);
+            var elapsed_time = format_time(sim.elapsed_time);
+            var filename = `${sim.focus.name}-${elapsed_time}.csv`;
+            download(blobUrl, filename);
+  		}
+	  }
+	});
 
     var screenshotVue = new Vue({
       el: '#screenshot',

@@ -29,12 +29,14 @@ function VectorRasterView(options) {
                       animation_phase_angle:     { type: 'f', value: 0 }
                 }
             });
-        for (var i=0, li=grid.vertices.length; i<li; ++i) {
-            geometry.vertices.push( grid.vertices[i].clone() );
-            geometry.vertices.push( grid.vertices[i].clone() );
-            material.attributes.vector_fraction_traversed.value.push(0);
-            material.attributes.vector_fraction_traversed.value.push(1);
-        }
+        var v = {x:0, y:0, z:0}; 
+        for (var i=0, li=grid.vertices.length; i<li; ++i) { 
+            v = grid.vertices[i]; 
+            geometry.vertices.push({x:v.x, y:v.y, z:v.z}); 
+            geometry.vertices.push({x:v.x, y:v.y, z:v.z}); 
+            material.attributes.vector_fraction_traversed.value.push(0); 
+            material.attributes.vector_fraction_traversed.value.push(1); 
+        } 
         return new THREE.Line( geometry, material, THREE.LinePieces);
     }
     function update_vertex_shader(value) {
@@ -57,7 +59,7 @@ function VectorRasterView(options) {
         if (mesh === void 0) {
             mesh = create_mesh(raster, options_);
             vertexShader = options_.vertexShader;
-            uniforms = {...options_};
+            uniforms = Object.assign({}, options_);
             gl_state.scene.add(mesh);
 
             // HACK: we expose mesh here so WorldViews can modify as they see fit, 

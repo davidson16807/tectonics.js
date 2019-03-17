@@ -67,16 +67,10 @@ function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
     this.update = function(sim){
         // TODO: what if sim changed from last iteration?
         scalarProjectionView.updateScene(gl_state, sim.focus, 
-                {
-                    ...options, 
-                    subview: scalarView
-                }
+                Object.assign({ subview: scalarView }, options)
             );
         vectorProjectionView.updateScene(gl_state, sim.focus, 
-                {
-                    ...options, 
-                    subview: vectorView
-                }
+                Object.assign({ subview: vectorView }, options)
             );
     }
     this.print = function(value, options){
@@ -85,17 +79,11 @@ function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
             value.x instanceof Uint16Array  ||
             value.x instanceof Uint8Array ) { // scalar raster
             scalarProjectionView.updateScene(gl_state, value, 
-                    {
-                        ...options, 
-                        subview: scalarView
-                    }
+                    Object.assign({ subview: scalarView }, options)
                 );
         } else if (value.x instanceof Float32Array){ // vector raster
             vectorProjectionView.updateScene(gl_state, value, 
-                    {
-                        ...options, 
-                        subview: vectorView
-                    }
+                    Object.assign({ subview: vectorView }, options)
                 );
         } else {
             gl_state.scene.add(
