@@ -33,7 +33,7 @@ function HeatmapRasterView(options) {
 			  scalar: { type: 'f', value: null }
 			},
 			uniforms: {
-			  sealevel:     { type: 'f', value: 0 },
+			  sealevel:     { type: 'f', value: options.sealevel },
 			  sealevel_mod: { type: 'f', value: options.sealevel_mod },
 			  index: 		{ type: 'f', value: options.index },
 			},
@@ -94,7 +94,7 @@ function HeatmapRasterView(options) {
 
 			// HACK: we expose mesh here so WorldViews can modify as they see fit, 
 			// 	  namely for displacement and sealevel attributes
-			this.mesh = mesh; 
+			// this.mesh = mesh; 
 		} 
 
 		update_attribute('scalar', 			scaled_raster);

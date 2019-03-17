@@ -31,7 +31,7 @@ function RealisticWorldView(shader_return_value) {
 			  scalar: { type: 'f', value: null }
 			},
 			uniforms: {
-			  sealevel:     { type: 'f', value: 0 },
+			  sealevel:     { type: 'f', value: options.sealevel },
 			  sealevel_mod: { type: 'f', value: options.sealevel_mod },
 			  darkness_mod: { type: 'f', value: options.darkness_mod },
 			  ice_mod: 		{ type: 'f', value: options.ice_mod },
