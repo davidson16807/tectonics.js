@@ -4,11 +4,11 @@ var scalarViews = {};
 scalarViews.satellite = new RealisticWorldView();
 
 scalarViews.npp     = new ScalarWorldView( 
-        new ColorscaleRasterView( { minColor: 0xffffff, maxColor: 0x00ff00, min: 0., max: 1. }),
+        new ColorscaleRasterView( { min_color: 0xffffff, max_color: 0x00ff00, min: 0., max: 1. }),
         world => world.biosphere.npp.value()
     );
 scalarViews.alt     = new ScalarWorldView( 
-        new ColorscaleRasterView( { minColor: 0x000000, maxColor: 0xffffff, scaling: true }),
+        new ColorscaleRasterView( { min_color: 0x000000, max_color: 0xffffff, scaling: true }),
         (world, result, scratch, options) => (options.ocean_visibility > 0.5? world.lithosphere.surface_height.value() : world.hydrosphere.elevation.value())
     );
 scalarViews.surface_normal_map     = new ScalarWorldView( 

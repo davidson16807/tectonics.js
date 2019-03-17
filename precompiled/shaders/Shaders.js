@@ -19,8 +19,8 @@ fragmentShaders.atmosphere = `
 fragmentShaders.heatmap = `
 #include "precompiled/shaders/fragment/heatmap.glsl.c"
 `;
-fragmentShaders.monochromatic = `
-#include "precompiled/shaders/fragment/monochromatic.glsl.c"
+fragmentShaders.colorscale = `
+#include "precompiled/shaders/fragment/colorscale.glsl.c"
 `;
 fragmentShaders.passthrough = `
 #include "precompiled/shaders/fragment/passthrough.glsl.c"

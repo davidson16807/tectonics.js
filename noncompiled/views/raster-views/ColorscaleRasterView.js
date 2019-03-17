@@ -3,29 +3,29 @@
 function ColorscaleRasterView(options) {
     var invariant_options = options || {};
     this.clone = function() {
-        return new ColorscaleRasterView(invariant_options);
+        return new  ColorscaleRasterView(invariant_options);
     }
-    var minColor = invariant_options['minColor'] || 0x000000;
-    var maxColor = invariant_options['maxColor'] || 0xffffff;
-    var min = invariant_options['min'] || 0.;
-    var max = invariant_options['max'] || 1.;
-    var scaling = invariant_options['scaling'] || (!invariant_options['min'] && !invariant_options['max']);
-    var chartView = invariant_options['chartViews'] || new PdfChartRasterView('land'); 
-    function hex_color_to_glsl_string_color(color) {
+    function hex_color_to_three_js_vector(color) {
         var rIntValue = ((color / 256 / 256) % 256) / 255.0;
         var gIntValue = ((color / 256      ) % 256) / 255.0;
         var bIntValue = ((color            ) % 256) / 255.0;
-        return rIntValue.toString()+","+gIntValue.toString()+","+bIntValue.toString();
+        return new THREE.Vector3(rIntValue, gIntValue, bIntValue);
     }
-    var minColor_str = hex_color_to_glsl_string_color(minColor);
-    var maxColor_str = hex_color_to_glsl_string_color(maxColor);
-    var fragmentShader = fragmentShaders.monochromatic;
+    var min_color = hex_color_to_three_js_vector(invariant_options['min_color'] || 0.);
+    var max_color = hex_color_to_three_js_vector(invariant_options['max_color'] || 0.);
+    var min = invariant_options['min'] || 0.;
+    var max = invariant_options['max'] || 1.;
+    var scaling = invariant_options['scaling'] || (!invariant_options['min'] && !invariant_options['max']);
+    var chartView = invariant_options['chartView'] || new PdfChartRasterView('land'); 
+    this.scaling = scaling;
+    var fragmentShader = fragmentShaders.colorscale;
 
     this.mesh = void 0;
     var mesh = void 0;
     var uniforms = {};
     var vertexShader = void 0;
     var scaled_raster = void 0;
+
 
     function create_mesh(raster, options) {
         var grid = raster.grid;
@@ -45,7 +45,10 @@ function ColorscaleRasterView(options) {
             },
             uniforms: {
               reference_distance: { type: 'f', value: options.reference_distance || Units.EARTH_RADIUS },
-                world_radius: { type: 'f', value: options.world_radius || Units.EARTH_RADIUS },
+              world_radius: { type: 'f', value: options.world_radius || Units.EARTH_RADIUS },
+              sealevel:     { type: 'f', value: options.sealevel },
+              min_color:     { type: 'v3', value: min_color },
+              max_color:     { type: 'v3', value: max_color },
               sealevel:     { type: 'f', value: options.sealevel },
               ocean_visibility: { type: 'f', value: options.ocean_visibility },
               map_projection_offset:         { type: 'f', value: options.map_projection_offset },
@@ -92,7 +95,7 @@ function ColorscaleRasterView(options) {
         if (scaled_raster === void 0 || scaled_raster.grid !== raster.grid) {
             scaled_raster = Float32Raster(raster.grid);
         }
-
+        
         if (scaling) {
             Float32Dataset.rescale(raster, scaled_raster, 0., 1.);
         } else {
@@ -111,12 +114,13 @@ function ColorscaleRasterView(options) {
         } 
 
         update_attribute('scalar',             scaled_raster);
+                
         update_uniform('world_radius',        options.world_radius || Units.EARTH_RADIUS);
         update_uniform('ocean_visibility',        options.ocean_visibility);
         update_uniform('map_projection_offset',                options.map_projection_offset);
 
         update_vertex_shader(options.vertexShader);
-        
+
         if (options.displacement !== void 0) {
             update_attribute('displacement', options.displacement);
         }
@@ -131,7 +135,7 @@ function ColorscaleRasterView(options) {
             mesh.material.dispose();
             mesh = void 0;
             this.mesh = void 0;
-        }
+        } 
         scaled_raster = void 0;
     };
     this.updateChart = function(data, raster, options) {
