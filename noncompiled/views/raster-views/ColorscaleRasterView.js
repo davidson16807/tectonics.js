@@ -43,7 +43,7 @@ function ColorscaleRasterView(options) {
 			  scalar: { type: 'f', value: null }
 			},
 			uniforms: {
-			  sealevel:     { type: 'f', value: 0 },
+			  sealevel:     { type: 'f', value: options.sealevel },
 			  sealevel_mod: { type: 'f', value: options.sealevel_mod },
 			  index: 		{ type: 'f', value: options.index },
 			},
