@@ -55,6 +55,7 @@ function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
         plant_visibility: 1.0,
         snow_visibility: 1.0,
         shadow_visibility: 1.0,
+        specular_visibility: 1.0,
         insolation_max: 0,
     };
 

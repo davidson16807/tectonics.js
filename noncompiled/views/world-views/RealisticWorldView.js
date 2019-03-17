@@ -75,6 +75,7 @@ function RealisticWorldView(shader_return_value) {
               plant_visibility:          { type: 'f', value: options.plant_visibility },
               snow_visibility:           { type: 'f', value: options.snow_visibility },
               shadow_visibility:         { type: 'f', value: options.shadow_visibility },
+              specular_visibility:       { type: 'f', value: options.specular_visibility },
 
               // LIGHT PROPERTIES
               light_rgb_intensities:     { type: "v3v", value: [new THREE.Vector3()]       },
@@ -201,12 +202,13 @@ function RealisticWorldView(shader_return_value) {
         update_renderpass_uniform  ('plant_visibility',          options.plant_visibility);
         update_renderpass_uniform  ('snow_visibility',           options.snow_visibility);
         update_renderpass_uniform  ('shadow_visibility',         options.shadow_visibility);
+        update_renderpass_uniform  ('specular_visibility',       options.specular_visibility);
         update_renderpass_uniform  ('map_projection_offset',     options.map_projection_offset);
 
         // LIGHT PROPERTIES
         update_renderpass_uniform  ('light_rgb_intensities',     [light_rgb_intensities_threejs, light_rgb_intensities_threejs, light_rgb_intensities_threejs, light_rgb_intensities_threejs]);
-        update_renderpass_uniform  ('light_directions',          [new THREE.Vector3(1,0,0), new THREE.Vector3(-1,0,0), new THREE.Vector3(0,0,1), new THREE.Vector3(0,0,-1)]);
-        update_renderpass_uniform  ('light_count',               4);
+        update_renderpass_uniform  ('light_directions',          [new THREE.Vector3(1,0,0), new THREE.Vector3(0,0,1), new THREE.Vector3(-1,0,0), new THREE.Vector3(0,0,-1)]);
+        update_renderpass_uniform  ('light_count',               2);
         update_renderpass_uniform  ('insolation_max',            insolation_max);
 
         // WORLD PROPERTIES
@@ -241,8 +243,8 @@ function RealisticWorldView(shader_return_value) {
 
         // LIGHT PROPERTIES
         update_shaderpass_uniform  ('light_rgb_intensities',    [light_rgb_intensities_threejs, light_rgb_intensities_threejs, light_rgb_intensities_threejs, light_rgb_intensities_threejs]);
-        update_shaderpass_uniform  ('light_directions',         [new THREE.Vector3(1,0,0), new THREE.Vector3(-1,0,0), new THREE.Vector3(0,0,1), new THREE.Vector3(0,0,-1)]);
-        update_shaderpass_uniform  ('light_count',              4);
+        update_shaderpass_uniform  ('light_directions',         [new THREE.Vector3(1,0,0), new THREE.Vector3(0,0,1), new THREE.Vector3(-1,0,0), new THREE.Vector3(0,0,-1)]);
+        update_shaderpass_uniform  ('light_count',              2);
         update_shaderpass_uniform  ('insolation_max',           insolation_max);
 
         // WORLD PROPERTIES

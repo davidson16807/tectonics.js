@@ -23,6 +23,7 @@ uniform float sediment_visibility;
 uniform float plant_visibility;
 uniform float snow_visibility;
 uniform float shadow_visibility;
+uniform float specular_visibility;
 
 // LIGHT SOURCE PROPERTIES -----------------------------------------------------
 uniform vec3  light_rgb_intensities [MAX_LIGHT_COUNT];
@@ -247,7 +248,7 @@ void main() {
         get_rgb_intensity_of_rgb_signal(color_with_plants);
     // TODO: model refractive index as a function of wavelength
     vec3 surface_specular_color_rgb_fraction = 
-        shadow_visibility * // turn off specular reflection if darkness is disabled
+        shadow_visibility * specular_visibility * // turn off specular reflection if darkness is disabled
         vec3(mix(
             is_visible_ocean? 
             get_fraction_of_light_reflected_on_surface_head_on(WATER_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX) : 
