@@ -1,6 +1,6 @@
 CONST(float) BIG = 1e20;
 CONST(float) SMALL = 1e-20;
-CONST(int)   MAX_LIGHT_COUNT = 6;
+CONST(int)   MAX_LIGHT_COUNT = 9;
 
 // "approx_air_column_density_ratio_along_2d_ray_for_curved_world" 
 //   calculates column density ratio of air for a ray emitted from the surface of a world to a desired distance, 

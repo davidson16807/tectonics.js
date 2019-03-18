@@ -13,6 +13,7 @@ function RealisticWorldView(shader_return_value) {
     var shaderpass_uniforms = {};
     var renderpass_uniforms = {};
     var vertexShader = void 0;
+    const MAX_LIGHT_COUNT = 9;
     var shaderpass = new THREE.ShaderPass({
         uniforms: {
             shaderpass_visibility:             { type: 'f', value: 0 },
@@ -22,9 +23,9 @@ function RealisticWorldView(shader_return_value) {
             view_matrix_inverse:        { type: "m4",  value: new THREE.Matrix4()         },
             reference_distance:         { type: "f",   value: Units.EARTH_RADIUS          },
 
-            light_rgb_intensities:      { type: "v3v", value: [new THREE.Vector3()]       },
-            light_directions:           { type: "v3v", value: [new THREE.Vector3()]       },
-            light_count:                { type: "i",   value: 1                           },
+            light_rgb_intensities:      { type: "v3v", value: []                          },
+            light_directions:           { type: "v3v", value: []                          },
+            light_count:                { type: "i",   value: 0                           },
             insolation_max:             { type: 'f',   value: Units.GLOBAL_SOLAR_CONSTANT },
 
             world_position:             { type: "v3",  value: new THREE.Vector3()         },
@@ -78,10 +79,10 @@ function RealisticWorldView(shader_return_value) {
               specular_visibility:       { type: 'f', value: options.specular_visibility },
 
               // LIGHT PROPERTIES
-              light_rgb_intensities:     { type: "v3v", value: [new THREE.Vector3()]       },
-              light_directions:          { type: "v3v", value: [new THREE.Vector3()]       },
-              light_count:               { type: "i",   value: 1                           },
-              insolation_max:            { type: 'f',   value: Units.GLOBAL_SOLAR_CONSTANT },
+              light_rgb_intensities:     { type: "v3v", value: options.light_rgb_intensities   },
+              light_directions:          { type: "v3v", value: options.light_directions        },
+              light_count:               { type: "i",   value: options.light_directions.length },
+              insolation_max:            { type: 'f',   value: Units.GLOBAL_SOLAR_CONSTANT     },
 
               // WORLD PROPERTIES
               world_position:            { type: "v3",value: new THREE.Vector3() },
@@ -160,19 +161,8 @@ function RealisticWorldView(shader_return_value) {
 
         var projection_matrix_inverse = new THREE.Matrix4().getInverse(gl_state.camera.projectionMatrix);
 
-        // get intensity of sunlight
-        // vec3  light_offset    = light_position - world_position;
-        // vec3  light_directions = normalize(light_offset);
-        // float light_distance  = length(light_offset);
-        var light_rgb_intensities = Thermodynamics.solve_rgb_intensity_of_light_emitted_by_black_body(Units.SOLAR_TEMPERATURE);
-        var light_attenuation = SphericalGeometry.get_surface_area(Units.SOLAR_RADIUS) / SphericalGeometry.get_surface_area(Units.ASTRONOMICAL_UNIT);
-        light_rgb_intensities.x *= light_attenuation;
-        light_rgb_intensities.y *= light_attenuation;
-        light_rgb_intensities.z *= light_attenuation;
-        var light_rgb_intensities_threejs = new THREE.Vector3(light_rgb_intensities.x, light_rgb_intensities.y, light_rgb_intensities.z);
+
         var insolation_max = Units.GLOBAL_SOLAR_CONSTANT; // Float32Dataset.max(world.atmosphere.average_insolation);
-
-
 
         var average_molecular_mass_of_air = 4.8e-26 * Units.KILOGRAM;
         var molecular_mass_of_water_vapor = 3.0e-26 * Units.KILOGRAM;
@@ -206,9 +196,9 @@ function RealisticWorldView(shader_return_value) {
         update_renderpass_uniform  ('map_projection_offset',     options.map_projection_offset);
 
         // LIGHT PROPERTIES
-        update_renderpass_uniform  ('light_rgb_intensities',     [light_rgb_intensities_threejs, light_rgb_intensities_threejs, light_rgb_intensities_threejs, light_rgb_intensities_threejs]);
-        update_renderpass_uniform  ('light_directions',          [new THREE.Vector3(1,0,0), new THREE.Vector3(0,0,1), new THREE.Vector3(-1,0,0), new THREE.Vector3(0,0,-1)]);
-        update_renderpass_uniform  ('light_count',               2);
+        update_renderpass_uniform  ('light_rgb_intensities',     options.light_rgb_intensities   );
+        update_renderpass_uniform  ('light_directions',          options.light_directions        );
+        update_renderpass_uniform  ('light_count',               options.light_directions.length );
         update_renderpass_uniform  ('insolation_max',            insolation_max);
 
         // WORLD PROPERTIES
@@ -221,7 +211,7 @@ function RealisticWorldView(shader_return_value) {
         update_renderpass_vector_attribute('gradient',           gradient);
 
         // ATMOSPHERE PROPERTIES
-        update_renderpass_uniform  ('atmosphere_scale_height', atmosphere_scale_height  );
+        update_renderpass_uniform  ('atmosphere_scale_height',   atmosphere_scale_height );
         update_renderpass_uniform  ('surface_air_rayleigh_scattering_coefficients', new THREE.Vector3(5.20e-6, 1.21e-5, 2.96e-5));
         update_renderpass_uniform  ('surface_air_mie_scattering_coefficients',      new THREE.Vector3(2.1e-8,  2.1e-8,  2.1e-8 ));
         update_renderpass_uniform  ('surface_air_absorption_coefficients',          new THREE.Vector3(0));
@@ -232,20 +222,19 @@ function RealisticWorldView(shader_return_value) {
         update_renderpass_uniform  ('ocean_mie_scattering_coefficients',      new THREE.Vector3(0));
         update_renderpass_uniform  ('ocean_absorption_coefficients',          new THREE.Vector3(3e-1, 1e-1, 2e-2));
 
-
         // SHADERPASS PROPERTIES -----------------------------------------------
 
         // VIEW PROPERTIES
-        update_shaderpass_uniform  ('projection_matrix_inverse',projection_matrix_inverse);
-        update_shaderpass_uniform  ('view_matrix_inverse',      gl_state.camera.matrixWorld);
-        update_shaderpass_uniform  ('reference_distance',       world.radius);
-        update_shaderpass_uniform  ('shaderpass_visibility',    (options.shaderpass_visibility * options.shadow_visibility) || 0);
+        update_shaderpass_uniform  ('projection_matrix_inverse', projection_matrix_inverse);
+        update_shaderpass_uniform  ('view_matrix_inverse',       gl_state.camera.matrixWorld);
+        update_shaderpass_uniform  ('reference_distance',        world.radius);
+        update_shaderpass_uniform  ('shaderpass_visibility',     (options.shaderpass_visibility * options.shadow_visibility) || 0);
 
         // LIGHT PROPERTIES
-        update_shaderpass_uniform  ('light_rgb_intensities',    [light_rgb_intensities_threejs, light_rgb_intensities_threejs, light_rgb_intensities_threejs, light_rgb_intensities_threejs]);
-        update_shaderpass_uniform  ('light_directions',         [new THREE.Vector3(1,0,0), new THREE.Vector3(0,0,1), new THREE.Vector3(-1,0,0), new THREE.Vector3(0,0,-1)]);
-        update_shaderpass_uniform  ('light_count',              2);
-        update_shaderpass_uniform  ('insolation_max',           insolation_max);
+        update_shaderpass_uniform  ('light_rgb_intensities',     options.light_rgb_intensities   );
+        update_shaderpass_uniform  ('light_directions',          options.light_directions        );
+        update_shaderpass_uniform  ('light_count',               options.light_directions.length );
+        update_shaderpass_uniform  ('insolation_max',            insolation_max );
 
         // WORLD PROPERTIES
         update_shaderpass_uniform  ('world_position',           new THREE.Vector3());

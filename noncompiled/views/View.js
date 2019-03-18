@@ -55,7 +55,6 @@ function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
         plant_visibility: 1.0,
         snow_visibility: 1.0,
         shadow_visibility: 1.0,
-        specular_visibility: 1.0,
         insolation_max: 0,
     };
 
@@ -69,9 +68,7 @@ function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
         var universe = sim.model();
         var body = sim.focus;
         var stars = universe.bodies.filter(body => body instanceof Star);
-        var star_sample_positions_map_ = universe.star_sample_positions_map(universe.config, body, 30/2 * sim._last_update_timestamp, 3);
-        // HACK: we use "sim._last_update_timestamp" here because we never planned for the view to need access to the proper timestep
-        // TODO: set "30/2" to read the correct fps
+        var star_sample_positions_map_ = universe.star_sample_positions_map(universe.config, body, sim.speed/2, 3);
 
         var light_rgb_intensities = [];
         var light_directions = [];
@@ -105,14 +102,16 @@ function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
                 Object.assign({ 
                     subview: scalarView, 
                     light_rgb_intensities: light_rgb_intensities,
-                    light_direction: light_direction 
+                    light_directions:      light_directions,
+                    specular_visibility:   light_directions.length == stars.length? 1.:0.
                 }, options)
             );
         vectorProjectionView.updateScene(gl_state, body, 
                 Object.assign({ 
                     subview: vectorView, 
                     light_rgb_intensities: light_rgb_intensities,
-                    light_direction: light_direction 
+                    light_directions:      light_directions, 
+                    specular_visibility:   light_directions.length == stars.length? 1.:0.
                 }, options)
             );
     }
