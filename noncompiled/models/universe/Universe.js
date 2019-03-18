@@ -178,6 +178,7 @@ function Universe(parameters) {
         return origin.get_body_matrices(config);
     }
     this.star_sample_positions_map = star_sample_positions_map;
+    this.bodies = bodies;
     this.advance = advance;
 
     this.setDependencies = function(dependencies) {}

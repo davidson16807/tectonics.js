@@ -65,12 +65,55 @@ function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
     };
 
     this.update = function(sim){
+
+        var universe = sim.model();
+        var body = sim.focus;
+        var stars = universe.bodies.filter(body => body instanceof Star);
+        var star_sample_positions_map_ = universe.star_sample_positions_map(universe.config, body, 30/2 * sim._last_update_timestamp, 3);
+        // HACK: we use "sim._last_update_timestamp" here because we never planned for the view to need access to the proper timestep
+        // TODO: set "30/2" to read the correct fps
+
+        var light_rgb_intensities = [];
+        var light_directions = [];
+        for (var star of stars){
+            var star_sample_positions = star_sample_positions_map_[star.name];
+            for (var star_sample_position of star_sample_positions) {
+                var light_distance = Vector.magnitude(
+                    star_sample_position.x,
+                    star_sample_position.y,
+                    star_sample_position.z
+                );
+                var light_direction = Vector.normalize(
+                    star_sample_position.x,
+                    star_sample_position.y,
+                    star_sample_position.z
+                );
+                var light_rgb_intensity = Thermodynamics.solve_rgb_intensity_of_light_emitted_by_black_body(star.surface_temperature);
+                var light_attenuation = SphericalGeometry.get_surface_area(star.radius) / SphericalGeometry.get_surface_area(light_distance);
+                var light_exposure = 1/star_sample_positions.length;
+                light_rgb_intensity.x *= light_attenuation * light_exposure;
+                light_rgb_intensity.y *= light_attenuation * light_exposure;
+                light_rgb_intensity.z *= light_attenuation * light_exposure;
+
+                light_rgb_intensities.push(light_rgb_intensity);
+                light_directions.push(light_direction);
+            }
+        }
+
         // TODO: what if sim changed from last iteration?
-        scalarProjectionView.updateScene(gl_state, sim.focus, 
-                Object.assign({ subview: scalarView }, options)
+        scalarProjectionView.updateScene(gl_state, body, 
+                Object.assign({ 
+                    subview: scalarView, 
+                    light_rgb_intensities: light_rgb_intensities,
+                    light_direction: light_direction 
+                }, options)
             );
-        vectorProjectionView.updateScene(gl_state, sim.focus, 
-                Object.assign({ subview: vectorView }, options)
+        vectorProjectionView.updateScene(gl_state, body, 
+                Object.assign({ 
+                    subview: vectorView, 
+                    light_rgb_intensities: light_rgb_intensities,
+                    light_direction: light_direction 
+                }, options)
             );
     }
     this.print = function(value, options){
