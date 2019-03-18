@@ -126,64 +126,58 @@ function Universe(parameters) {
         return samples;
     }
 
-    function insolation(config, body, star, insolation) {
-        var origin = body_id_to_node_map[body.name];
-        var surface_normal = body.grid.pos;
-
-        var body_matrices = origin.get_body_matrices(config);
-        // clear out result
-        var star_matrix = body_matrices[star.name];
-        var star_pos = Matrix4x4.get_translation(star_matrix);
-        // calculate insolation effects of a single star
-        Optics.get_incident_radiation_fluxes(
-            surface_normal,
-            star_pos, 
-            star.luminosity,
-            insolation
-        );
-        // TODO: add effects of occlusion, e.g. moons around gas giants
-        return insolation;
-    }
-    
-    // average insolation from a single star
-    function average_insolation_from_star(config, body, star, min_perceivable_period, average_insolation, samples_per_cycle){
+    // returns a dictionary mapping body ids for stars to a list of positions sampled along their orbits
+    function star_sample_positions_map(config, body, min_perceivable_period, samples_per_cycle, max_sample_count) {
         samples_per_cycle = samples_per_cycle || 6;
-        var average_insolation = average_insolation || Float32Raster(body.grid);
-        var insolation_sample = Float32Raster(body.grid);
-        var total_insolation = average_insolation; // double duty for performance
-        Float32Raster.fill(total_insolation, 0);
-
+        var origin = body_id_to_node_map[body.name];
         var samples_ = samples(config, samples_per_cycle, min_perceivable_period);
+        var stars = bodies.filter(body => body instanceof Star);
+        var result = {};
         for (var sample of samples_){
-            insolation(sample, body, star, insolation_sample);
-            ScalarField.add_field(total_insolation, insolation_sample, total_insolation);
+            var body_matrices = origin.get_body_matrices(sample);
+            for (var star of stars) {
+                var star_matrix = body_matrices[star.name];
+                var star_pos = Matrix4x4.get_translation(star_matrix);
+                result[star.name] = result[star.name] || [];
+                result[star.name].push(star_pos);
+            }
         }
-        return ScalarField.div_scalar(total_insolation, samples_.length, average_insolation);
+        return result;
     }
 
     // average insolation from all stars
-    // TODO: memoize this into "average_insolation_from_star" and "reference_luminosity"
-    //   correct memoized result to reflect actual luminosity as star ages
     function average_insolation(config, body, min_perceivable_period, average_insolation, samples_per_cycle){
+        var surface_normal = body.grid.pos;
         samples_per_cycle = samples_per_cycle || 6;
         var average_insolation = average_insolation || Float32Raster(body.grid);
         var insolation_sample = Float32Raster(body.grid);
         Float32Raster.fill(average_insolation, 0);
 
         var stars = bodies.filter(body => body instanceof Star);
+        var star_sample_positions_map_ = star_sample_positions_map(config, body, min_perceivable_period, samples_per_cycle);
         for (var star of stars){
-            average_insolation_from_star(config, body, star, min_perceivable_period, insolation_sample, samples_per_cycle);
-            ScalarField.add_field(average_insolation, insolation_sample, average_insolation);
+            var star_sample_positions = star_sample_positions_map_[star.name];
+            for (var star_sample_position of star_sample_positions) {
+                Optics.get_incident_radiation_fluxes(
+                    surface_normal,
+                    star_sample_position, 
+                    star.luminosity/star_sample_positions.length,
+                    insolation_sample
+                );
+                ScalarField.add_field(average_insolation, insolation_sample, average_insolation);
+            }
         }
         return average_insolation;
     }
 
     function assert_dependencies() { }
 
-    this.body_matrices = function(config, body, star, insolation) {
+    // returns a dictionary mapping body ids to transformation matrices
+    this.body_matrices = function(config, body) {
         var origin = body_id_to_node_map[body.name];
         return origin.get_body_matrices(config);
     }
+    this.star_sample_positions_map = star_sample_positions_map;
     this.advance = advance;
 
     this.setDependencies = function(dependencies) {}
@@ -193,10 +187,10 @@ function Universe(parameters) {
         for(var body of bodies) {
             if (body instanceof World) {
                 body.setDependencies({
-                    get_average_insolation: ((t, out) => average_insolation(
+                    get_average_insolation: ((timestep, out) => average_insolation(
                             this.config,
                             body, 
-                            30/2 * t,  // TODO: set this to the correct fps
+                            30/2 * timestep,  // TODO: set this to the correct fps
                             out,
                             8
                         )),
