@@ -378,6 +378,11 @@
         <img src="icons/spinner.svg"/>
         <h2>Loading</h2>
     </div>
+    <div class="notifications-dialog">
+        <transition name="fade">
+            <h3 v-for="notification in notifications">{{notification}}</h3>
+        </transition>
+    </div>
 </div>
 
 <script type="text/javascript">
@@ -681,11 +686,22 @@
       data: {
           isNoWebGl: false,
           isNoJs: false,
-          isLoadingSave: false
+          isLoadingSave: false,
+          notifications: []
       },
       created: function() {
           this.isNoWebGl = window.WebGLRenderingContext;
       },
+      methods: {
+          notify: function(notification) {
+              this.notifications.shift()
+              this.notifications.push(notification);
+              var _this = this;
+              setInterval(function() {
+                  _this.notifications.shift()
+              }, 3000);
+          }
+      }
     });
     
     var loadVue = new Vue({
@@ -1092,6 +1108,9 @@
     //  display to break when user increases speed past 1wk/s.
     // We set speed to 1m/s here to work around this.
     timeMenuVue.speed(1)
+
+    // once everything is loaded, instruct the user how to start
+    dialogVue.notify("click ⏩ or press > to begin")
 </script>
 </body>
 </html>
