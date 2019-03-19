@@ -23,9 +23,9 @@ The more iterations, the better it looks.
 I've made a few contributions to the algorithm in my attempt to adapt it to the model. I'll describe these contributions later, but first I want to describe this algorithm mathematically. 
 
 Think about what happens in step 2, where you increase elevation depending on what side you're on. Consider the simplest case where the "random axis" happens to be the planet's axis of rotation. We'll call this the z component of our position vector. Now, we want everything in the northern hemisphere to increase in height. In other words, we increase elevation where the z component is positive. We'll use the [Heaviside step function](https://en.wikipedia.org/wiki/Heaviside_step_function) to describe this relation: 
-	
+    
 <p>`Delta h prop H(x_z)`</p>
-	
+    
 <p>Where `Delta h` is the change in height, and `vec(x)` is our position in space. </p>
 
 <p>Now, back to step 1. We want to orient our northern hemisphere so that it faces some random direction. We can do this by applying a matrix to `vec(x)`. This matrix, denoted `bb A`, represents a random rotation in 3D space. </p>
@@ -67,7 +67,7 @@ There's no way we're going to accomplish this by tweaking the existing model par
 The hypsographic curve is a probability density function that tells us the probability of finding a piece of land with a given elevation. We can use this probability density function to generate a series of random values. These random values will serve as the elevations that populate our world. On earth, hypsography can be represented by the following statistical model:
 
 <p>`h ~ {(N(-4019, 1113), if f_{ocean} > 0.71),
-		 (N(797,1169),    if f_{ocean} < 0.71):}`</p>
+         (N(797,1169),    if f_{ocean} < 0.71):}`</p>
 <p>`f_{ocean} ~ uni f(0,1)`</p>
 
 <p>where `h` is height in meters, and `f_{ocean}` is a means to express the fraction of earth covered by ocean. `N` and `uni f` are the normal and uniform distribution functions, respectively. </p>

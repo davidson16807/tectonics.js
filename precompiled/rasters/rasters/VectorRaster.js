@@ -1,8 +1,8 @@
 
 // VectorRaster represents a grid where each cell contains a vector value. It is a specific kind of a multibanded raster.
 // A VectorRaster is composed of two parts
-// 		The first is a object of type Grid, representing a collection of vertices that are connected by edges
-//  	The second is a structure of arrays (SoA), representing a vector for each vertex within the grid. 
+//         The first is a object of type Grid, representing a collection of vertices that are connected by edges
+//      The second is a structure of arrays (SoA), representing a vector for each vertex within the grid. 
 // 
 // VectorRaster should theoretically work for any graph of vertices given the appropriate grid object,
 // However tectonics.js only uses them with spherical grids.
@@ -132,8 +132,8 @@ VectorRaster.max_id = function (vector_raster) {
 
 VectorRaster.get_nearest_value = function(value_raster, pos) {
   ASSERT_IS_VECTOR_RASTER(value_raster)
-	var id = value_raster.grid.getNearestId(pos);
-	return {x: value_raster.x[id], y: value_raster.y[id], z: value_raster.z[id]};
+    var id = value_raster.grid.getNearestId(pos);
+    return {x: value_raster.x[id], y: value_raster.y[id], z: value_raster.z[id]};
 }
 VectorRaster.get_nearest_values = function(value_raster, pos_raster, result) {
   result = result || VectorRaster(pos_raster.grid);

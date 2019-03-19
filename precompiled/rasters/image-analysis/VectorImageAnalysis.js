@@ -27,15 +27,15 @@ VectorImageAnalysis.image_segmentation = function(vector_field, segment_num, min
 
   var fill_ui8    = Uint8RasterGraphics.fill_into_selection;
   var fill_f32    = Float32RasterGraphics.fill_into_selection;
-  var magic_wand 	= VectorRasterGraphics.magic_wand_select;
+  var magic_wand     = VectorRasterGraphics.magic_wand_select;
   var sum         = Uint8Dataset.sum;
   var max_id      = Float32Raster.max_id;
 
   // step 1: run flood fill algorithm several times
   for (var i=1, j=0; i<segment_num && j<max_iterations; j++) {
-    magic_wand(vector_field, max_id(magnitude), occupied, segment, 		scratch_ui8_3);   
-    fill_f32 	(magnitude, 0, segment,                   magnitude);
-    fill_ui8 	(occupied, 0, segment, 	                  occupied);
+    magic_wand(vector_field, max_id(magnitude), occupied, segment,         scratch_ui8_3);   
+    fill_f32     (magnitude, 0, segment,                   magnitude);
+    fill_ui8     (occupied, 0, segment,                       occupied);
     if (sum(segment) > min_segment_size) { 
         fill_ui8 (segments, i, segment,                   segments);
         i++;
