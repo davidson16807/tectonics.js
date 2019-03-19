@@ -574,6 +574,7 @@
             sim = JsonDeserializer.sim(json);
             dialogVue.$data.isLoadingSave = false;
             $('.controls').show();
+            timeMenuVue.resync();
         });
     }
     function loadFile (file) {
@@ -584,8 +585,10 @@
             sim = JsonDeserializer.sim(e.target.result);
             dialogVue.$data.isLoadingSave = false;
             $('.controls').show();
+            timeMenuVue.resync();
         }
         reader.readAsText(file);
+        sim.set_paused()
     }
 
     function format (num, rollover, precision){
@@ -833,6 +836,10 @@
         rewind: function() {
             this.speed_i = Math.max(this.speed_i-1, 0);
             sim.speed = this.speeds[this.speed_i].scale;
+        },
+        resync: function() {
+            sim.speed = this.speeds[this.speed_i].scale;
+            sim.paused = this.paused;
         },
         format: function(time) {
             return format(time/Units.YEAR, 1000, 3)
