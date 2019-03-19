@@ -39,7 +39,6 @@ function PdfChartRasterView(surface_type_focus, name) {
         var category = Uint8Raster(raster.grid);
 
         for (var i = 0; i < bin_num; i++) {
-            // debugger;
             bin_min = plot_min + i*bin_size; 
             bin_max = plot_min + (i+1)*bin_size; 
             ScalarField.between_scalars(raster, bin_min, bin_max, category);

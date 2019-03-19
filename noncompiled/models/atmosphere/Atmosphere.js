@@ -171,7 +171,6 @@ function Atmosphere(grid, parameters) {
         if (this.sealevel_temperature === void 0 || timestep > 7*Units.DAY) {
             this.sealevel_temperature = Float32Raster.copy(this.long_term_sealevel_temperature.value(),     this.sealevel_temperature);
         } else {
-            debugger
             get_average_insolation(timestep,                                              this.average_insolation);
             ScalarField.mult_field( this.absorption.value(), this.average_insolation,     this.absorbed_radiation );
 

@@ -140,7 +140,6 @@ Tectonophysics.get_plate_rotation_matrix3x3 = function(plate_velocity, center_of
 
     var center_of_plate_rotation_vector = Vector.mult_scalar(center_of_plate_angular_velocity_average.x, center_of_plate_angular_velocity_average.y, center_of_plate_angular_velocity_average.z, seconds);
     var center_of_world_rotation_vector = Vector.mult_scalar(center_of_world_angular_velocity_average.x, center_of_world_angular_velocity_average.y, center_of_world_angular_velocity_average.z, seconds);
-// debugger;
 
     // TODO: negation shouldn't theoretically be needed! find out where the discrepancy lies and fix it the proper way! 
     var center_of_plate_rotation_matrix = Matrix3x3.FromRotationVector(-center_of_plate_rotation_vector.x, -center_of_plate_rotation_vector.y, -center_of_plate_rotation_vector.z);
