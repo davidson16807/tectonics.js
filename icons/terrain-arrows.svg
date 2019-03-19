@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   width="48"
+   height="48"
+   viewBox="0 0 48 48"
+   id="svg2"
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="terrain-arrows.svg">
+  <metadata
+     id="metadata10">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs8">
+    <filter
+       style="color-interpolation-filters:sRGB"
+       id="filter6396"
+       inkscape:label="filter1">
+      <feMorphology
+         id="feMorphology6398"
+         operator="dilate"
+         radius="5" />
+    </filter>
+  </defs>
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="2074"
+     inkscape:window-height="1028"
+     id="namedview6"
+     showgrid="false"
+     inkscape:zoom="9.8333332"
+     inkscape:cx="7.3780663"
+     inkscape:cy="23.715729"
+     inkscape:window-x="486"
+     inkscape:window-y="24"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="g4181" />
+  <g
+     style="display:inline;opacity:1"
+     inkscape:label="convergence"
+     id="g4181"
+     inkscape:groupmode="layer">
+    <g
+       style="display:inline;opacity:1"
+       transform="matrix(-0.00546574,0.98193326,-0.98193326,-0.00546574,53.782542,-1.6644857)"
+       id="g4183-3">
+      <path
+         inkscape:connector-curvature="0"
+         d="m 19.266505,24.959519 -9.02867,-9.028668 0,7.202871 -4.0127416,0 0,-14.0445968 14.0445976,0 0,4.0127418 -7.202873,0 9.322813,9.246729 -3.123126,2.610923"
+         id="path4185-6"
+         sodipodi:nodetypes="cccccccccc" />
+    </g>
+    <g
+       id="g6461"
+       transform="matrix(0.98193326,0.00546574,-0.00546574,0.98193326,0.4201647,1.7297758)"
+       style="display:inline;opacity:1">
+      <path
+         sodipodi:nodetypes="ccccccccc"
+         id="path6463"
+         d="m 19.562686,25.543728 -9.324851,-9.612877 0,7.202871 -4.0127416,0 0,-14.0445968 14.0445976,0 0,4.0127418 -7.202873,0 9.02867,9.02867"
+         inkscape:connector-curvature="0" />
+    </g>
+  </g>
+  <g
+     inkscape:label="terrain copy"
+     id="g6427"
+     inkscape:groupmode="layer"
+     style="display:inline">
+    <path
+       inkscape:connector-curvature="0"
+       d="m 28.194547,17.577033 -7.696833,10.262443 5.849593,7.799457 -3.283982,2.462987 C 19.594619,33.48382 13.827127,25.786987 13.827127,25.786987 l -12.3149323,16.41991 45.1547503,0 -18.472398,-24.629864 z"
+       id="path6431" />
+  </g>
+</svg>

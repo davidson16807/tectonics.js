@@ -86,7 +86,7 @@ Float32RasterInterpolation.smoothstep2 = function(x, k, result) {
     ASSERT_IS_ARRAY(result, Float32Array)
     var exp = Math.exp;
     for (var i = 0, li = result.length; i < li; i++) {
-	   result[i] = 2 / (1 + exp(-k*x[i])) - 1;
+       result[i] = 2 / (1 + exp(-k*x[i])) - 1;
     }
     return result;
 }

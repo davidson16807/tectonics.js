@@ -1,602 +1,620 @@
 <!doctype html>
 <html>
 <head>
-	<title>Tectonics.js - 3d plate tectonics in your web browser</title>
-	<!--If using IE9 or lower, don't even bother - IE won't even parse three.js right-->
-	<!--[if lte IE 9]>
-		<meta http-equiv="refresh" content="0;url=ie.html" />
-	<![endif]-->
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <title>Tectonics.js - 3d plate tectonics in your web browser</title>
+    <!--If using any IE, don't even bother-->
+    <!--[if IE]>
+        <meta http-equiv="refresh" content="0;url=ie.html" />
+    <![endif]-->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 
-	<link rel="icon" type="text/css" href="blog/icon5.png">
-	<link rel="stylesheet" href="styles/bootstrap.min.css">
-	<link rel="stylesheet" href="styles/bootstrap.custom.css">
-	<link rel="stylesheet" href="styles/main.css"/>
-	<link rel="stylesheet" href="styles/modern.css"/>
-	<link rel="stylesheet" href="styles/app.css"/>
+    <link rel="icon" type="text/css" href="blog/icon5.png">
+    <link rel="stylesheet" href="styles/bootstrap.min.css">
+    <link rel="stylesheet" href="styles/bootstrap.custom.css">
+    <link rel="stylesheet" href="styles/main.css"/>
+    <link rel="stylesheet" href="styles/modern.css"/>
+    <link rel="stylesheet" href="styles/app.css"/>
 
-	<script src="libraries/vue.js"></script>
-	<script src="libraries/Chart.js"></script>
-	<script src="libraries/vue-charts.js"></script>
-	<script src="libraries/jquery-1.10.2.min.js"></script>
-	<script src="libraries/bootstrap.js"></script>
-	<script src="libraries/three.js/Three.js"></script>
-	<script src="libraries/three.js/Detector.js"></script>
-	<script src="libraries/three.js/Stats.js"></script>
-	<script src="libraries/three.js/OrbitControls.js"></script>
-	<script src="libraries/three.js/BufferGeometryUtils.js"></script>
-	<script src="libraries/threex/THREEx.screenshot.js"></script>
-	<script src="libraries/threex/THREEx.FullScreen.js"></script>
-	<script src="libraries/threex/THREEx.WindowResize.js"></script>
-	<!-- <script src="libraries/threex/THREEx.QuickHull.js"></script> -->
-	<script src="libraries/threex/THREEx.Debug.js"></script>
-	<script src="libraries/random-0.26.js"></script>
-	<script src="libraries/base64-arraybuffer.js"></script>
-	<script src="postcompiled/Shaders.js"></script>
-	<script src="postcompiled/Rasters.js"></script>
-	<script src="noncompiled/Units.js"></script>
-	<script src="noncompiled/Interpolation.js"></script>
-	<script src="noncompiled/Logging.js"></script>
-	<script src="noncompiled/academics/SphericalGeometry.js"></script>
-	<script src="noncompiled/academics/Optics.js"></script>
-	<script src="noncompiled/academics/Thermodynamics.js"></script>
-	<script src="noncompiled/academics/FluidMechanics.js"></script>
-	<script src="noncompiled/academics/OrbitalMechanics.js"></script>
-	<script src="noncompiled/academics/Tectonophysics.js"></script>
-	<script src="noncompiled/academics/Hydrology.js"></script>
-	<script src="noncompiled/academics/Climatology.js"></script>
-	<script src="noncompiled/academics/PlantBiology.js"></script>
-	<script src="noncompiled/models/Memo.js"></script>
-	<script src="noncompiled/models/universe/Orbit.js"></script>
-	<script src="noncompiled/models/universe/Spin.js"></script>
-	<script src="noncompiled/models/universe/Star.js"></script>
-	<script src="noncompiled/models/universe/System.js"></script>
-	<script src="noncompiled/models/universe/Universe.js"></script>
-	<script src="noncompiled/models/lithosphere/Crust.js"></script>
-	<script src="noncompiled/models/lithosphere/RockColumn.js"></script>
-	<script src="noncompiled/models/lithosphere/Plate.js"></script>
-	<script src="noncompiled/models/lithosphere/SupercontinentCycle.js"></script>
-	<script src="noncompiled/models/lithosphere/Lithosphere.js"></script>
-	<script src="noncompiled/models/hydrosphere/Hydrosphere.js"></script>
-	<script src="noncompiled/models/atmosphere/Atmosphere.js"></script>
-	<script src="noncompiled/models/biosphere/Biosphere.js"></script>
-	<script src="noncompiled/models/World.js"></script>
-	<script src="noncompiled/models/Simulation.js"></script> 
-	<script src="noncompiled/generators/CrustGenerator.js"></script>
-	<script src="noncompiled/generators/NameGenerator.js"></script>
-	<script src="noncompiled/generators/NameCorpii.js"></script>
-	<script src="noncompiled/file-io/JsonSerializer.js"></script>
-	<script src="noncompiled/file-io/CsvExporter.js"></script>
-	<script src="noncompiled/views/raster-views/PdfChartRasterView.js"></script>
-	<script src="noncompiled/views/raster-views/ColorscaleRasterView.js"></script>
-	<script src="noncompiled/views/raster-views/HeatmapRasterView.js"></script>
-	<script src="noncompiled/views/raster-views/TopographicRasterView.js"></script>
-	<script src="noncompiled/views/raster-views/DisabledVectorRasterView.js"></script>
-	<script src="noncompiled/views/raster-views/VectorRasterView.js"></script>
-	<script src="noncompiled/views/world-views/RealisticWorldView.js"></script>
-	<script src="noncompiled/views/world-views/ScalarWorldView.js"></script>
-	<script src="noncompiled/views/world-views/VectorWorldView.js"></script>
-	<script src="noncompiled/views/projection-views/MapProjectionView.js"></script>
-	<script src="noncompiled/views/projection-views/GlobeProjectionView.js"></script>
-	<script src="noncompiled/views/ScalarViews.js"></script>
-	<script src="noncompiled/views/VectorViews.js"></script>
-	<script src="noncompiled/views/ProjectionViews.js"></script>
-	<script src="noncompiled/views/RegressionTestViews.js"></script>
-	<script src="noncompiled/views/ExperimentalViews.js"></script>
-	<!-- <script src="noncompiled/views/TestViews.js"></script> -->
-	<script src="noncompiled/views/View.js"></script>
+    <script src="libraries/vue.js"></script>
+    <script src="libraries/Chart.js"></script>
+    <script src="libraries/vue-charts.js"></script>
+    <script src="libraries/jquery-1.10.2.min.js"></script>
+    <script src="libraries/bootstrap.js"></script>
+    <script src="libraries/three.js/Three.js"></script>
+    <script src="libraries/three.js/OrbitControls.js"></script>
+    <script src="libraries/three.js/BufferGeometryUtils.js"></script>
+    <script src="libraries/three.js/CopyShader.js"></script>
+    <script src="libraries/three.js/EffectComposer.js"></script>
+    <script src="libraries/three.js/RenderPass.js"></script>
+    <script src="libraries/three.js/ShaderPass.js"></script>
+    <script src="libraries/threex/THREEx.screenshot.js"></script>
+    <script src="libraries/threex/THREEx.FullScreen.js"></script>
+    <script src="libraries/threex/THREEx.WindowResize.js"></script>
+    <script src="libraries/Stats.js"></script>
+    <script src="libraries/random-0.26.js"></script>
+    <script src="libraries/base64-arraybuffer.js"></script>
+    <script src="postcompiled/Shaders.js"></script>
+    <script src="postcompiled/Rasters.js"></script>
+    <script src="noncompiled/Units.js"></script>
+    <script src="noncompiled/Interpolation.js"></script>
+    <script src="noncompiled/Logging.js"></script>
+    <script src="noncompiled/academics/SphericalGeometry.js"></script>
+    <script src="noncompiled/academics/Optics.js"></script>
+    <script src="noncompiled/academics/Thermodynamics.js"></script>
+    <script src="noncompiled/academics/FluidMechanics.js"></script>
+    <script src="noncompiled/academics/OrbitalMechanics.js"></script>
+    <script src="noncompiled/academics/Tectonophysics.js"></script>
+    <script src="noncompiled/academics/Hydrology.js"></script>
+    <script src="noncompiled/academics/Climatology.js"></script>
+    <script src="noncompiled/academics/PlantBiology.js"></script>
+    <script src="noncompiled/models/Memo.js"></script>
+    <script src="noncompiled/models/universe/Orbit.js"></script>
+    <script src="noncompiled/models/universe/Spin.js"></script>
+    <script src="noncompiled/models/universe/Star.js"></script>
+    <script src="noncompiled/models/universe/System.js"></script>
+    <script src="noncompiled/models/universe/Universe.js"></script>
+    <script src="noncompiled/models/lithosphere/Crust.js"></script>
+    <script src="noncompiled/models/lithosphere/RockColumn.js"></script>
+    <script src="noncompiled/models/lithosphere/Plate.js"></script>
+    <script src="noncompiled/models/lithosphere/SupercontinentCycle.js"></script>
+    <script src="noncompiled/models/lithosphere/Lithosphere.js"></script>
+    <script src="noncompiled/models/hydrosphere/Hydrosphere.js"></script>
+    <script src="noncompiled/models/atmosphere/Atmosphere.js"></script>
+    <script src="noncompiled/models/biosphere/Biosphere.js"></script>
+    <script src="noncompiled/models/World.js"></script>
+    <script src="noncompiled/models/Simulation.js"></script> 
+    <script src="noncompiled/generators/CrustGenerator.js"></script>
+    <script src="noncompiled/generators/NameGenerator.js"></script>
+    <script src="noncompiled/generators/NameCorpii.js"></script>
+    <script src="noncompiled/file-io/JsonSerializer.js"></script>
+    <script src="noncompiled/file-io/CsvExporter.js"></script>
+    <script src="noncompiled/views/raster-views/PdfChartRasterView.js"></script>
+    <script src="noncompiled/views/raster-views/ColorscaleRasterView.js"></script>
+    <script src="noncompiled/views/raster-views/HeatmapRasterView.js"></script>
+    <script src="noncompiled/views/raster-views/TopographicRasterView.js"></script>
+    <script src="noncompiled/views/raster-views/SurfaceNormalMapRasterView.js"></script>
+    <script src="noncompiled/views/raster-views/DisabledVectorRasterView.js"></script>
+    <script src="noncompiled/views/raster-views/VectorRasterView.js"></script>
+    <script src="noncompiled/views/world-views/RealisticWorldView.js"></script>
+    <script src="noncompiled/views/world-views/ScalarWorldView.js"></script>
+    <script src="noncompiled/views/world-views/VectorWorldView.js"></script>
+    <script src="noncompiled/views/projection-views/MapProjectionView.js"></script>
+    <script src="noncompiled/views/projection-views/GlobeProjectionView.js"></script>
+    <script src="noncompiled/views/ScalarViews.js"></script>
+    <script src="noncompiled/views/VectorViews.js"></script>
+    <script src="noncompiled/views/ProjectionViews.js"></script>
+    <script src="noncompiled/views/RegressionTestViews.js"></script>
+    <script src="noncompiled/views/ExperimentalViews.js"></script>
+    <!-- <script src="noncompiled/views/TestViews.js"></script> -->
+    <script src="noncompiled/views/View.js"></script>
 </head>
 <body>
 <!-- three.js container -->
 <div id="container"></div>
 <!-- logo -->
 <div class="topleft header">
-	<h1><a href="blog/">Tectonics.js</a></h1>
-	<div class="navigation">
-		<a href="blog/index.html">ABOUT</a>&nbsp;
-		<a href="blog/news.html">BLOG</a>&nbsp;
-		<a href="blog/credits.html">CREDITS</a>&nbsp;
-		<a href="http://github.com/davidson16807/tectonics.js">CODE</a>&nbsp;
-	</div>
+    <h1><a href="blog/">Tectonics.js</a></h1>
+    <div class="navigation">
+        <a href="blog/index.html">ABOUT</a>&nbsp;
+        <a href="blog/news.html">BLOG</a>&nbsp;
+        <a href="blog/credits.html">CREDITS</a>&nbsp;
+        <a href="http://github.com/davidson16807/tectonics.js">CODE</a>&nbsp;
+    </div>
 </div>
 <!-- info on screen display -->
 <div class="topright collapse collapsible controls" >
-	<div id="time-menu" class="time-menu">
-		<div class="input-group elapsed_time-group">
-			<span class="form-control input-sm age">{{ format(elapsed_time).quantity }}</span>
-			<span class="input-group-addon age-units">{{ format(elapsed_time).unit }}y</span>
-		</div>
-		<div class="input-group speed-group">
-			<span class="input-group-addon rewind" v-on:click="rewind()">
-				<img src="icons/rewind.svg" height="12em" width="12em">
-			</span>
-			<span class="input-group-addon play" v-on:click="togglePause()">
-				<img src="icons/pause.svg" height="12em" width="12em" v-if="!paused">
-				<img src="icons/play.svg" height="12em" width="12em" v-if="paused">
-			</span>
-			<span class="input-group-addon fast-forward" v-on:click="fastForward()">
-				<img src="icons/fast-forward.svg" height="12em" width="12em">
-			</span>
+    <div id="time-menu" class="time-menu">
+        <div class="input-group elapsed_time-group">
+            <span class="form-control input-sm age">{{ format(elapsed_time).quantity }}</span>
+            <span class="input-group-addon age-units">{{ format(elapsed_time).unit }}y</span>
+        </div>
+        <div class="input-group speed-group">
+            <span class="input-group-addon rewind" v-on:click="rewind()">
+                <img src="icons/rewind.svg" height="12em" width="12em">
+            </span>
+            <span class="input-group-addon play" v-on:click="togglePause()">
+                <img src="icons/pause.svg" height="12em" width="12em" v-if="!paused">
+                <img src="icons/play.svg" height="12em" width="12em" v-if="paused">
+            </span>
+            <span class="input-group-addon fast-forward" v-on:click="fastForward()">
+                <img src="icons/fast-forward.svg" height="12em" width="12em">
+            </span>
 
-			<span class="input-group-addon">
-				{{speeds[speed_i].name}}
-				<span class="instructions">&lt;/&gt;</span>
-			</span>
-			
-		</div>
-	</div>
-	<div class="view-menu btn-group-vertical">
-	 	<div id="projection" class="btn-group">
-			<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-				<img src="icons/projector-screen.svg" height="16em" width="16em"/>
-				Projection 
-				<span class="caret"></span>
-			</button>
-			<ul class="dropdown-menu btn-default btn-xs">
-				<li v-for="option in options">
-					<button type="button" 
-						class="btn btn-default btn-xs" 
-						v-bind:class="getClass(option.value, selected)" 
-						v-bind:data-value="option.value" 
-						v-on:click="setSelected(option.value)">
-						<img v-bind:src="option.icon" height="16em" width="16em"/>
-						{{option.name}}
-					</button>
-				</li>
-			</ul>
-		</div>
-		<div id="scalar-view" class="btn-group">
-			<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-				<img src="icons/blur.svg" height="16em" width="16em"/>
-				View 
-				<span class="caret"></span>
-			</button>
-			<ul class="dropdown-menu btn-default btn-xs">
-				<li>
-					<button type="button" 
-						class="btn btn-default btn-xs" 
-						v-bind:class="{active: ocean}" 
-						v-on:click="setOcean(!ocean? 1:0)">
-						<img src="icons/water.svg" height="16em" width="16em"/>
-						Ocean
-					</button>
-				</li>
-				<li>
-					<button type="button" 
-						class="btn btn-default btn-xs" 
-						v-if="isSelected('satellite')"
-						v-bind:class="{active: night}" 
-						v-on:click="setNight(!night? 1:0)">
-						<img src="icons/weather-night.svg" height="16em" width="16em"/>
-						Night
-					</button>
-				</li>
-				<li>
-					<button type="button" 
-						class="btn btn-default btn-xs" 
-						v-if="isSelected('satellite')"
-						v-bind:class="{active: snow}" 
-						v-on:click="setSnow(!snow? 1:0)">
-						<img src="icons/snowflake.svg" height="16em" width="16em"/>
-						Snow
-					</button>
-				</li>
-				<li role="separator" class="divider"></li> 
-				<li v-for="option in options">
-					<button type="button" 
-						class="btn btn-default btn-xs" 
-						v-bind:class="getClass(option.value, selected)" 
-						v-bind:data-value="option.value" 
-						v-on:click="setSelected(option.value)">
-						<img v-bind:src="option.icon" height="16em" width="16em"/>
-						{{option.name}}
-					</button>
-				</li>
-			</ul>
-		</div>
-		<div id="vector-view" class="btn-group">
-			<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-				<img src="icons/arrow-move-all.svg" height="16em" width="16em"/>
-				Arrows
-				<span class="caret"></span>
-			</button>
-			<ul class="dropdown-menu btn-default btn-xs">
-				<li v-for="option in options">
-					<button type="button" 
-						class="btn btn-default btn-xs" 
-						data-toggle="tooltip"
-						v-bind:title="option.tip" 
-						v-bind:class="getClass(option.value, selected)" 
-						v-bind:data-value="option.value" 
-						v-on:click="setSelected(option.value)">
-						<img v-bind:src="option.icon" height="16em" width="16em"/>
-						{{option.name}}
-					</button>
-				</li>
-			</ul>
-		</div>
-		<div id="settings" class="btn-group">
-			<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-				<img src="icons/settings.svg" height="16em" width="16em"/>
-				Settings 
-				<span class="caret"></span>
-			</button>
-			<ul class="dropdown-menu btn-default btn-xs">
-				<li>
-					<button type="button" 
-						class="btn btn-default btn-xs" 
-						v-bind:class="{active: supercontinentBreakup}" 
-						v-on:click="setSupercontinentBreakup(!supercontinentBreakup? 1:0)">
-						<img src="icons/clock.svg" height="16em" width="16em"/>
-						Supercontinent Breakup
-					</button>
-				</li>
-			</ul>
-		</div>
+            <span class="input-group-addon">
+                {{speeds[speed_i].name}}
+                <span class="instructions">&lt;/&gt;</span>
+            </span>
+            
+        </div>
+    </div>
+    <div class="view-menu btn-group-vertical">
+         <div id="projection" class="btn-group">
+            <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <img src="icons/projector-screen.svg" height="16em" width="16em"/>
+                Projection 
+                <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu btn-default btn-xs">
+                <li v-for="option in options">
+                    <button type="button" 
+                        class="btn btn-default btn-xs" 
+                        v-bind:class="getClass(option.value, selected)" 
+                        v-bind:data-value="option.value" 
+                        v-on:click="setSelected(option.value)">
+                        <img v-bind:src="option.icon" height="16em" width="16em"/>
+                        {{option.name}}
+                    </button>
+                </li>
+            </ul>
+        </div>
+        <div id="scalar-view" class="btn-group">
+            <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <img src="icons/blur.svg" height="16em" width="16em"/>
+                View 
+                <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu btn-default btn-xs">
+                <li>
+                    <button type="button" 
+                        class="btn btn-default btn-xs" 
+                        v-bind:class="{active: ocean}" 
+                        v-on:click="setOcean(!ocean? 1:0)">
+                        <img src="icons/water.svg" height="16em" width="16em"/>
+                        Ocean
+                    </button>
+                </li>
+                <li>
+                    <button type="button" 
+                        class="btn btn-default btn-xs" 
+                        v-if="isSelected('satellite')"
+                        v-bind:class="{active: night}" 
+                        v-on:click="setShadows(!night? 1:0)">
+                        <img src="icons/weather-night.svg" height="16em" width="16em"/>
+                        Shadows
+                    </button>
+                </li>
+                <li>
+                    <button type="button" 
+                        class="btn btn-default btn-xs" 
+                        v-if="isSelected('satellite')"
+                        v-bind:class="{active: snow}" 
+                        v-on:click="setSnow(!snow? 1:0)">
+                        <img src="icons/snowflake.svg" height="16em" width="16em"/>
+                        Snow
+                    </button>
+                </li>
+                <li>
+                    <button type="button" 
+                        class="btn btn-default btn-xs" 
+                        v-if="isSelected('satellite')"
+                        v-bind:class="{active: sediment}" 
+                        v-on:click="setSediment(!sediment? 1:0)">
+                        <img src="icons/dirt.svg" height="16em" width="16em"/>
+                        Sediment
+                    </button>
+                </li>
+                <li>
+                    <button type="button" 
+                        class="btn btn-default btn-xs" 
+                        v-if="isSelected('satellite')"
+                        v-bind:class="{active: plant}" 
+                        v-on:click="setPlant(!plant? 1:0)">
+                        <img src="icons/leaf.svg" height="16em" width="16em"/>
+                        Plants
+                    </button>
+                </li>
+                <li role="separator" class="divider"></li> 
+                <li v-for="option in options">
+                    <button type="button" 
+                        class="btn btn-default btn-xs" 
+                        v-bind:class="getClass(option.value, selected)" 
+                        v-bind:data-value="option.value" 
+                        v-on:click="setSelected(option.value)">
+                        <img v-bind:src="option.icon" height="16em" width="16em"/>
+                        {{option.name}}
+                    </button>
+                </li>
+            </ul>
+        </div>
+        <div id="vector-view" class="btn-group">
+            <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <img src="icons/arrow-move-all.svg" height="16em" width="16em"/>
+                Arrows
+                <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu btn-default btn-xs">
+                <li v-for="option in options">
+                    <button type="button" 
+                        class="btn btn-default btn-xs" 
+                        data-toggle="tooltip"
+                        v-bind:title="option.tip" 
+                        v-bind:class="getClass(option.value, selected)" 
+                        v-bind:data-value="option.value" 
+                        v-on:click="setSelected(option.value)">
+                        <img v-bind:src="option.icon" height="16em" width="16em"/>
+                        {{option.name}}
+                    </button>
+                </li>
+            </ul>
+        </div>
+        <div id="settings" class="btn-group">
+            <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <img src="icons/settings.svg" height="16em" width="16em"/>
+                Settings 
+                <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu btn-default btn-xs">
+                <li>
+                    <button type="button" 
+                        class="btn btn-default btn-xs" 
+                        v-bind:class="{active: supercontinentBreakup}" 
+                        v-on:click="setSupercontinentBreakup(!supercontinentBreakup? 1:0)">
+                        <img src="icons/clock.svg" height="16em" width="16em"/>
+                        Supercontinent Breakup
+                    </button>
+                </li>
+            </ul>
+        </div>
 
-		<button id="fullscreen" v-if="isVisible" type="button" class="btn btn-default btn-xs fullscreen" data-toggle="button" aria-pressed="true" v-on:click="toggleFullscreen()">
-			<img v-if="!isFullscreen" src="icons/fullscreen.svg" height="16em">
-			<img v-if="isFullscreen"  src="icons/fullscreen-exit.svg" height="16em">
-			{{isFullscreen? 'Exit Fullscreen' : 'Fullscreen'}}
-			<span class="instructions">F11</span>
-		</button>
-		<button id="screenshot" v-if="isEnabled" type="button" class="btn btn-default btn-xs" v-on:click="capture" v-on:keyup.p="capture">
-			<img src="icons/camera.svg" height="16em">
-			Screenshot
-			<span class="instructions">p</span>
-		</button>
-	</div>
+        <button id="fullscreen" v-if="isVisible" type="button" class="btn btn-default btn-xs fullscreen" data-toggle="button" aria-pressed="true" v-on:click="toggleFullscreen()">
+            <img v-if="!isFullscreen" src="icons/fullscreen.svg" height="16em">
+            <img v-if="isFullscreen"  src="icons/fullscreen-exit.svg" height="16em">
+            {{isFullscreen? 'Exit Fullscreen' : 'Fullscreen'}}
+            <span class="instructions">F11</span>
+        </button>
+        <button id="screenshot" v-if="isEnabled" type="button" class="btn btn-default btn-xs" v-on:click="capture" v-on:keyup.p="capture">
+            <img src="icons/camera.svg" height="16em">
+            Screenshot
+            <span class="instructions">p</span>
+        </button>
+    </div>
 
 
-	<div class="file-menu btn-group-vertical">
-		<button id="save" type="button" class="btn btn-default btn-xs"  v-on:click="save">
-			<img src="icons/download.svg" height="16em">
-			Save
-			<span class="instructions">s</span>
-		</button>
-		<button id="load" type="button" class="btn btn-default btn-xs load" v-on:click="load()">
-			<img src="icons/upload.svg" height="16em">
-			Load
-			<span class="instructions">drag</span>
-			<input id="load-input" ref="loadInput" type="file" v-on:change="loadPart2($event.target.files[0])" class="hidden" />
-		</button>
-		<div id="export" class="btn-group">
-			<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-				<img src="icons/export.svg" height="16em" width="16em"/>
-				Export
-				<span class="caret"></span>
-			</button>
-			<ul class="dropdown-menu btn-default btn-xs">
-				<li>
-					<button type="button" 
-						class="btn btn-default btn-xs" 
-						v-on:click="csv">
-						<img src="icons/view-list.svg" height="16em" width="16em"/>
-						CSV
-					</button>
-				</li>
-			</ul>
-		</div>
-	</div>
+    <div class="file-menu btn-group-vertical">
+        <button id="save" type="button" class="btn btn-default btn-xs"  v-on:click="save">
+            <img src="icons/download.svg" height="16em">
+            Save
+            <span class="instructions">s</span>
+        </button>
+        <button id="load" type="button" class="btn btn-default btn-xs load" v-on:click="load()">
+            <img src="icons/upload.svg" height="16em">
+            Load
+            <span class="instructions">drag</span>
+            <input id="load-input" ref="loadInput" type="file" v-on:change="loadPart2($event.target.files[0])" class="hidden" />
+        </button>
+        <div id="export" class="btn-group">
+            <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <img src="icons/export.svg" height="16em" width="16em"/>
+                Export
+                <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu btn-default btn-xs">
+                <li>
+                    <button type="button" 
+                        class="btn btn-default btn-xs" 
+                        v-on:click="csv">
+                        <img src="icons/view-list.svg" height="16em" width="16em"/>
+                        CSV
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
 </div>
 
 <a id="hidden-downloader" href="dataUrl" download="filename"></a>
 
 <div class="bottomleft">
-	<div id="renderStats"></div>
-	<div id="updateStats"></div>
+    <div id="renderStats"></div>
+    <div id="updateStats"></div>
 </div>
 <div class="bottomright">
-	<div id="chart" v-if="isEnabled">
-		<table class="stat">
-			<tr>
-				<td class="name">min</td>
-				<td class="value">{{round(min)}}</td>
-			</tr>
-			<tr>
-				<td class="name">max</td>
-				<td class="value">{{round(max)}}</td>
-			</tr>
-		</table>
+    <div id="chart" v-if="isEnabled">
+        <table class="stat">
+            <tr>
+                <td class="name">min</td>
+                <td class="value">{{round(min)}}</td>
+            </tr>
+            <tr>
+                <td class="name">max</td>
+                <td class="value">{{round(max)}}</td>
+            </tr>
+        </table>
 
-		<table class="stat">
-			<tr>
-				<td class="name">mean</td>
-				<td class="value">{{round(mean)}}</td>
-			</tr>
-			<tr>
-				<td class="name">median</td>
-				<td class="value">{{round(median)}}</td>
-			</tr>
-		</table>
-		<table class="stat">
-			<tr>
-				<td class="name">S.D.</td>
-				<td class="value">{{round(stddev)}}</td>
-			</tr>
-		</table>
-		<chartjs-line :width="200" :height="100" 
-			:data="x" 
-			:labels="y" 
-			:bind="true"
-			:pointbackgroundcolor="'rgba(255,255,255,0.2)'"
-			:pointhoverbackgroundcolor="'rgba(255,255,255,0.2)'"
-			:pointbordercolor="'rgba(255,255,255,0.2)'"
-			:pointhoverbordercolor="'rgba(255,255,255,0.2)'"
-			:bordercolor="'rgba(255,255,255,0.5)'"
-			:backgroundcolor="'rgba(255,255,255,0.5)'" 
-			:fill="true"
-			:option="options">
-		</chartjs-line>
-	</div>
+        <table class="stat">
+            <tr>
+                <td class="name">mean</td>
+                <td class="value">{{round(mean)}}</td>
+            </tr>
+            <tr>
+                <td class="name">median</td>
+                <td class="value">{{round(median)}}</td>
+            </tr>
+        </table>
+        <table class="stat">
+            <tr>
+                <td class="name">S.D.</td>
+                <td class="value">{{round(stddev)}}</td>
+            </tr>
+        </table>
+        <chartjs-line :width="200" :height="100" 
+            :data="x" 
+            :labels="y" 
+            :bind="true"
+            :pointbackgroundcolor="'rgba(255,255,255,0.2)'"
+            :pointhoverbackgroundcolor="'rgba(255,255,255,0.2)'"
+            :pointbordercolor="'rgba(255,255,255,0.2)'"
+            :pointhoverbordercolor="'rgba(255,255,255,0.2)'"
+            :bordercolor="'rgba(255,255,255,0.5)'"
+            :backgroundcolor="'rgba(255,255,255,0.5)'" 
+            :fill="true"
+            :option="options">
+        </chartjs-line>
+    </div>
 </div>
 <div id="drop-dialog" class="collapse">
-	<h2>DRAG HERE</h2>
+    <h2>DRAG HERE</h2>
 </div>
 <div id="dialogs" class="vcenter">
-	<div v-if="isNoWebGl" class="collapse hcenter dialog">
-		<h2>Well, darn</h2>
-		<p>It looks like your using a web browser without WebGL.</p>
-		<p>WebGL is a technology that allows users to run high-end 3d graphics from their web-browser. Other technologies exist that can display simple 3d graphics to the user (canvas, svg, flash, etc.), but at present WebGL is the only web technology that allows developers to send their own code to a GPU.
-		</p>
-		<p>Writing a tectonics simulator in a browser is hard stuff. We're going to need all the tools we can get.
-		</p>
-		<p>It looks like you're using a browser that supports WebGL, but you just need to modify some settings, first. <a href="http://get.webgl.org/">Here</a> is a link that will help you get started.
-		</p>
-		<p>Until then, here's a video of what you're missing:
-		</p>
-		<iframe width="420" height="315" src="http://www.youtube.com/embed/VE67RgnLdKw" frameborder="0" allowfullscreen></iframe>
-	</div>
-	<div v-if="isNoJs" class="hcenter dialog">
-		<h2>Hang Tight</h2>
-		<p>We're loading up the model, this shouldn't take more than a second.</p>
-		<p>If things are taking too long, you might consider checking your settings to make sure javascript is enabled. For instructions on how to enable javascript, check <a href="http://www.enable-javascript.com/">here</a>.</p>
-	</div>
-	<div v-if="isLoadingSave" class="collapse hcenter dialog">
-		<h2>Hang Tight</h2>
-		<p>We're loading up the save game, this shouldn't take more than a few seconds.</p>
-		<p>If things are taking too long, you might consider checking the save game url. Make sure the url exists and can be easily loaded.</p>
-	</div>
+    <div v-if="isNoWebGl" class="collapse hcenter dialog">
+        <h2>Well, darn</h2>
+        <p>It looks like your using a web browser without WebGL.</p>
+        <p>WebGL is a technology that allows users to render graphics through the GPU from their web-browser.
+        </p>
+        <p>Writing a tectonics simulator in a browser is hard stuff. We're going to need all the tools we can get.
+        </p>
+        <p>It looks like you're using a browser that supports WebGL, but you just need to modify some settings, first. <a href="http://get.webgl.org/">Here</a> is a link that will help you get started.
+        </p>
+        <p>Until then, here's a video of what you're missing:
+        </p>
+        <iframe width="420" height="315" src="https://youtu.be/D6Lff8MYbAo?t=240" frameborder="0" allowfullscreen></iframe>
+    </div>
+    <div v-if="isNoJs" class="collapse loading-dialog">
+        <img src="icons/spinner.svg"/>
+        <h2>Initializing</h2>
+    </div>
+    <div v-if="isLoadingSave" class="collapse loading">
+        <img src="icons/spinner.svg"/>
+        <h2>Loading</h2>
+    </div>
+    <div class="notifications-dialog">
+        <transition name="fade">
+            <h3 v-for="notification in notifications">{{notification}}</h3>
+        </transition>
+    </div>
 </div>
 
 <script type="text/javascript">
-	'use strict';
-	
-	//standards:
-	// all spatial coordinates are xyz vectors on a unit sphere
-	// all angles are in radians
-	// all length is in meters
-	// all time is in seconds
-	// all speeds are in m/s (goes along with distance and time)
-	// all densities are in kg/m^3 (goes along with mass/thickness)
-	// all mass is in kg (goes along with density)
-	// all force is in Newtons (goes along with kg)
-	// all pressure is in Pascals (goes along with kg)
+    'use strict';
+    
+    //standards:
+    // all spatial coordinates are xyz vectors on a unit sphere
+    // all angles are in radians
+    // all units are in MKS
 
-	if( !Detector.webgl ){
-		process.exit(1);
-	}
+    if( !window.WebGLRenderingContext ){
+        process.exit(1);
+    }
 
-	var sim, view;
-	var renderStats, updateStats, controls;
-	var IS_PROD = true;
-	var autosave_period;
+    var sim, view;
+    var renderStats, updateStats;
+    var IS_PROD = false;
+    var autosave_period;
 
 
-	// init the scene
-	function init(){
-    	var querystring = [];
-		var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&')
-	    for(var i = 0; i < hashes.length; i++)
-	    {
-	        var hash = hashes[i].split('=');
-	        querystring.push(hash[0]);
-	        querystring[hash[0]] = hash[1];
-	    }
+    // init the scene
+    function init(){
+        var querystring = [];
+        var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&')
+        for(var i = 0; i < hashes.length; i++)
+        {
+            var hash = hashes[i].split('=');
+            querystring.push(hash[0]);
+            querystring[hash[0]] = hash[1];
+        }
 
-	    
-		var resolution      = Math.min(6, parseInt(querystring['resolution'] || '5'));
-		autosave_period 	= parseInt(querystring['autosave']   || '0');
+        
+        var resolution      = Math.min(6, parseInt(querystring['resolution'] || '5'));
+        autosave_period     = parseInt(querystring['autosave']   || '0');
 
-		view = new View(
-			window.innerWidth, 
-			window.innerHeight,
-			scalarViews.satellite, 
-			vectorViews.disabled, 
-			projectionViews.orthographic,
-		);
-		sim = new Simulation({
-			seed:  querystring['seed'] 			|| (new Date).getTime().toString(),
-			speed: parseInt(querystring['speed']	|| (1e6*Units.YEAR).toString()),
-		});
+        view = new View(
+            window.innerWidth, 
+            window.innerHeight,
+            scalarViews.satellite, 
+            vectorViews.disabled, 
+            projectionViews.orthographic,
+        );
+        sim = new Simulation({
+            seed:  querystring['seed'] || (new Date).getTime().toString(),
+            speed: 3.1*Units.DAY,
+        });  
 
-		var star_name_corpus = NameGenerator.tokenize_corpus(NameCorpii.arabic_star_names);
-		var get_star_name = NameGenerator.get_length_distribution_generator(star_name_corpus, 25, {5:1,6:3,7:11,8:3,9:1}, 100);
-		
-		var planet_name_corpus = NameGenerator.tokenize_corpus(NameCorpii.greek_mythological_names);
-		var get_planet_name = NameGenerator.get_length_distribution_generator(planet_name_corpus, 25, {5:1,6:3,7:11,8:3,9:1}, 100);
-		var focus_name = get_planet_name(sim.random);
-		
-		var geometry = new THREE.IcosahedronGeometry(1, resolution);
-		var universe = new Universe({
-			system: {
-				name: 'galactic orbit',
-				motion: { // motion mirrors orbit of sun around galactic center
-					type: 'orbit',
-					semi_major_axis: 2.35e20, // meters
-					effective_combined_mass: 1.262e41, // kg, back calculated to achieve period of 250 million years
-				},
-				invariant_insolation: true,
-				body: {
-					type: 'star',
-					name: get_star_name(sim.random),
-					mass: Units.SOLAR_MASS,
-				},
-				children: [
-					{
-						name: 'orbit',
-						motion: {
-							type: 'orbit',
-							semi_major_axis: 1. * Units.ASTRONOMICAL_UNIT,
-							eccentricity: 0.0167,
-							inclination: Math.PI * 5e-5/180,
-							longitude_of_ascending_node: Math.PI * -11/180,
-							effective_combined_mass: 2e30, // kg
-						},	
-						children: [
-							{
-								name: 'precession',
-								motion: { 
-									type: 'spin',
-									angular_speed: 2*Math.PI/(25860 * Units.YEAR),
-								},	
-								invariant_insolation: true,
-								children: [
-									{
-										name: 'spin',
-										motion: { 
-											type: 'spin',
-											angular_speed: 2*Math.PI/(60*60*24),
-											axial_tilt: Math.PI * 23.5/180,
-										},	
-										body: { 
-											type: 'world',
-											name: focus_name,
-											grid: {
-                                                faces:   geometry.faces.map(f => { 
-                                                    return {a: f.a, b: f.b, c: f.c, vertexNormals: f.vertexNormals} 
-                                                    }),
-                                                vertices:geometry.vertices.map(v => { 
-                                                    return {x: v.x, y: v.y, z: v.z} 
-                                                    }),
-                                            },
-										},
-									},
-							 	],
-							},
-						],
-					},
-				],
-			},
-		});
-		var focus = universe.body_id_to_node_map[focus_name].body;
-		CrustGenerator.generate(
-			SphericalGeometry.get_random_surface_field(focus.grid, sim.random), 
-			CrustGenerator.modern_earth_hypsography, 
-			CrustGenerator.modern_earth_attribute_height_maps, 
-			focus.lithosphere.total_crust,
-			sim.random
-		);
-		sim.model(universe);
-		sim.focus = focus;
+        var star_name_corpus = NameGenerator.tokenize_corpus(NameCorpii.arabic_star_names);
+        var get_star_name = NameGenerator.get_length_distribution_generator(star_name_corpus, 25, {5:1,6:3,7:11,8:3,9:1}, 100);
+        
+        var planet_name_corpus = NameGenerator.tokenize_corpus(NameCorpii.greek_mythological_names);
+        var get_planet_name = NameGenerator.get_length_distribution_generator(planet_name_corpus, 25, {5:1,6:3,7:11,8:3,9:1}, 100);
+        var focus_name = get_planet_name(sim.random);
+        
+        var geometry = new THREE.IcosahedronGeometry(1, resolution);
+        var universe = new Universe({
+            system: {
+                name: 'galactic orbit',
+                motion: { // motion mirrors orbit of sun around galactic center
+                    type: 'orbit',
+                    semi_major_axis: 2.35e20, // meters
+                    effective_combined_mass: 1.262e41, // kg, back calculated to achieve period of 250 million years
+                },
+                invariant_insolation: true,
+                body: {
+                    type: 'star',
+                    name: get_star_name(sim.random),
+                    mass: Units.SOLAR_MASS,
+                },
+                children: [
+                    {
+                        name: 'orbit',
+                        motion: {
+                            type: 'orbit',
+                            semi_major_axis: 1. * Units.ASTRONOMICAL_UNIT,
+                            eccentricity: 0.0167,
+                            inclination: Math.PI * 5e-5/180,
+                            longitude_of_ascending_node: Math.PI * -11/180,
+                            effective_combined_mass: 2e30, // kg
+                        },    
+                        children: [
+                            {
+                                name: 'precession',
+                                motion: { 
+                                    type: 'spin',
+                                    angular_speed: 2*Math.PI/(25860 * Units.YEAR),
+                                },    
+                                invariant_insolation: true,
+                                children: [
+                                    {
+                                        name: 'spin',
+                                        motion: { 
+                                            type: 'spin',
+                                            angular_speed: 2*Math.PI/(60*60*24),
+                                            axial_tilt: Math.PI * 23.5/180,
+                                        },    
+                                        body: { 
+                                            type: 'world',
+                                            name: focus_name,
+                                            grid: { 
+                                                faces:   geometry.faces.map(f => {  
+                                                    return {a: f.a, b: f.b, c: f.c, vertexNormals: f.vertexNormals}  
+                                                    }), 
+                                                vertices:geometry.vertices.map(v => {  
+                                                    return {x: v.x, y: v.y, z: v.z}  
+                                                    }), 
+                                            }, 
+                                        },
+                                    },
+                                 ],
+                            },
+                        ],
+                    },
+                ],
+            },
+        });
+        var focus = universe.body_id_to_node_map[focus_name].body;
+        CrustGenerator.generate(
+            SphericalGeometry.get_random_surface_field(focus.grid, sim.random), 
+            CrustGenerator.modern_earth_hypsography, 
+            CrustGenerator.modern_earth_attribute_height_maps, 
+            focus.lithosphere.total_crust,
+            sim.random
+        );
+        sim.model(universe);
+        sim.focus = focus;
 
-		if (querystring['load']) {
-			loadUrl(querystring['load']); // TODO: rework this
-		} 
+        if (querystring['load']) {
+            loadUrl(querystring['load']); // TODO: rework this
+        } 
 
-		$('.controls').show();
-		
-		$('#container').append(view.getDomElement());
-		
-		if(!IS_PROD){
-			// add Stats.js - https://github.com/mrdoob/renderStats.js
-			renderStats = new Stats();
-			$('#renderStats').append( renderStats.domElement );
+        $('.controls').show();
+        
+        $('#container').append(view.getDomElement());
+        
+        if(!IS_PROD){
+            // add Stats.js - https://github.com/mrdoob/renderStats.js
+            renderStats = new Stats();
+            $('#renderStats').append( renderStats.domElement );
 
-			updateStats = new Stats();
-			$('#updateStats').append( updateStats.domElement );
+            updateStats = new Stats();
+            $('#updateStats').append( updateStats.domElement );
 
-			$('.header').hide();
-		}
+            $('.header').hide();
+        }
 
-		// create a camera contol
-		controls	= new THREE.OrbitControls( view.camera, $("#container").get(0) );
-	}
+    }
 
-	function autosave() {
-		if (!autosave_period) { return; }
-		setTimeout(update, 1000*autosave_period);
-		saveVue.save();
-	}
+    function autosave() {
+        if (!autosave_period) { return; }
+        setTimeout(update, 1000*autosave_period);
+        saveVue.save();
+    }
 
-	// animation loop
-	function animate() {
-		// push to render queue and loop
-		// - it has to be at the begining of the function
-		// - to learn more: https://www.youtube.com/watch?v=8aGhZQkoFbQ
-		requestAnimationFrame( animate );
+    // animation loop
+    function animate() {
+        // push to render queue and loop
+        // - it has to be at the begining of the function
+        // - to learn more: https://www.youtube.com/watch?v=8aGhZQkoFbQ
+        requestAnimationFrame( animate );
 
-		// update camera controls
-		controls.update();
-		view.render();
+        view.render();
 
-		// actually render the scene
+        // actually render the scene
 
-		if(!IS_PROD){
-			renderStats.update();
-		}
-	}
+        if(!IS_PROD){
+            renderStats.update();
+        }
+    }
 
-	function update(){
-		// push to task queue and loop
-		// - it has to be at the begining of the function
-		//maximum refresh rate of 20fps
-		setTimeout(update, IS_PROD? 1000/20 : 0);
+    function update(){
+        // push to task queue and loop
+        // - it has to be at the begining of the function
+        //maximum refresh rate of 20fps
+        setTimeout(update, IS_PROD? 1000/20 : 0);
 
-		sim.update();
-		view.update(sim); 
+        sim.update();
+        view.update(sim); 
 
-		if(!IS_PROD){
-			updateStats.update();
-		}
-	}
-	
-	function loadUrl (url) {
-		dialogVue.$data.isLoadingSave = true;
-		$('.controls').hide();
-		$.get( url, function( json ) {
-			sim = JsonDeserializer.sim(json);
-			dialogVue.$data.isLoadingSave = false;
-			$('.controls').show();
-		});
-	}
-	function loadFile (file) {
-		dialogVue.$data.isLoadingSave = true;
-		$('.controls').hide();
-		var reader = new FileReader();
-	    reader.onload = function(e) {
-			sim = JsonDeserializer.sim(e.target.result);
-			dialogVue.$data.isLoadingSave = false;
-			$('.controls').show();
-	    }
-	    reader.readAsText(file);
-	}
+        if(!IS_PROD){
+            updateStats.update();
+        }
+    }
+    
+    function loadUrl (url) {
+        dialogVue.$data.isLoadingSave = true;
+        $('.controls').hide();
+        $.get( url, function( json ) {
+            sim = JsonDeserializer.sim(json);
+            dialogVue.$data.isLoadingSave = false;
+            $('.controls').show();
+            timeMenuVue.resync();
+        });
+    }
+    function loadFile (file) {
+        dialogVue.$data.isLoadingSave = true;
+        $('.controls').hide();
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            sim = JsonDeserializer.sim(e.target.result);
+            dialogVue.$data.isLoadingSave = false;
+            $('.controls').show();
+            timeMenuVue.resync();
+        }
+        reader.readAsText(file);
+        sim.set_paused()
+    }
 
-	function format (num, rollover, precision){
-				var quantity = num;
-				var units = ['', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']
-				var unit = units.shift();
-				while(quantity > rollover) {
-					unit = units.shift();
-					quantity /= 1000;
-				}
-				return {
-					quantity: 	quantity.toPrecision(precision).toString(), 
-					unit: 		unit,
-				};
-			}
-	function format_time (seconds) {
-		var formatted = format(seconds / Units.YEAR, 1000, 3);
-		return formatted.quantity + formatted.unit + 'y';
-	}
+    function format (num, rollover, precision){
+                var quantity = num;
+                var units = ['', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']
+                var unit = units.shift();
+                while(quantity > rollover) {
+                    unit = units.shift();
+                    quantity /= 1000;
+                }
+                return {
+                    quantity:     quantity.toPrecision(precision).toString(), 
+                    unit:         unit,
+                };
+            }
+    function format_time (seconds) {
+        var formatted = format(seconds / Units.YEAR, 1000, 3);
+        return formatted.quantity + formatted.unit + 'y';
+    }
 
-	function download(url, filename) {
-		$('#hidden-downloader')
-			.attr('href', url)
-			.attr('download', filename)
-			[0].click();
-	}
+    function download(url, filename) {
+        $('#hidden-downloader')
+            .attr('href', url)
+            .attr('download', filename)
+            [0].click();
+    }
 
 
     window.addEventListener('keyup', function(event) {
@@ -604,103 +622,114 @@
         screenshotVue.capture();
       }
       if (event.keyCode == 83) { //s
-      	saveVue.save();
+          saveVue.save();
       }
       if (event.keyCode == 188) { // <
-      	timeMenuVue.rewind();
+          timeMenuVue.rewind();
       }
       if (event.keyCode == 190) { // >
-      	timeMenuVue.fastForward();
+          timeMenuVue.fastForward();
       }
       if (event.keyCode == 191) { // /
-      	timeMenuVue.togglePause();
+          timeMenuVue.togglePause();
       }
     });
 
     var last_drag_entered;
     $('body').on(
-	    'dragover',
-	    function(e) {
-	        e.preventDefault();
-	        e.stopPropagation();
-	    }
-	);
-	$('body').on(
-	    'dragenter',
-	    function(e) {
-	        e.preventDefault();
-	        e.stopPropagation();
-	    	
-	    	last_drag_entered = e.target;
-	    	$('#drop-dialog').show();
-	    }
-	);
-	$('body').on(
-	    'dragleave',
-	    function(e) {
-	        e.preventDefault();
-	        e.stopPropagation();
-	    	
-	    	if(last_drag_entered == e.target){
-	    		$('#drop-dialog').hide();
-	    	}
-	    }
-	);
-	$('body').on(
-	    'drop',
-	    function(e) {
-	        e.preventDefault();
-	        e.stopPropagation();
+        'dragover',
+        function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    );
+    $('body').on(
+        'dragenter',
+        function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            last_drag_entered = e.target;
+            $('#drop-dialog').show();
+        }
+    );
+    $('body').on(
+        'dragleave',
+        function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            if(last_drag_entered == e.target){
+                $('#drop-dialog').hide();
+            }
+        }
+    );
+    $('body').on(
+        'drop',
+        function(e) {
+            e.preventDefault();
+            e.stopPropagation();
 
-    		$('#drop-dialog').hide();
-        	while(!e.dataTransfer && e.originalEvent){
-        		e = e.originalEvent;
-        	}
-			loadFile(e.dataTransfer.files[0]);
-	    }
-	);
+            $('#drop-dialog').hide();
+            while(!e.dataTransfer && e.originalEvent){
+                e = e.originalEvent;
+            }
+            loadFile(e.dataTransfer.files[0]);
+        }
+    );
 
-	var dialogVue = new Vue({
-	  el: '#dialogs',
-	  data: {
-	  	isNoWebGl: false,
-	  	isNoJs: false,
-	  	isLoadingSave: false
-	  },
-	  created: function() {
-	  	this.isNoWebGl = Detector.webgl;
-	  },
-	});
-	
-	var loadVue = new Vue({
-	  el: '#load',
-	  methods: {
-	  	load: function() {
-	  		// HACK: only <input> is capable of loading a file, 
-	  		// but we need to use a button for bootstrap styling.
-	  		// The solution is for the button to trigger click event
-	  		// on a hidden file input element.
-	  		this.$refs.loadInput.click();
-  		},
-  		loadPart2: function(file) {
-  			loadFile(file);
-  		}
-	  }
-	});
+    var dialogVue = new Vue({
+      el: '#dialogs',
+      data: {
+          isNoWebGl: false,
+          isNoJs: false,
+          isLoadingSave: false,
+          notifications: []
+      },
+      created: function() {
+          this.isNoWebGl = window.WebGLRenderingContext;
+      },
+      methods: {
+          notify: function(notification) {
+              this.notifications.shift()
+              this.notifications.push(notification);
+              var _this = this;
+              setInterval(function() {
+                  _this.notifications.shift()
+              }, 3000);
+          }
+      }
+    });
+    
+    var loadVue = new Vue({
+      el: '#load',
+      methods: {
+          load: function() {
+              // HACK: only <input> is capable of loading a file, 
+              // but we need to use a button for bootstrap styling.
+              // The solution is for the button to trigger click event
+              // on a hidden file input element.
+              this.$refs.loadInput.click();
+          },
+          loadPart2: function(file) {
+              loadFile(file);
+          }
+      }
+    });
 
-	var saveVue = new Vue({
-	  el: '#save',
-	  methods: {
-	  	save(event) {
-			var stringified = JsonSerializer.sim(sim);
-  			var blob = new Blob([stringified], {type : 'application/json'});
-  			var blobUrl = URL.createObjectURL(blob);
-  			var elapsed_time = format_time(sim.elapsed_time);
-  			var filename = `${sim.focus.name}-${elapsed_time}.sim`;
-  			download(blobUrl, filename);
-  		}
-	  }
-	});
+    var saveVue = new Vue({
+      el: '#save',
+      methods: {
+          save(event) {
+            var stringified = JsonSerializer.sim(sim);
+              var blob = new Blob([stringified], {type : 'application/json'});
+              var blobUrl = URL.createObjectURL(blob);
+              var elapsed_time = format_time(sim.elapsed_time);
+              var filename = `${sim.focus.name}-${elapsed_time}.sim`;
+              download(blobUrl, filename);
+          }
+      }
+    });
 
 	var exportVue = new Vue({
 	  el: '#export',
@@ -716,315 +745,373 @@
 	  }
 	});
 
-	var screenshotVue = new Vue({
-	  el: '#screenshot',
-	  data: {
-	  	isEnabled: false,
-	  },
-	  created: function() {
-	  	this.isEnabled = Detector.webgl;
-	  },
-	  methods: {
-	  	capture(event) {
-  			var dataUrl = view.getScreenshotDataURL();
-  			var filename = 
-  				sim.focus.name+'-'+
-  				format_time(sim.elapsed_time)+
-  				'.png';
-  			download(dataUrl, filename);
-  		}
-	  }
-	});
+    var screenshotVue = new Vue({
+      el: '#screenshot',
+      data: {
+          isEnabled: false,
+      },
+      created: function() {
+          this.isEnabled = window.WebGLRenderingContext;
+      },
+      methods: {
+          capture(event) {
+              var dataUrl = view.getScreenshotDataURL();
+              var filename = 
+                  sim.focus.name+'-'+
+                  format_time(sim.elapsed_time)+
+                  '.png';
+              download(dataUrl, filename);
+          }
+      }
+    });
 
-	var fullscreenVue = new Vue({
-	  el: '#fullscreen',
-	  data: {
-	  	isFullscreen: false,
-	  	isVisible: false,
-	  },
-	  created: function() {
-	  	if( THREEx.FullScreen.available() ){
-		  	// allow 'f' to go fullscreen where this feature is supported
-	  		THREEx.FullScreen.bindKey();
-	  		this.isVisible = true;
-	  	} 
-	  },
-	  methods: {
-		toggleFullscreen: function() {
-			this.isFullscreen = THREEx.FullScreen.activated();
-			if( this.isFullscreen ){
-				THREEx.FullScreen.cancel();
-			}else{
-				THREEx.FullScreen.request(document.body);
-			}
-			this.isFullscreen = !this.isFullscreen;
-		},
-	  }
-	});
+    var fullscreenVue = new Vue({
+      el: '#fullscreen',
+      data: {
+          isFullscreen: false,
+          isVisible: false,
+      },
+      created: function() {
+          if( THREEx.FullScreen.available() ){
+              // allow 'f' to go fullscreen where this feature is supported
+              THREEx.FullScreen.bindKey();
+              this.isVisible = true;
+          } 
+      },
+      methods: {
+        toggleFullscreen: function() {
+            this.isFullscreen = THREEx.FullScreen.activated();
+            if( this.isFullscreen ){
+                THREEx.FullScreen.cancel();
+            }else{
+                THREEx.FullScreen.request(document.body);
+            }
+            this.isFullscreen = !this.isFullscreen;
+        },
+      }
+    });
 
-	var timeMenuVue = new Vue({
-	  el: '#time-menu',
-	  data: {
-	  	paused: false,
-		speed_i: 9,
-		speeds: [
-			{	name:'1s/s', 	scale: 1,							},
-			{	name:'1m/s', 	scale: 60,							},
-			{	name:'1hr/s', 	scale: 60*60,						},
-			{	name:'1dy/s', 	scale: 60*60*24,					},
-			{	name:'1mo/s', 	scale: 60*60*24*31,					},
-			{	name:'1y/s', 	scale: 1  *Units.YEAR,	},
-			{	name:'30y/s', 	scale: 30 *Units.YEAR,	},
-			{	name:'1ky/s', 	scale: 1e3*Units.YEAR,	},
-			{	name:'30ky/s', 	scale: 3e4*Units.YEAR,	},
-			{	name:'1My/s', 	scale: 1e6*Units.YEAR,	},
-		],
-	  	elapsed_time: 0,
-	  	isSeasonVisible: true,
-	  },
-	  created: function() {
-	  	var _this = this;
-	  	setInterval(function() {
-	  		_this.$data.elapsed_time = sim.elapsed_time;
-	  	}, 1000/10);
-	  },
-	  methods: {
-		togglePause: function() {
-			this.paused = !this.paused;
-			sim.toggle_pause();
-		},
-		fastForward: function() {
-			if (this.speed_i >= this.speeds.length-1) {return} 
-			this.speed_i += 1;
-			sim.speed = this.speeds[this.speed_i].scale;
-		},
-		rewind: function() {
-			if (this.speed_i <= 0) {return} 
-			this.speed_i -= 1;
-			sim.speed = this.speeds[this.speed_i].scale;
-		},
-		format: function(time) {
-			return format(time/Units.YEAR, 1000, 3)
-		},
-	}
-	});
+    var timeMenuVue = new Vue({
+      el: '#time-menu',
+      data: {
+            paused: false,
+            speed_i: 1,
+            speeds: [
+                {    name:'1s/s',      scale: 1,               },
+                {    name:'1m/s',      scale: 60,              },
+                {    name:'1hr/s',     scale: 60*60,           },
+                {    name:'1dy/s',     scale: 1  *Units.DAY    },
+                {    name:'1wk/s',     scale: 7  *Units.DAY    },
+                {    name:'1mo/s',     scale: 31 *Units.DAY    },
+                {    name:'1y/s',      scale: 1  *Units.YEAR,  },
+                {    name:'10y/s',     scale: 10 *Units.YEAR,  },
+                {    name:'100y/s',    scale: 100*Units.YEAR,  },
+                {    name:'1ky/s',     scale: 1e3*Units.YEAR,  },
+                {    name:'10ky/s',    scale: 1e4*Units.YEAR,  },
+                {    name:'100ky/s',   scale: 1e5*Units.YEAR,  },
+                {    name:'1My/s',     scale: 1e6*Units.YEAR,  },
+            ],
+            elapsed_time: 0,
+            isSeasonVisible: true,
+      },
+      created: function() {
+          var _this = this;
+          setInterval(function() {
+              _this.$data.elapsed_time = sim.elapsed_time;
+          }, 1000/10);
+      },
+      methods: {
+        speed: function(speed_i) {
+            this.speed_i = speed_i
+            sim.speed = this.speeds[this.speed_i].scale;
+        },
+        togglePause: function() {
+            this.paused = !this.paused;
+            sim.toggle_pause();
+        },
+        fastForward: function() {
+            this.speed_i = Math.min(this.speed_i+1, this.speeds.length-1);
+            sim.speed = this.speeds[this.speed_i].scale;
+        },
+        rewind: function() {
+            this.speed_i = Math.max(this.speed_i-1, 0);
+            sim.speed = this.speeds[this.speed_i].scale;
+        },
+        resync: function() {
+            sim.speed = this.speeds[this.speed_i].scale;
+            sim.paused = this.paused;
+        },
+        format: function(time) {
+            return format(time/Units.YEAR, 1000, 3)
+        },
+    }
+    });
 
-	var projectionVue = new Vue({
-	  el: '#projection',
-	  data: {
-	    selected: 'orthographic',
-	    options: [
-	      { name: "Globe", value: "orthographic", icon: "icons/earth.svg" },
-	      { name: "Map", value: "equirectangular", icon: "icons/map.svg" },
-	      { name: "Texture", value: "texture", icon: "icons/texture.svg" },
-	    ],
-	  },
-	  methods: {
-	    setSelected: function(value) {
-	    	if (this.selected == value) { value = this.options[0].value; }
-	    	this.selected = value;
-	    	view.setProjectionView(projectionViews[value]);
-	    },
-	    getClass: function(value, selected) {
-	    	return value == selected? 'active' : '';
-	    }
-	  }
-	});
+    var projectionVue = new Vue({
+      el: '#projection',
+      data: {
+        selected: 'orthographic',
+        options: [
+          { name: "Globe", value: "orthographic", icon: "icons/earth.svg" },
+          { name: "Map", value: "equirectangular", icon: "icons/map.svg" },
+          { name: "Texture", value: "texture", icon: "icons/texture.svg" },
+        ],
+      },
+      methods: {
+        setSelected: function(value) {
+            if (this.selected == value) { value = this.options[0].value; }
+            this.selected = value;
+            view.setProjectionView(projectionViews[value]);
+        },
+        getClass: function(value, selected) {
+            return value == selected? 'active' : '';
+        }
+      }
+    });
 
-	var vectorViewVue = new Vue({
-	  el: '#vector-view',
-	  data: {
-	    selected: 'disabled',
-	    options: [
-	      { name: "None", value: "disabled", icon: "" },
-	      { name: "Mantle Flow", value: "asthenosphere_velocity", icon: "icons/fire-flow.svg" },
-	      // { name: "Plate Motion", value: "plate_velocity", icon: "icons/plate-motion.svg" },
-	      { name: "Wind Speed", value: "surface_air_velocity", icon: "icons/air-flow.svg" },
-	    ],
-	  },
-	  methods: {
-	  	setSelected: function(value) {
-	    	if (this.selected == value) { value = this.options[0].value; }
-	  		var option = this.options.filter(x => x.value == value)[0];
-	  		this.selected = value;
-	  		view.setVectorView(vectorViews[value]);
-	  	},
-	  	getClass: function(value, selected) {
-	  		return value == selected? 'active' : '';
-	  	}
-	  }
-	});
+    var vectorViewVue = new Vue({
+      el: '#vector-view',
+      data: {
+        selected: 'disabled',
+        options: [
+          { name: "None", value: "disabled", icon: "" },
+          { name: "Mantle Flow", value: "asthenosphere_velocity", icon: "icons/fire-flow.svg" },
+          // { name: "Plate Motion", value: "plate_velocity", icon: "icons/plate-motion.svg" },
+          { name: "Wind Speed", value: "surface_air_velocity", icon: "icons/air-flow.svg" },
+        ],
+      },
+      methods: {
+          setSelected: function(value) {
+            if (this.selected == value) { value = this.options[0].value; }
+              var option = this.options.filter(x => x.value == value)[0];
+              this.selected = value;
+              view.setVectorView(vectorViews[value]);
+          },
+          getClass: function(value, selected) {
+              return value == selected? 'active' : '';
+          }
+      }
+    });
 
-	var scalarViewVue = new Vue({
-	  el: '#scalar-view',
-	  data: {
-	    ocean: 1,
-	    ocean_target: 1,
-	    night: 1,
-	    night_target: 1,
-	    snow: 1,
-	    snow_target: 1,
-	    selected: 'satellite',
-	    vectorView: 'disabled',
-	    options: [
-	      {name: 'Satellite', value: 'satellite', icon: 'icons/satellite-variant.svg' },
-	      {name: 'Sediment', value: 'soil', icon: 'icons/dirt.svg'},
-	      {name: 'Bedrock', value: 'bedrock', icon: 'icons/rock.svg'},
-	      {name: 'Height map', value: 'alt', icon: 'icons/terrain.svg'},
-	      {name: 'Topographic map', value: 'topographic', icon: 'icons/terrain.svg'},
-	      {name: 'Plant Productivity', value: 'npp', icon: 'icons/leaf.svg'},
-	      {name: 'Air Temperature', value: 'temp', icon: 'icons/thermometer.svg' },
-	      {name: 'Air Pressure', value: 'surface_air_pressure', icon: 'icons/air-pressure.svg' },
-	      {name: 'Precipitation', value: 'precipitation', icon: 'icons/weather-raining.svg'},
-	      {name: 'Crust Age', value: 'age', icon: 'icons/clock.svg'},
-	      {name: 'Crust Density', value: 'density', icon: 'icons/scale.svg'},
-	      {name: 'Crust Thickness', value: 'thickness', icon: 'icons/ruler.svg'},
-	      {name: 'Plates', value: 'plates', icon: 'icons/puzzle.svg'},
-	    ],
-	  },
-	  methods: {
-	    setSelected: function(value) {
-	    	if (this.selected == value) { value = this.options[0].value; }
-	  		var option = this.options.filter(x => x.value == value)[0];
-	    	this.selected = value;
-	    	view.setScalarView(scalarViews[value]);
-	    },
-	    isSelected: function(value) {
-	    	return {
-	    		satellite: true,
-	    		soil: true,
-	    		bedrock: true,
-	    	}[this.selected];
-	    },
-	    setOcean: function(value) {
-	    	this.ocean_target = value;
-	    	var v = this;
-	    	// TODO: hook this up to actual fps
-	    	var fps = 30
-	    	var timestep = 1000/fps; 	//milliseconds
-	    	var duration = 500; 		//milliseconds
-	    	var increment = timestep/duration;
-	    	chartVue.setOceanVisibility(value);
-	    	var timer = setInterval(function() {
-	    		v.ocean += Math.sign(v.ocean_target - v.ocean) * increment
-	    		if (Math.abs(v.ocean_target - v.ocean) < 2*increment) {
-	    		  clearInterval(timer); 
-	    		  v.ocean = v.ocean_target;
-	    		}
-	    		view.uniform('sealevel_mod', (v.ocean)?(1.0):(-1.0));
-	    	}, timestep);
-	    },
-	    setNight: function(value) {
-	    	this.night_target = value;
-	    	var v = this;
-	    	// TODO: hook this up to actual fps
-	    	var fps = 30
-	    	var timestep = 1000/fps; 	//milliseconds
-	    	var duration = 500; 		//milliseconds
-	    	var increment = timestep/duration;
-	    	var timer = setInterval(function() {
-	    		v.night += Math.sign(v.night_target - v.night) * increment
-	    		if (Math.abs(v.night_target - v.night) < 2*increment) {
-	    		  clearInterval(timer); 
-	    		  v.night = v.night_target;
-	    		}
-	    		view.uniform('darkness_mod', (v.night)?(1.0):(0.0));
-	    	}, timestep);
-	    },
-	    setSnow: function(value) {
-	    	this.snow_target = value;
-	    	var v = this;
-	    	// TODO: hook this up to actual fps
-	    	var fps 		= 30
-	    	var timestep 	= 1000/fps;	//milliseconds
-	    	var duration 	= 500; 		//milliseconds
-	    	var increment = timestep/duration;
-	    	var timer = setInterval(function() {
-	    		v.snow += Math.sign(v.snow_target - v.snow) * increment
-	    		if (Math.abs(v.snow_target - v.snow) < 2*increment) {
-	    		  clearInterval(timer); 
-	    		  v.snow = v.snow_target;
-	    		}
-	    		view.uniform('ice_mod', (v.snow)?(1.0):(0.0));
-	    	}, timestep);
-	    },
-	    getClass: function(value, selected) {
-	    	return value == selected? 'active' : '';
-	    },
-	  }
-	});
+    var scalarViewVue = new Vue({
+      el: '#scalar-view',
+      data: {
+        ocean: 1,
+        ocean_target: 1,
+        night: 1,
+        night_target: 1,
+        snow: 1,
+        snow_target: 1,
+        sediment: 1,
+        sediment_target: 1,
+        plant: 1,
+        plant_target: 1,
+        selected: 'satellite',
+        vectorView: 'disabled',
+        options: [
+          {name: 'Satellite', value: 'satellite', icon: 'icons/satellite-variant.svg' },
+          {name: 'Topographic map', value: 'topographic', icon: 'icons/terrain.svg'},
+          {name: 'Height map', value: 'alt', icon: 'icons/terrain-length.svg'},
+          {name: 'Normal map', value: 'surface_normal_map', icon: 'icons/terrain-arrows.svg'},
+          {name: 'Plant Productivity', value: 'npp', icon: 'icons/leaf.svg'},
+          {name: 'Air Temperature', value: 'temp', icon: 'icons/air-temperature.svg' },
+          {name: 'Air Pressure', value: 'surface_air_pressure', icon: 'icons/air-pressure.svg' },
+          {name: 'Precipitation', value: 'precipitation', icon: 'icons/weather-raining.svg'},
+          {name: 'Crust Age', value: 'age', icon: 'icons/rock-age.svg'},
+          {name: 'Crust Density', value: 'density', icon: 'icons/rock-scale.svg'},
+          {name: 'Crust Thickness', value: 'thickness', icon: 'icons/rock-length.svg'},
+          {name: 'Plates', value: 'plates', icon: 'icons/puzzle.svg'},
+        ],
+      },
+      methods: {
+        setSelected: function(value) {
+            if (this.selected == value) { value = this.options[0].value; }
+              var option = this.options.filter(x => x.value == value)[0];
+            this.selected = value;
+            view.setScalarView(scalarViews[value]);
+        },
+        isSelected: function(value) {
+            return {
+                satellite: true,
+            }[this.selected];
+        },
+        setOcean: function(value) {
+            this.ocean_target = value;
+            var v = this;
+            // TODO: hook this up to actual fps
+            var fps = 30
+            var timestep = 1000/fps;     //milliseconds
+            var duration = 250;         //milliseconds
+            var increment = timestep/duration;
+            chartVue.setOceanVisibility(value);
+            var timer = setInterval(function() {
+                v.ocean += Math.sign(v.ocean_target - v.ocean) * increment
+                if (Math.abs(v.ocean_target - v.ocean) < 2*increment) {
+                  clearInterval(timer); 
+                  v.ocean = v.ocean_target;
+                }
+                view.uniform('ocean_visibility', (v.ocean)?(1.0):(-0.2));
+            }, timestep);
+        },
+        setShadows: function(value) {
+            this.night_target = value;
+            var v = this;
+            // TODO: hook this up to actual fps
+            var fps = 30
+            var timestep = 1000/fps;     //milliseconds
+            var duration = 250;         //milliseconds
+            var increment = timestep/duration;
+            var timer = setInterval(function() {
+                v.night += Math.sign(v.night_target - v.night) * increment
+                if (Math.abs(v.night_target - v.night) < 2*increment) {
+                  clearInterval(timer); 
+                  v.night = v.night_target;
+                }
+                view.uniform('shadow_visibility', (v.night)?(1.0):(0.0));
+            }, timestep);
+        },
+        setSnow: function(value) {
+            this.snow_target = value;
+            var v = this;
+            // TODO: hook this up to actual fps
+            var fps         = 30
+            var timestep     = 1000/fps;    //milliseconds
+            var duration     = 250;         //milliseconds
+            var increment = timestep/duration;
+            var timer = setInterval(function() {
+                v.snow += Math.sign(v.snow_target - v.snow) * increment
+                if (Math.abs(v.snow_target - v.snow) < 2*increment) {
+                  clearInterval(timer); 
+                  v.snow = v.snow_target;
+                }
+                view.uniform('snow_visibility', (v.snow)?(1.0):(0.0));
+            }, timestep);
+        },
+        setSediment: function(value) {
+            this.sediment_target = value;
+            var v = this;
+            // TODO: hook this up to actual fps
+            var fps         = 30
+            var timestep     = 1000/fps;    //milliseconds
+            var duration     = 250;         //milliseconds
+            var increment = timestep/duration;
+            if (v.plant_target > v.sediment_target) {
+                v.setPlant(v.sediment_target);
+            }
+            var timer = setInterval(function() {
+                v.sediment += Math.sign(v.sediment_target - v.sediment) * increment
+                if (Math.abs(v.sediment_target - v.sediment) < 2*increment) {
+                  clearInterval(timer); 
+                  v.sediment = v.sediment_target;
+                }
+                view.uniform('sediment_visibility', (v.sediment)?(1.0):(0.0));
+            }, timestep);
+        },
+        setPlant: function(value) {
+            this.plant_target = value;
+            var v = this;
+            // TODO: hook this up to actual fps
+            var fps         = 30
+            var timestep     = 1000/fps;    //milliseconds
+            var duration     = 250;         //milliseconds
+            var increment = timestep/duration;
+            if (v.plant_target > v.sediment_target) {
+                v.setSediment(v.plant_target);
+            }
+            var timer = setInterval(function() {
+                v.plant += Math.sign(v.plant_target - v.plant) * increment
+                if (Math.abs(v.plant_target - v.plant) < 2*increment) {
+                  clearInterval(timer); 
+                  v.plant = v.plant_target;
+                }
+                view.uniform('plant_visibility', (v.plant)?(1.0):(0.0));
+            }, timestep);
+        },
+        getClass: function(value, selected) {
+            return value == selected? 'active' : '';
+        },
+      }
+    });
 
-	var settingsVue = new Vue({
-	  el: '#settings',
-	  data: {
-	    supercontinentBreakup: 1,
-	  },
-	  methods: {
-	    setSupercontinentBreakup: function(value) {
-	    	this.supercontinentBreakup = value;
-	    	if (!this.supercontinentBreakup) {
-		    	sim.focus.lithosphere.supercontinentCycle.duration = Infinity;
-	    	} else {
-	    		sim.focus.lithosphere.supercontinentCycle.duration = 0;
-	    	}
-	    },
-	  }
-	});
+    var settingsVue = new Vue({
+      el: '#settings',
+      data: {
+        supercontinentBreakup: 1,
+      },
+      methods: {
+        setSupercontinentBreakup: function(value) {
+            this.supercontinentBreakup = value;
+            if (!this.supercontinentBreakup) {
+                sim.focus.lithosphere.supercontinentCycle.duration = Infinity;
+            } else {
+                sim.focus.lithosphere.supercontinentCycle.duration = 0;
+            }
+        },
+      }
+    });
 
-	Vue.use(VueCharts);
+    Vue.use(VueCharts);
     const chartVue = new Vue({
         el: '#chart',
         data:{
-			isEnabled: false,
-			min: 0,
-			max: 0,
-			mean: 0,
-			median: 0,
-			stddev: 0,
-			x: [],
-			y: [],
-        	sealevel_mod: 1,
+            isEnabled: false,
+            min: 0,
+            max: 0,
+            mean: 0,
+            median: 0,
+            stddev: 0,
+            x: [],
+            y: [],
+            ocean_visibility: 1,
             options: {
-            	legend: {display: false}, 
-            	animation : false,
-            	scales: {
-					xAxes: [{
-						ticks: {
-						  fontColor: '#FFFFFF'
-						}
-					}],
-					yAxes: [{
-						scaleLabel: {
-							display: true,
-							labelString: '% surface'
-						},
-						ticks: {
-						  fontColor: '#FFFFFF'
-						},
-					}]
-				}
+                legend: {display: false}, 
+                animation : false,
+                scales: {
+                    xAxes: [{
+                        ticks: {
+                          fontColor: '#FFFFFF'
+                        }
+                    }],
+                    yAxes: [{
+                        scaleLabel: {
+                            display: true,
+                            labelString: '% surface'
+                        },
+                        ticks: {
+                          fontColor: '#FFFFFF'
+                        },
+                    }]
+                }
             }
         },
-		created: function() {
-			var _this = this;
-			setInterval(function() {
-				view.updateChart(_this.$data, sim, _this.$data);
-			}, 1000/2);
-		},
-		methods: {
-			setOceanVisibility(value){
-				this.sealevel_mod = value? 1:0;
-			},
-			round(x) {
-				return Math.round(x);
-			}
-		}
+        created: function() {
+            var _this = this;
+            setInterval(function() {
+                view.updateChart(_this.$data, sim, _this.$data);
+            }, 1000/2);
+        },
+        methods: {
+            setOceanVisibility(value){
+                this.ocean_visibility = value? 1:0;
+            },
+            round(x) {
+                return Math.round(x);
+            }
+        }
     });
     
-	init();
-	animate();
-	update();
-	autosave();
+    init();
+    animate();
+    update();
+    autosave();
+
+    // HACK: not sure why, but initializing speed at 1m/s will cause 
+    //  display to break when user increases speed past 1wk/s.
+    // We set speed to 1m/s here to work around this.
+    timeMenuVue.speed(1)
+
+    // once everything is loaded, instruct the user how to start
+    dialogVue.notify("click ⏩ or press > to begin")
 </script>
 </body>
 </html>

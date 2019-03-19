@@ -1,16 +1,16 @@
 {
-	"folders":
-	[
-		{
-			"path": "~/Code/tectonics.js"
-		}
-	],
-	"build_systems":
-	[
-	    {
-	        "name": "tectonics",
-	        // "cmd": ["firefox", "~/Code/tectonics.js/index.html"]
-	        "cmd": ["google-chrome", "~/Code/tectonics.js/index.html"]
-	    }
-	]
+    "folders":
+    [
+        {
+            "path": "~/Code/tectonics.js"
+        }
+    ],
+    "build_systems":
+    [
+        {
+            "name": "tectonics",
+            // "cmd": ["firefox", "~/Code/tectonics.js/index.html"]
+            "cmd": ["google-chrome", "~/Code/tectonics.js/index.html"]
+        }
+    ]
 }

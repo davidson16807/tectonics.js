@@ -1,16 +1,16 @@
 .btn-group-vertical .btn{
-	text-align: left;
+    text-align: left;
 }
 .btn a{
-	color: black;
+    color: black;
 }
 .btn a:hover{
-	color: black;
-	text-decoration: none;
+    color: black;
+    text-decoration: none;
 }
 .dropdown-toggle .caret{
-	float: right;
+    float: right;
 }
 .dropdown-menu button{
-	width: 100%;
+    width: 100%;
 }

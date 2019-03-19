@@ -1,25 +1,37 @@
-const float PI = 3.14159265358979;
-const float OCEAN = 0.0;
-const float LAND = 0.005;
-const float NONE = 0.0;
-const float INDEX_SPACING = PI * 0.75; // anything from 0.0 to 2.*PI
+#define GL_ES
+#include "precompiled/shaders/academics/cross_platform_macros.glsl.c"
+#include "precompiled/shaders/academics/math/constants.glsl.c"
+
+// VIEW PROPERTIES -----------------------------------------------------------
+uniform   mat4  projection_matrix_inverse;
+uniform   mat4  view_matrix_inverse;
+uniform   float reference_distance;
+
+varying   vec3  view_direction_v;
+varying   vec3  view_origin_v;
+varying   vec4  position_v;
+
+// WORLD PROPERTIES
+uniform   float sealevel;
+uniform   float world_radius;
 
 attribute float displacement;
+attribute vec3  gradient;
+attribute float surface_temperature;
+attribute float snow_coverage;
 attribute float plant_coverage;
-attribute float ice_coverage;
-attribute float insolation;
 attribute float scalar;
+attribute vec3  vector;
+
+varying   float displacement_v;
+varying   vec3  gradient_v;
+varying   float surface_temperature_v;
+varying   float snow_coverage_v;
+varying   float plant_coverage_v;
+varying   float scalar_v;
+
+// MISCELLANEOUS PROPERTIES
+uniform   float map_projection_offset;
+uniform   float animation_phase_angle;
 attribute float vector_fraction_traversed;
-attribute vec3 vector;
-
-varying float vDisplacement;
-varying float vPlantCoverage;
-varying float vIceCoverage;
-varying float vInsolation;
-varying float vScalar;
-varying float vVectorFractionTraversed;
-varying vec4 vPosition;
-
-uniform float sealevel;
-uniform float index;
-uniform float animation_phase_angle;
+varying   float vector_fraction_traversed_v;
