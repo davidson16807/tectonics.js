@@ -150,7 +150,7 @@ function Universe(parameters) {
     // average insolation from all stars
     function average_insolation(config, body, min_perceivable_period, average_insolation, max_sample_count){
         var surface_normal = body.grid.pos;
-        max_sample_count = max_sample_count || 16;
+        max_sample_count = max_sample_count || 25;
         var average_insolation = average_insolation || Float32Raster(body.grid);
         var insolation_sample = Float32Raster(body.grid);
         Float32Raster.fill(average_insolation, 0);
@@ -195,7 +195,7 @@ function Universe(parameters) {
                             body, 
                             30/2 * timestep,  // TODO: set this to the correct fps
                             out,
-                            16
+                            25
                         )),
                 });
                 if (body_id_to_node_map[body.name].motion instanceof Spin) {

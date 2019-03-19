@@ -1597,6 +1597,7 @@ void main() {
     vec3 color_of_bedrock = mix(LAND_COLOR_MAFIC, LAND_COLOR_FELSIC, felsic_coverage);
     vec3 color_with_sediment = mix(color_of_bedrock, mix(LAND_COLOR_SAND, LAND_COLOR_PEAT, organic_coverage), mineral_coverage * sediment_visibility);
     vec3 color_with_plants = mix(color_with_sediment, JUNGLE_COLOR, !is_ocean? plant_coverage * plant_visibility * sediment_visibility : 0.);
+    vec3 color_with_snow = mix(color_with_plants, SNOW_COLOR, snow_coverage * snow_visibility);
     // "n" is the surface normal for a perfectly smooth sphere
     vec3 n = normalize(position_v.xyz);
     vec3 surface_position =
@@ -1608,7 +1609,7 @@ void main() {
             WATER_ROOT_MEAN_SLOPE_SQUARED :
             mix(LAND_ROOT_MEAN_SLOPE_SQUARED, JUNGLE_ROOT_MEAN_SLOPE_SQUARED, plant_coverage);
     vec3 surface_diffuse_color_rgb_fraction =
-        get_rgb_intensity_of_rgb_signal(color_with_plants);
+        get_rgb_intensity_of_rgb_signal(color_with_snow);
     // TODO: model refractive index as a function of wavelength
     vec3 surface_specular_color_rgb_fraction =
         shadow_visibility * specular_visibility * // turn off specular reflection if darkness is disabled
@@ -1619,7 +1620,7 @@ void main() {
             get_fraction_of_light_reflected_on_surface_head_on(SNOW_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX),
             snow_coverage*snow_visibility
         ));
-    float ocean_visible_depth = ocean_depth; //mix(ocean_depth, 0., snow_coverage*snow_coverage*snow_coverage*snow_visibility);
+    float ocean_visible_depth = mix(ocean_depth, 0., snow_coverage*snow_coverage*snow_coverage*snow_visibility);
     vec3 E_surface_reemitted = vec3(0);
     for (int i = 0; i < MAX_LIGHT_COUNT; ++i)
     {
