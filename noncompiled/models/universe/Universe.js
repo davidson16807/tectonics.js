@@ -102,19 +102,21 @@ function Universe(parameters) {
     // "sample()" generates a list of cycle configurations that are representative of that timestep
     // this is useful for finding, e.g. mean daily solar radiation
     // the function will not generate more than a given number of samples per cycle
-    function samples(config, samples_per_cycle, min_perceivable_period) {
-        // list of configs to sample across, starting with a clone of config
+    function samples(config, max_sample_count, min_perceivable_period) {
+        // if the cycle takes more than a given amount to complete, 
+        // then don't sample across it
+        var imperceptably_small_cycles = nodes_by_period.filter(cycle => {
+            return (cycle !== void 0  && 
+                    cycle.motion.period() < min_perceivable_period &&
+                   !cycle.invariant_insolation);
+        });
+        var samples_per_cycle = Math.floor(Math.pow(max_sample_count, 1/imperceptably_small_cycles.length));
+        // we return a list of configs to sample across, starting with a clone of `config`
         var samples = [Object.assign({}, config)];
         // for each imperceptably small cycle:
-        for(var node of nodes_by_period) {
-            if (node === void 0) { continue; }
-            var period = node.motion.period();
-            // if the cycle takes more than a given amount to complete, 
-            // then it can be simulated, so don't sample across it
-            if (period > min_perceivable_period)     { continue; }
-            if (node.invariant_insolation)             { continue; }
+        for(var cycle of imperceptably_small_cycles) {
             // sample across the cycle's period and add results to `samples`
-            var period = node.motion.period();
+            var period = cycle.motion.period();
             var subsamples = [];
             for (var sample of samples) {
                 for (var j = 0; j < samples_per_cycle; j++) {
@@ -127,10 +129,10 @@ function Universe(parameters) {
     }
 
     // returns a dictionary mapping body ids for stars to a list of positions sampled along their orbits
-    function star_sample_positions_map(config, body, min_perceivable_period, samples_per_cycle, max_sample_count) {
-        samples_per_cycle = samples_per_cycle || 6;
+    function star_sample_positions_map(config, body, min_perceivable_period, max_sample_count) {
+        max_sample_count = max_sample_count || 16;
         var origin = body_id_to_node_map[body.name];
-        var samples_ = samples(config, samples_per_cycle, min_perceivable_period);
+        var samples_ = samples(config, max_sample_count, min_perceivable_period);
         var stars = bodies.filter(body => body instanceof Star);
         var result = {};
         for (var sample of samples_){
@@ -146,15 +148,15 @@ function Universe(parameters) {
     }
 
     // average insolation from all stars
-    function average_insolation(config, body, min_perceivable_period, average_insolation, samples_per_cycle){
+    function average_insolation(config, body, min_perceivable_period, average_insolation, max_sample_count){
         var surface_normal = body.grid.pos;
-        samples_per_cycle = samples_per_cycle || 6;
+        max_sample_count = max_sample_count || 16;
         var average_insolation = average_insolation || Float32Raster(body.grid);
         var insolation_sample = Float32Raster(body.grid);
         Float32Raster.fill(average_insolation, 0);
 
         var stars = bodies.filter(body => body instanceof Star);
-        var star_sample_positions_map_ = star_sample_positions_map(config, body, min_perceivable_period, samples_per_cycle);
+        var star_sample_positions_map_ = star_sample_positions_map(config, body, min_perceivable_period, max_sample_count);
         for (var star of stars){
             var star_sample_positions = star_sample_positions_map_[star.name];
             for (var star_sample_position of star_sample_positions) {
@@ -193,7 +195,7 @@ function Universe(parameters) {
                             body, 
                             30/2 * timestep,  // TODO: set this to the correct fps
                             out,
-                            8
+                            16
                         )),
                 });
                 if (body_id_to_node_map[body.name].motion instanceof Spin) {
