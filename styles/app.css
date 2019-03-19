@@ -60,6 +60,16 @@ body {
     text-align  : center;
     border-style: dashed;
 }
+.loading-dialog {
+    position: fixed;
+    top: 43%;
+    left: 43%;
+    width: 15%;
+    text-align: center;
+}
+.loading h2{
+    text-align: center;
+}
 .dialog {
     color: black;
     background-color: white;
