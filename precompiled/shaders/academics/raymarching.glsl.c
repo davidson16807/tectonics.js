@@ -5,9 +5,9 @@ CONST(int)   MAX_LIGHT_COUNT = 9;
 // "approx_air_column_density_ratio_along_2d_ray_for_curved_world" 
 //   calculates column density ratio of air for a ray emitted from the surface of a world to a desired distance, 
 //   taking into account the curvature of the world.
-// It does this by making two linear approximations for height:
-//   one for the lower atmosphere, one for the upper atmosphere.
-// These are represented by the two call outs to get_air_column_density_ratio_along_2d_ray_for_flat_world().
+// It does this by making a quadratic approximation for the height above the surface.
+// The derivative of this approximation never reaches 0, and this allows us to find a closed form solution 
+//   for the column density ratio using integration by substitution.
 // "x_start" and "x_stop" are distances along the ray from closest approach.
 //   If there is no intersection, they are the distances from the closest approach to the upper bound.
 //   Negative numbers indicate the rays are firing towards the ground.

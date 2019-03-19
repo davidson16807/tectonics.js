@@ -3,6 +3,8 @@
 function Star(parameters) {
     var _this = this;
 
+    this.name = parameters['name'];
+
     this.mass = parameters['mass'] || stop('missing parameter: "mass"')
 
     // scaling laws from artifexian: https://www.youtube.com/watch?v=hG1of0MroM8

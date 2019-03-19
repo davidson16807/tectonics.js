@@ -360,7 +360,7 @@
     <div v-if="isNoWebGl" class="collapse hcenter dialog">
         <h2>Well, darn</h2>
         <p>It looks like your using a web browser without WebGL.</p>
-        <p>WebGL is a technology that allows users to run high-end 3d graphics from their web-browser. Other technologies exist that can display simple 3d graphics to the user (canvas, svg, flash, etc.), but at present WebGL is the only web technology that allows developers to send their own code to a GPU.
+        <p>WebGL is a technology that allows users to render graphics through the GPU from their web-browser.
         </p>
         <p>Writing a tectonics simulator in a browser is hard stuff. We're going to need all the tools we can get.
         </p>
@@ -391,13 +391,7 @@
     //standards:
     // all spatial coordinates are xyz vectors on a unit sphere
     // all angles are in radians
-    // all length is in meters
-    // all time is in seconds
-    // all speeds are in m/s (goes along with distance and time)
-    // all densities are in kg/m^3 (goes along with mass/thickness)
-    // all mass is in kg (goes along with density)
-    // all force is in Newtons (goes along with kg)
-    // all pressure is in Pascals (goes along with kg)
+    // all units are in MKS
 
     if( !window.WebGLRenderingContext ){
         process.exit(1);
