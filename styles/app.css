@@ -2,6 +2,10 @@ body {
     overflow    : hidden;
 }
 
+.hidden-when-loading{
+    display: none;
+}
+
 .controls {
     width:61%;
 }

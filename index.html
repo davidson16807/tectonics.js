@@ -69,6 +69,7 @@
     <script src="noncompiled/generators/NameCorpii.js"></script>
     <script src="noncompiled/file-io/JsonSerializer.js"></script>
     <script src="noncompiled/file-io/CsvExporter.js"></script>
+    <script src="noncompiled/file-io/ImageImporter.js"></script>
     <script src="noncompiled/views/raster-views/PdfChartRasterView.js"></script>
     <script src="noncompiled/views/raster-views/ColorscaleRasterView.js"></script>
     <script src="noncompiled/views/raster-views/HeatmapRasterView.js"></script>
@@ -103,7 +104,7 @@
     </div>
 </div>
 <!-- info on screen display -->
-<div class="topright collapse collapsible controls" >
+<div class="topright collapsible controls hidden-when-loading" >
     <div id="time-menu" class="time-menu">
         <div class="input-group elapsed_time-group">
             <span class="form-control input-sm age">{{ format(elapsed_time).quantity }}</span>
@@ -300,6 +301,25 @@
                 </li>
             </ul>
         </div>
+        <div id="import" class="btn-group">
+            <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <img src="icons/import.svg" height="16em" width="16em"/>
+                Import
+                <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu btn-default btn-xs">
+                <li>
+                    <button type="button" 
+                        class="btn btn-default btn-xs" 
+                        v-on:click="loadImage()">
+                        <img src="icons/image.svg" height="16em" width="16em"/>
+                        Heightmap
+                        <span class="instructions">drag</span>
+                        <input id="load-image" ref="loadImage" type="file" v-on:change="loadImagePart2($event.target.files[0])" class="hidden" />
+                    </button>
+                </li>
+            </ul>
+        </div>
     </div>
 </div>
 
@@ -310,7 +330,7 @@
     <div id="updateStats"></div>
 </div>
 <div class="bottomright">
-    <div id="chart" v-if="isEnabled">
+    <div class="hidden-when-loading" id="chart" v-if="isEnabled">
         <table class="stat">
             <tr>
                 <td class="name">min</td>
@@ -370,15 +390,15 @@
         </p>
         <iframe width="420" height="315" src="https://youtu.be/D6Lff8MYbAo?t=240" frameborder="0" allowfullscreen></iframe>
     </div>
-    <div v-if="isNoJs" class="collapse loading-dialog">
-        <img src="icons/spinner.svg"/>
+    <div v-if="isNoJs" class="loading-dialog">
+        <img src="icons/spinner.svg"/ class="hcenter">
         <h2>Initializing</h2>
     </div>
-    <div v-if="isLoadingSave" class="collapse loading">
+    <div v-if="isLoadingSave" class="collapse loading-dialog">
         <img src="icons/spinner.svg"/>
         <h2>Loading</h2>
     </div>
-    <div class="notifications-dialog">
+    <div class="notifications-dialog hidden-when-loading">
         <transition name="fade">
             <h3 v-for="notification in notifications">{{notification}}</h3>
         </transition>
@@ -500,12 +520,12 @@
             },
         });
         var focus = universe.body_id_to_node_map[focus_name].body;
-        CrustGenerator.generate(
+        CrustGenerator.get_crust_from_height_ranks(
             SphericalGeometry.get_random_surface_field(focus.grid, sim.random), 
             CrustGenerator.modern_earth_hypsography, 
             CrustGenerator.modern_earth_attribute_height_maps, 
-            focus.lithosphere.total_crust,
-            sim.random
+            sim.random,
+            focus.lithosphere.total_crust
         );
         sim.model(universe);
         sim.focus = focus;
@@ -514,7 +534,7 @@
             loadUrl(querystring['load']); // TODO: rework this
         } 
 
-        $('.controls').show();
+        $('.hidden-when-loading').show();
         
         $('#container').append(view.getDomElement());
         
@@ -546,8 +566,6 @@
 
         view.render();
 
-        // actually render the scene
-
         if(!IS_PROD){
             renderStats.update();
         }
@@ -569,26 +587,55 @@
     
     function loadUrl (url) {
         dialogVue.$data.isLoadingSave = true;
-        $('.controls').hide();
+        $('.hidden-when-loading').hide();
         $.get( url, function( json ) {
             sim = JsonDeserializer.sim(json);
             dialogVue.$data.isLoadingSave = false;
-            $('.controls').show();
+            $('.hidden-when-loading').show();
             timeMenuVue.resync();
         });
     }
     function loadFile (file) {
         dialogVue.$data.isLoadingSave = true;
-        $('.controls').hide();
+        $('.hidden-when-loading').hide();
         var reader = new FileReader();
         reader.onload = function(e) {
             sim = JsonDeserializer.sim(e.target.result);
             dialogVue.$data.isLoadingSave = false;
-            $('.controls').show();
+            $('.hidden-when-loading').show();
             timeMenuVue.resync();
         }
         reader.readAsText(file);
-        sim.set_paused()
+    }
+    function loadImage (file) {
+        dialogVue.$data.isLoadingSave = true;
+        $('.hidden-when-loading').hide();
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var data_url = e.target.result;
+            // create image
+            var image = new Image();
+            // create canvas context from image
+            var canvas = document.createElement('canvas');
+            var context = canvas.getContext('2d');
+            context.drawImage(image, 0, 0);
+            image.onload = function(){
+                canvas.width  = image.width;
+                canvas.height = image.height;
+                context.drawImage(image,0,0); // Or at whatever offset you like
+                // generate crust from canvas context
+                var elevations = ImageImporter.get_elevations_from_canvas_context(context, sim.focus.grid);
+                CrustGenerator.get_crust_from_elevations(
+                    elevations, 
+                    CrustGenerator.modern_earth_attribute_height_maps, 
+                    sim.focus.lithosphere.total_crust
+                );
+
+                $('.hidden-when-loading').show();
+            };
+            image.src = data_url;
+        }
+        reader.readAsDataURL(file);
     }
 
     function format (num, rollover, precision){
@@ -619,7 +666,7 @@
 
     window.addEventListener('keyup', function(event) {
       if (event.keyCode == 80) { //p
-        screenshotVue.capture();
+          screenshotVue.capture();
       }
       if (event.keyCode == 83) { //s
           saveVue.save();
@@ -631,6 +678,9 @@
           timeMenuVue.fastForward();
       }
       if (event.keyCode == 191) { // /
+          timeMenuVue.togglePause();
+      }
+      if (event.keyCode == 32) { // space
           timeMenuVue.togglePause();
       }
     });
@@ -731,19 +781,35 @@
       }
     });
 
-	var exportVue = new Vue({
-	  el: '#export',
-	  methods: {
-	  	csv(event) {
-			var content = CsvExporter.world(sim.focus);
+    var exportVue = new Vue({
+      el: '#export',
+      methods: {
+        csv(event) {
+            var content = CsvExporter.world(sim.focus);
             var blob = new Blob([content], {type : 'text/csv'});
             var blobUrl = URL.createObjectURL(blob);
             var elapsed_time = format_time(sim.elapsed_time);
             var filename = `${sim.focus.name}-${elapsed_time}.csv`;
             download(blobUrl, filename);
-  		}
-	  }
-	});
+        }
+      }
+    });
+
+    var importVue = new Vue({
+      el: '#import',
+      methods: {
+          loadImage: function() {
+              // HACK: only <input> is capable of loading a file, 
+              // but we need to use a button for bootstrap styling.
+              // The solution is for the button to trigger click event
+              // on a hidden file input element.
+              this.$refs.loadImage.click();
+          },
+          loadImagePart2: function(file) {
+              loadImage(file);
+          }
+      }
+    });
 
     var screenshotVue = new Vue({
       el: '#screenshot',
