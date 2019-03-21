@@ -32,12 +32,12 @@ var parameters = {
         },
 }
 lithosphere.setDependencies(parameters);
-CrustGenerator.generate(
+CrustGenerator.get_crust_from_height_ranks(
     SphericalGeometry.get_random_surface_field(grid, random), 
     CrustGenerator.modern_earth_hypsography, 
     CrustGenerator.modern_earth_attribute_height_maps, 
-    lithosphere.total_crust,
-    random
+    random,
+    lithosphere.total_crust
 );
 lithosphere.initialize();
 
