@@ -62,7 +62,7 @@ CrustGenerator.modern_earth_attribute_height_maps = {
     // thicknesses are +/- 800, from White McKenzie and O'nions 1992
     mafic_volcanic: function(displacement, result, scratch) {
         return Float32RasterInterpolation.lerp(
-            [-3200,         -200],
+            [-1500,         -950],
             [2890*7100,        0],
             displacement,
             result,
@@ -73,8 +73,8 @@ CrustGenerator.modern_earth_attribute_height_maps = {
     // 85% of continental crust is plutonic, 15% is volcanic, at least going by wikipedia
     felsic_plutonic: function(displacement, result, scratch) {
         return Float32RasterInterpolation.lerp(
-            [-3200, -200,           840,            8848          ],
-            [0,     2700*.85*28300, 2700*.85*36900, 2700*.85*70000],
+            [-1500, -950,           840,            8848           ],
+            [ 0,     2700*.85*28300, 2700*.85*36900, 2700*.85*70000],
             displacement,
             result,
             scratch
@@ -82,8 +82,8 @@ CrustGenerator.modern_earth_attribute_height_maps = {
     },
     felsic_volcanic: function(displacement, result, scratch) {
         return Float32RasterInterpolation.lerp(
-            [-3200, -200,           840,            8848],
-            [0,     2700*.15*28300, 2700*.15*36900, 2700*.15*70000],
+            [-1500, -950,           840,            8848           ],
+            [ 0,     2700*.15*28300, 2700*.15*36900, 2700*.15*70000],
             displacement,
             result,
             scratch
@@ -91,7 +91,7 @@ CrustGenerator.modern_earth_attribute_height_maps = {
     },
     sediment: function(displacement, result, scratch) {
         return Float32RasterInterpolation.lerp(
-            [-3200, -200   ],
+            [-3200, -1500   ],
             [0,     2500.*5],
             displacement,
             result,
@@ -101,8 +101,8 @@ CrustGenerator.modern_earth_attribute_height_maps = {
     // displacements are from Charette & Smith 2010 (shallow ocean), enclopedia britannica (shelf bottom"continental slope"), wikipedia (shelf top), and Sverdrup & Fleming 1942 (land)
     age: function(displacement, result, scratch) {
         return Float32RasterInterpolation.lerp(
-            [-11000,            -6000,             -3682,           -3200,             -200,              840],
-            [250*Units.MEGAYEAR,200*Units.MEGAYEAR,0*Units.MEGAYEAR,100*Units.MEGAYEAR,100*Units.MEGAYEAR,1000*Units.MEGAYEAR],
+            [-11000,            -5000,              -4000,             -2000,            -1500,              -900,                840],
+            [250*Units.MEGAYEAR, 100*Units.MEGAYEAR, 0*Units.MEGAYEAR,  0*Units.MEGAYEAR, 100*Units.MEGAYEAR, 1000*Units.MEGAYEAR,1000*Units.MEGAYEAR],
             displacement,
             result,
             scratch
