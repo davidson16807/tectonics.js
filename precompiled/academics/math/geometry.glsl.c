@@ -13,7 +13,7 @@ FUNC(void) get_relation_between_ray_and_point(
     OUT(float) z2,
     OUT(float) xz 
 ){
-    vec3 P = point_position - ray_origin;
+    VAR(vec3) P = point_position - ray_origin;
     
     xz = dot(P, V);
     z2 = dot(P, P) - xz * xz;

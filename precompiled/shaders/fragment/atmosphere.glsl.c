@@ -1,15 +1,15 @@
 #define GL_ES
-#include "precompiled/shaders/academics/cross_platform_macros.glsl.c"
-#include "precompiled/shaders/academics/units.glsl.c"
-#include "precompiled/shaders/academics/math/constants.glsl.c"
-#include "precompiled/shaders/academics/math/geometry.glsl.c"
-#include "precompiled/shaders/academics/physics/constants.glsl.c"
-#include "precompiled/shaders/academics/physics/emission.glsl.c"
-#include "precompiled/shaders/academics/physics/scattering.glsl.c"
-#include "precompiled/shaders/academics/physics/reflectance.glsl.c"
-#include "precompiled/shaders/academics/raymarching.glsl.c"
-#include "precompiled/shaders/academics/psychophysics.glsl.c"
-#include "precompiled/shaders/academics/electronics.glsl.c"
+#include "precompiled/cross_platform_macros.glsl.c"
+#include "precompiled/academics/units.glsl.c"
+#include "precompiled/academics/math/constants.glsl.c"
+#include "precompiled/academics/math/geometry.glsl.c"
+#include "precompiled/academics/physics/constants.glsl.c"
+#include "precompiled/academics/physics/emission.glsl.c"
+#include "precompiled/academics/physics/scattering.glsl.c"
+#include "precompiled/academics/physics/reflectance.glsl.c"
+#include "precompiled/academics/raymarching.glsl.c"
+#include "precompiled/academics/psychophysics.glsl.c"
+#include "precompiled/academics/electronics.glsl.c"
 
 
 varying vec2  vUv;
