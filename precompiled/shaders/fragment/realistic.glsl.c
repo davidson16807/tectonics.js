@@ -172,10 +172,10 @@ FUNC(vec3) get_rgb_intensity_of_light_from_surface_of_world(
     // "I_surface_refracted" is the intensity of light that is not immediately reflected, 
     //   but penetrates into the material, either to be absorbed, scattered away, 
     //   or scattered back to the view as diffuse reflection.
-    // Unlike I_surface_reflected, we do not consider it striking 
-    //     the ideal microfacet for reflection ("HV"), but instead the most common one ("NV").
+    // We would ideally like to negate the integral of reflectance over all possible angles, 
+    //   but finding that is hard, so let's just negate the reflectance for the angle at which it occurs the most, or "HV"
     vec3 I_surface_refracted = 
-        I_surface * (1. - get_rgb_fraction_of_light_reflected_on_surface(NV, F0));
+        I_surface * (1. - get_rgb_fraction_of_light_reflected_on_surface(HV, F0));
       //+ I_sun     *  atmosphere_ambient_light_factor;
     // If sea is present, "E_ocean_scattered" is the rgb intensity of light 
     //   scattered by the sea towards the camera. Otherwise, it equals 0.
