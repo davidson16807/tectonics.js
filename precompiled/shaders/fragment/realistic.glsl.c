@@ -1,15 +1,15 @@
 #define GL_ES
-#include "precompiled/shaders/academics/cross_platform_macros.glsl.c"
-#include "precompiled/shaders/academics/units.glsl.c"
-#include "precompiled/shaders/academics/math/constants.glsl.c"
-#include "precompiled/shaders/academics/math/geometry.glsl.c"
-#include "precompiled/shaders/academics/physics/constants.glsl.c"
-#include "precompiled/shaders/academics/physics/emission.glsl.c"
-#include "precompiled/shaders/academics/physics/scattering.glsl.c"
-#include "precompiled/shaders/academics/physics/reflectance.glsl.c"
-#include "precompiled/shaders/academics/raymarching.glsl.c"
-#include "precompiled/shaders/academics/psychophysics.glsl.c"
-#include "precompiled/shaders/academics/electronics.glsl.c"
+#include "precompiled/cross_platform_macros.glsl.c"
+#include "precompiled/academics/units.glsl.c"
+#include "precompiled/academics/math/constants.glsl.c"
+#include "precompiled/academics/math/geometry.glsl.c"
+#include "precompiled/academics/physics/constants.glsl.c"
+#include "precompiled/academics/physics/emission.glsl.c"
+#include "precompiled/academics/physics/scattering.glsl.c"
+#include "precompiled/academics/physics/reflectance.glsl.c"
+#include "precompiled/academics/raymarching.glsl.c"
+#include "precompiled/academics/psychophysics.glsl.c"
+#include "precompiled/academics/electronics.glsl.c"
 
 // Determines the length of a unit of distance within the view, in meters, 
 // it is generally the radius of whatever world's the focus for the scene.
@@ -172,10 +172,10 @@ FUNC(vec3) get_rgb_intensity_of_light_from_surface_of_world(
     // "I_surface_refracted" is the intensity of light that is not immediately reflected, 
     //   but penetrates into the material, either to be absorbed, scattered away, 
     //   or scattered back to the view as diffuse reflection.
-    // Unlike I_surface_reflected, we do not consider it striking 
-    //     the ideal microfacet for reflection ("HV"), but instead the most common one ("NV").
+    // We would ideally like to negate the integral of reflectance over all possible angles, 
+    //   but finding that is hard, so let's just negate the reflectance for the angle at which it occurs the most, or "HV"
     vec3 I_surface_refracted = 
-        I_surface * (1. - get_rgb_fraction_of_light_reflected_on_surface(NV, F0));
+        I_surface * (1. - get_rgb_fraction_of_light_reflected_on_surface(HV, F0));
       //+ I_sun     *  atmosphere_ambient_light_factor;
     // If sea is present, "E_ocean_scattered" is the rgb intensity of light 
     //   scattered by the sea towards the camera. Otherwise, it equals 0.

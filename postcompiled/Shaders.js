@@ -351,8 +351,7 @@ vec3 solve_rgb_intensity_of_light_emitted_by_black_body(
 float get_fraction_of_rayleigh_scattered_light_scattered_by_angle(
     in float cos_scatter_angle
 ){
-    return
-            3. * (1. + cos_scatter_angle*cos_scatter_angle)
+    return 3. * (1. + cos_scatter_angle*cos_scatter_angle)
     / //------------------------
                 (16. * PI);
 }
@@ -364,8 +363,7 @@ float get_fraction_of_mie_scattered_light_scattered_by_angle(
     in float cos_scatter_angle
 ){
     const float g = 0.76;
-    return
-                        (1. - g*g)
+    return (1. - g*g)
     / //---------------------------------------------
         ((4. + PI) * pow(1. + g*g - 2.*g*cos_scatter_angle, 1.5));
 }
@@ -376,8 +374,7 @@ float approx_fraction_of_mie_scattered_light_scattered_by_angle_fast(
 ){
     const float g = 0.76;
     const float k = 1.55*g - 0.55 * (g*g*g);
-    return
-                    (1. - k*k)
+    return (1. - k*k)
     / //-------------------------------------------
         (4. * PI * (1. + k*cos_scatter_angle) * (1. + k*cos_scatter_angle));
 }
@@ -456,9 +453,9 @@ const int MAX_LIGHT_COUNT = 9;
 // "approx_air_column_density_ratio_along_2d_ray_for_curved_world" 
 //   calculates column density ratio of air for a ray emitted from the surface of a world to a desired distance, 
 //   taking into account the curvature of the world.
-// It does this by making two linear approximations for height:
-//   one for the lower atmosphere, one for the upper atmosphere.
-// These are represented by the two call outs to get_air_column_density_ratio_along_2d_ray_for_flat_world().
+// It does this by making a quadratic approximation for the height above the surface.
+// The derivative of this approximation never reaches 0, and this allows us to find a closed form solution 
+//   for the column density ratio using integration by substitution.
 // "x_start" and "x_stop" are distances along the ray from closest approach.
 //   If there is no intersection, they are the distances from the closest approach to the upper bound.
 //   Negative numbers indicate the rays are firing towards the ground.
@@ -1013,8 +1010,7 @@ vec3 solve_rgb_intensity_of_light_emitted_by_black_body(
 float get_fraction_of_rayleigh_scattered_light_scattered_by_angle(
     in float cos_scatter_angle
 ){
-    return
-            3. * (1. + cos_scatter_angle*cos_scatter_angle)
+    return 3. * (1. + cos_scatter_angle*cos_scatter_angle)
     / //------------------------
                 (16. * PI);
 }
@@ -1026,8 +1022,7 @@ float get_fraction_of_mie_scattered_light_scattered_by_angle(
     in float cos_scatter_angle
 ){
     const float g = 0.76;
-    return
-                        (1. - g*g)
+    return (1. - g*g)
     / //---------------------------------------------
         ((4. + PI) * pow(1. + g*g - 2.*g*cos_scatter_angle, 1.5));
 }
@@ -1038,8 +1033,7 @@ float approx_fraction_of_mie_scattered_light_scattered_by_angle_fast(
 ){
     const float g = 0.76;
     const float k = 1.55*g - 0.55 * (g*g*g);
-    return
-                    (1. - k*k)
+    return (1. - k*k)
     / //-------------------------------------------
         (4. * PI * (1. + k*cos_scatter_angle) * (1. + k*cos_scatter_angle));
 }
@@ -1118,9 +1112,9 @@ const int MAX_LIGHT_COUNT = 9;
 // "approx_air_column_density_ratio_along_2d_ray_for_curved_world" 
 //   calculates column density ratio of air for a ray emitted from the surface of a world to a desired distance, 
 //   taking into account the curvature of the world.
-// It does this by making two linear approximations for height:
-//   one for the lower atmosphere, one for the upper atmosphere.
-// These are represented by the two call outs to get_air_column_density_ratio_along_2d_ray_for_flat_world().
+// It does this by making a quadratic approximation for the height above the surface.
+// The derivative of this approximation never reaches 0, and this allows us to find a closed form solution 
+//   for the column density ratio using integration by substitution.
 // "x_start" and "x_stop" are distances along the ray from closest approach.
 //   If there is no intersection, they are the distances from the closest approach to the upper bound.
 //   Negative numbers indicate the rays are firing towards the ground.
@@ -1550,10 +1544,10 @@ vec3 get_rgb_intensity_of_light_from_surface_of_world(
     // "I_surface_refracted" is the intensity of light that is not immediately reflected, 
     //   but penetrates into the material, either to be absorbed, scattered away, 
     //   or scattered back to the view as diffuse reflection.
-    // Unlike I_surface_reflected, we do not consider it striking 
-    //     the ideal microfacet for reflection ("HV"), but instead the most common one ("NV").
+    // We would ideally like to negate the integral of reflectance over all possible angles, 
+    //   but finding that is hard, so let's just negate the reflectance for the angle at which it occurs the most, or "HV"
     vec3 I_surface_refracted =
-        I_surface * (1. - get_rgb_fraction_of_light_reflected_on_surface(NV, F0));
+        I_surface * (1. - get_rgb_fraction_of_light_reflected_on_surface(HV, F0));
       //+ I_sun     *  atmosphere_ambient_light_factor;
     // If sea is present, "E_ocean_scattered" is the rgb intensity of light 
     //   scattered by the sea towards the camera. Otherwise, it equals 0.

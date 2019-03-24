@@ -1,6 +1,6 @@
 #define GL_ES
-#include "precompiled/shaders/academics/cross_platform_macros.glsl.c"
-#include "precompiled/shaders/academics/math/constants.glsl.c"
+#include "precompiled/cross_platform_macros.glsl.c"
+#include "precompiled/academics/math/constants.glsl.c"
 
 // VIEW PROPERTIES -----------------------------------------------------------
 uniform   mat4  projection_matrix_inverse;

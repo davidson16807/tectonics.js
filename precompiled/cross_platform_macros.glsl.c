@@ -22,7 +22,13 @@
 #define IN(T)
 #define INOUT(T)
 #define OUT(T)
-#define CONST(T) const T
-#define VAR(T) let T
-#define FUNC(T) function T
+#define CONST(T) const
+#define VAR(T) let
+#define FUNC(T) function
+#define vec2 glm.vec2
+#define vec3 glm.vec3
+#define vec4 glm.vec4
+#define mat2 glm.mat2
+#define mat3 glm.mat3
+#define mat4 glm.mat4
 #endif
