@@ -17,7 +17,7 @@ How does it do this? Well, it's a long story, and I won't describe it in full de
 
 I pretty much use the same technique as Alan Zucconi, but there is one significant improvement I made that I want to talk about. This was an improvement I made to combat performance issues when rendering with multiple light sources. Tectonics.js has a nifty feature where it samples light sources from across several points in time. This is done to create a "timelapse" effect when running at large timesteps. 
 
-<img align="right" src="http://davidson16807.github.io/tectonics.js/blog/images/physical-rendering/timelapse.gif" width="600px">
+![haze](http://davidson16807.github.io/tectonics.js/blog/images/physical-rendering/timelapse.gif){:height="600px"}
 
 I didn't want to toss out this feature in order to implement atmospheric scattering, but I have to admit: it's a pretty usual requirement for an atmospheric renderer. Most of the time, atmospheric renderers assume there is only one light source, that being the sun. You could trivially modify an atmospheric renderer to run on multiple light sources, but let's consider the performance implications of doing so.
 
