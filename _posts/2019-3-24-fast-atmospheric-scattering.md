@@ -82,9 +82,7 @@ If this were a college calculus course, you might think to use integration by su
 
 <p>`x_b = x`</p>
 
-<p>For my implementation, I define the "top" of the atmosphere to be 6 scale heights from the surface. Under these circumstances, I set `b = 0.45` and `a = 0.45`. I find this gives pretty good approximations for column density ratio given virtually any realistic value of `z` or `H`. See for yourself: adjust the sliders below for `H` and `z` and see how close the appoximation (red) gets to the actual column density (black)</p>
-
-<iframe src="https://www.desmos.com/calculator/mu12vadnte?embed" width="500px" height="500px" style="border: 1px solid #ccc" frameborder=0></iframe>
+<p>For my implementation, I define the "top" of the atmosphere to be 6 scale heights from the surface. Under these circumstances, I set `b = 0.45` and `a = 0.45`. I find this gives pretty good approximations for column density ratio given virtually any realistic value of `z` or `H`. See for yourself: follow the link [here](https://www.desmos.com/calculator/mu12vadnte) and adjust the sliders for `H` and `z` and see how close the appoximation (red) gets to the actual column density (black)</p>
 
 Lastly, if you're interested in borrowing some of my code, check out [raymarching.glsl.c](https://github.com/davidson16807/tectonics.js/blob/master/precompiled/academics/raymarching.glsl.c) in the Tectonics.js source code, or just copy/paste the code below:
 
