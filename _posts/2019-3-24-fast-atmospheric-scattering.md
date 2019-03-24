@@ -17,13 +17,13 @@ How does it do this? Well, it's a long story, and I won't describe it in full de
 
 I pretty much use the same technique as Alan Zucconi, but there is one significant improvement I made that I want to talk about. This was an improvement I made to combat performance issues when rendering with multiple light sources. Tectonics.js has a nifty feature where it samples light sources from across several points in time. This is done to create a "timelapse" effect when running at large timesteps. 
 
-![timelapse](http://davidson16807.github.io/tectonics.js/blog/images/physical-rendering/timelapse.gif){:height="100%"}
+<img src="http://davidson16807.github.io/tectonics.js/blog/images/physical-rendering/timelapse.gif" width="100%">
 
 I didn't want to toss out this feature in order to implement atmospheric scattering, but I have to admit: it's a pretty usual requirement for an atmospheric renderer. Most of the time, atmospheric renderers assume there is only one light source, that being the sun. You could trivially modify an atmospheric renderer to run on multiple light sources, but let's consider the performance implications of doing so.
 
 Atmospheric renderers use [raymarching](https://en.wikipedia.org/wiki/Volume_ray_casting). Their implementation looks a little like the following:
 
-<img align="right" src="http://davidson16807.github.io/tectonics.js/blog/diagrams/atmospheric-scattering-simple.svg" width="38%">
+<img src="http://davidson16807.github.io/tectonics.js/blog/diagrams/atmospheric-scattering-simple.svg" width="100%">
 
     for each sample point "A" along the path drawn out from the viewer "V":
         for each sample point "B" along the path drawn from A to the light source "L":
@@ -31,7 +31,7 @@ Atmospheric renderers use [raymarching](https://en.wikipedia.org/wiki/Volume_ray
 
 You will notice the implementation above uses two nested for loops. What if we added support for multiple light sources? We would need to add another for loop:
 
-<img align="right" src="http://davidson16807.github.io/tectonics.js/blog/diagrams/atmospheric-scattering-multiple-light-sources.svg" width="38%">
+<img align="right" src="http://davidson16807.github.io/tectonics.js/blog/diagrams/atmospheric-scattering-multiple-light-sources.svg" width="23%">
 
     for each sample point "A" along the path drawn out from the viewer "V":
         for each light source "L":
@@ -40,7 +40,7 @@ You will notice the implementation above uses two nested for loops. What if we a
 
 We now have three nested for loops, each of which might run about 10 iterations in our use case. We're looking at something on the order of 1000 calculations. That's 1000 calculations *for every pixel, for every frame.* This is madness. 
 
-####So is there anyway we can pare this down? Can we eliminate one of the for loops?
+#### So is there anyway we can pare this down? Can we eliminate one of the for loops?
 
 Well, fortunately for us, this code is highly under-optimized. We need to consider what we're doing here: we're summing up the mass that's encountered along a series of infinitesimally small steps from "A" to "L". In essence, we're calculating an integral. 
 
@@ -58,10 +58,9 @@ The integral looks like this:
 
 <p>`h(x) = sqrt(x^2 + z^2) - R`</p>
 
-<p>Here, `x` represents some distance along the ray relative to the closest approach, and `z` represents the distance to the center of the planet when at that closest approach. Here's a diagram to illustrate these variables:</p>
+<p>Here, `x` represents some distance along the ray relative to the closest approach, and `z` represents the distance to the center of the planet when at that closest approach (see diagram on the left)</p>
 
-<img src="http://davidson16807.github.io/tectonics.js/blog/diagrams/atmospheric-scattering-variables.svg" width="100%">
-![variables]()
+<img align="right" src="http://davidson16807.github.io/tectonics.js/blog/diagrams/atmospheric-scattering-variables.svg" width="23%">
 
 So all together, we're trying to solve:
 
