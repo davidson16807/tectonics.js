@@ -11,23 +11,23 @@ There have been some major changes recently to the appearance of the simulation.
 
 What I want to discuss today is one particular aspect of this new rendering model: atmospheric scattering. Zoom into a planet really close and you'll see how the atmosphere forms a haze:
 
-![haze](http://davidson16807.github.io/tectonics.js/blog/images/physical-rendering/haze.png){:height="100%"}
+![haze](http://davidson16807.github.io/tectonics.js/blog/images/physical-rendering/haze.png){:height="600px"}
 
 How does it do this? Well, it's a long story, and I won't describe it in full detail. There are already plenty of resources available online that teach you how it's done. I highly recommend reading [Alan Zucconi's](https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-1/) series on atmospheric scattering, if you're interested in the topic. 
 
 I pretty much use the same technique as Alan Zucconi, but there is one significant improvement I made that I want to talk about. This was an improvement I made to combat performance issues when rendering with multiple light sources. Tectonics.js has a nifty feature where it samples light sources from across several points in time. This is done to create a "timelapse" effect when running at large timesteps. 
 
-<img src="http://davidson16807.github.io/tectonics.js/blog/images/physical-rendering/timelapse.gif" width="100%">
+<img align="right" src="http://davidson16807.github.io/tectonics.js/blog/images/physical-rendering/timelapse.gif" width="600px">
 
 I didn't want to toss out this feature in order to implement atmospheric scattering, but I have to admit: it's a pretty usual requirement for an atmospheric renderer. Most of the time, atmospheric renderers assume there is only one light source, that being the sun. You could trivially modify an atmospheric renderer to run on multiple light sources, but let's consider the performance implications of doing so.
 
 Atmospheric renderers use [raymarching](https://en.wikipedia.org/wiki/Volume_ray_casting). Their implementation looks a little like the following:
 
-<img src="http://davidson16807.github.io/tectonics.js/blog/diagrams/atmospheric-scattering-simple.svg" width="100%">
+<img align="right" src="http://davidson16807.github.io/tectonics.js/blog/diagrams/atmospheric-scattering-simple.svg" width="23%">
 
     for each sample point "A" along the path drawn out from the viewer "V":
         for each sample point "B" along the path drawn from A to the light source "L":
-            add up the amount of mass that's encountered by light if it were to travel from the light source and scatter towards the viewer at point A, and calculate the color of light after traveling through that mass
+            sum up the amount of mass that's encountered from V to A to L
 
 You will notice the implementation above uses two nested for loops. What if we added support for multiple light sources? We would need to add another for loop:
 
@@ -36,7 +36,7 @@ You will notice the implementation above uses two nested for loops. What if we a
     for each sample point "A" along the path drawn out from the viewer "V":
         for each light source "L":
             for each sample point "B" along the path drawn from A to the light source "L":
-                ...
+                sum up the amount of mass that's encountered from V to A to L
 
 We now have three nested for loops, each of which might run about 10 iterations in our use case. We're looking at something on the order of 1000 calculations. That's 1000 calculations *for every pixel, for every frame.* This is madness. 
 
