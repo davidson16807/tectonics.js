@@ -11,13 +11,13 @@ There have been some major changes recently to the appearance of the simulation.
 
 What I want to discuss today is one particular aspect of this new rendering model: atmospheric scattering. Zoom into a planet really close and you'll see how the atmosphere forms a haze:
 
-![haze](http://davidson16807.github.io/tectonics.js/blog/images/physical-rendering/haze.png){:height="600px"}
+![haze](http://davidson16807.github.io/tectonics.js/blog/images/physical-rendering/haze.png){:height="500px"}
 
 How does it do this? Well, it's a long story, and I won't describe it in full detail. There are already plenty of resources available online that teach you how it's done. I highly recommend reading [Alan Zucconi's](https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-1/) series on atmospheric scattering, if you're interested in the topic. 
 
 I pretty much use the same technique as Alan Zucconi, but there is one significant improvement I made that I want to talk about. This was an improvement I made to combat performance issues when rendering with multiple light sources. Tectonics.js has a nifty feature where it samples light sources from across several points in time. This is done to create a "timelapse" effect when running at large timesteps. 
 
-![haze](http://davidson16807.github.io/tectonics.js/blog/images/physical-rendering/timelapse.gif){:height="600px"}
+![haze](http://davidson16807.github.io/tectonics.js/blog/images/physical-rendering/timelapse.gif)
 
 I didn't want to toss out this feature in order to implement atmospheric scattering, but I have to admit: it's a pretty usual requirement for an atmospheric renderer. Most of the time, atmospheric renderers assume there is only one light source, that being the sun. You could trivially modify an atmospheric renderer to run on multiple light sources, but let's consider the performance implications of doing so.
 
@@ -25,18 +25,18 @@ Atmospheric renderers use [raymarching](https://en.wikipedia.org/wiki/Volume_ray
 
 <img align="right" src="http://davidson16807.github.io/tectonics.js/blog/diagrams/atmospheric-scattering-simple.svg" width="23%">
 
-    for each sample point "A" along the path drawn out from the viewer "V":
-        for each sample point "B" along the path drawn from A to the light source "L":
-            sum up the amount of mass that's encountered from V to A to L
+    for each point "A" along the path drawn out from viewer "V":
+        for each point "B" along the path drawn from A to light source "L":
+            sum up the mass encountered from V to A to L
 
 You will notice the implementation above uses two nested for loops. What if we added support for multiple light sources? We would need to add another for loop:
 
 <img align="right" src="http://davidson16807.github.io/tectonics.js/blog/diagrams/atmospheric-scattering-multiple-light-sources.svg" width="23%">
 
-    for each sample point "A" along the path drawn out from the viewer "V":
+    for each point "A" along the path drawn out from the viewer "V":
         for each light source "L":
-            for each sample point "B" along the path drawn from A to the light source "L":
-                sum up the amount of mass that's encountered from V to A to L
+            for each point "B" along the path drawn from A to light source "L":
+                sum up the mass encountered from V to A to L
 
 We now have three nested for loops, each of which might run about 10 iterations in our use case. We're looking at something on the order of 1000 calculations. That's 1000 calculations *for every pixel, for every frame.* This is madness. 
 
@@ -82,11 +82,11 @@ If this were a college calculus course, you might think to use integration by su
 
 <p>`x_b = x`</p>
 
-<p>For my implementation, I define the "top" of the atmosphere to be 6 scale heights from the surface. Under these circumstances, I set `b = 0.45` and `a = 0.45`. I find this gives pretty good approximations for column density given virtually any realistic value of `z` or `H`.</p>
+<p>For my implementation, I define the "top" of the atmosphere to be 6 scale heights from the surface. Under these circumstances, I set `b = 0.45` and `a = 0.45`. I find this gives pretty good approximations for column density ratio given virtually any realistic value of `z` or `H`. See for yourself: adjust the sliders below for `H` and `z` and see how close the appoximation (red) gets to the actual column density (black)</p>
 
-If you're at all interested in playing around with this approximation, I've setup a desmos page [here](https://www.desmos.com/calculator/9g6ljuo4ge) that recreates this discussion. 
+<iframe src="https://www.desmos.com/calculator/mu12vadnte?embed" width="500px" height="500px" style="border: 1px solid #ccc" frameborder=0></iframe>
 
-Lastly, if you're at all interested in borrowing the code I use to implement atmospheric rendering, check out [raymarching.glsl.c](https://github.com/davidson16807/tectonics.js/blob/master/precompiled/academics/raymarching.glsl.c) in the Tectonics.js source code, or just copy/paste the code below:
+Lastly, if you're interested in borrowing some of my code, check out [raymarching.glsl.c](https://github.com/davidson16807/tectonics.js/blob/master/precompiled/academics/raymarching.glsl.c) in the Tectonics.js source code, or just copy/paste the code below:
 
 
     float approx_air_column_density_ratio_along_2d_ray_for_curved_world(
