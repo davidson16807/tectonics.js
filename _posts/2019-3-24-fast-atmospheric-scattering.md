@@ -11,13 +11,13 @@ There have been some major changes recently to the appearance of the simulation.
 
 What I want to discuss today is one particular aspect of this new rendering model: atmospheric scattering. Zoom into a planet really close and you'll see how the atmosphere forms a haze:
 
-![haze](http://davidson16807.github.io/tectonics.js/blog/images/physical-rendering/haze.png){:height="500px"}
+<img src="http://davidson16807.github.io/tectonics.js/blog/images/physical-rendering/haze.png" width="500px">
 
 How does it do this? Well, it's a long story, and I won't describe it in full detail. There are already plenty of resources available online that teach you how it's done. I highly recommend reading [Alan Zucconi's](https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-1/) series on atmospheric scattering, if you're interested in the topic. 
 
 I pretty much use the same technique as Alan Zucconi, but there is one significant improvement I made that I want to talk about. This was an improvement I made to combat performance issues when rendering with multiple light sources. Tectonics.js has a nifty feature where it samples light sources from across several points in time. This is done to create a "timelapse" effect when running at large timesteps. 
 
-![haze](http://davidson16807.github.io/tectonics.js/blog/images/physical-rendering/timelapse.gif)
+<img src="http://davidson16807.github.io/tectonics.js/blog/images/physical-rendering/timelapse.gif" width="500px">
 
 I didn't want to toss out this feature in order to implement atmospheric scattering, but I have to admit: it's a pretty usual requirement for an atmospheric renderer. Most of the time, atmospheric renderers assume there is only one light source, that being the sun. You could trivially modify an atmospheric renderer to run on multiple light sources, but let's consider the performance implications of doing so.
 
