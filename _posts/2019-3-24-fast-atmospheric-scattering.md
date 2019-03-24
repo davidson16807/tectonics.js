@@ -5,25 +5,25 @@ layout: default
 
 There have been some major changes recently to the appearance of the simulation. I've gone through great pains to learn physical rendering techniques in an [effort](https://github.com/davidson16807/tectonics.js/issues/34) to eventually model how atmospheric compounds affect climate. Those two topics might not sound interrelated, but it turns out they share a lot of the same equations.
 
-| ![before](http://davidson16807.github.io/tectonics.js/blog/images/montage/8.png) | ![after](http://davidson16807.github.io/tectonics.js/blog/images/montage/9.png) |
+| ![before](http://davidson16807.github.io/tectonics.js/blog/images/montage/8.png){:height="300px" width="300px"} | ![after](http://davidson16807.github.io/tectonics.js/blog/images/montage/9.png){:height="300px" width="300px"} |
 |--------------|---------------|
 | before | after |
 
 What I want to discuss today is one particular aspect of this new rendering model: atmospheric scattering. Zoom into a planet really close and you'll see how the atmosphere forms a haze:
 
-![haze](http://davidson16807.github.io/tectonics.js/blog/images/physical-rendering/haze.png)
+![haze](http://davidson16807.github.io/tectonics.js/blog/images/physical-rendering/haze.png){:height="100%"}
 
 How does it do this? Well, it's a long story, and I won't describe it in full detail. There are already plenty of resources available online that teach you how it's done. I highly recommend reading [Alan Zucconi's](https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-1/) series on atmospheric scattering, if you're interested in the topic. 
 
 I pretty much use the same technique as Alan Zucconi, but there is one significant improvement I made that I want to talk about. This was an improvement I made to combat performance issues when rendering with multiple light sources. Tectonics.js has a nifty feature where it samples light sources from across several points in time. This is done to create a "timelapse" effect when running at large timesteps. 
 
-![timelapse](http://davidson16807.github.io/tectonics.js/blog/images/physical-rendering/timelapse.png)
+![timelapse](http://davidson16807.github.io/tectonics.js/blog/images/physical-rendering/timelapse.gif){:height="100%"}
 
 I didn't want to toss out this feature in order to implement atmospheric scattering, but I have to admit: it's a pretty usual requirement for an atmospheric renderer. Most of the time, atmospheric renderers assume there is only one light source, that being the sun. You could trivially modify an atmospheric renderer to run on multiple light sources, but let's consider the performance implications of doing so.
 
 Atmospheric renderers use [raymarching](https://en.wikipedia.org/wiki/Volume_ray_casting). Their implementation looks a little like the following:
 
-<img align="right" src="http://davidson16807.github.io/tectonics.js/blog/diagrams/atmospheric-scattering-simple.png">
+<img align="right" src="http://davidson16807.github.io/tectonics.js/blog/diagrams/atmospheric-scattering-simple.svg" width="38%">
 
     for each sample point "A" along the path drawn out from the viewer "V":
         for each sample point "B" along the path drawn from A to the light source "L":
@@ -31,7 +31,7 @@ Atmospheric renderers use [raymarching](https://en.wikipedia.org/wiki/Volume_ray
 
 You will notice the implementation above uses two nested for loops. What if we added support for multiple light sources? We would need to add another for loop:
 
-<img align="right" src="http://davidson16807.github.io/tectonics.js/blog/diagrams/atmospheric-scattering-multiple-light-sources.png">
+<img align="right" src="http://davidson16807.github.io/tectonics.js/blog/diagrams/atmospheric-scattering-multiple-light-sources.svg" width="38%">
 
     for each sample point "A" along the path drawn out from the viewer "V":
         for each light source "L":
@@ -40,11 +40,13 @@ You will notice the implementation above uses two nested for loops. What if we a
 
 We now have three nested for loops, each of which might run about 10 iterations in our use case. We're looking at something on the order of 1000 calculations. That's 1000 calculations *for every pixel, for every frame.* This is madness. 
 
-**So is there anyway we can pare this down? Can we eliminate one of the for loops?**
+####So is there anyway we can pare this down? Can we eliminate one of the for loops?
 
 Well, fortunately for us, this code is highly under-optimized. We need to consider what we're doing here: we're summing up the mass that's encountered along a series of infinitesimally small steps from "A" to "L". In essence, we're calculating an integral. 
 
-To be more precise: we're trying to find the integral of density from points "A" to "L". This is sometimes known as the [column density](https://en.wikipedia.org/wiki/Area_density#Column_density) along the path.
+To be more precise: we're trying to find the integral of density from points "A" to "L". This is sometimes known as the [column density](https://en.wikipedia.org/wiki/Area_density#Column_density) along the path. To simplify the problem a bit, we're going to consider column density relative to the density of air on the surface of the planet. Let's call this the "column density ratio".
+
+The integral looks like this:
 
 <p>`int_A^L rho(x) dx`</p>
 
@@ -58,7 +60,8 @@ To be more precise: we're trying to find the integral of density from points "A"
 
 <p>Here, `x` represents some distance along the ray relative to the closest approach, and `z` represents the distance to the center of the planet when at that closest approach. Here's a diagram to illustrate these variables:</p>
 
-![variables](http://davidson16807.github.io/tectonics.js/blog/diagrams/atmospheric-scattering-variables.png)
+<img src="http://davidson16807.github.io/tectonics.js/blog/diagrams/atmospheric-scattering-variables.svg" width="100%">
+![variables]()
 
 So all together, we're trying to solve:
 
@@ -68,11 +71,11 @@ Solve this integral, and you will be able to completely eliminate a nested for l
 
 If this were a college calculus course, you might think to use integration by substitution. This results in the following expression:
 
-<p>`-H/h'(x) exp(-h/H)`</p>
+<p>`-H/(h'(x)) exp(-h/H)`</p>
 
 <p>However this produces bogus results when the ray just barely grazes the planet, such that `z approx R` and `x approx 0`. This is because the height changes very little in these circumstances, so `h'(x) = 0`. In essence, we divide by 0, and results near this singularity will look unrealistic.</p>
 
-<p>Fortunately, we only need something that looks convincing, so we can afford making approximations. All we need is a good approximation for height whose derivative never reaches 0. I've tried several approaches, but the best I've found so far uses a quadratic approximation for height. It's derivative still eventually reaches 0, but you can stretch out the approximation by some factor `a` to ensure it never gets anywhere near 0 for any positive value of x.</p> 
+<p>Fortunately, we only need something that looks convincing, so we can afford to make approximations. All we need is a good approximation for height whose derivative never reaches 0. I've tried several approaches, but the best I've found so far uses a quadratic approximation for height. It's derivative still eventually reaches 0, but you can stretch out the approximation by some factor `a` to ensure it never gets anywhere near 0 for any positive value of x.</p> 
 
 <p>`h(x) approx 1/2 a h''(x_b) + h'(x_b) + h(x_b)`</p>
 
@@ -87,42 +90,14 @@ If you're at all interested in playing around with this approximation, I've setu
 Lastly, if you're at all interested in borrowing the code I use to implement atmospheric rendering, check out [raymarching.glsl.c](https://github.com/davidson16807/tectonics.js/blob/master/precompiled/academics/raymarching.glsl.c) in the Tectonics.js source code, or just copy/paste the code below:
 
 
-    // "approx_air_column_density_ratio_along_2d_ray_for_curved_world" 
-    //   calculates column density ratio of air for a ray emitted from the surface of a world to a desired distance, 
-    //   taking into account the curvature of the world.
-    // It does this by making a quadratic approximation for the height above the surface.
-    // The derivative of this approximation never reaches 0, and this allows us to find a closed form solution 
-    //   for the column density ratio using integration by substitution.
-    // "x_start" and "x_stop" are distances along the ray from closest approach.
-    //   If there is no intersection, they are the distances from the closest approach to the upper bound.
-    //   Negative numbers indicate the rays are firing towards the ground.
-    // "z2" is the closest distance from the ray to the center of the world, squared.
-    // "r" is the radius of the world.
-    // "H" is the scale height of the atmosphere.
     float approx_air_column_density_ratio_along_2d_ray_for_curved_world(
-        float x_start, 
-        float x_stop, 
-        float z2, 
-        float r, 
-        float H
+        float x_start, // distance along path from closest approach at which we start the raymarch
+        float x_stop,  // distance along path from closest approach at which we stop the raymarch
+        float z2,      // distance at closest approach, squared
+        float r,       // radius of the planet
+        float H        // scale height of the planet's atmosphere
     ){
-
-        // GUIDE TO VARIABLE NAMES:
-        //  "x*" distance along the ray from closest approach
-        //  "z*" distance from the center of the world at closest approach
-        //  "r*" distance ("radius") from the center of the world
-        //  "h*" distance ("height") from the center of the world
-        //  "*b" variable at which the slope and intercept of the height approximation is sampled
-        //  "*0" variable at which the surface of the world occurs
-        //  "*1" variable at which the top of the atmosphere occurs
-        //  "*2" the square of a variable
-        //  "d*dx" a derivative, a rate of change over distance along the ray
-
-        // "a" is the factor by which we "stretch out" the quadratic height approximation
-        //   this is done to ensure we do not divide by zero when we perform integration by substitution
         float a = 0.45;
-        // "b" is the fraction along the path from the surface to the top of the atmosphere 
-        //   at which we sample for the slope and intercept of our height approximation
         float b = 0.45;
 
         float x0 = sqrt(max(r *r -z2, 0.));
@@ -157,10 +132,9 @@ Lastly, if you're at all interested in borrowing the code I use to implement atm
         // which can cause graphical artifacts.
         return min(abs(sigma),1e20);
     }
-    // "try_approx_air_column_density_ratio_along_ray" is an all-in-one convenience wrapper 
-    //   for approx_air_column_density_ratio_along_ray_2d() and approx_reference_air_column_density_ratio_along_ray.
-    // Just pass it the origin and direction of a 3d ray and it will find the column density ratio along its path, 
-    //   or return false to indicate the ray passes through the surface of the world.
+
+    // "approx_air_column_density_ratio_along_3d_ray_for_curved_world" is just a convenience wrapper 
+    //   for the above function that works with 3d vectors.
     float approx_air_column_density_ratio_along_3d_ray_for_curved_world (
         vec3  P, // position of viewer
         vec3  V, // direction of viewer (unit vector)
