@@ -87,7 +87,7 @@ If this were a college calculus course, you might think to use integration by su
 
 <p>Here, `x_b` is a sample point along the path through the atmosphere. If `x_0` is the point at which we encounter the surface, and `x_1` is the point at which we encounter some arbitrary "top" of the atmosphere, then `x_b` can be thought of as a point between them, defined by a fraction b:</p>
 
-<p>`x_b = x`</p>
+<p>`x_b = x_0 + b(x_1-x_0)`</p>
 
 <p>For my implementation, I define the "top" of the atmosphere to be 6 scale heights from the surface. Under these circumstances, I set `b = 0.45` and `a = 0.45`. I find this gives pretty good approximations for column density ratio given virtually any realistic value of `z` or `H`. See for yourself: follow the link <a href="https://www.desmos.com/calculator/mu12vadnte">here</a> and adjust the sliders for `H` and `z` and see how close the appoximation (red) gets to the actual column density (black)</p>
 
