@@ -26,7 +26,7 @@ I didn't want to toss out this feature in order to implement atmospheric scatter
 
 Atmospheric renderers use [raymarching](https://en.wikipedia.org/wiki/Volume_ray_casting) to find something known as the [column density](https://en.wikipedia.org/wiki/Area_density#Column_density) along a path from the viewer to the light source. You might see this mentioned here as the "column density ratio." When we say this, we mean the column density expressed relative to the density of air on the surface of the planet. Most standard atmospheric renderers are implemented as follows:
 
-<img align="right" src="http://davidson16807.github.io/tectonics.js/blog/diagrams/atmospheric-scattering-simple.svg" width="38%">
+<img src="http://davidson16807.github.io/tectonics.js/blog/diagrams/atmospheric-scattering-simple.svg" width="38%">
 
     for each point "A" along the view ray "V":
       for each point "B" from A to light source "L":
@@ -36,7 +36,7 @@ You will notice the implementation above uses two nested for loops. What if we a
 
 
 
-<img align="right" src="http://davidson16807.github.io/tectonics.js/blog/diagrams/atmospheric-scattering-multiple-light-sources.svg" width="38%">
+<img src="http://davidson16807.github.io/tectonics.js/blog/diagrams/atmospheric-scattering-multiple-light-sources.svg" width="38%">
 
     for each point "A" along the view ray "V":
       for each light source "L":
