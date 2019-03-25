@@ -7,7 +7,7 @@ There have been some major changes recently to the appearance of the simulation.
 
 
 <img align="left" src="http://davidson16807.github.io/tectonics.js/blog/images/montage/8.png" width="38%">
-<img align="left" src="http://davidson16807.github.io/tectonics.js/blog/images/montage/9.png" width="38%">
+<img src="http://davidson16807.github.io/tectonics.js/blog/images/montage/9.png" width="38%">
 
 
 What I want to discuss today is one particular aspect of this new rendering model: atmospheric scattering. Zoom into a planet really close and you'll see how the atmosphere forms a haze:
