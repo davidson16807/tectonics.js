@@ -27,13 +27,13 @@ I pretty much use the same technique as Alan Zucconi, but there is one significa
 
 I didn't want to toss out this feature in order to implement atmospheric scattering, but I have to admit: it's a pretty usual requirement for an atmospheric renderer. Most of the time, atmospheric renderers assume there is only one light source, that being the sun. You could trivially modify an atmospheric renderer to run on multiple light sources, but let's consider the performance implications of doing so.
 
-Atmospheric renderers use [raymarching](https://en.wikipedia.org/wiki/Volume_ray_casting). Their implementation looks a little like the following:
+Atmospheric renderers use [raymarching](https://en.wikipedia.org/wiki/Volume_ray_casting) to find something known as the [column density](https://en.wikipedia.org/wiki/Area_density#Column_density) along a path from the viewer to the light source. You might see this mentioned here as the "column density ratio." When we say this, we mean the column density expressed relative to the density of air on the surface of the planet. Most standard atmospheric renderers are implemented as follows:
 
 <img align="right" src="http://davidson16807.github.io/tectonics.js/blog/diagrams/atmospheric-scattering-simple.svg" width="23%">
 
-    for each point "A" along the path drawn out from viewer "V":
-        for each point "B" along the path drawn from A to light source "L":
-            sum up the mass encountered from V to A to L
+    for each point "A" along the view ray "V":
+        for each point "B" from A to light source "L":
+            sum up the column density ratio
 
 You will notice the implementation above uses two nested for loops. What if we added support for multiple light sources? We would need to add another for loop:
 
@@ -41,10 +41,10 @@ You will notice the implementation above uses two nested for loops. What if we a
 
 <img align="right" src="http://davidson16807.github.io/tectonics.js/blog/diagrams/atmospheric-scattering-multiple-light-sources.svg" width="23%">
 
-    for each point "A" along the path drawn out from the viewer "V":
+    for each point "A" along the view ray "V":
         for each light source "L":
-            for each point "B" along the path drawn from A to light source "L":
-                sum up the mass encountered from V to A to L
+            for each point "B" from A to light source "L":
+                sum up the column density ratio
 
 We now have three nested for loops, each of which might run about 10 iterations in our use case. We're looking at something on the order of 1000 calculations. That's 1000 calculations *for every pixel, for every frame.* This is madness. 
 
@@ -54,7 +54,7 @@ We now have three nested for loops, each of which might run about 10 iterations 
 
 Well, fortunately for us, this code is not very well optimized. We need to consider what we're doing here: we're summing up the mass that's encountered along a series of infinitesimally small steps from "A" to "L". In essence, we're calculating an integral. 
 
-To be more precise: we're trying to find the integral of density from points "A" to "L". This is sometimes known as the [column density](https://en.wikipedia.org/wiki/Area_density#Column_density) along the path. To simplify the problem a bit, we're going to consider column density relative to the density of air on the surface of the planet. Let's call this the "column density ratio".
+To be more precise: we're trying to find the integral of density from points "A" to "L". 
 
 The integral looks like this:
 
@@ -96,8 +96,7 @@ If this were a college calculus course, you might think to use integration by su
 
 Lastly, if you're interested in borrowing some of my code, check out [raymarching.glsl.c](https://github.com/davidson16807/tectonics.js/blob/master/precompiled/academics/raymarching.glsl.c) in the Tectonics.js source code, or just copy/paste the code below:
 
-<pre><code class="language-clike">
-
+<pre><code class="language-glsl">
 float approx_air_column_density_ratio_along_2d_ray_for_curved_world(
     float x_start, // distance along path from closest approach at which we start the raymarch
     float x_stop,  // distance along path from closest approach at which we stop the raymarch
@@ -154,5 +153,4 @@ float approx_air_column_density_ratio_along_3d_ray_for_curved_world (
     float z2 = dot( P,P) - xz * xz; // distance from the origin at which closest approach occurs
     return approx_air_column_density_ratio_along_2d_ray_for_curved_world( 0.-xz, x-xz, z2, r, H );
 }
-
 </code></pre>
