@@ -9,7 +9,7 @@ There have been some major changes recently to the appearance of the simulation.
 
 | ![before](http://davidson16807.github.io/tectonics.js/blog/images/montage/8.png){:height="300px" width="300px"} | ![after](http://davidson16807.github.io/tectonics.js/blog/images/montage/9.png){:height="300px" width="300px"} |
 |--------------|---------------|
-| before | after |
+|  |  |
 
 
 
@@ -29,22 +29,22 @@ I didn't want to toss out this feature in order to implement atmospheric scatter
 
 Atmospheric renderers use [raymarching](https://en.wikipedia.org/wiki/Volume_ray_casting) to find something known as the [column density](https://en.wikipedia.org/wiki/Area_density#Column_density) along a path from the viewer to the light source. You might see this mentioned here as the "column density ratio." When we say this, we mean the column density expressed relative to the density of air on the surface of the planet. Most standard atmospheric renderers are implemented as follows:
 
-<img align="right" src="http://davidson16807.github.io/tectonics.js/blog/diagrams/atmospheric-scattering-simple.svg" width="23%">
+<img align="right" src="http://davidson16807.github.io/tectonics.js/blog/diagrams/atmospheric-scattering-simple.svg" width="38%">
 
     for each point "A" along the view ray "V":
-        for each point "B" from A to light source "L":
-            sum up the column density ratio
+      for each point "B" from A to light source "L":
+        sum up the column density ratio
 
 You will notice the implementation above uses two nested for loops. What if we added support for multiple light sources? We would need to add another for loop:
 
 
 
-<img align="right" src="http://davidson16807.github.io/tectonics.js/blog/diagrams/atmospheric-scattering-multiple-light-sources.svg" width="23%">
+<img align="right" src="http://davidson16807.github.io/tectonics.js/blog/diagrams/atmospheric-scattering-multiple-light-sources.svg" width="38%">
 
     for each point "A" along the view ray "V":
-        for each light source "L":
-            for each point "B" from A to light source "L":
-                sum up the column density ratio
+      for each light source "L":
+        for each point "B" from A to light source "L":
+          sum up the column density ratio
 
 We now have three nested for loops, each of which might run about 10 iterations in our use case. We're looking at something on the order of 1000 calculations. That's 1000 calculations *for every pixel, for every frame.* This is madness. 
 
@@ -70,7 +70,7 @@ The integral looks like this:
 
 <p>Here, `x` represents some distance along the ray relative to the closest approach, and `z` represents the distance to the center of the planet when at that closest approach (see diagram on the left)</p>
 
-<img align="right" src="http://davidson16807.github.io/tectonics.js/blog/diagrams/atmospheric-scattering-variables.svg" width="23%">
+<img align="right" src="http://davidson16807.github.io/tectonics.js/blog/diagrams/atmospheric-scattering-variables.svg" width="38%">
 
 So all together, we're trying to solve:
 
