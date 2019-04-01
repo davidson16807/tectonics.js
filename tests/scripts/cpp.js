@@ -521,7 +521,7 @@ Cpp().then(function(cpp) {
 	};
 
 	framework_tests(
-		'Float32Raster',
+		'cpp floats',
 		cpp.floats_from_list([-1,	 0,		 0.5,	 -0.5 ]),
 		cpp.floats_from_list([ 1, 	 2,		 0.49,	  3   ]),
 	);

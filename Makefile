@@ -34,7 +34,7 @@ postcompiled/cpp.html : $(INC) $(SRC)
 	# -Werror \
 	# -g core/src/*.cpp \
 
-postcompiled/utils/Rasters.js : precompiled/utils/Rasters.js
+postcompiled/Rasters.js : precompiled/rasters/Rasters.js
 	$(CPP) -E -P -I. -xc -Wundef -std=c99 -nostdinc -Wtrigraphs -fdollars-in-identifiers -C $< > $@
 
 postcompiled/Shaders.js : precompiled/Shaders.js $(SHADERS) Makefile

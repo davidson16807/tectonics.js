@@ -34,6 +34,7 @@
     <script src="libraries/Stats.js"></script>
     <script src="libraries/random-0.26.js"></script>
     <script src="libraries/base64-arraybuffer.js"></script>
+    <script src="postcompiled/cpp.js"></script>
     <script src="postcompiled/Shaders.js"></script>
     <script src="postcompiled/Rasters.js"></script>
     <script src="noncompiled/Units.js"></script>
@@ -417,6 +418,7 @@
         process.exit(1);
     }
 
+    var cpp;
     var sim, view;
     var renderStats, updateStats;
     var IS_PROD = true;
@@ -1166,18 +1168,21 @@
         }
     });
     
-    init();
-    animate();
-    update();
-    autosave();
+    Cpp().then(function(x) {
+        cpp = x;
+        init();
+        animate();
+        update();
+        autosave();
 
-    // HACK: not sure why, but initializing speed at 1m/s will cause 
-    //  display to break when user increases speed past 1wk/s.
-    // We set speed to 1m/s here to work around this.
-    timeMenuVue.speed(1)
+        // HACK: not sure why, but initializing speed at 1m/s will cause 
+        //  display to break when user increases speed past 1wk/s.
+        // We set speed to 1m/s here to work around this.
+        timeMenuVue.speed(1)
 
-    // once everything is loaded, instruct the user how to start
-    dialogVue.notify("click ⏩ or press > to begin")
+        // once everything is loaded, instruct the user how to start
+        dialogVue.notify("click ⏩ or press > to begin")
+    });
 </script>
 </body>
 </html>
