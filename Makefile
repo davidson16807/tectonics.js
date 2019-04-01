@@ -10,7 +10,7 @@ SHADERS = $(shell find precompiled/ -type f -name '*.glsl.c')
 
 SRC=core/src/rasters.cpp
 INC:=$(shell find core/inc/ -name "*.hpp") 
-OUT=postcompiled/utils/Rasters.cpp.js postcompiled/utils/Rasters.js postcompiled/view/FragmentShaders.js postcompiled/view/VertexShaders.js
+OUT=postcompiled/Rasters.html postcompiled/Rasters.js postcompiled/Shaders.js
 
 all: $(OUT)
 
@@ -20,14 +20,16 @@ run:
 test:
 	emrun --browser chrome test.cpp.html
 
-postcompiled/utils/Rasters.cpp.js : $(INC) $(SRC)
-	em++ --emrun --bind --profiling-funcs -std=c++17 \
-	-I core/inc/ \
-	-g core/src/rasters.cpp \
+postcompiled/Rasters.html : $(INC) $(SRC)
+	cd postcompiled && \
+	em++ --emrun --bind -std=c++17 \
+	-I ../core/inc/ \
+	-g ../core/src/rasters.cpp \
 	-s EXPORT_NAME="'Rasters'" -s MODULARIZE=1 \
 	-s WASM=1 -s DEMANGLE_SUPPORT=1 -s ASSERTIONS=1 -s SAFE_HEAP=1 \
 	-s ALLOW_MEMORY_GROWTH=1 \
-	-o postcompiled/utils/Rasters.cpp.html
+	-o Rasters.html && \
+	cd -
 	# -g4 \
 	# -Werror \
 	# -g core/src/*.cpp \
