@@ -136,6 +136,16 @@ namespace composites
 			}
 		}
 	}
+	template <class T>
+	many<T> get(const many<T>& a, const many<unsigned int>& ids)
+	{
+		many<T> out = many<T>(ids.size());
+		for (unsigned int i = 0; i < ids.size(); ++i)
+		{
+			out[i] = a[ids[i]];
+		}
+		return out;
+	}
 
 	template <class T>
 	void fill(many<T>& out, const T a )
