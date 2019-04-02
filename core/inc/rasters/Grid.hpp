@@ -107,20 +107,20 @@ namespace rasters {
 
 			  	edge_vertex_id_a(0),
 			  	edge_vertex_id_b(0),
-			  //	edge_face_id_a(0),
-			  //	edge_face_id_b(0),
+			//	edge_face_id_a(0),
+			//	edge_face_id_b(0),
 			  	edge_endpoint_a(0),
 			  	edge_endpoint_b(0),
 			  	edge_midpoints(0),
 			  	edge_distances(0),
 			  	edge_average_distance(0),
 			  	edge_normals(0),
-			  //	edge_areas(0),
+			//	edge_areas(0),
 			  	
 			  	arrow_vertex_id_from(0),
 			  	arrow_vertex_id_to(0),
-			  //	arrow_face_id_a(0),
-			  //	arrow_face_id_b(0),
+			//	arrow_face_id_a(0),
+			//	arrow_face_id_b(0),
 			  	arrow_endpoint_from(0),
 			  	arrow_endpoint_to(0),
 			  	arrow_midpoints(0),
@@ -128,7 +128,7 @@ namespace rasters {
 			  	arrow_distances(0), 
 			  	arrow_average_distance(0),
 			  	arrow_normals(0)
-			  //	arrow_areas(0),
+			//	arrow_areas(0),
 		{
 			for (unsigned int i=0, i3=0; i<faces.size(); i++, i3+=3) 
 			{
@@ -202,24 +202,51 @@ namespace rasters {
 			aggregate_into(face_area_weighted_normals, face_vertex_id_c, [](vec3 a, vec3 b){ return a+b; }, vertex_normals);
 			normalize(vertex_normals, vertex_normals);
 
-			// edge_vertex_id_a 		= get_x(edge_vertex_ids);
-			// edge_vertex_id_b 		= get_y(edge_vertex_ids);
-			// edge_endpoint_a 		= get(vertex_pos, edge_vertex_id_a);
-			// edge_endpoint_b 		= get(vertex_pos, edge_vertex_id_b);
-			// edge_midpoints 			= (edge_endpoint_a + edge_endpoint_b) / 2.;
-			// edge_distances 			= distance(edge_endpoint_a, edge_endpoint_b);
-			// edge_average_distance 	= mean(edge_distances);
-			// edge_normals 			= (get(vertex_normals, edge_vertex_id_a) + get(vertex_normals, edge_vertex_id_b)) / 2.;
+			int edge_count         = arrow_vertex_ids_vector.size();
+			edge_vertex_id_a       = uints(edge_count);
+			edge_vertex_id_b       = uints(edge_count);
+			//edge_face_id_a         = uints(edge_count);
+			//edge_face_id_b         = uints(edge_count);
+			edge_endpoint_a        = vec3s(edge_count);
+			edge_endpoint_b        = vec3s(edge_count);
+			edge_midpoints         = vec3s(edge_count);
+			edge_distances         = floats(edge_count);
+			edge_average_distance  = float(edge_count);
+			edge_normals           = vec3s(edge_count);
+			//edge_areas             = floats(edge_count);
 
-			// arrow_vertex_id_from 	= get_x(arrow_vertex_ids);
-			// arrow_vertex_id_to   	= get_y(arrow_vertex_ids);
-			// arrow_endpoint_from 	= get(vertex_pos, arrow_vertex_id_from);
-			// arrow_endpoint_to   	= get(vertex_pos, arrow_vertex_id_to);
-			// arrow_midpoints 		= (arrow_endpoint_from + arrow_endpoint_to) / 2.;
-			// arrow_distances 		= distance(arrow_endpoint_from, arrow_endpoint_to);
-			// arrow_offsets 			= arrow_endpoint_to - arrow_endpoint_from;
-			// arrow_average_distance 	= mean(arrow_distances);
-			// arrow_normals 			= (get(vertex_normals, arrowvertex_id_a) + get(vertex_normals, arrowvertex_id_b)) / 2.; 
+			int arrow_count        = arrow_vertex_ids_vector.size();
+			arrow_vertex_id_from   = uints(arrow_count);
+			arrow_vertex_id_to     = uints(arrow_count);
+			//arrow_face_id_a        = uints(arrow_count);
+			//arrow_face_id_b        = uints(arrow_count);
+			arrow_endpoint_from    = vec3s(arrow_count);
+			arrow_endpoint_to      = vec3s(arrow_count);
+			arrow_midpoints        = vec3s(arrow_count);
+			arrow_offsets          = vec3s(arrow_count);
+			arrow_distances        = floats(arrow_count);
+			arrow_average_distance = float(arrow_count);
+			arrow_normals          = vec3s(arrow_count);
+			//arrow_areas            = floats(arrow_count);
+
+			get_x(edge_vertex_ids, edge_vertex_id_a);
+			get_y(edge_vertex_ids, edge_vertex_id_b);
+			get(vertex_pos, edge_vertex_id_a, edge_endpoint_a);
+			get(vertex_pos, edge_vertex_id_b, edge_endpoint_b);
+			distance(edge_endpoint_a, edge_endpoint_b, edge_distances);
+			edge_midpoints 				= (edge_endpoint_a + edge_endpoint_b) / 2.f;
+			edge_average_distance 		= mean(edge_distances);
+			edge_normals 				= (get(vertex_normals, edge_vertex_id_a) + get(vertex_normals, edge_vertex_id_b)) / 2.f;
+
+			get_x(arrow_vertex_ids, arrow_vertex_id_from);
+			get_y(arrow_vertex_ids, arrow_vertex_id_to);
+			get(vertex_pos, arrow_vertex_id_from, arrow_endpoint_from);
+			get(vertex_pos, arrow_vertex_id_to,   arrow_endpoint_to  );
+			distance(arrow_endpoint_from, arrow_endpoint_to, arrow_distances);
+			arrow_offsets 				= arrow_endpoint_to - arrow_endpoint_from;
+			arrow_midpoints 			= (arrow_endpoint_from + arrow_endpoint_to) / 2.f;
+			arrow_average_distance 		= mean(arrow_distances);
+			arrow_normals	 			= (get(vertex_normals, arrow_vertex_id_a) + get(vertex_normals, arrow_vertex_id_b)) / 2.f; 
 
 		}
 	};
