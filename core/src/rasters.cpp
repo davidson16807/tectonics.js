@@ -12,6 +12,7 @@
 
 #include "rasters/SphereGridVoronoi3d.hpp"
 #include "rasters/CartesianGridCellList3d.hpp"
+#include "rasters/Grid.hpp"
 
 #include <emscripten/bind.h>
 

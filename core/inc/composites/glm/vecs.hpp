@@ -11,6 +11,33 @@ namespace composites
 {
 	using namespace glm;
 
+	template <length_t L, class T, qualifier Q>
+	void get_x(const many<vec<L,T,Q>>& a, many<T>& out )
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i].x;
+		}
+	}
+
+	template <length_t L, class T, qualifier Q>
+	void get_y(const many<vec<L,T,Q>>& a, many<T>& out )
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i].y;
+		}
+	}
+
+	template <length_t L, class T, qualifier Q>
+	void get_z(const many<vec<L,T,Q>>& a, many<T>& out )
+	{
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+			out[i] = a[i].z;
+		}
+	}
+
 	template<typename T, qualifier Q>
 	void mult(const many<vec<3,T,Q>>& a, const mat<4,3,T,Q>& b, many<vec<3,T,Q>>& out)
 	{
@@ -115,10 +142,10 @@ namespace composites
 	typedef many<vec<3, int, glm::defaultp>> ivec3s;
 	typedef many<vec<4, int, glm::defaultp>> ivec4s;
 
-	typedef many<vec<1, unsigned int, glm::defaultp>> uivec1s;
-	typedef many<vec<2, unsigned int, glm::defaultp>> uivec2s;
-	typedef many<vec<3, unsigned int, glm::defaultp>> uivec3s;
-	typedef many<vec<4, unsigned int, glm::defaultp>> uivec4s;
+	typedef many<vec<1, unsigned int, glm::defaultp>> uvec1s;
+	typedef many<vec<2, unsigned int, glm::defaultp>> uvec2s;
+	typedef many<vec<3, unsigned int, glm::defaultp>> uvec3s;
+	typedef many<vec<4, unsigned int, glm::defaultp>> uvec4s;
 
 	typedef many<vec<1, double, glm::defaultp>> dvec1s;
 	typedef many<vec<2, double, glm::defaultp>> dvec2s;
