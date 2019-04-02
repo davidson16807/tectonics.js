@@ -38,6 +38,30 @@ namespace composites
 		}
 	}
 
+	template <length_t L, class T, qualifier Q>
+	many<T> get_x(const many<vec<L,T,Q>>& a)
+	{
+		many<T> out(a.size());
+		get_x(a, out);
+		return out;
+	}
+
+	template <length_t L, class T, qualifier Q>
+	many<T> get_y(const many<vec<L,T,Q>>& a)
+	{
+		many<T> out(a.size());
+		get_y(a, out);
+		return out;
+	}
+
+	template <length_t L, class T, qualifier Q>
+	many<T> get_z(const many<vec<L,T,Q>>& a)
+	{
+		many<T> out(a.size());
+		get_z(a, out);
+		return out;
+	}
+
 	template<typename T, qualifier Q>
 	void mult(const many<vec<3,T,Q>>& a, const mat<4,3,T,Q>& b, many<vec<3,T,Q>>& out)
 	{

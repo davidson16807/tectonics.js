@@ -151,7 +151,7 @@ namespace composites
 	template<length_t L, typename T, qualifier Q>
 	inline many<T> distance(const many<vec<L,T,Q>>& u, const vec<L,T,Q> v ) 
 	{
-		vec<L,T,Q> out = vec<L,T,Q>(u.size());
+		many<T> out = many<T>(u.size());
 		distance(u, v, out);
 		return out;
 	}
@@ -172,7 +172,7 @@ namespace composites
 	template<length_t L, typename T, qualifier Q>
 	inline many<T> distance(const many<vec<L,T,Q>>& u, const many<vec<L,T,Q>>& v ) 
 	{
-		vec<L,T,Q> out = vec<L,T,Q>(u.size());
+		many<T> out = many<T>(u.size());
 		distance(u, v, out);
 		return out;
 	}
