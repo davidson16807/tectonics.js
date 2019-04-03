@@ -21,7 +21,7 @@ using namespace composites;
 using namespace rasters;
 
 template<typename T>
-void copy_typed_array(many<T>& out, const val& typed_array)
+void copy_from_typed_array(many<T>& out, const val& typed_array)
 {
   unsigned int typed_array_length = typed_array["length"].as<unsigned int>();
   //TODO: verify output length equals typed_array length
@@ -36,9 +36,18 @@ many<T> from_typed_array(const val& typed_array)
 {
   unsigned int typed_array_length = typed_array["length"].as<unsigned int>();
   many<T> out = many<T>(typed_array_length);
-  copy_typed_array(out, typed_array);
+  copy_from_typed_array(out, typed_array);
   return out;
 }
+
+// template<typename T>
+// void copy_to_typed_array(many<T>& a, val& out)
+// {
+//   for (unsigned int i = 0; i < a.size(); ++i)
+//   {
+//     out.set(i, a[i]);
+//   }
+// }
 
 template<typename T>
 void copy_list(many<T>& out, const val& list)
@@ -160,6 +169,7 @@ val to_list(const many<vec<L,T,Q>>& a){
   return out;
 }
 
+
 template class glm::vec<2,float,defaultp>;
 template class glm::vec<3,float,defaultp>;
 template class glm::vec<4,float,defaultp>;
@@ -202,6 +212,33 @@ EMSCRIPTEN_BINDINGS(rasters)
       .property("y", &vec4::y)
       .property("z", &vec4::z)
       .property("w", &vec4::z)
+  ;
+
+  class_<uvec2>("uvec2")
+      .constructor()
+      .constructor<unsigned int>()
+      .constructor<unsigned int, unsigned int>()
+      .property("x", &uvec2::x)
+      .property("y", &uvec2::y)
+  ;
+
+  class_<uvec3>("uvec3")
+      .constructor()
+      .constructor<unsigned int>()
+      .constructor<unsigned int, unsigned int, unsigned int>()
+      .property("x", &uvec3::x)
+      .property("y", &uvec3::y)
+      .property("z", &uvec3::z)
+  ;
+
+  class_<uvec4>("uvec4")
+      .constructor()
+      .constructor<unsigned int>()
+      .constructor<unsigned int, unsigned int, unsigned int, unsigned int>()
+      .property("x", &uvec4::x)
+      .property("y", &uvec4::y)
+      .property("z", &uvec4::z)
+      .property("w", &uvec4::z)
   ;
 
   class_<mat2>("mat2")
@@ -247,7 +284,7 @@ EMSCRIPTEN_BINDINGS(rasters)
 
   class_<uints>("uints")
       .constructor<unsigned int>()
-      .constructor<unsigned int, uint>()
+      .constructor<unsigned int, unsigned int>()
       .function("size", &uints::size)
   ;
 
@@ -275,6 +312,24 @@ EMSCRIPTEN_BINDINGS(rasters)
       .function("size", &vec4s::size)
   ;
 
+  class_<uvec2s>("uvec2s")
+      .constructor<unsigned int>()
+      .constructor<unsigned int, uvec2>()
+      .function("size", &uvec2s::size)
+  ;
+
+  class_<uvec3s>("uvec3s")
+      .constructor<unsigned int>()
+      .constructor<unsigned int, uvec3>()
+      .function("size", &uvec3s::size)
+  ;
+
+  class_<uvec4s>("uvec4s")
+      .constructor<unsigned int>()
+      .constructor<unsigned int, uvec4>()
+      .function("size", &uvec4s::size)
+  ;
+
   register_vector<vec3>("vector_vec3");
 
   class_<CartesianGridCellList3d>("CartesianGridCellList3d")
@@ -287,7 +342,57 @@ EMSCRIPTEN_BINDINGS(rasters)
       .function("nearest_id", &SphereGridVoronoi3d::nearest_id)
   ;
 
-  function("bools_copy_typed_array",   (void (*)(bools& out, const val& js_list ))              copy_typed_array     );
+  class_<Grid>("Grid")
+      .constructor<const vec3s&, const uvec3s&>()
+      .property("buffer_array_vertex_ids",&Grid::buffer_array_vertex_ids)
+      // .property("vertex_neighbor_ids",    &Grid::vertex_neighbor_ids)
+      // .property("vertex_neighbor_count",  &Grid::vertex_neighbor_count)
+      .property("vertex_positions",       &Grid::vertex_positions)
+      .property("vertex_normals",         &Grid::vertex_normals)
+      .property("vertex_areas",           &Grid::vertex_areas)
+      .property("vertex_average_area",    &Grid::vertex_average_area)
+      .property("face_vertex_id_a",       &Grid::face_vertex_id_a)
+      .property("face_vertex_id_b",       &Grid::face_vertex_id_b)
+      .property("face_vertex_id_c",       &Grid::face_vertex_id_c)
+      // .property("face_edge_id_a",         &Grid::face_edge_id_a)
+      // .property("face_edge_id_b",         &Grid::face_edge_id_b)
+      // .property("face_edge_id_c",         &Grid::face_edge_id_c)
+      .property("face_endpoint_a",        &Grid::face_endpoint_a)
+      .property("face_endpoint_b",        &Grid::face_endpoint_b)
+      .property("face_endpoint_c",        &Grid::face_endpoint_c)
+      .property("face_midpoints",         &Grid::face_midpoints)
+      .property("face_normals",           &Grid::face_normals)
+      .property("face_areas",             &Grid::face_areas)
+      .property("face_average_area",      &Grid::face_average_area)
+      // .property("edge_vertex_ids",        &Grid::edge_vertex_ids)
+      .property("edge_vertex_id_a",       &Grid::edge_vertex_id_a)
+      .property("edge_vertex_id_b",       &Grid::edge_vertex_id_b)
+      // .property("edge_face_id_a",         &Grid::edge_face_id_a)
+      // .property("edge_face_id_b",         &Grid::edge_face_id_b)
+      .property("edge_endpoint_a",        &Grid::edge_endpoint_a)
+      .property("edge_endpoint_b",        &Grid::edge_endpoint_b)
+      .property("edge_midpoints",         &Grid::edge_midpoints)
+      .property("edge_distances",         &Grid::edge_distances)
+      .property("edge_average_distance",  &Grid::edge_average_distance)
+      .property("edge_normals",           &Grid::edge_normals)
+      // .property("edge_areas",             &Grid::edge_areas)
+      // .property("arrow_vertex_ids",       &Grid::arrow_vertex_ids)
+      .property("arrow_vertex_id_from",   &Grid::arrow_vertex_id_from)
+      .property("arrow_vertex_id_to",     &Grid::arrow_vertex_id_to)
+      // .property("arrow_face_id_a",        &Grid::arrow_face_id_a)
+      // .property("arrow_face_id_b",        &Grid::arrow_face_id_b)
+      .property("arrow_endpoint_from",    &Grid::arrow_endpoint_from)
+      .property("arrow_endpoint_to",      &Grid::arrow_endpoint_to)
+      .property("arrow_midpoints",        &Grid::arrow_midpoints)
+      .property("arrow_offsets",          &Grid::arrow_offsets)
+      .property("arrow_distances",        &Grid::arrow_distances)
+      .property("arrow_average_distance", &Grid::arrow_average_distance)
+      .property("arrow_normals",          &Grid::arrow_normals)
+      // .property("arrow_areas",            &Grid::arrow_areas)
+  ;
+
+  function("bools_copy_from_typed_array",   (void (*)(bools& out, const val& js_list ))              copy_from_typed_array     );
+  //function("bools_copy_to_typed_array",   (void (*)(bools& out, val& js_list ))                copy_to_typed_array     );
   function("bools_copy_list",   (void (*)(bools& out, const val& js_list ))                     copy_list     );
   function("bools_from_typed_array",   (bools (*)(const val& js_list ))                         from_typed_array     );
   function("bools_from_list",   (bools (*)(const val& js_list ))                                from_list     );
@@ -338,7 +443,8 @@ EMSCRIPTEN_BINDINGS(rasters)
 
 
 
-  function("ints_copy_typed_array",   (void (*)(ints& out, const val& js_list ))              copy_typed_array     );
+  function("ints_copy_from_typed_array",   (void (*)(ints& out, const val& js_list ))              copy_from_typed_array     );
+  //function("ints_copy_to_typed_array",   (void (*)(ints& out, val& js_list ))                copy_to_typed_array     );
   function("ints_copy_list",   (void (*)(ints& out, const val& js_list ))                     copy_list     );
   function("ints_from_typed_array",   (ints (*)(const val& js_list ))                         from_typed_array     );
   function("ints_from_list",   (ints (*)(const val& js_list ))                                from_list     );
@@ -474,7 +580,8 @@ EMSCRIPTEN_BINDINGS(rasters)
 
 
 
-  function("uints_copy_typed_array",   (void (*)(uints& out, const val& js_list ))              copy_typed_array     );
+  function("uints_copy_from_typed_array",   (void (*)(uints& out, const val& js_list ))              copy_from_typed_array     );
+  //function("uints_copy_to_typed_array",   (void (*)(uints& out, val& js_list ))                copy_to_typed_array     );
   function("uints_copy_list",   (void (*)(uints& out, const val& js_list ))                     copy_list     );
   function("uints_from_typed_array",   (uints (*)(const val& js_list ))                         from_typed_array     );
   function("uints_from_list",    (uints (*)(const val& js_list ))                               from_list     );
@@ -607,7 +714,8 @@ EMSCRIPTEN_BINDINGS(rasters)
 
 
 
-  function("floats_copy_typed_array",   (void (*)(floats& out, const val& js_list ))              copy_typed_array     );
+  function("floats_copy_from_typed_array",   (void (*)(floats& out, const val& js_list ))              copy_from_typed_array     );
+  //function("floats_copy_to_typed_array",   (void (*)(floats& out, val& js_list ))                copy_to_typed_array     );
   function("floats_copy_list",   (void (*)(floats& out, const val& js_list ))                     copy_list     );
   function("floats_from_typed_array",   (floats (*)(const val& js_list ))                         from_typed_array     );
   function("floats_from_list",   (floats (*)(const val& js_list ))                                from_list     );
@@ -945,7 +1053,7 @@ EMSCRIPTEN_BINDINGS(rasters)
 
 
 
-  function("vec2s_copy_typed_array",   (void (*)(vec2s& out, const val& js_list ))              copy_typed_array     );
+  function("vec2s_copy_from_typed_array",   (void (*)(vec2s& out, const val& js_list ))              copy_from_typed_array     );
   function("vec2s_copy_list",   (void (*)(vec2s& out, const val& js_list ))                     copy_list     );
   function("vec2s_from_typed_array",   (vec2s (*)(const val& js_list ))                         from_typed_array     );
   function("vec2s_from_list",   (vec2s (*)(const val& js_list ))                                vecs_from_list     );
@@ -1113,7 +1221,7 @@ EMSCRIPTEN_BINDINGS(rasters)
 
 
 
-  function("vec3s_copy_typed_array",   (void (*)(vec3s& out, const val& js_list ))              copy_typed_array     );
+  function("vec3s_copy_from_typed_array",   (void (*)(vec3s& out, const val& js_list ))              copy_from_typed_array     );
   function("vec3s_copy_list",   (void (*)(vec3s& out, const val& js_list ))                     copy_list     );
   function("vec3s_from_typed_array",   (vec3s (*)(const val& js_list ))                         from_typed_array     );
   function("vec3s_from_list",    (vec3s (*)(const val& js_list ))                               vecs_from_list     );
@@ -1281,7 +1389,7 @@ EMSCRIPTEN_BINDINGS(rasters)
 
 
 
-  function("vec4s_copy_typed_array",   (void (*)(vec4s& out, const val& js_list ))              copy_typed_array     );
+  function("vec4s_copy_from_typed_array",   (void (*)(vec4s& out, const val& js_list ))              copy_from_typed_array     );
   function("vec4s_copy_list",   (void (*)(vec4s& out, const val& js_list ))                     copy_list     );
   function("vec4s_from_typed_array",   (vec4s (*)(const val& js_list ))                         from_typed_array     );
   function("vec4s_from_list",   (vec4s (*)(const val& js_list ))                                vecs_from_list     );
@@ -1442,6 +1550,496 @@ EMSCRIPTEN_BINDINGS(rasters)
 
 
 
+
+
+  function("uvec2s_copy_from_typed_array",   (void (*)(uvec2s& out, const val& js_list ))              copy_from_typed_array     );
+  function("uvec2s_copy_list",   (void (*)(uvec2s& out, const val& js_list ))                     copy_list     );
+  function("uvec2s_from_typed_array",   (uvec2s (*)(const val& js_list ))                         from_typed_array     );
+  function("uvec2s_from_list",   (uvec2s (*)(const val& js_list ))                                vecs_from_list     );
+  function("uvec2s_from_uvec2s",   (uvec2s (*)(const uvec2s& a ))                                   copy     );
+  function("uvec2s_to_list",      (val (*)(const uvec2s& a ))                           to_list     );
+
+
+  function("uvec2s_add_uvec2s",  (void (*)(const uvec2s&, const uvec2s&, uvec2s&))  add  );
+  function("uvec2s_add_uints", (void (*)(const uvec2s&, const uints&, uvec2s&)) add  );
+  function("uvec2s_add_uvec2",   (void (*)(const uvec2s&, const uvec2, uvec2s&))    add  );
+  function("uvec2s_add_uint",  (void (*)(const uvec2s&, const uint, uvec2s&))   add  );
+  function("uvec2s_sub_uvec2s",  (void (*)(const uvec2s&, const uvec2s&, uvec2s&))  sub  );
+  function("uvec2s_sub_uints", (void (*)(const uvec2s&, const uints&, uvec2s&)) sub  );
+  function("uvec2s_sub_uvec2",   (void (*)(const uvec2s&, const uvec2, uvec2s&))    sub  );
+  function("uvec2s_sub_uint",  (void (*)(const uvec2s&, const uint, uvec2s&))   sub  );
+  function("uvec2s_mult_uvec2s", (void (*)(const uvec2s&, const uvec2s&, uvec2s&))  mult );
+  function("uvec2s_mult_uints",(void (*)(const uvec2s&, const uints&, uvec2s&)) mult );
+  function("uvec2s_mult_uvec2",  (void (*)(const uvec2s&, const uvec2, uvec2s&))    mult );
+  function("uvec2s_mult_uint", (void (*)(const uvec2s&, const uint, uvec2s&))   mult );
+  function("uvec2s_div_uvec2s",  (void (*)(const uvec2s&, const uvec2s&, uvec2s&))  div  );
+  function("uvec2s_div_uints", (void (*)(const uvec2s&, const uints&, uvec2s&)) div  );
+  function("uvec2s_div_uvec2",   (void (*)(const uvec2s&, const uvec2, uvec2s&))    div  );
+  function("uvec2s_div_uint",  (void (*)(const uvec2s&, const uint, uvec2s&))   div  );
+
+  // function("uvec2s_mult_mat3",   (void (*)(const uvec2s&, const mat2&, uvec2s&))    mult );
+
+  function("uvec2s_get_id",      (uvec2 (*)(const uvec2s& a, const unsigned int id ))             get      );
+  function("uvec2s_get_ids",     (void (*)(const uvec2s& a, const uints& ids, uvec2s& out ))      get      );
+  function("uvec2s_get_mask",    (void (*)(const uvec2s& a, const bools& mask, uvec2s& out ))     get      );
+  function("uvec2s_fill",        (void (*)(uvec2s& out, const uvec2 a ))                          fill     );
+  function("uvec2s_fill_ids",    (void (*)(uvec2s& out, const uints& ids, const uvec2 a ))        fill     );
+  function("uvec2s_fill_mask",   (void (*)(uvec2s& out, const bools& mask, const uvec2 a ))       fill     );
+  function("uvec2s_copy",        (void (*)(uvec2s& out, const uvec2s& a ))                        copy     );
+  function("uvec2s_copy_mask",   (void (*)(uvec2s& out, const bools& mask, const uvec2s& a ))     copy     );
+  function("uvec2s_copy_id",     (void (*)(uvec2s& out, const unsigned int id, const uvec2s& a )) copy     );
+  function("uvec2s_copy_ids",    (void (*)(uvec2s& out, const uints& ids, const uvec2s& a ))      copy     );
+  function("uvec2s_set_id",      (void (*)(uvec2s& out, const unsigned int id, const uvec2 a ))   set      );
+  function("uvec2s_set_ids",     (void (*)(uvec2s& out, const uints& ids, const uvec2s& a ))      set      );
+
+  // function("uvec2s_equal_uvec2",        (bool (*)(const uvec2s& a, const uvec2 b))                 equal    );
+  // function("uvec2s_notEqual_uvec2",     (bool (*)(const uvec2s& a, const uvec2 b))                 notEqual );
+  // function("uvec2s_equal_uvec2s",       (bool (*)(const uvec2s& a, const uvec2s& b))               equal    );
+  // function("uvec2s_notEqual_uvec2s",    (bool (*)(const uvec2s& a, const uvec2s& b))               notEqual );
+  // function("uvec2s_compEqual_uvec2",    (void (*)(const uvec2s& a, const uvec2 b, bools& out))     equal    );
+  // function("uvec2s_compNotEqual_uvec2", (void (*)(const uvec2s& a, const uvec2 b, bools& out))     notEqual );
+  // function("uvec2s_compEqual_uvec2s",   (void (*)(const uvec2s& a, const uvec2s& b, bools& out))   equal    );
+  // function("uvec2s_compNotEqual_uvec2s",(void (*)(const uvec2s& a, const uvec2s& b, bools& out))   notEqual );
+
+  // function("uvec2s_greaterThan_uint",      (void (*)(const uvec2s& a, const uint b, bvec2s& out))       greaterThan      );
+  // function("uvec2s_greaterThanEqual_uint", (void (*)(const uvec2s& a, const uint b, bvec2s& out))       greaterThanEqual );
+  // function("uvec2s_lessThan_uint",         (void (*)(const uvec2s& a, const uint b, bvec2s& out))       lessThan         );
+  // function("uvec2s_lessThanEqual_uint",    (void (*)(const uvec2s& a, const uint b, bvec2s& out))       lessThanEqual    );
+  // function("uvec2s_greaterThan_uints",     (void (*)(const uvec2s& a, const uints& b, bvec2s& out))     greaterThan      );
+  // function("uvec2s_greaterThanEqual_uints",(void (*)(const uvec2s& a, const uints& b, bvec2s& out))     greaterThanEqual );
+  // function("uvec2s_lessThan_uints",        (void (*)(const uvec2s& a, const uints& b, bvec2s& out))     lessThan         );
+  // function("uvec2s_lessThanEqual_uints",   (void (*)(const uvec2s& a, const uints& b, bvec2s& out))     lessThanEqual    );
+
+  // function("uvec2s_greaterThan_uvec2",      (void (*)(const uvec2s& a, const uvec2 b, bvec2s& out))      greaterThan      );
+  // function("uvec2s_greaterThanEqual_uvec2", (void (*)(const uvec2s& a, const uvec2 b, bvec2s& out))      greaterThanEqual );
+  // function("uvec2s_lessThan_uvec2",         (void (*)(const uvec2s& a, const uvec2 b, bvec2s& out))      lessThan         );
+  // function("uvec2s_lessThanEqual_uvec2",    (void (*)(const uvec2s& a, const uvec2 b, bvec2s& out))      lessThanEqual    );
+  // function("uvec2s_greaterThan_uvec2s",     (void (*)(const uvec2s& a, const uvec2s& b, bvec2s& out))    greaterThan      );
+  // function("uvec2s_greaterThanEqual_uvec2s",(void (*)(const uvec2s& a, const uvec2s& b, bvec2s& out))    greaterThanEqual );
+  // function("uvec2s_lessThan_uvec2s",        (void (*)(const uvec2s& a, const uvec2s& b, bvec2s& out))    lessThan         );
+  // function("uvec2s_lessThanEqual_uvec2s",   (void (*)(const uvec2s& a, const uvec2s& b, bvec2s& out))    lessThanEqual    );
+
+  function("uvec2s_abs",    ( void (*)(const uvec2s& a, uvec2s& out))    abs                                               );
+  function("uvec2s_sign",   ( void (*)(const uvec2s& a, uvec2s& out))    sign                                              );
+  // function("uvec2s_floor",  ( void (*)(const uvec2s& a, uvec2s& out))    floor                                             );
+  // function("uvec2s_trunc",  ( void (*)(const uvec2s& a, uvec2s& out))    trunc                                             );
+  // function("uvec2s_round",  ( void (*)(const uvec2s& a, uvec2s& out))    round                                             );
+  // function("uvec2s_ceil",   ( void (*)(const uvec2s& a, uvec2s& out))    ceil                                              );
+  // function("uvec2s_fract",  ( void (*)(const uvec2s& a, uvec2s& out))    fract                                             );
+
+  // function("uvec2s_mod",    ( void (*)(const uvec2s& a, const uvec2s& b, uvec2s& out))     mod                          );
+  // function("uvec2s_modf",   ( void (*)(const uvec2s& a, ints& intout, uvec2s& fractout))  modf                         );
+  function("uvec2s_min_uvec2s",    ( void (*)(const uvec2s& a, const uvec2s& b, uvec2s& out))   min                       );
+  function("uvec2s_max_uvec2s",    ( void (*)(const uvec2s& a, const uvec2s& b, uvec2s& out))   max                       );
+
+  function("uvec2s_min_uvec2",    ( void (*)(const uvec2s& a, const uvec2 b, uvec2s& out))     min                        );
+  function("uvec2s_max_uvec2",    ( void (*)(const uvec2s& a, const uvec2 b, uvec2s& out))     max                        );
+
+  function("uvec2s_min",    ( uvec2(*)(const uvec2s& a))                                       min                        );
+  function("uvec2s_max",    ( uvec2(*)(const uvec2s& a))                                       max                        );
+
+  function("uvec2s_clamp_11",  ( void (*)(const uvec2s& a, const uvec2 lo, const uvec2 hi, uvec2s& out))          clamp     );
+  function("uvec2s_clamp_1m",  ( void (*)(const uvec2s& a, const uvec2 lo, const uvec2s& hi, uvec2s& out))        clamp     );
+  function("uvec2s_clamp_m1",  ( void (*)(const uvec2s& a, const uvec2s& lo, const uvec2 hi, uvec2s& out))        clamp     );
+  function("uvec2s_clamp_mm",  ( void (*)(const uvec2s& a, const uvec2s& lo, const uvec2s& hi, uvec2s& out))      clamp     );
+
+  // function("uvec2s_mix_float_mmm",  ( void (*)(const uvec2s& x, const uvec2s& y, const floats& a, uvec2s& out)) mix       );
+  // function("uvec2s_mix_float_mm1",  ( void (*)(const uvec2s& x, const uvec2s& y, const float a, uvec2s& out))   mix       );
+  // function("uvec2s_mix_float_m1m",  ( void (*)(const uvec2s& x, const uvec2 y, const floats& a, uvec2s& out))   mix       );
+  // function("uvec2s_mix_float_m11",  ( void (*)(const uvec2s& x, const uvec2 y, const float a, uvec2s& out))     mix       );
+  // function("uvec2s_mix_float_1mm",  ( void (*)(const uvec2 x, const uvec2s& y, const floats& a, uvec2s& out))   mix       );
+  // function("uvec2s_mix_float_1m1",  ( void (*)(const uvec2 x, const uvec2s& y, const float a, uvec2s& out))     mix       );
+  // function("uvec2s_mix_float_11m",  ( void (*)(const uvec2 x, const uvec2 y, const floats& a, uvec2s& out))     mix       );
+
+  // function("uvec2s_mix_uvec2_mmm",    ( void (*)(const uvec2s& x, const uvec2s& y, const uvec2s& a, uvec2s& out))     mix         );
+  // function("uvec2s_mix_uvec2_mm1",    ( void (*)(const uvec2s& x, const uvec2s& y, const uvec2 a, uvec2s& out))       mix         );
+  // function("uvec2s_mix_uvec2_m1m",    ( void (*)(const uvec2s& x, const uvec2 y, const uvec2s& a, uvec2s& out))       mix         );
+  // function("uvec2s_mix_uvec2_m11",    ( void (*)(const uvec2s& x, const uvec2 y, const uvec2 a, uvec2s& out))         mix         );
+  // function("uvec2s_mix_uvec2_1mm",    ( void (*)(const uvec2 x, const uvec2s& y, const uvec2s& a, uvec2s& out))       mix         );
+  // function("uvec2s_mix_uvec2_1m1",    ( void (*)(const uvec2 x, const uvec2s& y, const uvec2 a, uvec2s& out))         mix         );
+  // function("uvec2s_mix_uvec2_11m",    ( void (*)(const uvec2 x, const uvec2 y, const uvec2s& a, uvec2s& out))         mix         );
+
+  function("uvec2s_step_mm",   ( void (*)(const uvec2s& edge, const uvec2s& x, uvec2s& out))                       step        );
+  function("uvec2s_step_m1",   ( void (*)(const uvec2s& edge, const uvec2 x, uvec2s& out))                         step        );
+  function("uvec2s_step_1m",   ( void (*)(const uvec2 edge, const uvec2s& x, uvec2s& out))                         step        );
+
+  // function("uvec2s_smoothstep_mmm",  ( void (*)(const uvec2s& lo, const uvec2s& hi, const uvec2s& x, uvec2s& out))  smoothstep  );
+  // function("uvec2s_smoothstep_1mm",  ( void (*)(const uvec2 lo, const uvec2s& hi, const uvec2s& x, uvec2s& out))    smoothstep  );
+  // function("uvec2s_smoothstep_m1m",  ( void (*)(const uvec2s& lo, uvec2 hi, const uvec2s& x, uvec2s& out))          smoothstep  );
+  // function("uvec2s_smoothstep_11m",  ( void (*)(const uvec2 lo, const uvec2 hi, const uvec2s& x, uvec2s& out))      smoothstep  );
+  // function("uvec2s_smoothstep_mm1",  ( void (*)(const uvec2s& lo, const uvec2s& hi, const uvec2 x, uvec2s& out))    smoothstep  );
+  // function("uvec2s_smoothstep_1m1",  ( void (*)(const uvec2 lo, const uvec2s& hi, const uvec2 x, uvec2s& out))      smoothstep  );
+  // function("uvec2s_smoothstep_m11",  ( void (*)(const uvec2s& lo, const uvec2 hi, const uvec2 x, uvec2s& out))      smoothstep  );
+  // function("uvec2s_isnan",  ( void (*)(const uvec2s& x, bools& out))                                          isnan       );
+  // function("uvec2s_isinf",  ( void (*)(const uvec2s& x, bools& out))                                          isinf       );
+  function("uvec2s_fma_mmm",    ( void (*)(const uvec2s& a, const uvec2s& b, const uvec2s& c, uvec2s& out))         fma         );
+  function("uvec2s_fma_1mm",    ( void (*)(const uvec2 a, const uvec2s& b, const uvec2s& c, uvec2s& out))           fma         );
+  function("uvec2s_fma_m1m",    ( void (*)(const uvec2s& a, uvec2 b, const uvec2s& c, uvec2s& out))                 fma         );
+  function("uvec2s_fma_11m",    ( void (*)(const uvec2 a, const uvec2 b, const uvec2s& c, uvec2s& out))             fma         );
+  function("uvec2s_fma_mm1",    ( void (*)(const uvec2s& a, const uvec2s& b, const uvec2 c, uvec2s& out))           fma         );
+  function("uvec2s_fma_1m1",    ( void (*)(const uvec2 a, const uvec2s& b, const uvec2 c, uvec2s& out))             fma         );
+  function("uvec2s_fma_m11",    ( void (*)(const uvec2s& a, const uvec2 b, const uvec2 c, uvec2s& out))             fma         );
+
+  // function("uvec2s_pow",         (void (*)(const uvec2s& base, const uvec2s& exponent, uvec2s& out)) pow                  );
+  // function("uvec2s_exp",         (void (*)(const uvec2s& a, uvec2s& out))                           exp                  );
+  // function("uvec2s_log",         (void (*)(const uvec2s& a, uvec2s& out))                           log                  );
+  // function("uvec2s_exp2",        (void (*)(const uvec2s& a, uvec2s& out))                           exp2                 );
+  // function("uvec2s_log2",        (void (*)(const uvec2s& a, uvec2s& out))                           log2                 );
+  // function("uvec2s_sqrt",        (void (*)(const uvec2s& a, uvec2s& out))                           sqrt                 );
+  // function("uvec2s_inversesqrt", (void (*)(const uvec2s& a, uvec2s& out))                           inversesqrt          );
+
+  // function("uvec2s_min_id",    (unsigned int (*)(const uvec2s& a))                                 min_id               );
+  // function("uvec2s_max_id",    (unsigned int (*)(const uvec2s& a))                                 max_id               );
+  function("uvec2s_sum",       (uvec2 (*)(const uvec2s& a))                                            sum                  );
+  function("uvec2s_mean",      (uvec2 (*)(const uvec2s& a))                                            mean                 );
+  // function("uvec2s_median",    (uvec2 (*)(const uvec2s& a))                                         median               );
+  // function("uvec2s_mode",      (uvec2 (*)(const uvec2s& a))                                         mode                 );
+  function("uvec2s_weighted_average", (uvec2 (*)(const uvec2s& a, const uints& weights))              weighted_average     );
+  function("uvec2s_rescale",   (void (*)(const uvec2s& a, uvec2s& out, uvec2 min_new, uvec2 max_new))    rescale              );
+
+  // function("uvec2s_dot_uvec2",        (void (*)(const uvec2s& u, const uvec2 v, uints& out))   dot       );
+  // function("uvec2s_cross_uvec2",      (void (*)(const uvec2s& u, const uvec2 v, uints& out))    cross     );
+  // function("uvec2s_distance_uvec2",   (void (*)(const uvec2s& u, const uvec2 v, uints& out))   distance  );
+  // function("uvec2s_dot_uvec2s",       (void (*)(const uvec2s& u, const uvec2s& v, uints& out)) dot       );
+  // function("uvec2s_cross_uvec2s",     (void (*)(const uvec2s& u, const uvec2s& v, uints& out))  cross     );
+  // function("uvec2s_distance_uvec2s",  (void (*)(const uvec2s& u, const uvec2s& v, uints& out)) distance  );
+
+  // function("uvec2s_length",     (void (*)(const uvec2s& u, uints& out))  length      );
+  // function("uvec2s_normalize",  (void (*)(const uvec2s& u, vec2s& out))   normalize   );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  function("uvec3s_copy_from_typed_array",   (void (*)(uvec3s& out, const val& js_list ))              copy_from_typed_array     );
+  function("uvec3s_copy_list",   (void (*)(uvec3s& out, const val& js_list ))                     copy_list     );
+  function("uvec3s_from_typed_array",   (uvec3s (*)(const val& js_list ))                         from_typed_array     );
+  function("uvec3s_from_list",    (uvec3s (*)(const val& js_list ))                               vecs_from_list     );
+  function("uvec3s_from_uvec3s",   (uvec3s (*)(const uvec3s& a ))                                   copy     );
+  function("uvec3s_to_list",      (val (*)(const uvec3s& a ))                                     to_list     );
+
+
+  function("uvec3s_add_uvec3s",  (void (*)(const uvec3s&, const uvec3s&, uvec3s&))  add  );
+  function("uvec3s_add_uints", (void (*)(const uvec3s&, const uints&, uvec3s&)) add  );
+  function("uvec3s_add_uvec3",   (void (*)(const uvec3s&, const uvec3, uvec3s&))    add  );
+  function("uvec3s_add_uint",  (void (*)(const uvec3s&, const uint, uvec3s&))   add  );
+  function("uvec3s_sub_uvec3s",  (void (*)(const uvec3s&, const uvec3s&, uvec3s&))  sub  );
+  function("uvec3s_sub_uints", (void (*)(const uvec3s&, const uints&, uvec3s&)) sub  );
+  function("uvec3s_sub_uvec3",   (void (*)(const uvec3s&, const uvec3, uvec3s&))    sub  );
+  function("uvec3s_sub_uint",  (void (*)(const uvec3s&, const uint, uvec3s&))   sub  );
+  function("uvec3s_mult_uvec3s", (void (*)(const uvec3s&, const uvec3s&, uvec3s&))  mult );
+  function("uvec3s_mult_uints",(void (*)(const uvec3s&, const uints&, uvec3s&)) mult );
+  function("uvec3s_mult_uvec3",  (void (*)(const uvec3s&, const uvec3, uvec3s&))    mult );
+  function("uvec3s_mult_uint", (void (*)(const uvec3s&, const uint, uvec3s&))   mult );
+  function("uvec3s_div_uvec3s",  (void (*)(const uvec3s&, const uvec3s&, uvec3s&))  div  );
+  function("uvec3s_div_uints", (void (*)(const uvec3s&, const uints&, uvec3s&)) div  );
+  function("uvec3s_div_uvec3",   (void (*)(const uvec3s&, const uvec3, uvec3s&))    div  );
+  function("uvec3s_div_uint",  (void (*)(const uvec3s&, const uint, uvec3s&))   div  );
+
+  // function("uvec3s_mult_mat3",   (void (*)(const uvec3s&, const mat3&, uvec3s&))    mult );
+  // function("uvec3s_mult_mat4x3", (void (*)(const uvec3s&, const mat4x3&, uvec3s&))    mult );
+
+  function("uvec3s_get_id",      (uvec3 (*)(const uvec3s& a, const unsigned int id ))             get      );
+  function("uvec3s_get_ids",     (void (*)(const uvec3s& a, const uints& ids, uvec3s& out ))      get      );
+  function("uvec3s_get_mask",    (void (*)(const uvec3s& a, const bools& mask, uvec3s& out ))     get      );
+  function("uvec3s_fill",        (void (*)(uvec3s& out, const uvec3 a ))                          fill     );
+  function("uvec3s_fill_ids",    (void (*)(uvec3s& out, const uints& ids, const uvec3 a ))        fill     );
+  function("uvec3s_fill_mask",   (void (*)(uvec3s& out, const bools& mask, const uvec3 a ))       fill     );
+  function("uvec3s_copy",        (void (*)(uvec3s& out, const uvec3s& a ))                        copy     );
+  function("uvec3s_copy_mask",   (void (*)(uvec3s& out, const bools& mask, const uvec3s& a ))     copy     );
+  function("uvec3s_copy_id",     (void (*)(uvec3s& out, const unsigned int id, const uvec3s& a )) copy     );
+  function("uvec3s_copy_ids",    (void (*)(uvec3s& out, const uints& ids, const uvec3s& a ))      copy     );
+  function("uvec3s_set_id",      (void (*)(uvec3s& out, const unsigned int id, const uvec3 a ))   set      );
+  function("uvec3s_set_ids",     (void (*)(uvec3s& out, const uints& ids, const uvec3s& a ))      set      );
+
+  // function("uvec3s_equal_uvec3",        (bool (*)(const uvec3s& a, const uvec3 b))                 equal    );
+  // function("uvec3s_notEqual_uvec3",     (bool (*)(const uvec3s& a, const uvec3 b))                 notEqual );
+  // function("uvec3s_equal_uvec3s",       (bool (*)(const uvec3s& a, const uvec3s& b))               equal    );
+  // function("uvec3s_notEqual_uvec3s",    (bool (*)(const uvec3s& a, const uvec3s& b))               notEqual );
+  // function("uvec3s_compEqual_uvec3",    (void (*)(const uvec3s& a, const uvec3 b, bools& out))     equal    );
+  // function("uvec3s_compNotEqual_uvec3", (void (*)(const uvec3s& a, const uvec3 b, bools& out))     notEqual );
+  // function("uvec3s_compEqual_uvec3s",   (void (*)(const uvec3s& a, const uvec3s& b, bools& out))   equal    );
+  // function("uvec3s_compNotEqual_uvec3s",(void (*)(const uvec3s& a, const uvec3s& b, bools& out))   notEqual );
+
+  // function("uvec3s_greaterThan_uint",      (void (*)(const uvec3s& a, const uint b, bvec3s& out))       greaterThan      );
+  // function("uvec3s_greaterThanEqual_uint", (void (*)(const uvec3s& a, const uint b, bvec3s& out))       greaterThanEqual );
+  // function("uvec3s_lessThan_uint",         (void (*)(const uvec3s& a, const uint b, bvec3s& out))       lessThan         );
+  // function("uvec3s_lessThanEqual_uint",    (void (*)(const uvec3s& a, const uint b, bvec3s& out))       lessThanEqual    );
+  // function("uvec3s_greaterThan_uints",     (void (*)(const uvec3s& a, const uints& b, bvec3s& out))     greaterThan      );
+  // function("uvec3s_greaterThanEqual_uints",(void (*)(const uvec3s& a, const uints& b, bvec3s& out))     greaterThanEqual );
+  // function("uvec3s_lessThan_uints",        (void (*)(const uvec3s& a, const uints& b, bvec3s& out))     lessThan         );
+  // function("uvec3s_lessThanEqual_uints",   (void (*)(const uvec3s& a, const uints& b, bvec3s& out))     lessThanEqual    );
+
+  // function("uvec3s_greaterThan_uvec3",      (void (*)(const uvec3s& a, const uvec3 b, bvec3s& out))      greaterThan      );
+  // function("uvec3s_greaterThanEqual_uvec3", (void (*)(const uvec3s& a, const uvec3 b, bvec3s& out))      greaterThanEqual );
+  // function("uvec3s_lessThan_uvec3",         (void (*)(const uvec3s& a, const uvec3 b, bvec3s& out))      lessThan         );
+  // function("uvec3s_lessThanEqual_uvec3",    (void (*)(const uvec3s& a, const uvec3 b, bvec3s& out))      lessThanEqual    );
+  // function("uvec3s_greaterThan_uvec3s",     (void (*)(const uvec3s& a, const uvec3s& b, bvec3s& out))    greaterThan      );
+  // function("uvec3s_greaterThanEqual_uvec3s",(void (*)(const uvec3s& a, const uvec3s& b, bvec3s& out))    greaterThanEqual );
+  // function("uvec3s_lessThan_uvec3s",        (void (*)(const uvec3s& a, const uvec3s& b, bvec3s& out))    lessThan         );
+  // function("uvec3s_lessThanEqual_uvec3s",   (void (*)(const uvec3s& a, const uvec3s& b, bvec3s& out))    lessThanEqual    );
+
+  function("uvec3s_abs",    ( void (*)(const uvec3s& a, uvec3s& out))    abs                                               );
+  function("uvec3s_sign",   ( void (*)(const uvec3s& a, uvec3s& out))    sign                                              );
+  // function("uvec3s_floor",  ( void (*)(const uvec3s& a, uvec3s& out))    floor                                             );
+  // function("uvec3s_trunc",  ( void (*)(const uvec3s& a, uvec3s& out))    trunc                                             );
+  // function("uvec3s_round",  ( void (*)(const uvec3s& a, uvec3s& out))    round                                             );
+  // function("uvec3s_ceil",   ( void (*)(const uvec3s& a, uvec3s& out))    ceil                                              );
+  // function("uvec3s_fract",  ( void (*)(const uvec3s& a, uvec3s& out))    fract                                             );
+
+  // function("uvec3s_mod",    ( void (*)(const uvec3s& a, const uvec3s& b, uvec3s& out))     mod                          );
+  // function("uvec3s_modf",   ( void (*)(const uvec3s& a, ints& intout, uvec3s& fractout))  modf                         );
+  function("uvec3s_min_uvec3s",    ( void (*)(const uvec3s& a, const uvec3s& b, uvec3s& out))   min                       );
+  function("uvec3s_max_uvec3s",    ( void (*)(const uvec3s& a, const uvec3s& b, uvec3s& out))   max                       );
+
+  function("uvec3s_min_uvec3",    ( void (*)(const uvec3s& a, const uvec3 b, uvec3s& out))     min                        );
+  function("uvec3s_max_uvec3",    ( void (*)(const uvec3s& a, const uvec3 b, uvec3s& out))     max                        );
+
+  function("uvec3s_min",    ( uvec3(*)(const uvec3s& a))                                       min                        );
+  function("uvec3s_max",    ( uvec3(*)(const uvec3s& a))                                       max                        );
+
+  function("uvec3s_clamp_11",  ( void (*)(const uvec3s& a, const uvec3 lo, const uvec3 hi, uvec3s& out))          clamp     );
+  function("uvec3s_clamp_1m",  ( void (*)(const uvec3s& a, const uvec3 lo, const uvec3s& hi, uvec3s& out))        clamp     );
+  function("uvec3s_clamp_m1",  ( void (*)(const uvec3s& a, const uvec3s& lo, const uvec3 hi, uvec3s& out))        clamp     );
+  function("uvec3s_clamp_mm",  ( void (*)(const uvec3s& a, const uvec3s& lo, const uvec3s& hi, uvec3s& out))      clamp     );
+
+  // function("uvec3s_mix_float_mmm",  ( void (*)(const uvec3s& x, const uvec3s& y, const floats& a, uvec3s& out)) mix       );
+  // function("uvec3s_mix_float_mm1",  ( void (*)(const uvec3s& x, const uvec3s& y, const float a, uvec3s& out))   mix       );
+  // function("uvec3s_mix_float_m1m",  ( void (*)(const uvec3s& x, const uvec3 y, const floats& a, uvec3s& out))   mix       );
+  // function("uvec3s_mix_float_m11",  ( void (*)(const uvec3s& x, const uvec3 y, const float a, uvec3s& out))     mix       );
+  // function("uvec3s_mix_float_1mm",  ( void (*)(const uvec3 x, const uvec3s& y, const floats& a, uvec3s& out))   mix       );
+  // function("uvec3s_mix_float_1m1",  ( void (*)(const uvec3 x, const uvec3s& y, const float a, uvec3s& out))     mix       );
+  // function("uvec3s_mix_float_11m",  ( void (*)(const uvec3 x, const uvec3 y, const floats& a, uvec3s& out))     mix       );
+
+  // function("uvec3s_mix_uvec3_mmm",    ( void (*)(const uvec3s& x, const uvec3s& y, const uvec3s& a, uvec3s& out))     mix         );
+  // function("uvec3s_mix_uvec3_mm1",    ( void (*)(const uvec3s& x, const uvec3s& y, const uvec3 a, uvec3s& out))       mix         );
+  // function("uvec3s_mix_uvec3_m1m",    ( void (*)(const uvec3s& x, const uvec3 y, const uvec3s& a, uvec3s& out))       mix         );
+  // function("uvec3s_mix_uvec3_m11",    ( void (*)(const uvec3s& x, const uvec3 y, const uvec3 a, uvec3s& out))         mix         );
+  // function("uvec3s_mix_uvec3_1mm",    ( void (*)(const uvec3 x, const uvec3s& y, const uvec3s& a, uvec3s& out))       mix         );
+  // function("uvec3s_mix_uvec3_1m1",    ( void (*)(const uvec3 x, const uvec3s& y, const uvec3 a, uvec3s& out))         mix         );
+  // function("uvec3s_mix_uvec3_11m",    ( void (*)(const uvec3 x, const uvec3 y, const uvec3s& a, uvec3s& out))         mix         );
+
+  function("uvec3s_step_mm",   ( void (*)(const uvec3s& edge, const uvec3s& x, uvec3s& out))                       step        );
+  function("uvec3s_step_m1",   ( void (*)(const uvec3s& edge, const uvec3 x, uvec3s& out))                         step        );
+  function("uvec3s_step_1m",   ( void (*)(const uvec3 edge, const uvec3s& x, uvec3s& out))                         step        );
+
+  // function("uvec3s_smoothstep_mmm",  ( void (*)(const uvec3s& lo, const uvec3s& hi, const uvec3s& x, uvec3s& out))  smoothstep  );
+  // function("uvec3s_smoothstep_1mm",  ( void (*)(const uvec3 lo, const uvec3s& hi, const uvec3s& x, uvec3s& out))    smoothstep  );
+  // function("uvec3s_smoothstep_m1m",  ( void (*)(const uvec3s& lo, uvec3 hi, const uvec3s& x, uvec3s& out))          smoothstep  );
+  // function("uvec3s_smoothstep_11m",  ( void (*)(const uvec3 lo, const uvec3 hi, const uvec3s& x, uvec3s& out))      smoothstep  );
+  // function("uvec3s_smoothstep_mm1",  ( void (*)(const uvec3s& lo, const uvec3s& hi, const uvec3 x, uvec3s& out))    smoothstep  );
+  // function("uvec3s_smoothstep_1m1",  ( void (*)(const uvec3 lo, const uvec3s& hi, const uvec3 x, uvec3s& out))      smoothstep  );
+  // function("uvec3s_smoothstep_m11",  ( void (*)(const uvec3s& lo, const uvec3 hi, const uvec3 x, uvec3s& out))      smoothstep  );
+  // function("uvec3s_isnan",  ( void (*)(const uvec3s& x, bools& out))                                          isnan       );
+  // function("uvec3s_isinf",  ( void (*)(const uvec3s& x, bools& out))                                          isinf       );
+  function("uvec3s_fma_mmm",    ( void (*)(const uvec3s& a, const uvec3s& b, const uvec3s& c, uvec3s& out))         fma         );
+  function("uvec3s_fma_1mm",    ( void (*)(const uvec3 a, const uvec3s& b, const uvec3s& c, uvec3s& out))           fma         );
+  function("uvec3s_fma_m1m",    ( void (*)(const uvec3s& a, uvec3 b, const uvec3s& c, uvec3s& out))                 fma         );
+  function("uvec3s_fma_11m",    ( void (*)(const uvec3 a, const uvec3 b, const uvec3s& c, uvec3s& out))             fma         );
+  function("uvec3s_fma_mm1",    ( void (*)(const uvec3s& a, const uvec3s& b, const uvec3 c, uvec3s& out))           fma         );
+  function("uvec3s_fma_1m1",    ( void (*)(const uvec3 a, const uvec3s& b, const uvec3 c, uvec3s& out))             fma         );
+  function("uvec3s_fma_m11",    ( void (*)(const uvec3s& a, const uvec3 b, const uvec3 c, uvec3s& out))             fma         );
+
+  // function("uvec3s_pow",         (void (*)(const uvec3s& base, const uvec3s& exponent, uvec3s& out)) pow                  );
+  // function("uvec3s_exp",         (void (*)(const uvec3s& a, uvec3s& out))                           exp                  );
+  // function("uvec3s_log",         (void (*)(const uvec3s& a, uvec3s& out))                           log                  );
+  // function("uvec3s_exp2",        (void (*)(const uvec3s& a, uvec3s& out))                           exp2                 );
+  // function("uvec3s_log2",        (void (*)(const uvec3s& a, uvec3s& out))                           log2                 );
+  // function("uvec3s_sqrt",        (void (*)(const uvec3s& a, uvec3s& out))                           sqrt                 );
+  // function("uvec3s_inversesqrt", (void (*)(const uvec3s& a, uvec3s& out))                           inversesqrt          );
+
+  // function("uvec3s_min_id",    (unsigned int (*)(const uvec3s& a))                                 min_id               );
+  // function("uvec3s_max_id",    (unsigned int (*)(const uvec3s& a))                                 max_id               );
+  function("uvec3s_sum",       (uvec3 (*)(const uvec3s& a))                                            sum                  );
+  function("uvec3s_mean",      (uvec3 (*)(const uvec3s& a))                                            mean                 );
+  // function("uvec3s_median",    (uvec3 (*)(const uvec3s& a))                                         median               );
+  // function("uvec3s_mode",      (uvec3 (*)(const uvec3s& a))                                         mode                 );
+  function("uvec3s_weighted_average", (uvec3 (*)(const uvec3s& a, const uints& weights))              weighted_average     );
+  function("uvec3s_rescale",   (void (*)(const uvec3s& a, uvec3s& out, uvec3 min_new, uvec3 max_new))    rescale              );
+
+  // function("uvec3s_dot_uvec3",        (void (*)(const uvec3s& u, const uvec3 v, uints& out))   dot       );
+  // function("uvec3s_cross_uvec3",      (void (*)(const uvec3s& u, const uvec3 v, uvec3s& out))    cross     );
+  // function("uvec3s_distance_uvec3",   (void (*)(const uvec3s& u, const uvec3 v, uints& out))   distance  );
+  // function("uvec3s_dot_uvec3s",       (void (*)(const uvec3s& u, const uvec3s& v, uints& out)) dot       );
+  // function("uvec3s_cross_uvec3s",     (void (*)(const uvec3s& u, const uvec3s& v, uvec3s& out))  cross     );
+  // function("uvec3s_distance_uvec3s",  (void (*)(const uvec3s& u, const uvec3s& v, uints& out)) distance  );
+
+  // function("uvec3s_length",     (void (*)(const uvec3s& u, uints& out))  length      );
+  // function("uvec3s_normalize",  (void (*)(const uvec3s& u, uvec3s& out))   normalize   );
+
+
+
+
+
+
+
+
+
+
+
+
+
+  function("uvec4s_copy_from_typed_array",   (void (*)(uvec4s& out, const val& js_list ))              copy_from_typed_array     );
+  function("uvec4s_copy_list",   (void (*)(uvec4s& out, const val& js_list ))                     copy_list     );
+  function("uvec4s_from_typed_array",   (uvec4s (*)(const val& js_list ))                         from_typed_array     );
+  function("uvec4s_from_list",   (uvec4s (*)(const val& js_list ))                                vecs_from_list     );
+  function("uvec4s_from_uvec4s",   (uvec4s (*)(const uvec4s& a ))                                   copy     );
+  function("uvec4s_to_list",      (val (*)(const uvec4s& a ))                                     to_list     );
+
+
+  function("uvec4s_add_uvec4s",  (void (*)(const uvec4s&, const uvec4s&, uvec4s&))  add  );
+  function("uvec4s_add_uints", (void (*)(const uvec4s&, const uints&, uvec4s&)) add  );
+  function("uvec4s_add_uvec4",   (void (*)(const uvec4s&, const uvec4, uvec4s&))    add  );
+  function("uvec4s_add_uint",  (void (*)(const uvec4s&, const uint, uvec4s&))   add  );
+  function("uvec4s_sub_uvec4s",  (void (*)(const uvec4s&, const uvec4s&, uvec4s&))  sub  );
+  function("uvec4s_sub_uints", (void (*)(const uvec4s&, const uints&, uvec4s&)) sub  );
+  function("uvec4s_sub_uvec4",   (void (*)(const uvec4s&, const uvec4, uvec4s&))    sub  );
+  function("uvec4s_sub_uint",  (void (*)(const uvec4s&, const uint, uvec4s&))   sub  );
+  function("uvec4s_mult_uvec4s", (void (*)(const uvec4s&, const uvec4s&, uvec4s&))  mult );
+  function("uvec4s_mult_uints",(void (*)(const uvec4s&, const uints&, uvec4s&)) mult );
+  function("uvec4s_mult_uvec4",  (void (*)(const uvec4s&, const uvec4, uvec4s&))    mult );
+  function("uvec4s_mult_uint", (void (*)(const uvec4s&, const uint, uvec4s&))   mult );
+  function("uvec4s_div_uvec4s",  (void (*)(const uvec4s&, const uvec4s&, uvec4s&))  div  );
+  function("uvec4s_div_uints", (void (*)(const uvec4s&, const uints&, uvec4s&)) div  );
+  function("uvec4s_div_uvec4",   (void (*)(const uvec4s&, const uvec4, uvec4s&))    div  );
+  function("uvec4s_div_uint",  (void (*)(const uvec4s&, const uint, uvec4s&))   div  );
+
+  // function("uvec4s_mult_mat3",   (void (*)(const uvec4s&, const mat4&, uvec4s&))    mult );
+
+  function("uvec4s_get_id",      (uvec4 (*)(const uvec4s& a, const unsigned int id ))             get      );
+  function("uvec4s_get_ids",     (void (*)(const uvec4s& a, const uints& ids, uvec4s& out ))      get      );
+  function("uvec4s_get_mask",    (void (*)(const uvec4s& a, const bools& mask, uvec4s& out ))     get      );
+  function("uvec4s_fill",        (void (*)(uvec4s& out, const uvec4 a ))                          fill     );
+  function("uvec4s_fill_ids",    (void (*)(uvec4s& out, const uints& ids, const uvec4 a ))        fill     );
+  function("uvec4s_fill_mask",   (void (*)(uvec4s& out, const bools& mask, const uvec4 a ))       fill     );
+  function("uvec4s_copy",        (void (*)(uvec4s& out, const uvec4s& a ))                        copy     );
+  function("uvec4s_copy_mask",   (void (*)(uvec4s& out, const bools& mask, const uvec4s& a ))     copy     );
+  function("uvec4s_copy_id",     (void (*)(uvec4s& out, const unsigned int id, const uvec4s& a )) copy     );
+  function("uvec4s_copy_ids",    (void (*)(uvec4s& out, const uints& ids, const uvec4s& a ))      copy     );
+  function("uvec4s_set_id",      (void (*)(uvec4s& out, const unsigned int id, const uvec4 a ))   set      );
+  function("uvec4s_set_ids",     (void (*)(uvec4s& out, const uints& ids, const uvec4s& a ))      set      );
+
+  // function("uvec4s_equal_uvec4",        (bool (*)(const uvec4s& a, const uvec4 b))                 equal    );
+  // function("uvec4s_notEqual_uvec4",     (bool (*)(const uvec4s& a, const uvec4 b))                 notEqual );
+  // function("uvec4s_equal_uvec4s",       (bool (*)(const uvec4s& a, const uvec4s& b))               equal    );
+  // function("uvec4s_notEqual_uvec4s",    (bool (*)(const uvec4s& a, const uvec4s& b))               notEqual );
+  // function("uvec4s_compEqual_uvec4",    (void (*)(const uvec4s& a, const uvec4 b, bools& out))     equal    );
+  // function("uvec4s_compNotEqual_uvec4", (void (*)(const uvec4s& a, const uvec4 b, bools& out))     notEqual );
+  // function("uvec4s_compEqual_uvec4s",   (void (*)(const uvec4s& a, const uvec4s& b, bools& out))   equal    );
+  // function("uvec4s_compNotEqual_uvec4s",(void (*)(const uvec4s& a, const uvec4s& b, bools& out))   notEqual );
+
+  // function("uvec4s_greaterThan_uint",      (void (*)(const uvec4s& a, const uint b, bvec4s& out))       greaterThan      );
+  // function("uvec4s_greaterThanEqual_uint", (void (*)(const uvec4s& a, const uint b, bvec4s& out))       greaterThanEqual );
+  // function("uvec4s_lessThan_uint",         (void (*)(const uvec4s& a, const uint b, bvec4s& out))       lessThan         );
+  // function("uvec4s_lessThanEqual_uint",    (void (*)(const uvec4s& a, const uint b, bvec4s& out))       lessThanEqual    );
+  // function("uvec4s_greaterThan_uints",     (void (*)(const uvec4s& a, const uints& b, bvec4s& out))     greaterThan      );
+  // function("uvec4s_greaterThanEqual_uints",(void (*)(const uvec4s& a, const uints& b, bvec4s& out))     greaterThanEqual );
+  // function("uvec4s_lessThan_uints",        (void (*)(const uvec4s& a, const uints& b, bvec4s& out))     lessThan         );
+  // function("uvec4s_lessThanEqual_uints",   (void (*)(const uvec4s& a, const uints& b, bvec4s& out))     lessThanEqual    );
+
+  // function("uvec4s_greaterThan_uvec4",      (void (*)(const uvec4s& a, const uvec4 b, bvec4s& out))      greaterThan      );
+  // function("uvec4s_greaterThanEqual_uvec4", (void (*)(const uvec4s& a, const uvec4 b, bvec4s& out))      greaterThanEqual );
+  // function("uvec4s_lessThan_uvec4",         (void (*)(const uvec4s& a, const uvec4 b, bvec4s& out))      lessThan         );
+  // function("uvec4s_lessThanEqual_uvec4",    (void (*)(const uvec4s& a, const uvec4 b, bvec4s& out))      lessThanEqual    );
+  // function("uvec4s_greaterThan_uvec4s",     (void (*)(const uvec4s& a, const uvec4s& b, bvec4s& out))    greaterThan      );
+  // function("uvec4s_greaterThanEqual_uvec4s",(void (*)(const uvec4s& a, const uvec4s& b, bvec4s& out))    greaterThanEqual );
+  // function("uvec4s_lessThan_uvec4s",        (void (*)(const uvec4s& a, const uvec4s& b, bvec4s& out))    lessThan         );
+  // function("uvec4s_lessThanEqual_uvec4s",   (void (*)(const uvec4s& a, const uvec4s& b, bvec4s& out))    lessThanEqual    );
+
+  function("uvec4s_abs",    ( void (*)(const uvec4s& a, uvec4s& out))    abs                                               );
+  function("uvec4s_sign",   ( void (*)(const uvec4s& a, uvec4s& out))    sign                                              );
+  // function("uvec4s_floor",  ( void (*)(const uvec4s& a, uvec4s& out))    floor                                             );
+  // function("uvec4s_trunc",  ( void (*)(const uvec4s& a, uvec4s& out))    trunc                                             );
+  // function("uvec4s_round",  ( void (*)(const uvec4s& a, uvec4s& out))    round                                             );
+  // function("uvec4s_ceil",   ( void (*)(const uvec4s& a, uvec4s& out))    ceil                                              );
+  // function("uvec4s_fract",  ( void (*)(const uvec4s& a, uvec4s& out))    fract                                             );
+
+  // function("uvec4s_mod",    ( void (*)(const uvec4s& a, const uvec4s& b, uvec4s& out))     mod                          );
+  // function("uvec4s_modf",   ( void (*)(const uvec4s& a, ints& intout, uvec4s& fractout))  modf                         );
+  function("uvec4s_min_uvec4s",    ( void (*)(const uvec4s& a, const uvec4s& b, uvec4s& out))   min                       );
+  function("uvec4s_max_uvec4s",    ( void (*)(const uvec4s& a, const uvec4s& b, uvec4s& out))   max                       );
+
+  function("uvec4s_min_uvec4",    ( void (*)(const uvec4s& a, const uvec4 b, uvec4s& out))     min                        );
+  function("uvec4s_max_uvec4",    ( void (*)(const uvec4s& a, const uvec4 b, uvec4s& out))     max                        );
+
+  function("uvec4s_min",    ( uvec4(*)(const uvec4s& a))                                       min                        );
+  function("uvec4s_max",    ( uvec4(*)(const uvec4s& a))                                       max                        );
+
+  function("uvec4s_clamp_11",  ( void (*)(const uvec4s& a, const uvec4 lo, const uvec4 hi, uvec4s& out))          clamp     );
+  function("uvec4s_clamp_1m",  ( void (*)(const uvec4s& a, const uvec4 lo, const uvec4s& hi, uvec4s& out))        clamp     );
+  function("uvec4s_clamp_m1",  ( void (*)(const uvec4s& a, const uvec4s& lo, const uvec4 hi, uvec4s& out))        clamp     );
+  function("uvec4s_clamp_mm",  ( void (*)(const uvec4s& a, const uvec4s& lo, const uvec4s& hi, uvec4s& out))      clamp     );
+
+  // function("uvec4s_mix_float_mmm",  ( void (*)(const uvec4s& x, const uvec4s& y, const floats& a, uvec4s& out)) mix       );
+  // function("uvec4s_mix_float_mm1",  ( void (*)(const uvec4s& x, const uvec4s& y, const float a, uvec4s& out))   mix       );
+  // function("uvec4s_mix_float_m1m",  ( void (*)(const uvec4s& x, const uvec4 y, const floats& a, uvec4s& out))   mix       );
+  // function("uvec4s_mix_float_m11",  ( void (*)(const uvec4s& x, const uvec4 y, const float a, uvec4s& out))     mix       );
+  // function("uvec4s_mix_float_1mm",  ( void (*)(const uvec4 x, const uvec4s& y, const floats& a, uvec4s& out))   mix       );
+  // function("uvec4s_mix_float_1m1",  ( void (*)(const uvec4 x, const uvec4s& y, const float a, uvec4s& out))     mix       );
+  // function("uvec4s_mix_float_11m",  ( void (*)(const uvec4 x, const uvec4 y, const floats& a, uvec4s& out))     mix       );
+
+  // function("uvec4s_mix_uvec4_mmm",    ( void (*)(const uvec4s& x, const uvec4s& y, const uvec4s& a, uvec4s& out))     mix         );
+  // function("uvec4s_mix_uvec4_mm1",    ( void (*)(const uvec4s& x, const uvec4s& y, const uvec4 a, uvec4s& out))       mix         );
+  // function("uvec4s_mix_uvec4_m1m",    ( void (*)(const uvec4s& x, const uvec4 y, const uvec4s& a, uvec4s& out))       mix         );
+  // function("uvec4s_mix_uvec4_m11",    ( void (*)(const uvec4s& x, const uvec4 y, const uvec4 a, uvec4s& out))         mix         );
+  // function("uvec4s_mix_uvec4_1mm",    ( void (*)(const uvec4 x, const uvec4s& y, const uvec4s& a, uvec4s& out))       mix         );
+  // function("uvec4s_mix_uvec4_1m1",    ( void (*)(const uvec4 x, const uvec4s& y, const uvec4 a, uvec4s& out))         mix         );
+  // function("uvec4s_mix_uvec4_11m",    ( void (*)(const uvec4 x, const uvec4 y, const uvec4s& a, uvec4s& out))         mix         );
+
+  function("uvec4s_step_mm",   ( void (*)(const uvec4s& edge, const uvec4s& x, uvec4s& out))                       step        );
+  function("uvec4s_step_m1",   ( void (*)(const uvec4s& edge, const uvec4 x, uvec4s& out))                         step        );
+  function("uvec4s_step_1m",   ( void (*)(const uvec4 edge, const uvec4s& x, uvec4s& out))                         step        );
+
+  // function("uvec4s_smoothstep_mmm",  ( void (*)(const uvec4s& lo, const uvec4s& hi, const uvec4s& x, uvec4s& out))  smoothstep  );
+  // function("uvec4s_smoothstep_1mm",  ( void (*)(const uvec4 lo, const uvec4s& hi, const uvec4s& x, uvec4s& out))    smoothstep  );
+  // function("uvec4s_smoothstep_m1m",  ( void (*)(const uvec4s& lo, uvec4 hi, const uvec4s& x, uvec4s& out))          smoothstep  );
+  // function("uvec4s_smoothstep_11m",  ( void (*)(const uvec4 lo, const uvec4 hi, const uvec4s& x, uvec4s& out))      smoothstep  );
+  // function("uvec4s_smoothstep_mm1",  ( void (*)(const uvec4s& lo, const uvec4s& hi, const uvec4 x, uvec4s& out))    smoothstep  );
+  // function("uvec4s_smoothstep_1m1",  ( void (*)(const uvec4 lo, const uvec4s& hi, const uvec4 x, uvec4s& out))      smoothstep  );
+  // function("uvec4s_smoothstep_m11",  ( void (*)(const uvec4s& lo, const uvec4 hi, const uvec4 x, uvec4s& out))      smoothstep  );
+  // function("uvec4s_isnan",  ( void (*)(const uvec4s& x, bools& out))                                          isnan       );
+  // function("uvec4s_isinf",  ( void (*)(const uvec4s& x, bools& out))                                          isinf       );
+  function("uvec4s_fma_mmm",    ( void (*)(const uvec4s& a, const uvec4s& b, const uvec4s& c, uvec4s& out))         fma         );
+  function("uvec4s_fma_1mm",    ( void (*)(const uvec4 a, const uvec4s& b, const uvec4s& c, uvec4s& out))           fma         );
+  function("uvec4s_fma_m1m",    ( void (*)(const uvec4s& a, uvec4 b, const uvec4s& c, uvec4s& out))                 fma         );
+  function("uvec4s_fma_11m",    ( void (*)(const uvec4 a, const uvec4 b, const uvec4s& c, uvec4s& out))             fma         );
+  function("uvec4s_fma_mm1",    ( void (*)(const uvec4s& a, const uvec4s& b, const uvec4 c, uvec4s& out))           fma         );
+  function("uvec4s_fma_1m1",    ( void (*)(const uvec4 a, const uvec4s& b, const uvec4 c, uvec4s& out))             fma         );
+  function("uvec4s_fma_m11",    ( void (*)(const uvec4s& a, const uvec4 b, const uvec4 c, uvec4s& out))             fma         );
+
+  // function("uvec4s_pow",         (void (*)(const uvec4s& base, const uvec4s& exponent, uvec4s& out)) pow                  );
+  // function("uvec4s_exp",         (void (*)(const uvec4s& a, uvec4s& out))                           exp                  );
+  // function("uvec4s_log",         (void (*)(const uvec4s& a, uvec4s& out))                           log                  );
+  // function("uvec4s_exp2",        (void (*)(const uvec4s& a, uvec4s& out))                           exp2                 );
+  // function("uvec4s_log2",        (void (*)(const uvec4s& a, uvec4s& out))                           log2                 );
+  // function("uvec4s_sqrt",        (void (*)(const uvec4s& a, uvec4s& out))                           sqrt                 );
+  // function("uvec4s_inversesqrt", (void (*)(const uvec4s& a, uvec4s& out))                           inversesqrt          );
+
+  // function("uvec4s_min_id",    (unsigned int (*)(const uvec4s& a))                                 min_id               );
+  // function("uvec4s_max_id",    (unsigned int (*)(const uvec4s& a))                                 max_id               );
+  function("uvec4s_sum",       (uvec4 (*)(const uvec4s& a))                                            sum                  );
+  function("uvec4s_mean",      (uvec4 (*)(const uvec4s& a))                                            mean                 );
+  // function("uvec4s_median",    (uvec4 (*)(const uvec4s& a))                                         median               );
+  // function("uvec4s_mode",      (uvec4 (*)(const uvec4s& a))                                         mode                 );
+  function("uvec4s_weighted_average", (uvec4 (*)(const uvec4s& a, const uints& weights))              weighted_average     );
+  function("uvec4s_rescale",   (void (*)(const uvec4s& a, uvec4s& out, uvec4 min_new, uvec4 max_new))    rescale              );
+
+  // function("uvec4s_dot_uvec4",        (void (*)(const uvec4s& u, const uvec4 v, uints& out))   dot       );
+  // function("uvec4s_distance_uvec4",   (void (*)(const uvec4s& u, const uvec4 v, uints& out))   distance  );
+  // function("uvec4s_dot_uvec4s",       (void (*)(const uvec4s& u, const uvec4s& v, uints& out)) dot       );
+  // function("uvec4s_distance_uvec4s",  (void (*)(const uvec4s& u, const uvec4s& v, uints& out)) distance  );
+
+  // function("uvec4s_length",     (void (*)(const uvec4s& u, uints& out))  length      );
+  // function("uvec4s_normalize",  (void (*)(const uvec4s& u, uvec4s& out))   normalize   );
 
 
 

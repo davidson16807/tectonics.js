@@ -26,10 +26,13 @@ postcompiled/cpp.html : $(INC) $(SRC)
 	-I ../core/inc/ \
 	-g ../core/src/rasters.cpp \
 	-s EXPORT_NAME="'Cpp'" -s MODULARIZE=1 \
-	-s WASM=1 -s DEMANGLE_SUPPORT=1 -s ASSERTIONS=1 -s SAFE_HEAP=1 \
-	-s ALLOW_MEMORY_GROWTH=1 \
+	-s WASM=1 \
+	-s ASSERTIONS=1 \
+	-s SAFE_HEAP=1 \
+	-s DEMANGLE_SUPPORT=1 \
 	-o cpp.html && \
 	cd -
+	# -s ALLOW_MEMORY_GROWTH=1 \
 	# -g4 \
 	# -Werror \
 	# -g core/src/*.cpp \
@@ -44,4 +47,4 @@ postcompiled/Academics.js : precompiled/Academics.js $(SHADERS) Makefile
 	$(CPP) -E -P -I. -xc -Wundef -std=c99 -nostdinc -Wtrigraphs -fdollars-in-identifiers -C precompiled/Academics.js > $@
 
 clean:
-	rm -f $(OUT)
+	rm -f $(OUT) postcompiled/cpp.*

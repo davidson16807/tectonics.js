@@ -156,29 +156,29 @@ namespace composites
 		}
 	}
 
-	typedef many<vec<1, bool, glm::defaultp>>	bvec1s;
-	typedef many<vec<2, bool, glm::defaultp>>	bvec2s;
-	typedef many<vec<3, bool, glm::defaultp>>	bvec3s;
-	typedef many<vec<4, bool, glm::defaultp>>	bvec4s;
+	typedef many<vec<1, bool, defaultp>>	bvec1s;
+	typedef many<vec<2, bool, defaultp>>	bvec2s;
+	typedef many<vec<3, bool, defaultp>>	bvec3s;
+	typedef many<vec<4, bool, defaultp>>	bvec4s;
 
-	typedef many<vec<1, int, glm::defaultp>> ivec1s;
-	typedef many<vec<2, int, glm::defaultp>> ivec2s;
-	typedef many<vec<3, int, glm::defaultp>> ivec3s;
-	typedef many<vec<4, int, glm::defaultp>> ivec4s;
+	typedef many<vec<1, int, defaultp>> ivec1s;
+	typedef many<vec<2, int, defaultp>> ivec2s;
+	typedef many<vec<3, int, defaultp>> ivec3s;
+	typedef many<vec<4, int, defaultp>> ivec4s;
 
-	typedef many<vec<1, unsigned int, glm::defaultp>> uvec1s;
-	typedef many<vec<2, unsigned int, glm::defaultp>> uvec2s;
-	typedef many<vec<3, unsigned int, glm::defaultp>> uvec3s;
-	typedef many<vec<4, unsigned int, glm::defaultp>> uvec4s;
+	typedef many<vec<1, unsigned int, defaultp>> uvec1s;
+	typedef many<vec<2, unsigned int, defaultp>> uvec2s;
+	typedef many<vec<3, unsigned int, defaultp>> uvec3s;
+	typedef many<vec<4, unsigned int, defaultp>> uvec4s;
 
-	typedef many<vec<1, double, glm::defaultp>> dvec1s;
-	typedef many<vec<2, double, glm::defaultp>> dvec2s;
-	typedef many<vec<3, double, glm::defaultp>> dvec3s;
-	typedef many<vec<4, double, glm::defaultp>> dvec4s;
+	typedef many<vec<1, double, defaultp>> dvec1s;
+	typedef many<vec<2, double, defaultp>> dvec2s;
+	typedef many<vec<3, double, defaultp>> dvec3s;
+	typedef many<vec<4, double, defaultp>> dvec4s;
 
-	typedef many<vec<1, float, glm::defaultp>> vec1s;
-	typedef many<vec<2, float, glm::defaultp>> vec2s;
-	typedef many<vec<3, float, glm::defaultp>> vec3s;
-	typedef many<vec<4, float, glm::defaultp>> vec4s;
+	typedef many<vec<1, float, defaultp>> vec1s;
+	typedef many<vec<2, float, defaultp>> vec2s;
+	typedef many<vec<3, float, defaultp>> vec3s;
+	typedef many<vec<4, float, defaultp>> vec4s;
 
 }

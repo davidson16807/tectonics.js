@@ -107,6 +107,17 @@ namespace composites
 			get(*this, ids, out);
 			return out;
 		}
+
+		inline many<T>& operator=(const many<T>& other )
+		{
+			copy(*this, other);
+			return *this;
+		}
+		inline many<T>& operator=(const T& other )
+		{
+			fill(*this, other);
+			return *this;
+		}
 	};
 
 
@@ -139,7 +150,7 @@ namespace composites
 	template <class T>
 	many<T> get(const many<T>& a, const many<unsigned int>& ids)
 	{
-		many<T> out = many<T>(ids.size());
+		many<T> out(ids.size());
 		get(a, ids, out);
 		return out;
 	}
@@ -590,27 +601,26 @@ namespace composites
 
 
 
-
 	template <class T, class T2, class T3>
-	inline many<T>& operator+=(const many<T>& a, const T2 b) 
+	inline many<T>& operator+=(many<T>& a, const T2 b) 
 	{
 		add(a, b, a);
 		return a;
 	}
 	template <class T, class T2>
-	inline many<T>& operator-=(const many<T>& a, const T2 b) 
+	inline many<T>& operator-=(many<T>& a, const T2 b) 
 	{
 		sub(a, b, a);
 		return a;
 	}
 	template <class T, class T2>
-	inline many<T>& operator*=(const many<T>& a, const T2 b) 
+	inline many<T>& operator*=(many<T>& a, const T2 b) 
 	{
 		mult(a, b, a);
 		return a;
 	}
 	template <class T, class T2>
-	inline many<T>& operator/=(const many<T>& a, const T2 b) 
+	inline many<T>& operator/=(many<T>& a, const T2 b) 
 	{
 		div(a, b, a);
 		return a;
@@ -618,25 +628,25 @@ namespace composites
 
 
 	template <class T, class T2>
-	inline many<T>& operator+=(const many<T>& a, const many<T2>& b) 
+	inline many<T>& operator+=(many<T>& a, const many<T2>& b) 
 	{
 		add(a, b, a);
 		return a;
 	}
 	template <class T, class T2>
-	inline many<T>& operator-=(const many<T>& a, const many<T2>& b) 
+	inline many<T>& operator-=(many<T>& a, const many<T2>& b) 
 	{
 		sub(a, b, a);
 		return a;
 	}
 	template <class T, class T2>
-	inline many<T>& operator*=(const many<T>& a, const many<T2>& b) 
+	inline many<T>& operator*=(many<T>& a, const many<T2>& b) 
 	{
 		mult(a, b, a);
 		return a;
 	}
 	template <class T, class T2>
-	inline many<T>& operator/=(const many<T>& a, const many<T2>& b) 
+	inline many<T>& operator/=(many<T>& a, const many<T2>& b) 
 	{
 		div(a, b, a);
 		return a;
@@ -644,13 +654,13 @@ namespace composites
 
 	// NOTE: prefix increment/decrement
 	template <class T>
-	inline many<T>& operator++(const many<T>& a)  
+	inline many<T>& operator++(many<T>& a)  
 	{  
 		add(a, 1, a);
 		return a;
 	}  
 	template <class T>
-	inline many<T>& operator--(const many<T>& a)  
+	inline many<T>& operator--(many<T>& a)  
 	{  
 		add(a, 1, a);
 		return a;
@@ -658,13 +668,13 @@ namespace composites
 
 	// NOTE: postfix increment/decrement
 	template <class T>
-	inline many<T> operator++(const many<T>& a, int)  
+	inline many<T> operator++(many<T>& a, int)  
 	{  
 		add(a, 1, a);
 		return a;
 	}  
 	template <class T>
-	inline many<T> operator--(const many<T>& a, int)  
+	inline many<T> operator--(many<T>& a, int)  
 	{  
 		add(a, 1, a);
 		return a;
@@ -679,28 +689,28 @@ namespace composites
 	template <class T, class T2>
 	inline many<T> operator+(const many<T>& a, const T2 b)
 	{
-		many<T> out = many<T>(a.size());
+		many<T> out(a.size());
 		add(a, b, out);
 		return out;
 	}
 	template <class T, class T2>
 	inline many<T> operator-(const many<T>& a, const T2 b)
 	{
-		many<T> out = many<T>(a.size());
+		many<T> out(a.size());
 		sub(a, b, out);
 		return out;
 	}
 	template <class T, class T2>
 	inline many<T> operator*(const many<T>& a, const T2 b)
 	{
-		many<T> out = many<T>(a.size());
+		many<T> out(a.size());
 		mult(a, b, out);
 		return out;
 	}
 	template <class T, class T2>
 	inline many<T> operator/(const many<T>& a, const T2 b)
 	{
-		many<T> out = many<T>(a.size());
+		many<T> out(a.size());
 		div(a, b, out);
 		return out;
 	}
@@ -714,28 +724,28 @@ namespace composites
 	template <class T, class T2>
 	inline many<T> operator+(const T2 a, const many<T>& b)
 	{
-		many<T> out = many<T>(a.size());
+		many<T> out(a.size());
 		add(a, b, out);
 		return out;
 	}
 	template <class T, class T2>
 	inline many<T> operator-(const T2 a, const many<T>& b)
 	{
-		many<T> out = many<T>(a.size());
+		many<T> out(a.size());
 		sub(a, b, out);
 		return out;
 	}
 	template <class T, class T2>
 	inline many<T> operator*(const T2 a, const many<T>& b)
 	{
-		many<T> out = many<T>(a.size());
+		many<T> out(a.size());
 		mult(a, b, out);
 		return out;
 	}
 	template <class T, class T2>
 	inline many<T> operator/(const T2 a, const many<T>& b)
 	{
-		many<T> out = many<T>(a.size());
+		many<T> out(a.size());
 		div(a, b, out);
 		return out;
 	}
@@ -746,28 +756,28 @@ namespace composites
 	template <class T, class T2>
 	inline many<T> operator+(const many<T>& a, const many<T2>& b)
 	{
-		many<T> out = many<T>(a.size());
+		many<T> out(a.size());
 		add(a, b, out);
 		return out;
 	}
 	template <class T, class T2>
 	inline many<T> operator-(const many<T>& a, const many<T2>& b)
 	{
-		many<T> out = many<T>(a.size());
+		many<T> out(a.size());
 		sub(a, b, out);
 		return out;
 	}
 	template <class T, class T2>
 	inline many<T> operator*(const many<T>& a, const many<T2>& b)
 	{
-		many<T> out = many<T>(a.size());
+		many<T> out(a.size());
 		mult(a, b, out);
 		return out;
 	}
 	template <class T, class T2>
 	inline many<T> operator/(const many<T>& a, const many<T2>& b)
 	{
-		many<T> out = many<T>(a.size());
+		many<T> out(a.size());
 		div(a, b, out);
 		return out;
 	}
