@@ -3,6 +3,7 @@
 #include <cmath> 		// sqrt, etc
 #include <algorithm>	// std::sort
 #include <functional>	// std::function
+#include <valarray>
 
 #include "many.hpp"
 
@@ -11,7 +12,7 @@ namespace composites
 
 
 	template<class T, typename Taggregator>
-	void aggregate_into(const many<T>& a, const many<unsigned int>& group_ids, Taggregator aggregator, many<T>& group_out)
+	void aggregate_into(const std::valarray<T>& a, const std::valarray<unsigned int>& group_ids, Taggregator aggregator, std::valarray<T>& group_out)
 	{
 		for (unsigned int i = 0; i < group_ids.size(); ++i)
 		{
@@ -19,7 +20,7 @@ namespace composites
 		}
 	}
 	template<class T, typename Taggregator>
-	void aggregate(const many<T>& a, const many<unsigned int>& group_ids, Taggregator aggregator, many<T>& group_out)
+	void aggregate(const std::valarray<T>& a, const std::valarray<unsigned int>& group_ids, Taggregator aggregator, std::valarray<T>& group_out)
 	{
 		fill(group_out, T(0));
 		for (unsigned int i = 0; i < group_ids.size(); ++i)
@@ -28,9 +29,9 @@ namespace composites
 		}
 	}
 	template<class T, typename Taggregator>
-	many<T> aggregate(const many<T>& a, const many<unsigned int>& group_ids, Taggregator aggregator)
+	std::valarray<T> aggregate(const std::valarray<T>& a, const std::valarray<unsigned int>& group_ids, Taggregator aggregator)
 	{
-		many<T> group_out = many<T>(max(group_ids));
+		std::valarray<T> group_out = std::valarray<T>(max(group_ids));
 		for (unsigned int i = 0; i < group_ids.size(); ++i)
 		{
 			group_out[group_ids[i]] = aggregator(group_out[group_ids[i]], a[i]);
@@ -40,7 +41,7 @@ namespace composites
 
 
 	template<class T, typename Taggregator>
-	void aggregate_into(const many<unsigned int>& group_ids, Taggregator aggregator, many<T>& group_out)
+	void aggregate_into(const std::valarray<unsigned int>& group_ids, Taggregator aggregator, std::valarray<T>& group_out)
 	{
 		for (unsigned int i = 0; i < group_ids.size(); ++i)
 		{
@@ -48,7 +49,7 @@ namespace composites
 		}
 	}
 	template<class T, typename Taggregator>
-	void aggregate(const many<unsigned int>& group_ids, Taggregator aggregator, many<T>& group_out)
+	void aggregate(const std::valarray<unsigned int>& group_ids, Taggregator aggregator, std::valarray<T>& group_out)
 	{
 		fill(group_out, T(0));
 		for (unsigned int i = 0; i < group_ids.size(); ++i)
@@ -57,9 +58,9 @@ namespace composites
 		}
 	}
 	template<class T, typename Taggregator>
-	many<T> aggregate(const many<unsigned int>& group_ids, Taggregator aggregator)
+	std::valarray<T> aggregate(const std::valarray<unsigned int>& group_ids, Taggregator aggregator)
 	{
-		many<T> group_out = many<T>(max(group_ids));
+		std::valarray<T> group_out = std::valarray<T>(max(group_ids));
 		for (unsigned int i = 0; i < group_ids.size(); ++i)
 		{
 			group_out[group_ids[i]] = aggregator(group_out[group_ids[i]]);
@@ -71,7 +72,7 @@ namespace composites
 
 	// component-wise min
 	template <class T>
-	unsigned int min_id(const many<T>& a)
+	unsigned int min_id(const std::valarray<T>& a)
 	{
 		T min_value = a[0];
 		unsigned int min_id = 0;
@@ -89,7 +90,7 @@ namespace composites
 
 
 	template <class T>
-	unsigned int max_id(const many<T>& a)
+	unsigned int max_id(const std::valarray<T>& a)
 	{
 		T min_value = a[0];
 		unsigned int max_id = 0;
@@ -107,7 +108,7 @@ namespace composites
 
 	// component-wise min
 	template <class T>
-	T sum(const many<T>& a)
+	T sum(const std::valarray<T>& a)
 	{
 		T out = T(0);
 		for (unsigned int i = 0; i < a.size(); ++i)
@@ -118,7 +119,7 @@ namespace composites
 	}
 
 	template <class T>
-	T mean(const many<T>& a)
+	T mean(const std::valarray<T>& a)
 	{
 		T out = T(0);
 		for (unsigned int i = 0; i < a.size(); ++i)
@@ -131,17 +132,17 @@ namespace composites
 
 	// // component-wise min
 	// template <class T>
-	// T median(const many<T>& a)
+	// T median(const std::valarray<T>& a)
 	// {
-	// 	const many<T> temp = many<T>(a);
+	// 	const std::valarray<T> temp = std::valarray<T>(a);
 	// 	std::sort(std::begin(temp), std::end(temp));
 	// 	return a[a.size()/2];
 	// }
 // 
 	// template <class T>
-	// T mode(const many<T>& a)
+	// T mode(const std::valarray<T>& a)
 	// {
-	// 	const many<T> temp = many<T>(a);
+	// 	const std::valarray<T> temp = std::valarray<T>(a);
 	// 	std::sort(std::begin(temp), std::end(temp));
 	//     int value = a[0];
 	//     int max = a[0];
@@ -164,7 +165,7 @@ namespace composites
 	// }
 
 	template <class T>
-	T standard_deviation(const many<T>& a)
+	T standard_deviation(const std::valarray<T>& a)
 	{
 		T mean_a = mean(a);
 
@@ -178,7 +179,7 @@ namespace composites
 	};
 
 	template <class T>
-	T weighted_average(const many<T>& a, const many<T>& weights)
+	T weighted_average(const std::valarray<T>& a, const std::valarray<T>& weights)
 	{
 		T out = T(0);
 		for (unsigned int i = 0; i < a.size(); ++i)
@@ -191,7 +192,7 @@ namespace composites
 
 	// TODO: vector version
 	template <class T>
-	void rescale(const many<T>& a, many<T>& out, T max_new = 1., T min_new = 0.)
+	void rescale(const std::valarray<T>& a, std::valarray<T>& out, T max_new = 1., T min_new = 0.)
 	{
 	    T max_old = max(a);
 	    T min_old = min(a);

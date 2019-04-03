@@ -2,6 +2,7 @@
 
 #include <initializer_list>	// initializer_list
 #include <iterator>			// std::distance
+#include <valarray>
 
 namespace composites
 {
@@ -49,7 +50,7 @@ namespace composites
 		}
 
 		// copy constructor
-		many(const many<T>& a)  : values(new T[a.N]), N(a.N)
+		many(const std::valarray<T>& a)  : values(new T[a.N]), N(a.N)
 		{
 			for (unsigned int i = 0; i < N; ++i)
 			{
@@ -67,7 +68,7 @@ namespace composites
 			}
 		};
 		template <class T2>
-		explicit many(const many<T2>& a)  : values(new T[a.N]), N(a.N)
+		explicit many(const std::valarray<T2>& a)  : values(new T[a.N]), N(a.N)
 		{
 			for (unsigned int i = 0; i < N; ++i)
 			{
@@ -95,25 +96,25 @@ namespace composites
 		   return this->values[id]; // reference return 
 		}
 	
-		inline many<T> operator[](const many<bool>& mask )
+		inline std::valarray<T> operator[](const std::valarray<bool>& mask )
 		{
-			many<T> out = many<T>(mask.size());
+			std::valarray<T> out = std::valarray<T>(mask.size());
 			get(*this, mask, out);
 			return out;
 		}
-		inline many<T> operator[](const many<unsigned int>& ids )
+		inline std::valarray<T> operator[](const std::valarray<unsigned int>& ids )
 		{
-			many<T> out = many<T>(ids.size());
+			std::valarray<T> out = std::valarray<T>(ids.size());
 			get(*this, ids, out);
 			return out;
 		}
 
-		inline many<T>& operator=(const many<T>& other )
+		inline std::valarray<T>& operator=(const std::valarray<T>& other )
 		{
 			copy(*this, other);
 			return *this;
 		}
-		inline many<T>& operator=(const T& other )
+		inline std::valarray<T>& operator=(const T& other )
 		{
 			fill(*this, other);
 			return *this;
@@ -122,12 +123,12 @@ namespace composites
 
 
 	template <class T>
-	inline T get(const many<T>& a, const unsigned int id )
+	inline T get(const std::valarray<T>& a, const unsigned int id )
 	{
 		return a[id];
 	}
 	template <class T>
-	void get(const many<T>& a, const many<unsigned int>& ids, many<T>& out )
+	void get(const std::valarray<T>& a, const std::valarray<unsigned int>& ids, std::valarray<T>& out )
 	{
 		for (unsigned int i = 0; i < ids.size(); ++i)
 		{
@@ -135,7 +136,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void get(const many<T>& a, const many<bool>& mask, many<T>& out )
+	void get(const std::valarray<T>& a, const std::valarray<bool>& mask, std::valarray<T>& out )
 	{
 		int out_i = 0;
 		for (unsigned int i = 0; i < a.size(); ++i)
@@ -148,15 +149,15 @@ namespace composites
 		}
 	}
 	template <class T>
-	many<T> get(const many<T>& a, const many<unsigned int>& ids)
+	std::valarray<T> get(const std::valarray<T>& a, const std::valarray<unsigned int>& ids)
 	{
-		many<T> out(ids.size());
+		std::valarray<T> out(ids.size());
 		get(a, ids, out);
 		return out;
 	}
 
 	template <class T>
-	void fill(many<T>& out, const T a )
+	void fill(std::valarray<T>& out, const T a )
 	{
 		for (unsigned int i = 0; i < out.size(); ++i)
 		{
@@ -164,7 +165,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void fill(many<T>& out, const many<unsigned int>& ids, const T a )
+	void fill(std::valarray<T>& out, const std::valarray<unsigned int>& ids, const T a )
 	{
 		for (unsigned int i = 0; i < ids.size(); ++i)
 		{
@@ -172,7 +173,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void fill(many<T>& out, const many<bool>& mask, const T a )
+	void fill(std::valarray<T>& out, const std::valarray<bool>& mask, const T a )
 	{
 		for (unsigned int i = 0; i < out.size(); ++i)
 		{
@@ -181,7 +182,7 @@ namespace composites
 	}
 
 	template <class T>
-	void copy(many<T>& out, const many<T>& a )
+	void copy(std::valarray<T>& out, const std::valarray<T>& a )
 	{
 		for (unsigned int i = 0; i < out.size(); ++i)
 		{
@@ -190,17 +191,17 @@ namespace composites
 	}
 	// NOTE: duplicate of copy constructor, just in case library needs it
 	template <class T>
-	many<T> copy(const many<T>& a )
+	std::valarray<T> copy(const std::valarray<T>& a )
 	{
-		return many<T>(a);
+		return std::valarray<T>(a);
 	}
 	template <class T>
-	inline void copy(many<T>& out, const unsigned int id, const many<T>& a )
+	inline void copy(std::valarray<T>& out, const unsigned int id, const std::valarray<T>& a )
 	{
 		out[id] = a[id];
 	}
 	template <class T>
-	void copy(many<T>& out, const many<unsigned int>& ids, const many<T>& a )
+	void copy(std::valarray<T>& out, const std::valarray<unsigned int>& ids, const std::valarray<T>& a )
 	{
 		for (unsigned int i = 0; i < ids.size(); ++i)
 		{
@@ -208,7 +209,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void copy(many<T>& out, const many<bool>& mask, const many<T>& a )
+	void copy(std::valarray<T>& out, const std::valarray<bool>& mask, const std::valarray<T>& a )
 	{
 		for (unsigned int i = 0; i < out.size(); ++i)
 		{
@@ -218,12 +219,12 @@ namespace composites
 
 
 	template <class T>
-	inline void set(many<T>& out, const unsigned int id, const T a )
+	inline void set(std::valarray<T>& out, const unsigned int id, const T a )
 	{
 		out[id] = a;
 	}
 	template <class T>
-	void set(many<T>& out, const many<unsigned int>& ids, const many<T>& a )
+	void set(std::valarray<T>& out, const std::valarray<unsigned int>& ids, const std::valarray<T>& a )
 	{
 		for (unsigned int i = 0; i < ids.size(); ++i)
 		{
@@ -235,7 +236,7 @@ namespace composites
 	float COMPOSITES_EPSILON = 1e-4;
 
 	template <class T>
-	bool equal(const many<T>& a, const T b)
+	bool equal(const std::valarray<T>& a, const T b)
 	{
 		bool out(true);
 		T diff(0);
@@ -248,7 +249,7 @@ namespace composites
 		return out;
 	}
 	template <class T>
-	bool notEqual(const many<T>& a, const T b)
+	bool notEqual(const std::valarray<T>& a, const T b)
 	{
 		bool out(false);
 		T diff(0);
@@ -261,7 +262,7 @@ namespace composites
 		return out;
 	}
 	template <class T>
-	bool equal(const many<T>& a, const many<T>& b)
+	bool equal(const std::valarray<T>& a, const std::valarray<T>& b)
 	{
 		bool out(true);
 		T diff(0);
@@ -274,7 +275,7 @@ namespace composites
 		return out;
 	}
 	template <class T>
-	bool notEqual(const many<T>& a, const many<T>& b)
+	bool notEqual(const std::valarray<T>& a, const std::valarray<T>& b)
 	{
 		bool out(false);
 		T diff(0);
@@ -290,7 +291,7 @@ namespace composites
 
 
 	template <class T>
-	void equal(const many<T>& a, const T b, many<bool>& out)
+	void equal(const std::valarray<T>& a, const T b, std::valarray<bool>& out)
 	{
 		T diff(0);
 		T threshold(COMPOSITES_EPSILON);
@@ -301,7 +302,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void notEqual(const many<T>& a, const T b, many<bool>& out)
+	void notEqual(const std::valarray<T>& a, const T b, std::valarray<bool>& out)
 	{
 		T diff(0);
 		T threshold(COMPOSITES_EPSILON);
@@ -312,7 +313,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void equal(const many<T>& a, const many<T>& b, many<bool>& out)
+	void equal(const std::valarray<T>& a, const std::valarray<T>& b, std::valarray<bool>& out)
 	{
 		T diff(0);
 		T threshold(COMPOSITES_EPSILON);
@@ -323,7 +324,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void notEqual(const many<T>& a, const many<T>& b, many<bool>& out)
+	void notEqual(const std::valarray<T>& a, const std::valarray<T>& b, std::valarray<bool>& out)
 	{
 		T diff(0);
 		T threshold(COMPOSITES_EPSILON);
@@ -337,32 +338,32 @@ namespace composites
 
 	// NOTE: all operators are suggested to be inline because they are thin wrappers of functions
 	template <class T>
-	inline bool operator==(const many<T>& a, const T b)
+	inline bool operator==(const std::valarray<T>& a, const T b)
 	{
 		return equal(a, b);
 	}
 	template <class T>
-	inline bool operator!=(const many<T>& a, const T b)
+	inline bool operator!=(const std::valarray<T>& a, const T b)
 	{
 		return notEqual(a, b);
 	}
 	template <class T>
-	inline bool operator==(const T a, const many<T>& b)
+	inline bool operator==(const T a, const std::valarray<T>& b)
 	{
 		return equal(a, b);
 	}
 	template <class T>
-	inline bool operator!=(const T a, const many<T>& b)
+	inline bool operator!=(const T a, const std::valarray<T>& b)
 	{
 		return notEqual(a, b);
 	}
 	template <class T>
-	inline bool operator==(const many<T>& a, const many<T>& b)
+	inline bool operator==(const std::valarray<T>& a, const std::valarray<T>& b)
 	{
 		return equal(a, b);
 	}
 	template <class T>
-	inline bool operator!=(const many<T>& a, const many<T>& b)
+	inline bool operator!=(const std::valarray<T>& a, const std::valarray<T>& b)
 	{
 		return notEqual(a, b);
 	}
@@ -374,7 +375,7 @@ namespace composites
 
 
 	template <class T, class T2>
-	void greaterThan(const many<T>& a, const T2 b, many<bool>& out)
+	void greaterThan(const std::valarray<T>& a, const T2 b, std::valarray<bool>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -382,7 +383,7 @@ namespace composites
 		}
 	}
 	template <class T, class T2>
-	void greaterThanEqual(const many<T>& a, const T2 b, many<bool>& out)
+	void greaterThanEqual(const std::valarray<T>& a, const T2 b, std::valarray<bool>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -390,7 +391,7 @@ namespace composites
 		}
 	}
 	template <class T, class T2>
-	void lessThan(const many<T>& a, const T2 b, many<bool>& out)
+	void lessThan(const std::valarray<T>& a, const T2 b, std::valarray<bool>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -398,7 +399,7 @@ namespace composites
 		}
 	}
 	template <class T, class T2>
-	void lessThanEqual(const many<T>& a, const T2 b, many<bool>& out)
+	void lessThanEqual(const std::valarray<T>& a, const T2 b, std::valarray<bool>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -409,7 +410,7 @@ namespace composites
 
 
 	template <class T, class T2>
-	void greaterThan(const many<T>& a, const many<T2>& b, many<bool>& out)
+	void greaterThan(const std::valarray<T>& a, const std::valarray<T2>& b, std::valarray<bool>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -417,7 +418,7 @@ namespace composites
 		}
 	}
 	template <class T, class T2>
-	void greaterThanEqual(const many<T>& a, const many<T2>& b, many<bool>& out)
+	void greaterThanEqual(const std::valarray<T>& a, const std::valarray<T2>& b, std::valarray<bool>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -425,7 +426,7 @@ namespace composites
 		}
 	}
 	template <class T, class T2>
-	void lessThan(const many<T>& a, const many<T2>& b, many<bool>& out)
+	void lessThan(const std::valarray<T>& a, const std::valarray<T2>& b, std::valarray<bool>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -433,7 +434,7 @@ namespace composites
 		}
 	}
 	template <class T, class T2>
-	void lessThanEqual(const many<T>& a, const many<T2>& b, many<bool>& out)
+	void lessThanEqual(const std::valarray<T>& a, const std::valarray<T2>& b, std::valarray<bool>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -444,7 +445,7 @@ namespace composites
 
 
 	template <class T, class T2, class T3>
-	void add(const many<T>& a, const T2 b, many<T3>& out)
+	void add(const std::valarray<T>& a, const T2 b, std::valarray<T3>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -452,7 +453,7 @@ namespace composites
 		}
 	}
 	template <class T, class T2, class T3>
-	void sub(const many<T>& a, const T2 b, many<T3>& out)
+	void sub(const std::valarray<T>& a, const T2 b, std::valarray<T3>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -460,7 +461,7 @@ namespace composites
 		}
 	}
 	template <class T, class T2, class T3>
-	void mult(const many<T>& a, const T2 b, many<T3>& out)
+	void mult(const std::valarray<T>& a, const T2 b, std::valarray<T3>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -468,7 +469,7 @@ namespace composites
 		}
 	}
 	template <class T, class T2, class T3>
-	void div(const many<T>& a, const T2 b, many<T3>& out)
+	void div(const std::valarray<T>& a, const T2 b, std::valarray<T3>& out)
 	{
 		const T2 binv = T2(1.)/b;
 		for (unsigned int i = 0; i < a.size(); ++i)
@@ -482,7 +483,7 @@ namespace composites
 	// NOTE: we define operators for multiple classes T and T2 in order to support 
 	//  vector/scalar multiplication, matrix/vect multiplication, etc.
 	template <class T, class T2, class T3>
-	void add(const many<T>& a, const many<T2>& b, many<T3>& out)
+	void add(const std::valarray<T>& a, const std::valarray<T2>& b, std::valarray<T3>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -490,7 +491,7 @@ namespace composites
 		}
 	}
 	template <class T, class T2, class T3>
-	void sub(const many<T>& a, const many<T2>& b, many<T3>& out)
+	void sub(const std::valarray<T>& a, const std::valarray<T2>& b, std::valarray<T3>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -498,7 +499,7 @@ namespace composites
 		}
 	}
 	template <class T, class T2, class T3>
-	void mult(const many<T>& a, const many<T2>& b, many<T3>& out)
+	void mult(const std::valarray<T>& a, const std::valarray<T2>& b, std::valarray<T3>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -506,7 +507,7 @@ namespace composites
 		}
 	}
 	template <class T, class T2, class T3>
-	void div(const many<T>& a, const many<T2>& b, many<T3>& out)
+	void div(const std::valarray<T>& a, const std::valarray<T2>& b, std::valarray<T3>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -514,7 +515,7 @@ namespace composites
 		}
 	}
 	template <class T, class T2, class T3>
-	void div(const T a, const many<T2>& b, many<T3>& out)
+	void div(const T a, const std::valarray<T2>& b, std::valarray<T3>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -539,30 +540,30 @@ namespace composites
 	// NOTE: all wrappers are suggested to be inline because they are thin wrappers of functions
 
 	template <class T, class T2, class T3>
-	inline many<T3> operator>(const many<T>& a, const T2 b)
+	inline std::valarray<T3> operator>(const std::valarray<T>& a, const T2 b)
 	{
-		many<T3> out = many<T3>(a.N);
+		std::valarray<T3> out = std::valarray<T3>(a.N);
 		greaterThan(a, b, out);
 		return out;
 	}
 	template <class T, class T2, class T3>
-	inline many<T3> operator>=(const many<T>& a, const T2 b)
+	inline std::valarray<T3> operator>=(const std::valarray<T>& a, const T2 b)
 	{
-		many<T3> out = many<T3>(a.N);
+		std::valarray<T3> out = std::valarray<T3>(a.N);
 		greaterThanEqual(a, b, out);
 		return out;
 	}
 	template <class T, class T2, class T3>
-	inline many<T3> operator<(const many<T>& a, const T2 b)
+	inline std::valarray<T3> operator<(const std::valarray<T>& a, const T2 b)
 	{
-		many<T3> out = many<T3>(a.N);
+		std::valarray<T3> out = std::valarray<T3>(a.N);
 		lessThan(a, b, out);
 		return out;
 	}
 	template <class T, class T2, class T3>
-	inline many<T3> operator<=(const many<T>& a, const T2 b)
+	inline std::valarray<T3> operator<=(const std::valarray<T>& a, const T2 b)
 	{
-		many<T3> out = many<T3>(a.N);
+		std::valarray<T3> out = std::valarray<T3>(a.N);
 		lessThanEqual(a, b, out);
 		return out;
 	}
@@ -570,30 +571,30 @@ namespace composites
 	// NOTE: all wrappers are suggested to be inline because they are thin wrappers of functions
 
 	template <class T, class T2, class T3>
-	inline many<T3> operator>(const T2 a, const many<T>& b)
+	inline std::valarray<T3> operator>(const T2 a, const std::valarray<T>& b)
 	{
-		many<T3> out = many<T3>(a.N);
+		std::valarray<T3> out = std::valarray<T3>(a.N);
 		greaterThan(a, b, out);
 		return out;
 	}
 	template <class T, class T2, class T3>
-	inline many<T3> operator>=(const T2 a, const many<T>& b)
+	inline std::valarray<T3> operator>=(const T2 a, const std::valarray<T>& b)
 	{
-		many<T3> out = many<T3>(a.N);
+		std::valarray<T3> out = std::valarray<T3>(a.N);
 		greaterThanEqual(a, b, out);
 		return out;
 	}
 	template <class T, class T2, class T3>
-	inline many<T3> operator<(const T2 a, const many<T>& b)
+	inline std::valarray<T3> operator<(const T2 a, const std::valarray<T>& b)
 	{
-		many<T3> out = many<T3>(a.N);
+		std::valarray<T3> out = std::valarray<T3>(a.N);
 		lessThan(a, b, out);
 		return out;
 	}
 	template <class T, class T2, class T3>
-	inline many<T3> operator<=(const T2 a, const many<T>& b)
+	inline std::valarray<T3> operator<=(const T2 a, const std::valarray<T>& b)
 	{
-		many<T3> out = many<T3>(a.N);
+		std::valarray<T3> out = std::valarray<T3>(a.N);
 		lessThanEqual(a, b, out);
 		return out;
 	}
@@ -602,25 +603,25 @@ namespace composites
 
 
 	template <class T, class T2, class T3>
-	inline many<T>& operator+=(many<T>& a, const T2 b) 
+	inline std::valarray<T>& operator+=(std::valarray<T>& a, const T2 b) 
 	{
 		add(a, b, a);
 		return a;
 	}
 	template <class T, class T2>
-	inline many<T>& operator-=(many<T>& a, const T2 b) 
+	inline std::valarray<T>& operator-=(std::valarray<T>& a, const T2 b) 
 	{
 		sub(a, b, a);
 		return a;
 	}
 	template <class T, class T2>
-	inline many<T>& operator*=(many<T>& a, const T2 b) 
+	inline std::valarray<T>& operator*=(std::valarray<T>& a, const T2 b) 
 	{
 		mult(a, b, a);
 		return a;
 	}
 	template <class T, class T2>
-	inline many<T>& operator/=(many<T>& a, const T2 b) 
+	inline std::valarray<T>& operator/=(std::valarray<T>& a, const T2 b) 
 	{
 		div(a, b, a);
 		return a;
@@ -628,25 +629,25 @@ namespace composites
 
 
 	template <class T, class T2>
-	inline many<T>& operator+=(many<T>& a, const many<T2>& b) 
+	inline std::valarray<T>& operator+=(std::valarray<T>& a, const std::valarray<T2>& b) 
 	{
 		add(a, b, a);
 		return a;
 	}
 	template <class T, class T2>
-	inline many<T>& operator-=(many<T>& a, const many<T2>& b) 
+	inline std::valarray<T>& operator-=(std::valarray<T>& a, const std::valarray<T2>& b) 
 	{
 		sub(a, b, a);
 		return a;
 	}
 	template <class T, class T2>
-	inline many<T>& operator*=(many<T>& a, const many<T2>& b) 
+	inline std::valarray<T>& operator*=(std::valarray<T>& a, const std::valarray<T2>& b) 
 	{
 		mult(a, b, a);
 		return a;
 	}
 	template <class T, class T2>
-	inline many<T>& operator/=(many<T>& a, const many<T2>& b) 
+	inline std::valarray<T>& operator/=(std::valarray<T>& a, const std::valarray<T2>& b) 
 	{
 		div(a, b, a);
 		return a;
@@ -654,13 +655,13 @@ namespace composites
 
 	// NOTE: prefix increment/decrement
 	template <class T>
-	inline many<T>& operator++(many<T>& a)  
+	inline std::valarray<T>& operator++(std::valarray<T>& a)  
 	{  
 		add(a, 1, a);
 		return a;
 	}  
 	template <class T>
-	inline many<T>& operator--(many<T>& a)  
+	inline std::valarray<T>& operator--(std::valarray<T>& a)  
 	{  
 		add(a, 1, a);
 		return a;
@@ -668,13 +669,13 @@ namespace composites
 
 	// NOTE: postfix increment/decrement
 	template <class T>
-	inline many<T> operator++(many<T>& a, int)  
+	inline std::valarray<T> operator++(std::valarray<T>& a, int)  
 	{  
 		add(a, 1, a);
 		return a;
 	}  
 	template <class T>
-	inline many<T> operator--(many<T>& a, int)  
+	inline std::valarray<T> operator--(std::valarray<T>& a, int)  
 	{  
 		add(a, 1, a);
 		return a;
@@ -687,30 +688,30 @@ namespace composites
 	// NOTE: we define operators for multiple classes T and T2 in order to support 
 	//  vector/scalar multiplication, matrix/vect multiplication, etc.
 	template <class T, class T2>
-	inline many<T> operator+(const many<T>& a, const T2 b)
+	inline std::valarray<T> operator+(const std::valarray<T>& a, const T2 b)
 	{
-		many<T> out(a.size());
+		std::valarray<T> out(a.size());
 		add(a, b, out);
 		return out;
 	}
 	template <class T, class T2>
-	inline many<T> operator-(const many<T>& a, const T2 b)
+	inline std::valarray<T> operator-(const std::valarray<T>& a, const T2 b)
 	{
-		many<T> out(a.size());
+		std::valarray<T> out(a.size());
 		sub(a, b, out);
 		return out;
 	}
 	template <class T, class T2>
-	inline many<T> operator*(const many<T>& a, const T2 b)
+	inline std::valarray<T> operator*(const std::valarray<T>& a, const T2 b)
 	{
-		many<T> out(a.size());
+		std::valarray<T> out(a.size());
 		mult(a, b, out);
 		return out;
 	}
 	template <class T, class T2>
-	inline many<T> operator/(const many<T>& a, const T2 b)
+	inline std::valarray<T> operator/(const std::valarray<T>& a, const T2 b)
 	{
-		many<T> out(a.size());
+		std::valarray<T> out(a.size());
 		div(a, b, out);
 		return out;
 	}
@@ -722,30 +723,30 @@ namespace composites
 	// NOTE: we define operators for multiple classes T and T2 in order to support 
 	//  vector/scalar multiplication, matrix/vect multiplication, etc.
 	template <class T, class T2>
-	inline many<T> operator+(const T2 a, const many<T>& b)
+	inline std::valarray<T> operator+(const T2 a, const std::valarray<T>& b)
 	{
-		many<T> out(a.size());
+		std::valarray<T> out(a.size());
 		add(a, b, out);
 		return out;
 	}
 	template <class T, class T2>
-	inline many<T> operator-(const T2 a, const many<T>& b)
+	inline std::valarray<T> operator-(const T2 a, const std::valarray<T>& b)
 	{
-		many<T> out(a.size());
+		std::valarray<T> out(a.size());
 		sub(a, b, out);
 		return out;
 	}
 	template <class T, class T2>
-	inline many<T> operator*(const T2 a, const many<T>& b)
+	inline std::valarray<T> operator*(const T2 a, const std::valarray<T>& b)
 	{
-		many<T> out(a.size());
+		std::valarray<T> out(a.size());
 		mult(a, b, out);
 		return out;
 	}
 	template <class T, class T2>
-	inline many<T> operator/(const T2 a, const many<T>& b)
+	inline std::valarray<T> operator/(const T2 a, const std::valarray<T>& b)
 	{
-		many<T> out(a.size());
+		std::valarray<T> out(a.size());
 		div(a, b, out);
 		return out;
 	}
@@ -754,36 +755,36 @@ namespace composites
 	// NOTE: we define operators for multiple classes T and T2 in order to support 
 	//  vector/scalar multiplication, matrix/vect multiplication, etc.
 	template <class T, class T2>
-	inline many<T> operator+(const many<T>& a, const many<T2>& b)
+	inline std::valarray<T> operator+(const std::valarray<T>& a, const std::valarray<T2>& b)
 	{
-		many<T> out(a.size());
+		std::valarray<T> out(a.size());
 		add(a, b, out);
 		return out;
 	}
 	template <class T, class T2>
-	inline many<T> operator-(const many<T>& a, const many<T2>& b)
+	inline std::valarray<T> operator-(const std::valarray<T>& a, const std::valarray<T2>& b)
 	{
-		many<T> out(a.size());
+		std::valarray<T> out(a.size());
 		sub(a, b, out);
 		return out;
 	}
 	template <class T, class T2>
-	inline many<T> operator*(const many<T>& a, const many<T2>& b)
+	inline std::valarray<T> operator*(const std::valarray<T>& a, const std::valarray<T2>& b)
 	{
-		many<T> out(a.size());
+		std::valarray<T> out(a.size());
 		mult(a, b, out);
 		return out;
 	}
 	template <class T, class T2>
-	inline many<T> operator/(const many<T>& a, const many<T2>& b)
+	inline std::valarray<T> operator/(const std::valarray<T>& a, const std::valarray<T2>& b)
 	{
-		many<T> out(a.size());
+		std::valarray<T> out(a.size());
 		div(a, b, out);
 		return out;
 	}
-	typedef many<bool>	bools;
-	typedef many<int>	ints;
-	typedef many<unsigned int> uints;
-	typedef many<float>	floats;
-	typedef many<double>doubles;
+	typedef std::valarray<bool>	bools;
+	typedef std::valarray<int>	ints;
+	typedef std::valarray<unsigned int> uints;
+	typedef std::valarray<float>	floats;
+	typedef std::valarray<double>doubles;
 }

@@ -1,4 +1,5 @@
 #pragma once
+#include <valarray>
 
 #include <glm/vec2.hpp>    	// vec2, bvec2, dvec2, ivec2 and uvec2
 #include <glm/vec3.hpp>    	// vec2, bvec2, dvec2, ivec2 and uvec2
@@ -8,7 +9,7 @@
 namespace composites
 {
 	template<length_t L, typename T, qualifier Q>
-	vec<L,T,Q> weighted_average(const many<vec<L,T,Q>>& a, const many<T>& weights)
+	vec<L,T,Q> weighted_average(const std::valarray<vec<L,T,Q>>& a, const std::valarray<T>& weights)
 	{
 		vec<L,T,Q> out = vec<L,T,Q>(0);
 		for (unsigned int i = 0; i < a.size(); ++i)
@@ -20,7 +21,7 @@ namespace composites
 	};
 	// TODO: vector version
 	template<length_t L, typename T, qualifier Q>
-	inline void rescale(const many<vec<L,T,Q>>& a, many<vec<L,T,Q>>& out, T max_new = 1.)
+	inline void rescale(const std::valarray<vec<L,T,Q>>& a, std::valarray<vec<L,T,Q>>& out, T max_new = 1.)
 	{
 		mult(a, max_new / max(length(a)), out);
 	};

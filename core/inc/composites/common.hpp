@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cmath>
+#include <valarray>
 
 #include "many.hpp"
 
@@ -8,7 +9,7 @@ namespace composites
 {
 	/// Returns x if x >= 0; otherwise, it returns -x.
 	template <class T>
-	void abs(const many<T>& a, many<T>& out)
+	void abs(const std::valarray<T>& a, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -18,7 +19,7 @@ namespace composites
 
 	/// Returns 1.0 if x > 0, 0.0 if x == 0, or -1.0 if x < 0.
 	template <class T, class Tout>
-	void sign(const many<T>& a, many<Tout>& out)
+	void sign(const std::valarray<T>& a, std::valarray<Tout>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -28,7 +29,7 @@ namespace composites
 
 	/// Returns a value equal to the nearest integer that is less then or equal to x.
 	template <class T>
-	void floor(const many<T>& a, many<T>& out)
+	void floor(const std::valarray<T>& a, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -39,7 +40,7 @@ namespace composites
 	/// Returns a value equal to the nearest integer to x
 	/// whose absolute value is not larger than the absolute value of x.
 	template <class T>
-	void trunc(const many<T>& a, many<T>& out)
+	void trunc(const std::valarray<T>& a, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -53,7 +54,7 @@ namespace composites
 	/// This includes the possibility that round(x) returns the
 	/// same value as roundEven(x) for all values of x.
 	template <class T>
-	void round(const many<T>& a, many<T>& out)
+	void round(const std::valarray<T>& a, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -64,7 +65,7 @@ namespace composites
 	/// Returns a value equal to the nearest integer
 	/// that is greater than or equal to x.
 	template <class T>
-	void ceil(const many<T>& a, many<T>& out)
+	void ceil(const std::valarray<T>& a, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -74,7 +75,7 @@ namespace composites
 
 	/// Return x - floor(x).
 	template <class T>
-	void fract(const many<T>& a, many<T>& out)
+	void fract(const std::valarray<T>& a, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -85,7 +86,7 @@ namespace composites
 	/// Modulus. Returns x - y * floor(x / y)
 	/// for each component in x using the floating point value y.
 	template <class T>
-	void mod(const many<T>& a, const many<T>& b, many<T>& out)
+	void mod(const std::valarray<T>& a, const std::valarray<T>& b, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -98,7 +99,7 @@ namespace composites
 	/// return value and the output parameter will have the same
 	/// sign as x.
 	template <class T>
-	void modf(const many<T>& a, many<int>& intout, many<T>& fractout)
+	void modf(const std::valarray<T>& a, std::valarray<int>& intout, std::valarray<T>& fractout)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -109,7 +110,7 @@ namespace composites
 
 	/// Returns y if y < x; otherwise, it returns x.
 	template <class T>
-	void min(const many<T>& a, const many<T>& b, many<T>& out)
+	void min(const std::valarray<T>& a, const std::valarray<T>& b, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -117,7 +118,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void min(const many<T>& a, const T b, many<T>& out)
+	void min(const std::valarray<T>& a, const T b, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -127,7 +128,7 @@ namespace composites
 
 	// component-wise min
 	template <class T>
-	T min(const many<T>& a)
+	T min(const std::valarray<T>& a)
 	{
 		T out = a[0];
 		for (unsigned int i = 0; i < a.size(); ++i)
@@ -139,7 +140,7 @@ namespace composites
 
 	/// Returns y if x < y; otherwise, it returns x.
 	template <class T>
-	void max(const many<T>& a, const many<T>& b, many<T>& out)
+	void max(const std::valarray<T>& a, const std::valarray<T>& b, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -147,7 +148,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void max(const many<T>& a, const T b, many<T>& out)
+	void max(const std::valarray<T>& a, const T b, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -156,7 +157,7 @@ namespace composites
 	}
 	// component-wise max
 	template <class T>
-	T max(const many<T>& a)
+	T max(const std::valarray<T>& a)
 	{
 		T out = a[0];
 		for (unsigned int i = 0; i < a.size(); ++i)
@@ -169,7 +170,7 @@ namespace composites
 	/// Returns min(max(x, minVal), maxVal) for each component in x
 	/// using the floating-point values minVal and maxVal.
 	template <class T>
-	void clamp(const many<T>& a, const T lo, const T hi, many<T>& out)
+	void clamp(const std::valarray<T>& a, const T lo, const T hi, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -177,7 +178,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void clamp(const many<T>& a, const T lo, const many<T>& hi, many<T>& out)
+	void clamp(const std::valarray<T>& a, const T lo, const std::valarray<T>& hi, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -185,7 +186,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void clamp(const many<T>& a, const many<T>& lo, const T hi, many<T>& out)
+	void clamp(const std::valarray<T>& a, const std::valarray<T>& lo, const T hi, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -193,7 +194,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void clamp(const many<T>& a, const many<T>& lo, const many<T>& hi, many<T>& out)
+	void clamp(const std::valarray<T>& a, const std::valarray<T>& lo, const std::valarray<T>& hi, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -228,7 +229,7 @@ namespace composites
 	/// @param[in]  y Value to interpolate.
 	/// @param[in]  a Interpolant.
 	template <class T>
-	void mix(const many<T>& x, const many<T>& y, const many<T>& a, many<T>& out)
+	void mix(const std::valarray<T>& x, const std::valarray<T>& y, const std::valarray<T>& a, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -240,7 +241,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void mix(const many<T>& x, const many<T>& y, const T a, many<T>& out)
+	void mix(const std::valarray<T>& x, const std::valarray<T>& y, const T a, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -252,7 +253,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void mix(const many<T>& x, const T y, const many<T>& a, many<T>& out)
+	void mix(const std::valarray<T>& x, const T y, const std::valarray<T>& a, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -264,7 +265,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void mix(const many<T>& x, const T y, const T a, many<T>& out)
+	void mix(const std::valarray<T>& x, const T y, const T a, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -276,7 +277,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void mix(const T x, const many<T>& y, const many<T>& a, many<T>& out)
+	void mix(const T x, const std::valarray<T>& y, const std::valarray<T>& a, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < y.size(); ++i)
 		{
@@ -288,7 +289,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void mix(const T x, const many<T>& y, const T a, many<T>& out)
+	void mix(const T x, const std::valarray<T>& y, const T a, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < y.size(); ++i)
 		{
@@ -300,7 +301,7 @@ namespace composites
 		}
 	}
 	template <class T>
-	void mix(const T x, const T y, const many<T>& a, many<T>& out)
+	void mix(const T x, const T y, const std::valarray<T>& a, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -314,7 +315,7 @@ namespace composites
 
 	/// Returns 0.0 if x < edge, otherwise it returns 1.0 for each component of a genType.
 	template<typename T>
-	void step(const many<T>& edge, const many<T>&  x, many<T>& out)
+	void step(const std::valarray<T>& edge, const std::valarray<T>&  x, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < edge.size(); ++i)
 		{
@@ -322,7 +323,7 @@ namespace composites
 		}
 	}
 	template<typename T>
-	void step(const many<T>&  edge, const T x, many<T>& out)
+	void step(const std::valarray<T>&  edge, const T x, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < edge.size(); ++i)
 		{
@@ -330,7 +331,7 @@ namespace composites
 		}
 	}
 	template<typename T>
-	void step(const T edge, const many<T>&  x, many<T>& out)
+	void step(const T edge, const std::valarray<T>&  x, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -348,7 +349,7 @@ namespace composites
 	/// return t * t * (3 - 2 * t);
 	/// Results are undefined if lo >= hi.
 	template<typename T>
-	void smoothstep(const many<T>& lo, const many<T>& hi, const many<T>& x, many<T>& out)
+	void smoothstep(const std::valarray<T>& lo, const std::valarray<T>& hi, const std::valarray<T>& x, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -356,7 +357,7 @@ namespace composites
 		}
 	}
 	template<typename T>
-	void smoothstep(const T lo, const many<T>& hi, const many<T>& x, many<T>& out)
+	void smoothstep(const T lo, const std::valarray<T>& hi, const std::valarray<T>& x, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -364,7 +365,7 @@ namespace composites
 		}
 	}
 	template<typename T>
-	void smoothstep(const many<T>& lo, T hi, const many<T>& x, many<T>& out)
+	void smoothstep(const std::valarray<T>& lo, T hi, const std::valarray<T>& x, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -372,7 +373,7 @@ namespace composites
 		}
 	}
 	template<typename T>
-	void smoothstep(const T lo, const T hi, const many<T>& x, many<T>& out)
+	void smoothstep(const T lo, const T hi, const std::valarray<T>& x, std::valarray<T>& out)
 	{
 		T range = hi-lo;
 		for (unsigned int i = 0; i < x.size(); ++i)
@@ -381,7 +382,7 @@ namespace composites
 		}
 	}
 	template<typename T>
-	void smoothstep(const many<T>& lo, const many<T>& hi, const T x, many<T>& out)
+	void smoothstep(const std::valarray<T>& lo, const std::valarray<T>& hi, const T x, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < hi.size(); ++i)
 		{
@@ -389,7 +390,7 @@ namespace composites
 		}
 	}
 	template<typename T>
-	void smoothstep(const T lo, const many<T>& hi, const T x, many<T>& out)
+	void smoothstep(const T lo, const std::valarray<T>& hi, const T x, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < hi.size(); ++i)
 		{
@@ -397,7 +398,7 @@ namespace composites
 		}
 	}
 	template<typename T>
-	void smoothstep(const many<T>& lo, const T hi, const T x, many<T>& out)
+	void smoothstep(const std::valarray<T>& lo, const T hi, const T x, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < lo.size(); ++i)
 		{
@@ -411,7 +412,7 @@ namespace composites
 	/// including for implementations with no NaN
 	/// representations.
 	template<typename T>
-	void isnan(const many<T>&  x, many<bool>& out)
+	void isnan(const std::valarray<T>&  x, std::valarray<bool>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -425,7 +426,7 @@ namespace composites
 	/// otherwise, including for implementations with no infinity
 	/// representations.
 	template<typename T>
-	void isinf(const many<T>&  x, many<bool>& out)
+	void isinf(const std::valarray<T>&  x, std::valarray<bool>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -435,7 +436,7 @@ namespace composites
 
 	/// Computes and returns a * b + c.
 	template<typename T>
-	void fma(const many<T>& a, const many<T>& b, const many<T>& c, many<T>& out)
+	void fma(const std::valarray<T>& a, const std::valarray<T>& b, const std::valarray<T>& c, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < c.size(); ++i)
 		{
@@ -443,7 +444,7 @@ namespace composites
 		}
 	}
 	template<typename T>
-	void fma(const T a, const many<T>& b, const many<T>& c, many<T>& out)
+	void fma(const T a, const std::valarray<T>& b, const std::valarray<T>& c, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < c.size(); ++i)
 		{
@@ -451,7 +452,7 @@ namespace composites
 		}
 	}
 	template<typename T>
-	void fma(const many<T>& a, T b, const many<T>& c, many<T>& out)
+	void fma(const std::valarray<T>& a, T b, const std::valarray<T>& c, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < c.size(); ++i)
 		{
@@ -459,7 +460,7 @@ namespace composites
 		}
 	}
 	template<typename T>
-	void fma(const T a, const T b, const many<T>& c, many<T>& out)
+	void fma(const T a, const T b, const std::valarray<T>& c, std::valarray<T>& out)
 	{
 		T ab = a*b;
 		for (unsigned int i = 0; i < c.size(); ++i)
@@ -468,7 +469,7 @@ namespace composites
 		}
 	}
 	template<typename T>
-	void fma(const many<T>& a, const many<T>& b, const T c, many<T>& out)
+	void fma(const std::valarray<T>& a, const std::valarray<T>& b, const T c, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < b.size(); ++i)
 		{
@@ -476,7 +477,7 @@ namespace composites
 		}
 	}
 	template<typename T>
-	void fma(const T a, const many<T>& b, const T c, many<T>& out)
+	void fma(const T a, const std::valarray<T>& b, const T c, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < b.size(); ++i)
 		{
@@ -484,7 +485,7 @@ namespace composites
 		}
 	}
 	template<typename T>
-	void fma(const many<T>& a, const T b, const T c, many<T>& out)
+	void fma(const std::valarray<T>& a, const T b, const T c, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{

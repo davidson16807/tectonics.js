@@ -21,7 +21,7 @@ using namespace composites;
 using namespace rasters;
 
 template<typename T>
-void copy_from_typed_array(many<T>& out, const val& typed_array)
+void copy_from_typed_array(std::valarray<T>& out, const val& typed_array)
 {
   unsigned int typed_array_length = typed_array["length"].as<unsigned int>();
   //TODO: verify output length equals typed_array length
@@ -32,16 +32,16 @@ void copy_from_typed_array(many<T>& out, const val& typed_array)
 }
 
 template<typename T>
-many<T> from_typed_array(const val& typed_array)
+std::valarray<T> from_typed_array(const val& typed_array)
 {
   unsigned int typed_array_length = typed_array["length"].as<unsigned int>();
-  many<T> out = many<T>(typed_array_length);
+  std::valarray<T> out = std::valarray<T>(typed_array_length);
   copy_from_typed_array(out, typed_array);
   return out;
 }
 
 // template<typename T>
-// void copy_to_typed_array(many<T>& a, val& out)
+// void copy_to_typed_array(std::valarray<T>& a, val& out)
 // {
 //   for (unsigned int i = 0; i < a.size(); ++i)
 //   {
@@ -50,7 +50,7 @@ many<T> from_typed_array(const val& typed_array)
 // }
 
 template<typename T>
-void copy_list(many<T>& out, const val& list)
+void copy_list(std::valarray<T>& out, const val& list)
 {
   unsigned int list_length = list["length"].as<unsigned int>();
   //TODO: verify output length equals list length
@@ -62,7 +62,7 @@ void copy_list(many<T>& out, const val& list)
 }
 
 template<typename T, qualifier Q>
-void copy_list(many<vec<2,T,Q>>& out, const val& list)
+void copy_list(std::valarray<vec<2,T,Q>>& out, const val& list)
 {
   unsigned int list_length = list["length"].as<unsigned int>();
   //TODO: verify output length equals list length
@@ -77,7 +77,7 @@ void copy_list(many<vec<2,T,Q>>& out, const val& list)
 }
 
 template<typename T, qualifier Q>
-void copy_list(many<vec<3,T,Q>>& out, const val& list)
+void copy_list(std::valarray<vec<3,T,Q>>& out, const val& list)
 {
   unsigned int list_length = list["length"].as<unsigned int>();
   //TODO: verify output length equals list length
@@ -93,7 +93,7 @@ void copy_list(many<vec<3,T,Q>>& out, const val& list)
 }
 
 template<typename T, qualifier Q>
-void copy_list(many<vec<4,T,Q>>& out, const val& list)
+void copy_list(std::valarray<vec<4,T,Q>>& out, const val& list)
 {
   unsigned int list_length = list["length"].as<unsigned int>();
   //TODO: verify output length equals list length
@@ -110,18 +110,18 @@ void copy_list(many<vec<4,T,Q>>& out, const val& list)
 }
 
 template<typename T>
-many<T> from_list(const val& list)
+std::valarray<T> from_list(const val& list)
 {
   unsigned int list_length = list["length"].as<unsigned int>();
-  many<T> out = many<T>(list_length);
+  std::valarray<T> out = std::valarray<T>(list_length);
   copy_list(out, list);
   return out;
 }
 template<length_t L, typename T, qualifier Q>
-many<vec<L,T,Q>> vecs_from_list(const val& list)
+std::valarray<vec<L,T,Q>> vecs_from_list(const val& list)
 {
   unsigned int list_length = list["length"].as<unsigned int>();
-  many<vec<L,T,Q>> out = many<vec<L,T,Q>>(list_length/L);
+  std::valarray<vec<L,T,Q>> out = std::valarray<vec<L,T,Q>>(list_length/L);
   copy_list(out, list);
   return out;
 }
@@ -151,7 +151,7 @@ val to_list(vec<4,T,Q> a){
   return out;
 }
 template<typename T>
-val to_list(const many<T>& a){
+val to_list(const std::valarray<T>& a){
   val out = val::array();
   for (unsigned int i = 0; i < a.size(); ++i)
   {
@@ -160,7 +160,7 @@ val to_list(const many<T>& a){
   return out;
 }
 template<length_t L, typename T, qualifier Q>
-val to_list(const many<vec<L,T,Q>>& a){
+val to_list(const std::valarray<vec<L,T,Q>>& a){
   val out = val::array();
   for (unsigned int i = 0; i < a.size(); ++i)
   {
@@ -176,14 +176,14 @@ template class glm::vec<4,float,defaultp>;
 template class glm::mat<3,3,float,defaultp>;
 template class glm::mat<4,3,float,defaultp>;
 template class glm::mat<4,4,float,defaultp>;
-template class composites::many<bool>;
-template class composites::many<int>;
-template class composites::many<unsigned int>;
-template class composites::many<float>;
-template class composites::many<double>;
-template class composites::many<vec<2,float,defaultp>>;
-template class composites::many<vec<3,float,defaultp>>;
-template class composites::many<vec<4,float,defaultp>>;
+template class std::valarray<bool>;
+template class std::valarray<int>;
+template class std::valarray<unsigned int>;
+template class std::valarray<float>;
+template class std::valarray<double>;
+template class std::valarray<vec<2,float,defaultp>>;
+template class std::valarray<vec<3,float,defaultp>>;
+template class std::valarray<vec<4,float,defaultp>>;
 
 EMSCRIPTEN_BINDINGS(rasters)
 {

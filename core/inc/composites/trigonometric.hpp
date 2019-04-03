@@ -7,13 +7,14 @@
 #pragma once
 
 #include <cmath>
+#include <valarray>
 
 namespace composites
 {
 
 	/// Converts degrees to radians and returns the result.
 	template <class T>
-	void radians(const many<T>& degrees, many<T>& out)
+	void radians(const std::valarray<T>& degrees, std::valarray<T>& out)
 	{
 		T conversion_factor = M_PI/180.;
 		for (unsigned int i = 0; i < degrees.size(); ++i)
@@ -24,7 +25,7 @@ namespace composites
 
 	/// Converts degrees to radians and returns the result.
 	template <class T>
-	void degrees(const many<T>& radians, many<T>& out)
+	void degrees(const std::valarray<T>& radians, std::valarray<T>& out)
 	{
 		T conversion_factor = 180./M_PI;
 		for (unsigned int i = 0; i < radians.size(); ++i)
@@ -36,7 +37,7 @@ namespace composites
 	/// The standard trigonometric sine function.
 	/// The values returned by this function will range from [-1, 1].
 	template <class T>
-	void sin(const many<T>& radians, many<T>& out)
+	void sin(const std::valarray<T>& radians, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < radians.size(); ++i)
 		{
@@ -47,7 +48,7 @@ namespace composites
 	/// The standard trigonometric cosine function.
 	/// The values returned by this function will range from [-1, 1].
 	template <class T>
-	void cos(const many<T>& radians, many<T>& out)
+	void cos(const std::valarray<T>& radians, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < radians.size(); ++i)
 		{
@@ -57,7 +58,7 @@ namespace composites
 
 	/// The standard trigonometric tangent function.
 	template <class T>
-	void tan(const many<T>& radians, many<T>& out)
+	void tan(const std::valarray<T>& radians, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < radians.size(); ++i)
 		{
@@ -69,7 +70,7 @@ namespace composites
 	/// The range of values returned by this function is [-PI/2, PI/2].
 	/// Results are undefined if |x| > 1.
 	template <class T>
-	void asin(const many<T>& x, many<T>& out)
+	void asin(const std::valarray<T>& x, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -81,7 +82,7 @@ namespace composites
 	/// The range of values returned by this function is [0, PI].
 	/// Results are undefined if |x| > 1.
 	template <class T>
-	void acos(const many<T>& x, many<T>& out)
+	void acos(const std::valarray<T>& x, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -95,7 +96,7 @@ namespace composites
 	/// by this function is [-PI, PI]. Results are undefined
 	/// if x and y are both 0.
 	template <class T>
-	void atan(const many<T>& y_over_x, many<T>& out)
+	void atan(const std::valarray<T>& y_over_x, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < y_over_x.size(); ++i)
 		{
@@ -110,7 +111,7 @@ namespace composites
 	/// by this function is [-PI, PI]. Results are undefined
 	/// if x and y are both 0.
 	template <class T>
-	void atan(const many<T>& x, const many<T>& y, many<T>& out)
+	void atan(const std::valarray<T>& x, const std::valarray<T>& y, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -121,7 +122,7 @@ namespace composites
 
 	/// Returns the hyperbolic sine function, (exp(x) - exp(-x)) / 2
 	template <class T>
-	void sinh(const many<T>& radians, many<T>& out)
+	void sinh(const std::valarray<T>& radians, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < radians.size(); ++i)
 		{
@@ -131,7 +132,7 @@ namespace composites
 
 	/// Returns the hyperbolic cosine function, (exp(x) + exp(-x)) / 2
 	template <class T>
-	void cosh(const many<T>& radians, many<T>& out)
+	void cosh(const std::valarray<T>& radians, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < radians.size(); ++i)
 		{
@@ -141,7 +142,7 @@ namespace composites
 
 	/// Returns the hyperbolic tangent function, sinh(angle) / cosh(angle)
 	template <class T>
-	void tanh(const many<T>& radians, many<T>& out)
+	void tanh(const std::valarray<T>& radians, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < radians.size(); ++i)
 		{
@@ -151,7 +152,7 @@ namespace composites
 
 	/// Arc hyperbolic sine; returns the inverse of sinh.
 	template <class T>
-	void asinh(const many<T>& x, many<T>& out)
+	void asinh(const std::valarray<T>& x, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -162,7 +163,7 @@ namespace composites
 	/// Arc hyperbolic cosine; returns the non-negative inverse
 	/// of cosh. Results are undefined if x < 1.
 	template <class T>
-	void acosh(const many<T>& x, many<T>& out)
+	void acosh(const std::valarray<T>& x, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -173,7 +174,7 @@ namespace composites
 	/// Arc hyperbolic tangent; returns the inverse of tanh.
 	/// Results are undefined if abs(x) >= 1.
 	template <class T>
-	void atanh(const many<T>& x, many<T>& out)
+	void atanh(const std::valarray<T>& x, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{

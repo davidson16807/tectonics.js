@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cmath>
+#include <valarray>
 
 #include "../many.hpp"
 
@@ -12,7 +13,7 @@ namespace composites
 {
 	/// Returns x if x >= 0; otherwise, it returns -x.
 	template <length_t L, typename T, qualifier Q>
-	void abs(const many<vec<L,T,Q>>& a, many<vec<L,T,Q>>& out)
+	void abs(const std::valarray<vec<L,T,Q>>& a, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -22,7 +23,7 @@ namespace composites
 
 	/// Returns 1.0 if x > 0, 0.0 if x == 0, or -1.0 if x < 0.
 	template <length_t L, typename T, qualifier Q, class Tout>
-	void sign(const many<vec<L,T,Q>>& a, many<Tout>& out)
+	void sign(const std::valarray<vec<L,T,Q>>& a, std::valarray<Tout>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -32,7 +33,7 @@ namespace composites
 
 	/// Returns a value equal to the nearest integer that is less then or equal to x.
 	template <length_t L, typename T, qualifier Q>
-	void floor(const many<vec<L,T,Q>>& a, many<vec<L,T,Q>>& out)
+	void floor(const std::valarray<vec<L,T,Q>>& a, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -43,7 +44,7 @@ namespace composites
 	/// Returns a value equal to the nearest integer to x
 	/// whose absolute value is not larger than the absolute value of x.
 	template <length_t L, typename T, qualifier Q>
-	void trunc(const many<vec<L,T,Q>>& a, many<vec<L,T,Q>>& out)
+	void trunc(const std::valarray<vec<L,T,Q>>& a, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -57,7 +58,7 @@ namespace composites
 	/// This includes the possibility that round(x) returns the
 	/// same value as roundEven(x) for all values of x.
 	template <length_t L, typename T, qualifier Q>
-	void round(const many<vec<L,T,Q>>& a, many<vec<L,T,Q>>& out)
+	void round(const std::valarray<vec<L,T,Q>>& a, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -68,7 +69,7 @@ namespace composites
 	/// Returns a value equal to the nearest integer
 	/// that is greater than or equal to x.
 	template <length_t L, typename T, qualifier Q>
-	void ceil(const many<vec<L,T,Q>>& a, many<vec<L,T,Q>>& out)
+	void ceil(const std::valarray<vec<L,T,Q>>& a, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -78,7 +79,7 @@ namespace composites
 
 	/// Return x - floor(x).
 	template <length_t L, typename T, qualifier Q>
-	void fract(const many<vec<L,T,Q>>& a, many<vec<L,T,Q>>& out)
+	void fract(const std::valarray<vec<L,T,Q>>& a, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -89,7 +90,7 @@ namespace composites
 	/// Modulus. Returns x - y * floor(x / y)
 	/// for each component in x using the floating point value y.
 	template <length_t L, typename T, qualifier Q>
-	void mod(const many<vec<L,T,Q>>& a, const many<vec<L,T,Q>>& b, many<vec<L,T,Q>>& out)
+	void mod(const std::valarray<vec<L,T,Q>>& a, const std::valarray<vec<L,T,Q>>& b, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -102,7 +103,7 @@ namespace composites
 	/// return value and the output parameter will have the same
 	/// sign as x.
 	template <length_t L, typename T, qualifier Q>
-	void modf(const many<vec<L,T,Q>>& a, many<vec<L,int,Q>>& intout, many<vec<L,T,Q>>& fractout)
+	void modf(const std::valarray<vec<L,T,Q>>& a, std::valarray<vec<L,int,Q>>& intout, std::valarray<vec<L,T,Q>>& fractout)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -113,7 +114,7 @@ namespace composites
 
 	/// Returns y if y < x; otherwise, it returns x.
 	template <length_t L, typename T, qualifier Q>
-	void min(const many<vec<L,T,Q>>& a, const many<vec<L,T,Q>>& b, many<vec<L,T,Q>>& out)
+	void min(const std::valarray<vec<L,T,Q>>& a, const std::valarray<vec<L,T,Q>>& b, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -121,7 +122,7 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	void min(const many<vec<L,T,Q>>& a, const vec<L,T,Q> b, many<vec<L,T,Q>>& out)
+	void min(const std::valarray<vec<L,T,Q>>& a, const vec<L,T,Q> b, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -129,7 +130,7 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	vec<L,T,Q> min(const many<vec<L,T,Q>>& a)
+	vec<L,T,Q> min(const std::valarray<vec<L,T,Q>>& a)
 	{
 		vec<L,T,Q> out = a[0];
 		for (unsigned int i = 0; i < a.size(); ++i)
@@ -140,7 +141,7 @@ namespace composites
 	}
 	/// Returns y if y < x; otherwise, it returns x.
 	template <length_t L, typename T, qualifier Q>
-	void max(const many<vec<L,T,Q>>& a, const many<vec<L,T,Q>>& b, many<vec<L,T,Q>>& out)
+	void max(const std::valarray<vec<L,T,Q>>& a, const std::valarray<vec<L,T,Q>>& b, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -149,7 +150,7 @@ namespace composites
 	}
 	/// Returns y if y < x; otherwise, it returns x.
 	template <length_t L, typename T, qualifier Q>
-	void max(const many<vec<L,T,Q>>& a, const vec<L,T,Q> b, many<vec<L,T,Q>>& out)
+	void max(const std::valarray<vec<L,T,Q>>& a, const vec<L,T,Q> b, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -157,7 +158,7 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	vec<L,T,Q> max(const many<vec<L,T,Q>>& a)
+	vec<L,T,Q> max(const std::valarray<vec<L,T,Q>>& a)
 	{
 		vec<L,T,Q> out = a[0];
 		for (unsigned int i = 0; i < a.size(); ++i)
@@ -170,7 +171,7 @@ namespace composites
 	/// Returns min(max(x, minVal), maxVal) for each component in x
 	/// using the floating-point values minVal and maxVal.
 	template <length_t L, typename T, qualifier Q>
-	void clamp(const many<vec<L,T,Q>>& a, const vec<L,T,Q> lo, const vec<L,T,Q> hi, many<vec<L,T,Q>>& out)
+	void clamp(const std::valarray<vec<L,T,Q>>& a, const vec<L,T,Q> lo, const vec<L,T,Q> hi, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -178,7 +179,7 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	void clamp(const many<vec<L,T,Q>>& a, const vec<L,T,Q> lo, const many<vec<L,T,Q>>& hi, many<vec<L,T,Q>>& out)
+	void clamp(const std::valarray<vec<L,T,Q>>& a, const vec<L,T,Q> lo, const std::valarray<vec<L,T,Q>>& hi, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -186,7 +187,7 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	void clamp(const many<vec<L,T,Q>>& a, const many<vec<L,T,Q>>& lo, const vec<L,T,Q> hi, many<vec<L,T,Q>>& out)
+	void clamp(const std::valarray<vec<L,T,Q>>& a, const std::valarray<vec<L,T,Q>>& lo, const vec<L,T,Q> hi, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -194,7 +195,7 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	void clamp(const many<vec<L,T,Q>>& a, const many<vec<L,T,Q>>& lo, const many<vec<L,T,Q>>& hi, many<vec<L,T,Q>>& out)
+	void clamp(const std::valarray<vec<L,T,Q>>& a, const std::valarray<vec<L,T,Q>>& lo, const std::valarray<vec<L,T,Q>>& hi, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -225,7 +226,7 @@ namespace composites
 	/// @param[in]  y Value to interpolate.
 	/// @param[in]  a Interpolant.
 	template <length_t L, typename T, qualifier Q>
-	void mix(const many<vec<L,T,Q>>& x, const many<vec<L,T,Q>>& y, const many<T>& a, many<vec<L,T,Q>>& out)
+	void mix(const std::valarray<vec<L,T,Q>>& x, const std::valarray<vec<L,T,Q>>& y, const std::valarray<T>& a, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -233,7 +234,7 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	void mix(const many<vec<L,T,Q>>& x, const many<vec<L,T,Q>>& y, const T a, many<vec<L,T,Q>>& out)
+	void mix(const std::valarray<vec<L,T,Q>>& x, const std::valarray<vec<L,T,Q>>& y, const T a, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -241,7 +242,7 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	void mix(const many<vec<L,T,Q>>& x, const vec<L,T,Q> y, const many<T>& a, many<vec<L,T,Q>>& out)
+	void mix(const std::valarray<vec<L,T,Q>>& x, const vec<L,T,Q> y, const std::valarray<T>& a, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -249,7 +250,7 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	void mix(const many<vec<L,T,Q>>& x, const vec<L,T,Q> y, const T a, many<vec<L,T,Q>>& out)
+	void mix(const std::valarray<vec<L,T,Q>>& x, const vec<L,T,Q> y, const T a, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -257,7 +258,7 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	void mix(const vec<L,T,Q> x, const many<vec<L,T,Q>>& y, const many<T>& a, many<vec<L,T,Q>>& out)
+	void mix(const vec<L,T,Q> x, const std::valarray<vec<L,T,Q>>& y, const std::valarray<T>& a, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < y.size(); ++i)
 		{
@@ -265,7 +266,7 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	void mix(const vec<L,T,Q> x, const many<vec<L,T,Q>>& y, const T a, many<vec<L,T,Q>>& out)
+	void mix(const vec<L,T,Q> x, const std::valarray<vec<L,T,Q>>& y, const T a, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < y.size(); ++i)
 		{
@@ -273,7 +274,7 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	void mix(const vec<L,T,Q> x, const vec<L,T,Q> y, const many<T>& a, many<vec<L,T,Q>>& out)
+	void mix(const vec<L,T,Q> x, const vec<L,T,Q> y, const std::valarray<T>& a, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -285,7 +286,7 @@ namespace composites
 
 
 	template <length_t L, typename T, qualifier Q>
-	void mix(const many<vec<L,T,Q>>& x, const many<vec<L,T,Q>>& y, const many<vec<L,T,Q>>& a, many<vec<L,T,Q>>& out)
+	void mix(const std::valarray<vec<L,T,Q>>& x, const std::valarray<vec<L,T,Q>>& y, const std::valarray<vec<L,T,Q>>& a, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -293,7 +294,7 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	void mix(const many<vec<L,T,Q>>& x, const many<vec<L,T,Q>>& y, const vec<L,T,Q> a, many<vec<L,T,Q>>& out)
+	void mix(const std::valarray<vec<L,T,Q>>& x, const std::valarray<vec<L,T,Q>>& y, const vec<L,T,Q> a, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -301,7 +302,7 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	void mix(const many<vec<L,T,Q>>& x, const vec<L,T,Q> y, const many<vec<L,T,Q>>& a, many<vec<L,T,Q>>& out)
+	void mix(const std::valarray<vec<L,T,Q>>& x, const vec<L,T,Q> y, const std::valarray<vec<L,T,Q>>& a, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -309,7 +310,7 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	void mix(const many<vec<L,T,Q>>& x, const vec<L,T,Q> y, const vec<L,T,Q> a, many<vec<L,T,Q>>& out)
+	void mix(const std::valarray<vec<L,T,Q>>& x, const vec<L,T,Q> y, const vec<L,T,Q> a, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -317,7 +318,7 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	void mix(const vec<L,T,Q> x, const many<vec<L,T,Q>>& y, const many<vec<L,T,Q>>& a, many<vec<L,T,Q>>& out)
+	void mix(const vec<L,T,Q> x, const std::valarray<vec<L,T,Q>>& y, const std::valarray<vec<L,T,Q>>& a, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < y.size(); ++i)
 		{
@@ -325,7 +326,7 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	void mix(const vec<L,T,Q> x, const many<vec<L,T,Q>>& y, const vec<L,T,Q> a, many<vec<L,T,Q>>& out)
+	void mix(const vec<L,T,Q> x, const std::valarray<vec<L,T,Q>>& y, const vec<L,T,Q> a, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < y.size(); ++i)
 		{
@@ -333,7 +334,7 @@ namespace composites
 		}
 	}
 	template <length_t L, typename T, qualifier Q>
-	void mix(const vec<L,T,Q> x, const vec<L,T,Q> y, const many<vec<L,T,Q>>& a, many<vec<L,T,Q>>& out)
+	void mix(const vec<L,T,Q> x, const vec<L,T,Q> y, const std::valarray<vec<L,T,Q>>& a, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -346,7 +347,7 @@ namespace composites
 
 	/// Returns 0.0 if x < edge, otherwise it returns 1.0 for each component of a genType.
 	template<length_t L, typename T, qualifier Q>
-	void step(const many<vec<L,T,Q>>& edge, const many<vec<L,T,Q>>&  x, many<vec<L,T,Q>>& out)
+	void step(const std::valarray<vec<L,T,Q>>& edge, const std::valarray<vec<L,T,Q>>&  x, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < edge.size(); ++i)
 		{
@@ -354,7 +355,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void step(const many<vec<L,T,Q>>&  edge, const vec<L,T,Q> x, many<vec<L,T,Q>>& out)
+	void step(const std::valarray<vec<L,T,Q>>&  edge, const vec<L,T,Q> x, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < edge.size(); ++i)
 		{
@@ -362,7 +363,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void step(const vec<L,T,Q> edge, const many<vec<L,T,Q>>&  x, many<vec<L,T,Q>>& out)
+	void step(const vec<L,T,Q> edge, const std::valarray<vec<L,T,Q>>&  x, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -380,7 +381,7 @@ namespace composites
 	/// return t * t * (3 - 2 * t);
 	/// Results are undefined if lo >= hi.
 	template<length_t L, typename T, qualifier Q>
-	void smoothstep(const many<vec<L,T,Q>>& lo, const many<vec<L,T,Q>>& hi, const many<vec<L,T,Q>>& x, many<vec<L,T,Q>>& out)
+	void smoothstep(const std::valarray<vec<L,T,Q>>& lo, const std::valarray<vec<L,T,Q>>& hi, const std::valarray<vec<L,T,Q>>& x, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -388,7 +389,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void smoothstep(const vec<L,T,Q> lo, const many<vec<L,T,Q>>& hi, const many<vec<L,T,Q>>& x, many<vec<L,T,Q>>& out)
+	void smoothstep(const vec<L,T,Q> lo, const std::valarray<vec<L,T,Q>>& hi, const std::valarray<vec<L,T,Q>>& x, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -396,7 +397,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void smoothstep(const many<vec<L,T,Q>>& lo, vec<L,T,Q> hi, const many<vec<L,T,Q>>& x, many<vec<L,T,Q>>& out)
+	void smoothstep(const std::valarray<vec<L,T,Q>>& lo, vec<L,T,Q> hi, const std::valarray<vec<L,T,Q>>& x, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -404,7 +405,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void smoothstep(const vec<L,T,Q> lo, const vec<L,T,Q> hi, const many<vec<L,T,Q>>& x, many<vec<L,T,Q>>& out)
+	void smoothstep(const vec<L,T,Q> lo, const vec<L,T,Q> hi, const std::valarray<vec<L,T,Q>>& x, std::valarray<vec<L,T,Q>>& out)
 	{
 		vec<L,T,Q> range = hi-lo;
 		for (unsigned int i = 0; i < x.size(); ++i)
@@ -413,7 +414,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void smoothstep(const many<vec<L,T,Q>>& lo, const many<vec<L,T,Q>>& hi, const vec<L,T,Q> x, many<vec<L,T,Q>>& out)
+	void smoothstep(const std::valarray<vec<L,T,Q>>& lo, const std::valarray<vec<L,T,Q>>& hi, const vec<L,T,Q> x, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < hi.size(); ++i)
 		{
@@ -421,7 +422,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void smoothstep(const vec<L,T,Q> lo, const many<vec<L,T,Q>>& hi, const vec<L,T,Q> x, many<vec<L,T,Q>>& out)
+	void smoothstep(const vec<L,T,Q> lo, const std::valarray<vec<L,T,Q>>& hi, const vec<L,T,Q> x, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < hi.size(); ++i)
 		{
@@ -429,7 +430,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void smoothstep(const many<vec<L,T,Q>>& lo, const vec<L,T,Q> hi, const vec<L,T,Q> x, many<vec<L,T,Q>>& out)
+	void smoothstep(const std::valarray<vec<L,T,Q>>& lo, const vec<L,T,Q> hi, const vec<L,T,Q> x, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < lo.size(); ++i)
 		{
@@ -443,7 +444,7 @@ namespace composites
 	/// including for implementations with no NaN
 	/// representations.
 	template<length_t L, typename T, qualifier Q>
-	void isnan(const many<vec<L,T,Q>>&  x, many<bool>& out)
+	void isnan(const std::valarray<vec<L,T,Q>>&  x, std::valarray<bool>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -457,7 +458,7 @@ namespace composites
 	/// otherwise, including for implementations with no infinity
 	/// representations.
 	template<length_t L, typename T, qualifier Q>
-	void isinf(const many<vec<L,T,Q>>&  x, many<bool>& out)
+	void isinf(const std::valarray<vec<L,T,Q>>&  x, std::valarray<bool>& out)
 	{
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
@@ -467,7 +468,7 @@ namespace composites
 
 	/// Computes and returns a * b + c.
 	template<length_t L, typename T, qualifier Q>
-	void fma(const many<vec<L,T,Q>>& a, const many<vec<L,T,Q>>& b, const many<vec<L,T,Q>>& c, many<vec<L,T,Q>>& out)
+	void fma(const std::valarray<vec<L,T,Q>>& a, const std::valarray<vec<L,T,Q>>& b, const std::valarray<vec<L,T,Q>>& c, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < c.size(); ++i)
 		{
@@ -475,7 +476,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void fma(const vec<L,T,Q> a, const many<vec<L,T,Q>>& b, const many<vec<L,T,Q>>& c, many<vec<L,T,Q>>& out)
+	void fma(const vec<L,T,Q> a, const std::valarray<vec<L,T,Q>>& b, const std::valarray<vec<L,T,Q>>& c, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < c.size(); ++i)
 		{
@@ -483,7 +484,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void fma(const many<vec<L,T,Q>>& a, vec<L,T,Q> b, const many<vec<L,T,Q>>& c, many<vec<L,T,Q>>& out)
+	void fma(const std::valarray<vec<L,T,Q>>& a, vec<L,T,Q> b, const std::valarray<vec<L,T,Q>>& c, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < c.size(); ++i)
 		{
@@ -491,7 +492,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void fma(const vec<L,T,Q> a, const vec<L,T,Q> b, const many<vec<L,T,Q>>& c, many<vec<L,T,Q>>& out)
+	void fma(const vec<L,T,Q> a, const vec<L,T,Q> b, const std::valarray<vec<L,T,Q>>& c, std::valarray<vec<L,T,Q>>& out)
 	{
 		vec<L,T,Q> ab = a*b;
 		for (unsigned int i = 0; i < c.size(); ++i)
@@ -500,7 +501,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void fma(const many<vec<L,T,Q>>& a, const many<vec<L,T,Q>>& b, const vec<L,T,Q> c, many<vec<L,T,Q>>& out)
+	void fma(const std::valarray<vec<L,T,Q>>& a, const std::valarray<vec<L,T,Q>>& b, const vec<L,T,Q> c, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < b.size(); ++i)
 		{
@@ -508,7 +509,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void fma(const vec<L,T,Q> a, const many<vec<L,T,Q>>& b, const vec<L,T,Q> c, many<vec<L,T,Q>>& out)
+	void fma(const vec<L,T,Q> a, const std::valarray<vec<L,T,Q>>& b, const vec<L,T,Q> c, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < b.size(); ++i)
 		{
@@ -516,7 +517,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void fma(const many<vec<L,T,Q>>& a, const vec<L,T,Q> b, const vec<L,T,Q> c, many<vec<L,T,Q>>& out)
+	void fma(const std::valarray<vec<L,T,Q>>& a, const vec<L,T,Q> b, const vec<L,T,Q> c, std::valarray<vec<L,T,Q>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{

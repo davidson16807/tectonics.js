@@ -2,6 +2,7 @@
 #pragma once
 
 #include <cmath>
+#include <valarray>
 
 namespace composites
 {
@@ -10,7 +11,7 @@ namespace composites
 	/// @param base Floating point value. pow function is defined for input values of 'base' defined in the range (inf-, inf+) in the limit of the type qualifier.
 	/// @param exponent Floating point value representing the 'exponent'.
 	template <class T>
-	void pow(const many<T>& base, const many<T>& exponent, many<T>& out)
+	void pow(const std::valarray<T>& base, const std::valarray<T>& exponent, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < base.size(); ++i)
 		{
@@ -22,7 +23,7 @@ namespace composites
 	///
 	/// @param a exp function is defined for input values of a defined in the range (inf-, inf+) in the limit of the type qualifier.
 	template <class T>
-	void exp(const many<T>& a, many<T>& out)
+	void exp(const std::valarray<T>& a, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -37,7 +38,7 @@ namespace composites
 	///
 	/// @param a log function is defined for input values of a defined in the range (0, inf+) in the limit of the type qualifier.
 	template <class T>
-	void log(const many<T>& a, many<T>& out)
+	void log(const std::valarray<T>& a, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -50,7 +51,7 @@ namespace composites
 	///
 	/// @param a exp2 function is defined for input values of a defined in the range (inf-, inf+) in the limit of the type qualifier.
 	template <class T>
-	void exp2(const many<T>& a, many<T>& out)
+	void exp2(const std::valarray<T>& a, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -64,7 +65,7 @@ namespace composites
 	///
 	/// @param a log2 function is defined for input values of a defined in the range (0, inf+) in the limit of the type qualifier.
 	template <class T>
-	void log2(const many<T>& a, many<T>& out)
+	void log2(const std::valarray<T>& a, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -77,7 +78,7 @@ namespace composites
 	///
 	/// @param a sqrt function is defined for input values of a defined in the range [0, inf+) in the limit of the type qualifier.
 	template <class T>
-	void sqrt(const many<T>& a, many<T>& out)
+	void sqrt(const std::valarray<T>& a, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -90,7 +91,7 @@ namespace composites
 	///
 	/// @param a inversesqrt function is defined for input values of a defined in the range [0, inf+) in the limit of the type qualifier.
 	template <class T>
-	void inversesqrt(const many<T>& a, many<T>& out)
+	void inversesqrt(const std::valarray<T>& a, std::valarray<T>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{

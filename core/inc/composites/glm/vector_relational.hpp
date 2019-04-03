@@ -1,5 +1,7 @@
 #pragma once
 
+#include <valarray>
+
 #include <glm/vec3.hpp>    	// vec2, bvec2, dvec2, ivec2 and uvec2
 
 #include "../many.hpp"
@@ -9,7 +11,7 @@ namespace composites
 	using namespace glm;
 
 	// template<length_t L, typename T, qualifier Q>
-	// void greaterThan(const many<vec<L,T,Q>>& a, const T b, many<vec<L,bool,defaultp>>& out)
+	// void greaterThan(const std::valarray<vec<L,T,Q>>& a, const T b, std::valarray<vec<L,bool,defaultp>>& out)
 	// {
 	// 	for (unsigned int i = 0; i < a.size(); ++i)
 	// 	{
@@ -17,7 +19,7 @@ namespace composites
 	// 	}
 	// }
 	// template<length_t L, typename T, qualifier Q>
-	// void greaterThanEqual(const many<vec<L,T,Q>>& a, const T b, many<vec<L,bool,defaultp>>& out)
+	// void greaterThanEqual(const std::valarray<vec<L,T,Q>>& a, const T b, std::valarray<vec<L,bool,defaultp>>& out)
 	// {
 	// 	for (unsigned int i = 0; i < a.size(); ++i)
 	// 	{
@@ -25,7 +27,7 @@ namespace composites
 	// 	}
 	// }
 	// template<length_t L, typename T, qualifier Q>
-	// void lessThan(const many<vec<L,T,Q>>& a, const T b, many<vec<L,bool,defaultp>>& out)
+	// void lessThan(const std::valarray<vec<L,T,Q>>& a, const T b, std::valarray<vec<L,bool,defaultp>>& out)
 	// {
 	// 	for (unsigned int i = 0; i < a.size(); ++i)
 	// 	{
@@ -33,7 +35,7 @@ namespace composites
 	// 	}
 	// }
 	// template<length_t L, typename T, qualifier Q>
-	// void lessThanEqual(const many<vec<L,T,Q>>& a, const T b, many<vec<L,bool,defaultp>>& out)
+	// void lessThanEqual(const std::valarray<vec<L,T,Q>>& a, const T b, std::valarray<vec<L,bool,defaultp>>& out)
 	// {
 	// 	for (unsigned int i = 0; i < a.size(); ++i)
 	// 	{
@@ -46,7 +48,7 @@ namespace composites
 
 
 	// template<length_t L, typename T, qualifier Q>
-	// void greaterThan(const many<vec<L,T,Q>>& a, const many<T> b, many<vec<L,bool,defaultp>>& out)
+	// void greaterThan(const std::valarray<vec<L,T,Q>>& a, const std::valarray<T> b, std::valarray<vec<L,bool,defaultp>>& out)
 	// {
 	// 	for (unsigned int i = 0; i < a.size(); ++i)
 	// 	{
@@ -54,7 +56,7 @@ namespace composites
 	// 	}
 	// }
 	// template<length_t L, typename T, qualifier Q>
-	// void greaterThanEqual(const many<vec<L,T,Q>>& a, const many<T> b, many<vec<L,bool,defaultp>>& out)
+	// void greaterThanEqual(const std::valarray<vec<L,T,Q>>& a, const std::valarray<T> b, std::valarray<vec<L,bool,defaultp>>& out)
 	// {
 	// 	for (unsigned int i = 0; i < a.size(); ++i)
 	// 	{
@@ -62,7 +64,7 @@ namespace composites
 	// 	}
 	// }
 	// template<length_t L, typename T, qualifier Q>
-	// void lessThan(const many<vec<L,T,Q>>& a, const many<T> b, many<vec<L,bool,defaultp>>& out)
+	// void lessThan(const std::valarray<vec<L,T,Q>>& a, const std::valarray<T> b, std::valarray<vec<L,bool,defaultp>>& out)
 	// {
 	// 	for (unsigned int i = 0; i < a.size(); ++i)
 	// 	{
@@ -70,7 +72,7 @@ namespace composites
 	// 	}
 	// }
 	// template<length_t L, typename T, qualifier Q>
-	// void lessThanEqual(const many<vec<L,T,Q>>& a, const many<T> b, many<vec<L,bool,defaultp>>& out)
+	// void lessThanEqual(const std::valarray<vec<L,T,Q>>& a, const std::valarray<T> b, std::valarray<vec<L,bool,defaultp>>& out)
 	// {
 	// 	for (unsigned int i = 0; i < a.size(); ++i)
 	// 	{
@@ -82,7 +84,7 @@ namespace composites
 
 
 	template<length_t L, typename T, qualifier Q>
-	void greaterThan(const many<vec<L,T,Q>>& a, const vec<L,T,Q> b, many<vec<L,bool,defaultp>>& out)
+	void greaterThan(const std::valarray<vec<L,T,Q>>& a, const vec<L,T,Q> b, std::valarray<vec<L,bool,defaultp>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -90,7 +92,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void greaterThanEqual(const many<vec<L,T,Q>>& a, const vec<L,T,Q> b, many<vec<L,bool,defaultp>>& out)
+	void greaterThanEqual(const std::valarray<vec<L,T,Q>>& a, const vec<L,T,Q> b, std::valarray<vec<L,bool,defaultp>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -98,7 +100,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void lessThan(const many<vec<L,T,Q>>& a, const vec<L,T,Q> b, many<vec<L,bool,defaultp>>& out)
+	void lessThan(const std::valarray<vec<L,T,Q>>& a, const vec<L,T,Q> b, std::valarray<vec<L,bool,defaultp>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -106,7 +108,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void lessThanEqual(const many<vec<L,T,Q>>& a, const vec<L,T,Q> b, many<vec<L,bool,defaultp>>& out)
+	void lessThanEqual(const std::valarray<vec<L,T,Q>>& a, const vec<L,T,Q> b, std::valarray<vec<L,bool,defaultp>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -121,7 +123,7 @@ namespace composites
 
 
 	template<length_t L, typename T, qualifier Q>
-	void greaterThan(const many<vec<L,T,Q>>& a, const many<vec<L,T,Q>>& b, many<vec<L,bool,defaultp>>& out)
+	void greaterThan(const std::valarray<vec<L,T,Q>>& a, const std::valarray<vec<L,T,Q>>& b, std::valarray<vec<L,bool,defaultp>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -129,7 +131,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void greaterThanEqual(const many<vec<L,T,Q>>& a, const many<vec<L,T,Q>>& b, many<vec<L,bool,defaultp>>& out)
+	void greaterThanEqual(const std::valarray<vec<L,T,Q>>& a, const std::valarray<vec<L,T,Q>>& b, std::valarray<vec<L,bool,defaultp>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -137,7 +139,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void lessThan(const many<vec<L,T,Q>>& a, const many<vec<L,T,Q>>& b, many<vec<L,bool,defaultp>>& out)
+	void lessThan(const std::valarray<vec<L,T,Q>>& a, const std::valarray<vec<L,T,Q>>& b, std::valarray<vec<L,bool,defaultp>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -145,7 +147,7 @@ namespace composites
 		}
 	}
 	template<length_t L, typename T, qualifier Q>
-	void lessThanEqual(const many<vec<L,T,Q>>& a, const many<vec<L,T,Q>>& b, many<vec<L,bool,defaultp>>& out)
+	void lessThanEqual(const std::valarray<vec<L,T,Q>>& a, const std::valarray<vec<L,T,Q>>& b, std::valarray<vec<L,bool,defaultp>>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{

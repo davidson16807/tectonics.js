@@ -5,7 +5,7 @@
 namespace composites
 {
 
-	void unite(const many<bool>& a, const bool b, many<bool>& out)
+	void unite(const std::valarray<bool>& a, const bool b, std::valarray<bool>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -13,7 +13,7 @@ namespace composites
 		}
 	}
 
-	void unite(const many<bool>& a, const many<bool>& b, many<bool>& out)
+	void unite(const std::valarray<bool>& a, const std::valarray<bool>& b, std::valarray<bool>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -21,7 +21,7 @@ namespace composites
 		}
 	}
 
-	void intersect(const many<bool>& a, const bool b, many<bool>& out)
+	void intersect(const std::valarray<bool>& a, const bool b, std::valarray<bool>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -29,7 +29,7 @@ namespace composites
 		}
 	}
 
-	void intersect(const many<bool>& a, const many<bool>& b, many<bool>& out)
+	void intersect(const std::valarray<bool>& a, const std::valarray<bool>& b, std::valarray<bool>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -37,7 +37,7 @@ namespace composites
 		}
 	}
 
-	void differ(const many<bool>& a, const bool b, many<bool>& out)
+	void differ(const std::valarray<bool>& a, const bool b, std::valarray<bool>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -45,7 +45,7 @@ namespace composites
 		}
 	}
 
-	void differ(const many<bool>& a, const many<bool>& b, many<bool>& out)
+	void differ(const std::valarray<bool>& a, const std::valarray<bool>& b, std::valarray<bool>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -53,7 +53,7 @@ namespace composites
 		}
 	}
 
-	void negate(const many<bool>& a, many<bool>& out)
+	void negate(const std::valarray<bool>& a, std::valarray<bool>& out)
 	{
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -61,7 +61,7 @@ namespace composites
 		}
 	}
 
-	bool all(const many<bool>& a)
+	bool all(const std::valarray<bool>& a)
 	{
 		bool out = true;
 		for (unsigned int i = 0; i < a.size(); ++i)
@@ -70,7 +70,7 @@ namespace composites
 		}
 		return out;
 	}
-	bool any(const many<bool>& a)
+	bool any(const std::valarray<bool>& a)
 	{
 		bool out = false;
 		for (unsigned int i = 0; i < a.size(); ++i)
@@ -79,7 +79,7 @@ namespace composites
 		}
 		return out;
 	}
-	bool none(const many<bool>& a)
+	bool none(const std::valarray<bool>& a)
 	{
 		bool out = false;
 		for (unsigned int i = 0; i < a.size(); ++i)
@@ -90,9 +90,9 @@ namespace composites
 	}
 
 
-	inline many<bool> operator~(const many<bool>& a)
+	inline std::valarray<bool> operator~(const std::valarray<bool>& a)
 	{
-		many<bool> out = many<bool>(a.size());
+		std::valarray<bool> out = std::valarray<bool>(a.size());
 		negate(a, out);
 		return out;
 	}
@@ -100,28 +100,28 @@ namespace composites
 
 
 
-	inline many<bool> operator|(const many<bool>& a, const bool b)
+	inline std::valarray<bool> operator|(const std::valarray<bool>& a, const bool b)
 	{
-		many<bool> out = many<bool>(a.size());
+		std::valarray<bool> out = std::valarray<bool>(a.size());
 		unite(a, b, out);
 		return out;
 	}
-	inline many<bool> operator&(const many<bool>& a, const bool b)
+	inline std::valarray<bool> operator&(const std::valarray<bool>& a, const bool b)
 	{
-		many<bool> out = many<bool>(a.size());
+		std::valarray<bool> out = std::valarray<bool>(a.size());
 		intersect(a, b, out);
 		return out;
 	}
 
-	inline many<bool> operator|(const many<bool>& a, const many<bool>& b)
+	inline std::valarray<bool> operator|(const std::valarray<bool>& a, const std::valarray<bool>& b)
 	{
-		many<bool> out = many<bool>(a.size());
+		std::valarray<bool> out = std::valarray<bool>(a.size());
 		unite(a, b, out);
 		return out;
 	}
-	inline many<bool> operator&(const many<bool>& a, const many<bool>& b)
+	inline std::valarray<bool> operator&(const std::valarray<bool>& a, const std::valarray<bool>& b)
 	{
-		many<bool> out = many<bool>(a.size());
+		std::valarray<bool> out = std::valarray<bool>(a.size());
 		intersect(a, b, out);
 		return out;
 	}
@@ -129,20 +129,20 @@ namespace composites
 
 
 
-	inline many<bool>& operator|=(many<bool>& a, const bool b){
+	inline std::valarray<bool>& operator|=(std::valarray<bool>& a, const bool b){
 		unite(a, b, a);
 		return a;
 	}
-	inline many<bool>& operator&=(many<bool>& a, const bool b){
+	inline std::valarray<bool>& operator&=(std::valarray<bool>& a, const bool b){
 		intersect(a, b, a);
 		return a;
 	}
 
-	inline many<bool>& operator|=(many<bool>& a, const many<bool>& b){
+	inline std::valarray<bool>& operator|=(std::valarray<bool>& a, const std::valarray<bool>& b){
 		unite(a, b, a);
 		return a;
 	}
-	inline many<bool>& operator&=(many<bool>& a, const many<bool>& b){
+	inline std::valarray<bool>& operator&=(std::valarray<bool>& a, const std::valarray<bool>& b){
 		intersect(a, b, a);
 		return a;
 	}
