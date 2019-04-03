@@ -32,7 +32,7 @@ namespace rasters {
 		uints 		buffer_array_vertex_ids;
 
 		//ivecNs 	vertex_neighbor_ids;
-		//ints 		vertex_neighbor_count;
+		floats 		vertex_neighbor_count;
 		vec3s 		vertex_positions;
 		vec3s 		vertex_normals;
 		floats 		vertex_areas;
@@ -54,6 +54,7 @@ namespace rasters {
 		floats 		face_areas;
 		float 		face_average_area;
 
+		uvec2s 		edge_vertex_ids;
 		uints 		edge_vertex_id_a;
 		uints 		edge_vertex_id_b;
 		//uints 	edge_face_id_a;
@@ -66,6 +67,7 @@ namespace rasters {
 		vec3s 		edge_normals;
 		//floats 	edge_areas;
 		
+		uvec2s 		arrow_vertex_ids;
 		uints 		arrow_vertex_id_from;
 		uints 		arrow_vertex_id_to;
 		//uints 	arrow_face_id_a;
@@ -87,52 +89,54 @@ namespace rasters {
 			: 
 			  	buffer_array_vertex_ids(3*face_count),
 
-			//	vertex_neighbor_ids(0),
-			//	vertex_neighbor_count(0),
-				vertex_positions(vertex_count),
-				vertex_normals(vertex_count),
-				vertex_areas(vertex_count),
-				vertex_average_area(0),
+			//	vertex_neighbor_ids    (0),
+				vertex_neighbor_count  (vertex_count),
+				vertex_positions       (vertex_count),
+				vertex_normals         (vertex_count),
+				vertex_areas           (vertex_count),
+				vertex_average_area    (0),
 
-				face_vertex_ids (face_count),
-				face_vertex_id_a(face_count),
-				face_vertex_id_b(face_count),
-				face_vertex_id_c(face_count),
-			//	face_edge_id_a(face_count),
-			//	face_edge_id_b(face_count),
-			//	face_edge_id_c(face_count),
-				face_endpoint_a(face_count),
-				face_endpoint_b(face_count),
-				face_endpoint_c(face_count),
-				face_midpoints(face_count),
-				face_normals(face_count),
-				face_areas(face_count),
-				face_average_area(0),
+				face_vertex_ids        (face_count),
+				face_vertex_id_a       (face_count),
+				face_vertex_id_b       (face_count),
+				face_vertex_id_c       (face_count),
+			//	face_edge_id_a         (face_count),
+			//	face_edge_id_b         (face_count),
+			//	face_edge_id_c         (face_count),
+				face_endpoint_a        (face_count),
+				face_endpoint_b        (face_count),
+				face_endpoint_c        (face_count),
+				face_midpoints         (face_count),
+				face_normals           (face_count),
+				face_areas             (face_count),
+				face_average_area      (0),
 
-			  	edge_vertex_id_a(edge_count),
-			  	edge_vertex_id_b(edge_count),
-			//	edge_face_id_a(edge_count),
-			//	edge_face_id_b(edge_count),
-			  	edge_endpoint_a(edge_count),
-			  	edge_endpoint_b(edge_count),
-			  	edge_midpoints(edge_count),
-			  	edge_distances(edge_count),
-			  	edge_normals(edge_count),
-			//	edge_areas(edge_count),
-			  	edge_average_distance(0),
+			  	edge_vertex_ids        (edge_count),
+			  	edge_vertex_id_a       (edge_count),
+			  	edge_vertex_id_b       (edge_count),
+			//	edge_face_id_a         (edge_count),
+			//	edge_face_id_b         (edge_count),
+			  	edge_endpoint_a        (edge_count),
+			  	edge_endpoint_b        (edge_count),
+			  	edge_midpoints         (edge_count),
+			  	edge_distances         (edge_count),
+			  	edge_normals           (edge_count),
+			//	edge_areas             (edge_count),
+			  	edge_average_distance  (0),
 			  	
-			  	arrow_vertex_id_from(2*edge_count),
-			  	arrow_vertex_id_to(2*edge_count),
-			//	arrow_face_id_a(2*edge_count),
-			//	arrow_face_id_b(2*edge_count),
-			  	arrow_endpoint_from(2*edge_count),
-			  	arrow_endpoint_to(2*edge_count),
-			  	arrow_midpoints(2*edge_count),
-			  	arrow_offsets(2*edge_count),
-			  	arrow_distances(2*edge_count), 
-			  	arrow_normals(2*edge_count),
-			//	arrow_areas(0),
-			  	arrow_average_distance(0)
+			  	arrow_vertex_ids       (2*edge_count),
+			  	arrow_vertex_id_from   (2*edge_count),
+			  	arrow_vertex_id_to     (2*edge_count),
+			//	arrow_face_id_a        (2*edge_count),
+			//	arrow_face_id_b        (2*edge_count),
+			  	arrow_endpoint_from    (2*edge_count),
+			  	arrow_endpoint_to      (2*edge_count),
+			  	arrow_midpoints        (2*edge_count),
+			  	arrow_offsets          (2*edge_count),
+			  	arrow_distances        (2*edge_count), 
+			  	arrow_normals          (2*edge_count),
+			//	arrow_areas            (0),
+			  	arrow_average_distance (0)
 		{
 
 		}
@@ -212,8 +216,8 @@ namespace rasters {
 				[](uvec2 a){return a.y > a.x;}
 			);
 
-			uvec2s edge_vertex_ids  (edge_vertex_ids_vector.begin(), edge_vertex_ids_vector.end());
-			uvec2s arrow_vertex_ids (arrow_vertex_ids_vector.begin(), arrow_vertex_ids_vector.end());
+			copy_iterators(edge_vertex_ids,  edge_vertex_ids_vector.begin(), edge_vertex_ids_vector.end());
+			copy_iterators(arrow_vertex_ids, arrow_vertex_ids_vector.begin(), arrow_vertex_ids_vector.end());
 
 			get_x	(edge_vertex_ids,                      edge_vertex_id_a);
 			get_y	(edge_vertex_ids,                      edge_vertex_id_b);
@@ -238,9 +242,55 @@ namespace rasters {
 				     										  arrow_normals 	 ); arrow_normals /= 2.f;
 			arrow_average_distance 	= mean(arrow_distances);
 
+			aggregate_into(arrow_vertex_id_from, [](float a){ return a+1.f; }, vertex_neighbor_count);
+
 		}
 	};
+
+
+	void gradient(const floats& scalar_field, const Grid& grid, vec3s& result)
+	{
+		// NOTE: 
+		// The naive implementation is to estimate the gradient based on each individual neighbor,
+		//  then take the average between the estimates.
+		// This is wrong! If dx is very small, 
+		//  then the gradient estimate along that dimension will be very big.
+		// This will result in very strange behavior.
+		//
+		// The correct implementation is to use the Gauss-Green theorem: 
+		//   ∫∫∫ᵥ ∇ϕ dV = ∫∫ₐ ϕn̂ da
+		// so:
+		//   ∇ϕ = 1/V ∫∫ₐ ϕn̂ da
+		// So if this were 3d, we'd find flux out of an area, then divide by volume.
+		// Since we're dealing with a 2d surface,
+		//   we find flux out of a perimeter, then divide by area.
+		// The "perimeter" and "area" that we measure is for a circle around the vertex. 
+		//   The circle reaches halfway to its neighbors, so its radius is half the distance to its neighbor
+		uvec2 arrow (0);
+		uint  from  (0);
+		uint  to    (0);
+		float df    (0);
+		vec3  dx    (0);
+		const float PI = 3.141592653589793238462643383279502884197169399;
+		fill(result, vec3(0));
+		for (unsigned int i = 0; i < grid.arrow_vertex_ids.size(); ++i)
+		{
+			arrow = grid.arrow_vertex_ids[i]; 
+			from  = arrow.x; 
+			to    = arrow.y; 
+			df    = scalar_field[to] - scalar_field[from]; 
+			// we multiply df by the circumference of a circle around the vertex that reaches halfway to its neighbor,
+			//   this gives us the flux out of this representative circle 
+			// we then add the flux to result in prep to find the average flux around the vertex
+			result[from] += df * grid.arrow_offsets[i]; // (PI cancels out)
+		}
+		// we divide by the number of neighbors to get the average flux around the vertex
+		result /= grid.vertex_neighbor_count; 
+		// we then divide by the area of the circle to get the gradient
+		result *= 1.f / ((grid.arrow_average_distance/2) * (grid.arrow_average_distance/2)); // (PI cancels out)
+	}
 }
+
 
 
 

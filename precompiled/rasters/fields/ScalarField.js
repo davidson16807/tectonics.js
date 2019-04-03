@@ -476,9 +476,9 @@ ScalarField.gradient = function (scalar_field, result, scratch, scratch2) {
     from = arrow[0]; 
     to = arrow[1]; 
     difference = (scalar_field[to] - scalar_field[from]);             
-    x[from] += difference * dxhat[i] * dlength[i]/neighbor_count[from] * PI;
-    y[from] += difference * dyhat[i] * dlength[i]/neighbor_count[from] * PI;
-    z[from] += difference * dzhat[i] * dlength[i]/neighbor_count[from] * PI;
+    x[from] += difference * dx[i] * PI / neighbor_count[from];
+    y[from] += difference * dy[i] * PI / neighbor_count[from];
+    z[from] += difference * dz[i] * PI / neighbor_count[from];
   } 
   var inverse_volume = 1 / (PI * (average_distance/2) * (average_distance/2)); 
   for (var i = 0, li = scalar_field.length; i < li; i++) { 

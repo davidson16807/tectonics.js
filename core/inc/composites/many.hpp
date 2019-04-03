@@ -180,6 +180,17 @@ namespace composites
 		}
 	}
 
+	template<class T, class TIterator>
+	void copy_iterators(many<T>& out, TIterator first, TIterator last)
+	{
+		unsigned int id = 0;
+		while (first!=last) 
+		{
+			out[id] = *first;
+			++first;
+			++id;
+		}
+	}
 	template <class T>
 	void copy(many<T>& out, const many<T>& a )
 	{
@@ -188,7 +199,6 @@ namespace composites
 			out[i] = a[i];
 		}
 	}
-	// NOTE: duplicate of copy constructor, just in case library needs it
 	template <class T>
 	many<T> copy(const many<T>& a )
 	{
