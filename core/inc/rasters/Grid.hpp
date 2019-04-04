@@ -32,7 +32,7 @@ namespace rasters {
 		uints 		buffer_array_vertex_ids;
 
 		//ivecNs 	vertex_neighbor_ids;
-		floats 		vertex_neighbor_count;
+		floats 		vertex_neighbor_counts;
 		vec3s 		vertex_positions;
 		vec3s 		vertex_normals;
 		floats 		vertex_areas;
@@ -90,7 +90,7 @@ namespace rasters {
 			  	buffer_array_vertex_ids(3*face_count),
 
 			//	vertex_neighbor_ids    (0),
-				vertex_neighbor_count  (vertex_count),
+				vertex_neighbor_counts (vertex_count),
 				vertex_positions       (vertex_count),
 				vertex_normals         (vertex_count),
 				vertex_areas           (vertex_count),
@@ -242,7 +242,7 @@ namespace rasters {
 				     										  arrow_normals 	 ); arrow_normals /= 2.f;
 			arrow_average_distance 	= mean(arrow_distances);
 
-			aggregate_into(arrow_vertex_id_from, [](float a){ return a+1.f; }, vertex_neighbor_count);
+			aggregate_into(arrow_vertex_id_from, [](float a){ return a+1.f; }, vertex_neighbor_counts);
 
 		}
 	};
@@ -285,7 +285,7 @@ namespace rasters {
 			result[from] += df * grid.arrow_offsets[i]; // (PI cancels out)
 		}
 		// we divide by the number of neighbors to get the average flux around the vertex
-		result /= grid.vertex_neighbor_count; 
+		result /= grid.vertex_neighbor_counts; 
 		// we then divide by the area of the circle to get the gradient
 		result *= 1.f / ((grid.arrow_average_distance/2) * (grid.arrow_average_distance/2)); // (PI cancels out)
 	}
