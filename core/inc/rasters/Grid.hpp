@@ -240,7 +240,7 @@ namespace rasters {
 			add 	(get(vertex_normals, arrow_vertex_id_from), 
 				     get(vertex_normals, arrow_vertex_id_to), 
 				     										  arrow_normals 	 ); arrow_normals /= 2.f;
-			arrow_average_distance 	= mean(arrow_distances);
+			arrow_average_distance = mean(arrow_distances);
 
 			aggregate_into(arrow_vertex_id_from, [](float a){ return a+1.f; }, vertex_neighbor_counts);
 

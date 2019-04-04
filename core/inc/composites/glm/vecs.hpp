@@ -62,6 +62,33 @@ namespace composites
 		return out;
 	}
 
+	template <length_t L, class T, qualifier Q>
+	void set_x(const many<vec<L,T,Q>>& out, many<T>& a )
+	{
+		for (unsigned int i = 0; i < out.size(); ++i)
+		{
+			out[i].x = a[i];
+		}
+	}
+
+	template <length_t L, class T, qualifier Q>
+	void set_y(const many<vec<L,T,Q>>& out, many<T>& a )
+	{
+		for (unsigned int i = 0; i < out.size(); ++i)
+		{
+			out[i].y = a[i];
+		}
+	}
+
+	template <length_t L, class T, qualifier Q>
+	void set_z(const many<vec<L,T,Q>>& out, many<T>& a )
+	{
+		for (unsigned int i = 0; i < out.size(); ++i)
+		{
+			out[i].z = a[i];
+		}
+	}
+
 	template<typename T, qualifier Q>
 	void mult(const many<vec<3,T,Q>>& a, const mat<4,3,T,Q>& b, many<vec<3,T,Q>>& out)
 	{

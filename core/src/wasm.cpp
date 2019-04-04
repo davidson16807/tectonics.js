@@ -20,6 +20,8 @@ using namespace emscripten;
 using namespace composites;
 using namespace rasters;
 
+////////////////////////////// SCALAR RASTERS //////////////////////////////////
+
 template<typename T>
 void copy_from_typed_array(many<T>& out, const val& typed_array)
 {
@@ -40,17 +42,26 @@ many<T> from_typed_array(const val& typed_array)
   return out;
 }
 
-// template<typename T>
-// void copy_to_typed_array(many<T>& a, val& out)
-// {
-//   for (unsigned int i = 0; i < a.size(); ++i)
-//   {
-//     out.set(i, a[i]);
-//   }
-// }
+template<typename T>
+void copy_to_typed_array(const many<T>& a, val& out)
+{
+  for (unsigned int i = 0; i < a.size(); ++i)
+  {
+    out.set(i, val(a[i]));
+  }
+}
 
 template<typename T>
-void copy_list(many<T>& out, const val& list)
+val to_typed_array(const many<T>& a)
+{
+  val Float32Array = val::global("Float32Array");
+  val out = Float32Array.new_(a.size());
+  copy_to_typed_array(a, out);
+  return out;
+}
+
+template<typename T>
+void copy_from_list(many<T>& out, const val& list)
 {
   unsigned int list_length = list["length"].as<unsigned int>();
   //TODO: verify output length equals list length
@@ -61,69 +72,43 @@ void copy_list(many<T>& out, const val& list)
   }
 }
 
-template<typename T, qualifier Q>
-void copy_list(many<vec<2,T,Q>>& out, const val& list)
-{
-  unsigned int list_length = list["length"].as<unsigned int>();
-  //TODO: verify output length equals list length
-
-  for (unsigned int i = 0; i < list_length; i+=2)
-  {
-    out[i/2] = vec<2,T,Q>(
-      list[i+0].as<T>(), 
-      list[i+1].as<T>() 
-    );
-  }
-}
-
-template<typename T, qualifier Q>
-void copy_list(many<vec<3,T,Q>>& out, const val& list)
-{
-  unsigned int list_length = list["length"].as<unsigned int>();
-  //TODO: verify output length equals list length
-
-  for (unsigned int i = 0; i < list_length; i+=3)
-  {
-    out[i/3] = vec<3,T,Q>(
-      list[i+0].as<T>(), 
-      list[i+1].as<T>(), 
-      list[i+2].as<T>() 
-    );
-  }
-}
-
-template<typename T, qualifier Q>
-void copy_list(many<vec<4,T,Q>>& out, const val& list)
-{
-  unsigned int list_length = list["length"].as<unsigned int>();
-  //TODO: verify output length equals list length
-
-  for (unsigned int i = 0; i < list_length; i+=4)
-  {
-    out[i/4] = vec<4,T,Q>(
-      list[i+0].as<T>(), 
-      list[i+1].as<T>(), 
-      list[i+2].as<T>(), 
-      list[i+3].as<T>() 
-    );
-  }
-}
-
 template<typename T>
 many<T> from_list(const val& list)
 {
   unsigned int list_length = list["length"].as<unsigned int>();
   many<T> out = many<T>(list_length);
-  copy_list(out, list);
+  copy_from_list(out, list);
   return out;
 }
-template<length_t L, typename T, qualifier Q>
-many<vec<L,T,Q>> vecs_from_list(const val& list)
+
+template<typename T>
+void copy_to_list(const many<T>& a, val& out)
 {
-  unsigned int list_length = list["length"].as<unsigned int>();
-  many<vec<L,T,Q>> out = many<vec<L,T,Q>>(list_length/L);
-  copy_list(out, list);
+  for (unsigned int i = 0; i < a.size(); ++i)
+  {
+    out.set(i, val(a[i]));
+  }
+}
+template<typename T>
+val to_list(const many<T>& a){
+  val out = val::array();
+  copy_to_list(a, out);
   return out;
+}
+
+////////////////////////////////// VECTORS /////////////////////////////////////
+
+template<typename T, qualifier Q>
+vec<2,T,Q> from_list(val& a){
+  return vec<2,T,Q>(a[0], a[1]);
+}
+template<typename T, qualifier Q>
+vec<3,T,Q> from_list(val& a){
+  return vec<3,T,Q>(a[0], a[1], a[2]);
+}
+template<typename T, qualifier Q>
+vec<4,T,Q> from_list(val& a){
+  return vec<4,T,Q>(a[0], a[1], a[2], a[3]);
 }
 
 template<typename T, qualifier Q>
@@ -150,24 +135,263 @@ val to_list(vec<4,T,Q> a){
   out.set(3,a.w);
   return out;
 }
-template<typename T>
-val to_list(const many<T>& a){
-  val out = val::array();
-  for (unsigned int i = 0; i < a.size(); ++i)
-  {
-    out.set(i, val(a[i]));
+
+
+
+
+
+
+
+
+////////////////////////////// VECTOR RASTERS //////////////////////////////////
+
+template<typename T, qualifier Q>
+void copy_from_typed_arrays(many<vec<3,T,Q>>& out, const val& x, const val& y, const val& z)
+{
+  for (unsigned int i = 0; i < out.size(); ++i) {
+    out[i].x = x[i].as<T>();
+    out[i].y = y[i].as<T>();
+    out[i].z = z[i].as<T>();
   }
+}
+template<typename T, qualifier Q>
+many<vec<3,T,Q>> from_typed_arrays(const val& x, const val& y, const val& z)
+{
+  unsigned int typed_array_length = x["length"].as<unsigned int>();
+  many<vec<3,T,Q>> out = many<vec<3,T,Q>>(typed_array_length);
+  copy_from_typed_arrays(out, x, y, z);
+  return out;
+}
+template<typename T, qualifier Q>
+void copy_to_typed_arrays(const many<vec<3,T,Q>>& a, val& x, val& y, val& z){
+  for (unsigned int i = 0; i < a.size(); ++i) {
+    x.set(i, val(a[i].x));
+    y.set(i, val(a[i].y));
+    z.set(i, val(a[i].z));
+  }
+}
+template<typename T, qualifier Q>
+val to_typed_arrays(const many<vec<3,T,Q>>& a){
+  val Float32Array = val::global("Float32Array");
+  val x = Float32Array.new_(a.size());
+  val y = Float32Array.new_(a.size());
+  val z = Float32Array.new_(a.size());
+  copy_to_typed_arrays(a, x,y,z);
+  val out = val::object();
+  out.set("x", x);
+  out.set("y", y);
+  out.set("z", z);
+  return out;
+}
+template<typename T, qualifier Q>
+void copy_from_lists(many<vec<3,T,Q>>& out, const val& x, const val& y, const val& z)
+{
+  for (unsigned int i = 0; i < out.size(); ++i) {
+    out[i].x = x[i].as<T>();
+    out[i].y = y[i].as<T>();
+    out[i].z = z[i].as<T>();
+  }
+}
+template<typename T, qualifier Q>
+many<vec<3,T,Q>> from_lists(const val& x, const val& y, const val& z)
+{
+  unsigned int list_length = x["length"].as<unsigned int>();
+  many<vec<3,T,Q>> out = many<vec<3,T,Q>>(list_length);
+  copy_from_lists(out, x, y, z);
+  return out;
+}
+template<typename T, qualifier Q>
+void copy_to_lists(const many<vec<3,T,Q>>& a, val& x, val& y, val& z){
+  for (unsigned int i = 0; i < a.size(); ++i) {
+    x.set(i, val(a[i].x));
+    y.set(i, val(a[i].y));
+    z.set(i, val(a[i].z));
+  }
+}
+template<typename T, qualifier Q>
+val to_lists(const many<vec<3,T,Q>>& a){
+  val x = val::array();
+  val y = val::array();
+  val z = val::array();
+  copy_to_lists(a, x,y,z);
+  val out = val::object();
+  out.set("x", x);
+  out.set("y", y);
+  out.set("z", z);
+  return out;
+}
+
+
+
+
+
+
+
+template<typename T, qualifier Q>
+void copy_from_typed_arrays(many<vec<4,T,Q>>& out, const val& x, const val& y, const val& z, const val& w)
+{
+  for (unsigned int i = 0; i < out.size(); ++i) {
+    out[i].x = x[i].as<T>();
+    out[i].y = y[i].as<T>();
+    out[i].z = z[i].as<T>();
+    out[i].w = w[i].as<T>();
+  }
+}
+template<typename T, qualifier Q>
+many<vec<4,T,Q>> from_typed_arrays(const val& x, const val& y, const val& z, const val& w)
+{
+  unsigned int typed_array_length = x["length"].as<unsigned int>();
+  many<vec<4,T,Q>> out = many<vec<4,T,Q>>(typed_array_length);
+  copy_from_typed_arrays(out, x, y, z, w);
+  return out;
+}
+template<typename T, qualifier Q>
+void copy_to_typed_arrays(const many<vec<4,T,Q>>& a, val& x, val& y, val& z, val& w){
+  for (unsigned int i = 0; i < a.size(); ++i) {
+    x.set(i, val(a[i].x));
+    y.set(i, val(a[i].y));
+    z.set(i, val(a[i].z));
+    w.set(i, val(a[i].w));
+  }
+}
+template<typename T, qualifier Q>
+val to_typed_arrays(const many<vec<4,T,Q>>& a){
+  val Float32Array = val::global("Float32Array");
+  val x = Float32Array.new_(a.size());
+  val y = Float32Array.new_(a.size());
+  val z = Float32Array.new_(a.size());
+  val w = Float32Array.new_(a.size());
+  copy_to_typed_arrays(a, x,y,z,w);
+  val out = val::object();
+  out.set("x", x);
+  out.set("y", y);
+  out.set("z", z);
+  out.set("w", w);
+  return out;
+}
+template<typename T, qualifier Q>
+void copy_from_lists(many<vec<4,T,Q>>& out, const val& x, const val& y, const val& z, const val& w)
+{
+  for (unsigned int i = 0; i < out.size(); ++i) {
+    out[i].x = x[i].as<T>();
+    out[i].y = y[i].as<T>();
+    out[i].z = z[i].as<T>();
+    out[i].w = w[i].as<T>();
+  }
+}
+template<typename T, qualifier Q>
+many<vec<4,T,Q>> from_lists(const val& x, const val& y, const val& z, const val& w)
+{
+  unsigned int list_length = x["length"].as<unsigned int>();
+  many<vec<4,T,Q>> out = many<vec<4,T,Q>>(list_length);
+  copy_from_lists(out, x, y, z, w);
+  return out;
+}
+template<typename T, qualifier Q>
+void copy_to_lists(const many<vec<4,T,Q>>& a, val& x, val& y, val& z, val& w){
+  for (unsigned int i = 0; i < a.size(); ++i) {
+    x.set(i, val(a[i].x));
+    y.set(i, val(a[i].y));
+    z.set(i, val(a[i].z));
+    w.set(i, val(a[i].w));
+  }
+}
+template<typename T, qualifier Q>
+val to_lists(const many<vec<4,T,Q>>& a){
+  val x = val::array();
+  val y = val::array();
+  val z = val::array();
+  val w = val::array();
+  copy_to_lists(a, x,y,z,w);
+  val out = val::object();
+  out.set("x", x);
+  out.set("y", y);
+  out.set("z", z);
+  out.set("w", w);
+  return out;
+}
+
+
+
+
+
+
+
+
+template<typename T, qualifier Q>
+void copy_from_typed_arrays(many<vec<2,T,Q>>& out, const val& x, const val& y)
+{
+  for (unsigned int i = 0; i < out.size(); ++i) {
+    out[i].x = x[i].as<T>();
+    out[i].y = y[i].as<T>();
+  }
+}
+template<typename T, qualifier Q>
+many<vec<2,T,Q>> from_typed_arrays(const val& x, const val& y)
+{
+  unsigned int typed_array_length = x["length"].as<unsigned int>();
+  many<vec<2,T,Q>> out = many<vec<2,T,Q>>(typed_array_length);
+  copy_from_typed_arrays(out, x, y);
   return out;
 }
 template<length_t L, typename T, qualifier Q>
-val to_list(const many<vec<L,T,Q>>& a){
-  val out = val::array();
-  for (unsigned int i = 0; i < a.size(); ++i)
-  {
-    out.set(i, to_list(a[i]));
+void copy_to_typed_arrays(const many<vec<2,T,Q>>& a, val& x, val& y){
+  for (unsigned int i = 0; i < a.size(); ++i) {
+    x.set(i, val(a[i].x));
+    y.set(i, val(a[i].y));
   }
+}
+template<length_t L, typename T, qualifier Q>
+val to_typed_arrays(const many<vec<2,T,Q>>& a){
+  val Float32Array = val::global("Float32Array");
+  val x = Float32Array.new_(a.size());
+  val y = Float32Array.new_(a.size());
+  copy_to_typed_arrays(a, x,y);
+  val out = val::object();
+  out.set("x", x);
+  out.set("y", y);
   return out;
 }
+template<typename T, qualifier Q>
+void copy_from_lists(many<vec<2,T,Q>>& out, const val& x, const val& y)
+{
+  for (unsigned int i = 0; i < out.size(); ++i) {
+    out[i].x = x[i].as<T>();
+    out[i].y = y[i].as<T>();
+  }
+}
+template<typename T, qualifier Q>
+many<vec<2,T,Q>> from_lists(const val& x, const val& y)
+{
+  unsigned int list_length = x["length"].as<unsigned int>();
+  many<vec<2,T,Q>> out = many<vec<2,T,Q>>(list_length);
+  copy_from_lists(out, x, y);
+  return out;
+}
+template<typename T, qualifier Q>
+void copy_to_lists(const many<vec<2,T,Q>>& a, val& x, val& y){
+  for (unsigned int i = 0; i < a.size(); ++i) {
+    x.set(i, val(a[i].x));
+    y.set(i, val(a[i].y));
+  }
+}
+template<typename T, qualifier Q>
+val to_lists(const many<vec<2,T,Q>>& a){
+  val x = val::array();
+  val y = val::array();
+  copy_to_lists(a, x,y);
+  val out = val::object();
+  out.set("x", x);
+  out.set("y", y);
+  return out;
+}
+
+
+
+
+
+
+
 
 
 template class glm::vec<2,float,defaultp>;
@@ -346,7 +570,7 @@ EMSCRIPTEN_BINDINGS(rasters)
       .constructor<const vec3s&, const uvec3s&>()
       .property("buffer_array_vertex_ids",&Grid::buffer_array_vertex_ids)
       // .property("vertex_neighbor_ids",    &Grid::vertex_neighbor_ids)
-      .property("vertex_neighbor_counts",  &Grid::vertex_neighbor_counts)
+      .property("vertex_neighbor_counts", &Grid::vertex_neighbor_counts)
       .property("vertex_positions",       &Grid::vertex_positions)
       .property("vertex_normals",         &Grid::vertex_normals)
       .property("vertex_areas",           &Grid::vertex_areas)
@@ -394,97 +618,97 @@ EMSCRIPTEN_BINDINGS(rasters)
       // .property("arrow_areas",            &Grid::arrow_areas)
   ;
 
-  function("bools_copy_from_typed_array",   (void (*)(bools& out, const val& js_list ))              copy_from_typed_array     );
-  //function("bools_copy_to_typed_array",   (void (*)(bools& out, val& js_list ))                copy_to_typed_array     );
-  function("bools_copy_list",   (void (*)(bools& out, const val& js_list ))                     copy_list     );
-  function("bools_from_typed_array",   (bools (*)(const val& js_list ))                         from_typed_array     );
-  function("bools_from_list",   (bools (*)(const val& js_list ))                                from_list     );
-  function("bools_from_bools",  (bools (*)(const bools& a ))                                    copy     );
-  function("bools_to_list",     (val (*)(const bools& a ))                                      to_list     );
+  function("bools_copy_from_typed_array",   (void (*)(bools& out, const val& js_list ))     copy_from_typed_array     );
+  //function("bools_copy_to_typed_array",   (void (*)(bools& out, val& js_list ))           copy_to_typed_array     );
+  function("bools_copy_from_list",   (void (*)(bools& out, const val& js_list ))            copy_from_list     );
+  function("bools_from_typed_array",   (bools (*)(const val& js_list ))                     from_typed_array     );
+  function("bools_from_list",   (bools (*)(const val& js_list ))                            from_list     );
+  function("bools_from_bools",  (bools (*)(const bools& a ))                                copy     );
+  function("bools_to_list",     (val (*)(const bools& a ))                                  to_list     );
 
 
 
-  function("ints_copy_from_typed_array",   (void (*)(ints& out, const val& js_list ))              copy_from_typed_array     );
-  //function("ints_copy_to_typed_array",   (void (*)(ints& out, val& js_list ))                copy_to_typed_array     );
-  function("ints_copy_list",   (void (*)(ints& out, const val& js_list ))                     copy_list     );
-  function("ints_from_typed_array",   (ints (*)(const val& js_list ))                         from_typed_array     );
-  function("ints_from_list",   (ints (*)(const val& js_list ))                                from_list     );
-  function("ints_from_ints",   (ints (*)(const ints& a ))                                     copy     );
-  function("ints_to_list",     (val (*)(const ints& a ))                                      to_list     );
+  function("ints_copy_from_typed_array",   (void (*)(ints& out, const val& js_list ))       copy_from_typed_array     );
+  //function("ints_copy_to_typed_array",   (void (*)(ints& out, val& js_list ))             copy_to_typed_array     );
+  function("ints_copy_from_list",   (void (*)(ints& out, const val& js_list ))              copy_from_list     );
+  function("ints_from_typed_array",   (ints (*)(const val& js_list ))                       from_typed_array     );
+  function("ints_from_list",   (ints (*)(const val& js_list ))                              from_list     );
+  function("ints_from_ints",   (ints (*)(const ints& a ))                                   copy     );
+  function("ints_to_list",     (val (*)(const ints& a ))                                    to_list     );
 
 
 
-  function("uints_copy_from_typed_array",   (void (*)(uints& out, const val& js_list ))              copy_from_typed_array     );
-  //function("uints_copy_to_typed_array",   (void (*)(uints& out, val& js_list ))                copy_to_typed_array     );
-  function("uints_copy_list",   (void (*)(uints& out, const val& js_list ))                     copy_list     );
-  function("uints_from_typed_array",   (uints (*)(const val& js_list ))                         from_typed_array     );
-  function("uints_from_list",    (uints (*)(const val& js_list ))                               from_list     );
-  function("uints_from_uints",   (uints (*)(const uints& a ))                                   copy     );
-  function("uints_to_list",      (val (*)(const uints& a ))                                     to_list     );
+  function("uints_copy_from_typed_array",   (void (*)(uints& out, const val& js_list ))     copy_from_typed_array     );
+  //function("uints_copy_to_typed_array",   (void (*)(uints& out, val& js_list ))           copy_to_typed_array     );
+  function("uints_copy_from_list",   (void (*)(uints& out, const val& js_list ))            copy_from_list     );
+  function("uints_from_typed_array",   (uints (*)(const val& js_list ))                     from_typed_array     );
+  function("uints_from_list",    (uints (*)(const val& js_list ))                           from_list     );
+  function("uints_from_uints",   (uints (*)(const uints& a ))                               copy     );
+  function("uints_to_list",      (val (*)(const uints& a ))                                 to_list     );
 
 
 
-  function("floats_copy_from_typed_array",   (void (*)(floats& out, const val& js_list ))              copy_from_typed_array     );
-  //function("floats_copy_to_typed_array",   (void (*)(floats& out, val& js_list ))                copy_to_typed_array     );
-  function("floats_copy_list",   (void (*)(floats& out, const val& js_list ))                     copy_list     );
-  function("floats_from_typed_array",   (floats (*)(const val& js_list ))                         from_typed_array     );
-  function("floats_from_list",   (floats (*)(const val& js_list ))                                from_list     );
-  function("floats_from_floats", (floats (*)(const floats& a ))                                   copy     );
-  function("floats_to_list",      (val (*)(const floats& a ))                                     to_list     );
+  function("floats_copy_from_typed_array",   (void (*)(floats& out, const val& js_list ))   copy_from_typed_array     );
+  //function("floats_copy_to_typed_array",   (void (*)(floats& out, val& js_list ))         copy_to_typed_array     );
+  function("floats_copy_from_list",   (void (*)(floats& out, const val& js_list ))          copy_from_list     );
+  function("floats_from_typed_array",   (floats (*)(const val& js_list ))                   from_typed_array     );
+  function("floats_from_list",   (floats (*)(const val& js_list ))                          from_list     );
+  function("floats_from_floats", (floats (*)(const floats& a ))                             copy     );
+  function("floats_to_list",      (val (*)(const floats& a ))                               to_list     );
 
 
 
-  function("vec2s_copy_from_typed_array",   (void (*)(vec2s& out, const val& js_list ))              copy_from_typed_array     );
-  function("vec2s_copy_list",   (void (*)(vec2s& out, const val& js_list ))                     copy_list     );
-  function("vec2s_from_typed_array",   (vec2s (*)(const val& js_list ))                         from_typed_array     );
-  function("vec2s_from_list",   (vec2s (*)(const val& js_list ))                                vecs_from_list     );
-  function("vec2s_from_vec2s",   (vec2s (*)(const vec2s& a ))                                   copy     );
-  function("vec2s_to_list",      (val (*)(const vec2s& a ))                                     to_list     );
+  function("vec2s_copy_from_typed_arrays", (void (*)(vec2s& out, const val&, const val&))    copy_from_typed_arrays     );
+  function("vec2s_from_typed_arrays",   (vec2s (*)(const val&, const val& ))                 from_typed_arrays     );
+  function("vec2s_copy_from_lists", (void (*)(vec2s& out,const val&,const val&))             copy_from_lists     );
+  function("vec2s_from_lists",   (vec2s (*)(const val&, const val&))                         from_lists     );
+  function("vec2s_from_vec2s",   (vec2s (*)(const vec2s& a ))                               copy     );
+  function("vec2s_to_lists",      (val (*)(const vec2s& a ))                                 to_lists     );
 
 
 
-  function("vec3s_copy_from_typed_array",   (void (*)(vec3s& out, const val& js_list ))              copy_from_typed_array     );
-  function("vec3s_copy_list",   (void (*)(vec3s& out, const val& js_list ))                     copy_list     );
-  function("vec3s_from_typed_array",   (vec3s (*)(const val& js_list ))                         from_typed_array     );
-  function("vec3s_from_list",    (vec3s (*)(const val& js_list ))                               vecs_from_list     );
-  function("vec3s_from_vec3s",   (vec3s (*)(const vec3s& a ))                                   copy     );
-  function("vec3s_to_list",      (val (*)(const vec3s& a ))                                     to_list     );
+  function("vec3s_copy_from_typed_arrays", (void (*)(vec3s& out,const val&,const val&,const val& )) copy_from_typed_arrays     );
+  function("vec3s_from_typed_arrays",   (vec3s (*)(const val&, const val&, const val& ))     from_typed_arrays     );
+  function("vec3s_copy_from_lists", (void (*)(vec3s& out,const val&,const val&,const val&))  copy_from_lists     );
+  function("vec3s_from_lists",    (vec3s (*)(const val&, const val&, const val&))            from_lists     );
+  function("vec3s_from_vec3s",   (vec3s (*)(const vec3s& a ))                               copy     );
+  function("vec3s_to_lists",      (val (*)(const vec3s& a ))                                 to_lists     );
 
 
 
-  function("vec4s_copy_from_typed_array",   (void (*)(vec4s& out, const val& js_list ))              copy_from_typed_array     );
-  function("vec4s_copy_list",   (void (*)(vec4s& out, const val& js_list ))                     copy_list     );
-  function("vec4s_from_typed_array",   (vec4s (*)(const val& js_list ))                         from_typed_array     );
-  function("vec4s_from_list",   (vec4s (*)(const val& js_list ))                                vecs_from_list     );
-  function("vec4s_from_vec4s",   (vec4s (*)(const vec4s& a ))                                   copy     );
-  function("vec4s_to_list",      (val (*)(const vec4s& a ))                                     to_list     );
+  function("vec4s_copy_from_typed_arrays", (void (*)(vec4s& out,const val&,const val&,const val&,const val& )) copy_from_typed_arrays     );
+  function("vec4s_from_typed_arrays",   (vec4s (*)(const val&,const val&,const val&,const val& ))      from_typed_arrays     );
+  function("vec4s_copy_from_lists", (void (*)(vec4s& out,const val&,const val&,const val&,const val&)) copy_from_lists     );
+  function("vec4s_from_lists",   (vec4s (*)(const val&, const val&, const val&,const val&))            from_lists     );
+  function("vec4s_from_vec4s",   (vec4s (*)(const vec4s& a ))                                         copy     );
+  function("vec4s_to_lists",      (val (*)(const vec4s& a ))                                           to_lists     );
 
 
 
-  function("uvec2s_copy_from_typed_array",   (void (*)(uvec2s& out, const val& js_list ))              copy_from_typed_array     );
-  function("uvec2s_copy_list",   (void (*)(uvec2s& out, const val& js_list ))                     copy_list     );
-  function("uvec2s_from_typed_array",   (uvec2s (*)(const val& js_list ))                         from_typed_array     );
-  function("uvec2s_from_list",   (uvec2s (*)(const val& js_list ))                                vecs_from_list     );
-  function("uvec2s_from_uvec2s",   (uvec2s (*)(const uvec2s& a ))                                   copy     );
-  function("uvec2s_to_list",      (val (*)(const uvec2s& a ))                           to_list     );
+  function("uvec2s_copy_from_typed_arrays", (void (*)(uvec2s& out,const val&,const val& ))   copy_from_typed_arrays     );
+  function("uvec2s_from_typed_arrays",   (uvec2s (*)(const val&, const val& ))               from_typed_arrays     );
+  function("uvec2s_copy_from_lists", (void (*)(uvec2s& out,const val&,const val&))           copy_from_lists     );
+  function("uvec2s_from_lists",   (uvec2s (*)(const val&, const val&))                       from_lists     );
+  function("uvec2s_from_uvec2s", (uvec2s (*)(const uvec2s& a ))                             copy     );
+  function("uvec2s_to_lists",     (val (*)(const uvec2s& a ))                                to_lists     );
 
 
 
-  function("uvec3s_copy_from_typed_array",   (void (*)(uvec3s& out, const val& js_list ))              copy_from_typed_array     );
-  function("uvec3s_copy_list",   (void (*)(uvec3s& out, const val& js_list ))                     copy_list     );
-  function("uvec3s_from_typed_array",   (uvec3s (*)(const val& js_list ))                         from_typed_array     );
-  function("uvec3s_from_list",    (uvec3s (*)(const val& js_list ))                               vecs_from_list     );
-  function("uvec3s_from_uvec3s",   (uvec3s (*)(const uvec3s& a ))                                   copy     );
-  function("uvec3s_to_list",      (val (*)(const uvec3s& a ))                                     to_list     );
+  function("uvec3s_copy_from_typed_arrays", (void (*)(uvec3s& out,const val&,const val&,const val& ))   copy_from_typed_arrays     );
+  function("uvec3s_from_typed_arrays",   (uvec3s (*)(const val&, const val&, const val& ))   from_typed_arrays     );
+  function("uvec3s_copy_from_lists", (void (*)(uvec3s& out,const val&,const val&,const val&))copy_from_lists     );
+  function("uvec3s_from_lists",    (uvec3s (*)(const val&, const val&, const val&))          from_lists     );
+  function("uvec3s_from_uvec3s",   (uvec3s (*)(const uvec3s& a ))                           copy     );
+  function("uvec3s_to_lists",      (val (*)(const uvec3s& a ))                               to_lists     );
 
 
 
-  function("uvec4s_copy_from_typed_array",   (void (*)(uvec4s& out, const val& js_list ))              copy_from_typed_array     );
-  function("uvec4s_copy_list",   (void (*)(uvec4s& out, const val& js_list ))                     copy_list     );
-  function("uvec4s_from_typed_array",   (uvec4s (*)(const val& js_list ))                         from_typed_array     );
-  function("uvec4s_from_list",   (uvec4s (*)(const val& js_list ))                                vecs_from_list     );
-  function("uvec4s_from_uvec4s",   (uvec4s (*)(const uvec4s& a ))                                   copy     );
-  function("uvec4s_to_list",      (val (*)(const uvec4s& a ))                                     to_list     );
+  function("uvec4s_copy_from_typed_arrays", (void (*)(uvec4s& out,const val&,const val&,const val&,const val& )) copy_from_typed_arrays     );
+  function("uvec4s_from_typed_arrays",   (uvec4s (*)(const val&, const val&, const val&,const val& ))            from_typed_arrays     );
+  function("uvec4s_copy_from_lists", (void (*)(uvec4s& out,const val&,const val&,const val&,const val&))         copy_from_lists     );
+  function("uvec4s_from_lists",   (uvec4s (*)(const val&, const val&, const val&,const val&))                    from_lists     );
+  function("uvec4s_from_uvec4s",   (uvec4s (*)(const uvec4s& a ))                                               copy     );
+  function("uvec4s_to_lists",      (val (*)(const uvec4s& a ))                                                   to_lists     );
 
 
 
