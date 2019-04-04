@@ -8,9 +8,9 @@ OUT=postcompiled/Rasters.js postcompiled/Shaders.js postcompiled/Academics.js
 SCRIPTS = $(shell find precompiled/ -type f -name '*.js')
 SHADERS = $(shell find precompiled/ -type f -name '*.glsl.c')
 
-SRC=core/src/rasters.cpp
+SRC=core/src/wasm.cpp
 INC:=$(shell find core/inc/ -name "*.hpp") 
-OUT=postcompiled/cpp.html postcompiled/Rasters.js postcompiled/Shaders.js
+OUT=postcompiled/wasm.html postcompiled/Rasters.js postcompiled/Shaders.js
 
 all: $(OUT)
 
@@ -18,19 +18,19 @@ postcompiled/Rasters.js : precompiled/rasters/Rasters.js $(SCRIPTS) Makefile
 run:
 	emrun --browser chrome index.html
 test:
-	emrun --browser chrome --serve_root ./ tests/cpp-test.html 
+	emrun --browser chrome --serve_root ./ tests/wasm-test.html 
 
-postcompiled/cpp.html : $(INC) $(SRC)
+postcompiled/wasm.html : $(INC) $(SRC)
 	cd postcompiled && \
 	em++ --emrun --bind -std=c++17 \
 	-I ../core/inc/ \
-	-g ../core/src/rasters.cpp \
+	-g ../core/src/wasm.cpp \
 	-s EXPORT_NAME="'Cpp'" -s MODULARIZE=1 \
 	-s WASM=1 \
 	-s ASSERTIONS=1 \
 	-s SAFE_HEAP=1 \
 	-s DEMANGLE_SUPPORT=1 \
-	-o cpp.html && \
+	-o wasm.html && \
 	cd -
 	# -s ALLOW_MEMORY_GROWTH=1 \
 	# -g4 \
