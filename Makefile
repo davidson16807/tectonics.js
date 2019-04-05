@@ -27,6 +27,7 @@ postcompiled/wasm.html : $(INC) $(SRC)
 	-g ../core/src/wasm.cpp \
 	-s EXPORT_NAME="'Cpp'" -s MODULARIZE=1 \
 	-s WASM=1 \
+	-s TOTAL_MEMORY=33554432 \
 	-s ASSERTIONS=1 \
 	-s SAFE_HEAP=1 \
 	-s DEMANGLE_SUPPORT=1 \

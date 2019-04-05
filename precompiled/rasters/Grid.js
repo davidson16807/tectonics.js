@@ -15,6 +15,15 @@ function Grid(parameters, options){
     this.faces = faces;
     var vertices = this.parameters.vertices;
     this.vertices = vertices;
+    
+    this.cpp_grid = new cpp.Grid(
+        new cpp.vec3s_from_lists (vertices.map(v => v.x)
+                                  vertices.map(v => v.y)
+                                  vertices.map(v => v.z)),
+        new cpp.uvec3s_from_lists(faces   .map(f => f.a)
+                                  faces   .map(f => f.b)
+                                  faces   .map(f => f.c))
+    );
 
 	this.getParameters = function(){
 		return {

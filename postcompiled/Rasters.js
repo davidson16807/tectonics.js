@@ -5547,6 +5547,17 @@ function Grid(parameters, options){
     this.faces = faces;
     var vertices = this.parameters.vertices;
     this.vertices = vertices;
+debugger
+    var vx = vertices.map(v => v.x);
+    var vy = vertices.map(v => v.y);
+    var vz = vertices.map(v => v.z);
+    var fx = faces .map(f => f.a);
+    var fy = faces .map(f => f.b);
+    var fz = faces .map(f => f.c);
+    this.cpp_grid = new cpp.Grid(
+        new cpp.vec3s_from_lists (vx,vy,vz),
+        new cpp.uvec3s_from_lists(fx,fy,fz)
+    );
 
  this.getParameters = function(){
   return {
