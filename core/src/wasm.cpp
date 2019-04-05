@@ -334,14 +334,14 @@ many<vec<2,T,Q>> from_typed_arrays(const val& x, const val& y)
   copy_from_typed_arrays(out, x, y);
   return out;
 }
-template<length_t L, typename T, qualifier Q>
+template<typename T, qualifier Q>
 void copy_to_typed_arrays(const many<vec<2,T,Q>>& a, val& x, val& y){
   for (unsigned int i = 0; i < a.size(); ++i) {
     x.set(i, val(a[i].x));
     y.set(i, val(a[i].y));
   }
 }
-template<length_t L, typename T, qualifier Q>
+template<typename T, qualifier Q>
 val to_typed_arrays(const many<vec<2,T,Q>>& a){
   val Float32Array = val::global("Float32Array");
   val x = Float32Array.new_(a.size());
@@ -662,8 +662,9 @@ EMSCRIPTEN_BINDINGS(rasters)
   function("vec2s_from_typed_arrays",   (vec2s (*)(const val&, const val& ))                 from_typed_arrays     );
   function("vec2s_copy_from_lists", (void (*)(vec2s& out,const val&,const val&))             copy_from_lists     );
   function("vec2s_from_lists",   (vec2s (*)(const val&, const val&))                         from_lists     );
-  function("vec2s_from_vec2s",   (vec2s (*)(const vec2s& a ))                               copy     );
+  function("vec2s_from_vec2s",   (vec2s (*)(const vec2s& a ))                                copy     );
   function("vec2s_to_lists",      (val (*)(const vec2s& a ))                                 to_lists     );
+  function("vec2s_to_typed_arrays", (val (*)(const vec2s& a))                  to_typed_arrays     );
 
 
 
@@ -671,8 +672,9 @@ EMSCRIPTEN_BINDINGS(rasters)
   function("vec3s_from_typed_arrays",   (vec3s (*)(const val&, const val&, const val& ))     from_typed_arrays     );
   function("vec3s_copy_from_lists", (void (*)(vec3s& out,const val&,const val&,const val&))  copy_from_lists     );
   function("vec3s_from_lists",    (vec3s (*)(const val&, const val&, const val&))            from_lists     );
-  function("vec3s_from_vec3s",   (vec3s (*)(const vec3s& a ))                               copy     );
+  function("vec3s_from_vec3s",   (vec3s (*)(const vec3s& a ))                                copy     );
   function("vec3s_to_lists",      (val (*)(const vec3s& a ))                                 to_lists     );
+  function("vec3s_to_typed_arrays", (val (*)(const vec3s& a))            to_typed_arrays     );
 
 
 
@@ -680,8 +682,9 @@ EMSCRIPTEN_BINDINGS(rasters)
   function("vec4s_from_typed_arrays",   (vec4s (*)(const val&,const val&,const val&,const val& ))      from_typed_arrays     );
   function("vec4s_copy_from_lists", (void (*)(vec4s& out,const val&,const val&,const val&,const val&)) copy_from_lists     );
   function("vec4s_from_lists",   (vec4s (*)(const val&, const val&, const val&,const val&))            from_lists     );
-  function("vec4s_from_vec4s",   (vec4s (*)(const vec4s& a ))                                         copy     );
+  function("vec4s_from_vec4s",   (vec4s (*)(const vec4s& a ))                                          copy     );
   function("vec4s_to_lists",      (val (*)(const vec4s& a ))                                           to_lists     );
+  function("vec4s_to_typed_arrays", (val (*)(const vec4s& a))                to_typed_arrays     );
 
 
 
@@ -689,8 +692,9 @@ EMSCRIPTEN_BINDINGS(rasters)
   function("uvec2s_from_typed_arrays",   (uvec2s (*)(const val&, const val& ))               from_typed_arrays     );
   function("uvec2s_copy_from_lists", (void (*)(uvec2s& out,const val&,const val&))           copy_from_lists     );
   function("uvec2s_from_lists",   (uvec2s (*)(const val&, const val&))                       from_lists     );
-  function("uvec2s_from_uvec2s", (uvec2s (*)(const uvec2s& a ))                             copy     );
+  function("uvec2s_from_uvec2s", (uvec2s (*)(const uvec2s& a ))                              copy     );
   function("uvec2s_to_lists",     (val (*)(const uvec2s& a ))                                to_lists     );
+  function("uvec2s_to_typed_arrays", (val (*)(const uvec2s& a))                to_typed_arrays     );
 
 
 
@@ -698,8 +702,9 @@ EMSCRIPTEN_BINDINGS(rasters)
   function("uvec3s_from_typed_arrays",   (uvec3s (*)(const val&, const val&, const val& ))   from_typed_arrays     );
   function("uvec3s_copy_from_lists", (void (*)(uvec3s& out,const val&,const val&,const val&))copy_from_lists     );
   function("uvec3s_from_lists",    (uvec3s (*)(const val&, const val&, const val&))          from_lists     );
-  function("uvec3s_from_uvec3s",   (uvec3s (*)(const uvec3s& a ))                           copy     );
+  function("uvec3s_from_uvec3s",   (uvec3s (*)(const uvec3s& a ))                            copy     );
   function("uvec3s_to_lists",      (val (*)(const uvec3s& a ))                               to_lists     );
+  function("uvec3s_to_typed_arrays", (val (*)(const uvec3s& a))          to_typed_arrays     );
 
 
 
@@ -707,9 +712,11 @@ EMSCRIPTEN_BINDINGS(rasters)
   function("uvec4s_from_typed_arrays",   (uvec4s (*)(const val&, const val&, const val&,const val& ))            from_typed_arrays     );
   function("uvec4s_copy_from_lists", (void (*)(uvec4s& out,const val&,const val&,const val&,const val&))         copy_from_lists     );
   function("uvec4s_from_lists",   (uvec4s (*)(const val&, const val&, const val&,const val&))                    from_lists     );
-  function("uvec4s_from_uvec4s",   (uvec4s (*)(const uvec4s& a ))                                               copy     );
+  function("uvec4s_from_uvec4s",   (uvec4s (*)(const uvec4s& a ))                                                copy     );
   function("uvec4s_to_lists",      (val (*)(const uvec4s& a ))                                                   to_lists     );
+  function("uvec4s_to_typed_arrays", (val (*)(const uvec4s& a))                        to_typed_arrays     );
 
+  function("floats_gradient", (void (*)(const floats&, const Grid&, vec3s&)) gradient );
 
 
 }

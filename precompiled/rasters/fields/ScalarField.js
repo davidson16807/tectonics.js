@@ -421,72 +421,17 @@ ScalarField.gradient = function (scalar_field, result, scratch, scratch2) {
   scratch2 = scratch2 || Float32Raster(scalar_field.grid);
 
   ASSERT_IS_ARRAY(scalar_field, Float32Array)
-  ASSERT_IS_ARRAY(scratch, Float32Array)
-  ASSERT_IS_ARRAY(scratch2, Float32Array)
   ASSERT_IS_VECTOR_RASTER(result)
 
-  var pos = scalar_field.grid.pos; 
-  var ix = pos.x; 
-  var iy = pos.y; 
-  var iz = pos.z; 
-  var dpos_hat = scalar_field.grid.pos_arrow_differential_normalized; 
-  var dxhat = dpos_hat.x; 
-  var dyhat = dpos_hat.y; 
-  var dzhat = dpos_hat.z; 
-  var dpos = scalar_field.grid.pos_arrow_differential; 
-  var dx = dpos.x; 
-  var dy = dpos.y; 
-  var dz = dpos.z; 
-  var arrows = scalar_field.grid.arrows; 
-  var arrow = []; 
-  var dlength = scalar_field.grid.pos_arrow_distances; 
-  var neighbor_count = scalar_field.grid.neighbor_count; 
-  var average = scratch; 
-  var x = result.x; 
-  var y = result.y; 
-  var z = result.z; 
-  var arrow_distance = 0; 
-  var average_distance = scalar_field.grid.average_distance; 
-  var slope = 0; 
-  var slope_magnitude = 0; 
-  var from = 0; 
-  var to = 0; 
-  var max_slope_from = 0; 
-  var PI = Math.PI; 
-  //
-  // NOTE: 
-  // The naive implementation is to estimate the gradient based on each individual neighbor,
-  //  then take the average between the estimates.
-  // This is wrong! If dx, dy, or dz is very small, 
-  //  then the gradient estimate along that dimension will be very big.
-  // This will result in very strange behavior.
-  //
-  // The correct implementation is to use the Gauss-Green theorem: 
-  //   ∫∫∫ᵥ ∇ϕ dV = ∫∫ₐ ϕn̂ da
-  // so:
-  //   ∇ϕ = 1/V ∫∫ₐ ϕn̂ da
-  // so find flux out of an area, then divide by volume
-  // the area/volume is calculated for a circle that reaches halfway to neighboring vertices
-  Float32Raster.fill(x, 0);
-  Float32Raster.fill(y, 0);
-  Float32Raster.fill(z, 0);
-  var difference = 0;
-  for (var i = 0, li = arrows.length; i < li; i++) { 
-    arrow = arrows[i]; 
-    from = arrow[0]; 
-    to = arrow[1]; 
-    difference = (scalar_field[to] - scalar_field[from]);             
-    x[from] += difference * dx[i] * PI / neighbor_count[from];
-    y[from] += difference * dy[i] * PI / neighbor_count[from];
-    z[from] += difference * dz[i] * PI / neighbor_count[from];
-  } 
-  var inverse_volume = 1 / (PI * (average_distance/2) * (average_distance/2)); 
-  for (var i = 0, li = scalar_field.length; i < li; i++) { 
-    x[i] *= inverse_volume; 
-    y[i] *= inverse_volume; 
-    z[i] *= inverse_volume; 
-  } 
+  debugger;
+  var result_cpp = new cpp.vec3s(scalar_field.length);
+  // cpp.floats_gradient(new cpp.floats_from_typed_array(scalar_field, scalar_field.grid.cpp, result_cpp);
+  cpp.floats_gradient(new cpp.floats_from_list(scalar_field), scalar_field.grid.cpp, result_cpp);
+  var result_copy = cpp.vec3s_to_typed_arrays(result_cpp);
 
+  result.x.set(result_copy);
+  result.y.set(result_copy);
+  result.z.set(result_copy);
   return result;
 };
 
