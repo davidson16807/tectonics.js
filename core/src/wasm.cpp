@@ -712,6 +712,7 @@ EMSCRIPTEN_BINDINGS(rasters)
   function("uvec4s_to_typed_arrays", (val (*)(const uvec4s& a))                        to_typed_arrays     );
 
   function("floats_gradient", (void (*)(const floats&, const Grid&, vec3s&)) gradient );
+  function("uints_gradient",  (void (*)(const uints&,  const Grid&, vec3s&)) gradient );
 
 
 }

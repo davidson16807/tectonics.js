@@ -1892,7 +1892,7 @@ var ASM_CONSTS = [];
 
 STATIC_BASE = GLOBAL_BASE;
 
-STATICTOP = STATIC_BASE + 18912;
+STATICTOP = STATIC_BASE + 18944;
 /* global initializers */  __ATINIT__.push({ func: function() { __GLOBAL__sub_I_wasm_cpp() } }, { func: function() { __GLOBAL__sub_I_bind_cpp() } });
 
 
@@ -1901,7 +1901,7 @@ STATICTOP = STATIC_BASE + 18912;
 
 
 
-var STATIC_BUMP = 18912;
+var STATIC_BUMP = 18944;
 Module["STATIC_BASE"] = STATIC_BASE;
 Module["STATIC_BUMP"] = STATIC_BUMP;
 
