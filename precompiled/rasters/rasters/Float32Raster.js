@@ -74,7 +74,9 @@ Float32Raster.copy = function(raster, result) {
   var result = result || Float32Raster(raster.grid);
   ASSERT_IS_ARRAY(raster, Float32Array)
   ASSERT_IS_ARRAY(result, Float32Array)
-  result.set(raster);
+  for (var i=0, li=result.length; i<li; ++i) {
+      result[i] = raster[i];
+  }
   return result;
 }
 Float32Raster.fill = function (raster, value) {
