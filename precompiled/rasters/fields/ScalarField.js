@@ -423,7 +423,6 @@ ScalarField.gradient = function (scalar_field, result, scratch, scratch2) {
   ASSERT_IS_ARRAY(scalar_field, Float32Array)
   ASSERT_IS_VECTOR_RASTER(result)
 
-  debugger;
   var result_cpp = new cpp.vec3s(scalar_field.length);
   // cpp.floats_gradient(new cpp.floats_from_typed_array(scalar_field, scalar_field.grid.cpp, result_cpp);
   cpp.floats_gradient(new cpp.floats_from_list(scalar_field), scalar_field.grid.cpp, result_cpp);
@@ -432,6 +431,8 @@ ScalarField.gradient = function (scalar_field, result, scratch, scratch2) {
   result.x.set(result_copy.x);
   result.y.set(result_copy.y);
   result.z.set(result_copy.z);
+
+  result_cpp.delete();
   return result;
 };
 
