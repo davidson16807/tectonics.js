@@ -248,7 +248,8 @@ namespace rasters {
 	};
 
 
-	void gradient(const floats& scalar_field, const Grid& grid, vec3s& result)
+	template<typename T>
+	void gradient(const many<T>& scalar_field, const Grid& grid, vec3s& result)
 	{
 		// NOTE: 
 		// The naive implementation is to estimate the gradient based on each individual neighbor,
