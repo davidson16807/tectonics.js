@@ -54,10 +54,7 @@ void copy_to_typed_array(const many<T>& a, val& out)
 template<typename T>
 val to_typed_array(const many<T>& a)
 {
-  val Float32Array = val::global("Float32Array");
-  val out = Float32Array.new_(a.size());
-  copy_to_typed_array(a, out);
-  return out;
+  return val(typed_memory_view(a.size(), a.data()));
 }
 
 template<typename T>
@@ -172,15 +169,13 @@ void copy_to_typed_arrays(const many<vec<3,T,Q>>& a, val& x, val& y, val& z){
 }
 template<typename T, qualifier Q>
 val to_typed_arrays(const many<vec<3,T,Q>>& a){
-  val Float32Array = val::global("Float32Array");
-  val x = Float32Array.new_(a.size());
-  val y = Float32Array.new_(a.size());
-  val z = Float32Array.new_(a.size());
-  copy_to_typed_arrays(a, x,y,z);
+  many<T> x = get_x(a);
+  many<T> y = get_y(a);
+  many<T> z = get_z(a);
   val out = val::object();
-  out.set("x", x);
-  out.set("y", y);
-  out.set("z", z);
+  out.set("x", val(typed_memory_view(x.size(), x.data())));
+  out.set("y", val(typed_memory_view(y.size(), y.data())));
+  out.set("z", val(typed_memory_view(z.size(), z.data())));
   return out;
 }
 template<typename T, qualifier Q>
