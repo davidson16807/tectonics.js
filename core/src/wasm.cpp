@@ -14,6 +14,8 @@
 #include "rasters/CartesianGridCellList3d.hpp"
 #include "rasters/Grid.hpp"
 
+#include "academics/tectonics.hpp"
+
 #include <emscripten/bind.h>
 
 using namespace emscripten;
@@ -714,5 +716,9 @@ EMSCRIPTEN_BINDINGS(rasters)
   function("floats_gradient", (void (*)(const floats&, const Grid&, vec3s&)) gradient );
   function("uints_gradient",  (void (*)(const uints&,  const Grid&, vec3s&)) gradient );
 
-
+  function(
+    "guess_plate_velocity", 
+    (void (*)(const bools& plate_mask, const floats& buoyancy, const float mantle_viscosity, const Grid& grid, vec3s& result)) 
+    academics::tectonics::guess_plate_velocity
+  );
 }

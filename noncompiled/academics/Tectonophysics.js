@@ -84,6 +84,29 @@ Tectonophysics.guess_plate_velocity = function(plate_mask, buoyancy, material_vi
     return lateral_velocity;
 
 }
+Tectonophysics.guess_plate_velocity = function(plate_mask, buoyancy, material_viscosity, result) {
+    result = result || VectorRaster(plate_mask.grid);
+    var grid = buoyancy.grid;
+
+    debugger
+    var result_cpp = new cpp.vec3s(result.x.length);
+    var plate_mask_cpp = new cpp.bools_from_list(plate_mask);
+    var plate_mask_debug = cpp.bools_to_list(plate_mask_cpp);
+    var buoyancy_cpp   = new cpp.floats_from_list(buoyancy);
+    var buoyancy_debug = cpp.floats_to_list(buoyancy_cpp);
+    cpp.guess_plate_velocity(plate_mask_cpp, buoyancy_cpp, material_viscosity.mantle, grid.cpp, result_cpp);
+    var result_view = cpp.vec3s_to_typed_arrays(result_cpp);
+
+    result.x.set(result_view.x);
+    result.y.set(result_view.y);
+    result.z.set(result_view.z);
+
+    result_cpp.delete();
+    plate_mask_cpp.delete();
+    buoyancy_cpp.delete();
+
+    return result;
+}
 
 Tectonophysics.get_plate_center_of_mass = function(mass, plate_mask, scratch) {
     scratch = scratch || Float32Raster(mass.grid);

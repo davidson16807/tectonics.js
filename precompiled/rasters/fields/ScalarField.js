@@ -427,11 +427,11 @@ ScalarField.gradient = function (scalar_field, result, scratch, scratch2) {
   // cpp.floats_gradient(new cpp.floats_from_typed_array(scalar_field, scalar_field.grid.cpp, result_cpp);
   var scalar_field_cpp = new cpp.floats_from_list(scalar_field);
   cpp.floats_gradient(scalar_field_cpp, scalar_field.grid.cpp, result_cpp);
-  var result_copy = cpp.vec3s_to_typed_arrays(result_cpp);
+  var result_view = cpp.vec3s_to_typed_arrays(result_cpp);
 
-  result.x.set(result_copy.x);
-  result.y.set(result_copy.y);
-  result.z.set(result_copy.z);
+  result.x.set(result_view.x);
+  result.y.set(result_view.y);
+  result.z.set(result_view.z);
 
   result_cpp.delete();
   scalar_field_cpp.delete();
