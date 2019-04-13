@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cmath>    	    // isnan
+
 #include <glm/vec2.hpp>    	// vec2, bvec2, dvec2, ivec2 and uvec2
 #include <glm/vec3.hpp>    	// vec2, bvec2, dvec2, ivec2 and uvec2
 #include <glm/geometric.hpp>// all the GLSL geometry functions: dot, cross, reflect, etc.
@@ -114,9 +116,11 @@ namespace composites
 	template<length_t L, typename T, qualifier Q>
 	void normalize(const many<vec<L,T,Q>>& u, many<vec<L,T,Q>>& out) 
 	{
+		float u_length(0);
 		for (unsigned int i = 0; i < u.size(); ++i)
 		{
-			out[i] = normalize(u[i]);
+			u_length = length(u[i]);
+			out[i] = u[i] / (u_length < 1e-4? 1.f : u_length);
 		}
 	}
 
