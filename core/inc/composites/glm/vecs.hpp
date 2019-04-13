@@ -183,6 +183,15 @@ namespace composites
 		}
 	}
 
+	template<length_t L, typename T, qualifier Q>
+	std::ostream &operator<< (std::ostream &out, const glm::vec<L,T,Q> &vec) {
+	    out << "[" 
+	        << vec.x << "," << vec.y << ","<< vec.z 
+	        << "]";
+
+	    return out;
+	}
+
 	typedef many<vec<1, bool, defaultp>>	bvec1s;
 	typedef many<vec<2, bool, defaultp>>	bvec2s;
 	typedef many<vec<3, bool, defaultp>>	bvec3s;

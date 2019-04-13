@@ -551,10 +551,18 @@ namespace composites
 
 
 
-
-
-
 	// NOTE: all wrappers are suggested to be inline because they are thin wrappers of functions
+
+	template <class T>
+	inline std::ostream &operator<<(std::ostream &os, const many<T>& a) { 
+		os << "[";
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+		    os << a[i] << " ";
+		}
+		os << "]";
+		return os;
+	}
 
 	template <class T, class T2, class T3>
 	inline many<T3> operator>(const many<T>& a, const T2 b)
