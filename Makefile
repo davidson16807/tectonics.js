@@ -1,9 +1,6 @@
 KNAME := $(shell uname)
-ifeq (Darwin,$(findstring Darwin,$(KNAME)))
-	CPP=clang++
-else
-	CPP=/usr/bin/cpp
-endif
+#NOTE: we use clang by default on all systems because the emcc compiler that's used to generate wasm is based off it
+CPP=g++
 OUT=postcompiled/Rasters.js postcompiled/Shaders.js postcompiled/Academics.js
 SCRIPTS = $(shell find precompiled/ -type f -name '*.js')
 SHADERS = $(shell find precompiled/ -type f -name '*.glsl.c')
@@ -17,8 +14,13 @@ all: $(OUT)
 postcompiled/Rasters.js : precompiled/rasters/Rasters.js $(SCRIPTS) Makefile
 run:
 	emrun --browser chrome index.html
-test:
+test-wasm:
 	emrun --browser chrome --serve_root ./ tests/wasm-test.html 
+test-cpp:
+	cd core && \
+	$(CPP)  -std=c++17 -o driver.out tests/driver.cpp -I ../core/inc/ && \
+	chmod a+x driver.out && \
+	./driver.out
 
 postcompiled/wasm.html : $(INC) $(SRC)
 	cd postcompiled && \
@@ -31,8 +33,7 @@ postcompiled/wasm.html : $(INC) $(SRC)
 	-s ASSERTIONS=1 \
 	-s SAFE_HEAP=1 \
 	-s DEMANGLE_SUPPORT=1 \
-	-o wasm.html && \
-	cd -
+	-o wasm.html 
 	# -s ALLOW_MEMORY_GROWTH=1 \
 	# -g4 \
 	# -Werror \

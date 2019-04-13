@@ -1,5 +1,6 @@
+node_modules
 *.sublime-project
 *.sublime-workspace
-node_modules
-.fuse_hidden*
+*.out
 *.DS_Store
+.fuse_hidden*
