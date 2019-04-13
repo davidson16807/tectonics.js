@@ -142,7 +142,7 @@ namespace rasters {
 		}
 
 		Grid(const vec3s& vertices, const uvec3s& faces)
-			: Grid(vertices.size(), faces.size(), vertices.size()+faces.size()-2)
+			: Grid(vertices.size(), faces.size(), 0)
 		{
 			copy(vertex_positions, vertices);
 			copy(face_vertex_ids,  faces);
@@ -215,6 +215,35 @@ namespace rasters {
 				std::back_inserter(edge_vertex_ids_vector), 
 				[](uvec2 a){return a.y > a.x;}
 			);
+
+			uint edge_count = edge_vertex_ids_vector.size();
+
+		  	edge_vertex_ids        .resize(edge_count);
+		  	edge_vertex_id_a       .resize(edge_count);
+		  	edge_vertex_id_b       .resize(edge_count);
+		//	edge_face_id_a         .resize(edge_count);
+		//	edge_face_id_b         .resize(edge_count);
+		  	edge_endpoint_a        .resize(edge_count);
+		  	edge_endpoint_b        .resize(edge_count);
+		  	edge_midpoints         .resize(edge_count);
+		  	edge_distances         .resize(edge_count);
+		  	edge_normals           .resize(edge_count);
+		//	edge_areas             .resize(edge_count);
+		//  edge_average_distance  = 0.0f;
+		  	
+		  	arrow_vertex_ids       .resize(2*edge_count);
+		  	arrow_vertex_id_from   .resize(2*edge_count);
+		  	arrow_vertex_id_to     .resize(2*edge_count);
+		//	arrow_face_id_a        .resize(2*edge_count);
+		//	arrow_face_id_b        .resize(2*edge_count);
+		  	arrow_endpoint_from    .resize(2*edge_count);
+		  	arrow_endpoint_to      .resize(2*edge_count);
+		  	arrow_midpoints        .resize(2*edge_count);
+		  	arrow_offsets          .resize(2*edge_count);
+		  	arrow_distances        .resize(2*edge_count); 
+		  	arrow_normals          .resize(2*edge_count);
+		//	arrow_areas            .resize(0);
+		//  arrow_average_distance = 0.0f;
 
 			copy_iterators(edge_vertex_ids,  edge_vertex_ids_vector.begin(), edge_vertex_ids_vector.end());
 			copy_iterators(arrow_vertex_ids, arrow_vertex_ids_vector.begin(), arrow_vertex_ids_vector.end());

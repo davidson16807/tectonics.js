@@ -85,6 +85,14 @@ namespace composites
 			return this->values;
 		}
 
+		void resize(const unsigned int N)
+		{
+			if (this->N == N) {	return; }
+    		delete [] this->values;
+    		this->values = new T[N];
+    		this->N = N;
+		}
+
 		// NOTE: all operators should to be inline because they are thin wrappers of functions
 		inline const T& operator[](const unsigned int id ) const
 		{
