@@ -3,6 +3,7 @@
 #include <iostream>
 #include <initializer_list>	// initializer_list
 #include <iterator>			// std::distance
+#include <vector>			// std::distance
 
 namespace composites
 {
@@ -13,45 +14,41 @@ namespace composites
 	// the data type must have basic operators common to all primitives: == != 
 	// 
 	// Q: Why don't we use std::valarray<T> instead? Doesn't it do the same thing?
-	// A: yes, but std::valarray<T> forbids T from overloading operator|(), and this forbids us from using it with glm::vec3. 
-	//      We really want to be able to use glm::vec3 since it allows us to easily port code from GLSL to C++ 
+	// A: Yes, but std::valarray<T> forbids T from overloading operator|(), and this forbids us from using it with glm::vec3. 
+	//      We really want to be able to use glm::vec3 since it allows us to easily port code from GLSL to C++.
+	//      std::valarray<T> also has several severe limitations relating to its flawed design history that would forbid its use anyway,
+	//      For instance, it does not implement standard container methods like .begin() and .end()
 	// 
 	// Q: Why don't we use the xtensor library? 
 	// A: I've tried exposing xtensor through wasm but it remains elusive. 
-	//      In any case, I'm also conflicted whether to use it because it replaces glm with a different paradigm,
-	//       and as mentioned above, we want glm for portability.
-	//      The same could be said for any other library that provides tensor/ndarray functionality.
+	//      Rolling our own custom class allows us full control over how it can be exposed through wasm.
+	//      In any case, I'm also conflicted on using xtensor because it favors borrowing cues from numpy instead of glm,
+	//       and as mentioned above, we want to continue using glm because it allows us to port easily from GLSL to C++.
+	//      The same could be said for any other library that provides tensor/ndarray functionality, really.
+	//
+	// Q: Why do we use std::vector internally?
+	// A: The functions and operators that use many<T> could effectively be reimplemented using std::vector<T>, 
+	//       but this could cause confusion in new developers, since they would see basic arithmetic being performed on std::vectors
+	//       without having any idea where that behavior was being implemented. 
+	//      Therefore, we roll our own custom class, many<T>, which is a thin wrapper around std::vector<T>
+	//      We could implement many<T> as a derived class of std::vector, but we prefer to favor composition over inheritance. 
+	//      This is especially the case given that we don't own std::vector<T>.
+	//      The performance penalty of using std::vector<T> over traditional arrays is inconsequential, 
+	//       and given our previous implementation was in javascript, we're happy with the performance boost we get by moving to C++.
 	template <class T>
 	class many
 	{
 	protected:
-		T* values;
-		unsigned int N;
+		std::vector<T> values;
 
 	public:
 
-		// NOTE: adapted from this:
-		//   https://stackoverflow.com/questions/8164567/how-to-make-my-custom-type-to-work-with-range-based-for-loops/31457319
-	    class iterator {
-	    public:
-	        iterator(T* ptr): ptr(ptr){}
-	        iterator operator++() { ++ptr; return *this; }
-	        bool operator!=(const iterator & other) const { return ptr != other.ptr; }
-	        bool operator==(const iterator & other) const { return ptr == other.ptr; }
-	        const T& operator*() const { return *ptr; }
-	    private:
-	        T* ptr;
-	    };
-
-		// destructor: delete pointer 
 		virtual ~many()
 		{
-    		delete [] this->values;
-    		this->values = nullptr;
 		};
 
 		// initializer list constructor
-		many(std::initializer_list<T> list) : values(new T[list.size()]), N(list.size())
+		many(std::initializer_list<T> list) : values(list.size())
 		{
 			unsigned int id = 0;
 			for (auto i = list.begin(); i != list.end(); ++i)
@@ -61,7 +58,7 @@ namespace composites
 			}
 		};
 		template<class TIterator>
-		many(TIterator first, TIterator last) : values(new T[std::distance(first, last)]), N(std::distance(first, last))
+		many(TIterator first, TIterator last) : values(std::distance(first, last))
 		{
 			unsigned int id = 0;
 			while (first!=last) 
@@ -73,27 +70,16 @@ namespace composites
 		}
 
 		// copy constructor
-		many(const many<T>& a)  : values(new T[a.N]), N(a.N)
-		{
-			for (unsigned int i = 0; i < N; ++i)
-			{
-				values[i] = a[i];
-			}
-		};
+		many(const many<T>& a)  : values(a.values) {};
 
-		explicit many(const unsigned int N) : values(new T[N]), N(N) {};
+		explicit many(const unsigned int N) : values(N) {};
 
-		explicit many(const unsigned int N, const T a)  : values(new T[N]), N(N)
-		{
-			for (unsigned int i = 0; i < N; ++i)
-			{
-				values[i] = a;
-			}
-		};
+		explicit many(const unsigned int N, const T a)  : values(N, a) {};
+
 		template <class T2>
-		explicit many(const many<T2>& a)  : values(new T[a.N]), N(a.N)
+		explicit many(const many<T2>& a)  : values(a.N)
 		{
-			for (unsigned int i = 0; i < N; ++i)
+			for (unsigned int i = 0; i < a.size(); ++i)
 			{
 				values[i] = a[i];
 			}
@@ -101,34 +87,33 @@ namespace composites
 
 		inline unsigned int size() const
 		{
-			return N;
+			return values.size();
 		}
 
 		inline T* data()
 		{
-			return this->values;
+			return values.data();
 		}
 
 		void resize(const unsigned int N)
 		{
-			if (this->N == N) {	return; }
-    		delete [] this->values;
-    		this->values = new T[N];
-    		this->N = N;
+			return values.resize(N);
 		}
 
+	    inline typename std::vector<T>::const_iterator begin() const { return values.begin(); }
+	    inline typename std::vector<T>::const_iterator end()   const { return values.end();   }
 
-	    iterator begin() const { return iterator(values); }
-	    iterator end()   const { return iterator(values + N); }
+	    inline typename std::vector<T>::iterator begin() { return values.begin(); }
+	    inline typename std::vector<T>::iterator end()   { return values.end();   }
 
 		// NOTE: all operators should to be inline because they are thin wrappers of functions
-		inline const T& operator[](const unsigned int id ) const
+		inline typename std::vector<T>::const_reference operator[](const unsigned int id ) const
 		{
-		   return this->values[id]; // reference return 
+		   return values.operator[](id);
 		}
-		inline T& operator[](const unsigned int id )
+		inline typename std::vector<T>::reference operator[](const unsigned int id )
 		{
-		   return this->values[id]; // reference return 
+		   return values[id]; // reference return 
 		}
 	
 		inline many<T> operator[](const many<bool>& mask )

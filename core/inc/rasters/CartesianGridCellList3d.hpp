@@ -68,15 +68,8 @@ namespace rasters {
     		  ),
 			  dimensions((max_bounds - min_bounds) / cell_width + 1.f), // NOTE: always offset by 1 because add() writes to neighboring cells, as well
 			  cell_width(cell_width),
-			  cells(cell_count())
+			  cells(cell_count(), std::vector<std::pair<int, glm::vec3>>(0))
 		{
-			// initialize grid
-			int cell_count_ = cell_count();
-			for (int i = 0; i < cell_count_; ++i)
-			{
-				cells[i] = std::vector<std::pair<int, glm::vec3>>();
-			}
-
 			for (int i = 0; i < points.size(); ++i)
 			{
 				add(i, points[i]);

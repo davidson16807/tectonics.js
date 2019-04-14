@@ -28,8 +28,6 @@ namespace rasters
 		// destructor: delete pointer 
 		~raster()
 		{
-    		delete [] this->values;
-    		this->values = nullptr;
 		};
 
 		// initializer list constructor
