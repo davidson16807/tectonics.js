@@ -28,7 +28,7 @@ namespace rasters
 
 		ivec2 dimensions; // dimensions of the grid on each side of the data cube 
 		float cell_width;
-		int* cells;
+		std::vector<int> cells;
 
 		int cell_count() const {
 			return OCTAHEDRON_SIDE_COUNT * dimensions.x * dimensions.y;
@@ -43,14 +43,12 @@ namespace rasters
 	public:
 		~SphereGridVoronoi3d()
 		{
-    		delete [] cells;
-    		cells = nullptr;
 		}
 		
 		SphereGridVoronoi3d(const vec3s points, const float cell_width)
 			: dimensions((int)ceil(2./cell_width)+1),
 			  cell_width(cell_width),
-			  cells(new int[cell_count()])
+			  cells(cell_count(), 0)
 		{
 			CartesianGridCellList3d grid = CartesianGridCellList3d(points, 2.*cell_width);
 
