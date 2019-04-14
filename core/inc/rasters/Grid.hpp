@@ -1,8 +1,9 @@
 #pragma once
 
-#include <unordered_set>
-#include <vector>
-#include <iostream>
+#include <memory>         // std::unique_ptr
+#include <unordered_set>  // std::unordered_set
+#include <vector>         // std::vector
+//#include <iostream>     // std::cout
 
 #include <glm/vec2.hpp>               // *vec2
 #include <glm/vec3.hpp>               // *vec3
@@ -14,6 +15,8 @@
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>           // unordered_set<vec*>
+
+#include "SphereGridVoronoi3d.hpp"
 
 namespace rasters {
 
@@ -81,6 +84,8 @@ namespace rasters {
 		float		arrow_average_distance;
 		vec3s 		arrow_normals;
 		//floats 	arrow_areas;
+
+		std::unique_ptr<SphereGridVoronoi3d> voronoi;
 
 		~Grid()
 		{
@@ -274,6 +279,8 @@ namespace rasters {
 
 			aggregate_into(arrow_vertex_id_from, [](float a){ return a+1.f; }, vertex_neighbor_counts);
 
+			const float cells_per_vertex = 8.f;
+			voronoi = std::make_unique<SphereGridVoronoi3d>(vertex_positions, min(arrow_distances)/cells_per_vertex);
 		}
 	};
 }

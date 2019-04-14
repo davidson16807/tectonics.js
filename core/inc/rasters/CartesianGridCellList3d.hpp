@@ -5,7 +5,6 @@
 #include <algorithm>	// clamp
 // #include <iostream>	// cout
 
-#include <glm/vec2.hpp>               // *vec2
 #include <glm/vec3.hpp>               // *vec3
 #include <composites/glm/vecs.hpp>    // *vec*s
 
@@ -16,8 +15,8 @@ namespace rasters {
 	// describes a 3d cartesian grid where every cell houses a list of ids representing nearby points
 	class CartesianGridCellList3d
 	{
-		glm::vec3 min_bounds;
-		glm::vec3 max_bounds;
+		glm::vec3  min_bounds;
+		glm::vec3  max_bounds;
 		glm::ivec3 dimensions;
 		float cell_width;
 		std::vector<std::pair<int, glm::vec3>>* cells;
@@ -58,16 +57,16 @@ namespace rasters {
     		cells = nullptr;
 		}
 		
-		CartesianGridCellList3d(const std::vector<glm::vec3>& aos, const float cell_width)
+		CartesianGridCellList3d(const vec3s& points, const float cell_width)
 			: min_bounds(
-			    (*std::min_element(aos.begin(), aos.end(), []( const glm::vec3 a, const glm::vec3 b ) { return a.x < b.x; })).x,
-			    (*std::min_element(aos.begin(), aos.end(), []( const glm::vec3 a, const glm::vec3 b ) { return a.y < b.y; })).y,
-			    (*std::min_element(aos.begin(), aos.end(), []( const glm::vec3 a, const glm::vec3 b ) { return a.z < b.z; })).z
+			    (*std::min_element(points.begin(), points.end(), []( const glm::vec3 a, const glm::vec3 b ) { return a.x < b.x; })).x,
+			    (*std::min_element(points.begin(), points.end(), []( const glm::vec3 a, const glm::vec3 b ) { return a.y < b.y; })).y,
+			    (*std::min_element(points.begin(), points.end(), []( const glm::vec3 a, const glm::vec3 b ) { return a.z < b.z; })).z
     		  ),
 			  max_bounds(
-			      (*std::max_element(aos.begin(), aos.end(), []( const glm::vec3 a, const glm::vec3 b ) { return a.x < b.x; })).x,
-			      (*std::max_element(aos.begin(), aos.end(), []( const glm::vec3 a, const glm::vec3 b ) { return a.y < b.y; })).y,
-			      (*std::max_element(aos.begin(), aos.end(), []( const glm::vec3 a, const glm::vec3 b ) { return a.z < b.z; })).z
+			    (*std::max_element(points.begin(), points.end(), []( const glm::vec3 a, const glm::vec3 b ) { return a.x < b.x; })).x,
+			    (*std::max_element(points.begin(), points.end(), []( const glm::vec3 a, const glm::vec3 b ) { return a.y < b.y; })).y,
+			    (*std::max_element(points.begin(), points.end(), []( const glm::vec3 a, const glm::vec3 b ) { return a.z < b.z; })).z
     		  ),
 			  dimensions((max_bounds - min_bounds) / cell_width + 1.f), // NOTE: always offset by 1 because add() writes to neighboring cells, as well
 			  cell_width(cell_width),
@@ -80,9 +79,9 @@ namespace rasters {
 				cells[i] = std::vector<std::pair<int, glm::vec3>>();
 			}
 
-			for (int i = 0; i < aos.size(); ++i)
+			for (int i = 0; i < points.size(); ++i)
 			{
-				add(i, aos[i]);
+				add(i, points[i]);
 			}
 		}
 		int nearest_id(const glm::vec3 point) const

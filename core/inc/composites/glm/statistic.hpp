@@ -1,9 +1,6 @@
 #pragma once
 
-#include <glm/vec2.hpp>    	// vec2, bvec2, dvec2, ivec2 and uvec2
-#include <glm/vec3.hpp>    	// vec2, bvec2, dvec2, ivec2 and uvec2
-
-#include "vecs.hpp"
+#include "../many.hpp"
 
 namespace composites
 {

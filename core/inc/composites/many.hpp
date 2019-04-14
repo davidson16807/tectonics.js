@@ -30,6 +30,19 @@ namespace composites
 
 	public:
 
+		// NOTE: adapted from this:
+		//   https://stackoverflow.com/questions/8164567/how-to-make-my-custom-type-to-work-with-range-based-for-loops/31457319
+	    class iterator {
+	    public:
+	        iterator(T* ptr): ptr(ptr){}
+	        iterator operator++() { ++ptr; return *this; }
+	        bool operator!=(const iterator & other) const { return ptr != other.ptr; }
+	        bool operator==(const iterator & other) const { return ptr == other.ptr; }
+	        const T& operator*() const { return *ptr; }
+	    private:
+	        T* ptr;
+	    };
+
 		// destructor: delete pointer 
 		virtual ~many()
 		{
@@ -103,6 +116,10 @@ namespace composites
     		this->values = new T[N];
     		this->N = N;
 		}
+
+
+	    iterator begin() const { return iterator(values); }
+	    iterator end()   const { return iterator(values + N); }
 
 		// NOTE: all operators should to be inline because they are thin wrappers of functions
 		inline const T& operator[](const unsigned int id ) const

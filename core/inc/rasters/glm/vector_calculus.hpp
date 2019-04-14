@@ -1,5 +1,7 @@
 #pragma once
 
+#include <glm/vec3.hpp>               // *vec3
+
 #include "../raster.hpp"
 
 namespace rasters

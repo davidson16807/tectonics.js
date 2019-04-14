@@ -10,7 +10,7 @@
 #include <composites/glm/vecs.hpp>
 #include <composites/glm/geometric.hpp>
 
-#include <rasters/CartesianGridCellList3d.hpp>
+#include "CartesianGridCellList3d.hpp"
 
 namespace rasters
 {
@@ -47,7 +47,7 @@ namespace rasters
     		cells = nullptr;
 		}
 		
-		SphereGridVoronoi3d(const std::vector<vec3> points, const float cell_width)
+		SphereGridVoronoi3d(const vec3s points, const float cell_width)
 			: dimensions((int)ceil(2./cell_width)+1),
 			  cell_width(cell_width),
 			  cells(new int[cell_count()])

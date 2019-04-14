@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../raster.hpp"
+
 namespace rasters
 {
 	typedef raster<glm::vec<2, bool,         glm::defaultp>> bvec2_raster;
