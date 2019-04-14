@@ -70,7 +70,7 @@ Tectonophysics.guess_plate_velocity = function(plate_mask, buoyancy, material_vi
     // lateral_velocity = buoyancy * normalize(gradient(mask))
     // NOTE: result does double duty for performance reasons
     var boundary_normal = result;
-    Uint8Field.gradient                (plate_mask,                         boundary_normal);
+    Uint8Field.gradient              (plate_mask,                         boundary_normal);
     VectorField.normalize            (boundary_normal,                    boundary_normal);
 
       //scratchpad.deallocate('get_plate_velocity');
@@ -91,9 +91,7 @@ Tectonophysics.guess_plate_velocity = function(plate_mask, buoyancy, material_vi
     debugger
     var result_cpp = new cpp.vec3s(result.x.length);
     var plate_mask_cpp = new cpp.bools_from_list(plate_mask);
-    var plate_mask_debug = cpp.bools_to_list(plate_mask_cpp);
     var buoyancy_cpp   = new cpp.floats_from_list(buoyancy);
-    var buoyancy_debug = cpp.floats_to_list(buoyancy_cpp);
     cpp.guess_plate_velocity(plate_mask_cpp, buoyancy_cpp, material_viscosity.mantle, grid.cpp, result_cpp);
     var result_view = cpp.vec3s_to_typed_arrays(result_cpp);
 
