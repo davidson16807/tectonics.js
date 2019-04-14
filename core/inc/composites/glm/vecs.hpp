@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include <initializer_list>	// initializer_list
 
 #include <glm/vec3.hpp>    	// vec2, bvec2, dvec2, ivec2 and uvec2
@@ -191,6 +192,17 @@ namespace composites
 
 	    return out;
 	}
+	template<length_t L, typename T, qualifier Q>
+	std::ostream &operator<<(std::ostream &os, const many<glm::vec<L,T,Q>>& a) { 
+		os << "[";
+		for (unsigned int i = 0; i < a.size(); ++i)
+		{
+		    os << a[i] << " ";
+		}
+		os << "]";
+		return os;
+	}
+
 
 	typedef many<vec<1, bool, defaultp>>	bvec1s;
 	typedef many<vec<2, bool, defaultp>>	bvec2s;

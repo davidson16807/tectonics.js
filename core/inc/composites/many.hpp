@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include <initializer_list>	// initializer_list
 #include <iterator>			// std::distance
 
@@ -554,7 +555,7 @@ namespace composites
 	// NOTE: all wrappers are suggested to be inline because they are thin wrappers of functions
 
 	template <class T>
-	inline std::ostream &operator<<(std::ostream &os, const many<T>& a) { 
+	std::ostream &operator<<(std::ostream &os, const many<T>& a) { 
 		os << "[";
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
