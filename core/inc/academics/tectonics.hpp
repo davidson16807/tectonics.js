@@ -2,16 +2,18 @@
 
 #include <cmath>
 
-#include <glm/vec2.hpp>     // vec2, bvec2, dvec2, ivec2 and uvec2
-#include <glm/vec3.hpp>     // vec3, bvec3, dvec3, ivec3 and uvec3
-#include <composites/composites.hpp>     // vec2, bvec2, dvec2, ivec2 and uvec2
-#include <composites/glm/glm.hpp>     // vec*, bvec*, dvec*, ivec* and uvec*
+#include <glm/vec3.hpp>               // *vec3
+#include <rasters/raster.hpp>          // float_raster, etc.
+#include <rasters/glm/vec_raster.hpp>  // *vec*_raster
+#include <rasters/glm/vector_calculus.hpp>  // *vec*_raster
 
 namespace academics {
 
 	namespace tectonics {
 
-		void guess_plate_velocity(const bools& plate_mask, const floats& buoyancy, const float mantle_viscosity, const rasters::Grid& grid, vec3s& result) {
+		using namespace rasters;
+
+		void guess_plate_velocity(const bool_raster& plate_mask, const float_raster& buoyancy, const float mantle_viscosity, vec3_raster& result) {
 
 		    // NOTE: 
 		    // Here, we calculate plate velocity as the terminal velocity of a subducting slab as it falls through the mantle.
@@ -57,7 +59,7 @@ namespace academics {
 
 		    // find boundary normal, store it in result
 		    // NOTE: result does double duty for performance reasons
-		    gradient	(plate_mask, grid,	result);
+		    gradient	(plate_mask,result);
 		    normalize 	(result,  	result);
 
 		    // buoyancy * lateral_speed_per_unit_force yields lateral velocity yields lateral speed

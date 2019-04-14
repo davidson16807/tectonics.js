@@ -1,16 +1,15 @@
 
 
 #define GLM_FORCE_PURE      // disable SIMD support for glm so we can work with webassembly
-#include <glm/vec2.hpp>     // vec2, bvec2, dvec2, ivec2 and uvec2
-#include <glm/vec3.hpp>     // vec3, bvec3, dvec3, ivec3 and uvec3
-#include <glm/vec4.hpp>     // vec4, bvec4, dvec4, ivec4 and uvec4
-#include <glm/matrix.hpp>     // vec4, bvec4, dvec4, ivec4 and uvec4
-#include <composites/composites.hpp>     // vec2, bvec2, dvec2, ivec2 and uvec2
-#include <composites/glm/glm.hpp>     // vec*, bvec*, dvec*, ivec* and uvec*
+#include <glm/vec3.hpp>               // *vec3
 
-#include "rasters/SphereGridVoronoi3d.hpp"
-#include "rasters/CartesianGridCellList3d.hpp"
-#include "rasters/Grid.hpp"
+#include <composites/many.hpp>        //  floats, etc.
+#include <composites/common.hpp>      //  floats, etc.
+#include <composites/glm/vecs.hpp>    // *vec*s
+
+#include "rasters/raster.hpp"         
+#include "rasters/glm/vec_raster.hpp"
+#include "rasters/glm/vector_calculus.hpp"
 
 #include "academics/tectonics.hpp"
 
@@ -20,7 +19,8 @@
 using namespace composites;
 using namespace rasters;
 
-Grid tetrahedron = Grid(
+std::shared_ptr<Grid> tetrahedron = 
+    std::make_shared<Grid>(
         vec3s({
                 vec3(0,0,0),
                 vec3(1,0,0),
@@ -40,7 +40,8 @@ Grid tetrahedron = Grid(
 // 3-0-1
 //  \|/ 
 //   4   
-Grid diamond = Grid(
+std::shared_ptr<Grid> diamond = 
+    std::make_shared<Grid>(
         vec3s({
                 vec3( 0, 0, 0),
                 vec3( 1, 0, 0),
@@ -63,22 +64,22 @@ int main(int argc, char const *argv[])
     // 0- 1- 1
     //  \ | / 
     //    0    
-    bools plate_mask = bools ({1,1,0,0,0});
+    bool_raster  plate_mask = bool_raster (diamond, {1,1,0,0,0});
     //    0  
     //  / | \ 
     // 0--1- 0
     //  \ | / 
     //    0   
-    floats buoyancy  = floats({0,-1,0,0,0});
-    float mantle_viscosity = 1.57e20;
-    vec3s gradient_of_bools = vec3s(5);
+    float_raster buoyancy  = float_raster(diamond, {0,-1,0,0,0});
+    float        mantle_viscosity = 1.57e20;
+    vec3_raster  result = vec3_raster(diamond);
     //    0   
     //  / | \ 
     // 0- < -0
     //  \ | / 
     //    0    
-    // gradient(plate_mask, tetrahedron, gradient_of_bools);
-    academics::tectonics::guess_plate_velocity(plate_mask, buoyancy, mantle_viscosity, diamond, gradient_of_bools);
-    std::cout << gradient_of_bools << std::endl;
+    // gradient(plate_mask, tetrahedron, result);
+    academics::tectonics::guess_plate_velocity(plate_mask, buoyancy, mantle_viscosity, result);
+    std::cout << result << std::endl;
     return 0;
 }

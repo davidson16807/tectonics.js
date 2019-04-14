@@ -1,12 +1,13 @@
 #pragma once
 
-#include <math.h>       // ceil, round 
+#include <cmath>        // ceil, round 
 #include <vector>		// vectors 
 #include <algorithm>	// clamp
-// #include <iostream>		// cout
+// #include <iostream>	// cout
 
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
+#include <glm/vec2.hpp>               // *vec2
+#include <glm/vec3.hpp>               // *vec3
+#include <composites/glm/vecs.hpp>    // *vec*s
 
 using namespace composites;
 

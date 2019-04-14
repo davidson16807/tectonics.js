@@ -2,17 +2,18 @@
 #include <math.h>       // ceil, round 
 #include <limits.h>   // infinity
 
-#define GLM_FORCE_PURE      // disable SIMD support for glm so we can work with webassembly
-#include <glm/vec2.hpp>     // vec2, bvec2, dvec2, ivec2 and uvec2
-#include <glm/vec3.hpp>     // vec3, bvec3, dvec3, ivec3 and uvec3
-#include <glm/vec4.hpp>     // vec4, bvec4, dvec4, ivec4 and uvec4
-#include <glm/matrix.hpp>     // vec4, bvec4, dvec4, ivec4 and uvec4
-#include <composites/composites.hpp>     // vec2, bvec2, dvec2, ivec2 and uvec2
-#include <composites/glm/glm.hpp>     // vec*, bvec*, dvec*, ivec* and uvec*
+#define GLM_FORCE_PURE               // disable SIMD support for glm so we can work with webassembly
+#include <glm/vec2.hpp>              // vec2, bvec2, dvec2, ivec2 and uvec2
+#include <glm/vec3.hpp>              // vec3, bvec3, dvec3, ivec3 and uvec3
+#include <glm/vec4.hpp>              // vec4, bvec4, dvec4, ivec4 and uvec4
+#include <glm/matrix.hpp>            // vec4, bvec4, dvec4, ivec4 and uvec4
+#include <composites/many.hpp>       // floats,bools,  doubles,ints,   and uints
+#include <composites/glm/vecs.hpp>   // vec*s, bvec*s, dvec*s, ivec*s, and uvec*s
 
 #include "rasters/SphereGridVoronoi3d.hpp"
 #include "rasters/CartesianGridCellList3d.hpp"
 #include "rasters/Grid.hpp"
+#include "rasters/rasters.hpp"
 
 #include "academics/tectonics.hpp"
 

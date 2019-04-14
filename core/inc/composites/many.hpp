@@ -7,10 +7,20 @@
 namespace composites
 {
 
-	// This template represents a statically-sized contiguous block of heap memory occupied by the primitive data of the same arbitrary type
+	// This template represents a statically-sized contiguous block of heap memory occupied by primitive data of the same arbitrary type
 	// The intention is to abstract away arrays of primitives that are used to address data locality issues
 	// the data type should be small enough to fit in a computer's register (e.g. ints, floats, and even vec3s)
 	// the data type must have basic operators common to all primitives: == != 
+	// 
+	// Q: Why don't we use std::valarray<T> instead? Doesn't it do the same thing?
+	// A: yes, but std::valarray<T> forbids T from overloading operator|(), and this forbids us from using it with glm::vec3. 
+	//      We really want to be able to use glm::vec3 since it allows us to easily port code from GLSL to C++ 
+	// 
+	// Q: Why don't we use the xtensor library? 
+	// A: I've tried exposing xtensor through wasm but it remains elusive. 
+	//      In any case, I'm also conflicted whether to use it because it replaces glm with a different paradigm,
+	//       and as mentioned above, we want glm for portability.
+	//      The same could be said for any other library that provides tensor/ndarray functionality.
 	template <class T>
 	class many
 	{
@@ -21,7 +31,7 @@ namespace composites
 	public:
 
 		// destructor: delete pointer 
-		~many()
+		virtual ~many()
 		{
     		delete [] this->values;
     		this->values = nullptr;
@@ -628,26 +638,26 @@ namespace composites
 
 
 
-	template <class T, class T2, class T3>
-	inline many<T>& operator+=(many<T>& a, const T2 b) 
+	template <class T>
+	inline many<T>& operator+=(many<T>& a, const T b) 
 	{
 		add(a, b, a);
 		return a;
 	}
-	template <class T, class T2>
-	inline many<T>& operator-=(many<T>& a, const T2 b) 
+	template <class T>
+	inline many<T>& operator-=(many<T>& a, const T b) 
 	{
 		sub(a, b, a);
 		return a;
 	}
-	template <class T, class T2>
-	inline many<T>& operator*=(many<T>& a, const T2 b) 
+	template <class T>
+	inline many<T>& operator*=(many<T>& a, const T b) 
 	{
 		mult(a, b, a);
 		return a;
 	}
-	template <class T, class T2>
-	inline many<T>& operator/=(many<T>& a, const T2 b) 
+	template <class T>
+	inline many<T>& operator/=(many<T>& a, const T b) 
 	{
 		div(a, b, a);
 		return a;
@@ -808,9 +818,9 @@ namespace composites
 		div(a, b, out);
 		return out;
 	}
-	typedef many<bool>	bools;
-	typedef many<int>	ints;
+	typedef many<bool>	       bools;
+	typedef many<int>	       ints;
 	typedef many<unsigned int> uints;
-	typedef many<float>	floats;
-	typedef many<double>doubles;
+	typedef many<float>	       floats;
+	typedef many<double>       doubles;
 }

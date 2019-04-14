@@ -1,6 +1,6 @@
 #pragma once
 
-#include <glm/vec3.hpp>    	// vec2, bvec2, dvec2, ivec2 and uvec2
+#include <glm/vector_relational.hpp>
 
 #include "../many.hpp"
 
