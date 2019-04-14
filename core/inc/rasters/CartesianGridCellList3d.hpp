@@ -19,7 +19,7 @@ namespace rasters {
 		glm::vec3  max_bounds;
 		glm::ivec3 dimensions;
 		float cell_width;
-		std::vector<std::pair<int, glm::vec3>>* cells;
+		std::vector<std::vector<std::pair<int, glm::vec3>>> cells;
 
 		int cell_count() const
 		{
@@ -53,8 +53,6 @@ namespace rasters {
 	public:
 		~CartesianGridCellList3d()
 		{
-    		delete [] cells;
-    		cells = nullptr;
 		}
 		
 		CartesianGridCellList3d(const vec3s& points, const float cell_width)
@@ -70,7 +68,7 @@ namespace rasters {
     		  ),
 			  dimensions((max_bounds - min_bounds) / cell_width + 1.f), // NOTE: always offset by 1 because add() writes to neighboring cells, as well
 			  cell_width(cell_width),
-			  cells(new std::vector<std::pair<int, glm::vec3>>[cell_count()])
+			  cells(cell_count())
 		{
 			// initialize grid
 			int cell_count_ = cell_count();
@@ -90,7 +88,7 @@ namespace rasters {
 			const int yi = std::clamp((int)ceil((point.y - min_bounds.y) / cell_width), 0, dimensions.y-1);
 			const int zi = std::clamp((int)ceil((point.z - min_bounds.z) / cell_width), 0, dimensions.z-1);
 
-			std::vector<std::pair<int, glm::vec3>> & neighbors = cells[cell_id(xi, yi, zi)];
+			const std::vector<std::pair<int, glm::vec3>>& neighbors = cells[cell_id(xi, yi, zi)];
 
 			if (neighbors.size() < 1)
 			{
