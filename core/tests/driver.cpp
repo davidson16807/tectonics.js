@@ -58,22 +58,27 @@ Grid diamond = Grid(
 
 int main(int argc, char const *argv[])
 {
-    //   0  
-    //  /|\ 
-    // 0-1-1
-    //  \|/ 
-    //   0   
+    //    0   
+    //  / | \ 
+    // 0- 1- 1
+    //  \ | / 
+    //    0    
     bools plate_mask = bools ({1,1,0,0,0});
-    //   0  
-    //  /|\ 
-    // 0-0-1
-    //  \|/ 
-    //   0   
-    floats buoyancy  = floats({0,1,0,0,0});
+    //    0  
+    //  / | \ 
+    // 0--1- 0
+    //  \ | / 
+    //    0   
+    floats buoyancy  = floats({0,-1,0,0,0});
     float mantle_viscosity = 1.57e20;
-    vec3s gradient_of_bools = vec3s(4);
-    gradient(plate_mask, tetrahedron, gradient_of_bools);
+    vec3s gradient_of_bools = vec3s(5);
+    //    0   
+    //  / | \ 
+    // 0- < -0
+    //  \ | / 
+    //    0    
+    // gradient(plate_mask, tetrahedron, gradient_of_bools);
     academics::tectonics::guess_plate_velocity(plate_mask, buoyancy, mantle_viscosity, diamond, gradient_of_bools);
-    std::cout << gradient_of_bools;
+    std::cout << gradient_of_bools << std::endl;
     return 0;
 }
