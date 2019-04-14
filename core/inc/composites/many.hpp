@@ -95,9 +95,9 @@ namespace composites
 			return values.data();
 		}
 
-		void resize(const unsigned int N)
+		inline std::vector<T>& vector()
 		{
-			return values.resize(N);
+			return values;
 		}
 
 	    inline typename std::vector<T>::const_iterator begin() const { return values.begin(); }

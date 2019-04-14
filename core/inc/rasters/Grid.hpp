@@ -203,10 +203,14 @@ namespace rasters {
 				arrow_vertex_ids_set.insert(uvec2(faces[i].z, faces[i].y));
 			}
 		    // sort arrows using a vector to avoid cache misses when retrieving indices
-			std::vector<uvec2> arrow_vertex_ids_vector(arrow_vertex_ids_set.begin(), arrow_vertex_ids_set.end());
+			std::copy(
+				arrow_vertex_ids_set.begin(), 
+				arrow_vertex_ids_set.end(), 
+				std::back_inserter(arrow_vertex_ids.vector())
+			);
 		    std::sort(
-		    	arrow_vertex_ids_vector.begin(), 
-		    	arrow_vertex_ids_vector.end(), 
+		    	arrow_vertex_ids.begin(), 
+		    	arrow_vertex_ids.end(), 
 		    	[](uvec2 a, uvec2 b) 
 		    	{ 
 		    		return std::min(a.x,a.y) < std::min(b.x,b.y) || 
@@ -216,45 +220,39 @@ namespace rasters {
 
 			// Step 2: generate edges from arrows,
 			//  an arrow should only become an edge if y > x
-			std::vector<uvec2> edge_vertex_ids_vector;
 			std::copy_if (
-				arrow_vertex_ids_vector.begin(), 
-				arrow_vertex_ids_vector.end(), 
-				std::back_inserter(edge_vertex_ids_vector), 
+				arrow_vertex_ids.begin(), 
+				arrow_vertex_ids.end(), 
+				std::back_inserter(edge_vertex_ids.vector()), 
 				[](uvec2 a){return a.y > a.x;}
 			);
 
-			uint edge_count = edge_vertex_ids_vector.size();
+			uint edge_count = edge_vertex_ids.size();
 
-		  	edge_vertex_ids        .resize(edge_count);
-		  	edge_vertex_id_a       .resize(edge_count);
-		  	edge_vertex_id_b       .resize(edge_count);
-		//	edge_face_id_a         .resize(edge_count);
-		//	edge_face_id_b         .resize(edge_count);
-		  	edge_endpoint_a        .resize(edge_count);
-		  	edge_endpoint_b        .resize(edge_count);
-		  	edge_midpoints         .resize(edge_count);
-		  	edge_distances         .resize(edge_count);
-		  	edge_normals           .resize(edge_count);
-		//	edge_areas             .resize(edge_count);
+		  	edge_vertex_id_a       .vector().resize(edge_count);
+		  	edge_vertex_id_b       .vector().resize(edge_count);
+		//	edge_face_id_a         .vector().resize(edge_count);
+		//	edge_face_id_b         .vector().resize(edge_count);
+		  	edge_endpoint_a        .vector().resize(edge_count);
+		  	edge_endpoint_b        .vector().resize(edge_count);
+		  	edge_midpoints         .vector().resize(edge_count);
+		  	edge_distances         .vector().resize(edge_count);
+		  	edge_normals           .vector().resize(edge_count);
+		//	edge_areas             .vector().resize(edge_count);
 		//  edge_average_distance  = 0.0f;
 		  	
-		  	arrow_vertex_ids       .resize(2*edge_count);
-		  	arrow_vertex_id_from   .resize(2*edge_count);
-		  	arrow_vertex_id_to     .resize(2*edge_count);
-		//	arrow_face_id_a        .resize(2*edge_count);
-		//	arrow_face_id_b        .resize(2*edge_count);
-		  	arrow_endpoint_from    .resize(2*edge_count);
-		  	arrow_endpoint_to      .resize(2*edge_count);
-		  	arrow_midpoints        .resize(2*edge_count);
-		  	arrow_offsets          .resize(2*edge_count);
-		  	arrow_distances        .resize(2*edge_count); 
-		  	arrow_normals          .resize(2*edge_count);
-		//	arrow_areas            .resize(0);
+		  	arrow_vertex_id_from   .vector().resize(2*edge_count);
+		  	arrow_vertex_id_to     .vector().resize(2*edge_count);
+		//	arrow_face_id_a        .vector().resize(2*edge_count);
+		//	arrow_face_id_b        .vector().resize(2*edge_count);
+		  	arrow_endpoint_from    .vector().resize(2*edge_count);
+		  	arrow_endpoint_to      .vector().resize(2*edge_count);
+		  	arrow_midpoints        .vector().resize(2*edge_count);
+		  	arrow_offsets          .vector().resize(2*edge_count);
+		  	arrow_distances        .vector().resize(2*edge_count); 
+		  	arrow_normals          .vector().resize(2*edge_count);
+		//	arrow_areas            .vector().resize(0);
 		//  arrow_average_distance = 0.0f;
-
-			copy_iterators(edge_vertex_ids,  edge_vertex_ids_vector.begin(), edge_vertex_ids_vector.end());
-			copy_iterators(arrow_vertex_ids, arrow_vertex_ids_vector.begin(), arrow_vertex_ids_vector.end());
 
 			get_x	(edge_vertex_ids,                      edge_vertex_id_a);
 			get_y	(edge_vertex_ids,                      edge_vertex_id_b);
