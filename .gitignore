@@ -2,5 +2,8 @@ node_modules
 *.sublime-project
 *.sublime-workspace
 *.out
+*.wasm.map
+*.wasm.pre
+*.wast
 *.DS_Store
 .fuse_hidden*
