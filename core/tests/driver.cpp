@@ -81,5 +81,7 @@ int main(int argc, char const *argv[])
     // gradient(plate_mask, tetrahedron, result);
     academics::tectonics::guess_plate_velocity(plate_mask, buoyancy, mantle_viscosity, result);
     std::cout << result << std::endl;
+
+    std::cout << diamond->voronoi->nearest_id(vec3(-1, 0, 0))        << std::endl;
     return 0;
 }

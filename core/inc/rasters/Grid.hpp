@@ -142,7 +142,9 @@ namespace rasters {
 			  	arrow_distances        (2*edge_count), 
 			  	arrow_normals          (2*edge_count),
 			//	arrow_areas            (0),
-			  	arrow_average_distance (0)
+			  	arrow_average_distance (0),
+
+			  	voronoi(nullptr)
 		{
 
 		}
