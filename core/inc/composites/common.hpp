@@ -129,6 +129,10 @@ namespace composites
 	template <class T>
 	T min(const many<T>& a)
 	{
+		if (a.size() < 1)
+		{
+			throw std::out_of_range("cannot find the minimum value of an empty composite");
+		}
 		T out = a[0];
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
@@ -158,6 +162,10 @@ namespace composites
 	template <class T>
 	T max(const many<T>& a)
 	{
+		if (a.size() < 1)
+		{
+			throw std::out_of_range("cannot find the minimum value of an empty composite");
+		}
 		T out = a[0];
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{

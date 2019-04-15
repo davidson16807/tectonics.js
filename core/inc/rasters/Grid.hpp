@@ -152,9 +152,13 @@ namespace rasters {
 		Grid(const vec3s& vertices, const uvec3s& faces)
 			: Grid(vertices.size(), faces.size(), 0)
 		{
+			if (faces.size() < 1)
+			{
+				throw std::out_of_range("cannot initialize a Grid with no faces");
+			}
+
 			copy(vertex_positions, vertices);
 			copy(face_vertex_ids,  faces);
-
 			for (unsigned int i=0, i3=0; i<faces.size(); i++, i3+=3) 
 			{
 				buffer_array_vertex_ids[i3+0] = faces[i].x;
