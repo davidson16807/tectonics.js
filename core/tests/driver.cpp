@@ -57,6 +57,27 @@ std::shared_ptr<Grid> diamond =
             })
     );
 
+SphereGridVoronoi3d voronoi_test(
+        vec3s({
+                normalize(vec3( 1, 0, 0)),
+                normalize(vec3( 0, 1, 0)),
+                normalize(vec3( 0, 0, 1)),
+                normalize(vec3(-1, 0, 0)),
+                normalize(vec3( 0,-1, 0)),
+                normalize(vec3( 0, 0,-1)),
+                normalize(vec3(-1,-1,-1)),
+                normalize(vec3( 1,-1,-1)),
+                normalize(vec3(-1, 1,-1)),
+                normalize(vec3( 1, 1,-1)),
+                normalize(vec3(-1,-1, 1)),
+                normalize(vec3( 1,-1, 1)),
+                normalize(vec3(-1, 1, 1)),
+                normalize(vec3( 1, 1, 1)),
+                normalize(vec3( 1, 1, 1))
+            }),
+        1./100.
+    );
+
 int main(int argc, char const *argv[])
 {
     //    0   
@@ -83,5 +104,27 @@ int main(int argc, char const *argv[])
     std::cout << result << std::endl;
 
     std::cout << diamond->voronoi->nearest_id(vec3(-1, 0, 0))        << std::endl;
+
+    std::cout << voronoi_test.nearest_id(vec3(1))        << std::endl;
+    std::cout << voronoi_test.nearest_id(vec3(-1))       << std::endl;
+    std::cout << voronoi_test.nearest_id(vec3( 1, 0, 0)) << std::endl;
+    std::cout << voronoi_test.nearest_id(vec3( 0, 1, 0)) << std::endl;
+    std::cout << voronoi_test.nearest_id(vec3( 0, 0, 1)) << std::endl;
+    std::cout << voronoi_test.nearest_id(vec3(-1, 0, 0)) << std::endl;
+    std::cout << voronoi_test.nearest_id(vec3( 0,-1, 0)) << std::endl;
+    std::cout << voronoi_test.nearest_id(vec3( 0, 0,-1)) << std::endl;
+    std::cout << voronoi_test.nearest_id(vec3(-1,-1,-1)) << std::endl;
+    std::cout << voronoi_test.nearest_id(vec3( 1,-1,-1)) << std::endl;
+    std::cout << voronoi_test.nearest_id(vec3(-1, 1,-1)) << std::endl;
+    std::cout << voronoi_test.nearest_id(vec3( 1, 1,-1)) << std::endl;
+    std::cout << voronoi_test.nearest_id(vec3(-1,-1, 1)) << std::endl;
+    std::cout << voronoi_test.nearest_id(vec3( 1,-1, 1)) << std::endl;
+    std::cout << voronoi_test.nearest_id(vec3(-1, 1, 1)) << std::endl;
+    std::cout << voronoi_test.nearest_id(vec3( 1, 1, 1)) << std::endl;
+    std::cout << voronoi_test.nearest_id(vec3( 1, 1, 1)) << std::endl;
+
+
     return 0;
 }
+
+
