@@ -105,6 +105,8 @@ int main(int argc, char const *argv[])
 
     std::cout << diamond->voronoi->nearest_id(vec3(-1, 0, 0))        << std::endl;
 
+    std::cout << "voronoi test:" << std::endl;
+
     std::cout << voronoi_test.nearest_id(vec3(1))        << std::endl;
     std::cout << voronoi_test.nearest_id(vec3(-1))       << std::endl;
     std::cout << voronoi_test.nearest_id(vec3( 1, 0, 0)) << std::endl;
