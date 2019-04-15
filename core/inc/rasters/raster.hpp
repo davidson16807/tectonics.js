@@ -30,24 +30,24 @@ namespace rasters
 		{
 		};
 
+		// copy constructor
+		raster(const raster<T>& a)
+			: many<T>(a),
+			  grid(a.grid)
+		{
+
+		}
+
 		// initializer list constructor
-		raster(const std::shared_ptr<Grid>& grid, std::initializer_list<T> list) 
+		explicit raster(const std::shared_ptr<Grid>& grid, std::initializer_list<T> list) 
 			: many<T>(list),
 			  grid(grid)
 		{
 
 		};
 		template<class TIterator>
-		raster(const std::shared_ptr<Grid>& grid, TIterator first, TIterator last)
+		explicit raster(const std::shared_ptr<Grid>& grid, TIterator first, TIterator last)
 			: many<T>(grid->vertex_positions.size()),
-			  grid(grid)
-		{
-
-		}
-
-		// copy constructor
-		raster(const raster<T>& a)
-			: many<T>(a),
 			  grid(grid)
 		{
 
@@ -56,7 +56,7 @@ namespace rasters
 		template <class T2>
 		explicit raster(const raster<T2>& a)
 			: many<T>(a),
-			  grid(grid)
+			  grid(a.grid)
 		{
 
 		}

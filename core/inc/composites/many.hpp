@@ -90,11 +90,6 @@ namespace composites
 			return values.size();
 		}
 
-		inline T* data()
-		{
-			return values.data();
-		}
-
 		inline std::vector<T>& vector()
 		{
 			return values;

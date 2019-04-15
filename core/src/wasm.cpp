@@ -10,12 +10,12 @@
 #include <composites/many.hpp>       // floats,bools,  doubles,ints,   and uints
 #include <composites/glm/vecs.hpp>   // vec*s, bvec*s, dvec*s, ivec*s, and uvec*s
 
-#include "rasters/SphereGridVoronoi3d.hpp"
-#include "rasters/CartesianGridCellList3d.hpp"
-#include "rasters/Grid.hpp"
-#include "rasters/rasters.hpp"
+#include <rasters/SphereGridVoronoi3d.hpp>
+#include <rasters/CartesianGridCellList3d.hpp>
+#include <rasters/Grid.hpp>
+#include <rasters/raster.hpp>
 
-#include "academics/tectonics.hpp"
+#include <academics/tectonics.hpp>
 
 #include <emscripten/bind.h>
 
@@ -32,7 +32,7 @@ void copy_from_typed_array(many<T>& out, const val& typed_array)
   //TODO: verify output length equals typed_array length
 
   val memory = val::module_property("buffer");
-  val memoryView = typed_array["constructor"].new_(memory, reinterpret_cast<uintptr_t>(out.data()), typed_array_length);
+  val memoryView = typed_array["constructor"].new_(memory, reinterpret_cast<uintptr_t>(out.vector().data()), typed_array_length);
   memoryView.call<void>("set", typed_array);
 }
 
@@ -57,7 +57,7 @@ void copy_to_typed_array(const many<T>& a, val& out)
 template<typename T>
 val to_typed_array(const many<T>& a)
 {
-  return val(typed_memory_view(a.size(), a.data()));
+  return val(typed_memory_view(a.size(), a.vector().data()));
 }
 
 template<typename T>
@@ -176,9 +176,9 @@ val to_typed_arrays(const many<vec<3,T,Q>>& a){
   many<T> y = get_y(a);
   many<T> z = get_z(a);
   val out = val::object();
-  out.set("x", val(typed_memory_view(x.size(), x.data())));
-  out.set("y", val(typed_memory_view(y.size(), y.data())));
-  out.set("z", val(typed_memory_view(z.size(), z.data())));
+  out.set("x", val(typed_memory_view(x.size(), x.vector().data())));
+  out.set("y", val(typed_memory_view(y.size(), y.vector().data())));
+  out.set("z", val(typed_memory_view(z.size(), z.vector().data())));
   return out;
 }
 template<typename T, qualifier Q>
@@ -406,6 +406,20 @@ template class composites::many<double>;
 template class composites::many<vec<2,float,defaultp>>;
 template class composites::many<vec<3,float,defaultp>>;
 template class composites::many<vec<4,float,defaultp>>;
+template class composites::many<vec<2,unsigned int,defaultp>>;
+template class composites::many<vec<3,unsigned int,defaultp>>;
+template class composites::many<vec<4,unsigned int,defaultp>>;
+template class rasters::raster<bool>;
+template class rasters::raster<int>;
+template class rasters::raster<unsigned int>;
+template class rasters::raster<float>;
+template class rasters::raster<double>;
+template class rasters::raster<vec<2,float,defaultp>>;
+template class rasters::raster<vec<3,float,defaultp>>;
+template class rasters::raster<vec<4,float,defaultp>>;
+template class rasters::raster<vec<2,unsigned int,defaultp>>;
+template class rasters::raster<vec<3,unsigned int,defaultp>>;
+template class rasters::raster<vec<4,unsigned int,defaultp>>;
 
 EMSCRIPTEN_BINDINGS(rasters)
 {
@@ -552,20 +566,18 @@ EMSCRIPTEN_BINDINGS(rasters)
       .function("size", &uvec4s::size)
   ;
 
-  register_vector<vec3>("vector_vec3");
-
   class_<CartesianGridCellList3d>("CartesianGridCellList3d")
-      .constructor<std::vector<vec3>, double>()
+      .constructor<vec3s, double>()
       .function("nearest_id", &CartesianGridCellList3d::nearest_id)
   ;
 
   class_<SphereGridVoronoi3d>("SphereGridVoronoi3d")
-      .constructor<std::vector<vec3>, double>()
+      .constructor<vec3s, double>()
       .function("nearest_id", &SphereGridVoronoi3d::nearest_id)
   ;
 
   class_<Grid>("Grid")
-      .constructor<const vec3s&, const uvec3s&>()
+      .smart_ptr_constructor<>("shared_ptr<Grid>", &std::make_shared<Grid, vec3s&, uvec3s&>)
       .property("buffer_array_vertex_ids",&Grid::buffer_array_vertex_ids)
       // .property("vertex_neighbor_ids",    &Grid::vertex_neighbor_ids)
       .property("vertex_neighbor_counts", &Grid::vertex_neighbor_counts)
@@ -616,10 +628,70 @@ EMSCRIPTEN_BINDINGS(rasters)
       // .property("arrow_areas",            &Grid::arrow_areas)
   ;
 
-  function("bools_copy_from_typed_array",   (void (*)(bools& out, const val& js_list ))     copy_from_typed_array     );
-  //function("bools_copy_to_typed_array",   (void (*)(bools& out, val& js_list ))           copy_to_typed_array     );
+  class_<bool_raster, base<bools>>("bool_raster")
+      .constructor<std::shared_ptr<Grid>>()
+      .constructor<std::shared_ptr<Grid>, bool>()
+  ;
+
+  class_<int_raster, base<ints>>("int_raster")
+      .constructor<std::shared_ptr<Grid>>()
+      .constructor<std::shared_ptr<Grid>, int>()
+  ;
+
+  class_<uint_raster, base<uints>>("uint_raster")
+      .constructor<std::shared_ptr<Grid>>()
+      .constructor<std::shared_ptr<Grid>, uint>()
+  ;
+
+  class_<float_raster, base<floats>>("float_raster")
+      .constructor<std::shared_ptr<Grid>>()
+      .constructor<std::shared_ptr<Grid>, float>()
+  ;
+
+  class_<double_raster, base<doubles>>("double_raster")
+      .constructor<std::shared_ptr<Grid>>()
+      .constructor<std::shared_ptr<Grid>, double>()
+  ;
+
+
+  class_<uvec2_raster, base<uvec2s>>("uvec2_raster")
+      .constructor<std::shared_ptr<Grid>>()
+      .constructor<std::shared_ptr<Grid>, uvec2>()
+  ;
+
+  class_<vec2_raster, base<vec2s>>("vec2_raster")
+      .constructor<std::shared_ptr<Grid>>()
+      .constructor<std::shared_ptr<Grid>, vec2>()
+  ;
+
+
+  class_<uvec3_raster, base<uvec3s>>("uvec3_raster")
+      .constructor<std::shared_ptr<Grid>>()
+      .constructor<std::shared_ptr<Grid>, uvec3>()
+  ;
+
+  class_<vec3_raster, base<vec3s>>("vec3_raster")
+      .constructor<std::shared_ptr<Grid>>()
+      .constructor<std::shared_ptr<Grid>, vec3>()
+  ;
+
+
+  class_<uvec4_raster, base<uvec4s>>("uvec4_raster")
+      .constructor<std::shared_ptr<Grid>>()
+      .constructor<std::shared_ptr<Grid>, uvec4>()
+  ;
+
+  class_<vec4_raster, base<vec4s>>("vec4_raster")
+      .constructor<std::shared_ptr<Grid>>()
+      .constructor<std::shared_ptr<Grid>, vec4>()
+  ;
+
+  // NOTE: we do not implement "bools_copy_from_typed_array" because it would require std::vector<bool>.data(), 
+  //   which is not implemented due to how it is represented in memory
+  // function("bools_copy_from_typed_array",   (void (*)(bools& out, const val& js_list ))     copy_from_typed_array     );
+  // function("bools_copy_to_typed_array",   (void (*)(bools& out, val& js_list ))           copy_to_typed_array     );
   function("bools_copy_from_list",   (void (*)(bools& out, const val& js_list ))            copy_from_list     );
-  function("bools_from_typed_array",   (bools (*)(const val& js_list ))                     from_typed_array     );
+  // function("bools_from_typed_array",   (bools (*)(const val& js_list ))                     from_typed_array     );
   function("bools_from_list",   (bools (*)(const val& js_list ))                            from_list     );
   function("bools_from_bools",  (bools (*)(const bools& a ))                                copy     );
   function("bools_to_list",     (val (*)(const bools& a ))                                  to_list     );
@@ -714,12 +786,12 @@ EMSCRIPTEN_BINDINGS(rasters)
   function("uvec4s_to_lists",      (val (*)(const uvec4s& a ))                                                   to_lists     );
   function("uvec4s_to_typed_arrays", (val (*)(const uvec4s& a))                        to_typed_arrays     );
 
-  function("floats_gradient", (void (*)(const floats&, const Grid&, vec3s&)) gradient );
-  function("uints_gradient",  (void (*)(const uints&,  const Grid&, vec3s&)) gradient );
+  function("floats_gradient", (void (*)(const float_raster&, vec3_raster&)) gradient );
+  function("uints_gradient",  (void (*)(const uint_raster&,  vec3_raster&)) gradient );
 
   function(
     "guess_plate_velocity", 
-    (void (*)(const bools& plate_mask, const floats& buoyancy, const float mantle_viscosity, const Grid& grid, vec3s& result)) 
+    (void (*)(const bool_raster& plate_mask, const float_raster& buoyancy, const float mantle_viscosity, vec3_raster& result)) 
     academics::tectonics::guess_plate_velocity
   );
 }

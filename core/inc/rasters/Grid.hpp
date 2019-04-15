@@ -1,6 +1,6 @@
 #pragma once
 
-#include <memory>         // std::unique_ptr
+#include <memory>         // std::shared_ptr
 #include <unordered_set>  // std::unordered_set
 #include <vector>         // std::vector
 //#include <iostream>     // std::cout
@@ -85,7 +85,7 @@ namespace rasters {
 		vec3s 		arrow_normals;
 		//floats 	arrow_areas;
 
-		std::unique_ptr<SphereGridVoronoi3d> voronoi;
+		std::shared_ptr<SphereGridVoronoi3d> voronoi;
 
 		~Grid()
 		{
@@ -284,7 +284,7 @@ namespace rasters {
 			aggregate_into(arrow_vertex_id_from, [](float a){ return a+1.f; }, vertex_neighbor_counts);
 
 			const float cells_per_vertex = 8.f;
-			voronoi = std::make_unique<SphereGridVoronoi3d>(vertex_positions, min(arrow_distances)/cells_per_vertex);
+			voronoi = std::make_shared<SphereGridVoronoi3d>(vertex_positions, min(arrow_distances)/cells_per_vertex);
 		}
 	};
 }
