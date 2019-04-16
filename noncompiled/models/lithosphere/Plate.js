@@ -6,7 +6,9 @@ function Plate(grid, parameters)
     var grid = grid || stop('missing parameter: "grid"');
 
     this.crust = new Crust({grid: grid, buffer: parameters['crust']});
-    this.mask = Uint8Raster.FromBuffer(parameters['mask'], grid);
+    var mask_temp = Uint8Raster.FromBuffer(parameters['mask'], grid);
+    var mask_cpp = cpp.uints_from_list(mask_temp);
+    this.mask = cpp.uints_to_typed_array(this.mask_cpp);
     this.local_to_global_matrix = Matrix3x3.Identity();
     if (parameters['local_to_global_matrix'] !== void 0) {
         this.local_to_global_matrix.set(parameters['local_to_global_matrix'])
@@ -51,7 +53,7 @@ function Plate(grid, parameters)
     ); 
     this.velocity = new Memo(  
         VectorRaster(grid), 
-        result => Tectonophysics.guess_plate_velocity(self.mask, self.buoyancy.value(), material_viscosity, result)
+        result => Tectonophysics.guess_plate_velocity(self.mask_cpp, self.buoyancy.value(), material_viscosity, result)
     ); 
     this.center_of_mass = new Memo(  
         { x:0, y:0, z:0 },

@@ -9,6 +9,26 @@ var Tectonophysics = {};
 
 
 
+var result_cpp     = void 0;
+var plate_mask_cpp = void 0;
+var buoyancy_cpp   = void 0;
+Tectonophysics.guess_plate_velocity = function(plate_mask, buoyancy, material_viscosity, result) {
+    result = result || VectorRaster(plate_mask.grid);
+
+    result_cpp     = result_cpp      || new cpp.vec3s(plate_mask.length);
+    plate_mask_cpp = plate_mask_cpp  || new cpp.bools(plate_mask.length);
+    buoyancy_cpp   = buoyancy_cpp    || new cpp.floats(plate_mask.length);
+    cpp.bools_copy_from_list(plate_mask_cpp, plate_mask);
+    cpp.floats_copy_from_list(buoyancy_cpp, buoyancy);
+    cpp.guess_plate_velocity(plate_mask_cpp, buoyancy_cpp, material_viscosity.mantle, buoyancy.grid.cpp, result_cpp);
+    var result_view = cpp.vec3s_to_typed_arrays(result_cpp);
+
+    result.x.set(result_view.x);
+    result.y.set(result_view.y);
+    result.z.set(result_view.z);
+
+    return result;
+}
 Tectonophysics.guess_plate_velocity = function(plate_mask, buoyancy, material_viscosity, result) {
     result = result || VectorRaster(plate_mask.grid);
 
@@ -83,27 +103,6 @@ Tectonophysics.guess_plate_velocity = function(plate_mask, buoyancy, material_vi
     
     return lateral_velocity;
 
-}
-Tectonophysics.guess_plate_velocity = function(plate_mask, buoyancy, material_viscosity, result) {
-    result = result || VectorRaster(plate_mask.grid);
-    var grid = buoyancy.grid;
-
-    debugger
-    var result_cpp = new cpp.vec3s(result.x.length);
-    var plate_mask_cpp = new cpp.bools_from_list(plate_mask);
-    var buoyancy_cpp   = new cpp.floats_from_list(buoyancy);
-    cpp.guess_plate_velocity(plate_mask_cpp, buoyancy_cpp, material_viscosity.mantle, grid.cpp, result_cpp);
-    var result_view = cpp.vec3s_to_typed_arrays(result_cpp);
-
-    result.x.set(result_view.x);
-    result.y.set(result_view.y);
-    result.z.set(result_view.z);
-
-    result_cpp.delete();
-    plate_mask_cpp.delete();
-    buoyancy_cpp.delete();
-
-    return result;
 }
 
 Tectonophysics.get_plate_center_of_mass = function(mass, plate_mask, scratch) {

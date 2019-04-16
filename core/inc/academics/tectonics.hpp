@@ -11,7 +11,7 @@ namespace academics {
 
 	namespace tectonics {
 
-		void guess_plate_velocity(const bools& plate_mask, const floats& buoyancy, const float mantle_viscosity, const rasters::Grid& grid, vec3s& result) {
+		void guess_plate_velocity(const uints& plate_mask, const floats& buoyancy, const float mantle_viscosity, const rasters::Grid& grid, vec3s& result) {
 
 		    // NOTE: 
 		    // Here, we calculate plate velocity as the terminal velocity of a subducting slab as it falls through the mantle.

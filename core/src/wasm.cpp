@@ -54,7 +54,7 @@ void copy_to_typed_array(const many<T>& a, val& out)
 }
 
 template<typename T>
-val to_typed_array(const many<T>& a)
+val to_typed_array(many<T>& a)
 {
   return val(typed_memory_view(a.size(), a.data()));
 }
@@ -616,43 +616,43 @@ EMSCRIPTEN_BINDINGS(rasters)
   ;
 
   function("bools_copy_from_typed_array",   (void (*)(bools& out, const val& js_list ))     copy_from_typed_array     );
-  //function("bools_copy_to_typed_array",   (void (*)(bools& out, val& js_list ))           copy_to_typed_array     );
+  // function("bools_copy_to_typed_array",   (void (*)(bools& out, val& js_list ))           copy_to_typed_array     );
   function("bools_copy_from_list",   (void (*)(bools& out, const val& js_list ))            copy_from_list     );
   function("bools_from_typed_array",   (bools (*)(const val& js_list ))                     from_typed_array     );
   function("bools_from_list",   (bools (*)(const val& js_list ))                            from_list     );
   function("bools_from_bools",  (bools (*)(const bools& a ))                                copy     );
   function("bools_to_list",     (val (*)(const bools& a ))                                  to_list     );
-
+  function("bools_to_typed_array", (val (*)(bools& a ))                                  to_typed_array     );
 
 
   function("ints_copy_from_typed_array",   (void (*)(ints& out, const val& js_list ))       copy_from_typed_array     );
-  //function("ints_copy_to_typed_array",   (void (*)(ints& out, val& js_list ))             copy_to_typed_array     );
+  // function("ints_copy_to_typed_array",   (void (*)(ints& out, val& js_list ))             copy_to_typed_array     );
   function("ints_copy_from_list",   (void (*)(ints& out, const val& js_list ))              copy_from_list     );
   function("ints_from_typed_array",   (ints (*)(const val& js_list ))                       from_typed_array     );
   function("ints_from_list",   (ints (*)(const val& js_list ))                              from_list     );
   function("ints_from_ints",   (ints (*)(const ints& a ))                                   copy     );
   function("ints_to_list",     (val (*)(const ints& a ))                                    to_list     );
-
+  function("ints_to_typed_array", (val (*)(ints& a ))                                    to_typed_array     );
 
 
   function("uints_copy_from_typed_array",   (void (*)(uints& out, const val& js_list ))     copy_from_typed_array     );
-  //function("uints_copy_to_typed_array",   (void (*)(uints& out, val& js_list ))           copy_to_typed_array     );
+  // function("uints_copy_to_typed_array",   (void (*)(uints& out, val& js_list ))           copy_to_typed_array     );
   function("uints_copy_from_list",   (void (*)(uints& out, const val& js_list ))            copy_from_list     );
   function("uints_from_typed_array",   (uints (*)(const val& js_list ))                     from_typed_array     );
   function("uints_from_list",    (uints (*)(const val& js_list ))                           from_list     );
   function("uints_from_uints",   (uints (*)(const uints& a ))                               copy     );
   function("uints_to_list",      (val (*)(const uints& a ))                                 to_list     );
-
+  function("uints_to_typed_array", (val (*)(uints& a ))                                 to_typed_array     );
 
 
   function("floats_copy_from_typed_array",   (void (*)(floats& out, const val& js_list ))   copy_from_typed_array     );
-  //function("floats_copy_to_typed_array",   (void (*)(floats& out, val& js_list ))         copy_to_typed_array     );
+  // function("floats_copy_to_typed_array",   (void (*)(floats& out, val& js_list ))         copy_to_typed_array     );
   function("floats_copy_from_list",   (void (*)(floats& out, const val& js_list ))          copy_from_list     );
   function("floats_from_typed_array",   (floats (*)(const val& js_list ))                   from_typed_array     );
   function("floats_from_list",   (floats (*)(const val& js_list ))                          from_list     );
   function("floats_from_floats", (floats (*)(const floats& a ))                             copy     );
   function("floats_to_list",      (val (*)(const floats& a ))                               to_list     );
-
+  function("floats_to_typed_array", (val (*)(floats& a ))                               to_typed_array     );
 
 
   function("vec2s_copy_from_typed_arrays", (void (*)(vec2s& out, const val&, const val&))    copy_from_typed_arrays     );
@@ -718,7 +718,7 @@ EMSCRIPTEN_BINDINGS(rasters)
 
   function(
     "guess_plate_velocity", 
-    (void (*)(const bools& plate_mask, const floats& buoyancy, const float mantle_viscosity, const Grid& grid, vec3s& result)) 
+    (void (*)(const uints& plate_mask, const floats& buoyancy, const float mantle_viscosity, const Grid& grid, vec3s& result)) 
     academics::tectonics::guess_plate_velocity
   );
 }
