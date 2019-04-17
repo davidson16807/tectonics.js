@@ -5,7 +5,9 @@
 
 #include <composites/many.hpp> // floats, etc.
 
-#include "Grid.hpp"            // Grid
+#include <rasters/Grid.hpp>    // Grid
+
+#include <models/Crust.hpp>    // Crust
 
 namespace crust
 {
@@ -20,8 +22,8 @@ namespace crust
         float sediment;
         float sedimentary;
         float metamorphic;
-        float felsic_plutonic
-        float felsic_volcanic
+        float felsic_plutonic;
+        float felsic_volcanic;
         float mafic_volcanic;
         float mafic_plutonic;
         float age;
@@ -85,8 +87,8 @@ namespace crust
         float_raster sediment;
         float_raster sedimentary;
         float_raster metamorphic;
-        float_raster felsic_plutonic
-        float_raster felsic_volcanic
+        float_raster felsic_plutonic;
+        float_raster felsic_volcanic;
         float_raster mafic_volcanic;
         float_raster mafic_plutonic;
         float_raster age;
@@ -97,9 +99,16 @@ namespace crust
         };
 
         // copy constructor
-        Crust(const Crust<T>& a)
-            : many<T>(a),
-              grid(a.grid)
+        Crust(const Crust& a)
+            : grid            (a.grid            ),
+              sediment        (a.sediment        ),
+              sedimentary     (a.sedimentary     ),
+              metamorphic     (a.metamorphic     ),
+              felsic_plutonic (a.felsic_plutonic ),
+              felsic_volcanic (a.felsic_volcanic ),
+              mafic_volcanic  (a.mafic_volcanic  ),
+              mafic_plutonic  (a.mafic_plutonic  ),
+              age             (a.age             )
         {
 
         }
@@ -113,13 +122,13 @@ namespace crust
               felsic_volcanic (grid),
               mafic_volcanic  (grid),
               mafic_plutonic  (grid),
-              age             (grid),
+              age             (grid)
         {
         }
 
         inline unsigned int size() const
         {
-            return values.size();
+            return grid->vertex_positions.size();
         }
     };
 
@@ -167,14 +176,14 @@ namespace crust
         copy(out.age,             source.age             );
     }
     void reset(Crust& crust) {
-        fill(out.sediment,        0 );
-        fill(out.sedimentary,     0 );
-        fill(out.metamorphic,     0 );
-        fill(out.felsic_plutonic, 0 );
-        fill(out.felsic_volcanic, 0 );
-        fill(out.mafic_volcanic,  0 );
-        fill(out.mafic_plutonic,  0 );
-        fill(out.age,             0 );
+        fill(crust.sediment,        0.f );
+        fill(crust.sedimentary,     0.f );
+        fill(crust.metamorphic,     0.f );
+        fill(crust.felsic_plutonic, 0.f );
+        fill(crust.felsic_volcanic, 0.f );
+        fill(crust.mafic_volcanic,  0.f );
+        fill(crust.mafic_plutonic,  0.f );
+        fill(crust.age,             0.f );
     }
     inline void mult(const Crust& crust, float_raster& field, Crust& result) {
         mult(crust.sediment,        field, result.sediment        );
@@ -197,28 +206,28 @@ namespace crust
         add(crust.age,             delta.age,             result.age             );
     }
 
-    many<T>& operator+=(Crust& crust, const Crust& delta) 
+    Crust& operator+=(Crust& crust, const Crust& delta) 
     {
-        crust.sediment        += delta.sediment        
-        crust.sedimentary     += delta.sedimentary     
-        crust.metamorphic     += delta.metamorphic     
-        crust.felsic_plutonic += delta.felsic_plutonic 
-        crust.felsic_volcanic += delta.felsic_volcanic 
-        crust.mafic_volcanic  += delta.mafic_volcanic  
-        crust.mafic_plutonic  += delta.mafic_plutonic  
-        crust.age             += delta.age             
+        crust.sediment        += delta.sediment;        
+        crust.sedimentary     += delta.sedimentary;     
+        crust.metamorphic     += delta.metamorphic;     
+        crust.felsic_plutonic += delta.felsic_plutonic; 
+        crust.felsic_volcanic += delta.felsic_volcanic; 
+        crust.mafic_volcanic  += delta.mafic_volcanic;  
+        crust.mafic_plutonic  += delta.mafic_plutonic;  
+        crust.age             += delta.age;             
         return crust;
     }
-    many<T>& operator*=(Crust& crust, const Crust& delta) 
+    Crust& operator*=(Crust& crust, const Crust& delta) 
     {
-        crust.sediment        *= delta.sediment        
-        crust.sedimentary     *= delta.sedimentary     
-        crust.metamorphic     *= delta.metamorphic     
-        crust.felsic_plutonic *= delta.felsic_plutonic 
-        crust.felsic_volcanic *= delta.felsic_volcanic 
-        crust.mafic_volcanic  *= delta.mafic_volcanic  
-        crust.mafic_plutonic  *= delta.mafic_plutonic  
-        crust.age             *= delta.age             
+        crust.sediment        *= delta.sediment;        
+        crust.sedimentary     *= delta.sedimentary;     
+        crust.metamorphic     *= delta.metamorphic;     
+        crust.felsic_plutonic *= delta.felsic_plutonic; 
+        crust.felsic_volcanic *= delta.felsic_volcanic; 
+        crust.mafic_volcanic  *= delta.mafic_volcanic;  
+        crust.mafic_plutonic  *= delta.mafic_plutonic;  
+        crust.age             *= delta.age;             
         return crust;
     }
 
@@ -232,10 +241,10 @@ namespace crust
         // conserved += sum(crust.mafic_volcanic  );
         // conserved += sum(crust.mafic_plutonic  );
         // conserved += sum(crust.age             );
-        return conserved / size();
+        return conserved / crust.size();
     }
     void get_conserved_mass(const Crust& crust, float_raster& conserved) {
-        fill(total, 0.);
+        fill(conserved, 0.f);
         conserved += crust.sediment;        
         conserved += crust.sedimentary;     
         conserved += crust.metamorphic;     
@@ -246,7 +255,7 @@ namespace crust
         // conserved += crust.age;             
     }
     void get_total_mass(const Crust& crust, float_raster& total) {  
-        fill(total, 0.);
+        fill(total, 0.f);
         total += crust.sediment;        
         total += crust.sedimentary;     
         total += crust.metamorphic;     
@@ -258,10 +267,9 @@ namespace crust
     }
     void get_density(const float_raster& mass, const float_raster& thickness, float default_density, float_raster& density) {
         copy(density, mass);
-        for (var i = 0, li = density.length; i < li; i++) { 
+        for (unsigned int i = 0; i < density.size(); i++) { 
             density[i] = thickness[i] > 0? density[i] / thickness[i] : default_density; 
         }
-        return density;
     }
 
 
@@ -276,46 +284,46 @@ namespace crust
         fill(crust.mafic_plutonic,  rock_profile.mafic_plutonic  );
         fill(crust.age,             rock_profile.age             );
     }
-    void fill(const Crust& crust, const bool_raster& selection_raster, const RockProfile& rock_profile, Crust& result) {
-        fill(crust.sediment,        rock_profile.sediment,        selection_raster, result);
-        fill(crust.sedimentary,     rock_profile.sedimentary,     selection_raster, result);
-        fill(crust.metamorphic,     rock_profile.metamorphic,     selection_raster, result);
-        fill(crust.felsic_plutonic, rock_profile.felsic_plutonic, selection_raster, result);
-        fill(crust.felsic_volcanic, rock_profile.felsic_volcanic, selection_raster, result);
-        fill(crust.mafic_volcanic,  rock_profile.mafic_volcanic,  selection_raster, result);
-        fill(crust.mafic_plutonic,  rock_profile.mafic_plutonic,  selection_raster, result);
-        fill(crust.age,             rock_profile.age,             selection_raster, result);
+    void fill(Crust& crust, const bool_raster& selection_raster, const RockProfile& rock_profile) {
+        fill(crust.sediment,        selection_raster, rock_profile.sediment        );
+        fill(crust.sedimentary,     selection_raster, rock_profile.sedimentary     );
+        fill(crust.metamorphic,     selection_raster, rock_profile.metamorphic     );
+        fill(crust.felsic_plutonic, selection_raster, rock_profile.felsic_plutonic );
+        fill(crust.felsic_volcanic, selection_raster, rock_profile.felsic_volcanic );
+        fill(crust.mafic_volcanic,  selection_raster, rock_profile.mafic_volcanic  );
+        fill(crust.mafic_plutonic,  selection_raster, rock_profile.mafic_plutonic  );
+        fill(crust.age,             selection_raster, rock_profile.age             );
     }
-    void copy(const Crust& crust1, const bool_raster& selection_raster, const Crust& crust2, Crust& result) {
-        copy(crust1.sediment,        crust2.sediment,        selection_raster, result);
-        copy(crust1.sedimentary,     crust2.sedimentary,     selection_raster, result);
-        copy(crust1.metamorphic,     crust2.metamorphic,     selection_raster, result);
-        copy(crust1.felsic_plutonic, crust2.felsic_plutonic, selection_raster, result);
-        copy(crust1.felsic_volcanic, crust2.felsic_volcanic, selection_raster, result);
-        copy(crust1.mafic_volcanic,  crust2.mafic_volcanic,  selection_raster, result);
-        copy(crust1.mafic_plutonic,  crust2.mafic_plutonic,  selection_raster, result);
-        copy(crust1.age,             crust2.age,             selection_raster, result);
+    void copy(Crust& crust1, const bool_raster& selection_raster, const Crust& crust2) {
+        copy(crust1.sediment,        selection_raster, crust2.sediment        );
+        copy(crust1.sedimentary,     selection_raster, crust2.sedimentary     );
+        copy(crust1.metamorphic,     selection_raster, crust2.metamorphic     );
+        copy(crust1.felsic_plutonic, selection_raster, crust2.felsic_plutonic );
+        copy(crust1.felsic_volcanic, selection_raster, crust2.felsic_volcanic );
+        copy(crust1.mafic_volcanic,  selection_raster, crust2.mafic_volcanic  );
+        copy(crust1.mafic_plutonic,  selection_raster, crust2.mafic_plutonic  );
+        copy(crust1.age,             selection_raster, crust2.age             );
     }
 
     void get_ids(const Crust& crust, const uint_raster& id_raster, Crust& result) {
-        get_ids(crust1.sediment,        id_raster, result.sediment        );
-        get_ids(crust1.sedimentary,     id_raster, result.sedimentary     );
-        get_ids(crust1.metamorphic,     id_raster, result.metamorphic     );
-        get_ids(crust1.felsic_plutonic, id_raster, result.felsic_plutonic );
-        get_ids(crust1.felsic_volcanic, id_raster, result.felsic_volcanic );
-        get_ids(crust1.mafic_volcanic,  id_raster, result.mafic_volcanic  );
-        get_ids(crust1.mafic_plutonic,  id_raster, result.mafic_plutonic  );
-        get_ids(crust1.age,             id_raster, result.age             );
+        get_ids(crust.sediment,        id_raster, result.sediment        );
+        get_ids(crust.sedimentary,     id_raster, result.sedimentary     );
+        get_ids(crust.metamorphic,     id_raster, result.metamorphic     );
+        get_ids(crust.felsic_plutonic, id_raster, result.felsic_plutonic );
+        get_ids(crust.felsic_volcanic, id_raster, result.felsic_volcanic );
+        get_ids(crust.mafic_volcanic,  id_raster, result.mafic_volcanic  );
+        get_ids(crust.mafic_plutonic,  id_raster, result.mafic_plutonic  );
+        get_ids(crust.age,             id_raster, result.age             );
     }
     void add_values_to_ids(const Crust& crust, const uint_raster& id_raster, const float_raster& value_crust, Crust& result) {
-        get_ids(crust1.sediment,        id_raster, value_crust.sediment,        result.sediment        );
-        get_ids(crust1.sedimentary,     id_raster, value_crust.sedimentary,     result.sedimentary     );
-        get_ids(crust1.metamorphic,     id_raster, value_crust.metamorphic,     result.metamorphic     );
-        get_ids(crust1.felsic_plutonic, id_raster, value_crust.felsic_plutonic, result.felsic_plutonic );
-        get_ids(crust1.felsic_volcanic, id_raster, value_crust.felsic_volcanic, result.felsic_volcanic );
-        get_ids(crust1.mafic_volcanic,  id_raster, value_crust.mafic_volcanic,  result.mafic_volcanic  );
-        get_ids(crust1.mafic_plutonic,  id_raster, value_crust.mafic_plutonic,  result.mafic_plutonic  );
-        get_ids(crust1.age,             id_raster, value_crust.age,             result.age             );
+        get_ids(crust.sediment,        id_raster, value_crust.sediment,        result.sediment        );
+        get_ids(crust.sedimentary,     id_raster, value_crust.sedimentary,     result.sedimentary     );
+        get_ids(crust.metamorphic,     id_raster, value_crust.metamorphic,     result.metamorphic     );
+        get_ids(crust.felsic_plutonic, id_raster, value_crust.felsic_plutonic, result.felsic_plutonic );
+        get_ids(crust.felsic_volcanic, id_raster, value_crust.felsic_volcanic, result.felsic_volcanic );
+        get_ids(crust.mafic_volcanic,  id_raster, value_crust.mafic_volcanic,  result.mafic_volcanic  );
+        get_ids(crust.mafic_plutonic,  id_raster, value_crust.mafic_plutonic,  result.mafic_plutonic  );
+        get_ids(crust.age,             id_raster, value_crust.age,             result.age             );
     }
     void fix_delta(Crust& delta, const Crust& crust, float_raster& scratch) {
         fix_nonnegative_conserved_quantity_delta(delta.sediment,        crust.sediment,        scratch);

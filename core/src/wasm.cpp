@@ -17,6 +17,8 @@
 
 #include <academics/tectonics.hpp>
 
+#include <models/Crust.hpp>
+
 #include <emscripten/bind.h>
 
 using namespace emscripten;
