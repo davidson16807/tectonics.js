@@ -38,10 +38,7 @@ namespace composites
 	template <class T>
 	void sin(const many<T>& radians, many<T>& out)
 	{
-		for (unsigned int i = 0; i < radians.size(); ++i)
-		{
-			out[i] = std::sin(radians[i]);
-		}
+		return transform(radians, std::sin, out);
 	}
 
 	/// The standard trigonometric cosine function.
@@ -49,20 +46,14 @@ namespace composites
 	template <class T>
 	void cos(const many<T>& radians, many<T>& out)
 	{
-		for (unsigned int i = 0; i < radians.size(); ++i)
-		{
-			out[i] = std::cos(radians[i]);
-		}
+		return transform(radians, std::cos, out);
 	}
 
 	/// The standard trigonometric tangent function.
 	template <class T>
 	void tan(const many<T>& radians, many<T>& out)
 	{
-		for (unsigned int i = 0; i < radians.size(); ++i)
-		{
-			out[i] = std::tan(radians[i]);
-		}
+		return transform(radians, std::tan, out);
 	}
 
 	/// Arc sine. Returns an angle whose sine is x.
@@ -71,10 +62,7 @@ namespace composites
 	template <class T>
 	void asin(const many<T>& x, many<T>& out)
 	{
-		for (unsigned int i = 0; i < x.size(); ++i)
-		{
-			out[i] = std::asin(x[i]);
-		}
+		return transform(x, std::asin, out);
 	}
 
 	/// Arc cosine. Returns an angle whose sine is x.
@@ -83,10 +71,7 @@ namespace composites
 	template <class T>
 	void acos(const many<T>& x, many<T>& out)
 	{
-		for (unsigned int i = 0; i < x.size(); ++i)
-		{
-			out[i] = std::acos(x[i]);
-		}
+		return transform(x, std::acos, out);
 	}
 
 	/// Arc tangent. Returns an angle whose tangent is y_over_x.
@@ -97,10 +82,7 @@ namespace composites
 	template <class T>
 	void atan(const many<T>& y_over_x, many<T>& out)
 	{
-		for (unsigned int i = 0; i < y_over_x.size(); ++i)
-		{
-			out[i] = std::atan(y_over_x[i]);
-		}
+		return transform(y_over_x, std::atan, out);
 	}
 
 
@@ -112,10 +94,7 @@ namespace composites
 	template <class T>
 	void atan(const many<T>& x, const many<T>& y, many<T>& out)
 	{
-		for (unsigned int i = 0; i < x.size(); ++i)
-		{
-			out[i] = std::atan2(x[i], y[i]);
-		}
+		return transform(x, y, std::atan2, out);
 	}
 
 
@@ -123,40 +102,28 @@ namespace composites
 	template <class T>
 	void sinh(const many<T>& radians, many<T>& out)
 	{
-		for (unsigned int i = 0; i < radians.size(); ++i)
-		{
-			out[i] = std::sinh(radians[i]);
-		}
+		return transform(radians, std::sinh, out);
 	}
 
 	/// Returns the hyperbolic cosine function, (exp(x) + exp(-x)) / 2
 	template <class T>
 	void cosh(const many<T>& radians, many<T>& out)
 	{
-		for (unsigned int i = 0; i < radians.size(); ++i)
-		{
-			out[i] = std::cosh(radians[i]);
-		}
+		return transform(radians, std::cosh, out);
 	}
 
 	/// Returns the hyperbolic tangent function, sinh(angle) / cosh(angle)
 	template <class T>
 	void tanh(const many<T>& radians, many<T>& out)
 	{
-		for (unsigned int i = 0; i < radians.size(); ++i)
-		{
-			out[i] = std::tanh(radians[i]);
-		}
+		return transform(radians, std::tanh, out);
 	}
 
 	/// Arc hyperbolic sine; returns the inverse of sinh.
 	template <class T>
 	void asinh(const many<T>& x, many<T>& out)
 	{
-		for (unsigned int i = 0; i < x.size(); ++i)
-		{
-			out[i] = std::asinh(x[i]);
-		}
+		return transform(x, std::asinh, out);
 	}
 
 	/// Arc hyperbolic cosine; returns the non-negative inverse
@@ -164,10 +131,7 @@ namespace composites
 	template <class T>
 	void acosh(const many<T>& x, many<T>& out)
 	{
-		for (unsigned int i = 0; i < x.size(); ++i)
-		{
-			out[i] = std::acosh(x[i]);
-		}
+		return transform(x, std::acosh, out);
 	}
 
 	/// Arc hyperbolic tangent; returns the inverse of tanh.
@@ -175,10 +139,7 @@ namespace composites
 	template <class T>
 	void atanh(const many<T>& x, many<T>& out)
 	{
-		for (unsigned int i = 0; i < x.size(); ++i)
-		{
-			out[i] = std::atanh(x[i]);
-		}
+		return transform(x, std::atanh, out);
 	}
 
 }//namespace composites

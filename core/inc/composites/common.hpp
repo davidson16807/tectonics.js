@@ -10,30 +10,21 @@ namespace composites
 	template <class T>
 	void abs(const many<T>& a, many<T>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = a[i] >= 0? a[i] : -a[i];
-		}
+		return transform(a, [](T ai){ return ai >= 0? ai : -ai; }, out);
 	}
 
 	/// Returns 1.0 if x > 0, 0.0 if x == 0, or -1.0 if x < 0.
 	template <class T, class Tout>
 	void sign(const many<T>& a, many<Tout>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = (T(0) < a[i]) - (a[i] < T(0));
-		}
+		return transform(a, [](T ai){ return (T(0) < ai) - (ai < T(0)); }, out);
 	}
 
 	/// Returns a value equal to the nearest integer that is less then or equal to x.
 	template <class T>
 	void floor(const many<T>& a, many<T>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = std::floor(a[i]);
-		}
+		return transform(a, std::floor, out);
 	}
 
 	/// Returns a value equal to the nearest integer to x
@@ -41,10 +32,7 @@ namespace composites
 	template <class T>
 	void trunc(const many<T>& a, many<T>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = std::trunc(a[i]);
-		}
+		return transform(a, std::trunc, out);
 	}
 
 	/// Returns a value equal to the nearest integer to x.
@@ -55,10 +43,7 @@ namespace composites
 	template <class T>
 	void round(const many<T>& a, many<T>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = std::round(a[i]);
-		}
+		return transform(a, std::round, out);
 	}
 
 	/// Returns a value equal to the nearest integer
@@ -66,20 +51,14 @@ namespace composites
 	template <class T>
 	void ceil(const many<T>& a, many<T>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = std::ceil(a[i]);
-		}
+		return transform(a, std::ceil, out);
 	}
 
 	/// Return x - floor(x).
 	template <class T>
 	void fract(const many<T>& a, many<T>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = a[i] - std::floor(a[i]);
-		}
+		return transform(a, [](T ai){ return ai - std::floor(ai); }, out);
 	}
 
 	/// Modulus. Returns x - y * floor(x / y)
@@ -87,10 +66,7 @@ namespace composites
 	template <class T>
 	void mod(const many<T>& a, const many<T>& b, many<T>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = a[i] - b[i] * std::floor(a[i] / b[i]);
-		}
+		return transform(a, b, [](T ai, T bi){ return ai - bi * std::floor(ai / bi); }, out);
 	}
 
 	/// Returns the fractional part of x and sets i to the integer
@@ -111,18 +87,12 @@ namespace composites
 	template <class T>
 	void min(const many<T>& a, const many<T>& b, many<T>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = a[i] < b[i]? a[i] : b[i];
-		}
+		return transform(a, b, [](T ai, T bi){ return ai < bi? ai : bi; }, out);
 	}
 	template <class T>
 	void min(const many<T>& a, const T b, many<T>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = a[i] < b? a[i] : b;
-		}
+		return transform(a, b, [](T ai, T bi){ return ai < bi? ai : bi; }, out);
 	}
 
 	// component-wise min
@@ -145,18 +115,12 @@ namespace composites
 	template <class T>
 	void max(const many<T>& a, const many<T>& b, many<T>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = a[i] > b[i]? a[i] : b[i];
-		}
+		return transform(a, b, [](T ai, T bi){ return ai > bi? ai : bi; }, out);
 	}
 	template <class T>
 	void max(const many<T>& a, const T b, many<T>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = a[i] > b? a[i] : b;
-		}
+		return transform(a, b, [](T ai, T bi){ return ai > bi? ai : bi; }, out);
 	}
 	// component-wise max
 	template <class T>
@@ -179,38 +143,23 @@ namespace composites
 	template <class T>
 	void clamp(const many<T>& a, const T lo, const T hi, many<T>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = a[i] > hi? hi : a[i] < lo? lo : a[i];
-		}
+		return transform(a, lo, hi, [](T ai, T loi, T hii){ return ai > hii? hii : ai < loi? loi : ai; }, out);
 	}
 	template <class T>
 	void clamp(const many<T>& a, const T lo, const many<T>& hi, many<T>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = a[i] > hi[i]? hi[i] : a[i] < lo? lo : a[i];
-		}
+		return transform(a, lo, hi, [](T ai, T loi, T hii){ return ai > hii? hii : ai < loi? loi : ai; }, out);
 	}
 	template <class T>
 	void clamp(const many<T>& a, const many<T>& lo, const T hi, many<T>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = a[i] > hi? hi : a[i] < lo[i]? lo[i] : a[i];
-		}
+		return transform(a, lo, hi, [](T ai, T loi, T hii){ return ai > hii? hii : ai < loi? loi : ai; }, out);
 	}
 	template <class T>
 	void clamp(const many<T>& a, const many<T>& lo, const many<T>& hi, many<T>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = a[i] > hi[i]? hi[i] : a[i];
-		}
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = a[i] < lo[i]? lo[i] : out[i];
-		}
+		return transform(a,   hi, [](T ai, T hii){ return ai > hii? hii : ai; }, out);
+		return transform(out, lo, [](T ai, T loi){ return ai < loi? loi : ai; }, out);
 	}
 
 
@@ -421,6 +370,7 @@ namespace composites
 	template<typename T>
 	void isnan(const many<T>&  x, many<bool>& out)
 	{
+		return transform(x, std::isinf, out);
 		for (unsigned int i = 0; i < x.size(); ++i)
 		{
 			out[i] = std::isnan(x[i]);
@@ -435,10 +385,7 @@ namespace composites
 	template<typename T>
 	void isinf(const many<T>&  x, many<bool>& out)
 	{
-		for (unsigned int i = 0; i < x.size(); ++i)
-		{
-			out[i] = std::isinf(x[i]);
-		}
+		return transform(x, std::isinf, out);
 	}
 
 	/// Computes and returns a * b + c.

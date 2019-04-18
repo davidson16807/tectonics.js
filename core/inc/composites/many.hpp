@@ -418,17 +418,10 @@ namespace composites
 	}
 
 
-	template <class T1, class Tout, typename F>
-	inline many<Tout> transform(const many<T1>& a, F f)
+	template <class T1, typename F>
+	inline many<T1> transform(const many<T1>& a, F f)
 	{
-		many<Tout> out = many<Tout>(a.size());
-		transform(a, f, out); 
-		return out;
-	}
-	template <class T1, class Tout, typename F>
-	inline many<Tout> transform(const T1 a, F f)
-	{
-		many<Tout> out = many<Tout>(a.size());
+		many<T1> out = many<T1>(a.size());
 		transform(a, f, out); 
 		return out;
 	}
@@ -461,24 +454,24 @@ namespace composites
 	}
 
 
-	template <class T1, class T2, class Tout, typename F>
-	inline many<Tout> transform(const many<T1>& a, const many<T2>& b, F f)
+	template <class T1, class T2, typename F>
+	inline many<T1> transform(const many<T1>& a, const many<T2>& b, F f)
 	{
-		many<Tout> out = many<Tout>(a.size());
+		many<T1> out = many<T1>(a.size());
 		transform(a, b, f, out); 
 		return out;
 	}
-	template <class T1, class T2, class Tout, typename F>
-	inline many<Tout> transform(const many<T1>& a, const T2 b, F f)
+	template <class T1, class T2, typename F>
+	inline many<T1> transform(const many<T1>& a, const T2 b, F f)
 	{
-		many<Tout> out = many<Tout>(a.size());
+		many<T1> out = many<T1>(a.size());
 		transform(a, b, f, out); 
 		return out;
 	}
-	template <class T1, class T2, class Tout, typename F>
-	inline many<Tout> transform(const T1 a, const many<T2>& b, F f)
+	template <class T1, class T2, typename F>
+	inline many<T1> transform(const T1 a, const many<T2>& b, F f)
 	{
-		many<Tout> out = many<Tout>(b.size());
+		many<T1> out = many<T1>(b.size());
 		transform(a, b, f, out); 
 		return out;
 	}
@@ -550,52 +543,52 @@ namespace composites
 	}
 
 
-	template <class T1, class T2, class T3, class Tout, typename F>
-	inline many<Tout> transform(const many<T1>& a, const many<T2>& b, const many<T3>& c, F f)
+	template <class T1, class T2, class T3, typename F>
+	inline many<T1> transform(const many<T1>& a, const many<T2>& b, const many<T3>& c, F f)
 	{
-		many<Tout> out = many<Tout>(a.size());
+		many<T1> out = many<T1>(a.size());
 		transform(a, b, c, f, out); 
 		return out;
 	}
-	template <class T1, class T2, class T3, class Tout, typename F>
-	inline many<Tout> transform(const many<T1>& a, const many<T2>& b, const T3 c, F f)
+	template <class T1, class T2, class T3, typename F>
+	inline many<T1> transform(const many<T1>& a, const many<T2>& b, const T3 c, F f)
 	{
-		many<Tout> out = many<Tout>(a.size());
+		many<T1> out = many<T1>(a.size());
 		transform(a, b, c, f, out); 
 		return out;
 	}
-	template <class T1, class T2, class T3, class Tout, typename F>
-	inline many<Tout> transform(const many<T1>& a, const T2 b, const many<T3>& c, F f)
+	template <class T1, class T2, class T3, typename F>
+	inline many<T1> transform(const many<T1>& a, const T2 b, const many<T3>& c, F f)
 	{
-		many<Tout> out = many<Tout>(a.size());
+		many<T1> out = many<T1>(a.size());
 		transform(a, b, c, f, out); 
 		return out;
 	}
-	template <class T1, class T2, class T3, class Tout, typename F>
-	inline many<Tout> transform(const many<T1>& a, const T2 b, const T3 c, F f)
+	template <class T1, class T2, class T3, typename F>
+	inline many<T1> transform(const many<T1>& a, const T2 b, const T3 c, F f)
 	{
-		many<Tout> out = many<Tout>(a.size());
+		many<T1> out = many<T1>(a.size());
 		transform(a, b, c, f, out); 
 		return out;
 	}
-	template <class T1, class T2, class T3, class Tout, typename F>
-	inline many<Tout> transform(const T1 a, const many<T2>& b, const many<T3>& c, F f)
+	template <class T1, class T2, class T3, typename F>
+	inline many<T1> transform(const T1 a, const many<T2>& b, const many<T3>& c, F f)
 	{
-		many<Tout> out = many<Tout>(b.size());
+		many<T1> out = many<T1>(b.size());
 		transform(a, b, c, f, out); 
 		return out;
 	}
-	template <class T1, class T2, class T3, class Tout, typename F>
-	inline many<Tout> transform(const T1 a, const many<T2>& b, const T3 c, F f)
+	template <class T1, class T2, class T3, typename F>
+	inline many<T1> transform(const T1 a, const many<T2>& b, const T3 c, F f)
 	{
-		many<Tout> out = many<Tout>(b.size());
+		many<T1> out = many<T1>(b.size());
 		transform(a, b, c, f, out); 
 		return out;
 	}
-	template <class T1, class T2, class T3, class Tout, typename F>
-	inline many<Tout> transform(const T1 a, const T2 b, const many<T3>& c, F f)
+	template <class T1, class T2, class T3, typename F>
+	inline many<T1> transform(const T1 a, const T2 b, const many<T3>& c, F f)
 	{
-		many<Tout> out = many<Tout>(c.size());
+		many<T1> out = many<T1>(c.size());
 		transform(a, b, c, f, out); 
 		return out;
 	}
@@ -609,22 +602,22 @@ namespace composites
 	template <class T, class T2>
 	void greaterThan(const many<T>& a, const T2 b, many<bool>& out)
 	{
-		transform(a, b, [](T ai, T bi){ return ai > bi; }, out); 
+		transform(a, b, [](T ai, T2 bi){ return ai > bi; }, out); 
 	}
 	template <class T, class T2>
 	void greaterThanEqual(const many<T>& a, const T2 b, many<bool>& out)
 	{
-		transform(a, b, [](T ai, T bi){ return ai >= bi; }, out); 
+		transform(a, b, [](T ai, T2 bi){ return ai >= bi; }, out); 
 	}
 	template <class T, class T2>
 	void lessThan(const many<T>& a, const T2 b, many<bool>& out)
 	{
-		transform(a, b, [](T ai, T bi){ return ai < bi; }, out); 
+		transform(a, b, [](T ai, T2 bi){ return ai < bi; }, out); 
 	}
 	template <class T, class T2>
 	void lessThanEqual(const many<T>& a, const T2 b, many<bool>& out)
 	{
-		transform(a, b, [](T ai, T bi){ return ai <= bi; }, out); 
+		transform(a, b, [](T ai, T2 bi){ return ai <= bi; }, out); 
 	}
 
 
@@ -632,22 +625,22 @@ namespace composites
 	template <class T, class T2>
 	void greaterThan(const many<T>& a, const many<T2>& b, many<bool>& out)
 	{
-		transform(a, b, [](T ai, T bi){ return ai > bi; }, out); 
+		transform(a, b, [](T ai, T2 bi){ return ai > bi; }, out); 
 	}
 	template <class T, class T2>
 	void greaterThanEqual(const many<T>& a, const many<T2>& b, many<bool>& out)
 	{
-		transform(a, b, [](T ai, T bi){ return ai >= bi; }, out); 
+		transform(a, b, [](T ai, T2 bi){ return ai >= bi; }, out); 
 	}
 	template <class T, class T2>
 	void lessThan(const many<T>& a, const many<T2>& b, many<bool>& out)
 	{
-		transform(a, b, [](T ai, T bi){ return ai <= bi; }, out); 
+		transform(a, b, [](T ai, T2 bi){ return ai <= bi; }, out); 
 	}
 	template <class T, class T2>
 	void lessThanEqual(const many<T>& a, const many<T2>& b, many<bool>& out)
 	{
-		transform(a, b, [](T ai, T bi){ return ai < bi; }, out); 
+		transform(a, b, [](T ai, T2 bi){ return ai < bi; }, out); 
 	}
 
 
@@ -655,23 +648,23 @@ namespace composites
 	template <class T, class T2, class T3>
 	void add(const many<T>& a, const T2 b, many<T3>& out)
 	{
-		transform(a, b, [](T ai, T bi){ return ai + bi; }, out); 
+		transform(a, b, [](T ai, T2 bi){ return ai + bi; }, out); 
 	}
 	template <class T, class T2, class T3>
 	void sub(const many<T>& a, const T2 b, many<T3>& out)
 	{
-		transform(a, b, [](T ai, T bi){ return ai - bi; }, out); 
+		transform(a, b, [](T ai, T2 bi){ return ai - bi; }, out); 
 	}
 	template <class T, class T2, class T3>
 	void mult(const many<T>& a, const T2 b, many<T3>& out)
 	{
-		transform(a, b, [](T ai, T bi){ return ai * bi; }, out); 
+		transform(a, b, [](T ai, T2 bi){ return ai * bi; }, out); 
 	}
 	template <class T, class T2, class T3>
 	void div(const many<T>& a, const T2 b, many<T3>& out)
 	{
 		const T2 binv = T2(1.)/b;
-		transform(a, b, [](T ai, T bi){ return ai * bi; }, out); 
+		transform(a, b, [](T ai, T2 bi){ return ai * bi; }, out); 
 	}
 
 
@@ -681,27 +674,27 @@ namespace composites
 	template <class T, class T2, class T3>
 	void add(const many<T>& a, const many<T2>& b, many<T3>& out)
 	{
-		transform(a, b, [](T ai, T bi){ return ai + bi; }, out); 
+		transform(a, b, [](T ai, T2 bi){ return ai + bi; }, out); 
 	}
 	template <class T, class T2, class T3>
 	void sub(const many<T>& a, const many<T2>& b, many<T3>& out)
 	{
-		transform(a, b, [](T ai, T bi){ return ai - bi; }, out); 
+		transform(a, b, [](T ai, T2 bi){ return ai - bi; }, out); 
 	}
 	template <class T, class T2, class T3>
 	void mult(const many<T>& a, const many<T2>& b, many<T3>& out)
 	{
-		transform(a, b, [](T ai, T bi){ return ai * bi; }, out); 
+		transform(a, b, [](T ai, T2 bi){ return ai * bi; }, out); 
 	}
 	template <class T, class T2, class T3>
 	void div(const many<T>& a, const many<T2>& b, many<T3>& out)
 	{
-		transform(a, b, [](T ai, T bi){ return ai / bi; }, out); 
+		transform(a, b, [](T ai, T2 bi){ return ai / bi; }, out); 
 	}
 	template <class T, class T2, class T3>
 	void div(const T a, const many<T2>& b, many<T3>& out)
 	{
-		transform(a, b, [](T ai, T bi){ return ai / bi; }, out); 
+		transform(a, b, [](T ai, T2 bi){ return ai / bi; }, out); 
 	}
 	
 
@@ -731,22 +724,22 @@ namespace composites
 	template <class T, class T2, class T3>
 	inline many<T3> operator>(const many<T>& a, const T2 b)
 	{
-		return transform(a, b, [](T ai, T bi){ return ai > bi; });
+		return transform(a, b, [](T ai, T2 bi){ return ai > bi; });
 	}
 	template <class T, class T2, class T3>
 	inline many<T3> operator>=(const many<T>& a, const T2 b)
 	{
-		return transform(a, b, [](T ai, T bi){ return ai >= bi; });
+		return transform(a, b, [](T ai, T2 bi){ return ai >= bi; });
 	}
 	template <class T, class T2, class T3>
 	inline many<T3> operator<(const many<T>& a, const T2 b)
 	{
-		return transform(a, b, [](T ai, T bi){ return ai < bi; });
+		return transform(a, b, [](T ai, T2 bi){ return ai < bi; });
 	}
 	template <class T, class T2, class T3>
 	inline many<T3> operator<=(const many<T>& a, const T2 b)
 	{
-		return transform(a, b, [](T ai, T bi){ return ai <= bi; });
+		return transform(a, b, [](T ai, T2 bi){ return ai <= bi; });
 	}
 	
 	// NOTE: all wrappers are suggested to be inline because they are thin wrappers of functions
@@ -754,22 +747,22 @@ namespace composites
 	template <class T, class T2, class T3>
 	inline many<T3> operator>(const T2 a, const many<T>& b)
 	{
-		return transform(a, b, [](T ai, T bi){ return ai > bi; });
+		return transform(a, b, [](T ai, T2 bi){ return ai > bi; });
 	}
 	template <class T, class T2, class T3>
 	inline many<T3> operator>=(const T2 a, const many<T>& b)
 	{
-		return transform(a, b, [](T ai, T bi){ return ai >= bi; });
+		return transform(a, b, [](T ai, T2 bi){ return ai >= bi; });
 	}
 	template <class T, class T2, class T3>
 	inline many<T3> operator<(const T2 a, const many<T>& b)
 	{
-		return transform(a, b, [](T ai, T bi){ return ai < bi; });
+		return transform(a, b, [](T ai, T2 bi){ return ai < bi; });
 	}
 	template <class T, class T2, class T3>
 	inline many<T3> operator<=(const T2 a, const many<T>& b)
 	{
-		return transform(a, b, [](T ai, T bi){ return ai <= bi; });
+		return transform(a, b, [](T ai, T2 bi){ return ai <= bi; });
 	}
 
 
@@ -907,22 +900,22 @@ namespace composites
 	template <class T, class T2>
 	inline many<T> operator+(const many<T>& a, const T2 b)
 	{
-		return transform(a, b, [](T ai, T bi){ return ai + bi; });
+		return transform(a, b, [](T ai, T2 bi){ return ai + bi; });
 	}
 	template <class T, class T2>
 	inline many<T> operator-(const many<T>& a, const T2 b)
 	{
-		return transform(a, b, [](T ai, T bi){ return ai - bi; });
+		return transform(a, b, [](T ai, T2 bi){ return ai - bi; });
 	}
 	template <class T, class T2>
 	inline many<T> operator*(const many<T>& a, const T2 b)
 	{
-		return transform(a, b, [](T ai, T bi){ return ai * bi; });
+		return transform(a, b, [](T ai, T2 bi){ return ai * bi; });
 	}
 	template <class T, class T2>
 	inline many<T> operator/(const many<T>& a, const T2 b)
 	{
-		return transform(a, b, [](T ai, T bi){ return ai / bi; });
+		return transform(a, b, [](T ai, T2 bi){ return ai / bi; });
 	}
 	
 
@@ -934,22 +927,22 @@ namespace composites
 	template <class T, class T2>
 	inline many<T> operator+(const T2 a, const many<T>& b)
 	{
-		return transform(a, b, [](T ai, T bi){ return ai + bi; });
+		return transform(a, b, [](T ai, T2 bi){ return ai + bi; });
 	}
 	template <class T, class T2>
 	inline many<T> operator-(const T2 a, const many<T>& b)
 	{
-		return transform(a, b, [](T ai, T bi){ return ai - bi; });
+		return transform(a, b, [](T ai, T2 bi){ return ai - bi; });
 	}
 	template <class T, class T2>
 	inline many<T> operator*(const T2 a, const many<T>& b)
 	{
-		return transform(a, b, [](T ai, T bi){ return ai * bi; });
+		return transform(a, b, [](T ai, T2 bi){ return ai * bi; });
 	}
 	template <class T, class T2>
 	inline many<T> operator/(const T2 a, const many<T>& b)
 	{
-		return transform(a, b, [](T ai, T bi){ return ai / bi; });
+		return transform(a, b, [](T ai, T2 bi){ return ai / bi; });
 	}
 
 
@@ -958,26 +951,26 @@ namespace composites
 	template <class T, class T2>
 	inline many<T> operator+(const many<T>& a, const many<T2>& b)
 	{
-		return transform(a, b, [](T ai, T bi){ return ai + bi; });
+		return transform(a, b, [](T ai, T2 bi){ return ai + bi; });
 	}
 	template <class T, class T2>
 	inline many<T> operator-(const many<T>& a, const many<T2>& b)
 	{
-		return transform(a, b, [](T ai, T bi){ return ai - bi; });
+		return transform(a, b, [](T ai, T2 bi){ return ai - bi; });
 	}
 	template <class T, class T2>
 	inline many<T> operator*(const many<T>& a, const many<T2>& b)
 	{
-		return transform(a, b, [](T ai, T bi){ return ai * bi; });
+		return transform(a, b, [](T ai, T2 bi){ return ai * bi; });
 	}
 	template <class T, class T2>
 	inline many<T> operator/(const many<T>& a, const many<T2>& b)
 	{
-		return transform(a, b, [](T ai, T bi){ return ai / bi; });
+		return transform(a, b, [](T ai, T2 bi){ return ai / bi; });
 	}
 
 
-	
+
 	typedef many<bool>	       bools;
 	typedef many<int>	       ints;
 	typedef many<unsigned int> uints;
