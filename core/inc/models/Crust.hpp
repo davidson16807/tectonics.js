@@ -164,46 +164,123 @@ namespace crust
     //    age
     //
 
+    template<typename F>
+    inline void transform_all(const Crust& in, F f, Crust& out) {
+        f(in.sediment,        out.sediment        );
+        f(in.sedimentary,     out.sedimentary     );
+        f(in.metamorphic,     out.metamorphic     );
+        f(in.felsic_plutonic, out.felsic_plutonic );
+        f(in.felsic_volcanic, out.felsic_volcanic );
+        f(in.mafic_volcanic,  out.mafic_volcanic  );
+        f(in.mafic_plutonic,  out.mafic_plutonic  );
+        f(in.age,             out.age             );
+    }
+    template<typename F>
+    inline void transform_all(const Crust& a, const Crust& b, F f, Crust& out) {
+        f(a.sediment,        b.sediment,        out.sediment        );
+        f(a.sedimentary,     b.sedimentary,     out.sedimentary     );
+        f(a.metamorphic,     b.metamorphic,     out.metamorphic     );
+        f(a.felsic_plutonic, b.felsic_plutonic, out.felsic_plutonic );
+        f(a.felsic_volcanic, b.felsic_volcanic, out.felsic_volcanic );
+        f(a.mafic_volcanic,  b.mafic_volcanic,  out.mafic_volcanic  );
+        f(a.mafic_plutonic,  b.mafic_plutonic,  out.mafic_plutonic  );
+        f(a.age,             b.age,             out.age             );
+    }
+    template<typename F, typename T>
+    inline void transform_all(const Crust& a, const T b, F f, Crust& out) {
+        f(a.sediment,        b, out.sediment        );
+        f(a.sedimentary,     b, out.sedimentary     );
+        f(a.metamorphic,     b, out.metamorphic     );
+        f(a.felsic_plutonic, b, out.felsic_plutonic );
+        f(a.felsic_volcanic, b, out.felsic_volcanic );
+        f(a.mafic_volcanic,  b, out.mafic_volcanic  );
+        f(a.mafic_plutonic,  b, out.mafic_plutonic  );
+        f(a.age,             b, out.age             );
+    }
+
+
+
+    template<typename F>
+    inline void transform_mass(const Crust& in, F f, Crust& out) {
+        f(in.sediment,        out.sediment        );
+        f(in.sedimentary,     out.sedimentary     );
+        f(in.metamorphic,     out.metamorphic     );
+        f(in.felsic_plutonic, out.felsic_plutonic );
+        f(in.felsic_volcanic, out.felsic_volcanic );
+        f(in.mafic_volcanic,  out.mafic_volcanic  );
+        f(in.mafic_plutonic,  out.mafic_plutonic  );
+        // f(in.age,             out.age             );
+    }
+    template<typename F>
+    inline void transform_mass(const Crust& a, const Crust& b, F f, Crust& out) {
+        f(a.sediment,        b.sediment,        out.sediment        );
+        f(a.sedimentary,     b.sedimentary,     out.sedimentary     );
+        f(a.metamorphic,     b.metamorphic,     out.metamorphic     );
+        f(a.felsic_plutonic, b.felsic_plutonic, out.felsic_plutonic );
+        f(a.felsic_volcanic, b.felsic_volcanic, out.felsic_volcanic );
+        f(a.mafic_volcanic,  b.mafic_volcanic,  out.mafic_volcanic  );
+        f(a.mafic_plutonic,  b.mafic_plutonic,  out.mafic_plutonic  );
+        // f(a.age,             b.age,             out.age             );
+    }
+    template<typename F, typename T>
+    inline void transform_mass(const Crust& a, const T b, F f, Crust& out) {
+        f(a.sediment,        b, out.sediment        );
+        f(a.sedimentary,     b, out.sedimentary     );
+        f(a.metamorphic,     b, out.metamorphic     );
+        f(a.felsic_plutonic, b, out.felsic_plutonic );
+        f(a.felsic_volcanic, b, out.felsic_volcanic );
+        f(a.mafic_volcanic,  b, out.mafic_volcanic  );
+        f(a.mafic_plutonic,  b, out.mafic_plutonic  );
+        // f(a.age,             b, out.age             );
+    }
+
+
+
+    template<typename F>
+    inline void transform_conserved(const Crust& in, F f, Crust& out) {
+        f(in.sediment,        out.sediment        );
+        f(in.sedimentary,     out.sedimentary     );
+        f(in.metamorphic,     out.metamorphic     );
+        f(in.felsic_plutonic, out.felsic_plutonic );
+        f(in.felsic_volcanic, out.felsic_volcanic );
+        // f(in.mafic_volcanic,  out.mafic_volcanic  );
+        // f(in.mafic_plutonic,  out.mafic_plutonic  );
+        // f(in.age,             out.age             );
+    }
+    template<typename F>
+    inline void transform_conserved(const Crust& a, const Crust& b, F f, Crust& out) {
+        f(a.sediment,        b.sediment,        out.sediment        );
+        f(a.sedimentary,     b.sedimentary,     out.sedimentary     );
+        f(a.metamorphic,     b.metamorphic,     out.metamorphic     );
+        f(a.felsic_plutonic, b.felsic_plutonic, out.felsic_plutonic );
+        f(a.felsic_volcanic, b.felsic_volcanic, out.felsic_volcanic );
+        // f(a.mafic_volcanic,  b.mafic_volcanic,  out.mafic_volcanic  );
+        // f(a.mafic_plutonic,  b.mafic_plutonic,  out.mafic_plutonic  );
+        // f(a.age,             b.age,             out.age             );
+    }
+    template<typename F, typename T>
+    inline void transform_conserved(const Crust& a, const T b, F f, Crust& out) {
+        f(a.sediment,        b, out.sediment        );
+        f(a.sedimentary,     b, out.sedimentary     );
+        f(a.metamorphic,     b, out.metamorphic     );
+        f(a.felsic_plutonic, b, out.felsic_plutonic );
+        f(a.felsic_volcanic, b, out.felsic_volcanic );
+        // f(a.mafic_volcanic,  b, out.mafic_volcanic  );
+        // f(a.mafic_plutonic,  b, out.mafic_plutonic  );
+        // f(a.age,             b, out.age             );
+    }
 
     void copy(Crust& out, const Crust& source) {
-        copy(out.sediment,        source.sediment        );
-        copy(out.sedimentary,     source.sedimentary     );
-        copy(out.metamorphic,     source.metamorphic     );
-        copy(out.felsic_plutonic, source.felsic_plutonic );
-        copy(out.felsic_volcanic, source.felsic_volcanic );
-        copy(out.mafic_volcanic,  source.mafic_volcanic  );
-        copy(out.mafic_plutonic,  source.mafic_plutonic  );
-        copy(out.age,             source.age             );
+        transform_all(source, copy, out);
     }
     void reset(Crust& crust) {
-        fill(crust.sediment,        0.f );
-        fill(crust.sedimentary,     0.f );
-        fill(crust.metamorphic,     0.f );
-        fill(crust.felsic_plutonic, 0.f );
-        fill(crust.felsic_volcanic, 0.f );
-        fill(crust.mafic_volcanic,  0.f );
-        fill(crust.mafic_plutonic,  0.f );
-        fill(crust.age,             0.f );
+        transform_all(source, 0.f, fill, out);
     }
-    inline void mult(const Crust& crust, float_raster& field, Crust& result) {
-        mult(crust.sediment,        field, result.sediment        );
-        mult(crust.sedimentary,     field, result.sedimentary     );
-        mult(crust.metamorphic,     field, result.metamorphic     );
-        mult(crust.felsic_plutonic, field, result.felsic_plutonic );
-        mult(crust.felsic_volcanic, field, result.felsic_volcanic );
-        mult(crust.mafic_volcanic,  field, result.mafic_volcanic  );
-        mult(crust.mafic_plutonic,  field, result.mafic_plutonic  );
-        mult(crust.age,             field, result.age             );
+    void mult(const Crust& crust, float_raster& field, Crust& result) {
+        transform_all(source, field, mult, out);
     }
-    inline void add(const Crust& crust, const Crust& delta, Crust& result) {
-        add(crust.sediment,        delta.sediment,        result.sediment        );
-        add(crust.sedimentary,     delta.sedimentary,     result.sedimentary     );
-        add(crust.metamorphic,     delta.metamorphic,     result.metamorphic     );
-        add(crust.felsic_plutonic, delta.felsic_plutonic, result.felsic_plutonic );
-        add(crust.felsic_volcanic, delta.felsic_volcanic, result.felsic_volcanic );
-        add(crust.mafic_volcanic,  delta.mafic_volcanic,  result.mafic_volcanic  );
-        add(crust.mafic_plutonic,  delta.mafic_plutonic,  result.mafic_plutonic  );
-        add(crust.age,             delta.age,             result.age             );
+    void add(const Crust& crust, const Crust& delta, Crust& result) {
+        transform_all(source, delta, add, out);
     }
 
     Crust& operator+=(Crust& crust, const Crust& delta) 
@@ -274,15 +351,11 @@ namespace crust
 
 
 
+    void get(const Crust& crust, const uint_raster& id_raster, Crust& result) {
+        transform_all(crust, id_raster, get, result);
+    }
     void fill(Crust& crust, const RockProfile& rock_profile) {
-        fill(crust.sediment,        rock_profile.sediment        );
-        fill(crust.sedimentary,     rock_profile.sedimentary     );
-        fill(crust.metamorphic,     rock_profile.metamorphic     );
-        fill(crust.felsic_plutonic, rock_profile.felsic_plutonic );
-        fill(crust.felsic_volcanic, rock_profile.felsic_volcanic );
-        fill(crust.mafic_volcanic,  rock_profile.mafic_volcanic  );
-        fill(crust.mafic_plutonic,  rock_profile.mafic_plutonic  );
-        fill(crust.age,             rock_profile.age             );
+        transform_all(crust, rock_profile, fill, crust);
     }
     void fill(Crust& crust, const bool_raster& selection_raster, const RockProfile& rock_profile) {
         fill(crust.sediment,        selection_raster, rock_profile.sediment        );
@@ -305,25 +378,15 @@ namespace crust
         copy(crust1.age,             selection_raster, crust2.age             );
     }
 
-    void get_ids(const Crust& crust, const uint_raster& id_raster, Crust& result) {
-        get_ids(crust.sediment,        id_raster, result.sediment        );
-        get_ids(crust.sedimentary,     id_raster, result.sedimentary     );
-        get_ids(crust.metamorphic,     id_raster, result.metamorphic     );
-        get_ids(crust.felsic_plutonic, id_raster, result.felsic_plutonic );
-        get_ids(crust.felsic_volcanic, id_raster, result.felsic_volcanic );
-        get_ids(crust.mafic_volcanic,  id_raster, result.mafic_volcanic  );
-        get_ids(crust.mafic_plutonic,  id_raster, result.mafic_plutonic  );
-        get_ids(crust.age,             id_raster, result.age             );
-    }
     void add_values_to_ids(const Crust& crust, const uint_raster& id_raster, const float_raster& value_crust, Crust& result) {
-        get_ids(crust.sediment,        id_raster, value_crust.sediment,        result.sediment        );
-        get_ids(crust.sedimentary,     id_raster, value_crust.sedimentary,     result.sedimentary     );
-        get_ids(crust.metamorphic,     id_raster, value_crust.metamorphic,     result.metamorphic     );
-        get_ids(crust.felsic_plutonic, id_raster, value_crust.felsic_plutonic, result.felsic_plutonic );
-        get_ids(crust.felsic_volcanic, id_raster, value_crust.felsic_volcanic, result.felsic_volcanic );
-        get_ids(crust.mafic_volcanic,  id_raster, value_crust.mafic_volcanic,  result.mafic_volcanic  );
-        get_ids(crust.mafic_plutonic,  id_raster, value_crust.mafic_plutonic,  result.mafic_plutonic  );
-        get_ids(crust.age,             id_raster, value_crust.age,             result.age             );
+        add_values_to_ids(crust.sediment,        id_raster, value_crust.sediment,        result.sediment        );
+        add_values_to_ids(crust.sedimentary,     id_raster, value_crust.sedimentary,     result.sedimentary     );
+        add_values_to_ids(crust.metamorphic,     id_raster, value_crust.metamorphic,     result.metamorphic     );
+        add_values_to_ids(crust.felsic_plutonic, id_raster, value_crust.felsic_plutonic, result.felsic_plutonic );
+        add_values_to_ids(crust.felsic_volcanic, id_raster, value_crust.felsic_volcanic, result.felsic_volcanic );
+        add_values_to_ids(crust.mafic_volcanic,  id_raster, value_crust.mafic_volcanic,  result.mafic_volcanic  );
+        add_values_to_ids(crust.mafic_plutonic,  id_raster, value_crust.mafic_plutonic,  result.mafic_plutonic  );
+        add_values_to_ids(crust.age,             id_raster, value_crust.age,             result.age             );
     }
     void fix_delta(Crust& delta, const Crust& crust, float_raster& scratch) {
         fix_nonnegative_conserved_quantity_delta(delta.sediment,        crust.sediment,        scratch);
