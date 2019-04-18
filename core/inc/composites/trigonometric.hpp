@@ -16,10 +16,7 @@ namespace composites
 	void radians(const many<T>& degrees, many<T>& out)
 	{
 		T conversion_factor = M_PI/180.;
-		for (unsigned int i = 0; i < degrees.size(); ++i)
-		{
-			out[i] = conversion_factor * degrees[i];
-		}
+		return transform(a, [](T ai){ return conversion_factor * ai; }, out);
 	}
 
 	/// Converts degrees to radians and returns the result.
@@ -27,10 +24,7 @@ namespace composites
 	void degrees(const many<T>& radians, many<T>& out)
 	{
 		T conversion_factor = 180./M_PI;
-		for (unsigned int i = 0; i < radians.size(); ++i)
-		{
-			out[i] = conversion_factor * radians[i];
-		}
+		return transform(a, [](T ai){ return conversion_factor * ai; }, out);
 	}
 
 	/// The standard trigonometric sine function.

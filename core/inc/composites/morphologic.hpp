@@ -7,58 +7,37 @@ namespace composites
 
 	void unite(const many<bool>& a, const bool b, many<bool>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = a[i] || b;
-		}
+		transform(a, b, [](T ai, T2 bi){ return ai || bi; }, out);
 	}
 
 	void unite(const many<bool>& a, const many<bool>& b, many<bool>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = a[i] || b[i];
-		}
+		transform(a, b, [](T ai, T2 bi){ return ai || bi; }, out);
 	}
 
 	void intersect(const many<bool>& a, const bool b, many<bool>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = a[i] && b;
-		}
+		transform(a, b, [](T ai, T2 bi){ return ai && bi; }, out);
 	}
 
 	void intersect(const many<bool>& a, const many<bool>& b, many<bool>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = a[i] && b[i];
-		}
+		transform(a, b, [](T ai, T2 bi){ return ai && bi; }, out);
 	}
 
 	void differ(const many<bool>& a, const bool b, many<bool>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = a[i] && !b;
-		}
+		transform(a, b, [](T ai, T2 bi){ return ai && !bi; }, out);
 	}
 
 	void differ(const many<bool>& a, const many<bool>& b, many<bool>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = a[i] && !b[i];
-		}
+		transform(a, b, [](T ai, T2 bi){ return ai && !bi; }, out);
 	}
 
 	void negate(const many<bool>& a, many<bool>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = !a[i];
-		}
+		transform(a, [](T ai){ return !ai; }, out);
 	}
 
 	bool all(const many<bool>& a)
@@ -102,49 +81,37 @@ namespace composites
 
 	inline many<bool> operator|(const many<bool>& a, const bool b)
 	{
-		many<bool> out = many<bool>(a.size());
-		unite(a, b, out);
-		return out;
+		return transform(a, b, [](T ai, T2 bi){ return ai || bi; });
 	}
 	inline many<bool> operator&(const many<bool>& a, const bool b)
 	{
-		many<bool> out = many<bool>(a.size());
-		intersect(a, b, out);
-		return out;
+		return transform(a, b, [](T ai, T2 bi){ return ai && bi; });
 	}
 
 	inline many<bool> operator|(const many<bool>& a, const many<bool>& b)
 	{
-		many<bool> out = many<bool>(a.size());
-		unite(a, b, out);
-		return out;
+		return transform(a, b, [](T ai, T2 bi){ return ai || bi; });
 	}
 	inline many<bool> operator&(const many<bool>& a, const many<bool>& b)
 	{
-		many<bool> out = many<bool>(a.size());
-		intersect(a, b, out);
-		return out;
+		return transform(a, b, [](T ai, T2 bi){ return ai && bi; });
 	}
 
 
 
 
 	inline many<bool>& operator|=(many<bool>& a, const bool b){
-		unite(a, b, a);
-		return a;
+		return transform(a, b, [](T ai, T2 bi){ return ai || bi; }, a);
 	}
 	inline many<bool>& operator&=(many<bool>& a, const bool b){
-		intersect(a, b, a);
-		return a;
+		return transform(a, b, [](T ai, T2 bi){ return ai &&  bi; }, a);
 	}
 
 	inline many<bool>& operator|=(many<bool>& a, const many<bool>& b){
-		unite(a, b, a);
-		return a;
+		return transform(a, b, [](T ai, T2 bi){ return ai || bi; }, a);
 	}
 	inline many<bool>& operator&=(many<bool>& a, const many<bool>& b){
-		intersect(a, b, a);
-		return a;
+		return transform(a, b, [](T ai, T2 bi){ return ai &&  bi; }, a);
 	}
 
 }

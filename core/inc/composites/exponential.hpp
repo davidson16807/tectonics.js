@@ -11,10 +11,7 @@ namespace composites
 	template <class T>
 	void pow(const many<T>& base, const many<T>& exponent, many<T>& out)
 	{
-		for (unsigned int i = 0; i < base.size(); ++i)
-		{
-			out[i] = std::pow(base[i], exponent[i]);
-		}
+		return transform(base, exponent, std::pow, out);
 	}
 	// TODO: vector variant
 	/// Returns the natural exponentiation of x, i.e., e^x.
@@ -23,6 +20,7 @@ namespace composites
 	template <class T>
 	void exp(const many<T>& a, many<T>& out)
 	{
+		return transform(a, std::exp, out);
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
 			out[i] = std::exp(a[i]);
@@ -38,6 +36,7 @@ namespace composites
 	template <class T>
 	void log(const many<T>& a, many<T>& out)
 	{
+		return transform(a, std::log, out);
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
 			out[i] = std::log(a[i]);
@@ -51,10 +50,7 @@ namespace composites
 	template <class T>
 	void exp2(const many<T>& a, many<T>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = std::exp2(a[i]);
-		}
+		return transform(a, std::exp2, out);
 	}
 
 	// TODO: vector variant
@@ -65,10 +61,7 @@ namespace composites
 	template <class T>
 	void log2(const many<T>& a, many<T>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = std::log2(a[i]);
-		}
+		return transform(a, std::log2, out);
 	}
 
 	// TODO: vector variant
@@ -78,10 +71,7 @@ namespace composites
 	template <class T>
 	void sqrt(const many<T>& a, many<T>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = std::sqrt(a[i]);
-		}
+		return transform(a, std::sqrt, out);
 	}
 
 	// TODO: vector variant
@@ -91,10 +81,7 @@ namespace composites
 	template <class T>
 	void inversesqrt(const many<T>& a, many<T>& out)
 	{
-		for (unsigned int i = 0; i < a.size(); ++i)
-		{
-			out[i] = 1./std::sqrt(a[i]);
-		}
+		return transform(a, [](T ai){ return 1./std::sqrt(a[i]); }, out);
 	}
 }//namespace composites
 
