@@ -774,9 +774,8 @@ namespace composites
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
 			a[i] += b;
-
-			return a;
 		}
+		return a;
 	}
 	template <class T>
 	inline many<T>& operator-=(many<T>& a, const T b) 
@@ -784,9 +783,8 @@ namespace composites
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
 			a[i] -= b;
-
-			return a;
 		}
+		return a;
 	}
 	template <class T>
 	inline many<T>& operator*=(many<T>& a, const T b) 
@@ -794,9 +792,8 @@ namespace composites
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
 			a[i] *= b;
-
-			return a;
 		}
+		return a;
 	}
 	template <class T>
 	inline many<T>& operator/=(many<T>& a, const T b) 
@@ -804,9 +801,8 @@ namespace composites
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
 			a[i] /= b;
-
-			return a;
 		}
+		return a;
 	}
 
 
@@ -816,9 +812,8 @@ namespace composites
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
 			a[i] += b[i];
-
-			return a;
 		}
+		return a;
 	}
 	template <class T, class T2>
 	inline many<T>& operator-=(many<T>& a, const many<T2>& b) 
@@ -826,9 +821,8 @@ namespace composites
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
 			a[i] -= b[i];
-
-			return a;
 		}
+		return a;
 	}
 	template <class T, class T2>
 	inline many<T>& operator*=(many<T>& a, const many<T2>& b) 
@@ -836,9 +830,8 @@ namespace composites
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
 			a[i] *= b[i];
-
-			return a;
 		}
+		return a;
 	}
 	template <class T, class T2>
 	inline many<T>& operator/=(many<T>& a, const many<T2>& b) 
@@ -846,9 +839,8 @@ namespace composites
 		for (unsigned int i = 0; i < a.size(); ++i)
 		{
 			a[i] /= b[i];
-
-			return a;
 		}
+		return a;
 	}
 
 	// NOTE: prefix increment/decrement
