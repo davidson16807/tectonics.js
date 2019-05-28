@@ -117,9 +117,9 @@ function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
     }
     this.print = function(value, options){
         options = options || {};
-        if (value.x instanceof Float32Array || 
-            value.x instanceof Uint16Array  ||
-            value.x instanceof Uint8Array ) { // scalar raster
+        if (value instanceof Float32Array || 
+            value instanceof Uint16Array  ||
+            value instanceof Uint8Array ) { // scalar raster
             scalarProjectionView.updateScene(gl_state, value, 
                     Object.assign({ subview: scalarView }, options)
                 );
