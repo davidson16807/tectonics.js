@@ -9,8 +9,8 @@ var Tectonophysics = {};
 
 
 
-Tectonophysics.guess_plate_velocity = function(plate_mask, buoyancy, material_viscosity, result) {
-    result = result || VectorRaster(plate_mask.grid);
+Tectonophysics.guess_plate_velocity = function(boundary_normal, buoyancy, material_viscosity, result) {
+    result = result || VectorRaster(boundary_normal.grid);
 
       var scratchpad = RasterStackBuffer.scratchpad;
       scratchpad.allocate('get_plate_velocity');
@@ -67,14 +67,7 @@ Tectonophysics.guess_plate_velocity = function(plate_mask, buoyancy, material_vi
 
     // find slab pull force field (Newtons/m^3)
     // buoyancy = slab_pull * normalize(gradient(mask))
-    // lateral_velocity = buoyancy * normalize(gradient(mask))
-    // NOTE: result does double duty for performance reasons
-    var boundary_normal = result;
-    Uint8Field.gradient                (plate_mask,                         boundary_normal);
-    VectorField.normalize            (boundary_normal,                    boundary_normal);
-
-      //scratchpad.deallocate('get_plate_velocity');
-    //return boundary_normal;
+    // lateral_velocity = buoyancy * boundary_normal
 
     var lateral_velocity = result;    
     VectorField.mult_scalar_field    (boundary_normal, lateral_speed,     lateral_velocity);

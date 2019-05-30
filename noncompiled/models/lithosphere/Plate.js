@@ -49,9 +49,17 @@ function Plate(grid, parameters)
         Float32Raster(grid),  
         result => Crust.get_buoyancy(self.density.value(), material_density, surface_gravity, result)
     ); 
+    this.boundary_normal = new Memo(  
+        VectorRaster(grid), 
+        result => {
+            Uint8Field .gradient  (self.mask, result);
+            VectorField.normalize (result,          result);
+            return result;
+        }
+    ); 
     this.velocity = new Memo(  
         VectorRaster(grid), 
-        result => Tectonophysics.guess_plate_velocity(self.mask, self.buoyancy.value(), material_viscosity, result)
+        result => Tectonophysics.guess_plate_velocity(self.boundary_normal.value(), self.buoyancy.value(), material_viscosity, result)
     ); 
     this.center_of_mass = new Memo(  
         { x:0, y:0, z:0 },
@@ -87,6 +95,7 @@ function Plate(grid, parameters)
         this.thickness.invalidate();
         this.total_mass.invalidate();
         this.density.invalidate();
+        this.boundary_normal.invalidate();
         this.buoyancy.invalidate();
         this.velocity.invalidate();
         this.center_of_mass.invalidate();
