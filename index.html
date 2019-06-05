@@ -106,13 +106,13 @@
 <!-- info on screen display -->
 <div class="topright collapsible controls hidden-when-loading" >
     <div id="time-menu" class="time-menu">
-        <div class="input-group elapsed-time-group">
-            <span class="form-control input-sm age">{{ format(elapsed_time).quantity }}</span>
+        <div class="input-group input-group-sm">
+            <span class="form-control input age">{{ format(elapsed_time).quantity }}</span>
             <div class="input-group-append">
                 <span class="input-group-text age-units">{{ format(elapsed_time).unit }}y</span>
             </div>
         </div>
-        <div class="input-group speed-group">
+        <div class="input-group input-group-sm">
             <div class="input-group-prepend">
                 <span class="input-group-text rewind" v-on:click="rewind()">
                     <img src="icons/rewind.svg" height="12em" width="12em">
@@ -137,17 +137,17 @@
             </div>
         </div>
     </div>
-    <div class="view-menu btn-group-vertical">
-         <div class="btn-group">
-            <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    <div class="view-menu btn-group-vertical btn-group-sm">
+         <div class="btn-group btn-group-sm">
+            <button type="button" class="btn btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <img src="icons/projector-screen.svg" height="16em" width="16em"/>
                 Projection 
                 <span class="caret"></span>
             </button>
-            <ul class="dropdown-menu btn-default btn-xs">
+            <ul class="dropdown-menu btn-sm">
                 <li v-for="option in options">
                     <button type="button" 
-                        class="btn btn-default btn-xs" 
+                        class="btn btn-sm" 
                         v-bind:class="getClass(option.value, selected)" 
                         v-bind:data-value="option.value" 
                         v-on:click="setSelected(option.value)">
@@ -157,16 +157,16 @@
                 </li>
             </ul>
         </div>
-        <div id="scalar-view" class="btn-group">
-            <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <div id="scalar-view" class="btn-group btn-group-sm">
+            <button type="button" class="btn btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <img src="icons/blur.svg" height="16em" width="16em"/>
                 View 
                 <span class="caret"></span>
             </button>
-            <ul class="dropdown-menu btn-default btn-xs">
+            <ul class="dropdown-menu btn-sm">
                 <li>
                     <button type="button" 
-                        class="btn btn-default btn-xs" 
+                        class="btn btn-sm" 
                         v-bind:class="{active: ocean}" 
                         v-on:click="setOcean(!ocean? 1:0)">
                         <img src="icons/water.svg" height="16em" width="16em"/>
@@ -175,7 +175,7 @@
                 </li>
                 <li>
                     <button type="button" 
-                        class="btn btn-default btn-xs" 
+                        class="btn btn-sm" 
                         v-if="isSelected('satellite')"
                         v-bind:class="{active: night}" 
                         v-on:click="setShadows(!night? 1:0)">
@@ -185,7 +185,7 @@
                 </li>
                 <li>
                     <button type="button" 
-                        class="btn btn-default btn-xs" 
+                        class="btn btn-sm" 
                         v-if="isSelected('satellite')"
                         v-bind:class="{active: snow}" 
                         v-on:click="setSnow(!snow? 1:0)">
@@ -195,7 +195,7 @@
                 </li>
                 <li>
                     <button type="button" 
-                        class="btn btn-default btn-xs" 
+                        class="btn btn-sm" 
                         v-if="isSelected('satellite')"
                         v-bind:class="{active: sediment}" 
                         v-on:click="setSediment(!sediment? 1:0)">
@@ -205,7 +205,7 @@
                 </li>
                 <li>
                     <button type="button" 
-                        class="btn btn-default btn-xs" 
+                        class="btn btn-sm" 
                         v-if="isSelected('satellite')"
                         v-bind:class="{active: plant}" 
                         v-on:click="setPlant(!plant? 1:0)">
@@ -216,7 +216,7 @@
                 <li role="separator" class="divider"></li> 
                 <li v-for="option in options">
                     <button type="button" 
-                        class="btn btn-default btn-xs" 
+                        class="btn btn-sm" 
                         v-bind:class="getClass(option.value, selected)" 
                         v-bind:data-value="option.value" 
                         v-on:click="setSelected(option.value)">
@@ -226,16 +226,16 @@
                 </li>
             </ul>
         </div>
-        <div id="vector-view" class="btn-group">
-            <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <div id="vector-view" class="btn-group btn-group-sm">
+            <button type="button" class="btn btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <img src="icons/arrow-move-all.svg" height="16em" width="16em"/>
                 Arrows
                 <span class="caret"></span>
             </button>
-            <ul class="dropdown-menu btn-default btn-xs">
+            <ul class="dropdown-menu btn-sm">
                 <li v-for="option in options">
                     <button type="button" 
-                        class="btn btn-default btn-xs" 
+                        class="btn btn-sm" 
                         data-toggle="tooltip"
                         v-bind:title="option.tip" 
                         v-bind:class="getClass(option.value, selected)" 
@@ -247,16 +247,16 @@
                 </li>
             </ul>
         </div>
-        <div id="settings" class="btn-group">
-            <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <div id="settings" class="btn-group btn-group-sm">
+            <button type="button" class="btn btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <img src="icons/settings.svg" height="16em" width="16em"/>
                 Settings 
                 <span class="caret"></span>
             </button>
-            <ul class="dropdown-menu btn-default btn-xs">
+            <ul class="dropdown-menu btn-sm">
                 <li>
                     <button type="button" 
-                        class="btn btn-default btn-xs" 
+                        class="btn btn-sm" 
                         v-bind:class="{active: supercontinentBreakup}" 
                         v-on:click="setSupercontinentBreakup(!supercontinentBreakup? 1:0)">
                         <img src="icons/clock.svg" height="16em" width="16em"/>
@@ -266,13 +266,13 @@
             </ul>
         </div>
 
-        <button id="fullscreen" v-if="isVisible" type="button" class="btn btn-default btn-xs fullscreen" data-toggle="button" aria-pressed="true" v-on:click="toggleFullscreen()">
+        <button id="fullscreen" v-if="isVisible" type="button" class="btn btn-sm fullscreen" data-toggle="button" aria-pressed="true" v-on:click="toggleFullscreen()">
             <img v-if="!isFullscreen" src="icons/fullscreen.svg" height="16em">
             <img v-if="isFullscreen"  src="icons/fullscreen-exit.svg" height="16em">
             {{isFullscreen? 'Exit Fullscreen' : 'Fullscreen'}}
             <span class="instructions">F11</span>
         </button>
-        <button id="screenshot" v-if="isEnabled" type="button" class="btn btn-default btn-xs" v-on:click="capture" v-on:keyup.p="capture">
+        <button id="screenshot" v-if="isEnabled" type="button" class="btn btn-sm" v-on:click="capture" v-on:keyup.p="capture">
             <img src="icons/camera.svg" height="16em">
             Screenshot
             <span class="instructions">p</span>
@@ -280,28 +280,28 @@
     </div>
 
 
-    <div class="file-menu btn-group-vertical">
-        <button id="save" type="button" class="btn btn-default btn-xs"  v-on:click="save">
+    <div class="file-menu btn-group-vertical btn-group-sm">
+        <button id="save" type="button" class="btn btn-sm"  v-on:click="save">
             <img src="icons/download.svg" height="16em">
             Save
             <span class="instructions">s</span>
         </button>
-        <button id="load" type="button" class="btn btn-default btn-xs load" v-on:click="load()">
+        <button id="load" type="button" class="btn btn-sm load" v-on:click="load()">
             <img src="icons/upload.svg" height="16em">
             Load
             <span class="instructions">drag</span>
             <input id="load-input" ref="loadInput" type="file" v-on:change="loadPart2($event.target.files[0])" class="hidden" />
         </button>
-        <div id="export" class="btn-group">
-            <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <div id="export" class="btn-group btn-group-sm">
+            <button type="button" class="btn btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <img src="icons/export.svg" height="16em" width="16em"/>
                 Export
                 <span class="caret"></span>
             </button>
-            <ul class="dropdown-menu btn-default btn-xs">
+            <ul class="dropdown-menu btn-sm">
                 <li>
                     <button type="button" 
-                        class="btn btn-default btn-xs" 
+                        class="btn btn-sm" 
                         v-on:click="csv">
                         <img src="icons/view-list.svg" height="16em" width="16em"/>
                         CSV
@@ -309,16 +309,16 @@
                 </li>
             </ul>
         </div>
-        <div id="import" class="btn-group">
-            <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <div id="import" class="btn-group btn-group-sm">
+            <button type="button" class="btn btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <img src="icons/import.svg" height="16em" width="16em"/>
                 Import
                 <span class="caret"></span>
             </button>
-            <ul class="dropdown-menu btn-default btn-xs">
+            <ul class="dropdown-menu btn-sm">
                 <li>
                     <button type="button" 
-                        class="btn btn-default btn-xs" 
+                        class="btn btn-sm" 
                         v-on:click="loadImage()">
                         <img src="icons/image.svg" height="16em" width="16em"/>
                         Heightmap
