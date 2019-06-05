@@ -25,6 +25,9 @@ body {
 .view-menu {
     float: right;
 }
+.menu {
+    float: right;
+}
 
 .instructions {
     color: grey;

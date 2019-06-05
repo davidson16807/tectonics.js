@@ -20,7 +20,7 @@
     <script src="libraries/Chart.js"></script>
     <script src="libraries/vue-charts.js"></script>
     <script src="libraries/jquery-1.10.2.min.js"></script>
-    <script src="libraries/bootstrap.js"></script>
+    <script src="libraries/bootstrap.bundle.min.js"></script>
     <script src="libraries/three.js/Three.js"></script>
     <script src="libraries/three.js/OrbitControls.js"></script>
     <script src="libraries/three.js/BufferGeometryUtils.js"></script>
@@ -106,31 +106,39 @@
 <!-- info on screen display -->
 <div class="topright collapsible controls hidden-when-loading" >
     <div id="time-menu" class="time-menu">
-        <div class="input-group elapsed_time-group">
+        <div class="input-group elapsed-time-group">
             <span class="form-control input-sm age">{{ format(elapsed_time).quantity }}</span>
-            <span class="input-group-addon age-units">{{ format(elapsed_time).unit }}y</span>
+            <div class="input-group-append">
+                <span class="input-group-text age-units">{{ format(elapsed_time).unit }}y</span>
+            </div>
         </div>
         <div class="input-group speed-group">
-            <span class="input-group-addon rewind" v-on:click="rewind()">
-                <img src="icons/rewind.svg" height="12em" width="12em">
-            </span>
-            <span class="input-group-addon play" v-on:click="togglePause()">
-                <img src="icons/pause.svg" height="12em" width="12em" v-if="!paused">
-                <img src="icons/play.svg" height="12em" width="12em" v-if="paused">
-            </span>
-            <span class="input-group-addon fast-forward" v-on:click="fastForward()">
-                <img src="icons/fast-forward.svg" height="12em" width="12em">
-            </span>
-
-            <span class="input-group-addon">
-                {{speeds[speed_i].name}}
-                <span class="instructions">&lt;/&gt;</span>
-            </span>
-            
+            <div class="input-group-prepend">
+                <span class="input-group-text rewind" v-on:click="rewind()">
+                    <img src="icons/rewind.svg" height="12em" width="12em">
+                </span>
+            </div>
+            <div class="input-group-prepend">
+                <span class="input-group-text play" v-on:click="togglePause()">
+                    <img src="icons/pause.svg" height="12em" width="12em" v-if="!paused">
+                    <img src="icons/play.svg" height="12em" width="12em" v-if="paused">
+                </span>
+            </div>
+            <div class="input-group-prepend">
+                <span class="input-group-text fast-forward" v-on:click="fastForward()">
+                    <img src="icons/fast-forward.svg" height="12em" width="12em">
+                </span>
+            </div>
+            <div class="input-group-append">
+                <span class="input-group-text">
+                    {{speeds[speed_i].name}}
+                    <span class="instructions">&lt;/&gt;</span>
+                </span>
+            </div>
         </div>
     </div>
     <div class="view-menu btn-group-vertical">
-         <div id="projection" class="btn-group">
+         <div class="btn-group">
             <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <img src="icons/projector-screen.svg" height="16em" width="16em"/>
                 Projection 
