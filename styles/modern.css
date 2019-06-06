@@ -53,3 +53,9 @@ details p {
     padding: 3.44%;
     border-radius: 1em;
 }
+
+@media (max-width: 576px) {
+    .header h1 {
+        font-size: 1.5rem;
+    }
+}

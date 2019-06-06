@@ -115,18 +115,18 @@
         <div class="input-group input-group-sm">
             <div class="input-group-prepend">
                 <span class="input-group-text rewind" v-on:click="rewind()">
-                    <img src="icons/rewind.svg" height="12em" width="12em">
+                    <img src="icons/rewind.svg" height="16em" width="16em">
                 </span>
             </div>
             <div class="input-group-prepend">
                 <span class="input-group-text play" v-on:click="togglePause()">
-                    <img src="icons/pause.svg" height="12em" width="12em" v-if="!paused">
-                    <img src="icons/play.svg" height="12em" width="12em" v-if="paused">
+                    <img src="icons/pause.svg" height="16em" width="16em" v-if="!paused">
+                    <img src="icons/play.svg" height="16em" width="16em" v-if="paused">
                 </span>
             </div>
             <div class="input-group-prepend">
                 <span class="input-group-text fast-forward" v-on:click="fastForward()">
-                    <img src="icons/fast-forward.svg" height="12em" width="12em">
+                    <img src="icons/fast-forward.svg" height="16em" width="16em">
                 </span>
             </div>
             <div class="input-group-append">
@@ -138,7 +138,7 @@
         </div>
     </div>
     <div class="view-menu btn-group-vertical btn-group-sm">
-         <div class="btn-group btn-group-sm">
+         <div id="projection" class="btn-group btn-group-sm">
             <button type="button" class="btn btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <img src="icons/projector-screen.svg" height="16em" width="16em"/>
                 Projection 
@@ -948,7 +948,7 @@
       data: {
         selected: 'disabled',
         options: [
-          { name: "None", value: "disabled", icon: "" },
+          { name: "None", value: "disabled", icon: "icons/none.svg" },
           { name: "Mantle Flow", value: "asthenosphere_velocity", icon: "icons/fire-flow.svg" },
           // { name: "Plate Motion", value: "plate_velocity", icon: "icons/plate-motion.svg" },
           { name: "Wind Speed", value: "surface_air_velocity", icon: "icons/air-flow.svg" },

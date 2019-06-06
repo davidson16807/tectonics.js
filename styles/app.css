@@ -104,3 +104,23 @@ body {
     padding: 3.44%;
     border-radius: 1em;
 }
+
+@media (max-width: 576px) {
+    .instructions {
+        display: none;
+    }
+    .btn {
+        font-size: 7px !important;
+        text-align: center;
+        /*font-size:   0.01em  !important;*/
+        /* set white-space to "normal" to enable word wrap */
+    }
+    .btn img, .input-group img {
+        width:  24px;
+        height: 24px;
+        display: block;
+    }
+    .navigation {
+        display: none;
+    }
+}

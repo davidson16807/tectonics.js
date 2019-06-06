@@ -79,3 +79,10 @@ article a:hover {
     z-index        : -1;
 }
 
+
+@media (max-width: 576px) {
+    .navigation {
+        width:   61%;
+        display: inline;
+    }
+}
