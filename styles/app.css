@@ -7,7 +7,7 @@ body {
 }
 
 .controls {
-    width:13%;
+    width:23%;
 }
 .controls select, 
 .controls button, 
@@ -15,17 +15,27 @@ body {
     color: black;
 }
 
-.time-menu {
-    width: 210px;
-    float: right;
+@media (max-width: 576px) {
+    .instructions {
+        display: none;
+    }
+    .nav-link {
+        font-size: 7px;
+    }
+    .btn {
+        font-size: 7px !important;
+        text-align: center;
+        /*font-size:   0.01em  !important;*/
+        /* set white-space to "normal" to enable word wrap */
+    }
+    .btn img, .nav-link img {
+        width:  24px;
+        height: 24px;
+        display: block;
+    }
 }
-.file-menu {
-    float: right;
-}
-.view-menu {
-    float: right;
-}
-.menu {
+
+.control {
     float: right;
 }
 
