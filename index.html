@@ -94,7 +94,7 @@
 <!-- three.js container -->
 <div id="container"></div>
 <!-- logo -->
-<div class="topleft header">
+<div class="header">
     <h1><a href="blog/">Tectonics.js</a></h1>
     <div class="navigation">
         <a href="blog/index.html">ABOUT</a>&nbsp;
@@ -104,8 +104,8 @@
     </div>
 </div>
 <!-- info on screen display -->
-<div class="topright collapsible controls hidden-when-loading" >
-    <div id="time-menu" class="time-menu">
+<div class="controls hidden-when-loading" >
+    <div id="time-control" class="control">
         <div class="input-group input-group-sm">
             <span class="form-control input age">{{ format(elapsed_time).quantity }}</span>
             <div class="input-group-append">
@@ -115,18 +115,14 @@
         <div class="input-group input-group-sm">
             <div class="input-group-prepend">
                 <span class="input-group-text rewind" v-on:click="rewind()">
-                    <img src="icons/rewind.svg" height="16em" width="16em">
+                    <img src="icons/rewind.svg">
                 </span>
-            </div>
-            <div class="input-group-prepend">
                 <span class="input-group-text play" v-on:click="togglePause()">
-                    <img src="icons/pause.svg" height="16em" width="16em" v-if="!paused">
-                    <img src="icons/play.svg" height="16em" width="16em" v-if="paused">
+                    <img src="icons/pause.svg" v-if="!paused">
+                    <img src="icons/play.svg" v-if="paused">
                 </span>
-            </div>
-            <div class="input-group-prepend">
                 <span class="input-group-text fast-forward" v-on:click="fastForward()">
-                    <img src="icons/fast-forward.svg" height="16em" width="16em">
+                    <img src="icons/fast-forward.svg">
                 </span>
             </div>
             <div class="input-group-append">
@@ -137,12 +133,11 @@
             </div>
         </div>
     </div>
-    <div class="view-menu btn-group-vertical btn-group-sm">
+    <div class="control btn-group btn-group-sm">
          <div id="projection" class="btn-group btn-group-sm">
             <button type="button" class="btn btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <img src="icons/projector-screen.svg" height="16em" width="16em"/>
+                <img src="icons/projector-screen.svg"/>
                 Projection 
-                <span class="caret"></span>
             </button>
             <ul class="dropdown-menu btn-sm">
                 <li v-for="option in options">
@@ -151,7 +146,7 @@
                         v-bind:class="getClass(option.value, selected)" 
                         v-bind:data-value="option.value" 
                         v-on:click="setSelected(option.value)">
-                        <img v-bind:src="option.icon" height="16em" width="16em"/>
+                        <img v-bind:src="option.icon"/>
                         {{option.name}}
                     </button>
                 </li>
@@ -159,9 +154,8 @@
         </div>
         <div id="scalar-view" class="btn-group btn-group-sm">
             <button type="button" class="btn btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <img src="icons/blur.svg" height="16em" width="16em"/>
+                <img src="icons/blur.svg"/>
                 View 
-                <span class="caret"></span>
             </button>
             <ul class="dropdown-menu btn-sm">
                 <li>
@@ -169,7 +163,7 @@
                         class="btn btn-sm" 
                         v-bind:class="{active: ocean}" 
                         v-on:click="setOcean(!ocean? 1:0)">
-                        <img src="icons/water.svg" height="16em" width="16em"/>
+                        <img src="icons/water.svg"/>
                         Ocean
                     </button>
                 </li>
@@ -179,7 +173,7 @@
                         v-if="isSelected('satellite')"
                         v-bind:class="{active: night}" 
                         v-on:click="setShadows(!night? 1:0)">
-                        <img src="icons/weather-night.svg" height="16em" width="16em"/>
+                        <img src="icons/weather-night.svg"/>
                         Shadows
                     </button>
                 </li>
@@ -189,7 +183,7 @@
                         v-if="isSelected('satellite')"
                         v-bind:class="{active: snow}" 
                         v-on:click="setSnow(!snow? 1:0)">
-                        <img src="icons/snowflake.svg" height="16em" width="16em"/>
+                        <img src="icons/snowflake.svg"/>
                         Snow
                     </button>
                 </li>
@@ -199,7 +193,7 @@
                         v-if="isSelected('satellite')"
                         v-bind:class="{active: sediment}" 
                         v-on:click="setSediment(!sediment? 1:0)">
-                        <img src="icons/dirt.svg" height="16em" width="16em"/>
+                        <img src="icons/dirt.svg"/>
                         Sediment
                     </button>
                 </li>
@@ -209,7 +203,7 @@
                         v-if="isSelected('satellite')"
                         v-bind:class="{active: plant}" 
                         v-on:click="setPlant(!plant? 1:0)">
-                        <img src="icons/leaf.svg" height="16em" width="16em"/>
+                        <img src="icons/leaf.svg"/>
                         Plants
                     </button>
                 </li>
@@ -220,7 +214,7 @@
                         v-bind:class="getClass(option.value, selected)" 
                         v-bind:data-value="option.value" 
                         v-on:click="setSelected(option.value)">
-                        <img v-bind:src="option.icon" height="16em" width="16em"/>
+                        <img v-bind:src="option.icon"/>
                         {{option.name}}
                     </button>
                 </li>
@@ -228,9 +222,8 @@
         </div>
         <div id="vector-view" class="btn-group btn-group-sm">
             <button type="button" class="btn btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <img src="icons/arrow-move-all.svg" height="16em" width="16em"/>
+                <img src="icons/arrow-move-all.svg"/>
                 Arrows
-                <span class="caret"></span>
             </button>
             <ul class="dropdown-menu btn-sm">
                 <li v-for="option in options">
@@ -241,7 +234,7 @@
                         v-bind:class="getClass(option.value, selected)" 
                         v-bind:data-value="option.value" 
                         v-on:click="setSelected(option.value)">
-                        <img v-bind:src="option.icon" height="16em" width="16em"/>
+                        <img v-bind:src="option.icon"/>
                         {{option.name}}
                     </button>
                 </li>
@@ -249,9 +242,8 @@
         </div>
         <div id="settings" class="btn-group btn-group-sm">
             <button type="button" class="btn btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <img src="icons/settings.svg" height="16em" width="16em"/>
+                <img src="icons/settings.svg"/>
                 Settings 
-                <span class="caret"></span>
             </button>
             <ul class="dropdown-menu btn-sm">
                 <li>
@@ -259,7 +251,7 @@
                         class="btn btn-sm" 
                         v-bind:class="{active: supercontinentBreakup}" 
                         v-on:click="setSupercontinentBreakup(!supercontinentBreakup? 1:0)">
-                        <img src="icons/clock.svg" height="16em" width="16em"/>
+                        <img src="icons/clock.svg"/>
                         Supercontinent Breakup
                     </button>
                 </li>
@@ -280,7 +272,7 @@
     </div>
 
 
-    <div class="file-menu btn-group-vertical btn-group-sm">
+    <div class="control btn-group btn-group-sm">
         <button id="save" type="button" class="btn btn-sm"  v-on:click="save">
             <img src="icons/download.svg" height="16em">
             Save
@@ -294,16 +286,15 @@
         </button>
         <div id="export" class="btn-group btn-group-sm">
             <button type="button" class="btn btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <img src="icons/export.svg" height="16em" width="16em"/>
+                <img src="icons/export.svg"/>
                 Export
-                <span class="caret"></span>
             </button>
             <ul class="dropdown-menu btn-sm">
                 <li>
                     <button type="button" 
                         class="btn btn-sm" 
                         v-on:click="csv">
-                        <img src="icons/view-list.svg" height="16em" width="16em"/>
+                        <img src="icons/view-list.svg"/>
                         CSV
                     </button>
                 </li>
@@ -311,16 +302,15 @@
         </div>
         <div id="import" class="btn-group btn-group-sm">
             <button type="button" class="btn btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <img src="icons/import.svg" height="16em" width="16em"/>
+                <img src="icons/import.svg"/>
                 Import
-                <span class="caret"></span>
             </button>
             <ul class="dropdown-menu btn-sm">
                 <li>
                     <button type="button" 
                         class="btn btn-sm" 
                         v-on:click="loadImage()">
-                        <img src="icons/image.svg" height="16em" width="16em"/>
+                        <img src="icons/image.svg"/>
                         Heightmap
                         <span class="instructions">drag</span>
                         <input id="load-image" ref="loadImage" type="file" v-on:change="loadImagePart2($event.target.files[0])" class="hidden" />
@@ -337,49 +327,47 @@
     <div id="renderStats"></div>
     <div id="updateStats"></div>
 </div>
-<div class="bottomright">
-    <div class="hidden-when-loading" id="chart" v-if="isEnabled">
-        <table class="stat">
-            <tr>
-                <td class="name">min</td>
-                <td class="value">{{round(min)}}</td>
-            </tr>
-            <tr>
-                <td class="name">max</td>
-                <td class="value">{{round(max)}}</td>
-            </tr>
-        </table>
+<div class="hidden-when-loading" id="chart" v-if="isEnabled">
+    <table class="stat">
+        <tr>
+            <td class="name">min</td>
+            <td class="value">{{round(min)}}</td>
+        </tr>
+        <tr>
+            <td class="name">max</td>
+            <td class="value">{{round(max)}}</td>
+        </tr>
+    </table>
 
-        <table class="stat">
-            <tr>
-                <td class="name">mean</td>
-                <td class="value">{{round(mean)}}</td>
-            </tr>
-            <tr>
-                <td class="name">median</td>
-                <td class="value">{{round(median)}}</td>
-            </tr>
-        </table>
-        <table class="stat">
-            <tr>
-                <td class="name">S.D.</td>
-                <td class="value">{{round(stddev)}}</td>
-            </tr>
-        </table>
-        <chartjs-line :width="200" :height="100" 
-            :data="x" 
-            :labels="y" 
-            :bind="true"
-            :pointbackgroundcolor="'rgba(255,255,255,0.2)'"
-            :pointhoverbackgroundcolor="'rgba(255,255,255,0.2)'"
-            :pointbordercolor="'rgba(255,255,255,0.2)'"
-            :pointhoverbordercolor="'rgba(255,255,255,0.2)'"
-            :bordercolor="'rgba(255,255,255,0.5)'"
-            :backgroundcolor="'rgba(255,255,255,0.5)'" 
-            :fill="true"
-            :option="options">
-        </chartjs-line>
-    </div>
+    <table class="stat">
+        <tr>
+            <td class="name">mean</td>
+            <td class="value">{{round(mean)}}</td>
+        </tr>
+        <tr>
+            <td class="name">median</td>
+            <td class="value">{{round(median)}}</td>
+        </tr>
+    </table>
+    <table class="stat">
+        <tr>
+            <td class="name">S.D.</td>
+            <td class="value">{{round(stddev)}}</td>
+        </tr>
+    </table>
+    <chartjs-line :width="200" :height="100" 
+        :data="x" 
+        :labels="y" 
+        :bind="true"
+        :pointbackgroundcolor="'rgba(255,255,255,0.2)'"
+        :pointhoverbackgroundcolor="'rgba(255,255,255,0.2)'"
+        :pointbordercolor="'rgba(255,255,255,0.2)'"
+        :pointhoverbordercolor="'rgba(255,255,255,0.2)'"
+        :bordercolor="'rgba(255,255,255,0.5)'"
+        :backgroundcolor="'rgba(255,255,255,0.5)'" 
+        :fill="true"
+        :option="options">
+    </chartjs-line>
 </div>
 <div id="drop-dialog" class="collapse">
     <h2>DRAG HERE</h2>
@@ -866,7 +854,7 @@
     });
 
     var timeMenuVue = new Vue({
-      el: '#time-menu',
+      el: '#time-control',
       data: {
             paused: false,
             speed_i: 1,

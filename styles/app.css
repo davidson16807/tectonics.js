@@ -1,43 +1,59 @@
+/*
+app.css contains all styling that is specific to the simulation.
+It is written using a responsive, mobile-first design approach. 
+It does not contain any styling relevant to the blog, about page, etc. 
+It also assumes the user is accessing the site on a modern, evergreen browser. 
+Therefore, it assumes the use of both main.css and modern.css. 
+*/
+
+/* set "overflow: hidden" to hide the scrollbar ; */
 body {
-    overflow    : hidden;
+    overflow : hidden;
 }
 
-.hidden-when-loading{
-    display: none;
-}
-
+/* 
+".controls" expresses a single place where all buttons and parameters are located  
+*/
 .controls {
-    width:38%;
+    /* top right corner */
+    position : fixed;
+    top      : 0em;
+    right    : 0em;
 }
 .controls select, 
 .controls button, 
 .controls input{
     color: black;
 }
-
-.time-menu {
-    width: 210px;
+/*
+".control" expresses a group of buttons or parameters within ".controls"
+*/
+.control {
     float: right;
 }
-.file-menu {
-    float: right;
+/* 
+"#time-control" is a special instance of .control.
+It requires some special flexbox fanagaling to make itself look pretty.
+*/
+#time-control {
+    display         : flex;
+    flex-flow       : row wrap;
+    width           : 190px;
 }
-.view-menu {
-    float: right;
-}
-.menu {
-    float: right;
-}
-
-.instructions {
-    color: grey;
-    font-style: italic;
-    font-size: 61%;
-    padding-left:1em;
+#time-control .input-group-prepend,
+#time-control .input-group-text {
+    flex: 2 1 auto;
 }
 
+/*
+"#chart" conveys nonspatial data to the user on a 2d plot
+*/
 #chart{
     width: 300px;
+    /* bottom right corner */
+    position : fixed;
+    bottom   : 1em;
+    right    : 1em;
 }
 #chart canvas{
     padding: 1em;
@@ -55,21 +71,34 @@ body {
     text-align: right;
 }
 
+/*
+"#hidden-downloader" is an element that is required by the browser 
+ in order to download files, yet is not otherwise needed by the user interface
+It  has no styling and is never meant to be seen.
+*/
 #hidden-downloader{
     display: none;
 }
 
+/*
+"#drop-dialog" is a visual cue that indicates to the user
+ that he can drag and drop files into the application.
+*/
 #drop-dialog {
     position    : absolute;
-    top            : 23%;
+    top         : 23%;
     left        : 23%;
-    bottom        : 23%;
-    right        : 23%;
+    bottom      : 23%;
+    right       : 23%;
     padding     : 5.57%;
     text-align  : center;
     border-style: dashed;
 }
 
+/*
+"#loading-dialog" is a visual cue that indicates to the user
+ that the application is loading something.
+*/
 .loading-dialog {
     position: fixed;
     top: 43%;
@@ -81,6 +110,12 @@ body {
     text-align: center;
 }
 
+/*
+".notifications" express short nonessential messages to the user.
+They require no interaction on the users behalf. 
+They appear at the bottom of the screen and are inspired by 
+ the notifications that appear in Skyrim to indicate things like encumbrance. 
+*/
 .notifications-dialog {
     position: fixed;
     bottom: 8.4%;
@@ -98,6 +133,12 @@ body {
   opacity: 0;
 }
 
+/*
+".dialog" express longer messages to the user.
+They may potentially require interaction on the users behalf. 
+They appear as a white box in the center of the screen, 
+ and are inspired by Windows dialog boxes.
+*/
 .dialog {
     color: black;
     background-color: white;
@@ -105,22 +146,150 @@ body {
     border-radius: 1em;
 }
 
-@media (max-width: 576px) {
-    .instructions {
-        display: none;
+/*
+".hidden-when-loading" indicates an element must not render when 
+ a new game or save file is loaded. 
+This may be used to avoid confusing the user, 
+ or to prevent invalid states from occuring due to user interaction.
+*/
+.hidden-when-loading{
+    display: none;
+}
+
+/* SCREEN SPECIFIC DESIGN COMPONENTS FOLLOW BELOW */
+
+/*
+We treat small screens as if they were mobile phones.
+Mobile phones require big buttons that are easy to press. 
+Therefore, buttons icons are enlarged on small screens. 
+This applies regardless of screen orientation. 
+*/
+.btn img, .input-group img {
+    width:  24px;
+    height: 24px;
+    /* "display: block" is used to force button text below the icon */
+    display: block;
+}
+/*
+Button text is reduced and placed below the button icon,
+ in order to give a space saving square shape. 
+*/
+.btn {
+    white-space: normal;
+    font-size:   0.1rem !important;
+}
+
+/* 
+".instructions" appear next to button text. 
+They convey useful shortcuts and hotkeys to the user.
+Since they are usually only relevant to desktop users,
+ they only appear when screen space is sufficiently large.
+*/
+.instructions {
+    display: none;
+}
+/*The main navigation also disappears to conserve real estate, at least within the application. */
+.navigation {
+    display: none;
+}
+
+/*
+We want to maximize useful screen realestate for any given orientation
+Much of the screen is consumed by the planet itself. 
+The planet is spherical, so it takes up equal portions of width and height 
+ at the center of the screen.
+So on landscape orientations, most of the remaining realestate is on the left and right.
+On portrait orientations, most of the remaining realestate is on the top and bottom.
+So a responsive design ought to use horizontal button groups for portrait orientations,
+ and vertical button groups for horizontal orientations.
+Text must always consume horizontal space, no matter what the orientation,
+ so it's reasonable to assume the portrait orientation is more resource constrained.
+For this reason, we adopt a portrait-first design approach.
+Button groups by default are horizontal.
+We only style them as vertical button groups when in a landscape orientation.
+*/
+@media (min-width: 768px), (orientation: landscape) {
+    /*
+    We copy paste most of the styling for Bootstrap's btn-group-vertical 
+     in order to style btn-group as btn-group-vertical
+    */
+    .control.btn-group {
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
     }
+
+    .control.btn-group .btn,
+    .control.btn-group .btn-group {
+      width: 100%;
+      text-align: left;
+    }
+
+    .control.btn-group > .btn + .btn,
+    .control.btn-group > .btn + .btn-group,
+    .control.btn-group > .btn-group + .btn,
+    .control.btn-group > .btn-group + .btn-group {
+      margin-top: -1px;
+      margin-left: 0;
+    }
+    .control.btn-group > .btn,
+    .control.btn-group > .btn-group > .btn {
+      border-bottom-right-radius: 0.25rem;
+      border-bottom-left-radius: 0.25rem;
+      border-bottom-left-radius: 0.25rem;
+      border-bottom-right-radius: 0.25rem;
+    }
+
+    .control.btn-group > .btn:not(:last-child):not(.dropdown-toggle),
+    .control.btn-group > .btn-group:not(:last-child) > .btn {
+      border-bottom-right-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+
+    .control.btn-group > .btn:not(:first-child),
+    .control.btn-group > .btn-group:not(:first-child) > .btn {
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
+    }
+
+    .controls {
+        width: 38.2%;
+    }
+}
+
+/*
+We treat large screens as if they were desktop computers.
+Large desktop computers allow the user to select buttons with pixel perfect precision.
+They therefore do not require big buttons.
+However desktop users still want to maximize screen realestate spent towards the planet.
+So we must take advantage of smaller required button footprints to allow for this. 
+*/
+@media (min-width: 768px) {
     .btn {
-        font-size: 7px !important;
-        text-align: center;
-        /*font-size:   0.01em  !important;*/
-        /* set white-space to "normal" to enable word wrap */
+        font-size: 1rem !important;
     }
     .btn img, .input-group img {
-        width:  24px;
-        height: 24px;
-        display: block;
+        width    : 1rem;
+        height   : 1rem;
+        display  : inline-block;
+    }
+    .instructions {
+        /* enable display */
+        display    : inline;
+        /* small grey text */
+        color      : grey;
+        font-style : italic;
+        font-size  : 61%;
+        /* positioned in the corner */
+        float      : right;
     }
     .navigation {
-        display: none;
+        display: inherit;
+    }
+    .controls {
+        /* top right corner */
+        position : fixed;
+        top      : 1rem;
+        right    : 1rem;
     }
 }

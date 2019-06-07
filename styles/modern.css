@@ -45,6 +45,12 @@ details p {
     display:none;
 }
 
+.header {
+    /* top left corner */
+    position    : fixed;
+    top         : 1em;
+    left        : 1em;
+}
 .article{
     position: absolute;
     top:   23%;
