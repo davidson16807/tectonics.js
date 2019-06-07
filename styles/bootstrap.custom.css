@@ -1,16 +1,12 @@
-.btn-group-vertical .btn{
-    text-align: left;
-}
+/*
+"bootstrap.custom.css" contains generic styling modifications for bootstrap. 
+It is owned by the application and is not affiliated with the makers of bootstrap. 
+Developers are free to modify this stylesheet as they see fit. 
+*/
 .btn a{
     color: black;
 }
 .btn a:hover{
     color: black;
     text-decoration: none;
-}
-.dropdown-toggle .caret{
-    float: right;
-}
-.dropdown-menu button{
-    width: 100%;
 }

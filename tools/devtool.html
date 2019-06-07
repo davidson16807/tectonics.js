@@ -56,14 +56,14 @@
 <!-- three.js container -->
 <div id="container"></div>
 <!-- logo -->
-<div class="topleft header">
+<div id="header">
     <h3><a href="blog/">Tectonics Dev Tool</a></h3>
-    <div class="navigation">
+    <div id="navigation">
         open the dev console and call view.print(demo)
     </div>
 </div>
 <!-- info on screen display -->
-<div class="topright collapse collapsible controls" >
+<div id="controls" class="collapse collapsible" >
     <div class="view-menu btn-group-vertical">
         <button id="screenshot" v-if="isEnabled" type="button" class="btn btn-default btn-xs" v-on:click="capture" v-on:keyup.p="capture">
             <img src="icons/camera.svg" height="16em">
@@ -139,7 +139,7 @@
     var grid = new Grid(new THREE.IcosahedronGeometry(1, 5));
     var random = new Random();
     var demo = SphericalGeometry.get_random_surface_field(grid, random);
-    $('.controls').show();
+    $('#controls').show();
     $('#container').append(view.getDomElement());
 
     // animation loop

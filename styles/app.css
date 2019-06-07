@@ -1,5 +1,5 @@
 /*
-app.css contains all styling that is specific to the simulation.
+"app.css" contains all styling that is specific to the simulation.
 It is written using a responsive, mobile-first design approach. 
 It does not contain any styling relevant to the blog, about page, etc. 
 It also assumes the user is accessing the site on a modern, evergreen browser. 
@@ -203,7 +203,7 @@ Since they are usually only relevant to desktop users,
     display: none;
 }
 /*The main navigation also disappears to conserve real estate, at least within the application. */
-.navigation {
+#navigation {
     display: none;
 }
 
@@ -299,7 +299,7 @@ So we must take advantage of smaller required button footprints to allow for thi
         /* positioned in the corner */
         float      : right;
     }
-    .navigation {
+    #navigation {
         display: inherit;
     }
     #controls {

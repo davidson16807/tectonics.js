@@ -38,7 +38,7 @@
 <!-- three.js container -->
 <div id="container"></div>
 
-<div class="topright controls" id="season-sliders" style="width:200px;" >
+<div id="controls" style="width:200px;" >
     <div class="input-group season-group" v-for="(value, key) in state">
         <span class="input-group-addon">
             {{key}}
@@ -421,7 +421,7 @@
     }
     var TIMESTEP = 60*60*24; // ~1 day per frame
     const seasonVue = new Vue({
-        el: '#season-sliders',
+        el: '#controls',
         data:{
             state:{
                 'Solar System':     0,

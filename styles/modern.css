@@ -1,3 +1,11 @@
+/*
+"modern.css" is a counterpart to main.css that makes use of modern web features.
+It contains all styling that is used throughout the website, 
+ with the exception of fallback webpages for IE.  
+It is meant to be loaded with main.css and can be optionally extended with other 
+ more purpose built stylesheets like app.css or blog.css.
+*/
+
 summary { 
     font-size: 138%; 
     font-weight:bold;
@@ -25,13 +33,13 @@ details p {
     display:none;
 }
 
-.header {
+#header {
     /* top left corner */
     position    : fixed;
     top         : 1em;
     left        : 1em;
 }
-.article{
+#article{
     position: absolute;
     top:   23%;
     right: 3.44%;
@@ -41,7 +49,7 @@ details p {
 }
 
 @media (max-width: 576px) {
-    .header h1 {
+    #header h1 {
         font-size: 1.5rem;
     }
 }

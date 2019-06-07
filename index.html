@@ -94,9 +94,9 @@
 <!-- three.js container -->
 <div id="container"></div>
 <!-- logo -->
-<div class="header">
+<div id="header">
     <h1><a href="blog/">Tectonics.js</a></h1>
-    <div class="navigation">
+    <div id="navigation">
         <a href="blog/index.html">ABOUT</a>&nbsp;
         <a href="blog/news.html">BLOG</a>&nbsp;
         <a href="blog/credits.html">CREDITS</a>&nbsp;
@@ -324,8 +324,6 @@
 <a id="hidden-downloader" href="dataUrl" download="filename"></a>
 
 <div id="stats">
-    <div id="renderStats"></div>
-    <div id="updateStats"></div>
 </div>
 <div class="hidden-when-loading" id="chart" v-if="isEnabled">
     <table class="stat">
@@ -537,14 +535,13 @@
         if(!IS_PROD){
             // add Stats.js - https://github.com/mrdoob/renderStats.js
             renderStats = new Stats();
-            $('#renderStats').append( renderStats.domElement );
+            $('#stats').append( renderStats.domElement );
 
             updateStats = new Stats();
-            $('#updateStats').append( updateStats.domElement );
+            $('#stats').append( updateStats.domElement );
 
-            $('.header').hide();
+            $('#header').hide();
         }
-
     }
 
     function autosave() {

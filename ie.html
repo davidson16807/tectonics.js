@@ -4,6 +4,18 @@
     <title>Tectonics.js - 3d plate tectonics in your web browser</title>
     <meta charset="utf-8">
     <link  href="styles/main.css" rel="stylesheet"/>
+    <style>
+        .header {
+            font-weight:bold;
+        }
+        .header a {
+            color : white;
+            text-decoration    : none;
+        }
+        .header a:hover {
+            text-decoration    : none;
+        }
+    </style>
 </head>
 <body>
     <div style="margin: 1em;" >
@@ -16,7 +28,7 @@
             <td></td>
         </tr>
         <tr>
-            <td class="header navigation" colspan="2" style="padding-left: 5em ;">
+            <td class="header" id="navigation" colspan="2" style="padding-left: 5em ;">
                 <a href="blog/index.html">ABOUT</a>&nbsp;
                 <a href="blog/news.html">BLOG</a>&nbsp;
                 <a href="blog/contact.html">CONTACT</a>&nbsp;
@@ -27,7 +39,7 @@
         <tr><td><!--and one for good luck:-->&nbsp;</td></tr>
         <tr>
             <td></td>
-            <td class="article" style="margin: 2em; padding: 2em;" >
+            <td id="article" style="margin: 2em; padding: 2em;" >
                 <h2>Aw, Come On!</h2>
                 <p>Tectonics.js does not support this version of Internet Explorer </p>
                 <p>So here's some background:</p>

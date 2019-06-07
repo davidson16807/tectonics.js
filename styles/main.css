@@ -1,3 +1,15 @@
+/*
+"main.css" contains all styling that is used in common throughout the website.
+It includes styling for the application, the blog, and a fallback webpage for IE. 
+It is a standalone stylesheet that can be optionally extended with other 
+ more purpose built stylesheets like app.css, blog.css, or modern.css.
+Since it must express styling for fallback webpages, 
+ it does not assume the user has access to a modern web browser. 
+For an equivalent stylesheet that does make use of modern web features, 
+ see modern.css.
+*/
+
+
 @font-face
 {
     font-family: Garogier;
@@ -22,27 +34,27 @@ h1 {
     margin-top: 0.502%;
 }
 
-.header {
+#header {
     font-weight:bold;
 }
-.header a {
+#header a {
     color : white;
     text-decoration    : none;
 }
-.header a:hover {
+#header a:hover {
     text-decoration    : none;
 }
-.navigation
+#navigation
 {
     margin-left: 23.6%;
     width:     161%;
     font-size: 0.7rem;
 }
-.navigation a:hover {
+#navigation a:hover {
     color: grey;
     text-decoration    : none;
 }
-.article{
+#article{
     color: black;
     background-color: white;
 }
