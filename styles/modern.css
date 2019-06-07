@@ -9,26 +9,6 @@ details p {
     margin-left: 1.315%; 
 }
 
-.topleft {
-    position    : fixed;
-    top            : 1em;
-    left        : 1em;
-}
-.topright {
-    position    : fixed;
-    top            : 1em;
-    right        : 1em;
-}
-.bottomright {
-    position    : fixed;
-    bottom        : 1em;
-    right        : 1em;
-}
-.bottomleft {
-    position    : fixed;
-    bottom        : 1em;
-    left        : 1em;
-}
 .hcenter {
     width: 61.8%;
     margin-left: auto;

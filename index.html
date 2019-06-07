@@ -104,7 +104,7 @@
     </div>
 </div>
 <!-- info on screen display -->
-<div class="controls hidden-when-loading" >
+<div id="controls" class="hidden-when-loading" >
     <div id="time-control" class="control">
         <div class="input-group input-group-sm">
             <span class="form-control input age">{{ format(elapsed_time).quantity }}</span>
@@ -323,7 +323,7 @@
 
 <a id="hidden-downloader" href="dataUrl" download="filename"></a>
 
-<div class="bottomleft">
+<div id="stats">
     <div id="renderStats"></div>
     <div id="updateStats"></div>
 </div>

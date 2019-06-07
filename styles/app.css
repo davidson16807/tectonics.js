@@ -12,21 +12,21 @@ body {
 }
 
 /* 
-".controls" expresses a single place where all buttons and parameters are located  
+"#controls" expresses a single place where all buttons and parameters are located  
 */
-.controls {
+#controls {
     /* top right corner */
     position : fixed;
     top      : 0em;
     right    : 0em;
 }
-.controls select, 
-.controls button, 
-.controls input{
+#controls select, 
+#controls button, 
+#controls input{
     color: black;
 }
 /*
-".control" expresses a group of buttons or parameters within ".controls"
+".control" expresses a group of buttons or parameters within "#controls"
 */
 .control {
     float: right;
@@ -46,7 +46,8 @@ It requires some special flexbox fanagaling to make itself look pretty.
 }
 
 /*
-"#chart" conveys nonspatial data to the user on a 2d plot
+"#chart" conveys nonspatial data to the user on a 2d plot.
+It occurs in the bottom right corner. 
 */
 #chart{
     width: 300px;
@@ -69,6 +70,19 @@ It requires some special flexbox fanagaling to make itself look pretty.
 #chart .stat .value{
     margin: 1em;
     text-align: right;
+}
+
+/*
+"#stats" displays performance metrics such as fps. 
+It is only visible in dev environments. 
+It appears in the bottom left corner, since that's the only corner that 
+ hasn't been taken up yet.
+*/
+#stats {
+    /* bottom right corner */
+    position : fixed;
+    bottom   : 1em;
+    right    : 1em;
 }
 
 /*
@@ -207,6 +221,8 @@ Text must always consume horizontal space, no matter what the orientation,
 For this reason, we adopt a portrait-first design approach.
 Button groups by default are horizontal.
 We only style them as vertical button groups when in a landscape orientation.
+Since text must always consume horizontal space, we will also default to 
+ using vertical button groups whenever screensize is sufficiently large.  
 */
 @media (min-width: 768px), (orientation: landscape) {
     /*
@@ -252,8 +268,8 @@ We only style them as vertical button groups when in a landscape orientation.
       border-top-right-radius: 0;
     }
 
-    .controls {
-        width: 38.2%;
+    #controls {
+        width: 23.6%;
     }
 }
 
@@ -286,7 +302,7 @@ So we must take advantage of smaller required button footprints to allow for thi
     .navigation {
         display: inherit;
     }
-    .controls {
+    #controls {
         /* top right corner */
         position : fixed;
         top      : 1rem;
