@@ -1,12 +1,12 @@
 /*
 "main.css" contains all styling that is used in common throughout the website.
-It includes styling for the application, the blog, and a fallback webpage for IE. 
-It is a standalone stylesheet that can be optionally extended with other 
- more purpose built stylesheets like app.css, blog.css, or modern.css.
-Since it must express styling for fallback webpages, 
- it does not assume the user has access to a modern web browser. 
-For an equivalent stylesheet that does make use of modern web features, 
- see modern.css.
+It includes styling for the application, the blog, and the about page. 
+It does not however include styling for the IE fallback webpage, 
+ since that webpage is designed to operate in extenuating circumstances
+ and doing so would incur significant mental overhead.
+It assumes instead the user is accessing the site on a modern, evergreen browser. 
+It is a standalone stylesheet that can be optionally extended with other.
+ more purpose built stylesheets like app.css or blog.css. 
 */
 
 
@@ -17,13 +17,12 @@ For an equivalent stylesheet that does make use of modern web features,
 }
 
 body {
-    padding        : 0;
-    margin        : 0;
-
-    color       : white;
-    background-color: black;
-    font-family : Helvetica, Arial, sans-serif;
-    font-size    : 100%;
+    padding          : 0;
+    margin           : 0;
+    color            : white;
+    background-color : black;
+    font-family      : Helvetica, Arial, sans-serif;
+    font-size        : 100%;
 }
 
 h1,h2,h3 {
@@ -34,21 +33,52 @@ h1 {
     margin-top: 0.502%;
 }
 
-#header {
+summary { 
+    font-size: 138%; 
     font-weight:bold;
 }
+details {
+    margin-top: 1.315%    
+}
+details p { 
+    margin-left: 1.315%; 
+}
+
+.hcenter {
+    width: 61.8%;
+    margin-left: auto;
+    margin-right: auto;
+}
+.hcenter h2{
+    text-align:center;
+}
+.vcenter {
+    position: absolute;
+    top: 23.6%;
+}
+.hidden {
+    display:none;
+}
+
+#header {
+    font-weight:bold;
+    /* top left corner */
+    position    : fixed;
+    top         : 1em;
+    left        : 1em;
+}
 #header a {
-    color : white;
-    text-decoration    : none;
+    color           : white;
+    text-decoration : none;
 }
 #header a:hover {
-    text-decoration    : none;
+    text-decoration : none;
 }
 #navigation
 {
-    margin-left: 23.6%;
-    width:     161%;
-    font-size: 0.7rem;
+    margin-left : 23.6%;
+    width       : 161%;
+    font-size   : 0.7rem;
 }
 #navigation a:hover {
     color: grey;
@@ -57,4 +87,16 @@ h1 {
 #article{
     color: black;
     background-color: white;
+    position: absolute;
+    top:   23%;
+    right: 3.44%;
+    width: 61.8%;
+    padding: 3.44%;
+    border-radius: 1em;
+}
+
+@media (max-width: 576px) {
+    #header h1 {
+        font-size: 1.5rem;
+    }
 }

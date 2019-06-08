@@ -3,7 +3,7 @@
 It is written using a responsive, mobile-first design approach. 
 It does not contain any styling relevant to the blog, about page, etc. 
 It also assumes the user is accessing the site on a modern, evergreen browser. 
-Therefore, it assumes the use of both main.css and modern.css. 
+Therefore, it assumes it is being used in tandem with main.css. 
 */
 
 /* set "overflow: hidden" to hide the scrollbar ; */
