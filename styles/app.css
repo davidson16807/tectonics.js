@@ -202,10 +202,6 @@ Since they are usually only relevant to desktop users,
 .instructions {
     display: none;
 }
-/*The main navigation also disappears to conserve real estate, at least within the application. */
-#navigation {
-    display: none;
-}
 
 /*
 We want to maximize useful screen realestate for any given orientation
@@ -299,13 +295,26 @@ So we must take advantage of smaller required button footprints to allow for thi
         /* positioned in the corner */
         float      : right;
     }
-    #navigation {
-        display: inherit;
-    }
     #controls {
         /* top right corner */
         position : fixed;
         top      : 1rem;
         right    : 1rem;
+    }
+}
+
+/*
+The header must make way for the controls on mobile phones in protrait mode.
+However, styling for the header is expressed within main.css.
+This stylesheet must also express styling within the web log. 
+Styling for the blog does not require the header to make room for the controls,
+ because the controls are not present in the web log. 
+So even on mobile the header stays put. 
+So this is the only exception where we break from our mobile-first design approach. 
+*/
+@media (max-width: 768px) and (orientation: portrait) {
+    #header {
+        top: auto;
+        bottom: 1rem;
     }
 }
