@@ -44,6 +44,13 @@ It requires some special flexbox fanagaling to make itself look pretty.
 #time-control .input-group-text {
     flex: 2 1 auto;
 }
+.dropdown-menu.show {
+    display: flex;
+    overflow: scroll;
+}
+.dropdown-menu .btn {
+    height: 100%
+}
 
 /*
 "#chart" conveys nonspatial data to the user on a 2d plot.
