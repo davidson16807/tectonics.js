@@ -103,8 +103,8 @@
     </div>
 </div>
 <!-- info on screen display -->
-<div id="controls" class="hidden-when-loading" >
-    <div id="time-control" class="control">
+<div id="main-control" class="show collapse control" >
+    <div id="time-control">
         <div class="input-group input-group-sm">
             <span class="form-control input age">{{ format(elapsed_time).quantity }}</span>
             <div class="input-group-append">
@@ -113,7 +113,7 @@
         </div>
         <div class="input-group input-group-sm">
             <div class="input-group-prepend">
-                <span class="input-group-text rewind" v-on:click="rewind()">
+                <span class="input-group-text" v-on:click="rewind()">
                     <img src="icons/rewind.svg">
                 </span>
                 <span class="input-group-text play" v-on:click="togglePause()">
@@ -132,199 +132,217 @@
             </div>
         </div>
     </div>
-    <div class="control btn-group btn-group-sm">
-         <div id="projection" class="btn-group btn-group-sm">
-            <button type="button" class="btn btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <img src="icons/projector-screen.svg"/>
-                Projection 
-            </button>
-            <ul class="dropdown-menu btn-sm">
-                <li v-for="option in options">
-                    <button type="button" 
-                        class="btn btn-sm" 
-                        v-bind:class="getClass(option.value, selected)" 
-                        v-bind:data-value="option.value" 
-                        v-on:click="setSelected(option.value)">
-                        <img v-bind:src="option.icon"/>
-                        {{option.name}}
-                    </button>
-                </li>
-            </ul>
-        </div>
-        <div id="scalar-view" class="btn-group btn-group-sm">
-            <button type="button" class="btn btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <img src="icons/blur.svg"/>
-                View 
-            </button>
-            <ul class="dropdown-menu btn-sm">
-                <li>
-                    <button type="button" 
-                        class="btn btn-sm" 
-                        v-bind:class="{active: ocean}" 
-                        v-on:click="setOcean(!ocean? 1:0)">
-                        <img src="icons/water.svg"/>
-                        Ocean
-                    </button>
-                </li>
-                <li>
-                    <button type="button" 
-                        class="btn btn-sm" 
-                        v-if="isSelected('satellite')"
-                        v-bind:class="{active: night}" 
-                        v-on:click="setShadows(!night? 1:0)">
-                        <img src="icons/weather-night.svg"/>
-                        Shadows
-                    </button>
-                </li>
-                <li>
-                    <button type="button" 
-                        class="btn btn-sm" 
-                        v-if="isSelected('satellite')"
-                        v-bind:class="{active: snow}" 
-                        v-on:click="setSnow(!snow? 1:0)">
-                        <img src="icons/snowflake.svg"/>
-                        Snow
-                    </button>
-                </li>
-                <li>
-                    <button type="button" 
-                        class="btn btn-sm" 
-                        v-if="isSelected('satellite')"
-                        v-bind:class="{active: sediment}" 
-                        v-on:click="setSediment(!sediment? 1:0)">
-                        <img src="icons/dirt.svg"/>
-                        Sediment
-                    </button>
-                </li>
-                <li>
-                    <button type="button" 
-                        class="btn btn-sm" 
-                        v-if="isSelected('satellite')"
-                        v-bind:class="{active: plant}" 
-                        v-on:click="setPlant(!plant? 1:0)">
-                        <img src="icons/leaf.svg"/>
-                        Plants
-                    </button>
-                </li>
-                <li role="separator" class="divider"></li> 
-                <li v-for="option in options">
-                    <button type="button" 
-                        class="btn btn-sm" 
-                        v-bind:class="getClass(option.value, selected)" 
-                        v-bind:data-value="option.value" 
-                        v-on:click="setSelected(option.value)">
-                        <img v-bind:src="option.icon"/>
-                        {{option.name}}
-                    </button>
-                </li>
-            </ul>
-        </div>
-        <div id="vector-view" class="btn-group btn-group-sm">
-            <button type="button" class="btn btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <img src="icons/arrow-move-all.svg"/>
-                Arrows
-            </button>
-            <ul class="dropdown-menu btn-sm">
-                <li v-for="option in options">
-                    <button type="button" 
-                        class="btn btn-sm" 
-                        data-toggle="tooltip"
-                        v-bind:title="option.tip" 
-                        v-bind:class="getClass(option.value, selected)" 
-                        v-bind:data-value="option.value" 
-                        v-on:click="setSelected(option.value)">
-                        <img v-bind:src="option.icon"/>
-                        {{option.name}}
-                    </button>
-                </li>
-            </ul>
-        </div>
-        <div id="settings" class="btn-group btn-group-sm">
-            <button type="button" class="btn btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <img src="icons/settings.svg"/>
-                Settings 
-            </button>
-            <ul class="dropdown-menu btn-sm">
-                <li>
-                    <button type="button" 
-                        class="btn btn-sm" 
-                        v-bind:class="{active: supercontinentBreakup}" 
-                        v-on:click="setSupercontinentBreakup(!supercontinentBreakup? 1:0)">
-                        <img src="icons/clock.svg"/>
-                        Supercontinent Breakup
-                    </button>
-                </li>
-            </ul>
-        </div>
 
-        <button id="fullscreen" v-if="isVisible" type="button" class="btn btn-sm fullscreen" data-toggle="button" aria-pressed="true" v-on:click="toggleFullscreen()">
-            <img v-if="!isFullscreen" src="icons/fullscreen.svg" height="16em">
-            <img v-if="isFullscreen"  src="icons/fullscreen-exit.svg" height="16em">
-            {{isFullscreen? 'Exit Fullscreen' : 'Fullscreen'}}
-            <span class="instructions">F11</span>
+    <div class="btn-group btn-group-sm">
+        <button type="button" class="btn" data-toggle="collapse" data-target="#tune-control, #main-control">
+            <img src="icons/tune.svg"/>
+            Tune 
         </button>
-        <button id="screenshot" v-if="isEnabled" type="button" class="btn btn-sm" v-on:click="capture" v-on:keyup.p="capture">
-            <img src="icons/camera.svg" height="16em">
+        <button type="button" class="btn" data-toggle="collapse" data-target="#view-control, #main-control">
+            <img src="icons/eye.svg"/>
+            View 
+        </button>
+        <button type="button" class="btn" data-toggle="collapse" data-target="#file-control, #main-control">
+            <img src="icons/folder.svg"/>
+            File 
+        </button>
+        <button type="button" class="btn" data-toggle="collapse" data-target="#new-control, #main-control">
+            <img src="icons/add.svg"/>
+            New 
+        </button>
+    </div>
+</div>
+
+<div id="new-control"  class="collapse control" >
+    <button type="button" class="btn" data-toggle="collapse" data-target="#new-control, #main-control">
+        <img src="icons/down-arrow.svg"/>
+        Return
+    </button>
+</div>
+
+<div id="file-control" class="collapse control" >
+    <div class="btn-group btn-group-sm">
+        <button type="button" class="btn" data-toggle="collapse" data-target="#file-control, #main-control">
+            <img src="icons/down-arrow.svg"/>
+            Return
+        </button>
+        <button id="screenshot" v-if="isEnabled" type="button" class="btn" v-on:click="capture" v-on:keyup.p="capture">
+            <img src="icons/camera.svg">
             Screenshot
             <span class="instructions">p</span>
         </button>
-    </div>
-
-
-    <div class="control btn-group btn-group-sm">
-        <button id="save" type="button" class="btn btn-sm"  v-on:click="save">
-            <img src="icons/download.svg" height="16em">
-            Save
-            <span class="instructions">s</span>
-        </button>
-        <button id="load" type="button" class="btn btn-sm load" v-on:click="load()">
-            <img src="icons/upload.svg" height="16em">
+        <div id="export" class="btn-group">
+            <button type="button" class="btn" data-toggle="collapse" data-target="#export-menu" aria-haspopup="true" aria-expanded="false">
+                <img src="icons/export.svg"/>
+                Export
+            </button>
+            <div id="export-menu" class="collapse">
+                <button type="button" 
+                    class="btn" 
+                    v-on:click="csv">
+                    <img src="icons/view-list.svg"/>
+                    CSV
+                </button>
+            </div>
+        </div>
+        <div id="import" class="btn-group">
+            <button type="button" class="btn" data-toggle="collapse" data-target="#import-menu" aria-haspopup="true" aria-expanded="false">
+                <img src="icons/import.svg"/>
+                Import
+            </button>
+            <div id="import-menu" class="collapse">
+                <button type="button" 
+                    class="btn" 
+                    v-on:click="loadImage()">
+                    <img src="icons/image.svg"/>
+                    Heightmap
+                    <span class="instructions">drag</span>
+                    <input id="load-image" ref="loadImage" type="file" v-on:change="loadImagePart2($event.target.files[0])" class="hidden" />
+                </button>
+            </div>
+        </div>
+        <button id="load" type="button" class="btn load" v-on:click="load()">
+            <img src="icons/upload.svg">
             Load
             <span class="instructions">drag</span>
             <input id="load-input" ref="loadInput" type="file" v-on:change="loadPart2($event.target.files[0])" class="hidden" />
         </button>
-        <div id="export" class="btn-group btn-group-sm">
-            <button type="button" class="btn btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <img src="icons/export.svg"/>
-                Export
+        <button id="save" type="button" class="btn"  v-on:click="save">
+            <img src="icons/download.svg">
+            Save
+            <span class="instructions">s</span>
+        </button>
+    </div>
+</div>
+
+ <div id="view-control" class="collapse control ">
+    <div id="scalar-view" class="btn-group btn-group-sm">
+        <button type="button" class="btn" data-toggle="collapse" data-target="#view-control, #main-control">
+            <img src="icons/down-arrow.svg"/>
+            Return
+        </button>
+        <button type="button" 
+            class="btn" 
+            v-bind:class="{'btn-secondary': ocean}" 
+            v-on:click="setOcean(!ocean? 1:0)">
+            <img src="icons/water.svg"/>
+            Ocean
+        </button>
+        <button type="button" 
+            class="btn" 
+            v-if="isSelected('satellite')"
+            v-bind:class="{'btn-secondary': night}" 
+            v-on:click="setShadows(!night? 1:0)">
+            <img src="icons/weather-night.svg"/>
+            Shadows
+        </button>
+        <button type="button" 
+            class="btn" 
+            v-if="isSelected('satellite')"
+            v-bind:class="{'btn-secondary': snow}" 
+            v-on:click="setSnow(!snow? 1:0)">
+            <img src="icons/snowflake.svg"/>
+            Snow
+        </button>
+        <button type="button" 
+            class="btn" 
+            v-if="isSelected('satellite')"
+            v-bind:class="{'btn-secondary': sediment}" 
+            v-on:click="setSediment(!sediment? 1:0)">
+            <img src="icons/dirt.svg"/>
+            Sediment
+        </button>
+        <button type="button" 
+            class="btn" 
+            v-if="isSelected('satellite')"
+            v-bind:class="{'btn-secondary': plant}" 
+            v-on:click="setPlant(!plant? 1:0)">
+            <img src="icons/leaf.svg"/>
+            Plants
+        </button>
+        <button type="button" 
+            class="btn" 
+            v-for="option in options"
+            v-bind:class="getClass(option.value, selected)" 
+            v-bind:data-value="option.value" 
+            v-on:click="setSelected(option.value)">
+            <img v-bind:src="option.icon"/>
+            {{option.name}}
+        </button>
+    </div>
+    <div id="vector-view" class="btn-group btn-group-sm">
+        <button type="button" 
+            class="btn" 
+            data-toggle="tooltip"
+            v-for="option in options"
+            v-bind:title="option.tip" 
+            v-bind:class="getClass(option.value, selected)" 
+            v-bind:data-value="option.value" 
+            v-on:click="setSelected(option.value)">
+            <img v-bind:src="option.icon"/>
+            {{option.name}}
+        </button>
+    </div>
+    <div id="projection" class="btn-group btn-group-sm">
+        <button type="button" 
+            class="btn" 
+            v-for="option in options"
+            v-bind:class="getClass(option.value, selected)" 
+            v-bind:data-value="option.value" 
+            v-on:click="setSelected(option.value)">
+            <img v-bind:src="option.icon"/>
+            {{option.name}}
+        </button>
+    </div>
+    <button id="fullscreen" v-if="isVisible" type="button" class="btn fullscreen" data-toggle="button" aria-pressed="true" v-on:click="toggleFullscreen()">
+        <img v-if="!isFullscreen" src="icons/fullscreen.svg">
+        <img v-if="isFullscreen"  src="icons/fullscreen-exit.svg">
+        {{isFullscreen? 'Exit Fullscreen' : 'Fullscreen'}}
+        <span class="instructions">F11</span>
+    </button>
+</div>
+
+<div id="tune-control" class="collapse control" >
+    <div class="btn-group btn-group-sm">
+        <div class="btn-group-vertical btn-group-sm">
+            <button type="button" 
+                class="btn" 
+                v-bind:class="{'btn-secondary': supercontinentBreakup}" 
+                v-on:click="setSupercontinentBreakup(!supercontinentBreakup? 1:0)">
+                <img src="icons/clock.svg"/>
+                Supercontinent Breakup
             </button>
-            <ul class="dropdown-menu btn-sm">
-                <li>
-                    <button type="button" 
-                        class="btn btn-sm" 
-                        v-on:click="csv">
-                        <img src="icons/view-list.svg"/>
-                        CSV
-                    </button>
-                </li>
-            </ul>
+            <button type="button" class="btn" data-toggle="collapse" data-target="#tune-control, #main-control">
+                <img src="icons/down-arrow.svg"/>
+                Return
+            </button>
         </div>
-        <div id="import" class="btn-group btn-group-sm">
-            <button type="button" class="btn btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <img src="icons/import.svg"/>
-                Import
-            </button>
-            <ul class="dropdown-menu btn-sm">
-                <li>
-                    <button type="button" 
-                        class="btn btn-sm" 
-                        v-on:click="loadImage()">
-                        <img src="icons/image.svg"/>
-                        Heightmap
-                        <span class="instructions">drag</span>
-                        <input id="load-image" ref="loadImage" type="file" v-on:change="loadImagePart2($event.target.files[0])" class="hidden" />
-                    </button>
-                </li>
-            </ul>
+        <div class="input-group input-group-sm">
+            <div class="input-group-prepend">
+                <span class="input-group-text">
+                    <img src="icons/globe-model.svg">
+                    Axial Tilt
+                </span>
+                <span class="input-group-text">
+                    <input type="range" name="axial_tilt" width="100px">
+                </span>
+            </div>
+            <div class="input-group-append">
+                <span class="input-group-text">
+                    &#x2295;
+                </span>
+            </div>
         </div>
     </div>
 </div>
+
 
 <a id="hidden-downloader" href="dataUrl" download="filename"></a>
 
 <div id="stats">
 </div>
-<div class="hidden-when-loading" id="chart" v-if="isEnabled">
+
+<div id="chart" class="hidden-when-loading" v-if="isEnabled">
     <table class="stat">
         <tr>
             <td class="name">min</td>
@@ -381,7 +399,7 @@
         </p>
         <p>Until then, here's a video of what you're missing:
         </p>
-        <iframe width="420" height="315" src="https://youtu.be/D6Lff8MYbAo?t=240" frameborder="0" allowfullscreen></iframe>
+        <iframe width="420" height="315" src="https://www.youtube.com/watch?v=MYMOHkVMIcA" frameborder="0" allowfullscreen></iframe>
     </div>
     <div v-if="isNoJs" class="loading-dialog">
         <img src="icons/spinner.svg"/ class="hcenter">
@@ -412,7 +430,7 @@
 
     var sim, view;
     var renderStats, updateStats;
-    var IS_PROD = true;
+    var IS_PROD = false;
     var autosave_period;
 
 
@@ -922,7 +940,7 @@
             view.setProjectionView(projectionViews[value]);
         },
         getClass: function(value, selected) {
-            return value == selected? 'active' : '';
+            return value == selected? 'btn-secondary' : '';
         }
       }
     });
@@ -932,7 +950,7 @@
       data: {
         selected: 'disabled',
         options: [
-          { name: "None", value: "disabled", icon: "icons/none.svg" },
+          { name: "No Arrows", value: "disabled", icon: "icons/none.svg" },
           { name: "Mantle Flow", value: "asthenosphere_velocity", icon: "icons/fire-flow.svg" },
           // { name: "Plate Motion", value: "plate_velocity", icon: "icons/plate-motion.svg" },
           { name: "Wind Speed", value: "surface_air_velocity", icon: "icons/air-flow.svg" },
@@ -946,7 +964,7 @@
               view.setVectorView(vectorViews[value]);
           },
           getClass: function(value, selected) {
-              return value == selected? 'active' : '';
+              return value == selected? 'btn-secondary' : '';
           }
       }
     });
@@ -1086,13 +1104,13 @@
             }, timestep);
         },
         getClass: function(value, selected) {
-            return value == selected? 'active' : '';
+            return value == selected? 'btn-secondary' : '';
         },
       }
     });
 
     var settingsVue = new Vue({
-      el: '#settings',
+      el: '#tune-control',
       data: {
         supercontinentBreakup: 1,
       },

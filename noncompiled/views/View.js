@@ -15,7 +15,7 @@ function ThreeJsState() {
     // put a camera in the scene
 
     this.camera    = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, .01, 100000 );
-    this.camera.position.set(0, 0, 5);
+    this.camera.position.set(-4, 2, 4);
 
     // transparently support window resize
     THREEx.WindowResize.bind(this.renderer, this.camera);

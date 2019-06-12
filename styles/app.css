@@ -1,55 +1,264 @@
 /*
 "app.css" contains all styling that is specific to the simulation.
 It is written using a responsive, mobile-first design approach. 
-It does not contain any styling relevant to the blog, about page, etc. 
-It also assumes the user is accessing the site on a modern, evergreen browser. 
-Therefore, it assumes it is being used in tandem with main.css. 
+It does not contain any styling relevant to the blog or about page.
+It assumes the user is accessing the site on a modern, evergreen browser. 
+It also assumes it is being used in tandem with main.css. 
 */
 
-/* set "overflow: hidden" to hide the scrollbar ; */
-body {
-    overflow : hidden;
-}
+/* ====== START OF SCREEN SPECIFIC CONTENT ======*/
 
-/* 
-"#controls" expresses a single place where all buttons and parameters are located  
-*/
-#controls {
-    /* top right corner */
-    position : fixed;
-    top      : 0em;
-    right    : 0em;
-}
-#controls select, 
-#controls button, 
-#controls input{
-    color: black;
-}
 /*
-".control" expresses a group of buttons or parameters within "#controls"
+Overarching design:
+
+We want to maximize the utility of screenspace for any given orientation. 
+We want our solution to scale well for any number of UI components. 
+We want our solution to be consistent to the user.
+We want to leverage existing UI conventions to prevent user confusion.
+
+The planet is the main focus of the application, so therefore 
+ much of the screenspace is rightfully consumed by the planet, in the center. 
+This is regardless of screen orientation. 
+The planet is also spherical, so it takes up equal portions of width and height 
+ at the center of the screen. 
+This is again regardless of screen orientation.
+So in landscape orientations, most of the remaining screenspace is on the left and right.
+ The remaining screenspace is taller than it is wide, so our UI should scale out vertically.
+ We abstain from scaling the UI out horizontally, since a sufficiently 
+  large number of UI components could then obstruct the view of the planet.
+ Our button groups are vertical, our flexboxes are column based, and we do not wrap content.
+In portrait orientations, most of the remaining screenspace is on the top and bottom.
+ The remaining screenspace is wider than it is tall, so our UI should scale out horizontally.
+ We abstain from scaling the UI out vertically, since a sufficiently 
+  large number of UI components could then obstruct the view of the planet.
+ Our button groups are horizontal, our flexboxes are row based, and we do not wrap content.
+
+We also note that text must always consume horizontal space.
+This is the case regardless of screen orientation.
+Because the UI scales out horizontally in a portrait orientation,
+ we can see the portrait orientation is more resource constrained.
+And since we follow the logic of mobile-first design, 
+ we must first design for the most resource constrained environment.
+We therefore not only adopt a mobile-first design, but a portrait-first design, as well.
+
+Since we adopt a portrait first design, our button groups are horizontal by default.
+We only style button groups vertically when the user switches to a landscape orientation.
+The same applies to the flexboxes and all our other controls.
+
+We want our UI to be consistent to the user, 
+ and by following a well reasoned design we do already accomplish that to an extent. 
+However, standards should be set for any aspect of design that is not clamped down by the above reasoning.
+By convention, the top left corner is typically used for branding and site level navigation,
+ so we will follow that convention and leave that corner to that purpose.
+That means the remaining UI should occupy one of the remaining corners.
+Since the remaining UI must be able to expand out both horizontally and vertically,
+ we should position it to allow expansion into either of those directions. 
+This means placing it in the bottom right, as far away from our branding as possible. 
+In landscape orientations, it will expand from bottom right to top right.
+In portrait orientations, it will expand from bottom right to bottom left. 
 */
 .control {
-    float: right;
+    /* bottom right corner */
+    position  : fixed;
+    bottom    : 0;
+    right     : 0;
+
+    /* flex, wrap right to left, bottom to top*/
+    display   : flex;
+    flex-flow : row-reverse nowrap;
+
+    /* max height should not cause world to become obstructed */
+    max-height: 14.6%;
+    overflow-y: hidden;
+
+    /* max width on mobile */
+    width     : 100%;
+    overflow-x: auto;
 }
-/* 
-"#time-control" is a special instance of .control.
-It requires some special flexbox fanagaling to make itself look pretty.
+@media (pointer: fine), (pointer: none), (orientation: landscape) {
+    .control {
+        /* Content should progress from bottom right to top right, and should not wrap. */
+        flex-flow   : column-reverse nowrap;
+        /* 
+        Because we do not wrap content, we run the risk of content running off the screen. 
+        To prevent this, we set the height not exceed the height of the window. 
+        If necessary, the user may scroll vertically through the content. 
+        */
+        max-height  : 100%;
+        overflow-y  : auto;
+        /* 
+        To prevent obstructing the view of the planet, 
+         content should be aligned to the right side of the screen,
+         and content width should resize as necessary. 
+        */
+        width       : auto;
+        overflow-x  : hidden;
+        align-items : flex-end;
+    }
+}
+
+/*
+Mobile phones require big buttons that are easy to press. 
+Therefore, buttons icons are enlarged on small screens. 
+This applies regardless of screen orientation. 
+Text is also shrunk and placed below the icon to give a space saving square shape.
+
+If the users have the ability to select buttons with pixel perfect precision, they do not require big buttons.
+However desktop users still presumably want to maximize screenspace spent towards the planet.
+So we therefore reduce the size of buttons to allow for this.
+Our buttons then become composed of small icons next to large text. 
+Since text consumes space horizontally, we will always want button groups to consume space vertically.
+This will be the case regardless of screen orientation. 
+
+We also want to display hints to desktop users so they can learn shortcuts and hotkeys
+To accomplish this we display "instructions" next to button text. 
+These only appear when pointer precision indicates a desktop user.
 */
-#time-control {
-    display         : flex;
-    flex-flow       : row wrap;
-    width           : 190px;
+.btn {
+    /* we follow apple recommendations for button size */
+    min-width : 44px;
+    min-height: 44px;
+    /* text is shrunk and placed below the icon to give a space saving square shape */
+    font-size : 0.5rem !important;
+    display   : flex;
+    flex-flow : column nowrap;
+    align-items: center;
+}
+.btn img {
+    /* we follow google material recommendations for icon size */
+    width:  24px;
+    height: 24px;
+}
+.instructions {
+    display: none;
+}
+@media (pointer: fine), (pointer: none) {
+    .btn {
+        /* cancel the height/width restrictions that are imposed on mobile */
+        min-width : auto;
+        min-height: auto;
+        /* text is enlarged and placed beside the icon to save vertical space */
+        font-size : 1rem !important;
+        display   : flex;
+        flex-flow : row nowrap;
+        align-items: left;
+        padding    : 0.2rem;
+    }
+    .btn img {
+        width    : 1rem;
+        height   : 1rem;
+        margin   : 0.2rem;
+    }
+    .instructions {
+        /* enable display */
+        display     : flex;
+        /* small grey text */
+        color       : grey;
+        font-style  : italic;
+        font-size   : 61%;
+        /* positioned in the corner */
+        margin-left   : auto;
+        margin-bottom : auto;
+        padding-left: 0.3rem;
+    }
+}
+
+/*
+We copy paste most of the styling for Bootstrap's btn-group-vertical 
+ in order btn-group to work when we set "flex-direction: row-reverse"
+*/
+.btn-group {
+    /* 
+    We want everything in a button group to be consistently sized,
+    so we set all flexbox properties to "stretch".
+    */
+    flex-flow      : row-reverse nowrap;
+    align-items    : stretch;
+    align-content  : stretch;
+    justify-content: stretch;
+}
+.btn-group .btn + .btn,
+.btn-group .btn + .btn-group,
+.btn-group .btn-group + .btn,
+.btn-group .btn-group + .btn-group {
+  margin-bottom: -1px;
+  margin-right : 0;
+}
+.btn-group .btn,
+.btn-group .btn-group .btn {
+  border-top-left-radius  : 0.25rem ;
+  border-top-right-radius : 0.25rem ;
+  border-bottom-left-radius  : 0.25rem ;
+  border-bottom-right-radius : 0.25rem ;
+}
+.btn-group .btn:not(:last-child):not(.dropdown-toggle),
+.btn-group .btn-group:not(:last-child) .btn {
+  border-bottom-left-radius : 0  ;
+  border-top-left-radius : 0  ;
+}
+.btn-group .btn:not(:first-child),
+.btn-group .btn-group:not(:first-child) > .btn {
+  border-top-right-radius: 0  ;
+  border-bottom-right-radius: 0  ;
+}
+@media (pointer: fine), (pointer: none), (orientation: landscape) {
+    .btn-group {
+        /* 
+        We want everything within a button group to be consistently sized,
+        so we set all flexbox properties to "stretch".
+        */
+        flex-flow      : column-reverse nowrap;
+        align-items    : stretch;
+        align-content  : stretch;
+        justify-content: stretch;
+    }
+
+    /*
+    We copy paste most of the styling for Bootstrap's btn-group-vertical 
+     in order to style btn-group as btn-group-vertical
+    */
+    .btn-group .btn + .btn,
+    .btn-group .btn + .btn-group,
+    .btn-group .btn-group + .btn,
+    .btn-group .btn-group + .btn-group {
+      margin-top: -1px;
+      margin-left: 0;
+    }
+    .btn-group .btn,
+    .btn-group .btn-group .btn {
+      border-top-left-radius  : 0.25rem ;
+      border-top-right-radius : 0.25rem ;
+      border-bottom-left-radius  : 0.25rem ;
+      border-bottom-right-radius : 0.25rem ;
+    }
+
+    .btn-group .btn:not(:last-child):not(.dropdown-toggle),
+    .btn-group .btn-group:not(:last-child) .btn {
+      border-bottom-left-radius : 0  ;
+      border-bottom-right-radius: 0  ;
+    }
+
+    .btn-group .btn:not(:first-child),
+    .btn-group .btn-group:not(:first-child) > .btn {
+      border-top-right-radius: 0  ;
+      border-top-left-radius : 0  ;
+    }
+}
+
+/* ====== END OF SCREEN SPECIFIC CONTENT ======*/
+
+
+/* 
+We give special attention to styling the time warp control,
+because it features so prominently
+*/
+#time-control .input-group{
+    flex-flow : row nowrap;
+    width     : 190px;
 }
 #time-control .input-group-prepend,
 #time-control .input-group-text {
     flex: 2 1 auto;
-}
-.dropdown-menu.show {
-    display: flex;
-    overflow: scroll;
-}
-.dropdown-menu .btn {
-    height: 100%
 }
 
 /*
@@ -88,8 +297,8 @@ It appears in the bottom left corner, since that's the only corner that
 #stats {
     /* bottom right corner */
     position : fixed;
-    bottom   : 1em;
-    right    : 1em;
+    top     : 1em;
+    left    : 1em;
 }
 
 /*
@@ -177,151 +386,8 @@ This may be used to avoid confusing the user,
     display: none;
 }
 
-/* SCREEN SPECIFIC DESIGN COMPONENTS FOLLOW BELOW */
 
-/*
-We treat small screens as if they were mobile phones.
-Mobile phones require big buttons that are easy to press. 
-Therefore, buttons icons are enlarged on small screens. 
-This applies regardless of screen orientation. 
-*/
-.btn img, .input-group img {
-    width:  24px;
-    height: 24px;
-    /* "display: block" is used to force button text below the icon */
-    display: block;
-}
-/*
-Button text is reduced and placed below the button icon,
- in order to give a space saving square shape. 
-*/
-.btn {
-    white-space: normal;
-    font-size:   0.1rem !important;
-}
-
-/* 
-".instructions" appear next to button text. 
-They convey useful shortcuts and hotkeys to the user.
-Since they are usually only relevant to desktop users,
- they only appear when screen space is sufficiently large.
-*/
-.instructions {
-    display: none;
-}
-
-/*
-We want to maximize useful screen realestate for any given orientation
-Much of the screen is consumed by the planet itself. 
-The planet is spherical, so it takes up equal portions of width and height 
- at the center of the screen.
-So on landscape orientations, most of the remaining realestate is on the left and right.
-On portrait orientations, most of the remaining realestate is on the top and bottom.
-So a responsive design ought to use horizontal button groups for portrait orientations,
- and vertical button groups for horizontal orientations.
-Text must always consume horizontal space, no matter what the orientation,
- so it's reasonable to assume the portrait orientation is more resource constrained.
-For this reason, we adopt a portrait-first design approach.
-Button groups by default are horizontal.
-We only style them as vertical button groups when in a landscape orientation.
-Since text must always consume horizontal space, we will also default to 
- using vertical button groups whenever screensize is sufficiently large.  
-*/
-@media (min-width: 768px), (orientation: landscape) {
-    /*
-    We copy paste most of the styling for Bootstrap's btn-group-vertical 
-     in order to style btn-group as btn-group-vertical
-    */
-    .control.btn-group {
-      flex-direction: column;
-      align-items: flex-start;
-      justify-content: center;
-    }
-
-    .control.btn-group .btn,
-    .control.btn-group .btn-group {
-      width: 100%;
-      text-align: left;
-    }
-
-    .control.btn-group > .btn + .btn,
-    .control.btn-group > .btn + .btn-group,
-    .control.btn-group > .btn-group + .btn,
-    .control.btn-group > .btn-group + .btn-group {
-      margin-top: -1px;
-      margin-left: 0;
-    }
-    .control.btn-group > .btn,
-    .control.btn-group > .btn-group > .btn {
-      border-bottom-right-radius: 0.25rem;
-      border-bottom-left-radius: 0.25rem;
-      border-bottom-left-radius: 0.25rem;
-      border-bottom-right-radius: 0.25rem;
-    }
-
-    .control.btn-group > .btn:not(:last-child):not(.dropdown-toggle),
-    .control.btn-group > .btn-group:not(:last-child) > .btn {
-      border-bottom-right-radius: 0;
-      border-bottom-left-radius: 0;
-    }
-
-    .control.btn-group > .btn:not(:first-child),
-    .control.btn-group > .btn-group:not(:first-child) > .btn {
-      border-top-left-radius: 0;
-      border-top-right-radius: 0;
-    }
-
-    #controls {
-        width: 23.6%;
-    }
-}
-
-/*
-We treat large screens as if they were desktop computers.
-Large desktop computers allow the user to select buttons with pixel perfect precision.
-They therefore do not require big buttons.
-However desktop users still want to maximize screen realestate spent towards the planet.
-So we must take advantage of smaller required button footprints to allow for this. 
-*/
-@media (min-width: 768px) {
-    .btn {
-        font-size: 1rem !important;
-    }
-    .btn img, .input-group img {
-        width    : 1rem;
-        height   : 1rem;
-        display  : inline-block;
-    }
-    .instructions {
-        /* enable display */
-        display    : inline;
-        /* small grey text */
-        color      : grey;
-        font-style : italic;
-        font-size  : 61%;
-        /* positioned in the corner */
-        float      : right;
-    }
-    #controls {
-        /* top right corner */
-        position : fixed;
-        top      : 1rem;
-        right    : 1rem;
-    }
-}
-
-/*
-The header must make way for the controls on mobile phones in protrait mode.
-However, styling for the header is expressed within main.css.
-This stylesheet must also express styling within the web log. 
-Styling for the blog does not require the header to make room for the controls,
- because the controls are not present in the web log. 
-So even on mobile the header stays put. 
-So this is the only exception where we break from our mobile-first design approach. 
-*/
-@media (max-width: 768px) and (orientation: portrait) {
-    #header {
-        top: auto;
-        bottom: 1rem;
-    }
+/* set "overflow: hidden" to hide the scrollbar ; */
+body {
+    overflow : hidden;
 }
