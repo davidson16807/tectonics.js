@@ -1,5 +1,5 @@
 # Tectonics.js
-a 3d plate tectonics in your web browser
+a 3d planet simulator in your web browser
 
 ## End user quickstart guide:
 Just go [here](http://davidson16807.github.io/tectonics.js/) if you want to mess around with the model.
