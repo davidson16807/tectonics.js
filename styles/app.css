@@ -68,17 +68,21 @@ In portrait orientations, it will expand from bottom right to bottom left.
     flex-flow : row-reverse nowrap;
 
     /* max height should not cause world to become obstructed */
-    max-height: 14.6%;
+    max-height: 23.6%;
     overflow-y: hidden;
 
     /* max width on mobile */
-    width     : 100%;
+    max-width : 100%;
     overflow-x: auto;
 }
 @media (pointer: fine), (pointer: none), (orientation: landscape) {
     .control {
-        /* Content should progress from bottom right to top right, and should not wrap. */
+        /* 
+        Content should progress from bottom right to top right, and should not wrap.
+        content should be aligned to the right side of the screen,
+        */
         flex-flow   : column-reverse nowrap;
+        align-items : flex-end;
         /* 
         Because we do not wrap content, we run the risk of content running off the screen. 
         To prevent this, we set the height not exceed the height of the window. 
@@ -88,12 +92,10 @@ In portrait orientations, it will expand from bottom right to bottom left.
         overflow-y  : auto;
         /* 
         To prevent obstructing the view of the planet, 
-         content should be aligned to the right side of the screen,
-         and content width should resize as necessary. 
+        and content width should resize as necessary. 
         */
-        width       : auto;
+        max-width   : auto;
         overflow-x  : hidden;
-        align-items : flex-end;
     }
 }
 
@@ -109,10 +111,6 @@ So we therefore reduce the size of buttons to allow for this.
 Our buttons then become composed of small icons next to large text. 
 Since text consumes space horizontally, we will always want button groups to consume space vertically.
 This will be the case regardless of screen orientation. 
-
-We also want to display hints to desktop users so they can learn shortcuts and hotkeys
-To accomplish this we display "instructions" next to button text. 
-These only appear when pointer precision indicates a desktop user.
 */
 .btn {
     /* we follow apple recommendations for button size */
@@ -128,9 +126,6 @@ These only appear when pointer precision indicates a desktop user.
     /* we follow google material recommendations for icon size */
     width:  24px;
     height: 24px;
-}
-.instructions {
-    display: none;
 }
 @media (pointer: fine), (pointer: none) {
     .btn {
@@ -149,6 +144,17 @@ These only appear when pointer precision indicates a desktop user.
         height   : 1rem;
         margin   : 0.2rem;
     }
+}
+
+/*
+We also want to display hints to desktop users so they can learn shortcuts and hotkeys
+To accomplish this we display "instructions" next to button text. 
+These only appear when pointer precision indicates a desktop user.
+*/
+.instructions {
+    display: none;
+}
+@media (pointer: fine), (pointer: none) {
     .instructions {
         /* enable display */
         display     : flex;
@@ -163,91 +169,249 @@ These only appear when pointer precision indicates a desktop user.
     }
 }
 
+
 /*
-We copy paste most of the styling for Bootstrap's btn-group-vertical 
- in order btn-group to work when we set "flex-direction: row-reverse"
+".main-axis-group" behaves similarly to bootstrap's .btn-group,
+ however it switches between vertical and horizontal layouts dependant on screen orientation.
+In portrait mode, it assumes a vertical layout. 
+In horizontal mode, it assumes a horizontal layout. 
+It is called ".main-axis-group" in reference to the main axis concept within the flexbox display model.
+"Main axis" here refers to whichever axis expands in a direction 
+ that will not obstruct the main focus of the screen (in our case, the planet).
+Since one of our core design principles is to prevent obstruction of the main focus, 
+ .main-axis-group should be used with any component that can expand to an arbitrary length, 
+ especially if the component should always remain visible for ease of use.
 */
-.btn-group {
-    /* 
-    We want everything in a button group to be consistently sized,
-    so we set all flexbox properties to "stretch".
-    */
-    flex-flow      : row-reverse nowrap;
-    align-items    : stretch;
-    align-content  : stretch;
-    justify-content: stretch;
+.main-axis-group {
+    /* flex, wrap right to left, bottom to top*/
+    display   : flex;
+    flex-flow : row-reverse nowrap;
 }
-.btn-group .btn + .btn,
-.btn-group .btn + .btn-group,
-.btn-group .btn-group + .btn,
-.btn-group .btn-group + .btn-group {
+.main-axis-group .btn + .btn,
+.main-axis-group .btn + .main-axis-group,
+.main-axis-group .main-axis-group + .btn,
+.main-axis-group .main-axis-group + .main-axis-group {
   margin-bottom: -1px;
   margin-right : 0;
 }
-.btn-group .btn,
-.btn-group .btn-group .btn {
-  border-top-left-radius  : 0.25rem ;
-  border-top-right-radius : 0.25rem ;
+.main-axis-group .btn,
+.main-axis-group .main-axis-group .btn {
+  border-top-left-radius     : 0.25rem ;
+  border-top-right-radius    : 0.25rem ;
   border-bottom-left-radius  : 0.25rem ;
   border-bottom-right-radius : 0.25rem ;
 }
-.btn-group .btn:not(:last-child):not(.dropdown-toggle),
-.btn-group .btn-group:not(:last-child) .btn {
+.main-axis-group .btn:not(:last-child):not(.dropdown-toggle),
+.main-axis-group .main-axis-group:not(:last-child) .btn {
   border-bottom-left-radius : 0  ;
   border-top-left-radius : 0  ;
 }
-.btn-group .btn:not(:first-child),
-.btn-group .btn-group:not(:first-child) > .btn {
+.main-axis-group .btn:not(:first-child),
+.main-axis-group .main-axis-group:not(:first-child) > .btn {
   border-top-right-radius: 0  ;
   border-bottom-right-radius: 0  ;
 }
 @media (pointer: fine), (pointer: none), (orientation: landscape) {
-    .btn-group {
+    .main-axis-group {
         /* 
         We want everything within a button group to be consistently sized,
         so we set all flexbox properties to "stretch".
         */
-        flex-flow      : column-reverse nowrap;
-        align-items    : stretch;
-        align-content  : stretch;
-        justify-content: stretch;
+        display   : flex;
+        flex-flow : column-reverse nowrap;
     }
 
     /*
-    We copy paste most of the styling for Bootstrap's btn-group-vertical 
-     in order to style btn-group as btn-group-vertical
+    We copy paste most of the styling for Bootstrap's main-axis-group-vertical 
+     in order to style main-axis-group as main-axis-group-vertical
     */
-    .btn-group .btn + .btn,
-    .btn-group .btn + .btn-group,
-    .btn-group .btn-group + .btn,
-    .btn-group .btn-group + .btn-group {
+    .main-axis-group .btn + .btn,
+    .main-axis-group .btn + .main-axis-group,
+    .main-axis-group .main-axis-group + .btn,
+    .main-axis-group .main-axis-group + .main-axis-group {
       margin-top: -1px;
       margin-left: 0;
     }
-    .btn-group .btn,
-    .btn-group .btn-group .btn {
-      border-top-left-radius  : 0.25rem ;
-      border-top-right-radius : 0.25rem ;
+    .main-axis-group .btn,
+    .main-axis-group .main-axis-group .btn {
+      border-top-left-radius     : 0.25rem ;
+      border-top-right-radius    : 0.25rem ;
       border-bottom-left-radius  : 0.25rem ;
       border-bottom-right-radius : 0.25rem ;
     }
 
-    .btn-group .btn:not(:last-child):not(.dropdown-toggle),
-    .btn-group .btn-group:not(:last-child) .btn {
+    .main-axis-group .btn:not(:last-child):not(.dropdown-toggle),
+    .main-axis-group .main-axis-group:not(:last-child) .btn {
       border-bottom-left-radius : 0  ;
       border-bottom-right-radius: 0  ;
     }
 
-    .btn-group .btn:not(:first-child),
-    .btn-group .btn-group:not(:first-child) > .btn {
+    .main-axis-group .btn:not(:first-child),
+    .main-axis-group .main-axis-group:not(:first-child) > .btn {
       border-top-right-radius: 0  ;
       border-top-left-radius : 0  ;
+    }
+}
+
+/*
+".cross-axis-group" behaves similarly to bootstrap's .btn-group,
+ however it switches between vertical and horizontal layouts dependant on screen orientation.
+In portrait mode, it assumes a horizontal layout. 
+In horizontal mode, it assumes a vertical layout.
+It is called ".cross-axis-group" in reference to the cross axis concept within the flexbox display model.
+"Cross axis" here refers to whichever axis expands towards the main focus of the screen (in our case, the planet).
+Since one of our core design principles is to prevent obstruction of the main focus, 
+ .cross-axis-group should be used sparingly, either for components that appear temporarily, 
+ or components that will not expand to some arbitrary length.
+*/
+.cross-axis-group {
+    /* 
+    We want everything within a button group to be consistently sized,
+    so we set all flexbox properties to "stretch".
+    */
+    display   : flex;
+    flex-flow : column-reverse nowrap;
+}
+.cross-axis-group .btn + .btn,
+.cross-axis-group .btn + .cross-axis-group,
+.cross-axis-group .cross-axis-group + .btn,
+.cross-axis-group .cross-axis-group + .cross-axis-group {
+  margin-top: -1px;
+  margin-left: 0;
+}
+.cross-axis-group .btn,
+.cross-axis-group .cross-axis-group .btn {
+  border-top-left-radius     : 0.25rem ;
+  border-top-right-radius    : 0.25rem ;
+  border-bottom-left-radius  : 0.25rem ;
+  border-bottom-right-radius : 0.25rem ;
+}
+.cross-axis-group .btn:not(:last-child):not(.dropdown-toggle),
+.cross-axis-group .cross-axis-group:not(:last-child) .btn {
+  border-bottom-left-radius : 0  ;
+  border-bottom-right-radius: 0  ;
+}
+.cross-axis-group .btn:not(:first-child),
+.cross-axis-group .cross-axis-group:not(:first-child) > .btn {
+  border-top-right-radius: 0  ;
+  border-top-left-radius : 0  ;
+}
+@media (pointer: fine), (pointer: none), (orientation: landscape) {
+    .cross-axis-group {
+        /* flex, wrap right to left, bottom to top*/
+        display   : flex;
+        flex-flow : row-reverse nowrap;
+    }
+    .cross-axis-group .btn + .btn,
+    .cross-axis-group .btn + .cross-axis-group,
+    .cross-axis-group .cross-axis-group + .btn,
+    .cross-axis-group .cross-axis-group + .cross-axis-group {
+      margin-bottom: -1px;
+      margin-right : 0;
+    }
+    .cross-axis-group .btn,
+    .cross-axis-group .cross-axis-group .btn {
+      border-top-left-radius     : 0.25rem ;
+      border-top-right-radius    : 0.25rem ;
+      border-bottom-left-radius  : 0.25rem ;
+      border-bottom-right-radius : 0.25rem ;
+    }
+    .cross-axis-group .btn:not(:last-child):not(.dropdown-toggle),
+    .cross-axis-group .cross-axis-group:not(:last-child) .btn {
+      border-bottom-left-radius : 0;
+      border-top-left-radius    : 0;
+    }
+    .cross-axis-group .btn:not(:first-child),
+    .cross-axis-group .cross-axis-group:not(:first-child) > .btn {
+      border-top-right-radius   : 0;
+      border-bottom-right-radius: 0;
+    }
+}
+
+.is-cross-axis-vertical {
+  display: inherit;
+}
+.is-cross-axis-horizontal {
+  display: none;
+}
+/*@media (pointer: fine), (pointer: none), (orientation: landscape) {*/
+@media (orientation: landscape) {
+    .is-cross-axis-vertical {
+      display: none;
+    }
+    .is-cross-axis-horizontal {
+      display: inherit;
+    }
+}
+
+.is-main-axis-vertical {
+  display: none;
+}
+.is-main-axis-horizontal {
+  display: inherit;
+}
+/*@media (pointer: fine), (pointer: none), (orientation: landscape) {*/
+@media (orientation: landscape) {
+    .is-main-axis-vertical {
+      display: inherit;
+    }
+    .is-main-axis-horizontal {
+      display: none;
+    }
+}
+
+.slider-label {
+    font-size: 0.75rem;
+    line-height: 1.5;
+    align-items     : center;
+    justify-content : space-between;
+}
+.slider-label img{
+    width:  24px;
+    height: 24px;
+}
+@media (pointer: fine), (pointer: none) {
+    .slider-label {
+        /* cancel the height/width restrictions that are imposed on mobile */
+        min-width : auto;
+        min-height: auto;
+        /* text is enlarged and placed beside the icon to save vertical space */
+        font-size : 1rem !important;
+        display   : flex;
+        flex-flow : row nowrap;
+        align-items: center;
+        padding    : 0.2rem;
+    }
+    .slider-label img {
+        width    : 1rem;
+        height   : 1rem;
+        margin   : 0.2rem;
+    }
+}
+
+input[type="range"].slider-vertical {
+    /*we follow apple recommendations for width of touchable components*/
+    width: 44px;
+    height: 88px;
+    -webkit-appearance: slider-vertical;
+    writing-mode: bt-lr;
+}
+@media (pointer: fine), (pointer: none) {
+    /* when pointer precision is better than a touchscreen, we can make sliders smaller */
+    input[type="range"].slider-vertical {
+        width: 20px;
     }
 }
 
 /* ====== END OF SCREEN SPECIFIC CONTENT ======*/
 
 
+.label {
+    background-color: buttonface;
+    color: #212529;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.2rem;
+}
 /* 
 We give special attention to styling the time warp control,
 because it features so prominently

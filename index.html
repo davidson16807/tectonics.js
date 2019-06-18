@@ -133,7 +133,7 @@
         </div>
     </div>
 
-    <div class="btn-group btn-group-sm">
+    <div class="main-axis-group">
         <button type="button" class="btn" data-toggle="collapse" data-target="#tune-control, #main-control">
             <img src="icons/tune.svg"/>
             Tune 
@@ -161,7 +161,7 @@
 </div>
 
 <div id="file-control" class="collapse control" >
-    <div class="btn-group btn-group-sm">
+    <div class="main-axis-group">
         <button type="button" class="btn" data-toggle="collapse" data-target="#file-control, #main-control">
             <img src="icons/down-arrow.svg"/>
             Return
@@ -171,7 +171,7 @@
             Screenshot
             <span class="instructions">p</span>
         </button>
-        <div id="export" class="btn-group">
+        <div id="export" class="main-axis-group">
             <button type="button" class="btn" data-toggle="collapse" data-target="#export-menu" aria-haspopup="true" aria-expanded="false">
                 <img src="icons/export.svg"/>
                 Export
@@ -185,7 +185,7 @@
                 </button>
             </div>
         </div>
-        <div id="import" class="btn-group">
+        <div id="import" class="main-axis-group">
             <button type="button" class="btn" data-toggle="collapse" data-target="#import-menu" aria-haspopup="true" aria-expanded="false">
                 <img src="icons/import.svg"/>
                 Import
@@ -216,7 +216,7 @@
 </div>
 
  <div id="view-control" class="collapse control ">
-    <div id="scalar-view" class="btn-group btn-group-sm">
+    <div id="scalar-view" class="main-axis-group">
         <button type="button" class="btn" data-toggle="collapse" data-target="#view-control, #main-control">
             <img src="icons/down-arrow.svg"/>
             Return
@@ -270,7 +270,7 @@
             {{option.name}}
         </button>
     </div>
-    <div id="vector-view" class="btn-group btn-group-sm">
+    <div id="vector-view" class="main-axis-group">
         <button type="button" 
             class="btn" 
             data-toggle="tooltip"
@@ -283,7 +283,7 @@
             {{option.name}}
         </button>
     </div>
-    <div id="projection" class="btn-group btn-group-sm">
+    <div id="projection" class="main-axis-group">
         <button type="button" 
             class="btn" 
             v-for="option in options"
@@ -303,8 +303,12 @@
 </div>
 
 <div id="tune-control" class="collapse control" >
-    <div class="btn-group btn-group-sm">
-        <div class="btn-group-vertical btn-group-sm">
+    <div class="main-axis-group">
+        <div class="cross-axis-group">
+            <button type="button" class="btn" data-toggle="collapse" data-target="#tune-control, #main-control">
+                <img src="icons/down-arrow.svg"/>
+                Return
+            </button>
             <button type="button" 
                 class="btn" 
                 v-bind:class="{'btn-secondary': supercontinentBreakup}" 
@@ -312,25 +316,16 @@
                 <img src="icons/clock.svg"/>
                 Supercontinent Breakup
             </button>
-            <button type="button" class="btn" data-toggle="collapse" data-target="#tune-control, #main-control">
-                <img src="icons/down-arrow.svg"/>
-                Return
-            </button>
         </div>
-        <div class="input-group input-group-sm">
-            <div class="input-group-prepend">
-                <span class="input-group-text">
-                    <img src="icons/globe-model.svg">
-                    Axial Tilt
-                </span>
-                <span class="input-group-text">
-                    <input type="range" name="axial_tilt" width="100px">
-                </span>
+        <div class="cross-axis-group slider-label label">
+            <div class="">
+                <input type="range" name="axial_tilt" class="is-cross-axis-vertical slider-vertical" orient="vertical">
+                <input type="range" name="axial_tilt" class="is-cross-axis-horizontal">
             </div>
-            <div class="input-group-append">
-                <span class="input-group-text">
-                    &#x2295;
-                </span>
+            <div class="btn">
+                <img src="icons/globe-model.svg">
+                <div class="">Axial Tilt</div>
+                <div class="">100 M<sub>&#x2295;</div>
             </div>
         </div>
     </div>
