@@ -121,6 +121,7 @@ This will be the case regardless of screen orientation.
     display   : flex;
     flex-flow : column nowrap;
     align-items: center;
+    flex: 1 2 auto;
 }
 .btn img {
     /* we follow google material recommendations for icon size */
@@ -169,102 +170,117 @@ These only appear when pointer precision indicates a desktop user.
     }
 }
 
+.horizontal-axis-group {
+    display   : flex;
+    flex-flow : row nowrap;
+    justify-content: space-evenly;
+}
+.vertical-axis-group {
+    display   : flex;
+    flex-flow : column nowrap;
+    justify-content: space-evenly;
+}
+.form-control {
+  height: auto;
+}
 
 /*
-".main-axis-group" behaves similarly to bootstrap's .btn-group,
- however it switches between vertical and horizontal layouts dependant on screen orientation.
+".short-axis-group" behaves similarly to bootstrap's .btn-group,
+ however it switches between vertical and horizontal axes dependant on screen orientation.
+It picks whichever axis is longest at any given time:
 In portrait mode, it assumes a vertical layout. 
 In horizontal mode, it assumes a horizontal layout. 
-It is called ".main-axis-group" in reference to the main axis concept within the flexbox display model.
-"Main axis" here refers to whichever axis expands in a direction 
- that will not obstruct the main focus of the screen (in our case, the planet).
+The short axis is important because we can add components along it indefinitely
+ without ever obstructing the main focus of the screen (in our case, the planet).
 Since one of our core design principles is to prevent obstruction of the main focus, 
- .main-axis-group should be used with any component that can expand to an arbitrary length, 
+ .short-axis-group should be used with any component that can expand to an arbitrary length, 
  especially if the component should always remain visible for ease of use.
 */
-.main-axis-group {
+.short-axis-group {
     /* flex, wrap right to left, bottom to top*/
-    display   : flex;
-    flex-flow : row-reverse nowrap;
+    display    : flex;
+    flex-flow  : row-reverse nowrap;
+    align-items: flex-end;
 }
-.main-axis-group .btn + .btn,
-.main-axis-group .btn + .main-axis-group,
-.main-axis-group .main-axis-group + .btn,
-.main-axis-group .main-axis-group + .main-axis-group {
+.short-axis-group .btn + .btn,
+.short-axis-group .btn + .short-axis-group,
+.short-axis-group .short-axis-group + .btn,
+.short-axis-group .short-axis-group + .short-axis-group {
   margin-bottom: -1px;
   margin-right : 0;
 }
-.main-axis-group .btn,
-.main-axis-group .main-axis-group .btn {
+.short-axis-group .btn,
+.short-axis-group .short-axis-group .btn {
   border-top-left-radius     : 0.25rem ;
   border-top-right-radius    : 0.25rem ;
   border-bottom-left-radius  : 0.25rem ;
   border-bottom-right-radius : 0.25rem ;
 }
-.main-axis-group .btn:not(:last-child):not(.dropdown-toggle),
-.main-axis-group .main-axis-group:not(:last-child) .btn {
+.short-axis-group .btn:not(:last-child):not(.dropdown-toggle),
+.short-axis-group .short-axis-group:not(:last-child) .btn {
   border-bottom-left-radius : 0  ;
   border-top-left-radius : 0  ;
 }
-.main-axis-group .btn:not(:first-child),
-.main-axis-group .main-axis-group:not(:first-child) > .btn {
+.short-axis-group .btn:not(:first-child),
+.short-axis-group .short-axis-group:not(:first-child) > .btn {
   border-top-right-radius: 0  ;
   border-bottom-right-radius: 0  ;
 }
 @media (pointer: fine), (pointer: none), (orientation: landscape) {
-    .main-axis-group {
+    .short-axis-group {
         /* 
         We want everything within a button group to be consistently sized,
         so we set all flexbox properties to "stretch".
         */
         display   : flex;
         flex-flow : column-reverse nowrap;
+        align-items: stretch;
     }
 
     /*
-    We copy paste most of the styling for Bootstrap's main-axis-group-vertical 
-     in order to style main-axis-group as main-axis-group-vertical
+    We copy paste most of the styling for Bootstrap's short-axis-group-vertical 
+     in order to style short-axis-group as short-axis-group-vertical
     */
-    .main-axis-group .btn + .btn,
-    .main-axis-group .btn + .main-axis-group,
-    .main-axis-group .main-axis-group + .btn,
-    .main-axis-group .main-axis-group + .main-axis-group {
+    .short-axis-group .btn + .btn,
+    .short-axis-group .btn + .short-axis-group,
+    .short-axis-group .short-axis-group + .btn,
+    .short-axis-group .short-axis-group + .short-axis-group {
       margin-top: -1px;
       margin-left: 0;
     }
-    .main-axis-group .btn,
-    .main-axis-group .main-axis-group .btn {
+    .short-axis-group .btn,
+    .short-axis-group .short-axis-group .btn {
       border-top-left-radius     : 0.25rem ;
       border-top-right-radius    : 0.25rem ;
       border-bottom-left-radius  : 0.25rem ;
       border-bottom-right-radius : 0.25rem ;
     }
 
-    .main-axis-group .btn:not(:last-child):not(.dropdown-toggle),
-    .main-axis-group .main-axis-group:not(:last-child) .btn {
+    .short-axis-group .btn:not(:last-child):not(.dropdown-toggle),
+    .short-axis-group .short-axis-group:not(:last-child) .btn {
       border-bottom-left-radius : 0  ;
       border-bottom-right-radius: 0  ;
     }
 
-    .main-axis-group .btn:not(:first-child),
-    .main-axis-group .main-axis-group:not(:first-child) > .btn {
+    .short-axis-group .btn:not(:first-child),
+    .short-axis-group .short-axis-group:not(:first-child) > .btn {
       border-top-right-radius: 0  ;
       border-top-left-radius : 0  ;
     }
 }
 
 /*
-".cross-axis-group" behaves similarly to bootstrap's .btn-group,
- however it switches between vertical and horizontal layouts dependant on screen orientation.
+".long-axis-group" behaves similarly to bootstrap's .btn-group,
+ however it switches between vertical and horizontal axes dependant on screen orientation.
+It picks whichever axis is longest at any given time:
 In portrait mode, it assumes a horizontal layout. 
 In horizontal mode, it assumes a vertical layout.
-It is called ".cross-axis-group" in reference to the cross axis concept within the flexbox display model.
-"Cross axis" here refers to whichever axis expands towards the main focus of the screen (in our case, the planet).
+"Long axis" will always expand towards the main focus of the screen (in our case, the planet).
 Since one of our core design principles is to prevent obstruction of the main focus, 
- .cross-axis-group should be used sparingly, either for components that appear temporarily, 
- or components that will not expand to some arbitrary length.
+ .long-axis-group should be used sparingly.
+Use it only when you can guarantee the number of components you're dealing with is small.
 */
-.cross-axis-group {
+.long-axis-group {
     /* 
     We want everything within a button group to be consistently sized,
     so we set all flexbox properties to "stretch".
@@ -272,93 +288,102 @@ Since one of our core design principles is to prevent obstruction of the main fo
     display   : flex;
     flex-flow : column-reverse nowrap;
 }
-.cross-axis-group .btn + .btn,
-.cross-axis-group .btn + .cross-axis-group,
-.cross-axis-group .cross-axis-group + .btn,
-.cross-axis-group .cross-axis-group + .cross-axis-group {
+.long-axis-group .btn + .btn,
+.long-axis-group .btn + .long-axis-group,
+.long-axis-group .long-axis-group + .btn,
+.long-axis-group .long-axis-group + .long-axis-group {
   margin-top: -1px;
   margin-left: 0;
 }
-.cross-axis-group .btn,
-.cross-axis-group .cross-axis-group .btn {
+.long-axis-group .btn,
+.long-axis-group .long-axis-group .btn {
   border-top-left-radius     : 0.25rem ;
   border-top-right-radius    : 0.25rem ;
   border-bottom-left-radius  : 0.25rem ;
   border-bottom-right-radius : 0.25rem ;
 }
-.cross-axis-group .btn:not(:last-child):not(.dropdown-toggle),
-.cross-axis-group .cross-axis-group:not(:last-child) .btn {
+.long-axis-group .btn:not(:last-child):not(.dropdown-toggle),
+.long-axis-group .long-axis-group:not(:last-child) .btn {
   border-bottom-left-radius : 0  ;
   border-bottom-right-radius: 0  ;
 }
-.cross-axis-group .btn:not(:first-child),
-.cross-axis-group .cross-axis-group:not(:first-child) > .btn {
+.long-axis-group .btn:not(:first-child),
+.long-axis-group .long-axis-group:not(:first-child) > .btn {
   border-top-right-radius: 0  ;
   border-top-left-radius : 0  ;
 }
 @media (pointer: fine), (pointer: none), (orientation: landscape) {
-    .cross-axis-group {
+    .long-axis-group {
         /* flex, wrap right to left, bottom to top*/
         display   : flex;
         flex-flow : row-reverse nowrap;
     }
-    .cross-axis-group .btn + .btn,
-    .cross-axis-group .btn + .cross-axis-group,
-    .cross-axis-group .cross-axis-group + .btn,
-    .cross-axis-group .cross-axis-group + .cross-axis-group {
+    .long-axis-group .btn + .btn,
+    .long-axis-group .btn + .long-axis-group,
+    .long-axis-group .long-axis-group + .btn,
+    .long-axis-group .long-axis-group + .long-axis-group {
       margin-bottom: -1px;
       margin-right : 0;
     }
-    .cross-axis-group .btn,
-    .cross-axis-group .cross-axis-group .btn {
+    .long-axis-group .btn,
+    .long-axis-group .long-axis-group .btn {
       border-top-left-radius     : 0.25rem ;
       border-top-right-radius    : 0.25rem ;
       border-bottom-left-radius  : 0.25rem ;
       border-bottom-right-radius : 0.25rem ;
     }
-    .cross-axis-group .btn:not(:last-child):not(.dropdown-toggle),
-    .cross-axis-group .cross-axis-group:not(:last-child) .btn {
+    .long-axis-group .btn:not(:last-child):not(.dropdown-toggle),
+    .long-axis-group .long-axis-group:not(:last-child) .btn {
       border-bottom-left-radius : 0;
       border-top-left-radius    : 0;
     }
-    .cross-axis-group .btn:not(:first-child),
-    .cross-axis-group .cross-axis-group:not(:first-child) > .btn {
+    .long-axis-group .btn:not(:first-child),
+    .long-axis-group .long-axis-group:not(:first-child) > .btn {
       border-top-right-radius   : 0;
       border-bottom-right-radius: 0;
     }
 }
 
-.is-cross-axis-vertical {
+/* 
+is-long-axis-vertical only displays when the vertical axis is longest
+is-long-axis-horizontal only displays when the horizontal axis is longest
+*/
+.is-long-axis-vertical {
   display: inherit;
 }
-.is-cross-axis-horizontal {
+.is-long-axis-horizontal {
   display: none;
 }
 /*@media (pointer: fine), (pointer: none), (orientation: landscape) {*/
-@media (orientation: landscape) {
-    .is-cross-axis-vertical {
+@media (pointer: fine), (pointer: none), (orientation: landscape) {
+    .is-long-axis-vertical {
       display: none;
     }
-    .is-cross-axis-horizontal {
+    .is-long-axis-horizontal {
       display: inherit;
     }
 }
 
-.is-main-axis-vertical {
+/* 
+is-short-axis-vertical only displays when the vertical axis is shortest
+is-short-axis-horizontal only displays when the horizontal axis is shortest
+*/
+.is-short-axis-vertical {
   display: none;
 }
-.is-main-axis-horizontal {
+.is-short-axis-horizontal {
   display: inherit;
 }
 /*@media (pointer: fine), (pointer: none), (orientation: landscape) {*/
-@media (orientation: landscape) {
-    .is-main-axis-vertical {
+@media (pointer: fine), (pointer: none), (orientation: landscape) {
+    .is-short-axis-vertical {
       display: inherit;
     }
-    .is-main-axis-horizontal {
+    .is-short-axis-horizontal {
       display: none;
     }
 }
+
 
 .slider-label {
     font-size: 0.75rem;
@@ -385,7 +410,10 @@ Since one of our core design principles is to prevent obstruction of the main fo
     .slider-label img {
         width    : 1rem;
         height   : 1rem;
-        margin   : 0.2rem;
+        margin   : 0.5rem;
+    }
+    .slider-label .vertical-axis-group {
+        align-items     : flex-start;
     }
 }
 

@@ -104,24 +104,24 @@
 </div>
 <!-- info on screen display -->
 <div id="main-control" class="show collapse control" >
-    <div id="time-control">
-        <div class="input-group input-group-sm">
+    <div class="vertical-axis-group">
+        <div class="horizontal-axis-group">
             <span class="form-control input age">{{ format(elapsed_time).quantity }}</span>
             <div class="input-group-append">
                 <span class="input-group-text age-units">{{ format(elapsed_time).unit }}y</span>
             </div>
         </div>
-        <div class="input-group input-group-sm">
+        <div class="horizontal-axis-group">
             <div class="input-group-prepend">
                 <span class="input-group-text" v-on:click="rewind()">
-                    <img src="icons/rewind.svg">
+                    <img src="icons/rewind.svg"/>
                 </span>
                 <span class="input-group-text play" v-on:click="togglePause()">
-                    <img src="icons/pause.svg" v-if="!paused">
-                    <img src="icons/play.svg" v-if="paused">
+                    <img src="icons/pause.svg"/>
+                    <img src="icons/play.svg"/>
                 </span>
                 <span class="input-group-text fast-forward" v-on:click="fastForward()">
-                    <img src="icons/fast-forward.svg">
+                    <img src="icons/fast-forward.svg"/>
                 </span>
             </div>
             <div class="input-group-append">
@@ -133,8 +133,8 @@
         </div>
     </div>
 
-    <div class="main-axis-group">
-        <button type="button" class="btn" data-toggle="collapse" data-target="#tune-control, #main-control">
+    <div class="short-axis-group">
+        <button type="button" class="btn" data-toggle="collapse" data-target=".tune-control, #main-control">
             <img src="icons/tune.svg"/>
             Tune 
         </button>
@@ -146,32 +146,25 @@
             <img src="icons/folder.svg"/>
             File 
         </button>
-        <button type="button" class="btn" data-toggle="collapse" data-target="#new-control, #main-control">
-            <img src="icons/add.svg"/>
+        <button type="button" class="btn" data-toggle="collapse" data-target=".new-control, #main-control">
+            <img src="icons/asterisk.svg"/>
             New 
         </button>
     </div>
 </div>
 
-<div id="new-control"  class="collapse control" >
-    <button type="button" class="btn" data-toggle="collapse" data-target="#new-control, #main-control">
-        <img src="icons/down-arrow.svg"/>
-        Return
-    </button>
-</div>
-
 <div id="file-control" class="collapse control" >
-    <div class="main-axis-group">
+    <div class="short-axis-group">
         <button type="button" class="btn" data-toggle="collapse" data-target="#file-control, #main-control">
             <img src="icons/down-arrow.svg"/>
             Return
         </button>
         <button id="screenshot" v-if="isEnabled" type="button" class="btn" v-on:click="capture" v-on:keyup.p="capture">
-            <img src="icons/camera.svg">
+            <img src="icons/camera.svg"/>
             Screenshot
             <span class="instructions">p</span>
         </button>
-        <div id="export" class="main-axis-group">
+        <div id="export" class="short-axis-group">
             <button type="button" class="btn" data-toggle="collapse" data-target="#export-menu" aria-haspopup="true" aria-expanded="false">
                 <img src="icons/export.svg"/>
                 Export
@@ -185,7 +178,7 @@
                 </button>
             </div>
         </div>
-        <div id="import" class="main-axis-group">
+        <div id="import" class="short-axis-group">
             <button type="button" class="btn" data-toggle="collapse" data-target="#import-menu" aria-haspopup="true" aria-expanded="false">
                 <img src="icons/import.svg"/>
                 Import
@@ -202,13 +195,13 @@
             </div>
         </div>
         <button id="load" type="button" class="btn load" v-on:click="load()">
-            <img src="icons/upload.svg">
+            <img src="icons/upload.svg"/>
             Load
             <span class="instructions">drag</span>
             <input id="load-input" ref="loadInput" type="file" v-on:change="loadPart2($event.target.files[0])" class="hidden" />
         </button>
         <button id="save" type="button" class="btn"  v-on:click="save">
-            <img src="icons/download.svg">
+            <img src="icons/download.svg"/>
             Save
             <span class="instructions">s</span>
         </button>
@@ -216,7 +209,7 @@
 </div>
 
  <div id="view-control" class="collapse control ">
-    <div id="scalar-view" class="main-axis-group">
+    <div id="scalar-view" class="short-axis-group">
         <button type="button" class="btn" data-toggle="collapse" data-target="#view-control, #main-control">
             <img src="icons/down-arrow.svg"/>
             Return
@@ -270,7 +263,7 @@
             {{option.name}}
         </button>
     </div>
-    <div id="vector-view" class="main-axis-group">
+    <div id="vector-view" class="short-axis-group">
         <button type="button" 
             class="btn" 
             data-toggle="tooltip"
@@ -283,7 +276,7 @@
             {{option.name}}
         </button>
     </div>
-    <div id="projection" class="main-axis-group">
+    <div id="projection" class="short-axis-group">
         <button type="button" 
             class="btn" 
             v-for="option in options"
@@ -295,42 +288,89 @@
         </button>
     </div>
     <button id="fullscreen" v-if="isVisible" type="button" class="btn fullscreen" data-toggle="button" aria-pressed="true" v-on:click="toggleFullscreen()">
-        <img v-if="!isFullscreen" src="icons/fullscreen.svg">
-        <img v-if="isFullscreen"  src="icons/fullscreen-exit.svg">
+        <img v-if="!isFullscreen"/>
+        <img v-if="isFullscreen"/>
         {{isFullscreen? 'Exit Fullscreen' : 'Fullscreen'}}
         <span class="instructions">F11</span>
     </button>
 </div>
 
-<div id="tune-control" class="collapse control" >
-    <div class="main-axis-group">
-        <div class="cross-axis-group">
-            <button type="button" class="btn" data-toggle="collapse" data-target="#tune-control, #main-control">
-                <img src="icons/down-arrow.svg"/>
-                Return
-            </button>
-            <button type="button" 
-                class="btn" 
-                v-bind:class="{'btn-secondary': supercontinentBreakup}" 
-                v-on:click="setSupercontinentBreakup(!supercontinentBreakup? 1:0)">
-                <img src="icons/clock.svg"/>
-                Supercontinent Breakup
-            </button>
-        </div>
-        <div class="cross-axis-group slider-label label">
-            <div class="">
-                <input type="range" name="axial_tilt" class="is-cross-axis-vertical slider-vertical" orient="vertical">
-                <input type="range" name="axial_tilt" class="is-cross-axis-horizontal">
+<div id="tune-control" class="tune-control new-control collapse control" >
+    <div class="short-axis-group">
+        <div class="vertical-axis-group">
+            <div class="horizontal-axis-group new-control collapse">
+                <span class="form-control">1561181197700</span>
             </div>
+            <div class="horizontal-axis-group new-control collapse">
+                <button type="button" class="btn">
+                    <img src="icons/dice-6.svg"/>
+                    Randomize
+                </button>
+                <button type="button" class="btn">
+                    <img v-if="!isCopied"/>
+                    <img v-if="isCopied"/>
+                    Copy Seed
+                </button>
+            </div>
+            <div class="horizontal-axis-group">
+                <button type="button" 
+                    class="btn" 
+                    v-bind:class="{'btn-secondary': supercontinentBreakup}" 
+                    v-on:click="setSupercontinentBreakup(!supercontinentBreakup? 1:0)">
+                    <img src="icons/clock.svg"/>
+                    Supercontinent Breakup
+                </button>
+                <button type="button" class="btn tune-control collapse" data-toggle="collapse" data-target="#main-control, .tune-control">
+                    <img src="icons/down-arrow.svg"/>
+                    Return
+                </button>
+                <button type="button" class="btn new-control collapse" data-toggle="collapse" data-target="#main-control, .new-control">
+                    <img src="icons/down-arrow.svg"/>
+                    Return
+                </button>
+            </div>
+        </div>
+        <div class="new-control long-axis-group slider-label label collapse">
             <div class="btn">
-                <img src="icons/globe-model.svg">
-                <div class="">Axial Tilt</div>
-                <div class="">100 M<sub>&#x2295;</div>
+                <img src="icons/grid.svg"/>
+                <div class="vertical-axis-group">
+                    <div>Resolution</div>
+                    <div>10k cells</div>
+                </div>
+            </div>
+            <div class="">
+                <input type="range" name="axial_tilt" class="is-long-axis-vertical slider-vertical" orient="vertical">
+                <input type="range" name="axial_tilt" class="is-long-axis-horizontal">
+            </div>
+        </div>
+        <div class="long-axis-group slider-label label">
+            <div class="btn">
+                <img src="icons/globe-model.svg"/>
+                <div class="vertical-axis-group">
+                    <div class="">Axial Tilt</div>
+                    <div class="">100 M<sub>&#x2295;</sub></div>
+                </div>
+            </div>
+            <div class="">
+                <input type="range" name="axial_tilt" class="is-long-axis-vertical slider-vertical" orient="vertical">
+                <input type="range" name="axial_tilt" class="is-long-axis-horizontal">
+            </div>
+        </div>
+        <div class="long-axis-group slider-label label">
+            <div class="btn">
+                <img src="icons/day-night.svg"/>
+                <div class="vertical-axis-group">
+                    <div class="">Day Length</div>
+                    <div class="">24h</div>
+                </div>
+            </div>
+            <div class="">
+                <input type="range" name="axial_tilt" class="is-long-axis-vertical slider-vertical" orient="vertical">
+                <input type="range" name="axial_tilt" class="is-long-axis-horizontal">
             </div>
         </div>
     </div>
 </div>
-
 
 <a id="hidden-downloader" href="dataUrl" download="filename"></a>
 
@@ -397,7 +437,7 @@
         <iframe width="420" height="315" src="https://www.youtube.com/watch?v=MYMOHkVMIcA" frameborder="0" allowfullscreen></iframe>
     </div>
     <div v-if="isNoJs" class="loading-dialog">
-        <img src="icons/spinner.svg"/ class="hcenter">
+        <img src="icons/spinner.svg"/>
         <h2>Initializing</h2>
     </div>
     <div v-if="isLoadingSave" class="collapse loading-dialog">
@@ -863,7 +903,7 @@
     });
 
     var timeMenuVue = new Vue({
-      el: '#time-control',
+      el: '#main-control',
       data: {
             paused: false,
             speed_i: 1,
