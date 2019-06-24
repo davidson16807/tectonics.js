@@ -9,7 +9,7 @@
   ],
   "dependencies": {},
   "devDependencies": {
-    "eslint": "4.3.0",
+    "eslint": "4.18.2",
     "karma": "1.7.0",
     "karma-chrome-launcher": "2.2.0",
     "karma-cli": "^1.0.1",
