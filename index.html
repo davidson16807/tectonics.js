@@ -38,6 +38,7 @@
     <script src="noncompiled/Units.js"></script>
     <script src="noncompiled/Interpolation.js"></script>
     <script src="noncompiled/Logging.js"></script>
+    <script src="noncompiled/Event.js"></script>
     <script src="noncompiled/academics/SphericalGeometry.js"></script>
     <script src="noncompiled/academics/Optics.js"></script>
     <script src="noncompiled/academics/Thermodynamics.js"></script>
@@ -299,16 +300,16 @@
     <div class="short-axis-group">
         <div class="vertical-axis-group">
             <div class="horizontal-axis-group new-control collapse">
-                <span class="form-control">1561181197700</span>
+                <input id="seed" v-model="seed" class="form-control"></input>
             </div>
             <div class="horizontal-axis-group new-control collapse">
-                <button type="button" class="btn">
+                <button type="button" class="btn" v-on:click="randomizeCrust">
                     <img src="icons/dice-6.svg"/>
                     Randomize
                 </button>
-                <button type="button" class="btn">
-                    <img v-if="!isCopied"/>
-                    <img v-if="isCopied"/>
+                <button type="button" class="btn" v-on:click="copySeed">
+                    <img v-if="!isSeedCopied" src="icons/clipboard-arrow-down.svg"/>
+                    <img v-if="isSeedCopied" src="icons/clipboard-check.svg"/>
                     Copy Seed
                 </button>
             </div>
@@ -330,45 +331,51 @@
                 </button>
             </div>
         </div>
-        <div class="new-control long-axis-group slider-label label collapse">
+        <!-- <div class="new-control long-axis-group slider-label label collapse">
             <div class="btn">
                 <img src="icons/grid.svg"/>
                 <div class="vertical-axis-group">
                     <div>Resolution</div>
-                    <div>10k cells</div>
+                    <div>{{ format_count(cell_count).quantity }}{{ format_count(cell_count).unit }} cells</div>
                 </div>
             </div>
-            <div class="">
-                <input type="range" name="axial_tilt" class="is-long-axis-vertical slider-vertical" orient="vertical">
-                <input type="range" name="axial_tilt" class="is-long-axis-horizontal">
+            <div>
+                <input type="range" v-model="resolution_level" class="is-long-axis-vertical slider-vertical" orient="vertical"
+                    min="1" max="6" step="1">
+                <input type="range" v-model="resolution_level" class="is-long-axis-horizontal" 
+                    min="1" max="6" step="1">
             </div>
-        </div>
-        <div class="long-axis-group slider-label label">
+        </div> -->
+        <!-- <div class="long-axis-group slider-label label">
             <div class="btn">
                 <img src="icons/globe-model.svg"/>
                 <div class="vertical-axis-group">
-                    <div class="">Axial Tilt</div>
-                    <div class="">100 M<sub>&#x2295;</sub></div>
+                    <div>Axial Tilt</div>
+                    <div>{{degrees(axial_tilt)}}°</div>
                 </div>
             </div>
             <div class="">
-                <input type="range" name="axial_tilt" class="is-long-axis-vertical slider-vertical" orient="vertical">
-                <input type="range" name="axial_tilt" class="is-long-axis-horizontal">
+                <input type="range" name="axial_tilt" class="is-long-axis-vertical slider-vertical" orient="vertical"
+                    min="0" max="90" step="0.5">
+                <input type="range" name="axial_tilt" class="is-long-axis-horizontal"
+                    min="0" max="90" step="0.5">
             </div>
-        </div>
-        <div class="long-axis-group slider-label label">
+        </div> -->
+        <!-- <div class="long-axis-group slider-label label">
             <div class="btn">
                 <img src="icons/day-night.svg"/>
                 <div class="vertical-axis-group">
-                    <div class="">Day Length</div>
-                    <div class="">24h</div>
+                    <div>Day Length</div>
+                    <div>{{ format_time(day_length).quantity }} {{ format_time(day_length).unit }}</div>
                 </div>
             </div>
             <div class="">
-                <input type="range" name="axial_tilt" class="is-long-axis-vertical slider-vertical" orient="vertical">
-                <input type="range" name="axial_tilt" class="is-long-axis-horizontal">
+                <input type="range" name="log10_day_length" class="is-long-axis-vertical slider-vertical" orient="vertical"
+                    min="0" max="3">
+                <input type="range" name="log10_day_length" class="is-long-axis-horizontal"
+                    min="0" max="3">
             </div>
-        </div>
+        </div> -->
     </div>
 </div>
 
@@ -468,6 +475,61 @@
     var IS_PROD = false;
     var autosave_period;
 
+    var onSimLoadStart   = new Event();
+    var onSimLoadStop    = new Event();
+
+    onSimLoadStart.subscribe(function() {
+        $('.hidden-when-loading').hide();
+    });
+    onSimLoadStop.subscribe(function() {
+        $('.hidden-when-loading').show();
+    });
+
+    function loadUrl (url) {
+        onSimLoadStart.fire();
+        $.get( url, function( json ) {
+            sim = JsonDeserializer.sim(json);
+            onSimLoadStop.fire();
+        });
+    }
+    function loadFile (file) {
+        onSimLoadStart.fire();
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            sim = JsonDeserializer.sim(e.target.result);
+            onSimLoadStop.fire();
+        }
+        reader.readAsText(file);
+    }
+    function loadImage (file) {
+        onSimLoadStart.fire();
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var data_url = e.target.result;
+            // create image
+            var image = new Image();
+            // create canvas context from image
+            var canvas = document.createElement('canvas');
+            var context = canvas.getContext('2d');
+            context.drawImage(image, 0, 0);
+            image.onload = function(){
+                canvas.width  = image.width;
+                canvas.height = image.height;
+                context.drawImage(image,0,0); // Or at whatever offset you like
+                // generate crust from canvas context
+                var elevations = ImageImporter.get_elevations_from_canvas_context(context, sim.focus.grid);
+                CrustGenerator.get_crust_from_elevations(
+                    elevations, 
+                    CrustGenerator.modern_earth_attribute_height_maps, 
+                    sim.focus.lithosphere.total_crust
+                );
+
+                onSimLoadStop.fire();
+            };
+            image.src = data_url;
+        }
+        reader.readAsDataURL(file);
+    }
 
     // init the scene
     function init(){
@@ -481,8 +543,8 @@
         }
 
         
-        var resolution      = Math.min(6, parseInt(querystring['resolution'] || '5'));
-        autosave_period     = parseInt(querystring['autosave']   || '0');
+        var resolution_level = Math.min(6, parseInt(querystring['resolution_level'] || '5'));
+        autosave_period      = parseInt(querystring['autosave']   || '0');
 
         view = new View(
             window.innerWidth, 
@@ -491,6 +553,9 @@
             vectorViews.disabled, 
             projectionViews.orthographic,
         );
+
+        onSimLoadStart.fire();
+
         sim = new Simulation({
             seed:  querystring['seed'] || (new Date).getTime().toString(),
             speed: 3.1*Units.DAY,
@@ -503,7 +568,7 @@
         var get_planet_name = NameGenerator.get_length_distribution_generator(planet_name_corpus, 25, {5:1,6:3,7:11,8:3,9:1}, 100);
         var focus_name = get_planet_name(sim.random);
         
-        var geometry = new THREE.IcosahedronGeometry(1, resolution);
+        var geometry = new THREE.IcosahedronGeometry(1, resolution_level);
         var universe = new Universe({
             system: {
                 name: 'galactic orbit',
@@ -580,8 +645,8 @@
             loadUrl(querystring['load']); // TODO: rework this
         } 
 
-        $('.hidden-when-loading').show();
-        
+        onSimLoadStop.fire();
+
         $('#container').append(view.getDomElement());
         
         if(!IS_PROD){
@@ -630,75 +695,23 @@
         }
     }
     
-    function loadUrl (url) {
-        dialogVue.$data.isLoadingSave = true;
-        $('.hidden-when-loading').hide();
-        $.get( url, function( json ) {
-            sim = JsonDeserializer.sim(json);
-            dialogVue.$data.isLoadingSave = false;
-            $('.hidden-when-loading').show();
-            timeMenuVue.resync();
-        });
-    }
-    function loadFile (file) {
-        dialogVue.$data.isLoadingSave = true;
-        $('.hidden-when-loading').hide();
-        var reader = new FileReader();
-        reader.onload = function(e) {
-            sim = JsonDeserializer.sim(e.target.result);
-            dialogVue.$data.isLoadingSave = false;
-            $('.hidden-when-loading').show();
-            timeMenuVue.resync();
-        }
-        reader.readAsText(file);
-    }
-    function loadImage (file) {
-        dialogVue.$data.isLoadingSave = true;
-        $('.hidden-when-loading').hide();
-        var reader = new FileReader();
-        reader.onload = function(e) {
-            var data_url = e.target.result;
-            // create image
-            var image = new Image();
-            // create canvas context from image
-            var canvas = document.createElement('canvas');
-            var context = canvas.getContext('2d');
-            context.drawImage(image, 0, 0);
-            image.onload = function(){
-                canvas.width  = image.width;
-                canvas.height = image.height;
-                context.drawImage(image,0,0); // Or at whatever offset you like
-                // generate crust from canvas context
-                var elevations = ImageImporter.get_elevations_from_canvas_context(context, sim.focus.grid);
-                CrustGenerator.get_crust_from_elevations(
-                    elevations, 
-                    CrustGenerator.modern_earth_attribute_height_maps, 
-                    sim.focus.lithosphere.total_crust
-                );
-
-                $('.hidden-when-loading').show();
-            };
-            image.src = data_url;
-        }
-        reader.readAsDataURL(file);
-    }
 
     function format (num, rollover, precision){
-                var quantity = num;
-                var units = ['', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']
-                var unit = units.shift();
-                while(quantity > rollover) {
-                    unit = units.shift();
-                    quantity /= 1000;
-                }
-                return {
-                    quantity:     quantity.toPrecision(precision).toString(), 
-                    unit:         unit,
-                };
-            }
+        var quantity = num;
+        var units = ['', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']
+        var unit = units.shift();
+        while(quantity > rollover) {
+            unit = units.shift();
+            quantity /= rollover;
+        }
+        return {
+            quantity:     quantity.toPrecision(precision).toString(), 
+            unit:         unit,
+        };
+    }
     function format_time (seconds) {
         var formatted = format(seconds / Units.YEAR, 1000, 3);
-        return formatted.quantity + formatted.unit + 'y';
+        return formatted.quantity + formatted.unit;
     }
 
     function download(url, filename) {
@@ -783,6 +796,13 @@
       },
       created: function() {
           this.isNoWebGl = window.WebGLRenderingContext;
+          var _this = this;
+          onSimLoadStart.subscribe(function() {
+              _this.isLoadingSave = true;
+          })
+          onSimLoadStop.subscribe(function() {
+              _this.isLoadingSave = false;
+          })
       },
       methods: {
           notify: function(notification) {
@@ -927,9 +947,11 @@
       },
       created: function() {
           var _this = this;
-          setInterval(function() {
-              _this.$data.elapsed_time = sim.elapsed_time;
-          }, 1000/10);
+          onSimLoadStop.subscribe(function () {
+            _this.elapsed_time = sim.elapsed_time;
+            sim.speed = _this.speeds[_this.speed_i].scale;
+            sim.paused = _this.paused;
+          })
       },
       methods: {
         speed: function(speed_i) {
@@ -947,10 +969,6 @@
         rewind: function() {
             this.speed_i = Math.max(this.speed_i-1, 0);
             sim.speed = this.speeds[this.speed_i].scale;
-        },
-        resync: function() {
-            sim.speed = this.speeds[this.speed_i].scale;
-            sim.paused = this.paused;
         },
         format: function(time) {
             return format(time/Units.YEAR, 1000, 3)
@@ -1148,8 +1166,55 @@
       el: '#tune-control',
       data: {
         supercontinentBreakup: 1,
+        seed: '',
+        isSeedCopied: 0,
+        resolution_level: 5,
+        cell_count: 0,
+      },
+      created: function() {
+          var _this = this;
+          onSimLoadStop.subscribe(function() { 
+            _this.seed = sim.seed;
+            _this.cell_count = sim.focus.grid.vertices.length;
+          });
+      },
+      watch: {
+        'seed': function(new_seed, old_seed) {
+            // TODO: reset sim to match the new seed
+        },
+        'resolution_level': function(new_resolution_level, old_resolution_level) {
+            onSimLoadStart.fire();
+
+            var geometry = new THREE.IcosahedronGeometry(1, new_resolution_level);
+            var focus = new World({ 
+                name: sim.focus.name,
+                grid: { 
+                    faces:   geometry.faces.map(f => {  
+                        return {a: f.a, b: f.b, c: f.c, vertexNormals: f.vertexNormals}  
+                        }), 
+                    vertices:geometry.vertices.map(v => {  
+                        return {x: v.x, y: v.y, z: v.z}  
+                        }), 
+                }, 
+            });
+            sim.focus = focus;
+            CrustGenerator.get_crust_from_height_ranks(
+                SphericalGeometry.get_random_surface_field(focus.grid, sim.random), 
+                CrustGenerator.modern_earth_hypsography, 
+                CrustGenerator.modern_earth_attribute_height_maps, 
+                sim.random,
+                focus.lithosphere.total_crust
+            );
+            sim.model().initialize();
+
+            onSimLoadStop.fire();
+            this.cell_count = sim.focus.grid.vertices.length;
+        }
       },
       methods: {
+        format_count: function(count) {
+            return format(count, 1000, 3);
+        },
         setSupercontinentBreakup: function(value) {
             this.supercontinentBreakup = value;
             if (!this.supercontinentBreakup) {
@@ -1158,6 +1223,21 @@
                 sim.focus.lithosphere.supercontinentCycle.duration = 0;
             }
         },
+        randomizeCrust: function() {
+            var focus = sim.focus;
+            CrustGenerator.get_crust_from_height_ranks(
+                SphericalGeometry.get_random_surface_field(focus.grid, sim.random), 
+                CrustGenerator.modern_earth_hypsography, 
+                CrustGenerator.modern_earth_attribute_height_maps, 
+                sim.random,
+                focus.lithosphere.total_crust
+            );
+        },
+        copySeed: function() {
+            var copyText = document.getElementById("seed");
+            copyText.select();
+            document.execCommand("copy");
+        }
       }
     });
 
@@ -1197,9 +1277,9 @@
         },
         created: function() {
             var _this = this;
-            setInterval(function() {
+            onSimLoadStop.subscribe(function() {
                 view.updateChart(_this.$data, sim, _this.$data);
-            }, 1000/2);
+            });
         },
         methods: {
             setOceanVisibility(value){
