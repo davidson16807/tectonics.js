@@ -106,9 +106,9 @@
 <div id="main-control" class="show collapse control" >
     <div class="vertical-axis-group">
         <div class="horizontal-axis-group">
-            <span class="form-control input age">{{ format(elapsed_time).quantity }}</span>
+            <span class="form-control input age">{{ format_count(elapsed_time).quantity }}</span>
             <div class="input-group-append">
-                <span class="input-group-text age-units">{{ format(elapsed_time).unit }}y</span>
+                <span class="input-group-text age-units">{{ format_count(elapsed_time).unit }}y</span>
             </div>
         </div>
         <div class="horizontal-axis-group">
@@ -361,7 +361,7 @@
                     min="0" max="90" step="0.5">
             </div>
         </div>
-        <!-- <div class="long-axis-group slider-label label">
+        <div class="long-axis-group slider-label label">
             <div class="btn">
                 <img src="icons/day-night.svg"/>
                 <div class="vertical-axis-group">
@@ -370,12 +370,12 @@
                 </div>
             </div>
             <div class="">
-                <input type="range" name="log10_day_length" class="is-long-axis-vertical slider-vertical" orient="vertical"
-                    min="0" max="3">
-                <input type="range" name="log10_day_length" class="is-long-axis-horizontal"
-                    min="0" max="3">
+                <input type="range" v-model="log10_day_length" class="is-long-axis-vertical slider-vertical" orient="vertical"
+                    min="4.45" max="7.5" step="0.1">
+                <input type="range" v-model="log10_day_length" class="is-long-axis-horizontal"
+                    min="4.45" max="7.5" step="0.1">
             </div>
-        </div> -->
+        </div>
     </div>
 </div>
 
@@ -707,7 +707,7 @@
     }
     
 
-    function format (num, rollover, precision){
+    function format_count (num, rollover, precision){
         var quantity = num;
         var units = ['', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']
         var unit = units.shift();
@@ -720,9 +720,24 @@
             unit:         unit,
         };
     }
-    function format_time (seconds) {
-        var formatted = format(seconds / Units.YEAR, 1000, 3);
-        return formatted.quantity + formatted.unit;
+    function format_time (seconds, precision){
+        var quantity = seconds;
+        if (quantity < Units.MINUTE) { 
+            return { unit: 's',  quantity:  (quantity/Units.SECOND).toPrecision(precision).toString() }; 
+        } else if (quantity < Units.HOUR) {
+            return { unit: 'm',  quantity:  (quantity/Units.MINUTE).toPrecision(precision).toString() }; 
+        } else if (quantity < Units.DAY) {
+            return { unit: 'hr',  quantity: (quantity/Units.HOUR).toPrecision(precision).toString() }; 
+        } else if (quantity < Units.WEEK) {
+            return { unit: 'dy',  quantity: (quantity/Units.DAY).toPrecision(precision).toString() }; 
+        } else if (quantity < Units.MONTH) {
+            return { unit: 'wk',  quantity: (quantity/Units.WEEK).toPrecision(precision).toString() }; 
+        } else if (quantity < Units.YEAR) {
+            return { unit: 'mo',  quantity: (quantity/Units.MONTH).toPrecision(precision).toString() }; 
+        }
+        var formatted = format_count(quantity, 1000, 3);
+        formatted.unit += 'y';
+        return formatted;
     }
 
     function download(url, filename) {
@@ -851,7 +866,7 @@
               var blob = new Blob([stringified], {type : 'application/json'});
               var blobUrl = URL.createObjectURL(blob);
               var elapsed_time = format_time(sim.elapsed_time);
-              var filename = `${sim.focus().name}-${elapsed_time}.sim`;
+              var filename = `${sim.focus().name}-${elapsed_time.quantity}${elapsed_time.unit}.sim`;
               download(blobUrl, filename);
           }
       }
@@ -865,7 +880,7 @@
             var blob = new Blob([content], {type : 'text/csv'});
             var blobUrl = URL.createObjectURL(blob);
             var elapsed_time = format_time(sim.elapsed_time);
-            var filename = `${sim.focus().name}-${elapsed_time}.csv`;
+            var filename = `${sim.focus().name}-${elapsed_time.quantity}${elapsed_time.unit}.csv`;
             download(blobUrl, filename);
         }
       }
@@ -898,10 +913,7 @@
       methods: {
           capture(event) {
               var dataUrl = view.getScreenshotDataURL();
-              var filename = 
-                  sim.focus().name+'-'+
-                  format_time(sim.elapsed_time)+
-                  '.png';
+              var filename = `${sim.focus().name}-${elapsed_time.quantity}${elapsed_time.unit}.png`
               download(dataUrl, filename);
           }
       }
@@ -981,8 +993,8 @@
             this.speed_i = Math.max(this.speed_i-1, 0);
             sim.speed = this.speeds[this.speed_i].scale;
         },
-        format: function(time) {
-            return format(time/Units.YEAR, 1000, 3)
+        format_count: function(time) {
+            return format_count(time/Units.YEAR, 1000, 3)
         },
     }
     });
@@ -1176,12 +1188,14 @@
     var settingsVue = new Vue({
       el: '#tune-control',
       data: {
-        supercontinentBreakup: 1,
-        seed: '',
-        isSeedCopied: 0,
-        resolution_level: 5,
-        cell_count: 0,
-        axial_tilt_degrees: 23.5,
+        supercontinentBreakup : 1,
+        seed                  : '',
+        isSeedCopied          : 0,
+        resolution_level      : 5,
+        cell_count            : 0,
+        axial_tilt_degrees    : 23.5,
+        log10_day_length      : Math.log(Units.DAY)/Math.log(10),
+        day_length            : Units.DAY,
       },
       created: function() {
           var _this = this;
@@ -1196,6 +1210,12 @@
         },
         'axial_tilt_degrees': function(new_value, old_value) {
             sim.model().cycles['spin'].motion.axial_tilt = new_value * Math.PI/180;
+        },
+        'log10_day_length': function(new_value, old_value) {
+            console.log(new_value);
+            this.day_length = Math.pow(10, new_value);
+            console.log(this.day_length);
+            sim.model().cycles['spin'].motion.angular_speed = 2*Math.PI/this.day_length;
         },
         'resolution_level': function(new_value, old_value) {
             onSimLoadStart.fire();
@@ -1237,7 +1257,10 @@
       },
       methods: {
         format_count: function(count) {
-            return format(count, 1000, 3);
+            return format_count(count, 1000, 3);
+        },
+        format_time: function(seconds) {
+            return format_time(seconds, 3);
         },
         setSupercontinentBreakup: function(value) {
             this.supercontinentBreakup = value;
