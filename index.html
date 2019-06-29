@@ -113,14 +113,14 @@
         </div>
         <div class="horizontal-axis-group">
             <div class="input-group-prepend">
-                <span class="input-group-text" v-on:click="rewind()">
-                    <img src="icons/rewind.svg"/>
-                </span>
                 <span class="input-group-text play" v-on:click="togglePause()">
                     <img src="icons/pause.svg" v-if="!paused"/>
                     <img src="icons/play.svg"  v-if="paused"/>
                 </span>
-                <span class="input-group-text fast-forward" v-on:click="fastForward()">
+                <span class="input-group-text" v-on:click="slower()">
+                    <img src="icons/step-forward.svg"/>
+                </span>
+                <span class="input-group-text fast-forward" v-on:click="faster()">
                     <img src="icons/fast-forward.svg"/>
                 </span>
             </div>
@@ -771,10 +771,10 @@
           saveVue.save();
       }
       if (event.keyCode == 188) { // <
-          timeMenuVue.rewind();
+          timeMenuVue.slower();
       }
       if (event.keyCode == 190) { // >
-          timeMenuVue.fastForward();
+          timeMenuVue.faster();
       }
       if (event.keyCode == 191) { // /
           timeMenuVue.togglePause();
@@ -974,11 +974,11 @@
             this.paused = !this.paused;
             sim.toggle_pause();
         },
-        fastForward: function() {
+        faster: function() {
             this.speed_i = Math.min(this.speed_i+1, this.speeds.length-1);
             sim.speed = this.speeds[this.speed_i].scale;
         },
-        rewind: function() {
+        slower: function() {
             this.speed_i = Math.max(this.speed_i-1, 0);
             sim.speed = this.speeds[this.speed_i].scale;
         },
