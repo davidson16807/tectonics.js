@@ -346,21 +346,21 @@
                     min="1" max="6" step="1">
             </div>
         </div>
-        <!-- <div class="long-axis-group slider-label label">
+        <div class="long-axis-group slider-label label">
             <div class="btn">
                 <img src="icons/globe-model.svg"/>
                 <div class="vertical-axis-group">
                     <div>Axial Tilt</div>
-                    <div>{{degrees(axial_tilt)}}°</div>
+                    <div>{{axial_tilt_degrees}}°</div>
                 </div>
             </div>
             <div class="">
-                <input type="range" name="axial_tilt" class="is-long-axis-vertical slider-vertical" orient="vertical"
+                <input type="range" v-model="axial_tilt_degrees" class="is-long-axis-vertical slider-vertical" orient="vertical"
                     min="0" max="90" step="0.5">
-                <input type="range" name="axial_tilt" class="is-long-axis-horizontal"
+                <input type="range" v-model="axial_tilt_degrees" class="is-long-axis-horizontal"
                     min="0" max="90" step="0.5">
             </div>
-        </div> -->
+        </div>
         <!-- <div class="long-axis-group slider-label label">
             <div class="btn">
                 <img src="icons/day-night.svg"/>
@@ -635,7 +635,7 @@
                     motion: { 
                         type: 'spin',
                         angular_speed: 2*Math.PI/(60*60*24),
-                        axial_tilt: Math.PI * 23.5/180,
+                        axial_tilt: 23.5 * Math.PI/180,
                     },   
                     invariant_insolation: false,
                 },
@@ -1181,24 +1181,27 @@
         isSeedCopied: 0,
         resolution_level: 5,
         cell_count: 0,
+        axial_tilt_degrees: 23.5,
       },
       created: function() {
           var _this = this;
           onSimLoadStop.subscribe(function() { 
             _this.seed = sim.seed;
-            console.log(sim.focus().grid.vertices.length)
             _this.cell_count = sim.focus().grid.vertices.length;
           });
       },
       watch: {
-        'seed': function(new_seed, old_seed) {
+        'seed': function(new_value, old_value) {
             // TODO: reset sim to match the new seed
         },
-        'resolution_level': function(new_resolution_level, old_resolution_level) {
+        'axial_tilt_degrees': function(new_value, old_value) {
+            sim.model().systems['spin'].motion.axial_tilt = new_value * Math.PI/180;
+        },
+        'resolution_level': function(new_value, old_value) {
             onSimLoadStart.fire();
             // preserve the same exact state of world in every way except grid
             var world_params = sim.focus().getParameters();
-            var geometry = new THREE.IcosahedronGeometry(1, new_resolution_level);
+            var geometry = new THREE.IcosahedronGeometry(1, new_value);
             world_params.grid = { 
                     faces:   geometry.faces.map(f => {  
                         return {a: f.a, b: f.b, c: f.c, vertexNormals: f.vertexNormals}  
