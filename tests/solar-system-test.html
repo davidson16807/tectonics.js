@@ -13,7 +13,6 @@
     <link rel="stylesheet" href="../styles/bootstrap.min.css">
     <link rel="stylesheet" href="../styles/bootstrap.custom.css">
     <link rel="stylesheet" href="../styles/main.css"/>
-    <link rel="stylesheet" href="../styles/modern.css"/>
     <link rel="stylesheet" href="../styles/app.css"/>
 
     <script src="../libraries/vue.js"></script>
@@ -31,14 +30,14 @@
     <script src="../noncompiled/academics/OrbitalMechanics.js"></script>
     <script src="../noncompiled/models/universe/Orbit.js"></script>
     <script src="../noncompiled/models/universe/Spin.js"></script>
-    <script src="../noncompiled/models/universe/System.js"></script>
+    <script src="../noncompiled/models/universe/CelestialCycle.js"></script>
     <script src="../noncompiled/models/universe/Universe.js"></script>
 </head>
 <body>
 <!-- three.js container -->
 <div id="container"></div>
 
-<div class="topright controls" id="season-sliders" style="width:200px;" >
+<div id="controls" style="width:200px;" >
     <div class="input-group season-group" v-for="(value, key) in state">
         <span class="input-group-addon">
             {{key}}
@@ -99,223 +98,241 @@
         neptune: { name: 'neptune',    color: 0x537cfe,    radius:  24e6, },
     };
     var universe = new Universe({
-        system: {
-            name: 'Galactic Orbit',
-            motion: { 
-                type: 'orbit',
-                semi_major_axis: 2.35e20,
-                effective_combined_mass: 1.22e56, // kg,  back calculated to achieve period of 250 million years
+        bodies:  bodies,
+        cycles: {
+            'Galactic Orbit': {
+                name: 'Galactic Orbit',
+                motion: { 
+                    type: 'orbit',
+                    semi_major_axis: 2.35e20,
+                    effective_combined_mass: 1.22e56, // kg,  back calculated to achieve period of 250 million years
+                },
+                body: 'sun',
+                children: [
+                    'Mercurial Orbit',
+                    'Venerean Orbit',
+                    'Earth Orbit',
+                    'Martian Orbit',
+                    'Jovian Orbit',
+                    'Saturnian Orbit',
+                    'Uranian Orbit',
+                    'Neptunian Orbit',
+                ]
             },
-            body: bodies['sun'],
-            children: [
-                {
-                    name: 'Mercurial Orbit',
-                    motion: {
-                        type: 'orbit',
-                        semi_major_axis: 0.387*Units.ASTRONOMICAL_UNIT,
-                        eccentricity: 0.205,
-                        inclination: Math.PI * 7./180,
-                        longitude_of_ascending_node: Math.PI * 48/180,
-                        effective_combined_mass: 2e30, // kg
-                    },    
-                    children: [
-                        {
-                            name: 'Mercurial Spin',
-                            motion: { 
-                                type: 'spin',
-                                angular_speed: 2*Math.PI/(60*60*24*58.5),
-                                axial_tilt: Math.PI * 0.01/180,
-                            },    
-                            body: bodies['mercury'],
-                        },
-                    ],
+            'Mercurial Orbit': {
+                name: 'Mercurial Orbit',
+                motion: {
+                    type: 'orbit',
+                    semi_major_axis: 0.387*Units.ASTRONOMICAL_UNIT,
+                    eccentricity: 0.205,
+                    inclination: Math.PI * 7./180,
+                    longitude_of_ascending_node: Math.PI * 48/180,
+                    effective_combined_mass: 2e30, // kg
                 },
-                {
-                    name: 'Venerean Orbit',
-                    motion: {
-                        type: 'orbit',
-                        semi_major_axis: 0.723*Units.ASTRONOMICAL_UNIT,
-                        eccentricity: 0.0067,
-                        inclination: Math.PI * 3.4/180,
-                        longitude_of_ascending_node: Math.PI * 76/180,
-                        effective_combined_mass: 2e30, // kg
-                    },    
-                    children: [
-                        {
-                            name: 'Venerean Spin',
-                            motion: { 
-                                type: 'spin',
-                                angular_speed: 2*Math.PI/(60*60*24*243),
-                                axial_tilt: Math.PI * 177.4/180,
-                            },    
-                            body: bodies['venus'],
-                        },
-                    ],
+                parent: 'Galactic Orbit',
+                children: ['Mercurial Spin'],
+            },
+            'Mercurial Spin': {
+                name: 'Mercurial Spin',
+                motion: { 
+                    type: 'spin',
+                    angular_speed: 2*Math.PI/(60*60*24*58.5),
+                    axial_tilt: Math.PI * 0.01/180,
+                },    
+                parent: 'Mercurial Orbit',
+                body: 'mercury',
+            },
+            'Venerean Orbit': {
+                name: 'Venerean Orbit',
+                motion: {
+                    type: 'orbit',
+                    semi_major_axis: 0.723*Units.ASTRONOMICAL_UNIT,
+                    eccentricity: 0.0067,
+                    inclination: Math.PI * 3.4/180,
+                    longitude_of_ascending_node: Math.PI * 76/180,
+                    effective_combined_mass: 2e30, // kg
                 },
-                {
-                    name: 'Earth Orbit',
-                    motion: {
-                        type: 'orbit',
-                        semi_major_axis: 1.*Units.ASTRONOMICAL_UNIT,
-                        eccentricity: 0.0167,
-                        inclination: Math.PI * 5e-5/180,
-                        longitude_of_ascending_node: Math.PI * -11/180,
-                        effective_combined_mass: 2e30, // kg
-                    },    
-                    children: [
-
-                        {
-                            name: 'Lunar Orbit',
-                            motion: {
-                                type: 'orbit',
-                                semi_major_axis: 384.748e6,
-                                eccentricity: 0.0554,
-                                inclination: Math.PI * 5.16/180,
-                                effective_combined_mass: 5.79e24, // kg
-                            },    
-                            children: [
-                                {
-                                    name: 'Lunar Spin',
-                                    motion: { 
-                                        type: 'spin',
-                                        angular_speed: 2*Math.PI/(Units.DAY*27.322),
-                                    },    
-                                    body: bodies['moon'],
-                                },
-                            ],
-                        },
-
-                        {
-                            name: 'Earth Precession',
-                            motion: { 
-                                type: 'spin',
-                                angular_speed: 2*Math.PI/(10e3*Units.YEAR),
-                            },    
-                            children: [
-                                {
-                                    name: 'Earth Spin',
-                                    motion: { 
-                                        type: 'spin',
-                                        angular_speed: 2*Math.PI/(60*60*24),
-                                        axial_tilt: Math.PI * 23.5/180,
-                                    },    
-                                    body: bodies['earth'],
-                                },
-                            ],
-                        },
-                    ],
+                parent: 'Galactic Orbit',
+                children: ['Venerean Spin'],
+            },
+            'Venerean Spin': {
+                name: 'Venerean Spin',
+                motion: { 
+                    type: 'spin',
+                    angular_speed: 2*Math.PI/(60*60*24*243),
+                    axial_tilt: Math.PI * 177.4/180,
+                },    
+                parent: 'Venerean Orbit',
+                body: 'venus',
+            },
+            'Earth Orbit': {
+                name: 'Earth Orbit',
+                motion: {
+                    type: 'orbit',
+                    semi_major_axis: 1.*Units.ASTRONOMICAL_UNIT,
+                    eccentricity: 0.0167,
+                    inclination: Math.PI * 5e-5/180,
+                    longitude_of_ascending_node: Math.PI * -11/180,
+                    effective_combined_mass: 2e30, // kg
                 },
-                {
-                    name: 'Martian Orbit',
-                    motion: {
-                        type: 'orbit',
-                        semi_major_axis: 1.52*Units.ASTRONOMICAL_UNIT,
-                        eccentricity: 0.093,
-                        inclination: Math.PI * 1.85/180,
-                        longitude_of_ascending_node: Math.PI * -49/180,
-                        effective_combined_mass: 2e30, // kg
-                    },    
-                    children: [
-                        {
-                            name: 'Martian Spin',
-                            motion: { 
-                                type: 'spin',
-                                angular_speed: 2*Math.PI/(60*60*24.6),
-                                axial_tilt: Math.PI * 25.19/180,
-                            },    
-                            body: bodies['mars'],
-                        },
-                    ],
+                parent: 'Galactic Orbit',
+                children: ['Earth Precession', 'Lunar Orbit'],
+            },
+            'Earth Precession': {
+                name: 'Earth Precession',
+                motion: { 
+                    type: 'spin',
+                    angular_speed: 2*Math.PI/(10e3*Units.YEAR),
+                },    
+                parent: 'Earth Orbit',
+                children: ['Earth Spin'],
+            },
+            'Earth Spin': {
+                name: 'Earth Spin',
+                motion: { 
+                    type: 'spin',
+                    angular_speed: 2*Math.PI/(60*60*24),
+                    axial_tilt: Math.PI * 23.5/180,
+                },    
+                parent: 'Earth Precession',
+                body: 'earth',
+            },
+            'Lunar Orbit': {
+                name: 'Lunar Orbit',
+                motion: {
+                    type: 'orbit',
+                    semi_major_axis: 384.748e6,
+                    eccentricity: 0.0554,
+                    inclination: Math.PI * 5.16/180,
+                    effective_combined_mass: 5.79e24, // kg
+                },    
+                parent: 'Earth Orbit',
+                children: ['Lunar Spin'],
+            },
+            'Lunar Spin': {
+                name: 'Lunar Spin',
+                motion: { 
+                    type: 'spin',
+                    angular_speed: 2*Math.PI/(Units.DAY*27.322),
+                }, 
+                parent: 'Lunar Orbit',
+                body: 'moon',
+            },
+            'Martian Orbit': {
+                name: 'Martian Orbit',
+                motion: {
+                    type: 'orbit',
+                    semi_major_axis: 1.52*Units.ASTRONOMICAL_UNIT,
+                    eccentricity: 0.093,
+                    inclination: Math.PI * 1.85/180,
+                    longitude_of_ascending_node: Math.PI * -49/180,
+                    effective_combined_mass: 2e30, // kg
+                },    
+                parent: 'Martian Orbit',
+                children: ['Martian Spin'],
+            },
+            'Martian Spin': {
+                name: 'Martian Spin',
+                motion: { 
+                    type: 'spin',
+                    angular_speed: 2*Math.PI/(60*60*24.6),
+                    axial_tilt: Math.PI * 25.19/180,
                 },
-                {
-                    name: 'Jovian Orbit',
-                    motion: {
-                        type: 'orbit',
-                        semi_major_axis: 5.2*Units.ASTRONOMICAL_UNIT,
-                        eccentricity: 0.048,
-                        inclination: Math.PI * 1.3/180,
-                        effective_combined_mass: 2e30, // kg
-                        longitude_of_ascending_node: Math.PI * -100/180,
-                    },    
-                    children: [
-                        {
-                            name: 'Jovian Spin',
-                            motion: { 
-                                type: 'spin',
-                                angular_speed: 2*Math.PI/(60*60*10),
-                                axial_tilt: Math.PI * 3.13/180,
-                            },    
-                            body: bodies['jupiter'],
-                        },
-                    ],
+                parent: 'Martian Orbit',
+                body: 'mars',
+            },
+            'Jovian Orbit': {
+                name: 'Jovian Orbit',
+                motion: {
+                    type: 'orbit',
+                    semi_major_axis: 5.2*Units.ASTRONOMICAL_UNIT,
+                    eccentricity: 0.048,
+                    inclination: Math.PI * 1.3/180,
+                    effective_combined_mass: 2e30, // kg
+                    longitude_of_ascending_node: Math.PI * -100/180,
                 },
-                {
-                    name: 'Saturnian Orbit',
-                    motion: {
-                        type: 'orbit',
-                        semi_major_axis: 9.5*Units.ASTRONOMICAL_UNIT,
-                        eccentricity: 0.054,
-                        inclination: Math.PI * 2.48/180,
-                        longitude_of_ascending_node: Math.PI * -113/180,
-                        effective_combined_mass: 2e30, // kg
-                    },    
-                    children: [
-                        {
-                            name: 'Saturnian Spin',
-                            motion: { 
-                                type: 'spin',
-                                angular_speed: 2*Math.PI/(60*60*10.8),
-                                axial_tilt: Math.PI * 26.7/180,
-                            },    
-                            body: bodies['saturn'],
-                        },
-                    ],
+                parent: 'Galactic Orbit',
+                children: ['Jovian Spin'],
+            },
+            'Jovian Spin': {
+                name: 'Jovian Spin',
+                motion: { 
+                    type: 'spin',
+                    angular_speed: 2*Math.PI/(60*60*10),
+                    axial_tilt: Math.PI * 3.13/180,
+                },    
+                parent: 'Jovian Orbit',
+                body: 'jupiter',
+            },
+            'Saturnian Orbit': {
+                name: 'Saturnian Orbit',
+                motion: {
+                    type: 'orbit',
+                    semi_major_axis: 9.5*Units.ASTRONOMICAL_UNIT,
+                    eccentricity: 0.054,
+                    inclination: Math.PI * 2.48/180,
+                    longitude_of_ascending_node: Math.PI * -113/180,
+                    effective_combined_mass: 2e30, // kg
                 },
-                {
-                    name: 'Uranian Orbit',
-                    motion: {
-                        type: 'orbit',
-                        semi_major_axis: 19.19*Units.ASTRONOMICAL_UNIT,
-                        eccentricity: 0.047,
-                        inclination: Math.PI * 0.77/180,
-                        effective_combined_mass: 2e30, // kg
-                        longitude_of_ascending_node: Math.PI * -74/180,
-                    },    
-                    children: [
-                        {
-                            name: 'Uranian Spin',
-                            motion: { 
-                                type: 'spin',
-                                angular_speed: 2*Math.PI/(60*60*17.25),
-                                axial_tilt: Math.PI * 97.7/180,
-                            },    
-                            body: bodies['uranus'],
-                        },
-                    ],
+                parent: 'Galactic Orbit',
+                children: ['Saturnian Spin'],
+            },
+            'Saturnian Spin': {
+                name: 'Saturnian Spin',
+                motion: { 
+                    type: 'spin',
+                    angular_speed: 2*Math.PI/(60*60*10.8),
+                    axial_tilt: Math.PI * 26.7/180,
                 },
-                {
-                    name: 'Neptunian Orbit',
-                    motion: {
-                        type: 'orbit',
-                        semi_major_axis: 30.06*Units.ASTRONOMICAL_UNIT,
-                        eccentricity: 0.008,
-                        inclination: Math.PI * 1.77/180,
-                        longitude_of_ascending_node: Math.PI * -131/180,
-                        effective_combined_mass: 2e30, // kg
-                    },    
-                    children: [
-                        {
-                            name: 'Neptunian Spin',
-                            motion: { 
-                                type: 'spin',
-                                angular_speed: 2*Math.PI/(60*60*16.11),
-                                axial_tilt: Math.PI * 28.3/180,
-                            },    
-                            body: bodies['neptune'],
-                        },
-                    ],
-                },
-            ]
+                parent: 'Saturnian Orbit',
+                body: 'saturn',
+            },
+            'Uranian Orbit': {
+                name: 'Uranian Orbit',
+                motion: {
+                    type: 'orbit',
+                    semi_major_axis: 19.19*Units.ASTRONOMICAL_UNIT,
+                    eccentricity: 0.047,
+                    inclination: Math.PI * 0.77/180,
+                    effective_combined_mass: 2e30, // kg
+                    longitude_of_ascending_node: Math.PI * -74/180,
+                },    
+                parent: 'Galactic Orbit',
+                children: ['Uranian Spin'],
+            },
+            'Uranian Spin': {
+                name: 'Uranian Spin',
+                motion: { 
+                    type: 'spin',
+                    angular_speed: 2*Math.PI/(60*60*17.25),
+                    axial_tilt: Math.PI * 97.7/180,
+                },    
+                parent: 'Uranian Orbit',
+                body: 'uranus',
+            },
+            'Neptunian Orbit': {
+                name: 'Neptunian Orbit',
+                motion: {
+                    type: 'orbit',
+                    semi_major_axis: 30.06*Units.ASTRONOMICAL_UNIT,
+                    eccentricity: 0.008,
+                    inclination: Math.PI * 1.77/180,
+                    longitude_of_ascending_node: Math.PI * -131/180,
+                    effective_combined_mass: 2e30, // kg
+                },    
+                parent: 'Galactic Orbit',
+                children: ['Neptunian Spin'],
+            },
+            'Neptunian Spin': {
+                name: 'Neptunian Spin',
+                motion: { 
+                    type: 'spin',
+                    angular_speed: 2*Math.PI/(60*60*16.11),
+                    axial_tilt: Math.PI * 28.3/180,
+                },    
+                parent: 'Neptunian Orbit',
+                body: 'neptune',
+            },
         }
     });
 
@@ -344,9 +361,10 @@
     for (var id in body_matrix_map) {
         body_index_map[id] = i; i++;
         var v = Matrix4x4.get_translation(body_matrix_map[id]);
+        var body = bodies[id];
         particleGeometry.vertices.push( new THREE.Vector3( v.x, v.y, v.z ) );
-        particleShader.attributes.color.value.push(new THREE.Color(bodies[id].color));
-        particleShader.attributes.radius.value.push(bodies[id].radius);
+        particleShader.attributes.color.value.push(new THREE.Color(body.color));
+        particleShader.attributes.radius.value.push(body.radius);
     }
     var particleSystem = new THREE.ParticleSystem(particleGeometry, particleShader);
 
@@ -421,7 +439,7 @@
     }
     var TIMESTEP = 60*60*24; // ~1 day per frame
     const seasonVue = new Vue({
-        el: '#season-sliders',
+        el: '#controls',
         data:{
             state:{
                 'Solar System':     0,

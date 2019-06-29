@@ -1,43 +1,468 @@
-body {
-    overflow    : hidden;
+/*
+"app.css" contains all styling that is specific to the simulation.
+It is written using a responsive, mobile-first design approach. 
+It does not contain any styling relevant to the blog or about page.
+It assumes the user is accessing the site on a modern, evergreen browser. 
+It also assumes it is being used in tandem with main.css. 
+*/
+
+/* ====== START OF SCREEN SPECIFIC CONTENT ======*/
+
+/*
+Overarching design:
+
+We want to maximize the utility of screenspace for any given orientation. 
+We want our solution to scale well for any number of UI components. 
+We want our solution to be consistent to the user.
+We want to leverage existing UI conventions to prevent user confusion.
+
+The planet is the main focus of the application, so therefore 
+ much of the screenspace is rightfully consumed by the planet, in the center. 
+This is regardless of screen orientation. 
+The planet is also spherical, so it takes up equal portions of width and height 
+ at the center of the screen. 
+This is again regardless of screen orientation.
+So in landscape orientations, most of the remaining screenspace is on the left and right.
+ The remaining screenspace is taller than it is wide, so our UI should scale out vertically.
+ We abstain from scaling the UI out horizontally, since a sufficiently 
+  large number of UI components could then obstruct the view of the planet.
+ Our button groups are vertical, our flexboxes are column based, and we do not wrap content.
+In portrait orientations, most of the remaining screenspace is on the top and bottom.
+ The remaining screenspace is wider than it is tall, so our UI should scale out horizontally.
+ We abstain from scaling the UI out vertically, since a sufficiently 
+  large number of UI components could then obstruct the view of the planet.
+ Our button groups are horizontal, our flexboxes are row based, and we do not wrap content.
+
+We also note that text must always consume horizontal space.
+This is the case regardless of screen orientation.
+Because the UI scales out horizontally in a portrait orientation,
+ we can see the portrait orientation is more resource constrained.
+And since we follow the logic of mobile-first design, 
+ we must first design for the most resource constrained environment.
+We therefore not only adopt a mobile-first design, but a portrait-first design, as well.
+
+Since we adopt a portrait first design, our button groups are horizontal by default.
+We only style button groups vertically when the user switches to a landscape orientation.
+The same applies to the flexboxes and all our other controls.
+
+We want our UI to be consistent to the user, 
+ and by following a well reasoned design we do already accomplish that to an extent. 
+However, standards should be set for any aspect of design that is not clamped down by the above reasoning.
+By convention, the top left corner is typically used for branding and site level navigation,
+ so we will follow that convention and leave that corner to that purpose.
+That means the remaining UI should occupy one of the remaining corners.
+Since the remaining UI must be able to expand out both horizontally and vertically,
+ we should position it to allow expansion into either of those directions. 
+This means placing it in the bottom right, as far away from our branding as possible. 
+In landscape orientations, it will expand from bottom right to top right.
+In portrait orientations, it will expand from bottom right to bottom left. 
+*/
+.control {
+    /* bottom right corner */
+    position  : fixed;
+    bottom    : 0;
+    right     : 0;
+
+    /* flex, wrap right to left, bottom to top*/
+    display   : flex;
+    flex-flow : row-reverse nowrap;
+
+    /* max height should not cause world to become obstructed */
+    max-height: 23.6%;
+    overflow-y: hidden;
+
+    /* max width on mobile */
+    max-width : 100%;
+    overflow-x: auto;
+}
+@media (pointer: fine), (pointer: none), (orientation: landscape) {
+    .control {
+        /* 
+        Content should progress from bottom right to top right, and should not wrap.
+        content should be aligned to the right side of the screen,
+        */
+        flex-flow   : column-reverse nowrap;
+        align-items : flex-end;
+        /* 
+        Because we do not wrap content, we run the risk of content running off the screen. 
+        To prevent this, we set the height not exceed the height of the window. 
+        If necessary, the user may scroll vertically through the content. 
+        */
+        max-height  : 100%;
+        overflow-y  : auto;
+        /* 
+        To prevent obstructing the view of the planet, 
+        and content width should resize as necessary. 
+        */
+        max-width   : auto;
+        overflow-x  : hidden;
+    }
 }
 
-.hidden-when-loading{
+/*
+Mobile phones require big buttons that are easy to press. 
+Therefore, buttons icons are enlarged on small screens. 
+This applies regardless of screen orientation. 
+Text is also shrunk and placed below the icon to give a space saving square shape.
+
+If the users have the ability to select buttons with pixel perfect precision, they do not require big buttons.
+However desktop users still presumably want to maximize screenspace spent towards the planet.
+So we therefore reduce the size of buttons to allow for this.
+Our buttons then become composed of small icons next to large text. 
+Since text consumes space horizontally, we will always want button groups to consume space vertically.
+This will be the case regardless of screen orientation. 
+*/
+.btn {
+    /* we follow apple recommendations for button size */
+    min-width : 44px;
+    min-height: 44px;
+    /* text is shrunk and placed below the icon to give a space saving square shape */
+    font-size : 0.5rem !important;
+    display   : flex;
+    flex-flow : column nowrap;
+    align-items: center;
+    flex: 1 2 auto;
+}
+.btn img {
+    /* we follow google material recommendations for icon size */
+    width:  24px;
+    height: 24px;
+}
+@media (pointer: fine), (pointer: none) {
+    .btn {
+        /* cancel the height/width restrictions that are imposed on mobile */
+        min-width : auto;
+        min-height: auto;
+        /* text is enlarged and placed beside the icon to save vertical space */
+        font-size : 1rem !important;
+        display   : flex;
+        flex-flow : row nowrap;
+        align-items: left;
+        padding    : 0.2rem;
+    }
+    .btn img {
+        width    : 1rem;
+        height   : 1rem;
+        margin   : 0.2rem;
+    }
+}
+
+/*
+We also want to display hints to desktop users so they can learn shortcuts and hotkeys
+To accomplish this we display "instructions" next to button text. 
+These only appear when pointer precision indicates a desktop user.
+*/
+.instructions {
     display: none;
 }
-
-.controls {
-    width:38%;
-}
-.controls select, 
-.controls button, 
-.controls input{
-    color: black;
-}
-
-.time-menu {
-    width: 210px;
-    float: right;
-}
-.file-menu {
-    float: right;
-}
-.view-menu {
-    float: right;
-}
-.menu {
-    float: right;
+@media (pointer: fine), (pointer: none) {
+    .instructions {
+        /* enable display */
+        display     : flex;
+        /* small grey text */
+        color       : grey;
+        font-style  : italic;
+        font-size   : 61%;
+        /* positioned in the corner */
+        margin-left   : auto;
+        margin-bottom : auto;
+        padding-left: 0.3rem;
+    }
 }
 
-.instructions {
-    color: grey;
-    font-style: italic;
-    font-size: 61%;
-    padding-left:1em;
+.horizontal-axis-group {
+    display   : flex;
+    flex-flow : row nowrap;
+    justify-content: space-evenly;
+}
+.vertical-axis-group {
+    display   : flex;
+    flex-flow : column nowrap;
+    justify-content: space-evenly;
+}
+.form-control {
+  height: auto;
 }
 
+/*
+".short-axis-group" behaves similarly to bootstrap's .btn-group,
+ however it switches between vertical and horizontal axes dependant on screen orientation.
+It picks whichever axis is longest at any given time:
+In portrait mode, it assumes a vertical layout. 
+In horizontal mode, it assumes a horizontal layout. 
+The short axis is important because we can add components along it indefinitely
+ without ever obstructing the main focus of the screen (in our case, the planet).
+Since one of our core design principles is to prevent obstruction of the main focus, 
+ .short-axis-group should be used with any component that can expand to an arbitrary length, 
+ especially if the component should always remain visible for ease of use.
+*/
+.short-axis-group {
+    /* flex, wrap right to left, bottom to top*/
+    display    : flex;
+    flex-flow  : row-reverse nowrap;
+    align-items: flex-end;
+}
+.short-axis-group .btn + .btn,
+.short-axis-group .btn + .short-axis-group,
+.short-axis-group .short-axis-group + .btn,
+.short-axis-group .short-axis-group + .short-axis-group {
+  margin-bottom: -1px;
+  margin-right : 0;
+}
+.short-axis-group .btn,
+.short-axis-group .short-axis-group .btn {
+  border-top-left-radius     : 0.25rem ;
+  border-top-right-radius    : 0.25rem ;
+  border-bottom-left-radius  : 0.25rem ;
+  border-bottom-right-radius : 0.25rem ;
+}
+.short-axis-group .btn:not(:last-child):not(.dropdown-toggle),
+.short-axis-group .short-axis-group:not(:last-child) .btn {
+  border-bottom-left-radius : 0  ;
+  border-top-left-radius : 0  ;
+}
+.short-axis-group .btn:not(:first-child),
+.short-axis-group .short-axis-group:not(:first-child) > .btn {
+  border-top-right-radius: 0  ;
+  border-bottom-right-radius: 0  ;
+}
+@media (pointer: fine), (pointer: none), (orientation: landscape) {
+    .short-axis-group {
+        /* 
+        We want everything within a button group to be consistently sized,
+        so we set all flexbox properties to "stretch".
+        */
+        display   : flex;
+        flex-flow : column-reverse nowrap;
+        align-items: stretch;
+    }
+
+    /*
+    We copy paste most of the styling for Bootstrap's short-axis-group-vertical 
+     in order to style short-axis-group as short-axis-group-vertical
+    */
+    .short-axis-group .btn + .btn,
+    .short-axis-group .btn + .short-axis-group,
+    .short-axis-group .short-axis-group + .btn,
+    .short-axis-group .short-axis-group + .short-axis-group {
+      margin-top: -1px;
+      margin-left: 0;
+    }
+    .short-axis-group .btn,
+    .short-axis-group .short-axis-group .btn {
+      border-top-left-radius     : 0.25rem ;
+      border-top-right-radius    : 0.25rem ;
+      border-bottom-left-radius  : 0.25rem ;
+      border-bottom-right-radius : 0.25rem ;
+    }
+
+    .short-axis-group .btn:not(:last-child):not(.dropdown-toggle),
+    .short-axis-group .short-axis-group:not(:last-child) .btn {
+      border-bottom-left-radius : 0  ;
+      border-bottom-right-radius: 0  ;
+    }
+
+    .short-axis-group .btn:not(:first-child),
+    .short-axis-group .short-axis-group:not(:first-child) > .btn {
+      border-top-right-radius: 0  ;
+      border-top-left-radius : 0  ;
+    }
+}
+
+/*
+".long-axis-group" behaves similarly to bootstrap's .btn-group,
+ however it switches between vertical and horizontal axes dependant on screen orientation.
+It picks whichever axis is longest at any given time:
+In portrait mode, it assumes a horizontal layout. 
+In horizontal mode, it assumes a vertical layout.
+"Long axis" will always expand towards the main focus of the screen (in our case, the planet).
+Since one of our core design principles is to prevent obstruction of the main focus, 
+ .long-axis-group should be used sparingly.
+Use it only when you can guarantee the number of components you're dealing with is small.
+*/
+.long-axis-group {
+    /* 
+    We want everything within a button group to be consistently sized,
+    so we set all flexbox properties to "stretch".
+    */
+    display   : flex;
+    flex-flow : column-reverse nowrap;
+}
+.long-axis-group .btn + .btn,
+.long-axis-group .btn + .long-axis-group,
+.long-axis-group .long-axis-group + .btn,
+.long-axis-group .long-axis-group + .long-axis-group {
+  margin-top: -1px;
+  margin-left: 0;
+}
+.long-axis-group .btn,
+.long-axis-group .long-axis-group .btn {
+  border-top-left-radius     : 0.25rem ;
+  border-top-right-radius    : 0.25rem ;
+  border-bottom-left-radius  : 0.25rem ;
+  border-bottom-right-radius : 0.25rem ;
+}
+.long-axis-group .btn:not(:last-child):not(.dropdown-toggle),
+.long-axis-group .long-axis-group:not(:last-child) .btn {
+  border-bottom-left-radius : 0  ;
+  border-bottom-right-radius: 0  ;
+}
+.long-axis-group .btn:not(:first-child),
+.long-axis-group .long-axis-group:not(:first-child) > .btn {
+  border-top-right-radius: 0  ;
+  border-top-left-radius : 0  ;
+}
+@media (pointer: fine), (pointer: none), (orientation: landscape) {
+    .long-axis-group {
+        /* flex, wrap right to left, bottom to top*/
+        display   : flex;
+        flex-flow : row-reverse nowrap;
+    }
+    .long-axis-group .btn + .btn,
+    .long-axis-group .btn + .long-axis-group,
+    .long-axis-group .long-axis-group + .btn,
+    .long-axis-group .long-axis-group + .long-axis-group {
+      margin-bottom: -1px;
+      margin-right : 0;
+    }
+    .long-axis-group .btn,
+    .long-axis-group .long-axis-group .btn {
+      border-top-left-radius     : 0.25rem ;
+      border-top-right-radius    : 0.25rem ;
+      border-bottom-left-radius  : 0.25rem ;
+      border-bottom-right-radius : 0.25rem ;
+    }
+    .long-axis-group .btn:not(:last-child):not(.dropdown-toggle),
+    .long-axis-group .long-axis-group:not(:last-child) .btn {
+      border-bottom-left-radius : 0;
+      border-top-left-radius    : 0;
+    }
+    .long-axis-group .btn:not(:first-child),
+    .long-axis-group .long-axis-group:not(:first-child) > .btn {
+      border-top-right-radius   : 0;
+      border-bottom-right-radius: 0;
+    }
+}
+
+/* 
+is-long-axis-vertical only displays when the vertical axis is longest
+is-long-axis-horizontal only displays when the horizontal axis is longest
+*/
+.is-long-axis-vertical {
+  display: inherit;
+}
+.is-long-axis-horizontal {
+  display: none;
+}
+/*@media (pointer: fine), (pointer: none), (orientation: landscape) {*/
+@media (pointer: fine), (pointer: none), (orientation: landscape) {
+    .is-long-axis-vertical {
+      display: none;
+    }
+    .is-long-axis-horizontal {
+      display: inherit;
+    }
+}
+
+/* 
+is-short-axis-vertical only displays when the vertical axis is shortest
+is-short-axis-horizontal only displays when the horizontal axis is shortest
+*/
+.is-short-axis-vertical {
+  display: none;
+}
+.is-short-axis-horizontal {
+  display: inherit;
+}
+/*@media (pointer: fine), (pointer: none), (orientation: landscape) {*/
+@media (pointer: fine), (pointer: none), (orientation: landscape) {
+    .is-short-axis-vertical {
+      display: inherit;
+    }
+    .is-short-axis-horizontal {
+      display: none;
+    }
+}
+
+
+.slider-label {
+    font-size: 0.75rem;
+    line-height: 1.5;
+    align-items     : center;
+    justify-content : space-between;
+}
+.slider-label img{
+    width:  24px;
+    height: 24px;
+}
+@media (pointer: fine), (pointer: none) {
+    .slider-label {
+        /* cancel the height/width restrictions that are imposed on mobile */
+        min-width : auto;
+        min-height: auto;
+        /* text is enlarged and placed beside the icon to save vertical space */
+        font-size : 1rem !important;
+        display   : flex;
+        flex-flow : row nowrap;
+        align-items: center;
+        padding    : 0.2rem;
+    }
+    .slider-label img {
+        width    : 1rem;
+        height   : 1rem;
+        margin   : 0.5rem;
+    }
+    .slider-label .vertical-axis-group {
+        align-items     : flex-start;
+    }
+}
+
+input[type="range"].slider-vertical {
+    /*we follow apple recommendations for width of touchable components*/
+    width: 44px;
+    height: 88px;
+    -webkit-appearance: slider-vertical;
+    writing-mode: bt-lr;
+}
+@media (pointer: fine), (pointer: none) {
+    /* when pointer precision is better than a touchscreen, we can make sliders smaller */
+    input[type="range"].slider-vertical {
+        width: 20px;
+    }
+}
+
+/* ====== END OF SCREEN SPECIFIC CONTENT ======*/
+
+
+.label {
+    background-color: buttonface;
+    color: #212529;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.2rem;
+}
+/* 
+We give special attention to styling the time warp control,
+because it features so prominently
+*/
+#time-control .input-group{
+    flex-flow : row nowrap;
+    width     : 190px;
+}
+#time-control .input-group-prepend,
+#time-control .input-group-text {
+    flex: 2 1 auto;
+}
+
+/*
+"#chart" conveys nonspatial data to the user on a 2d plot.
+It occurs in the bottom right corner. 
+*/
 #chart{
     width: 300px;
+    /* bottom right corner */
+    position : fixed;
+    bottom   : 1em;
+    right    : 1em;
 }
 #chart canvas{
     padding: 1em;
@@ -55,21 +480,47 @@ body {
     text-align: right;
 }
 
+/*
+"#stats" displays performance metrics such as fps. 
+It is only visible in dev environments. 
+It appears in the bottom left corner, since that's the only corner that 
+ hasn't been taken up yet.
+*/
+#stats {
+    /* bottom right corner */
+    position : fixed;
+    top     : 1em;
+    left    : 1em;
+}
+
+/*
+"#hidden-downloader" is an element that is required by the browser 
+ in order to download files, yet is not otherwise needed by the user interface
+It  has no styling and is never meant to be seen.
+*/
 #hidden-downloader{
     display: none;
 }
 
+/*
+"#drop-dialog" is a visual cue that indicates to the user
+ that he can drag and drop files into the application.
+*/
 #drop-dialog {
     position    : absolute;
-    top            : 23%;
+    top         : 23%;
     left        : 23%;
-    bottom        : 23%;
-    right        : 23%;
+    bottom      : 23%;
+    right       : 23%;
     padding     : 5.57%;
     text-align  : center;
     border-style: dashed;
 }
 
+/*
+"#loading-dialog" is a visual cue that indicates to the user
+ that the application is loading something.
+*/
 .loading-dialog {
     position: fixed;
     top: 43%;
@@ -81,6 +532,12 @@ body {
     text-align: center;
 }
 
+/*
+".notifications" express short nonessential messages to the user.
+They require no interaction on the users behalf. 
+They appear at the bottom of the screen and are inspired by 
+ the notifications that appear in Skyrim to indicate things like encumbrance. 
+*/
 .notifications-dialog {
     position: fixed;
     bottom: 8.4%;
@@ -98,9 +555,31 @@ body {
   opacity: 0;
 }
 
+/*
+".dialog" express longer messages to the user.
+They may potentially require interaction on the users behalf. 
+They appear as a white box in the center of the screen, 
+ and are inspired by Windows dialog boxes.
+*/
 .dialog {
     color: black;
     background-color: white;
     padding: 3.44%;
     border-radius: 1em;
+}
+
+/*
+".hidden-when-loading" indicates an element must not render when 
+ a new game or save file is loaded. 
+This may be used to avoid confusing the user, 
+ or to prevent invalid states from occuring due to user interaction.
+*/
+.hidden-when-loading{
+    display: none;
+}
+
+
+/* set "overflow: hidden" to hide the scrollbar ; */
+body {
+    overflow : hidden;
 }

@@ -1,6 +1,7 @@
 function Simulation (parameters) {
     parameters = parameters || {};
     var _model                 = void 0;
+    var _focus_id              = void 0;
     this.paused             = parameters.paused || false;
     this.speed                 = parameters.speed || 1;
     this.elapsed_time        = parameters.elapsed_time || 0;
@@ -24,7 +25,6 @@ function Simulation (parameters) {
         }
         
     // the "model" is the singular entity we are simulating
-    // it can be anything that implements the correct interface: a universe, a planet, an atmosphere, etc.
     this.model = function(model) {
         if (model === void 0) {
             return _model;
@@ -36,9 +36,16 @@ function Simulation (parameters) {
         this.model(new Universe(parameters.model));
     }
 
-    this.focus = undefined;
+    // the "focus" is component of the model on which we focus the camera and ui
+    // it is currently set to always be the world we are simulating
+    this.focus = function(value) {
+        if (value === void 0) {
+            return _model.bodies[_focus_id];
+        };
+        _focus_id = value.id;
+    };
     if (parameters.focus !== void 0 && _model !== void 0) {
-        this.focus = _model.body_id_to_node_map[parameters.focus].body;
+        _focus_id = parameters.focus;
     } 
 
     this.getParameters = function() {
@@ -48,7 +55,7 @@ function Simulation (parameters) {
             speed:             this.speed,
             elapsed_time:     this.elapsed_time,
             seed:             this.seed,
-            focus:             this.focus.name, 
+            focus:             _focus_id, 
             random: {
                 mt:  this.random.mt,
                 mti: this.random.mti

@@ -10,6 +10,7 @@ function SurfaceNormalMapRasterView(options) {
 
     this.mesh = void 0;
     var mesh = void 0;
+    var grid = void 0;
     var uniforms = {};
     var vertexShader = void 0;
 
@@ -76,6 +77,11 @@ function SurfaceNormalMapRasterView(options) {
 
     this.updateScene = function(gl_state, raster, options) {
 
+        if (grid !== raster.grid) {
+            grid = raster.grid;
+            this.removeFromScene(gl_state)
+        }
+
         if (raster === void 0) {
             this.removeFromScene(gl_state);
             return;
@@ -121,7 +127,10 @@ function SurfaceNormalMapRasterView(options) {
             mesh.material.dispose();
             mesh = void 0;
             this.mesh = void 0;
-        }
+        } 
+        if (grid !== void 0) {
+            grid = void 0;
+        } 
     };
     this.updateChart = function(data, raster, options) {}
 }

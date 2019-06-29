@@ -71,6 +71,9 @@ var VoronoiSphere = (function() {
         // populate cells using the slower IntegerLattice implementation
         for (var side_id = 0; side_id < OCTAHEDRON_SIDE_COUNT; side_id++)
         {
+            side_x = OCTAHEDRON_SIDE_X[side_id];
+            side_y = OCTAHEDRON_SIDE_Y[side_id];
+            side_z = OCTAHEDRON_SIDE_Z[side_id];
             for (var xi2d = 0; xi2d < dimension_x; xi2d++)
             {
                 for (var yi2d = 0; yi2d < dimension_y; yi2d++)
@@ -81,9 +84,6 @@ var VoronoiSphere = (function() {
 
                     // reconstruct the dimension omitted from the grid using pythagorean theorem
                     z2d = sqrt(max(1. - (x2d*x2d) - (y2d*y2d), 0.));
-                    side_x = OCTAHEDRON_SIDE_X[side_id];
-                    side_y = OCTAHEDRON_SIDE_Y[side_id];
-                    side_z = OCTAHEDRON_SIDE_Z[side_id];
 
                     Vector.mult_scalar(side_x.x, side_x.y, side_x.z, x2d, cell_x);
                     Vector.mult_scalar(side_y.x, side_y.y, side_y.z, y2d, cell_y);
