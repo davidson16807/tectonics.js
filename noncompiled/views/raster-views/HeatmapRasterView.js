@@ -70,8 +70,8 @@ function HeatmapRasterView(options) {
 
     this.updateScene = function(gl_state, raster, options) {
 
-        if (grid !== world.grid) {
-            grid = world.grid;
+        if (grid !== raster.grid) {
+            grid = raster.grid;
             this.removeFromScene(gl_state)
         }
 
