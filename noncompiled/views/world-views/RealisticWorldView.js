@@ -258,6 +258,9 @@ function RealisticWorldView(shader_return_value) {
             mesh.material.dispose();
             mesh = void 0;
             this.mesh = void 0;
+
+            gl_state.composer.passes.pop();
+            gl_state.composer.passes.push(gl_state.shaderpass_default);
         } 
         if (grid !== void 0) {
             grid = void 0;

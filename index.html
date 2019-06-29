@@ -204,90 +204,95 @@
     </div>
 </div>
 
- <div id="view-control" class="collapse control ">
-    <div id="scalar-view" class="short-axis-group">
-        <button type="button" class="btn" data-toggle="collapse" data-target="#view-control, #main-control">
-            <img src="icons/down-arrow.svg"/>
-            Return
-        </button>
-        <button type="button" 
-            class="btn" 
-            v-bind:class="{'btn-secondary': ocean}" 
-            v-on:click="setOcean(!ocean? 1:0)">
-            <img src="icons/water.svg"/>
-            Ocean
-        </button>
-        <button type="button" 
-            class="btn" 
-            v-if="isSelected('satellite')"
-            v-bind:class="{'btn-secondary': night}" 
-            v-on:click="setShadows(!night? 1:0)">
-            <img src="icons/weather-night.svg"/>
-            Shadows
-        </button>
-        <button type="button" 
-            class="btn" 
-            v-if="isSelected('satellite')"
-            v-bind:class="{'btn-secondary': snow}" 
-            v-on:click="setSnow(!snow? 1:0)">
-            <img src="icons/snowflake.svg"/>
-            Snow
-        </button>
-        <button type="button" 
-            class="btn" 
-            v-if="isSelected('satellite')"
-            v-bind:class="{'btn-secondary': sediment}" 
-            v-on:click="setSediment(!sediment? 1:0)">
-            <img src="icons/dirt.svg"/>
-            Sediment
-        </button>
-        <button type="button" 
-            class="btn" 
-            v-if="isSelected('satellite')"
-            v-bind:class="{'btn-secondary': plant}" 
-            v-on:click="setPlant(!plant? 1:0)">
-            <img src="icons/leaf.svg"/>
-            Plants
-        </button>
-        <button type="button" 
-            class="btn" 
-            v-for="option in options"
-            v-bind:class="getClass(option.value, selected)" 
-            v-bind:data-value="option.value" 
-            v-on:click="setSelected(option.value)">
-            <img v-bind:src="option.icon"/>
-            {{option.name}}
-        </button>
-    </div>
-    <div id="vector-view" class="short-axis-group">
-        <button type="button" 
-            class="btn" 
-            data-toggle="tooltip"
-            v-for="option in options"
-            v-bind:title="option.tip" 
-            v-bind:class="getClass(option.value, selected)" 
-            v-bind:data-value="option.value" 
-            v-on:click="setSelected(option.value)">
-            <img v-bind:src="option.icon"/>
-            {{option.name}}
-        </button>
-    </div>
-    <div id="projection" class="short-axis-group">
-        <button type="button" 
-            class="btn" 
-            v-for="option in options"
-            v-bind:class="getClass(option.value, selected)" 
-            v-bind:data-value="option.value" 
-            v-on:click="setSelected(option.value)">
-            <img v-bind:src="option.icon"/>
-            {{option.name}}
-        </button>
-    </div>
-    <button id="fullscreen" v-if="isVisible" type="button" class="btn fullscreen" data-toggle="button" aria-pressed="true" v-on:click="toggleFullscreen()">
-        <img v-if="!isFullscreen"/>
-        <img v-if="isFullscreen"/>
+ <div id="view-control" class="short-axis-group collapse control">
+
+    <!-- RETURN -->
+    <button type="button" class="btn" data-toggle="collapse" data-target="#view-control, #main-control">
+        <img src="icons/down-arrow.svg"/>
+        Return
+    </button>
+
+
+    <!-- FULLSCREEN -->
+    <button id="fullscreen" v-if="isFullscreenVisible" type="button" class="btn fullscreen" data-toggle="button" aria-pressed="true" v-on:click="toggleFullscreen()">
+        <img v-if="!isFullscreen" src="icons/fullscreen.svg" />
+        <img v-if="isFullscreen" src="icons/fullscreen-exit.svg"/>
         {{isFullscreen? 'Exit Fullscreen' : 'Fullscreen'}}
         <span class="instructions">F11</span>
+    </button>
+
+    <!-- SCALAR OPTIONS -->
+    <button type="button" 
+        class="btn" 
+        v-bind:class="{'btn-secondary': ocean}" 
+        v-on:click="setOcean(!ocean? 1:0)">
+        <img src="icons/water.svg"/>
+        Ocean
+    </button>
+    <button type="button" 
+        class="btn" 
+        v-if="isScalarViewSelected('satellite')"
+        v-bind:class="{'btn-secondary': night}" 
+        v-on:click="setShadows(!night? 1:0)">
+        <img src="icons/weather-night.svg"/>
+        Shadows
+    </button>
+    <button type="button" 
+        class="btn" 
+        v-if="isScalarViewSelected('satellite')"
+        v-bind:class="{'btn-secondary': snow}" 
+        v-on:click="setSnow(!snow? 1:0)">
+        <img src="icons/snowflake.svg"/>
+        Snow
+    </button>
+    <button type="button" 
+        class="btn" 
+        v-if="isScalarViewSelected('satellite')"
+        v-bind:class="{'btn-secondary': sediment}" 
+        v-on:click="setSediment(!sediment? 1:0)">
+        <img src="icons/dirt.svg"/>
+        Sediment
+    </button>
+    <button type="button" 
+        class="btn" 
+        v-if="isScalarViewSelected('satellite')"
+        v-bind:class="{'btn-secondary': plant}" 
+        v-on:click="setPlant(!plant? 1:0)">
+        <img src="icons/leaf.svg"/>
+        Plants
+    </button>
+    <button type="button" 
+        class="btn" 
+        v-for="option in scalarViewOptions"
+        v-bind:class="getClass(option.value, scalarViewSelected)" 
+        v-bind:data-value="option.value" 
+        v-on:click="setScalarViewSelected(option.value)">
+        <img v-bind:src="option.icon"/>
+        {{option.name}}
+    </button>
+
+    <!-- VECTOR OPTIONS -->
+    <button type="button" 
+        class="btn" 
+        data-toggle="tooltip"
+        v-for="option in vectorViewOptions"
+        v-bind:title="option.tip" 
+        v-bind:class="getClass(option.value, vectorViewSelected)" 
+        v-bind:data-value="option.value" 
+        v-on:click="setVectorViewSelected(option.value)">
+        <img v-bind:src="option.icon"/>
+        {{option.name}}
+    </button>
+
+    <!-- PROJECTION OPTIONS -->
+    <button type="button" 
+        class="btn" 
+        v-for="option in projectionOptions"
+        v-bind:class="getClass(option.value, projectionSelected)" 
+        v-bind:data-value="option.value" 
+        v-on:click="setProjectionSelected(option.value)">
+        <img v-bind:src="option.icon"/>
+        {{option.name}}
     </button>
 </div>
 
@@ -929,32 +934,6 @@
       }
     });
 
-    var fullscreenVue = new Vue({
-      el: '#fullscreen',
-      data: {
-          isFullscreen: false,
-          isVisible: false,
-      },
-      created: function() {
-          if( THREEx.FullScreen.available() ){
-              // allow 'f' to go fullscreen where this feature is supported
-              THREEx.FullScreen.bindKey();
-              this.isVisible = true;
-          } 
-      },
-      methods: {
-        toggleFullscreen: function() {
-            this.isFullscreen = THREEx.FullScreen.activated();
-            if( this.isFullscreen ){
-                THREEx.FullScreen.cancel();
-            }else{
-                THREEx.FullScreen.request(document.body);
-            }
-            this.isFullscreen = !this.isFullscreen;
-        },
-      }
-    });
-
     var timeMenuVue = new Vue({
       el: '#main-control',
       data: {
@@ -1009,54 +988,8 @@
     }
     });
 
-    var projectionVue = new Vue({
-      el: '#projection',
-      data: {
-        selected: 'orthographic',
-        options: [
-          { name: "Globe", value: "orthographic", icon: "icons/earth.svg" },
-          { name: "Map", value: "equirectangular", icon: "icons/map.svg" },
-          { name: "Texture", value: "texture", icon: "icons/texture.svg" },
-        ],
-      },
-      methods: {
-        setSelected: function(value) {
-            if (this.selected == value) { value = this.options[0].value; }
-            this.selected = value;
-            view.setProjectionView(projectionViews[value]);
-        },
-        getClass: function(value, selected) {
-            return value == selected? 'btn-secondary' : '';
-        }
-      }
-    });
-
-    var vectorViewVue = new Vue({
-      el: '#vector-view',
-      data: {
-        selected: 'disabled',
-        options: [
-          { name: "No Arrows", value: "disabled", icon: "icons/none.svg" },
-          { name: "Mantle Flow", value: "asthenosphere_velocity", icon: "icons/fire-flow.svg" },
-          // { name: "Plate Motion", value: "plate_velocity", icon: "icons/plate-motion.svg" },
-          { name: "Wind Speed", value: "surface_air_velocity", icon: "icons/air-flow.svg" },
-        ],
-      },
-      methods: {
-          setSelected: function(value) {
-            if (this.selected == value) { value = this.options[0].value; }
-              var option = this.options.filter(x => x.value == value)[0];
-              this.selected = value;
-              view.setVectorView(vectorViews[value]);
-          },
-          getClass: function(value, selected) {
-              return value == selected? 'btn-secondary' : '';
-          }
-      }
-    });
-
     var scalarViewVue = new Vue({
-      el: '#scalar-view',
+      el: '#view-control',
       data: {
         ocean: 1,
         ocean_target: 1,
@@ -1068,9 +1001,8 @@
         sediment_target: 1,
         plant: 1,
         plant_target: 1,
-        selected: 'satellite',
-        vectorView: 'disabled',
-        options: [
+        scalarViewSelected: 'satellite',
+        scalarViewOptions: [
           {name: 'Satellite', value: 'satellite', icon: 'icons/satellite-variant.svg' },
           {name: 'Topographic map', value: 'topographic', icon: 'icons/terrain.svg'},
           {name: 'Height map', value: 'alt', icon: 'icons/terrain-length.svg'},
@@ -1084,18 +1016,60 @@
           {name: 'Crust Thickness', value: 'thickness', icon: 'icons/rock-length.svg'},
           {name: 'Plates', value: 'plates', icon: 'icons/puzzle.svg'},
         ],
+        vectorViewSelected: 'disabled',
+        vectorViewOptions: [
+          { name: "No Arrows", value: "disabled", icon: "icons/none.svg" },
+          { name: "Mantle Flow", value: "asthenosphere_velocity", icon: "icons/fire-flow.svg" },
+          // { name: "Plate Motion", value: "plate_velocity", icon: "icons/plate-motion.svg" },
+          { name: "Wind Speed", value: "surface_air_velocity", icon: "icons/air-flow.svg" },
+        ],
+        projectionSelected: 'orthographic',
+        projectionOptions: [
+          { name: "Globe", value: "orthographic", icon: "icons/earth.svg" },
+          { name: "Map", value: "equirectangular", icon: "icons/map.svg" },
+          { name: "Texture", value: "texture", icon: "icons/texture.svg" },
+        ],
+        isFullscreen: false,
+        isFullscreenVisible: false,
+      },
+      created: function() {
+          if( THREEx.FullScreen.available() ){
+              // allow 'f' to go fullscreen where this feature is supported
+              THREEx.FullScreen.bindKey();
+              this.isFullscreenVisible = true;
+          } 
       },
       methods: {
-        setSelected: function(value) {
-            if (this.selected == value) { value = this.options[0].value; }
-              var option = this.options.filter(x => x.value == value)[0];
+        toggleFullscreen: function() {
+            this.isFullscreen = THREEx.FullScreen.activated();
+            if( this.isFullscreen ){
+                THREEx.FullScreen.cancel();
+            }else{
+                THREEx.FullScreen.request(document.body);
+            }
+            this.isFullscreen = !this.isFullscreen;
+        },
+        setProjectionSelected: function(value) {
+            if (this.projectionSelected == value) { value = this.options[0].value; }
+            this.projectionSelected = value;
+            view.setProjectionView(projectionViews[value]);
+        },
+        setVectorViewSelected: function(value) {
+          if (this.selected == value) { value = this.options[0].value; }
+            var option = this.options.filter(x => x.value == value)[0];
             this.selected = value;
+            view.setVectorView(vectorViews[value]);
+        },
+        setScalarViewSelected: function(value) {
+            if (this.scalarViewSelected == value) { value = this.scalarViewOptions[0].value; }
+              var option = this.scalarViewOptions.filter(x => x.value == value)[0];
+            this.scalarViewSelected = value;
             view.setScalarView(scalarViews[value]);
         },
-        isSelected: function(value) {
+        isScalarViewSelected: function(value) {
             return {
                 satellite: true,
-            }[this.selected];
+            }[this.scalarViewSelected];
         },
         setOcean: function(value) {
             this.ocean_target = value;
@@ -1189,8 +1163,8 @@
                 view.uniform('plant_visibility', (v.plant)?(1.0):(0.0));
             }, timestep);
         },
-        getClass: function(value, selected) {
-            return value == selected? 'btn-secondary' : '';
+        getClass: function(value, scalarViewSelected) {
+            return value == scalarViewSelected? 'btn-secondary' : '';
         },
       }
     });
@@ -1363,7 +1337,7 @@
     timeMenuVue.speed(1)
 
     // once everything is loaded, instruct the user how to start
-    dialogVue.notify("click ⏩ or press > to begin")
+    dialogVue.notify("click ▶▶ or press > to begin")
 </script>
 </body>
 </html>

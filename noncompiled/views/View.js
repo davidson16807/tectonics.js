@@ -31,15 +31,15 @@ function ThreeJsState() {
     this.renderpass = new THREE.RenderPass(this.scene, this.camera);
     this.composer.passes.push(this.renderpass);
 
-    this.shaderpass = new THREE.ShaderPass({
+    this.shaderpass_default = new THREE.ShaderPass({
         uniforms: {
             "input_texture": { type: "t", value: null },
         },
         vertexShader: vertexShaders.passthrough,
         fragmentShader: fragmentShaders.passthrough,
     }, 'input_texture');
-    this.shaderpass.renderToScreen = true;
-    this.composer.passes.push(this.shaderpass);
+    this.shaderpass_default.renderToScreen = true;
+    this.composer.passes.push(this.shaderpass_default);
 }
 
 function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
