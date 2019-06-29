@@ -517,11 +517,11 @@
                 canvas.height = image.height;
                 context.drawImage(image,0,0); // Or at whatever offset you like
                 // generate crust from canvas context
-                var elevations = ImageImporter.get_elevations_from_canvas_context(context, sim.focus.grid);
+                var elevations = ImageImporter.get_elevations_from_canvas_context(context, sim.focus().grid);
                 CrustGenerator.get_crust_from_elevations(
                     elevations, 
                     CrustGenerator.modern_earth_attribute_height_maps, 
-                    sim.focus.lithosphere.total_crust
+                    sim.focus().lithosphere.total_crust
                 );
 
                 onSimLoadStop.fire();
@@ -593,7 +593,7 @@
             },
             systems: {
                 'galactic orbit': {
-                    name: 'galactic orbit',
+                    id:       'galactic orbit',
                     children:  ['stellar orbit'],
                     body:       'star',
                     motion: { // motion mirrors orbit of sun around galactic center
@@ -604,7 +604,7 @@
                     invariant_insolation: true,
                 },
                 'stellar orbit': {
-                    name: 'stellar orbit',
+                    id:       'stellar orbit',
                     parent:   'galactic orbit',
                     children: ['precession'],
                     motion: {
@@ -618,7 +618,7 @@
                     invariant_insolation: false,
                 },
                 'precession': {
-                    name: 'precession',
+                    id:       'precession',
                     parent:   'stellar orbit',
                     children: ['spin'],
                     motion: { 
@@ -628,7 +628,7 @@
                     invariant_insolation: true,
                 },
                 'spin': {
-                    name: 'spin',
+                    id:       'spin',
                     parent:   'precession',
                     children: [],
                     body:     'world',
@@ -641,16 +641,16 @@
                 },
             },
         });
-        var focus = universe.bodies['world'];
+        var world = universe.bodies['world'];
         CrustGenerator.get_crust_from_height_ranks(
-            SphericalGeometry.get_random_surface_field(focus.grid, sim.random), 
+            SphericalGeometry.get_random_surface_field(world.grid, sim.random), 
             CrustGenerator.modern_earth_hypsography, 
             CrustGenerator.modern_earth_attribute_height_maps, 
             sim.random,
-            focus.lithosphere.total_crust
+            world.lithosphere.total_crust
         );
         sim.model(universe);
-        sim.focus = focus;
+        sim.focus(world);
 
         if (querystring['load']) {
             loadUrl(querystring['load']); // TODO: rework this
@@ -851,7 +851,7 @@
               var blob = new Blob([stringified], {type : 'application/json'});
               var blobUrl = URL.createObjectURL(blob);
               var elapsed_time = format_time(sim.elapsed_time);
-              var filename = `${sim.focus.name}-${elapsed_time}.sim`;
+              var filename = `${sim.focus().name}-${elapsed_time}.sim`;
               download(blobUrl, filename);
           }
       }
@@ -861,11 +861,11 @@
       el: '#export',
       methods: {
         csv(event) {
-            var content = CsvExporter.world(sim.focus);
+            var content = CsvExporter.world(sim.focus());
             var blob = new Blob([content], {type : 'text/csv'});
             var blobUrl = URL.createObjectURL(blob);
             var elapsed_time = format_time(sim.elapsed_time);
-            var filename = `${sim.focus.name}-${elapsed_time}.csv`;
+            var filename = `${sim.focus().name}-${elapsed_time}.csv`;
             download(blobUrl, filename);
         }
       }
@@ -899,7 +899,7 @@
           capture(event) {
               var dataUrl = view.getScreenshotDataURL();
               var filename = 
-                  sim.focus.name+'-'+
+                  sim.focus().name+'-'+
                   format_time(sim.elapsed_time)+
                   '.png';
               download(dataUrl, filename);
@@ -1186,7 +1186,7 @@
           var _this = this;
           onSimLoadStop.subscribe(function() { 
             _this.seed = sim.seed;
-            _this.cell_count = sim.focus.grid.vertices.length;
+            _this.cell_count = sim.focus().grid.vertices.length;
           });
       },
       watch: {
@@ -1198,7 +1198,7 @@
             onSimLoadStart.fire();
 
             var geometry = new THREE.IcosahedronGeometry(1, new_resolution_level);
-            var world_name = sim.focus.name;
+            var world_name = sim.focus().name;
             var world = new World({ 
                 id:  'world',
                 name: world_name,
@@ -1231,7 +1231,7 @@
 
             // TODO: refactor sim.focus as a accessor function, similar to model()
             //   create new attribute, sim.focus_name, to store world.name
-            sim.focus = world;
+            sim.focus(world);
 
 
             onSimLoadStop.fire();
@@ -1245,19 +1245,19 @@
         setSupercontinentBreakup: function(value) {
             this.supercontinentBreakup = value;
             if (!this.supercontinentBreakup) {
-                sim.focus.lithosphere.supercontinentCycle.duration = Infinity;
+                sim.focus().lithosphere.supercontinentCycle.duration = Infinity;
             } else {
-                sim.focus.lithosphere.supercontinentCycle.duration = 0;
+                sim.focus().lithosphere.supercontinentCycle.duration = 0;
             }
         },
         randomizeCrust: function() {
-            var focus = sim.focus;
+            var world = sim.focus();
             CrustGenerator.get_crust_from_height_ranks(
-                SphericalGeometry.get_random_surface_field(focus.grid, sim.random), 
+                SphericalGeometry.get_random_surface_field(world.grid, sim.random), 
                 CrustGenerator.modern_earth_hypsography, 
                 CrustGenerator.modern_earth_attribute_height_maps, 
                 sim.random,
-                focus.lithosphere.total_crust
+                world.lithosphere.total_crust
             );
         },
         copySeed: function() {

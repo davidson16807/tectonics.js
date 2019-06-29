@@ -8,8 +8,7 @@
 // Designating arbitrary nodes as the origin is meant to resolve floating point precision issues 
 // that commonly occur for very distant objects, A.K.A. the "Deep Space Kraken" of Kerbal Space Program
 function System(parameters) {
-    // name of the cycle induced by the system
-    this.name = parameters.name;
+    this.id = parameters.id;
 
     if (parameters.motion === void 0) {
         stop('missing parameter: "motion"');
@@ -44,7 +43,7 @@ function System(parameters) {
 
     this.getParameters = function() {
         return {
-            name:         this.name,
+            name:         this.id,
             motion:       this.motion.getParameters(),
             body:         this.body,
             children:     this.children,
@@ -57,16 +56,16 @@ function System(parameters) {
     // returns a dictionary mapping body ids to transformation matrices
     //  indicating the position/rotation relative to this node 
     this.get_body_matrices = function (config, systems, origin) {
-        origin = origin || this.name;
+        origin = origin || this.id;
         var parent   = this.parent;
         var children = this.children;
-        var system_config = (config[this.name] || 0);
+        var system_config = (config[this.id] || 0);
 
         var map = {};
         if (parent !== void 0) {
             // NOTE: don't consider origin, or else an infinite recursive loop will result
             if (parent !== origin) {
-                var parent_map = systems[parent].get_body_matrices(config, systems, this.name);
+                var parent_map = systems[parent].get_body_matrices(config, systems, this.id);
                 for(var key in parent_map){
                     var parent_to_child_matrix = this.motion.get_parent_to_child_matrix(system_config)
                     map[key] = mult_matrix(parent_to_child_matrix , parent_map[key] )
@@ -76,7 +75,7 @@ function System(parameters) {
         for (var child of children) {
             // NOTE: don't consider origin, or else an infinite recursive loop will result
             if (child !== origin) {
-                var child_map = systems[child].get_body_matrices(config, systems, this.name);
+                var child_map = systems[child].get_body_matrices(config, systems, this.id);
                 var child_config = (config[child] || 0);
                 for(var key in child_map){
                     var child_to_parent_matrix = systems[child].motion.get_child_to_parent_matrix(child_config);

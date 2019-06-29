@@ -32,6 +32,8 @@ function Star(parameters) {
     this.getParameters = function() {
         return {
             type:     'star',
+            id:       this.id,
+            name:     this.name,
             mass:     this.mass,
         };
     }
