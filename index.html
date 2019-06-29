@@ -376,6 +376,21 @@
                     min="4.45" max="7.5" step="0.1">
             </div>
         </div>
+        <!-- <div class="long-axis-group slider-label label">
+            <div class="btn">
+                <img src="icons/orbit.svg"/>
+                <div class="vertical-axis-group">
+                    <div>Semi-Major Axis</div>
+                    <div>{{ semi_major_axis_au }}A.U.</div>
+                </div>
+            </div>
+            <div class="">
+                <input type="range" v-model="log10_semi_major_axis" class="is-long-axis-vertical slider-vertical" orient="vertical"
+                    min="8.5" max="14.1" step="0.1">
+                <input type="range" v-model="log10_semi_major_axis" class="is-long-axis-horizontal"
+                    min="8.5" max="14.1" step="0.1">
+            </div>
+        </div> -->
     </div>
 </div>
 
@@ -1196,6 +1211,8 @@
         axial_tilt_degrees    : 23.5,
         log10_day_length      : Math.log(Units.DAY)/Math.log(10),
         day_length            : Units.DAY,
+        log10_semi_major_axis : Math.log(Units.ASTRONOMICAL_UNIT)/Math.log(10),
+        semi_major_axis_au    : 1,
       },
       created: function() {
           var _this = this;
@@ -1212,10 +1229,12 @@
             sim.model().cycles['spin'].motion.axial_tilt = new_value * Math.PI/180;
         },
         'log10_day_length': function(new_value, old_value) {
-            console.log(new_value);
             this.day_length = Math.pow(10, new_value);
-            console.log(this.day_length);
             sim.model().cycles['spin'].motion.angular_speed = 2*Math.PI/this.day_length;
+        },
+        'log10_semi_major_axis': function(new_value, old_value) {
+            this.semi_major_axis_au = (Math.pow(10, new_value)/Units.ASTRONOMICAL_UNIT).toPrecision(3).toString();
+            sim.model().cycles['stellar orbit'].motion.semi_major_axis = Math.pow(10, new_value);
         },
         'resolution_level': function(new_value, old_value) {
             onSimLoadStart.fire();
