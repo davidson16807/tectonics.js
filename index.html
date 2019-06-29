@@ -1050,13 +1050,13 @@
             this.isFullscreen = !this.isFullscreen;
         },
         setProjectionSelected: function(value) {
-            if (this.projectionSelected == value) { value = this.options[0].value; }
+            if (this.projectionSelected == value) { value = this.projectionOptions[0].value; }
             this.projectionSelected = value;
             view.setProjectionView(projectionViews[value]);
         },
         setVectorViewSelected: function(value) {
-          if (this.selected == value) { value = this.options[0].value; }
-            var option = this.options.filter(x => x.value == value)[0];
+          if (this.selected == value) { value = this.vectorViewOptions[0].value; }
+            var option = this.vectorViewOptions.filter(x => x.value == value)[0];
             this.selected = value;
             view.setVectorView(vectorViews[value]);
         },
