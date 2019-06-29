@@ -3,7 +3,14 @@
 function Star(parameters) {
     var _this = this;
 
-    this.name = parameters['name'];
+    // "id" is used to reference the world within the rest of the universe
+    // It remains unique to the world regardless of name changes. 
+    // It is not visible to the user.
+    // It is effectively the primary key within the context of database design.
+    this.id   = parameters.id;
+    // "name" is the name of the world as understood by the user.
+    // It is randomly generated and can be modified by the user at any time. 
+    this.name = parameters.name;
 
     this.mass = parameters['mass'] || stop('missing parameter: "mass"')
 

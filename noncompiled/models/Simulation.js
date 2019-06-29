@@ -38,7 +38,7 @@ function Simulation (parameters) {
 
     this.focus = undefined;
     if (parameters.focus !== void 0 && _model !== void 0) {
-        this.focus = _model.body_id_to_node_map[parameters.focus].body;
+        this.focus = _model.bodies[parameters.focus].body;
     } 
 
     this.getParameters = function() {

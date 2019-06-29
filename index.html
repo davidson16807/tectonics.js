@@ -331,7 +331,7 @@
                 </button>
             </div>
         </div>
-        <!-- <div class="new-control long-axis-group slider-label label collapse">
+        <div class="new-control long-axis-group slider-label label collapse">
             <div class="btn">
                 <img src="icons/grid.svg"/>
                 <div class="vertical-axis-group">
@@ -345,7 +345,7 @@
                 <input type="range" v-model="resolution_level" class="is-long-axis-horizontal" 
                     min="1" max="6" step="1">
             </div>
-        </div> -->
+        </div>
         <!-- <div class="long-axis-group slider-label label">
             <div class="btn">
                 <img src="icons/globe-model.svg"/>
@@ -570,67 +570,78 @@
         
         var geometry = new THREE.IcosahedronGeometry(1, resolution_level);
         var universe = new Universe({
-            system: {
-                name: 'galactic orbit',
-                motion: { // motion mirrors orbit of sun around galactic center
-                    type: 'orbit',
-                    semi_major_axis: 2.35e20, // meters
-                    effective_combined_mass: 1.262e41, // kg, back calculated to achieve period of 250 million years
-                },
-                invariant_insolation: true,
-                body: {
+            bodies: {
+                'star': {
                     type: 'star',
+                    id  : 'star',
                     name: get_star_name(sim.random),
                     mass: Units.SOLAR_MASS,
                 },
-                children: [
-                    {
-                        name: 'orbit',
-                        motion: {
-                            type: 'orbit',
-                            semi_major_axis: 1. * Units.ASTRONOMICAL_UNIT,
-                            eccentricity: 0.0167,
-                            inclination: Math.PI * 5e-5/180,
-                            longitude_of_ascending_node: Math.PI * -11/180,
-                            effective_combined_mass: 2e30, // kg
-                        },    
-                        children: [
-                            {
-                                name: 'precession',
-                                motion: { 
-                                    type: 'spin',
-                                    angular_speed: 2*Math.PI/(25860 * Units.YEAR),
-                                },    
-                                invariant_insolation: true,
-                                children: [
-                                    {
-                                        name: 'spin',
-                                        motion: { 
-                                            type: 'spin',
-                                            angular_speed: 2*Math.PI/(60*60*24),
-                                            axial_tilt: Math.PI * 23.5/180,
-                                        },    
-                                        body: { 
-                                            type: 'world',
-                                            name: focus_name,
-                                            grid: { 
-                                                faces:   geometry.faces.map(f => {  
-                                                    return {a: f.a, b: f.b, c: f.c, vertexNormals: f.vertexNormals}  
-                                                    }), 
-                                                vertices:geometry.vertices.map(v => {  
-                                                    return {x: v.x, y: v.y, z: v.z}  
-                                                    }), 
-                                            }, 
-                                        },
-                                    },
-                                 ],
-                            },
-                        ],
+                'world': {
+                    type: 'world',
+                    id  : 'world',
+                    name: focus_name,
+                    grid: { 
+                        faces:   geometry.faces.map(f => {  
+                            return {a: f.a, b: f.b, c: f.c, vertexNormals: f.vertexNormals}  
+                            }), 
+                        vertices:geometry.vertices.map(v => {  
+                            return {x: v.x, y: v.y, z: v.z}  
+                            }), 
+                    }, 
+                },
+            },
+            systems: {
+                'galactic orbit': {
+                    name: 'galactic orbit',
+                    children:  ['stellar orbit'],
+                    body:       'star',
+                    motion: { // motion mirrors orbit of sun around galactic center
+                        type: 'orbit',
+                        semi_major_axis: 2.35e20, // meters
+                        effective_combined_mass: 1.262e41, // kg, back calculated to achieve period of 250 million years
                     },
-                ],
+                    invariant_insolation: true,
+                },
+                'stellar orbit': {
+                    name: 'stellar orbit',
+                    parent:   'galactic orbit',
+                    children: ['precession'],
+                    motion: {
+                        type: 'orbit',
+                        semi_major_axis: 1. * Units.ASTRONOMICAL_UNIT,
+                        eccentricity: 0.0167,
+                        inclination: Math.PI * 5e-5/180,
+                        longitude_of_ascending_node: Math.PI * -11/180,
+                        effective_combined_mass: 2e30, // kg
+                    },    
+                    invariant_insolation: false,
+                },
+                'precession': {
+                    name: 'precession',
+                    parent:   'stellar orbit',
+                    children: ['spin'],
+                    motion: { 
+                        type: 'spin',
+                        angular_speed: 2*Math.PI/(25860 * Units.YEAR),
+                    },    
+                    invariant_insolation: true,
+                },
+                'spin': {
+                    name: 'spin',
+                    parent:   'precession',
+                    children: [],
+                    body:     'world',
+                    motion: { 
+                        type: 'spin',
+                        angular_speed: 2*Math.PI/(60*60*24),
+                        axial_tilt: Math.PI * 23.5/180,
+                    },   
+                    invariant_insolation: false,
+                },
             },
         });
-        var focus = universe.body_id_to_node_map[focus_name].body;
+        var focus = universe.bodies['world'];
         CrustGenerator.get_crust_from_height_ranks(
             SphericalGeometry.get_random_surface_field(focus.grid, sim.random), 
             CrustGenerator.modern_earth_hypsography, 
@@ -1183,11 +1194,14 @@
             // TODO: reset sim to match the new seed
         },
         'resolution_level': function(new_resolution_level, old_resolution_level) {
+            console.log('resolution_level')
             onSimLoadStart.fire();
 
             var geometry = new THREE.IcosahedronGeometry(1, new_resolution_level);
-            var focus = new World({ 
-                name: sim.focus.name,
+            var world_name = sim.focus.name;
+            var world = new World({ 
+                id:  'world',
+                name: world_name,
                 grid: { 
                     faces:   geometry.faces.map(f => {  
                         return {a: f.a, b: f.b, c: f.c, vertexNormals: f.vertexNormals}  
@@ -1197,18 +1211,31 @@
                         }), 
                 }, 
             });
-            sim.focus = focus;
             CrustGenerator.get_crust_from_height_ranks(
-                SphericalGeometry.get_random_surface_field(focus.grid, sim.random), 
+                SphericalGeometry.get_random_surface_field(world.grid, sim.random), 
                 CrustGenerator.modern_earth_hypsography, 
                 CrustGenerator.modern_earth_attribute_height_maps, 
                 sim.random,
-                focus.lithosphere.total_crust
+                world.lithosphere.total_crust
             );
-            sim.model().initialize();
+            
+            var universe = sim.model();
+            // HACK: we need to retrieve and manipulate the serialization of universe,
+            //   because universe encapsulates private variables that 
+            //   reference the old instance of world. 
+            // This is a huge pain in the ass and this is the exact reason why
+            //   you shouldn't play with stateful objects, kids. 
+            // TODO: refactor the universe
+            universe.body_id_to_node_map[world_name].body = world;
+
+
+            // TODO: refactor sim.focus as a accessor function, similar to model()
+            //   create new attribute, sim.focus_name, to store world.name
+            sim.focus = world;
+
 
             onSimLoadStop.fire();
-            this.cell_count = sim.focus.grid.vertices.length;
+            this.cell_count = geometry.vertices.length;
         }
       },
       methods: {
