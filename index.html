@@ -146,10 +146,6 @@
             <img src="icons/folder.svg"/>
             File 
         </button>
-        <button type="button" class="btn" data-toggle="collapse" data-target=".new-control, #main-control">
-            <img src="icons/asterisk.svg"/>
-            New 
-        </button>
     </div>
 </div>
 
@@ -295,13 +291,13 @@
     </button>
 </div>
 
-<div id="tune-control" class="tune-control new-control collapse control" >
+<div id="tune-control" class="tune-control collapse control" >
     <div class="short-axis-group">
         <div class="vertical-axis-group">
-            <div class="horizontal-axis-group new-control collapse">
+            <div class="horizontal-axis-group">
                 <input id="seed" v-model="seed" class="form-control"></input>
             </div>
-            <div class="horizontal-axis-group new-control collapse">
+            <div class="horizontal-axis-group">
                 <button type="button" class="btn" v-on:click="randomizeCrust">
                     <img src="icons/dice-6.svg"/>
                     Randomize
@@ -320,17 +316,13 @@
                     <img src="icons/clock.svg"/>
                     Supercontinent Breakup
                 </button>
-                <button type="button" class="btn tune-control collapse" data-toggle="collapse" data-target="#main-control, .tune-control">
-                    <img src="icons/down-arrow.svg"/>
-                    Return
-                </button>
-                <button type="button" class="btn new-control collapse" data-toggle="collapse" data-target="#main-control, .new-control">
+                <button type="button" class="btn tune-control" data-toggle="collapse" data-target="#main-control, .tune-control">
                     <img src="icons/down-arrow.svg"/>
                     Return
                 </button>
             </div>
         </div>
-        <div class="new-control long-axis-group slider-label label collapse">
+        <div class="long-axis-group slider-label label">
             <div class="btn">
                 <!-- <img src="icons/spinner-small.gif"/> -->
                 <img src="icons/grid.svg"/>
@@ -605,6 +597,9 @@
                             }), 
                     }, 
                 },
+            },
+            config: {
+                'stellar orbit': Math.PI/2
             },
             cycles: {
                 'galactic orbit': {
@@ -1209,9 +1204,9 @@
         resolution_level      : 5,
         cell_count            : 0,
         axial_tilt_degrees    : 23.5,
-        log10_day_length      : Math.log(Units.DAY)/Math.log(10),
+        log10_day_length      : Math.log10(Units.DAY),
         day_length            : Units.DAY,
-        log10_semi_major_axis : Math.log(Units.ASTRONOMICAL_UNIT)/Math.log(10),
+        log10_semi_major_axis : Math.log10(Units.ASTRONOMICAL_UNIT),
         semi_major_axis_au    : 1,
       },
       created: function() {
