@@ -117,8 +117,8 @@
                     <img src="icons/rewind.svg"/>
                 </span>
                 <span class="input-group-text play" v-on:click="togglePause()">
-                    <img src="icons/pause.svg"/>
-                    <img src="icons/play.svg"/>
+                    <img src="icons/pause.svg" v-if="!paused"/>
+                    <img src="icons/play.svg"  v-if="paused"/>
                 </span>
                 <span class="input-group-text fast-forward" v-on:click="fastForward()">
                     <img src="icons/fast-forward.svg"/>
