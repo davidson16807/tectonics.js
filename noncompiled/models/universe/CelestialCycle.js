@@ -1,13 +1,13 @@
 'use strict';
 
-// A "System" is a class representation of an isolated physical system
+// A "CelestialCycle" is a class representation of an isolated physical system driven by a cycle
 // it is essentially a node in a scene graph 
 // It is designed for on-rails physics simulation over large distances.
 // It offers support for constantly changing transformation matrices,
 // and allows arbitrary nodes to be designated as the origin of a coordinate system.
 // Designating arbitrary nodes as the origin is meant to resolve floating point precision issues 
 // that commonly occur for very distant objects, A.K.A. the "Deep Space Kraken" of Kerbal Space Program
-function System(parameters) {
+function CelestialCycle(parameters) {
     this.id = parameters.id;
 
     if (parameters.motion === void 0) {
@@ -16,7 +16,7 @@ function System(parameters) {
     if (parameters.motion.type === void 0) {
         stop('missing parameter: "motion.type"');
     }
-    // the motion that characterizes all bodies within the system
+    // the motion that characterizes all bodies within the cycle
     // motion can currently either be an "Orbit" or "Spin", although it could be any class that instantiates their methods
     this.motion = {
         'orbit': () => new Orbit(parameters.motion),
@@ -38,7 +38,7 @@ function System(parameters) {
     // the motions described by the children assume a coordinate basis that is designated by this node
     this.children = (parameters.children || []);
 
-    // whether or not the insolation of child bodies will change throughout this system's motion
+    // whether or not the insolation of child bodies will change throughout this cycle's motion
     this.invariant_insolation = parameters['invariant_insolation'] || false;
 
     this.getParameters = function() {
@@ -55,19 +55,19 @@ function System(parameters) {
     
     // returns a dictionary mapping body ids to transformation matrices
     //  indicating the position/rotation relative to this node 
-    this.get_body_matrices = function (config, systems, origin) {
+    this.get_body_matrices = function (config, cycles, origin) {
         origin = origin || this.id;
         var parent   = this.parent;
         var children = this.children;
-        var system_config = (config[this.id] || 0);
+        var cycle_config = (config[this.id] || 0);
 
         var map = {};
         if (parent !== void 0) {
             // NOTE: don't consider origin, or else an infinite recursive loop will result
             if (parent !== origin) {
-                var parent_map = systems[parent].get_body_matrices(config, systems, this.id);
+                var parent_map = cycles[parent].get_body_matrices(config, cycles, this.id);
                 for(var key in parent_map){
-                    var parent_to_child_matrix = this.motion.get_parent_to_child_matrix(system_config)
+                    var parent_to_child_matrix = this.motion.get_parent_to_child_matrix(cycle_config)
                     map[key] = mult_matrix(parent_to_child_matrix , parent_map[key] )
                 }
             }
@@ -75,10 +75,10 @@ function System(parameters) {
         for (var child of children) {
             // NOTE: don't consider origin, or else an infinite recursive loop will result
             if (child !== origin) {
-                var child_map = systems[child].get_body_matrices(config, systems, this.id);
+                var child_map = cycles[child].get_body_matrices(config, cycles, this.id);
                 var child_config = (config[child] || 0);
                 for(var key in child_map){
-                    var child_to_parent_matrix = systems[child].motion.get_child_to_parent_matrix(child_config);
+                    var child_to_parent_matrix = cycles[child].motion.get_child_to_parent_matrix(child_config);
                     map[key] = mult_matrix(child_to_parent_matrix, child_map[key] )
                 }
             }

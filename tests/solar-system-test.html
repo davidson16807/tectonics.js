@@ -30,7 +30,7 @@
     <script src="../noncompiled/academics/OrbitalMechanics.js"></script>
     <script src="../noncompiled/models/universe/Orbit.js"></script>
     <script src="../noncompiled/models/universe/Spin.js"></script>
-    <script src="../noncompiled/models/universe/System.js"></script>
+    <script src="../noncompiled/models/universe/CelestialCycle.js"></script>
     <script src="../noncompiled/models/universe/Universe.js"></script>
 </head>
 <body>
@@ -99,7 +99,7 @@
     };
     var universe = new Universe({
         bodies:  bodies,
-        systems: {
+        cycles: {
             'Galactic Orbit': {
                 name: 'Galactic Orbit',
                 motion: { 

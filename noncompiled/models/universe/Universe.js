@@ -4,7 +4,7 @@
 // the data structure is designed to allow for:
 //  * iterative physics simulation
 //  * "on-rails" simulation, ala Kerbal Space Program
-//  * arbitrary assignment of cycle states from the user (since the system is ergodic - any state is likely occur within a single million year timestep)
+//  * arbitrary assignment of cycle states from the user (since the cycle is ergodic - any state is likely occur within a single million year timestep)
 // design principles:
 //  1. must be able to easily update the state of all "on-rails" motions 
 //  2. must be able to easily update the state of all bodies
@@ -54,17 +54,17 @@ function Universe(parameters) {
     // this is done using phase angles (e.g. number from 0 to 2*pi where pi represents the halfway point within the cycle)
     // example: { 'earth-revolution': pi*1/2, 'earth-rotation': pi*3/4, 'moon-revolution': pi*0}
     this.config = parameters.config || {};
-    // A "system" represents a system of celestial bodies that share a common reference frame. 
-    // The reference frame may be moving within a larger parent system, and may itself have subsystems as children. 
+    // A "cycle" represents the cyclical motion of one or more celestial bodies that share a common reference frame. 
+    // The reference frame may be moving within a larger parent cycle, and may itself have subcycles as children. 
     // For instance, moons can orbit planets that orbit stars.
-    // A system may contain a celestial body at its center but this is not strictly necessary,
+    // A cycle may contain a celestial body at its center but this is not strictly necessary,
     // For instance, the two planets may orbit a common barycenter. 
-    // Systems do not track the phase angle of their motions. 
+    // Cycles do not track the phase angle of their motions. 
     // Phase angle is stored separately, in "config". 
     // This is done because phase angle may change very frequently over large timesteps,
     //  where ergodic behavior emerges, and it is often not relevant to track it in these situations
-    var systems =  Object.keys(parameters.systems)
-        .reduce((accumulator, id) => { accumulator[id] = new System(parameters.systems[id]); return accumulator; }, {} );
+    var cycles =  Object.keys(parameters.cycles)
+        .reduce((accumulator, id) => { accumulator[id] = new CelestialCycle(parameters.cycles[id]); return accumulator; }, {} );
     // A "body" represents a celestial body: a collection of matter that is tightly bound by gravity.
     var bodies  =  Object.keys(parameters.bodies)
         .reduce((accumulator,  id) => { 
@@ -80,20 +80,20 @@ function Universe(parameters) {
     this.getParameters = function() {
         return {
             config:  this.config,
-            systems: Object.keys(systems)
-                .reduce((accumulator, id) => { accumulator[id] = systems[id].getParameters(); return accumulator; }, {} ),
+            cycles: Object.keys(cycles)
+                .reduce((accumulator, id) => { accumulator[id] = cycles[id].getParameters(); return accumulator; }, {} ),
             bodies:  Object.keys(bodies)
                 .reduce((accumulator, id) => { accumulator[id] = bodies [id].getParameters(); return accumulator; }, {} ),
         }
     }
 
-    this.systems = systems;
+    this.cycles = cycles;
     this.bodies  = bodies;
 
-    // given a body name, "system_of_body()" returns the system at which the body is the center
-    // it is of O(N) complexity, where N is the number of systems
-    function system_of_body(body_id) {
-        return Object.values(systems).filter(x => x.body == body_id)[0];
+    // given a body name, "cycle_of_body()" returns the cycle at which the body is the center
+    // it is of O(N) complexity, where N is the number of cycles
+    function cycle_of_body(body_id) {
+        return Object.values(cycles).filter(x => x.body == body_id)[0];
     }
 
     // NOTE: min_perceivable_period = 30/2 * timestep // half a second of real time
@@ -104,9 +104,9 @@ function Universe(parameters) {
     //given a cycle configuration, "advance()" returns the cycle configuration that would occur after a given amount of time
     function advance(config, timestep, output, min_perceivable_period, max_perceivable_period) {
         output = output || {};
-        for(var id in systems){
-            if (systems[id] === void 0) { continue; }
-            var period = systems[id].motion.period();
+        for(var id in cycles){
+            if (cycles[id] === void 0) { continue; }
+            var period = cycles[id].motion.period();
             // default to current value, if present
             if (config[id]) { output[id] = config[id]};
             // if cycle completes too fast for the user to perceive, don't simulate 
@@ -126,11 +126,11 @@ function Universe(parameters) {
     function samples(config, max_sample_count, min_perceivable_period) {
         // if the cycle takes more than a given amount to complete, 
         // then don't sample across it
-        var imperceptably_small_cycles = Object.values(systems)
-            .filter(system => {
-                return (system !== void 0 &&
-                        system.motion.period() < min_perceivable_period &&
-                       !system.invariant_insolation);
+        var imperceptably_small_cycles = Object.values(cycles)
+            .filter(cycle => {
+                return (cycle !== void 0 &&
+                        cycle.motion.period() < min_perceivable_period &&
+                       !cycle.invariant_insolation);
             })
             .sort((a,b) => a.motion.period() - b.motion.period())
             .reverse();
@@ -157,12 +157,12 @@ function Universe(parameters) {
     // returns a dictionary mapping body ids for stars to a list of positions sampled along their orbits
     function star_sample_positions_map(config, body, min_perceivable_period, max_sample_count) {
         max_sample_count = max_sample_count || 16;
-        var origin   = system_of_body(body.id);
+        var origin   = cycle_of_body(body.id);
         var samples_ = samples(config, max_sample_count, min_perceivable_period);
         var stars = Object.values(bodies).filter(body => body instanceof Star);
         var result = {};
         for (var sample of samples_){
-            var body_matrices = origin.get_body_matrices(sample, systems);
+            var body_matrices = origin.get_body_matrices(sample, cycles);
             for (var star of stars) {
                 var star_matrix = body_matrices[star.id];
                 var star_pos = Matrix4x4.get_translation(star_matrix);
@@ -202,11 +202,11 @@ function Universe(parameters) {
 
     // returns a dictionary mapping body ids to transformation matrices
     this.body_matrices = function(config, body) {
-        return system_of_body(body.id).get_body_matrices(config, systems);
+        return cycle_of_body(body.id).get_body_matrices(config, cycles);
     }
     this.star_sample_positions_map = star_sample_positions_map;
     this.advance        = advance;
-    this.system_of_body = system_of_body;
+    this.cycle_of_body = cycle_of_body;
 
     this.setDependencies = function(dependencies) {}
 
@@ -227,10 +227,10 @@ function Universe(parameters) {
             }
         }
 
-        for(var system_id in systems) {
-            var system  = systems[system_id];
-            var body_id = system.body;
-            var motion  = system.motion;
+        for(var cycle_id in cycles) {
+            var cycle  = cycles[cycle_id];
+            var body_id = cycle.body;
+            var motion  = cycle.motion;
             if (body_id !== void 0 && motion instanceof Spin) {
                 bodies[body_id].setDependencies({
                     axial_tilt:    motion.axial_tilt,
