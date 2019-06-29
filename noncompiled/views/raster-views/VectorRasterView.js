@@ -9,6 +9,7 @@ function VectorRasterView(options) {
 
     this.mesh = void 0;
     var mesh = void 0;
+    var grid = void 0;
     var vertexShader = void 0;
     var uniforms = {};
 
@@ -56,6 +57,11 @@ function VectorRasterView(options) {
 
     this.updateScene = function(gl_state, raster, options_) {
 
+        if (grid !== world.grid) {
+            grid = world.grid;
+            this.removeFromScene(gl_state)
+        }
+
         if (mesh === void 0) {
             mesh = create_mesh(raster, options_);
             vertexShader = options_.vertexShader;
@@ -94,12 +100,14 @@ function VectorRasterView(options) {
 
     };
     this.removeFromScene = function(gl_state) {
-        if (mesh !== void 0) {
+        if (mesh !== void 0 || grid !== void 0) {
             gl_state.scene.remove(mesh);
             mesh.geometry.dispose();
             mesh.material.dispose();
             mesh = void 0;
             this.mesh = void 0;
+
+            grid = void 0;
         }
     };
     this.updateChart = function(data, raster, options) {

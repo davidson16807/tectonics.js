@@ -333,6 +333,7 @@
         </div>
         <div class="new-control long-axis-group slider-label label collapse">
             <div class="btn">
+                <!-- <img src="icons/spinner-small.gif"/> -->
                 <img src="icons/grid.svg"/>
                 <div class="vertical-axis-group">
                     <div>Resolution</div>
@@ -1186,6 +1187,7 @@
           var _this = this;
           onSimLoadStop.subscribe(function() { 
             _this.seed = sim.seed;
+            console.log(sim.focus().grid.vertices.length)
             _this.cell_count = sim.focus().grid.vertices.length;
           });
       },
@@ -1194,23 +1196,22 @@
             // TODO: reset sim to match the new seed
         },
         'resolution_level': function(new_resolution_level, old_resolution_level) {
-            console.log('resolution_level')
             onSimLoadStart.fire();
-
+            // preserve the same exact state of world in every way except grid
+            var world_params = sim.focus().getParameters();
             var geometry = new THREE.IcosahedronGeometry(1, new_resolution_level);
-            var world_name = sim.focus().name;
-            var world = new World({ 
-                id:  'world',
-                name: world_name,
-                grid: { 
+            world_params.grid = { 
                     faces:   geometry.faces.map(f => {  
                         return {a: f.a, b: f.b, c: f.c, vertexNormals: f.vertexNormals}  
                         }), 
                     vertices:geometry.vertices.map(v => {  
                         return {x: v.x, y: v.y, z: v.z}  
                         }), 
-                }, 
-            });
+                };
+            // eliminate anything that would store a raster in a buffer to prevent overflow
+            world_params.lithosphere.plates = [];
+            world_params.lithosphere.total_crust = undefined;
+            var world = new World(world_params);
             CrustGenerator.get_crust_from_height_ranks(
                 SphericalGeometry.get_random_surface_field(world.grid, sim.random), 
                 CrustGenerator.modern_earth_hypsography, 
@@ -1220,22 +1221,16 @@
             );
             
             var universe = sim.model();
-            // HACK: we need to retrieve and manipulate the serialization of universe,
-            //   because universe encapsulates private variables that 
-            //   reference the old instance of world. 
+            universe.bodies[world.id] = world;
+            // HACK: we need to call initialize() on universe again because 
+            // it's the only thing that passes the dependencies required by world.
             // This is a huge pain in the ass and this is the exact reason why
             //   you shouldn't play with stateful objects, kids. 
             // TODO: refactor the universe
-            universe.body_id_to_node_map[world_name].body = world;
-
-
-            // TODO: refactor sim.focus as a accessor function, similar to model()
-            //   create new attribute, sim.focus_name, to store world.name
+            universe.initialize();
             sim.focus(world);
 
-
             onSimLoadStop.fire();
-            this.cell_count = geometry.vertices.length;
         }
       },
       methods: {

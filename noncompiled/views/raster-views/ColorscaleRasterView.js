@@ -22,6 +22,7 @@ function ColorscaleRasterView(options) {
 
     this.mesh = void 0;
     var mesh = void 0;
+    var grid = void 0;
     var uniforms = {};
     var vertexShader = void 0;
     var scaled_raster = void 0;
@@ -80,6 +81,11 @@ function ColorscaleRasterView(options) {
 
     this.updateScene = function(gl_state, raster, options) {
 
+        if (grid !== world.grid) {
+            grid = world.grid;
+            this.removeFromScene(gl_state)
+        }
+
         if (raster === void 0) {
             this.removeFromScene(gl_state);
             return;
@@ -102,7 +108,8 @@ function ColorscaleRasterView(options) {
             Float32Dataset.rescale(raster, scaled_raster, 0., 1., min, max);
         }
 
-        if (mesh === void 0) {
+        if (mesh === void 0 || grid !== scaled_raster.grid) {
+            grid = scaled_raster.grid;
             mesh = create_mesh(scaled_raster, options);
             uniforms = Object.assign({}, options);
             vertexShader = options.vertexShader;
@@ -129,12 +136,14 @@ function ColorscaleRasterView(options) {
         }
     };
     this.removeFromScene = function(gl_state) {
-        if (mesh !== void 0) {
+        if (mesh !== void 0 || grid !== void 0) {
             gl_state.scene.remove(mesh);
             mesh.geometry.dispose();
             mesh.material.dispose();
             mesh = void 0;
             this.mesh = void 0;
+            
+            grid = void 0;
         } 
         scaled_raster = void 0;
     };

@@ -10,6 +10,7 @@ function RealisticWorldView(shader_return_value) {
     this.chartViews = []; 
     var added = false;
     var mesh = void 0;
+    var grid = void 0;
     var shaderpass_uniforms = {};
     var renderpass_uniforms = {};
     var vertexShader = void 0;
@@ -147,7 +148,12 @@ function RealisticWorldView(shader_return_value) {
     }
     this.updateScene = function(gl_state, world, options) {
 
-        if (!added) {
+        if (grid !== world.grid) {
+            grid = world.grid;
+            this.removeFromScene(gl_state)
+        }
+
+        if (mesh === void 0) {
             mesh = create_mesh(world, options);
             renderpass_uniforms = Object.assign({}, options);
             vertexShader = options.vertexShader;
@@ -155,8 +161,6 @@ function RealisticWorldView(shader_return_value) {
 
             gl_state.composer.passes.pop();
             gl_state.composer.passes.push(shaderpass);
-
-            added = true;
         } 
 
         var projection_matrix_inverse = new THREE.Matrix4().getInverse(gl_state.camera.projectionMatrix);
@@ -248,17 +252,15 @@ function RealisticWorldView(shader_return_value) {
     };
 
     this.removeFromScene = function(gl_state) {
-        if (added) {
-
+        if (mesh !== void 0 || grid !== void 0) {
             gl_state.scene.remove(mesh);
             mesh.geometry.dispose();
             mesh.material.dispose();
             mesh = void 0;
+            grid = void 0;
 
             gl_state.composer.passes.pop();
             gl_state.composer.passes.push(gl_state.shaderpass);
-
-            added = false;
         }
     };
     this.updateChart = function(data, world, options) {
