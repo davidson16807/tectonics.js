@@ -252,16 +252,16 @@ function RealisticWorldView(shader_return_value) {
     };
 
     this.removeFromScene = function(gl_state) {
-        if (mesh !== void 0 || grid !== void 0) {
+        if (mesh !== void 0) {
             gl_state.scene.remove(mesh);
             mesh.geometry.dispose();
             mesh.material.dispose();
             mesh = void 0;
+            this.mesh = void 0;
+        } 
+        if (grid !== void 0) {
             grid = void 0;
-
-            gl_state.composer.passes.pop();
-            gl_state.composer.passes.push(gl_state.shaderpass);
-        }
+        } 
     };
     this.updateChart = function(data, world, options) {
         data.isEnabled = false;
