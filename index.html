@@ -368,9 +368,9 @@
             </div>
             <div class="">
                 <input type="range" v-model="log10_day_length" class="is-long-axis-vertical slider-vertical" orient="vertical"
-                    min="4.45" max="7.5" step="0.1">
+                    min="4.45" max="7.5" step="0.01">
                 <input type="range" v-model="log10_day_length" class="is-long-axis-horizontal"
-                    min="4.45" max="7.5" step="0.1">
+                    min="4.45" max="7.5" step="0.01">
             </div>
         </div>
         <!-- <div class="long-axis-group slider-label label">
@@ -750,7 +750,7 @@
         } else if (quantity < Units.YEAR) {
             return { unit: 'mo',  quantity: (quantity/Units.MONTH).toPrecision(precision).toString() }; 
         }
-        var formatted = format_count(quantity, 1000, 3);
+        var formatted = format_count(quantity/Units.YEAR, 1000, 3);
         formatted.unit += 'y';
         return formatted;
     }
