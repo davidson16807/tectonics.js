@@ -75,8 +75,14 @@ FluidMechanics.get_isostatic_displacements = function(thickness, density, materi
      }
      return displacement;
 }
-
-
+FluidMechanics.get_advected_ids = function (velocity, timestep, result, scratch) {
+    var past_pos = scratch || VectorRaster(velocity.grid);
+    var result   = result  || Uint16Raster(velocity.grid);
+    VectorField.add_scalar_term (velocity.grid.pos, velocity, -timestep,    past_pos);
+    VectorField.normalize(past_pos, past_pos);
+    velocity.grid.getNearestIds    (past_pos,                                  result);
+    return result;
+}
 
 return FluidMechanics;
 })();
