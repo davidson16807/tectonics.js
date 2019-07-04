@@ -144,7 +144,7 @@ VectorRaster.get_nearest_values = function(value_raster, pos_raster, result) {
   return VectorRaster.get_ids(value_raster, ids, result);
 }
 VectorRaster.get_ids = function(value_raster, ids_raster, result) {
-  result = result || VectorRaster(pos_raster.grid);
+  result = result || VectorRaster(value_raster.grid);
 
   ASSERT_IS_VECTOR_RASTER(vector_raster)
   ASSERT_IS_VECTOR_RASTER(result)

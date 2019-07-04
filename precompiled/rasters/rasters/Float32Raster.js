@@ -23,6 +23,15 @@ function Float32Raster(grid, fill) {
     }
     return result;
 };
+Float32Raster.map = function(raster, fn, result) {
+  result = result || Float32Raster(raster.grid);
+  ASSERT_IS_ARRAY (raster, Float32Array)
+  ASSERT_IS_ARRAY (result, Float32Array)
+  for (var i = 0, li = result.length; i < li; i++) {
+    result[i] = fn(raster[i]);
+  }
+  return result;
+}
 Float32Raster.FromExample = function(raster) {
   var length = 0; 
   if (raster instanceof Float32Array || raster instanceof Uint8Array || raster instanceof Uint16Array) { 
