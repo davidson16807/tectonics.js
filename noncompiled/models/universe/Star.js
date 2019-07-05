@@ -48,22 +48,6 @@ var Star = (function() {
     // 
     Star.get_memos = function(star) {
 
-        // NOTE: "memo" is reimplemented here because it reflects what we want
-        //  the memo class to look like in the future.
-        // TODO: replace global "Memo" class with this instance.
-        function memo(get_value, result) {
-            var is_dirty = true;
-            return function() {
-                if (is_dirty) {
-                    // NOTE: we set is_dirty first in order to resolve circular dependencies between memos
-                    //  e.g. snow coverage depends on temperature which depends on albedo which depends on snow coverage
-                    is_dirty = false;
-                    result = get_value(result); 
-                }
-                return result;
-            }
-        }
-
         // NOTE: scaling laws from artifexian: https://www.youtube.com/watch?v=hG1of0MroM8
         var solar_masses       = memo( result => star.mass / Units.SOLAR_MASS );
         var solar_luminosities = memo( result => Math.pow(solar_masses(), 3.5) );

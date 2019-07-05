@@ -5,7 +5,7 @@ scalarViews.satellite = new RealisticWorldView();
 
 scalarViews.npp     = new ScalarWorldView( 
         new ColorscaleRasterView( { min_color: 0xffffff, max_color: 0x00ff00, min: 0., max: 1. }),
-        world => world.biosphere.npp.value()
+        world => world.biosphere.net_primary_productivity
     );
 scalarViews.alt     = new ScalarWorldView( 
         new ColorscaleRasterView( { min_color: 0x000000, max_color: 0xffffff, scaling: true }),
@@ -100,7 +100,7 @@ scalarViews.ocean_coverage = new ScalarWorldView(
     );
 scalarViews.plant_coverage = new ScalarWorldView( 
         new HeatmapRasterView( { min: 0., max: 1. }),
-        world => world.biosphere.plant_coverage.value()
+        world => Biosphere.get_memos(world.biosphere).plant_coverage()
     );
 scalarViews.asthenosphere_pressure = new ScalarWorldView( 
         new HeatmapRasterView(  { min: 1., max: 0.  }),

@@ -122,7 +122,6 @@ function Atmosphere(grid, parameters) {
     var surface_height     = undefined;
     var ocean_coverage     = undefined;
     var snow_coverage     = undefined;
-    var plant_coverage     = undefined;
     var angular_speed     = undefined;
 
     function assert_dependencies() {
@@ -132,7 +131,6 @@ function Atmosphere(grid, parameters) {
         if (surface_height === void 0)     { throw '"surface_height" not provided'; }
         if (ocean_coverage === void 0)     { throw '"ocean_coverage" not provided'; }
         if (snow_coverage === void 0)     { throw '"snow_coverage" not provided'; }
-        if (plant_coverage === void 0)     { throw '"plant_coverage" not provided'; }
         if (angular_speed === void 0)     { throw '"angular_speed" not provided'; }
     }
 
@@ -143,7 +141,6 @@ function Atmosphere(grid, parameters) {
         surface_height         = dependencies['surface_height']     !== void 0?     dependencies['surface_height']     : surface_height;        
         ocean_coverage         = dependencies['ocean_coverage']!== void 0?     dependencies['ocean_coverage']     : ocean_coverage;        
         snow_coverage         = dependencies['snow_coverage']     !== void 0?     dependencies['snow_coverage']     : snow_coverage;        
-        plant_coverage         = dependencies['plant_coverage']!== void 0?     dependencies['plant_coverage']     : plant_coverage;    
         angular_speed         = dependencies['angular_speed'] !== void 0?     dependencies['angular_speed']     : angular_speed;    
     };
 

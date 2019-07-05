@@ -184,6 +184,7 @@ function RealisticWorldView(shader_return_value) {
         var gradient = ScalarField.gradient(world.lithosphere.surface_height.value());
         VectorField.div_scalar(gradient, world.radius, gradient);
 
+        var biosphere_memos = Biosphere.get_memos(world.biosphere);
         // RENDERPASS PROPERTIES -----------------------------------------------
 
         // VIEW PROPERTIES
@@ -211,7 +212,7 @@ function RealisticWorldView(shader_return_value) {
         update_renderpass_attribute('displacement',              world.lithosphere.displacement.value());
         update_renderpass_attribute('surface_temperature',       world.atmosphere.surface_temperature);
         update_renderpass_attribute('snow_coverage',             world.hydrosphere.snow_coverage.value());
-        update_renderpass_attribute('plant_coverage',            world.biosphere.plant_coverage.value());
+        update_renderpass_attribute('plant_coverage',            biosphere_memos.plant_coverage());
         update_renderpass_vector_attribute('gradient',           gradient);
 
         // ATMOSPHERE PROPERTIES
