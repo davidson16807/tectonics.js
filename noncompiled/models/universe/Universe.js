@@ -184,12 +184,13 @@ function Universe(parameters) {
         var stars = Object.values(bodies).filter(body => body instanceof Star);
         var star_sample_positions_map_ = star_sample_positions_map(config, body, min_perceivable_period, max_sample_count);
         for (var star of stars){
+            var star_memos = Star.get_memos(star);
             var star_sample_positions = star_sample_positions_map_[star.id];
             for (var star_sample_position of star_sample_positions) {
                 Optics.get_incident_radiation_fluxes(
                     surface_normal,
                     star_sample_position, 
-                    star.luminosity/star_sample_positions.length,
+                    star_memos.luminosity()/star_sample_positions.length,
                     insolation_sample
                 );
                 ScalarField.add_field(average_insolation, insolation_sample, average_insolation);
