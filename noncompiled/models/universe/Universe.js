@@ -208,6 +208,18 @@ function Universe(parameters) {
     this.star_sample_positions_map = star_sample_positions_map;
     this.advance        = advance;
     this.cycle_of_body = cycle_of_body;
+    this.average_insolation_of_body = function(body, simulation_speed, result, max_sample_count) {
+        result    = result || Float32Raster(body.grid);
+        max_sample_count = max_sample_count || 25;
+        average_insolation(
+                this.config,
+                body, 
+                simulation_speed/2.,
+                result,
+                max_sample_count
+            );
+        return result;
+    }
 
     this.setDependencies = function(dependencies) {}
 
