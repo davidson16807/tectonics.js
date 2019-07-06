@@ -42,7 +42,11 @@ Encapsulation
 	 If you are doing it to hide away methods that are only relevant to a section of code, don't use objects as a substitute for namespaces.
 	 If you are doing it to hide away attributes, you should further ask yourself why you need to hide attributes away from the user. 
 	 An unknowable, hidden state should not instill any sense of confidence in the person using your code. So what are you afraid of? 
-	 Are you afraid the user might enter an invalid state? If so, can you think of another way to express state that avoids the issue?
+	 Is it because you fear the structure of your encapsulated state is intrinsically subject to change? 
+	 If so, why do you feel your interface of getters and setters will be any more reliable? 
+	 Are you afraid the user might enter an invalid state? 
+	 If so, can you think of another way to express state that avoids the issue of invalidity all together?
+	 Invalid state should be treated as a code smell.
 
 So where do we go from here?
 	Program with the intent to offer guarantees about your code. 
