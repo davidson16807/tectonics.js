@@ -155,9 +155,9 @@ function Universe(parameters) {
     }
 
     // returns a dictionary mapping body ids for stars to a list of positions sampled along their orbits
-    function star_sample_positions_map(config, body, min_perceivable_period, max_sample_count) {
+    function star_sample_positions_map(config, body_id, min_perceivable_period, max_sample_count) {
         max_sample_count = max_sample_count || 16;
-        var origin   = cycle_of_body(body.id);
+        var origin   = cycle_of_body(body_id);
         var samples_ = samples(config, max_sample_count, min_perceivable_period);
         var stars = Object.values(bodies).filter(body => body instanceof Star);
         var result = {};
@@ -174,15 +174,16 @@ function Universe(parameters) {
     }
 
     // average insolation from all stars
-    function average_insolation(config, body, min_perceivable_period, average_insolation, max_sample_count){
-        var surface_normal = body.grid.pos;
+    function average_insolation(config, body_id, min_perceivable_period, average_insolation, max_sample_count){
+        var grid = average_insolation.grid;
+        var surface_normal = grid.pos;
         max_sample_count = max_sample_count || 25;
-        var average_insolation = average_insolation || Float32Raster(body.grid);
-        var insolation_sample = Float32Raster(body.grid);
+        var average_insolation = average_insolation || Float32Raster(grid);
+        var insolation_sample = Float32Raster(grid);
         Float32Raster.fill(average_insolation, 0);
 
         var stars = Object.values(bodies).filter(body => body instanceof Star);
-        var star_sample_positions_map_ = star_sample_positions_map(config, body, min_perceivable_period, max_sample_count);
+        var star_sample_positions_map_ = star_sample_positions_map(config, body_id, min_perceivable_period, max_sample_count);
         for (var star of stars){
             var star_memos = Star.get_memos(star);
             var star_sample_positions = star_sample_positions_map_[star.id];
@@ -209,7 +210,7 @@ function Universe(parameters) {
     this.advance        = advance;
     this.cycle_of_body = cycle_of_body;
     this.average_insolation_of_body = function(body, simulation_speed, result, max_sample_count) {
-        result    = result || Float32Raster(body.grid);
+        result    = result || Float32Raster(result.grid);
         max_sample_count = max_sample_count || 25;
         average_insolation(
                 this.config,
@@ -231,7 +232,7 @@ function Universe(parameters) {
                 body.setDependencies({
                     get_average_insolation: ((timestep, out) => average_insolation(
                             this.config,
-                            body, 
+                            body.id, 
                             30/2 * timestep,  // TODO: set this to the correct fps
                             out,
                             25

@@ -68,7 +68,7 @@ function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
         var universe = sim.model();
         var body = sim.focus();
         var stars = Object.values(universe.bodies).filter(body => body instanceof Star);
-        var star_sample_positions_map_ = universe.star_sample_positions_map(universe.config, body, sim.speed/2, 9);
+        var star_sample_positions_map_ = universe.star_sample_positions_map(universe.config, body.id, sim.speed/2, 9);
 
         var light_rgb_intensities = [];
         var light_directions = [];
