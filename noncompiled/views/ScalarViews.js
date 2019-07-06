@@ -100,7 +100,7 @@ scalarViews.ocean_coverage = new ScalarWorldView(
     );
 scalarViews.plant_coverage = new ScalarWorldView( 
         new HeatmapRasterView( { min: 0., max: 1. }),
-        world => Biosphere.get_memos(world.biosphere).plant_coverage()
+        world => Biosphere.get_memos ( world.biosphere, world.atmosphere, undefined ).plant_coverage()
     );
 scalarViews.asthenosphere_pressure = new ScalarWorldView( 
         new HeatmapRasterView(  { min: 1., max: 0.  }),

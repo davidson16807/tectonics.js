@@ -11,9 +11,9 @@ var Biosphere = (function() {
 
         var length = this.grid.vertices.length;
         this.buffer                   = parameters['buffer']          || new ArrayBuffer(2 * Float32Array.BYTES_PER_ELEMENT * length);
-        this.primary_biomass          = Float32Raster.FromBuffer(this.buffer, this.grid, 0 * Float32Array.BYTES_PER_ELEMENT * length);
-        this.net_primary_productivity = Float32Raster.FromBuffer(this.buffer, this.grid, 1 * Float32Array.BYTES_PER_ELEMENT * length);
-        this.everything               = new Float32Array(this.buffer);
+        this.primary_carbon_biomass   = Float32Raster.FromBuffer(this.buffer, this.grid, 0 * Float32Array.BYTES_PER_ELEMENT * length);
+
+        this.all_rasters              = new Float32Array(this.buffer, 0 * length, 1 * length);
 
         this.getParameters = function() {
             return { 
@@ -26,28 +26,33 @@ var Biosphere = (function() {
         }
     }
 
-    Biosphere.get_delta  = function(biosphere, atmosphere, timestep, biosphere_delta) {
-        biosphere_delta = biosphere_delta || new Biosphere(biosphere.getParameters());
+    Biosphere.get_steady_state = function(
+            /*input:*/  atmosphere, universe, 
+            /*output:*/ biosphere) {
+        biosphere = biosphere || new Biosphere({ grid: atmosphere.grid });
 
-        Biosphere.growth_factor = 0;
-        Biosphere.npp_max       = 0;
-        Biosphere.lai_max       = 0;
-        PlantBiology.net_primary_productivities(atmosphere.long_term_surface_temperature.value(), atmosphere.precipitation.value(), biosphere.npp_max, biosphere_delta.net_primary_productivity);
-        ScalarField.sub_field(biosphere_delta.net_primary_productivity, biosphere.net_primary_productivity, biosphere_delta.net_primary_productivity);
-
-        return biosphere_delta;
     }
-    Biosphere.add_delta = function(biosphere, biosphere_delta, biosphere_result) {
+
+    Biosphere.get_update = function(
+            /*input:*/  biosphere, biosphere_memos, timestep,
+            /*output:*/ biosphere_result
+        ) {
         biosphere_result = biosphere_result || new Biosphere(biosphere.getParameters());
 
-        ScalarField.add_field(biosphere.everything, biosphere_delta.everything, biosphere_result.everything);
+        // ScalarField.add_scalar_term(biosphere.primary_carbon_biomass, biosphere_memos.net_primary_productivity(), timestep, biosphere_result.primary_carbon_biomass);
 
         return biosphere_result;
     }
 
-    // NOTE: All derived attributes are calculated within stateless functions!
-    //  Do not create getter/setter attributes within the "Biosphere" class!
-    //  We do it this way for two reasons:
+    
+    // NOTE: Do not create getters/setters within the "Biosphere" class! Use this instead!
+    // "get_memos()" is a pure stateless function. 
+    // Given a Biosphere object, it returns a dictionary of memo functions.
+    // These memo functions calculate derived attributes of the Biosphere object.
+    // When modifications are made to the biosphere object, the memo is discarded. 
+    // This ensures with minimal overhead that derived attributes are never "dirty".
+    // They are never out of sync with the underlying attributes they were derived from. 
+    // We do it this way for two reasons:
     //   1.) To prevent introducing state within code that relies on the Biosphere class.
     //       Developers do not have to worry about the state of is_dirty flags, memos, 
     //       or derived attributes within "Biosphere" objects. 
@@ -57,17 +62,36 @@ var Biosphere = (function() {
     //       The "Biosphere" class concerns itself only with storing the inherent state of a biosphere.
     //       The "Biosphere namespace" concerns itself only with pure, stateless functions 
     //        that describe the transformation of state and the calculation of derived attributes.
-    Biosphere.get_memos = function(biosphere) {
+    Biosphere.get_memos = function(biosphere, atmosphere, universe) {
 
         var memos = {};
-        memos.leaf_area_index = memo( 
-            result => PlantBiology.leaf_area_indices(biosphere.net_primary_productivity, biosphere.npp_max, biosphere.lai_max, result, biosphere.growth_factor),
+
+        memos.net_primary_productivity = memo( 
+            result => PlantBiology.net_primary_productivities(
+                atmosphere.long_term_surface_temperature.value(), 
+                atmosphere.precipitation.value(), 
+                biosphere.npp_max, 
+                result
+            ),
             Float32Raster(biosphere.grid),
         );
+
+        memos.leaf_area_index = memo( 
+            result => PlantBiology.leaf_area_indices(
+                memos.net_primary_productivity(), 
+                biosphere.npp_max, 
+                biosphere.lai_max, 
+                result, 
+                biosphere.growth_factor
+            ),
+            Float32Raster(biosphere.grid),
+        );
+
         memos.plant_coverage = memo( 
             result => Float32RasterInterpolation.linearstep(0, 1, memos.leaf_area_index(), result),
             Float32Raster(biosphere.grid),
         );
+
         return memos;
     }
 

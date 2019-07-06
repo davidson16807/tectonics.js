@@ -139,8 +139,6 @@ function World(parameters) {
         this.lithosphere.calcChanges(timestep);
         this.hydrosphere.calcChanges(timestep);
         this.atmosphere.calcChanges(timestep);
-
-        this.biosphere_delta = Biosphere.get_delta( this.biosphere, this.atmosphere, timestep, this.biosphere_delta );
     };
 
     this.applyChanges = function(timestep) {
@@ -152,7 +150,8 @@ function World(parameters) {
         this.hydrosphere.applyChanges(timestep);
         this.atmosphere.applyChanges(timestep);
 
-        Biosphere.add_delta( this.biosphere, this.biosphere_delta, this.biosphere );
+        Biosphere.get_memos ( this.biosphere, this.atmosphere, this.universe );
+        Biosphere.get_update( this.biosphere, this.biosphere_memo,  timestep, this.biosphere );
     };
     return this;
 }

@@ -184,7 +184,7 @@ function RealisticWorldView(shader_return_value) {
         var gradient = ScalarField.gradient(world.lithosphere.surface_height.value());
         VectorField.div_scalar(gradient, world.radius, gradient);
 
-        var biosphere_memos = Biosphere.get_memos(world.biosphere);
+        var biosphere_memos = Biosphere.get_memos(world.biosphere, world.atmosphere, undefined);
         // RENDERPASS PROPERTIES -----------------------------------------------
 
         // VIEW PROPERTIES
