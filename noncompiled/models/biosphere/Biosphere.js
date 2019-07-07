@@ -62,37 +62,39 @@ var Biosphere = (function() {
     //       The "Biosphere" class concerns itself only with storing the inherent state of a biosphere.
     //       The "Biosphere namespace" concerns itself only with pure, stateless functions 
     //        that describe the transformation of state and the calculation of derived attributes.
-    Biosphere.get_memos = function(biosphere, atmosphere, universe) {
+    Biosphere.get_memos = function(biosphere, atmosphere, universe, memos_out) {
 
-        var memos = {};
-
-        memos.net_primary_productivity = memo( 
-            result => PlantBiology.net_primary_productivities(
-                atmosphere.long_term_surface_temperature.value(), 
-                atmosphere.precipitation.value(), 
-                biosphere.npp_max, 
-                result
+        var memos_out = memos_out || {
+            net_primary_productivity: new Memo( 0, 
+                result => PlantBiology.net_primary_productivities(
+                    atmosphere.long_term_surface_temperature.value(), 
+                    atmosphere.precipitation.value(), 
+                    biosphere.npp_max, 
+                    result
+                ),
+                Float32Raster(biosphere.grid),
             ),
-            Float32Raster(biosphere.grid),
-        );
-
-        memos.leaf_area_index = memo( 
-            result => PlantBiology.leaf_area_indices(
-                memos.net_primary_productivity(), 
-                biosphere.npp_max, 
-                biosphere.lai_max, 
-                result, 
-                biosphere.growth_factor
+            leaf_area_index: new Memo( 0, 
+                result => PlantBiology.leaf_area_indices(
+                    memos_out.net_primary_productivity.value(), 
+                    biosphere.npp_max, 
+                    biosphere.lai_max, 
+                    result, 
+                    biosphere.growth_factor
+                ),
+                Float32Raster(biosphere.grid),
             ),
-            Float32Raster(biosphere.grid),
-        );
+            plant_coverage: new Memo( 0, 
+                result => Float32RasterInterpolation.linearstep(0, 1, memos_out.leaf_area_index.value(), result),
+                Float32Raster(biosphere.grid),
+            )
+        };
 
-        memos.plant_coverage = memo( 
-            result => Float32RasterInterpolation.linearstep(0, 1, memos.leaf_area_index(), result),
-            Float32Raster(biosphere.grid),
-        );
+        for (var memo_id in memos_out){
+            memos_out[memo_id].invalidate();
+        }
 
-        return memos;
+        return memos_out;
     }
 
     return Biosphere;

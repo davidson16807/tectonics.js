@@ -196,14 +196,14 @@ function Universe(parameters) {
                 Optics.get_incident_radiation_fluxes(
                     surface_normal,
                     star_sample_position, 
-                    star_memos.luminosity()/star_sample_positions.length,
+                    star_memos.luminosity.value()/star_sample_positions.length,
                     insolation_sample
                 );
                 if (!is_complete_spectrum) {
                     var fraction_between_wavelengths = Thermodynamics.solve_fraction_of_light_emitted_by_black_body_between_wavelength(
                         min_wavelength, 
                         max_wavelength, 
-                        star_memos.surface_temperature()
+                        star_memos.surface_temperature.value()
                     );
                     ScalarField.mult_scalar(insolation_sample, fraction_between_wavelengths, insolation_sample);
                 }

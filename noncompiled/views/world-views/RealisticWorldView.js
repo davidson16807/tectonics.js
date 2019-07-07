@@ -212,7 +212,7 @@ function RealisticWorldView(shader_return_value) {
         update_renderpass_attribute('displacement',              world.lithosphere.displacement.value());
         update_renderpass_attribute('surface_temperature',       world.atmosphere.surface_temperature);
         update_renderpass_attribute('snow_coverage',             world.hydrosphere.snow_coverage.value());
-        update_renderpass_attribute('plant_coverage',            biosphere_memos.plant_coverage());
+        update_renderpass_attribute('plant_coverage',            biosphere_memos.plant_coverage.value());
         update_renderpass_vector_attribute('gradient',           gradient);
 
         // ATMOSPHERE PROPERTIES

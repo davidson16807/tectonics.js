@@ -86,8 +86,8 @@ function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
                     star_sample_position.y,
                     star_sample_position.z
                 );
-                var light_rgb_intensity = Thermodynamics.solve_rgb_intensity_of_light_emitted_by_black_body(star_memos.surface_temperature());
-                var light_attenuation = SphericalGeometry.get_surface_area(star_memos.radius()) / SphericalGeometry.get_surface_area(light_distance);
+                var light_rgb_intensity = Thermodynamics.solve_rgb_intensity_of_light_emitted_by_black_body(star_memos.surface_temperature.value());
+                var light_attenuation = SphericalGeometry.get_surface_area(star_memos.radius.value()) / SphericalGeometry.get_surface_area(light_distance);
                 var light_exposure = 1/star_sample_positions.length;
                 light_rgb_intensity.x *= light_attenuation * light_exposure;
                 light_rgb_intensity.y *= light_attenuation * light_exposure;

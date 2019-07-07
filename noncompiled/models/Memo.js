@@ -18,19 +18,3 @@ function Memo(initial_value, get_value, is_dirty) {
         return value;
     }
 }
-
-// NOTE: "memo" is reimplemented here because it reflects what we want
-//  the memo class to look like in the future.
-// TODO: replace global "Memo" class with this instance.
-function memo(get_value, result) {
-    var is_dirty = true;
-    return function() {
-        if (is_dirty) {
-            // NOTE: we set is_dirty first in order to resolve circular dependencies between memos
-            //  e.g. snow coverage depends on temperature which depends on albedo which depends on snow coverage
-            is_dirty = false;
-            result = get_value(result); 
-        }
-        return result;
-    }
-}
