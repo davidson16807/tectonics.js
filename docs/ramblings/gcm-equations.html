@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+    <script type="text/javascript"
+      src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML" async></script>
+</head>
+<body style="color: #111;">
+"All weather and climate result from three fundamental entities: 
+motion (both horizontal and vertical), energy, and moisture. 
+Without any of these three, weather and climate do not exist. 
+Any attempt to simulate the behavior of the atmosphere dynamically must include 
+a representation of the fundamental equations that govern motion, energy, and moisture in the atmosphere. 
+Seven equations accomplish this task. "
+ - Rohli and Vega, "Climatology" Ch.13 
+
+<table cellpadding="1">
+	<tr>
+		<td>`vecu`</td>
+		<td>wind velocity</td>
+	<tr>
+	</tr>
+		<td>`rho`</td>
+		<td>density</td>
+	<tr>
+	</tr>
+		<td>`p`</td>
+		<td>pressure</td>
+	<tr>
+	</tr>
+		<td>`T`</td>
+		<td>temperature</td>
+	</tr>
+	</tr>
+		<td>`m`</td>
+		<td>specific humidity </td>
+	<tr>
+	</tr>
+		<td></td>
+		<td>`m = r/(r+1)` or `m = (e epsilon)/p`</td>
+	<tr>
+	</tr>
+		<td>`P`</td>
+		<td>Precipitation</td>
+	<tr>
+	</tr>
+		<td>`P`</td>
+		<td>Evaporation</td>
+	<tr>
+	</tr>
+		<td>`f`</td>
+		<td>Coriolis force</td>
+	<tr>
+	</tr>
+		<td></td>
+		<td>`f = 2 Omega sin varphi`</td>
+	<tr>
+	</tr>
+		<td>`vecF`</td>
+		<td>additional forcing</td>
+	<tr>
+	</tr>
+		<td>`C_p`</td>
+		<td>constant pressure specific heat capacity</td>
+	<tr>
+	</tr>
+		<td>`R_d`</td>
+		<td>dry air constant `(287 J kg^-1 K^-1)`</td>
+	<tr>
+	</tr>
+		<td>`R`</td>
+		<td>universal gas constant `(8.314 J mol^-1 K^-1)`</td>
+	<tr>
+	</tr>
+		<td>`r`</td>
+		<td>mixing ratio</td>
+	<tr>
+	</tr>
+		<td>`e`</td>
+		<td>vapor pressure</td>
+	<tr>
+	</tr>
+		<td></td>
+		<td>`e = e_0 exp( (L M) / R (1/T_f - 1/T_d ) )`</td>
+	<tr>
+	</tr>
+		<td>`e_0`</td>
+		<td>vapor pressure when `T_d = T_f` `(611 Pa)`</td>
+	<tr>
+	</tr>
+		<td>`T_f`</td>
+		<td>Temperature at freezing</td>
+	<tr>
+	</tr>
+		<td>`T_d`</td>
+		<td>Temperature at dew point</td>
+	<tr>
+	</tr>
+		<td>`T_v`</td>
+		<td>Virtual temperature, temperature of dry air were its pressure and temperature equaled that of sampled air</td>
+	<tr>
+	</tr>
+		<td></td>
+		<td>`T_v = ((1+r/epsilon))/(1+r) T`</td>
+	<tr>
+	</tr>
+		<td>`L`</td>
+		<td>latent heat of condensation `(2.5008e6 J kg^-1)` or sublimation `(2.8345e6 J kg^-1)` if over ice surface</td>
+	<tr>
+<table cellpadding="10">
+	<tr><td>Equation of State:</td></tr>
+	<tr>
+		<td>
+			`P/rho = R_d T_v`
+		</td>
+	</tr>
+	<tr><td>Mass Conservation Equation:</td></tr>
+	<tr>
+		<td>
+			`(drho)/dt  = -u(drho)/dx -v(drho)/dy - w(drho)/dz -rho(du)/dx -rho(dv)/dy - rho(dw)/dz`
+		</td>
+		<td>
+			`(drho)/dt  = -vecu * nabla rho  + rho nabla * vecu`
+		</td>
+	</tr>
+	<tr><td>Moisture Conservation Equation:</td></tr>
+	<tr>
+		<td>
+			`(dm)/dt  = -u(dm)/dx -v(dm)/dy - w(dm)/dz + P - E`
+		</td>
+		<td>
+			`(dm)/dt  = -vecu * nabla m  + P - E`
+		</td>
+	</tr>
+	<tr><td>Thermodynamic Energy Equation:</td></tr>
+	<tr>
+		<td>
+			`(dT)/dt  = -u(dT)/dx -v(dT)/dy - w(dT)/dz + 1/C_p (dQ)/dt + 1/(rho C_p) (dp)/dt`
+		</td>
+		<td>
+			`(dT)/dt  = -vecu * nabla T  + 1/C_p (dQ)/dt + 1/(rho C_p) (dp)/dt`
+		</td>
+	</tr>
+	<tr><td>Navier-Stokes Equations:</td></tr>
+	<tr>
+		<td>
+			`(du)/dt  = -u(du)/dx -v(du)/dy - w(du)/dz - 1/rho (dp)/dx + F_x + fv`
+			<br/>
+			`(dv)/dt  = -u(dv)/dx -v(dv)/dy - w(dv)/dz - 1/rho (dp)/dy + F_y - fu`
+			<br/>
+			`(dw)/dt = -u(dw)/dx -v(dw)/dy - w(dw)/dz - 1/rho g + F_z`
+			<br/>
+			<br/>
+			
+		</td>
+		<td rowspan="3">
+			`(dvecu)/dt  = -vecu * nabla vecu - 1/rho nabla p + vecF + fv`
+		</td>
+	</tr>
+</table>
+
+</body>
+</html>
