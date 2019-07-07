@@ -174,11 +174,16 @@ function Universe(parameters) {
     }
 
     // average insolation from all stars
-    function average_insolation(config, body_id, min_perceivable_period, average_insolation, max_sample_count){
+    function average_insolation(config, body_id, min_perceivable_period, average_insolation, min_wavelength, max_wavelength, max_sample_count){
+        max_sample_count = max_sample_count || 25;
+        min_wavelength = min_wavelength || 0;
+        max_wavelength = max_wavelength || Infinity;
+        var is_complete_spectrum = (min_wavelength == 0 && !isFinite(max_wavelength));
+
+        var average_insolation = average_insolation || Float32Raster(grid);
+
         var grid = average_insolation.grid;
         var surface_normal = grid.pos;
-        max_sample_count = max_sample_count || 25;
-        var average_insolation = average_insolation || Float32Raster(grid);
         var insolation_sample = Float32Raster(grid);
         Float32Raster.fill(average_insolation, 0);
 
@@ -194,6 +199,14 @@ function Universe(parameters) {
                     star_memos.luminosity()/star_sample_positions.length,
                     insolation_sample
                 );
+                if (!is_complete_spectrum) {
+                    var fraction_between_wavelengths = Thermodynamics.solve_fraction_of_light_emitted_by_black_body_between_wavelength(
+                        min_wavelength, 
+                        max_wavelength, 
+                        star_memos.surface_temperature()
+                    );
+                    ScalarField.mult_scalar(insolation_sample, fraction_between_wavelengths, insolation_sample);
+                }
                 ScalarField.add_field(average_insolation, insolation_sample, average_insolation);
             }
         }
@@ -209,7 +222,7 @@ function Universe(parameters) {
     this.star_sample_positions_map = star_sample_positions_map;
     this.advance        = advance;
     this.cycle_of_body = cycle_of_body;
-    this.average_insolation_of_body = function(body, simulation_speed, result, max_sample_count) {
+    this.average_insolation_of_body = function(body, simulation_speed, result, min_wavelength, max_wavelength, max_sample_count) {
         result    = result || Float32Raster(result.grid);
         max_sample_count = max_sample_count || 25;
         average_insolation(
@@ -217,6 +230,8 @@ function Universe(parameters) {
                 body, 
                 simulation_speed/2.,
                 result,
+                min_wavelength, 
+                max_wavelength, 
                 max_sample_count
             );
         return result;
@@ -234,8 +249,7 @@ function Universe(parameters) {
                             this.config,
                             body.id, 
                             30/2 * timestep,  // TODO: set this to the correct fps
-                            out,
-                            25
+                            out
                         )),
                 });
             }
