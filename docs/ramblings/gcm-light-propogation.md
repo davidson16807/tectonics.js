@@ -117,7 +117,31 @@ And "intensity_of_incoming_visible_light_received_by_surface" is equivalent to t
 This representation assumes that surface air temperature will equilibrate to whatever is the temperature of the surface proper 
 This is all we need for our first pass. 
 
-To further simplify our second pass, let's introduce an additional datastructure,
+If we model climate using a steady state assumption, 
+such as if our timestep is very large,
+then we assume intensity_of_incoming_visible_light_absorbed_by_surface equals
+intensity_of_outgoing_infrared_light_transmitted_by_air. 
+
+The order of calculation is as follows:
+
+    intensity_of_incoming_visible_light_received_by_surface 
+    intensity_of_incoming_visible_light_absorbed_by_surface
+    intensity_of_incoming_visible_light_emitted_by_surface
+
+However, if we model climate using numerical integration,
+the order is as follows:
+
+    intensity_of_incoming_visible_light_received_by_surface 
+    intensity_of_incoming_visible_light_absorbed_by_surface
+    intensity_of_incoming_visible_light_emitted_by_surface
+    intensity_of_outgoing_infrared_light_transmitted_by_air
+
+This has implications for our architecture.
+See more information about this in model-architecture.md
+
+Now let's discuss our second pass.
+In our second pass, we want to model 
+Let's introduce an additional datastructure,
 to represent the way light from a certain source propogates within a material:
 
   LightInteractionRaster:

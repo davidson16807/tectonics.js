@@ -47,7 +47,7 @@ We could for instance calculate deltas upon request within a memo object:
 
  update   (particle1, particle2, ... particleN, timestep) => particle1_result
  get_memos (particle1)    => particle1_memos
- particle1_memos.delta1() => particle1_delta
+ particle1_memos.delta1.value() => particle1_delta
 
 However, if the delta takes a long time to calculate, it would be very inefficient.
 We would unnecessarily repeat our calculations. 
@@ -69,13 +69,13 @@ Individual fluxes would then have to be calculated separately using memos, with 
  sub       (particle1_result, particle2, ... particleN, timestep) => particle1_delta
  add_delta (particle1, particle1_delta)                    => particle1_result
 
-No, perhaps we ought to grant our update function access to any memo object that might be needed to calculate its result.
+Perhaps we ought to grant our update function access to any memo object that might be needed to calculate its result?
 This way, we have a place to store the delta in case it is calculated during the update function.
 If it is calculated during the update function, then no extra time is spent recalculating it.
 If it is not calculated during the update function, then we only perform the calculation when it is requested by the user.
 
  update (particle1, particle2, ... particleN, particle1_memo, timestep) => particle1_result
- particle1_memos.flux1() => particle1_flux
+ particle1_memos.flux1.value() => particle1_flux
 
 This may be unecessarily verbose, but there is nothing stopping us from treating the memo as a complete facade for a particle
 
@@ -122,15 +122,34 @@ so it relies on the biosphere, atmosphere, and universe subcomponents as depende
 Now, according to the architecture we've outlined above, fluxes should be stored within memos.
 The get_memos() function that is used to generate these memos should therefore accept all dependencies as input.
 
- Biosphere.get_memos(biosphere, atmosphere, universe) => biosphere_memos
- biosphere_memos.plant_carbon_net_productivity() => npp
+ Atmosphere.get_memos(atmosphere, biosphere, lithosphere, universe) => atmosphere_memos
+ atmosphere_memos.intensity_of_incoming_visible_light_emitted_by_surface.value() => emission
 
-This is unfortunate, but let's remember two things:
- * We have achieved designing a performant stateless function. 
-   It works in the general case without introducing significant mental overhead. 
-   This is a huge win.
- * Subcomponents (atmosphere, hydrosphere, etc.) in the real world are tightly coupled. 
-   Attributes are often derived from several other subcomponents. 
-   There is often no clear distinction which subcomponent an attribute belongs to. 
-   So subcomponents can be thought more as arbitrary boundaries that help organize code,
-   rather than proper objects that need strict encapsulation.
+Worse still, certain memos will be calculated in different ways depending on timestep. 
+As we see in gcm-light-propogation.md, if the timestep is short enough we use numerical integration, 
+and we derive three variables A, B, and C, using their predecessor in each calculation.
+
+However if the timestep is long enough we want to use a steady state assumption,
+which amounts to equating A to C and then deriving B from C.
+
+So if timestep is small we derive B from C, and if timestep is large we derive C from B.
+If we stuck with the above implementation using get_memos(), 
+then each memo would have several conditional detecting whether other memos are still marked dirty.
+This is a nightmare that strikes me as incredibly painful to debug.
+
+I've toyed around with the idea of implementing the Blackboard design pattern.
+In this design pattern, we create a blackboard object on which rasters can be stored,
+and then create a set of agents that each traverse the board trying to find whether 
+they can apply a particular rule to calculate a value. 
+
+However the blackboard is still even more of a nightmare.
+Not only is it still incredibly hard to debug, 
+but it is also incredibly inefficient, error prone, 
+and difficult for new developers to understand. 
+
+So let's not abuse the get_memos() function, 
+and for God's sake let's not do blackboards. 
+I think get_memos() has a regular place in the application.
+I expect it should be present for just about every model object,
+however it should only be used in calculations where the dependency graph is known and shallow. 
+
