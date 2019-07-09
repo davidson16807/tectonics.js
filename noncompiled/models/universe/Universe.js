@@ -66,34 +66,31 @@ function Universe(parameters) {
     var cycles =  Object.keys(parameters.cycles)
         .reduce((accumulator, id) => { accumulator[id] = new CelestialCycle(parameters.cycles[id]); return accumulator; }, {} );
     // A "body" represents a celestial body: a collection of matter that is tightly bound by gravity.
-    var bodies  =  Object.keys(parameters.bodies)
-        .reduce((accumulator,  id) => { 
-            var body = parameters.bodies[id];
-            accumulator[id] = {
-                undefined: () => body,
-                'world': () => new World(body),
-                'star': () => new Star(body),
-            }[body.type](); 
-            return accumulator; 
-        }, {} );
+    var stars  =  Object.keys(parameters.stars)
+        .reduce((accumulator,  id) => { accumulator[id] = new Star (parameters.stars[id]);   return accumulator; }, {} );
+    var worlds  =  Object.keys(parameters.worlds)
+        .reduce((accumulator,  id) => { accumulator[id] = new World(parameters.worlds[id]);  return accumulator; }, {} ); 
 
     this.getParameters = function() {
         return {
             config:  this.config,
             cycles: Object.keys(cycles)
                 .reduce((accumulator, id) => { accumulator[id] = cycles[id].getParameters(); return accumulator; }, {} ),
-            bodies:  Object.keys(bodies)
-                .reduce((accumulator, id) => { accumulator[id] = bodies [id].getParameters(); return accumulator; }, {} ),
+            stars:  Object.keys(stars)
+                .reduce((accumulator, id) => { accumulator[id] = stars [id].getParameters(); return accumulator; }, {} ),
+            worlds:  Object.keys(worlds)
+                .reduce((accumulator, id) => { accumulator[id] = worlds [id].getParameters(); return accumulator; }, {} ),
         }
     }
 
     this.cycles = cycles;
-    this.bodies  = bodies;
+    this.stars  = stars;
+    this.worlds = worlds;
 
     // given a body name, "cycle_of_body()" returns the cycle at which the body is the center
     // it is of O(N) complexity, where N is the number of cycles
-    function cycle_of_body(body_id) {
-        return Object.values(cycles).filter(x => x.body == body_id)[0];
+    function cycle_of_body(world_id) {
+        return Object.values(cycles).filter(x => x.body == world_id)[0];
     }
 
     // NOTE: min_perceivable_period = 30/2 * timestep // half a second of real time
@@ -155,26 +152,25 @@ function Universe(parameters) {
     }
 
     // returns a dictionary mapping body ids for stars to a list of positions sampled along their orbits
-    function star_sample_positions_map(config, body_id, min_perceivable_period, max_sample_count) {
+    function star_sample_positions_map(config, world_id, min_perceivable_period, max_sample_count) {
         max_sample_count = max_sample_count || 16;
-        var origin   = cycle_of_body(body_id);
+        var origin   = cycle_of_body(world_id);
         var samples_ = samples(config, max_sample_count, min_perceivable_period);
-        var stars = Object.values(bodies).filter(body => body instanceof Star);
         var result = {};
         for (var sample of samples_){
             var body_matrices = origin.get_body_matrices(sample, cycles);
-            for (var star of stars) {
-                var star_matrix = body_matrices[star.id];
+            for (var star_id in stars) {
+                var star_matrix = body_matrices[star_id];
                 var star_pos = Matrix4x4.get_translation(star_matrix);
-                result[star.id] = result[star.id] || [];
-                result[star.id].push(star_pos);
+                result[star_id] = result[star_id] || [];
+                result[star_id].push(star_pos);
             }
         }
         return result;
     }
 
     // average insolation from all stars
-    function average_insolation(config, body_id, min_perceivable_period, average_insolation, min_wavelength, max_wavelength, max_sample_count){
+    function average_insolation(config, world_id, min_perceivable_period, average_insolation, min_wavelength, max_wavelength, max_sample_count){
         max_sample_count = max_sample_count || 25;
         min_wavelength = min_wavelength || 0;
         max_wavelength = max_wavelength || Infinity;
@@ -187,9 +183,9 @@ function Universe(parameters) {
         var insolation_sample = Float32Raster(grid);
         Float32Raster.fill(average_insolation, 0);
 
-        var stars = Object.values(bodies).filter(body => body instanceof Star);
-        var star_sample_positions_map_ = star_sample_positions_map(config, body_id, min_perceivable_period, max_sample_count);
-        for (var star of stars){
+        var star_sample_positions_map_ = star_sample_positions_map(config, world_id, min_perceivable_period, max_sample_count);
+        for (var star_id in stars){
+            var star = stars[star_id];
             var star_memos = Star.get_memos(star);
             var star_sample_positions = star_sample_positions_map_[star.id];
             for (var star_sample_position of star_sample_positions) {
@@ -241,41 +237,39 @@ function Universe(parameters) {
 
     this.initialize = function() {
         assert_dependencies();
-        for(var body_id in bodies) {
-            var body = bodies[body_id];
-            if (body instanceof World) {
-                body.setDependencies({
-                    get_average_insolation: ((timestep, out) => average_insolation(
-                            this.config,
-                            body.id, 
-                            30/2 * timestep,  // TODO: set this to the correct fps
-                            out
-                        )),
-                });
-            }
+        for(var world_id in worlds) {
+            var world = worlds[world_id];
+            world.setDependencies({
+                get_average_insolation: ((timestep, out) => average_insolation(
+                        this.config,
+                        world.id, 
+                        30/2 * timestep,  // TODO: set this to the correct fps
+                        out
+                    )),
+            });
         }
 
         for(var cycle_id in cycles) {
             var cycle  = cycles[cycle_id];
-            var body_id = cycle.body;
+            var world_id = cycle.body;
             var motion  = cycle.motion;
-            if (body_id !== void 0 && motion instanceof Spin) {
-                bodies[body_id].setDependencies({
+            if (world_id !== void 0 && motion instanceof Spin) {
+                worlds[world_id].setDependencies({
                     axial_tilt:    motion.axial_tilt,
                     angular_speed: motion.angular_speed,
                 });
             }
         }
-        for(var body_id in bodies) {
-            var body = bodies[body_id];
-            body.initialize();
+        for(var world_id in worlds) {
+            var world = worlds[world_id];
+            world.initialize();
         }
     }
 
     this.invalidate = function() {
-        for(var body_id in bodies) {
-            var body = bodies[body_id];
-            body.invalidate();
+        for(var world_id in worlds) {
+            var world = worlds[world_id];
+            world.invalidate();
         }
     }
 
@@ -285,16 +279,16 @@ function Universe(parameters) {
         };
         assert_dependencies();
 
-        for(var body_id in bodies){
-            var body = bodies[body_id];
+        for(var world_id in worlds){
+            var body = worlds[world_id];
             // TODO: do away with this! We don't need to set mean anomaly!
             body.setDependencies({ 
                 mean_anomaly: this.config['orbit'],
             });
         }
 
-        for(var body_id in bodies){
-            var body = bodies[body_id];
+        for(var world_id in worlds){
+            var body = worlds[world_id];
             body.calcChanges(timestep);
         }
     };
@@ -308,12 +302,12 @@ function Universe(parameters) {
         advance(this.config, 
                 timestep,
                 this.config,
-                1/2        * timestep, 
+                1/2         * timestep, 
                 60*60*24*30 * timestep
             ); 
 
-        for(var body_id in bodies){
-            var body = bodies[body_id];
+        for(var world_id in worlds){
+            var body = worlds[world_id];
             body.applyChanges(timestep);
         }
     };

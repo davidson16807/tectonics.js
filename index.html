@@ -582,15 +582,15 @@
         
         var geometry = new THREE.IcosahedronGeometry(1, resolution_level);
         var universe = new Universe({
-            bodies: {
+            stars: {
                 'star': {
-                    type: 'star',
                     id  : 'star',
                     name: get_star_name(sim.random),
                     mass: Units.SOLAR_MASS,
                 },
+            },
+            worlds: {
                 'world': {
-                    type: 'world',
                     id  : 'world',
                     name: focus_name,
                     grid: { 
@@ -656,7 +656,7 @@
                 },
             },
         });
-        var world = universe.bodies['world'];
+        var world = universe.worlds['world'];
         CrustGenerator.get_crust_from_height_ranks(
             SphericalGeometry.get_random_surface_field(world.grid, sim.random), 
             CrustGenerator.modern_earth_hypsography, 
@@ -1231,7 +1231,7 @@
             );
             
             var universe = sim.model();
-            universe.bodies[world.id] = world;
+            universe.worlds[world.id] = world;
             // HACK: we need to call initialize() on universe again because 
             // it's the only thing that passes the dependencies required by world.
             // This is a huge pain in the ass and this is the exact reason why

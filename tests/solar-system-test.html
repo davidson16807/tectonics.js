@@ -86,22 +86,23 @@
 
     // colors from http://colorhunt.co/blog/solar-system-stars-color-palettes/
     var bodies = {
-        sun:     { name: 'sun',        color: 0xffff00,    radius: 695e6, },
-        mercury:{ name: 'mercury',    color: 0x888888,    radius: 2.4e6, },
-        venus:     { name: 'venus',    color: 0xeecb8b,    radius: 6.1e6, },
-        earth:     { name: 'earth',    color: 0x182A61,    radius: 6.3e6, },
-        moon:     { name: 'moon',        color: 0x888888,    radius: 1.7e6, },
-        mars:     { name: 'mars',        color: 0x4c0803,    radius: 3.4e6, },
-        jupiter:{ name: 'jupiter',    color: 0xc1844d,    radius:  71e6, },
-        saturn: { name: 'saturn',    color: 0xe0cdad,    radius:  60e6, },
-        uranus: { name: 'uranus',    color: 0xc7edf0,    radius:  25e6, },
-        neptune: { name: 'neptune',    color: 0x537cfe,    radius:  24e6, },
+        sun:     { id: 'sun',        color: 0xffff00,    radius: 695e6, },
+        mercury:{ id: 'mercury',    color: 0x888888,    radius: 2.4e6, },
+        venus:     { id: 'venus',    color: 0xeecb8b,    radius: 6.1e6, },
+        earth:     { id: 'earth',    color: 0x182A61,    radius: 6.3e6, },
+        moon:     { id: 'moon',        color: 0x888888,    radius: 1.7e6, },
+        mars:     { id: 'mars',        color: 0x4c0803,    radius: 3.4e6, },
+        jupiter:{ id: 'jupiter',    color: 0xc1844d,    radius:  71e6, },
+        saturn: { id: 'saturn',    color: 0xe0cdad,    radius:  60e6, },
+        uranus: { id: 'uranus',    color: 0xc7edf0,    radius:  25e6, },
+        neptune: { id: 'neptune',    color: 0x537cfe,    radius:  24e6, },
     };
     var universe = new Universe({
-        bodies:  bodies,
+        stars:  bodies,
+        worlds: bodies,
         cycles: {
             'Galactic Orbit': {
-                name: 'Galactic Orbit',
+                id: 'Galactic Orbit',
                 motion: { 
                     type: 'orbit',
                     semi_major_axis: 2.35e20,
@@ -120,7 +121,7 @@
                 ]
             },
             'Mercurial Orbit': {
-                name: 'Mercurial Orbit',
+                id: 'Mercurial Orbit',
                 motion: {
                     type: 'orbit',
                     semi_major_axis: 0.387*Units.ASTRONOMICAL_UNIT,
@@ -133,7 +134,7 @@
                 children: ['Mercurial Spin'],
             },
             'Mercurial Spin': {
-                name: 'Mercurial Spin',
+                id: 'Mercurial Spin',
                 motion: { 
                     type: 'spin',
                     angular_speed: 2*Math.PI/(60*60*24*58.5),
@@ -143,7 +144,7 @@
                 body: 'mercury',
             },
             'Venerean Orbit': {
-                name: 'Venerean Orbit',
+                id: 'Venerean Orbit',
                 motion: {
                     type: 'orbit',
                     semi_major_axis: 0.723*Units.ASTRONOMICAL_UNIT,
@@ -156,7 +157,7 @@
                 children: ['Venerean Spin'],
             },
             'Venerean Spin': {
-                name: 'Venerean Spin',
+                id: 'Venerean Spin',
                 motion: { 
                     type: 'spin',
                     angular_speed: 2*Math.PI/(60*60*24*243),
@@ -166,7 +167,7 @@
                 body: 'venus',
             },
             'Earth Orbit': {
-                name: 'Earth Orbit',
+                id: 'Earth Orbit',
                 motion: {
                     type: 'orbit',
                     semi_major_axis: 1.*Units.ASTRONOMICAL_UNIT,
@@ -179,7 +180,7 @@
                 children: ['Earth Precession', 'Lunar Orbit'],
             },
             'Earth Precession': {
-                name: 'Earth Precession',
+                id: 'Earth Precession',
                 motion: { 
                     type: 'spin',
                     angular_speed: 2*Math.PI/(10e3*Units.YEAR),
@@ -188,7 +189,7 @@
                 children: ['Earth Spin'],
             },
             'Earth Spin': {
-                name: 'Earth Spin',
+                id: 'Earth Spin',
                 motion: { 
                     type: 'spin',
                     angular_speed: 2*Math.PI/(60*60*24),
@@ -198,7 +199,7 @@
                 body: 'earth',
             },
             'Lunar Orbit': {
-                name: 'Lunar Orbit',
+                id: 'Lunar Orbit',
                 motion: {
                     type: 'orbit',
                     semi_major_axis: 384.748e6,
@@ -210,7 +211,7 @@
                 children: ['Lunar Spin'],
             },
             'Lunar Spin': {
-                name: 'Lunar Spin',
+                id: 'Lunar Spin',
                 motion: { 
                     type: 'spin',
                     angular_speed: 2*Math.PI/(Units.DAY*27.322),
@@ -219,7 +220,7 @@
                 body: 'moon',
             },
             'Martian Orbit': {
-                name: 'Martian Orbit',
+                id: 'Martian Orbit',
                 motion: {
                     type: 'orbit',
                     semi_major_axis: 1.52*Units.ASTRONOMICAL_UNIT,
@@ -232,7 +233,7 @@
                 children: ['Martian Spin'],
             },
             'Martian Spin': {
-                name: 'Martian Spin',
+                id: 'Martian Spin',
                 motion: { 
                     type: 'spin',
                     angular_speed: 2*Math.PI/(60*60*24.6),
@@ -242,7 +243,7 @@
                 body: 'mars',
             },
             'Jovian Orbit': {
-                name: 'Jovian Orbit',
+                id: 'Jovian Orbit',
                 motion: {
                     type: 'orbit',
                     semi_major_axis: 5.2*Units.ASTRONOMICAL_UNIT,
@@ -255,7 +256,7 @@
                 children: ['Jovian Spin'],
             },
             'Jovian Spin': {
-                name: 'Jovian Spin',
+                id: 'Jovian Spin',
                 motion: { 
                     type: 'spin',
                     angular_speed: 2*Math.PI/(60*60*10),
@@ -265,7 +266,7 @@
                 body: 'jupiter',
             },
             'Saturnian Orbit': {
-                name: 'Saturnian Orbit',
+                id: 'Saturnian Orbit',
                 motion: {
                     type: 'orbit',
                     semi_major_axis: 9.5*Units.ASTRONOMICAL_UNIT,
@@ -278,7 +279,7 @@
                 children: ['Saturnian Spin'],
             },
             'Saturnian Spin': {
-                name: 'Saturnian Spin',
+                id: 'Saturnian Spin',
                 motion: { 
                     type: 'spin',
                     angular_speed: 2*Math.PI/(60*60*10.8),
@@ -288,7 +289,7 @@
                 body: 'saturn',
             },
             'Uranian Orbit': {
-                name: 'Uranian Orbit',
+                id: 'Uranian Orbit',
                 motion: {
                     type: 'orbit',
                     semi_major_axis: 19.19*Units.ASTRONOMICAL_UNIT,
@@ -301,7 +302,7 @@
                 children: ['Uranian Spin'],
             },
             'Uranian Spin': {
-                name: 'Uranian Spin',
+                id: 'Uranian Spin',
                 motion: { 
                     type: 'spin',
                     angular_speed: 2*Math.PI/(60*60*17.25),
@@ -311,7 +312,7 @@
                 body: 'uranus',
             },
             'Neptunian Orbit': {
-                name: 'Neptunian Orbit',
+                id: 'Neptunian Orbit',
                 motion: {
                     type: 'orbit',
                     semi_major_axis: 30.06*Units.ASTRONOMICAL_UNIT,
@@ -324,7 +325,7 @@
                 children: ['Neptunian Spin'],
             },
             'Neptunian Spin': {
-                name: 'Neptunian Spin',
+                id: 'Neptunian Spin',
                 motion: { 
                     type: 'spin',
                     angular_speed: 2*Math.PI/(60*60*16.11),

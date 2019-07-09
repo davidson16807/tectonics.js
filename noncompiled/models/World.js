@@ -63,7 +63,6 @@ function World(parameters) {
 
     this.getParameters = function() {
         return { 
-            type:                     'world',
             grid:                     this.grid.getParameters(),
             id:                     this.id,
             name:                     this.name,

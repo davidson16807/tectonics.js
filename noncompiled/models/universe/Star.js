@@ -17,20 +17,11 @@ var Star = (function() {
 
         this.getParameters = function() {
             return {
-                type:     'star',
                 id:       this.id,
                 name:     this.name,
                 mass:     this.mass,
             };
-        }
-        // NOTE: we only include these functions to satisfy depreciated interfaces
-        // TODO: remove all instances of these functions,
-        //  adopt get_derived_attributes in its state.
-        this.initialize      = function() {};
-        this.invalidate      = function() {};
-        this.setDependencies = function(dependencies) {};
-        this.calcChanges     = function(timestep) {};
-        this.applyChanges    = function(timestep) {};
+        };
     }
 
     // NOTE: All derived attributes are calculated within stateless functions!

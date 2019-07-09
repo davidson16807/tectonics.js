@@ -40,7 +40,7 @@ function Simulation (parameters) {
     // it is currently set to always be the world we are simulating
     this.focus = function(value) {
         if (value === void 0) {
-            return _model.bodies[_focus_id];
+            return _model.worlds[_focus_id];
         };
         _focus_id = value.id;
     };
