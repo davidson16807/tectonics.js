@@ -42,18 +42,47 @@ Errors concerning raster ordering or reallocation can be addressed through reuse
 Object serialization is another source for error.
 This can be addressed with a unit test that mimics an autoencoder within the context of neural networks:
  serialize the object, deserialize the serialization, then perform a deep comparison with the original object.
+So the following returns true: 
+ 
+ deserialize(serialize(a)) == a
+
+In other words, serialize/deserialize function as inverse operators. 
 This "autoencoder" unit test has an added benefit:
  it can weed out other errors that occur due to buffer raster declaration.
 Another unit test that could be done is to attempt deserializing an example json object,
  however constructing these json objects would be too labor intensive for our consideration,
  and it's functionality is completely subsumed by our autoencoder unit test.
 
-Most components will also likely have a "get_steady_state()" function. 
+Most components will also likely have a "get_steady_state()" function, 
+ and one or more system namespaces with their own various functions.
 We expect these functions will be used within certain systems when running above a certain timestep. 
 They can also be used during initialization, to ensure that new worlds have physically sensible states.
-It's not as certain how to write unit tests for these. 
-Each instance of get_steady_state() would require thought to determine test cases.
-The same could be said for systems. 
-Fortunately for us, we do have unit tests for the components,
-and these should at least get part way there.
-Perfect is the enemy of good enough.
+While we could not easily test for certain behavior within these functions, 
+ they do offer some generic guarantees which can be tested with little thought.
+First off, we state that these functions are pure: 
+ for the same input, we can call them multiple times without changing output.
+So for instance the following returns true:
+
+  get_steady_state(a, b)
+  get_steady_state(a, c)
+  b == c
+
+We should even require them to pure functions for in-place operations, 
+ such that the following also returns true:
+
+  get_steady_state(input, output)
+  get_steady_state(input, input)
+  input == output
+
+Such a test would help guard against problems that arise due to the sequencing 
+ of operations within the function.
+
+There is another thing we note about these functions:
+It is highly likely that any default state for a component will be far from
+ it's steady state, since the default state will likely consist of zero'd out scalars an rasters.
+So we should expect these operations to at least do something with output. 
+We would expect something like the following to return true:
+
+  a = new Component()
+  get_steady_state(..., b)
+  a != b
