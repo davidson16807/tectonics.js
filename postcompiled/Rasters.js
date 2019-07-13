@@ -5040,8 +5040,8 @@ Grid.prototype.getNeighborIds = function(id) {
 // You can request new rasters without fear of performance penalties or referencing issues
 // Additionally, you can push and pop method names to the stack so the stack knows when to deallocate rasters
 // Think of it as a dedicated stack based memory for Javascript TypedArrays
-function RasterStackBuffer(byte_length){
-    this.buffer = new ArrayBuffer(byte_length);
+function RasterStackBuffer(byte_length, buffer){
+    this.buffer = buffer || new ArrayBuffer(byte_length);
     this.pos = 0;
     this.stack = [];
     this.method_names = [];

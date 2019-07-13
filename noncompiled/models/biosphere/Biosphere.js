@@ -4,16 +4,15 @@
 var Biosphere = (function() {
         
     function Biosphere(parameters) {
-        this.grid                     = parameters['grid'] || stop('missing parameter: "grid"');
-        this.growth_factor            = parameters['growth_factor'] || 1; // This is something I haven't bothered parameterizing. If c=1/∞, then npp∝lai
-        this.npp_max                  = parameters['npp_max'] || 1;
-        this.lai_max                  = parameters['lai_max'] || 1;
+        this.grid                   = parameters['grid'] || stop('missing parameter: "grid"');
+        this.growth_factor          = parameters['growth_factor'] || 1; // This is something I haven't bothered parameterizing. If c=1/∞, then npp∝lai
+        this.npp_max                = parameters['npp_max'] || 1;
+        this.lai_max                = parameters['lai_max'] || 1;
 
-        var length = this.grid.vertices.length;
-        this.buffer                   = parameters['buffer']          || new ArrayBuffer(2 * Float32Array.BYTES_PER_ELEMENT * length);
-        this.primary_carbon_biomass   = Float32Raster.FromBuffer(this.buffer, this.grid, 0 * Float32Array.BYTES_PER_ELEMENT * length);
-
-        this.all_rasters              = new Float32Array(this.buffer, 0 * length, 1 * length);
+        var raster_stack_buffer     = new RasterStackBuffer(8 * Float32Array.BYTES_PER_ELEMENT * this.grid.vertices.length, parameters['buffer']);
+        this.buffer                 = raster_stack_buffer.buffer;
+        this.primary_carbon_biomass = raster_stack_buffer.getFloat32Raster(this.grid);
+        this.all_rasters            = new Float32Array(this.buffer);
 
         this.getParameters = function() {
             return { 

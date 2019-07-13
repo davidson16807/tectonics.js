@@ -8,21 +8,20 @@ function Crust(parameters) {
 
     var length = this.grid.vertices.length;
 
-    var buffer = parameters['buffer'] || new ArrayBuffer(8 * Float32Array.BYTES_PER_ELEMENT * length);
-    this.buffer = buffer;
+    var raster_stack_buffer = new RasterStackBuffer(8 * Float32Array.BYTES_PER_ELEMENT * this.grid.vertices.length, parameters['buffer']);
+    this.buffer             = raster_stack_buffer.buffer;
+    this.sediment           = raster_stack_buffer.getFloat32Raster(this.grid);
+    this.sedimentary        = raster_stack_buffer.getFloat32Raster(this.grid);
+    this.metamorphic        = raster_stack_buffer.getFloat32Raster(this.grid);
+    this.felsic_plutonic    = raster_stack_buffer.getFloat32Raster(this.grid);
+    this.felsic_volcanic    = raster_stack_buffer.getFloat32Raster(this.grid);
+    this.mafic_volcanic     = raster_stack_buffer.getFloat32Raster(this.grid);
+    this.mafic_plutonic     = raster_stack_buffer.getFloat32Raster(this.grid);
+    this.age                = raster_stack_buffer.getFloat32Raster(this.grid);
 
-    this.sediment             = Float32Raster.FromBuffer(buffer, this.grid, 0 * Float32Array.BYTES_PER_ELEMENT * length);
-    this.sedimentary        = Float32Raster.FromBuffer(buffer, this.grid, 1 * Float32Array.BYTES_PER_ELEMENT * length);
-    this.metamorphic        = Float32Raster.FromBuffer(buffer, this.grid, 2 * Float32Array.BYTES_PER_ELEMENT * length);
-    this.felsic_plutonic     = Float32Raster.FromBuffer(buffer, this.grid, 3 * Float32Array.BYTES_PER_ELEMENT * length);
-    this.felsic_volcanic     = Float32Raster.FromBuffer(buffer, this.grid, 4 * Float32Array.BYTES_PER_ELEMENT * length);
-    this.mafic_volcanic     = Float32Raster.FromBuffer(buffer, this.grid, 5 * Float32Array.BYTES_PER_ELEMENT * length);
-    this.mafic_plutonic     = Float32Raster.FromBuffer(buffer, this.grid, 6 * Float32Array.BYTES_PER_ELEMENT * length);
-    this.age                  = Float32Raster.FromBuffer(buffer, this.grid, 7 * Float32Array.BYTES_PER_ELEMENT * length);
-
-    this.conserved_array     = new Float32Array(buffer, 0, 5 * length);
-    this.mass_array         = new Float32Array(buffer, 0, 7 * length);
-    this.everything         = new Float32Array(buffer);
+    this.conserved_array    = new Float32Array(this.buffer, 0, 5 * length);
+    this.mass_array         = new Float32Array(this.buffer, 0, 7 * length);
+    this.everything         = new Float32Array(this.buffer);
 
     this.all_pools = [ 
         this.sediment,
