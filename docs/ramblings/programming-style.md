@@ -33,7 +33,7 @@ Abstraction
 	 Abstraction exists for the same reason polymorphism exists.
 	 It lets you offer guarantees about your code that you can then later rely on.
 	 This way, you no longer need to know the inner state of a function.
-	 But of all the guarantees you can regularly offer when writing your code, I can think of none more powerful than to guarantee that your function is pure, stateless, and free of side effects,
+	 But of all the guarantees you can regularly offer when writing your code, I can think of none more powerful than to guarantee that your function is pure, stateless, idempotent, or free of side effects (whatever you want to call it).
 	 yet OOP outright advocates the dereliction of this guarantee when it sermonizes the use of methods that modify private attributes that can never be known to users.
 	 To add insult to injury, OOP then uses the principle of encapsulation to claim that it's actually a good thing that users can never truly understand how the code they rely on operates.
 Encapsulation
@@ -61,11 +61,12 @@ So where do we go from here?
 		Express floating point behavior in terms of relations, not conditional logic.
 		Likewise, if you pass a data structure to a function, guarantee it will provide sensible outputs for all possible configurations of the data structure. 
 		This leads to my next point...
-	Never express state in such a way that it leaves open the possibility of an invalid state. 
-		If you have derived attributes that could get out of sync with the rest of your data structure, those attributes need to go somewhere else. Create a pure function that generates the derived attribute when given a data structure as input. 
+	Clearly separate independant state from derived state
+		If you have derived attributes that could get out of sync with the rest of your data structure, those attributes need to go somewhere else. Create a pure function that generates the derived attribute when given a data structure as input, as much as possible.
 		If there are many derived attributes, or if some attributes depend on others, or if some derived attributes require extensive calculation, create a pure function that returns a dictionary of interdependant memos. 
+		This may not always be practical, though, so if you are storing derived state together with independant state in the same class, at least make sure to separate them physically and/or label them as derived/independant
 	Always strive for transparency. 
-		Make it apparent that there is nothing up your sleeves. The developer using your code should have the sense there is nothing ugly hidden by your code and that he is free to modify state in whatever wacky way he wants, whenever he wants. If he does not feel comfortable doing so, you are not offering enough guarantees about your code.
+		Make it apparent that there is nothing up your sleeves. The developer using your code should have the sense there is no ugly surprise behavior hidden by your code and that he is free to modify state in whatever wacky way he wants, whenever he wants. If he does not feel comfortable doing so, you are not offering enough guarantees about your code.
 	Use objects only when polymorphism is needed.
 		Unless you need polymorphism, your objects should be nothing more than big dumb data structures, totally free of methods or private attributes. 
 	And most importantly: think for yourself. 
