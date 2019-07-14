@@ -13,6 +13,12 @@ var SphericalGeometry = (function() {
     SphericalGeometry.get_volume = function(radius) {
         return 4/3*Math.PI*radius*radius*radius;
     }
+    SphericalGeometry.get_radius_from_volume = function(volume) {
+        return Math.cbrt(volume / (4/3*Math.PI));
+    }
+    SphericalGeometry.get_radius_from_surface_area = function(surface_area) {
+        return Math.sqrt(surface_area / (4*Math.PI));
+    }
     SphericalGeometry.cartesian_to_spherical = function(x,y,z){
         return {lat: Math.asin(y/Math.sqrt(x*x+y*y+z*z)), lon: Math.atan2(-z, x)};
     }

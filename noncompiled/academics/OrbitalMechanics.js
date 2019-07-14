@@ -9,6 +9,10 @@ var OrbitalMechanics = (function() {
 
     OrbitalMechanics.GRAVITATIONAL_CONSTANT = 6.6740831e-11; // m3 kg-1 s-2
 
+    OrbitalMechanics.get_gravity = function(effective_parent_mass, distance) {
+        return OrbitalMechanics.GRAVITATIONAL_CONSTANT * effective_parent_mass / (distance * distance);
+    }
+
     OrbitalMechanics.get_period = function(semi_major_axis, effective_parent_mass) {
         // TODO: move this logic to OrbitalMechanics
         var a = semi_major_axis;
