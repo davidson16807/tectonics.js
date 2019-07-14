@@ -167,6 +167,14 @@ test_values_are_between(
 
 // ORBITAL MECHANICS
 test_value_is_to_within(
+    OrbitalMechanics.get_gravity(Units.EARTH_MASS, Units.EARTH_RADIUS),
+    Units.STANDARD_GRAVITY,
+    0.01,
+    'OrbitalMechanics.get_gravity',
+    "must predict Earth's surface gravity to within 1%"
+);
+
+test_value_is_to_within(
     OrbitalMechanics.get_period(Units.ASTRONOMICAL_UNIT, Units.SOLAR_MASS),
     Units.YEAR,
     0.01,
