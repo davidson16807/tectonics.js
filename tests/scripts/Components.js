@@ -6,22 +6,22 @@ QUnit.module('Rasters');
 // See blog/ramblings/rearchitecture-roadmap.md for documentation 
 //  surrounding the thought process that went into the design of these unit tests.
 
-var betelgeuse_body_json = { name: 'Betelgeuse', age:    8*Units.MEGAYEAR };
-var sun_body_json        = { name: 'Sol',        age: 4500*Units.MEGAYEAR };
+var vega_body_json       = { name: 'Vega', age:  455*Units.MEGAYEAR };
+var sun_body_json        = { name: 'Sol',  age: 4500*Units.MEGAYEAR };
 
-var betelgeuse_body_component = new Body(betelgeuse_body_json );
-var sun_body_component        = new Body(sun_body_json        );
+var vega_body_component = new Body(vega_body_json );
+var sun_body_component  = new Body(sun_body_json        );
 
-var betelgeuse_star_json = { 
-	mass_H:  0.70 * 11.6 * Units.SOLAR_MASS, 
-	mass_He: 0.28 * 11.6 * Units.SOLAR_MASS 
+var vega_star_json = { 
+	mass_H:  0.97 * 2.135 * Units.SOLAR_MASS, 
+	mass_He: 0.03 * 2.135 * Units.SOLAR_MASS 
 };
 var sun_star_json        = { 
-	mass_H:  0.75 *        Units.SOLAR_MASS, 
-	mass_He: 0.25 *        Units.SOLAR_MASS 
+	mass_H:  0.75 *         Units.SOLAR_MASS, 
+	mass_He: 0.25 *         Units.SOLAR_MASS 
 };
 
-var betelgeuse_star_component = new Star(betelgeuse_star_json);
+var vega_star_component = new Star(vega_star_json);
 var sun_star_component        = new Star(sun_star_json       );
 var default_star_component    = new Star({});
 var scratch_star_component    = new Star({});
@@ -33,7 +33,7 @@ test_unary_inverse(
 	'new Star',
 	{ 
 		sun:        sun_star_component,
-		betelgeuse: betelgeuse_star_component,
+		vega: vega_star_component,
 		default:    default_star_component,
 	},
 );
@@ -44,7 +44,7 @@ test_unary_inverse(
 	'star.getParameters',
 	{ 
 		sun:        sun_star_json,
-		betelgeuse: betelgeuse_star_json,
+		vega: vega_star_json,
 	},
 );
 
@@ -75,6 +75,38 @@ test_value_is_to_within(
     0.01,
     'star.surface_temperature()',
     "must predict temperature of the Sun to within 1%"
+);
+
+
+
+
+test_value_is_to_within(
+    vega_star_component.total_mass(),
+    2.135 * Units.SOLAR_MASS,
+    0.01,
+    'star.total_mass()',
+    "must predict mass of Vega to within 1%"
+);
+test_value_is_to_within(
+    vega_star_component.radius(),
+    2.362 * 2.818 * Units.SOLAR_RADIUS,
+    2.0,
+    'star.radius()',
+    "must predict radius of Vega to within a factor of 2"
+);
+test_value_is_to_within(
+    vega_star_component.luminosity(),
+    40.12 * Units.SOLAR_LUMINOSITY,
+    2.0,
+    'star.luminosity()',
+    "must predict luminosity of Vega to within a factor of 2"
+);
+test_value_is_to_within(
+    vega_star_component.surface_temperature(),
+    9602,
+    0.10,
+    'star.surface_temperature()',
+    "must predict temperature of Vega to within 1%"
 );
 
 var earth_body_json      = { name: 'Earth',      age: 4500*Units.MEGAYEAR };
