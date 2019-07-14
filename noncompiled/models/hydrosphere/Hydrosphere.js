@@ -13,7 +13,6 @@ function Hydrosphere(grid, parameters) {
             Hydrology.solve_sealevel(
                 displacement.value(), 
                 _this.average_ocean_depth, 
-                material_density.ocean, 
                 // Float32Raster(grid) 
             ),
         true,
