@@ -8,16 +8,18 @@ QUnit.module('Rasters');
 
 var betelgeuse_body_json = { name: 'Betelgeuse', age:    8*Units.MEGAYEAR };
 var sun_body_json        = { name: 'Sol',        age: 4500*Units.MEGAYEAR };
-var earth_body_json      = { name: 'Earth',      age: 4500*Units.MEGAYEAR };
-var jupiter_body_json    = { name: 'Jupiter',    age: 4500*Units.MEGAYEAR };
 
 var betelgeuse_body_component = new Body(betelgeuse_body_json );
 var sun_body_component        = new Body(sun_body_json        );
-var earth_body_component      = new Body(earth_body_json      );
-var jupiter_body_component    = new Body(jupiter_body_json    );
 
-var betelgeuse_star_json = { mass_H: 0.70 * 11.6 * Units.SOLAR_MASS, mass_He: 0.28 * 11.6 * Units.SOLAR_MASS };
-var sun_star_json        = { mass_H: 0.75 *        Units.SOLAR_MASS, mass_He: 0.25 *        Units.SOLAR_MASS };
+var betelgeuse_star_json = { 
+	mass_H:  0.70 * 11.6 * Units.SOLAR_MASS, 
+	mass_He: 0.28 * 11.6 * Units.SOLAR_MASS 
+};
+var sun_star_json        = { 
+	mass_H:  0.75 *        Units.SOLAR_MASS, 
+	mass_He: 0.25 *        Units.SOLAR_MASS 
+};
 
 var betelgeuse_star_component = new Star(betelgeuse_star_json);
 var sun_star_component        = new Star(sun_star_json       );
@@ -75,6 +77,12 @@ test_value_is_to_within(
     "must predict temperature of the Sun to within 1%"
 );
 
+var earth_body_json      = { name: 'Earth',      age: 4500*Units.MEGAYEAR };
+var jupiter_body_json    = { name: 'Jupiter',    age: 4500*Units.MEGAYEAR };
+
+var earth_body_component      = new Body(earth_body_json      );
+var jupiter_body_component    = new Body(jupiter_body_json    );
+
 var earth_world_json = { 
 	mass_FeNi: 2.3e24,
 	mass_SiX : 3.6e24,
@@ -87,6 +95,7 @@ var jupiter_world_json = {
 	mass_H2O : 0.05 * Units.JUPITER_MASS,
 	mass_HHe : 0.95 * Units.JUPITER_MASS,
 };
+
 var earth_world_component   = new World({ 
 	mass_FeNi: 2.29e24,
 	mass_SiX : 3.66e24,
