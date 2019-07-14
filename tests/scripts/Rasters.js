@@ -60,7 +60,7 @@ function test_algabraic_group    (
         inv, inv_name, edgy1, edgy2,
     );
 
-    inverse_tests             (op, op_name, inv, inv_name,  happy1, happy2);
+    test_binary_inverse             (op, op_name, inv, inv_name,  happy1, happy2);
 
 }
 
@@ -111,7 +111,7 @@ function algabraic_abelian_group_tests     (op, op_name,  inv, inv_name, happy_o
         inv, inv_name, edgy_op_args, edgy_op_args
     );
 
-    inverse_tests             (op, op_name, inv, inv_name,  happy_op_args, happy_op_args);
+    test_binary_inverse             (op, op_name, inv, inv_name,  happy_op_args, happy_op_args);
 
 }
 

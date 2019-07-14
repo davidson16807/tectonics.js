@@ -127,7 +127,7 @@ function test_identity(op, op_name, A, B){
     });
 }
 
-function inverse_tests(op, op_name, inv, inv_name, A, B){
+function test_binary_inverse(op, op_name, inv, inv_name, A, B){
     QUnit.test(`${op_name}/${inv_name} Inverse tests`, function (assert) {
         for (var a_name in A) {
             for (var b_name in B) {
@@ -135,13 +135,24 @@ function inverse_tests(op, op_name, inv, inv_name, A, B){
                 let b = B[b_name];
                 assert.deepApprox( 
                     op( inv( a, b ), b ),     a,
-                    `${op_name}(${inv_name}(${a_name}, ${b_name}), ${b_name} ) needs to return ${a_name}`,
+                    `${op_name}(${inv_name}(${a_name}, ${b_name}), ${b_name} ) needs the inversability property: it must return ${a_name}`,
                 );
                 assert.deepApprox( 
                     inv( op( a, b ), b ),     a,
-                    `${inv_name}(${op_name}(${a_name}, ${b_name}), ${b_name} ) needs to return ${a_name}`,
+                    `${inv_name}(${op_name}(${a_name}, ${b_name}), ${b_name} ) needs the inversability property: it must return ${a_name}`,
                 );
             }
+        }
+    });
+}
+function test_unary_inverse(op, op_name, inv, inv_name, A){
+    QUnit.test(`${op_name}/${inv_name} Inverse tests`, function (assert) {
+        for (var a_name in A) {
+            let a = A[a_name];
+            assert.deepApprox( 
+                inv( op( a ) ),     a,
+                `${inv_name}(${op_name}(${a_name}) ) needs the inversability property: it must return ${a_name}`,
+            );
         }
     });
 }
