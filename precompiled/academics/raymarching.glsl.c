@@ -2,6 +2,52 @@ CONST(float) BIG = 1e20;
 CONST(float) SMALL = 1e-20;
 CONST(int)   MAX_LIGHT_COUNT = 9;
 
+// "oplus" is the o-plus operator,
+//   or the reciprocal of the sum of reciprocals.
+// It's a handy function that comes up a lot in some physics problems.
+// It's pretty useful for preventing division by zero.
+FUNC(float) oplus(IN(float) a, IN(float) b){
+    return 1. / (1./a + 1./b);
+}
+
+// "approx_air_column_density_ratio_along_2d_ray_for_curved_world" 
+//   calculates the distance you would need to travel 
+//   along the surface to encounter the same number of particles in the column. 
+// It does this by finding an integral using integration by substitution, 
+//   then tweaking that integral to prevent division by 0. 
+// All distances are recorded in scale heights.
+// "a" and "b" are distances along the ray from closest approach.
+//   The ray is fired in the positive direction.
+//   If there is no intersection with the planet, 
+//   a and b are distances from the closest approach to the upper bound.
+// "z2" is the closest distance from the ray to the center of the world, squared.
+// "r0" is the radius of the world.
+FUNC(float) approx_air_column_density_ratio_along_2d_ray_for_curved_world(
+    IN(float) a, 
+    IN(float) b, 
+    IN(float) z2, 
+    IN(float) R
+){
+    // GUIDE TO VARIABLE NAMES:
+    //  capital letters indicate surface values, e.g. "R" is planet radius
+    //  "x*" distance along the ray from closest approach
+    //  "z*" distance from the center of the world at closest approach
+    //  "R*" distance ("radius") from the center of the world
+    //  "h*" distance ("height") from the center of the world
+    //  "*0" variable at reference point
+    //  "*1" variable at which the top of the atmosphere occurs
+    //  "*2" the square of a variable
+    //  "d*dx" a derivative, a rate of change over distance along the ray
+    VAR(float) X  = sqrt(max(R*R -z2, 0.));
+    VAR(float) div0_fix = sqrt((X*X+R) * 0.5*PI);
+    VAR(float) ra = sqrt(a*a+z2);
+    VAR(float) rb = sqrt(b*b+z2);
+    VAR(float) sa = oplus(ra/abs(a), div0_fix) *     exp(R-ra);
+    VAR(float) sb = oplus(rb/abs(b), div0_fix) *     exp(R-rb);
+    VAR(float) S  = oplus(R /abs(X), div0_fix) * min(exp(R-sqrt(z2)),1.);
+    return sign(b)*(S-sb) - sign(a)*(S-sa);
+}
+
 // "approx_air_column_density_ratio_along_2d_ray_for_curved_world" 
 //   calculates column density ratio of air for a ray emitted from the surface of a world to a desired distance, 
 //   taking into account the curvature of the world.
@@ -21,57 +67,25 @@ FUNC(float) approx_air_column_density_ratio_along_2d_ray_for_curved_world(
     IN(float) r, 
     IN(float) H
 ){
-
-    // GUIDE TO VARIABLE NAMES:
-    //  "x*" distance along the ray from closest approach
-    //  "z*" distance from the center of the world at closest approach
-    //  "r*" distance ("radius") from the center of the world
-    //  "h*" distance ("height") from the center of the world
-    //  "*b" variable at which the slope and intercept of the height approximation is sampled
-    //  "*0" variable at which the surface of the world occurs
-    //  "*1" variable at which the top of the atmosphere occurs
-    //  "*2" the square of a variable
-    //  "d*dx" a derivative, a rate of change over distance along the ray
-
-    // "a" is the factor by which we "stretch out" the quadratic height approximation
-    //   this is done to ensure we do not divide by zero when we perform integration by substitution
-    CONST(float) a = 0.45;
-    // "b" is the fraction along the path from the surface to the top of the atmosphere 
-    //   at which we sample for the slope and intercept of our height approximation
-    CONST(float) b = 0.45;
-
-    VAR(float) x0 = sqrt(max(r *r -z2, 0.));
+    VAR(float) X = sqrt(max(r*r -z2, 0.));
     // if ray is obstructed
-    if (x_start < x0 && -x0 < x_stop && z2 < r*r)
+    if (x_start < X && -X < x_stop && z2 < r*r)
     {
         // return ludicrously big number to represent obstruction
         return BIG;
     }
-    
-    VAR(float) r1      = r + 6.*H;
-    VAR(float) x1      = sqrt(max(r1*r1-z2, 0.));
-    VAR(float) xb      = x0+(x1-x0)*b;
-    VAR(float) rb2     = xb*xb + z2;
-    VAR(float) rb      = sqrt(rb2);
-    VAR(float) d2hdx2  = z2 / sqrt(rb2*rb2*rb2);
-    VAR(float) dhdx    = xb / rb; 
-    VAR(float) hb      = rb - r;
-    VAR(float) dx0     = x0          -xb;
-    VAR(float) dx_stop = abs(x_stop )-xb;
-    VAR(float) dx_start= abs(x_start)-xb;
-    VAR(float) h0      = (0.5 * a * d2hdx2 * dx0      + dhdx) * dx0      + hb;
-    VAR(float) h_stop  = (0.5 * a * d2hdx2 * dx_stop  + dhdx) * dx_stop  + hb;
-    VAR(float) h_start = (0.5 * a * d2hdx2 * dx_start + dhdx) * dx_start + hb;
-
-    VAR(float) rho0  = exp(-h0/H);
     VAR(float) sigma = 
-        sign(x_stop ) * max(H/dhdx * (rho0 - exp(-h_stop /H)), 0.) 
-      - sign(x_start) * max(H/dhdx * (rho0 - exp(-h_start/H)), 0.);
-
+        H * approx_air_column_density_ratio_along_2d_ray_for_curved_world(
+            x_start / H,
+            x_stop  / H,
+            z2      /(H*H),
+            r       / H
+        );
     // NOTE: we clamp the result to prevent the generation of inifinities and nans, 
     // which can cause graphical artifacts.
     return min(abs(sigma),BIG);
 }
+
 // "try_approx_air_column_density_ratio_along_ray" is an all-in-one convenience wrapper 
 //   for approx_air_column_density_ratio_along_ray_2d() and approx_reference_air_column_density_ratio_along_ray.
 // Just pass it the origin and direction of a 3d ray and it will find the column density ratio along its path, 
