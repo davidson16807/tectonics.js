@@ -231,6 +231,64 @@ function get_fraction_of_microfacets_with_angle(
 const BIG = 1e20;
 const SMALL = 1e-20;
 const MAX_LIGHT_COUNT = 9;
+// "oplus" is the o-plus operator,
+//   or the reciprocal of the sum of reciprocals.
+// It's a handy function that comes up a lot in some physics problems.
+// It's pretty useful for preventing division by zero.
+function oplus( a, b){
+    return 1. / (1./a + 1./b);
+}
+// "approx_air_column_density_ratio_along_2d_ray_for_curved_world" 
+//   calculates the distance you would need to travel 
+//   along the surface to encounter the same number of particles in the column. 
+// It does this by finding an integral using integration by substitution, 
+//   then tweaking that integral to prevent division by 0. 
+// All distances are recorded in scale heights.
+// "a" and "b" are distances along the ray from closest approach.
+//   The ray is fired in the positive direction.
+//   If there is no intersection with the planet, 
+//   a and b are distances from the closest approach to the upper bound.
+// "z2" is the closest distance from the ray to the center of the world, squared.
+// "r0" is the radius of the world.
+// GUIDE TO VARIABLE NAMES:
+//  capitol letters indicate surface values, e.g. "R" is planet radius
+//  "x*" distance along the ray from closest approach
+//  "z*" distance from the center of the world at closest approach
+//  "R*" distance ("radius") from the center of the world
+//  "h*" distance ("height") from the center of the world
+//  "*0" variable at reference point
+//  "*1" variable at which the top of the atmosphere occurs
+//  "*2" the square of a variable
+//  "d*dx" a derivative, a rate of change over distance along the ray
+function approx_air_column_density_ratio_along_2d_ray_for_curved_world2(
+    a,
+    b,
+    z2,
+    R
+){
+    let X = sqrt(max(R*R -z2, 0.));
+    let div0_fix = sqrt((X*X+R) * 0.5*Math.PI);
+    let c = max(a, X); // NOTE: you can set X to whatever lower bound you like, here
+    let d = max(a,-X); // NOTE: you can set X to whatever lower bound you like, here
+    let sa = oplus(sqrt(a*a+z2)/abs(a), div0_fix) * exp(R-sqrt(a*a+z2));
+    let sb = oplus(sqrt(b*b+z2)/abs(b), div0_fix) * exp(R-sqrt(b*b+z2));
+    let sc = oplus(sqrt(c*c+z2)/abs(c), div0_fix) * exp(R-sqrt(c*c+z2));
+    let sd = oplus(sqrt(d*d+z2)/abs(d), div0_fix) * exp(R-sqrt(d*d+z2));
+    return sb - sc + sa - sd;
+}
+function approx_air_column_density_ratio_along_2d_ray_for_curved_world(
+    a,
+    b,
+    z2,
+    R
+){
+    let X = sqrt(max(R*R -z2, 0.));
+    let div0_fix = sqrt((X*X+R) * 0.5*Math.PI);
+    let sa = oplus(sqrt(a*a+z2)/abs(a), div0_fix) * exp(R-sqrt(a*a+z2));
+    let sb = oplus(sqrt(b*b+z2)/abs(b), div0_fix) * exp(R-sqrt(b*b+z2));
+    let S = oplus( R/abs(X), div0_fix) * min(exp(R-sqrt(z2)),1.);
+    return sign(b)*(S-sb) - sign(a)*(S-sa);
+}
 // "approx_air_column_density_ratio_along_2d_ray_for_curved_world" 
 //   calculates column density ratio of air for a ray emitted from the surface of a world to a desired distance, 
 //   taking into account the curvature of the world.
@@ -250,47 +308,20 @@ function approx_air_column_density_ratio_along_2d_ray_for_curved_world(
     r,
     H
 ){
-    // GUIDE TO VARIABLE NAMES:
-    //  "x*" distance along the ray from closest approach
-    //  "z*" distance from the center of the world at closest approach
-    //  "r*" distance ("radius") from the center of the world
-    //  "h*" distance ("height") from the center of the world
-    //  "*b" variable at which the slope and intercept of the height approximation is sampled
-    //  "*0" variable at which the surface of the world occurs
-    //  "*1" variable at which the top of the atmosphere occurs
-    //  "*2" the square of a variable
-    //  "d*dx" a derivative, a rate of change over distance along the ray
-    // "a" is the factor by which we "stretch out" the quadratic height approximation
-    //   this is done to ensure we do not divide by zero when we perform integration by substitution
-    const a = 0.45;
-    // "b" is the fraction along the path from the surface to the top of the atmosphere 
-    //   at which we sample for the slope and intercept of our height approximation
-    const b = 0.45;
-    let x0 = sqrt(max(r *r -z2, 0.));
+    let x0 = sqrt(max(r*r -z2, 0.));
     // if ray is obstructed
     if (x_start < x0 && -x0 < x_stop && z2 < r*r)
     {
         // return ludicrously big number to represent obstruction
         return BIG;
     }
-    let r1 = r + 6.*H;
-    let x1 = sqrt(max(r1*r1-z2, 0.));
-    let xb = x0+(x1-x0)*b;
-    let rb2 = xb*xb + z2;
-    let rb = sqrt(rb2);
-    let d2hdx2 = z2 / sqrt(rb2*rb2*rb2);
-    let dhdx = xb / rb;
-    let hb = rb - r;
-    let dx0 = x0 -xb;
-    let dx_stop = abs(x_stop )-xb;
-    let dx_start= abs(x_start)-xb;
-    let h0 = (0.5 * a * d2hdx2 * dx0 + dhdx) * dx0 + hb;
-    let h_stop = (0.5 * a * d2hdx2 * dx_stop + dhdx) * dx_stop + hb;
-    let h_start = (0.5 * a * d2hdx2 * dx_start + dhdx) * dx_start + hb;
-    let rho0 = exp(-h0/H);
     let sigma =
-        sign(x_stop ) * max(H/dhdx * (rho0 - exp(-h_stop /H)), 0.)
-      - sign(x_start) * max(H/dhdx * (rho0 - exp(-h_start/H)), 0.);
+        H * approx_air_column_density_ratio_along_2d_ray_for_curved_world(
+            x_start / H,
+            x_stop / H,
+            z2 /(H*H),
+            r / H
+        );
     // NOTE: we clamp the result to prevent the generation of inifinities and nans, 
     // which can cause graphical artifacts.
     return min(abs(sigma),BIG);
