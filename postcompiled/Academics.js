@@ -250,43 +250,29 @@ function oplus( a, b){
 //   a and b are distances from the closest approach to the upper bound.
 // "z2" is the closest distance from the ray to the center of the world, squared.
 // "r0" is the radius of the world.
-// GUIDE TO VARIABLE NAMES:
-//  capitol letters indicate surface values, e.g. "R" is planet radius
-//  "x*" distance along the ray from closest approach
-//  "z*" distance from the center of the world at closest approach
-//  "R*" distance ("radius") from the center of the world
-//  "h*" distance ("height") from the center of the world
-//  "*0" variable at reference point
-//  "*1" variable at which the top of the atmosphere occurs
-//  "*2" the square of a variable
-//  "d*dx" a derivative, a rate of change over distance along the ray
-function approx_air_column_density_ratio_along_2d_ray_for_curved_world2(
-    a,
-    b,
-    z2,
-    R
-){
-    let X = sqrt(max(R*R -z2, 0.));
-    let div0_fix = sqrt((X*X+R) * 0.5*Math.PI);
-    let c = max(a, X); // NOTE: you can set X to whatever lower bound you like, here
-    let d = max(a,-X); // NOTE: you can set X to whatever lower bound you like, here
-    let sa = oplus(sqrt(a*a+z2)/abs(a), div0_fix) * exp(R-sqrt(a*a+z2));
-    let sb = oplus(sqrt(b*b+z2)/abs(b), div0_fix) * exp(R-sqrt(b*b+z2));
-    let sc = oplus(sqrt(c*c+z2)/abs(c), div0_fix) * exp(R-sqrt(c*c+z2));
-    let sd = oplus(sqrt(d*d+z2)/abs(d), div0_fix) * exp(R-sqrt(d*d+z2));
-    return sb - sc + sa - sd;
-}
 function approx_air_column_density_ratio_along_2d_ray_for_curved_world(
     a,
     b,
     z2,
     R
 ){
+    // GUIDE TO VARIABLE NAMES:
+    //  capital letters indicate surface values, e.g. "R" is planet radius
+    //  "x*" distance along the ray from closest approach
+    //  "z*" distance from the center of the world at closest approach
+    //  "R*" distance ("radius") from the center of the world
+    //  "h*" distance ("height") from the center of the world
+    //  "*0" variable at reference point
+    //  "*1" variable at which the top of the atmosphere occurs
+    //  "*2" the square of a variable
+    //  "d*dx" a derivative, a rate of change over distance along the ray
     let X = sqrt(max(R*R -z2, 0.));
-    let div0_fix = sqrt((X*X+R) * 0.5*Math.PI);
-    let sa = oplus(sqrt(a*a+z2)/abs(a), div0_fix) * exp(R-sqrt(a*a+z2));
-    let sb = oplus(sqrt(b*b+z2)/abs(b), div0_fix) * exp(R-sqrt(b*b+z2));
-    let S = oplus( R/abs(X), div0_fix) * min(exp(R-sqrt(z2)),1.);
+    let div0_fix = 1./sqrt((X*X+R) * 0.5*Math.PI);
+    let ra = sqrt(a*a+z2);
+    let rb = sqrt(b*b+z2);
+    let sa = 1./(abs(a)/ra + div0_fix) * exp(R-ra);
+    let sb = 1./(abs(b)/rb + div0_fix) * exp(R-rb);
+    let S = 1./(abs(X)/R + div0_fix) * min(exp(R-sqrt(z2)),1.);
     return sign(b)*(S-sb) - sign(a)*(S-sa);
 }
 // "approx_air_column_density_ratio_along_2d_ray_for_curved_world" 
@@ -308,9 +294,9 @@ function approx_air_column_density_ratio_along_2d_ray_for_curved_world(
     r,
     H
 ){
-    let x0 = sqrt(max(r*r -z2, 0.));
+    let X = sqrt(max(r*r -z2, 0.));
     // if ray is obstructed
-    if (x_start < x0 && -x0 < x_stop && z2 < r*r)
+    if (x_start < X && -X < x_stop && z2 < r*r)
     {
         // return ludicrously big number to represent obstruction
         return BIG;
