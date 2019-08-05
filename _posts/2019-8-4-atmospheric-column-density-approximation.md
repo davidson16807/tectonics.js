@@ -1,6 +1,13 @@
+---
+title: Fasterer Atmospheric Rendering 
+layout: default
+---
+
 So there's been an improvement to atmospheric scattering that I want to share. You'll want to make sure to read [Alan Zucconi's series](https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-1/) on scattering if you're not familiar with the topic. Also read the earlier blog post on [Fast atmosphere scattering](http://davidson16807.github.io/tectonics.js//2019/03/24/fast-atmospheric-scattering.html) to get yourself acquainted with the problem I'm dealing with. 
 
 We're basically trying to solve this integral:
+
+<img align="right" src="http://davidson16807.github.io/tectonics.js/blog/diagrams/atmospheric-scattering-variables.svg" width="61%">
 
 <p>`int_A^L exp(-(sqrt(x^2 + z^2) - R)/H) dx`</p>
 
