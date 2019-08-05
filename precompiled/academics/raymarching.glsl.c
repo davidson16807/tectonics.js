@@ -39,12 +39,12 @@ FUNC(float) approx_air_column_density_ratio_along_2d_ray_for_curved_world(
     //  "*2" the square of a variable
     //  "d*dx" a derivative, a rate of change over distance along the ray
     VAR(float) X  = sqrt(max(R*R -z2, 0.));
-    VAR(float) div0_fix = sqrt((X*X+R) * 0.5*PI);
+    VAR(float) div0_fix = 1./sqrt((X*X+R) * 0.5*PI);
     VAR(float) ra = sqrt(a*a+z2);
     VAR(float) rb = sqrt(b*b+z2);
-    VAR(float) sa = oplus(ra/abs(a), div0_fix) *     exp(R-ra);
-    VAR(float) sb = oplus(rb/abs(b), div0_fix) *     exp(R-rb);
-    VAR(float) S  = oplus(R /abs(X), div0_fix) * min(exp(R-sqrt(z2)),1.);
+    VAR(float) sa = 1./(abs(a)/ra + div0_fix) *     exp(R-ra);
+    VAR(float) sb = 1./(abs(b)/rb + div0_fix) *     exp(R-rb);
+    VAR(float) S  = 1./(abs(X)/R  + div0_fix) * min(exp(R-sqrt(z2)),1.);
     return sign(b)*(S-sb) - sign(a)*(S-sa);
 }
 
