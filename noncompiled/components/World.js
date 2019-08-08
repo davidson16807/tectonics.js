@@ -27,10 +27,10 @@ var World = (function() {
         
         // INDEPENDANT ATTRIBUTES:
         // independant attributes are always public and can be modified at any time
-        this.mass_FeNi= parameters.mass_FeNi;// iron + nickel        kilograms
-        this.mass_SiX = parameters.mass_SiX; // silicate             kilograms
-        this.mass_H2O = parameters.mass_H2O; // water                kilograms
-        this.mass_HHe = parameters.mass_HHe; // hydrogen + helium    kilograms
+        this.mass_FeNi= parameters.mass_FeNi || 0; // iron + nickel        kilograms
+        this.mass_SiX = parameters.mass_SiX  || 0; // silicate             kilograms
+        this.mass_H2O = parameters.mass_H2O  || 0; // water                kilograms
+        this.mass_HHe = parameters.mass_HHe  || 0; // hydrogen + helium    kilograms
 
         this.getParameters = function() {
             return {
@@ -44,18 +44,16 @@ var World = (function() {
         // DERIVED ATTRIBUTES:
         // scalars are calculated within getters, 
         // rasters are calculated within memos
-        
-        // derived scalars, private
-        var this_ = this;
-        var volume = function() {
-            return this_.mass_FeNi / densities.FeNi+
-                   this_.mass_SiX  / densities.SiX + 
-                   this_.mass_H2O  / densities.H2O + 
-                   this_.mass_HHe  / densities.HHe;
-        };
 
-        // derived scalars, public
-        this.total_mass            = () => (this.mass_FeNi + this.mass_SiX + this.mass_H2O + this.mass_HHe);
+        // derived scalars
+        this.volume = function() {
+            return this.mass_FeNi / densities.FeNi+
+                   this.mass_SiX  / densities.SiX + 
+                   this.mass_H2O  / densities.H2O + 
+                   this.mass_HHe  / densities.HHe;
+        };
+        this.total_mass            = () => this.mass_FeNi + this.mass_SiX + this.mass_H2O + this.mass_HHe;
+        this.density               = () => this.total_mass() / this.volume();
         this.radius                = () => SphericalGeometry.get_radius_from_volume(volume());
         this.surface_area          = () => SphericalGeometry.get_surface_area(this.radius());
         this.surface_gravity       = () => OrbitalMechanics.get_gravity(this.total_mass(), this.radius());

@@ -8,9 +8,9 @@ function Star(parameters) {
 
     // INDEPENDANT ATTRIBUTES:
     // independant attributes are always public and can be modified at any time
-    this.mass_H     = parameters.mass_H;     // hydrogen kilograms
-    this.mass_He    = parameters.mass_He;    // helium   kilograms
-    this.mass_metal = parameters.mass_metal; // helium   kilograms
+    this.mass_H     = parameters.mass_H     || 0; // hydrogen kilograms
+    this.mass_He    = parameters.mass_He    || 0; // helium   kilograms
+    this.mass_metal = parameters.mass_metal || 0; // helium   kilograms
 
     this.getParameters = function() {
         return {
