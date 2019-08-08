@@ -54,7 +54,7 @@ var World = (function() {
         };
         this.total_mass            = () => this.mass_FeNi + this.mass_SiX + this.mass_H2O + this.mass_HHe;
         this.density               = () => this.total_mass() / this.volume();
-        this.radius                = () => SphericalGeometry.get_radius_from_volume(volume());
+        this.radius                = () => SphericalGeometry.get_radius_from_volume(this.volume());
         this.surface_area          = () => SphericalGeometry.get_surface_area(this.radius());
         this.surface_gravity       = () => OrbitalMechanics.get_gravity(this.total_mass(), this.radius());
     }

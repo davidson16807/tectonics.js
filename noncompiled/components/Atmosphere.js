@@ -261,7 +261,7 @@ var Atmosphere = (function() {
                 this.mass_C2H6 / molecular_masses.C2H6 + 
                 this.mass_Ar   / molecular_masses.Ar   + 
                 this.mass_He   / molecular_masses.He   + 
-                this.mass_H    / molecular_masses.H    ; 
+                this.mass_H    / molecular_masses.H    
             );
         }
         this.mean_molecular_mass    = function() {

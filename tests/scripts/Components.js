@@ -116,8 +116,8 @@ var earth_body_component      = new Body(earth_body_json      );
 var jupiter_body_component    = new Body(jupiter_body_json    );
 
 var earth_world_json = { 
-	mass_FeNi: 2.3e24,
-	mass_SiX : 3.6e24,
+	mass_FeNi: 2.35e24,
+	mass_SiX : 3.65e24,
 	mass_H2O : 1.4e21,
 	mass_HHe : 0,
 };
@@ -128,18 +128,8 @@ var jupiter_world_json = {
 	mass_HHe : 0.95 * Units.JUPITER_MASS,
 };
 
-var earth_world_component   = new World({ 
-	mass_FeNi: 2.29e24,
-	mass_SiX : 3.66e24,
-	mass_H2O : 1.4e21,
-	mass_HHe : 0,
-});
-var jupiter_world_component   = new World({ 
-	mass_FeNi: 0,
-	mass_SiX : 0,
-	mass_H2O : 0.05 * Units.JUPITER_MASS,
-	mass_HHe : 0.95 * Units.JUPITER_MASS,
-});
+var earth_world_component   = new World(earth_world_json);
+var jupiter_world_component = new World(jupiter_world_json);
 var default_world_component = new World({});
 var scratch_world_component = new World({});
 
@@ -201,6 +191,21 @@ test_value_is_to_within(
     'world.radius()',
     "must predict radius of Jupiter to within 1%"
 );
+
+// from https://www.engineeringtoolbox.com/air-composition-d_212.html
+var earth_atmo_json = { 
+    mass_N2  : 5.148e18 * 21.873983/28.96,
+    mass_O2  : 5.148e18 *  6.702469/28.96,
+    mass_CO2 : 5.148e18 *  0.014677/28.96,
+    mass_H2O : 5.148e18 *  0.001   /28.96,
+    mass_CH4 : 5.148e18 *  0.000029/28.96,
+    mass_C2H6: 5.148e18 *  0       /28.96,
+    mass_Ar  : 5.148e18 *  0.373114/28.96,
+    mass_He  : 5.148e18 *  0.000021/28.96,
+    mass_H2  : 5.148e18 *  0.000001/28.96,
+};
+var earth_atmo_component   = new Atmosphere(earth_atmo_json);
+
 // // get_steady_state should allow an output parameter to be passed to it
 // // if provided, this output parameter will be returned as output
 // test_unary_output_reference(
