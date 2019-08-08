@@ -38,7 +38,7 @@ var Interpolation = (function() {
     Interpolation.integral_of_lerp = function(control_point_x, control_point_y, a, b) {
         var mix = Interpolation.mix;
         var linearstep = Interpolation.linearstep;
-        var fa, fb;
+        var fa, fb, dFdf;
         var I  = 0;
         for (var i = 1; i < control_point_x.length; i++) {
             // "f*" is fraction through the control point for a or b

@@ -32,6 +32,7 @@ var Atmosphere = (function() {
         mass_He  : 4.0026  * Units.DALTON,
         mass_H2  : 2.016   * Units.DALTON,
     };
+    // NOTE: used to determine specific heat capacity
     // from http://hyperphysics.phy-astr.gsu.edu/hbase/Tables/heatcap.html
     const molecular_degrees_of_freedom = {
         mass_N2  : 5.0,
@@ -248,20 +249,20 @@ var Atmosphere = (function() {
                 this.mass_C2H6 +
                 this.mass_Ar   +
                 this.mass_He   +
-                this.mass_H    
+                this.mass_H2   
             );
         }
         this.molecule_count         = function() {
             return (
-                this.mass_N2   / molecular_masses.N2   + 
-                this.mass_O2   / molecular_masses.O2   + 
-                this.mass_CO2  / molecular_masses.CO2  + 
-                this.mass_H2O  / molecular_masses.H2O  + 
-                this.mass_CH4  / molecular_masses.CH4  + 
-                this.mass_C2H6 / molecular_masses.C2H6 + 
-                this.mass_Ar   / molecular_masses.Ar   + 
-                this.mass_He   / molecular_masses.He   + 
-                this.mass_H    / molecular_masses.H    
+                this.mass_N2   / molecular_masses.mass_N2   + 
+                this.mass_O2   / molecular_masses.mass_O2   + 
+                this.mass_CO2  / molecular_masses.mass_CO2  + 
+                this.mass_H2O  / molecular_masses.mass_H2O  + 
+                this.mass_CH4  / molecular_masses.mass_CH4  + 
+                this.mass_C2H6 / molecular_masses.mass_C2H6 + 
+                this.mass_Ar   / molecular_masses.mass_Ar   + 
+                this.mass_He   / molecular_masses.mass_He   + 
+                this.mass_H2   / molecular_masses.mass_H2    
             );
         }
         this.mean_molecular_mass    = function() {
@@ -269,6 +270,7 @@ var Atmosphere = (function() {
         }
         this.specific_heat_capacity = function() {
             var sum_heat_capacity = 0;
+            var sum_molecule_count = 0;
             for (var i = 0, li = mass_pools.length; i < li; i++) {
                 var pool = mass_pools[i];
                 var molecule_count = this_[pool] / molecular_masses[pool];
@@ -329,25 +331,16 @@ var Atmosphere = (function() {
         // This is the cross sectional area of a single particle that can scatter with a ray of light of given wavelength.
         // Multiply it by surface_molecular_density() to get an absorption coefficient, 
         //  then use the absorption coefficient to find the fraction lost to absorption via Beer's law.
-        this.absorption_cross_section = function(wavelength) {
+        this.absorption_cross_section = function(lo, hi) {
             var sum_cross_section = 0;
             for (var i = 0, li = mass_pools.length; i < li; i++) {
                 var pool = mass_pools[i];
                 var molecule_count = this_[pool] / molecular_masses[pool];
-                var cross_section = molecular_absorption_cross_section[pool](wavelength);
+                var cross_section = molecular_absorption_cross_section[pool](1/lo, 1/hi);
                 sum_cross_section += cross_section * molecule_count;
                 sum_molecule_count += molecule_count;
             };
             return sum_cross_section / sum_molecule_count;
-        }
-        this.pressure_at_height     = function(gravity, surface_area, temperature, height) {
-            this.surface_pressure(gravity, surface_area) * Math.exp(-height / this.scale_height(gravity, temperature));
-        }
-        this.density_at_height      = function(gravity, surface_area, temperature, height) {
-            this.surface_pressure(gravity, surface_area) * Math.exp(-height / this.scale_height(gravity, temperature));
-        }
-        this.temperature_at_height  = function(gravity, surface_temperature, height) {
-            surface_temperature - height * this.lapse_rate(gravity);
         }
     }
 

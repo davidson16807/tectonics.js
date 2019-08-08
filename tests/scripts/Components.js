@@ -193,18 +193,99 @@ test_value_is_to_within(
 );
 
 // from https://www.engineeringtoolbox.com/air-composition-d_212.html
+var earth_atmo_mass = 5.148e18;
+var earth_atmo_mean_molecular_mass = 28.9647;
 var earth_atmo_json = { 
-    mass_N2  : 5.148e18 * 21.873983/28.96,
-    mass_O2  : 5.148e18 *  6.702469/28.96,
-    mass_CO2 : 5.148e18 *  0.014677/28.96,
-    mass_H2O : 5.148e18 *  0.001   /28.96,
-    mass_CH4 : 5.148e18 *  0.000029/28.96,
-    mass_C2H6: 5.148e18 *  0       /28.96,
-    mass_Ar  : 5.148e18 *  0.373114/28.96,
-    mass_He  : 5.148e18 *  0.000021/28.96,
-    mass_H2  : 5.148e18 *  0.000001/28.96,
+    mass_N2  : earth_atmo_mass * 21.873983/earth_atmo_mean_molecular_mass,
+    mass_O2  : earth_atmo_mass *  6.702469/earth_atmo_mean_molecular_mass,
+    mass_CO2 : earth_atmo_mass *  0.014677/earth_atmo_mean_molecular_mass,
+    mass_H2O : earth_atmo_mass *  0.001   /earth_atmo_mean_molecular_mass,
+    mass_CH4 : earth_atmo_mass *  0.000029/earth_atmo_mean_molecular_mass,
+    mass_C2H6: earth_atmo_mass *  0       /earth_atmo_mean_molecular_mass,
+    mass_Ar  : earth_atmo_mass *  0.373114/earth_atmo_mean_molecular_mass,
+    mass_He  : earth_atmo_mass *  0.000021/earth_atmo_mean_molecular_mass,
+    mass_H2  : earth_atmo_mass *  0.000001/earth_atmo_mean_molecular_mass,
 };
 var earth_atmo_component   = new Atmosphere(earth_atmo_json);
+var default_atmo_component = new Atmosphere({});
+
+test_unary_inverse(
+    atmosphere => atmosphere.getParameters(),
+    'atmosphere.getParameters',
+    params => new Atmosphere(params),
+    'new Atmosphere',
+    { 
+        earth:   earth_atmo_component,
+        default: default_atmo_component,
+    },
+);
+test_unary_inverse(
+    params => new Atmosphere(params),
+    'new Atmosphere',
+    atmosphere => atmosphere.getParameters(),
+    'atmosphere.getParameters',
+    { 
+        earth:   earth_atmo_json, 
+    },
+);
+test_value_is_to_within(
+    earth_atmo_component.total_mass(),
+    earth_atmo_mass,
+    0.01,
+    'atmosphere.total_mass()',
+    "must predict mass of Earth's atmosphere to within 1%"
+);
+test_value_is_to_within(
+    earth_atmo_component.molecule_count(),
+    1e44,
+    0.1,
+    'atmosphere.molecule_count()',
+    "must predict number of molecules in Earth's atmosphere to within 10%"
+);
+test_value_is_to_within(
+    earth_atmo_component.mean_molecular_mass(),
+    earth_atmo_mean_molecular_mass*Units.DALTON,
+    0.01,
+    'atmosphere.mean_molecular_mass()',
+    "must predict mean molecular mass of Earth's atmosphere to within 1%"
+);
+
+// TODO: specific heat capacity
+
+test_value_is_to_within(
+    earth_atmo_component.scale_height(Units.STANDARD_GRAVITY, Units.STANDARD_TEMPERATURE),
+    8*Units.KILOMETER,
+    0.01,
+    'atmosphere.scale_height()',
+    "must predict scale height of Earth's atmosphere to within 1%"
+);
+test_value_is_to_within(
+    earth_atmo_component.surface_pressure(Units.STANDARD_GRAVITY, earth_world_component.surface_area()),
+    Units.STANDARD_PRESSURE,
+    0.10,
+    'atmosphere.surface_pressure()',
+    "must predict surface air pressure on Earth to within 10%"
+);
+
+// TODO: surface density
+// TODO: surface molecular density
+// TODO: lapse rate
+// test_value_is_to_within(
+//     earth_atmo_component.lapse_rate(Units.STANDARD_GRAVITY),
+//     9.8*Units.KELVIN/Units.KILOMETER,
+//     0.1,
+//     'atmosphere.surface_pressure()',
+//     "must predict average lapse rate on Earth to within 10%"
+// );
+
+test_value_is_to_within(
+    earth_atmo_component.rayleigh_scattering_cross_section(650*Units.NANOMETER) * 
+    earth_atmo_component.surface_molecular_density(Units.STANDARD_GRAVITY, earth_world_component.surface_area(), Units.STANDARD_TEMPERATURE),
+    5.20e-6,
+    0.10,
+    'atmosphere.rayleigh_scattering_cross_section()',
+    "must predict rayleigh scattering cross section for surface air on earth to within 10%"
+);
 
 // // get_steady_state should allow an output parameter to be passed to it
 // // if provided, this output parameter will be returned as output
