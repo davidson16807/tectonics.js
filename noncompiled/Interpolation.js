@@ -34,6 +34,22 @@ var Interpolation = (function() {
         }
         return result;
     }
+    // finds the integral of the lerp() function from a to b
+    Interpolation.integral_of_lerp = function(control_point_x, control_point_y, a, b) {
+        var mix = Interpolation.mix;
+        var linearstep = Interpolation.linearstep;
+        var fa, fb;
+        var I  = 0;
+        for (var i = 1; i < control_point_x.length; i++) {
+            // "f*" is fraction through the control point for a or b
+            fa = linearstep(control_point_x[i-1], control_point_x[i], a);
+            fb = linearstep(control_point_x[i-1], control_point_x[i], b);
+            dFdf = control_point_y[i] - control_point_y[i-1];
+            I += dFdf * fa * fa / 2 + fa * control_point_y[i-1]
+              -  dFdf * fb * fa / 2 + fb * control_point_y[i-1];
+        }
+        return I;
+    }
 
     return Interpolation;
 })();
