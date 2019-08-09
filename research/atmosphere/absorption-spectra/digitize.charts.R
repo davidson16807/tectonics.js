@@ -99,8 +99,12 @@ with(charts$`O2O3-O2.png`, points(wavenumber, log10(cross.section), type='lines'
 with(charts$`O2O3-O3.png`, points(wavenumber, log10(cross.section), type='lines', col=4))
 with(charts$`O3-1.png`,    points(wavenumber, log10(cross.section), type='lines', col=5))
 with(charts$`O3-2.png`,    points(wavenumber, log10(cross.section), type='lines', col=6))
+# O3 estimate
 lines(x, lerp(c(0,  2e5,7e5,9e5,1.6e6,2e6,2.5e6,2.8e6,3e6,3.5e6,4.6e6,6e6,7.7e6,1.2e7), 
               c(-28,-26,-31,-28,-24,  -25,-27,  -24.5,-23,-21,  -22.5,-22,-21,  -21  ), x), col=2)
+# O2 estimate
+lines(x, lerp(c(3e6, 3.5e6, 4.8e6, 6.1e6, 7.3e6, 8.1e6, 9.6e6, 1.2e7), 
+              c(-35, -26.8, -26.5, -21.3, -20.8, -22.3, -23.3, -22.0), x), col=2)
 
 charts$`CO2-1.jpg` = digitize::digitize('CO2-1.jpg')
 charts$`CO2-1.jpg`$wavenumber = 1/(charts$`CO2-1.jpg`$x * 1e-9)

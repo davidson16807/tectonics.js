@@ -38,15 +38,19 @@ var Interpolation = (function() {
     Interpolation.integral_of_lerp = function(control_point_x, control_point_y, a, b) {
         var mix = Interpolation.mix;
         var linearstep = Interpolation.linearstep;
-        var fa, fb, dFdf;
-        var I  = 0;
-        for (var i = 1; i < control_point_x.length; i++) {
+        var fa, fb, ya, yb, dydf, dxdf;
+        var li = control_point_x.length;
+        var I  = b < control_point_x[0]?    (b - a) * control_point_y[0]    : 0
+               + a > control_point_x[li-1]? (b - a) * control_point_y[li-1] : 0;
+        for (var i = 1; i < li; i++) {
             // "f*" is fraction through the control point for a or b
             fa = linearstep(control_point_x[i-1], control_point_x[i], a);
             fb = linearstep(control_point_x[i-1], control_point_x[i], b);
-            dFdf = control_point_y[i] - control_point_y[i-1];
-            I += dFdf * fa * fa / 2 + fa * control_point_y[i-1]
-              -  dFdf * fb * fa / 2 + fb * control_point_y[i-1];
+            dydf = control_point_y[i] - control_point_y[i-1];
+            dxdf = control_point_x[i] - control_point_x[i-1];
+            yb = dydf * fb * fb / 2 + fb * control_point_y[i-1];
+            ya = dydf * fa * fa / 2 + fa * control_point_y[i-1];
+            I += (yb - ya) * dxdf;
         }
         return I;
     }

@@ -83,74 +83,82 @@ var Atmosphere = (function() {
     //  (greenhouse gas effect, ozone layer, color of plants, physically based rendering, etc.)
     //  however the model must be performant and its output need only be representational, 
     //  so we prefer crude approximations that cover a broad range of the spectrum.
-    // Unlike virtually every other variable involving light,this variable uses wavenumber instead of wavelength.
+    // Unlike virtually every other variable involving light, this variable uses wavenumber instead of wavelength.
     // This is because wavenumber scales with energy, 
     //  and since we assume the user mostly cares about processes related to energy,
     //  we can take an average cross section across a range of wavenumbers and it should have some physical meaning. 
     const molecular_absorption_cross_section = {
         mass_N2  : function(lo, hi) {
-            return Interpolation.integral_of_lerp(
+            return Math.pow(10, Interpolation.integral_of_lerp(
                 [6.5e6, 1e7,   8e7,   1e9], 
                 [-35,   -20.5, -21.5, -23], 
                 lo, hi
-            ) / (hi - lo);
+            ) / (hi - lo));
         },
         // NOTE: we assume that if UV light and O2 is present, then there must also be ozone,
-        //  so the cross section for O2 is represented by that of O3.
+        //  so we treat O2 as ozone within UV wavelengths.
         // TODO: revisit this, try to model O2/O3 conversion, and separate out their cross sections
         mass_O2  : function(lo, hi) {
-            return Interpolation.integral_of_lerp(
-                [0,  2e5,7e5,9e5,1.6e6,2e6,2.5e6,2.8e6,3e6,3.5e6,4.6e6,6e6,7.7e6,1.2e7], 
-                [-28,-26,-31,-28,-24,  -25,-27,  -24.5,-23,-21,  -22.5,-22,-21,  -21  ], 
+            return Math.pow(10, Interpolation.integral_of_lerp(
+                [0,  2e5,7e5,9e5,1.6e6,3e6, 3.5e6, 4.8e6, 6.1e6, 7.3e6, 8.1e6, 9.6e6, 1.2e7], 
+                [-28,-26,-31,-28,-35,  -35, -26.8, -26.5, -21.3, -20.8, -22.3, -23.3, -22.0], 
                 lo, hi
-            ) / (hi - lo);
+            ) / (hi - lo));
         },
         mass_CO2 : function(lo, hi) {
-            return Interpolation.integral_of_lerp(
+            return Math.pow(10, Interpolation.integral_of_lerp(
                 [ 0,  1.5e6,5e6,  6.6e6,7.5e6,9e6,  4.7e7,1.5e8,5e8,2e9], 
                 [-26,-34,  -30.5,-22.5,-22,   -20.5,-21,  -22,  -23,-26], 
                 lo, hi
-            ) / (hi - lo);
+            ) / (hi - lo));
         },
         mass_H2O : function(lo, hi) {
-            return Interpolation.integral_of_lerp(
+            return Math.pow(10, Interpolation.integral_of_lerp(
                 [0,  100, 2.1e6, 2.7e6, 6e6,   1.3e7,  2e8  ], 
                 [-26,-24, -31.5, -29.5, -21.5, -20.5,  -22.5], 
                 lo, hi
-            ) / (hi - lo);
+            ) / (hi - lo));
         },
         mass_CH4 : function(lo, hi) {
-            return Interpolation.integral_of_lerp(
+            return Math.pow(10, Interpolation.integral_of_lerp(
                 [3.7e4, 2.9e5, 1.9e6, 2.3e6, 2.4e6, 6.2e6, 7.6e6, 1e7,   7e7  ],
                 [-31,   -25,   -31,   -31,   -31,   -27,   -21,   -20.3, -22.5],
                 lo, hi
-            ) / (hi - lo);
+            ) / (hi - lo));
         },
         mass_C2H6: function(lo, hi) { 
-            return Interpolation.integral_of_lerp(
+            return Math.pow(10, Interpolation.integral_of_lerp(
                 [5.6e6, 7.6e6, 1.2e7, 5.3e7, 1.9e8],
                 [-35,   -20.6, -20,   -21.5, -22.6],
                 lo, hi
-            ) / (hi - lo);
+            ) / (hi - lo));
         },
         mass_Ar  : function(lo, hi) { return 1e-35; },
         mass_He  : function(lo, hi) { return 1e-35; },
         mass_H2  : function(lo, hi) {
-            return Interpolation.integral_of_lerp(
+            return Math.pow(10, Interpolation.integral_of_lerp(
                 [5e6,  1e7,   2.6e7, 5.7e7], 
                 [-35,  -20.6, -21.6, -22.6], 
                 lo, hi
-            ) / (hi - lo);
+            ) / (hi - lo));
         },
-        // NOTE: the remaining cross section function are here for possible future use
+        // NOTE: the remaining cross section functions here are for possible future use
+        mass_O3  : function(lo, hi) {
+            return Math.pow(10, Interpolation.integral_of_lerp(
+                [0,  2e5,7e5,9e5,1.6e6,2e6,2.5e6,2.8e6,3e6,3.5e6,4.6e6,6e6,7.7e6,1.2e7], 
+                [-28,-26,-31,-28,-24,  -25,-27,  -24.5,-23,-21,  -22.5,-22,-21,  -21  ], 
+                lo, hi
+            ) / (hi - lo));
+        },
         mass_N2O : function(lo, hi) {
-            return Interpolation.integral_of_lerp(
+            return Math.pow(10, Interpolation.integral_of_lerp(
                 [5e4, 6e4, 2.6e5, 7.7e5, 2.7e6, 7.6e6, 7.8e7, 2.1e8, 4.4e8], 
                 [-35, -25, -24.4, -29,   -35,   -20.4, -21.4, -22.4, -21.8], 
                 lo, hi
-            ) / (hi - lo);
+            ) / (hi - lo));
         }
         // mass_CO  : 
+        // mass_NH3 : 
         // mass_NO  : 
         // mass_NO2 : 
         // mass_NO2 : 
@@ -269,16 +277,16 @@ var Atmosphere = (function() {
             return this.total_mass() / this.molecule_count();
         }
         this.specific_heat_capacity = function() {
-            var sum_heat_capacity = 0;
+            var sum_degrees_of_freedom = 0;
             var sum_molecule_count = 0;
             for (var i = 0, li = mass_pools.length; i < li; i++) {
                 var pool = mass_pools[i];
                 var molecule_count = this_[pool] / molecular_masses[pool];
-                var heat_capacity = molecular_degrees_of_freedom[pool] / 2 + 1;
-                sum_heat_capacity += heat_capacity * molecule_count;
+                var degrees_of_freedom = molecular_degrees_of_freedom[pool] / 2 + 1;
+                sum_degrees_of_freedom += degrees_of_freedom * molecule_count;
                 sum_molecule_count += molecule_count;
             };
-            return sum_heat_capacity / sum_molecule_count;
+            return (sum_degrees_of_freedom / sum_molecule_count) * (Thermodynamics.BOLTZMANN_CONSTANT / this.mean_molecular_mass());
         }
         this.scale_height           = function(gravity, temperature) {
             return Thermodynamics.BOLTZMANN_CONSTANT * temperature / (this.mean_molecular_mass() * gravity);
@@ -300,7 +308,7 @@ var Atmosphere = (function() {
         // "rayleigh_scattering_cross_section" indicates the rayleigh scattering cross section for surface air.
         // This is the cross sectional area of a single particle that can scatter a ray of light of given wavelength.
         // Multiply it by surface_molecular_density() to get a scattering coefficient, 
-        //  then use the scattering coefficient to find the fraction lost to rayleigh scattering via Beer's law. 
+        //  then use the scattering coefficient to find the fraction of intensity lost to rayleigh scattering via Beer's law. 
         this.rayleigh_scattering_cross_section = function(wavelength) {
             const π = Math.PI;
             const λ = wavelength;
@@ -314,7 +322,7 @@ var Atmosphere = (function() {
         // "mie_scattering_cross_section" indicates the mie scattering cross section for surface air.
         // This is the cross sectional area of a single particle that can scatter with a ray of light of given wavelength.
         // Multiply it by surface_molecular_density() to get a scattering coefficient, 
-        //  then use the scattering coefficient to find the fraction lost to mie scattering via Beer's law.
+        //  then use the scattering coefficient to find the fraction of intensity lost to mie scattering via Beer's law.
         this.mie_scattering_cross_section = function(wavelength) {
             const π = Math.PI;
             const λ = wavelength;
@@ -325,18 +333,21 @@ var Atmosphere = (function() {
             // See http://www.mike-willis.com/Tutorial/rainscatter.htm
             //  or http://www.radartutorial.eu/01.basics/Rayleigh-%20versus%20Mie-Scattering.en.html
             //  for an introduction to the different scattering regimes.
-            return π*r*r;
+            // One last thing: we check for NaNs in case there are no particles large enough to cause mie scattering
+            //  if this  this case we return a very small number.
+            return !isNaN(r)? π*r*r : 1e-35;
         }
         // "absorption_cross_section" indicates the absorption cross section for surface air.
         // This is the cross sectional area of a single particle that can scatter with a ray of light of given wavelength.
         // Multiply it by surface_molecular_density() to get an absorption coefficient, 
-        //  then use the absorption coefficient to find the fraction lost to absorption via Beer's law.
-        this.absorption_cross_section = function(lo, hi) {
+        //  then use the absorption coefficient to find the fraction of intensity lost to absorption via Beer's law.
+        this.absorption_cross_section = function(wavelength_lo, wavelength_hi) {
             var sum_cross_section = 0;
+            var sum_molecule_count = 0;
             for (var i = 0, li = mass_pools.length; i < li; i++) {
                 var pool = mass_pools[i];
                 var molecule_count = this_[pool] / molecular_masses[pool];
-                var cross_section = molecular_absorption_cross_section[pool](1/lo, 1/hi);
+                var cross_section = molecular_absorption_cross_section[pool](1/wavelength_hi, 1/wavelength_lo);
                 sum_cross_section += cross_section * molecule_count;
                 sum_molecule_count += molecule_count;
             };

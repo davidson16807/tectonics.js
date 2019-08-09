@@ -206,7 +206,14 @@ var earth_atmo_json = {
     mass_He  : earth_atmo_mass *  0.000021/earth_atmo_mean_molecular_mass,
     mass_H2  : earth_atmo_mass *  0.000001/earth_atmo_mean_molecular_mass,
 };
+var neptune_atmo_mass = 1e26;
+var neptune_atmo_json = { 
+    mass_CH4 : neptune_atmo_mass * 0.01,
+    mass_He  : neptune_atmo_mass * 0.19,
+    mass_H2  : neptune_atmo_mass * 0.80,
+};
 var earth_atmo_component   = new Atmosphere(earth_atmo_json);
+var neptune_atmo_component = new Atmosphere(neptune_atmo_json);
 var default_atmo_component = new Atmosphere({});
 
 test_unary_inverse(
@@ -250,8 +257,13 @@ test_value_is_to_within(
     "must predict mean molecular mass of Earth's atmosphere to within 1%"
 );
 
-// TODO: specific heat capacity
-
+test_value_is_to_within(
+    earth_atmo_component.specific_heat_capacity(),
+    1005,
+    0.01,
+    'atmosphere.specific_heat_capacity()',
+    "must predict specific heat capacity of Earth's atmosphere to within 1%"
+);
 test_value_is_to_within(
     earth_atmo_component.scale_height(Units.STANDARD_GRAVITY, Units.STANDARD_TEMPERATURE),
     8*Units.KILOMETER,
@@ -267,26 +279,114 @@ test_value_is_to_within(
     "must predict surface air pressure on Earth to within 10%"
 );
 
-// TODO: surface density
-// TODO: surface molecular density
-// TODO: lapse rate
-// test_value_is_to_within(
-//     earth_atmo_component.lapse_rate(Units.STANDARD_GRAVITY),
-//     9.8*Units.KELVIN/Units.KILOMETER,
-//     0.1,
-//     'atmosphere.surface_pressure()',
-//     "must predict average lapse rate on Earth to within 10%"
-// );
+test_value_is_to_within(
+    earth_atmo_component.lapse_rate(Units.STANDARD_GRAVITY),
+    9.8*Units.KELVIN/Units.KILOMETER,
+    0.01,
+    'atmosphere.lapse_rate()',
+    "must predict average lapse rate on Earth to within 1%"
+);
 
 test_value_is_to_within(
-    earth_atmo_component.rayleigh_scattering_cross_section(650*Units.NANOMETER) * 
-    earth_atmo_component.surface_molecular_density(Units.STANDARD_GRAVITY, earth_world_component.surface_area(), Units.STANDARD_TEMPERATURE),
+    earth_atmo_component.rayleigh_scattering_cross_section(660*Units.NANOMETER) * 
+    earth_atmo_component.surface_molecular_density(Units.STANDARD_GRAVITY, earth_world_component.surface_area(), Units.STANDARD_TEMPERATURE+15),
     5.20e-6,
     0.10,
     'atmosphere.rayleigh_scattering_cross_section()',
-    "must predict rayleigh scattering cross section for surface air on earth to within 10%"
+    "must predict rayleigh scattering cross section for red light through surface air on earth to within 10%"
+);
+test_value_is_to_within(
+    earth_atmo_component.rayleigh_scattering_cross_section(540*Units.NANOMETER) * 
+    earth_atmo_component.surface_molecular_density(Units.STANDARD_GRAVITY, earth_world_component.surface_area(), Units.STANDARD_TEMPERATURE+15),
+    1.21e-5,
+    0.10,
+    'atmosphere.rayleigh_scattering_cross_section()',
+    "must predict rayleigh scattering cross section for green light through surface air on earth to within 10%"
+);
+test_value_is_to_within(
+    earth_atmo_component.rayleigh_scattering_cross_section(430*Units.NANOMETER) * 
+    earth_atmo_component.surface_molecular_density(Units.STANDARD_GRAVITY, earth_world_component.surface_area(), Units.STANDARD_TEMPERATURE+15),
+    2.96e-5,
+    0.10,
+    'atmosphere.rayleigh_scattering_cross_section()',
+    "must predict rayleigh scattering cross section for blue light through surface air on earth to within 10%"
 );
 
+test_value_is_below(
+    earth_atmo_component.mie_scattering_cross_section(660*Units.NANOMETER) * 
+    earth_atmo_component.surface_molecular_density(Units.STANDARD_GRAVITY, earth_world_component.surface_area(), Units.STANDARD_TEMPERATURE+15),
+    1e-8,
+    'atmosphere.mie_scattering_cross_section()',
+    "must predict negligible mie scattering cross section of red light from single molecules in Earth's atmosphere"
+);
+test_value_is_below(
+    earth_atmo_component.mie_scattering_cross_section(540*Units.NANOMETER) * 
+    earth_atmo_component.surface_molecular_density(Units.STANDARD_GRAVITY, earth_world_component.surface_area(), Units.STANDARD_TEMPERATURE+15),
+    1e-8,
+    'atmosphere.mie_scattering_cross_section()',
+    "must predict negligible mie scattering cross section of green light from single molecules in Earth's atmosphere"
+);
+test_value_is_below(
+    earth_atmo_component.mie_scattering_cross_section(430*Units.NANOMETER) * 
+    earth_atmo_component.surface_molecular_density(Units.STANDARD_GRAVITY, earth_world_component.surface_area(), Units.STANDARD_TEMPERATURE+15),
+    1e-8,
+    'atmosphere.mie_scattering_cross_section()',
+    "must predict negligible mie scattering cross section of blue light from single molecules in Earth's atmosphere"
+);
+test_value_is_above(
+    Math.exp(-earth_atmo_component.absorption_cross_section(800*Units.NANOMETER, 1000*Units.NANOMETER) * 
+    earth_atmo_component.surface_molecular_density(Units.STANDARD_GRAVITY, earth_world_component.surface_area(), Units.STANDARD_TEMPERATURE+15) * 
+    250e3),
+    0.1,
+    'atmosphere.absorption_cross_section()',
+    "must predict that greenhouse gas effect exists on earth"
+);
+test_value_is_above(
+    Math.exp(-earth_atmo_component.absorption_cross_section(600*Units.NANOMETER, 700*Units.NANOMETER) * 
+    earth_atmo_component.surface_molecular_density(Units.STANDARD_GRAVITY, earth_world_component.surface_area(), Units.STANDARD_TEMPERATURE+15) * 
+    250e3),
+    0.99,
+    'atmosphere.absorption_cross_section()',
+    "must predict that Earth's atmosphere does not filter red light"
+);
+test_value_is_above(
+    Math.exp(-earth_atmo_component.absorption_cross_section(500*Units.NANOMETER, 600*Units.NANOMETER) * 
+    earth_atmo_component.surface_molecular_density(Units.STANDARD_GRAVITY, earth_world_component.surface_area(), Units.STANDARD_TEMPERATURE+15) * 
+    250e3),
+    0.99,
+    'atmosphere.absorption_cross_section()',
+    "must predict that Earth's atmosphere does not filter green light"
+);
+test_value_is_above(
+    Math.exp(-earth_atmo_component.absorption_cross_section(400*Units.NANOMETER, 500*Units.NANOMETER) * 
+    earth_atmo_component.surface_molecular_density(Units.STANDARD_GRAVITY, earth_world_component.surface_area(), Units.STANDARD_TEMPERATURE+15) * 
+    250e3),
+    0.99,
+    'atmosphere.absorption_cross_section()',
+    "must predict that Earth's atmosphere does not filter blue light"
+);
+test_value_is_above(
+    Math.exp(-earth_atmo_component.absorption_cross_section(315*Units.NANOMETER, 400*Units.NANOMETER) * 
+    earth_atmo_component.surface_molecular_density(Units.STANDARD_GRAVITY, earth_world_component.surface_area(), Units.STANDARD_TEMPERATURE+15) * 
+    250e3),
+    0.99,
+    'atmosphere.absorption_cross_section()',
+    "must predict that Earth's atmosphere does not filter UV-A light"
+);
+test_value_is_below(
+    Math.exp(-earth_atmo_component.absorption_cross_section(280*Units.NANOMETER, 315*Units.NANOMETER) * 
+    earth_atmo_component.surface_molecular_density(Units.STANDARD_GRAVITY, earth_world_component.surface_area(), Units.STANDARD_TEMPERATURE+15) * 
+    250e3),
+    0.01,
+    'atmosphere.absorption_cross_section()',
+    "must predict that Earth's atmosphere filters UV-B light"
+);
+test_value_is_above(
+    Math.log(neptune_atmo_component.absorption_cross_section(600*Units.NANOMETER, 700*Units.NANOMETER)),
+    Math.log(neptune_atmo_component.absorption_cross_section(400*Units.NANOMETER, 500*Units.NANOMETER)),
+    'atmosphere.absorption_cross_section()',
+    "must predict that Neptune is blue"
+);
 // // get_steady_state should allow an output parameter to be passed to it
 // // if provided, this output parameter will be returned as output
 // test_unary_output_reference(
