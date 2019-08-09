@@ -206,14 +206,25 @@ var earth_atmo_json = {
     mass_He  : earth_atmo_mass *  0.000021/earth_atmo_mean_molecular_mass,
     mass_H2  : earth_atmo_mass *  0.000001/earth_atmo_mean_molecular_mass,
 };
+var earth_atmo_component   = new Atmosphere(earth_atmo_json);
+
+var mars_atmo_mass = 2.5e16;
+var mars_atmo_json = { 
+    mass_N2  : mars_atmo_mass * 0.027,
+    mass_O2  : mars_atmo_mass * 0.0013,
+    mass_CO2 : mars_atmo_mass * 0.9532,
+    mass_Ar  : mars_atmo_mass * 0.016,
+};
+var mars_atmo_component = new Atmosphere(mars_atmo_json);
+
 var neptune_atmo_mass = 1e26;
 var neptune_atmo_json = { 
     mass_CH4 : neptune_atmo_mass * 0.01,
     mass_He  : neptune_atmo_mass * 0.19,
     mass_H2  : neptune_atmo_mass * 0.80,
 };
-var earth_atmo_component   = new Atmosphere(earth_atmo_json);
 var neptune_atmo_component = new Atmosphere(neptune_atmo_json);
+
 var default_atmo_component = new Atmosphere({});
 
 test_unary_inverse(
@@ -223,6 +234,7 @@ test_unary_inverse(
     'new Atmosphere',
     { 
         earth:   earth_atmo_component,
+        mars:    mars_atmo_component,
         default: default_atmo_component,
     },
 );
@@ -270,6 +282,13 @@ test_value_is_to_within(
     0.01,
     'atmosphere.scale_height()',
     "must predict scale height of Earth's atmosphere to within 1%"
+);
+test_value_is_to_within(
+    mars_atmo_component.scale_height(3.71, 210),
+    11.1*Units.KILOMETER,
+    0.1,
+    'atmosphere.scale_height()',
+    "must predict scale height of Mars's atmosphere to within 10%"
 );
 test_value_is_to_within(
     earth_atmo_component.surface_pressure(Units.STANDARD_GRAVITY, earth_world_component.surface_area()),
