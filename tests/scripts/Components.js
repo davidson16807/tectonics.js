@@ -406,6 +406,19 @@ test_value_is_above(
     'atmosphere.absorption_cross_section()',
     "must predict that Neptune is blue"
 );
+var earth_ocean_mass = 1.35e21;
+var earth_ocean_json = { 
+    mass_H2O : earth_ocean_mass,
+};
+var earth_ocean_component   = new Ocean(earth_ocean_json);
+
+var titan_ocean_mass = 3.81e16;
+var titan_ocean_json = { 
+    mass_C2H6 : titan_ocean_mass * 0.75,
+    mass_CH4  : titan_ocean_mass * 0.25,
+};
+var titan_ocean_component   = new Ocean(titan_ocean_json);
+
 // // get_steady_state should allow an output parameter to be passed to it
 // // if provided, this output parameter will be returned as output
 // test_unary_output_reference(

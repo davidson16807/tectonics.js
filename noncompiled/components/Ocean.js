@@ -23,9 +23,10 @@ var Ocean = (function() {
         mass_H2  : 2.016   * Units.DALTON,
         // NOTE: felsic rock is 63% SiO2 by mass,
         //  SiO2 is 60.08 orthoclase is 278.33, muscovite is 398.71
-        //  mass: m = 0.63*m_s + 0.37*m_o
-        //  
-        mass_felsic :  60.08 * Units.DALTON, 
+        //  so for every unit of mass, 0.63/60.08D molecules are SiO2 and 0.37/300D is other stuff
+        //  what unit of mass m is needed such that N_A = 0.63m/60.08D + 0.37m/300D ? 
+        //  answer: 1/(0.63m/60.08D + 0.37m/300D) = 85
+        mass_felsic :  85 * Units.DALTON, 
         // NOTE: olivine is 153.31
         mass_mafic  : 153.31 * Units.DALTON, 
         // NOTE: iron is 55.84, nickel is 58.69
@@ -34,7 +35,7 @@ var Ocean = (function() {
         mass_FeNi   :  55.84 * Units.DALTON,
     };
     // values are mostly from wolfram alpha
-    const densities: {
+    const densities = {
         mass_N2  :    807,
         mass_O2  :   1141,
         mass_CO2 :   1101,
