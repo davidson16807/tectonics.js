@@ -412,6 +412,70 @@ var earth_ocean_json = {
 };
 var earth_ocean_component   = new Ocean(earth_ocean_json);
 
+test_value_is_to_within(
+    earth_ocean_component.total_mass(),
+    earth_ocean_mass,
+    0.01,
+    'ocean.total_mass()',
+    "must predict the total mass of Earth's oceans to within 1%"
+);
+test_value_is_to_within(
+    earth_ocean_component.density(),
+    1022,
+    0.01,
+    'ocean.density()',
+    "must predict the density of ocean water to within 1%"
+);
+test_value_is_to_within(
+    earth_ocean_component.molecular_density() * Units.MILLIMETER*Units.MILLIMETER*Units.MILLIMETER,
+    1.67e21,
+    10,
+    'ocean.molecular_density()',
+    "must predict the number of molecules in a drop of water to the correct order of magnitude"
+);
+test_value_is_to_within(
+    earth_ocean_component.rayleigh_scattering_cross_section(660*Units.NANOMETER) * earth_ocean_component.molecular_density(),
+    0.005, // estimate was from hardcoded values in the original PBR shader 
+    2,
+    'ocean.rayleigh_scattering_cross_section()',
+    "must predict rayleigh scattering cross section for red light through ocean water to within a factor of 2"
+);
+test_value_is_to_within(
+    earth_ocean_component.rayleigh_scattering_cross_section(540*Units.NANOMETER) * earth_ocean_component.molecular_density(),
+    0.01, // estimate was from hardcoded values in the original PBR shader 
+    2,
+    'ocean.rayleigh_scattering_cross_section()',
+    "must predict rayleigh scattering cross section for green light through ocean water to within a factor of 2"
+);
+test_value_is_to_within(
+    earth_ocean_component.rayleigh_scattering_cross_section(430*Units.NANOMETER) * earth_ocean_component.molecular_density(),
+    0.03, // estimate was from hardcoded values in the original PBR shader 
+    2,
+    'ocean.rayleigh_scattering_cross_section()',
+    "must predict rayleigh scattering cross section for blue light through ocean water to within a factor of 2"
+);
+test_value_is_to_within(
+    earth_ocean_component.absorption_cross_section(600*Units.NANOMETER, 700*Units.NANOMETER) * earth_ocean_component.molecular_density(),
+    0.3, // estimate was from hardcoded values in the original PBR shader 
+    2,
+    'ocean.absorption_cross_section()',
+    "must predict absorption cross section for red light through ocean water to within a factor of 2"
+);
+test_value_is_to_within(
+    earth_ocean_component.absorption_cross_section(500*Units.NANOMETER, 600*Units.NANOMETER) * earth_ocean_component.molecular_density(),
+    0.1, // estimate was from hardcoded values in the original PBR shader 
+    2,
+    'ocean.absorption_cross_section()',
+    "must predict absorption cross section for green light through ocean water to within a factor of 2"
+);
+test_value_is_to_within(
+    earth_ocean_component.absorption_cross_section(400*Units.NANOMETER, 500*Units.NANOMETER) * earth_ocean_component.molecular_density(),
+    0.02, // estimate was from hardcoded values in the original PBR shader 
+    2,
+    'ocean.absorption_cross_section()',
+    "must predict absorption cross section for blue light through ocean water to within a factor of 2"
+);
+
 var titan_ocean_mass = 3.81e16;
 var titan_ocean_json = { 
     mass_C2H6 : titan_ocean_mass * 0.75,

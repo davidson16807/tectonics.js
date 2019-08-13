@@ -10,6 +10,14 @@
 // for more information about the Entity-Component-System pattern, 
 //  see https://en.wikipedia.org/wiki/Entity_component_system
 var Ocean = (function() {
+    // "get_molecular_refraction_of_refractive_index_at_stp" returns molecular refraction 
+    // from refractive index at standard temperature and pressure
+    // see description from https://encyclopedia2.thefreedictionary.com/Molecular+Refraction
+    // or https://goldbook.iupac.org/terms/view/M03979 for the related concept, "molar refraction"
+    // see trying-to-find-molecular-refraction.md for how this was derived
+    const get_molecular_refraction_of_refractive_index_at_stp = function(n) {
+        return ((n*n-1)/(n*n+2)) * Units.STANDARD_MOLAR_VOLUME / Units.MOLE;
+    }
     // TODO: hoist these constants out of atmosphere as need arises
     const molecular_masses = {
         mass_N2  : 28.034  * Units.DALTON,
@@ -48,6 +56,34 @@ var Ocean = (function() {
         mass_felsic: 2180, // from Murase and McBirney (1973)
         mass_mafic:  2800, // from Murase and McBirney (1973)
         mass_FeNi:   7874,
+    };
+    // "molecular_refractions" can be thought of as a refractive tendency when applied to a volume per molecule
+    // see description from https://encyclopedia2.thefreedictionary.com/Molecular+Refraction
+    // or https://goldbook.iupac.org/terms/view/M03979 for the related concept, "molar refraction"
+    // derived using refractive indices from https://www.engineeringtoolbox.com/refractive-index-d_1264.html
+    // as well as https://refractiveindex.info/?shelf=organic&book=ethane&page=Loria
+    const molecular_refractions = {
+        mass_N2  : get_molecular_refraction_of_refractive_index_at_stp(1.000298),
+        mass_O2  : get_molecular_refraction_of_refractive_index_at_stp(1.000271),
+        mass_CO2 : get_molecular_refraction_of_refractive_index_at_stp(1.000449),
+        mass_H2O : get_molecular_refraction_of_refractive_index_at_stp(1.000261),
+        mass_CH4 : get_molecular_refraction_of_refractive_index_at_stp(1.000444),
+        mass_C2H6: get_molecular_refraction_of_refractive_index_at_stp(1.000752),
+        mass_Ar  : get_molecular_refraction_of_refractive_index_at_stp(1.000281),
+        mass_He  : get_molecular_refraction_of_refractive_index_at_stp(1.000035),
+        mass_H2  : get_molecular_refraction_of_refractive_index_at_stp(1.000132),
+    }
+    // from https://en.wikipedia.org/wiki/Kinetic_diameter
+    const molecular_diameters = {
+        mass_N2  : 365 * Units.PICOMETER,
+        mass_O2  : 346 * Units.PICOMETER,
+        mass_CO2 : 330 * Units.PICOMETER,
+        mass_H2O : 265 * Units.PICOMETER,
+        mass_CH4 : 380 * Units.PICOMETER,
+        mass_C2H6: 443 * Units.PICOMETER,
+        mass_Ar  : 340 * Units.PICOMETER,
+        mass_He  : 260 * Units.PICOMETER,
+        mass_H2  : 289 * Units.PICOMETER,
     };
     // "molecular_absorption_cross_section" is a dictionary that maps mass pools to functions.
     // Each function accepts a range of the electromagnetic spectrum 
@@ -186,6 +222,22 @@ var Ocean = (function() {
         // rasters are calculated within memos
         
         var this_ = this;
+        // "mean_molecular_refraction_between_diameters" returns the average molecular refraction 
+        // for particles whose diameter falls within a range
+        var mean_molecular_refraction_between_diameters = function(lo, hi) {
+            var sum_molecular_refraction = 0;
+            var sum_molecule_count = 0;
+            for (var i = 0, li = mass_pools.length; i < li; i++) {
+                var pool = mass_pools[i];
+                var diameter = molecular_diameters[pool];
+                var molecule_count = this_[pool] / molecular_masses[pool];
+                if (lo < diameter && diameter < hi) {
+                    sum_molecular_refraction += molecular_refractions[pool] * molecule_count;
+                    sum_molecule_count += molecule_count;
+                }
+            };
+            return sum_molecular_refraction / sum_molecule_count;
+        }
 
         // "mean_molecular_refraction_between_diameters" returns the average molecular diameter 
         // for particles whose diameter falls within a range
@@ -250,7 +302,21 @@ var Ocean = (function() {
             return 1. / specific_volume;
         }
         this.molecular_density    = function(gravity, surface_area, temperature) {
-            return this.surface_density(gravity, surface_area, temperature) / this.mean_molecular_mass();
+            return this.density(gravity, surface_area, temperature) / this.mean_molecular_mass();
+        }
+        // "rayleigh_scattering_cross_section" indicates the rayleigh scattering cross section for surface air.
+        // This is the cross sectional area of a single particle that can scatter a ray of light of given wavelength.
+        // Multiply it by surface_molecular_density() to get a scattering coefficient, 
+        //  then use the scattering coefficient to find the fraction of intensity lost to rayleigh scattering via Beer's law. 
+        this.rayleigh_scattering_cross_section = function(wavelength) {
+            const π = Math.PI;
+            const λ = wavelength;
+            const R = mean_molecular_refraction_between_diameters(0, λ);
+            // see Platt (2007)
+            // Platt states σ = 24*π^3/λ^4 * ((n*n-1)/(n*n+2))^2 / (count/volume)^2
+            // and R = (n*n-1)/(n*n+2) * volume / count
+            // So that simplifies to σ = 24*π^3/λ^4 * R^2
+            return 24*π*π*π*R*R / (λ*λ*λ*λ);
         }
         // "mie_scattering_cross_section" indicates the mie scattering cross section for surface air.
         // This is the cross sectional area of a single particle that can scatter with a ray of light of given wavelength.
