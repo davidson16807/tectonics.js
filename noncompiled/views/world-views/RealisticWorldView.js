@@ -223,9 +223,9 @@ function RealisticWorldView(shader_return_value) {
 
         // SEA PROPERTIES
         update_renderpass_uniform  ('sealevel',             world.hydrosphere.sealevel.value());
-        update_renderpass_uniform  ('ocean_rayleigh_scattering_coefficients', new THREE.Vector3(0.005, 0.01, 0.03));
+        update_renderpass_uniform  ('ocean_rayleigh_scattering_coefficients', new THREE.Vector3(0.0056, 0.0125, 0.0312));
         update_renderpass_uniform  ('ocean_mie_scattering_coefficients',      new THREE.Vector3(0));
-        update_renderpass_uniform  ('ocean_absorption_coefficients',          new THREE.Vector3(3e-1, 1e-1, 2e-2));
+        update_renderpass_uniform  ('ocean_absorption_coefficients',          new THREE.Vector3(0.1, 0.01, 0.004));
 
         // SHADERPASS PROPERTIES -----------------------------------------------
 
