@@ -434,6 +434,13 @@ test_value_is_to_within(
     "must predict the number of molecules in a drop of water to the correct order of magnitude"
 );
 test_value_is_to_within(
+    earth_ocean_component.specific_heat_capacity(),
+    4186,
+    0.01,
+    'ocean.specific_heat_capacity()',
+    "must predict the specific heat capacity of ocean water to within 1%"
+);
+test_value_is_to_within(
     earth_ocean_component.rayleigh_scattering_cross_section(660*Units.NANOMETER) * earth_ocean_component.molecular_density(),
     0.005, // estimate was from hardcoded values in the original PBR shader 
     2,
