@@ -42,6 +42,21 @@ var Ocean = (function() {
         //  so we simply go with the molecular mass for iron
         mass_FeNi   :  55.84 * Units.DALTON,
     };
+    // TODO: hoist these constants out of atmosphere as need arises
+    const atoms_per_molecule = {
+        mass_N2  : 2,
+        mass_O2  : 2,
+        mass_CO2 : 3,
+        mass_H2O : 3,
+        mass_CH4 : 5,
+        mass_C2H6: 8,
+        mass_Ar  : 1,
+        mass_He  : 1,
+        mass_H2  : 2,
+        mass_felsic : 3, 
+        mass_mafic  : 7, 
+        mass_FeNi   : 1,
+    };
     // values are mostly from wolfram alpha
     const densities = {
         mass_N2  :    807,
@@ -283,16 +298,29 @@ var Ocean = (function() {
                 this.mass_H2   / molecular_masses.mass_H2    
             );
         }
+        this.atom_count         = function() {
+            return (
+                this.mass_N2   * atoms_per_molecule.mass_N2   / molecular_masses.mass_N2   + 
+                this.mass_O2   * atoms_per_molecule.mass_O2   / molecular_masses.mass_O2   + 
+                this.mass_CO2  * atoms_per_molecule.mass_CO2  / molecular_masses.mass_CO2  + 
+                this.mass_H2O  * atoms_per_molecule.mass_H2O  / molecular_masses.mass_H2O  + 
+                this.mass_CH4  * atoms_per_molecule.mass_CH4  / molecular_masses.mass_CH4  + 
+                this.mass_C2H6 * atoms_per_molecule.mass_C2H6 / molecular_masses.mass_C2H6 + 
+                this.mass_Ar   * atoms_per_molecule.mass_Ar   / molecular_masses.mass_Ar   + 
+                this.mass_He   * atoms_per_molecule.mass_He   / molecular_masses.mass_He   + 
+                this.mass_H2   * atoms_per_molecule.mass_H2   / molecular_masses.mass_H2    
+            );
+        }
         this.mean_molecular_mass    = function() {
             return this.total_mass() / this.molecule_count();
         }
-        // use the Law of Dulong and Petit to find specific heat capacity
+        // use the Law of Dulong and Petit to find specific heat capacity for constant pressure, in Joules/(kilogram*Kelvin)
         this.specific_heat_capacity = function() {
             const mean_degrees_of_freedom = 3;
-            return mean_degrees_of_freedom * (Thermodynamics.BOLTZMANN_CONSTANT / this.mean_molecular_mass());
+            return mean_degrees_of_freedom * Thermodynamics.BOLTZMANN_CONSTANT * this.atom_count() / this.total_mass();
         }
         // calculation from https://en.wikibooks.org/wiki/Introduction_to_Chemical_Engineering_Processes/The_most_important_point#Density_of_Liquid_Mixtures
-        this.density        = function(gravity, surface_area, temperature) {
+        this.density        = function() {
             var specific_volume = 0;
             var total_mass = this.total_mass();
             for (var i = 0, li = mass_pools.length; i < li; i++) {
@@ -301,8 +329,8 @@ var Ocean = (function() {
             }
             return 1. / specific_volume;
         }
-        this.molecular_density    = function(gravity, surface_area, temperature) {
-            return this.density(gravity, surface_area, temperature) / this.mean_molecular_mass();
+        this.molecular_density    = function() {
+            return this.molecule_count() / this.total_mass();
         }
         // "rayleigh_scattering_cross_section" indicates the rayleigh scattering cross section for surface air.
         // This is the cross sectional area of a single particle that can scatter a ray of light of given wavelength.
