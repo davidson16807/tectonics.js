@@ -29,18 +29,10 @@ var Ocean = (function() {
         mass_Ar  : 39.948  * Units.DALTON,
         mass_He  : 4.0026  * Units.DALTON,
         mass_H2  : 2.016   * Units.DALTON,
-        // NOTE: felsic rock is 63% SiO2 by mass,
-        //  SiO2 is 60.08 orthoclase is 278.33, muscovite is 398.71
-        //  so for every unit of mass, 0.63/60.08D molecules are SiO2 and 0.37/300D is other stuff
-        //  what unit of mass m is needed such that N_A = 0.63m/60.08D + 0.37m/300D ? 
-        //  answer: 1/(0.63m/60.08D + 0.37m/300D) = 85
-        mass_felsic :  85 * Units.DALTON, 
-        // NOTE: olivine is 153.31
-        mass_mafic  : 153.31 * Units.DALTON, 
-        // NOTE: iron is 55.84, nickel is 58.69
-        //  iron is more abundant in the universe, and their molecular masses are very similar,
-        //  so we simply go with the molecular mass for iron
-        mass_FeNi   :  55.84 * Units.DALTON,
+        mass_SiO2     :  60.08 * Units.DALTON, 
+        mass_KAlSi3O8 : 278.33 * Units.DALTON, 
+        mass_Mg2SiO4  : 153.31 * Units.DALTON, 
+        mass_Fe       :  55.84 * Units.DALTON,
     };
     // TODO: hoist these constants out of atmosphere as need arises
     const atoms_per_molecule = {
@@ -53,24 +45,26 @@ var Ocean = (function() {
         mass_Ar  : 1,
         mass_He  : 1,
         mass_H2  : 2,
-        mass_felsic : 3, 
-        mass_mafic  : 7, 
-        mass_FeNi   : 1,
+        mass_SiO2     :  3, 
+        mass_KAlSi3O8 : 13, 
+        mass_Mg2SiO4  :  7, 
+        mass_Fe       :  1,
     };
     // values are mostly from wolfram alpha
-    const densities = {
-        mass_N2  :    807,
-        mass_O2  :   1141,
-        mass_CO2 :   1101,
-        mass_H2O :   1022, // NOTE: we use the density of seawater, because do not model the effect of solute concentration on density
-        mass_CH4 :    423, 
-        mass_C2H6:    545,
-        mass_Ar  :   1401,
-        mass_He  :    141,
-        mass_H2  :     72,
-        mass_felsic: 2180, // from Murase and McBirney (1973)
-        mass_mafic:  2800, // from Murase and McBirney (1973)
-        mass_FeNi:   7874,
+    const liquid_densities = {
+        mass_N2  :     807,
+        mass_O2  :    1141,
+        mass_CO2 :    1101,
+        mass_H2O :    1022, // NOTE: we use the density of seawater, because do not model the effect of solute concentration on density
+        mass_CH4 :     423, 
+        mass_C2H6:     545,
+        mass_Ar  :    1401,
+        mass_He  :     141,
+        mass_H2  :      72,
+        mass_SiO2:    2180, // from Murase and McBirney (1973), for rhyolitic magma
+        mass_KAlSi3O8:2180, // from Murase and McBirney (1973), for rhyolitic magma
+        mass_Mg2SiO4: 2800, // from Murase and McBirney (1973), for basaltic  magma
+        mass_Fe  :    7874,
     };
     // "molecular_refractions" can be thought of as a refractive tendency when applied to a volume per molecule
     // see description from https://encyclopedia2.thefreedictionary.com/Molecular+Refraction
@@ -78,27 +72,35 @@ var Ocean = (function() {
     // derived using refractive indices from https://www.engineeringtoolbox.com/refractive-index-d_1264.html
     // as well as https://refractiveindex.info/?shelf=organic&book=ethane&page=Loria
     const molecular_refractions = {
-        mass_N2  : get_molecular_refraction_of_refractive_index_at_stp(1.000298),
-        mass_O2  : get_molecular_refraction_of_refractive_index_at_stp(1.000271),
-        mass_CO2 : get_molecular_refraction_of_refractive_index_at_stp(1.000449),
-        mass_H2O : get_molecular_refraction_of_refractive_index_at_stp(1.000261),
-        mass_CH4 : get_molecular_refraction_of_refractive_index_at_stp(1.000444),
-        mass_C2H6: get_molecular_refraction_of_refractive_index_at_stp(1.000752),
-        mass_Ar  : get_molecular_refraction_of_refractive_index_at_stp(1.000281),
-        mass_He  : get_molecular_refraction_of_refractive_index_at_stp(1.000035),
-        mass_H2  : get_molecular_refraction_of_refractive_index_at_stp(1.000132),
-    }
+        mass_N2      : get_molecular_refraction_of_refractive_index_at_stp(1.000298),
+        mass_O2      : get_molecular_refraction_of_refractive_index_at_stp(1.000271),
+        mass_CO2     : get_molecular_refraction_of_refractive_index_at_stp(1.000449),
+        mass_H2O     : get_molecular_refraction_of_refractive_index_at_stp(1.000261),
+        mass_CH4     : get_molecular_refraction_of_refractive_index_at_stp(1.000444),
+        mass_C2H6    : get_molecular_refraction_of_refractive_index_at_stp(1.000752),
+        mass_Ar      : get_molecular_refraction_of_refractive_index_at_stp(1.000281),
+        mass_He      : get_molecular_refraction_of_refractive_index_at_stp(1.000035),
+        mass_H2      : get_molecular_refraction_of_refractive_index_at_stp(1.000132),
+        mass_SiO2    : get_molecular_refraction_of_refractive_index_at_stp(1.000600), // WARNING: wild ass guess based on correlation with molar mass
+        mass_KAlSi3O8: get_molecular_refraction_of_refractive_index_at_stp(1.003000), // WARNING: wild ass guess based on correlation with molar mass
+        mass_Mg2SiO4 : get_molecular_refraction_of_refractive_index_at_stp(1.001500), // WARNING: wild ass guess based on correlation with molar mass
+        mass_Fe      : get_molecular_refraction_of_refractive_index_at_stp(1.000550), // WARNING: wild ass guess based on correlation with molar mass
+    };
     // from https://en.wikipedia.org/wiki/Kinetic_diameter
     const molecular_diameters = {
-        mass_N2  : 365 * Units.PICOMETER,
-        mass_O2  : 346 * Units.PICOMETER,
-        mass_CO2 : 330 * Units.PICOMETER,
-        mass_H2O : 265 * Units.PICOMETER,
-        mass_CH4 : 380 * Units.PICOMETER,
-        mass_C2H6: 443 * Units.PICOMETER,
-        mass_Ar  : 340 * Units.PICOMETER,
-        mass_He  : 260 * Units.PICOMETER,
-        mass_H2  : 289 * Units.PICOMETER,
+        mass_N2      : 365 * Units.PICOMETER,
+        mass_O2      : 346 * Units.PICOMETER,
+        mass_CO2     : 330 * Units.PICOMETER,
+        mass_H2O     : 265 * Units.PICOMETER,
+        mass_CH4     : 380 * Units.PICOMETER,
+        mass_C2H6    : 443 * Units.PICOMETER,
+        mass_Ar      : 340 * Units.PICOMETER,
+        mass_He      : 260 * Units.PICOMETER,
+        mass_H2      : 289 * Units.PICOMETER,
+        mass_SiO2    : 600 * Units.PICOMETER, // WARNING: wild ass guess based on correlation with molar mass
+        mass_KAlSi3O8:3000 * Units.PICOMETER, // WARNING: wild ass guess based on correlation with molar mass
+        mass_Mg2SiO4 :1500 * Units.PICOMETER, // WARNING: wild ass guess based on correlation with molar mass
+        mass_Fe      : 550 * Units.PICOMETER, // WARNING: wild ass guess based on correlation with molar mass
     };
     // "molecular_absorption_cross_section" is a dictionary that maps mass pools to functions.
     // Each function accepts a range of the electromagnetic spectrum 
@@ -245,6 +247,9 @@ var Ocean = (function() {
             for (var i = 0, li = mass_pools.length; i < li; i++) {
                 var pool = mass_pools[i];
                 var diameter = molecular_diameters[pool];
+                if (!(pool in molecular_masses)) {
+                    continue;
+                }
                 var molecule_count = this_[pool] / molecular_masses[pool];
                 if (lo < diameter && diameter < hi) {
                     sum_molecular_refraction += molecular_refractions[pool] * molecule_count;
@@ -262,6 +267,9 @@ var Ocean = (function() {
             for (var i = 0, li = mass_pools.length; i < li; i++) {
                 var pool = mass_pools[i];
                 var diameter = molecular_diameters[pool];
+                if (!(pool in molecular_masses)) {
+                    continue;
+                }
                 var molecule_count = this_[pool] / molecular_masses[pool];
                 if (lo < diameter && diameter < hi) {
                     sum_molecular_diameter += diameter * molecule_count;
@@ -284,6 +292,9 @@ var Ocean = (function() {
                 this.mass_He   +
                 this.mass_H2   
             );
+        }
+        this.total_volume           = function() {
+            return this.total_mass() / this.density();
         }
         this.molecule_count         = function() {
             return (
@@ -325,7 +336,7 @@ var Ocean = (function() {
             var total_mass = this.total_mass();
             for (var i = 0, li = mass_pools.length; i < li; i++) {
                 var pool = mass_pools[i];
-                specific_volume += (this[pool] / total_mass) / densities[pool]; 
+                specific_volume += (this[pool] / total_mass) / liquid_densities[pool]; 
             }
             return 1. / specific_volume;
         }
