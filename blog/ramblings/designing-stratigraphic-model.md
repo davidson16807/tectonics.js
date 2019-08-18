@@ -51,19 +51,33 @@ Metamorphosis occurs under heat and pressure due to a solid state change of grai
 And now the stage is set. We see a few common threads throughout the above description of processes. Rocks are characterized by a set of "grains", each of which has a homogenous mineral composition and an average size. Different minerals can have the same composition but different structure, depending on the pressure and temperature extremes they were exposed to. The pressure and temperature extremes encountered are assumed to be constant for all components of the same composition within a given a rock specimen. There is also an average "particle size", which is distinct from the average size of a grain in the case of mechanical weathering, and if a grain precipitates as with lithification or crystal formation, the size of the component depends on the pore density between the grains. 
 
 So let's consider the following data structure to represent our "Layer":
-	particle size
+4b	particle size
 	mass pool:
-		mass
-		max pressure received
-		max temperature received
-		average size
+4b		mass
+1b		max pressure received
+1b		max temperature received
+1b		mass pool id (optional)
+1b		average size
 
 We assume here that pressure and temperature increase monotonically with depth, in a predictable fashion, so there is little risk of developing situations where temperature and pressure have maxed out at separate points in time. This allows us to efficiently store max pressure and temperature for each grain. 
 
 Let's consider an edge case that is still relevant to users: the formation of alluvial diamond deposits. To form a diamond, a mass pool of carbon must receive a max pressure and temperature that falls within a certain range. The average size of the diamond presumably depends on the pore size of the parent rock it forms in. It is also presumed at some point that the parent rock undergoes partial melting, which allows the diamond to be forced up onto the surface through fissures known as "kimberly pipes". Once there, the partial melt solidifies: the other mass pools solidify, their max pressures and temperatures are reset to surface values, and their average size is small to reflect the rapid cooling rate. The particle size of the rock is set to a maximum to reflect that it is solid after formation. At this stage, the data structure describes the consistency of Kimberlite. After a time, weathering occurs, dissolvable mass pools reset their max pressures and temperatures and set their size to infinitesimal. The result is a mix of clay, sand, and diamond. This can be transported through erosion to become an alluvial diamond deposit. 
 
-This is a lot to represent in memory, and if we are to store all mass pools in a single cache line, we need a single mass pool to be stored within 8 bytes. The mass of the pool itself requires the most precision since it is a conserved property, and it needs to represent values across several orders of magnitude ranging from 1kg/m^2 ash layers to 10^6 kg/m^2 metamorphic rock layers. So I propose it should be represented with a 32 bit float. 
+The data structure above requires a lot of memory, and if we are to store all mass pools in a single cache line, we need a single mass pool to be stored within 8 bytes. The mass of the pool itself requires the most precision since it is a conserved property, and it needs to represent values across several orders of magnitude ranging from 1kg/m^2 ash layers to 10^6 kg/m^2 metamorphic rock layers. So I propose at least a 2 byte short. If the other attributes are a minimum of one byte, we are guaranteed to run over the size of a 4 byte word, so we might as well make use of the remaining space and make mass a 4 byte float. 
 
-As for pressure, temperature, and size, we really only need rough estimates. Temperature should not exceed 24000 K (the temperature of Jupiter's core) and could be further limited to 6000 K (the temperature of Earth's core). Pressure should not exceed 10^13 Pa (Jupiter's core) and could be limited to 10^12 Pa (Earth's core). Error intervals could be on the order of 10 K for temperature and 10^8 Pa for pressure (to represent lithification, and to distinguish metamorphic forms of basalt) 
+As for pressure, temperature, and size, we really only need rough estimates. Temperature should not exceed 24000 K (the temperature of Jupiter's core) and could be further limited to 6000 K (the temperature of Earth's core) if needed. Pressure should not exceed 5e12 Pa (Jupiter's core) and could be limited to 2e11 Pa (Earth's upper mantle) if needed. Error intervals could be on the order of 10 K for temperature and 10^8 Pa for pressure (to represent lithification, and e.g. to distinguish metamorphic forms of basalt) 
 
-One final thing: we do need to concern ourselves with what the representative depth would be for a given layer. Each layer has a variable thickness, so depth could vary considerably across the layer. This in turn means that pressure and temperature could vary considerably. This is especially the case for the bottom-most layer, which is sort of a garbage bin of whatever mass pools were leftover. Fortunately enough, we again reason that users don't care so much what happens at the bottom. We further reiterate that our model does have the potential to generate depths that are sufficient for metamorphosis, so it is likely with adequate parameterization that the bottommost layer will always be at a depth where metamorphosis could occur consistently throughout the layer. 
+In table form:
+			max(dex) 	min(dex) 	
+temperature	2e4 		1e1 		
+pressure 	5e12 		1e8 		
+
+Since temperature and pressure are only representational, it may be in our interest to store them in a single byte that represents their logarithm at a given base. We would have to choose which base. For performance, it should probably be a root of 2 to allow for performant bit twiddling. 
+
+If temperature       were represented as `2<<(T/17)`,  we could represent temperatures up to  32768K with a precision of 12%
+If pressure          were represented as `2<<(P/6)`,   we could represent pressures    up to    6e12 with a precision of 12%
+If particle diameter were represented as `2<<(-d/25)`, we could represent sizes        down to 0.001 with a precision of 12%
+
+One final thing: we do need to concern ourselves with what the representative depth would be for a given layer. Each layer has a variable thickness, so depth could vary considerably across the layer. This in turn means that pressure and temperature could vary considerably. This is especially the case for the bottom-most layer, which is sort of a garbage bin of whatever mass pools were leftover. 
+
+There are things working in our favor though. We again reason that users don't care so much what happens at the bottom. We further reiterate that our model does have the potential to generate depths that are sufficient for metamorphosis, so it is likely with adequate parameterization that the bottommost layer will always be at a depth where metamorphosis could occur consistently throughout the layer. 
