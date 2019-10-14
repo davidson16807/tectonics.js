@@ -927,7 +927,7 @@
       },
       methods: {
           capture(event) {
-              var elapsed_time = sim.elapsed_time;
+              var elapsed_time = format_time(sim.elapsed_time);
               var dataUrl = view.getScreenshotDataURL();
               var filename = `${sim.focus().name}-${elapsed_time.quantity}${elapsed_time.unit}.png`
               download(dataUrl, filename);
