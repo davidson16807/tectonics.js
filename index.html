@@ -960,10 +960,23 @@
       },
       created: function() {
           var _this = this;
-          onSimLoadStop.subscribe(function () {
-            _this.elapsed_time = sim.elapsed_time;
-            sim.speed = _this.speeds[_this.speed_i].scale;
-            sim.paused = _this.paused;
+          var isLoadingSave = true;
+          var update_time_period = 0.5;
+
+          function update_time() {
+              if (isLoadingSave) { return; }
+              _this.elapsed_time = sim.elapsed_time;
+              sim.speed = _this.speeds[_this.speed_i].scale;
+              sim.paused = _this.paused;
+              setTimeout(update_time, 1000*update_time_period);
+          }
+          update_time();
+          onSimLoadStart.subscribe(function() {
+              isLoadingSave = true;
+          })
+          onSimLoadStop.subscribe(function() {
+              isLoadingSave = false;
+              update_time();
           })
       },
       methods: {
