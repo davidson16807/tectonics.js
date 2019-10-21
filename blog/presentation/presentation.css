@@ -23,6 +23,9 @@ time, mark, audio, video {
 	font: inherit;
 	vertical-align: baseline;
 }
+img {
+	margin: 1%;
+}
 /* HTML5 display-role reset for older browsers */
 article, aside, details, figcaption, figure, 
 footer, header, hgroup, menu, nav, section {
@@ -147,7 +150,7 @@ h2 {
 	color: #121B28;
 	font-family: 'Ubuntu', helvetica, trebuchet ms, serif;
 	font-size: 261%;
-	margin-bottom: 0px;
+	margin-bottom: 3%;
 	margin-top: 0px;
 	text-align: center;
 }
@@ -158,6 +161,14 @@ h3 {
 	margin-bottom: 14px;
 	margin-top: 10px;
 	text-align: center;
+}
+h4 {
+	color: #121B28;
+	font-family: 'Ubuntu', helvetica, trebuchet ms, serif;
+	font-size: 200%;
+	/*margin-bottom: 14px;*/
+	/*margin-top: 10px;*/
+	/*text-align: center;*/
 }
 ul {
 	padding: 30px 60px;
