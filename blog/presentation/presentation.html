@@ -1,0 +1,168 @@
+<html>
+  <head>
+
+    <title>Presentation: Fun with hardware acceleration</title>
+    <script src="jquery-1.10.2.min.js"></script>
+    <script src="fathom.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="presentation.css" />
+    <script src="http://www.openlayers.org/api/OpenLayers.js"></script>
+  </head>
+  <body>
+    <div id="presentation">
+
+      <div class="slide">
+        <h1>
+          <br/>
+          Tectonics.js
+        </h1>
+        <center>
+          <img src="icon6.png" width="50%"/>
+        </center>
+
+        <h2>Deep Dive: Orbital Mechanics and Insolation</h2>
+      </div>
+      
+      <div class="slide">
+        <h2>Overview</h2>
+        <ul>
+          <li>Inspiration</li>
+          <li>Use Cases</li>
+          <li>Development</li>
+          <li>Deep Dive</li>
+        </ul>
+      </div>
+      
+      <div class="slide">
+        <h2>Inspiration</h2>
+        <h3>High School</h3>
+        <!-- <img src="high-school-alien.jpg" style="float:right;clear:right;" height="30%"/> -->
+        <img src="high-school-sim-earth-cropped.jpg" style="float:right;clear:right;" width="45%"/>
+        <img src="high-school-cladogram.jpg" style="float:right;clear:right;" width="45%"/>
+        <img src="high-school-ship.jpg" style="float:right;clear:right;" width="45%"/>
+        <ul>
+          <li>Science Fiction</li>
+          <li>Sim Earth</li>
+          <li>Programming</li>
+        </ul>
+        <h2>Idea: make a modern sim earth clone with realistic graphics for fantasy world builders</h2>
+      </div>
+
+      <div class="slide">
+        <h3>Grad School</h3>
+        <h2>Idea: just do it</h2>
+      </div>
+
+      <div class="slide">
+        <h2>Design principles</h2>
+        <center>
+          <h3>Basically, something like this:</h3>
+          <iframe width="600" height="350" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" 
+          src="https://maps.google.com/?ie=UTF8&amp;ll=41.671405,-93.73033&amp;spn=0.027152,0.055747&amp;t=m&amp;z=15&amp;output=embed"></iframe><br />
+        </center>
+      </div>
+
+      <div class="slide">
+        <h2>Project Iterations:</h2>
+        <center>
+          <div>
+            <iframe width="600" height="300"  src="http://tcs.phidev.com/tcs/GT6/cyc.html"></iframe>
+          </div>
+          <div>
+          <iframe width="600" height="350"  src="http://tcs.phidev.com/tcs/GT6/wonder_wheel.html"></iframe>
+          </div>
+        </center>
+      </div>
+
+      <div class="slide">
+        <h2>3D</h2>
+        <ul>
+          <li>Looks neat, but is it useful?</li>
+          <li>
+            3D graphics are computationally intensive, but we've spent decades building up techniques to make it work:
+          </li>
+          <center>
+            <img src="skyrim.jpg" width="50%"/>
+          </center>
+          <li>Say, informatics can can be computationally intensive, too...</li>
+          <li>Why not synergize!</li>
+          <li>Leverage the graphics libraries we're already using to push analytical code to the GPU</li>
+        </ul>
+      </div>
+
+      <div class="slide">
+        <h2>Possibilities</h2>
+        <ul>
+          <div style="float:right">
+            <iframe width="300" height="150" frameborder="0" src="https://www.shadertoy.com/embed/ldl3W8" allowfullscreen></iframe>
+          </div>
+          <li>Binning/nearest neighbor algorithms</li>
+          <li>Haplotyping</li>
+          <li>Custom queries</li>
+        </ul>
+          <center>
+            <iframe width="900" height="400" frameborder="0" src="http://www.selfshadow.com/sandbox/gloss.html" style="transform: scale(0.05, 0.05)"></iframe>
+          </center>
+      </div>
+
+      <div class="slide">
+        <h2>Architecture</h2>
+        <ul>
+          <li>Don't try to guess what the user wants, let him decide</li>
+          <li>Shift analytics off server and on to client</li>
+          <li>Maximize information density of sent data:</li>
+        </ul>
+        <center>
+          <img src="ref-14-0.png" width="50%"/>
+        </center>
+      </div>
+
+      <div class="slide">
+        <h2>Architecture</h2>
+        <ul>
+          <li>Get data from server in image format</li>
+          <center>
+            <img src="ref-14-0.png" width="20%"/>
+            <img src="HG11-16-0.png" width="20%"/>
+          </center>
+          <li>Transform information with optional feedback effects <br/>(e.g. binning)</li>
+          <center>
+              <iframe width="25%" height="25%" frameborder="0" src="http://tcs.phidev.com/tcs/GT6/grouping/shader_demo2d.html"></iframe>
+          </center>
+          <li>Final render pass...</li>
+        </ul>
+      </div>
+
+      <div class="slide">
+        <h2>Live Demo</h2>
+        <h2>
+          <br/><a href="http://tcs.phidev.com/tcs/GT6/v3/shader_demo.html"> Live Demo </a>
+        </h2>
+      </div>
+
+      <div class="slide">
+        <h2>Binning/Nearest Neighbor Demo</h2>
+        <h2>
+          <br/><a href="http://tcs.phidev.com/tcs/GT6/grouping/shader_demo.html"> Nearest Neighbor Demo </a>
+        </h2>
+      </div>
+
+      <div class="slide">
+        <h1>
+          <br/>
+          Thanks
+        </h1>
+        <center>
+          <img src="spaceinvader.png" width="50%"/>
+        </center>
+        <h2>
+          <br/>
+          Questions?
+        </h2>
+      </div>
+      
+    </div>
+    <script>
+      $('#presentation').fathom();
+    </script>
+  </body>
+</html>

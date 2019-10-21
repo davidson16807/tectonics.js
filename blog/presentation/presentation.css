@@ -1,0 +1,223 @@
+/* http://meyerweb.com/eric/tools/css/reset/ 
+   v2.0 | 20110126
+   License: none (public domain)
+*/
+
+html, body, div, span, applet, object, 
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+	display: block;
+}
+body {
+	line-height: 1;
+}
+ol, ul {
+	list-style: none;
+}
+blockquote, q {
+	quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: '';
+	content: none;
+}
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+
+input:focus {
+	outline: 0;
+}
+
+div.slide {
+	-webkit-box-shadow: 0 0 50px #c0c0c0;
+	-moz-box-shadow: 0 0 50px #c0c0c0;
+	box-shadow: 0 0 50px #c0c0c0;
+	-moz-border-radius: 20px;
+	-webkit-border-radius: 20px;
+	border-radius: 20px;
+	-moz-background-clip: padding;
+	-webkit-background-clip: padding-box;
+	background-clip: padding-box; 
+	height: 700px;
+	padding: 20px;
+	position: relative;
+	width: 900px;
+}
+	div.inactiveslide {
+		opacity: 0.4;
+	}
+	div.activeslide {
+		opacity: 1;
+	}
+
+div.footer {
+	bottom: 20px;
+	color: #404040;
+	font-family: arial;
+	font-size: 26px;
+	position: absolute;
+	text-align: center;
+	width: 100%;
+}
+
+pre {
+	font-family: monospace;
+	font-size: 16pt;
+	height: 600px;
+	letter-spacing: -1px;
+	line-height: 20pt;
+	overflow: auto;
+}
+	pre:focus {
+		outline: 0;
+	}
+div.phone {
+	-webkit-box-shadow: 0 0 30px #c0c0c0;
+	-moz-box-shadow: 0 0 30px #c0c0c0;
+	box-shadow: 0 0 30px #c0c0c0;
+	-moz-border-radius: 40px;
+	-webkit-border-radius: 40px;
+	border-radius: 40px;
+	-moz-background-clip: padding;
+	-webkit-background-clip: padding-box;
+	background-clip: padding-box;
+	background-color: black;
+	height: 650px;
+	left: 50%;
+	margin-left: -190px;
+	margin-top: -325px;
+	position: absolute;
+	top: 50%;
+	width: 380px;
+}
+strong {
+	text-shadow: 1px 0 0 #606060;
+}
+h1 {
+	color: #121B28;
+	font-family: 'Ubuntu', helvetica, trebuchet ms, serif;
+	font-size: 423%;
+	margin-bottom: 14px;
+	margin-top: 10px;
+	text-align: center;
+}
+h1#prelogo {
+	left: 50%;
+	margin-left: -368px;
+	overflow: hidden;
+	position: absolute;
+	top: 150px;
+	width: 735px;
+}
+h1#logo {
+	background-image: url(../images/jquery-mobile-logo.png);
+	height: 202px;
+	line-height: 1000px;
+	left: 50%;
+	margin-left: -368px;
+	overflow: hidden;
+	position: absolute;
+	top: 220px;
+	width: 735px;
+}
+h2 {
+	color: #121B28;
+	font-family: 'Ubuntu', helvetica, trebuchet ms, serif;
+	font-size: 261%;
+	margin-bottom: 0px;
+	margin-top: 0px;
+	text-align: center;
+}
+h3 {
+	color: #121B28;
+	font-family: 'Ubuntu', helvetica, trebuchet ms, serif;
+	font-size: 161%;
+	margin-bottom: 14px;
+	margin-top: 10px;
+	text-align: center;
+}
+ul {
+	padding: 30px 60px;
+}
+ul li {
+	color: #121B28;
+	font-family: helvetica, calibri, arial, sans-serif;
+	font-size: 22pt;
+	font-weight: normal;
+	line-height: 30pt;
+	list-style-type: disc;
+	margin-bottom: 10px;
+	text-align: left;
+}
+
+a {
+	color: #75B143;
+}
+
+
+
+
+.topleft {
+	position	: absolute;
+	top		    : 1em;
+	left		: 1em;
+}
+.topright {
+	position	: absolute;
+	top		    : 1em;
+	right		: 1em;
+}
+.bottomright {
+	position	: absolute;
+	bottom		: 0em;
+	right		: 1em;
+}
+.bottom {
+	position	: absolute;
+	bottom		: 0em;
+	right		: 3em;
+	left		: 3em;
+}
+.bottomleft {
+	position	: absolute;
+	bottom		: 0em;
+	left		: 1em;
+}
+.hcenter {
+	width: 100;
+	margin-left: auto;
+	margin-right: auto;
+}
+.hcenter h2{
+	text-align:center;
+}
+.vcenter {
+	position: absolute;
+	top: 40%;
+}
+.hidden {
+	display:none;
+}
