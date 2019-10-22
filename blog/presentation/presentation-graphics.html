@@ -75,19 +75,12 @@
       </div>
 
       <div class="slide">
-        <h2>Use Cases</h2>
-        <ul>
-          <li>Authors</li>
-          <li>Modders</li>
-          <li>Developers</li>
-        </ul>
-      </div>
-
-      <div class="slide">
         <h2>Deep Dive:</h2>
         <h2>How do we quickly estimate average temperature on a planet?</h2>
+        <img src="binary.gif" style="float:right;" width="30%"/>
+        <img src="timelapse.gif" style="float:right;" width="30%"/>
         <div style="float:right;">
-          <iframe width="300" height="550"  src="../../index.html"></iframe>
+          <!-- <iframe width="300" height="550"  src="../../index.html"></iframe> -->
         </div>
         <h4>Requirements:</h4>
         <ul>
@@ -112,81 +105,10 @@
           <li>Generates multiple sample ephemerides for any body</li>
           <li>Runs in under 10ms</li>
           <li>Resilient to floating point errors ("Anti-Kraken" clause)</li>
-          <img src="deep-space-kraken.gif" style="float:right" width="30%"/>
-        </ul>
-      </div>
-
-      <div class="slide">
-        <h2>3D</h2>
-        <ul>
-          <li>Looks neat, but is it useful?</li>
-          <li>
-            3D graphics are computationally intensive, but we've spent decades building up techniques to make it work:
-          </li>
           <center>
-            <img src="skyrim.jpg" width="50%"/>
+            <img src="kraken.gif" width="80%"/>
           </center>
-          <li>Say, informatics can can be computationally intensive, too...</li>
-          <li>Why not synergize!</li>
-          <li>Leverage the graphics libraries we're already using to push analytical code to the GPU</li>
         </ul>
-      </div>
-
-      <div class="slide">
-        <h2>Possibilities</h2>
-        <ul>
-          <div style="float:right">
-            <iframe width="300" height="150" frameborder="0" src="https://www.shadertoy.com/embed/ldl3W8" allowfullscreen></iframe>
-          </div>
-          <li>Binning/nearest neighbor algorithms</li>
-          <li>Haplotyping</li>
-          <li>Custom queries</li>
-        </ul>
-          <center>
-            <iframe width="900" height="400" frameborder="0" src="http://www.selfshadow.com/sandbox/gloss.html" style="transform: scale(0.05, 0.05)"></iframe>
-          </center>
-      </div>
-
-      <div class="slide">
-        <h2>Architecture</h2>
-        <ul>
-          <li>Don't try to guess what the user wants, let him decide</li>
-          <li>Shift analytics off server and on to client</li>
-          <li>Maximize information density of sent data:</li>
-        </ul>
-        <center>
-          <img src="ref-14-0.png" width="50%"/>
-        </center>
-      </div>
-
-      <div class="slide">
-        <h2>Architecture</h2>
-        <ul>
-          <li>Get data from server in image format</li>
-          <center>
-            <img src="ref-14-0.png" width="20%"/>
-            <img src="HG11-16-0.png" width="20%"/>
-          </center>
-          <li>Transform information with optional feedback effects <br/>(e.g. binning)</li>
-          <center>
-              <iframe width="25%" height="25%" frameborder="0" src="http://tcs.phidev.com/tcs/GT6/grouping/shader_demo2d.html"></iframe>
-          </center>
-          <li>Final render pass...</li>
-        </ul>
-      </div>
-
-      <div class="slide">
-        <h2>Live Demo</h2>
-        <h2>
-          <br/><a href="http://tcs.phidev.com/tcs/GT6/v3/shader_demo.html"> Live Demo </a>
-        </h2>
-      </div>
-
-      <div class="slide">
-        <h2>Binning/Nearest Neighbor Demo</h2>
-        <h2>
-          <br/><a href="http://tcs.phidev.com/tcs/GT6/grouping/shader_demo.html"> Nearest Neighbor Demo </a>
-        </h2>
       </div>
 
       <div class="slide">
@@ -195,7 +117,7 @@
           Thanks
         </h1>
         <center>
-          <img src="spaceinvader.png" width="50%"/>
+          <img src="montage.gif" width="50%"/>
         </center>
         <h2>
           <br/>
