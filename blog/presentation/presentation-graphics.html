@@ -91,7 +91,7 @@
       </div>
 
       <div class="slide">
-        <h2>Deep Dive:</h2>
+        <h2>Deep Dive</h2>
         <h2>How do we quickly estimate average temperature on a planet?</h2>
         <img src="timelapse.gif" style="float:right;clear:right" width="30%"/>
         <img src="seasons.gif" style="float:right;" width="30%"/>
@@ -112,26 +112,37 @@
 
       <div class="slide">
         <h2>Deep Dive</h2>
-        <h4>Overview</h4>
+        <h4>Conclusions:</h4>
+        <img src="solar-equation2.jpg" style="float:right" width="40%"/>
+        <ul>
+          <li>can't suffice with single equation, must work in general case</li>
+          <li>"on-rails" orbital mechanics, assume stability</li>
+          <li>precision may be an issue, must work from any reference frame ("Anti-Kraken" clause)</li>
+          <li>potentially ergodic, sample multiple positions when timestep is large and average between them</li>
+        </ul>
+        <center>
+          <img src="on-rails.gif" width="40%"/>
+          <img src="kraken.gif" width="40%"/>
+        </center>
       </div>
 
+      <div class="slide">
+        <h2>Deep Dive</h2>
+        <ul>
+          <li>sample multiple positions along each orbit and calculate average insolation</li>
+        </ul>
+      </div>
       <div class="slide">
         <h2>Orbital Mechanics</h2>
         <h4>Design Considerations</h4>
         <ul>
-          <li>Simulates timesteps from 10ms to 10ky</li>
-          <li>Generates multiple sample ephemerides for any body</li>
-          <li>Runs in under 10ms</li>
-          <li>Resilient to floating point errors ("Anti-Kraken" clause)</li>
-          <center>
-            <img src="kraken.gif" width="80%"/>
-          </center>
+          <li>Resilient to </li>
         </ul>
       </div>
 
       <div class="slide">
         <center>
-          <iframe width="800" height="550"  src="../../tests/solar-system-test.html"></iframe>
+          <!-- <iframe width="800" height="550"  src="../../tests/solar-system-test.html"></iframe> -->
         </center>
       </div>
 
