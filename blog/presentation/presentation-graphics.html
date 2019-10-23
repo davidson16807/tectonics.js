@@ -1,11 +1,16 @@
 <html>
   <head>
 
-    <title>Presentation: Fun with hardware acceleration</title>
+    <title>Tectonics.js: A journey through time and space</title>
     <script src="jquery-1.10.2.min.js"></script>
     <script src="fathom.min.js"></script>
     <link rel="stylesheet" type="text/css" href="presentation.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML" async></script>
+    <style type="text/css">
+      .code img {
+        vertical-align: top;
+      }
+    </style>
   </head>
   <body>
     <div id="presentation">
@@ -20,7 +25,7 @@
         </center>
 
         <h2>Deep Dive:</h2>
-        <h3>Physically Based Rendering</h3>
+        <h3>Orbital Mechanics</h3>
       </div>
       
       <div class="slide">
@@ -118,7 +123,7 @@
           <li>must work in general case: closed form solution for earth won't suffice</li>
           <li>must work fast: "on-rails" orbital mechanics</li>
           <li>potentially ergodic: sample multiple positions when timestep is large and average between them</li>
-          <li>possible gold plating: avoid precision issues, allow sampling from any reference frame ("Anti-Kraken" clause)</li>
+          <li>possible gold plating: avoid precision issues, allow sampling from any reference frame ("Anti-Kraken" measure)</li>
         </ul>
         <center>
           <img src="on-rails.gif" width="40%"/>
@@ -126,11 +131,11 @@
         </center>
       </div>
 
-      <div class="slide orbits">
+      <div id="orbits-slide" class="slide">
         <h2>Deep Dive</h2>
-        <h4 id='step1' class="step">Visualizing the problem</h4>
-        <h4 id='step2' class="step">Defining a Common Data Type and Algebra</h4>
-        <h4 id='step3' class="step">Defining Data Structures</h4>
+        <h4 id='orbits-slide-step1' class="step">Visualizing the problem</h4>
+        <h4 id='orbits-slide-step2' class="step">Defining a Common Data Type and Algebra</h4>
+        <h4 id='orbits-slide-step3' class="step">Defining Data Structures</h4>
         <center onclick="animate_orbits()">
           <span id="graph">
             <img src="graph0.svg" width="30%"/>
@@ -251,6 +256,40 @@
         </center>
       </div>
 
+
+      <div id="code-slide" class="slide" onclick="animate_code()">
+        <h2>Deep Dive</h2>
+        <h4 id="code-slide-step1" class="step">Implementation: "Academics Layer"</h4>
+        <h4 id="code-slide-step2" class="step">Implementation: "Model Layer"</h4>
+        <h4 id="code-slide-step3" class="step">Implementation: Unit Tests</h4>
+          <span class="orbits">
+            <img src="orbits11.svg" width="30%"/>
+            <img src="orbits11.svg" width="30%"/>
+            <img src="orbits11.svg" width="30%"/>
+            <img src="orbits12.svg" width="30%"/>
+            <img src="orbits15.svg" width="30%"/>
+            <img src="orbits6.svg" width="30%"/>
+            <img src="orbits6.svg" width="30%"/>
+            <img src="orbits6.svg" width="30%"/>
+            <img src="graph0.svg" width="30%"/>
+            <img src="graph0.svg" width="30%"/>
+            <img src="graph0.svg" width="30%"/>
+          </span>
+          <span class="code">
+            <img src="code-eccentric-anomaly.png" width="60%"/>
+            <img src="code-2d-eliptic.png" width="60%"/>
+            <img src="code-orbit.png" width="60%"/>
+            <img src="code-spin.png" width="60%"/>
+            <img src="code-scene-graph.png" width="60%"/>
+            <img src="code-advance.png" width="60%"/>
+            <img src="code-samples.png" width="60%"/>
+            <img src="code-star-samples.png" width="60%"/>
+            <img src="code-test1.png" width="60%"/>
+            <img src="code-test2.png" width="60%"/>
+            <img src="code-test3.png" width="60%"/>
+          </span>
+      </div>
+
       <div class="slide">
         <h2>Deep Dive</h2>
         <h4>Tech Demo</h4>
@@ -276,37 +315,65 @@
     </div>
     <script>
       let orbit_id = -1;
+      let code_id = -1;
       function animate_orbits() {
-        orbit_id = (orbit_id+1) % 19;
+        const step1_length = 6
+        const step2_length = 9
+        const step3_length = 3
+
+        orbit_id = (orbit_id+1) % (step1_length+step2_length+step3_length+1);
 
         $('#graph>img').hide();
-        $('#graph>img').eq(Math.min(orbit_id, 15)).show();
+        $('#graph>img').eq(Math.min(orbit_id, step1_length+step2_length)).show();
 
         $('#orbits>img').hide();
-        $('#orbits>img').eq(Math.min(orbit_id, 15)).show();
+        $('#orbits>img').eq(Math.min(orbit_id, step1_length+step2_length)).show();
 
-        $('.step').hide();
-        $('.orbits table').hide();
-        if (orbit_id<=6) {
-          $('#step1').show();
-        } else if (orbit_id<=15) {
-          $('#step2').show();
+        $('#orbits-slide .step').hide();
+        $('#orbits-slide table').hide();
+        if (orbit_id<=step1_length) {
+          $('#orbit-slide-step1').show();
+        } else if (orbit_id<=step1_length+step2_length) {
+          $('#orbit-slide-step2').show();
         } else {
-          $('#step3').show();
-          if (orbit_id==16) {
+          $('#orbit-slide-step3').show();
+          if (orbit_id==step1_length+step2_length+1) {
             $('#orbit-table1').show();
             $('#spin-table1').show();
-          } else if (orbit_id==17) {
+          } else if (orbit_id==step1_length+step2_length+2) {
             $('#orbit-table2').show();
             $('#spin-table1').show();
-          } else if (orbit_id==18) {
+          } else if (orbit_id==step1_length+step2_length+3) {
             $('#orbit-table3').show();
             $('#spin-table2').show();
             $('#phase-table1').show();
           }
         } 
       }
+      function animate_code() {
+        const step1_length = 3
+        const step2_length = 3
+        const step3_length = 3
+
+        code_id = (code_id+1) % (step1_length+step2_length+step3_length+1);
+
+        $('#code-slide .orbits>img').hide();
+        $('#code-slide .orbits>img').eq(Math.min(code_id, (step1_length+step2_length+step3_length))).show();
+
+        $('#code-slide .code>img').hide();
+        $('#code-slide .code>img').eq(Math.min(code_id, (step1_length+step2_length+step3_length))).show();
+
+        $('#code-slide .step').hide();
+        if (code_id<=step1_length) {
+          $('#code-slide-step1').show();
+        } else if (code_id<=step1_length+step2_length) {
+          $('#code-slide-step2').show();
+        } else {
+          $('#code-slide-step3').show();
+        } 
+      }
       animate_orbits();
+      animate_code();
 
       $('#presentation').fathom();
     </script>

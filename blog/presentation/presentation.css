@@ -177,6 +177,8 @@ table {
 	font-family: 'Ubuntu', helvetica, trebuchet ms, serif;
 	font-size: 161%;
 	display: inline
+	margin: 5%;
+	margin-top: 10%;
 	/*margin-bottom: 14px;*/
 	/*margin-top: 10px;*/
 	/*text-align: center;*/
