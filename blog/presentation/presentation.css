@@ -172,6 +172,15 @@ h4 {
 	/*margin-top: 10px;*/
 	/*text-align: center;*/
 }
+table {
+	color: #DDDDDD;
+	font-family: 'Ubuntu', helvetica, trebuchet ms, serif;
+	font-size: 161%;
+	display: inline
+	/*margin-bottom: 14px;*/
+	/*margin-top: 10px;*/
+	/*text-align: center;*/
+}
 ul {
 	padding: 30px 60px;
 }

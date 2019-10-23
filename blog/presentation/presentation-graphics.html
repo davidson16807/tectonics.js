@@ -126,12 +126,12 @@
         </center>
       </div>
 
-      <div class="slide" onclick="animate_orbits()">
+      <div class="slide orbits">
         <h2>Deep Dive</h2>
         <h4 id='step1' class="step">Visualizing the problem</h4>
-        <h4 id='step2' class="step">Defining the Algebra</h4>
-        <h4 id='step2' class="step">Defining the Data Structures</h4>
-        <center>
+        <h4 id='step2' class="step">Defining a Common Data Type and Algebra</h4>
+        <h4 id='step3' class="step">Defining Data Structures</h4>
+        <center onclick="animate_orbits()">
           <span id="graph">
             <img src="graph0.svg" width="30%"/>
             <img src="graph0.svg" width="30%"/>
@@ -142,10 +142,11 @@
             <img src="graph0.svg" width="30%"/>
             <img src="graph0.svg" width="30%"/>
             <img src="graph0.svg" width="30%"/>
-            <img src="graph1.svg" width="30%"/>
-            <img src="graph2.svg" width="30%"/>
-            <img src="graph3.svg" width="30%"/>
-            <img src="graph4.svg" width="30%"/>
+            <img src="graph0.svg" width="30%"/>
+            <img src="graph0.svg" width="30%"/>
+            <img src="graph0.svg" width="30%"/>
+            <img src="graph0.svg" width="30%"/>
+            <img src="graph0.svg" width="30%"/>
             <img src="graph5.svg" width="30%"/>
             <img src="graph6.svg" width="30%"/>
           </span>
@@ -159,19 +160,100 @@
             <img src="orbits6.svg" width="30%"/>
             <img src="orbits7.svg" width="30%"/>
             <img src="orbits8.svg" width="30%"/>
-            <!-- <img src="orbits9.svg" width="30%"/> -->
             <img src="orbits10.svg" width="30%"/>
             <img src="orbits11.svg" width="30%"/>
             <img src="orbits12.svg" width="30%"/>
             <img src="orbits13.svg" width="30%"/>
             <img src="orbits14.svg" width="30%"/>
+            <img src="orbits14.svg" width="30%"/>
             <img src="orbits15.svg" width="30%"/>
-            <img src="orbits16.svg" width="30%"/>
           </span>
+          <div style="width:30%; min-width: 30%; display:block; float:right;">
+            &nbsp;
+            <table id="orbit-table1">
+              <tr><th/><th colspan="6">Orbits</th></tr>
+              <tr>
+                <th></th>
+                <th>a</th>
+                <th>e</th>
+                <th>i</th>
+                <th>ω</th>
+                <th>Ω</th>
+                <th>ν</th>
+              </tr>
+              <tr><td>A</td></tr>
+              <tr><td>B</td><td colspan="6" align="center">. . .</td></tr>
+              <tr><td>D</td></tr>
+            </table>
+            <table id="orbit-table2">
+              <tr><th/><th colspan="6">Orbits</th></tr>
+              <tr>
+                <th></th>
+                <th>a</th>
+                <th>e</th>
+                <th>i</th>
+                <th>ω</th>
+                <th>Ω</th>
+                <th>M</th>
+              </tr>
+              <tr><td>A</td></tr>
+              <tr><td>B</td><td colspan="6" align="center">. . .</td></tr>
+              <tr><td>D</td></tr>
+            </table>
+            <table id="orbit-table3">
+              <tr><th/><th colspan="6">Orbits</th></tr>
+              <tr>
+                <th></th>
+                <th>a</th>
+                <th>e</th>
+                <th>i</th>
+                <th>ω</th>
+                <th>Ω</th>
+              </tr>
+              <tr><td>A</td></tr>
+              <tr><td>B</td><td colspan="6" align="center">. . .</td></tr>
+              <tr><td>D</td></tr>
+            </table>
+            <table id="spin-table1">
+              <tr><th/><th colspan="6">Spins</th></tr>
+              <tr>
+                <th></th>
+                <th>ω</th>
+                <th>ε</th>
+                <th>ϕ</th>
+              </tr>
+              <tr><td>C</td></tr>
+              <tr><td>E</td><td colspan="6" align="center">. . .</td></tr>
+            </table>
+            <table id="spin-table2">
+              <tr><th/><th colspan="6">Spins</th></tr>
+              <tr>
+                <th></th>
+                <th>ω</th>
+                <th>ε</th>
+              </tr>
+              <tr><td>C</td></tr>
+              <tr><td>E</td><td colspan="6" align="center">. . .</td></tr>
+            </table>
+            <table id="phase-table1">
+              <tr><th/><th colspan="6">Phases</th></tr>
+              <tr>
+                <th></th>
+                <th>ϕ</th>
+              </tr>
+              <tr><td>A</td></tr>
+              <tr><td>B</td></tr>
+              <tr><td>C</td><td colspan="6" align="center">. . .</td></tr>
+              <tr><td>D</td></tr>
+              <tr><td>E</td></tr>
+            </table>
+          </div>
         </center>
       </div>
 
       <div class="slide">
+        <h2>Deep Dive</h2>
+        <h4>Tech Demo</h4>
         <center>
           <!-- <iframe width="800" height="550"  src="http://davidson16807.github.io/tectonics.js/tests/solar-system-test.html"></iframe> -->
         </center>
@@ -195,19 +277,33 @@
     <script>
       let orbit_id = -1;
       function animate_orbits() {
-        orbit_id = (orbit_id+1) % 15;
+        orbit_id = (orbit_id+1) % 19;
 
-        $('#graph img').hide();
-        $('#graph img').eq(orbit_id).show();
+        $('#graph>img').hide();
+        $('#graph>img').eq(Math.min(orbit_id, 15)).show();
 
-        $('#orbits img').hide();
-        $('#orbits img').eq(orbit_id).show();
+        $('#orbits>img').hide();
+        $('#orbits>img').eq(Math.min(orbit_id, 15)).show();
 
         $('.step').hide();
+        $('.orbits table').hide();
         if (orbit_id<=6) {
           $('#step1').show();
-        } else if (orbit_id<=14) {
+        } else if (orbit_id<=15) {
           $('#step2').show();
+        } else {
+          $('#step3').show();
+          if (orbit_id==16) {
+            $('#orbit-table1').show();
+            $('#spin-table1').show();
+          } else if (orbit_id==17) {
+            $('#orbit-table2').show();
+            $('#spin-table1').show();
+          } else if (orbit_id==18) {
+            $('#orbit-table3').show();
+            $('#spin-table2').show();
+            $('#phase-table1').show();
+          }
         } 
       }
       animate_orbits();
