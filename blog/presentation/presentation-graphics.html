@@ -16,10 +16,8 @@
     <div id="presentation">
 
       <div class="slide">
-        <h1>
-          <br/>
-          Tectonics.js
-        </h1>
+        <h1>Tectonics.js</h1>
+        <h3>Carl Davidson</h3>
         <center>
           <img src="icon6.png" width="50%"/>
         </center>
@@ -31,10 +29,11 @@
       <div class="slide">
         <h2>Overview</h2>
         <ul>
-          <li>Inspiration</li>
-          <li>Use Cases</li>
-          <li>Development</li>
-          <li>Deep Dive</li>
+          <li>Project History</li>
+          <li>Problem Description</li>
+          <li>Design Considerations</li>
+          <li>Approach to Problem Solving</li>
+          <li>Implementation</li>
         </ul>
       </div>
       
@@ -96,8 +95,14 @@
       </div>
 
       <div class="slide">
+        <h2>Nowadays</h2>
+        <h4>The Grand Plan</h4>
+        <center><img src="development-path.svg" height="80%"/></center>
+      </div>
+
+      <div class="slide">
         <h2>Deep Dive</h2>
-        <h2>How do we quickly estimate average temperature on a planet?</h2>
+        <h2>How do we quickly estimate average insolation on a planet?</h2>
         <img src="timelapse.gif" style="float:right;clear:right" width="30%"/>
         <img src="seasons.gif" style="float:right;" width="30%"/>
         <img src="binary.gif" style="float:right;clear:right" width="30%"/>
@@ -121,9 +126,9 @@
         <img src="solar-equation2.jpg" style="float:right" width="40%"/>
         <ul>
           <li>must work in general case: closed form solution for earth won't suffice</li>
-          <li>must work fast: "on-rails" orbital mechanics</li>
+          <li>must work fast: assume stability, use "on-rails" orbital mechanics</li>
           <li>potentially ergodic: sample multiple positions when timestep is large and average between them</li>
-          <li>possible gold plating: avoid precision issues, allow sampling from any reference frame ("Anti-Kraken" measure)</li>
+          <li>"nice to have": avoid precision issues by allowing samples from any reference frame ("Anti-Kraken" measure)</li>
         </ul>
         <center>
           <img src="on-rails.gif" width="40%"/>
@@ -294,8 +299,15 @@
         <h2>Deep Dive</h2>
         <h4>Tech Demo</h4>
         <center>
-          <!-- <iframe width="800" height="550"  src="http://davidson16807.github.io/tectonics.js/tests/solar-system-test.html"></iframe> -->
+          <iframe width="800" height="550"  src="http://davidson16807.github.io/tectonics.js/tests/solar-system-test.html"></iframe>
         </center>
+      </div>
+
+      <div class="slide">
+        <h2>Deep Dive</h2>
+        <h4>Integration</h4>
+        <img src="seasons.gif" width="30%"/>
+        <img src="code-shader-input.png" width="60%"/>
       </div>
 
       <div class="slide">
@@ -332,11 +344,11 @@
         $('#orbits-slide .step').hide();
         $('#orbits-slide table').hide();
         if (orbit_id<=step1_length) {
-          $('#orbit-slide-step1').show();
+          $('#orbits-slide-step1').show();
         } else if (orbit_id<=step1_length+step2_length) {
-          $('#orbit-slide-step2').show();
+          $('#orbits-slide-step2').show();
         } else {
-          $('#orbit-slide-step3').show();
+          $('#orbits-slide-step3').show();
           if (orbit_id==step1_length+step2_length+1) {
             $('#orbit-table1').show();
             $('#spin-table1').show();
@@ -359,6 +371,9 @@
 
         $('#code-slide .orbits>img').hide();
         $('#code-slide .orbits>img').eq(Math.min(code_id, (step1_length+step2_length+step3_length))).show();
+
+        $('#code-slide .layers>img').hide();
+        $('#code-slide .layers>img').eq(Math.min(code_id, (step1_length+step2_length+step3_length))).show();
 
         $('#code-slide .code>img').hide();
         $('#code-slide .code>img').eq(Math.min(code_id, (step1_length+step2_length+step3_length))).show();
