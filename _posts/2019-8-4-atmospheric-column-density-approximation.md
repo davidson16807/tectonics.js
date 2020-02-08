@@ -43,7 +43,7 @@ in which case the integral is approximated by the [error function](https://en.wi
 
 <p>however if `z=0` then height is linear:</p>
 
-<p>h = abs(x) - R</p>
+<p>`h = abs(x) - R`</p>
 
 in which case the integral is trivial:
 
@@ -51,13 +51,23 @@ in which case the integral is trivial:
 
 We need some way to switch between these two integral solutions seamlessly. Fortunately, if we attempt a naïve solution using integration by substitution:
 
-<p>`int_A^L exp(R - sqrt(x^2 + z^2)) dx approx - 1/h' exp(h(x)) approx - sqrt(x^2 + z^2)/x exp(R - sqrt(x^2 + z^2))`</p>
+<p>`int_A^L exp(R - sqrt(x^2 + z^2)) dx approx - 1/(h') exp(h(x)) approx - sqrt(x^2 + z^2)/x exp(R - sqrt(x^2 + z^2))`</p>
 
-<p>Then we see that the division by zero occurs when `x=0`. That only appreciably occurs when `z=R`. So whatever workaround we use to address the division by zero needs to return the approximation from the error function instead of the bogus results from the naïve integration by substitution.</p>
+<p>Then we see that the division by zero occurs when `x=0`. That only appreciably occurs when `z=R`. So whatever workaround we use to address the division by zero needs to return under these circumstances the approximation from the error function instead of the bogus results from the naïve integration by substitution.</p>
 
-<p>So how about this: we "nudge" the derivative by some amount before calculating its reciprocal. The amount (let's call it F) should be close to 0 when the ray strikes the planet head on. However, if the ray only grazes the planet, `F` should equal the reciprocal of whatever ought to be returned instead of the derivative. As we've mentioned, what ought to be returned is the error function approximation, `1/2 sqrt(pi) e^R erf(x)`. Since `erf(x)` behaves similarly to `exp(-x)`, we will disregard that part and only return `1/2 sqrt(pi)`. However we still need to modify this so that it is only nonzero when `x = 0`. After some trial and error, I've found `F = sqrt(pi/2 (x_0^2 + r))` works to a suitable approximation. There is no mathematical reason why I chose this expression, but it does equal zero when the ray strikes the planet head on.</p>
+<p>So how about this: we "nudge" the derivative by some amount before calculating its reciprocal. The amount (let's call it `F`) should be close to 0 when the ray strikes the planet head on. </p>
 
-<p>So in other words, we perform the "[o-plus](https://math.stackexchange.com/questions/1785715/finding-properties-of-operation-defined-by-x%E2%8A%95y-frac1-frac1x-frac1y)" operation between `1/h'` and `F`. I've come to discover o-plus is pretty useful for preventing division by 0, in general.</p>
+<p>`int_A^L exp(R - sqrt(x^2 + z^2)) dx approx - 1/(x/sqrt(x^2 + z^2) + F) exp(R - sqrt(x^2 + z^2))`</p>
+
+<p>`F = 0` when `z = 0`</p>
+
+<p>However, if the ray only grazes the planet, `F` should equal the reciprocal of whatever ought to be returned instead of the derivative. Let's call what ought to be returned `G`. As we've mentioned, what the entire approximation should return in those circumstances is `1/2 sqrt(pi) e^R erf(x)`. Since `e^R erf(x)` behaves similarly to the `-exp(R-x)` in our naïve integration by substitution, we will disregard that part and only return `-1/2 sqrt(pi)`, so:</p>
+
+<p>`G = -1/2 sqrt(pi)` when `x=0` and `z=R`</p>
+
+<p>However we still need to modify this so that it is only nonzero when `x = 0`. After some trial and error, I've found `G = sqrt(pi/2 (x^2 + r))` works to a suitable approximation. There is no mathematical reason why I chose this expression, but it does equal zero when the ray strikes the planet head on.</p>
+
+<p>So in other words, we perform the "[o-plus](https://math.stackexchange.com/questions/1785715/finding-properties-of-operation-defined-by-x%E2%8A%95y-frac1-frac1x-frac1y)" operation between `h'` and `G`. I've come to discover o-plus is pretty useful for preventing division by 0, in general.</p>
 
 So chances are if you clicked a link here you'll probably want to see the code more than anything. Well, here it is:
 
