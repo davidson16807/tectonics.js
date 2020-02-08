@@ -10,7 +10,7 @@ Units.GRAM = 1e-3;                               // kilogram
 Units.KILOGRAM = 1;                              // kilogram
 Units.TON = 1000.;                               // kilogram
 
-Units.FEMOTMETER = 1e-12;                        // meter
+Units.FEMTOMETER = 1e-12;                        // meter
 Units.PICOMETER = 1e-12;                         // meter
 Units.NANOMETER = 1e-9;                          // meter
 Units.MICROMETER = 1e-6;                         // meter

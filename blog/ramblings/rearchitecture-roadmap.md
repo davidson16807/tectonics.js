@@ -86,3 +86,10 @@ We would expect something like the following to return true:
   a = new Component()
   get_steady_state(..., b)
   a != b
+
+And lastly, if we apply the update function to our steady state, 
+ we should expect the result not to differ from the steady state by a certain threshold:
+
+  get_steady_state(input, state1)
+  update_state(state1, state2)
+  abs(state1-state2) < threshold
