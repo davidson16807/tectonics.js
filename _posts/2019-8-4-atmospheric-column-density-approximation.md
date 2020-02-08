@@ -29,13 +29,13 @@ My first insight was to reduce the number of parameters to contemplate. I realiz
 
 <p>`int_A^L exp(R-sqrt(x^2 + z^2)) dx approx -sqrt(x^2 + z^2)/x exp(R-sqrt(x^2 + z^2))`</p>
 
-<p>I then thought about what would happen in certain situations. When `z=R`, the behavior for height:</p>
+<p>I then thought about what would happen in certain situations. When `z=R` and `x=0`, the behavior for height:</p>
 
-<p>h = sqrt(x^2 + z^2) - R</p>
+<p>`h(x,z,R) = sqrt(x^2 + z^2) - R`</p>
 
 begins to resemble a parabola:
 
-<p>h = x^2 - R</p>
+<p>`h(0,R,R) approx approx x^2 - R`</p>
 
 in which case the integral is approximated by the [error function](https://en.wikipedia.org/wiki/Error_function):
 
