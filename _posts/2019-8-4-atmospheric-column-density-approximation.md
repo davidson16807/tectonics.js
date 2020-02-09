@@ -85,7 +85,11 @@ We need some way to switch between these two integral solutions seamlessly. We f
 
 <p>where I set `a = 0.6`</p>
 
-<p>So in other words, we perform the "<a href="https://math.stackexchange.com/questions/1785715/finding-properties-of-operation-defined-by-x%E2%8A%95y-frac1-frac1x-frac1y">o-plus</a>" operation between `h'` and `Ch|| + ax`. O-plus turns out to be pretty useful for preventing division by 0, in general.</p>
+<p>So in other words, all we're really doing is a modified integration by substitution using the "<a href="https://math.stackexchange.com/questions/1785715/finding-properties-of-operation-defined-by-x%E2%8A%95y-frac1-frac1x-frac1y">o-plus</a>" operation between `h'` and `Ch|| + ax` to prevent division by zero. </p>
+
+<p>`I = int_A^L exp(R-sqrt(x^2 + z^2)) dx approx (h' oplus Ch) exp(R-sqrt(x^2 + z^2))`</p>
+
+<p>O-plus turns out to be pretty useful for preventing division by 0, in general.</p>
 
 So chances are you've clicked a link here wanting to see the code. Well, here it is:
 

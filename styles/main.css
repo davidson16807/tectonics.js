@@ -34,8 +34,10 @@ h1 {
 }
 .navigation
 {
-    margin-left: 23.6%;
     width: 161%;
+}
+.navigation a {
+    margin: 0.5em;
 }
 .navigation a:hover {
     color: grey;
