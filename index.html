@@ -11,16 +11,14 @@
 
     <link rel="icon" type="text/css" href="blog/icon6.png">
     <link rel="stylesheet" href="styles/bootstrap.min.css">
-    <link rel="stylesheet" href="styles/bootstrap.custom.css">
     <link rel="stylesheet" href="styles/main.css"/>
-    <link rel="stylesheet" href="styles/modern.css"/>
     <link rel="stylesheet" href="styles/app.css"/>
 
     <script src="libraries/vue.js"></script>
     <script src="libraries/Chart.js"></script>
     <script src="libraries/vue-charts.js"></script>
     <script src="libraries/jquery-1.10.2.min.js"></script>
-    <script src="libraries/bootstrap.js"></script>
+    <script src="libraries/bootstrap.bundle.min.js"></script>
     <script src="libraries/three.js/Three.js"></script>
     <script src="libraries/three.js/OrbitControls.js"></script>
     <script src="libraries/three.js/BufferGeometryUtils.js"></script>
@@ -39,6 +37,7 @@
     <script src="noncompiled/Units.js"></script>
     <script src="noncompiled/Interpolation.js"></script>
     <script src="noncompiled/Logging.js"></script>
+    <script src="noncompiled/Event.js"></script>
     <script src="noncompiled/academics/SphericalGeometry.js"></script>
     <script src="noncompiled/academics/Optics.js"></script>
     <script src="noncompiled/academics/Thermodynamics.js"></script>
@@ -52,7 +51,7 @@
     <script src="noncompiled/models/universe/Orbit.js"></script>
     <script src="noncompiled/models/universe/Spin.js"></script>
     <script src="noncompiled/models/universe/Star.js"></script>
-    <script src="noncompiled/models/universe/System.js"></script>
+    <script src="noncompiled/models/universe/CelestialCycle.js"></script>
     <script src="noncompiled/models/universe/Universe.js"></script>
     <script src="noncompiled/models/lithosphere/Crust.js"></script>
     <script src="noncompiled/models/lithosphere/RockColumn.js"></script>
@@ -94,9 +93,9 @@
 <!-- three.js container -->
 <div id="container"></div>
 <!-- logo -->
-<div class="topleft header">
+<div id="header">
     <h1><a href="blog/">Tectonics.js</a></h1>
-    <div class="navigation">
+    <div id="navigation">
         <a href="blog/index.html">ABOUT</a>&nbsp;
         <a href="blog/news.html">BLOG</a>&nbsp;
         <a href="blog/credits.html">CREDITS</a>&nbsp;
@@ -104,274 +103,340 @@
     </div>
 </div>
 <!-- info on screen display -->
-<div class="topright collapsible controls hidden-when-loading" >
-    <div id="time-menu" class="time-menu">
-        <div class="input-group elapsed_time-group">
-            <span class="form-control input-sm age">{{ format(elapsed_time).quantity }}</span>
-            <span class="input-group-addon age-units">{{ format(elapsed_time).unit }}y</span>
+<div id="main-control" class="show collapse control" >
+    <div class="vertical-axis-group">
+        <div class="horizontal-axis-group">
+            <span id='age-display' class="form-control input">{{ format_count(elapsed_time).quantity }}</span>
+            <div id='age-units-display' class="input-group-append">
+                <span class="input-group-text age-units">{{ format_count(elapsed_time).unit }}y</span>
+            </div>
         </div>
-        <div class="input-group speed-group">
-            <span class="input-group-addon rewind" v-on:click="rewind()">
-                <img src="icons/rewind.svg" height="12em" width="12em">
-            </span>
-            <span class="input-group-addon play" v-on:click="togglePause()">
-                <img src="icons/pause.svg" height="12em" width="12em" v-if="!paused">
-                <img src="icons/play.svg" height="12em" width="12em" v-if="paused">
-            </span>
-            <span class="input-group-addon fast-forward" v-on:click="fastForward()">
-                <img src="icons/fast-forward.svg" height="12em" width="12em">
-            </span>
-
-            <span class="input-group-addon">
-                {{speeds[speed_i].name}}
-                <span class="instructions">&lt;/&gt;</span>
-            </span>
-            
+        <div class="horizontal-axis-group">
+            <div class="input-group-prepend">
+                <span class="input-group-text play" v-on:click="togglePause()">
+                    <img src="icons/pause.svg" v-if="!paused"/>
+                    <img src="icons/play.svg"  v-if="paused"/>
+                </span>
+                <span class="input-group-text" v-on:click="slower()">
+                    <img src="icons/step-forward.svg"/>
+                </span>
+                <span class="input-group-text fast-forward" v-on:click="faster()">
+                    <img src="icons/fast-forward.svg"/>
+                </span>
+            </div>
+            <div class="input-group-append">
+                <span id="speed-display" class="input-group-text">
+                    {{speeds[speed_i].name}}
+                    <span class="instructions">&lt;/&gt;</span>
+                </span>
+            </div>
         </div>
     </div>
-    <div class="view-menu btn-group-vertical">
-         <div id="projection" class="btn-group">
-            <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <img src="icons/projector-screen.svg" height="16em" width="16em"/>
-                Projection 
-                <span class="caret"></span>
-            </button>
-            <ul class="dropdown-menu btn-default btn-xs">
-                <li v-for="option in options">
-                    <button type="button" 
-                        class="btn btn-default btn-xs" 
-                        v-bind:class="getClass(option.value, selected)" 
-                        v-bind:data-value="option.value" 
-                        v-on:click="setSelected(option.value)">
-                        <img v-bind:src="option.icon" height="16em" width="16em"/>
-                        {{option.name}}
-                    </button>
-                </li>
-            </ul>
-        </div>
-        <div id="scalar-view" class="btn-group">
-            <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <img src="icons/blur.svg" height="16em" width="16em"/>
-                View 
-                <span class="caret"></span>
-            </button>
-            <ul class="dropdown-menu btn-default btn-xs">
-                <li>
-                    <button type="button" 
-                        class="btn btn-default btn-xs" 
-                        v-bind:class="{active: ocean}" 
-                        v-on:click="setOcean(!ocean? 1:0)">
-                        <img src="icons/water.svg" height="16em" width="16em"/>
-                        Ocean
-                    </button>
-                </li>
-                <li>
-                    <button type="button" 
-                        class="btn btn-default btn-xs" 
-                        v-if="isSelected('satellite')"
-                        v-bind:class="{active: night}" 
-                        v-on:click="setShadows(!night? 1:0)">
-                        <img src="icons/weather-night.svg" height="16em" width="16em"/>
-                        Shadows
-                    </button>
-                </li>
-                <li>
-                    <button type="button" 
-                        class="btn btn-default btn-xs" 
-                        v-if="isSelected('satellite')"
-                        v-bind:class="{active: snow}" 
-                        v-on:click="setSnow(!snow? 1:0)">
-                        <img src="icons/snowflake.svg" height="16em" width="16em"/>
-                        Snow
-                    </button>
-                </li>
-                <li>
-                    <button type="button" 
-                        class="btn btn-default btn-xs" 
-                        v-if="isSelected('satellite')"
-                        v-bind:class="{active: sediment}" 
-                        v-on:click="setSediment(!sediment? 1:0)">
-                        <img src="icons/dirt.svg" height="16em" width="16em"/>
-                        Sediment
-                    </button>
-                </li>
-                <li>
-                    <button type="button" 
-                        class="btn btn-default btn-xs" 
-                        v-if="isSelected('satellite')"
-                        v-bind:class="{active: plant}" 
-                        v-on:click="setPlant(!plant? 1:0)">
-                        <img src="icons/leaf.svg" height="16em" width="16em"/>
-                        Plants
-                    </button>
-                </li>
-                <li role="separator" class="divider"></li> 
-                <li v-for="option in options">
-                    <button type="button" 
-                        class="btn btn-default btn-xs" 
-                        v-bind:class="getClass(option.value, selected)" 
-                        v-bind:data-value="option.value" 
-                        v-on:click="setSelected(option.value)">
-                        <img v-bind:src="option.icon" height="16em" width="16em"/>
-                        {{option.name}}
-                    </button>
-                </li>
-            </ul>
-        </div>
-        <div id="vector-view" class="btn-group">
-            <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <img src="icons/arrow-move-all.svg" height="16em" width="16em"/>
-                Arrows
-                <span class="caret"></span>
-            </button>
-            <ul class="dropdown-menu btn-default btn-xs">
-                <li v-for="option in options">
-                    <button type="button" 
-                        class="btn btn-default btn-xs" 
-                        data-toggle="tooltip"
-                        v-bind:title="option.tip" 
-                        v-bind:class="getClass(option.value, selected)" 
-                        v-bind:data-value="option.value" 
-                        v-on:click="setSelected(option.value)">
-                        <img v-bind:src="option.icon" height="16em" width="16em"/>
-                        {{option.name}}
-                    </button>
-                </li>
-            </ul>
-        </div>
-        <div id="settings" class="btn-group">
-            <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <img src="icons/settings.svg" height="16em" width="16em"/>
-                Settings 
-                <span class="caret"></span>
-            </button>
-            <ul class="dropdown-menu btn-default btn-xs">
-                <li>
-                    <button type="button" 
-                        class="btn btn-default btn-xs" 
-                        v-bind:class="{active: supercontinentBreakup}" 
-                        v-on:click="setSupercontinentBreakup(!supercontinentBreakup? 1:0)">
-                        <img src="icons/clock.svg" height="16em" width="16em"/>
-                        Supercontinent Breakup
-                    </button>
-                </li>
-            </ul>
-        </div>
 
-        <button id="fullscreen" v-if="isVisible" type="button" class="btn btn-default btn-xs fullscreen" data-toggle="button" aria-pressed="true" v-on:click="toggleFullscreen()">
-            <img v-if="!isFullscreen" src="icons/fullscreen.svg" height="16em">
-            <img v-if="isFullscreen"  src="icons/fullscreen-exit.svg" height="16em">
-            {{isFullscreen? 'Exit Fullscreen' : 'Fullscreen'}}
-            <span class="instructions">F11</span>
+    <div class="short-axis-group">
+        <button type="button" class="btn" data-toggle="collapse" data-target=".tune-control, #main-control">
+            <img src="icons/tune.svg"/>
+            Tune 
         </button>
-        <button id="screenshot" v-if="isEnabled" type="button" class="btn btn-default btn-xs" v-on:click="capture" v-on:keyup.p="capture">
-            <img src="icons/camera.svg" height="16em">
+        <button type="button" class="btn" data-toggle="collapse" data-target="#view-control, #main-control">
+            <img src="icons/eye.svg"/>
+            View 
+        </button>
+        <button type="button" class="btn" data-toggle="collapse" data-target="#file-control, #main-control">
+            <img src="icons/folder.svg"/>
+            File 
+        </button>
+    </div>
+</div>
+
+<div id="file-control" class="collapse control" >
+    <div class="short-axis-group">
+        <button type="button" class="btn" data-toggle="collapse" data-target="#file-control, #main-control">
+            <img src="icons/down-arrow.svg"/>
+            Return
+        </button>
+        <button id="screenshot" v-if="isEnabled" type="button" class="btn" v-on:click="capture" v-on:keyup.p="capture">
+            <img src="icons/camera.svg"/>
             Screenshot
             <span class="instructions">p</span>
         </button>
-    </div>
-
-
-    <div class="file-menu btn-group-vertical">
-        <button id="save" type="button" class="btn btn-default btn-xs"  v-on:click="save">
-            <img src="icons/download.svg" height="16em">
-            Save
-            <span class="instructions">s</span>
-        </button>
-        <button id="load" type="button" class="btn btn-default btn-xs load" v-on:click="load()">
-            <img src="icons/upload.svg" height="16em">
+        <div id="export" class="short-axis-group">
+            <button type="button" class="btn" data-toggle="collapse" data-target="#export-menu" aria-haspopup="true" aria-expanded="false">
+                <img src="icons/export.svg"/>
+                Export
+            </button>
+            <div id="export-menu" class="collapse">
+                <button type="button" 
+                    class="btn" 
+                    v-on:click="csv">
+                    <img src="icons/view-list.svg"/>
+                    CSV
+                </button>
+            </div>
+        </div>
+        <div id="import" class="short-axis-group">
+            <button type="button" class="btn" data-toggle="collapse" data-target="#import-menu" aria-haspopup="true" aria-expanded="false">
+                <img src="icons/import.svg"/>
+                Import
+            </button>
+            <div id="import-menu" class="collapse">
+                <button type="button" 
+                    class="btn" 
+                    v-on:click="loadImage()">
+                    <img src="icons/image.svg"/>
+                    Heightmap
+                    <span class="instructions">drag</span>
+                    <input id="load-image" ref="loadImage" type="file" v-on:change="loadImagePart2($event.target.files[0])" class="hidden" />
+                </button>
+            </div>
+        </div>
+        <button id="load" type="button" class="btn load" v-on:click="load()">
+            <img src="icons/upload.svg"/>
             Load
             <span class="instructions">drag</span>
             <input id="load-input" ref="loadInput" type="file" v-on:change="loadPart2($event.target.files[0])" class="hidden" />
         </button>
-        <div id="export" class="btn-group">
-            <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <img src="icons/export.svg" height="16em" width="16em"/>
-                Export
-                <span class="caret"></span>
-            </button>
-            <ul class="dropdown-menu btn-default btn-xs">
-                <li>
-                    <button type="button" 
-                        class="btn btn-default btn-xs" 
-                        v-on:click="csv">
-                        <img src="icons/view-list.svg" height="16em" width="16em"/>
-                        CSV
-                    </button>
-                </li>
-            </ul>
+        <button id="save" type="button" class="btn"  v-on:click="save">
+            <img src="icons/download.svg"/>
+            Save
+            <span class="instructions">s</span>
+        </button>
+    </div>
+</div>
+
+ <div id="view-control" class="short-axis-group collapse control">
+
+    <!-- RETURN -->
+    <button type="button" class="btn" data-toggle="collapse" data-target="#view-control, #main-control">
+        <img src="icons/down-arrow.svg"/>
+        Return
+    </button>
+
+
+    <!-- FULLSCREEN -->
+    <button id="fullscreen" v-if="isFullscreenVisible" type="button" class="btn fullscreen" data-toggle="button" aria-pressed="true" v-on:click="toggleFullscreen()">
+        <img v-if="!isFullscreen" src="icons/fullscreen.svg" />
+        <img v-if="isFullscreen" src="icons/fullscreen-exit.svg"/>
+        {{isFullscreen? 'Exit Fullscreen' : 'Fullscreen'}}
+        <span class="instructions">F11</span>
+    </button>
+
+    <!-- SCALAR OPTIONS -->
+    <button type="button" 
+        class="btn" 
+        v-bind:class="{'btn-secondary': ocean}" 
+        v-on:click="setOcean(!ocean? 1:0)">
+        <img src="icons/water.svg"/>
+        Ocean
+    </button>
+    <button type="button" 
+        class="btn" 
+        v-if="isScalarViewSelected('satellite')"
+        v-bind:class="{'btn-secondary': night}" 
+        v-on:click="setShadows(!night? 1:0)">
+        <img src="icons/weather-night.svg"/>
+        Shadows
+    </button>
+    <button type="button" 
+        class="btn" 
+        v-if="isScalarViewSelected('satellite')"
+        v-bind:class="{'btn-secondary': snow}" 
+        v-on:click="setSnow(!snow? 1:0)">
+        <img src="icons/snowflake.svg"/>
+        Snow
+    </button>
+    <button type="button" 
+        class="btn" 
+        v-if="isScalarViewSelected('satellite')"
+        v-bind:class="{'btn-secondary': sediment}" 
+        v-on:click="setSediment(!sediment? 1:0)">
+        <img src="icons/dirt.svg"/>
+        Sediment
+    </button>
+    <button type="button" 
+        class="btn" 
+        v-if="isScalarViewSelected('satellite')"
+        v-bind:class="{'btn-secondary': plant}" 
+        v-on:click="setPlant(!plant? 1:0)">
+        <img src="icons/leaf.svg"/>
+        Plants
+    </button>
+    <button type="button" 
+        class="btn" 
+        v-for="option in scalarViewOptions"
+        v-bind:class="getClass(option.value, scalarViewSelected)" 
+        v-bind:data-value="option.value" 
+        v-on:click="setScalarViewSelected(option.value)">
+        <img v-bind:src="option.icon"/>
+        {{option.name}}
+    </button>
+
+    <!-- VECTOR OPTIONS -->
+    <button type="button" 
+        class="btn" 
+        data-toggle="tooltip"
+        v-for="option in vectorViewOptions"
+        v-bind:title="option.tip" 
+        v-bind:class="getClass(option.value, vectorViewSelected)" 
+        v-bind:data-value="option.value" 
+        v-on:click="setVectorViewSelected(option.value)">
+        <img v-bind:src="option.icon"/>
+        {{option.name}}
+    </button>
+
+    <!-- PROJECTION OPTIONS -->
+    <button type="button" 
+        class="btn" 
+        v-for="option in projectionOptions"
+        v-bind:class="getClass(option.value, projectionSelected)" 
+        v-bind:data-value="option.value" 
+        v-on:click="setProjectionSelected(option.value)">
+        <img v-bind:src="option.icon"/>
+        {{option.name}}
+    </button>
+</div>
+
+<div id="tune-control" class="tune-control collapse control" >
+    <div class="short-axis-group">
+        <div class="vertical-axis-group">
+            <div class="horizontal-axis-group">
+                <input id="seed" v-model="seed" class="form-control"></input>
+            </div>
+            <div class="horizontal-axis-group">
+                <button type="button" class="btn" v-on:click="randomizeCrust">
+                    <img src="icons/dice-6.svg"/>
+                    Randomize
+                </button>
+                <button type="button" class="btn" v-on:click="copySeed">
+                    <img v-if="!isSeedCopied" src="icons/clipboard-arrow-down.svg"/>
+                    <img v-if="isSeedCopied" src="icons/clipboard-check.svg"/>
+                    Copy Seed
+                </button>
+            </div>
+            <div class="horizontal-axis-group">
+                <button type="button" 
+                    class="btn" 
+                    v-bind:class="{'btn-secondary': supercontinentBreakup}" 
+                    v-on:click="setSupercontinentBreakup(!supercontinentBreakup? 1:0)">
+                    <img src="icons/clock.svg"/>
+                    Supercontinent Breakup
+                </button>
+                <button type="button" class="btn tune-control" data-toggle="collapse" data-target="#main-control, .tune-control">
+                    <img src="icons/down-arrow.svg"/>
+                    Return
+                </button>
+            </div>
         </div>
-        <div id="import" class="btn-group">
-            <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <img src="icons/import.svg" height="16em" width="16em"/>
-                Import
-                <span class="caret"></span>
-            </button>
-            <ul class="dropdown-menu btn-default btn-xs">
-                <li>
-                    <button type="button" 
-                        class="btn btn-default btn-xs" 
-                        v-on:click="loadImage()">
-                        <img src="icons/image.svg" height="16em" width="16em"/>
-                        Heightmap
-                        <span class="instructions">drag</span>
-                        <input id="load-image" ref="loadImage" type="file" v-on:change="loadImagePart2($event.target.files[0])" class="hidden" />
-                    </button>
-                </li>
-            </ul>
+        <div class="long-axis-group slider-label label">
+            <div class="btn">
+                <!-- <img src="icons/spinner-small.gif"/> -->
+                <img src="icons/grid.svg"/>
+                <div class="vertical-axis-group">
+                    <div>Resolution</div>
+                    <div>{{ format_count(cell_count).quantity }}{{ format_count(cell_count).unit }} cells</div>
+                </div>
+            </div>
+            <div>
+                <input type="range" v-model="resolution_level" class="is-long-axis-vertical slider-vertical" orient="vertical"
+                    min="1" max="6" step="1">
+                <input type="range" v-model="resolution_level" class="is-long-axis-horizontal" 
+                    min="1" max="6" step="1">
+            </div>
         </div>
+        <div class="long-axis-group slider-label label">
+            <div class="btn">
+                <img src="icons/globe-model.svg"/>
+                <div class="vertical-axis-group">
+                    <div>Axial Tilt</div>
+                    <div>{{axial_tilt_degrees}}°</div>
+                </div>
+            </div>
+            <div class="">
+                <input type="range" v-model="axial_tilt_degrees" class="is-long-axis-vertical slider-vertical" orient="vertical"
+                    min="0" max="90" step="0.5">
+                <input type="range" v-model="axial_tilt_degrees" class="is-long-axis-horizontal"
+                    min="0" max="90" step="0.5">
+            </div>
+        </div>
+        <div class="long-axis-group slider-label label">
+            <div class="btn">
+                <img src="icons/day-night.svg"/>
+                <div class="vertical-axis-group">
+                    <div>Day Length</div>
+                    <div>{{ format_time(day_length).quantity }} {{ format_time(day_length).unit }}</div>
+                </div>
+            </div>
+            <div class="">
+                <input type="range" v-model="log10_day_length" class="is-long-axis-vertical slider-vertical" orient="vertical"
+                    min="4.45" max="7.5" step="0.01">
+                <input type="range" v-model="log10_day_length" class="is-long-axis-horizontal"
+                    min="4.45" max="7.5" step="0.01">
+            </div>
+        </div>
+        <!-- <div class="long-axis-group slider-label label">
+            <div class="btn">
+                <img src="icons/orbit.svg"/>
+                <div class="vertical-axis-group">
+                    <div>Semi-Major Axis</div>
+                    <div>{{ semi_major_axis_au }}A.U.</div>
+                </div>
+            </div>
+            <div class="">
+                <input type="range" v-model="log10_semi_major_axis" class="is-long-axis-vertical slider-vertical" orient="vertical"
+                    min="8.5" max="14.1" step="0.1">
+                <input type="range" v-model="log10_semi_major_axis" class="is-long-axis-horizontal"
+                    min="8.5" max="14.1" step="0.1">
+            </div>
+        </div> -->
     </div>
 </div>
 
 <a id="hidden-downloader" href="dataUrl" download="filename"></a>
 
-<div class="bottomleft">
-    <div id="renderStats"></div>
-    <div id="updateStats"></div>
+<div id="stats">
 </div>
-<div class="bottomright">
-    <div class="hidden-when-loading" id="chart" v-if="isEnabled">
-        <table class="stat">
-            <tr>
-                <td class="name">min</td>
-                <td class="value">{{round(min)}}</td>
-            </tr>
-            <tr>
-                <td class="name">max</td>
-                <td class="value">{{round(max)}}</td>
-            </tr>
-        </table>
 
-        <table class="stat">
-            <tr>
-                <td class="name">mean</td>
-                <td class="value">{{round(mean)}}</td>
-            </tr>
-            <tr>
-                <td class="name">median</td>
-                <td class="value">{{round(median)}}</td>
-            </tr>
-        </table>
-        <table class="stat">
-            <tr>
-                <td class="name">S.D.</td>
-                <td class="value">{{round(stddev)}}</td>
-            </tr>
-        </table>
-        <chartjs-line :width="200" :height="100" 
-            :data="x" 
-            :labels="y" 
-            :bind="true"
-            :pointbackgroundcolor="'rgba(255,255,255,0.2)'"
-            :pointhoverbackgroundcolor="'rgba(255,255,255,0.2)'"
-            :pointbordercolor="'rgba(255,255,255,0.2)'"
-            :pointhoverbordercolor="'rgba(255,255,255,0.2)'"
-            :bordercolor="'rgba(255,255,255,0.5)'"
-            :backgroundcolor="'rgba(255,255,255,0.5)'" 
-            :fill="true"
-            :option="options">
-        </chartjs-line>
-    </div>
+<div id="chart" class="hidden-when-loading" v-if="isEnabled">
+    <table class="stat">
+        <tr>
+            <td class="name">min</td>
+            <td class="value">{{round(min)}}</td>
+        </tr>
+        <tr>
+            <td class="name">max</td>
+            <td class="value">{{round(max)}}</td>
+        </tr>
+    </table>
+
+    <table class="stat">
+        <tr>
+            <td class="name">mean</td>
+            <td class="value">{{round(mean)}}</td>
+        </tr>
+        <tr>
+            <td class="name">median</td>
+            <td class="value">{{round(median)}}</td>
+        </tr>
+    </table>
+    <table class="stat">
+        <tr>
+            <td class="name">S.D.</td>
+            <td class="value">{{round(stddev)}}</td>
+        </tr>
+    </table>
+    <chartjs-line :width="200" :height="100" 
+        :data="x" 
+        :labels="y" 
+        :bind="true"
+        :pointbackgroundcolor="'rgba(255,255,255,0.2)'"
+        :pointhoverbackgroundcolor="'rgba(255,255,255,0.2)'"
+        :pointbordercolor="'rgba(255,255,255,0.2)'"
+        :pointhoverbordercolor="'rgba(255,255,255,0.2)'"
+        :bordercolor="'rgba(255,255,255,0.5)'"
+        :backgroundcolor="'rgba(255,255,255,0.5)'" 
+        :fill="true"
+        :option="options">
+    </chartjs-line>
 </div>
 <div id="drop-dialog" class="collapse">
     <h2>DRAG HERE</h2>
@@ -388,10 +453,10 @@
         </p>
         <p>Until then, here's a video of what you're missing:
         </p>
-        <iframe width="420" height="315" src="https://youtu.be/D6Lff8MYbAo?t=240" frameborder="0" allowfullscreen></iframe>
+        <iframe width="420" height="315" src="https://www.youtube.com/watch?v=MYMOHkVMIcA" frameborder="0" allowfullscreen></iframe>
     </div>
     <div v-if="isNoJs" class="loading-dialog">
-        <img src="icons/spinner.svg"/ class="hcenter">
+        <img src="icons/spinner.svg"/>
         <h2>Initializing</h2>
     </div>
     <div v-if="isLoadingSave" class="collapse loading-dialog">
@@ -422,6 +487,61 @@
     var IS_PROD = true;
     var autosave_period;
 
+    var onSimLoadStart   = new Event();
+    var onSimLoadStop    = new Event();
+
+    onSimLoadStart.subscribe(function() {
+        $('.hidden-when-loading').hide();
+    });
+    onSimLoadStop.subscribe(function() {
+        $('.hidden-when-loading').show();
+    });
+
+    function loadUrl (url) {
+        onSimLoadStart.fire();
+        $.get( url, function( json ) {
+            sim = JsonDeserializer.sim(json);
+            onSimLoadStop.fire();
+        });
+    }
+    function loadFile (file) {
+        onSimLoadStart.fire();
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            sim = JsonDeserializer.sim(e.target.result);
+            onSimLoadStop.fire();
+        }
+        reader.readAsText(file);
+    }
+    function loadImage (file) {
+        onSimLoadStart.fire();
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var data_url = e.target.result;
+            // create image
+            var image = new Image();
+            // create canvas context from image
+            var canvas = document.createElement('canvas');
+            var context = canvas.getContext('2d');
+            context.drawImage(image, 0, 0);
+            image.onload = function(){
+                canvas.width  = image.width;
+                canvas.height = image.height;
+                context.drawImage(image,0,0); // Or at whatever offset you like
+                // generate crust from canvas context
+                var elevations = ImageImporter.get_elevations_from_canvas_context(context, sim.focus().grid);
+                CrustGenerator.get_crust_from_elevations(
+                    elevations, 
+                    CrustGenerator.modern_earth_attribute_height_maps, 
+                    sim.focus().lithosphere.total_crust
+                );
+
+                onSimLoadStop.fire();
+            };
+            image.src = data_url;
+        }
+        reader.readAsDataURL(file);
+    }
 
     // init the scene
     function init(){
@@ -435,8 +555,8 @@
         }
 
         
-        var resolution      = Math.min(6, parseInt(querystring['resolution'] || '5'));
-        autosave_period     = parseInt(querystring['autosave']   || '0');
+        var resolution_level = Math.min(6, parseInt(querystring['resolution_level'] || '5'));
+        autosave_period      = parseInt(querystring['autosave']   || '0');
 
         view = new View(
             window.innerWidth, 
@@ -445,6 +565,9 @@
             vectorViews.disabled, 
             projectionViews.orthographic,
         );
+
+        onSimLoadStart.fire();
+
         sim = new Simulation({
             seed:  querystring['seed'] || (new Date).getTime().toString(),
             speed: 3.1*Units.DAY,
@@ -457,98 +580,111 @@
         var get_planet_name = NameGenerator.get_length_distribution_generator(planet_name_corpus, 25, {5:1,6:3,7:11,8:3,9:1}, 100);
         var focus_name = get_planet_name(sim.random);
         
-        var geometry = new THREE.IcosahedronGeometry(1, resolution);
+        var geometry = new THREE.IcosahedronGeometry(1, resolution_level);
         var universe = new Universe({
-            system: {
-                name: 'galactic orbit',
-                motion: { // motion mirrors orbit of sun around galactic center
-                    type: 'orbit',
-                    semi_major_axis: 2.35e20, // meters
-                    effective_combined_mass: 1.262e41, // kg, back calculated to achieve period of 250 million years
-                },
-                invariant_insolation: true,
-                body: {
+            bodies: {
+                'star': {
                     type: 'star',
+                    id  : 'star',
                     name: get_star_name(sim.random),
                     mass: Units.SOLAR_MASS,
                 },
-                children: [
-                    {
-                        name: 'orbit',
-                        motion: {
-                            type: 'orbit',
-                            semi_major_axis: 1. * Units.ASTRONOMICAL_UNIT,
-                            eccentricity: 0.0167,
-                            inclination: Math.PI * 5e-5/180,
-                            longitude_of_ascending_node: Math.PI * -11/180,
-                            effective_combined_mass: 2e30, // kg
-                        },    
-                        children: [
-                            {
-                                name: 'precession',
-                                motion: { 
-                                    type: 'spin',
-                                    angular_speed: 2*Math.PI/(25860 * Units.YEAR),
-                                },    
-                                invariant_insolation: true,
-                                children: [
-                                    {
-                                        name: 'spin',
-                                        motion: { 
-                                            type: 'spin',
-                                            angular_speed: 2*Math.PI/(60*60*24),
-                                            axial_tilt: Math.PI * 23.5/180,
-                                        },    
-                                        body: { 
-                                            type: 'world',
-                                            name: focus_name,
-                                            grid: { 
-                                                faces:   geometry.faces.map(f => {  
-                                                    return {a: f.a, b: f.b, c: f.c, vertexNormals: f.vertexNormals}  
-                                                    }), 
-                                                vertices:geometry.vertices.map(v => {  
-                                                    return {x: v.x, y: v.y, z: v.z}  
-                                                    }), 
-                                            }, 
-                                        },
-                                    },
-                                 ],
-                            },
-                        ],
+                'world': {
+                    type: 'world',
+                    id  : 'world',
+                    name: focus_name,
+                    grid: { 
+                        faces:   geometry.faces.map(f => {  
+                            return {a: f.a, b: f.b, c: f.c, vertexNormals: f.vertexNormals}  
+                            }), 
+                        vertices:geometry.vertices.map(v => {  
+                            return {x: v.x, y: v.y, z: v.z}  
+                            }), 
+                    }, 
+                },
+            },
+            config: {
+                'stellar orbit': Math.PI/2
+            },
+            cycles: {
+                'galactic orbit': {
+                    id:       'galactic orbit',
+                    children:  ['stellar orbit'],
+                    body:       'star',
+                    motion: { // motion mirrors orbit of sun around galactic center
+                        type: 'orbit',
+                        semi_major_axis: 2.35e20, // meters
+                        effective_combined_mass: 1.262e41, // kg, back calculated to achieve period of 250 million years
                     },
-                ],
+                    invariant_insolation: true,
+                },
+                'stellar orbit': {
+                    id:       'stellar orbit',
+                    parent:   'galactic orbit',
+                    children: ['precession'],
+                    motion: {
+                        type: 'orbit',
+                        semi_major_axis: 1. * Units.ASTRONOMICAL_UNIT,
+                        eccentricity: 0.0167,
+                        inclination: Math.PI * 5e-5/180,
+                        longitude_of_ascending_node: Math.PI * -11/180,
+                        effective_combined_mass: 2e30, // kg
+                    },    
+                    invariant_insolation: false,
+                },
+                'precession': {
+                    id:       'precession',
+                    parent:   'stellar orbit',
+                    children: ['spin'],
+                    motion: { 
+                        type: 'spin',
+                        angular_speed: 2*Math.PI/(25860 * Units.YEAR),
+                    },    
+                    invariant_insolation: true,
+                },
+                'spin': {
+                    id:       'spin',
+                    parent:   'precession',
+                    children: [],
+                    body:     'world',
+                    motion: { 
+                        type: 'spin',
+                        angular_speed: 2*Math.PI/(60*60*24),
+                        axial_tilt: 23.5 * Math.PI/180,
+                    },   
+                    invariant_insolation: false,
+                },
             },
         });
-        var focus = universe.body_id_to_node_map[focus_name].body;
+        var world = universe.bodies['world'];
         CrustGenerator.get_crust_from_height_ranks(
-            SphericalGeometry.get_random_surface_field(focus.grid, sim.random), 
+            SphericalGeometry.get_random_surface_field(world.grid, sim.random), 
             CrustGenerator.modern_earth_hypsography, 
             CrustGenerator.modern_earth_attribute_height_maps, 
             sim.random,
-            focus.lithosphere.total_crust
+            world.lithosphere.total_crust
         );
         sim.model(universe);
-        sim.focus = focus;
+        sim.focus(world);
 
         if (querystring['load']) {
             loadUrl(querystring['load']); // TODO: rework this
         } 
 
-        $('.hidden-when-loading').show();
-        
+        onSimLoadStop.fire();
+
         $('#container').append(view.getDomElement());
         
         if(!IS_PROD){
             // add Stats.js - https://github.com/mrdoob/renderStats.js
             renderStats = new Stats();
-            $('#renderStats').append( renderStats.domElement );
+            $('#stats').append( renderStats.domElement );
 
             updateStats = new Stats();
-            $('#updateStats').append( updateStats.domElement );
+            $('#stats').append( updateStats.domElement );
 
-            $('.header').hide();
+            $('#header').hide();
         }
-
     }
 
     function autosave() {
@@ -585,75 +721,38 @@
         }
     }
     
-    function loadUrl (url) {
-        dialogVue.$data.isLoadingSave = true;
-        $('.hidden-when-loading').hide();
-        $.get( url, function( json ) {
-            sim = JsonDeserializer.sim(json);
-            dialogVue.$data.isLoadingSave = false;
-            $('.hidden-when-loading').show();
-            timeMenuVue.resync();
-        });
-    }
-    function loadFile (file) {
-        dialogVue.$data.isLoadingSave = true;
-        $('.hidden-when-loading').hide();
-        var reader = new FileReader();
-        reader.onload = function(e) {
-            sim = JsonDeserializer.sim(e.target.result);
-            dialogVue.$data.isLoadingSave = false;
-            $('.hidden-when-loading').show();
-            timeMenuVue.resync();
-        }
-        reader.readAsText(file);
-    }
-    function loadImage (file) {
-        dialogVue.$data.isLoadingSave = true;
-        $('.hidden-when-loading').hide();
-        var reader = new FileReader();
-        reader.onload = function(e) {
-            var data_url = e.target.result;
-            // create image
-            var image = new Image();
-            // create canvas context from image
-            var canvas = document.createElement('canvas');
-            var context = canvas.getContext('2d');
-            context.drawImage(image, 0, 0);
-            image.onload = function(){
-                canvas.width  = image.width;
-                canvas.height = image.height;
-                context.drawImage(image,0,0); // Or at whatever offset you like
-                // generate crust from canvas context
-                var elevations = ImageImporter.get_elevations_from_canvas_context(context, sim.focus.grid);
-                CrustGenerator.get_crust_from_elevations(
-                    elevations, 
-                    CrustGenerator.modern_earth_attribute_height_maps, 
-                    sim.focus.lithosphere.total_crust
-                );
 
-                $('.hidden-when-loading').show();
-            };
-            image.src = data_url;
+    function format_count (num, rollover, precision){
+        var quantity = num;
+        var units = ['', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']
+        var unit = units.shift();
+        while(quantity > rollover) {
+            unit = units.shift();
+            quantity /= rollover;
         }
-        reader.readAsDataURL(file);
+        return {
+            quantity:     quantity.toPrecision(precision).toString(), 
+            unit:         unit,
+        };
     }
-
-    function format (num, rollover, precision){
-                var quantity = num;
-                var units = ['', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']
-                var unit = units.shift();
-                while(quantity > rollover) {
-                    unit = units.shift();
-                    quantity /= 1000;
-                }
-                return {
-                    quantity:     quantity.toPrecision(precision).toString(), 
-                    unit:         unit,
-                };
-            }
-    function format_time (seconds) {
-        var formatted = format(seconds / Units.YEAR, 1000, 3);
-        return formatted.quantity + formatted.unit + 'y';
+    function format_time (seconds, precision){
+        var quantity = seconds;
+        if (quantity < Units.MINUTE) { 
+            return { unit: 's',  quantity:  (quantity/Units.SECOND).toPrecision(precision).toString() }; 
+        } else if (quantity < Units.HOUR) {
+            return { unit: 'm',  quantity:  (quantity/Units.MINUTE).toPrecision(precision).toString() }; 
+        } else if (quantity < Units.DAY) {
+            return { unit: 'hr',  quantity: (quantity/Units.HOUR).toPrecision(precision).toString() }; 
+        } else if (quantity < Units.WEEK) {
+            return { unit: 'dy',  quantity: (quantity/Units.DAY).toPrecision(precision).toString() }; 
+        } else if (quantity < Units.MONTH) {
+            return { unit: 'wk',  quantity: (quantity/Units.WEEK).toPrecision(precision).toString() }; 
+        } else if (quantity < Units.YEAR) {
+            return { unit: 'mo',  quantity: (quantity/Units.MONTH).toPrecision(precision).toString() }; 
+        }
+        var formatted = format_count(quantity/Units.YEAR, 1000, 3);
+        formatted.unit += 'y';
+        return formatted;
     }
 
     function download(url, filename) {
@@ -672,10 +771,10 @@
           saveVue.save();
       }
       if (event.keyCode == 188) { // <
-          timeMenuVue.rewind();
+          timeMenuVue.slower();
       }
       if (event.keyCode == 190) { // >
-          timeMenuVue.fastForward();
+          timeMenuVue.faster();
       }
       if (event.keyCode == 191) { // /
           timeMenuVue.togglePause();
@@ -738,6 +837,13 @@
       },
       created: function() {
           this.isNoWebGl = window.WebGLRenderingContext;
+          var _this = this;
+          onSimLoadStart.subscribe(function() {
+              _this.isLoadingSave = true;
+          })
+          onSimLoadStop.subscribe(function() {
+              _this.isLoadingSave = false;
+          })
       },
       methods: {
           notify: function(notification) {
@@ -775,7 +881,7 @@
               var blob = new Blob([stringified], {type : 'application/json'});
               var blobUrl = URL.createObjectURL(blob);
               var elapsed_time = format_time(sim.elapsed_time);
-              var filename = `${sim.focus.name}-${elapsed_time}.sim`;
+              var filename = `${sim.focus().name}-${elapsed_time.quantity}${elapsed_time.unit}.sim`;
               download(blobUrl, filename);
           }
       }
@@ -785,11 +891,11 @@
       el: '#export',
       methods: {
         csv(event) {
-            var content = CsvExporter.world(sim.focus);
+            var content = CsvExporter.world(sim.focus());
             var blob = new Blob([content], {type : 'text/csv'});
             var blobUrl = URL.createObjectURL(blob);
             var elapsed_time = format_time(sim.elapsed_time);
-            var filename = `${sim.focus.name}-${elapsed_time}.csv`;
+            var filename = `${sim.focus().name}-${elapsed_time.quantity}${elapsed_time.unit}.csv`;
             download(blobUrl, filename);
         }
       }
@@ -821,44 +927,16 @@
       },
       methods: {
           capture(event) {
+              var elapsed_time = format_time(sim.elapsed_time);
               var dataUrl = view.getScreenshotDataURL();
-              var filename = 
-                  sim.focus.name+'-'+
-                  format_time(sim.elapsed_time)+
-                  '.png';
+              var filename = `${sim.focus().name}-${elapsed_time.quantity}${elapsed_time.unit}.png`
               download(dataUrl, filename);
           }
       }
     });
 
-    var fullscreenVue = new Vue({
-      el: '#fullscreen',
-      data: {
-          isFullscreen: false,
-          isVisible: false,
-      },
-      created: function() {
-          if( THREEx.FullScreen.available() ){
-              // allow 'f' to go fullscreen where this feature is supported
-              THREEx.FullScreen.bindKey();
-              this.isVisible = true;
-          } 
-      },
-      methods: {
-        toggleFullscreen: function() {
-            this.isFullscreen = THREEx.FullScreen.activated();
-            if( this.isFullscreen ){
-                THREEx.FullScreen.cancel();
-            }else{
-                THREEx.FullScreen.request(document.body);
-            }
-            this.isFullscreen = !this.isFullscreen;
-        },
-      }
-    });
-
     var timeMenuVue = new Vue({
-      el: '#time-menu',
+      el: '#main-control',
       data: {
             paused: false,
             speed_i: 1,
@@ -882,9 +960,24 @@
       },
       created: function() {
           var _this = this;
-          setInterval(function() {
-              _this.$data.elapsed_time = sim.elapsed_time;
-          }, 1000/10);
+          var isLoadingSave = true;
+          var update_time_period = 0.5;
+
+          function update_time() {
+              if (isLoadingSave) { return; }
+              _this.elapsed_time = sim.elapsed_time;
+              sim.speed = _this.speeds[_this.speed_i].scale;
+              sim.paused = _this.paused;
+              setTimeout(update_time, 1000*update_time_period);
+          }
+          update_time();
+          onSimLoadStart.subscribe(function() {
+              isLoadingSave = true;
+          })
+          onSimLoadStop.subscribe(function() {
+              isLoadingSave = false;
+              update_time();
+          })
       },
       methods: {
         speed: function(speed_i) {
@@ -895,72 +988,22 @@
             this.paused = !this.paused;
             sim.toggle_pause();
         },
-        fastForward: function() {
+        faster: function() {
             this.speed_i = Math.min(this.speed_i+1, this.speeds.length-1);
             sim.speed = this.speeds[this.speed_i].scale;
         },
-        rewind: function() {
+        slower: function() {
             this.speed_i = Math.max(this.speed_i-1, 0);
             sim.speed = this.speeds[this.speed_i].scale;
         },
-        resync: function() {
-            sim.speed = this.speeds[this.speed_i].scale;
-            sim.paused = this.paused;
-        },
-        format: function(time) {
-            return format(time/Units.YEAR, 1000, 3)
+        format_count: function(time) {
+            return format_count(time/Units.YEAR, 1000, 3)
         },
     }
     });
 
-    var projectionVue = new Vue({
-      el: '#projection',
-      data: {
-        selected: 'orthographic',
-        options: [
-          { name: "Globe", value: "orthographic", icon: "icons/earth.svg" },
-          { name: "Map", value: "equirectangular", icon: "icons/map.svg" },
-          { name: "Texture", value: "texture", icon: "icons/texture.svg" },
-        ],
-      },
-      methods: {
-        setSelected: function(value) {
-            if (this.selected == value) { value = this.options[0].value; }
-            this.selected = value;
-            view.setProjectionView(projectionViews[value]);
-        },
-        getClass: function(value, selected) {
-            return value == selected? 'active' : '';
-        }
-      }
-    });
-
-    var vectorViewVue = new Vue({
-      el: '#vector-view',
-      data: {
-        selected: 'disabled',
-        options: [
-          { name: "None", value: "disabled", icon: "" },
-          { name: "Mantle Flow", value: "asthenosphere_velocity", icon: "icons/fire-flow.svg" },
-          // { name: "Plate Motion", value: "plate_velocity", icon: "icons/plate-motion.svg" },
-          { name: "Wind Speed", value: "surface_air_velocity", icon: "icons/air-flow.svg" },
-        ],
-      },
-      methods: {
-          setSelected: function(value) {
-            if (this.selected == value) { value = this.options[0].value; }
-              var option = this.options.filter(x => x.value == value)[0];
-              this.selected = value;
-              view.setVectorView(vectorViews[value]);
-          },
-          getClass: function(value, selected) {
-              return value == selected? 'active' : '';
-          }
-      }
-    });
-
     var scalarViewVue = new Vue({
-      el: '#scalar-view',
+      el: '#view-control',
       data: {
         ocean: 1,
         ocean_target: 1,
@@ -972,9 +1015,8 @@
         sediment_target: 1,
         plant: 1,
         plant_target: 1,
-        selected: 'satellite',
-        vectorView: 'disabled',
-        options: [
+        scalarViewSelected: 'satellite',
+        scalarViewOptions: [
           {name: 'Satellite', value: 'satellite', icon: 'icons/satellite-variant.svg' },
           {name: 'Topographic map', value: 'topographic', icon: 'icons/terrain.svg'},
           {name: 'Height map', value: 'alt', icon: 'icons/terrain-length.svg'},
@@ -988,18 +1030,60 @@
           {name: 'Crust Thickness', value: 'thickness', icon: 'icons/rock-length.svg'},
           {name: 'Plates', value: 'plates', icon: 'icons/puzzle.svg'},
         ],
+        vectorViewSelected: 'disabled',
+        vectorViewOptions: [
+          { name: "No Arrows", value: "disabled", icon: "icons/none.svg" },
+          { name: "Mantle Flow", value: "asthenosphere_velocity", icon: "icons/fire-flow.svg" },
+          // { name: "Plate Motion", value: "plate_velocity", icon: "icons/plate-motion.svg" },
+          { name: "Wind Speed", value: "surface_air_velocity", icon: "icons/air-flow.svg" },
+        ],
+        projectionSelected: 'orthographic',
+        projectionOptions: [
+          { name: "Globe", value: "orthographic", icon: "icons/earth.svg" },
+          { name: "Map", value: "equirectangular", icon: "icons/map.svg" },
+          { name: "Texture", value: "texture", icon: "icons/texture.svg" },
+        ],
+        isFullscreen: false,
+        isFullscreenVisible: false,
+      },
+      created: function() {
+          if( THREEx.FullScreen.available() ){
+              // allow 'f' to go fullscreen where this feature is supported
+              THREEx.FullScreen.bindKey();
+              this.isFullscreenVisible = true;
+          } 
       },
       methods: {
-        setSelected: function(value) {
-            if (this.selected == value) { value = this.options[0].value; }
-              var option = this.options.filter(x => x.value == value)[0];
+        toggleFullscreen: function() {
+            this.isFullscreen = THREEx.FullScreen.activated();
+            if( this.isFullscreen ){
+                THREEx.FullScreen.cancel();
+            }else{
+                THREEx.FullScreen.request(document.body);
+            }
+            this.isFullscreen = !this.isFullscreen;
+        },
+        setProjectionSelected: function(value) {
+            if (this.projectionSelected == value) { value = this.projectionOptions[0].value; }
+            this.projectionSelected = value;
+            view.setProjectionView(projectionViews[value]);
+        },
+        setVectorViewSelected: function(value) {
+          if (this.selected == value) { value = this.vectorViewOptions[0].value; }
+            var option = this.vectorViewOptions.filter(x => x.value == value)[0];
             this.selected = value;
+            view.setVectorView(vectorViews[value]);
+        },
+        setScalarViewSelected: function(value) {
+            if (this.scalarViewSelected == value) { value = this.scalarViewOptions[0].value; }
+              var option = this.scalarViewOptions.filter(x => x.value == value)[0];
+            this.scalarViewSelected = value;
             view.setScalarView(scalarViews[value]);
         },
-        isSelected: function(value) {
+        isScalarViewSelected: function(value) {
             return {
                 satellite: true,
-            }[this.selected];
+            }[this.scalarViewSelected];
         },
         setOcean: function(value) {
             this.ocean_target = value;
@@ -1093,26 +1177,116 @@
                 view.uniform('plant_visibility', (v.plant)?(1.0):(0.0));
             }, timestep);
         },
-        getClass: function(value, selected) {
-            return value == selected? 'active' : '';
+        getClass: function(value, scalarViewSelected) {
+            return value == scalarViewSelected? 'btn-secondary' : '';
         },
       }
     });
 
     var settingsVue = new Vue({
-      el: '#settings',
+      el: '#tune-control',
       data: {
-        supercontinentBreakup: 1,
+        supercontinentBreakup : 1,
+        seed                  : '',
+        isSeedCopied          : 0,
+        resolution_level      : 5,
+        cell_count            : 0,
+        axial_tilt_degrees    : 23.5,
+        log10_day_length      : Math.log10(Units.DAY),
+        day_length            : Units.DAY,
+        log10_semi_major_axis : Math.log10(Units.ASTRONOMICAL_UNIT),
+        semi_major_axis_au    : 1,
+      },
+      created: function() {
+          var _this = this;
+          onSimLoadStop.subscribe(function() { 
+            _this.seed = sim.seed;
+            _this.cell_count = sim.focus().grid.vertices.length;
+          });
+      },
+      watch: {
+        'seed': function(new_value, old_value) {
+            // TODO: reset sim to match the new seed
+        },
+        'axial_tilt_degrees': function(new_value, old_value) {
+            sim.model().cycles['spin'].motion.axial_tilt = new_value * Math.PI/180;
+        },
+        'log10_day_length': function(new_value, old_value) {
+            this.day_length = Math.pow(10, new_value);
+            sim.model().cycles['spin'].motion.angular_speed = 2*Math.PI/this.day_length;
+        },
+        'log10_semi_major_axis': function(new_value, old_value) {
+            this.semi_major_axis_au = (Math.pow(10, new_value)/Units.ASTRONOMICAL_UNIT).toPrecision(3).toString();
+            sim.model().cycles['stellar orbit'].motion.semi_major_axis = Math.pow(10, new_value);
+        },
+        'resolution_level': function(new_value, old_value) {
+            onSimLoadStart.fire();
+            // preserve the same exact state of world in every way except grid
+            var world_params = sim.focus().getParameters();
+            var geometry = new THREE.IcosahedronGeometry(1, new_value);
+            world_params.grid = { 
+                    faces:   geometry.faces.map(f => {  
+                        return {a: f.a, b: f.b, c: f.c, vertexNormals: f.vertexNormals}  
+                        }), 
+                    vertices:geometry.vertices.map(v => {  
+                        return {x: v.x, y: v.y, z: v.z}  
+                        }), 
+                };
+            // eliminate anything that would store a raster in a buffer to prevent overflow
+            world_params.lithosphere.plates = [];
+            world_params.lithosphere.total_crust = undefined;
+            var world = new World(world_params);
+            CrustGenerator.get_crust_from_height_ranks(
+                SphericalGeometry.get_random_surface_field(world.grid, sim.random), 
+                CrustGenerator.modern_earth_hypsography, 
+                CrustGenerator.modern_earth_attribute_height_maps, 
+                sim.random,
+                world.lithosphere.total_crust
+            );
+            
+            var universe = sim.model();
+            universe.bodies[world.id] = world;
+            // HACK: we need to call initialize() on universe again because 
+            // it's the only thing that passes the dependencies required by world.
+            // This is a huge pain in the ass and this is the exact reason why
+            //   you shouldn't play with stateful objects, kids. 
+            // TODO: refactor the universe
+            universe.initialize();
+            sim.focus(world);
+
+            onSimLoadStop.fire();
+        }
       },
       methods: {
+        format_count: function(count) {
+            return format_count(count, 1000, 3);
+        },
+        format_time: function(seconds) {
+            return format_time(seconds, 3);
+        },
         setSupercontinentBreakup: function(value) {
             this.supercontinentBreakup = value;
             if (!this.supercontinentBreakup) {
-                sim.focus.lithosphere.supercontinentCycle.duration = Infinity;
+                sim.focus().lithosphere.supercontinentCycle.duration = Infinity;
             } else {
-                sim.focus.lithosphere.supercontinentCycle.duration = 0;
+                sim.focus().lithosphere.supercontinentCycle.duration = 0;
             }
         },
+        randomizeCrust: function() {
+            var world = sim.focus();
+            CrustGenerator.get_crust_from_height_ranks(
+                SphericalGeometry.get_random_surface_field(world.grid, sim.random), 
+                CrustGenerator.modern_earth_hypsography, 
+                CrustGenerator.modern_earth_attribute_height_maps, 
+                sim.random,
+                world.lithosphere.total_crust
+            );
+        },
+        copySeed: function() {
+            var copyText = document.getElementById("seed");
+            copyText.select();
+            document.execCommand("copy");
+        }
       }
     });
 
@@ -1152,9 +1326,9 @@
         },
         created: function() {
             var _this = this;
-            setInterval(function() {
+            onSimLoadStop.subscribe(function() {
                 view.updateChart(_this.$data, sim, _this.$data);
-            }, 1000/2);
+            });
         },
         methods: {
             setOceanVisibility(value){
@@ -1177,7 +1351,7 @@
     timeMenuVue.speed(1)
 
     // once everything is loaded, instruct the user how to start
-    dialogVue.notify("click ⏩ or press > to begin")
+    dialogVue.notify("click ▶▶ or press > to begin")
 </script>
 </body>
 </html>

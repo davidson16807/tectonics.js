@@ -1,3 +1,15 @@
+/*
+"main.css" contains all styling that is used in common throughout the website.
+It includes styling for the application, the blog, and the about page. 
+It does not however include styling for the IE fallback webpage, 
+ since that webpage is designed to operate in extenuating circumstances
+ and doing so would incur significant mental overhead.
+It assumes instead the user is accessing the site on a modern, evergreen browser. 
+It is a standalone stylesheet that can be optionally extended with other.
+ more purpose built stylesheets like app.css or blog.css. 
+*/
+
+
 @font-face
 {
     font-family: Garogier;
@@ -5,13 +17,12 @@
 }
 
 body {
-    padding        : 0;
-    margin        : 0;
-
-    color       : white;
-    background-color: black;
-    font-family : Helvetica, Arial, sans-serif;
-    font-size    : 100%;
+    padding          : 0;
+    margin           : 0;
+    color            : white;
+    background-color : black;
+    font-family      : Helvetica, Arial, sans-serif;
+    font-size        : 100%;
 }
 
 h1,h2,h3 {
@@ -22,28 +33,59 @@ h1 {
     margin-top: 0.502%;
 }
 
-.header {
+summary { 
+    font-size: 138%; 
     font-weight:bold;
 }
-.header a {
-    color : white;
-    text-decoration    : none;
+details {
+    margin-top: 1.315%    
 }
-.header a:hover {
-    text-decoration    : none;
+details p { 
+    margin-left: 1.315%; 
 }
-.navigation
+
+.hcenter {
+    width: 61.8%;
+    margin-left: auto;
+    margin-right: auto;
+}
+.hcenter h2{
+    text-align:center;
+}
+.vcenter {
+    position: absolute;
+    top: 23.6%;
+}
+.hidden {
+    display:none;
+}
+
+#header {
+    font-weight:bold;
+    /* top left corner */
+    position    : fixed;
+    top         : 1em;
+    left        : 1em;
+}
+#header a {
+    color           : white;
+    text-decoration : none;
+}
+#header a:hover {
+    text-decoration : none;
+}
+#navigation
 {
-    width: 161%;
+    margin-left : 23.6%;
+    font-size   : 1vw;
 }
-.navigation a {
-    margin: 0.5em;
-}
-.navigation a:hover {
+#navigation a:hover {
     color: grey;
     text-decoration    : none;
 }
-.article{
-    color: black;
-    background-color: white;
+
+@media (max-width: 576px) {
+    #header h1 {
+        font-size: 1.5rem;
+    }
 }

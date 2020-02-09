@@ -9,8 +9,8 @@ var Tectonophysics = {};
 
 
 
-Tectonophysics.guess_plate_velocity = function(plate_mask, buoyancy, material_viscosity, result) {
-    result = result || VectorRaster(plate_mask.grid);
+Tectonophysics.guess_plate_velocity = function(boundary_normal, buoyancy, material_viscosity, result) {
+    result = result || VectorRaster(boundary_normal.grid);
 
       var scratchpad = RasterStackBuffer.scratchpad;
       scratchpad.allocate('get_plate_velocity');
@@ -19,9 +19,108 @@ Tectonophysics.guess_plate_velocity = function(plate_mask, buoyancy, material_vi
 
 
     // NOTE: 
-    // Here, we calculate plate velocity as the terminal velocity of a subducting slab as it falls through the mantle.
+    // we use the conceptual model from Schellart 2010 to calculate plate velocity
+    // see research/lithosphere/schellart2010.pdf and research/lithosphere/schellart2010-supplement.pdf 
+    // Here's an intuitive explanation:
+    //
+    // Imagine a foam mat floating in a swimming pool. 
+    // One side of the foam mat has lead weights strapped to it. 
+    // It's just barely enough to sink the mat. 
+    // The foam mat slides across the surface and into the water. 
+    //            
+    //     ________ →     
+    //     ~~~~~~~~\~~~~~~~~~
+    //            ↓| 
+    //             ° ← lead weight  
     // 
-    // Imagine a cloth with lead weights strapped to one side as it slides down into a vat of honey - it's kind of like that.
+    // Since the foam mat doesn't stretch, we know it must slide across the surface at the same rate it sinks. 
+    // The rate at which it sinks is a constant, known as the terminal velocity.
+    // This is the speed at which the drag force of the water counteracts the buoyant force of the lead weights.
+    // 
+    //     ________
+    //     ~~~~~~~~\~~~~~~~~~
+    //             |↓ buoyant force
+    //             °↑ drag force
+    // 
+    // Replace the foam mat with a tectonic plate and you'll start to see how the model handles plate velocity.
+    // There is a buoyancy force (b) that causes slabs to subduct.
+    // The slabs generate a drag force (d) as they pass through the mantle.
+    // The two forces reach an equilibrium where the velocity (v) of a region does not change. 
+    // Since these forces are only noticeable over millions of years, 
+    //  by the time we notice their effect they should have already equilibrated. 
+    // So we can't just simulate the forces over multiple timesteps. 
+    // The forces involved could also vary greatly from planet to planet,
+    //  so we wouldn't even know what timesteps to use even if we want to use that approach.
+    // So how about this, instead:
+    // For there to be equilibrium, the sum of the forces must be zero. 
+    // Since plates are assumed to be rigid bodies, 
+    //  we must consider the forces acting across the entire plate.
+    // So ∫ b + d(v) dΩ = 0 where Ω is the area of a plate. 
+    // Since b does not vary based on v, we simplify this to:
+    //  B + ∫ d(v) dΩ = 0 where B = ∫ b dΩ is the sum of buoyancy forces.
+    // 
+    // We start by making some sort of appropriate guess for the velocity of the rigid body plate.
+    // 
+    //  D = ∫ d(v) ∂Ω
+    // the derivative ∂D/∂v therefore is:
+    //  D = ∫ ∂d/∂v ∂Ω
+    // Schellart makes a statement of a similar nature.
+    // We make several local estimates for velocity and then 
+    //  make an estimate for the entire rigid body using the local estimates. 
+    // We then calculate the local drag forces that would result at that velocity.
+    // We take the difference between local drag forces and local buoyant forces.
+    // Let's call these "local net forces".
+    // The local net forces ought to sum to zero, but they probably will not,
+    //  either because they cancel out when we calculate the velocity for the rigid body
+    //  or there is a flaw in our inital guess,
+    //  or there is 
+    // 
+    // 
+    // let's consider a concrete example
+    // There's a plate shaped like a rectangle. One side is subducting, 
+    //  which causes the plate to rotate.
+    // We calculate velocity given local buoyant forces then find an angular velocity based upon them.
+    // The region furthest from the axis now subducts faster than it would in isolation.
+    // This causes a greater drag force than was predicted 
+    // 
+    // 
+    // dv/dt = F/m
+    // 
+    // 
+    // 
+    // 
+    // 
+    // 
+    // 
+    // 
+    // 
+    // 
+    // If the drag forces don't sum up to match the buoyancy forces, we know we got the velocity wrong.
+    // But since velocity is a linear function of force, 
+    // We can map the net forces back into a correction .
+    // We can do this any number of times for added precision.
+    // 
+    // Remember: v is not a constant. If a rigid body rotates, 
+    //  the points that are furthest from the axis have higher velocity.
+    // We need to find the translation T and rotation R for the whole object such that 
+    //  the local velocities v meet the requirement ∫ b + d(v) dΩ = 0 
+    // v = T x r_world + R x r_plate
+    // We 
+    // 
+    // compare this to our previous method, which was to find v for each point based on b and take the average
+    // We start with the assumption b = -ζv 
+    // then v = - 1/Ω ∫ b/ζ dΩ
+    // then v = - 1/(Ωζ) B
+    // then ζvΩ = -B 
+    // then -ζv = d(v) because -B = ∫ d(v) dΩ
+    // 
+    // We use that guess to calculate 
+    // 
+    // Schellart uses the following equation to describe the terminal velocity of a plate:
+    //     
+    // 
+    //         v = S F (WLT)^2/3 /18 cμ
+    // where v is velocity, F is force, and the rest of the parameters are used as follows:
     // 
     // WARNING:
     // most of this is wrong! Here, we try calculating terminal velocity for each grid cell in isolation,
@@ -67,14 +166,7 @@ Tectonophysics.guess_plate_velocity = function(plate_mask, buoyancy, material_vi
 
     // find slab pull force field (Newtons/m^3)
     // buoyancy = slab_pull * normalize(gradient(mask))
-    // lateral_velocity = buoyancy * normalize(gradient(mask))
-    // NOTE: result does double duty for performance reasons
-    var boundary_normal = result;
-    Uint8Field.gradient                (plate_mask,                         boundary_normal);
-    VectorField.normalize            (boundary_normal,                    boundary_normal);
-
-      //scratchpad.deallocate('get_plate_velocity');
-    //return boundary_normal;
+    // lateral_velocity = buoyancy * boundary_normal
 
     var lateral_velocity = result;    
     VectorField.mult_scalar_field    (boundary_normal, lateral_speed,     lateral_velocity);

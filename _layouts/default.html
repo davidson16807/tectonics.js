@@ -12,7 +12,6 @@
     <link href="{{ site.url }}/styles/bootstrap.custom.css" rel="stylesheet" type="text/css"/>
     <link href="{{ site.url }}/styles/prism.css" rel="stylesheet" type="text/css"/>
     <link href="{{ site.url }}/styles/main.css" rel="stylesheet" type="text/css"/>
-    <link href="{{ site.url }}/styles/modern.css" rel="stylesheet" type="text/css"/>
     <link href="{{ site.url }}/styles/blog.css" rel="stylesheet" type="text/css"/>
     <script src="{{ site.url }}/styles/prism.js"></script>
     <script src="http://code.jquery.com/jquery.min.js"></script>
@@ -20,9 +19,9 @@
       src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML" async></script>
 </head>
     <body>
-        <div class="topleft header">
+        <div id="header">
             <h1><a href="{{ site.url }}">Tectonics.js</a></h1>
-            <div class="navigation">
+            <div id="navigation">
                 <a href="{{ site.url }}">RUN</a>
                 <a href="{{ site.url }}/blog/index.html">ABOUT</a>
                 <a href="{{ site.url }}/blog/news.html">BLOG</a>
@@ -33,7 +32,7 @@
         
         <img src="{{ site.url }}/blog/icon6.png" class="icon"/>
 
-        <div class="article">
+        <div id="article">
             {{ content }}
         </div>
     </body>

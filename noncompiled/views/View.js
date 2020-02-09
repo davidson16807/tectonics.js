@@ -15,7 +15,7 @@ function ThreeJsState() {
     // put a camera in the scene
 
     this.camera    = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, .01, 100000 );
-    this.camera.position.set(0, 0, 5);
+    this.camera.position.set(-4, 2, 4);
 
     // transparently support window resize
     THREEx.WindowResize.bind(this.renderer, this.camera);
@@ -31,15 +31,15 @@ function ThreeJsState() {
     this.renderpass = new THREE.RenderPass(this.scene, this.camera);
     this.composer.passes.push(this.renderpass);
 
-    this.shaderpass = new THREE.ShaderPass({
+    this.shaderpass_default = new THREE.ShaderPass({
         uniforms: {
             "input_texture": { type: "t", value: null },
         },
         vertexShader: vertexShaders.passthrough,
         fragmentShader: fragmentShaders.passthrough,
     }, 'input_texture');
-    this.shaderpass.renderToScreen = true;
-    this.composer.passes.push(this.shaderpass);
+    this.shaderpass_default.renderToScreen = true;
+    this.composer.passes.push(this.shaderpass_default);
 }
 
 function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
@@ -66,14 +66,15 @@ function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
     this.update = function(sim){
 
         var universe = sim.model();
-        var body = sim.focus;
-        var stars = universe.bodies.filter(body => body instanceof Star);
+        var body = sim.focus();
+        var stars = Object.values(universe.bodies).filter(body => body instanceof Star);
         var star_sample_positions_map_ = universe.star_sample_positions_map(universe.config, body, sim.speed/2, 9);
 
         var light_rgb_intensities = [];
         var light_directions = [];
         for (var star of stars){
-            var star_sample_positions = star_sample_positions_map_[star.name];
+            var star_memos = Star.get_memos(star);
+            var star_sample_positions = star_sample_positions_map_[star.id];
             for (var star_sample_position of star_sample_positions) {
                 var light_distance = Vector.magnitude(
                     star_sample_position.x,
@@ -85,8 +86,8 @@ function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
                     star_sample_position.y,
                     star_sample_position.z
                 );
-                var light_rgb_intensity = Thermodynamics.solve_rgb_intensity_of_light_emitted_by_black_body(star.surface_temperature);
-                var light_attenuation = SphericalGeometry.get_surface_area(star.radius) / SphericalGeometry.get_surface_area(light_distance);
+                var light_rgb_intensity = Thermodynamics.solve_rgb_intensity_of_light_emitted_by_black_body(star_memos.surface_temperature());
+                var light_attenuation = SphericalGeometry.get_surface_area(star_memos.radius()) / SphericalGeometry.get_surface_area(light_distance);
                 var light_exposure = 1/star_sample_positions.length;
                 light_rgb_intensity.x *= light_attenuation * light_exposure;
                 light_rgb_intensity.y *= light_attenuation * light_exposure;

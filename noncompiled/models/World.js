@@ -4,6 +4,13 @@
 
 function World(parameters) {
     var this_ = this;
+    // "id" is used to reference the world within the rest of the universe
+    // It remains unique to the world regardless of name changes. 
+    // It is not visible to the user.
+    // It is effectively the primary key within the context of database design.
+    this.id   = parameters.id;
+    // "name" is the name of the world as understood by the user.
+    // It is randomly generated and can be modified by the user at any time. 
     this.name = parameters.name;
     this.grid = new Grid(parameters['grid']) || stop('missing parameter: "grid"');
 
@@ -58,6 +65,7 @@ function World(parameters) {
         return { 
             type:                     'world',
             grid:                     this.grid.getParameters(),
+            id:                     this.id,
             name:                     this.name,
             material_heat_capacity: this.material_heat_capacity,
             material_viscosity:     this.material_viscosity,

@@ -1,0 +1,396 @@
+<html>
+  <head>
+
+    <title>Tectonics.js: A journey through time and space</title>
+    <script src="jquery-1.10.2.min.js"></script>
+    <script src="fathom.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="presentation.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML" async></script>
+    <style type="text/css">
+      .code img {
+        vertical-align: top;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="presentation">
+
+      <div class="slide">
+        <h1>Tectonics.js</h1>
+        <h3>Carl Davidson</h3>
+        <center>
+          <img src="icon6.png" width="50%"/>
+        </center>
+
+        <h2>Deep Dive:</h2>
+        <h3>Orbital Mechanics</h3>
+      </div>
+      
+      <div class="slide">
+        <h2>Overview</h2>
+        <ul>
+          <li>Project History</li>
+          <li>Problem Description</li>
+          <li>Design Considerations</li>
+          <li>Approach to Problem Solving</li>
+          <li>Implementation</li>
+        </ul>
+      </div>
+      
+      <div class="slide">
+        <h2>Inspiration</h2>
+        <!-- <img src="high-school-alien.jpg" style="float:right;clear:right;" height="30%"/> -->
+        <img src="high-school-ship.jpg" style="float:right;clear:right;" width="45%"/>
+        <img src="high-school-cladogram.jpg" style="float:right;clear:right;" width="45%"/>
+        <img src="high-school-sim-earth-cropped.jpg" style="float:right;clear:right;" width="45%"/>
+        <h4>High School</h4>
+        <ul>
+          <li>Science Fiction</li>
+          <li>Interstellar Rocketry</li>
+          <li>Speculative Biology</li>
+          <li>World Building</li>
+          <li>Sim Earth</li>
+          <li>Programming</li>
+        </ul>
+        <h2>Idea: make a scientifically accurate sim earth for modern hardware</h2>
+      </div>
+
+      <div class="slide">
+        <h2>Grad School</h2>
+        <img src="ed2.gif" style="float:right;" width="30%"/>
+        <ul>
+          <li>Ecology and Evolutionary Biology</li>
+          <li>Computer Models</li>
+        </ul>
+        <h2  style="clear:right">Idea: stop thinking about it and just do it</h2>
+        <img src="pytectonics.png" style="float:right"  width="40%"/>
+        <ul>
+          <li>PyTectonics</li>
+        </ul>
+      </div>
+
+      <div class="slide">
+        <h2>After Grad School</h2>
+        <br/>
+        <center>
+          <iframe width="800" height="550"  src="../../index.html"></iframe>
+        </center>
+        <h3>Tectonics.js</h3>
+      </div>
+
+      <div class="slide">
+        <h2>Nowadays</h2>
+        <h4>Usage</h4>
+        <ul>
+          <li>Authors</li>
+          <li>Modders</li>
+          <li>Developers</li>
+        </ul>
+        <img src="moe.jpg" height="20%"/>
+        <img src="emery.png" height="20%"/>
+        <img src="gregrox.png" height="20%"/>
+        <img src="whirligig.png" height="20%"/>
+        <img src="zspace.png" height="20%"/>
+        <img src="novasilisko.png" height="20%"/>
+      </div>
+
+      <div class="slide">
+        <h2>Nowadays</h2>
+        <h4>The Grand Plan</h4>
+        <center><img src="development-path.svg" height="80%"/></center>
+      </div>
+
+      <div class="slide">
+        <h2>Deep Dive</h2>
+        <h2>How do we quickly estimate average insolation on a planet?</h2>
+        <img src="timelapse.gif" style="float:right;clear:right" width="30%"/>
+        <img src="seasons.gif" style="float:right;" width="30%"/>
+        <img src="binary.gif" style="float:right;clear:right" width="30%"/>
+        <img src="urania.gif" style="float:right;" width="30%"/>
+        <div style="float:right;">
+          <!-- <iframe width="300" height="550"  src="../../index.html"></iframe> -->
+        </div>
+        <h4>Requirements:</h4>
+        <ul>
+          <li>Any location</li>
+          <li>Any point in time</li>
+          <li>Any timestep length</li>
+          <li>Any stable stellar system</li>
+          <li>In under 10ms</li>
+        </ul>
+      </div>
+
+      <div class="slide">
+        <h2>Deep Dive</h2>
+        <h4>Conclusions:</h4>
+        <img src="solar-equation2.jpg" style="float:right" width="40%"/>
+        <ul>
+          <li>must work in general case: closed form solution for earth won't suffice</li>
+          <li>must work fast: assume stability, use "on-rails" orbital mechanics</li>
+          <li>potentially ergodic: sample multiple positions when timestep is large and average between them</li>
+          <li>"nice to have": avoid precision issues by allowing samples from any reference frame ("Anti-Kraken" measure)</li>
+        </ul>
+        <center>
+          <img src="on-rails.gif" width="40%"/>
+          <img src="kraken.gif" width="40%"/>
+        </center>
+      </div>
+
+      <div id="orbits-slide" class="slide">
+        <h2>Deep Dive</h2>
+        <h4 id='orbits-slide-step1' class="step">Visualizing the problem</h4>
+        <h4 id='orbits-slide-step2' class="step">Defining a Common Data Type and Algebra</h4>
+        <h4 id='orbits-slide-step3' class="step">Defining Data Structures</h4>
+        <center onclick="animate_orbits()">
+          <span id="graph">
+            <img src="graph0.svg" width="30%"/>
+            <img src="graph0.svg" width="30%"/>
+            <img src="graph0.svg" width="30%"/>
+            <img src="graph0.svg" width="30%"/>
+            <img src="graph0.svg" width="30%"/>
+            <img src="graph0.svg" width="30%"/>
+            <img src="graph0.svg" width="30%"/>
+            <img src="graph0.svg" width="30%"/>
+            <img src="graph0.svg" width="30%"/>
+            <img src="graph0.svg" width="30%"/>
+            <img src="graph0.svg" width="30%"/>
+            <img src="graph0.svg" width="30%"/>
+            <img src="graph0.svg" width="30%"/>
+            <img src="graph0.svg" width="30%"/>
+            <img src="graph5.svg" width="30%"/>
+            <img src="graph6.svg" width="30%"/>
+          </span>
+          <span id="orbits">
+            <img src="orbits0.svg" width="30%"/>
+            <img src="orbits1.svg" width="30%"/>
+            <img src="orbits2.svg" width="30%"/>
+            <img src="orbits3.svg" width="30%"/>
+            <img src="orbits4.svg" width="30%"/>
+            <img src="orbits5.svg" width="30%"/>
+            <img src="orbits6.svg" width="30%"/>
+            <img src="orbits7.svg" width="30%"/>
+            <img src="orbits8.svg" width="30%"/>
+            <img src="orbits10.svg" width="30%"/>
+            <img src="orbits11.svg" width="30%"/>
+            <img src="orbits12.svg" width="30%"/>
+            <img src="orbits13.svg" width="30%"/>
+            <img src="orbits14.svg" width="30%"/>
+            <img src="orbits14.svg" width="30%"/>
+            <img src="orbits15.svg" width="30%"/>
+          </span>
+          <div style="width:30%; min-width: 30%; display:block; float:right;">
+            &nbsp;
+            <table id="orbit-table1">
+              <tr><th/><th colspan="6">Orbits</th></tr>
+              <tr>
+                <th></th>
+                <th>a</th>
+                <th>e</th>
+                <th>i</th>
+                <th>ω</th>
+                <th>Ω</th>
+                <th>ν</th>
+              </tr>
+              <tr><td>A</td></tr>
+              <tr><td>B</td><td colspan="6" align="center">. . .</td></tr>
+              <tr><td>D</td></tr>
+            </table>
+            <table id="orbit-table2">
+              <tr><th/><th colspan="6">Orbits</th></tr>
+              <tr>
+                <th></th>
+                <th>a</th>
+                <th>e</th>
+                <th>i</th>
+                <th>ω</th>
+                <th>Ω</th>
+                <th>M</th>
+              </tr>
+              <tr><td>A</td></tr>
+              <tr><td>B</td><td colspan="6" align="center">. . .</td></tr>
+              <tr><td>D</td></tr>
+            </table>
+            <table id="orbit-table3">
+              <tr><th/><th colspan="6">Orbits</th></tr>
+              <tr>
+                <th></th>
+                <th>a</th>
+                <th>e</th>
+                <th>i</th>
+                <th>ω</th>
+                <th>Ω</th>
+              </tr>
+              <tr><td>A</td></tr>
+              <tr><td>B</td><td colspan="6" align="center">. . .</td></tr>
+              <tr><td>D</td></tr>
+            </table>
+            <table id="spin-table1">
+              <tr><th/><th colspan="6">Spins</th></tr>
+              <tr>
+                <th></th>
+                <th>ω</th>
+                <th>ε</th>
+                <th>ϕ</th>
+              </tr>
+              <tr><td>C</td></tr>
+              <tr><td>E</td><td colspan="6" align="center">. . .</td></tr>
+            </table>
+            <table id="spin-table2">
+              <tr><th/><th colspan="6">Spins</th></tr>
+              <tr>
+                <th></th>
+                <th>ω</th>
+                <th>ε</th>
+              </tr>
+              <tr><td>C</td></tr>
+              <tr><td>E</td><td colspan="6" align="center">. . .</td></tr>
+            </table>
+            <table id="phase-table1">
+              <tr><th/><th colspan="6">Phases</th></tr>
+              <tr>
+                <th></th>
+                <th>ϕ</th>
+              </tr>
+              <tr><td>A</td></tr>
+              <tr><td>B</td></tr>
+              <tr><td>C</td><td colspan="6" align="center">. . .</td></tr>
+              <tr><td>D</td></tr>
+              <tr><td>E</td></tr>
+            </table>
+          </div>
+        </center>
+      </div>
+
+
+      <div id="code-slide" class="slide" onclick="animate_code()">
+        <h2>Deep Dive</h2>
+        <h4 id="code-slide-step1" class="step">Implementation: "Academics Layer"</h4>
+        <h4 id="code-slide-step2" class="step">Implementation: "Model Layer"</h4>
+        <h4 id="code-slide-step3" class="step">Implementation: Unit Tests</h4>
+          <span class="orbits">
+            <img src="orbits11.svg" width="30%"/>
+            <img src="orbits11.svg" width="30%"/>
+            <img src="orbits11.svg" width="30%"/>
+            <img src="orbits12.svg" width="30%"/>
+            <img src="orbits15.svg" width="30%"/>
+            <img src="orbits6.svg" width="30%"/>
+            <img src="orbits6.svg" width="30%"/>
+            <img src="orbits6.svg" width="30%"/>
+            <img src="graph0.svg" width="30%"/>
+            <img src="graph0.svg" width="30%"/>
+            <img src="graph0.svg" width="30%"/>
+          </span>
+          <span class="code">
+            <img src="code-eccentric-anomaly.png" width="60%"/>
+            <img src="code-2d-eliptic.png" width="60%"/>
+            <img src="code-orbit.png" width="60%"/>
+            <img src="code-spin.png" width="60%"/>
+            <img src="code-scene-graph.png" width="60%"/>
+            <img src="code-advance.png" width="60%"/>
+            <img src="code-samples.png" width="60%"/>
+            <img src="code-star-samples.png" width="60%"/>
+            <img src="code-test1.png" width="60%"/>
+            <img src="code-test2.png" width="60%"/>
+            <img src="code-test3.png" width="60%"/>
+          </span>
+      </div>
+
+      <div class="slide">
+        <h2>Deep Dive</h2>
+        <h4>Tech Demo</h4>
+        <center>
+          <iframe width="800" height="550"  src="http://davidson16807.github.io/tectonics.js/tests/solar-system-test.html"></iframe>
+        </center>
+      </div>
+
+      <div class="slide">
+        <h2>Deep Dive</h2>
+        <h4>Integration</h4>
+        <img src="seasons.gif" width="30%"/>
+        <img src="code-shader-input.png" width="60%"/>
+      </div>
+
+      <div class="slide">
+        <h1>
+          <br/>
+          Thanks
+        </h1>
+        <center>
+          <img src="montage.gif" width="50%"/>
+        </center>
+        <h2>
+          <br/>
+          Questions?
+        </h2>
+      </div>
+      
+    </div>
+    <script>
+      let orbit_id = -1;
+      let code_id = -1;
+      function animate_orbits() {
+        const step1_length = 6
+        const step2_length = 9
+        const step3_length = 3
+
+        orbit_id = (orbit_id+1) % (step1_length+step2_length+step3_length+1);
+
+        $('#graph>img').hide();
+        $('#graph>img').eq(Math.min(orbit_id, step1_length+step2_length)).show();
+
+        $('#orbits>img').hide();
+        $('#orbits>img').eq(Math.min(orbit_id, step1_length+step2_length)).show();
+
+        $('#orbits-slide .step').hide();
+        $('#orbits-slide table').hide();
+        if (orbit_id<=step1_length) {
+          $('#orbits-slide-step1').show();
+        } else if (orbit_id<=step1_length+step2_length) {
+          $('#orbits-slide-step2').show();
+        } else {
+          $('#orbits-slide-step3').show();
+          if (orbit_id==step1_length+step2_length+1) {
+            $('#orbit-table1').show();
+            $('#spin-table1').show();
+          } else if (orbit_id==step1_length+step2_length+2) {
+            $('#orbit-table2').show();
+            $('#spin-table1').show();
+          } else if (orbit_id==step1_length+step2_length+3) {
+            $('#orbit-table3').show();
+            $('#spin-table2').show();
+            $('#phase-table1').show();
+          }
+        } 
+      }
+      function animate_code() {
+        const step1_length = 3
+        const step2_length = 3
+        const step3_length = 3
+
+        code_id = (code_id+1) % (step1_length+step2_length+step3_length+1);
+
+        $('#code-slide .orbits>img').hide();
+        $('#code-slide .orbits>img').eq(Math.min(code_id, (step1_length+step2_length+step3_length))).show();
+
+        $('#code-slide .layers>img').hide();
+        $('#code-slide .layers>img').eq(Math.min(code_id, (step1_length+step2_length+step3_length))).show();
+
+        $('#code-slide .code>img').hide();
+        $('#code-slide .code>img').eq(Math.min(code_id, (step1_length+step2_length+step3_length))).show();
+
+        $('#code-slide .step').hide();
+        if (code_id<=step1_length) {
+          $('#code-slide-step1').show();
+        } else if (code_id<=step1_length+step2_length) {
+          $('#code-slide-step2').show();
+        } else {
+          $('#code-slide-step3').show();
+        } 
+      }
+      animate_orbits();
+      animate_code();
+
+      $('#presentation').fathom();
+    </script>
+  </body>
+</html>

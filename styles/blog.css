@@ -1,73 +1,80 @@
+﻿/*
+"blog.css" contains all styling that is specific to the developer's web log. 
+It is written using a responsive, mobile-first design approach. 
+It does not contain any styling relevant to the application. 
+It also assumes the user is accessing the site on a modern, evergreen browser. 
+Therefore, it assumes it is being used in tandem with main.css. 
+*/
+
 body
 {
     font-family: Helvetica, Arial, sans-serif;
     margin: 0;
 }
-
-.article {
+#header h1 {
+    font-size: 3.5vw;
+}
+#article {
     position: absolute;
     top:   23%;
     right: 3.44%;
     width: 76.4%;
     padding: 3.44%;
+    margin-bottom: 100%;
     border-radius: 1em;
-    font-size: 150%;
+    font-size: 100%;
+    color: black;
+    background-color: white;
 }
-.article h1, h2, h3, summary
+#article h1, h2, h3, summary
 {
     font-family: Garamond, Hoefler Text, Free Serif, serif;
 }
-.article h1 a, h2 a, h3 a
+#article h1 a, h2 a, h3 a
 {
     color: black;
     text-decoration: initial;
 }
-.article h1, h2
+#article h1, h2
 { 
     margin-left: -2.128%; 
 } 
-.article h3, h4
+#article h3, h4
 { 
     margin-left: -1.315%; 
 }
-.article h5, h6   
+#article h5, h6   
 { 
     margin-left: -0.813%; 
 } 
-.article h1 { 
-    font-size: 261%; 
-    margin-bottom: 0.813%; 
-    margin-top: 0.502%
-}
-.article h2 { 
-    font-size: 161%; 
-}
-.article h3, summary
+#article h1 { font-size: 261%; margin-bottom: 0.813%; margin-top: 0.502%}
+#article h2 { font-size: 161%; }
+#article h3, summary
 { 
     font-size: 138%; 
     font-weight:bold;
 }
-.article details
+#article details
 {
     margin-top: 1.315%    
 }
-.article details p 
+#article details p 
 { 
     margin-left: 1.315%; 
 }
 
-.article img
+#article img
 {
     padding: 2em;
     border-style: none;
     text-decoration: none;
 }
 
-.article a {
+#article a {
     color: #0A968C;
     text-decoration: initial;
 }
-.article a:hover {
+#article a:hover {
     color: #0A5E68;
     text-decoration: initial;
 }
@@ -95,3 +102,10 @@ body
     z-index: -1;
 }
 
+
+@media (max-width: 576px) {
+    #navigation {
+        width:   61%;
+        display: inline;
+    }
+}
