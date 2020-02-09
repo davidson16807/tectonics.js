@@ -41,7 +41,7 @@ in which case the integral is proportionate to the [error function](https://en.w
 
 <p>`int_A^L exp(R-x^2) dx propto 1/2 sqrt(pi) e^R erf(x)`</p>
 
-<p>And we know from <a href="https://books.google.com/books?id=PExnDwAAQBAJ&lpg=PT242&ots=EPVT5yu6Nx&dq=schuler%20chapman%20approximation&pg=PT242#v=onepage&q=schuler%20chapman%20approximation&f=false">Schüler's work</a> that the limit to our integral as `x->oo` is described by the chapman function where `chi = 90°`:</p>
+<p>And we know from <a href="https://books.google.com/books?id=PExnDwAAQBAJ&lpg=PT242&ots=EPVT5yu6Nx&dq=schuler%20chapman%20approximation&pg=PT242#v=onepage&q=schuler%20chapman%20approximation&f=false">Schüler's work</a> that the limit to our integral as `x->oo` is described by the chapman function when viewing the horizon:</p>
 
 <p>`Ch|| = (1/(2(z-r)) + 1) sqrt((pi (z-r)) / 2)`</p>
 
@@ -67,25 +67,25 @@ We need some way to switch between these two integral solutions seamlessly. We f
 
 <p>`int_A^L exp(R - sqrt(x^2 + z^2)) dx approx - 1/(x/sqrt(x^2 + z^2) + F) exp(R - sqrt(x^2 + z^2))`</p>
 
-When the ray only grazes the planet, `F` should be exactly what's needed to spit out the known good answer, `Ch|| erf(x)`. Since `erf(x)` is close enough to `-exp(R-sqrt(x^2+z^2))`, we'll say:</p>
+<p>When the ray only grazes the planet, `F` should be exactly what's needed to spit out the known good answer, `Ch|| erf(x)`. Since `erf(x)` is close enough to `-exp(R-sqrt(x^2+z^2))`, we'll say:</p>
 
 <p>`F approx 1/(Ch||) = 1 / ((1/(2x) + 1) sqrt((pi x) / 2))` when `x=0` and `z=R`</p>
 
-When the ray strikes head on (`z=0`), the amount we nudge it by should be zero.
+<p>When the ray strikes head on (`z=0`), the amount we nudge it by should be zero.</p>
 
 <p>`F = 0` when `z = 0`</p>
 
-<p>So all we need is to modify `Ch||` in such a way that F goes to 0 for large values of `x`. We'll call this modification `Ch` I started by calculating `I` using numerical integration and [evaluating the expression](https://www.desmos.com/calculator/1vtmyf9f3i) that was equivalent to `Ch`:</p>
+<p>So all we need is to modify `Ch||` in such a way that F goes to 0 for large values of `x`. We'll call this modification `Ch` I started by calculating `I` using numerical integration and <a href="https://www.desmos.com/calculator/1vtmyf9f3i">evaluating the expression</a> that was equivalent to `Ch`:</p>
 
-<p>`Ch = [-exp(R-sqrt(x^2 + z^2)) / I - |x|/sqrt(x^2+z^2)]^-1`</p>
+<p>`Ch = (-exp(-h) / I - h')^-1`</p>
 
-<p>After [some trial and error](https://www.desmos.com/calculator/dkkzm9lcyh), I found `Ch approx sqrt(pi/2 (x^2 + z))` works to a suitable approximation, but for those who want more accuracy for a little less performance, it's best to simply to add a linear term onto `Ch||`:</p>
+<p>After <a href="https://www.desmos.com/calculator/dkkzm9lcyh">some trial and error</a>, I found `Ch approx sqrt(pi/2 (x^2 + z))` works to a suitable approximation, but for those who want more accuracy for a little less performance, it's best to simply to add a linear term onto `Ch||`:</p>
 
 <p>`Ch approx (1/(2 sqrt(x^2+z^2))+1) sqrt(1/2 pi sqrt(x^2+z^2))  + ax`</p>
 
-where I set `a = 0.6`
+<p>where I set `a = 0.6`</p>
 
-<p>So in other words, we perform the "[o-plus](https://math.stackexchange.com/questions/1785715/finding-properties-of-operation-defined-by-x%E2%8A%95y-frac1-frac1x-frac1y)" operation between `h'` and `Ch|| + ax`. O-plus turns out to be pretty useful for preventing division by 0, in general.</p>
+<p>So in other words, we perform the "<a href="https://math.stackexchange.com/questions/1785715/finding-properties-of-operation-defined-by-x%E2%8A%95y-frac1-frac1x-frac1y">o-plus</a>" operation between `h'` and `Ch|| + ax`. O-plus turns out to be pretty useful for preventing division by 0, in general.</p>
 
 So chances are you've clicked a link here wanting to see the code. Well, here it is:
 
