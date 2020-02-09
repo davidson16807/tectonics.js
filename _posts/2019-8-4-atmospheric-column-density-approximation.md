@@ -75,11 +75,11 @@ We need some way to switch between these two integral solutions seamlessly. We f
 
 <p>`F = 0` when `z = 0`</p>
 
-<p>So all we need is to modify `Ch||` in such a way that F goes to 0 for large values of `x`. We'll call this modification `Ch` I started by calculating `I` using numerical integration and <a href="https://www.desmos.com/calculator/1vtmyf9f3i">evaluating the expression</a> that was equivalent to `Ch`:</p>
+<p>So all we need is to modify `Ch||` in such a way that F goes to 0 for large values of `x`. We'll call this modification `Ch` I started by calculating `I` using numerical integration and <a href="https://www.desmos.com/calculator/wainnu3qyk">evaluating the expression</a> that was equivalent to `Ch`:</p>
 
 <p>`Ch = (-exp(-h) / I - h')^-1`</p>
 
-<p>After <a href="https://www.desmos.com/calculator/dkkzm9lcyh">some trial and error</a>, I found `Ch approx sqrt(pi/2 (x^2 + z))` works to a suitable approximation, but for those who want more accuracy for a little less performance, it's best to simply to add a linear term onto `Ch||`:</p>
+<p>After <a href="https://www.desmos.com/calculator/iht5vlwov8">some trial and error</a>, I found `Ch approx sqrt(pi/2 (x^2 + z))` works to a suitable approximation, but for those who want more accuracy for a little less performance, it's best to simply to add a linear term onto `Ch||`:</p>
 
 <p>`Ch approx (1/(2 sqrt(x^2+z^2))+1) sqrt(1/2 pi sqrt(x^2+z^2))  + ax`</p>
 
