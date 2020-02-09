@@ -444,13 +444,18 @@ input[type="range"].slider-vertical {
 We give special attention to styling the time warp control,
 because it features so prominently
 */
-#time-control .input-group{
+#speed-control .input-group{
     flex-flow : row nowrap;
     width     : 190px;
 }
-#time-control .input-group-prepend,
-#time-control .input-group-text {
+#speed-control .input-group-prepend,
+#speed-control .input-group-text {
     flex: 2 1 auto;
+}
+
+#speed-display {
+    width: 100px;
+    min-width: 100px;
 }
 
 /*

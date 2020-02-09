@@ -106,8 +106,8 @@
 <div id="main-control" class="show collapse control" >
     <div class="vertical-axis-group">
         <div class="horizontal-axis-group">
-            <span class="form-control input age">{{ format_count(elapsed_time).quantity }}</span>
-            <div class="input-group-append">
+            <span id='age-display' class="form-control input">{{ format_count(elapsed_time).quantity }}</span>
+            <div id='age-units-display' class="input-group-append">
                 <span class="input-group-text age-units">{{ format_count(elapsed_time).unit }}y</span>
             </div>
         </div>
@@ -125,7 +125,7 @@
                 </span>
             </div>
             <div class="input-group-append">
-                <span class="input-group-text">
+                <span id="speed-display" class="input-group-text">
                     {{speeds[speed_i].name}}
                     <span class="instructions">&lt;/&gt;</span>
                 </span>
