@@ -7,9 +7,9 @@ So there's been an improvement to atmospheric scattering that I want to share. Y
 
 We're basically trying to solve this integral:
 
-<img align="right" src="http://davidson16807.github.io/tectonics.js/blog/diagrams/atmospheric-scattering-variables.svg" width="61%">
-
 <p>`I = int_A^L exp(-(sqrt(x^2 + z^2) - R)/H) dx`</p>
+
+<img align="right" src="http://davidson16807.github.io/tectonics.js/blog/diagrams/atmospheric-scattering-variables.svg" width="61%">
 
 Like many integrals, it has no closed form solution. We have to make approximations.
 

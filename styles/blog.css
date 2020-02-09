@@ -4,6 +4,10 @@
     margin: 0;
 }
 
+article
+{
+    font-size: 150%;
+}
 article h1, h2, h3, summary
 {
     font-family: Garamond, Hoefler Text, Free Serif, serif;
@@ -43,6 +47,7 @@ article details p
 
 article img
 {
+    padding: 2em;
     border-style: none;
     text-decoration: none;
 }
