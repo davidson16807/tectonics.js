@@ -47,7 +47,7 @@ in which case the integral is proportionate to the [error function](https://en.w
 
 So we can refine our estimate to: 
 
-<p>`Ch|| erf(x)`</p>
+<p>`Ch|| erf(x)` where `z=R` and `x=0`</p>
 
 <p>however if `z=0` then height is linear:</p>
 
@@ -63,31 +63,31 @@ We need some way to switch between these two integral solutions seamlessly. We f
 
 <p>we see that the division by zero occurs when `x=0`. That only appreciably occurs when `z=R`. So whatever workaround we use to address the division by zero ought to in these circumstance return the approximation from the error function instead of the bogus results from the naïve integration by substitution.</p>
 
-<p>So how about this: we "nudge" the derivative by some amount (let's call it `F`) to prevent division by zero when `x=0`. 
+<p>So how about this: we "nudge" the derivative by some amount (let's call it `F`) to prevent division by zero when `x=0`. </p>
 
 <p>`int_A^L exp(R - sqrt(x^2 + z^2)) dx approx - 1/(x/sqrt(x^2 + z^2) + F) exp(R - sqrt(x^2 + z^2))`</p>
+
+When the ray only grazes the planet, `F` should be exactly what's needed to spit out the known good answer, `Ch|| erf(x)`. Since `erf(x)` is close enough to `-exp(R-sqrt(x^2+z^2))`, we'll say:</p>
+
+<p>`F approx 1/(Ch||) = 1 / ((1/(2x) + 1) sqrt((pi x) / 2))` when `x=0` and `z=R`</p>
 
 When the ray strikes head on (`z=0`), the amount we nudge it by should be zero.
 
 <p>`F = 0` when `z = 0`</p>
 
-But when the ray only grazes the planet, the amount we nudge it by (let's call it `F`) should be exactly what's needed to spit out the known good answer, `Ch|| erf(x)`. Since `erf(x)` is close enough to `-exp(R-sqrt(x^2+z^2))`, we'll say:</p>
+<p>So all we need is to modify `Ch||` in such a way that F goes to 0 for large values of `x`. We'll call this modification `Ch` I started by calculating `I` using numerical integration and [evaluating the expression](https://www.desmos.com/calculator/1vtmyf9f3i) that was equivalent to `Ch`:</p>
 
-<p>`F = 1/(Ch||) = 1 / ((1/(2x) + 1) sqrt((pi x) / 2))` when `x=0` and `z=R`</p>
+<p>`Ch = [-exp(R-sqrt(x^2 + z^2)) / I - |x|/sqrt(x^2+z^2)]^-1`</p>
 
-<p>So all we need is a way for F to transition between these two states. In other words, `1/F` needs to get bigger in response to x. I started by calculating `I` using numerical integration and [evaluating the expression](https://www.desmos.com/calculator/1vtmyf9f3i) that was equivalent to `F`:</p>
+<p>After [some trial and error](https://www.desmos.com/calculator/dkkzm9lcyh), I found `Ch approx sqrt(pi/2 (x^2 + z))` works to a suitable approximation, but for those who want more accuracy for a little less performance, it's best to simply to add a linear term onto `Ch||`:</p>
 
-<p>`F = -rho(x,z,r) / I(x,z,r) - |x|/sqrt(x^2+z^2)`</p>
+<p>`Ch approx (1/(2 sqrt(x^2+z^2))+1) sqrt(1/2 pi sqrt(x^2+z^2))  + ax`</p>
 
-<p>After [some trial and error](https://www.desmos.com/calculator/dkkzm9lcyh), I found `F = 1/sqrt(pi/2 (x^2 + z))` works to a suitable approximation. For those who want more accuracy at the cost of performance, the following expression works to a better approximation:</p>
+where I set `a = 0.6`
 
-<p>`F = 1/( (1/(2 sqrt(x^2+z^2))+1) sqrt(1/2 pi sqrt(x^2+z^2)) + 3/4 x - sqrt(pi/2) )`</p>
+<p>So in other words, we perform the "[o-plus](https://math.stackexchange.com/questions/1785715/finding-properties-of-operation-defined-by-x%E2%8A%95y-frac1-frac1x-frac1y)" operation between `h'` and `Ch|| + ax`. O-plus turns out to be pretty useful for preventing division by 0, in general.</p>
 
-<p>There is no mathematical reason why I chose either of these expressions, I've simply made an empirical modification to `C||`.</p>
-
-<p>So in other words, we perform the "[o-plus](https://math.stackexchange.com/questions/1785715/finding-properties-of-operation-defined-by-x%E2%8A%95y-frac1-frac1x-frac1y)" operation between `h'` and `G`. I've come to discover o-plus is pretty useful for preventing division by 0, in general.</p>
-
-So chances are if you clicked a link here you'll probably want to see the code more than anything. Well, here it is:
+So chances are you've clicked a link here wanting to see the code. Well, here it is:
 
 <pre><code class="language-glsl">
 // "approx_air_column_density_ratio_along_2d_ray_for_curved_world" 
@@ -119,7 +119,7 @@ float approx_air_column_density_ratio_along_2d_ray_for_curved_world(
     //  "*2" the square of a variable
     //  "d*dx" a derivative, a rate of change over distance along the ray
     float X  = sqrt(max(R*R -z2, 0.));
-    float div0_fix = 1./sqrt((X*X+R) * 0.5*PI);
+    float div0_fix = 1./sqrt((X*X+sqrt(z)) * 0.5*PI);
     float ra = sqrt(a*a+z2);
     float rb = sqrt(b*b+z2);
     float sa = 1./(abs(a)/ra + div0_fix) *     exp(R-ra);
