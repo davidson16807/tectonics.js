@@ -9,12 +9,12 @@ It also assumes it is being used in tandem with main.css.
 /* ====== START OF SCREEN SPECIFIC CONTENT ======*/
 
 /*
-Overarching design:
+Overarching design principles:
 
-We want to maximize the utility of screenspace for any given orientation. 
-We want our solution to scale well for any number of UI components. 
-We want our solution to be consistent to the user.
-We want to leverage existing UI conventions to prevent user confusion.
+* We want to maximize the utility of screenspace for any given orientation. 
+* We want our solution to scale well for any number of UI components. 
+* We want our solution to be consistent to the user.
+* We want to leverage existing UI conventions to prevent user confusion.
 
 The planet is the main focus of the application, so therefore 
  much of the screenspace is rightfully consumed by the planet, in the center. 
@@ -84,18 +84,30 @@ In portrait orientations, it will expand from bottom right to bottom left.
         flex-flow   : column-reverse nowrap;
         align-items : flex-end;
         /* 
+        To prevent obstructing the view of the planet, 
+        the content width should resize as necessary. 
+        */
+        max-width   : auto;
+        overflow-x  : hidden;
+    }
+}
+@media (orientation: landscape) {
+    .control {
+        /* 
         Because we do not wrap content, we run the risk of content running off the screen. 
-        To prevent this, we set the height not exceed the height of the window. 
+        To prevent this, we set the height to not exceed the height of the window. 
         If necessary, the user may scroll vertically through the content. 
         */
         max-height  : 100%;
         overflow-y  : auto;
+    }
+}
+@media (pointer: fine), (pointer: none) {
+    .control {
         /* 
-        To prevent obstructing the view of the planet, 
-        and content width should resize as necessary. 
+        If the user is on a desktop, they can resize the screen as needed
         */
-        max-width   : auto;
-        overflow-x  : hidden;
+        overflow-y  : hidden;
     }
 }
 
@@ -148,7 +160,7 @@ This will be the case regardless of screen orientation.
 }
 
 /*
-We also want to display hints to desktop users so they can learn shortcuts and hotkeys
+We also want to display hints to desktop users so they can learn shortcuts and hotkeys.
 To accomplish this we display "instructions" next to button text. 
 These only appear when pointer precision indicates a desktop user.
 */
@@ -170,18 +182,29 @@ These only appear when pointer precision indicates a desktop user.
     }
 }
 
+/*
+"horizontal-axis-group" behaves similarly to bootstrap's .btn-group.
+Its name makes clear the fact that its content always expands out horizontally,
+regardless of screen orientation.
+This is only meant to provide an override for special cases 
+where we know the content is short enough not to require considering screen orientation.
+*/
 .horizontal-axis-group {
     display   : flex;
     flex-flow : row nowrap;
     justify-content: space-evenly;
 }
+/*
+"vertical-axis-group" behaves similarly to bootstrap's .btn-group.
+Its name makes clear the fact that its content always expands out vertically,
+regardless of screen orientation.
+This is only meant to provide an override for special cases 
+where we know the content is short enough not to require considering screen orientation.
+*/
 .vertical-axis-group {
     display   : flex;
     flex-flow : column nowrap;
     justify-content: space-evenly;
-}
-.form-control {
-  height: auto;
 }
 
 /*
@@ -354,7 +377,6 @@ is-long-axis-horizontal only displays when the horizontal axis is longest
 .is-long-axis-horizontal {
   display: none;
 }
-/*@media (pointer: fine), (pointer: none), (orientation: landscape) {*/
 @media (pointer: fine), (pointer: none), (orientation: landscape) {
     .is-long-axis-vertical {
       display: none;
@@ -374,7 +396,6 @@ is-short-axis-horizontal only displays when the horizontal axis is shortest
 .is-short-axis-horizontal {
   display: inherit;
 }
-/*@media (pointer: fine), (pointer: none), (orientation: landscape) {*/
 @media (pointer: fine), (pointer: none), (orientation: landscape) {
     .is-short-axis-vertical {
       display: inherit;
@@ -384,6 +405,98 @@ is-short-axis-horizontal only displays when the horizontal axis is shortest
     }
 }
 
+/*
+remaining screen-specific content is ordered by position on the page
+*/
+
+#header {
+    /* top left corner, do not spill over the screen */
+    position        : fixed;
+    top             : 2vw;
+    left            : 4vw;
+    right           : 2vw;
+
+    /* extend content to the left, wrap when you run out of screen */
+    display         : flex;
+    flex-direction  : row;
+    flex-wrap       : wrap;
+}
+#header h1 {
+    /* set margins to 0 */
+    margin          : 0;
+    /* but set right margin to something just in case the navigation menu doesn't spill */
+    margin-right    : 2vw;
+}
+#header a {
+    /*we follow apple recommendations for height of touchable components*/
+    font-size       : 44px;
+    font-weight     : bold;
+
+    /* standard header colors, no underscore */
+    color           : white;
+    text-decoration : none;
+}
+#header a:hover {
+    /* no underscore on highlight */
+    text-decoration : none;
+}
+@media (orientation: landscape) {
+    #header {
+        /* don't spill over in landscape, just scroll */
+        flex-wrap   : nowrap;
+    }
+}
+@media (pointer: fine), (pointer: none) {
+    #header {
+        /* always spill over on desktop, override the landscape setting */
+        flex-wrap   : wrap;
+    }
+    #header h1 {
+        /* header is constant size on desktops */
+        font-size   : 3rem;
+        /* navigation menu always wraps onto the next line on desktops */
+        width       : 100%;
+    }
+}
+
+#navigation {
+    /* extend to the left, scroll when you run out of screen */
+    display         : flex;
+    flex-direction  : row;
+    flex-wrap       : nowrap;
+    overflow-x      : auto;
+    /* navigation menu indentation */
+    margin-left     : 3vw;
+}
+#navigation a {
+    /*we follow apple recommendations for height of touchable components*/
+    font-size       : 22px;
+    height          : 44px;
+    /* navigation menu items should be spaced apart */
+    margin-left     : 4vw;
+
+    /* standard header colors, no underscore */
+    color           : white;
+    text-decoration : none;
+}
+#navigation a:hover {
+    /* standard header colors, no underscore */
+    color           : grey;
+    text-decoration : none;
+}
+@media (pointer: fine), (pointer: none) {
+    #navigation {
+        /* ensure scrollbar is disabled on desktop because it's tacky */
+        overflow-x  : hidden;
+    }
+    #navigation a {
+        /* navigation menu is smaller on desktops */
+        font-size   : 1rem;
+        /* navigation menu indentation is constant on desktops */
+        margin-left : 1rem;
+        margin-left : 1rem;
+    }
+}
 
 .slider-label {
     font-size: 0.75rem;
@@ -434,12 +547,97 @@ input[type="range"].slider-vertical {
 /* ====== END OF SCREEN SPECIFIC CONTENT ======*/
 
 
+/* 
+TAG BASED STYLING
+*/
+body {
+    overflow : hidden;
+}
+
+
+/* 
+CLASS BASED STYLING
+*/
+
+/*
+"#loading-dialog" is a visual cue that indicates to the user
+ that the application is loading something.
+*/
+.loading-dialog {
+    position: fixed;
+    top: 43%;
+    left: 43%;
+    width: 15%;
+    text-align: center;
+}
+.loading-dialog h2{
+    text-align: center;
+}
+
+/*
+".notifications" express short nonessential messages to the user.
+They require no interaction on the users behalf. 
+They appear at the bottom of the screen and are inspired by 
+ the notifications that appear in Skyrim to indicate things like encumbrance. 
+*/
+.notifications-dialog {
+    position: fixed;
+    bottom: 8.4%;
+    left: 20%;
+    width: 61%;
+    text-align: center;
+}
+.notifications-dialog h3 {
+    text-align: center;
+}
+.notifications-dialog .fade-enter-active, .fade-leave-active {
+  transition: opacity 3s;
+}
+.notifications-dialog .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
+  opacity: 0;
+}
+
+/*
+".dialog" express longer messages to the user.
+They may potentially require interaction on the users behalf. 
+They appear as a white box in the center of the screen, 
+ and are inspired by Windows dialog boxes.
+*/
+.dialog {
+    color: black;
+    background-color: white;
+    padding: 3.44%;
+    border-radius: 1em;
+}
+
+/*
+".hidden-when-loading" indicates an element must not render when 
+ a new game or save file is loaded. 
+This may be used to avoid confusing the user, 
+ or to prevent invalid states from occuring due to user interaction.
+*/
+.hidden-when-loading{
+    display: none;
+}
+
+
+/* set "overflow: hidden" to hide the scrollbar ; */
+
+.form-control {
+  height: auto;
+}
 .label {
     background-color: buttonface;
     color: #212529;
     padding: 0.25rem 0.5rem;
     border-radius: 0.2rem;
 }
+
+
+/* 
+INDIVIDUAL COMPONENT BASED STYLING
+*/
+
 /* 
 We give special attention to styling the time warp control,
 because it features so prominently
@@ -522,69 +720,3 @@ It  has no styling and is never meant to be seen.
     border-style: dashed;
 }
 
-/*
-"#loading-dialog" is a visual cue that indicates to the user
- that the application is loading something.
-*/
-.loading-dialog {
-    position: fixed;
-    top: 43%;
-    left: 43%;
-    width: 15%;
-    text-align: center;
-}
-.loading-dialog h2{
-    text-align: center;
-}
-
-/*
-".notifications" express short nonessential messages to the user.
-They require no interaction on the users behalf. 
-They appear at the bottom of the screen and are inspired by 
- the notifications that appear in Skyrim to indicate things like encumbrance. 
-*/
-.notifications-dialog {
-    position: fixed;
-    bottom: 8.4%;
-    left: 20%;
-    width: 61%;
-    text-align: center;
-}
-.notifications-dialog h3 {
-    text-align: center;
-}
-.notifications-dialog .fade-enter-active, .fade-leave-active {
-  transition: opacity 3s;
-}
-.notifications-dialog .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
-  opacity: 0;
-}
-
-/*
-".dialog" express longer messages to the user.
-They may potentially require interaction on the users behalf. 
-They appear as a white box in the center of the screen, 
- and are inspired by Windows dialog boxes.
-*/
-.dialog {
-    color: black;
-    background-color: white;
-    padding: 3.44%;
-    border-radius: 1em;
-}
-
-/*
-".hidden-when-loading" indicates an element must not render when 
- a new game or save file is loaded. 
-This may be used to avoid confusing the user, 
- or to prevent invalid states from occuring due to user interaction.
-*/
-.hidden-when-loading{
-    display: none;
-}
-
-
-/* set "overflow: hidden" to hide the scrollbar ; */
-body {
-    overflow : hidden;
-}
