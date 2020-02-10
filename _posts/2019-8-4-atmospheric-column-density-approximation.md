@@ -7,9 +7,9 @@ So there's been an improvement to atmospheric scattering that I want to share. Y
 
 We're basically trying to solve this integral:
 
-<img align="right" src="http://davidson16807.github.io/tectonics.js/blog/diagrams/atmospheric-scattering-variables.svg" width="61%">
+<p>`I = int_A^L exp(-(sqrt(x^2 + z^2) - R)/H) dx`</p>
 
-<p>`int_A^L exp(-(sqrt(x^2 + z^2) - R)/H) dx`</p>
+<img align="right" src="http://davidson16807.github.io/tectonics.js/blog/diagrams/atmospheric-scattering-variables.svg" width="61%">
 
 Like many integrals, it has no closed form solution. We have to make approximations.
 
@@ -25,7 +25,7 @@ And that's why it felt so ugly. You had to pick some value for the magic constan
 
 So I kept revisiting the problem, more than I probably should have, and eventually I was able to reason my way to a better solution. 
 
-My first insight was to reduce the number of parameters to contemplate. I realized that if all distances (both input and output) were expressed in scale heights, we could do away with H:
+My first insight was to reduce the number of parameters to consider. I realized that if all distances (both input and output) were expressed in scale heights, we could do away with H:
 
 <p>`int_A^L exp(R-sqrt(x^2 + z^2)) dx approx -sqrt(x^2 + z^2)/x exp(R-sqrt(x^2 + z^2))`</p>
 
@@ -37,9 +37,17 @@ begins to resemble a parabola:
 
 <p>`h(0,R,R) approx approx x^2 - R`</p>
 
-in which case the integral is approximated by the [error function](https://en.wikipedia.org/wiki/Error_function):
+in which case the integral is proportionate to the [error function](https://en.wikipedia.org/wiki/Error_function):
 
-<p>`int_A^L exp(R-x^2) dx = 1/2 sqrt(pi) e^R erf(x)`</p>
+<p>`int_A^L exp(R-x^2) dx propto 1/2 sqrt(pi) e^R erf(x)`</p>
+
+<p>And we know from <a href="https://books.google.com/books?id=PExnDwAAQBAJ&lpg=PT242&ots=EPVT5yu6Nx&dq=schuler%20chapman%20approximation&pg=PT242#v=onepage&q=schuler%20chapman%20approximation&f=false">Schüler's work</a> that the limit to our integral as `x->oo` is described by the chapman function when viewing the horizon:</p>
+
+<p>`Ch|| = (1/(2(z-r)) + 1) sqrt((pi (z-r)) / 2)`</p>
+
+So we can refine our estimate to: 
+
+<p>`Ch|| erf(x)` where `z=R` and `x=0`</p>
 
 <p>however if `z=0` then height is linear:</p>
 
@@ -49,27 +57,41 @@ in which case the integral is trivial:
 
 <p>`int_A^L exp(R - x) dx = -exp(R - x)`</p>
 
-We need some way to switch between these two integral solutions seamlessly. Fortunately, if we attempt a naïve solution using integration by substitution:
+We need some way to switch between these two integral solutions seamlessly. We first notice that if we attempt a naïve solution using integration by substitution:
 
 <p>`int_A^L exp(R - sqrt(x^2 + z^2)) dx approx - 1/(h') exp(h(x)) approx - sqrt(x^2 + z^2)/x exp(R - sqrt(x^2 + z^2))`</p>
 
-<p>Then we see that the division by zero occurs when `x=0`. That only appreciably occurs when `z=R`. So whatever workaround we use to address the division by zero needs to return under these circumstances the approximation from the error function instead of the bogus results from the naïve integration by substitution.</p>
+<p>we see that the division by zero occurs when `x=0`. That only appreciably occurs when `z=R`. So whatever workaround we use to address the division by zero ought to in these circumstance return the approximation from the error function instead of the bogus results from the naïve integration by substitution.</p>
 
-<p>So how about this: we "nudge" the derivative by some amount before calculating its reciprocal. The amount (let's call it `F`) should be close to 0 when the ray strikes the planet head on. </p>
+<p>So how about this: we "nudge" the derivative by some amount (let's call it `F`) to prevent division by zero when `x=0`. </p>
 
 <p>`int_A^L exp(R - sqrt(x^2 + z^2)) dx approx - 1/(x/sqrt(x^2 + z^2) + F) exp(R - sqrt(x^2 + z^2))`</p>
 
+<p>When the ray only grazes the planet, `F` should be exactly what's needed to spit out the known good answer, `Ch|| erf(x)`. Since `erf(x)` is close enough to `-exp(R-sqrt(x^2+z^2))`, we'll say:</p>
+
+<p>`F approx 1/(Ch||) = 1 / ((1/(2x) + 1) sqrt((pi x) / 2))` when `x=0` and `z=R`</p>
+
+<p>When the ray strikes head on (`z=0`), the amount we nudge it by should be zero.</p>
+
 <p>`F = 0` when `z = 0`</p>
 
-<p>However, if the ray only grazes the planet, `F` should equal the reciprocal of whatever ought to be returned instead of the derivative. Let's call what ought to be returned `G`. As we've mentioned, what the entire approximation should return in those circumstances is `1/2 sqrt(pi) e^R erf(x)`. Since `e^R erf(x)` behaves similarly to the `-exp(R-x)` in our naïve integration by substitution, we will disregard that part and only return `-1/2 sqrt(pi)`, so:</p>
+<p>So all we need is to modify `Ch||` in such a way that F goes to 0 for large values of `x`. We'll call this modification `Ch` I started by calculating `I` using numerical integration and <a href="https://www.desmos.com/calculator/wainnu3qyk">evaluating the expression</a> that was equivalent to `Ch`:</p>
 
-<p>`G = -1/2 sqrt(pi)` when `x=0` and `z=R`</p>
+<p>`Ch = (-exp(-h) / I - h')^-1`</p>
 
-<p>However we still need to modify this so that it is only nonzero when `x = 0`. After some trial and error, I've found `G = sqrt(pi/2 (x^2 + r))` works to a suitable approximation. There is no mathematical reason why I chose this expression, but it does equal zero when the ray strikes the planet head on.</p>
+<p>After <a href="https://www.desmos.com/calculator/iht5vlwov8">some trial and error</a>, I found `Ch approx sqrt(pi/2 (x^2 + z))` works to a suitable approximation, but for those who want more accuracy for a little less performance, it's best to simply to add a linear term onto `Ch||`:</p>
 
-<p>So in other words, we perform the "[o-plus](https://math.stackexchange.com/questions/1785715/finding-properties-of-operation-defined-by-x%E2%8A%95y-frac1-frac1x-frac1y)" operation between `h'` and `G`. I've come to discover o-plus is pretty useful for preventing division by 0, in general.</p>
+<p>`Ch approx (1/(2 sqrt(x^2+z^2))+1) sqrt(1/2 pi sqrt(x^2+z^2))  + ax`</p>
 
-So chances are if you clicked a link here you'll probably want to see the code more than anything. Well, here it is:
+<p>where I set `a = 0.6`</p>
+
+<p>So in other words, all we're really doing is a modified integration by substitution using the "<a href="https://math.stackexchange.com/questions/1785715/finding-properties-of-operation-defined-by-x%E2%8A%95y-frac1-frac1x-frac1y">o-plus</a>" operation between `h'` and `Ch|| + ax` to prevent division by zero. </p>
+
+<p>`I = int_A^L exp(R-sqrt(x^2 + z^2)) dx approx (h' oplus Ch) exp(R-sqrt(x^2 + z^2))`</p>
+
+<p>O-plus turns out to be pretty useful for preventing division by 0, in general.</p>
+
+So chances are you've clicked a link here wanting to see the code. Well, here it is:
 
 <pre><code class="language-glsl">
 // "approx_air_column_density_ratio_along_2d_ray_for_curved_world" 
@@ -101,7 +123,7 @@ float approx_air_column_density_ratio_along_2d_ray_for_curved_world(
     //  "*2" the square of a variable
     //  "d*dx" a derivative, a rate of change over distance along the ray
     float X  = sqrt(max(R*R -z2, 0.));
-    float div0_fix = 1./sqrt((X*X+R) * 0.5*PI);
+    float div0_fix = 1./sqrt((X*X+sqrt(z)) * 0.5*PI);
     float ra = sqrt(a*a+z2);
     float rb = sqrt(b*b+z2);
     float sa = 1./(abs(a)/ra + div0_fix) *     exp(R-ra);

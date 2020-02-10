@@ -5,7 +5,7 @@ It does not however include styling for the IE fallback webpage,
  since that webpage is designed to operate in extenuating circumstances
  and doing so would incur significant mental overhead.
 It assumes instead the user is accessing the site on a modern, evergreen browser. 
-It is a standalone stylesheet that can be optionally extended with other.
+It is a standalone stylesheet that can be optionally extended with other,
  more purpose built stylesheets like app.css or blog.css. 
 */
 
@@ -58,45 +58,4 @@ details p {
 }
 .hidden {
     display:none;
-}
-
-#header {
-    font-weight:bold;
-    /* top left corner */
-    position    : fixed;
-    top         : 1em;
-    left        : 1em;
-}
-#header a {
-    color           : white;
-    text-decoration : none;
-}
-#header a:hover {
-    text-decoration : none;
-}
-#navigation
-{
-    margin-left : 23.6%;
-    width       : 161%;
-    font-size   : 0.7rem;
-}
-#navigation a:hover {
-    color: grey;
-    text-decoration    : none;
-}
-#article{
-    color: black;
-    background-color: white;
-    position: absolute;
-    top:   23%;
-    right: 3.44%;
-    width: 61.8%;
-    padding: 3.44%;
-    border-radius: 1em;
-}
-
-@media (max-width: 576px) {
-    #header h1 {
-        font-size: 1.5rem;
-    }
 }

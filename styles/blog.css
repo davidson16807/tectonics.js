@@ -4,13 +4,181 @@ It is written using a responsive, mobile-first design approach.
 It does not contain any styling relevant to the application. 
 It also assumes the user is accessing the site on a modern, evergreen browser. 
 Therefore, it assumes it is being used in tandem with main.css. 
+
+"blog.css" follows the same design principles as outlined in app.css.
+A quick summary of core principles is as follows:
+
+* We want to maximize the utility of screenspace for any given orientation. 
+* We want our solution to scale well for any number of UI components. 
+* We want our solution to be consistent to the user.
+* We want to leverage existing UI conventions to prevent user confusion.
+* We design for the most limiting circumstances first
+
+Following from these principles, we pursue 
+a mobile-first and portrait-first design philosophy. 
 */
 
+/* ====== START OF SCREEN SPECIFIC CONTENT ======*/
+
+#header {
+    /* top left corner, do not spill over the screen */
+    top             : 2vw;
+    left            : 4vw;
+    right           : 2vw;
+
+    /* extend content to the left, wrap when you run out of screen */
+    display         : flex;
+    flex-direction  : row;
+    flex-wrap       : wrap;
+}
+#header h1 {
+    /* set margins to 0 */
+    margin          : 0;
+    /* but set right margin to something just in case the navigation menu doesn't spill */
+    margin-right    : 2vw;
+}
+#header a {
+    /*we follow apple recommendations for height of touchable components*/
+    font-size       : 44px;
+    font-weight     : bold;
+
+    /* standard header colors, no underscore */
+    color           : white;
+    text-decoration : none;
+}
+#header a:hover {
+    /* no underscore on highlight */
+    text-decoration : none;
+}
+@media (orientation: landscape) {
+    #header {
+        /* don't spill over in landscape, just scroll */
+        flex-wrap   : nowrap;
+    }
+}
+@media (pointer: fine), (pointer: none) {
+    #header {
+        /* always spill over on desktop, override the landscape setting */
+        flex-wrap   : wrap;
+    }
+    #header h1 {
+        /* header is constant size on desktops */
+        font-size   : 3rem;
+        /* navigation menu always wraps onto the next line on desktops */
+        width       : 100%;
+    }
+}
+
+#navigation {
+    /* extend to the left, scroll when you run out of screen */
+    display         : flex;
+    flex-direction  : row;
+    flex-wrap       : nowrap;
+    overflow-x      : auto;
+    /* navigation menu indentation */
+    margin-left     : 3vw;
+}
+#navigation a {
+    /*we follow apple recommendations for height of touchable components*/
+    font-size       : 22px;
+    height          : 44px;
+    /* navigation menu items should be spaced apart */
+    margin-left     : 4vw;
+
+    /* standard header colors, no underscore */
+    color           : white;
+    text-decoration : none;
+}
+#navigation a:hover {
+    /* standard header colors, no underscore */
+    color           : grey;
+    text-decoration : none;
+}
+@media (pointer: fine), (pointer: none) {
+    #navigation {
+        /* ensure scrollbar is disabled on desktop because it's tacky */
+        overflow-x  : hidden;
+    }
+    #navigation a {
+        /* navigation menu is smaller on desktops */
+        font-size   : 1rem;
+        /* navigation menu indentation is constant on desktops */
+        margin-left : 1rem;
+        margin-left : 1rem;
+    }
+}
+
+
+#article {
+    margin-top       : 23%;
+    margin-left      : 3.44%;
+    margin-right     : 3.44%;
+    margin-bottom    : 200%;
+
+    padding          : 3.44%;
+
+    border-radius    : 1em;
+
+    color            : black;
+    background-color : white;
+}
+@media (pointer: fine), (pointer: none) {
+    #article {
+        margin-top       : 14.6%;
+        margin-left      : 14.6%;
+        margin-right     : 3.44%;
+        margin-bottom    : 200%;
+    }
+}
+/* ====== END OF SCREEN SPECIFIC CONTENT ======*/
+
+
+
+/* 
+TAG BASED STYLING
+*/
 body
 {
-    font-family: Helvetica, Arial, sans-serif;
-    margin: 0;
+    overflow-x : hidden;
+    overflow-y : auto;
 }
+
+/* 
+CLASS BASED STYLING
+*/
+.mjx-chtml 
+{
+    width      : 100%;
+    overflow-x : auto;
+    overflow-y : hidden;
+}
+.quotation
+{
+    display:list-item;
+    list-style:none;
+    font-style:italic;
+    text-align:center;
+}
+.attribution
+{
+    display:list-item;
+    list-style:none;
+    font-style:normal;
+    text-indent:61%
+}
+.icon
+{
+    position: fixed;
+    width: 50%;
+    bottom: -1em;
+    left: -15%;
+    z-index: -1;
+}
+
+/* 
+INDIVIDUAL COMPONENT BASED STYLING
+ordered by position on page
+*/
 
 #article h1, h2, h3, summary
 {
@@ -51,6 +219,7 @@ body
 
 #article img
 {
+    padding: 2em;
     border-style: none;
     text-decoration: none;
 }
@@ -62,35 +231,4 @@ body
 #article a:hover {
     color: #0A5E68;
     text-decoration: initial;
-}
-
-.quotation
-{
-    display:list-item;
-    list-style:none;
-    font-style:italic;
-    text-align:center;
-}
-.attribution
-{
-    display:list-item;
-    list-style:none;
-    font-style:normal;
-    text-indent:61%
-}
-.icon
-{
-    position    : fixed;
-    width       : 40%;
-    bottom        : -1em;
-    left        : -15%;
-    z-index        : -1;
-}
-
-
-@media (max-width: 576px) {
-    #navigation {
-        width:   61%;
-        display: inline;
-    }
 }
