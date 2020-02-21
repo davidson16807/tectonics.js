@@ -484,13 +484,13 @@ maybe_vec2 get_distances_along_3d_line_to_sphere(
     );
 }
 maybe_vec2 get_distances_along_line_to_negation(
-    in maybe_vec2 shape1,
-    in maybe_vec2 shape2
+    in maybe_vec2 positive,
+    in maybe_vec2 negative
 ) {
     return maybe_vec2(
-        vec2(!shape2.exists ? shape1.value.x : min(shape2.value.y, shape1.value.x),
-             !shape2.exists ? shape1.value.y : min(shape2.value.x, shape1.value.y)),
-        shape1.exists && (!shape2.exists || shape1.value.x < shape2.value.x || shape2.value.y < shape1.value.y)
+        vec2(!negative.exists ? positive.value.x : min(negative.value.y, positive.value.x),
+             !negative.exists || negative.value.y < 0. ? positive.value.y : min(negative.value.x, positive.value.y)),
+        positive.exists && !(negative.value.x < positive.value.x && positive.value.y < negative.value.y)
     );
 }
 // "oplus" is the o-plus operator,
@@ -607,12 +607,9 @@ vec3 get_rgb_fraction_of_light_transmitted_through_air_for_curved_world(
 // TODO: multiple scattering events
 // TODO: support for light sources from within atmosphere
 vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
-    in vec3 view_origin, in vec3 view_direction,
+    in vec3 view_origin, in vec3 view_direction, in float view_start_length, in float view_stop_length,
     in vec3 world_position, in float world_radius,
-    in vec3 [MAX_LIGHT_COUNT] light_directions,
-    in vec3 [MAX_LIGHT_COUNT] light_rgb_intensities,
-    in int light_count,
-    in vec3 background_rgb_intensity,
+    in vec3 light_direction, in vec3 light_rgb_intensity,
     in float atmosphere_scale_height,
     in vec3 beta_ray, in vec3 beta_mie, in vec3 beta_abs
 ){
@@ -623,14 +620,13 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     //  Uppercase letters indicate vectors.
     //  Lowercase letters indicate scalars.
     //  Going for terseness because I tried longhand names and trust me, you can't read them.
-    //  "x*"     distance along a ray, either from the ray origin or from closest approach
     //  "z*"     distance from the center of the world to closest approach
     //  "r*"     a distance ("radius") from the center of the world
     //  "h*"     a distance ("height") from the surface of the world
     //  "*v*"    property of the view ray, the ray cast from the viewer to the object being viewed
     //  "*l*"    property of the light ray, the ray cast from the object to the light source
     //  "*2"     the square of a variable
-    //  "*_i"    property of an iteration within the raymarch
+    //  "*i"    property of an iteration within the raymarch
     //  "beta*"  a scattering coefficient, the number of e-foldings in light intensity per unit distance
     //  "gamma*" a phase factor, the fraction of light that's scattered in a certain direction
     //  "rho*"   a density ratio, the density of air relative to surface density
@@ -640,32 +636,18 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     //  "*_ray"  property of rayleigh scattering
     //  "*_mie"  property of mie scattering
     //  "*_abs"  property of absorption
-    vec3 O = world_position;
-    vec3 P = view_origin - world_position;
     vec3 V0= view_origin;
     vec3 V = view_direction;
-    vec3 I_back = background_rgb_intensity;
+    float v0= view_start_length;
+    float v1= view_stop_length;
+    vec3 P = view_origin - world_position;
+    vec3 L = light_direction; // unit vector pointing to light source
+    vec3 I = light_rgb_intensity; // vector indicating intensity of light source for each color channel
+    vec3 O = world_position;
     float r = world_radius;
     float H = atmosphere_scale_height;
-    const float STEP_COUNT = 16.;// number of steps taken while marching along the view ray
-    float xv = dot(-P,V); // distance from view ray origin to closest approach
-    float zv2 = dot( P,P) - xv * xv; // squared distance from the view ray to the center of the world at closest approach
-    float xv_in_air; // distance along the view ray at which the ray enters the atmosphere
-    float xv_out_air; // distance along the view ray at which the ray exits the atmosphere
-    float xv_in_world; // distance along the view ray at which the ray enters the surface of the world
-    float xv_out_world; // distance along the view ray at which the ray enters the surface of the world
-    //   We only set it to 3 scale heights because we are using this parameter for raymarching, and not a closed form solution
-    bool is_scattered = try_get_relation_between_ray_and_sphere(r + 12.*H, zv2, xv, xv_in_air, xv_out_air );
-    bool is_obstructed = try_get_relation_between_ray_and_sphere(r, zv2, xv, xv_in_world, xv_out_world);
-    //   We only set it to 3 scale heights because we are using this parameter for raymarching, and not a closed form solution
-    maybe_vec2 xv_atmosphere_region = get_distances_along_3d_line_to_sphere(view_origin, V, O, r + 12.*H);
-    maybe_vec2 xv_obstructed_region = get_distances_along_3d_line_to_sphere(view_origin, V, O, r);
-    maybe_vec2 xv_scatter_region = get_distances_along_line_to_negation(xv_atmosphere_region, xv_obstructed_region);
-    // if view ray does not interact with the atmosphere
-    // don't bother running the raymarch algorithm
-    if (!xv_scatter_region.exists){ return I_back; }
-    // return vec3(max(xv_obstructed_region.value.x - xv_atmosphere_region.value.x, 0.) / 8e4);
-    // return vec3((xv_scatter_region.value.y - xv_scatter_region.value.x) / 8e4);
+    float v = dot(-P,V); // distance from view ray origin to closest approach
+    float z2 = dot( P,P) - v * v; // squared distance from the view ray to the center of the world at closest approach
     // cosine of angle between view and light directions
     float VL;
     // "gamma_*" indicates the fraction of scattered sunlight that scatters to a given angle (indicated by its cosine, A.K.A. "VL").
@@ -677,15 +659,10 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     // So all together, the fraction of sunlight that scatters to a given angle is: beta(wavelength) * gamma(angle) * density_ratio(height)
     vec3 beta_sum = beta_ray + beta_mie + beta_abs;
     vec3 beta_gamma;
-    float xv_start = max(xv_scatter_region.value.x, 0.0);
-    // VAR(float) xv_start = max(xv_in_air, 0.);
-    // VAR(float) xv_stop  = max(xv_scatter_region.value.y, 0.0);
-    float xv_stop = is_obstructed? xv_in_world : xv_out_air;
-    float dx = (xv_stop - xv_start) / STEP_COUNT;
-    float xvi = xv_start - xv + 0.5 * dx;
-    vec3 L; // unit vector pointing to light source
-    vec3 I; // vector indicating intensity of light source for each color channel
-    float xl; // distance from light ray origin to closest approach
+    const float STEP_COUNT = 16.; // number of steps taken while marching along the view ray
+    float dx = (v1 - v0) / STEP_COUNT;
+    float vi = v0 - v + 0.5 * dx;
+    float l; // distance from light ray origin to closest approach
     float zl2; // squared distance ("radius") of the light ray at closest for a single iteration of the view ray march
     float r2; // squared distance ("radius") from the center of the world for a single iteration of the view ray march
     float h; // distance ("height") from the surface of the world for a single iteration of the view ray march
@@ -694,33 +671,23 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     vec3 E = vec3(0); // total intensity for each color channel, found as the sum of light intensities for each path from the light source to the camera
     for (float i = 0.; i < STEP_COUNT; ++i)
     {
-        r2 = xvi*xvi+zv2;
+        r2 = vi*vi+z2;
         h = sqrt(r2) - r;
-        sigma_v = approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xv, xvi, zv2, r, H );
-        for (int j = 0; j < MAX_LIGHT_COUNT; ++j)
-        {
-            if (j >= light_count) { break; }
-            L = light_directions[j];
-            I = light_rgb_intensities[j];
-            VL = dot(V, L);
-            xl = dot(P+V*(xvi+xv),-L);
-            zl2 = r2 - xl*xl;
-            sigma_l = approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xl, 3.*r, zl2, r, H );
-            gamma_ray = get_fraction_of_rayleigh_scattered_light_scattered_by_angle(VL);
-            gamma_mie = get_fraction_of_mie_scattered_light_scattered_by_angle(VL);
-            beta_gamma= beta_ray * gamma_ray + beta_mie * gamma_mie;
-            E += I
-                // incoming fraction: the fraction of light that scatters towards camera
-                * exp(-h/H) * beta_gamma * dx
-                // outgoing fraction: the fraction of light that scatters away from camera
-                * exp(-beta_sum * (sigma_l + sigma_v));
-        }
-        xvi += dx;
+        sigma_v = approx_air_column_density_ratio_along_2d_ray_for_curved_world(-v, vi, z2, r, H );
+        VL = dot(V, -L);
+        l = dot(P+V*(vi+v),-L);
+        zl2 = r2 - l*l;
+        sigma_l = approx_air_column_density_ratio_along_2d_ray_for_curved_world(-l, 3.*r, zl2, r, H );
+        gamma_ray = get_fraction_of_rayleigh_scattered_light_scattered_by_angle(VL);
+        gamma_mie = get_fraction_of_mie_scattered_light_scattered_by_angle(VL);
+        beta_gamma = beta_ray * gamma_ray + beta_mie * gamma_mie;
+        E += I
+            // incoming fraction: the fraction of light that scatters towards camera
+            * exp(-h/H) * beta_gamma * dx
+            // outgoing fraction: the fraction of light that scatters away from camera
+            * exp(-beta_sum * (sigma_l + sigma_v));
+        vi += dx;
     }
-    // now calculate the intensity of light that traveled straight in from the background, and add it to the total
-    E += I_back * get_rgb_fraction_of_light_transmitted_through_air_for_curved_world(
-        V0, V, xv_scatter_region.value.y*0.999, O, r, H, beta_ray, beta_mie, beta_abs
-    );
     return E;
 }
 vec3 get_rgb_intensity_of_light_scattered_from_fluid_for_flat_world(
@@ -846,51 +813,65 @@ bool isbig(float x)
 {
     return abs(x)>BIG;
 }
-vec2 get_chartspace(vec2 bottomleft, vec2 topright, vec2 screenspace){
-    return screenspace * abs(topright - bottomleft) + bottomleft;
-}
-vec3 line(float y, vec2 chartspace, float line_width, vec3 line_color){
-    return abs(y-chartspace.y) < line_width? line_color : vec3(1.);
-}
-vec3 chart_scratch(vec2 screenspace){
-    vec2 bottomleft = vec2(-500e3, -100e3);
-    vec2 topright = vec2( 500e3, 100e3);
-    vec2 chartspace = get_chartspace(bottomleft, topright, screenspace);
-    float line_width = 0.01 * abs(topright - bottomleft).y;
-    float y = chartspace.x;
-    return line(y, chartspace, line_width, vec3(1,0,0));
-}
 void main() {
     vec2 screenspace = vUv;
-    // gl_FragColor = vec4(chart_scratch(screenspace), 1);
-    // return;
     vec2 clipspace = 2.0 * screenspace - 1.0;
-    vec3 view_direction = normalize(view_matrix_inverse * projection_matrix_inverse * vec4(clipspace, 1, 1)).xyz;
-    vec3 view_origin = view_matrix_inverse[3].xyz * reference_distance;
-    vec4 background_rgb_signal = texture2D( background_rgb_signal_texture, vUv );
-    vec3 background_rgb_intensity = insolation_max * get_rgb_intensity_of_rgb_signal(background_rgb_signal.rgb);
+    // "V0" is view origin
+    vec3 V0 = view_matrix_inverse[3].xyz * reference_distance;
+    // "V" is view direction
+    vec3 V = normalize(view_matrix_inverse * projection_matrix_inverse * vec4(clipspace, 1, 1)).xyz;
+    // "O" is world origin
+    vec3 O = vec3(0);
+    // "r" is world radius
+    float r = world_radius;
+    // "H" is atmospheric scale height
+    float H = atmosphere_scale_height;
+    // "I_back" is background light intensity
+    vec3 I_back = insolation_max * get_rgb_intensity_of_rgb_signal(
+        texture2D( background_rgb_signal_texture, vUv ).rgb
+    );
     // "beta_air_*" variables are the scattering coefficients for the atmosphere at sea level
     vec3 beta_ray = surface_air_rayleigh_scattering_coefficients;
     vec3 beta_mie = surface_air_mie_scattering_coefficients;
     vec3 beta_abs = surface_air_absorption_coefficients;
-    vec3 rgb_intensity =
-        get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
-            view_origin, view_direction,
-            world_position, world_radius,
-            light_directions, // rgb vectors indicating intensities of light sources
-            light_rgb_intensities, // unit vectors indicating directions to light sources
-            light_count,
-            background_rgb_intensity,
-            atmosphere_scale_height,
-            beta_ray, beta_mie, beta_abs
+    // check for intersection with the atmosphere
+    // We only set it to 12 scale heights because we are using this parameter for raymarching, and not a closed form solution
+    maybe_vec2 v_atmosphere_region = get_distances_along_3d_line_to_sphere(V0, V, O, r + 12.*H);
+    maybe_vec2 v_obstructed_region = get_distances_along_3d_line_to_sphere(V0, V, O, r);
+    maybe_vec2 v_scatter_region = get_distances_along_line_to_negation(v_atmosphere_region, v_obstructed_region);
+    // "E" is the rgb intensity of light emitted towards the camera
+    vec3 E = vec3(0);
+    // if view ray does not interact with the atmosphere
+    // don't bother running the raymarch algorithm
+    if (v_scatter_region.exists)
+    {
+        // start of march along view ray
+        float v0 = max(v_scatter_region.value.x, 0.0);
+        // end of march along view ray
+        float v1 = max(v_scatter_region.value.y, 0.0);
+        for (int i = 0; i < MAX_LIGHT_COUNT; ++i)
+        {
+            if (i >= light_count) { break; }
+            E += get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
+                V0, V, v0, v1, O, r,
+                light_directions[i], light_rgb_intensities[i],
+                H, beta_ray, beta_mie, beta_abs
+            );
+        }
+        // now calculate the intensity of light that traveled straight in from the background, and add it to the total
+        E += I_back * get_rgb_fraction_of_light_transmitted_through_air_for_curved_world(
+            V0, V, v1*0.999, O, r, H, beta_ray, beta_mie, beta_abs
         );
-    rgb_intensity = mix(background_rgb_intensity, rgb_intensity, shaderpass_visibility);
+    }
+    else
+    {
+        E = I_back;
+    }
     // TODO: move this to a separate shader pass!
     // see https://learnopengl.com/Advanced-Lighting/HDR for an intro to tone mapping
     float exposure_intensity = 150.; // Watts/m^2
-    vec3 ldr_tone_map = 1.0 - exp(-rgb_intensity/exposure_intensity);
+    vec3 ldr_tone_map = 1.0 - exp(-E/exposure_intensity);
     gl_FragColor = vec4(get_rgb_signal_of_rgb_intensity(ldr_tone_map), 1);
-    // gl_FragColor = 3.*background_rgb_signal;
 }
 `;
 fragmentShaders.heatmap = `
@@ -1214,13 +1195,13 @@ maybe_vec2 get_distances_along_3d_line_to_sphere(
     );
 }
 maybe_vec2 get_distances_along_line_to_negation(
-    in maybe_vec2 shape1,
-    in maybe_vec2 shape2
+    in maybe_vec2 positive,
+    in maybe_vec2 negative
 ) {
     return maybe_vec2(
-        vec2(!shape2.exists ? shape1.value.x : min(shape2.value.y, shape1.value.x),
-             !shape2.exists ? shape1.value.y : min(shape2.value.x, shape1.value.y)),
-        shape1.exists && (!shape2.exists || shape1.value.x < shape2.value.x || shape2.value.y < shape1.value.y)
+        vec2(!negative.exists ? positive.value.x : min(negative.value.y, positive.value.x),
+             !negative.exists || negative.value.y < 0. ? positive.value.y : min(negative.value.x, positive.value.y)),
+        positive.exists && !(negative.value.x < positive.value.x && positive.value.y < negative.value.y)
     );
 }
 // "oplus" is the o-plus operator,
@@ -1337,12 +1318,9 @@ vec3 get_rgb_fraction_of_light_transmitted_through_air_for_curved_world(
 // TODO: multiple scattering events
 // TODO: support for light sources from within atmosphere
 vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
-    in vec3 view_origin, in vec3 view_direction,
+    in vec3 view_origin, in vec3 view_direction, in float view_start_length, in float view_stop_length,
     in vec3 world_position, in float world_radius,
-    in vec3 [MAX_LIGHT_COUNT] light_directions,
-    in vec3 [MAX_LIGHT_COUNT] light_rgb_intensities,
-    in int light_count,
-    in vec3 background_rgb_intensity,
+    in vec3 light_direction, in vec3 light_rgb_intensity,
     in float atmosphere_scale_height,
     in vec3 beta_ray, in vec3 beta_mie, in vec3 beta_abs
 ){
@@ -1353,14 +1331,13 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     //  Uppercase letters indicate vectors.
     //  Lowercase letters indicate scalars.
     //  Going for terseness because I tried longhand names and trust me, you can't read them.
-    //  "x*"     distance along a ray, either from the ray origin or from closest approach
     //  "z*"     distance from the center of the world to closest approach
     //  "r*"     a distance ("radius") from the center of the world
     //  "h*"     a distance ("height") from the surface of the world
     //  "*v*"    property of the view ray, the ray cast from the viewer to the object being viewed
     //  "*l*"    property of the light ray, the ray cast from the object to the light source
     //  "*2"     the square of a variable
-    //  "*_i"    property of an iteration within the raymarch
+    //  "*i"    property of an iteration within the raymarch
     //  "beta*"  a scattering coefficient, the number of e-foldings in light intensity per unit distance
     //  "gamma*" a phase factor, the fraction of light that's scattered in a certain direction
     //  "rho*"   a density ratio, the density of air relative to surface density
@@ -1370,32 +1347,18 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     //  "*_ray"  property of rayleigh scattering
     //  "*_mie"  property of mie scattering
     //  "*_abs"  property of absorption
-    vec3 O = world_position;
-    vec3 P = view_origin - world_position;
     vec3 V0= view_origin;
     vec3 V = view_direction;
-    vec3 I_back = background_rgb_intensity;
+    float v0= view_start_length;
+    float v1= view_stop_length;
+    vec3 P = view_origin - world_position;
+    vec3 L = light_direction; // unit vector pointing to light source
+    vec3 I = light_rgb_intensity; // vector indicating intensity of light source for each color channel
+    vec3 O = world_position;
     float r = world_radius;
     float H = atmosphere_scale_height;
-    const float STEP_COUNT = 16.;// number of steps taken while marching along the view ray
-    float xv = dot(-P,V); // distance from view ray origin to closest approach
-    float zv2 = dot( P,P) - xv * xv; // squared distance from the view ray to the center of the world at closest approach
-    float xv_in_air; // distance along the view ray at which the ray enters the atmosphere
-    float xv_out_air; // distance along the view ray at which the ray exits the atmosphere
-    float xv_in_world; // distance along the view ray at which the ray enters the surface of the world
-    float xv_out_world; // distance along the view ray at which the ray enters the surface of the world
-    //   We only set it to 3 scale heights because we are using this parameter for raymarching, and not a closed form solution
-    bool is_scattered = try_get_relation_between_ray_and_sphere(r + 12.*H, zv2, xv, xv_in_air, xv_out_air );
-    bool is_obstructed = try_get_relation_between_ray_and_sphere(r, zv2, xv, xv_in_world, xv_out_world);
-    //   We only set it to 3 scale heights because we are using this parameter for raymarching, and not a closed form solution
-    maybe_vec2 xv_atmosphere_region = get_distances_along_3d_line_to_sphere(view_origin, V, O, r + 12.*H);
-    maybe_vec2 xv_obstructed_region = get_distances_along_3d_line_to_sphere(view_origin, V, O, r);
-    maybe_vec2 xv_scatter_region = get_distances_along_line_to_negation(xv_atmosphere_region, xv_obstructed_region);
-    // if view ray does not interact with the atmosphere
-    // don't bother running the raymarch algorithm
-    if (!xv_scatter_region.exists){ return I_back; }
-    // return vec3(max(xv_obstructed_region.value.x - xv_atmosphere_region.value.x, 0.) / 8e4);
-    // return vec3((xv_scatter_region.value.y - xv_scatter_region.value.x) / 8e4);
+    float v = dot(-P,V); // distance from view ray origin to closest approach
+    float z2 = dot( P,P) - v * v; // squared distance from the view ray to the center of the world at closest approach
     // cosine of angle between view and light directions
     float VL;
     // "gamma_*" indicates the fraction of scattered sunlight that scatters to a given angle (indicated by its cosine, A.K.A. "VL").
@@ -1407,15 +1370,10 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     // So all together, the fraction of sunlight that scatters to a given angle is: beta(wavelength) * gamma(angle) * density_ratio(height)
     vec3 beta_sum = beta_ray + beta_mie + beta_abs;
     vec3 beta_gamma;
-    float xv_start = max(xv_scatter_region.value.x, 0.0);
-    // VAR(float) xv_start = max(xv_in_air, 0.);
-    // VAR(float) xv_stop  = max(xv_scatter_region.value.y, 0.0);
-    float xv_stop = is_obstructed? xv_in_world : xv_out_air;
-    float dx = (xv_stop - xv_start) / STEP_COUNT;
-    float xvi = xv_start - xv + 0.5 * dx;
-    vec3 L; // unit vector pointing to light source
-    vec3 I; // vector indicating intensity of light source for each color channel
-    float xl; // distance from light ray origin to closest approach
+    const float STEP_COUNT = 16.; // number of steps taken while marching along the view ray
+    float dx = (v1 - v0) / STEP_COUNT;
+    float vi = v0 - v + 0.5 * dx;
+    float l; // distance from light ray origin to closest approach
     float zl2; // squared distance ("radius") of the light ray at closest for a single iteration of the view ray march
     float r2; // squared distance ("radius") from the center of the world for a single iteration of the view ray march
     float h; // distance ("height") from the surface of the world for a single iteration of the view ray march
@@ -1424,33 +1382,23 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     vec3 E = vec3(0); // total intensity for each color channel, found as the sum of light intensities for each path from the light source to the camera
     for (float i = 0.; i < STEP_COUNT; ++i)
     {
-        r2 = xvi*xvi+zv2;
+        r2 = vi*vi+z2;
         h = sqrt(r2) - r;
-        sigma_v = approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xv, xvi, zv2, r, H );
-        for (int j = 0; j < MAX_LIGHT_COUNT; ++j)
-        {
-            if (j >= light_count) { break; }
-            L = light_directions[j];
-            I = light_rgb_intensities[j];
-            VL = dot(V, L);
-            xl = dot(P+V*(xvi+xv),-L);
-            zl2 = r2 - xl*xl;
-            sigma_l = approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xl, 3.*r, zl2, r, H );
-            gamma_ray = get_fraction_of_rayleigh_scattered_light_scattered_by_angle(VL);
-            gamma_mie = get_fraction_of_mie_scattered_light_scattered_by_angle(VL);
-            beta_gamma= beta_ray * gamma_ray + beta_mie * gamma_mie;
-            E += I
-                // incoming fraction: the fraction of light that scatters towards camera
-                * exp(-h/H) * beta_gamma * dx
-                // outgoing fraction: the fraction of light that scatters away from camera
-                * exp(-beta_sum * (sigma_l + sigma_v));
-        }
-        xvi += dx;
+        sigma_v = approx_air_column_density_ratio_along_2d_ray_for_curved_world(-v, vi, z2, r, H );
+        VL = dot(V, -L);
+        l = dot(P+V*(vi+v),-L);
+        zl2 = r2 - l*l;
+        sigma_l = approx_air_column_density_ratio_along_2d_ray_for_curved_world(-l, 3.*r, zl2, r, H );
+        gamma_ray = get_fraction_of_rayleigh_scattered_light_scattered_by_angle(VL);
+        gamma_mie = get_fraction_of_mie_scattered_light_scattered_by_angle(VL);
+        beta_gamma = beta_ray * gamma_ray + beta_mie * gamma_mie;
+        E += I
+            // incoming fraction: the fraction of light that scatters towards camera
+            * exp(-h/H) * beta_gamma * dx
+            // outgoing fraction: the fraction of light that scatters away from camera
+            * exp(-beta_sum * (sigma_l + sigma_v));
+        vi += dx;
     }
-    // now calculate the intensity of light that traveled straight in from the background, and add it to the total
-    E += I_back * get_rgb_fraction_of_light_transmitted_through_air_for_curved_world(
-        V0, V, xv_scatter_region.value.y*0.999, O, r, H, beta_ray, beta_mie, beta_abs
-    );
     return E;
 }
 vec3 get_rgb_intensity_of_light_scattered_from_fluid_for_flat_world(
