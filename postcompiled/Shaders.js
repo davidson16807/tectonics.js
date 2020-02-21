@@ -450,6 +450,49 @@ float get_fraction_of_microfacets_with_angle(
 const float BIG = 1e20;
 const float SMALL = 1e-20;
 const int MAX_LIGHT_COUNT = 9;
+struct maybe_vec2
+{
+    vec2 value;
+    bool exists;
+};
+struct maybe_float
+{
+    float value;
+    bool exists;
+};
+maybe_float get_distance_along_3d_line_to_plane(
+    in vec3 A0,
+    in vec3 A,
+    in vec3 B0,
+    in vec3 N
+){
+    return maybe_float( -dot(A0 - B0, N) / dot(A, N), abs(dot(A, N)) < SMALL);
+}
+maybe_vec2 get_distances_along_3d_line_to_sphere(
+    in vec3 A0,
+    in vec3 A,
+    in vec3 B0,
+    in float r
+){
+    float xz = dot(B0 - A0, A);
+    float z = length(A0 + A * xz - B0);
+    float y2 = r * r - z * z;
+    float dxr = sqrt(max(y2, 1e-10));
+    return maybe_vec2(
+        vec2(xz - dxr, xz + dxr),
+        y2 > 0.
+    );
+}
+maybe_vec2 get_distances_along_line_to_negation(
+    in maybe_vec2 shape1,
+    in maybe_vec2 shape2
+) {
+    return maybe_vec2(
+        vec2(!shape2.exists ? shape1.value.x : min(shape2.value.y, shape1.value.x),
+             !shape2.exists ? shape1.value.y : min(shape2.value.x, shape1.value.y)),
+        shape1.exists && (!shape2.exists || shape1.value.x < shape2.value.x || shape2.value.y < shape1.value.y)
+    );
+}
 // "oplus" is the o-plus operator,
 //   or the reciprocal of the sum of reciprocals.
 // It's a handy function that comes up a lot in some physics problems.
@@ -582,6 +625,7 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     //  "*_ray"  property of rayleigh scattering
     //  "*_mie"  property of mie scattering
     //  "*_abs"  property of absorption
+    vec3 O = world_position;
     vec3 P = view_origin - world_position;
     vec3 V = view_direction;
     vec3 I_back = background_rgb_intensity;
@@ -597,9 +641,15 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     //   We only set it to 3 scale heights because we are using this parameter for raymarching, and not a closed form solution
     bool is_scattered = try_get_relation_between_ray_and_sphere(r + 12.*H, zv2, xv, xv_in_air, xv_out_air );
     bool is_obstructed = try_get_relation_between_ray_and_sphere(r, zv2, xv, xv_in_world, xv_out_world);
+    //   We only set it to 3 scale heights because we are using this parameter for raymarching, and not a closed form solution
+    maybe_vec2 xv_atmosphere_region = get_distances_along_3d_line_to_sphere(view_origin, V, O, r + 12.*H);
+    maybe_vec2 xv_obstructed_region = get_distances_along_3d_line_to_sphere(view_origin, V, O, r);
+    maybe_vec2 xv_scatter_region = get_distances_along_line_to_negation(xv_atmosphere_region, xv_obstructed_region);
     // if view ray does not interact with the atmosphere
     // don't bother running the raymarch algorithm
-    if (!is_scattered){ return I_back; }
+    if (!xv_scatter_region.exists){ return I_back; }
+    // return vec3(max(xv_obstructed_region.value.x - xv_atmosphere_region.value.x, 0.) / 8e4);
+    // return vec3((xv_scatter_region.value.y - xv_scatter_region.value.x) / 8e4);
     // cosine of angle between view and light directions
     float VL;
     // "gamma_*" indicates the fraction of scattered sunlight that scatters to a given angle (indicated by its cosine, A.K.A. "VL").
@@ -611,7 +661,9 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     // So all together, the fraction of sunlight that scatters to a given angle is: beta(wavelength) * gamma(angle) * density_ratio(height)
     vec3 beta_sum = beta_ray + beta_mie + beta_abs;
     vec3 beta_gamma;
-    float xv_start = max(xv_in_air, 0.);
+    float xv_start = max(xv_scatter_region.value.x, 0.0);
+    // VAR(float) xv_start = max(xv_in_air, 0.);
+    // VAR(float) xv_stop  = max(xv_scatter_region.value.y, 0.0);
     float xv_stop = is_obstructed? xv_in_world : xv_out_air;
     float dx = (xv_stop - xv_start) / STEP_COUNT;
     float xvi = xv_start - xv + 0.5 * dx;
@@ -1126,6 +1178,49 @@ float get_fraction_of_microfacets_with_angle(
 const float BIG = 1e20;
 const float SMALL = 1e-20;
 const int MAX_LIGHT_COUNT = 9;
+struct maybe_vec2
+{
+    vec2 value;
+    bool exists;
+};
+struct maybe_float
+{
+    float value;
+    bool exists;
+};
+maybe_float get_distance_along_3d_line_to_plane(
+    in vec3 A0,
+    in vec3 A,
+    in vec3 B0,
+    in vec3 N
+){
+    return maybe_float( -dot(A0 - B0, N) / dot(A, N), abs(dot(A, N)) < SMALL);
+}
+maybe_vec2 get_distances_along_3d_line_to_sphere(
+    in vec3 A0,
+    in vec3 A,
+    in vec3 B0,
+    in float r
+){
+    float xz = dot(B0 - A0, A);
+    float z = length(A0 + A * xz - B0);
+    float y2 = r * r - z * z;
+    float dxr = sqrt(max(y2, 1e-10));
+    return maybe_vec2(
+        vec2(xz - dxr, xz + dxr),
+        y2 > 0.
+    );
+}
+maybe_vec2 get_distances_along_line_to_negation(
+    in maybe_vec2 shape1,
+    in maybe_vec2 shape2
+) {
+    return maybe_vec2(
+        vec2(!shape2.exists ? shape1.value.x : min(shape2.value.y, shape1.value.x),
+             !shape2.exists ? shape1.value.y : min(shape2.value.x, shape1.value.y)),
+        shape1.exists && (!shape2.exists || shape1.value.x < shape2.value.x || shape2.value.y < shape1.value.y)
+    );
+}
 // "oplus" is the o-plus operator,
 //   or the reciprocal of the sum of reciprocals.
 // It's a handy function that comes up a lot in some physics problems.
@@ -1258,6 +1353,7 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     //  "*_ray"  property of rayleigh scattering
     //  "*_mie"  property of mie scattering
     //  "*_abs"  property of absorption
+    vec3 O = world_position;
     vec3 P = view_origin - world_position;
     vec3 V = view_direction;
     vec3 I_back = background_rgb_intensity;
@@ -1273,9 +1369,15 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     //   We only set it to 3 scale heights because we are using this parameter for raymarching, and not a closed form solution
     bool is_scattered = try_get_relation_between_ray_and_sphere(r + 12.*H, zv2, xv, xv_in_air, xv_out_air );
     bool is_obstructed = try_get_relation_between_ray_and_sphere(r, zv2, xv, xv_in_world, xv_out_world);
+    //   We only set it to 3 scale heights because we are using this parameter for raymarching, and not a closed form solution
+    maybe_vec2 xv_atmosphere_region = get_distances_along_3d_line_to_sphere(view_origin, V, O, r + 12.*H);
+    maybe_vec2 xv_obstructed_region = get_distances_along_3d_line_to_sphere(view_origin, V, O, r);
+    maybe_vec2 xv_scatter_region = get_distances_along_line_to_negation(xv_atmosphere_region, xv_obstructed_region);
     // if view ray does not interact with the atmosphere
     // don't bother running the raymarch algorithm
-    if (!is_scattered){ return I_back; }
+    if (!xv_scatter_region.exists){ return I_back; }
+    // return vec3(max(xv_obstructed_region.value.x - xv_atmosphere_region.value.x, 0.) / 8e4);
+    // return vec3((xv_scatter_region.value.y - xv_scatter_region.value.x) / 8e4);
     // cosine of angle between view and light directions
     float VL;
     // "gamma_*" indicates the fraction of scattered sunlight that scatters to a given angle (indicated by its cosine, A.K.A. "VL").
@@ -1287,7 +1389,9 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     // So all together, the fraction of sunlight that scatters to a given angle is: beta(wavelength) * gamma(angle) * density_ratio(height)
     vec3 beta_sum = beta_ray + beta_mie + beta_abs;
     vec3 beta_gamma;
-    float xv_start = max(xv_in_air, 0.);
+    float xv_start = max(xv_scatter_region.value.x, 0.0);
+    // VAR(float) xv_start = max(xv_in_air, 0.);
+    // VAR(float) xv_stop  = max(xv_scatter_region.value.y, 0.0);
     float xv_stop = is_obstructed? xv_in_world : xv_out_air;
     float dx = (xv_stop - xv_start) / STEP_COUNT;
     float xvi = xv_start - xv + 0.5 * dx;
