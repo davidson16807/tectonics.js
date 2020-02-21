@@ -149,6 +149,22 @@ FUNC(float) approx_air_column_density_ratio_along_3d_ray_for_curved_world (
     return approx_air_column_density_ratio_along_2d_ray_for_curved_world( 0.-xz, x-xz, z2, r, H );
 }
 
+FUNC(vec3) get_rgb_fraction_of_light_transmitted_through_air_for_curved_world(
+    IN(vec3)  segment_origin, IN(vec3)  segment_direction, IN(float) segment_length,
+    IN(vec3)  world_position, IN(float) world_radius,      IN(float) atmosphere_scale_height,
+    IN(vec3)  beta_ray,       IN(vec3)  beta_mie,          IN(vec3)  beta_abs
+){
+    VAR(vec3)  O = world_position;
+    VAR(float) r = world_radius;
+    VAR(float) H = atmosphere_scale_height;
+    // "sigma" is the column density of air, relative to the surface of the world, that's along the light's path of travel,
+    //   we use it to estimate the amount of light that's filtered by the atmosphere before reaching the surface
+    //   see https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-1/ for an awesome introduction
+    VAR(float) sigma  = approx_air_column_density_ratio_along_3d_ray_for_curved_world (segment_origin-world_position, segment_direction, segment_length, r, H);
+    // "I_surface" is the intensity of light that reaches the surface after being filtered by atmosphere
+    return exp(-sigma * (beta_ray + beta_mie + beta_abs));
+}
+
 // TODO: multiple scattering events
 // TODO: support for light sources from within atmosphere
 FUNC(vec3) get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
@@ -189,6 +205,7 @@ FUNC(vec3) get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
 
     VAR(vec3)  O = world_position;
     VAR(vec3)  P = view_origin - world_position;
+    VAR(vec3)  V0= view_origin;
     VAR(vec3)  V = view_direction;
     VAR(vec3)  I_back = background_rgb_intensity;
     VAR(float) r = world_radius;
@@ -279,28 +296,13 @@ FUNC(vec3) get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     }
 
     // now calculate the intensity of light that traveled straight in from the background, and add it to the total
-    sigma_v  = approx_air_column_density_ratio_along_2d_ray_for_curved_world(-xv, xv_stop-xv_start-xv, zv2, r, H );
-    E += I_back * exp(-beta_sum * sigma_v);
+    E += I_back * get_rgb_fraction_of_light_transmitted_through_air_for_curved_world(
+        V0, V, xv_scatter_region.value.y*0.999, O, r, H, beta_ray, beta_mie, beta_abs
+    );
 
     return E;
 }
 
-
-FUNC(vec3) get_rgb_fraction_of_light_transmitted_through_air_for_curved_world(
-    IN(vec3)  segment_origin, IN(vec3)  segment_direction, IN(float) segment_length,
-    IN(vec3)  world_position, IN(float) world_radius,      IN(float) atmosphere_scale_height,
-    IN(vec3)  beta_ray,       IN(vec3)  beta_mie,          IN(vec3)  beta_abs
-){
-    VAR(vec3)  O = world_position;
-    VAR(float) r = world_radius;
-    VAR(float) H = atmosphere_scale_height;
-    // "sigma" is the column density of air, relative to the surface of the world, that's along the light's path of travel,
-    //   we use it to estimate the amount of light that's filtered by the atmosphere before reaching the surface
-    //   see https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-1/ for an awesome introduction
-    VAR(float) sigma  = approx_air_column_density_ratio_along_3d_ray_for_curved_world (segment_origin-world_position, segment_direction, segment_length, r, H);
-    // "I_surface" is the intensity of light that reaches the surface after being filtered by atmosphere
-    return exp(-sigma * (beta_ray + beta_mie + beta_abs));
-}
 
 FUNC(vec3) get_rgb_intensity_of_light_scattered_from_fluid_for_flat_world(
     IN(float) cos_view_angle, 
