@@ -142,6 +142,11 @@ body
     overflow-x : hidden;
     overflow-y : auto;
 }
+pre
+{
+    background: #EEEEEE;
+    padding   : 2em;
+}
 
 /* 
 CLASS BASED STYLING
