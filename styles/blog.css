@@ -1,4 +1,4 @@
-﻿/*
+/*
 "blog.css" contains all styling that is specific to the developer's web log. 
 It is written using a responsive, mobile-first design approach. 
 It does not contain any styling relevant to the application. 
@@ -146,12 +146,6 @@ body
 /* 
 CLASS BASED STYLING
 */
-.mjx-chtml 
-{
-    width      : 100%;
-    overflow-x : auto;
-    overflow-y : hidden;
-}
 .quotation
 {
     display:list-item;
@@ -231,4 +225,12 @@ ordered by position on page
 #article a:hover {
     color: #0A5E68;
     text-decoration: initial;
+}
+
+#article .mjx-chtml 
+{
+    width      : 100%;
+    overflow-x : auto;
+    overflow-y : hidden;
+    display    : inline;
 }
