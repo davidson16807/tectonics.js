@@ -142,11 +142,6 @@ body
     overflow-x : hidden;
     overflow-y : auto;
 }
-pre
-{
-    background: #EEEEEE;
-    padding   : 2em;
-}
 
 /* 
 CLASS BASED STYLING
@@ -216,11 +211,27 @@ ordered by position on page
     margin-left: 1.315%; 
 }
 
+#article pre
+{
+    background   : #EEEEEE;
+    padding      : 2em;
+    border-radius: 1em;
+}
 #article img
 {
-    padding: 2em;
-    border-style: none;
-    text-decoration: none;
+    padding         : 0;
+    margin          : 2em;
+    border-radius   : 1em;
+    border-style    : none;
+    text-decoration : none;
+}
+#article .world
+{
+    padding         : 0;
+    margin          : 2em;
+    border-radius   : 50%;
+    border-style    : none;
+    text-decoration : none;
 }
 
 #article a {

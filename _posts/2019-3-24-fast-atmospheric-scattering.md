@@ -6,8 +6,8 @@ layout: default
 There have been some major changes recently to the appearance of the simulation. I've gone through great pains to learn physical rendering techniques in an [effort](https://github.com/davidson16807/tectonics.js/issues/34) to eventually model how atmospheric compounds affect climate. Those two topics might not sound interrelated, but it turns out they share a lot of the same equations.
 
 
-<img align="left" src="http://davidson16807.github.io/tectonics.js/blog/images/montage-js/8.png" width="38%">
-<img src="http://davidson16807.github.io/tectonics.js/blog/images/montage-js/9.png" width="38%">
+<img class="world" align="left" src="http://davidson16807.github.io/tectonics.js/blog/images/montage-js/8.png" width="38%">
+<img class="world" src="http://davidson16807.github.io/tectonics.js/blog/images/montage-js/9.png" width="38%">
 
 
 What I want to discuss today is one particular aspect of this new rendering model: atmospheric scattering. Zoom into a planet really close and you'll see how the atmosphere forms a haze:
