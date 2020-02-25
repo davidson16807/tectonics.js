@@ -216,6 +216,7 @@ ordered by position on page
     background   : #EEEEEE;
     padding      : 2em;
     border-radius: 1em;
+    width        : min-content;
 }
 #article img
 {
