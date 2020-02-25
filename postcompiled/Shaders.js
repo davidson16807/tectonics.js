@@ -551,6 +551,50 @@ float approx_air_column_density_ratio_along_2d_ray_for_curved_world(
     float sb = exp(r0-rb) / (abs_b/rb + 1./chb);
     return sign(b)*(s0-sb) - sign(a)*(s0-sa);
 }
+// "approx_air_column_density_ratio_along_3d_ray_for_curved_world" 
+//   calculates the distance you would need to travel 
+//   along the surface to encounter the same number of particles in the column. 
+// It does this by finding an integral using integration by substitution, 
+//   then tweaking that integral to prevent division by 0. 
+// All distances are recorded in scale heights.
+// "a" and "b" are distances along the ray from closest approach.
+//   The ray is fired in the positive direction.
+//   If there is no intersection with the planet, 
+//   a and b are distances from the closest approach to the upper bound.
+// "z2" is the closest distance from the ray to the center of the world, squared.
+// "r0" is the radius of the world.
+float approx_air_column_density_ratio_along_3d_ray_for_curved_world(
+    in float a,
+    in float b,
+    in float y2,
+    in float z2,
+    in float r0
+){
+    // GUIDE TO VARIABLE NAMES:
+    //  "x*" distance along the ray from closest approach
+    //  "y*" distance along an axis at closest approach
+    //  "z*" distance along an axis at closest approach
+    //  "r*" distance ("radius") from the center of the world 
+    //  "*0" variable at reference point
+    //  "*2" the square of a variable
+    //  "ch" a nudge we give to prevent division by zero, analogous to the Chapman function
+    const float SQRT_HALF_PI = sqrt(PI/2.);
+    const float k = 0.6; // "k" is an empirically derived constant
+    float x0 = sqrt(max(r0*r0 - y2 - z2, 0.));
+    float abs_a = abs(a);
+    float abs_b = abs(b);
+    float rmin = sqrt(y2+z2);
+    float sqrt_rmin = sqrt(rmin);
+    float ra = sqrt(a*a+y2+z2);
+    float rb = sqrt(b*b+y2+z2);
+    float ch0 = (1./(2.*r0) + 1.) * SQRT_HALF_PI * sqrt_rmin + k*x0;
+    float cha = (1./(2.*ra) + 1.) * SQRT_HALF_PI * sqrt_rmin + k*abs_a;
+    float chb = (1./(2.*rb) + 1.) * SQRT_HALF_PI * sqrt_rmin + k*abs_b;
+    float s0 = min(exp(r0-rmin),1.) / ( x0/r0 + 1./ch0);
+    float sa = exp(r0-ra ) / (abs_a/ra + 1./cha);
+    float sb = exp(r0-rb ) / (abs_b/rb + 1./chb);
+    return sign(b)*(s0-sb) - sign(a)*(s0-sa);
+}
 // "approx_air_column_density_ratio_along_2d_ray_for_curved_world" 
 //   calculates column density ratio of air for a ray emitted from the surface of a world to a desired distance, 
 //   taking into account the curvature of the world.
@@ -1274,6 +1318,50 @@ float approx_air_column_density_ratio_along_2d_ray_for_curved_world(
     float s0 = min(exp(r0- z),1.) / ( x0/r0 + 1./ch0);
     float sa = exp(r0-ra) / (abs_a/ra + 1./cha);
     float sb = exp(r0-rb) / (abs_b/rb + 1./chb);
+    return sign(b)*(s0-sb) - sign(a)*(s0-sa);
+}
+// "approx_air_column_density_ratio_along_3d_ray_for_curved_world" 
+//   calculates the distance you would need to travel 
+//   along the surface to encounter the same number of particles in the column. 
+// It does this by finding an integral using integration by substitution, 
+//   then tweaking that integral to prevent division by 0. 
+// All distances are recorded in scale heights.
+// "a" and "b" are distances along the ray from closest approach.
+//   The ray is fired in the positive direction.
+//   If there is no intersection with the planet, 
+//   a and b are distances from the closest approach to the upper bound.
+// "z2" is the closest distance from the ray to the center of the world, squared.
+// "r0" is the radius of the world.
+float approx_air_column_density_ratio_along_3d_ray_for_curved_world(
+    in float a,
+    in float b,
+    in float y2,
+    in float z2,
+    in float r0
+){
+    // GUIDE TO VARIABLE NAMES:
+    //  "x*" distance along the ray from closest approach
+    //  "y*" distance along an axis at closest approach
+    //  "z*" distance along an axis at closest approach
+    //  "r*" distance ("radius") from the center of the world 
+    //  "*0" variable at reference point
+    //  "*2" the square of a variable
+    //  "ch" a nudge we give to prevent division by zero, analogous to the Chapman function
+    const float SQRT_HALF_PI = sqrt(PI/2.);
+    const float k = 0.6; // "k" is an empirically derived constant
+    float x0 = sqrt(max(r0*r0 - y2 - z2, 0.));
+    float abs_a = abs(a);
+    float abs_b = abs(b);
+    float rmin = sqrt(y2+z2);
+    float sqrt_rmin = sqrt(rmin);
+    float ra = sqrt(a*a+y2+z2);
+    float rb = sqrt(b*b+y2+z2);
+    float ch0 = (1./(2.*r0) + 1.) * SQRT_HALF_PI * sqrt_rmin + k*x0;
+    float cha = (1./(2.*ra) + 1.) * SQRT_HALF_PI * sqrt_rmin + k*abs_a;
+    float chb = (1./(2.*rb) + 1.) * SQRT_HALF_PI * sqrt_rmin + k*abs_b;
+    float s0 = min(exp(r0-rmin),1.) / ( x0/r0 + 1./ch0);
+    float sa = exp(r0-ra ) / (abs_a/ra + 1./cha);
+    float sb = exp(r0-rb ) / (abs_b/rb + 1./chb);
     return sign(b)*(s0-sb) - sign(a)*(s0-sa);
 }
 // "approx_air_column_density_ratio_along_2d_ray_for_curved_world" 
