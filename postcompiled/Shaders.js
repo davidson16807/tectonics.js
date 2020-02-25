@@ -537,6 +537,8 @@ float approx_air_column_density_ratio_along_2d_ray_for_curved_world(
     const float SQRT_HALF_PI = sqrt(PI/2.);
     const float k = 0.6; // "k" is an empirically derived constant
     float x0 = sqrt(max(r0*r0 - z2, 0.));
+    // if obstructed by the world, approximate answer by using a ludicrously large number
+    if (a < x0 && -x0 < b && z2 < r0*r0) { return BIG; }
     float abs_a = abs(a);
     float abs_b = abs(b);
     float z = sqrt(z2);
@@ -581,9 +583,10 @@ float approx_air_column_density_ratio_along_3d_ray_for_curved_world(
     const float SQRT_HALF_PI = sqrt(PI/2.);
     const float k = 0.6; // "k" is an empirically derived constant
     float x0 = sqrt(max(r0*r0 - y2 - z2, 0.));
+    float rmin = sqrt(y2+z2);
+    if (a < x0 && -x0 < b && rmin < r0*r0) { return BIG; }
     float abs_a = abs(a);
     float abs_b = abs(b);
-    float rmin = sqrt(y2+z2);
     float sqrt_rmin = sqrt(rmin);
     float ra = sqrt(a*a+y2+z2);
     float rb = sqrt(b*b+y2+z2);
@@ -611,22 +614,22 @@ float approx_air_column_density_ratio_along_2d_ray_for_curved_world(
     in float x_start,
     in float x_stop,
     in float z2,
-    in float r,
-    in float H
+    in float r0,
+    in float h
 ){
-    float X = sqrt(max(r*r -z2, 0.));
+    float x0 = sqrt(max(r0*r0 -z2, 0.));
     // if ray is obstructed
-    if (x_start < X && -X < x_stop && z2 < r*r)
+    if (x_start < x0 && -x0 < x_stop && z2 < r0*r0)
     {
         // return ludicrously big number to represent obstruction
         return BIG;
     }
     float sigma =
-        H * approx_air_column_density_ratio_along_2d_ray_for_curved_world(
-            x_start / H,
-            x_stop / H,
-            z2 /(H*H),
-            r / H
+        h * approx_air_column_density_ratio_along_2d_ray_for_curved_world(
+            x_start / h,
+            x_stop / h,
+            z2 /(h*h),
+            r0 / h
         );
     // NOTE: we clamp the result to prevent the generation of inifinities and nans, 
     // which can cause graphical artifacts.
@@ -694,16 +697,20 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     //  "*_ray"  property of rayleigh scattering
     //  "*_mie"  property of mie scattering
     //  "*_abs"  property of absorption
-    vec3 V0= view_origin;
+    // setup variable shorthands and express all distances in terms of scale height
+    float h = atmosphere_scale_height;
+    vec3 V0= view_origin / h;
     vec3 V = view_direction;
-    float v0= view_start_length;
-    float v1= view_stop_length;
-    vec3 P = view_origin - world_position;
+    float v0= view_start_length / h;
+    float v1= view_stop_length / h;
+    vec3 P = (view_origin - world_position) / h;
+    vec3 O = world_position / h;
+    float r = world_radius / h;
+    beta_ray *= h;
+    beta_mie *= h;
+    beta_abs *= h;
     vec3 L = light_direction; // unit vector pointing to light source
     vec3 I = light_rgb_intensity; // vector indicating intensity of light source for each color channel
-    vec3 O = world_position;
-    float r = world_radius;
-    float H = atmosphere_scale_height;
     float v = dot(-P,V); // distance from view ray origin to closest approach
     float z2 = dot( P,P) - v * v; // squared distance from the view ray to the center of the world at closest approach
     // cosine of angle between view and light directions
@@ -723,25 +730,23 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     float l; // distance from light ray origin to closest approach
     float zl2; // squared distance ("radius") of the light ray at closest for a single iteration of the view ray march
     float r2; // squared distance ("radius") from the center of the world for a single iteration of the view ray march
-    float h; // distance ("height") from the surface of the world for a single iteration of the view ray march
-    float sigma_v; // columnar density encountered along the view ray,  relative to surface density
-    float sigma_l; // columnar density encountered along the light ray, relative to surface density
+    float sigma_v; // columnar density encountered along the view ray,  relative to surface density, effectively the distance along the surface needed to obtain a similar column density
+    float sigma_l; // columnar density encountered along the light ray, relative to surface density, effectively the distance along the surface needed to obtain a similar column density
     vec3 E = vec3(0); // total intensity for each color channel, found as the sum of light intensities for each path from the light source to the camera
     for (float i = 0.; i < STEP_COUNT; ++i)
     {
         r2 = vi*vi+z2;
-        h = sqrt(r2) - r;
-        sigma_v = approx_air_column_density_ratio_along_2d_ray_for_curved_world(-v, vi, z2, r, H );
+        sigma_v = approx_air_column_density_ratio_along_2d_ray_for_curved_world(-v, vi, z2, r );
         VL = dot(V, -L);
         l = dot(P+V*(vi+v),-L);
         zl2 = r2 - l*l;
-        sigma_l = approx_air_column_density_ratio_along_2d_ray_for_curved_world(-l, 3.*r, zl2, r, H );
+        sigma_l = approx_air_column_density_ratio_along_2d_ray_for_curved_world(-l, 3.*r, zl2, r );
         gamma_ray = get_fraction_of_rayleigh_scattered_light_scattered_by_angle(VL);
         gamma_mie = get_fraction_of_mie_scattered_light_scattered_by_angle(VL);
         beta_gamma = beta_ray * gamma_ray + beta_mie * gamma_mie;
         E += I
             // incoming fraction: the fraction of light that scatters towards camera
-            * exp(-h/H) * beta_gamma * dx
+            * exp((r-sqrt(r2))) * beta_gamma * dx
             // outgoing fraction: the fraction of light that scatters away from camera
             * exp(-beta_sum * (sigma_l + sigma_v));
         vi += dx;
@@ -1306,6 +1311,8 @@ float approx_air_column_density_ratio_along_2d_ray_for_curved_world(
     const float SQRT_HALF_PI = sqrt(PI/2.);
     const float k = 0.6; // "k" is an empirically derived constant
     float x0 = sqrt(max(r0*r0 - z2, 0.));
+    // if obstructed by the world, approximate answer by using a ludicrously large number
+    if (a < x0 && -x0 < b && z2 < r0*r0) { return BIG; }
     float abs_a = abs(a);
     float abs_b = abs(b);
     float z = sqrt(z2);
@@ -1350,9 +1357,10 @@ float approx_air_column_density_ratio_along_3d_ray_for_curved_world(
     const float SQRT_HALF_PI = sqrt(PI/2.);
     const float k = 0.6; // "k" is an empirically derived constant
     float x0 = sqrt(max(r0*r0 - y2 - z2, 0.));
+    float rmin = sqrt(y2+z2);
+    if (a < x0 && -x0 < b && rmin < r0*r0) { return BIG; }
     float abs_a = abs(a);
     float abs_b = abs(b);
-    float rmin = sqrt(y2+z2);
     float sqrt_rmin = sqrt(rmin);
     float ra = sqrt(a*a+y2+z2);
     float rb = sqrt(b*b+y2+z2);
@@ -1380,22 +1388,22 @@ float approx_air_column_density_ratio_along_2d_ray_for_curved_world(
     in float x_start,
     in float x_stop,
     in float z2,
-    in float r,
-    in float H
+    in float r0,
+    in float h
 ){
-    float X = sqrt(max(r*r -z2, 0.));
+    float x0 = sqrt(max(r0*r0 -z2, 0.));
     // if ray is obstructed
-    if (x_start < X && -X < x_stop && z2 < r*r)
+    if (x_start < x0 && -x0 < x_stop && z2 < r0*r0)
     {
         // return ludicrously big number to represent obstruction
         return BIG;
     }
     float sigma =
-        H * approx_air_column_density_ratio_along_2d_ray_for_curved_world(
-            x_start / H,
-            x_stop / H,
-            z2 /(H*H),
-            r / H
+        h * approx_air_column_density_ratio_along_2d_ray_for_curved_world(
+            x_start / h,
+            x_stop / h,
+            z2 /(h*h),
+            r0 / h
         );
     // NOTE: we clamp the result to prevent the generation of inifinities and nans, 
     // which can cause graphical artifacts.
@@ -1463,16 +1471,20 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     //  "*_ray"  property of rayleigh scattering
     //  "*_mie"  property of mie scattering
     //  "*_abs"  property of absorption
-    vec3 V0= view_origin;
+    // setup variable shorthands and express all distances in terms of scale height
+    float h = atmosphere_scale_height;
+    vec3 V0= view_origin / h;
     vec3 V = view_direction;
-    float v0= view_start_length;
-    float v1= view_stop_length;
-    vec3 P = view_origin - world_position;
+    float v0= view_start_length / h;
+    float v1= view_stop_length / h;
+    vec3 P = (view_origin - world_position) / h;
+    vec3 O = world_position / h;
+    float r = world_radius / h;
+    beta_ray *= h;
+    beta_mie *= h;
+    beta_abs *= h;
     vec3 L = light_direction; // unit vector pointing to light source
     vec3 I = light_rgb_intensity; // vector indicating intensity of light source for each color channel
-    vec3 O = world_position;
-    float r = world_radius;
-    float H = atmosphere_scale_height;
     float v = dot(-P,V); // distance from view ray origin to closest approach
     float z2 = dot( P,P) - v * v; // squared distance from the view ray to the center of the world at closest approach
     // cosine of angle between view and light directions
@@ -1492,25 +1504,23 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     float l; // distance from light ray origin to closest approach
     float zl2; // squared distance ("radius") of the light ray at closest for a single iteration of the view ray march
     float r2; // squared distance ("radius") from the center of the world for a single iteration of the view ray march
-    float h; // distance ("height") from the surface of the world for a single iteration of the view ray march
-    float sigma_v; // columnar density encountered along the view ray,  relative to surface density
-    float sigma_l; // columnar density encountered along the light ray, relative to surface density
+    float sigma_v; // columnar density encountered along the view ray,  relative to surface density, effectively the distance along the surface needed to obtain a similar column density
+    float sigma_l; // columnar density encountered along the light ray, relative to surface density, effectively the distance along the surface needed to obtain a similar column density
     vec3 E = vec3(0); // total intensity for each color channel, found as the sum of light intensities for each path from the light source to the camera
     for (float i = 0.; i < STEP_COUNT; ++i)
     {
         r2 = vi*vi+z2;
-        h = sqrt(r2) - r;
-        sigma_v = approx_air_column_density_ratio_along_2d_ray_for_curved_world(-v, vi, z2, r, H );
+        sigma_v = approx_air_column_density_ratio_along_2d_ray_for_curved_world(-v, vi, z2, r );
         VL = dot(V, -L);
         l = dot(P+V*(vi+v),-L);
         zl2 = r2 - l*l;
-        sigma_l = approx_air_column_density_ratio_along_2d_ray_for_curved_world(-l, 3.*r, zl2, r, H );
+        sigma_l = approx_air_column_density_ratio_along_2d_ray_for_curved_world(-l, 3.*r, zl2, r );
         gamma_ray = get_fraction_of_rayleigh_scattered_light_scattered_by_angle(VL);
         gamma_mie = get_fraction_of_mie_scattered_light_scattered_by_angle(VL);
         beta_gamma = beta_ray * gamma_ray + beta_mie * gamma_mie;
         E += I
             // incoming fraction: the fraction of light that scatters towards camera
-            * exp(-h/H) * beta_gamma * dx
+            * exp((r-sqrt(r2))) * beta_gamma * dx
             // outgoing fraction: the fraction of light that scatters away from camera
             * exp(-beta_sum * (sigma_l + sigma_v));
         vi += dx;
