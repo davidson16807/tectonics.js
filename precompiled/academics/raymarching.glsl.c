@@ -83,26 +83,31 @@ FUNC(float) approx_air_column_density_ratio_along_2d_ray_for_curved_world(
     IN(float) a, 
     IN(float) b, 
     IN(float) z2, 
-    IN(float) R
+    IN(float) r0
 ){
     // GUIDE TO VARIABLE NAMES:
-    //  capital letters indicate surface values, e.g. "R" is planet radius
     //  "x*" distance along the ray from closest approach
     //  "z*" distance from the center of the world at closest approach
-    //  "R*" distance ("radius") from the center of the world
-    //  "h*" distance ("height") from the center of the world
+    //  "r*" distance ("radius") from the center of the world
     //  "*0" variable at reference point
-    //  "*1" variable at which the top of the atmosphere occurs
     //  "*2" the square of a variable
-    //  "d*dx" a derivative, a rate of change over distance along the ray
-    float X  = sqrt(max(R*R -z2, 0.));
-    float div0_fix = 1./sqrt((X*X+R) * 0.5*PI);
-    float ra = sqrt(a*a+z2);
-    float rb = sqrt(b*b+z2);
-    float sa = 1./(abs(a)/ra + div0_fix) *     exp(R-ra);
-    float sb = 1./(abs(b)/rb + div0_fix) *     exp(R-rb);
-    float S  = 1./(abs(X)/R  + div0_fix) * min(exp(R-sqrt(z2)),1.);
-    return sign(b)*(S-sb) - sign(a)*(S-sa);
+    //  "ch" a nudge we give to prevent division by zero, analogous to the Chapman function
+    const float SQRT_HALF_PI  = sqrt(PI/2.);
+    const float k = 0.6; // "k" is an empirically derived constant
+    float x0     = sqrt(max(r0*r0 - z2, 0.));
+    float abs_a  = abs(a);
+    float abs_b  = abs(b);
+    float z      = sqrt(z2);
+    float sqrt_z = sqrt(z);
+    float ra     = sqrt(a*a+z2);
+    float rb     = sqrt(b*b+z2);
+    float ch0    = (1./(2.*r0) + 1.) * SQRT_HALF_PI * sqrt_z + k*x0;
+    float cha    = (1./(2.*ra) + 1.) * SQRT_HALF_PI * sqrt_z + k*abs_a;
+    float chb    = (1./(2.*rb) + 1.) * SQRT_HALF_PI * sqrt_z + k*abs_b;
+    float s0     = min(exp(r0- z),1.) / (   x0/r0 + 1./ch0);
+    float sa     =     exp(r0-ra)     / (abs_a/ra + 1./cha);
+    float sb     =     exp(r0-rb)     / (abs_b/rb + 1./chb);
+    return sign(b)*(s0-sb) - sign(a)*(s0-sa);
 }
 
 // "approx_air_column_density_ratio_along_2d_ray_for_curved_world" 
