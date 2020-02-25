@@ -158,44 +158,6 @@ FUNC(float) approx_air_column_density_ratio_along_3d_ray_for_curved_world(
     return sign(b)*(s0-sb) - sign(a)*(s0-sa);
 }
 
-// "approx_air_column_density_ratio_along_2d_ray_for_curved_world" 
-//   calculates column density ratio of air for a ray emitted from the surface of a world to a desired distance, 
-//   taking into account the curvature of the world.
-// It does this by making a quadratic approximation for the height above the surface.
-// The derivative of this approximation never reaches 0, and this allows us to find a closed form solution 
-//   for the column density ratio using integration by substitution.
-// "x_start" and "x_stop" are distances along the ray from closest approach.
-//   If there is no intersection, they are the distances from the closest approach to the upper bound.
-//   Negative numbers indicate the rays are firing towards the ground.
-// "z2" is the closest distance from the ray to the center of the world, squared.
-// "r" is the radius of the world.
-// "H" is the scale height of the atmosphere.
-FUNC(float) approx_air_column_density_ratio_along_2d_ray_for_curved_world(
-    IN(float) x_start, 
-    IN(float) x_stop, 
-    IN(float) z2, 
-    IN(float) r0, 
-    IN(float) h
-){
-    float x0 = sqrt(max(r0*r0 -z2, 0.));
-    // if ray is obstructed
-    if (x_start < x0 && -x0 < x_stop && z2 < r0*r0)
-    {
-        // return ludicrously big number to represent obstruction
-        return BIG;
-    }
-    float sigma = 
-        h * approx_air_column_density_ratio_along_2d_ray_for_curved_world(
-            x_start / h,
-            x_stop  / h,
-            z2      /(h*h),
-            r0      / h
-        );
-    // NOTE: we clamp the result to prevent the generation of inifinities and nans, 
-    // which can cause graphical artifacts.
-    return min(abs(sigma),BIG);
-}
-
 // "try_approx_air_column_density_ratio_along_ray" is an all-in-one convenience wrapper 
 //   for approx_air_column_density_ratio_along_ray_2d() and approx_reference_air_column_density_ratio_along_ray.
 // Just pass it the origin and direction of a 3d ray and it will find the column density ratio along its path, 
@@ -205,11 +167,11 @@ FUNC(float) approx_air_column_density_ratio_along_3d_ray_for_curved_world (
     IN(vec3)  V,
     IN(float) x,
     IN(float) r, 
-    IN(float) H
+    IN(float) h
 ){
     float xz = dot(-P,V);           // distance ("radius") from the ray to the center of the world at closest approach, squared
     float z2 = dot( P,P) - xz * xz; // distance from the origin at which closest approach occurs
-    return approx_air_column_density_ratio_along_2d_ray_for_curved_world( 0.-xz, x-xz, z2, r, H );
+    return h * approx_air_column_density_ratio_along_2d_ray_for_curved_world( (0.-xz)/h, (x-xz)/h, z2/(h*h), r/h );
 }
 
 FUNC(vec3) get_rgb_fraction_of_light_transmitted_through_air_for_curved_world(
@@ -276,7 +238,6 @@ FUNC(vec3) get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     beta_abs *= h;
     vec3  L = light_direction;     // unit vector pointing to light source
     vec3  I = light_rgb_intensity; // vector indicating intensity of light source for each color channel
-
 
     float v  = dot(-P,V);         // distance from view ray origin to closest approach
     float z2 = dot( P,P) - v * v; // squared distance from the view ray to the center of the world at closest approach
