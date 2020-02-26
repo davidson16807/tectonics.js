@@ -81,7 +81,7 @@ We need some way to switch between these two integral solutions seamlessly. We f
 
 <p>After <a href="https://www.desmos.com/calculator/iht5vlwov8">some trial and error</a>, I found `Ch approx sqrt(pi/2 (x^2 + z))` works to a suitable approximation, but for those who want more accuracy for a little less performance, it's best to simply to add a linear term onto `Ch||`:</p>
 
-<p>`Ch approx (1/(2 sqrt(x^2+z^2))+1) sqrt(1/2 pi sqrt(x^2+z^2))  + ax`</p>
+<p>`Ch approx (1/(2 sqrt(x^2+z^2))+1) sqrt(1/2 pi z)  + ax`</p>
 
 <p>where I set `a = 0.6`</p>
 
