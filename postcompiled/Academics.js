@@ -411,11 +411,9 @@ function get_rgb_fraction_of_light_transmitted_through_air_for_curved_world(
 }
 // TODO: multiple scattering events
 // TODO: support for light sources from within atmosphere
-function get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
+function get_rgb_fraction_of_light_scattered_from_air_for_curved_world(
     view_origin, view_direction, view_start_length, view_stop_length,
-    world_position, world_radius,
-    light_direction, light_rgb_intensity,
-    atmosphere_scale_height,
+    world_position, world_radius, light_direction, atmosphere_scale_height,
     beta_ray, beta_mie, beta_abs
 ){
     // For an excellent introduction to what we're try to do here, see Alan Zucconi: 
@@ -436,8 +434,7 @@ function get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     //  "gamma*" a phase factor, the fraction of light that's scattered in a certain direction
     //  "rho*"   a density ratio, the density of air relative to surface density
     //  "sigma*" a column density ratio, the density of a column of air relative to surface density
-    //  "I*"     intensity of source lighting for each color channel
-    //  "E*"     intensity of light cast towards the viewer for each color channel
+    //  "F*"     fraction of source light that reaches the viewer due to scattering for each color channel
     //  "*_ray"  property of rayleigh scattering
     //  "*_mie"  property of mie scattering
     //  "*_abs"  property of absorption
@@ -454,7 +451,6 @@ function get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     beta_mie *= h;
     beta_abs *= h;
     glm.vec3 L = light_direction; // unit vector pointing to light source
-    glm.vec3 I = light_rgb_intensity; // vector indicating intensity of light source for each color channel
     // cosine of angle between view and light directions
     float VL = dot(V, -L);
     // vector pointing orthogonal to view and light directions, with magnitude equal to their sine
@@ -475,29 +471,30 @@ function get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     const float STEP_COUNT = 16.; // number of steps taken while marching along the view ray
     float dx = (v1 - v0) / STEP_COUNT;
     float vi = v0 - v + 0.5 * dx;
-    float sigma_v; // columnar density encountered along the view ray,  relative to surface density, effectively the distance along the surface needed to obtain a similar column density
-    float sigma_l; // columnar density encountered along the light ray, relative to surface density, effectively the distance along the surface needed to obtain a similar column density
+    float sigma; // columnar density encountered along the entire path, relative to surface density, effectively the distance along the surface needed to obtain a similar column density
     glm.vec3 F = glm.vec3(0); // total intensity for each color channel, found as the sum of light intensities for each path from the light source to the camera
     // "l":  distance from light ray origin to closest approach
     float l = dot(P+V*(vi+v),-L);
     float dl = dx*VL;
-    // "zl": distance ("radius") of the light ray at closest for a single iteration of the view ray march
-    float zl = sqrt((vi )*(vi )+z2 - dot(P+V*(vi+v ),-L) * dot(P+V*(vi+v ), -L));
-    float dzl = sqrt((vi+dx)*(vi+dx)+z2 - dot(P+V*(vi+v+dx),-L) * dot(P+V*(vi+v+dx), -L)) - zl;
+    // "zl": distance of the light ray at closest for a single iteration of the view ray march
+    // float zl  = sqrt((vi   )*(vi   )+z2 - dot(P+V*(vi+v   ),-L) * dot(P+V*(vi+v   ), -L)); 
+    float zl2 = ((vi )*(vi )+z2 - dot(P+V*(vi+v ),-L) * dot(P+V*(vi+v ), -L));
+    // float dzl = sqrt((vi+dx)*(vi+dx)+z2 - dot(P+V*(vi+v+dx),-L) * dot(P+V*(vi+v+dx), -L)) - zl;
+    // float dzl = sign(dzl) * sqrt(1. - VL*VL);
     for (float i = 0.; i < STEP_COUNT; ++i)
     {
-        sigma_v = approx_air_column_density_ratio_along_3d_ray_for_curved_world(-v, vi, y2, z2, r );
-        sigma_l = approx_air_column_density_ratio_along_3d_ray_for_curved_world(-l, 3.*r, y2, zl*zl, r );
-        F +=
-            // incoming fraction: the fraction of light that scatters towards camera
-              exp((r-sqrt(vi*vi+y2+z2))) * beta_gamma * dx
+        sigma = approx_air_column_density_ratio_along_3d_ray_for_curved_world(-v, vi, y2, z2, r )
+              + approx_air_column_density_ratio_along_3d_ray_for_curved_world(-l, 3.*r, y2, zl2, r );
+        F +=// incoming fraction: the fraction of light that scatters towards camera
+              exp(r-sqrt(vi*vi+y2+z2)) * beta_gamma * dx
             // outgoing fraction: the fraction of light that scatters away from camera
-            * exp(-beta_sum * (sigma_l + sigma_v));
+            * exp(-beta_sum * sigma);
         vi += dx;
         l += dl;
-        zl += dzl;
+        // zl += dzl; 
+        zl2 = vi*vi+z2 - dot(P+V*(vi+v),-L) * dot(P+V*(vi+v), -L);
     }
-    return F*I;
+    return F;
 }
 function get_rgb_intensity_of_light_scattered_from_fluid_for_flat_world(
     cos_view_angle,
