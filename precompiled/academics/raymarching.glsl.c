@@ -239,22 +239,24 @@ FUNC(vec3) get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     vec3  L = light_direction;     // unit vector pointing to light source
     vec3  I = light_rgb_intensity; // vector indicating intensity of light source for each color channel
 
-    float v  = dot(-P,V);         // distance from view ray origin to closest approach
-    float z2 = dot( P,P) - v * v; // squared distance from the view ray to the center of the world at closest approach
-
     // cosine of angle between view and light directions
-    float VL; 
+    float VL   = dot(V, -L);
+    // vector pointing orthogonal to view and light directions, with magnitude equal to their sine
+    vec3  VxL  = cross(V, -L);
+    float v  = dot(-P,V);         // distance from view ray origin to closest approach
+    float y2 = dot(-P,normalize(VxL));// distance from world center to plane shared by view and light directions
+    float z2 = dot( P,P) - v * v; // squared distance from the view ray to the center of the world at closest approach
 
     // "gamma_*" indicates the fraction of scattered sunlight that scatters to a given angle (indicated by its cosine, A.K.A. "VL").
     // It only accounts for a portion of the sunlight that's lost during the scatter, which is irrespective of wavelength or density
-    float gamma_ray;
-    float gamma_mie;
+    float gamma_ray = get_fraction_of_rayleigh_scattered_light_scattered_by_angle(VL);
+    float gamma_mie = get_fraction_of_mie_scattered_light_scattered_by_angle(VL);
 
     // "beta_*" indicates the rest of the fractional loss.
     // it is dependant on wavelength, and the density ratio, which is dependant on height
     // So all together, the fraction of sunlight that scatters to a given angle is: beta(wavelength) * gamma(angle) * density_ratio(height)
     vec3  beta_sum   = beta_ray + beta_mie + beta_abs;
-    vec3  beta_gamma;
+    vec3  beta_gamma = beta_ray * gamma_ray + beta_mie * gamma_mie;
     
     const float STEP_COUNT = 16.; // number of steps taken while marching along the view ray
     float dx = (v1 - v0) / STEP_COUNT;
@@ -267,11 +269,6 @@ FUNC(vec3) get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     float sigma_l;     // columnar density encountered along the light ray, relative to surface density, effectively the distance along the surface needed to obtain a similar column density
     vec3  E = vec3(0); // total intensity for each color channel, found as the sum of light intensities for each path from the light source to the camera
 
-    VL  = dot(V, -L);
-    vec3 VxL  = cross(V, -L);
-    gamma_ray  = get_fraction_of_rayleigh_scattered_light_scattered_by_angle(VL);
-    gamma_mie  = get_fraction_of_mie_scattered_light_scattered_by_angle(VL);
-    beta_gamma = beta_ray * gamma_ray + beta_mie * gamma_mie;
 
     l   = dot(P+V*(vi+v),-L);
     float dl_dv  = VL;
