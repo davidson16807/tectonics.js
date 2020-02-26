@@ -143,7 +143,7 @@ FUNC(float) approx_air_column_density_ratio_along_3d_ray_for_curved_world(
     const float k = 0.6; // "k" is an empirically derived constant
     float x0     = sqrt(max(r0*r0 - y2 - z2, 0.));
     float rmin   = sqrt(y2+z2);
-    if (a < x0 && -x0 < b && rmin < r0*r0) { return BIG; }
+    if (a < x0 && -x0 < b && y2+z2 < r0*r0) { return BIG; }
     float abs_a  = abs(a);
     float abs_b  = abs(b);
     float sqrt_rmin = sqrt(rmin);
@@ -244,8 +244,9 @@ FUNC(vec3) get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     // vector pointing orthogonal to view and light directions, with magnitude equal to their sine
     vec3  VxL  = cross(V, -L);
     float v  = dot(-P,V);         // distance from view ray origin to closest approach
-    float y2 = dot(-P,normalize(VxL));// distance from world center to plane shared by view and light directions
-    float z2 = dot( P,P) - v * v; // squared distance from the view ray to the center of the world at closest approach
+    float y  = dot(-P,normalize(VxL));// distance from world center to plane shared by view and light directions
+    float y2 = y*y;
+    float z2 = dot( P,P) - y2 - v*v; // squared distance from the view ray to the center of the world at closest approach
 
     // "gamma_*" indicates the fraction of scattered sunlight that scatters to a given angle (indicated by its cosine, A.K.A. "VL").
     // It only accounts for a portion of the sunlight that's lost during the scatter, which is irrespective of wavelength or density
@@ -269,17 +270,16 @@ FUNC(vec3) get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     float sigma_l;     // columnar density encountered along the light ray, relative to surface density, effectively the distance along the surface needed to obtain a similar column density
     vec3  E = vec3(0); // total intensity for each color channel, found as the sum of light intensities for each path from the light source to the camera
 
-
     l   = dot(P+V*(vi+v),-L);
     float dl_dv  = VL;
     // float dzl_dv = length(VxL) * sign(dot(V0+V*vi, normalize(cross(L, VxL))));
     for (float i = 0.; i < STEP_COUNT; ++i)
     {
-        r2  = vi*vi+z2;
-        sigma_v = approx_air_column_density_ratio_along_2d_ray_for_curved_world(-v, vi, z2, r );
+        r2  = vi*vi+y2+z2;
+        sigma_v = approx_air_column_density_ratio_along_3d_ray_for_curved_world(-v, vi, y2, z2, r );
 
-        zl2 = r2 - dot(P+V*(vi+v),-L) * dot(P+V*(vi+v),-L); 
-        sigma_l    = approx_air_column_density_ratio_along_2d_ray_for_curved_world(-l, 3.*r, zl2, r );
+        zl2 = r2 - y2 - dot(P+V*(vi+v),-L) * dot(P+V*(vi+v),-L); 
+        sigma_l    = approx_air_column_density_ratio_along_3d_ray_for_curved_world(-l, 3.*r, y2, zl2, r );
 
         E += I
             // incoming fraction: the fraction of light that scatters towards camera
