@@ -696,23 +696,28 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     float sigma_v; // columnar density encountered along the view ray,  relative to surface density, effectively the distance along the surface needed to obtain a similar column density
     float sigma_l; // columnar density encountered along the light ray, relative to surface density, effectively the distance along the surface needed to obtain a similar column density
     vec3 E = vec3(0); // total intensity for each color channel, found as the sum of light intensities for each path from the light source to the camera
+    VL = dot(V, -L);
+    vec3 VxL = cross(V, -L);
+    gamma_ray = get_fraction_of_rayleigh_scattered_light_scattered_by_angle(VL);
+    gamma_mie = get_fraction_of_mie_scattered_light_scattered_by_angle(VL);
+    beta_gamma = beta_ray * gamma_ray + beta_mie * gamma_mie;
+    l = dot(P+V*(vi+v),-L);
+    float dl_dv = VL;
+    // float dzl_dv = length(VxL) * sign(dot(V0+V*vi, normalize(cross(L, VxL))));
     for (float i = 0.; i < STEP_COUNT; ++i)
     {
         r2 = vi*vi+z2;
         sigma_v = approx_air_column_density_ratio_along_2d_ray_for_curved_world(-v, vi, z2, r );
-        VL = dot(V, -L);
-        l = dot(P+V*(vi+v),-L);
-        zl2 = r2 - l*l;
+        zl2 = r2 - dot(P+V*(vi+v),-L) * dot(P+V*(vi+v),-L);
         sigma_l = approx_air_column_density_ratio_along_2d_ray_for_curved_world(-l, 3.*r, zl2, r );
-        gamma_ray = get_fraction_of_rayleigh_scattered_light_scattered_by_angle(VL);
-        gamma_mie = get_fraction_of_mie_scattered_light_scattered_by_angle(VL);
-        beta_gamma = beta_ray * gamma_ray + beta_mie * gamma_mie;
         E += I
             // incoming fraction: the fraction of light that scatters towards camera
             * exp((r-sqrt(r2))) * beta_gamma * dx
             // outgoing fraction: the fraction of light that scatters away from camera
             * exp(-beta_sum * (sigma_l + sigma_v));
         vi += dx;
+        l += dx*dl_dv;
+        // zl += dv*dzl_dv; 
     }
     return E;
 }
@@ -1433,23 +1438,28 @@ vec3 get_rgb_intensity_of_light_scattered_from_air_for_curved_world(
     float sigma_v; // columnar density encountered along the view ray,  relative to surface density, effectively the distance along the surface needed to obtain a similar column density
     float sigma_l; // columnar density encountered along the light ray, relative to surface density, effectively the distance along the surface needed to obtain a similar column density
     vec3 E = vec3(0); // total intensity for each color channel, found as the sum of light intensities for each path from the light source to the camera
+    VL = dot(V, -L);
+    vec3 VxL = cross(V, -L);
+    gamma_ray = get_fraction_of_rayleigh_scattered_light_scattered_by_angle(VL);
+    gamma_mie = get_fraction_of_mie_scattered_light_scattered_by_angle(VL);
+    beta_gamma = beta_ray * gamma_ray + beta_mie * gamma_mie;
+    l = dot(P+V*(vi+v),-L);
+    float dl_dv = VL;
+    // float dzl_dv = length(VxL) * sign(dot(V0+V*vi, normalize(cross(L, VxL))));
     for (float i = 0.; i < STEP_COUNT; ++i)
     {
         r2 = vi*vi+z2;
         sigma_v = approx_air_column_density_ratio_along_2d_ray_for_curved_world(-v, vi, z2, r );
-        VL = dot(V, -L);
-        l = dot(P+V*(vi+v),-L);
-        zl2 = r2 - l*l;
+        zl2 = r2 - dot(P+V*(vi+v),-L) * dot(P+V*(vi+v),-L);
         sigma_l = approx_air_column_density_ratio_along_2d_ray_for_curved_world(-l, 3.*r, zl2, r );
-        gamma_ray = get_fraction_of_rayleigh_scattered_light_scattered_by_angle(VL);
-        gamma_mie = get_fraction_of_mie_scattered_light_scattered_by_angle(VL);
-        beta_gamma = beta_ray * gamma_ray + beta_mie * gamma_mie;
         E += I
             // incoming fraction: the fraction of light that scatters towards camera
             * exp((r-sqrt(r2))) * beta_gamma * dx
             // outgoing fraction: the fraction of light that scatters away from camera
             * exp(-beta_sum * (sigma_l + sigma_v));
         vi += dx;
+        l += dx*dl_dv;
+        // zl += dv*dzl_dv; 
     }
     return E;
 }
