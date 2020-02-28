@@ -158,7 +158,7 @@ FUNC(vec3) get_rgb_intensity_of_light_from_surface_of_world(
     vec3 I_sun = light_rgb_intensity;
     // "I_surface" is the intensity of light that reaches the surface after being filtered by atmosphere
     vec3 I_surface = I_sun 
-      * get_rgb_fraction_of_light_transmitted_through_air_for_curved_world(
+      * get_rgb_fraction_of_light_transmitted_through_air_of_spherical_world(
             // NOTE: we nudge the origin of light ray by a small amount so that collision isn't detected with the world
             1.000001 * P, L, 3.*world_radius, vec3(0), world_radius, 
             atmosphere_scale_height, atmosphere_beta_ray, atmosphere_beta_mie, atmosphere_beta_abs
@@ -180,7 +180,7 @@ FUNC(vec3) get_rgb_intensity_of_light_from_surface_of_world(
     // If sea is present, "E_ocean_scattered" is the rgb intensity of light 
     //   scattered by the sea towards the camera. Otherwise, it equals 0.
     vec3 E_ocean_scattered = 
-        get_rgb_intensity_of_light_scattered_from_fluid_for_flat_world(
+        get_rgb_intensity_of_light_scattered_by_fluid_along_flat_surface(
             NV, NL, LV, ocean_depth, I_surface_refracted, 
             ocean_beta_ray, ocean_beta_mie, ocean_beta_abs
         );
@@ -188,7 +188,7 @@ FUNC(vec3) get_rgb_intensity_of_light_from_surface_of_world(
     //   that reaches the ground after being filtered by air and sea. 
     //   Otherwise, it equals I_surface_refracted.
     vec3 I_ocean_trasmitted= I_surface_refracted
-        * get_rgb_fraction_of_light_transmitted_through_fluid_for_flat_world(NL, ocean_depth, ocean_beta_ray, ocean_beta_mie, ocean_beta_abs);
+        * get_rgb_fraction_of_light_transmitted_through_fluid_along_flat_surface(NL, ocean_depth, ocean_beta_ray, ocean_beta_mie, ocean_beta_abs);
 
     // "E_diffuse" is diffuse reflection of any nontrasparent component beneath the transparent surface,
     // It effectively describes diffuse reflection as understood within the phong model of reflectance.
@@ -197,7 +197,7 @@ FUNC(vec3) get_rgb_intensity_of_light_from_surface_of_world(
     // if sea is present, "E_ocean_transmitted" is the fraction 
     //   of E_diffuse that makes it out of the sea. Otheriwse, it equals E_diffuse
     vec3 E_ocean_transmitted  = E_diffuse 
-        * get_rgb_fraction_of_light_transmitted_through_fluid_for_flat_world(NV, ocean_depth, ocean_beta_ray, ocean_beta_mie, ocean_beta_abs);
+        * get_rgb_fraction_of_light_transmitted_through_fluid_along_flat_surface(NV, ocean_depth, ocean_beta_ray, ocean_beta_mie, ocean_beta_abs);
 
     return 
         E_surface_reflected

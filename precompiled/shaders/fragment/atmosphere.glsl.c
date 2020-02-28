@@ -97,13 +97,13 @@ void main() {
         {
             if (i >= light_count) { break; }
             E += light_rgb_intensities[i] 
-               * get_rgb_fraction_of_light_scattered_from_air_for_curved_world(
+               * get_rgb_fraction_of_distant_light_scattered_by_air_of_spherical_world(
                      V0, V, v0, v1, O, r, light_directions[i], H, beta_ray, beta_mie, beta_abs
                  );
         }
         // now calculate the intensity of light that traveled straight in from the background, and add it to the total
         E += I_back 
-           * get_rgb_fraction_of_light_transmitted_through_air_for_curved_world(
+           * get_rgb_fraction_of_light_transmitted_through_air_of_spherical_world(
                  V0, V, v1*0.999, O, r, H, beta_ray, beta_mie, beta_abs
              );
     }
