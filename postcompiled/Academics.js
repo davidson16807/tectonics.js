@@ -1,86 +1,717 @@
-// NOTE: these macros are here to allow porting the code between several languages
-const DEGREE = 3.141592653589793238462643383279502884197169399/180.;
+const DEGREE = 3.141592653589793238462643383279502884197169399 / 180.;
 const RADIAN = 1.;
 const KELVIN = 1.;
-const MICROGRAM = 1e-9; // kilograms
-const MILLIGRAM = 1e-6; // kilograms
-const GRAM = 1e-3; // kilograms
-const KILOGRAM = 1.; // kilograms
-const TON = 1000.; // kilograms
-const NANOMETER = 1e-9; // meters
-const MICROMETER = 1e-6; // meters
-const MILLIMETER = 1e-3; // meters
-const METER = 1.; // meters
-const KILOMETER = 1000.; // meters
+const MICROGRAM = 1e-9;
+// kilograms
+const MILLIGRAM = 1e-6;
+// kilograms
+const GRAM = 1e-3;
+// kilograms
+const KILOGRAM = 1.;
+// kilograms
+const TON = 1000.;
+// kilograms
+const NANOMETER = 1e-9;
+// meters
+const MICROMETER = 1e-6;
+// meters
+const MILLIMETER = 1e-3;
+// meters
+const METER = 1.;
+// meters
+const KILOMETER = 1000.;
+// meters
 const MOLE = 6.02214076e23;
 const MILLIMOLE = MOLE / 1e3;
 const MICROMOLE = MOLE / 1e6;
 const NANOMOLE = MOLE / 1e9;
 const FEMTOMOLE = MOLE / 1e12;
-const SECOND = 1.; // seconds
-const MINUTE = 60.; // seconds
-const HOUR = MINUTE*60.; // seconds
-const DAY = HOUR*24.; // seconds
-const WEEK = DAY*7.; // seconds
-const MONTH = DAY*29.53059; // seconds
-const YEAR = DAY*365.256363004; // seconds
-const MEGAYEAR = YEAR*1e6; // seconds
+const SECOND = 1.;
+// seconds
+const MINUTE = 60.;
+// seconds
+const HOUR = MINUTE * 60.;
+// seconds
+const DAY = HOUR * 24.;
+// seconds
+const WEEK = DAY * 7.;
+// seconds
+const MONTH = DAY * 29.53059;
+// seconds
+const YEAR = DAY * 365.256363004;
+// seconds
+const MEGAYEAR = YEAR * 1e6;
+// seconds
 const NEWTON = KILOGRAM * METER / (SECOND * SECOND);
 const JOULE = NEWTON * METER;
 const WATT = JOULE / SECOND;
-const EARTH_MASS = 5.972e24; // kilograms
-const EARTH_RADIUS = 6.367e6; // meters
-const STANDARD_GRAVITY = 9.80665; // meters/second^2
-const STANDARD_TEMPERATURE = 273.15; // kelvin
-const STANDARD_PRESSURE = 101325.; // pascals
-const ASTRONOMICAL_UNIT = 149597870700.;// meters
-const GLOBAL_SOLAR_CONSTANT = 1361.; // watts/meter^2
-const JUPITER_MASS = 1.898e27; // kilograms
-const JUPITER_RADIUS = 71e6; // meters
-const SOLAR_MASS = 2e30; // kilograms
-const SOLAR_RADIUS = 695.7e6; // meters
-const SOLAR_LUMINOSITY = 3.828e26; // watts
-const SOLAR_TEMPERATURE = 5772.; // kelvin
-function get_surface_area_of_sphere(
-    radius
-) {
-    return 4.*Math.PI*radius*radius;
-}
-// TODO: try to get this to work with structs!
-// See: http://www.lighthouse3d.com/tutorials/maths/ray-sphere-intersection/
-function get_relation_between_ray_and_point(
-    point_position,
-    ray_origin,
-    V,
-    z2,
-    xz
+const EARTH_MASS = 5.972e24;
+// kilograms
+const EARTH_RADIUS = 6.367e6;
+// meters
+const STANDARD_GRAVITY = 9.80665;
+// meters/second^2
+const STANDARD_TEMPERATURE = 273.15;
+// kelvin
+const STANDARD_PRESSURE = 101325.;
+// pascals
+const ASTRONOMICAL_UNIT = 149597870700.;
+// meters
+const GLOBAL_SOLAR_CONSTANT = 1361.;
+// watts/meter^2
+const JUPITER_MASS = 1.898e27;
+// kilograms
+const JUPITER_RADIUS = 71e6;
+// meters
+const SOLAR_MASS = 2e30;
+// kilograms
+const SOLAR_RADIUS = 695.7e6;
+// meters
+const SOLAR_LUMINOSITY = 3.828e26;
+// watts
+const SOLAR_TEMPERATURE = 5772.;
+// kelvin
+       
+const PI = 3.14159265358979323846264338327950288419716939937510;
+const PHI = 1.6180339887;
+const BIG = 1e20;
+const SMALL = 1e-20;
+function maybe_int(
+ /*bool*/ exists
 ){
-    let P = point_position - ray_origin;
-    xz = dot(P, V);
-    z2 = dot(P, P) - xz * xz;
+    return {
+        value:value,
+        exists:exists
+    };
 }
-function try_get_relation_between_ray_and_sphere(
-    sphere_radius,
-    z2,
-    xz,
-    distance_to_entrance,
-    distance_to_exit
+
+function maybe_float(
+ /*bool*/ exists
 ){
-    let sphere_radius2 = sphere_radius * sphere_radius;
-    let distance_from_closest_approach_to_exit = sqrt(max(sphere_radius2 - z2, 1e-10));
-    distance_to_entrance = xz - distance_from_closest_approach_to_exit;
-    distance_to_exit = xz + distance_from_closest_approach_to_exit;
-    return (distance_to_exit > 0. && z2 < sphere_radius*sphere_radius);
+    return {
+        value:value,
+        exists:exists
+    };
 }
+
+function maybe_vec2(
+ /*bool*/ exists
+){
+    return {
+        value:value,
+        exists:exists
+    };
+}
+
+function maybe_vec3(
+ /*bool*/ exists
+){
+    return {
+        value:value,
+        exists:exists
+    };
+}
+
+function maybe_vec4(
+ /*bool*/ exists
+){
+    return {
+        value:value,
+        exists:exists
+    };
+}
+
+/*maybe_float*/
+function get_distance_along_line_to_union(
+     /*maybe_float*/ shape1,
+     /*maybe_float*/ shape2
+){
+    return maybe_float( !shape1.exists? shape2.value : !shape2.exists? shape1.value : glm.min( shape1.value,  shape2.value),  shape1.exists || shape2.exists);
+}
+
+/*maybe_vec2*/
+function get_distances_along_line_to_union(
+     /*maybe_vec2*/ shape1,
+     /*maybe_vec2*/ shape2
+){
+    return maybe_vec2( glm.vec2( !shape1.exists? shape2.value.x : !shape2.exists? shape1.value.x : glm.min( shape1.value.x,  shape2.value.x),  !shape1.exists? shape2.value.y : !shape2.exists? shape1.value.y : glm.max( shape1.value.y,  shape2.value.y)),  shape1.exists || shape2.exists);
+}
+
+/*maybe_vec2*/
+function get_distances_along_line_to_negation(
+     /*maybe_vec2*/ positive,
+     /*maybe_vec2*/ negative
+){
+    // as long as intersection with positive exists, 
+    // and negative doesn't completely surround it, there will be an intersection
+    let exists = positive.exists && !(negative.value.x < positive.value.x && positive.value.y < negative.value.y);
+    // find the first region of intersection
+    let entrance = !negative.exists? positive.value.x : glm.min( negative.value.y,  positive.value.x);
+    let exit = !negative.exists? positive.value.y : glm.min( negative.value.x,  positive.value.y);
+    // if the first region is behind us, find the second region
+    if (exit < 0. && 0. < positive.value.y){
+        entrance = negative.value.y;
+        exit = positive.value.y;
+    }
+
+    return maybe_vec2( glm.vec2( entrance,  exit),  exists);
+}
+
+/*maybe_vec2*/
+function get_distances_along_line_to_intersection(
+     /*maybe_vec2*/ shape1,
+     /*maybe_vec2*/ shape2
+){
+    let x = shape1.exists && shape2.exists? glm.max( shape1.value.x,  shape2.value.x) : 0.f;
+    let y = shape1.exists && shape2.exists? glm.min( shape1.value.y,  shape2.value.y) : 0.f;
+    return maybe_vec2( glm.vec2( x,  y),  shape1.exists && shape2.exists && x < y);
+}
+
+/*float*/
+function get_distance_along_2d_line_nearest_to_point(
+     /*vec2*/ A0,
+     /*vec2*/ A,
+     /*vec2*/ B0
+){
+    return glm.dot( B0['-']( A0),  A);
+}
+
+/*
+A0 line reference
+A  line direction, normalized
+B0 line reference
+B  line direction, normalized
+*/
+/*maybe_float*/
+function get_distance_along_2d_line_to_line(
+     /*vec2*/ A0,
+     /*vec2*/ A,
+     /*vec2*/ B0,
+     /*vec2*/ B
+){
+    let D = B0['-']( A0);
+    // offset
+    let R = D['-']( A['*']( glm.dot( D,  A)));
+    // rejection
+    return maybe_float( glm.length( R) / glm.dot( B,  glm.normalize( (R)["*"]( -1))),  glm.abs( glm.abs( glm.dot( A,  B)) - 1.f) > 0.f);
+}
+
+/*
+A0 line reference
+A  line direction, normalized
+B0 ray origin
+B  ray direction, normalized
+*/
+/*maybe_float*/
+function get_distance_along_2d_line_to_ray(
+     /*vec2*/ A0,
+     /*vec2*/ A,
+     /*vec2*/ B0,
+     /*vec2*/ B
+){
+    // INTUITION: same as the line-line intersection, but now results are only valid if distance > 0
+    let D = B0['-']( A0);
+    // offset
+    let R = D['-']( A['*']( glm.dot( D,  A)));
+    // rejection
+    let xB = glm.length( R) / glm.dot( B,  glm.normalize( (R)["*"]( -1)));
+    // distance along B
+    let xA = xB / glm.dot( B,  A);
+    // distance along A
+    return maybe_float( xB,  glm.abs( glm.abs( glm.dot( A,  B)) - 1.f) > 0.f && xA > 0.f);
+}
+
+/*
+A0 line reference
+A  line direction, normalized
+B0 line segment endpoint 1
+B1 line segment endpoint 2
+*/
+/*maybe_float*/
+function get_distance_along_2d_line_to_line_segment(
+     /*vec2*/ A0,
+     /*vec2*/ A,
+     /*vec2*/ B1,
+     /*vec2*/ B2
+){
+    // INTUITION: same as the line-line intersection, but now results are only valid if 0 < distance < |B2-B1|
+    let B = glm.normalize( B2['-']( B1));
+    let D = B1['-']( A0);
+    // offset
+    let R = D['-']( A['*']( glm.dot( D,  A)));
+    // rejection
+    let xB = glm.length( R) / glm.dot( B,  glm.normalize( (R)["*"]( -1)));
+    // distance along B
+    let xA = xB / glm.dot( B,  A);
+    // distance along A
+    return maybe_float( xB,  glm.abs( glm.abs( glm.dot( A,  B)) - 1.f) > 0.f && 0. < xA && xA < glm.length( B2['-']( B1)));
+}
+
+/*maybe_vec2*/
+function get_distances_along_2d_line_to_circle(
+     /*vec2*/ A0,
+     /*vec2*/ A,
+     /*vec2*/ B0,
+     /*float*/ r
+){
+    let D = B0['-']( A0);
+    let xz = glm.dot( D,  A);
+    let z2 = glm.dot( D,  D) - xz * xz;
+    let y2 = r * r - z2;
+    let dxr = glm.sqrt( glm.max( y2,  1e-10));
+    return maybe_vec2( glm.vec2( xz - dxr,  xz + dxr),  y2 > 0.);
+}
+
+/*
+A0 line reference
+A  line direction, normalized
+B1 vertex position 1
+B2 vertex position 2
+*/
+/*maybe_vec2*/
+function get_distances_along_2d_line_to_triangle(
+     /*vec2*/ A0,
+     /*vec2*/ A,
+     /*vec2*/ B1,
+     /*vec2*/ B2,
+     /*vec2*/ B3
+){
+    let line1 = get_distance_along_2d_line_to_line_segment( A0,  A,  B1,  B2);
+    let line2 = get_distance_along_2d_line_to_line_segment( A0,  A,  B2,  B3);
+    let line3 = get_distance_along_2d_line_to_line_segment( A0,  A,  B3,  B1);
+    return maybe_vec2( glm.vec2( glm.min( line1.value,  glm.min( line2.value,  line3.value)),  glm.max( line1.value,  glm.max( line2.value,  line3.value))),  line1.exists || line2.exists || line3.exists);
+}
+
+/*float*/
+function get_distance_along_3d_line_nearest_to_point(
+     /*vec3*/ A0,
+     /*vec3*/ A,
+     /*vec3*/ B0
+){
+    return glm.dot( B0['-']( A0),  A);
+}
+
+/*
+A0 line reference
+A  line direction, normalized
+B0 line reference
+B  line direction, normalized
+*/
+/*maybe_float*/
+function get_distance_along_3d_line_nearest_to_line(
+     /*vec3*/ A0,
+     /*vec3*/ A,
+     /*vec3*/ B0,
+     /*vec3*/ B
+){
+    let D = B0['-']( A0);
+    // offset
+    let C = glm.normalize( glm.cross( B,  A));
+    // cross
+    let R = D['-']( (A['*']( glm.dot( D,  A)))['-']( C['*']( glm.dot( D,  C))));
+    // rejection
+    return maybe_float( glm.length( R) / -glm.dot( B,  glm.normalize( R)),  glm.abs( glm.abs( glm.dot( A,  B)) - 1.f) > 0.f);
+}
+
+/*
+A0 line reference
+A  line direction, normalized
+B0 ray origin
+B  ray direction, normalized
+*/
+/*maybe_float*/
+function get_distance_along_3d_line_nearest_to_ray(
+     /*vec3*/ A0,
+     /*vec3*/ A,
+     /*vec3*/ B0,
+     /*vec3*/ B
+){
+    let D = B0['-']( A0);
+    // offset
+    let R = D['-']( A['*']( glm.dot( D,  A)));
+    // rejection
+    let xB = glm.length( R) / glm.dot( B,  glm.normalize( (R)["*"]( -1)));
+    // distance along B
+    let xA = xB / glm.dot( B,  A);
+    // distance along A
+    return maybe_float( xB,  glm.abs( glm.abs( glm.dot( A,  B)) - 1.f) > 0.f && xA > 0.f);
+}
+
+/*
+A0 line reference
+A  line direction, normalized
+B1 line segment endpoint 1
+B2 line segment endpoint 2
+*/
+/*maybe_float*/
+function get_distance_along_3d_line_nearest_to_line_segment(
+     /*vec3*/ A0,
+     /*vec3*/ A,
+     /*vec3*/ B0,
+     /*vec3*/ B1
+){
+    let B = glm.normalize( B1['-']( B0));
+    let D = B0['-']( A0);
+    // offset
+    let R = D['-']( A['*']( glm.dot( D,  A)));
+    // rejection
+    let xB = glm.length( R) / glm.dot( B,  glm.normalize( (R)["*"]( -1)));
+    // distance along B
+    let xA = xB / glm.dot( B,  A);
+    // distance along A
+    return maybe_float( xB,  glm.abs( glm.abs( glm.dot( A,  B)) - 1.f) > 0.f && 0. < xA && xA < glm.length( B1['-']( B0)));
+}
+
+/*
+A0 line reference
+A  line direction, normalized
+B0 plane reference
+N  plane surface normal, normalized
+*/
+/*maybe_float*/
+function get_distance_along_3d_line_to_plane(
+     /*vec3*/ A0,
+     /*vec3*/ A,
+     /*vec3*/ B0,
+     /*vec3*/ N
+){
+    return maybe_float( -glm.dot( A0['-']( B0),  N) / glm.dot( A,  N),  glm.abs( glm.dot( A,  N)) < SMALL);
+}
+
+/*
+A0 line reference
+A  line direction, normalized
+B0 circle origin
+N  circle surface normal, normalized
+r  circle radius
+*/
+/*maybe_float*/
+function get_distance_along_3d_line_to_circle(
+     /*vec3*/ A0,
+     /*vec3*/ A,
+     /*vec3*/ B0,
+     /*vec3*/ N,
+     /*float*/ r
+){
+    // intersection(plane, sphere)
+    let t = get_distance_along_3d_line_to_plane( A0,  A,  B0,  N);
+    return maybe_float( t.value,  is_3d_point_in_sphere( A0['+']( A['*']( t.value)),  B0,  r));
+}
+
+/*
+A0 line reference
+A  line direction, normalized
+B1 vertex position 1
+B2 vertex position 2
+B3 vertex position 3
+*/
+/*maybe_float*/
+function get_distance_along_3d_line_to_triangle(
+     /*vec3*/ A0,
+     /*vec3*/ A,
+     /*vec3*/ B1,
+     /*vec3*/ B2,
+     /*vec3*/ B3
+){
+    // intersection(face plane, edge plane, edge plane, edge plane)
+    let B0 = ((B1['+']( B2['+']( B3))))['/']( 3.);
+    let N = glm.normalize( glm.cross( B1['-']( B2),  B2['-']( B3)));
+    let t = get_distance_along_3d_line_to_plane( A0,  A,  B0,  N);
+    let At = A0['+']( A['*']( t.value));
+    let B2B1hat = glm.normalize( B2['-']( B1));
+    let B3B2hat = glm.normalize( B3['-']( B2));
+    let B1B3hat = glm.normalize( B1['-']( B3));
+    return maybe_float( t.value,  glm.dot( glm.normalize( At['-']( B1)),  B2B1hat) > glm.dot( (B1B3hat)["*"]( -1),  B2B1hat) && glm.dot( glm.normalize( At['-']( B2)),  B3B2hat) > glm.dot( (B2B1hat)["*"]( -1),  B3B2hat) && glm.dot( glm.normalize( At['-']( B3)),  B1B3hat) > glm.dot( (B3B2hat)["*"]( -1),  B1B3hat));
+}
+
+/*
+A0 line reference
+A  line direction, normalized
+B0 sphere origin
+R  sphere radius along each coordinate axis
+*/
+/*maybe_vec2*/
+function get_distances_along_3d_line_to_sphere(
+     /*vec3*/ A0,
+     /*vec3*/ A,
+     /*vec3*/ B0,
+     /*float*/ r
+){
+    let xz = glm.dot( B0['-']( A0),  A);
+    let z = glm.length( A0['+']( (A['*']( xz))['-']( B0)));
+    let y2 = r * r - z * z;
+    let dxr = glm.sqrt( glm.max( y2,  1e-10));
+    return maybe_vec2( glm.vec2( xz - dxr,  xz + dxr),  y2 > 0.);
+}
+
+/*
+A0 line reference
+A  line direction, normalized
+B0 ellipsoid center
+R  ellipsoid radius along each coordinate axis
+*/
+/*maybe_float*/
+function get_distance_along_3d_line_to_ellipsoid(
+     /*vec3*/ A0,
+     /*vec3*/ A,
+     /*vec3*/ B0,
+     /*vec3*/ R
+){
+    // NOTE: shamelessly copy pasted, all credit goes to Inigo: 
+    // https://www.iquilezles.org/www/articles/intersectors/intersectors.htm
+    let Or = ((A0['-']( B0)))['/']( R);
+    let Ar = A['/']( R);
+    let ArAr = glm.dot( Ar,  Ar);
+    let OrAr = glm.dot( Or,  Ar);
+    let OrOr = glm.dot( Or,  Or);
+    let h = OrAr * OrAr - ArAr * (OrOr - 1.0);
+    return maybe_float( (-OrAr - glm.sqrt( h)) / ArAr,  h >= 0.0);
+}
+
+/*
+A0 line reference
+A  line direction, normalized
+B1 vertex position 1
+B2 vertex position 2
+B3 vertex position 3
+B4 vertex position 4
+*/
+/*maybe_float*/
+function get_distance_along_3d_line_to_tetrahedron(
+     /*vec3*/ A0,
+     /*vec3*/ A,
+     /*vec3*/ B1,
+     /*vec3*/ B2,
+     /*vec3*/ B3,
+     /*vec3*/ B4
+){
+    let hit1 = get_distance_along_3d_line_to_triangle( A0,  A,  B1,  B2,  B3);
+    let hit2 = get_distance_along_3d_line_to_triangle( A0,  A,  B2,  B3,  B4);
+    let hit3 = get_distance_along_3d_line_to_triangle( A0,  A,  B3,  B4,  B1);
+    let hit4 = get_distance_along_3d_line_to_triangle( A0,  A,  B4,  B1,  B2);
+    let hit;
+    hit = get_distance_along_line_to_union( hit1,  hit2);
+    hit = get_distance_along_line_to_union( hit,  hit3);
+    hit = get_distance_along_line_to_union( hit,  hit4);
+    return hit;
+}
+
+/*
+A0 line reference
+A  line direction, normalized
+B0 cylinder reference
+B  cylinder direction, normalized
+r  cylinder radius
+*/
+/*maybe_vec2*/
+function get_distances_along_3d_line_to_infinite_cylinder(
+     /*vec3*/ A0,
+     /*vec3*/ A,
+     /*vec3*/ B0,
+     /*vec3*/ B,
+     /*float*/ r
+){
+    // INTUITION: simplify the problem by using a coordinate system based around the line and the tube center
+    // see closest-approach-between-line-and-cylinder-visualized.scad
+    // implementation shamelessly copied from Inigo: 
+    // https://www.iquilezles.org/www/articles/intersectors/intersectors.htm
+    let D = A0['-']( B0);
+    let BA = glm.dot( B,  A);
+    let BD = glm.dot( B,  D);
+    let a = 1.0 - BA * BA;
+    let b = glm.dot( D,  A) - BD * BA;
+    let c = glm.dot( D,  D) - BD * BD - r * r;
+    let h = glm.sqrt( glm.max( b * b - a * c,  0.f));
+    return maybe_vec2( glm.vec2( (-b + h) / a,  (-b - h) / a),  h > 0.0);
+}
+
+/*
+A0 line reference
+A  line direction, normalized
+B1 cylinder endpoint 1
+B2 cylinder endpoing 2
+r  cylinder radius
+*/
+/*maybe_vec2*/
+function get_distances_along_3d_line_to_cylinder(
+     /*vec3*/ A0,
+     /*vec3*/ A,
+     /*vec3*/ B1,
+     /*vec3*/ B2,
+     /*float*/ r
+){
+    let B = glm.normalize( B2['-']( B1));
+    let a1 = get_distance_along_3d_line_to_plane( A0,  A,  B1,  B);
+    let a2 = get_distance_along_3d_line_to_plane( A0,  A,  B2,  B);
+    let a_in = glm.min( a1.value,  a2.value);
+    let a_out = glm.max( a1.value,  a2.value);
+    let ends = maybe_vec2( glm.vec2( a_in,  a_out),  a1.exists || a2.exists);
+    let tube = get_distances_along_3d_line_to_infinite_cylinder( A0,  A,  B1,  B,  r);
+    let cylinder = get_distances_along_line_to_intersection( tube,  ends);
+    // TODO: do we need this line?
+    let entrance = glm.max( tube.value.y,  a_in);
+    let exit = glm.min( tube.value.x,  a_out);
+    return maybe_vec2( glm.vec2( entrance,  exit),  tube.exists && entrance < exit);
+}
+
+/*
+A0 line reference
+A  line direction, normalized
+B1 capsule endpoint 1
+B2 capsule endpoing 2
+r  capsule radius
+*/
+/*maybe_vec2*/
+function get_distances_along_3d_line_to_capsule(
+     /*vec3*/ A0,
+     /*vec3*/ A,
+     /*vec3*/ B1,
+     /*vec3*/ B2,
+     /*float*/ r
+){
+    let cylinder = get_distances_along_3d_line_to_cylinder( A0,  A,  B1,  B2,  r);
+    let sphere1 = get_distances_along_3d_line_to_sphere( A0,  A,  B1,  r);
+    let sphere2 = get_distances_along_3d_line_to_sphere( A0,  A,  B2,  r);
+    let spheres = get_distances_along_line_to_union( sphere1,  sphere2);
+    let capsule = get_distances_along_line_to_union( spheres,  cylinder);
+    return capsule;
+}
+
+/*
+A0 line reference
+A  line direction, normalized
+B1 ring endpoint 1
+B2 ring endpoing 2
+ro ring outer radius
+ri ring inner radius
+*/
+/*maybe_vec2*/
+function get_distances_along_3d_line_to_ring(
+     /*vec3*/ A0,
+     /*vec3*/ A,
+     /*vec3*/ B1,
+     /*vec3*/ B2,
+     /*float*/ ro,
+     /*float*/ ri
+){
+    let outer = get_distances_along_3d_line_to_cylinder( A0,  A,  B1,  B2,  ro);
+    let inner = get_distances_along_3d_line_to_cylinder( A0,  A,  B1,  B2,  ri);
+    let ring = get_distances_along_line_to_negation( outer,  inner);
+    return ring;
+}
+
+/*
+A0 line reference
+A  line direction, normalized
+B0 cone vertex
+B  cone direction, normalized
+cosb cosine of cone half angle
+*/
+/*maybe_float*/
+function get_distance_along_3d_line_to_infinite_cone(
+     /*vec3*/ A0,
+     /*vec3*/ A,
+     /*vec3*/ B0,
+     /*vec3*/ B,
+     /*float*/ cosb
+){
+    let D = A0['-']( B0);
+    let a = glm.dot( A,  B) * glm.dot( A,  B) - cosb * cosb;
+    let b = 2. * (glm.dot( A,  B) * glm.dot( D,  B) - glm.dot( A,  D) * cosb * cosb);
+    let c = glm.dot( D,  B) * glm.dot( D,  B) - glm.dot( D,  D) * cosb * cosb;
+    let det = b * b - 4. * a * c;
+    if (det < 0.){
+        return maybe_float( 0.f,  false);
+    }
+
+    det = glm.sqrt( det);
+    let t1 = (-b - det) / (2. * a);
+    let t2 = (-b + det) / (2. * a);
+    // This is a bit messy; there ought to be a more elegant solution.
+    let t = t1;
+    if (t < 0. || t2 > 0. && t2 < t){
+        t = t2;
+    }
+    else {
+        t = t1;
+    }
+
+    let cp = A0['+']( (A['*']( t))['-']( B0));
+    let h = glm.dot( cp,  B);
+    return maybe_float( t,  t > 0. && h > 0.);
+}
+
+/*
+A0 line reference
+A  line direction, normalized
+B0 cone vertex
+B  cone direction, normalized
+r  cone radius
+h  cone height
+*/
+/*maybe_float*/
+function get_distance_along_3d_line_to_cone(
+     /*vec3*/ A0,
+     /*vec3*/ A,
+     /*vec3*/ B0,
+     /*vec3*/ B,
+     /*float*/ r,
+     /*float*/ h
+){
+    let end = get_distance_along_3d_line_to_circle( A0,  A,  B0['+']( B['*']( h)),  B,  r);
+    let cone = get_distance_along_3d_line_to_infinite_cone( A0,  A,  B0,  B,  Math.cos( Math.atan( r / h)));
+    cone.exists = cone.exists && glm.dot( A0['+']( (A['*']( cone.value))['-']( B0)),  B) <= h;
+    cone = get_distance_along_line_to_union( end,  cone);
+    return cone;
+}
+
+/*
+A0 line reference
+A  line direction, normalized
+B1 cone endpoint 1
+B2 cone endpoint 2
+r1 cone endpoint 1 radius
+r2 cone endpoint 2 radius
+*/
+/*maybe_float*/
+function get_distance_along_3d_line_to_capped_cone(
+     /*vec3*/ A0,
+     /*vec3*/ A,
+     /*vec3*/ B1,
+     /*vec3*/ B2,
+     /*float*/ r1,
+     /*float*/ r2
+){
+    let dh = glm.length( B2['-']( B1));
+    let dr = r2 - r1;
+    let rmax = glm.max( r2,  r1);
+    let rmin = glm.min( r2,  r1);
+    let hmax = rmax * dr / dh;
+    let hmin = rmin * dr / dh;
+    let B = glm.normalize( B2['-']( B1))['*']( glm.sign( dr));
+    let Bmax = (r2 > r1? B2 : B1);
+    let B0 = Bmax['-']( B['*']( hmax));
+    let Bmin = Bmax['-']( B['*']( hmin));
+    let end1 = get_distance_along_3d_line_to_circle( A0,  A,  Bmax,  B,  rmax);
+    let end2 = get_distance_along_3d_line_to_circle( A0,  A,  Bmin,  B,  rmin);
+    let cone = get_distance_along_3d_line_to_infinite_cone( A0,  A,  B0,  B,  Math.cos( Math.atan( rmax / hmax)));
+    let c_h = glm.dot( A0['+']( (A['*']( cone.value))['-']( B0)),  B);
+    cone.exists = cone.exists && hmin <= c_h && c_h <= hmax;
+    cone = get_distance_along_line_to_union( cone,  end1);
+    cone = get_distance_along_line_to_union( cone,  end2);
+    return cone;
+}
+
 const SPEED_OF_LIGHT = 299792458. * METER / SECOND;
 const BOLTZMANN_CONSTANT = 1.3806485279e-23 * JOULE / KELVIN;
-const STEPHAN_BOLTZMANN_CONSTANT = 5.670373e-8 * WATT / (METER*METER* KELVIN*KELVIN*KELVIN*KELVIN);
+const STEPHAN_BOLTZMANN_CONSTANT = 5.670373e-8 * WATT / (METER * METER * KELVIN * KELVIN * KELVIN * KELVIN);
 const PLANCK_CONSTANT = 6.62607004e-34 * JOULE * SECOND;
 // see Lawson 2004, "The Blackbody Fraction, Infinite Series and Spreadsheets"
 // we only do a single iteration with n=1, because it doesn't have a noticeable effect on output
+/*float*/
 function solve_fraction_of_light_emitted_by_black_body_below_wavelength(
-    wavelength,
-    temperature
+     /*float*/ wavelength,
+     /*float*/ temperature
 ){
     const iterations = 2.;
     const h = PLANCK_CONSTANT;
@@ -88,91 +719,98 @@ function solve_fraction_of_light_emitted_by_black_body_below_wavelength(
     const c = SPEED_OF_LIGHT;
     let L = wavelength;
     let T = temperature;
-    let C2 = h*c/k;
-    let z = C2 / (L*T);
-    let z2 = z*z;
-    let z3 = z2*z;
+    let C2 = h * c / k;
+    let z = C2 / (L * T);
+    let z2 = z * z;
+    let z3 = z2 * z;
     let sum = 0.;
-    let n2=0.;
-    let n3=0.;
-    for (let n=1.; n <= iterations; n++) {
-        n2 = n*n;
-        n3 = n2*n;
-        sum += (z3 + 3.*z2/n + 6.*z/n2 + 6./n3) * exp(-n*z) / n;
+    let n2 = 0.;
+    let n3 = 0.;
+    for (let n = 1.; n <= iterations; n++) {
+        n2 = n * n;
+        n3 = n2 * n;
+        sum += (z3 + 3. * z2 / n + 6. * z / n2 + 6. / n3) * Math.exp( -n * z) / n;
     }
-    return 15.*sum/(Math.PI*Math.PI*Math.PI*Math.PI);
+
+    return 15. * sum / (PI * PI * PI * PI);
 }
+
+/*float*/
 function solve_fraction_of_light_emitted_by_black_body_between_wavelengths(
-    lo,
-    hi,
-    temperature
+     /*float*/ lo,
+     /*float*/ hi,
+     /*float*/ temperature
 ){
-    return solve_fraction_of_light_emitted_by_black_body_below_wavelength(hi, temperature) -
-            solve_fraction_of_light_emitted_by_black_body_below_wavelength(lo, temperature);
+    return solve_fraction_of_light_emitted_by_black_body_below_wavelength( hi,  temperature) - solve_fraction_of_light_emitted_by_black_body_below_wavelength( lo,  temperature);
 }
+
 // This calculates the radiation (in watts/m^2) that's emitted 
 // by a single object using the Stephan-Boltzmann equation
+/*float*/
 function get_intensity_of_light_emitted_by_black_body(
-    temperature
+     /*float*/ temperature
 ){
     let T = temperature;
-    return STEPHAN_BOLTZMANN_CONSTANT * T*T*T*T;
+    return STEPHAN_BOLTZMANN_CONSTANT * T * T * T * T;
 }
+
+/*vec3*/
 function solve_rgb_intensity_of_light_emitted_by_black_body(
-    temperature
+     /*float*/ temperature
 ){
-    return get_intensity_of_light_emitted_by_black_body(temperature)
-         * glm.vec3(
-             solve_fraction_of_light_emitted_by_black_body_between_wavelengths(600e-9*METER, 700e-9*METER, temperature),
-             solve_fraction_of_light_emitted_by_black_body_between_wavelengths(500e-9*METER, 600e-9*METER, temperature),
-             solve_fraction_of_light_emitted_by_black_body_between_wavelengths(400e-9*METER, 500e-9*METER, temperature)
-           );
+    return glm.vec3( solve_fraction_of_light_emitted_by_black_body_between_wavelengths( 600e-9 * METER,  700e-9 * METER,  temperature),  solve_fraction_of_light_emitted_by_black_body_between_wavelengths( 500e-9 * METER,  600e-9 * METER,  temperature),  solve_fraction_of_light_emitted_by_black_body_between_wavelengths( 400e-9 * METER,  500e-9 * METER,  temperature))['*']( get_intensity_of_light_emitted_by_black_body( temperature));
 }
+
 // Rayleigh phase function factor [-1, 1]
+/*float*/
 function get_fraction_of_rayleigh_scattered_light_scattered_by_angle(
-    cos_scatter_angle
+     /*float*/ cos_scatter_angle
 ){
-    return 3. * (1. + cos_scatter_angle*cos_scatter_angle)
-    / //------------------------
-                (16. * Math.PI);
+    return 3. * (1. + cos_scatter_angle * cos_scatter_angle) / //------------------------
+                (16. * PI);
 }
+
 // Henyey-Greenstein phase function factor [-1, 1]
 // represents the average cosine of the scattered directions
 // 0 is isotropic scattering
 // > 1 is forward scattering, < 1 is backwards
+/*float*/
 function get_fraction_of_mie_scattered_light_scattered_by_angle(
-    cos_scatter_angle
+     /*float*/ cos_scatter_angle
 ){
     const g = 0.76;
-    return (1. - g*g)
-    / //---------------------------------------------
-        ((4. + Math.PI) * pow(1. + g*g - 2.*g*cos_scatter_angle, 1.5));
+    return (1. - g * g) / //---------------------------------------------
+        ((4. + PI) * Math.pow( 1. + g * g - 2. * g * cos_scatter_angle,  1.5));
 }
+
 // Schlick's fast approximation to the Henyey-Greenstein phase function factor
 // Pharr and  Humphreys [2004] equivalence to g above
+/*float*/
 function approx_fraction_of_mie_scattered_light_scattered_by_angle_fast(
-    cos_scatter_angle
+     /*float*/ cos_scatter_angle
 ){
     const g = 0.76;
-    const k = 1.55*g - 0.55 * (g*g*g);
-    return (1. - k*k)
-    / //-------------------------------------------
-        (4. * Math.PI * (1. + k*cos_scatter_angle) * (1. + k*cos_scatter_angle));
+    const k = 1.55 * g - 0.55 * (g * g * g);
+    return (1. - k * k) / //-------------------------------------------
+        (4. * PI * (1. + k * cos_scatter_angle) * (1. + k * cos_scatter_angle));
 }
+
 // "get_fraction_of_light_reflected_on_surface_head_on" finds the fraction of light that's reflected
 //   by a boundary between materials when striking head on.
 //   It is also known as the "characteristic reflectance" within the fresnel reflectance equation.
 //   The refractive indices can be provided as parameters in any order.
+/*float*/
 function get_fraction_of_light_reflected_on_surface_head_on(
-    refractivate_index1,
-    refractivate_index2
+     /*float*/ refractivate_index1,
+     /*float*/ refractivate_index2
 ){
     let n1 = refractivate_index1;
     let n2 = refractivate_index2;
-    let sqrtR0 = ((n1-n2)/(n1+n2));
+    let sqrtR0 = ((n1 - n2) / (n1 + n2));
     let R0 = sqrtR0 * sqrtR0;
     return R0;
 }
+
 // "get_fraction_of_light_reflected_on_surface" returns Fresnel reflectance.
 //   Fresnel reflectance is the fraction of light that's immediately reflected upon striking the surface.
 //   It is the fraction of light that causes specular reflection.
@@ -180,14 +818,16 @@ function get_fraction_of_light_reflected_on_surface_head_on(
 //   see https://en.wikipedia.org/wiki/Schlick%27s_approximation for a summary 
 //   see Hoffmann 2015 for a gentle introduction to the concept
 //   see Schlick (1994) for implementation details
+/*float*/
 function get_fraction_of_light_reflected_on_surface(
-    cos_incident_angle,
-    characteristic_reflectance
+     /*float*/ cos_incident_angle,
+     /*float*/ characteristic_reflectance
 ){
     let R0 = characteristic_reflectance;
-    let _1_u = 1.-cos_incident_angle;
-    return R0 + (1.-R0) * _1_u*_1_u*_1_u*_1_u*_1_u;
+    let _1_u = 1. - cos_incident_angle;
+    return R0 + (1. - R0) * _1_u * _1_u * _1_u * _1_u * _1_u;
 }
+
 // "get_rgb_fraction_of_light_reflected_on_surface" returns Fresnel reflectance for each color channel.
 //   Fresnel reflectance is the fraction of light that's immediately reflected upon striking the surface.
 //   It is the fraction of light that causes specular reflection.
@@ -195,102 +835,47 @@ function get_fraction_of_light_reflected_on_surface(
 //   see https://en.wikipedia.org/wiki/Schlick%27s_approximation for a summary 
 //   see Hoffmann 2015 for a gentle introduction to the concept
 //   see Schlick (1994) for implementation details
+/*vec3*/
 function get_rgb_fraction_of_light_reflected_on_surface(
-    cos_incident_angle,
-    characteristic_reflectance
+     /*float*/ cos_incident_angle,
+     /*vec3*/ characteristic_reflectance
 ){
     let R0 = characteristic_reflectance;
-    let _1_u = 1.-cos_incident_angle;
-    return R0 + (1.-R0) * _1_u*_1_u*_1_u*_1_u*_1_u;
+    let _1_u = 1. - cos_incident_angle;
+    return R0['+']( ((R0['-']( 1.)))['*']( _1_u * _1_u * _1_u * _1_u * _1_u));
 }
+
 // "get_fraction_of_light_masked_or_shaded_by_surface" is Schlick's fast approximation for Smith's function
 //   see Hoffmann 2015 for a gentle introduction to the concept
 //   see Schlick (1994) for even more details.
+/*float*/
 function get_fraction_of_light_masked_or_shaded_by_surface(
-    cos_view_angle,
-    root_mean_slope_squared
+     /*float*/ cos_view_angle,
+     /*float*/ root_mean_slope_squared
 ){
     let m = root_mean_slope_squared;
     let v = cos_view_angle;
-    let k = sqrt(2.*m*m/Math.PI);
-    return v/(v-k*v+k);
+    let k = glm.sqrt( 2. * m * m / PI);
+    return v / (v - k * v + k);
 }
+
 // "get_fraction_of_microfacets_with_angle" 
 //   This is also known as the Beckmann Surface Normal Distribution Function.
 //   This is the probability of finding a microfacet whose surface normal deviates from the average by a certain angle.
 //   see Hoffmann 2015 for a gentle introduction to the concept.
 //   see Schlick (1994) for even more details.
+/*float*/
 function get_fraction_of_microfacets_with_angle(
-    cos_angle_of_deviation,
-    root_mean_slope_squared
+     /*float*/ cos_angle_of_deviation,
+     /*float*/ root_mean_slope_squared
 ){
     let m = root_mean_slope_squared;
     let t = cos_angle_of_deviation;
-    return exp((t*t-1.)/(m*m*t*t))/(m*m*t*t*t*t);
+    return Math.exp( (t * t - 1.) / (m * m * t * t)) / (m * m * t * t * t * t);
 }
-const BIG = 1e20;
-const SMALL = 1e-20;
+
 const MAX_LIGHT_COUNT = 9;
-struct maybe_vec2
-{
-    glm.vec2 value;
-    bool exists;
-};
-struct maybe_float
-{
-    float value;
-    bool exists;
-};
-maybe_float get_distance_along_3d_line_to_plane(
-    in glm.vec3 A0,
-    in glm.vec3 A,
-    in glm.vec3 B0,
-    in glm.vec3 N
-){
-    return maybe_float( -dot(A0 - B0, N) / dot(A, N), abs(dot(A, N)) < SMALL);
-}
-maybe_vec2 get_distances_along_3d_line_to_sphere(
-    in glm.vec3 A0,
-    in glm.vec3 A,
-    in glm.vec3 B0,
-    in float r
-){
-    float xz = dot(B0 - A0, A);
-    float z = length(A0 + A * xz - B0);
-    float y2 = r * r - z * z;
-    float dxr = sqrt(max(y2, 1e-10));
-    return maybe_vec2(
-        glm.vec2(xz - dxr, xz + dxr),
-        y2 > 0.
-    );
-}
-maybe_vec2 get_distances_along_line_to_negation(
-    in maybe_vec2 positive,
-    in maybe_vec2 negative
-) {
-    // as long as intersection with positive exists, 
-    // and negative doesn't completely surround it, there will be an intersection
-    bool exists =
-        positive.exists && !(negative.value.x < positive.value.x && positive.value.y < negative.value.y);
-    // find the first region of intersection
-    float entrance = !negative.exists ? positive.value.x : min(negative.value.y, positive.value.x);
-    float exit = !negative.exists ? positive.value.y : min(negative.value.x, positive.value.y);
-    // if the first region is behind us, find the second region
-    if (exit < 0. && 0. < positive.value.y)
-    {
-        entrance = negative.value.y;
-        exit = positive.value.y;
-    }
-    return maybe_vec2( glm.vec2(entrance, exit), exists );
-}
-// "oplus" is the o-plus operator,
-//   or the reciprocal of the sum of reciprocals.
-// It's a handy function that comes up a lot in some physics problems.
-// It's pretty useful for preventing division by zero.
-function oplus( a, b){
-    return 1. / (1./a + 1./b);
-}
-// "approx_air_column_density_ratio_along_2d_ray_for_curved_world" 
+// "approx_air_column_density_ratio_along_2d_ray_for_spherical_world" 
 //   calculates the distance you would need to travel 
 //   along the surface to encounter the same number of particles in the column. 
 // It does this by finding an integral using integration by substitution, 
@@ -302,11 +887,12 @@ function oplus( a, b){
 //   a and b are distances from the closest approach to the upper bound.
 // "z2" is the closest distance from the ray to the center of the world, squared.
 // "r0" is the radius of the world.
-function approx_air_column_density_ratio_along_2d_ray_for_curved_world(
-    a,
-    b,
-    z2,
-    r0
+/*float*/
+function approx_air_column_density_ratio_along_2d_ray_for_spherical_world(
+     /*float*/ a,
+     /*float*/ b,
+     /*float*/ z2,
+     /*float*/ r0
 ){
     // GUIDE TO VARIABLE NAMES:
     //  "x*" distance along the ray from closest approach
@@ -315,26 +901,31 @@ function approx_air_column_density_ratio_along_2d_ray_for_curved_world(
     //  "*0" variable at reference point
     //  "*2" the square of a variable
     //  "ch" a nudge we give to prevent division by zero, analogous to the Chapman function
-    const float SQRT_HALF_PI = sqrt(Math.PI/2.);
-    const float k = 0.6; // "k" is an empirically derived constant
-    float x0 = sqrt(max(r0*r0 - z2, 0.));
+    const SQRT_HALF_PI = glm.sqrt( PI / 2.);
+    const k = 0.6;
+    // "k" is an empirically derived constant
+    let x0 = glm.sqrt( glm.max( r0 * r0 - z2,  0.));
     // if obstructed by the world, approximate answer by using a ludicrously large number
-    if (a < x0 && -x0 < b && z2 < r0*r0) { return BIG; }
-    float abs_a = abs(a);
-    float abs_b = abs(b);
-    float z = sqrt(z2);
-    float sqrt_z = sqrt(z);
-    float ra = sqrt(a*a+z2);
-    float rb = sqrt(b*b+z2);
-    float ch0 = (1./(2.*r0) + 1.) * SQRT_HALF_PI * sqrt_z + k*x0;
-    float cha = (1./(2.*ra) + 1.) * SQRT_HALF_PI * sqrt_z + k*abs_a;
-    float chb = (1./(2.*rb) + 1.) * SQRT_HALF_PI * sqrt_z + k*abs_b;
-    float s0 = min(exp(r0- z),1.) / ( x0/r0 + 1./ch0);
-    float sa = exp(r0-ra) / (abs_a/ra + 1./cha);
-    float sb = exp(r0-rb) / (abs_b/rb + 1./chb);
-    return sign(b)*(s0-sb) - sign(a)*(s0-sa);
+    if (a < x0 && -x0 < b && z2 < r0 * r0){
+        return BIG;
+    }
+
+    let abs_a = glm.abs( a);
+    let abs_b = glm.abs( b);
+    let z = glm.sqrt( z2);
+    let sqrt_z = glm.sqrt( z);
+    let ra = glm.sqrt( a * a + z2);
+    let rb = glm.sqrt( b * b + z2);
+    let ch0 = (1. / (2. * r0) + 1.) * SQRT_HALF_PI * sqrt_z + k * x0;
+    let cha = (1. / (2. * ra) + 1.) * SQRT_HALF_PI * sqrt_z + k * abs_a;
+    let chb = (1. / (2. * rb) + 1.) * SQRT_HALF_PI * sqrt_z + k * abs_b;
+    let s0 = glm.min( Math.exp( r0 - z),  1.) / (x0 / r0 + 1. / ch0);
+    let sa = Math.exp( r0 - ra) / (abs_a / ra + 1. / cha);
+    let sb = Math.exp( r0 - rb) / (abs_b / rb + 1. / chb);
+    return glm.sign( b) * (s0 - sb) - glm.sign( a) * (s0 - sa);
 }
-// "approx_air_column_density_ratio_along_3d_ray_for_curved_world" 
+
+// "approx_air_column_density_ratio_along_3d_ray_for_spherical_world" 
 //   calculates the distance you would need to travel 
 //   along the surface to encounter the same number of particles in the column. 
 // It does this by finding an integral using integration by substitution, 
@@ -346,12 +937,13 @@ function approx_air_column_density_ratio_along_2d_ray_for_curved_world(
 //   a and b are distances from the closest approach to the upper bound.
 // "z2" is the closest distance from the ray to the center of the world, squared.
 // "r0" is the radius of the world.
-function approx_air_column_density_ratio_along_3d_ray_for_curved_world(
-    a,
-    b,
-    y2,
-    z2,
-    r0
+/*float*/
+function approx_air_column_density_ratio_along_3d_ray_for_spherical_world(
+     /*float*/ a,
+     /*float*/ b,
+     /*float*/ y2,
+     /*float*/ z2,
+     /*float*/ r0
 ){
     // GUIDE TO VARIABLE NAMES:
     //  "x*" distance along the ray from closest approach
@@ -361,60 +953,86 @@ function approx_air_column_density_ratio_along_3d_ray_for_curved_world(
     //  "*0" variable at reference point
     //  "*2" the square of a variable
     //  "ch" a nudge we give to prevent division by zero, analogous to the Chapman function
-    const float SQRT_HALF_PI = sqrt(Math.PI/2.);
-    const float k = 0.6; // "k" is an empirically derived constant
-    float x0 = sqrt(max(r0*r0 - y2 - z2, 0.));
-    float rmin = sqrt(y2+z2);
-    if (a < x0 && -x0 < b && y2+z2 < r0*r0) { return BIG; }
-    float abs_a = abs(a);
-    float abs_b = abs(b);
-    float sqrt_rmin = sqrt(rmin);
-    float ra = sqrt(a*a+y2+z2);
-    float rb = sqrt(b*b+y2+z2);
-    float ch0 = (1./(2.*r0) + 1.) * SQRT_HALF_PI * sqrt_rmin + k*x0;
-    float cha = (1./(2.*ra) + 1.) * SQRT_HALF_PI * sqrt_rmin + k*abs_a;
-    float chb = (1./(2.*rb) + 1.) * SQRT_HALF_PI * sqrt_rmin + k*abs_b;
-    float s0 = min(exp(r0-rmin),1.) / ( x0/r0 + 1./ch0);
-    float sa = exp(r0-ra ) / (abs_a/ra + 1./cha);
-    float sb = exp(r0-rb ) / (abs_b/rb + 1./chb);
-    return sign(b)*(s0-sb) - sign(a)*(s0-sa);
+    const SQRT_HALF_PI = glm.sqrt( PI / 2.);
+    const k = 0.6;
+    // "k" is an empirically derived constant
+    let x0 = glm.sqrt( glm.max( r0 * r0 - y2 - z2,  0.));
+    let rmin = glm.sqrt( y2 + z2);
+    if (a < x0 && -x0 < b && y2 + z2 < r0 * r0){
+        return BIG;
+    }
+
+    let abs_a = glm.abs( a);
+    let abs_b = glm.abs( b);
+    let sqrt_rmin = glm.sqrt( rmin);
+    let ra = glm.sqrt( a * a + y2 + z2);
+    let rb = glm.sqrt( b * b + y2 + z2);
+    let ch0 = (1. / (2. * r0) + 1.) * SQRT_HALF_PI * sqrt_rmin + k * x0;
+    let cha = (1. / (2. * ra) + 1.) * SQRT_HALF_PI * sqrt_rmin + k * abs_a;
+    let chb = (1. / (2. * rb) + 1.) * SQRT_HALF_PI * sqrt_rmin + k * abs_b;
+    let s0 = glm.min( Math.exp( r0 - rmin),  1.) / (x0 / r0 + 1. / ch0);
+    let sa = Math.exp( r0 - ra) / (abs_a / ra + 1. / cha);
+    let sb = Math.exp( r0 - rb) / (abs_b / rb + 1. / chb);
+    return glm.sign( b) * (s0 - sb) - glm.sign( a) * (s0 - sa);
 }
+
 // "try_approx_air_column_density_ratio_along_ray" is an all-in-one convenience wrapper 
 //   for approx_air_column_density_ratio_along_ray_2d() and approx_reference_air_column_density_ratio_along_ray.
 // Just pass it the origin and direction of a 3d ray and it will find the column density ratio along its path, 
 //   or return false to indicate the ray passes through the surface of the world.
-function approx_air_column_density_ratio_along_3d_ray_for_curved_world (
-    P,
-    V,
-    x,
-    r,
-    h
+/*float*/
+function approx_air_column_density_ratio_along_3d_ray_for_spherical_world(
+     /*vec3*/ P,
+     /*vec3*/ V,
+     /*float*/ x,
+     /*float*/ r,
+     /*float*/ h
 ){
-    float xz = dot(-P,V); // distance ("radius") from the ray to the center of the world at closest approach, squared
-    float z2 = dot( P,P) - xz * xz; // distance from the origin at which closest approach occurs
-    return h * approx_air_column_density_ratio_along_2d_ray_for_curved_world( (0.-xz)/h, (x-xz)/h, z2/(h*h), r/h );
+    let xz = glm.dot( (P)["*"]( -1),  V);
+    // distance ("radius") from the ray to the center of the world at closest approach, squared
+    let z2 = glm.dot( P,  P) - xz * xz;
+    // distance from the origin at which closest approach occurs
+    return h * approx_air_column_density_ratio_along_2d_ray_for_spherical_world( (0. - xz) / h,  (x - xz) / h,  z2 / (h * h),  r / h);
 }
-function get_rgb_fraction_of_light_transmitted_through_air_for_curved_world(
-    segment_origin, segment_direction, segment_length,
-    world_position, world_radius, atmosphere_scale_height,
-    beta_ray, beta_mie, beta_abs
+
+/*vec3*/
+function get_rgb_fraction_of_light_transmitted_through_air_of_spherical_world(
+     /*vec3*/ segment_origin,
+     /*vec3*/ segment_direction,
+     /*float*/ segment_length,
+     /*vec3*/ world_position,
+     /*float*/ world_radius,
+     /*float*/ atmosphere_scale_height,
+     /*vec3*/ beta_ray,
+     /*vec3*/ beta_mie,
+     /*vec3*/ beta_abs
 ){
-    glm.vec3 O = world_position;
-    float r = world_radius;
-    float H = atmosphere_scale_height;
+    let O = world_position;
+    let r = world_radius;
+    let H = atmosphere_scale_height;
     // "sigma" is the column density of air, relative to the surface of the world, that's along the light's path of travel,
     //   we use it to estimate the amount of light that's filtered by the atmosphere before reaching the surface
     //   see https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-1/ for an awesome introduction
-    float sigma = approx_air_column_density_ratio_along_3d_ray_for_curved_world (segment_origin-world_position, segment_direction, segment_length, r, H);
+    let sigma = approx_air_column_density_ratio_along_3d_ray_for_spherical_world( segment_origin['-']( world_position),  segment_direction,  segment_length,  r,  H);
     // "I_surface" is the intensity of light that reaches the surface after being filtered by atmosphere
-    return exp(-sigma * (beta_ray + beta_mie + beta_abs));
+    return Math.exp( ((beta_ray['+']( beta_mie['+']( beta_abs))))['*']( -sigma));
 }
+
 // TODO: multiple scattering events
 // TODO: support for light sources from within atmosphere
-function get_rgb_fraction_of_light_scattered_from_air_for_curved_world(
-    view_origin, view_direction, view_start_length, view_stop_length,
-    world_position, world_radius, light_direction, atmosphere_scale_height,
-    beta_ray, beta_mie, beta_abs
+/*vec3*/
+function get_rgb_fraction_of_distant_light_scattered_by_air_of_spherical_world(
+     /*vec3*/ view_origin,
+     /*vec3*/ view_direction,
+     /*float*/ view_start_length,
+     /*float*/ view_stop_length,
+     /*vec3*/ world_position,
+     /*float*/ world_radius,
+     /*vec3*/ light_direction,
+     /*float*/ atmosphere_scale_height,
+     /*vec3*/ beta_ray,
+     /*vec3*/ beta_mie,
+     /*vec3*/ beta_abs
 ){
     // For an excellent introduction to what we're try to do here, see Alan Zucconi: 
     //   https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-3/
@@ -439,151 +1057,186 @@ function get_rgb_fraction_of_light_scattered_from_air_for_curved_world(
     //  "*_mie"  property of mie scattering
     //  "*_abs"  property of absorption
     // setup variable shorthands and express all distances in terms of scale height
-    float h = atmosphere_scale_height;
-    glm.vec3 V0= view_origin / h;
-    glm.vec3 V = view_direction;
-    float v0= view_start_length / h;
-    float v1= view_stop_length / h;
-    glm.vec3 P = (view_origin - world_position) / h;
-    glm.vec3 O = world_position / h;
-    float r = world_radius / h;
+    let h = atmosphere_scale_height;
+    let V0 = view_origin['/']( h);
+    let V = view_direction;
+    let v0 = view_start_length / h;
+    let v1 = view_stop_length / h;
+    let P = ((view_origin['-']( world_position)))['/']( h);
+    let O = world_position['/']( h);
+    let r = world_radius / h;
     beta_ray *= h;
     beta_mie *= h;
     beta_abs *= h;
-    glm.vec3 L = light_direction; // unit vector pointing to light source
-    // cosine of angle between view and light directions
-    float VL = dot(V, -L);
-    // vector pointing orthogonal to view and light directions, with magnitude equal to their sine
-    glm.vec3 VxL = cross(V, -L);
-    float v = dot(-P,V); // distance from view ray origin to closest approach
-    float y = dot(-P,normalize(VxL));// distance from world center to plane shared by view and light directions
-    float y2 = y*y;
-    float z2 = dot( P,P) - y2 - v*v; // squared distance from the view ray to the center of the world at closest approach
+    let L = light_direction;
+    // unit vector pointing to light source
+    // cosine of the angle between view and light directions
+    let VL = glm.dot( V,  (L)["*"]( -1));
+    // a vector pointing orthogonal to view and light directions, magnitude equal to their sine
+    let VxL = glm.cross( V,  (L)["*"]( -1));
+    // distance from view ray origin to closest approach
+    let v = glm.dot( (P)["*"]( -1),  V);
+    // distance from world center to plane shared by view and light directions
+    let y = glm.dot( (P)["*"]( -1),  glm.normalize( VxL));
+    let y2 = y * y;
+    // squared distance from the view ray to the center of the world at closest approach
+    let z2 = glm.dot( P,  P) - y2 - v * v;
     // "gamma_*" indicates the fraction of scattered sunlight that scatters to a given angle (indicated by its cosine, A.K.A. "VL").
     // It only accounts for a portion of the sunlight that's lost during the scatter, which is irrespective of wavelength or density
-    float gamma_ray = get_fraction_of_rayleigh_scattered_light_scattered_by_angle(VL);
-    float gamma_mie = get_fraction_of_mie_scattered_light_scattered_by_angle(VL);
+    let gamma_ray = get_fraction_of_rayleigh_scattered_light_scattered_by_angle( VL);
+    let gamma_mie = get_fraction_of_mie_scattered_light_scattered_by_angle( VL);
     // "beta_*" indicates the rest of the fractional loss.
     // it is dependant on wavelength, and the density ratio, which is dependant on height
     // So all together, the fraction of sunlight that scatters to a given angle is: beta(wavelength) * gamma(angle) * density_ratio(height)
-    glm.vec3 beta_sum = beta_ray + beta_mie + beta_abs;
-    glm.vec3 beta_gamma = beta_ray * gamma_ray + beta_mie * gamma_mie;
-    const float STEP_COUNT = 16.; // number of steps taken while marching along the view ray
-    float dx = (v1 - v0) / STEP_COUNT;
-    float vi = v0 - v + 0.5 * dx;
-    float sigma; // columnar density encountered along the entire path, relative to surface density, effectively the distance along the surface needed to obtain a similar column density
-    glm.vec3 F = glm.vec3(0); // total intensity for each color channel, found as the sum of light intensities for each path from the light source to the camera
-    // "l":  distance from light ray origin to closest approach
-    float l = dot(P+V*(vi+v),-L);
-    float dl = dx*VL;
-    // "zl": distance of the light ray at closest for a single iteration of the view ray march
+    let beta_sum = beta_ray['+']( beta_mie['+']( beta_abs));
+    let beta_gamma = (beta_ray['*']( gamma_ray))['+']( beta_mie['*']( gamma_mie));
+    // number of steps taken while marching along the view ray
+    const STEP_COUNT = 16.;
+    let dv = (v1 - v0) / STEP_COUNT;
+    let vi = v0 - v + 0.5 * dv;
+    // distance from light ray origin to closest approach
+    let l = glm.dot( P['+']( V['*']( (vi + v))),  (L)["*"]( -1));
+    let dl = dv * VL;
+    // distance of the light ray at closest for a single iteration of the view ray march
     // float zl  = sqrt((vi   )*(vi   )+z2 - dot(P+V*(vi+v   ),-L) * dot(P+V*(vi+v   ), -L)); 
-    float zl2 = ((vi )*(vi )+z2 - dot(P+V*(vi+v ),-L) * dot(P+V*(vi+v ), -L));
-    // float dzl = sqrt((vi+dx)*(vi+dx)+z2 - dot(P+V*(vi+v+dx),-L) * dot(P+V*(vi+v+dx), -L)) - zl;
+    let zl2 = ((vi) * (vi) + z2 - glm.dot( P['+']( V['*']( (vi + v))),  (L)["*"]( -1)) * glm.dot( P['+']( V['*']( (vi + v))),  (L)["*"]( -1)));
+    // float dzl = sqrt((vi+dv)*(vi+dv)+z2 - dot(P+V*(vi+v+dv),-L) * dot(P+V*(vi+v+dv), -L)) - zl;
     // float dzl = sign(dzl) * sqrt(1. - VL*VL);
-    for (float i = 0.; i < STEP_COUNT; ++i)
-    {
-        sigma = approx_air_column_density_ratio_along_3d_ray_for_curved_world(-v, vi, y2, z2, r )
-              + approx_air_column_density_ratio_along_3d_ray_for_curved_world(-l, 3.*r, y2, zl2, r );
-        F +=// incoming fraction: the fraction of light that scatters towards camera
-              exp(r-sqrt(vi*vi+y2+z2)) * beta_gamma * dx
-            // outgoing fraction: the fraction of light that scatters away from camera
-            * exp(-beta_sum * sigma);
-        vi += dx;
+    // columnar density encountered along the entire path, relative to surface density, effectively the distance along the surface needed to obtain a similar column density
+    let sigma;
+    // total intensity for each color channel, found as the sum of light intensities for each path from the light source to the camera
+    let F = glm.vec3( 0);
+    for (let i = 0.; i < STEP_COUNT; ++i) {
+        sigma = approx_air_column_density_ratio_along_3d_ray_for_spherical_world( -v,  vi,  y2,  z2,  r) + approx_air_column_density_ratio_along_3d_ray_for_spherical_world( -l,  3. * r,  y2,  zl2,  r);
+        F += (beta_gamma['*']( Math.exp( ((beta_sum)["*"]( -1))['*']( sigma))['*']( dv)))['*']( Math.exp( r - glm.sqrt( vi * vi + y2 + z2)));
+        vi += dv;
         l += dl;
         // zl += dzl; 
-        zl2 = vi*vi+z2 - dot(P+V*(vi+v),-L) * dot(P+V*(vi+v), -L);
+        zl2 = vi * vi + z2 - glm.dot( P['+']( V['*']( (vi + v))),  (L)["*"]( -1)) * glm.dot( P['+']( V['*']( (vi + v))),  (L)["*"]( -1));
     }
+
     return F;
 }
-function get_rgb_intensity_of_light_scattered_from_fluid_for_flat_world(
-    cos_view_angle,
-    cos_light_angle,
-    cos_scatter_angle,
-    ocean_depth,
-    refracted_light_rgb_intensity,
-    beta_ray, beta_mie, beta_abs
+
+/*vec3*/
+function get_rgb_intensity_of_light_scattered_by_fluid_along_flat_surface(
+     /*float*/ cos_view_angle,
+     /*float*/ cos_light_angle,
+     /*float*/ cos_scatter_angle,
+     /*float*/ ocean_depth,
+     /*vec3*/ refracted_light_rgb_intensity,
+     /*vec3*/ beta_ray,
+     /*vec3*/ beta_mie,
+     /*vec3*/ beta_abs
 ){
-    float NV = cos_view_angle;
-    float NL = cos_light_angle;
-    float LV = cos_scatter_angle;
-    glm.vec3 I = refracted_light_rgb_intensity;
+    let NV = cos_view_angle;
+    let NL = cos_light_angle;
+    let LV = cos_scatter_angle;
+    let I = refracted_light_rgb_intensity;
     // "gamma_*" variables indicate the fraction of scattered sunlight that scatters to a given angle (indicated by its cosine).
     // it is also known as the "phase factor"
     // It varies
     // see mention of "gamma" by Alan Zucconi: https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-3/
-    float gamma_ray = get_fraction_of_rayleigh_scattered_light_scattered_by_angle(LV);
-    float gamma_mie = get_fraction_of_mie_scattered_light_scattered_by_angle(LV);
-    glm.vec3 beta_gamma = beta_ray * gamma_ray + beta_mie * gamma_mie;
-    glm.vec3 beta_sum = beta_ray + beta_mie + beta_abs;
+    let gamma_ray = get_fraction_of_rayleigh_scattered_light_scattered_by_angle( LV);
+    let gamma_mie = get_fraction_of_mie_scattered_light_scattered_by_angle( LV);
+    let beta_gamma = (beta_ray['*']( gamma_ray))['+']( beta_mie['*']( gamma_mie));
+    let beta_sum = beta_ray['+']( beta_mie['+']( beta_abs));
     // "sigma_v"  is the column density, relative to the surface, that's along the view ray.
     // "sigma_l" is the column density, relative to the surface, that's along the light ray.
     // "sigma_ratio" is the column density ratio of the full path of light relative to the distance along the incoming path
     // Since water is treated as incompressible, the density remains constant, 
     //   so they are effectively the distances traveled along their respective paths.
     // TODO: model vector of refracted light within ocean
-    float sigma_v = ocean_depth / NV;
-    float sigma_l = ocean_depth / NL;
-    float sigma_ratio = 1. + NV/NL;
-    return I
-        // incoming fraction: the fraction of light that scatters towards camera
-        * beta_gamma
-        // outgoing fraction: the fraction of light that scatters away from camera
-        * (exp(-sigma_v * sigma_ratio * beta_sum) - 1.)
-        / (-sigma_ratio * beta_sum);
+    let sigma_v = ocean_depth / NV;
+    let sigma_l = ocean_depth / NL;
+    let sigma_ratio = 1. + NV / NL;
+    return I['*']( beta_gamma['*']( ((Math.exp( (beta_sum['*']( sigma_ratio))['*']( -sigma_v))['-']( 1.)))['/']( (beta_sum['*']( -sigma_ratio)))));
 }
-function get_rgb_fraction_of_light_transmitted_through_fluid_for_flat_world(
-    cos_incident_angle, ocean_depth,
-    beta_ray, beta_mie, beta_abs
+
+/*vec3*/
+function get_rgb_fraction_of_light_transmitted_through_fluid_along_flat_surface(
+     /*float*/ cos_incident_angle,
+     /*float*/ ocean_depth,
+     /*vec3*/ beta_ray,
+     /*vec3*/ beta_mie,
+     /*vec3*/ beta_abs
 ){
-    float sigma = ocean_depth / cos_incident_angle;
-    return exp(-sigma * (beta_ray + beta_mie + beta_abs));
+    let sigma = ocean_depth / cos_incident_angle;
+    return Math.exp( ((beta_ray['+']( beta_mie['+']( beta_abs))))['*']( -sigma));
 }
-// This function returns a rgb vector that quickly approximates a spectral "bump".
-// Adapted from GPU Gems and Alan Zucconi
-// from https://www.alanzucconi.com/2017/07/15/improving-the-rainbow/
-function bump (
-    x,
-    edge0,
-    edge1,
-    height
+
+/*
+"bump" is the Alan Zucconi bump function.
+It's a fast and easy way to approximate any kind of wavelet or gaussian function
+Adapted from GPU Gems and Alan Zucconi
+from https://www.alanzucconi.com/2017/07/15/improving-the-rainbow/
+*/
+/*float*/
+function bump(
+     /*float*/ x,
+     /*float*/ edge0,
+     /*float*/ edge1,
+     /*float*/ height
 ){
     let center = (edge1 + edge0) / 2.;
     let width = (edge1 - edge0) / 2.;
     let offset = (x - center) / width;
-    return height * max(1. - offset * offset, 0.);
+    return height * glm.max( 1. - offset * offset,  0.);
 }
-// This function returns a rgb vector that best represents color at a given wavelength
-// It is from Alan Zucconi: https://www.alanzucconi.com/2017/07/15/improving-the-rainbow/
-// I've adapted the function so that coefficients are expressed in meters.
-function get_rgb_signal_of_wavelength (
-    w
+
+/*
+"oplus" is the o-plus operator,
+  or the reciprocal of the sum of reciprocals.
+It's a handy function that comes up a lot in some physics problems.
+It's pretty useful for preventing division by zero.
+*/
+/*float*/
+function oplus(
+     /*float*/ a,
+     /*float*/ b
 ){
-    return glm.vec3(
-        bump(w, 530e-9, 690e-9, 1.00)+
-        bump(w, 410e-9, 460e-9, 0.15),
-        bump(w, 465e-9, 635e-9, 0.75)+
-        bump(w, 420e-9, 700e-9, 0.15),
-        bump(w, 400e-9, 570e-9, 0.45)+
-        bump(w, 570e-9, 625e-9, 0.30)
-      );
+    return 1. / (1. / a + 1. / b);
 }
-// "GAMMA" is the constant that's used to map between 
-//   rgb signals sent to a monitor and their actual intensity
+
+/*
+This function returns a rgb vector that best represents color at a given wavelength
+It is from Alan Zucconi: https://www.alanzucconi.com/2017/07/15/improving-the-rainbow/
+I've adapted the function so that coefficients are expressed in meters.
+*/
+/*vec3*/
+function get_rgb_signal_of_wavelength(
+     /*float*/ w
+){
+    return glm.vec3( bump( w,  530e-9,  690e-9,  1.00) + bump( w,  410e-9,  460e-9,  0.15),  bump( w,  465e-9,  635e-9,  0.75) + bump( w,  420e-9,  700e-9,  0.15),  bump( w,  400e-9,  570e-9,  0.45) + bump( w,  570e-9,  625e-9,  0.30));
+}
+
+/*
+"GAMMA" is the constant that's used to map between 
+rgb signals sent to a monitor and their actual intensity
+*/
 const GAMMA = 2.2;
-function get_rgb_intensity_of_rgb_signal( signal
+/* 
+This function returns a rgb vector that quickly approximates a spectral "bump".
+Adapted from GPU Gems and Alan Zucconi
+from https://www.alanzucconi.com/2017/07/15/improving-the-rainbow/
+*/
+/*vec3*/
+function get_rgb_intensity_of_rgb_signal(
+     /*vec3*/ signal
 ){
-    return glm.vec3(
-        pow(signal.x, GAMMA),
-        pow(signal.y, GAMMA),
-        pow(signal.z, GAMMA)
-    );
+    return glm.vec3( Math.pow( signal.x,  GAMMA),  Math.pow( signal.y,  GAMMA),  Math.pow( signal.z,  GAMMA));
 }
-function get_rgb_signal_of_rgb_intensity( intensity
+
+/*
+This function returns a rgb vector that best represents color at a given wavelength
+It is from Alan Zucconi: https://www.alanzucconi.com/2017/07/15/improving-the-rainbow/
+I've adapted the function so that coefficients are expressed in meters.
+*/
+/*vec3*/
+function get_rgb_signal_of_rgb_intensity(
+     /*vec3*/ intensity
 ){
-    return glm.vec3(
-        pow(intensity.x, 1./GAMMA),
-        pow(intensity.y, 1./GAMMA),
-        pow(intensity.z, 1./GAMMA)
-    );
+    return glm.vec3( Math.pow( intensity.x,  1. / GAMMA),  Math.pow( intensity.y,  1. / GAMMA),  Math.pow( intensity.z,  1. / GAMMA));
 }
+
+
