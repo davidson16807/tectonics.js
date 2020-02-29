@@ -1,71 +1,5 @@
-CONST(float) BIG = 1e20;
-CONST(float) SMALL = 1e-20;
-CONST(int)   MAX_LIGHT_COUNT = 9;
 
-struct maybe_vec2
-{
-    vec2 value; 
-    bool  exists; 
-};
-struct maybe_float
-{
-    float value;  
-    bool  exists; 
-};
-
-maybe_float get_distance_along_3d_line_to_plane(
-    in vec3 A0,
-    in vec3 A,
-    in vec3 B0,
-    in vec3 N
-){
-    return maybe_float( -dot(A0 - B0, N) / dot(A, N), abs(dot(A, N)) < SMALL);
-}
-
-maybe_vec2 get_distances_along_3d_line_to_sphere(
-    in vec3 A0,
-    in vec3 A,
-    in vec3 B0,
-    in float r
-){
-    float xz = dot(B0 - A0, A);
-    float z = length(A0 + A * xz - B0);
-    float y2 = r * r - z * z;
-    float dxr = sqrt(max(y2, 1e-10));
-    return maybe_vec2(
-        vec2(xz - dxr, xz + dxr), 
-        y2 > 0.
-    );
-}
-
-
-maybe_vec2 get_distances_along_line_to_negation(
-    in maybe_vec2 positive,
-    in maybe_vec2 negative
-) {
-    // as long as intersection with positive exists, 
-    // and negative doesn't completely surround it, there will be an intersection
-    bool exists = 
-        positive.exists && !(negative.value.x < positive.value.x && positive.value.y < negative.value.y);
-    // find the first region of intersection
-    float entrance = !negative.exists ? positive.value.x : min(negative.value.y, positive.value.x);
-    float exit     = !negative.exists ? positive.value.y : min(negative.value.x, positive.value.y);
-    // if the first region is behind us, find the second region
-    if (exit < 0. && 0. < positive.value.y)
-    {
-        entrance = negative.value.y;
-        exit     = positive.value.y;
-    }
-    return maybe_vec2( vec2(entrance, exit), exists );
-}
-
-// "oplus" is the o-plus operator,
-//   or the reciprocal of the sum of reciprocals.
-// It's a handy function that comes up a lot in some physics problems.
-// It's pretty useful for preventing division by zero.
-FUNC(float) oplus(IN(float) a, IN(float) b){
-    return 1. / (1./a + 1./b);
-}
+const int MAX_LIGHT_COUNT = 9;
 
 // "approx_air_column_density_ratio_along_2d_ray_for_spherical_world" 
 //   calculates the distance you would need to travel 
@@ -79,11 +13,11 @@ FUNC(float) oplus(IN(float) a, IN(float) b){
 //   a and b are distances from the closest approach to the upper bound.
 // "z2" is the closest distance from the ray to the center of the world, squared.
 // "r0" is the radius of the world.
-FUNC(float) approx_air_column_density_ratio_along_2d_ray_for_spherical_world(
-    IN(float) a, 
-    IN(float) b, 
-    IN(float) z2, 
-    IN(float) r0
+float approx_air_column_density_ratio_along_2d_ray_for_spherical_world(
+    in float a, 
+    in float b, 
+    in float z2, 
+    in float r0
 ){
     // GUIDE TO VARIABLE NAMES:
     //  "x*" distance along the ray from closest approach
@@ -124,12 +58,12 @@ FUNC(float) approx_air_column_density_ratio_along_2d_ray_for_spherical_world(
 //   a and b are distances from the closest approach to the upper bound.
 // "z2" is the closest distance from the ray to the center of the world, squared.
 // "r0" is the radius of the world.
-FUNC(float) approx_air_column_density_ratio_along_3d_ray_for_spherical_world(
-    IN(float) a, 
-    IN(float) b, 
-    IN(float) y2,
-    IN(float) z2, 
-    IN(float) r0
+float approx_air_column_density_ratio_along_3d_ray_for_spherical_world(
+    in float a, 
+    in float b, 
+    in float y2,
+    in float z2, 
+    in float r0
 ){
     // GUIDE TO VARIABLE NAMES:
     //  "x*" distance along the ray from closest approach
@@ -162,22 +96,22 @@ FUNC(float) approx_air_column_density_ratio_along_3d_ray_for_spherical_world(
 //   for approx_air_column_density_ratio_along_ray_2d() and approx_reference_air_column_density_ratio_along_ray.
 // Just pass it the origin and direction of a 3d ray and it will find the column density ratio along its path, 
 //   or return false to indicate the ray passes through the surface of the world.
-FUNC(float) approx_air_column_density_ratio_along_3d_ray_for_spherical_world (
-    IN(vec3)  P, 
-    IN(vec3)  V,
-    IN(float) x,
-    IN(float) r, 
-    IN(float) h
+float approx_air_column_density_ratio_along_3d_ray_for_spherical_world (
+    in vec3  P, 
+    in vec3  V,
+    in float x,
+    in float r, 
+    in float h
 ){
     float xz = dot(-P,V);           // distance ("radius") from the ray to the center of the world at closest approach, squared
     float z2 = dot( P,P) - xz * xz; // distance from the origin at which closest approach occurs
     return h * approx_air_column_density_ratio_along_2d_ray_for_spherical_world( (0.-xz)/h, (x-xz)/h, z2/(h*h), r/h );
 }
 
-FUNC(vec3) get_rgb_fraction_of_light_transmitted_through_air_of_spherical_world(
-    IN(vec3)  segment_origin, IN(vec3)  segment_direction, IN(float) segment_length,
-    IN(vec3)  world_position, IN(float) world_radius,      IN(float) atmosphere_scale_height,
-    IN(vec3)  beta_ray,       IN(vec3)  beta_mie,          IN(vec3)  beta_abs
+vec3 get_rgb_fraction_of_light_transmitted_through_air_of_spherical_world(
+    in vec3  segment_origin, in vec3  segment_direction, in float segment_length,
+    in vec3  world_position, in float world_radius,      in float atmosphere_scale_height,
+    in vec3  beta_ray,       in vec3  beta_mie,          in vec3  beta_abs
 ){
     vec3  O = world_position;
     float r = world_radius;
@@ -193,9 +127,9 @@ FUNC(vec3) get_rgb_fraction_of_light_transmitted_through_air_of_spherical_world(
 // TODO: multiple scattering events
 // TODO: support for light sources from within atmosphere
 vec3 get_rgb_fraction_of_distant_light_scattered_by_air_of_spherical_world(
-    vec3  view_origin,     vec3 view_direction, float view_start_length, float view_stop_length,
-    vec3  world_position,  float world_radius,  
-    vec3  light_direction, float atmosphere_scale_height,
+    vec3 view_origin,     vec3 view_direction, float view_start_length, float view_stop_length,
+    vec3 world_position,  float world_radius,  
+    vec3 light_direction, float atmosphere_scale_height,
     vec3 beta_ray, vec3 beta_mie, vec3  beta_abs
 ){
     // For an excellent introduction to what we're try to do here, see Alan Zucconi: 
@@ -299,13 +233,13 @@ vec3 get_rgb_fraction_of_distant_light_scattered_by_air_of_spherical_world(
 }
 
 
-FUNC(vec3) get_rgb_intensity_of_light_scattered_by_fluid_along_flat_surface(
-    IN(float) cos_view_angle, 
-    IN(float) cos_light_angle, 
-    IN(float) cos_scatter_angle, 
-    IN(float) ocean_depth,
-    IN(vec3)  refracted_light_rgb_intensity,
-    IN(vec3)  beta_ray,       IN(vec3)  beta_mie,          IN(vec3)  beta_abs
+vec3 get_rgb_intensity_of_light_scattered_by_fluid_along_flat_surface(
+    in float cos_view_angle, 
+    in float cos_light_angle, 
+    in float cos_scatter_angle, 
+    in float ocean_depth,
+    in vec3  refracted_light_rgb_intensity,
+    in vec3  beta_ray,       in vec3  beta_mie,          in vec3  beta_abs
 ){
     float NV = cos_view_angle;
     float NL = cos_light_angle;
@@ -341,9 +275,9 @@ FUNC(vec3) get_rgb_intensity_of_light_scattered_by_fluid_along_flat_surface(
         /               (-sigma_ratio * beta_sum);
 }
 
-FUNC(vec3) get_rgb_fraction_of_light_transmitted_through_fluid_along_flat_surface(
-    IN(float) cos_incident_angle, IN(float) ocean_depth,
-    IN(vec3)  beta_ray,           IN(vec3)  beta_mie,          IN(vec3)  beta_abs
+vec3 get_rgb_fraction_of_light_transmitted_through_fluid_along_flat_surface(
+    in float cos_incident_angle, in float ocean_depth,
+    in vec3  beta_ray,           in vec3  beta_mie,          in vec3  beta_abs
 ){
     float sigma  = ocean_depth / cos_incident_angle;
     return exp(-sigma * (beta_ray + beta_mie + beta_abs));

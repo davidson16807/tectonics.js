@@ -1,0 +1,5 @@
+
+const float PI = 3.14159265358979323846264338327950288419716939937510;
+const float PHI = 1.6180339887;
+const float BIG = 1e20;
+const float SMALL = 1e-20;

@@ -1,4 +1,4 @@
-#include "precompiled/shaders/vertex/template.glsl.c"
+#include "precompiled/shaders/vertex/template.glsl"
 
 varying vec2 vUv;
 void main() {

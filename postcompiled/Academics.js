@@ -70,12 +70,6 @@ const SOLAR_RADIUS = 695.7e6;
 const SOLAR_LUMINOSITY = 3.828e26;
 // watts
 const SOLAR_TEMPERATURE = 5772.;
-// kelvin
-       
-const PI = 3.14159265358979323846264338327950288419716939937510;
-const PHI = 1.6180339887;
-const BIG = 1e20;
-const SMALL = 1e-20;
 function maybe_int(
  /*bool*/ exists
 ){
@@ -121,6 +115,43 @@ function maybe_vec4(
     };
 }
 
+const PI = 3.14159265358979323846264338327950288419716939937510;
+const PHI = 1.6180339887;
+const BIG = 1e20;
+const SMALL = 1e-20;
+/*
+"bump" is the Alan Zucconi bump function.
+It's a fast and easy way to approximate any kind of wavelet or gaussian function
+Adapted from GPU Gems and Alan Zucconi
+from https://www.alanzucconi.com/2017/07/15/improving-the-rainbow/
+*/
+/*float*/
+function bump(
+     /*float*/ x,
+     /*float*/ edge0,
+     /*float*/ edge1,
+     /*float*/ height
+){
+    let center = (edge1 + edge0) / 2.;
+    let width = (edge1 - edge0) / 2.;
+    let offset = (x - center) / width;
+    return height * glm.max( 1. - offset * offset,  0.);
+}
+
+/*
+"oplus" is the o-plus operator,
+  or the reciprocal of the sum of reciprocals.
+It's a handy function that comes up a lot in some physics problems.
+It's pretty useful for preventing division by zero.
+*/
+/*float*/
+function oplus(
+     /*float*/ a,
+     /*float*/ b
+){
+    return 1. / (1. / a + 1. / b);
+}
+
 /*maybe_float*/
 function get_distance_along_line_to_union(
      /*maybe_float*/ shape1,
@@ -162,8 +193,8 @@ function get_distances_along_line_to_intersection(
      /*maybe_vec2*/ shape1,
      /*maybe_vec2*/ shape2
 ){
-    let x = shape1.exists && shape2.exists? glm.max( shape1.value.x,  shape2.value.x) : 0.f;
-    let y = shape1.exists && shape2.exists? glm.min( shape1.value.y,  shape2.value.y) : 0.f;
+    let x = shape1.exists && shape2.exists? glm.max( shape1.value.x,  shape2.value.x) : 0.0;
+    let y = shape1.exists && shape2.exists? glm.min( shape1.value.y,  shape2.value.y) : 0.0;
     return maybe_vec2( glm.vec2( x,  y),  shape1.exists && shape2.exists && x < y);
 }
 
@@ -193,7 +224,7 @@ function get_distance_along_2d_line_to_line(
     // offset
     let R = D['-']( A['*']( glm.dot( D,  A)));
     // rejection
-    return maybe_float( glm.length( R) / glm.dot( B,  glm.normalize( (R)["*"]( -1))),  glm.abs( glm.abs( glm.dot( A,  B)) - 1.f) > 0.f);
+    return maybe_float( glm.length( R) / glm.dot( B,  glm.normalize( (R)["*"]( -1))),  glm.abs( glm.abs( glm.dot( A,  B)) - 1.0) > 0.0);
 }
 
 /*
@@ -218,7 +249,7 @@ function get_distance_along_2d_line_to_ray(
     // distance along B
     let xA = xB / glm.dot( B,  A);
     // distance along A
-    return maybe_float( xB,  glm.abs( glm.abs( glm.dot( A,  B)) - 1.f) > 0.f && xA > 0.f);
+    return maybe_float( xB,  glm.abs( glm.abs( glm.dot( A,  B)) - 1.0) > 0.0 && xA > 0.0);
 }
 
 /*
@@ -244,7 +275,7 @@ function get_distance_along_2d_line_to_line_segment(
     // distance along B
     let xA = xB / glm.dot( B,  A);
     // distance along A
-    return maybe_float( xB,  glm.abs( glm.abs( glm.dot( A,  B)) - 1.f) > 0.f && 0. < xA && xA < glm.length( B2['-']( B1)));
+    return maybe_float( xB,  glm.abs( glm.abs( glm.dot( A,  B)) - 1.0) > 0.0 && 0. < xA && xA < glm.length( B2['-']( B1)));
 }
 
 /*maybe_vec2*/
@@ -310,7 +341,7 @@ function get_distance_along_3d_line_nearest_to_line(
     // cross
     let R = D['-']( (A['*']( glm.dot( D,  A)))['-']( C['*']( glm.dot( D,  C))));
     // rejection
-    return maybe_float( glm.length( R) / -glm.dot( B,  glm.normalize( R)),  glm.abs( glm.abs( glm.dot( A,  B)) - 1.f) > 0.f);
+    return maybe_float( glm.length( R) / -glm.dot( B,  glm.normalize( R)),  glm.abs( glm.abs( glm.dot( A,  B)) - 1.0) > 0.0);
 }
 
 /*
@@ -334,7 +365,7 @@ function get_distance_along_3d_line_nearest_to_ray(
     // distance along B
     let xA = xB / glm.dot( B,  A);
     // distance along A
-    return maybe_float( xB,  glm.abs( glm.abs( glm.dot( A,  B)) - 1.f) > 0.f && xA > 0.f);
+    return maybe_float( xB,  glm.abs( glm.abs( glm.dot( A,  B)) - 1.0) > 0.0 && xA > 0.0);
 }
 
 /*
@@ -359,7 +390,7 @@ function get_distance_along_3d_line_nearest_to_line_segment(
     // distance along B
     let xA = xB / glm.dot( B,  A);
     // distance along A
-    return maybe_float( xB,  glm.abs( glm.abs( glm.dot( A,  B)) - 1.f) > 0.f && 0. < xA && xA < glm.length( B1['-']( B0)));
+    return maybe_float( xB,  glm.abs( glm.abs( glm.dot( A,  B)) - 1.0) > 0.0 && 0. < xA && xA < glm.length( B1['-']( B0)));
 }
 
 /*
@@ -521,7 +552,7 @@ function get_distances_along_3d_line_to_infinite_cylinder(
     let a = 1.0 - BA * BA;
     let b = glm.dot( D,  A) - BD * BA;
     let c = glm.dot( D,  D) - BD * BD - r * r;
-    let h = glm.sqrt( glm.max( b * b - a * c,  0.f));
+    let h = glm.sqrt( glm.max( b * b - a * c,  0.0));
     return maybe_vec2( glm.vec2( (-b + h) / a,  (-b - h) / a),  h > 0.0);
 }
 
@@ -621,7 +652,7 @@ function get_distance_along_3d_line_to_infinite_cone(
     let c = glm.dot( D,  B) * glm.dot( D,  B) - glm.dot( D,  D) * cosb * cosb;
     let det = b * b - 4. * a * c;
     if (det < 0.){
-        return maybe_float( 0.f,  false);
+        return maybe_float( 0.0,  false);
     }
 
     det = glm.sqrt( det);
@@ -1163,39 +1194,6 @@ function get_rgb_fraction_of_light_transmitted_through_fluid_along_flat_surface(
 ){
     let sigma = ocean_depth / cos_incident_angle;
     return Math.exp( ((beta_ray['+']( beta_mie['+']( beta_abs))))['*']( -sigma));
-}
-
-/*
-"bump" is the Alan Zucconi bump function.
-It's a fast and easy way to approximate any kind of wavelet or gaussian function
-Adapted from GPU Gems and Alan Zucconi
-from https://www.alanzucconi.com/2017/07/15/improving-the-rainbow/
-*/
-/*float*/
-function bump(
-     /*float*/ x,
-     /*float*/ edge0,
-     /*float*/ edge1,
-     /*float*/ height
-){
-    let center = (edge1 + edge0) / 2.;
-    let width = (edge1 - edge0) / 2.;
-    let offset = (x - center) / width;
-    return height * glm.max( 1. - offset * offset,  0.);
-}
-
-/*
-"oplus" is the o-plus operator,
-  or the reciprocal of the sum of reciprocals.
-It's a handy function that comes up a lot in some physics problems.
-It's pretty useful for preventing division by zero.
-*/
-/*float*/
-function oplus(
-     /*float*/ a,
-     /*float*/ b
-){
-    return 1. / (1. / a + 1. / b);
 }
 
 /*

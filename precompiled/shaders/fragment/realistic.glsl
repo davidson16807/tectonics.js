@@ -1,15 +1,15 @@
+
 #define GL_ES
-#include "precompiled/cross_platform_macros.glsl.c"
-#include "precompiled/academics/units.glsl.c"
-#include "precompiled/academics/math/constants.glsl.c"
-#include "precompiled/academics/math/geometry.glsl.c"
-#include "precompiled/academics/physics/constants.glsl.c"
-#include "precompiled/academics/physics/emission.glsl.c"
-#include "precompiled/academics/physics/scattering.glsl.c"
-#include "precompiled/academics/physics/reflectance.glsl.c"
-#include "precompiled/academics/raymarching.glsl.c"
-#include "precompiled/academics/psychophysics.glsl.c"
-#include "precompiled/academics/electronics.glsl.c"
+#include "precompiled/academics/units.glsl"
+#include "precompiled/academics/math/constants.glsl"
+#include "precompiled/academics/math/utilities.glsl"
+#include "precompiled/academics/physics/constants.glsl"
+#include "precompiled/academics/physics/emission.glsl"
+#include "precompiled/academics/physics/scattering.glsl"
+#include "precompiled/academics/physics/reflectance.glsl"
+#include "precompiled/academics/graphics/raymarching.glsl"
+#include "precompiled/academics/graphics/psychophysics.glsl"
+#include "precompiled/academics/graphics/electronics.glsl"
 
 // Determines the length of a unit of distance within the view, in meters, 
 // it is generally the radius of whatever world's the focus for the scene.
@@ -80,7 +80,7 @@ const float JUNGLE_ROOT_MEAN_SLOPE_SQUARED = 30.0;
 const vec3  SNOW_COLOR            = vec3(0.9, 0.9, 0.9); 
 const float SNOW_REFRACTIVE_INDEX = 1.333; 
 
-// TODO: calculate airglow for nightside using scattering equations from atmosphere.glsl.c, 
+// TODO: calculate airglow for nightside using scattering equations from atmosphere.glsl, 
 //   also keep in mind this: https://en.wikipedia.org/wiki/Airglow
 const float AMBIENT_LIGHT_AESTHETIC_BRIGHTNESS_FACTOR = 0.000001;
 
@@ -92,30 +92,30 @@ const float AMBIENT_LIGHT_AESTHETIC_BRIGHTNESS_FACTOR = 0.000001;
 //   since that is a job that only our atmosphere shader is capable of doing.
 //   Nor does it determine emission, since it is designed to be looped 
 //   over several light sources, and this would oversaturate the contribution from emission.
-FUNC(vec3) get_rgb_intensity_of_light_from_surface_of_world(
+vec3 get_rgb_intensity_of_light_from_surface_of_world(
     // light properties
-    IN(vec3)  light_direction,
-    IN(vec3)  light_rgb_intensity,
+    in vec3  light_direction,
+    in vec3  light_rgb_intensity,
     // atmoshere properties
-    IN(float) world_radius, 
-    IN(float) atmosphere_scale_height,
-    IN(vec3)  atmosphere_beta_ray,
-    IN(vec3)  atmosphere_beta_mie,
-    IN(vec3)  atmosphere_beta_abs,
-    IN(float) atmosphere_ambient_light_factor,
+    in float world_radius, 
+    in float atmosphere_scale_height,
+    in vec3  atmosphere_beta_ray,
+    in vec3  atmosphere_beta_mie,
+    in vec3  atmosphere_beta_abs,
+    in float atmosphere_ambient_light_factor,
     // surface properties
-    IN(vec3)  surface_position,
-    IN(vec3)  surface_normal,
-    IN(float) surface_slope_root_mean_squared,
-    IN(vec3)  surface_diffuse_color_rgb_fraction,
-    IN(vec3)  surface_specular_color_rgb_fraction,
+    in vec3  surface_position,
+    in vec3  surface_normal,
+    in float surface_slope_root_mean_squared,
+    in vec3  surface_diffuse_color_rgb_fraction,
+    in vec3  surface_specular_color_rgb_fraction,
     // ocean properties
-    IN(float) ocean_depth,
-    IN(vec3)  ocean_beta_ray,
-    IN(vec3)  ocean_beta_mie,
-    IN(vec3)  ocean_beta_abs,
+    in float ocean_depth,
+    in vec3  ocean_beta_ray,
+    in vec3  ocean_beta_mie,
+    in vec3  ocean_beta_abs,
     // view properties
-    IN(vec3)  view_direction
+    in vec3  view_direction
 ){
     // NOTE: the single letter variable names here are industry standard, learn them!
     // Uppercase indicates vectors
@@ -301,7 +301,7 @@ void main() {
     vec3 E_surface_emitted = solve_rgb_intensity_of_light_emitted_by_black_body(surface_temperature_v);
 
     // NOTE: we do not filter E_total by atmospheric scattering
-    //   that job is done by the atmospheric shader pass, in "atmosphere.glsl.c"
+    //   that job is done by the atmospheric shader pass, in "atmosphere.glsl"
     vec3 E_total = 
           E_surface_emitted
         + E_surface_reemitted;
