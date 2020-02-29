@@ -1,0 +1,3 @@
+[submodule "tools/glsl_tools"]
+	path = tools/glsl_tools
+	url = https://github.com/davidson16807/glsl_tools.git
