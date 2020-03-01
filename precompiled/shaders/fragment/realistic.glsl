@@ -160,7 +160,7 @@ vec3 get_rgb_intensity_of_light_from_surface_of_world(
     vec3 I_surface = I_sun 
       * get_rgb_fraction_of_light_transmitted_through_air_of_spherical_world(
             // NOTE: we nudge the origin of light ray by a small amount so that collision isn't detected with the world
-            1.000001 * P, L, 3.*world_radius, vec3(0), world_radius, 
+            1.000001 * P, L, 0.0, 3.0*world_radius, vec3(0), world_radius, 
             atmosphere_scale_height, atmosphere_beta_ray, atmosphere_beta_mie, atmosphere_beta_abs
         );
     // "E_surface_reflected" is the intensity of light that is immediately reflected by the surface, A.K.A. "specular" reflection

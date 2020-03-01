@@ -107,7 +107,7 @@ void main() {
         // now calculate the intensity of light that traveled straight in from the background, and add it to the total
         E += I_back 
            * get_rgb_fraction_of_light_transmitted_through_air_of_spherical_world(
-                 V0, V, v1*0.999, O, r, H, beta_ray, beta_mie, beta_abs
+                 V0, V, 0.0, v1*0.999, O, r, H, beta_ray, beta_mie, beta_abs
              );
     }
     else 

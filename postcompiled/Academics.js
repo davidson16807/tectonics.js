@@ -1030,7 +1030,8 @@ function approx_air_column_density_ratio_along_3d_ray_for_spherical_world(
 function get_rgb_fraction_of_light_transmitted_through_air_of_spherical_world(
      /*vec3*/ segment_origin,
      /*vec3*/ segment_direction,
-     /*float*/ segment_length,
+     /*float*/ segment_start_length,
+     /*float*/ segment_stop_length,
      /*vec3*/ world_position,
      /*float*/ world_radius,
      /*float*/ atmosphere_scale_height,
@@ -1044,7 +1045,7 @@ function get_rgb_fraction_of_light_transmitted_through_air_of_spherical_world(
     // "sigma" is the column density of air, relative to the surface of the world, that's along the light's path of travel,
     //   we use it to estimate the amount of light that's filtered by the atmosphere before reaching the surface
     //   see https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-1/ for an awesome introduction
-    let sigma = approx_air_column_density_ratio_along_3d_ray_for_spherical_world( segment_origin['-']( world_position),  segment_direction,  segment_length,  r,  H);
+    let sigma = approx_air_column_density_ratio_along_3d_ray_for_spherical_world( segment_origin['-']( world_position),  segment_direction,  segment_stop_length - segment_start_length,  r,  H);
     // "I_surface" is the intensity of light that reaches the surface after being filtered by atmosphere
     return Math.exp( ((beta_ray['+']( beta_mie['+']( beta_abs))))['*']( -sigma));
 }
@@ -1142,6 +1143,18 @@ function get_rgb_fraction_of_distant_light_scattered_by_air_of_spherical_world(
 }
 
 /*vec3*/
+function get_rgb_fraction_of_light_transmitted_through_fluid_along_flat_surface(
+     /*float*/ cos_incident_angle,
+     /*float*/ ocean_depth,
+     /*vec3*/ beta_ray,
+     /*vec3*/ beta_mie,
+     /*vec3*/ beta_abs
+){
+    let sigma = ocean_depth / cos_incident_angle;
+    return Math.exp( ((beta_ray['+']( beta_mie['+']( beta_abs))))['*']( -sigma));
+}
+
+/*vec3*/
 function get_rgb_intensity_of_light_scattered_by_fluid_along_flat_surface(
      /*float*/ cos_view_angle,
      /*float*/ cos_light_angle,
@@ -1154,14 +1167,14 @@ function get_rgb_intensity_of_light_scattered_by_fluid_along_flat_surface(
 ){
     let NV = cos_view_angle;
     let NL = cos_light_angle;
-    let LV = cos_scatter_angle;
+    let VL = cos_scatter_angle;
     let I = refracted_light_rgb_intensity;
     // "gamma_*" variables indicate the fraction of scattered sunlight that scatters to a given angle (indicated by its cosine).
     // it is also known as the "phase factor"
     // It varies
     // see mention of "gamma" by Alan Zucconi: https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-3/
-    let gamma_ray = get_fraction_of_rayleigh_scattered_light_scattered_by_angle( LV);
-    let gamma_mie = get_fraction_of_mie_scattered_light_scattered_by_angle( LV);
+    let gamma_ray = get_fraction_of_rayleigh_scattered_light_scattered_by_angle( VL);
+    let gamma_mie = get_fraction_of_mie_scattered_light_scattered_by_angle( VL);
     let beta_gamma = (beta_ray['*']( gamma_ray))['+']( beta_mie['*']( gamma_mie));
     let beta_sum = beta_ray['+']( beta_mie['+']( beta_abs));
     // "sigma_v"  is the column density, relative to the surface, that's along the view ray.
@@ -1174,18 +1187,6 @@ function get_rgb_intensity_of_light_scattered_by_fluid_along_flat_surface(
     let sigma_l = ocean_depth / NL;
     let sigma_ratio = 1. + NV / NL;
     return I['*']( beta_gamma['*']( ((Math.exp( (beta_sum['*']( sigma_ratio))['*']( -sigma_v))['-']( 1.)))['/']( (beta_sum['*']( -sigma_ratio)))));
-}
-
-/*vec3*/
-function get_rgb_fraction_of_light_transmitted_through_fluid_along_flat_surface(
-     /*float*/ cos_incident_angle,
-     /*float*/ ocean_depth,
-     /*vec3*/ beta_ray,
-     /*vec3*/ beta_mie,
-     /*vec3*/ beta_abs
-){
-    let sigma = ocean_depth / cos_incident_angle;
-    return Math.exp( ((beta_ray['+']( beta_mie['+']( beta_abs))))['*']( -sigma));
 }
 
 /*
