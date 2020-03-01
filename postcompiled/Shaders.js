@@ -1248,7 +1248,6 @@ float get_fraction_of_microfacets_with_angle(
     float t = cos_angle_of_deviation;
     return exp((t*t-1.)/(m*m*t*t))/(m*m*t*t*t*t);
 }
-const int MAX_LIGHT_COUNT = 9;
 // "approx_air_column_density_ratio_along_2d_ray_for_spherical_world" 
 //   calculates the distance you would need to travel 
 //   along the surface to encounter the same number of particles in the column. 
@@ -1391,17 +1390,17 @@ vec3 get_rgb_fraction_of_distant_light_scattered_by_air_of_spherical_world(
     return F;
 }
 vec3 get_rgb_fraction_of_light_transmitted_through_fluid_along_flat_surface(
-    in float cos_incident_angle, in float ocean_depth,
+    in float cos_incident_angle, in float fluid_depth,
     in vec3 beta_ray, in vec3 beta_mie, in vec3 beta_abs
 ){
-    float sigma = ocean_depth / cos_incident_angle;
+    float sigma = fluid_depth / cos_incident_angle;
     return exp(-sigma * (beta_ray + beta_mie + beta_abs));
 }
 vec3 get_rgb_intensity_of_light_scattered_by_fluid_along_flat_surface(
     in float cos_view_angle,
     in float cos_light_angle,
     in float cos_scatter_angle,
-    in float ocean_depth,
+    in float fluid_depth,
     in vec3 refracted_light_rgb_intensity,
     in vec3 beta_ray, in vec3 beta_mie, in vec3 beta_abs
 ){
@@ -1423,8 +1422,8 @@ vec3 get_rgb_intensity_of_light_scattered_by_fluid_along_flat_surface(
     // Since water is treated as incompressible, the density remains constant, 
     //   so they are effectively the distances traveled along their respective paths.
     // TODO: model vector of refracted light within ocean
-    float sigma_v = ocean_depth / NV;
-    float sigma_l = ocean_depth / NL;
+    float sigma_v = fluid_depth / NV;
+    float sigma_l = fluid_depth / NL;
     float sigma_ratio = 1. + NV/NL;
     return I
         // incoming fraction: the fraction of light that scatters towards camera
@@ -1483,6 +1482,7 @@ vec3 get_rgb_signal_of_rgb_intensity(
         pow(intensity.z, 1./GAMMA)
     );
 }
+const int MAX_LIGHT_COUNT = 9;
 varying vec2 vUv;
 uniform sampler2D background_rgb_signal_texture;
 // Determines the length of a unit of distance within the view, in meters, 
@@ -1857,7 +1857,6 @@ float get_fraction_of_microfacets_with_angle(
     float t = cos_angle_of_deviation;
     return exp((t*t-1.)/(m*m*t*t))/(m*m*t*t*t*t);
 }
-const int MAX_LIGHT_COUNT = 9;
 // "approx_air_column_density_ratio_along_2d_ray_for_spherical_world" 
 //   calculates the distance you would need to travel 
 //   along the surface to encounter the same number of particles in the column. 
@@ -2000,17 +1999,17 @@ vec3 get_rgb_fraction_of_distant_light_scattered_by_air_of_spherical_world(
     return F;
 }
 vec3 get_rgb_fraction_of_light_transmitted_through_fluid_along_flat_surface(
-    in float cos_incident_angle, in float ocean_depth,
+    in float cos_incident_angle, in float fluid_depth,
     in vec3 beta_ray, in vec3 beta_mie, in vec3 beta_abs
 ){
-    float sigma = ocean_depth / cos_incident_angle;
+    float sigma = fluid_depth / cos_incident_angle;
     return exp(-sigma * (beta_ray + beta_mie + beta_abs));
 }
 vec3 get_rgb_intensity_of_light_scattered_by_fluid_along_flat_surface(
     in float cos_view_angle,
     in float cos_light_angle,
     in float cos_scatter_angle,
-    in float ocean_depth,
+    in float fluid_depth,
     in vec3 refracted_light_rgb_intensity,
     in vec3 beta_ray, in vec3 beta_mie, in vec3 beta_abs
 ){
@@ -2032,8 +2031,8 @@ vec3 get_rgb_intensity_of_light_scattered_by_fluid_along_flat_surface(
     // Since water is treated as incompressible, the density remains constant, 
     //   so they are effectively the distances traveled along their respective paths.
     // TODO: model vector of refracted light within ocean
-    float sigma_v = ocean_depth / NV;
-    float sigma_l = ocean_depth / NL;
+    float sigma_v = fluid_depth / NV;
+    float sigma_l = fluid_depth / NL;
     float sigma_ratio = 1. + NV/NL;
     return I
         // incoming fraction: the fraction of light that scatters towards camera
@@ -2092,6 +2091,7 @@ vec3 get_rgb_signal_of_rgb_intensity(
         pow(intensity.z, 1./GAMMA)
     );
 }
+const int MAX_LIGHT_COUNT = 9;
 // Determines the length of a unit of distance within the view, in meters, 
 // it is generally the radius of whatever world's the focus for the scene.
 // The view uses different units for length to prevent certain issues with

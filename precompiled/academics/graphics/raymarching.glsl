@@ -1,5 +1,4 @@
 
-const int MAX_LIGHT_COUNT = 9;
 
 // "approx_air_column_density_ratio_along_2d_ray_for_spherical_world" 
 //   calculates the distance you would need to travel 
@@ -157,17 +156,17 @@ vec3 get_rgb_fraction_of_distant_light_scattered_by_air_of_spherical_world(
 
 
 vec3 get_rgb_fraction_of_light_transmitted_through_fluid_along_flat_surface(
-    in float cos_incident_angle, in float ocean_depth,
+    in float cos_incident_angle, in float fluid_depth,
     in vec3  beta_ray,           in vec3  beta_mie,          in vec3  beta_abs
 ){
-    float sigma  = ocean_depth / cos_incident_angle;
+    float sigma  = fluid_depth / cos_incident_angle;
     return exp(-sigma * (beta_ray + beta_mie + beta_abs));
 }
 vec3 get_rgb_intensity_of_light_scattered_by_fluid_along_flat_surface(
     in float cos_view_angle, 
     in float cos_light_angle, 
     in float cos_scatter_angle, 
-    in float ocean_depth,
+    in float fluid_depth,
     in vec3  refracted_light_rgb_intensity,
     in vec3  beta_ray,       in vec3  beta_mie,          in vec3  beta_abs
 ){
@@ -193,8 +192,8 @@ vec3 get_rgb_intensity_of_light_scattered_by_fluid_along_flat_surface(
     // Since water is treated as incompressible, the density remains constant, 
     //   so they are effectively the distances traveled along their respective paths.
     // TODO: model vector of refracted light within ocean
-    float sigma_v  = ocean_depth / NV;
-    float sigma_l = ocean_depth / NL;
+    float sigma_v  = fluid_depth / NV;
+    float sigma_l = fluid_depth / NL;
     float sigma_ratio = 1. + NV/NL;
 
     return I 

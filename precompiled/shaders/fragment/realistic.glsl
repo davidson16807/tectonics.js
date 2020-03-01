@@ -11,6 +11,7 @@
 #include "precompiled/academics/graphics/psychophysics.glsl"
 #include "precompiled/academics/graphics/electronics.glsl"
 
+const int MAX_LIGHT_COUNT = 9;
 // Determines the length of a unit of distance within the view, in meters, 
 // it is generally the radius of whatever world's the focus for the scene.
 // The view uses different units for length to prevent certain issues with

@@ -905,7 +905,6 @@ function get_fraction_of_microfacets_with_angle(
     return Math.exp( (t * t - 1.) / (m * m * t * t)) / (m * m * t * t * t * t);
 }
 
-const MAX_LIGHT_COUNT = 9;
 // "approx_air_column_density_ratio_along_2d_ray_for_spherical_world" 
 //   calculates the distance you would need to travel 
 //   along the surface to encounter the same number of particles in the column. 
@@ -1075,12 +1074,12 @@ function get_rgb_fraction_of_distant_light_scattered_by_air_of_spherical_world(
 /*vec3*/
 function get_rgb_fraction_of_light_transmitted_through_fluid_along_flat_surface(
      /*float*/ cos_incident_angle,
-     /*float*/ ocean_depth,
+     /*float*/ fluid_depth,
      /*vec3*/ beta_ray,
      /*vec3*/ beta_mie,
      /*vec3*/ beta_abs
 ){
-    let sigma = ocean_depth / cos_incident_angle;
+    let sigma = fluid_depth / cos_incident_angle;
     return Math.exp( ((beta_ray['+']( beta_mie['+']( beta_abs))))['*']( -sigma));
 }
 
@@ -1089,7 +1088,7 @@ function get_rgb_intensity_of_light_scattered_by_fluid_along_flat_surface(
      /*float*/ cos_view_angle,
      /*float*/ cos_light_angle,
      /*float*/ cos_scatter_angle,
-     /*float*/ ocean_depth,
+     /*float*/ fluid_depth,
      /*vec3*/ refracted_light_rgb_intensity,
      /*vec3*/ beta_ray,
      /*vec3*/ beta_mie,
@@ -1113,8 +1112,8 @@ function get_rgb_intensity_of_light_scattered_by_fluid_along_flat_surface(
     // Since water is treated as incompressible, the density remains constant, 
     //   so they are effectively the distances traveled along their respective paths.
     // TODO: model vector of refracted light within ocean
-    let sigma_v = ocean_depth / NV;
-    let sigma_l = ocean_depth / NL;
+    let sigma_v = fluid_depth / NV;
+    let sigma_l = fluid_depth / NL;
     let sigma_ratio = 1. + NV / NL;
     return I['*']( beta_gamma['*']( ((Math.exp( (beta_sum['*']( sigma_ratio))['*']( -sigma_v))['-']( 1.)))['/']( (beta_sum['*']( -sigma_ratio)))));
 }
