@@ -956,82 +956,12 @@ function approx_air_column_density_ratio_along_2d_ray_for_spherical_world(
     return glm.sign( b) * (s0 - sb) - glm.sign( a) * (s0 - sa);
 }
 
-// "approx_air_column_density_ratio_along_3d_ray_for_spherical_world" 
-//   calculates the distance you would need to travel 
-//   along the surface to encounter the same number of particles in the column. 
-// It does this by finding an integral using integration by substitution, 
-//   then tweaking that integral to prevent division by 0. 
-// All distances are recorded in scale heights.
-// "a" and "b" are distances along the ray from closest approach.
-//   The ray is fired in the positive direction.
-//   If there is no intersection with the planet, 
-//   a and b are distances from the closest approach to the upper bound.
-// "z2" is the closest distance from the ray to the center of the world, squared.
-// "r0" is the radius of the world.
-/*float*/
-function approx_air_column_density_ratio_along_3d_ray_for_spherical_world(
-     /*float*/ a,
-     /*float*/ b,
-     /*float*/ y2,
-     /*float*/ z2,
-     /*float*/ r0
-){
-    // GUIDE TO VARIABLE NAMES:
-    //  "x*" distance along the ray from closest approach
-    //  "y*" distance along an axis at closest approach
-    //  "z*" distance along an axis at closest approach
-    //  "r*" distance ("radius") from the center of the world 
-    //  "*0" variable at reference point
-    //  "*2" the square of a variable
-    //  "ch" a nudge we give to prevent division by zero, analogous to the Chapman function
-    const SQRT_HALF_PI = glm.sqrt( PI / 2.);
-    const k = 0.6;
-    // "k" is an empirically derived constant
-    let x0 = glm.sqrt( glm.max( r0 * r0 - y2 - z2,  0.));
-    let rmin = glm.sqrt( y2 + z2);
-    if (a < x0 && -x0 < b && y2 + z2 < r0 * r0){
-        return BIG;
-    }
-
-    let abs_a = glm.abs( a);
-    let abs_b = glm.abs( b);
-    let sqrt_rmin = glm.sqrt( rmin);
-    let ra = glm.sqrt( a * a + y2 + z2);
-    let rb = glm.sqrt( b * b + y2 + z2);
-    let ch0 = (1. / (2. * r0) + 1.) * SQRT_HALF_PI * sqrt_rmin + k * x0;
-    let cha = (1. / (2. * ra) + 1.) * SQRT_HALF_PI * sqrt_rmin + k * abs_a;
-    let chb = (1. / (2. * rb) + 1.) * SQRT_HALF_PI * sqrt_rmin + k * abs_b;
-    let s0 = glm.min( Math.exp( r0 - rmin),  1.) / (x0 / r0 + 1. / ch0);
-    let sa = Math.exp( r0 - ra) / (abs_a / ra + 1. / cha);
-    let sb = Math.exp( r0 - rb) / (abs_b / rb + 1. / chb);
-    return glm.sign( b) * (s0 - sb) - glm.sign( a) * (s0 - sa);
-}
-
-// "approx_air_column_density_ratio_along_3d_ray_for_spherical_world" is an all-in-one convenience wrapper 
-//   for approx_air_column_density_ratio_along_3d_ray_for_spherical_world().
-// Just pass it the origin and direction of a 3d ray and it will find the column density ratio along its path, 
-//   or return false to indicate the ray passes through the surface of the world.
-/*float*/
-function approx_air_column_density_ratio_along_3d_ray_for_spherical_world(
-     /*vec3*/ P,
-     /*vec3*/ V,
-     /*float*/ x,
-     /*float*/ r,
-     /*float*/ h
-){
-    let xz = glm.dot( (P)["*"]( -1),  V);
-    // distance ("radius") from the ray to the center of the world at closest approach, squared
-    let z2 = glm.dot( P,  P) - xz * xz;
-    // distance from the origin at which closest approach occurs
-    return h * approx_air_column_density_ratio_along_2d_ray_for_spherical_world( (0. - xz) / h,  (x - xz) / h,  z2 / (h * h),  r / h);
-}
-
 /*vec3*/
 function get_rgb_fraction_of_light_transmitted_through_air_of_spherical_world(
-     /*vec3*/ segment_origin,
-     /*vec3*/ segment_direction,
-     /*float*/ segment_start_length,
-     /*float*/ segment_stop_length,
+     /*vec3*/ view_origin,
+     /*vec3*/ view_direction,
+     /*float*/ view_start_length,
+     /*float*/ view_stop_length,
      /*vec3*/ world_position,
      /*float*/ world_radius,
      /*float*/ atmosphere_scale_height,
@@ -1039,15 +969,18 @@ function get_rgb_fraction_of_light_transmitted_through_air_of_spherical_world(
      /*vec3*/ beta_mie,
      /*vec3*/ beta_abs
 ){
-    let O = world_position;
-    let r = world_radius;
-    let H = atmosphere_scale_height;
-    // "sigma" is the column density of air, relative to the surface of the world, that's along the light's path of travel,
-    //   we use it to estimate the amount of light that's filtered by the atmosphere before reaching the surface
-    //   see https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-1/ for an awesome introduction
-    let sigma = approx_air_column_density_ratio_along_3d_ray_for_spherical_world( segment_origin['-']( world_position),  segment_direction,  segment_stop_length - segment_start_length,  r,  H);
-    // "I_surface" is the intensity of light that reaches the surface after being filtered by atmosphere
-    return Math.exp( ((beta_ray['+']( beta_mie['+']( beta_abs))))['*']( -sigma));
+    let h = atmosphere_scale_height;
+    let r = world_radius / h;
+    let V0 = ((view_origin['+']( (view_direction['*']( view_start_length))['-']( world_position))))['/']( h);
+    let V1 = ((view_origin['+']( (view_direction['*']( view_stop_length))['-']( world_position))))['/']( h);
+    let V = view_direction;
+    // unit vector pointing to pixel being viewed
+    let v0 = glm.dot( V0,  V);
+    let v1 = glm.dot( V1,  V);
+    let zv2 = glm.dot( V0,  V0) - v0 * v0;
+    let beta_sum = ((beta_ray['+']( beta_mie['+']( beta_abs))))['*']( h);
+    let sigma = approx_air_column_density_ratio_along_2d_ray_for_spherical_world( v0,  v1,  zv2,  r);
+    return Math.exp( beta_sum['*']( -sigma));
 }
 
 // TODO: multiple scattering events
@@ -1104,9 +1037,6 @@ function get_rgb_fraction_of_distant_light_scattered_by_air_of_spherical_world(
     let v1 = glm.dot( V1,  V);
     let L = light_direction;
     // unit vector pointing to light source
-    beta_ray *= h;
-    beta_mie *= h;
-    beta_abs *= h;
     let VL = glm.dot( V,  L);
     // "gamma_*" indicates the fraction of scattered sunlight that scatters to a given angle (indicated by its cosine, A.K.A. "VL").
     // It only accounts for a portion of the sunlight that's lost during the scatter, which is irrespective of wavelength or density
@@ -1115,8 +1045,8 @@ function get_rgb_fraction_of_distant_light_scattered_by_air_of_spherical_world(
     // "beta_*" indicates the rest of the fractional loss.
     // it is dependant on wavelength, and the density ratio, which is dependant on height
     // So all together, the fraction of sunlight that scatters to a given angle is: beta(wavelength) * gamma(angle) * density_ratio(height)
-    let beta_sum = beta_ray['+']( beta_mie['+']( beta_abs));
-    let beta_gamma = (beta_ray['*']( gamma_ray))['+']( beta_mie['*']( gamma_mie));
+    let beta_sum = ((beta_ray['+']( beta_mie['+']( beta_abs))))['*']( h);
+    let beta_gamma = (((beta_ray['*']( gamma_ray))['+']( beta_mie['*']( gamma_mie))))['*']( h);
     // number of iterations within the raymarch
     const STEP_COUNT = 16.;
     let dv = (v1 - v0) / STEP_COUNT;
@@ -1133,7 +1063,7 @@ function get_rgb_fraction_of_distant_light_scattered_by_air_of_spherical_world(
     // total intensity for each color channel, found as the sum of light intensities for each path from the light source to the camera
     for (let i = 0.; i < STEP_COUNT; ++i) {
         zl2 = vi * vi + zv2 - li * li;
-        sigma = approx_air_column_density_ratio_along_3d_ray_for_spherical_world( v0,  vi,  y2,  zv2,  r) + approx_air_column_density_ratio_along_3d_ray_for_spherical_world( li,  3. * r,  y2,  zl2,  r);
+        sigma = approx_air_column_density_ratio_along_2d_ray_for_spherical_world( v0,  vi,  y2 + zv2,  r) + approx_air_column_density_ratio_along_2d_ray_for_spherical_world( li,  3. * r,  y2 + zl2,  r);
         F += (beta_gamma['*']( Math.exp( ((beta_sum)["*"]( -1))['*']( sigma))['*']( dv)))['*']( Math.exp( r - glm.sqrt( vi * vi + y2 + zv2)));
         vi += dv;
         li += dl;

@@ -46,82 +46,22 @@ float approx_air_column_density_ratio_along_2d_ray_for_spherical_world(
     return sign(b)*(s0-sb) - sign(a)*(s0-sa);
 }
 
-// "approx_air_column_density_ratio_along_3d_ray_for_spherical_world" 
-//   calculates the distance you would need to travel 
-//   along the surface to encounter the same number of particles in the column. 
-// It does this by finding an integral using integration by substitution, 
-//   then tweaking that integral to prevent division by 0. 
-// All distances are recorded in scale heights.
-// "a" and "b" are distances along the ray from closest approach.
-//   The ray is fired in the positive direction.
-//   If there is no intersection with the planet, 
-//   a and b are distances from the closest approach to the upper bound.
-// "z2" is the closest distance from the ray to the center of the world, squared.
-// "r0" is the radius of the world.
-float approx_air_column_density_ratio_along_3d_ray_for_spherical_world(
-    in float a, 
-    in float b, 
-    in float y2,
-    in float z2, 
-    in float r0
-){
-    // GUIDE TO VARIABLE NAMES:
-    //  "x*" distance along the ray from closest approach
-    //  "y*" distance along an axis at closest approach
-    //  "z*" distance along an axis at closest approach
-    //  "r*" distance ("radius") from the center of the world 
-    //  "*0" variable at reference point
-    //  "*2" the square of a variable
-    //  "ch" a nudge we give to prevent division by zero, analogous to the Chapman function
-    const float SQRT_HALF_PI  = sqrt(PI/2.);
-    const float k = 0.6; // "k" is an empirically derived constant
-    float x0     = sqrt(max(r0*r0 - y2 - z2, 0.));
-    float rmin   = sqrt(y2+z2);
-    if (a < x0 && -x0 < b && y2+z2 < r0*r0) { return BIG; }
-    float abs_a  = abs(a);
-    float abs_b  = abs(b);
-    float sqrt_rmin = sqrt(rmin);
-    float ra     = sqrt(a*a+y2+z2);
-    float rb     = sqrt(b*b+y2+z2);
-    float ch0    = (1./(2.*r0) + 1.) * SQRT_HALF_PI * sqrt_rmin + k*x0;
-    float cha    = (1./(2.*ra) + 1.) * SQRT_HALF_PI * sqrt_rmin + k*abs_a;
-    float chb    = (1./(2.*rb) + 1.) * SQRT_HALF_PI * sqrt_rmin + k*abs_b;
-    float s0     = min(exp(r0-rmin),1.) / (   x0/r0 + 1./ch0);
-    float sa     =     exp(r0-ra  )     / (abs_a/ra + 1./cha);
-    float sb     =     exp(r0-rb  )     / (abs_b/rb + 1./chb);
-    return sign(b)*(s0-sb) - sign(a)*(s0-sa);
-}
-
-// "approx_air_column_density_ratio_along_3d_ray_for_spherical_world" is an all-in-one convenience wrapper 
-//   for approx_air_column_density_ratio_along_3d_ray_for_spherical_world().
-// Just pass it the origin and direction of a 3d ray and it will find the column density ratio along its path, 
-//   or return false to indicate the ray passes through the surface of the world.
-float approx_air_column_density_ratio_along_3d_ray_for_spherical_world (
-    in vec3  P, 
-    in vec3  V,
-    in float x,
-    in float r, 
-    in float h
-){
-    float xz = dot(-P,V);           // distance ("radius") from the ray to the center of the world at closest approach, squared
-    float z2 = dot( P,P) - xz * xz; // distance from the origin at which closest approach occurs
-    return h * approx_air_column_density_ratio_along_2d_ray_for_spherical_world( (0.-xz)/h, (x-xz)/h, z2/(h*h), r/h );
-}
-
 vec3 get_rgb_fraction_of_light_transmitted_through_air_of_spherical_world(
-    in vec3  segment_origin, in vec3  segment_direction, in float segment_start_length,    in float segment_stop_length, 
-    in vec3  world_position, in float world_radius,      in float atmosphere_scale_height,
-    in vec3  beta_ray,       in vec3  beta_mie,          in vec3  beta_abs
+    in vec3  view_origin,    in vec3  view_direction, in float view_start_length,      in float view_stop_length, 
+    in vec3  world_position, in float world_radius,   in float atmosphere_scale_height,
+    in vec3  beta_ray,       in vec3  beta_mie,       in vec3  beta_abs
 ){
-    vec3  O = world_position;
-    float r = world_radius;
-    float H = atmosphere_scale_height;
-    // "sigma" is the column density of air, relative to the surface of the world, that's along the light's path of travel,
-    //   we use it to estimate the amount of light that's filtered by the atmosphere before reaching the surface
-    //   see https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-1/ for an awesome introduction
-    float sigma  = approx_air_column_density_ratio_along_3d_ray_for_spherical_world (segment_origin-world_position, segment_direction, segment_stop_length - segment_start_length, r, H);
-    // "I_surface" is the intensity of light that reaches the surface after being filtered by atmosphere
-    return exp(-sigma * (beta_ray + beta_mie + beta_abs));
+    float h   = atmosphere_scale_height;
+    float r   = world_radius / h;
+    vec3  V0  = (view_origin + view_direction * view_start_length - world_position) / h;
+    vec3  V1  = (view_origin + view_direction * view_stop_length  - world_position) / h;
+    vec3  V   = view_direction;   // unit vector pointing to pixel being viewed
+    float v0  = dot(V0,V);
+    float v1  = dot(V1,V);
+    float zv2 = dot(V0,V0) - v0*v0; 
+    vec3  beta_sum = (beta_ray + beta_mie + beta_abs)*h;
+    float sigma = approx_air_column_density_ratio_along_2d_ray_for_spherical_world(v0,v1,zv2,r);
+    return exp(-sigma * beta_sum);
 }
 
 // TODO: multiple scattering events
@@ -170,10 +110,6 @@ vec3 get_rgb_fraction_of_distant_light_scattered_by_air_of_spherical_world(
     float v0 = dot(V0,V);
     float v1 = dot(V1,V);
     vec3  L  = light_direction;  // unit vector pointing to light source
-    beta_ray *= h;
-    beta_mie *= h;
-    beta_abs *= h;
-
     float VL = dot(V,L);
 
     // "gamma_*" indicates the fraction of scattered sunlight that scatters to a given angle (indicated by its cosine, A.K.A. "VL").
@@ -184,8 +120,8 @@ vec3 get_rgb_fraction_of_distant_light_scattered_by_air_of_spherical_world(
     // "beta_*" indicates the rest of the fractional loss.
     // it is dependant on wavelength, and the density ratio, which is dependant on height
     // So all together, the fraction of sunlight that scatters to a given angle is: beta(wavelength) * gamma(angle) * density_ratio(height)
-    vec3  beta_sum   = beta_ray + beta_mie + beta_abs;
-    vec3  beta_gamma = beta_ray * gamma_ray + beta_mie * gamma_mie;
+    vec3  beta_sum   = h*(beta_ray + beta_mie + beta_abs);
+    vec3  beta_gamma = h*(beta_ray * gamma_ray + beta_mie * gamma_mie);
     
     // number of iterations within the raymarch
     const float STEP_COUNT = 16.; 
@@ -204,8 +140,8 @@ vec3 get_rgb_fraction_of_distant_light_scattered_by_air_of_spherical_world(
     for (float i = 0.; i < STEP_COUNT; ++i)
     {
         zl2 = vi*vi + zv2 - li*li;
-        sigma = approx_air_column_density_ratio_along_3d_ray_for_spherical_world(v0, vi,   y2, zv2, r )
-              + approx_air_column_density_ratio_along_3d_ray_for_spherical_world(li, 3.*r, y2, zl2, r );
+        sigma = approx_air_column_density_ratio_along_2d_ray_for_spherical_world(v0, vi,   y2+zv2, r )
+              + approx_air_column_density_ratio_along_2d_ray_for_spherical_world(li, 3.*r, y2+zl2, r );
 
         F +=// incoming fraction: the fraction of light that scatters towards camera
               exp(r-sqrt(vi*vi+y2+zv2)) * beta_gamma * dv
