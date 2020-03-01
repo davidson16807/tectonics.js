@@ -92,8 +92,8 @@ float approx_air_column_density_ratio_along_3d_ray_for_spherical_world(
     return sign(b)*(s0-sb) - sign(a)*(s0-sa);
 }
 
-// "try_approx_air_column_density_ratio_along_ray" is an all-in-one convenience wrapper 
-//   for approx_air_column_density_ratio_along_ray_2d() and approx_reference_air_column_density_ratio_along_ray.
+// "approx_air_column_density_ratio_along_3d_ray_for_spherical_world" is an all-in-one convenience wrapper 
+//   for approx_air_column_density_ratio_along_3d_ray_for_spherical_world().
 // Just pass it the origin and direction of a 3d ray and it will find the column density ratio along its path, 
 //   or return false to indicate the ray passes through the surface of the world.
 float approx_air_column_density_ratio_along_3d_ray_for_spherical_world (
@@ -140,47 +140,41 @@ vec3 get_rgb_fraction_of_distant_light_scattered_by_air_of_spherical_world(
     //  Uppercase letters indicate vectors.
     //  Lowercase letters indicate scalars.
     //  Going for terseness because I tried longhand names and trust me, you can't read them.
-    //  "z*"     distance from the center of the world to closest approach
-    //  "r*"     a distance ("radius") from the center of the world
-    //  "h*"     a distance ("height") from the surface of the world
     //  "*v*"    property of the view ray, the ray cast from the viewer to the object being viewed
     //  "*l*"    property of the light ray, the ray cast from the object to the light source
+    //  "y*"     distance from the center of the world to the plane shared by view and light ray
+    //  "z*"     distance from the center of the world to along the plane shared by the view and light ray 
+    //  "r*"     a distance ("radius") from the center of the world
+    //  "h*"     the atmospheric scale height, the distance at which air density reduces by a factor of e
     //  "*2"     the square of a variable
-    //  "*i"    property of an iteration within the raymarch
+    //  "*0"     property at the start of the raymarch
+    //  "*1"     property at the end of the raymarch
+    //  "*i"     property during an iteration of the raymarch
+    //  "d*"     the change in a property across iterations of the raymarch
     //  "beta*"  a scattering coefficient, the number of e-foldings in light intensity per unit distance
     //  "gamma*" a phase factor, the fraction of light that's scattered in a certain direction
-    //  "rho*"   a density ratio, the density of air relative to surface density
     //  "sigma*" a column density ratio, the density of a column of air relative to surface density
     //  "F*"     fraction of source light that reaches the viewer due to scattering for each color channel
     //  "*_ray"  property of rayleigh scattering
     //  "*_mie"  property of mie scattering
     //  "*_abs"  property of absorption
 
-    // setup variable shorthands and express all distances in terms of scale height
-    float h = atmosphere_scale_height;
-    vec3  V0= view_origin / h;
-    vec3  V = view_direction;
-    float v0= view_start_length / h;
-    float v1= view_stop_length / h;
-    vec3  P = (view_origin - world_position) / h;
-    vec3  O = world_position / h;
-    float r = world_radius / h;
+    // setup variable shorthands
+    // express all distances in scale heights 
+    // express all positions relative to world origin
+    float h  = atmosphere_scale_height;
+    float r  = world_radius / h;
+    vec3  V0 = (view_origin + view_direction * view_start_length - world_position) / h;
+    vec3  V1 = (view_origin + view_direction * view_stop_length  - world_position) / h;
+    vec3  V  = view_direction;   // unit vector pointing to pixel being viewed
+    float v0 = dot(V0,V);
+    float v1 = dot(V1,V);
+    vec3  L  = light_direction;  // unit vector pointing to light source
     beta_ray *= h;
     beta_mie *= h;
     beta_abs *= h;
-    vec3  L = light_direction;     // unit vector pointing to light source
 
-    // cosine of the angle between view and light directions
-    float VL = dot(V, -L);
-    // a vector pointing orthogonal to view and light directions, magnitude equal to their sine
-    vec3  VxL= cross(V, -L);
-    // distance from view ray origin to closest approach
-    float v  = dot(-P,V);         
-    // distance from world center to plane shared by view and light directions
-    float y  = dot(-P,normalize(VxL));
-    float y2 = y*y;
-    // squared distance from the view ray to the center of the world at closest approach
-    float z2 = dot( P,P) - y2 - v*v; 
+    float VL = dot(V,L);
 
     // "gamma_*" indicates the fraction of scattered sunlight that scatters to a given angle (indicated by its cosine, A.K.A. "VL").
     // It only accounts for a portion of the sunlight that's lost during the scatter, which is irrespective of wavelength or density
@@ -193,40 +187,33 @@ vec3 get_rgb_fraction_of_distant_light_scattered_by_air_of_spherical_world(
     vec3  beta_sum   = beta_ray + beta_mie + beta_abs;
     vec3  beta_gamma = beta_ray * gamma_ray + beta_mie * gamma_mie;
     
-    // number of steps taken while marching along the view ray
+    // number of iterations within the raymarch
     const float STEP_COUNT = 16.; 
-    float dv = (v1 - v0) / STEP_COUNT;
-    float vi = v0 - v + 0.5 * dv;
-
-    // distance from light ray origin to closest approach
-    float l   = dot(P+V*(vi+v),-L);
+    float dv  = (v1 - v0) / STEP_COUNT;
+    float vi  = v0;
     float dl  = dv*VL;
+    float li  = dot(V0,L);
+    float y   = dot(V0,normalize(cross(V,L))); 
+    float y2  = y*y;
+    float zv2 = dot(V0,V0) - y2 - v0*v0; 
+    float zl2 = 0.0; 
 
-    // distance of the light ray at closest for a single iteration of the view ray march
-    // float zl  = sqrt((vi   )*(vi   )+z2 - dot(P+V*(vi+v   ),-L) * dot(P+V*(vi+v   ), -L)); 
-    float zl2 =     ((vi   )*(vi   )+z2 - dot(P+V*(vi+v   ),-L) * dot(P+V*(vi+v   ), -L)); 
-    // float dzl = sqrt((vi+dv)*(vi+dv)+z2 - dot(P+V*(vi+v+dv),-L) * dot(P+V*(vi+v+dv), -L)) - zl;
-    // float dzl = sign(dzl) * sqrt(1. - VL*VL);
-
-    // columnar density encountered along the entire path, relative to surface density, effectively the distance along the surface needed to obtain a similar column density
-    float sigma; 
-    // total intensity for each color channel, found as the sum of light intensities for each path from the light source to the camera
-    vec3  F = vec3(0); 
+    float sigma;       // columnar density encountered along the entire path, relative to surface density, effectively the distance along the surface needed to obtain a similar column density
+    vec3  F = vec3(0); // total intensity for each color channel, found as the sum of light intensities for each path from the light source to the camera
 
     for (float i = 0.; i < STEP_COUNT; ++i)
     {
-        sigma = approx_air_column_density_ratio_along_3d_ray_for_spherical_world(-v, vi,   y2, z2,  r )
-              + approx_air_column_density_ratio_along_3d_ray_for_spherical_world(-l, 3.*r, y2, zl2, r );
+        zl2 = vi*vi + zv2 - li*li;
+        sigma = approx_air_column_density_ratio_along_3d_ray_for_spherical_world(v0, vi,   y2, zv2, r )
+              + approx_air_column_density_ratio_along_3d_ray_for_spherical_world(li, 3.*r, y2, zl2, r );
 
         F +=// incoming fraction: the fraction of light that scatters towards camera
-              exp(r-sqrt(vi*vi+y2+z2)) * beta_gamma * dv
+              exp(r-sqrt(vi*vi+y2+zv2)) * beta_gamma * dv
             // outgoing fraction: the fraction of light that scatters away from camera
             * exp(-beta_sum * sigma);
 
         vi += dv;
-        l  += dl;
-        // zl += dzl; 
-        zl2 = vi*vi+z2 - dot(P+V*(vi+v),-L) * dot(P+V*(vi+v), -L); 
+        li += dl;
     }
 
     return F;
