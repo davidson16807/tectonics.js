@@ -1,6 +1,6 @@
 
 
-// "approx_air_column_density_ratio_along_2d_ray_for_spherical_world" 
+// "approx_air_column_density_ratio_through_atmosphere" 
 //   calculates the distance you would need to travel 
 //   along the surface to encounter the same number of particles in the column. 
 // It does this by finding an integral using integration by substitution, 
@@ -12,7 +12,7 @@
 //   a and b are distances from the closest approach to the upper bound.
 // "z2" is the closest distance from the ray to the center of the world, squared.
 // "r0" is the radius of the world.
-float approx_air_column_density_ratio_along_2d_ray_for_spherical_world(
+float approx_air_column_density_ratio_through_atmosphere(
     in float a, 
     in float b, 
     in float z2, 
@@ -45,7 +45,7 @@ float approx_air_column_density_ratio_along_2d_ray_for_spherical_world(
     return sign(b)*(s0-sb) - sign(a)*(s0-sa);
 }
 
-vec3 get_rgb_fraction_of_light_transmitted_through_air_of_spherical_world(
+vec3 get_rgb_fraction_of_light_transmitted_through_atmosphere(
     in vec3  view_origin,    in vec3  view_direction, in float view_start_length,      in float view_stop_length, 
     in vec3  world_position, in float world_radius,   in float atmosphere_scale_height,
     in vec3  beta_ray,       in vec3  beta_mie,       in vec3  beta_abs
@@ -59,13 +59,13 @@ vec3 get_rgb_fraction_of_light_transmitted_through_air_of_spherical_world(
     float v1  = dot(V1,V);
     float zv2 = dot(V0,V0) - v0*v0; 
     vec3  beta_sum = (beta_ray + beta_mie + beta_abs)*h;
-    float sigma = approx_air_column_density_ratio_along_2d_ray_for_spherical_world(v0,v1,zv2,r);
+    float sigma = approx_air_column_density_ratio_through_atmosphere(v0,v1,zv2,r);
     return exp(-sigma * beta_sum);
 }
 
 // TODO: multiple scattering events
 // TODO: support for light sources from within atmosphere
-vec3 get_rgb_fraction_of_distant_light_scattered_by_air_of_spherical_world(
+vec3 get_rgb_fraction_of_distant_light_scattered_by_atmosphere(
     vec3 view_origin,     vec3 view_direction, float view_start_length, float view_stop_length,
     vec3 world_position,  float world_radius,  
     vec3 light_direction, float atmosphere_scale_height,
@@ -139,8 +139,8 @@ vec3 get_rgb_fraction_of_distant_light_scattered_by_air_of_spherical_world(
     for (float i = 0.; i < STEP_COUNT; ++i)
     {
         zl2 = vi*vi + zv2 - li*li;
-        sigma = approx_air_column_density_ratio_along_2d_ray_for_spherical_world(v0, vi,   y2+zv2, r )
-              + approx_air_column_density_ratio_along_2d_ray_for_spherical_world(li, 3.*r, y2+zl2, r );
+        sigma = approx_air_column_density_ratio_through_atmosphere(v0, vi,   y2+zv2, r )
+              + approx_air_column_density_ratio_through_atmosphere(li, 3.*r, y2+zl2, r );
 
         F +=// incoming fraction: the fraction of light that scatters towards camera
               exp(r-sqrt(vi*vi+y2+zv2)) * beta_gamma * dv
@@ -152,54 +152,4 @@ vec3 get_rgb_fraction_of_distant_light_scattered_by_air_of_spherical_world(
     }
 
     return F;
-}
-
-
-vec3 get_rgb_fraction_of_light_transmitted_through_fluid_along_flat_surface(
-    in float cos_incident_angle, in float fluid_depth,
-    in vec3  beta_ray,           in vec3  beta_mie,          in vec3  beta_abs
-){
-    float sigma  = fluid_depth / cos_incident_angle;
-    return exp(-sigma * (beta_ray + beta_mie + beta_abs));
-}
-vec3 get_rgb_intensity_of_light_scattered_by_fluid_along_flat_surface(
-    in float cos_view_angle, 
-    in float cos_light_angle, 
-    in float cos_scatter_angle, 
-    in float fluid_depth,
-    in vec3  refracted_light_rgb_intensity,
-    in vec3  beta_ray,       in vec3  beta_mie,          in vec3  beta_abs
-){
-    float NV = cos_view_angle;
-    float NL = cos_light_angle;
-    float VL = cos_scatter_angle;
-
-    vec3 I = refracted_light_rgb_intensity;
-
-    // "gamma_*" variables indicate the fraction of scattered sunlight that scatters to a given angle (indicated by its cosine).
-    // it is also known as the "phase factor"
-    // It varies
-    // see mention of "gamma" by Alan Zucconi: https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-3/
-    float gamma_ray = get_fraction_of_rayleigh_scattered_light_scattered_by_angle(VL);
-    float gamma_mie = get_fraction_of_mie_scattered_light_scattered_by_angle(VL);
-
-    vec3  beta_gamma = beta_ray * gamma_ray + beta_mie * gamma_mie;
-    vec3  beta_sum   = beta_ray + beta_mie + beta_abs;
-
-    // "sigma_v"  is the column density, relative to the surface, that's along the view ray.
-    // "sigma_l" is the column density, relative to the surface, that's along the light ray.
-    // "sigma_ratio" is the column density ratio of the full path of light relative to the distance along the incoming path
-    // Since water is treated as incompressible, the density remains constant, 
-    //   so they are effectively the distances traveled along their respective paths.
-    // TODO: model vector of refracted light within ocean
-    float sigma_v  = fluid_depth / NV;
-    float sigma_l = fluid_depth / NL;
-    float sigma_ratio = 1. + NV/NL;
-
-    return I 
-        // incoming fraction: the fraction of light that scatters towards camera
-        *     beta_gamma
-        // outgoing fraction: the fraction of light that scatters away from camera
-        * (exp(-sigma_v * sigma_ratio * beta_sum) - 1.)
-        /               (-sigma_ratio * beta_sum);
 }

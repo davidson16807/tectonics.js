@@ -10,9 +10,9 @@
 #include "precompiled/academics/physics/emission.glsl"
 #include "precompiled/academics/physics/scattering.glsl"
 #include "precompiled/academics/physics/reflectance.glsl"
-#include "precompiled/academics/graphics/raymarching.glsl"
 #include "precompiled/academics/graphics/psychophysics.glsl"
 #include "precompiled/academics/graphics/electronics.glsl"
+#include "precompiled/academics/graphics/atmospheres.glsl"
 
 const int MAX_LIGHT_COUNT = 9;
 
@@ -100,13 +100,13 @@ void main() {
         {
             if (i >= light_count) { break; }
             E += light_rgb_intensities[i] 
-               * get_rgb_fraction_of_distant_light_scattered_by_air_of_spherical_world(
+               * get_rgb_fraction_of_distant_light_scattered_by_atmosphere(
                      V0, V, v0, v1, O, r, light_directions[i], H, beta_ray, beta_mie, beta_abs
                  );
         }
         // now calculate the intensity of light that traveled straight in from the background, and add it to the total
         E += I_back 
-           * get_rgb_fraction_of_light_transmitted_through_air_of_spherical_world(
+           * get_rgb_fraction_of_light_transmitted_through_atmosphere(
                  V0, V, 0.0, v1*0.999, O, r, H, beta_ray, beta_mie, beta_abs
              );
     }

@@ -8,6 +8,7 @@
 #include "precompiled/academics/physics/emission.glsl"
 #include "precompiled/academics/physics/scattering.glsl"
 #include "precompiled/academics/physics/reflectance.glsl"
-#include "precompiled/academics/graphics/raymarching.glsl"
 #include "precompiled/academics/graphics/psychophysics.glsl"
 #include "precompiled/academics/graphics/electronics.glsl"
+#include "precompiled/academics/graphics/oceans.glsl"
+#include "precompiled/academics/graphics/atmospheres.glsl"
