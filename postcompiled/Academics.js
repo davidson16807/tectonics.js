@@ -1034,9 +1034,9 @@ function approx_air_column_density_ratio_through_atmosphere(
     let sqrt_z = glm.sqrt( z);
     let ra = glm.sqrt( a * a + z2);
     let rb = glm.sqrt( b * b + z2);
-    let ch0 = (1. / (2. * r0) + 1.) * SQRT_HALF_PI * sqrt_z + k * x0;
-    let cha = (1. / (2. * ra) + 1.) * SQRT_HALF_PI * sqrt_z + k * abs_a;
-    let chb = (1. / (2. * rb) + 1.) * SQRT_HALF_PI * sqrt_z + k * abs_b;
+    let ch0 = (1. - 1. / (2. * r0)) * SQRT_HALF_PI * sqrt_z + k * x0;
+    let cha = (1. - 1. / (2. * ra)) * SQRT_HALF_PI * sqrt_z + k * abs_a;
+    let chb = (1. - 1. / (2. * rb)) * SQRT_HALF_PI * sqrt_z + k * abs_b;
     let s0 = glm.min( Math.exp( r0 - z),  1.) / (x0 / r0 + 1. / ch0);
     let sa = Math.exp( r0 - ra) / (abs_a / ra + 1. / cha);
     let sb = Math.exp( r0 - rb) / (abs_b / rb + 1. / chb);
@@ -1151,7 +1151,12 @@ function get_rgb_fraction_of_distant_light_scattered_by_atmosphere(
     for (let i = 0.; i < STEP_COUNT; ++i) {
         zl2 = vi * vi + zv2 - li * li;
         sigma = approx_air_column_density_ratio_through_atmosphere( v0,  vi,  y2 + zv2,  r) + approx_air_column_density_ratio_through_atmosphere( li,  3. * r,  y2 + zl2,  r);
-        F += (beta_gamma['*']( Math.exp( ((beta_sum)["*"]( -1))['*']( sigma))['*']( dv)))['*']( Math.exp( r - glm.sqrt( vi * vi + y2 + zv2)));
+        F += Math.exp( ((beta_sum['*']( sigma))['-']( glm.sqrt( vi * vi + y2 + zv2)))['-']( r))['*']( beta_gamma['*']( dv));
+        // NOTE: the above is equivalen to the incoming fraction multiplied by the outgoing fraction:
+            // incoming fraction: the fraction of light that scatters towards camera
+            //   exp(r-sqrt(vi*vi+y2+zv2)) * beta_gamma * dv
+            // outgoing fraction: the fraction of light that scatters away from camera
+            // * exp(-beta_sum * sigma);
         vi += dv;
         li += dl;
     }

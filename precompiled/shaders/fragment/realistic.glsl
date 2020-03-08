@@ -9,8 +9,8 @@
 #include "precompiled/academics/physics/reflectance.glsl"
 #include "precompiled/academics/graphics/psychophysics.glsl"
 #include "precompiled/academics/graphics/electronics.glsl"
-#include "precompiled/academics/graphics/oceans.glsl"
-#include "precompiled/academics/graphics/atmospheres.glsl"
+#include "precompiled/academics/graphics/raymarching/oceans.glsl"
+#include "precompiled/academics/graphics/raymarching/atmospheres.glsl"
 
 const int MAX_LIGHT_COUNT = 9;
 // Determines the length of a unit of distance within the view, in meters, 

@@ -1334,9 +1334,9 @@ float approx_air_column_density_ratio_through_atmosphere(
     float sqrt_z = sqrt(z);
     float ra = sqrt(a*a+z2);
     float rb = sqrt(b*b+z2);
-    float ch0 = (1./(2.*r0) + 1.) * SQRT_HALF_PI * sqrt_z + k*x0;
-    float cha = (1./(2.*ra) + 1.) * SQRT_HALF_PI * sqrt_z + k*abs_a;
-    float chb = (1./(2.*rb) + 1.) * SQRT_HALF_PI * sqrt_z + k*abs_b;
+    float ch0 = (1. - 1./(2.*r0)) * SQRT_HALF_PI * sqrt_z + k*x0;
+    float cha = (1. - 1./(2.*ra)) * SQRT_HALF_PI * sqrt_z + k*abs_a;
+    float chb = (1. - 1./(2.*rb)) * SQRT_HALF_PI * sqrt_z + k*abs_b;
     float s0 = min(exp(r0- z),1.) / ( x0/r0 + 1./ch0);
     float sa = exp(r0-ra) / (abs_a/ra + 1./cha);
     float sb = exp(r0-rb) / (abs_b/rb + 1./chb);
@@ -1430,10 +1430,12 @@ vec3 get_rgb_fraction_of_distant_light_scattered_by_atmosphere(
         zl2 = vi*vi + zv2 - li*li;
         sigma = approx_air_column_density_ratio_through_atmosphere(v0, vi, y2+zv2, r )
               + approx_air_column_density_ratio_through_atmosphere(li, 3.*r, y2+zl2, r );
-        F +=// incoming fraction: the fraction of light that scatters towards camera
-              exp(r-sqrt(vi*vi+y2+zv2)) * beta_gamma * dv
+        F += exp(r-sqrt(vi*vi+y2+zv2) - beta_sum*sigma) * beta_gamma * dv;
+            // NOTE: the above is equivalen to the incoming fraction multiplied by the outgoing fraction:
+            // incoming fraction: the fraction of light that scatters towards camera
+            //   exp(r-sqrt(vi*vi+y2+zv2)) * beta_gamma * dv
             // outgoing fraction: the fraction of light that scatters away from camera
-            * exp(-beta_sum * sigma);
+            // * exp(-beta_sum * sigma);
         vi += dv;
         li += dl;
     }
@@ -1943,9 +1945,9 @@ float approx_air_column_density_ratio_through_atmosphere(
     float sqrt_z = sqrt(z);
     float ra = sqrt(a*a+z2);
     float rb = sqrt(b*b+z2);
-    float ch0 = (1./(2.*r0) + 1.) * SQRT_HALF_PI * sqrt_z + k*x0;
-    float cha = (1./(2.*ra) + 1.) * SQRT_HALF_PI * sqrt_z + k*abs_a;
-    float chb = (1./(2.*rb) + 1.) * SQRT_HALF_PI * sqrt_z + k*abs_b;
+    float ch0 = (1. - 1./(2.*r0)) * SQRT_HALF_PI * sqrt_z + k*x0;
+    float cha = (1. - 1./(2.*ra)) * SQRT_HALF_PI * sqrt_z + k*abs_a;
+    float chb = (1. - 1./(2.*rb)) * SQRT_HALF_PI * sqrt_z + k*abs_b;
     float s0 = min(exp(r0- z),1.) / ( x0/r0 + 1./ch0);
     float sa = exp(r0-ra) / (abs_a/ra + 1./cha);
     float sb = exp(r0-rb) / (abs_b/rb + 1./chb);
@@ -2039,10 +2041,12 @@ vec3 get_rgb_fraction_of_distant_light_scattered_by_atmosphere(
         zl2 = vi*vi + zv2 - li*li;
         sigma = approx_air_column_density_ratio_through_atmosphere(v0, vi, y2+zv2, r )
               + approx_air_column_density_ratio_through_atmosphere(li, 3.*r, y2+zl2, r );
-        F +=// incoming fraction: the fraction of light that scatters towards camera
-              exp(r-sqrt(vi*vi+y2+zv2)) * beta_gamma * dv
+        F += exp(r-sqrt(vi*vi+y2+zv2) - beta_sum*sigma) * beta_gamma * dv;
+            // NOTE: the above is equivalen to the incoming fraction multiplied by the outgoing fraction:
+            // incoming fraction: the fraction of light that scatters towards camera
+            //   exp(r-sqrt(vi*vi+y2+zv2)) * beta_gamma * dv
             // outgoing fraction: the fraction of light that scatters away from camera
-            * exp(-beta_sum * sigma);
+            // * exp(-beta_sum * sigma);
         vi += dv;
         li += dl;
     }
