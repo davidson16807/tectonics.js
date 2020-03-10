@@ -107,7 +107,8 @@ In portrait orientations, it will expand from bottom right to bottom left.
         /* 
         If the user is on a desktop, they can resize the screen as needed
         */
-        overflow-y  : hidden;
+        max-height  : 100%;
+        overflow-y  : auto;
     }
 }
 
