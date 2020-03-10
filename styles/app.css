@@ -107,6 +107,7 @@ In portrait orientations, it will expand from bottom right to bottom left.
         /* 
         If the user is on a desktop, they can resize the screen as needed
         */
+        height      : auto;
         max-height  : 100%;
         overflow-y  : auto;
     }
@@ -230,7 +231,6 @@ Since one of our core design principles is to prevent obstruction of the main fo
 .short-axis-group .btn + .short-axis-group,
 .short-axis-group .short-axis-group + .btn,
 .short-axis-group .short-axis-group + .short-axis-group {
-  margin-bottom: -1px;
   margin-right : 0;
 }
 .short-axis-group .btn,
@@ -269,7 +269,6 @@ Since one of our core design principles is to prevent obstruction of the main fo
     .short-axis-group .btn + .short-axis-group,
     .short-axis-group .short-axis-group + .btn,
     .short-axis-group .short-axis-group + .short-axis-group {
-      margin-top: -1px;
       margin-left: 0;
     }
     .short-axis-group .btn,
@@ -316,7 +315,6 @@ Use it only when you can guarantee the number of components you're dealing with 
 .long-axis-group .btn + .long-axis-group,
 .long-axis-group .long-axis-group + .btn,
 .long-axis-group .long-axis-group + .long-axis-group {
-  margin-top: -1px;
   margin-left: 0;
 }
 .long-axis-group .btn,
@@ -346,7 +344,6 @@ Use it only when you can guarantee the number of components you're dealing with 
     .long-axis-group .btn + .long-axis-group,
     .long-axis-group .long-axis-group + .btn,
     .long-axis-group .long-axis-group + .long-axis-group {
-      margin-bottom: -1px;
       margin-right : 0;
     }
     .long-axis-group .btn,
