@@ -144,9 +144,8 @@ vec3 get_rgb_intensity_of_light_from_surface_of_world(
     //   producing the reflections seen by the camera.
     vec3 H = normalize(-V+L);
 
-    // Here we setup  several useful dot products of unit vectors
-    //   we can think of them as the cosines of the angles formed between them,
-    //   or their "cosine similarity": https://en.wikipedia.org/wiki/Cosine_similarity
+    // Here we setup several useful dot products of unit vectors
+    float NL = max(dot(N,L),0.0);
 
     // "F0" is the characteristic fresnel reflectance.
     //   it is the fraction of light that's immediately reflected when striking the surface head on.
@@ -156,18 +155,23 @@ vec3 get_rgb_intensity_of_light_from_surface_of_world(
     float m = surface_slope_root_mean_squared;
     // "D" is the diffuse reflection fraction, essentially the color of the surface
     vec3 D = surface_diffuse_color_rgb_fraction;
-
     // "I_sun" is the rgb Intensity of Incoming Incident light, A.K.A. "Insolation"
     vec3 I_sun = light_rgb_intensity;
     // "I_surface" is the intensity of light that reaches the surface after being filtered by atmosphere
-    vec3 I_surface = I_sun * abs(dot(N,L))
+    vec3 I_surface = I_sun * NL
       * get_rgb_fraction_of_light_transmitted_through_atmosphere(
             // NOTE: we nudge the origin of light ray by a small amount so that collision isn't detected with the world
             1.000001 * P, L, 0.0, 3.0*world_radius, vec3(0), world_radius, 
             atmosphere_scale_height, atmosphere_beta_ray, atmosphere_beta_mie, atmosphere_beta_abs
         );
     // "E_surface_reflected" is the intensity of light that is immediately reflected by the surface
-    vec3 E_surface_reflected = I_surface * get_fraction_of_light_reflected_from_material(abs(dot(N,L)),dot(N,H),abs(dot(N,-V)),max(dot(-V,H),0.),m,F0);
+    vec3 E_surface_reflected = I_surface * 1.0
+        * get_fraction_of_microfacets_accessible_to_ray(NL, m) 
+        * get_fraction_of_microfacets_with_angle(dot(N,H), m)
+        * get_fraction_of_microfacets_accessible_to_ray(abs(dot(N,-V)), m) 
+        * get_rgb_fraction_of_light_reflected_from_facet(max(dot(-V,H), 0.), F0)
+        / max(4.*PI*dot(N,-V)*NL, 0.001); 
+        //get_fraction_of_light_reflected_from_material(NL,dot(N,H),abs(dot(N,-V)),max(dot(-V,H),0.),m,F0);
     // "I_surface_refracted" is the intensity of light that is not immediately reflected, 
     //   but penetrates into the material, either to be absorbed, scattered away, 
     //   or scattered back to the view as diffuse reflection.
@@ -197,6 +201,7 @@ vec3 get_rgb_intensity_of_light_from_surface_of_world(
     //   of E_diffuse that makes it out of the sea. Otheriwse, it equals E_diffuse
     vec3 E_ocean_transmitted  = E_diffuse 
         * get_rgb_fraction_of_light_transmitted_through_ocean(abs(dot(N,-V)), ocean_depth, ocean_beta_ray, ocean_beta_mie, ocean_beta_abs);
+    ASSERT(E_surface_reflected.r  >= 0., vec3(1,0,0))
 
     return 
         E_surface_reflected

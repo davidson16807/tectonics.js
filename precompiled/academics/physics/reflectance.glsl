@@ -26,8 +26,8 @@ float get_fraction_of_microfacets_accessible_to_ray(
 ){
     float m = root_mean_slope_squared;
     float v = cos_view_angle;
-    float k = sqrt(2.*m*m/PI);
-    return v/(v-k*v+k); 
+    // float k = m/2.0; return 2.0*v/(v+sqrt(m*m+(1.0-m*m)*v*v)); // Schlick-GGX
+    float k = m*sqrt(2./PI); return v/(v*(1.0-k)+k); // Schlick-Beckmann
 }
 /*
 "get_fraction_of_microfacets_with_angle" 
