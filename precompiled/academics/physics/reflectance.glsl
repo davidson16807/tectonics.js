@@ -42,7 +42,7 @@ float get_fraction_of_microfacets_with_angle(
 ){
     float m = root_mean_slope_squared;
     float t = cos_angle_of_deviation;
-    return exp((t*t-1.)/(m*m*t*t))/(m*m*t*t*t*t);
+    return exp((t*t-1.)/(m*m*t*t))/(PI*m*m*t*t*t*t);
 }
 /*
 "get_rgb_fraction_of_light_reflected_from_facet" returns Fresnel reflectance for each color channel.
