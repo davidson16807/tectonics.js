@@ -826,61 +826,31 @@ function approx_fraction_of_mie_scattered_light_scattered_by_angle_fast(
         (4. * PI * (1. + k * cos_scatter_angle) * (1. + k * cos_scatter_angle));
 }
 
-// "get_fraction_of_light_reflected_on_surface_head_on" finds the fraction of light that's reflected
-//   by a boundary between materials when striking head on.
-//   It is also known as the "characteristic reflectance" within the fresnel reflectance equation.
-//   The refractive indices can be provided as parameters in any order.
+/*
+"get_fraction_of_light_reflected_from_facet_head_on" finds the fraction of light that's reflected
+  by a boundary between materials when striking head on.
+  It is also known as the "characteristic reflectance" within the fresnel reflectance equation.
+  The refractive indices can be provided as parameters in any order.
+*/
 /*float*/
-function get_fraction_of_light_reflected_on_surface_head_on(
+function get_fraction_of_light_reflected_from_facet_head_on(
      /*float*/ refractivate_index1,
      /*float*/ refractivate_index2
 ){
     let n1 = refractivate_index1;
     let n2 = refractivate_index2;
-    let sqrtR0 = ((n1 - n2) / (n1 + n2));
-    let R0 = sqrtR0 * sqrtR0;
-    return R0;
+    let sqrtF0 = ((n1 - n2) / (n1 + n2));
+    let F0 = sqrtF0 * sqrtF0;
+    return F0;
 }
 
-// "get_fraction_of_light_reflected_on_surface" returns Fresnel reflectance.
-//   Fresnel reflectance is the fraction of light that's immediately reflected upon striking the surface.
-//   It is the fraction of light that causes specular reflection.
-//   Here, we use Schlick's fast approximation for Fresnel reflectance.
-//   see https://en.wikipedia.org/wiki/Schlick%27s_approximation for a summary 
-//   see Hoffmann 2015 for a gentle introduction to the concept
-//   see Schlick (1994) for implementation details
+/*
+"get_fraction_of_microfacets_accessible_to_ray" is Schlick's fast approximation for Smith's function
+  see Hoffmann 2015 for a gentle introduction to the concept
+  see Schlick (1994) for even more details.
+*/
 /*float*/
-function get_fraction_of_light_reflected_on_surface(
-     /*float*/ cos_incident_angle,
-     /*float*/ characteristic_reflectance
-){
-    let R0 = characteristic_reflectance;
-    let _1_u = 1. - cos_incident_angle;
-    return R0 + (1. - R0) * _1_u * _1_u * _1_u * _1_u * _1_u;
-}
-
-// "get_rgb_fraction_of_light_reflected_on_surface" returns Fresnel reflectance for each color channel.
-//   Fresnel reflectance is the fraction of light that's immediately reflected upon striking the surface.
-//   It is the fraction of light that causes specular reflection.
-//   Here, we use Schlick's fast approximation for Fresnel reflectance.
-//   see https://en.wikipedia.org/wiki/Schlick%27s_approximation for a summary 
-//   see Hoffmann 2015 for a gentle introduction to the concept
-//   see Schlick (1994) for implementation details
-/*vec3*/
-function get_rgb_fraction_of_light_reflected_on_surface(
-     /*float*/ cos_incident_angle,
-     /*vec3*/ characteristic_reflectance
-){
-    let R0 = characteristic_reflectance;
-    let _1_u = 1. - cos_incident_angle;
-    return R0['+']( ((R0['-']( 1.)))['*']( _1_u * _1_u * _1_u * _1_u * _1_u));
-}
-
-// "get_fraction_of_light_masked_or_shaded_by_surface" is Schlick's fast approximation for Smith's function
-//   see Hoffmann 2015 for a gentle introduction to the concept
-//   see Schlick (1994) for even more details.
-/*float*/
-function get_fraction_of_light_masked_or_shaded_by_surface(
+function get_fraction_of_microfacets_accessible_to_ray(
      /*float*/ cos_view_angle,
      /*float*/ root_mean_slope_squared
 ){
@@ -890,11 +860,13 @@ function get_fraction_of_light_masked_or_shaded_by_surface(
     return v / (v - k * v + k);
 }
 
-// "get_fraction_of_microfacets_with_angle" 
-//   This is also known as the Beckmann Surface Normal Distribution Function.
-//   This is the probability of finding a microfacet whose surface normal deviates from the average by a certain angle.
-//   see Hoffmann 2015 for a gentle introduction to the concept.
-//   see Schlick (1994) for even more details.
+/*
+"get_fraction_of_microfacets_with_angle" 
+  This is also known as the Beckmann Surface Normal Distribution Function.
+  This is the probability of finding a microfacet whose surface normal deviates from the average by a certain angle.
+  see Hoffmann 2015 for a gentle introduction to the concept.
+  see Schlick (1994) for even more details.
+*/
 /*float*/
 function get_fraction_of_microfacets_with_angle(
      /*float*/ cos_angle_of_deviation,
@@ -902,7 +874,45 @@ function get_fraction_of_microfacets_with_angle(
 ){
     let m = root_mean_slope_squared;
     let t = cos_angle_of_deviation;
-    return Math.exp( (t * t - 1.) / (m * m * t * t)) / (m * m * t * t * t * t);
+    return Math.exp( (t * t - 1.) / (m * m * t * t)) / (PI * m * m * t * t * t * t);
+}
+
+/*
+"get_rgb_fraction_of_light_reflected_from_facet" returns Fresnel reflectance for each color channel.
+  Fresnel reflectance is the fraction of light that's immediately reflected upon striking the surface.
+  It is the fraction of light that causes specular reflection.
+  Here, we use Schlick's fast approximation for Fresnel reflectance.
+  see https://en.wikipedia.org/wiki/Schlick%27s_approximation for a summary 
+  see Hoffmann 2015 for a gentle introduction to the concept
+  see Schlick (1994) for implementation details
+*/
+/*vec3*/
+function get_rgb_fraction_of_light_reflected_from_facet(
+     /*float*/ cos_incident_angle,
+     /*vec3*/ characteristic_reflectance
+){
+    let F0 = characteristic_reflectance;
+    let _1_u = 1. - cos_incident_angle;
+    return F0['+']( ((F0['-']( 1.)))['*']( _1_u * _1_u * _1_u * _1_u * _1_u));
+}
+
+/*
+"get_fraction_of_light_reflected_from_material" is a fast approximation to the Cook-Torrance Specular BRDF.
+  It is the fraction of light that reflects from a material to the viewer.
+  see Hoffmann 2015 for a gentle introduction to the concept
+*/
+/*vec3*/
+function get_fraction_of_light_reflected_from_material(
+     /*float*/ NL,
+     /*float*/ NH,
+     /*float*/ NV,
+     /*float*/ HV,
+     /*float*/ root_mean_slope_squared,
+     /*vec3*/ characteristic_reflectance
+){
+    let m = root_mean_slope_squared;
+    let F0 = characteristic_reflectance;
+    return ((((get_rgb_fraction_of_light_reflected_from_facet( HV,  F0)['/']( (4. * PI * NV * NL)))['*']( get_fraction_of_microfacets_accessible_to_ray( NV,  m)))['*']( get_fraction_of_microfacets_with_angle( NH,  m)))['*']( get_fraction_of_microfacets_accessible_to_ray( NL,  m)))['*']( 1.0);
 }
 
 /*
@@ -1152,7 +1162,7 @@ function get_rgb_fraction_of_distant_light_scattered_by_atmosphere(
         zl2 = vi * vi + zv2 - li * li;
         sigma = approx_air_column_density_ratio_through_atmosphere( v0,  vi,  y2 + zv2,  r) + approx_air_column_density_ratio_through_atmosphere( li,  3. * r,  y2 + zl2,  r);
         F += Math.exp( ((beta_sum['*']( sigma))['-']( glm.sqrt( vi * vi + y2 + zv2)))['-']( r))['*']( beta_gamma['*']( dv));
-        // NOTE: the above is equivalen to the incoming fraction multiplied by the outgoing fraction:
+        // NOTE: the above is equivalent to the incoming fraction multiplied by the outgoing fraction:
             // incoming fraction: the fraction of light that scatters towards camera
             //   exp(r-sqrt(vi*vi+y2+zv2)) * beta_gamma * dv
             // outgoing fraction: the fraction of light that scatters away from camera

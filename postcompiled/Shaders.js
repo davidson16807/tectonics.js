@@ -1179,74 +1179,86 @@ float approx_fraction_of_mie_scattered_light_scattered_by_angle_fast(
     / //-------------------------------------------
         (4. * PI * (1. + k*cos_scatter_angle) * (1. + k*cos_scatter_angle));
 }
-// "get_fraction_of_light_reflected_on_surface_head_on" finds the fraction of light that's reflected
-//   by a boundary between materials when striking head on.
-//   It is also known as the "characteristic reflectance" within the fresnel reflectance equation.
-//   The refractive indices can be provided as parameters in any order.
-float get_fraction_of_light_reflected_on_surface_head_on(
-    float refractivate_index1,
-    float refractivate_index2
+/*
+"get_fraction_of_light_reflected_from_facet_head_on" finds the fraction of light that's reflected
+  by a boundary between materials when striking head on.
+  It is also known as the "characteristic reflectance" within the fresnel reflectance equation.
+  The refractive indices can be provided as parameters in any order.
+*/
+float get_fraction_of_light_reflected_from_facet_head_on(
+    in float refractivate_index1,
+    in float refractivate_index2
 ){
     float n1 = refractivate_index1;
     float n2 = refractivate_index2;
-    float sqrtR0 = ((n1-n2)/(n1+n2));
-    float R0 = sqrtR0 * sqrtR0;
-    return R0;
+    float sqrtF0 = ((n1-n2)/(n1+n2));
+    float F0 = sqrtF0 * sqrtF0;
+    return F0;
 }
-// "get_fraction_of_light_reflected_on_surface" returns Fresnel reflectance.
-//   Fresnel reflectance is the fraction of light that's immediately reflected upon striking the surface.
-//   It is the fraction of light that causes specular reflection.
-//   Here, we use Schlick's fast approximation for Fresnel reflectance.
-//   see https://en.wikipedia.org/wiki/Schlick%27s_approximation for a summary 
-//   see Hoffmann 2015 for a gentle introduction to the concept
-//   see Schlick (1994) for implementation details
-float get_fraction_of_light_reflected_on_surface(
-    float cos_incident_angle,
-    float characteristic_reflectance
-){
-    float R0 = characteristic_reflectance;
-    float _1_u = 1.-cos_incident_angle;
-    return R0 + (1.-R0) * _1_u*_1_u*_1_u*_1_u*_1_u;
-}
-// "get_rgb_fraction_of_light_reflected_on_surface" returns Fresnel reflectance for each color channel.
-//   Fresnel reflectance is the fraction of light that's immediately reflected upon striking the surface.
-//   It is the fraction of light that causes specular reflection.
-//   Here, we use Schlick's fast approximation for Fresnel reflectance.
-//   see https://en.wikipedia.org/wiki/Schlick%27s_approximation for a summary 
-//   see Hoffmann 2015 for a gentle introduction to the concept
-//   see Schlick (1994) for implementation details
-vec3 get_rgb_fraction_of_light_reflected_on_surface(
-    float cos_incident_angle,
-    vec3 characteristic_reflectance
-){
-    vec3 R0 = characteristic_reflectance;
-    float _1_u = 1.-cos_incident_angle;
-    return R0 + (1.-R0) * _1_u*_1_u*_1_u*_1_u*_1_u;
-}
-// "get_fraction_of_light_masked_or_shaded_by_surface" is Schlick's fast approximation for Smith's function
-//   see Hoffmann 2015 for a gentle introduction to the concept
-//   see Schlick (1994) for even more details.
-float get_fraction_of_light_masked_or_shaded_by_surface(
-    float cos_view_angle,
-    float root_mean_slope_squared
+/*
+"get_fraction_of_microfacets_accessible_to_ray" is Schlick's fast approximation for Smith's function
+  see Hoffmann 2015 for a gentle introduction to the concept
+  see Schlick (1994) for even more details.
+*/
+float get_fraction_of_microfacets_accessible_to_ray(
+    in float cos_view_angle,
+    in float root_mean_slope_squared
 ){
     float m = root_mean_slope_squared;
     float v = cos_view_angle;
     float k = sqrt(2.*m*m/PI);
     return v/(v-k*v+k);
 }
-// "get_fraction_of_microfacets_with_angle" 
-//   This is also known as the Beckmann Surface Normal Distribution Function.
-//   This is the probability of finding a microfacet whose surface normal deviates from the average by a certain angle.
-//   see Hoffmann 2015 for a gentle introduction to the concept.
-//   see Schlick (1994) for even more details.
+/*
+"get_fraction_of_microfacets_with_angle" 
+  This is also known as the Beckmann Surface Normal Distribution Function.
+  This is the probability of finding a microfacet whose surface normal deviates from the average by a certain angle.
+  see Hoffmann 2015 for a gentle introduction to the concept.
+  see Schlick (1994) for even more details.
+*/
 float get_fraction_of_microfacets_with_angle(
-    float cos_angle_of_deviation,
-    float root_mean_slope_squared
+    in float cos_angle_of_deviation,
+    in float root_mean_slope_squared
 ){
     float m = root_mean_slope_squared;
     float t = cos_angle_of_deviation;
-    return exp((t*t-1.)/(m*m*t*t))/(m*m*t*t*t*t);
+    return exp((t*t-1.)/(m*m*t*t))/(PI*m*m*t*t*t*t);
+}
+/*
+"get_rgb_fraction_of_light_reflected_from_facet" returns Fresnel reflectance for each color channel.
+  Fresnel reflectance is the fraction of light that's immediately reflected upon striking the surface.
+  It is the fraction of light that causes specular reflection.
+  Here, we use Schlick's fast approximation for Fresnel reflectance.
+  see https://en.wikipedia.org/wiki/Schlick%27s_approximation for a summary 
+  see Hoffmann 2015 for a gentle introduction to the concept
+  see Schlick (1994) for implementation details
+*/
+vec3 get_rgb_fraction_of_light_reflected_from_facet(
+    in float cos_incident_angle,
+    in vec3 characteristic_reflectance
+){
+    vec3 F0 = characteristic_reflectance;
+    float _1_u = 1.-cos_incident_angle;
+    return F0 + (1.-F0) * _1_u*_1_u*_1_u*_1_u*_1_u;
+}
+/*
+"get_fraction_of_light_reflected_from_material" is a fast approximation to the Cook-Torrance Specular BRDF.
+  It is the fraction of light that reflects from a material to the viewer.
+  see Hoffmann 2015 for a gentle introduction to the concept
+*/
+vec3 get_fraction_of_light_reflected_from_material(
+    in float NL, in float NH, in float NV, in float HV,
+    in float root_mean_slope_squared,
+    in vec3 characteristic_reflectance
+){
+    float m = root_mean_slope_squared;
+    vec3 F0 = characteristic_reflectance;
+    return 1.0
+        * get_fraction_of_microfacets_accessible_to_ray(NL, m)
+        * get_fraction_of_microfacets_with_angle(NH, m)
+        * get_fraction_of_microfacets_accessible_to_ray(NV, m)
+        * get_rgb_fraction_of_light_reflected_from_facet(HV, F0)
+        / (4.*PI*NV*NL);
 }
 /*
 This function returns a rgb vector that best represents color at a given wavelength
@@ -1431,7 +1443,7 @@ vec3 get_rgb_fraction_of_distant_light_scattered_by_atmosphere(
         sigma = approx_air_column_density_ratio_through_atmosphere(v0, vi, y2+zv2, r )
               + approx_air_column_density_ratio_through_atmosphere(li, 3.*r, y2+zl2, r );
         F += exp(r-sqrt(vi*vi+y2+zv2) - beta_sum*sigma) * beta_gamma * dv;
-            // NOTE: the above is equivalen to the incoming fraction multiplied by the outgoing fraction:
+            // NOTE: the above is equivalent to the incoming fraction multiplied by the outgoing fraction:
             // incoming fraction: the fraction of light that scatters towards camera
             //   exp(r-sqrt(vi*vi+y2+zv2)) * beta_gamma * dv
             // outgoing fraction: the fraction of light that scatters away from camera
@@ -1749,74 +1761,86 @@ float approx_fraction_of_mie_scattered_light_scattered_by_angle_fast(
     / //-------------------------------------------
         (4. * PI * (1. + k*cos_scatter_angle) * (1. + k*cos_scatter_angle));
 }
-// "get_fraction_of_light_reflected_on_surface_head_on" finds the fraction of light that's reflected
-//   by a boundary between materials when striking head on.
-//   It is also known as the "characteristic reflectance" within the fresnel reflectance equation.
-//   The refractive indices can be provided as parameters in any order.
-float get_fraction_of_light_reflected_on_surface_head_on(
-    float refractivate_index1,
-    float refractivate_index2
+/*
+"get_fraction_of_light_reflected_from_facet_head_on" finds the fraction of light that's reflected
+  by a boundary between materials when striking head on.
+  It is also known as the "characteristic reflectance" within the fresnel reflectance equation.
+  The refractive indices can be provided as parameters in any order.
+*/
+float get_fraction_of_light_reflected_from_facet_head_on(
+    in float refractivate_index1,
+    in float refractivate_index2
 ){
     float n1 = refractivate_index1;
     float n2 = refractivate_index2;
-    float sqrtR0 = ((n1-n2)/(n1+n2));
-    float R0 = sqrtR0 * sqrtR0;
-    return R0;
+    float sqrtF0 = ((n1-n2)/(n1+n2));
+    float F0 = sqrtF0 * sqrtF0;
+    return F0;
 }
-// "get_fraction_of_light_reflected_on_surface" returns Fresnel reflectance.
-//   Fresnel reflectance is the fraction of light that's immediately reflected upon striking the surface.
-//   It is the fraction of light that causes specular reflection.
-//   Here, we use Schlick's fast approximation for Fresnel reflectance.
-//   see https://en.wikipedia.org/wiki/Schlick%27s_approximation for a summary 
-//   see Hoffmann 2015 for a gentle introduction to the concept
-//   see Schlick (1994) for implementation details
-float get_fraction_of_light_reflected_on_surface(
-    float cos_incident_angle,
-    float characteristic_reflectance
-){
-    float R0 = characteristic_reflectance;
-    float _1_u = 1.-cos_incident_angle;
-    return R0 + (1.-R0) * _1_u*_1_u*_1_u*_1_u*_1_u;
-}
-// "get_rgb_fraction_of_light_reflected_on_surface" returns Fresnel reflectance for each color channel.
-//   Fresnel reflectance is the fraction of light that's immediately reflected upon striking the surface.
-//   It is the fraction of light that causes specular reflection.
-//   Here, we use Schlick's fast approximation for Fresnel reflectance.
-//   see https://en.wikipedia.org/wiki/Schlick%27s_approximation for a summary 
-//   see Hoffmann 2015 for a gentle introduction to the concept
-//   see Schlick (1994) for implementation details
-vec3 get_rgb_fraction_of_light_reflected_on_surface(
-    float cos_incident_angle,
-    vec3 characteristic_reflectance
-){
-    vec3 R0 = characteristic_reflectance;
-    float _1_u = 1.-cos_incident_angle;
-    return R0 + (1.-R0) * _1_u*_1_u*_1_u*_1_u*_1_u;
-}
-// "get_fraction_of_light_masked_or_shaded_by_surface" is Schlick's fast approximation for Smith's function
-//   see Hoffmann 2015 for a gentle introduction to the concept
-//   see Schlick (1994) for even more details.
-float get_fraction_of_light_masked_or_shaded_by_surface(
-    float cos_view_angle,
-    float root_mean_slope_squared
+/*
+"get_fraction_of_microfacets_accessible_to_ray" is Schlick's fast approximation for Smith's function
+  see Hoffmann 2015 for a gentle introduction to the concept
+  see Schlick (1994) for even more details.
+*/
+float get_fraction_of_microfacets_accessible_to_ray(
+    in float cos_view_angle,
+    in float root_mean_slope_squared
 ){
     float m = root_mean_slope_squared;
     float v = cos_view_angle;
     float k = sqrt(2.*m*m/PI);
     return v/(v-k*v+k);
 }
-// "get_fraction_of_microfacets_with_angle" 
-//   This is also known as the Beckmann Surface Normal Distribution Function.
-//   This is the probability of finding a microfacet whose surface normal deviates from the average by a certain angle.
-//   see Hoffmann 2015 for a gentle introduction to the concept.
-//   see Schlick (1994) for even more details.
+/*
+"get_fraction_of_microfacets_with_angle" 
+  This is also known as the Beckmann Surface Normal Distribution Function.
+  This is the probability of finding a microfacet whose surface normal deviates from the average by a certain angle.
+  see Hoffmann 2015 for a gentle introduction to the concept.
+  see Schlick (1994) for even more details.
+*/
 float get_fraction_of_microfacets_with_angle(
-    float cos_angle_of_deviation,
-    float root_mean_slope_squared
+    in float cos_angle_of_deviation,
+    in float root_mean_slope_squared
 ){
     float m = root_mean_slope_squared;
     float t = cos_angle_of_deviation;
-    return exp((t*t-1.)/(m*m*t*t))/(m*m*t*t*t*t);
+    return exp((t*t-1.)/(m*m*t*t))/(PI*m*m*t*t*t*t);
+}
+/*
+"get_rgb_fraction_of_light_reflected_from_facet" returns Fresnel reflectance for each color channel.
+  Fresnel reflectance is the fraction of light that's immediately reflected upon striking the surface.
+  It is the fraction of light that causes specular reflection.
+  Here, we use Schlick's fast approximation for Fresnel reflectance.
+  see https://en.wikipedia.org/wiki/Schlick%27s_approximation for a summary 
+  see Hoffmann 2015 for a gentle introduction to the concept
+  see Schlick (1994) for implementation details
+*/
+vec3 get_rgb_fraction_of_light_reflected_from_facet(
+    in float cos_incident_angle,
+    in vec3 characteristic_reflectance
+){
+    vec3 F0 = characteristic_reflectance;
+    float _1_u = 1.-cos_incident_angle;
+    return F0 + (1.-F0) * _1_u*_1_u*_1_u*_1_u*_1_u;
+}
+/*
+"get_fraction_of_light_reflected_from_material" is a fast approximation to the Cook-Torrance Specular BRDF.
+  It is the fraction of light that reflects from a material to the viewer.
+  see Hoffmann 2015 for a gentle introduction to the concept
+*/
+vec3 get_fraction_of_light_reflected_from_material(
+    in float NL, in float NH, in float NV, in float HV,
+    in float root_mean_slope_squared,
+    in vec3 characteristic_reflectance
+){
+    float m = root_mean_slope_squared;
+    vec3 F0 = characteristic_reflectance;
+    return 1.0
+        * get_fraction_of_microfacets_accessible_to_ray(NL, m)
+        * get_fraction_of_microfacets_with_angle(NH, m)
+        * get_fraction_of_microfacets_accessible_to_ray(NV, m)
+        * get_rgb_fraction_of_light_reflected_from_facet(HV, F0)
+        / (4.*PI*NV*NL);
 }
 /*
 This function returns a rgb vector that best represents color at a given wavelength
@@ -2044,7 +2068,7 @@ vec3 get_rgb_fraction_of_distant_light_scattered_by_atmosphere(
         sigma = approx_air_column_density_ratio_through_atmosphere(v0, vi, y2+zv2, r )
               + approx_air_column_density_ratio_through_atmosphere(li, 3.*r, y2+zl2, r );
         F += exp(r-sqrt(vi*vi+y2+zv2) - beta_sum*sigma) * beta_gamma * dv;
-            // NOTE: the above is equivalen to the incoming fraction multiplied by the outgoing fraction:
+            // NOTE: the above is equivalent to the incoming fraction multiplied by the outgoing fraction:
             // incoming fraction: the fraction of light that scatters towards camera
             //   exp(r-sqrt(vi*vi+y2+zv2)) * beta_gamma * dv
             // outgoing fraction: the fraction of light that scatters away from camera
@@ -2153,24 +2177,19 @@ vec3 get_rgb_intensity_of_light_from_surface_of_world(
     vec3 P = surface_position;
     // "N" is the surface normal
     vec3 N = surface_normal;
-    // "V" is the normal vector indicating the direction from the view
+    // "V" is the normal vector indicating the direction to the view
     // TODO: standardize view_direction as view from surface to camera
-    vec3 V = view_direction;
+    vec3 V =-view_direction;
     // "L" is the normal vector indicating the direction to the light source
     vec3 L = light_direction;
     // "H" is the halfway vector between normal and view.
     // It represents the surface normal that's needed to cause reflection.
     // It can also be thought of as the surface normal of a microfacet that's 
     //   producing the reflections seen by the camera.
-    vec3 H = normalize(V+L);
+    vec3 H = normalize(-V+L);
     // Here we setup  several useful dot products of unit vectors
     //   we can think of them as the cosines of the angles formed between them,
     //   or their "cosine similarity": https://en.wikipedia.org/wiki/Cosine_similarity
-    float LV = dot(L,V);
-    float NV = abs(dot(N,V));
-    float NL = abs(dot(N,L));
-    float NH = dot(N,H);
-    float HV = max(dot(V,H), 0.);
     // "F0" is the characteristic fresnel reflectance.
     //   it is the fraction of light that's immediately reflected when striking the surface head on.
     vec3 F0 = surface_specular_color_rgb_fraction;
@@ -2182,45 +2201,41 @@ vec3 get_rgb_intensity_of_light_from_surface_of_world(
     // "I_sun" is the rgb Intensity of Incoming Incident light, A.K.A. "Insolation"
     vec3 I_sun = light_rgb_intensity;
     // "I_surface" is the intensity of light that reaches the surface after being filtered by atmosphere
-    vec3 I_surface = I_sun
+    vec3 I_surface = I_sun * abs(dot(N,L))
       * get_rgb_fraction_of_light_transmitted_through_atmosphere(
             // NOTE: we nudge the origin of light ray by a small amount so that collision isn't detected with the world
             1.000001 * P, L, 0.0, 3.0*world_radius, vec3(0), world_radius,
             atmosphere_scale_height, atmosphere_beta_ray, atmosphere_beta_mie, atmosphere_beta_abs
         );
-    // "E_surface_reflected" is the intensity of light that is immediately reflected by the surface, A.K.A. "specular" reflection
-    vec3 E_surface_reflected = I_surface
-        * get_rgb_fraction_of_light_reflected_on_surface(HV, F0)
-        * get_fraction_of_light_masked_or_shaded_by_surface(NV, m)
-        * get_fraction_of_microfacets_with_angle(NH, m)
-        / (4.*PI); // NOTE: NV*VL should appear here in the denominator, but I can't get it to work
+    // "E_surface_reflected" is the intensity of light that is immediately reflected by the surface
+    vec3 E_surface_reflected = I_surface * get_fraction_of_light_reflected_from_material(abs(dot(N,L)),dot(N,H),abs(dot(N,-V)),max(dot(-V,H),0.),m,F0);
     // "I_surface_refracted" is the intensity of light that is not immediately reflected, 
     //   but penetrates into the material, either to be absorbed, scattered away, 
     //   or scattered back to the view as diffuse reflection.
-    // We would ideally like to negate the integral of reflectance over all possible angles, 
-    //   but finding that is hard, so let's just negate the reflectance for the angle at which it occurs the most, or "HV"
-    vec3 I_surface_refracted =
-        I_surface * (1. - get_rgb_fraction_of_light_reflected_on_surface(HV, F0));
+    // Since energy is conserved, everything from I_surface has to get either reflected, diffused, or absorbed
+    // We would ideally like to negate the integral of reflectance over all possible viewing angles, 
+    //   but finding that is hard, so let's just negate the reflectance for the viewing angle at which it occurs the most
+    vec3 I_surface_refracted = I_surface; // * (1.0 - get_fraction_of_light_reflected_from_material(abs(dot(N,L)),1.0,abs(dot(N,L)),abs(dot(N,L)),m,F0));
       //+ I_sun     *  atmosphere_ambient_light_factor;
     // If sea is present, "E_ocean_scattered" is the rgb intensity of light 
     //   scattered by the sea towards the camera. Otherwise, it equals 0.
     vec3 E_ocean_scattered =
         get_rgb_intensity_of_light_scattered_by_ocean(
-            NV, NL, LV, ocean_depth, I_surface_refracted,
+            abs(dot(N,-V)), abs(dot(N,L)), max(dot(L,-V),0.), ocean_depth, I_surface_refracted,
             ocean_beta_ray, ocean_beta_mie, ocean_beta_abs
         );
     // if sea is present, "I_ocean_trasmitted" is the rgb intensity of light 
     //   that reaches the ground after being filtered by air and sea. 
     //   Otherwise, it equals I_surface_refracted.
     vec3 I_ocean_trasmitted= I_surface_refracted
-        * get_rgb_fraction_of_light_transmitted_through_ocean(NL, ocean_depth, ocean_beta_ray, ocean_beta_mie, ocean_beta_abs);
+        * get_rgb_fraction_of_light_transmitted_through_ocean(abs(dot(N,L)), ocean_depth, ocean_beta_ray, ocean_beta_mie, ocean_beta_abs);
     // "E_diffuse" is diffuse reflection of any nontrasparent component beneath the transparent surface,
     // It effectively describes diffuse reflection as understood within the phong model of reflectance.
-    vec3 E_diffuse = I_ocean_trasmitted * NL * surface_diffuse_color_rgb_fraction;
+    vec3 E_diffuse = I_ocean_trasmitted * D;
     // if sea is present, "E_ocean_transmitted" is the fraction 
     //   of E_diffuse that makes it out of the sea. Otheriwse, it equals E_diffuse
     vec3 E_ocean_transmitted = E_diffuse
-        * get_rgb_fraction_of_light_transmitted_through_ocean(NV, ocean_depth, ocean_beta_ray, ocean_beta_mie, ocean_beta_abs);
+        * get_rgb_fraction_of_light_transmitted_through_ocean(abs(dot(N,-V)), ocean_depth, ocean_beta_ray, ocean_beta_mie, ocean_beta_abs);
     return
         E_surface_reflected
       + E_ocean_transmitted
@@ -2262,9 +2277,9 @@ void main() {
         shadow_visibility * specular_visibility * // turn off specular reflection if darkness is disabled
         vec3(mix(
             is_visible_ocean?
-            get_fraction_of_light_reflected_on_surface_head_on(WATER_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX) :
+            get_fraction_of_light_reflected_from_facet_head_on(WATER_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX) :
             LAND_CHARACTERISTIC_FRESNEL_REFLECTANCE,
-            get_fraction_of_light_reflected_on_surface_head_on(SNOW_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX),
+            get_fraction_of_light_reflected_from_facet_head_on(SNOW_REFRACTIVE_INDEX, AIR_REFRACTIVE_INDEX),
             snow_coverage*snow_visibility
         ));
     float ocean_visible_depth = mix(ocean_depth, 0., snow_coverage*snow_coverage*snow_coverage*snow_visibility);

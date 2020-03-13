@@ -86,6 +86,12 @@ const float SNOW_REFRACTIVE_INDEX = 1.333;
 //   also keep in mind this: https://en.wikipedia.org/wiki/Airglow
 const float AMBIENT_LIGHT_AESTHETIC_BRIGHTNESS_FACTOR = 0.000001;
 
+#ifndef PROD
+#define ASSERT(test, color) if (!(test)) { return color; }
+#else
+#define ASSERT(test, color)
+#endif
+
 // TODO: multiple scattering events
 // TODO: support for light sources from within atmosphere
 // "get_rgb_intensity_of_light_from_surface_of_world" 
