@@ -143,7 +143,7 @@ vec3 get_rgb_fraction_of_distant_light_scattered_by_atmosphere(
               + approx_air_column_density_ratio_through_atmosphere(li, 3.*r, y2+zl2, r );
 
         F += exp(r-sqrt(vi*vi+y2+zv2) - beta_sum*sigma) * beta_gamma * dv;
-            // NOTE: the above is equivalen to the incoming fraction multiplied by the outgoing fraction:
+            // NOTE: the above is equivalent to the incoming fraction multiplied by the outgoing fraction:
             // incoming fraction: the fraction of light that scatters towards camera
             //   exp(r-sqrt(vi*vi+y2+zv2)) * beta_gamma * dv
             // outgoing fraction: the fraction of light that scatters away from camera
