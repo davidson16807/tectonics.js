@@ -98,7 +98,9 @@ void main() {
 
         for (int i = 0; i < MAX_LIGHT_COUNT; ++i)
         {
-            if (i >= light_count) { break; }
+            // HACK: for some reason calulating y2 within get_rgb_fraction_of_distant_light_scattered_by_atmosphere
+            // causes the render to break when running on more than 1 light source
+            if (i >= 1) { break; }
             E += light_rgb_intensities[i] 
                * get_rgb_fraction_of_distant_light_scattered_by_atmosphere(
                      V0, V, v0, v1, O, r, light_directions[i], H, beta_ray, beta_mie, beta_abs
