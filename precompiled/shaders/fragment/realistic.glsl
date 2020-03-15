@@ -135,17 +135,23 @@ vec3 get_rgb_intensity_of_light_from_surface_of_world(
     vec3 N = surface_normal;
     // "V" is the normal vector indicating the direction to the view
     // TODO: standardize view_direction as view from surface to camera
-    vec3 V =-view_direction;
+    vec3 V = view_direction;
     // "L" is the normal vector indicating the direction to the light source
     vec3 L = light_direction;
     // "H" is the halfway vector between normal and view.
     // It represents the surface normal that's needed to cause reflection.
     // It can also be thought of as the surface normal of a microfacet that's 
     //   producing the reflections seen by the camera.
-    vec3 H = normalize(-V+L);
+    vec3 H = normalize(V+L);
 
     // Here we setup several useful dot products of unit vectors
-    float NL = max(dot(N,L),0.0);
+    float NL = max(dot(N,L), 0.0);
+    float NH = max(dot(N,H), 0.0);
+    float NV = max(dot(N,V), 0.0);
+
+    float HV = max(dot(V,H), 0.0);
+
+    float VL = max(dot(L,V), 0.0);
 
     // "F0" is the characteristic fresnel reflectance.
     //   it is the fraction of light that's immediately reflected when striking the surface head on.
@@ -167,31 +173,31 @@ vec3 get_rgb_intensity_of_light_from_surface_of_world(
     // "E_surface_reflected" is the intensity of light that is immediately reflected by the surface
     vec3 E_surface_reflected = I_surface * 1.0
         * get_fraction_of_microfacets_accessible_to_ray(NL, m) 
-        * get_fraction_of_microfacets_with_angle(dot(N,H), m)
-        * get_fraction_of_microfacets_accessible_to_ray(abs(dot(N,-V)), m) 
-        * get_rgb_fraction_of_light_reflected_from_facet(max(dot(-V,H), 0.), F0)
-        / max(4.*PI*dot(N,-V)*NL, 0.001); 
-        //get_fraction_of_light_reflected_from_material(NL,dot(N,H),abs(dot(N,-V)),max(dot(-V,H),0.),m,F0);
+        * get_fraction_of_microfacets_with_angle(NH, m)
+        * get_fraction_of_microfacets_accessible_to_ray(NV, m) 
+        * get_rgb_fraction_of_light_reflected_from_facet(HV, F0)
+        / max(4.*PI*NV*NL, 0.001); 
+        //get_fraction_of_light_reflected_from_material(NL,NH,NV,max(dot(V,H),0.),m,F0);
     // "I_surface_refracted" is the intensity of light that is not immediately reflected, 
     //   but penetrates into the material, either to be absorbed, scattered away, 
     //   or scattered back to the view as diffuse reflection.
     // Since energy is conserved, everything from I_surface has to get either reflected, diffused, or absorbed
     // We would ideally like to negate the integral of reflectance over all possible viewing angles, 
     //   but finding that is hard, so let's just negate the reflectance for the viewing angle at which it occurs the most
-    vec3 I_surface_refracted = I_surface; // * (1.0 - get_fraction_of_light_reflected_from_material(abs(dot(N,L)),1.0,abs(dot(N,L)),abs(dot(N,L)),m,F0));
+    vec3 I_surface_refracted = I_surface; // * (1.0 - get_fraction_of_light_reflected_from_material(NL,1.0,NL,NL,m,F0));
       //+ I_sun     *  atmosphere_ambient_light_factor;
     // If sea is present, "E_ocean_scattered" is the rgb intensity of light 
     //   scattered by the sea towards the camera. Otherwise, it equals 0.
     vec3 E_ocean_scattered = 
         get_rgb_intensity_of_light_scattered_by_ocean(
-            abs(dot(N,-V)), abs(dot(N,L)), max(dot(L,-V),0.), ocean_depth, I_surface_refracted, 
+            NV, NL, VL, ocean_depth, I_surface_refracted, 
             ocean_beta_ray, ocean_beta_mie, ocean_beta_abs
         );
     // if sea is present, "I_ocean_trasmitted" is the rgb intensity of light 
     //   that reaches the ground after being filtered by air and sea. 
     //   Otherwise, it equals I_surface_refracted.
     vec3 I_ocean_trasmitted= I_surface_refracted
-        * get_rgb_fraction_of_light_transmitted_through_ocean(abs(dot(N,L)), ocean_depth, ocean_beta_ray, ocean_beta_mie, ocean_beta_abs);
+        * get_rgb_fraction_of_light_transmitted_through_ocean(NL, ocean_depth, ocean_beta_ray, ocean_beta_mie, ocean_beta_abs);
 
     // "E_diffuse" is diffuse reflection of any nontrasparent component beneath the transparent surface,
     // It effectively describes diffuse reflection as understood within the phong model of reflectance.
@@ -200,8 +206,12 @@ vec3 get_rgb_intensity_of_light_from_surface_of_world(
     // if sea is present, "E_ocean_transmitted" is the fraction 
     //   of E_diffuse that makes it out of the sea. Otheriwse, it equals E_diffuse
     vec3 E_ocean_transmitted  = E_diffuse 
-        * get_rgb_fraction_of_light_transmitted_through_ocean(abs(dot(N,-V)), ocean_depth, ocean_beta_ray, ocean_beta_mie, ocean_beta_abs);
-    ASSERT(E_surface_reflected.r  >= 0., vec3(1,0,0))
+        * get_rgb_fraction_of_light_transmitted_through_ocean(NV, ocean_depth, ocean_beta_ray, ocean_beta_mie, ocean_beta_abs);
+    
+    ASSERT(all(greaterThanEqual(E_surface_reflected, vec3(0))), vec3(1,0,0))
+    ASSERT(all(greaterThanEqual(E_ocean_transmitted, vec3(0))), vec3(0,1,0))
+    ASSERT(all(greaterThanEqual(E_ocean_scattered,   vec3(0))), vec3(0,0,1))
+    ASSERT(all(lessThan(E_surface_reflected+E_ocean_transmitted+E_ocean_scattered, I_sun)), vec3(1,1,0))
 
     return 
         E_surface_reflected
