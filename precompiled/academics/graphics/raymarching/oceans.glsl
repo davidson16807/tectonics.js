@@ -4,7 +4,7 @@ vec3 get_rgb_fraction_of_light_transmitted_through_ocean(
     in float cos_incident_angle, in float fluid_depth,
     in vec3  beta_ray,           in vec3  beta_mie,          in vec3  beta_abs
 ){
-    float sigma  = fluid_depth / cos_incident_angle;
+    float sigma  = fluid_depth / max(cos_incident_angle, 0.001);
     return exp(-sigma * (beta_ray + beta_mie + beta_abs));
 }
 vec3 get_rgb_intensity_of_light_scattered_by_ocean(
@@ -31,7 +31,7 @@ vec3 get_rgb_intensity_of_light_scattered_by_ocean(
     vec3  beta_gamma = beta_ray * gamma_ray + beta_mie * gamma_mie;
     vec3  beta_sum   = beta_ray + beta_mie + beta_abs;
 
-    // "sigma_v"  is the column density, relative to the surface, that's along the view ray.
+    // "sigma_v" is the column density, relative to the surface, that's along the view ray.
     // "sigma_l" is the column density, relative to the surface, that's along the light ray.
     // "sigma_ratio" is the column density ratio of the full path of light relative to the distance along the incoming path
     // Since water is treated as incompressible, the density remains constant, 
@@ -39,12 +39,12 @@ vec3 get_rgb_intensity_of_light_scattered_by_ocean(
     // TODO: model vector of refracted light within ocean
     float sigma_v  = fluid_depth / NV;
     float sigma_l = fluid_depth / NL;
-    float sigma_ratio = 1. + NV/NL;
+    float sigma_ratio = 1. + NV/max(NL, 0.001);
 
     return I 
         // incoming fraction: the fraction of light that scatters towards camera
         *     beta_gamma
         // outgoing fraction: the fraction of light that scatters away from camera
-        * (exp(-sigma_v * sigma_ratio * beta_sum) - 1.)
-        /               (-sigma_ratio * beta_sum);
+        * (1. - exp(-sigma_v * sigma_ratio * beta_sum))
+        /                     (sigma_ratio * beta_sum);
 }
