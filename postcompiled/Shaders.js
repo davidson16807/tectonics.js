@@ -1180,22 +1180,6 @@ float approx_fraction_of_mie_scattered_light_scattered_by_angle_fast(
         (4. * PI * (1. + k*cos_scatter_angle) * (1. + k*cos_scatter_angle));
 }
 /*
-"get_fraction_of_light_reflected_from_facet_head_on" finds the fraction of light that's reflected
-  by a boundary between materials when striking head on.
-  It is also known as the "characteristic reflectance" within the fresnel reflectance equation.
-  The refractive indices can be provided as parameters in any order.
-*/
-float get_fraction_of_light_reflected_from_facet_head_on(
-    in float refractivate_index1,
-    in float refractivate_index2
-){
-    float n1 = refractivate_index1;
-    float n2 = refractivate_index2;
-    float sqrtF0 = ((n1-n2)/(n1+n2));
-    float F0 = sqrtF0 * sqrtF0;
-    return F0;
-}
-/*
 "get_fraction_of_microfacets_accessible_to_ray" is Schlick's fast approximation for Smith's function
   see Hoffmann 2015 for a gentle introduction to the concept
   see Schlick (1994) for even more details.
@@ -1226,6 +1210,22 @@ float get_fraction_of_microfacets_with_angle(
     float t2 = t*t;
     float u = t2*(m2-1.0)+1.0; return m2/(PI*u*u);
     //return exp((t*t-1.)/max(m*m*t*t, 0.1))/max(PI*m*m*t*t*t*t, 0.1);
+}
+/*
+"get_fraction_of_light_reflected_from_facet_head_on" finds the fraction of light that's reflected
+  by a boundary between materials when striking head on.
+  It is also known as the "characteristic reflectance" within the fresnel reflectance equation.
+  The refractive indices can be provided as parameters in any order.
+*/
+float get_fraction_of_light_reflected_from_facet_head_on(
+    in float refractivate_index1,
+    in float refractivate_index2
+){
+    float n1 = refractivate_index1;
+    float n2 = refractivate_index2;
+    float sqrtF0 = ((n1-n2)/(n1+n2));
+    float F0 = sqrtF0 * sqrtF0;
+    return F0;
 }
 /*
 "get_rgb_fraction_of_light_reflected_from_facet" returns Fresnel reflectance for each color channel.
@@ -1765,22 +1765,6 @@ float approx_fraction_of_mie_scattered_light_scattered_by_angle_fast(
         (4. * PI * (1. + k*cos_scatter_angle) * (1. + k*cos_scatter_angle));
 }
 /*
-"get_fraction_of_light_reflected_from_facet_head_on" finds the fraction of light that's reflected
-  by a boundary between materials when striking head on.
-  It is also known as the "characteristic reflectance" within the fresnel reflectance equation.
-  The refractive indices can be provided as parameters in any order.
-*/
-float get_fraction_of_light_reflected_from_facet_head_on(
-    in float refractivate_index1,
-    in float refractivate_index2
-){
-    float n1 = refractivate_index1;
-    float n2 = refractivate_index2;
-    float sqrtF0 = ((n1-n2)/(n1+n2));
-    float F0 = sqrtF0 * sqrtF0;
-    return F0;
-}
-/*
 "get_fraction_of_microfacets_accessible_to_ray" is Schlick's fast approximation for Smith's function
   see Hoffmann 2015 for a gentle introduction to the concept
   see Schlick (1994) for even more details.
@@ -1811,6 +1795,22 @@ float get_fraction_of_microfacets_with_angle(
     float t2 = t*t;
     float u = t2*(m2-1.0)+1.0; return m2/(PI*u*u);
     //return exp((t*t-1.)/max(m*m*t*t, 0.1))/max(PI*m*m*t*t*t*t, 0.1);
+}
+/*
+"get_fraction_of_light_reflected_from_facet_head_on" finds the fraction of light that's reflected
+  by a boundary between materials when striking head on.
+  It is also known as the "characteristic reflectance" within the fresnel reflectance equation.
+  The refractive indices can be provided as parameters in any order.
+*/
+float get_fraction_of_light_reflected_from_facet_head_on(
+    in float refractivate_index1,
+    in float refractivate_index2
+){
+    float n1 = refractivate_index1;
+    float n2 = refractivate_index2;
+    float sqrtF0 = ((n1-n2)/(n1+n2));
+    float F0 = sqrtF0 * sqrtF0;
+    return F0;
 }
 /*
 "get_rgb_fraction_of_light_reflected_from_facet" returns Fresnel reflectance for each color channel.

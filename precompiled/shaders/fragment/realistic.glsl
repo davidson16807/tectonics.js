@@ -59,11 +59,6 @@ varying vec4  position_v;
 varying vec3  view_direction_v;
 
 
-// "SOLAR_RGB_LUMINOSITY" is the rgb luminosity of earth's sun, in Watts.
-//   It is used to convert the above true color values to absorption coefficients.
-//   You can also generate these numbers by calling solve_rgb_intensity_of_light_emitted_by_black_body(SOLAR_TEMPERATURE)
-const vec3  SOLAR_RGB_LUMINOSITY    = vec3(7247419., 8223259., 8121487.);
-
 const float AIR_REFRACTIVE_INDEX   = 1.000277;
 
 const float WATER_REFRACTIVE_INDEX = 1.333;
@@ -171,12 +166,7 @@ vec3 get_rgb_intensity_of_light_from_surface_of_world(
             atmosphere_scale_height, atmosphere_beta_ray, atmosphere_beta_mie, atmosphere_beta_abs
         );
     // "E_surface_reflected" is the intensity of light that is immediately reflected by the surface
-    vec3 E_surface_reflected = I_surface * 1.0
-        * get_fraction_of_microfacets_accessible_to_ray(NL, m) 
-        * get_fraction_of_microfacets_with_angle(NH, m)
-        * get_fraction_of_microfacets_accessible_to_ray(NV, m) 
-        * get_rgb_fraction_of_light_reflected_from_facet(HV, F0)
-        / max(4.*PI*NV*NL, 0.001); 
+    vec3 E_surface_reflected = I_surface * get_fraction_of_light_reflected_from_material(NL,NH,NV, HV, m,F0);
         //get_fraction_of_light_reflected_from_material(NL,NH,NV,max(dot(V,H),0.),m,F0);
     // "I_surface_refracted" is the intensity of light that is not immediately reflected, 
     //   but penetrates into the material, either to be absorbed, scattered away, 
