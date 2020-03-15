@@ -856,8 +856,10 @@ function get_fraction_of_microfacets_accessible_to_ray(
 ){
     let m = root_mean_slope_squared;
     let v = cos_view_angle;
-    let k = glm.sqrt( 2. * m * m / PI);
-    return v / (v - k * v + k);
+    // float k = m/2.0; return 2.0*v/(v+sqrt(m*m+(1.0-m*m)*v*v)); // Schlick-GGX
+    let k = m * glm.sqrt( 2. / PI);
+    return v / (v * (1.0 - k) + k);
+    // Schlick-Beckmann
 }
 
 /*
@@ -874,7 +876,11 @@ function get_fraction_of_microfacets_with_angle(
 ){
     let m = root_mean_slope_squared;
     let t = cos_angle_of_deviation;
-    return Math.exp( (t * t - 1.) / (m * m * t * t)) / (PI * m * m * t * t * t * t);
+    let m2 = m * m;
+    let t2 = t * t;
+    let u = t2 * (m2 - 1.0) + 1.0;
+    return m2 / (PI * u * u);
+    //return exp((t*t-1.)/max(m*m*t*t, 0.1))/max(PI*m*m*t*t*t*t, 0.1);
 }
 
 /*
@@ -964,7 +970,7 @@ function get_rgb_fraction_of_light_transmitted_through_ocean(
      /*vec3*/ beta_mie,
      /*vec3*/ beta_abs
 ){
-    let sigma = fluid_depth / cos_incident_angle;
+    let sigma = fluid_depth / glm.max( cos_incident_angle,  0.001);
     return Math.exp( ((beta_ray['+']( beta_mie['+']( beta_abs))))['*']( -sigma));
 }
 
@@ -991,7 +997,7 @@ function get_rgb_intensity_of_light_scattered_by_ocean(
     let gamma_mie = get_fraction_of_mie_scattered_light_scattered_by_angle( VL);
     let beta_gamma = (beta_ray['*']( gamma_ray))['+']( beta_mie['*']( gamma_mie));
     let beta_sum = beta_ray['+']( beta_mie['+']( beta_abs));
-    // "sigma_v"  is the column density, relative to the surface, that's along the view ray.
+    // "sigma_v" is the column density, relative to the surface, that's along the view ray.
     // "sigma_l" is the column density, relative to the surface, that's along the light ray.
     // "sigma_ratio" is the column density ratio of the full path of light relative to the distance along the incoming path
     // Since water is treated as incompressible, the density remains constant, 
@@ -999,8 +1005,8 @@ function get_rgb_intensity_of_light_scattered_by_ocean(
     // TODO: model vector of refracted light within ocean
     let sigma_v = fluid_depth / NV;
     let sigma_l = fluid_depth / NL;
-    let sigma_ratio = 1. + NV / NL;
-    return I['*']( beta_gamma['*']( ((Math.exp( (beta_sum['*']( sigma_ratio))['*']( -sigma_v))['-']( 1.)))['/']( (beta_sum['*']( -sigma_ratio)))));
+    let sigma_ratio = 1. + NV / glm.max( NL,  0.001);
+    return I['*']( beta_gamma['*']( ((Math.exp( (beta_sum['*']( sigma_ratio))['*']( -sigma_v))['-']( 1.)))['/']( (beta_sum['*']( sigma_ratio)))));
 }
 
 // "approx_air_column_density_ratio_through_atmosphere" 

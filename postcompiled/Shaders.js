@@ -1206,8 +1206,8 @@ float get_fraction_of_microfacets_accessible_to_ray(
 ){
     float m = root_mean_slope_squared;
     float v = cos_view_angle;
-    float k = sqrt(2.*m*m/PI);
-    return v/(v-k*v+k);
+    // float k = m/2.0; return 2.0*v/(v+sqrt(m*m+(1.0-m*m)*v*v)); // Schlick-GGX
+    float k = m*sqrt(2./PI); return v/(v*(1.0-k)+k); // Schlick-Beckmann
 }
 /*
 "get_fraction_of_microfacets_with_angle" 
@@ -1222,7 +1222,10 @@ float get_fraction_of_microfacets_with_angle(
 ){
     float m = root_mean_slope_squared;
     float t = cos_angle_of_deviation;
-    return exp((t*t-1.)/(m*m*t*t))/(PI*m*m*t*t*t*t);
+    float m2 = m*m;
+    float t2 = t*t;
+    float u = t2*(m2-1.0)+1.0; return m2/(PI*u*u);
+    //return exp((t*t-1.)/max(m*m*t*t, 0.1))/max(PI*m*m*t*t*t*t, 0.1);
 }
 /*
 "get_rgb_fraction_of_light_reflected_from_facet" returns Fresnel reflectance for each color channel.
@@ -1788,8 +1791,8 @@ float get_fraction_of_microfacets_accessible_to_ray(
 ){
     float m = root_mean_slope_squared;
     float v = cos_view_angle;
-    float k = sqrt(2.*m*m/PI);
-    return v/(v-k*v+k);
+    // float k = m/2.0; return 2.0*v/(v+sqrt(m*m+(1.0-m*m)*v*v)); // Schlick-GGX
+    float k = m*sqrt(2./PI); return v/(v*(1.0-k)+k); // Schlick-Beckmann
 }
 /*
 "get_fraction_of_microfacets_with_angle" 
@@ -1804,7 +1807,10 @@ float get_fraction_of_microfacets_with_angle(
 ){
     float m = root_mean_slope_squared;
     float t = cos_angle_of_deviation;
-    return exp((t*t-1.)/(m*m*t*t))/(PI*m*m*t*t*t*t);
+    float m2 = m*m;
+    float t2 = t*t;
+    float u = t2*(m2-1.0)+1.0; return m2/(PI*u*u);
+    //return exp((t*t-1.)/max(m*m*t*t, 0.1))/max(PI*m*m*t*t*t*t, 0.1);
 }
 /*
 "get_rgb_fraction_of_light_reflected_from_facet" returns Fresnel reflectance for each color channel.
@@ -1896,7 +1902,7 @@ vec3 get_rgb_fraction_of_light_transmitted_through_ocean(
     in float cos_incident_angle, in float fluid_depth,
     in vec3 beta_ray, in vec3 beta_mie, in vec3 beta_abs
 ){
-    float sigma = fluid_depth / cos_incident_angle;
+    float sigma = fluid_depth / max(cos_incident_angle, 0.001);
     return exp(-sigma * (beta_ray + beta_mie + beta_abs));
 }
 vec3 get_rgb_intensity_of_light_scattered_by_ocean(
@@ -1919,7 +1925,7 @@ vec3 get_rgb_intensity_of_light_scattered_by_ocean(
     float gamma_mie = get_fraction_of_mie_scattered_light_scattered_by_angle(VL);
     vec3 beta_gamma = beta_ray * gamma_ray + beta_mie * gamma_mie;
     vec3 beta_sum = beta_ray + beta_mie + beta_abs;
-    // "sigma_v"  is the column density, relative to the surface, that's along the view ray.
+    // "sigma_v" is the column density, relative to the surface, that's along the view ray.
     // "sigma_l" is the column density, relative to the surface, that's along the light ray.
     // "sigma_ratio" is the column density ratio of the full path of light relative to the distance along the incoming path
     // Since water is treated as incompressible, the density remains constant, 
@@ -1927,13 +1933,13 @@ vec3 get_rgb_intensity_of_light_scattered_by_ocean(
     // TODO: model vector of refracted light within ocean
     float sigma_v = fluid_depth / NV;
     float sigma_l = fluid_depth / NL;
-    float sigma_ratio = 1. + NV/NL;
+    float sigma_ratio = 1. + NV/max(NL, 0.001);
     return I
         // incoming fraction: the fraction of light that scatters towards camera
         * beta_gamma
         // outgoing fraction: the fraction of light that scatters away from camera
-        * (exp(-sigma_v * sigma_ratio * beta_sum) - 1.)
-        / (-sigma_ratio * beta_sum);
+        * (1. - exp(-sigma_v * sigma_ratio * beta_sum))
+        / (sigma_ratio * beta_sum);
 }
 // "approx_air_column_density_ratio_through_atmosphere" 
 //   calculates the distance you would need to travel 
@@ -2179,17 +2185,20 @@ vec3 get_rgb_intensity_of_light_from_surface_of_world(
     vec3 N = surface_normal;
     // "V" is the normal vector indicating the direction to the view
     // TODO: standardize view_direction as view from surface to camera
-    vec3 V =-view_direction;
+    vec3 V = view_direction;
     // "L" is the normal vector indicating the direction to the light source
     vec3 L = light_direction;
     // "H" is the halfway vector between normal and view.
     // It represents the surface normal that's needed to cause reflection.
     // It can also be thought of as the surface normal of a microfacet that's 
     //   producing the reflections seen by the camera.
-    vec3 H = normalize(-V+L);
-    // Here we setup  several useful dot products of unit vectors
-    //   we can think of them as the cosines of the angles formed between them,
-    //   or their "cosine similarity": https://en.wikipedia.org/wiki/Cosine_similarity
+    vec3 H = normalize(V+L);
+    // Here we setup several useful dot products of unit vectors
+    float NL = max(dot(N,L), 0.0);
+    float NH = max(dot(N,H), 0.0);
+    float NV = max(dot(N,V), 0.0);
+    float HV = max(dot(V,H), 0.0);
+    float VL = max(dot(L,V), 0.0);
     // "F0" is the characteristic fresnel reflectance.
     //   it is the fraction of light that's immediately reflected when striking the surface head on.
     vec3 F0 = surface_specular_color_rgb_fraction;
@@ -2201,41 +2210,51 @@ vec3 get_rgb_intensity_of_light_from_surface_of_world(
     // "I_sun" is the rgb Intensity of Incoming Incident light, A.K.A. "Insolation"
     vec3 I_sun = light_rgb_intensity;
     // "I_surface" is the intensity of light that reaches the surface after being filtered by atmosphere
-    vec3 I_surface = I_sun * abs(dot(N,L))
+    vec3 I_surface = I_sun * NL
       * get_rgb_fraction_of_light_transmitted_through_atmosphere(
             // NOTE: we nudge the origin of light ray by a small amount so that collision isn't detected with the world
             1.000001 * P, L, 0.0, 3.0*world_radius, vec3(0), world_radius,
             atmosphere_scale_height, atmosphere_beta_ray, atmosphere_beta_mie, atmosphere_beta_abs
         );
     // "E_surface_reflected" is the intensity of light that is immediately reflected by the surface
-    vec3 E_surface_reflected = I_surface * get_fraction_of_light_reflected_from_material(abs(dot(N,L)),dot(N,H),abs(dot(N,-V)),max(dot(-V,H),0.),m,F0);
+    vec3 E_surface_reflected = I_surface * 1.0
+        * get_fraction_of_microfacets_accessible_to_ray(NL, m)
+        * get_fraction_of_microfacets_with_angle(NH, m)
+        * get_fraction_of_microfacets_accessible_to_ray(NV, m)
+        * get_rgb_fraction_of_light_reflected_from_facet(HV, F0)
+        / max(4.*PI*NV*NL, 0.001);
+        //get_fraction_of_light_reflected_from_material(NL,NH,NV,max(dot(V,H),0.),m,F0);
     // "I_surface_refracted" is the intensity of light that is not immediately reflected, 
     //   but penetrates into the material, either to be absorbed, scattered away, 
     //   or scattered back to the view as diffuse reflection.
     // Since energy is conserved, everything from I_surface has to get either reflected, diffused, or absorbed
     // We would ideally like to negate the integral of reflectance over all possible viewing angles, 
     //   but finding that is hard, so let's just negate the reflectance for the viewing angle at which it occurs the most
-    vec3 I_surface_refracted = I_surface; // * (1.0 - get_fraction_of_light_reflected_from_material(abs(dot(N,L)),1.0,abs(dot(N,L)),abs(dot(N,L)),m,F0));
+    vec3 I_surface_refracted = I_surface; // * (1.0 - get_fraction_of_light_reflected_from_material(NL,1.0,NL,NL,m,F0));
       //+ I_sun     *  atmosphere_ambient_light_factor;
     // If sea is present, "E_ocean_scattered" is the rgb intensity of light 
     //   scattered by the sea towards the camera. Otherwise, it equals 0.
     vec3 E_ocean_scattered =
         get_rgb_intensity_of_light_scattered_by_ocean(
-            abs(dot(N,-V)), abs(dot(N,L)), max(dot(L,-V),0.), ocean_depth, I_surface_refracted,
+            NV, NL, VL, ocean_depth, I_surface_refracted,
             ocean_beta_ray, ocean_beta_mie, ocean_beta_abs
         );
     // if sea is present, "I_ocean_trasmitted" is the rgb intensity of light 
     //   that reaches the ground after being filtered by air and sea. 
     //   Otherwise, it equals I_surface_refracted.
     vec3 I_ocean_trasmitted= I_surface_refracted
-        * get_rgb_fraction_of_light_transmitted_through_ocean(abs(dot(N,L)), ocean_depth, ocean_beta_ray, ocean_beta_mie, ocean_beta_abs);
+        * get_rgb_fraction_of_light_transmitted_through_ocean(NL, ocean_depth, ocean_beta_ray, ocean_beta_mie, ocean_beta_abs);
     // "E_diffuse" is diffuse reflection of any nontrasparent component beneath the transparent surface,
     // It effectively describes diffuse reflection as understood within the phong model of reflectance.
     vec3 E_diffuse = I_ocean_trasmitted * D;
     // if sea is present, "E_ocean_transmitted" is the fraction 
     //   of E_diffuse that makes it out of the sea. Otheriwse, it equals E_diffuse
     vec3 E_ocean_transmitted = E_diffuse
-        * get_rgb_fraction_of_light_transmitted_through_ocean(abs(dot(N,-V)), ocean_depth, ocean_beta_ray, ocean_beta_mie, ocean_beta_abs);
+        * get_rgb_fraction_of_light_transmitted_through_ocean(NV, ocean_depth, ocean_beta_ray, ocean_beta_mie, ocean_beta_abs);
+    if (!(all(greaterThanEqual(E_surface_reflected, vec3(0))))) { return vec3(1,0,0); }
+    if (!(all(greaterThanEqual(E_ocean_transmitted, vec3(0))))) { return vec3(0,1,0); }
+    if (!(all(greaterThanEqual(E_ocean_scattered, vec3(0))))) { return vec3(0,0,1); }
+    if (!(all(lessThan(E_surface_reflected+E_ocean_transmitted+E_ocean_scattered, I_sun)))) { return vec3(1,1,0); }
     return
         E_surface_reflected
       + E_ocean_transmitted
