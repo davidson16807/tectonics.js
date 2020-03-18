@@ -13,9 +13,9 @@
 // "z2" is the closest distance from the ray to the center of the world, squared.
 // "r0" is the radius of the world.
 float approx_air_column_density_ratio_through_atmosphere(
-    in float a, 
-    in float b, 
-    in float z2, 
+    in float a,
+    in float b,
+    in float z2,
     in float r0
 ){
     // GUIDE TO VARIABLE NAMES:
@@ -25,9 +25,9 @@ float approx_air_column_density_ratio_through_atmosphere(
     //  "*0" variable at reference point
     //  "*2" the square of a variable
     //  "ch" a nudge we give to prevent division by zero, analogous to the Chapman function
-    const float SQRT_HALF_PI  = sqrt(PI/2.);
+    const float SQRT_HALF_PI = sqrt(PI/2.);
     const float k = 0.6; // "k" is an empirically derived constant
-    float x0     = sqrt(max(r0*r0 - z2, 0.));
+    float x0 = sqrt(max(r0*r0 - z2, SMALL));
     // if obstructed by the world, approximate answer by using a ludicrously large number
     if (a < x0 && -x0 < b && z2 < r0*r0) { return BIG; }
     float abs_a  = abs(a);
@@ -39,9 +39,9 @@ float approx_air_column_density_ratio_through_atmosphere(
     float ch0    = (1. - 1./(2.*r0)) * SQRT_HALF_PI * sqrt_z + k*x0;
     float cha    = (1. - 1./(2.*ra)) * SQRT_HALF_PI * sqrt_z + k*abs_a;
     float chb    = (1. - 1./(2.*rb)) * SQRT_HALF_PI * sqrt_z + k*abs_b;
-    float s0     = min(exp(r0- z),1.) / (   x0/r0 + 1./ch0);
-    float sa     =     exp(r0-ra)     / (abs_a/ra + 1./cha);
-    float sb     =     exp(r0-rb)     / (abs_b/rb + 1./chb);
+    float s0     = min(exp(r0- z),1.) / max( x0/r0 + 1./ch0, SMALL);
+    float sa     = exp(r0-ra) / max(abs_a/ra + 1./cha, SMALL);
+    float sb     = exp(r0-rb) / max(abs_b/rb + 1./chb, SMALL);
     return sign(b)*(s0-sb) - sign(a)*(s0-sa);
 }
 
