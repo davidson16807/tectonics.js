@@ -1,5 +1,6 @@
 
 #define GL_ES
+#include "precompiled/academics/assertions.glsl"
 #include "precompiled/academics/units.glsl"
 #include "precompiled/academics/maybe.glsl"
 #include "precompiled/academics/math/constants.glsl"

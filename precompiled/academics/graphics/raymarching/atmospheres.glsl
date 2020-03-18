@@ -65,16 +65,18 @@ vec3 get_rgb_fraction_of_light_transmitted_through_atmosphere(
 
 // TODO: multiple scattering events
 // TODO: support for light sources from within atmosphere
+
+// TODO: multiple scattering events
+// TODO: support for light sources from within atmosphere
 vec3 get_rgb_fraction_of_distant_light_scattered_by_atmosphere(
-    vec3 view_origin,     vec3 view_direction, float view_start_length, float view_stop_length,
-    vec3 world_position,  float world_radius,  
+    vec3 view_origin, vec3 view_direction, float view_start_length, float view_stop_length,
+    vec3 world_position, float world_radius,
     vec3 light_direction, float atmosphere_scale_height,
-    vec3 beta_ray, vec3 beta_mie, vec3  beta_abs
+    vec3 beta_ray, vec3 beta_mie, vec3 beta_abs
 ){
     // For an excellent introduction to what we're try to do here, see Alan Zucconi: 
     //   https://www.alanzucconi.com/2017/10/10/atmospheric-scattering-3/
     // We will be using most of the same terminology and variable names.
-
     // GUIDE TO VARIABLE NAMES:
     //  Uppercase letters indicate vectors.
     //  Lowercase letters indicate scalars.
@@ -97,61 +99,52 @@ vec3 get_rgb_fraction_of_distant_light_scattered_by_atmosphere(
     //  "*_ray"  property of rayleigh scattering
     //  "*_mie"  property of mie scattering
     //  "*_abs"  property of absorption
-
     // setup variable shorthands
     // express all distances in scale heights 
     // express all positions relative to world origin
-    float h  = atmosphere_scale_height;
-    float r  = world_radius / h;
-    vec3  V0 = (view_origin + view_direction * view_start_length - world_position) / h;
-    vec3  V1 = (view_origin + view_direction * view_stop_length  - world_position) / h;
-    vec3  V  = view_direction;   // unit vector pointing to pixel being viewed
+    float h = atmosphere_scale_height;
+    float r = world_radius / h;
+    vec3 V0 = (view_origin + view_direction * view_start_length - world_position) / h;
+    vec3 V1 = (view_origin + view_direction * view_stop_length - world_position) / h;
+    vec3 V = view_direction; // unit vector pointing to pixel being viewed
     float v0 = dot(V0,V);
     float v1 = dot(V1,V);
-    vec3  L  = light_direction;  // unit vector pointing to light source
+    vec3 L = light_direction; // unit vector pointing to light source
     float VL = dot(V,L);
-
     // "gamma_*" indicates the fraction of scattered sunlight that scatters to a given angle (indicated by its cosine, A.K.A. "VL").
     // It only accounts for a portion of the sunlight that's lost during the scatter, which is irrespective of wavelength or density
     float gamma_ray = get_fraction_of_rayleigh_scattered_light_scattered_by_angle(VL);
     float gamma_mie = get_fraction_of_mie_scattered_light_scattered_by_angle(VL);
-
     // "beta_*" indicates the rest of the fractional loss.
     // it is dependant on wavelength, and the density ratio, which is dependant on height
     // So all together, the fraction of sunlight that scatters to a given angle is: beta(wavelength) * gamma(angle) * density_ratio(height)
-    vec3  beta_sum   = h*(beta_ray + beta_mie + beta_abs);
-    vec3  beta_gamma = h*(beta_ray * gamma_ray + beta_mie * gamma_mie);
-    
+    vec3 beta_sum = h*(beta_ray + beta_mie + beta_abs);
+    vec3 beta_gamma = h*(beta_ray * gamma_ray + beta_mie * gamma_mie);
     // number of iterations within the raymarch
-    const float STEP_COUNT = 16.; 
-    float dv  = (v1 - v0) / STEP_COUNT;
-    float vi  = v0;
-    float dl  = dv*VL;
-    float li  = dot(V0,L);
-    float y   = dot(V0,normalize(cross(V,L))); 
-    float y2  = y*y;
-    float zv2 = dot(V0,V0) - y2 - v0*v0; 
-    float zl2 = 0.0; 
-
-    float sigma;       // columnar density encountered along the entire path, relative to surface density, effectively the distance along the surface needed to obtain a similar column density
-    vec3  F = vec3(0); // total intensity for each color channel, found as the sum of light intensities for each path from the light source to the camera
-
+    const float STEP_COUNT = 6.;
+    float dv = (v1 - v0) / STEP_COUNT;
+    float vi = v0+0.5*dv;
+    float dl = dv*VL;
+    float li = dot(V0,L)+0.5*dl;
+    float y = dot(V0,normalize(cross(V,L)));
+    float y2 = y*y;
+    float zv2 = dot(V0,V0) - y2 - v0*v0;
+    float zl2 = 0.0;
+    float sigma; // columnar density encountered along the entire path, relative to surface density, effectively the distance along the surface needed to obtain a similar column density
+    vec3 F = vec3(0); // total intensity for each color channel, found as the sum of light intensities for each path from the light source to the camera
     for (float i = 0.; i < STEP_COUNT; ++i)
     {
         zl2 = vi*vi + zv2 - li*li;
-        sigma = approx_air_column_density_ratio_through_atmosphere(v0, vi,   y2+zv2, r )
+        sigma = approx_air_column_density_ratio_through_atmosphere(v0, vi, y2+zv2, r )
               + approx_air_column_density_ratio_through_atmosphere(li, 3.*r, y2+zl2, r );
-
         F += exp(r-sqrt(vi*vi+y2+zv2) - beta_sum*sigma) * beta_gamma * dv;
             // NOTE: the above is equivalent to the incoming fraction multiplied by the outgoing fraction:
             // incoming fraction: the fraction of light that scatters towards camera
             //   exp(r-sqrt(vi*vi+y2+zv2)) * beta_gamma * dv
             // outgoing fraction: the fraction of light that scatters away from camera
             // * exp(-beta_sum * sigma);
-
         vi += dv;
         li += dl;
     }
-
     return F;
 }

@@ -1,5 +1,6 @@
 
 #define GL_ES
+#include "precompiled/academics/assertions.glsl"
 #include "precompiled/academics/units.glsl"
 #include "precompiled/academics/math/constants.glsl"
 #include "precompiled/academics/math/utilities.glsl"
@@ -80,12 +81,6 @@ const float SNOW_REFRACTIVE_INDEX = 1.333;
 // TODO: calculate airglow for nightside using scattering equations from atmosphere.glsl, 
 //   also keep in mind this: https://en.wikipedia.org/wiki/Airglow
 const float AMBIENT_LIGHT_AESTHETIC_BRIGHTNESS_FACTOR = 0.000001;
-
-#ifndef PROD
-#define ASSERT(test, color) if (!(test)) { return color; }
-#else
-#define ASSERT(test, color)
-#endif
 
 // TODO: multiple scattering events
 // TODO: support for light sources from within atmosphere
