@@ -1,5 +1,4 @@
 
-
 // "approx_air_column_density_ratio_through_atmosphere" 
 //   calculates the distance you would need to travel 
 //   along the surface to encounter the same number of particles in the column. 
@@ -39,32 +38,29 @@ float approx_air_column_density_ratio_through_atmosphere(
     float ch0    = (1. - 1./(2.*r0)) * SQRT_HALF_PI * sqrt_z + k*x0;
     float cha    = (1. - 1./(2.*ra)) * SQRT_HALF_PI * sqrt_z + k*abs_a;
     float chb    = (1. - 1./(2.*rb)) * SQRT_HALF_PI * sqrt_z + k*abs_b;
-    float s0     = min(exp(r0- z),1.) / max( x0/r0 + 1./ch0, SMALL);
-    float sa     = exp(r0-ra) / max(abs_a/ra + 1./cha, SMALL);
-    float sb     = exp(r0-rb) / max(abs_b/rb + 1./chb, SMALL);
-    return sign(b)*(s0-sb) - sign(a)*(s0-sa);
+    float s0     = min(exp(r0- z),1.) / (x0/r0 + 1./ch0);
+    float sa     = exp(r0-ra) / max(abs_a/ra + 1./cha, 0.01);
+    float sb     = exp(r0-rb) / max(abs_b/rb + 1./chb, 0.01);
+    return max( sign(b)*(s0-sb) - sign(a)*(s0-sa), 0.0 );
 }
 
 vec3 get_rgb_fraction_of_light_transmitted_through_atmosphere(
-    in vec3  view_origin,    in vec3  view_direction, in float view_start_length,      in float view_stop_length, 
-    in vec3  world_position, in float world_radius,   in float atmosphere_scale_height,
-    in vec3  beta_ray,       in vec3  beta_mie,       in vec3  beta_abs
+    in vec3 view_origin, in vec3 view_direction, in float view_start_length, in float view_stop_length,
+    in vec3 world_position, in float world_radius, in float atmosphere_scale_height,
+    in vec3 beta_ray, in vec3 beta_mie, in vec3 beta_abs
 ){
-    float h   = atmosphere_scale_height;
-    float r   = world_radius / h;
-    vec3  V0  = (view_origin + view_direction * view_start_length - world_position) / h;
-    vec3  V1  = (view_origin + view_direction * view_stop_length  - world_position) / h;
-    vec3  V   = view_direction;   // unit vector pointing to pixel being viewed
-    float v0  = dot(V0,V);
-    float v1  = dot(V1,V);
-    float zv2 = dot(V0,V0) - v0*v0; 
-    vec3  beta_sum = (beta_ray + beta_mie + beta_abs)*h;
+    float h = atmosphere_scale_height;
+    float r = world_radius / h;
+    vec3 V0 = (view_origin + view_direction * view_start_length - world_position) / h;
+    vec3 V1 = (view_origin + view_direction * view_stop_length - world_position) / h;
+    vec3 V = view_direction; // unit vector pointing to pixel being viewed
+    float v0 = dot(V0,V);
+    float v1 = dot(V1,V);
+    float zv2 = dot(V0,V0) - v0*v0;
+    vec3 beta_sum = (beta_ray + beta_mie + beta_abs)*h;
     float sigma = approx_air_column_density_ratio_through_atmosphere(v0,v1,zv2,r);
     return exp(-sigma * beta_sum);
 }
-
-// TODO: multiple scattering events
-// TODO: support for light sources from within atmosphere
 
 // TODO: multiple scattering events
 // TODO: support for light sources from within atmosphere
@@ -123,9 +119,9 @@ vec3 get_rgb_fraction_of_distant_light_scattered_by_atmosphere(
     // number of iterations within the raymarch
     const float STEP_COUNT = 6.;
     float dv = (v1 - v0) / STEP_COUNT;
-    float vi = v0+0.5*dv;
+    float vi = v0;
     float dl = dv*VL;
-    float li = dot(V0,L)+0.5*dl;
+    float li = dot(V0,L);
     float y = dot(V0,normalize(cross(V,L)));
     float y2 = y*y;
     float zv2 = dot(V0,V0) - y2 - v0*v0;
@@ -134,12 +130,14 @@ vec3 get_rgb_fraction_of_distant_light_scattered_by_atmosphere(
     vec3 F = vec3(0); // total intensity for each color channel, found as the sum of light intensities for each path from the light source to the camera
     for (float i = 0.; i < STEP_COUNT; ++i)
     {
-        zl2 = vi*vi + zv2 - li*li;
+        zl2 = vi*vi + zv2 - li*li;  f
         sigma = approx_air_column_density_ratio_through_atmosphere(v0, vi, y2+zv2, r )
               + approx_air_column_density_ratio_through_atmosphere(li, 3.*r, y2+zl2, r );
         F += exp(r-sqrt(vi*vi+y2+zv2) - beta_sum*sigma) * beta_gamma * dv;
             // NOTE: the above is equivalent to the incoming fraction multiplied by the outgoing fraction:
             // incoming fraction: the fraction of light that scatters towards camera
+            //   exp(r-sqrt(vi*vi+y2+zv2)) * beta_gamma * dv
+            // emission : 
             //   exp(r-sqrt(vi*vi+y2+zv2)) * beta_gamma * dv
             // outgoing fraction: the fraction of light that scatters away from camera
             // * exp(-beta_sum * sigma);
