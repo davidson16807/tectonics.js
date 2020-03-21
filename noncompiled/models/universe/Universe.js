@@ -1,73 +1,77 @@
 'use strict';
+/*
+a universe is a collection of celestial bodies that interact with one another
+the data structure is designed to allow for:
+ * iterative physics simulation
+ * "on-rails" simulation, ala Kerbal Space Program
+ * arbitrary assignment of cycle states from the user (since the cycle is ergodic - any state is likely occur within a single million year timestep)
+design principles:
+ 1. must be able to easily update the state of all "on-rails" motions 
+ 2. must be able to easily update the state of all bodies
+ 3. must be able to easily track the position and orientation of all bodies relative to any other body
+ 4. must be able to easily find the incident radiation incurred on all bodies from all stars, **for an arbitrary cycle configuration**
+ 4. must be able to easily find the gravity induced on all bodies from all other bodies
+ 5. must be able to enumerate all bodies to for easy selection by the user
+conclusions:
+ a. must contain a nested structure of all bodies, since this reflects the underlying data
+ b. from 1.), must contain an easily traversed structure of all motions
+ c. from 2.), must contain an easily traversed structure of all bodies
+ d. from 3.), must contain a function that returns a map between bodies and their transformation matrices
+ e. from 4.), must contain an easily traversed structure of all stars
+ d. from 4.), must **not store cycle configuration as an attribute of motion!** Cycle configuration must be stored in a separate structure
+ e. from d.), must have a way to map between motions in a hierarchy and state within a cycle configuration structure, i.e. a unique key for each motion
 
-// a universe is a collection of celestial bodies that interact with one another
-// the data structure is designed to allow for:
-//  * iterative physics simulation
-//  * "on-rails" simulation, ala Kerbal Space Program
-//  * arbitrary assignment of cycle states from the user (since the cycle is ergodic - any state is likely occur within a single million year timestep)
-// design principles:
-//  1. must be able to easily update the state of all "on-rails" motions 
-//  2. must be able to easily update the state of all bodies
-//  3. must be able to easily track the position and orientation of all bodies relative to any other body
-//  4. must be able to easily find the incident radiation incurred on all bodies from all stars, **for an arbitrary cycle configuration**
-//  4. must be able to easily find the gravity induced on all bodies from all other bodies
-//  5. must be able to enumerate all bodies to for easy selection by the user
-// conclusions:
-//  a. must contain a nested structure of all bodies, since this reflects the underlying data
-//  b. from 1.), must contain an easily traversed structure of all motions
-//  c. from 2.), must contain an easily traversed structure of all bodies
-//  d. from 3.), must contain a function that returns a map between bodies and their transformation matrices
-//  e. from 4.), must contain an easily traversed structure of all stars
-//  d. from 4.), must **not store cycle configuration as an attribute of motion!** Cycle configuration must be stored in a separate structure
-//  e. from d.), must have a way to map between motions in a hierarchy and state within a cycle configuration structure, i.e. a unique key for each motion
-// 
-// so we have the following:
-// 
-//    ancestors(hierarchy, node)
-//        returns a hierarchy containing only immediate ancestors of a given node 
-//    descendants(hierarchy, node)
-//        returns a hierarchy containing only immediate descendants of a given node 
-//    zip(hierarchy1, hierarchy2)
-//        zips two hierarchies into one
-//    prune(hierarchy, nodes)
-//        returns a hierarchy containing only cycles relating to a list of given nodes
-//        effectively zip(ancestors(node1), ancestors(node2), ...)
-//        usage for insolation is: prune(star1, star2, planet)
-//    matrices(hierarchy, state, origin)
-//        returns a dict mapping bodies to matrices that represent body position/rotation relative to origin node
-//    iterate(hierarchy, state, timestep)
-//        returns a state object representing cycle state after a given timestep
-//    insolation(hierarchy, state)
-//        returns a scalar field representing insolation at a well defined state
-//    insolation(hierarchy, state, averaging_window_size, sample_num)
-//        returns a scalar field representing average insolation across a averaging_window_size
-//        we simply average between the fields and hope no resonance exists between cycles
-//        can use several methods:
-//            successively iterate() through averaging_window_size by 1.61 times period of shortest cycle
-//            successively iterate() by 1.61^n that approximates averaging_window_size / sample_num
-//            successively iterate() by averaging_window_size / sample_num
-//
+so we have the following:
 
+   ancestors(hierarchy, node)
+       returns a hierarchy containing only immediate ancestors of a given node 
+   descendants(hierarchy, node)
+       returns a hierarchy containing only immediate descendants of a given node 
+   zip(hierarchy1, hierarchy2)
+       zips two hierarchies into one
+   prune(hierarchy, nodes)
+       returns a hierarchy containing only cycles relating to a list of given nodes
+       effectively zip(ancestors(node1), ancestors(node2), ...)
+       usage for insolation is: prune(star1, star2, planet)
+   matrices(hierarchy, state, origin)
+       returns a dict mapping bodies to matrices that represent body position/rotation relative to origin node
+   iterate(hierarchy, state, timestep)
+       returns a state object representing cycle state after a given timestep
+   insolation(hierarchy, state)
+       returns a scalar field representing insolation at a well defined state
+   insolation(hierarchy, state, averaging_window_size, sample_num)
+       returns a scalar field representing average insolation across a averaging_window_size
+       we simply average between the fields and hope no resonance exists between cycles
+       can use several methods:
+           successively iterate() through averaging_window_size by 1.61 times period of shortest cycle
+           successively iterate() by 1.61^n that approximates averaging_window_size / sample_num
+           successively iterate() by averaging_window_size / sample_num
+*/
 
 function Universe(parameters) {
     // "config" expresses the current configuration of the cyclical motions within the universe
-    // this is done using phase angles (e.g. number from 0 to 2*pi where pi represents the halfway point within the cycle)
-    // example: { 'earth-revolution': pi*1/2, 'earth-rotation': pi*3/4, 'moon-revolution': pi*0}
+    /*
+    "config" expresses the current configuration of the cyclical motions within the universe
+    this is done using phase angles (e.g. number from 0 to 2*pi where pi represents the halfway point within the cycle)
+    example: { 'earth-revolution': pi*1/2, 'earth-rotation': pi*3/4, 'moon-revolution': pi*0}
+    */
     this.config = parameters.config || {};
-    // A "cycle" represents the cyclical motion of one or more celestial bodies that share a common reference frame. 
-    // The reference frame may be moving within a larger parent cycle, and may itself have subcycles as children. 
-    // For instance, moons can orbit planets that orbit stars.
-    // A cycle may contain a celestial body at its center but this is not strictly necessary,
-    // For instance, the two planets may orbit a common barycenter. 
-    // Cycles do not track the phase angle of their motions. 
-    // Phase angle is stored separately, in "config". 
-    // This is done because phase angle may change very frequently over large timesteps,
-    //  where ergodic behavior emerges, and it is often not relevant to track it in these situations
+    /*
+    A "cycle" represents the cyclical motion of one or more celestial bodies that share a common reference frame. 
+    The reference frame may be moving within a larger parent cycle, and may itself have subcycles as children. 
+    For instance, moons can orbit planets that orbit stars.
+    A cycle may contain a celestial body at its center but this is not strictly necessary,
+    For instance, the two planets may orbit a common barycenter. 
+    Cycles do not track the phase angle of their motions. 
+    Phase angle is stored separately, in "config". 
+    This is done because phase angle may change very frequently over large timesteps,
+     where ergodic behavior emerges, and it is often not relevant to track it in these situations
+    */
     var cycles =  Object.keys(parameters.cycles)
         .reduce((accumulator, id) => { accumulator[id] = new CelestialCycle(parameters.cycles[id]); return accumulator; }, {} );
     // A "body" represents a celestial body: a collection of matter that is tightly bound by gravity.
     var bodies  =  Object.keys(parameters.bodies)
-        .reduce((accumulator,  id) => { 
+        .reduce((accumulator,  id) => {
             var body = parameters.bodies[id];
             accumulator[id] = {
                 undefined: () => body,
@@ -90,8 +94,10 @@ function Universe(parameters) {
     this.cycles = cycles;
     this.bodies  = bodies;
 
-    // given a body name, "cycle_of_body()" returns the cycle at which the body is the center
-    // it is of O(N) complexity, where N is the number of cycles
+    /*
+    given a body name, "cycle_of_body()" returns the cycle at which the body is the center
+    it is of O(N) complexity, where N is the number of cycles
+    */
     function cycle_of_body(body_id) {
         return Object.values(cycles).filter(x => x.body == body_id)[0];
     }
@@ -119,10 +125,12 @@ function Universe(parameters) {
         return output;
     }
 
-    // given a cycle configuration and timestep, 
-    // "sample()" generates a list of cycle configurations that are representative of that timestep
-    // this is useful for finding, e.g. mean daily solar radiation
-    // the function will not generate more than a given number of samples per cycle
+    /*
+    given a cycle configuration and timestep, 
+    "sample()" generates a list of cycle configurations that are representative of that timestep
+    this is useful for finding, e.g. mean daily solar radiation
+    the function will not generate more than a given number of samples per cycle
+    */
     function samples(config, max_sample_count, min_perceivable_period) {
         // if the cycle takes more than a given amount to complete, 
         // then don't sample across it
