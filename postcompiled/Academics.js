@@ -152,6 +152,21 @@ function oplus(
     return 1. / (1. / a + 1. / b);
 }
 
+//#include "precompiled/academics/math/geometry/point_intersection.glsl"
+/*maybe_vec2*/
+function get_bounding_distances_along_ray(
+     /*maybe_vec2*/ distances_along_line
+){
+    return maybe_vec2( glm.vec2( glm.max( glm.min( distances_along_line.value.x,  distances_along_line.value.y),  0.0),  glm.max( distances_along_line.value.x,  distances_along_line.value.y)),  distances_along_line.exists && glm.max( distances_along_line.value.x,  distances_along_line.value.y) > 0.);
+}
+
+/*maybe_float*/
+function get_nearest_distance_along_ray(
+     /*maybe_vec2*/ distances_along_line
+){
+    return maybe_float( distances_along_line.value.x < 0.0? distances_along_line.value.y : distances_along_line.value.y < 0.0? distances_along_line.value.x : glm.min( distances_along_line.value.x,  distances_along_line.value.y),  distances_along_line.exists && glm.max( distances_along_line.value.x,  distances_along_line.value.y) > 0.);
+}
+
 /*maybe_float*/
 function get_distance_along_line_to_union(
      /*maybe_float*/ shape1,
@@ -918,7 +933,7 @@ function get_fraction_of_light_reflected_from_material(
 ){
     let m = root_mean_slope_squared;
     let F0 = characteristic_reflectance;
-    return ((((get_rgb_fraction_of_light_reflected_from_facet( HV,  F0)['/']( (4. * PI * NV * NL)))['*']( get_fraction_of_microfacets_accessible_to_ray( NV,  m)))['*']( get_fraction_of_microfacets_with_angle( NH,  m)))['*']( get_fraction_of_microfacets_accessible_to_ray( NL,  m)))['*']( 1.0);
+    return ((((get_rgb_fraction_of_light_reflected_from_facet( HV,  F0)['/']( glm.max( 4. * PI * NV * NL,  0.001)))['*']( get_fraction_of_microfacets_accessible_to_ray( NV,  m)))['*']( get_fraction_of_microfacets_with_angle( NH,  m)))['*']( get_fraction_of_microfacets_accessible_to_ray( NL,  m)))['*']( 1.0);
 }
 
 /*
@@ -1038,7 +1053,7 @@ function approx_air_column_density_ratio_through_atmosphere(
     const SQRT_HALF_PI = glm.sqrt( PI / 2.);
     const k = 0.6;
     // "k" is an empirically derived constant
-    let x0 = glm.sqrt( glm.max( r0 * r0 - z2,  0.));
+    let x0 = glm.sqrt( glm.max( r0 * r0 - z2,  SMALL));
     // if obstructed by the world, approximate answer by using a ludicrously large number
     if (a < x0 && -x0 < b && z2 < r0 * r0){
         return BIG;
@@ -1054,9 +1069,9 @@ function approx_air_column_density_ratio_through_atmosphere(
     let cha = (1. - 1. / (2. * ra)) * SQRT_HALF_PI * sqrt_z + k * abs_a;
     let chb = (1. - 1. / (2. * rb)) * SQRT_HALF_PI * sqrt_z + k * abs_b;
     let s0 = glm.min( Math.exp( r0 - z),  1.) / (x0 / r0 + 1. / ch0);
-    let sa = Math.exp( r0 - ra) / (abs_a / ra + 1. / cha);
-    let sb = Math.exp( r0 - rb) / (abs_b / rb + 1. / chb);
-    return glm.sign( b) * (s0 - sb) - glm.sign( a) * (s0 - sa);
+    let sa = Math.exp( r0 - ra) / glm.max( abs_a / ra + 1. / cha,  0.01);
+    let sb = Math.exp( r0 - rb) / glm.max( abs_b / rb + 1. / chb,  0.01);
+    return glm.max( glm.sign( b) * (s0 - sb) - glm.sign( a) * (s0 - sa),  0.0);
 }
 
 /*vec3*/
@@ -1151,7 +1166,7 @@ function get_rgb_fraction_of_distant_light_scattered_by_atmosphere(
     let beta_sum = ((beta_ray['+']( beta_mie['+']( beta_abs))))['*']( h);
     let beta_gamma = (((beta_ray['*']( gamma_ray))['+']( beta_mie['*']( gamma_mie))))['*']( h);
     // number of iterations within the raymarch
-    const STEP_COUNT = 16.;
+    const STEP_COUNT = 6.;
     let dv = (v1 - v0) / STEP_COUNT;
     let vi = v0;
     let dl = dv * VL;
@@ -1170,6 +1185,8 @@ function get_rgb_fraction_of_distant_light_scattered_by_atmosphere(
         F += Math.exp( ((beta_sum['*']( sigma))['-']( glm.sqrt( vi * vi + y2 + zv2)))['-']( r))['*']( beta_gamma['*']( dv));
         // NOTE: the above is equivalent to the incoming fraction multiplied by the outgoing fraction:
             // incoming fraction: the fraction of light that scatters towards camera
+            //   exp(r-sqrt(vi*vi+y2+zv2)) * beta_gamma * dv
+            // emission : 
             //   exp(r-sqrt(vi*vi+y2+zv2)) * beta_gamma * dv
             // outgoing fraction: the fraction of light that scatters away from camera
             // * exp(-beta_sum * sigma);

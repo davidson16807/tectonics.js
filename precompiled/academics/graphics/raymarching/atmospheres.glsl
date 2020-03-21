@@ -130,7 +130,7 @@ vec3 get_rgb_fraction_of_distant_light_scattered_by_atmosphere(
     vec3 F = vec3(0); // total intensity for each color channel, found as the sum of light intensities for each path from the light source to the camera
     for (float i = 0.; i < STEP_COUNT; ++i)
     {
-        zl2 = vi*vi + zv2 - li*li;  f
+        zl2 = vi*vi + zv2 - li*li;
         sigma = approx_air_column_density_ratio_through_atmosphere(v0, vi, y2+zv2, r )
               + approx_air_column_density_ratio_through_atmosphere(li, 3.*r, y2+zl2, r );
         F += exp(r-sqrt(vi*vi+y2+zv2) - beta_sum*sigma) * beta_gamma * dv;

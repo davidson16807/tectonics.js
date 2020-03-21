@@ -531,6 +531,26 @@ float get_distance_of_3d_point_to_tetrahedron(in vec3 A0, in vec3 B1, in vec3 B2
         ;
 }
 */
+//#include "precompiled/academics/math/geometry/point_intersection.glsl"
+maybe_vec2 get_bounding_distances_along_ray(in maybe_vec2 distances_along_line){
+    return
+      maybe_vec2(
+        vec2(
+          max(min(distances_along_line.value.x, distances_along_line.value.y), 0.0),
+          max(distances_along_line.value.x, distances_along_line.value.y)
+        ),
+        distances_along_line.exists && max(distances_along_line.value.x, distances_along_line.value.y) > 0.
+      );
+}
+maybe_float get_nearest_distance_along_ray(in maybe_vec2 distances_along_line){
+    return
+      maybe_float(
+        distances_along_line.value.x < 0.0? distances_along_line.value.y :
+        distances_along_line.value.y < 0.0? distances_along_line.value.x :
+        min(distances_along_line.value.x, distances_along_line.value.y),
+        distances_along_line.exists && max(distances_along_line.value.x, distances_along_line.value.y) > 0.
+      );
+}
 maybe_float get_distance_along_line_to_union(
     in maybe_float shape1,
     in maybe_float shape2
@@ -1261,7 +1281,7 @@ vec3 get_fraction_of_light_reflected_from_material(
         * get_fraction_of_microfacets_with_angle(NH, m)
         * get_fraction_of_microfacets_accessible_to_ray(NV, m)
         * get_rgb_fraction_of_light_reflected_from_facet(HV, F0)
-        / (4.*PI*NV*NL);
+        / max(4.*PI*NV*NL, 0.001);
 }
 /*
 This function returns a rgb vector that best represents color at a given wavelength
@@ -1340,7 +1360,7 @@ float approx_air_column_density_ratio_through_atmosphere(
     //  "ch" a nudge we give to prevent division by zero, analogous to the Chapman function
     const float SQRT_HALF_PI = sqrt(PI/2.);
     const float k = 0.6; // "k" is an empirically derived constant
-    float x0 = sqrt(max(r0*r0 - z2, 0.));
+    float x0 = sqrt(max(r0*r0 - z2, SMALL));
     // if obstructed by the world, approximate answer by using a ludicrously large number
     if (a < x0 && -x0 < b && z2 < r0*r0) { return BIG; }
     float abs_a = abs(a);
@@ -1352,10 +1372,10 @@ float approx_air_column_density_ratio_through_atmosphere(
     float ch0 = (1. - 1./(2.*r0)) * SQRT_HALF_PI * sqrt_z + k*x0;
     float cha = (1. - 1./(2.*ra)) * SQRT_HALF_PI * sqrt_z + k*abs_a;
     float chb = (1. - 1./(2.*rb)) * SQRT_HALF_PI * sqrt_z + k*abs_b;
-    float s0 = min(exp(r0- z),1.) / ( x0/r0 + 1./ch0);
-    float sa = exp(r0-ra) / (abs_a/ra + 1./cha);
-    float sb = exp(r0-rb) / (abs_b/rb + 1./chb);
-    return sign(b)*(s0-sb) - sign(a)*(s0-sa);
+    float s0 = min(exp(r0- z),1.) / (x0/r0 + 1./ch0);
+    float sa = exp(r0-ra) / max(abs_a/ra + 1./cha, 0.01);
+    float sb = exp(r0-rb) / max(abs_b/rb + 1./chb, 0.01);
+    return max( sign(b)*(s0-sb) - sign(a)*(s0-sa), 0.0 );
 }
 vec3 get_rgb_fraction_of_light_transmitted_through_atmosphere(
     in vec3 view_origin, in vec3 view_direction, in float view_start_length, in float view_stop_length,
@@ -1429,7 +1449,7 @@ vec3 get_rgb_fraction_of_distant_light_scattered_by_atmosphere(
     vec3 beta_sum = h*(beta_ray + beta_mie + beta_abs);
     vec3 beta_gamma = h*(beta_ray * gamma_ray + beta_mie * gamma_mie);
     // number of iterations within the raymarch
-    const float STEP_COUNT = 16.;
+    const float STEP_COUNT = 6.;
     float dv = (v1 - v0) / STEP_COUNT;
     float vi = v0;
     float dl = dv*VL;
@@ -1448,6 +1468,8 @@ vec3 get_rgb_fraction_of_distant_light_scattered_by_atmosphere(
         F += exp(r-sqrt(vi*vi+y2+zv2) - beta_sum*sigma) * beta_gamma * dv;
             // NOTE: the above is equivalent to the incoming fraction multiplied by the outgoing fraction:
             // incoming fraction: the fraction of light that scatters towards camera
+            //   exp(r-sqrt(vi*vi+y2+zv2)) * beta_gamma * dv
+            // emission : 
             //   exp(r-sqrt(vi*vi+y2+zv2)) * beta_gamma * dv
             // outgoing fraction: the fraction of light that scatters away from camera
             // * exp(-beta_sum * sigma);
@@ -1846,7 +1868,7 @@ vec3 get_fraction_of_light_reflected_from_material(
         * get_fraction_of_microfacets_with_angle(NH, m)
         * get_fraction_of_microfacets_accessible_to_ray(NV, m)
         * get_rgb_fraction_of_light_reflected_from_facet(HV, F0)
-        / (4.*PI*NV*NL);
+        / max(4.*PI*NV*NL, 0.001);
 }
 /*
 This function returns a rgb vector that best represents color at a given wavelength
@@ -1968,7 +1990,7 @@ float approx_air_column_density_ratio_through_atmosphere(
     //  "ch" a nudge we give to prevent division by zero, analogous to the Chapman function
     const float SQRT_HALF_PI = sqrt(PI/2.);
     const float k = 0.6; // "k" is an empirically derived constant
-    float x0 = sqrt(max(r0*r0 - z2, 0.));
+    float x0 = sqrt(max(r0*r0 - z2, SMALL));
     // if obstructed by the world, approximate answer by using a ludicrously large number
     if (a < x0 && -x0 < b && z2 < r0*r0) { return BIG; }
     float abs_a = abs(a);
@@ -1980,10 +2002,10 @@ float approx_air_column_density_ratio_through_atmosphere(
     float ch0 = (1. - 1./(2.*r0)) * SQRT_HALF_PI * sqrt_z + k*x0;
     float cha = (1. - 1./(2.*ra)) * SQRT_HALF_PI * sqrt_z + k*abs_a;
     float chb = (1. - 1./(2.*rb)) * SQRT_HALF_PI * sqrt_z + k*abs_b;
-    float s0 = min(exp(r0- z),1.) / ( x0/r0 + 1./ch0);
-    float sa = exp(r0-ra) / (abs_a/ra + 1./cha);
-    float sb = exp(r0-rb) / (abs_b/rb + 1./chb);
-    return sign(b)*(s0-sb) - sign(a)*(s0-sa);
+    float s0 = min(exp(r0- z),1.) / (x0/r0 + 1./ch0);
+    float sa = exp(r0-ra) / max(abs_a/ra + 1./cha, 0.01);
+    float sb = exp(r0-rb) / max(abs_b/rb + 1./chb, 0.01);
+    return max( sign(b)*(s0-sb) - sign(a)*(s0-sa), 0.0 );
 }
 vec3 get_rgb_fraction_of_light_transmitted_through_atmosphere(
     in vec3 view_origin, in vec3 view_direction, in float view_start_length, in float view_stop_length,
@@ -2057,7 +2079,7 @@ vec3 get_rgb_fraction_of_distant_light_scattered_by_atmosphere(
     vec3 beta_sum = h*(beta_ray + beta_mie + beta_abs);
     vec3 beta_gamma = h*(beta_ray * gamma_ray + beta_mie * gamma_mie);
     // number of iterations within the raymarch
-    const float STEP_COUNT = 16.;
+    const float STEP_COUNT = 6.;
     float dv = (v1 - v0) / STEP_COUNT;
     float vi = v0;
     float dl = dv*VL;
@@ -2076,6 +2098,8 @@ vec3 get_rgb_fraction_of_distant_light_scattered_by_atmosphere(
         F += exp(r-sqrt(vi*vi+y2+zv2) - beta_sum*sigma) * beta_gamma * dv;
             // NOTE: the above is equivalent to the incoming fraction multiplied by the outgoing fraction:
             // incoming fraction: the fraction of light that scatters towards camera
+            //   exp(r-sqrt(vi*vi+y2+zv2)) * beta_gamma * dv
+            // emission : 
             //   exp(r-sqrt(vi*vi+y2+zv2)) * beta_gamma * dv
             // outgoing fraction: the fraction of light that scatters away from camera
             // * exp(-beta_sum * sigma);
@@ -2123,10 +2147,6 @@ varying float scalar_v;
 varying float surface_temperature_v;
 varying vec4 position_v;
 varying vec3 view_direction_v;
-// "SOLAR_RGB_LUMINOSITY" is the rgb luminosity of earth's sun, in Watts.
-//   It is used to convert the above true color values to absorption coefficients.
-//   You can also generate these numbers by calling solve_rgb_intensity_of_light_emitted_by_black_body(SOLAR_TEMPERATURE)
-const vec3 SOLAR_RGB_LUMINOSITY = vec3(7247419., 8223259., 8121487.);
 const float AIR_REFRACTIVE_INDEX = 1.000277;
 const float WATER_REFRACTIVE_INDEX = 1.333;
 const float WATER_ROOT_MEAN_SLOPE_SQUARED = 0.18;
@@ -2217,12 +2237,7 @@ vec3 get_rgb_intensity_of_light_from_surface_of_world(
             atmosphere_scale_height, atmosphere_beta_ray, atmosphere_beta_mie, atmosphere_beta_abs
         );
     // "E_surface_reflected" is the intensity of light that is immediately reflected by the surface
-    vec3 E_surface_reflected = I_surface * 1.0
-        * get_fraction_of_microfacets_accessible_to_ray(NL, m)
-        * get_fraction_of_microfacets_with_angle(NH, m)
-        * get_fraction_of_microfacets_accessible_to_ray(NV, m)
-        * get_rgb_fraction_of_light_reflected_from_facet(HV, F0)
-        / max(4.*PI*NV*NL, 0.001);
+    vec3 E_surface_reflected = I_surface * get_fraction_of_light_reflected_from_material(NL,NH,NV, HV, m,F0);
         //get_fraction_of_light_reflected_from_material(NL,NH,NV,max(dot(V,H),0.),m,F0);
     // "I_surface_refracted" is the intensity of light that is not immediately reflected, 
     //   but penetrates into the material, either to be absorbed, scattered away, 
