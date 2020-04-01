@@ -26,7 +26,6 @@
     <script src="libraries/three.js/EffectComposer.js"></script>
     <script src="libraries/three.js/RenderPass.js"></script>
     <script src="libraries/three.js/ShaderPass.js"></script>
-    <script src="libraries/threex/THREEx.FullScreen.js"></script>
     <script src="libraries/threex/THREEx.WindowResize.js"></script>
     <script src="libraries/Stats.js"></script>
     <script src="libraries/random-0.26.js"></script>
@@ -210,16 +209,7 @@
         <img src="icons/down-arrow.svg"/>
         Return
     </button>
-
-
-    <!-- FULLSCREEN -->
-    <button id="fullscreen" v-if="isFullscreenVisible" type="button" class="btn fullscreen" data-toggle="button" aria-pressed="true" v-on:click="toggleFullscreen()">
-        <img v-if="!isFullscreen" src="icons/fullscreen.svg" />
-        <img v-if="isFullscreen" src="icons/fullscreen-exit.svg"/>
-        {{isFullscreen? 'Exit Fullscreen' : 'Fullscreen'}}
-        <span class="instructions">F11</span>
-    </button>
-
+    
     <!-- SCALAR OPTIONS -->
     <button type="button" 
         class="btn" 
@@ -1045,23 +1035,8 @@
         isFullscreen: false,
         isFullscreenVisible: false,
       },
-      created: function() {
-          if( THREEx.FullScreen.available() ){
-              // allow 'f' to go fullscreen where this feature is supported
-              THREEx.FullScreen.bindKey();
-              this.isFullscreenVisible = true;
-          } 
-      },
+      created: function() {},
       methods: {
-        toggleFullscreen: function() {
-            this.isFullscreen = THREEx.FullScreen.activated();
-            if( this.isFullscreen ){
-                THREEx.FullScreen.cancel();
-            }else{
-                THREEx.FullScreen.request(document.body);
-            }
-            this.isFullscreen = !this.isFullscreen;
-        },
         setProjectionSelected: function(value) {
             if (this.projectionSelected == value) { value = this.projectionOptions[0].value; }
             this.projectionSelected = value;
