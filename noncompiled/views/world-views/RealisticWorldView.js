@@ -45,7 +45,7 @@ function RealisticWorldView(shader_return_value) {
     function create_mesh(world, options) {
         var grid = world.grid;
         var faces = grid.faces;
-        var geometry = grid.buffer_geometry;
+        var geometry = grid.getBufferGeometry();
         geometry.addAttribute('displacement',   Float32Array, faces.length*3,   1);
         geometry.addAttribute('gradient',       Float32Array, faces.length*3*3, 1);
         geometry.addAttribute('snow_coverage',   Float32Array, faces.length*3,   1);

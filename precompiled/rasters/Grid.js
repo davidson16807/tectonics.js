@@ -58,21 +58,8 @@ function Grid(parameters, options){
         positions[ i3 + 7 ] = c.y;
         positions[ i3 + 8 ] = c.z;
     }
-    var buffer_geometry = {
-        id: THREE.GeometryIdCount++,
-        uuid: THREE.Math.generateUUID(),
-        name: "",
-        attributes: {
-            position: { itemSize: 3, array: positions },
-            normal:   { itemSize: 3, array: normals   }
-        },
-        offsets: [],
-        boundingSphere: null,
-        boundingBox: null,
-        //HACK: the line below is an interrim hack that stays until I can remove Three.js
-        __proto__: THREE.BufferGeometry.prototype 
-    };
-    this.buffer_geometry = buffer_geometry;
+    this._buffer_geometry_positions = positions;
+    this._buffer_geometry_normals   = normals;
 
     //Precompute neighbors for O(1) lookups
     var neighbor_lookup = vertices.map(function(vertex) { return {}});
@@ -160,3 +147,20 @@ Grid.prototype.getNearestIds = function(pos_field, result) {
 Grid.prototype.getNeighborIds = function(id) {
     return this.neighbor_lookup[id];
 }
+
+Grid.prototype.getBufferGeometry = function() {
+    return {
+        id: THREE.GeometryIdCount++,
+        uuid: THREE.Math.generateUUID(),
+        name: "",
+        attributes: {
+            position: { itemSize: 3, array: this._buffer_geometry_positions },
+            normal:   { itemSize: 3, array: this._buffer_geometry_normals   }
+        },
+        offsets: [],
+        boundingSphere: null,
+        boundingBox: null,
+        //HACK: the line below is an interrim hack that stays until I can remove Three.js
+        __proto__: THREE.BufferGeometry.prototype 
+    };
+};

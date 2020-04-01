@@ -31,7 +31,7 @@ function ColorscaleRasterView(options) {
     function create_mesh(raster, options) {
         var grid = raster.grid;
         var faces = grid.faces;
-        var geometry = grid.buffer_geometry;
+        var geometry = grid.getBufferGeometry();
         geometry.addAttribute('displacement', Float32Array, faces.length*3, 1);
         geometry.addAttribute('scalar', Float32Array, faces.length*3, 1);
 
@@ -134,7 +134,6 @@ function ColorscaleRasterView(options) {
     this.removeFromScene = function(gl_state) {
         if (mesh !== void 0) {
             gl_state.scene.remove(mesh);
-            mesh.geometry.dispose();
             mesh.material.dispose();
             mesh = void 0;
             this.mesh = void 0;
