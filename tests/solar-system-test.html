@@ -22,8 +22,6 @@
     <script src="../libraries/three.js/Stats.js"></script>
     <script src="../libraries/three.js/OrbitControls.js"></script>
     <script src="../libraries/three.js/BufferGeometryUtils.js"></script>
-    <script src="../libraries/threex/THREEx.FullScreen.js"></script>
-    <script src="../libraries/threex/THREEx.WindowResize.js"></script>
     <script src="../libraries/random-0.26.js"></script>
     <script src="../postcompiled/Rasters.js"></script>
     <script src="../noncompiled/Units.js"></script>
@@ -407,7 +405,11 @@
         controls.zoomSpeed = 5.0;
         
         // transparently support window resize
-        THREEx.WindowResize.bind(renderer, camera);
+        window.addEventListener('resize', function(){
+            renderer.setSize( window.innerWidth, window.innerHeight );
+            camera.aspect   = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+        }, false);
 
         // here you add your objects
         // - you will most likely replace this part by your own

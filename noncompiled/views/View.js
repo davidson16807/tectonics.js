@@ -18,7 +18,11 @@ function ThreeJsState() {
     this.camera.position.set(-4, 2, 4);
 
     // transparently support window resize
-    THREEx.WindowResize.bind(this.renderer, this.camera);
+    window.addEventListener('resize', function(){
+        this.renderer.setSize( window.innerWidth, window.innerHeight );
+        this.camera.aspect   = window.innerWidth / window.innerHeight;
+        this.camera.updateProjectionMatrix();
+    }.bind(this), false);
 
     // create a camera contol
     this.controls = new THREE.OrbitControls( this.camera, this.renderer.domElement );
