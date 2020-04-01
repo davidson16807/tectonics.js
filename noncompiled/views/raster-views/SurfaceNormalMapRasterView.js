@@ -20,7 +20,6 @@ function SurfaceNormalMapRasterView(options) {
         var geometry = THREE.BufferGeometryUtils.fromGeometry({
             faces: grid.faces, 
             vertices: grid.vertices, 
-            faceVertexUvs: [[]], // HACK: necessary for use with BufferGeometryUtils.fromGeometry
         });
         geometry.addAttribute('displacement', Float32Array, faces.length*3, 1);
         geometry.addAttribute('gradient',     Float32Array, faces.length*3*3, 1);

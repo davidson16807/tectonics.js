@@ -34,7 +34,6 @@ function ColorscaleRasterView(options) {
         var geometry = THREE.BufferGeometryUtils.fromGeometry({
             faces: grid.faces, 
             vertices: grid.vertices, 
-            faceVertexUvs: [[]], // HACK: necessary for use with BufferGeometryUtils.fromGeometry
         });
         geometry.addAttribute('displacement', Float32Array, faces.length*3, 1);
         geometry.addAttribute('scalar', Float32Array, faces.length*3, 1);
