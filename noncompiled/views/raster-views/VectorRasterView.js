@@ -15,7 +15,7 @@ function VectorRasterView(options) {
 
     function create_mesh(raster, options_) {
         var grid = raster.grid;
-        var geometry = grid.getBufferGeometry();
+        var geometry = new THREE.Geometry();
         var material = new THREE.ShaderMaterial({
                 vertexShader:     options_.vertexShader,
                 fragmentShader: fragmentShaders.vector_field,
