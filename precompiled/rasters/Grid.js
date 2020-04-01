@@ -18,7 +18,7 @@ function Grid(parameters, options){
 
 	this.getParameters = function(){
 		return {
-			faces: 		faces	.map(f => { return {a: f.a, b: f.b, c: f.c, vertexNormals: f.vertexNormals} } ),
+			faces: 		faces	.map(f => { return {a: f.a, b: f.b, c: f.c} } ),
 			vertices: 	vertices.map(v => { return {x: v.x, y: v.y, z: v.z} } ),
 		};
 	}

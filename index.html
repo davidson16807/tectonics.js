@@ -582,7 +582,7 @@
                     name: focus_name,
                     grid: { 
                         faces:   geometry.faces.map(f => {  
-                            return {a: f.a, b: f.b, c: f.c, vertexNormals: f.vertexNormals}  
+                            return {a: f.a, b: f.b, c: f.c}  
                             }), 
                         vertices:geometry.vertices.map(v => {  
                             return {x: v.x, y: v.y, z: v.z}  
@@ -1198,7 +1198,7 @@
             var geometry = new THREE.IcosahedronGeometry(1, new_value);
             world_params.grid = { 
                     faces:   geometry.faces.map(f => {  
-                        return {a: f.a, b: f.b, c: f.c, vertexNormals: f.vertexNormals}  
+                        return {a: f.a, b: f.b, c: f.c}  
                         }), 
                     vertices:geometry.vertices.map(v => {  
                         return {x: v.x, y: v.y, z: v.z}  
