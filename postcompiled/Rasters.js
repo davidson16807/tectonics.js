@@ -4961,6 +4961,38 @@ function Grid(parameters, options){
         buffer_array_to_cell[i3+2] = face.c;
     };
     this.buffer_array_to_cell = buffer_array_to_cell;
+    var positions = new Float32Array( faces.length * 3 * 3 );
+    var normals = new Float32Array( faces.length * 3 * 3 );
+    for ( var i = 0, i2 = 0, i3 = 0; i < faces.length; i ++, i2 += 6, i3 += 9 ) {
+        var face = faces[ i ];
+        var a = vertices[ face.a ];
+        var b = vertices[ face.b ];
+        var c = vertices[ face.c ];
+        positions[ i3 ] = a.x;
+        positions[ i3 + 1 ] = a.y;
+        positions[ i3 + 2 ] = a.z;
+        positions[ i3 + 3 ] = b.x;
+        positions[ i3 + 4 ] = b.y;
+        positions[ i3 + 5 ] = b.z;
+        positions[ i3 + 6 ] = c.x;
+        positions[ i3 + 7 ] = c.y;
+        positions[ i3 + 8 ] = c.z;
+    }
+    var buffer_geometry = {
+        id: THREE.GeometryIdCount++,
+        uuid: THREE.Math.generateUUID(),
+        name: "",
+        attributes: {
+            position: { itemSize: 3, array: positions },
+            normal: { itemSize: 3, array: normals }
+        },
+        offsets: [],
+        boundingSphere: null,
+        boundingBox: null,
+        //HACK: the line below is an interrim hack that stays until I can remove Three.js
+        __proto__: THREE.BufferGeometry.prototype
+    };
+    this.buffer_geometry = buffer_geometry;
     //Precompute neighbors for O(1) lookups
     var neighbor_lookup = vertices.map(function(vertex) { return {}});
     for(var i=0, il = faces.length; i<il; i++){

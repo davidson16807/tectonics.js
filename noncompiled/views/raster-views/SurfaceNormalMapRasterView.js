@@ -17,10 +17,7 @@ function SurfaceNormalMapRasterView(options) {
     function create_mesh(raster, options) {
         var grid = raster.grid;
         var faces = grid.faces;
-        var geometry = THREE.BufferGeometryUtils.fromGeometry({
-            faces: grid.faces, 
-            vertices: grid.vertices, 
-        });
+        var geometry = grid.buffer_geometry;
         geometry.addAttribute('displacement', Float32Array, faces.length*3, 1);
         geometry.addAttribute('gradient',     Float32Array, faces.length*3*3, 1);
 

@@ -45,10 +45,7 @@ function RealisticWorldView(shader_return_value) {
     function create_mesh(world, options) {
         var grid = world.grid;
         var faces = grid.faces;
-        var geometry = THREE.BufferGeometryUtils.fromGeometry({
-            faces: grid.faces, 
-            vertices: grid.vertices, 
-        });
+        var geometry = grid.buffer_geometry;
         geometry.addAttribute('displacement',   Float32Array, faces.length*3,   1);
         geometry.addAttribute('gradient',       Float32Array, faces.length*3*3, 1);
         geometry.addAttribute('snow_coverage',   Float32Array, faces.length*3,   1);
