@@ -18,8 +18,8 @@ function SurfaceNormalMapRasterView(options) {
         var grid = raster.grid;
         var faces = grid.faces;
         var geometry = grid.getBufferGeometry();
-        geometry.addAttribute('displacement', Float32Array, faces.length*3, 1);
-        geometry.addAttribute('gradient',     Float32Array, faces.length*3*3, 1);
+        geometry.addAttribute('displacement', { itemSize: 1, array: new Float32Array( faces.length * 3 * 1 ), __proto__: THREE.BufferAttribute.prototype });
+        geometry.addAttribute('gradient',     { itemSize: 1, array: new Float32Array( faces.length * 3 * 3 ), __proto__: THREE.BufferAttribute.prototype });
 
         var material = new THREE.ShaderMaterial({
             attributes: {

@@ -32,8 +32,8 @@ function ColorscaleRasterView(options) {
         var grid = raster.grid;
         var faces = grid.faces;
         var geometry = grid.getBufferGeometry();
-        geometry.addAttribute('displacement', Float32Array, faces.length*3, 1);
-        geometry.addAttribute('scalar', Float32Array, faces.length*3, 1);
+        geometry.addAttribute('displacement', { itemSize: 1, array: new Float32Array( faces.length * 3 * 1 ), __proto__: THREE.BufferAttribute.prototype });
+        geometry.addAttribute('scalar',       { itemSize: 1, array: new Float32Array( faces.length * 3 * 1 ), __proto__: THREE.BufferAttribute.prototype });
 
         var material = new THREE.ShaderMaterial({
             attributes: {

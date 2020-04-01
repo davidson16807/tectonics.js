@@ -149,13 +149,14 @@ Grid.prototype.getNeighborIds = function(id) {
 }
 
 Grid.prototype.getBufferGeometry = function() {
+    THREE.BufferAttribute();
     return {
         id: THREE.GeometryIdCount++,
         uuid: THREE.Math.generateUUID(),
         name: "",
         attributes: {
-            position: { itemSize: 3, array: this._buffer_geometry_positions },
-            normal:   { itemSize: 3, array: this._buffer_geometry_normals   }
+            position: { itemSize: 3, array: this._buffer_geometry_positions, __proto__: THREE.BufferAttribute.prototype },
+            normal:   { itemSize: 3, array: this._buffer_geometry_normals,   __proto__: THREE.BufferAttribute.prototype }
         },
         offsets: [],
         boundingSphere: null,

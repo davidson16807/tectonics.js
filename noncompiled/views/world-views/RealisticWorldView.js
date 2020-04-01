@@ -46,12 +46,12 @@ function RealisticWorldView(shader_return_value) {
         var grid = world.grid;
         var faces = grid.faces;
         var geometry = grid.getBufferGeometry();
-        geometry.addAttribute('displacement',   Float32Array, faces.length*3,   1);
-        geometry.addAttribute('gradient',       Float32Array, faces.length*3*3, 1);
-        geometry.addAttribute('snow_coverage',   Float32Array, faces.length*3,   1);
-        geometry.addAttribute('surface_temperature',   Float32Array, faces.length*3,   1);
-        geometry.addAttribute('plant_coverage', Float32Array, faces.length*3,   1);
-        geometry.addAttribute('scalar',         Float32Array, faces.length*3,   1);
+        geometry.addAttribute('displacement',   { itemSize: 1, array: new Float32Array( faces.length * 3 * 1 ), __proto__: THREE.BufferAttribute.prototype });
+        geometry.addAttribute('gradient',       { itemSize: 1, array: new Float32Array( faces.length * 3 * 3 ), __proto__: THREE.BufferAttribute.prototype });
+        geometry.addAttribute('snow_coverage',  { itemSize: 1, array: new Float32Array( faces.length * 3 * 1 ), __proto__: THREE.BufferAttribute.prototype });
+        geometry.addAttribute('surface_temperature', { itemSize: 1, array: new Float32Array( faces.length * 3 * 1 ), __proto__: THREE.BufferAttribute.prototype });
+        geometry.addAttribute('plant_coverage', { itemSize: 1, array: new Float32Array( faces.length * 3 * 1 ), __proto__: THREE.BufferAttribute.prototype });
+        geometry.addAttribute('scalar',         { itemSize: 1, array: new Float32Array( faces.length * 3 * 1 ), __proto__: THREE.BufferAttribute.prototype });
 
         var material = new THREE.ShaderMaterial({
             attributes: {
