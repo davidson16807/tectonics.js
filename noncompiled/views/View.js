@@ -149,7 +149,7 @@ function View(innerWidth, innerHeight, scalarView, vectorView, projectionView) {
     };
 
     this.getScreenshotDataURL = function() {
-        return THREEx.Screenshot.toDataURL(gl_state.renderer);
+        return gl_state.renderer.domElement.toDataURL("image/png");
     };
 
     this.setScalarView = function(value) {
