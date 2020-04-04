@@ -3,11 +3,11 @@
 // All functions within the namespace are static and have no side effects
 // The only data structures allowed are rasters and grid objects
 
-var Thermodynamics = (function() {
-    var Thermodynamics = {};
+const Thermodynamics = (function() {
+    const Thermodynamics = {};
 
     // NOTE: this stays a private variable here until we can figure out where else to put it.
-    var SPEED_OF_LIGHT = 299792458 * Units.METER / Units.SECOND; 
+    const SPEED_OF_LIGHT = 299792458 * Units.METER / Units.SECOND; 
 
     Thermodynamics.BOLTZMANN_CONSTANT = 1.3806485279e-23 * Units.JOULE / Units.KELVIN;
     Thermodynamics.STEPHAN_BOLTZMANN_CONSTANT = 5.670373e-8 * Units.WATT / (Units.METER*Units.METER* Units.KELVIN*Units.KELVIN*Units.KELVIN*Units.KELVIN);
@@ -23,13 +23,13 @@ var Thermodynamics = (function() {
     Thermodynamics.get_photons_per_watt_emitted_by_black_body_between_wavelengths = function(lo, hi, temperature, sample_count, iterations_per_sample) {
         sample_count = sample_count || 1;
         iterations_per_sample = iterations_per_sample || 5;
-        var sum = 0;
-        var range = hi-lo;
-        var δλ = range / sample_count;
-        var T = temperature;
-        var F = Thermodynamics.solve_fraction_of_light_emitted_by_black_body_between_wavelengths;
-        var E = Thermodynamics.get_energy_of_photon_at_wavelength;
-        for (var λ = lo; λ < hi; λ += δλ) {
+        const range = hi-lo;
+        const δλ = range / sample_count;
+        const T = temperature;
+        const F = Thermodynamics.solve_fraction_of_light_emitted_by_black_body_between_wavelengths;
+        const E = Thermodynamics.get_energy_of_photon_at_wavelength;
+        let sum = 0;
+        for (let λ = lo; λ < hi; λ += δλ) {
             sum += F(λ, λ+δλ, T, iterations_per_sample) / E(λ+δλ/2);
         }
         return sum;
@@ -38,18 +38,18 @@ var Thermodynamics = (function() {
     // see Lawson 2004, "The Blackbody Fraction, Infinite Series and Spreadsheets"
     Thermodynamics.solve_fraction_of_light_emitted_by_black_body_below_wavelength = function(wavelength, temperature, iterations){ 
         iterations = iterations || 5;
-        var π = Math.PI;
-        var h = Thermodynamics.PLANCK_CONSTANT;
-        var k = Thermodynamics.BOLTZMANN_CONSTANT;
-        var c = SPEED_OF_LIGHT;
-        var λ = wavelength;
-        var T = temperature;
-        var C2 = h*c/k;
-        var z = C2 / (λ*T);
-        var z2 = z*z;
-        var z3 = z2*z;
-        var sum = 0;
-        for (var n=1, n2=0, n3=0; n < iterations; n++) {
+        const π = Math.PI;
+        const h = Thermodynamics.PLANCK_CONSTANT;
+        const k = Thermodynamics.BOLTZMANN_CONSTANT;
+        const c = SPEED_OF_LIGHT;
+        const λ = wavelength;
+        const T = temperature;
+        const C2 = h*c/k;
+        const z = C2 / (λ*T);
+        const z2 = z*z;
+        const z3 = z2*z;
+        let sum = 0;
+        for (let n=1, n2=0, n3=0; n < iterations; n++) {
             n2 = n*n;
             n3 = n2*n;
             sum += (z3 + 3*z2/n + 6*z/n2 + 6/n3) * Math.exp(-n*z) / n;
@@ -62,7 +62,7 @@ var Thermodynamics = (function() {
                 Thermodynamics.solve_fraction_of_light_emitted_by_black_body_below_wavelength(lo, temperature, iterations);
     }
     Thermodynamics.solve_rgb_intensity_of_light_emitted_by_black_body = function(temperature){
-        var I = Thermodynamics.get_intensity_of_light_emitted_by_black_body(temperature);
+        const I = Thermodynamics.get_intensity_of_light_emitted_by_black_body(temperature);
         return Vector(
                 I * Thermodynamics.solve_fraction_of_light_emitted_by_black_body_between_wavelengths(600e-9*Units.METER, 700e-9*Units.METER, temperature),
                 I * Thermodynamics.solve_fraction_of_light_emitted_by_black_body_between_wavelengths(500e-9*Units.METER, 600e-9*Units.METER, temperature),
@@ -135,7 +135,6 @@ var Thermodynamics = (function() {
     Thermodynamics.guess_entropic_heat_flows = function(heat, heat_flow, result) {
         result = result || Float32Raster.FromExample(heat);
 
-        var heat_flow_field = result;
         Float32Dataset.normalize(heat, result, -heat_flow, heat_flow);
         ScalarTransport.fix_conserved_quantity_delta(result, 1e-5);
 
@@ -149,13 +148,13 @@ var Thermodynamics = (function() {
     Thermodynamics.solve_entropic_heat_flow = function(insolation_hot, insolation_cold, emission_coefficient, iterations) {
         iterations = iterations || 10;
 
-        var Ih = insolation_hot;
-        var Ic = insolation_cold;
-        var β = emission_coefficient || 1.;
+        const Ih = insolation_hot;
+        const Ic = insolation_cold;
+        const β = emission_coefficient || 1.;
         // temperature given net energy flux
 
-        var T = Thermodynamics.get_equilibrium_temperature;
-        var S = Thermodynamics.get_entropy_production;
+        const T = Thermodynamics.get_equilibrium_temperature;
+        const S = Thermodynamics.get_entropy_production;
 
         // entropy production given heat flux
         function N(F, Ih, Ic) {
@@ -163,12 +162,13 @@ var Thermodynamics = (function() {
         }
  
         // heat flow 
-        var F = (Ih-Ic)/4; 
-        var dF = F/iterations; // "dF" is a measure for how much F changes with each iteration 
+        let F = (Ih-Ic)/4; 
+        let dF = F/iterations; // "dF" is a measure for how much F changes with each iteration 
+        let dN;
         // reduce step_size by this fraction for each iteration 
-        var annealing_factor = 0.8; 
+        const annealing_factor = 0.8; 
         // amount to change F with each iteration
-        for (var i = 0; i < iterations; i++) {
+        for (let i = 0; i < iterations; i++) {
             // TODO: relax assumption that world must have earth-like rotation (e.g. tidally locked)
             dN = N(F-dF, Ih, Ic) - N(F+dF, Ih, Ic);
             F -= dF * Math.sign(dN);

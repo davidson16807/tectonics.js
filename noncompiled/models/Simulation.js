@@ -1,7 +1,7 @@
 function Simulation (parameters) {
     parameters = parameters || {};
-    var _model                 = void 0;
-    var _focus_id              = void 0;
+    let _model                 = void 0;
+    let _focus_id              = void 0;
     this.paused             = parameters.paused || false;
     this.speed                 = parameters.speed || 1;
     this.elapsed_time        = parameters.elapsed_time || 0;
@@ -14,10 +14,10 @@ function Simulation (parameters) {
     this._last_update_timestamp = 0;
 
     function parseSeed(text) {
-            var parsed = parseInt(text);
+            let parsed = parseInt(text);
             if(isNaN(parsed)) {
                 parsed = 0;
-                for (var i = 0; i < Math.min(8, text.length); i++) {
+                for (let i = 0; i < Math.min(8, text.length); i++) {
                     parsed = (parsed * 256) + text.charCodeAt(i);
                 }
             }
@@ -64,8 +64,8 @@ function Simulation (parameters) {
     }
 
     this.update = function() {
-        var now = performance.now();
-        var seconds = (now - this._last_update_timestamp)/1000;
+        const now = performance.now();
+        const seconds = (now - this._last_update_timestamp)/1000;
         this._last_update_timestamp = now;
 
         //minimum refresh rate of 5fps
@@ -83,7 +83,7 @@ function Simulation (parameters) {
 
         this.elapsed_time += this.speed * seconds;
 
-        var timestep = this.speed * seconds;
+        const timestep = this.speed * seconds;
 
         _model.invalidate(timestep);
         _model.calcChanges(timestep);

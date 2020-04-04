@@ -3,7 +3,7 @@
 function Plate(grid, parameters)
 {
     parameters = parameters || stop('missing parameter object')
-    var grid = grid || stop('missing parameter: "grid"');
+    grid = grid || stop('missing parameter: "grid"');
 
     this.crust = new Crust({grid: grid, buffer: parameters['crust']});
     this.mask = Uint8Raster.FromBuffer(parameters['mask'], grid);
@@ -22,7 +22,7 @@ function Plate(grid, parameters)
         };
     }
 
-    var self = this; 
+    const self = this; 
     // The following are fields that are derived from other fields:
     // "displacement is the height of the crust relative to an arbitrary datum level
     // It is not called "elevation" because we want to emphasize that it is not relative to sea level
@@ -74,9 +74,9 @@ function Plate(grid, parameters)
     this.global_pos_of_local_cells = VectorRaster(grid);
     this.local_pos_of_global_cells = VectorRaster(grid);
 
-    var material_density = undefined;
-    var material_viscosity = undefined;
-    var surface_gravity = undefined;
+    let material_density = undefined;
+    let material_viscosity = undefined;
+    let surface_gravity = undefined;
 
     function assert_dependencies() {
         if (material_density === void 0)    { throw '"material_density" not provided'; }
@@ -104,9 +104,9 @@ function Plate(grid, parameters)
     this.move = function(megayears){
         assert_dependencies();
 
-        var world = this.world;
+        const world = this.world;
 
-        var rotation_matrix = Tectonophysics.get_plate_rotation_matrix3x3(this.velocity.value(), this.center_of_mass.value(), megayears);
+        const rotation_matrix = Tectonophysics.get_plate_rotation_matrix3x3(this.velocity.value(), this.center_of_mass.value(), megayears);
 
         Matrix3x3.mult_matrix(this.local_to_global_matrix, rotation_matrix, this.local_to_global_matrix);
         Matrix3x3.invert(this.local_to_global_matrix, this.global_to_local_matrix);

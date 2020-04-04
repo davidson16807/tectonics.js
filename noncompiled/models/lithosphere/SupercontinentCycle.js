@@ -29,10 +29,7 @@ SupercontinentCycle.prototype.isEnding = function() {
     return this.age >= this.duration;
 };
 SupercontinentCycle.prototype.restart = function() {
-    var lithosphere = this.lithosphere;
-
     this.age = 0;
     this.duration = this.getRandomDuration();
-
-    lithosphere.resetPlates();
+    this.lithosphere.resetPlates();
 }; 

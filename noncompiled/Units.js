@@ -1,4 +1,4 @@
-var Units = {};
+const Units = {};
 Units.DEGREE = Math.PI/180.;
 Units.RADIAN = 1;
 

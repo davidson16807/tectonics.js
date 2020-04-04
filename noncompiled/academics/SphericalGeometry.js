@@ -27,17 +27,17 @@ var SphericalGeometry = (function() {
         // Note: vertical axis is classically Y in 3d gaming, but it's classically Z in the math
         // We call it "height" to avoid confusion.
         // see https://gamedev.stackexchange.com/questions/46225/why-is-y-up-in-many-games
-        var lat = lat || Float32Raster(height.grid);
-        var asin = Math.asin;
-        for (var i=0, li=height.length; i<li; ++i) {
+        lat = lat || Float32Raster(height.grid);
+        const asin = Math.asin;
+        for (let i=0, li=height.length; i<li; ++i) {
             lat[i] = asin(height[i]);
         }
         return lat;
     }
     SphericalGeometry.get_longitudes = function(x, z, lon) {
-        var lon = lon || Float32Raster(x.grid);
-        var atan = Math.atan2;
-        for (var i=0, li=x.length; i<li; ++i) {
+        lon = lon || Float32Raster(x.grid);
+        const atan = Math.atan2;
+        for (let i=0, li=x.length; i<li; ++i) {
             lon[i] = atan(-z[i], x[i]);
         }
         return lon;
@@ -49,23 +49,23 @@ var SphericalGeometry = (function() {
         );
     };
     SphericalGeometry.get_random_point_on_great_circle = function(eulerPole, random) {
-        var a = eulerPole;
-        var b = Vector(0,0,1); 
-        var c = Vector()
+        const a = eulerPole;
+        const b = Vector(0,0,1); 
+        const c = Vector()
 
         // First, cross eulerPole with another vector to give a nonrandom point along great circle
         Vector.cross_vector    (a.x, a.y, a.z,      b.x, b.y, b.z,     c); 
         Vector.normalize    (c.x, c.y, c.z,                     c); 
         
         // then rotate by some random amount around the eulerPole
-        var random_rotation_matrix = Matrix3x3.RotationAboutAxis(a.x, a.y, a.z, 2*Math.PI * random.random());
+        const random_rotation_matrix = Matrix3x3.RotationAboutAxis(a.x, a.y, a.z, 2*Math.PI * random.random());
         return Vector.mult_matrix(c.x, c.y, c.z,  random_rotation_matrix)
     };
     SphericalGeometry.get_random_rotation_matrix3x3 = function (random) {
-        var up = Vector(0,0,1); 
-        var a = Vector(); 
-        var b = Vector(); 
-        var c = SphericalGeometry.get_random_point_on_surface(random); 
+        const up = Vector(0,0,1); 
+        const a = Vector(); 
+        const b = Vector(); 
+        const c = SphericalGeometry.get_random_point_on_surface(random); 
         Vector.cross_vector    (c.x, c.y, c.z, up.x, up.y, up.z, a); 
         Vector.normalize    (a.x, a.y, a.z, a); 
         Vector.cross_vector    (c.x, c.y, c.z, a.x, a.y, a.z, b); 
@@ -83,7 +83,7 @@ var SphericalGeometry = (function() {
     // instead of an immediate drop off between sides. 
     // This is done to produce smoother terrain using fewer iterations 
     SphericalGeometry.get_random_surface_field = function (grid, random) {
-        var exp = Math.exp;
+        const exp = Math.exp;
 
         function heaviside_approximation (x, k) {
             return 2 / (1 + exp(-k*x)) - 1;
@@ -95,8 +95,8 @@ var SphericalGeometry = (function() {
         // so we discard all but the row representing the z axis
         // this row is stored as a vector, and we take the dot product with the cell pos 
         // to find the z axis relative to the continent center 
-        var zDotMultipliers = [];
-        for (var i = 0; i < 1000; i++) {
+        const zDotMultipliers = [];
+        for (let i = 0; i < 1000; i++) {
             zDotMultipliers.push(SphericalGeometry.get_random_point_on_surface(random));
         };
 
@@ -104,12 +104,12 @@ var SphericalGeometry = (function() {
         // This value doesn't translate directly to elevation. 
         // It only represents how cells would rank if sorted by elevation.
         // This is done so we can later derive elevations that are consistent with earth's.
-        var positions = grid.vertices;
-        var pos = grid.pos;
-        var z = Float32Raster(grid);
-        var height_ranks = Float32Raster(grid);
+        const positions = grid.vertices;
+        const pos = grid.pos;
+        const z = Float32Raster(grid);
+        const height_ranks = Float32Raster(grid);
         Float32Raster.fill(height_ranks, 0);
-        for (var j = 0, lj = zDotMultipliers.length; j < lj; j++) {
+        for (let j = 0, lj = zDotMultipliers.length; j < lj; j++) {
             VectorField.dot_vector(pos, zDotMultipliers[j], z);
             Float32RasterInterpolation.smoothstep2(z, 300, z);
             ScalarField.add_field(height_ranks, z, height_ranks);

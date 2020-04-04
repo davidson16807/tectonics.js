@@ -1,6 +1,6 @@
 'use strict';
 
-var CrustGenerator = {};
+const CrustGenerator = {};
 CrustGenerator.get_crust_from_elevations = function(elevations, attribute_height_maps, crust) {
     // Our model does not work directly with elevation.
     // We must express elevation in terms of thickness/density
@@ -17,8 +17,8 @@ CrustGenerator.get_crust_from_elevations = function(elevations, attribute_height
 }
 CrustGenerator.get_elevations_from_height_ranks = function (height_ranks, hypsography, random, elevations) {
     // order cells by height rank
-    var sorted_cell_ids = new Uint16Array(height_ranks.length);
-    for(var i=0, length = sorted_cell_ids.length; i<length; i++) {
+    const sorted_cell_ids = new Uint16Array(height_ranks.length);
+    for (let i=0, length = sorted_cell_ids.length; i<length; i++) {
         sorted_cell_ids[i] = i;
     }
     sorted_cell_ids.sort(function(a, b) { return height_ranks[a] - height_ranks[b]; });
@@ -27,33 +27,33 @@ CrustGenerator.get_elevations_from_height_ranks = function (height_ranks, hypsog
     // To do this, we generate a second dataset of equal size that represents actual elevations.
     // This dataset is generated from statistical distributions matching those found on earth. 
     // We sort the elevations and map each one to a cell from our height-rank sorted list.
-    var sorted_height_samples = new Float32Array(sorted_cell_ids.length);
-    for (var i = 0, li = sorted_height_samples.length; i < li; i++) {
+    const sorted_height_samples = new Float32Array(sorted_cell_ids.length);
+    for (let i = 0, li = sorted_height_samples.length; i < li; i++) {
         sorted_height_samples[i] = hypsography(random);
     };
     sorted_height_samples.sort(function(a,b) { return a-b; });
 
     // Now use the cell ids height ranks 
-    var elevations = elevations || Float32Raster.FromExample(height_ranks);
-    for (var i = 0, li = sorted_cell_ids.length; i < li; i++) {
+    elevations = elevations || Float32Raster.FromExample(height_ranks);
+    for (let i = 0, li = sorted_cell_ids.length; i < li; i++) {
         elevations[sorted_cell_ids[i]] = sorted_height_samples[i];
     }
 
     return elevations;
 }
 CrustGenerator.get_crust_from_height_ranks = function (height_ranks, hypsography, attribute_height_maps, random, crust) {
-    var elevations = CrustGenerator.get_elevations_from_height_ranks(height_ranks, hypsography, random);
+    const elevations = CrustGenerator.get_elevations_from_height_ranks(height_ranks, hypsography, random);
     return CrustGenerator.get_crust_from_elevations(elevations, attribute_height_maps, crust);
 };
 
 CrustGenerator.early_earth_hypsography = function(random) {
-    var ocean_fraction = 0.95; // Earth = 0.71
+    const ocean_fraction = 0.95; // Earth = 0.71
     return random.uniform(0,1) < ocean_fraction? 
         random.normal(-4019,1113) :
         random.normal(797,1169);
 };
 CrustGenerator.modern_earth_hypsography = function(random) {
-    var ocean_fraction = 0.6; // 60% of earth's crust is oceanic
+    const ocean_fraction = 0.6; // 60% of earth's crust is oceanic
     return random.uniform(0,1) < ocean_fraction? 
         random.normal(-4019,1113) :
         random.normal(797,1169);

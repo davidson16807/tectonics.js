@@ -1,10 +1,10 @@
 'use strict';
 
 function Biosphere(grid, parameters) {
-    var grid             = grid || stop('missing parameter: "grid"');
-    var growth_factor     = parameters['growth_factor'] || 1; // This is something I haven't bothered parameterizing. If c=1/∞, then npp∝lai
-    var npp_max         = parameters['npp_max'] || 1;
-    var lai_max         = parameters['lai_max'] || 1;
+    grid             = grid || stop('missing parameter: "grid"');
+    const growth_factor     = parameters['growth_factor'] || 1; // This is something I haven't bothered parameterizing. If c=1/∞, then npp∝lai
+    const npp_max         = parameters['npp_max'] || 1;
+    const lai_max         = parameters['lai_max'] || 1;
 
     this.getParameters = function() {
         return { 
@@ -16,7 +16,7 @@ function Biosphere(grid, parameters) {
     }
 
     // public variables
-    var self = this;
+    const self = this;
     this.npp = new Memo(
         Float32Raster(grid),  
         result => {
@@ -33,12 +33,12 @@ function Biosphere(grid, parameters) {
     ); 
 
     // private variables
-    var npp_refresh = Float32Raster(grid);
-    var lai_refresh = Float32Raster(grid);
-    var plant_coverage_refresh = Float32Raster(grid);
+    const npp_refresh = Float32Raster(grid);
+    const lai_refresh = Float32Raster(grid);
+    const plant_coverage_refresh = Float32Raster(grid);
 
-    var long_term_surface_temperature = undefined;
-    var precipitation = undefined;
+    let long_term_surface_temperature = undefined;
+    let precipitation = undefined;
 
     function calculate_deltas(world, timestep) { }
 

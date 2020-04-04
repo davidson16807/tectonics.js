@@ -1,6 +1,6 @@
 'use strict';
 
-var RockColumn = (function() {
+const RockColumn = (function() {
     function RockColumn(optional){
         optional = optional || {};
         this.displacement = optional['displacement'] || 0;

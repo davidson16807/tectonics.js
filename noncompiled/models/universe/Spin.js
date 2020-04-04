@@ -1,7 +1,7 @@
 'use strict';
 
 function Spin(parameters) {
-    var self = this;
+    const self = this;
 
     // public variables
     this.axial_tilt         = parameters['axial_tilt']             || 0;
@@ -30,8 +30,8 @@ function Spin(parameters) {
     }
 
     this.iterate = function(rotation_angle, timestep) {
-        var period = this.period();
-        var TURN = 2*Math.PI;
+        const period = this.period();
+        const TURN = 2*Math.PI;
         return (rotation_angle + TURN*(timestep / period)) % TURN;
     };
 }

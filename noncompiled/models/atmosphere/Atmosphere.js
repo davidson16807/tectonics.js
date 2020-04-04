@@ -2,7 +2,7 @@
 
 function Atmosphere(grid, parameters) {
     // private variables
-    var grid = grid || stop('missing parameter: "grid"');
+    grid = grid || stop('missing parameter: "grid"');
     this.lapse_rate = parameters['lapse_rate'] || 3.5 / 1e3; // degrees Kelvin per meter
     this.emission_coefficient = parameters['emission_coefficient'] || 0.83;
 
@@ -14,14 +14,14 @@ function Atmosphere(grid, parameters) {
         };
     }
 
-    var _this = this;
+    const _this = this;
     this.scratch = Float32Raster(grid);
     this.long_term_absorbed_radiation = new Memo(
         Float32Raster(grid),  
         result => { 
-            var long_term_average_insolation = result; // double duty for performance
+            const long_term_average_insolation = result; // double duty for performance
             get_average_insolation(Units.MEGAYEAR, long_term_average_insolation)
-            var absorbed_radiation = this.scratch; // double duty for performance
+            const absorbed_radiation = this.scratch; // double duty for performance
             ScalarField.mult_field( this.absorption.value(), long_term_average_insolation, result );
             return result;
         }
@@ -29,13 +29,13 @@ function Atmosphere(grid, parameters) {
     this.long_term_heat_flow = new Memo(
         Float32Raster(grid),  
         result => { 
-            var absorbed_radiation = this.long_term_absorbed_radiation.value();
-            var max_absorbed_radiation     = Float32Dataset.max( absorbed_radiation );
-            var min_absorbed_radiation     = Float32Dataset.min( absorbed_radiation );
-            var mean_absorbed_radiation    = Float32Dataset.average( absorbed_radiation );
+            const absorbed_radiation = this.long_term_absorbed_radiation.value();
+            const max_absorbed_radiation     = Float32Dataset.max( absorbed_radiation );
+            const min_absorbed_radiation     = Float32Dataset.min( absorbed_radiation );
+            const mean_absorbed_radiation    = Float32Dataset.average( absorbed_radiation );
 
             // TODO: improve heat flow by modeling it as a vector field
-            var heat_flow_uniform = Thermodynamics.solve_entropic_heat_flow(
+            const heat_flow_uniform = Thermodynamics.solve_entropic_heat_flow(
                 max_absorbed_radiation, 
                 min_absorbed_radiation, 
                 this.emission_coefficient,
@@ -53,7 +53,7 @@ function Atmosphere(grid, parameters) {
     this.long_term_sealevel_temperature = new Memo(
         Float32Raster(grid),  
         result => { 
-            var incoming_heat = result;// double duty for performance
+            const incoming_heat = result;// double duty for performance
             ScalarField.add_field(this.long_term_absorbed_radiation.value(), this.long_term_heat_flow.value(), incoming_heat);
 
             ScalarField.div_scalar(incoming_heat, this.emission_coefficient, incoming_heat);
@@ -93,7 +93,7 @@ function Atmosphere(grid, parameters) {
             return result;
         },
     );
-    var lat = new Memo(
+    const lat = new Memo(
         Float32Raster(grid),  
         result => SphericalGeometry.get_latitudes(grid.pos.y, result)
     ); 
@@ -116,14 +116,14 @@ function Atmosphere(grid, parameters) {
     );
 
     // private variables
-    var material_heat_capacity = undefined;
-    var get_average_insolation = undefined;
-    var material_reflectivity = undefined;
-    var surface_height     = undefined;
-    var ocean_coverage     = undefined;
-    var snow_coverage     = undefined;
-    var plant_coverage     = undefined;
-    var angular_speed     = undefined;
+    let material_heat_capacity = undefined;
+    let get_average_insolation = undefined;
+    let material_reflectivity = undefined;
+    let surface_height     = undefined;
+    let ocean_coverage     = undefined;
+    let snow_coverage     = undefined;
+    let plant_coverage     = undefined;
+    let angular_speed     = undefined;
 
     function assert_dependencies() {
         if (material_heat_capacity === void 0) { throw '"material_heat_capacity" not provided'; }

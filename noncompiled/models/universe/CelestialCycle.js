@@ -64,7 +64,7 @@ function CelestialCycle(parameters) {
         };
     }
 
-    var mult_matrix = Matrix4x4.mult_matrix;
+    const mult_matrix = Matrix4x4.mult_matrix;
     
     /*
     returns a dictionary mapping body ids to transformation matrices
@@ -72,28 +72,28 @@ function CelestialCycle(parameters) {
     */
     this.get_body_matrices = function (config, cycles, origin) {
         origin = origin || this.id;
-        var parent   = this.parent;
-        var children = this.children;
-        var cycle_config = (config[this.id] || 0);
+        const parent   = this.parent;
+        const children = this.children;
+        const cycle_config = (config[this.id] || 0);
 
-        var map = {};
+        const map = {};
         if (parent !== void 0) {
             // NOTE: don't consider origin, or else an infinite recursive loop will result
             if (parent !== origin) {
-                var parent_map = cycles[parent].get_body_matrices(config, cycles, this.id);
-                for(var key in parent_map){
-                    var parent_to_child_matrix = this.motion.get_parent_to_child_matrix(cycle_config)
+                const parent_map = cycles[parent].get_body_matrices(config, cycles, this.id);
+                for(let key in parent_map){
+                    const parent_to_child_matrix = this.motion.get_parent_to_child_matrix(cycle_config)
                     map[key] = mult_matrix(parent_to_child_matrix , parent_map[key] )
                 }
             }
         }
-        for (var child of children) {
+        for (let child of children) {
             // NOTE: don't consider origin, or else an infinite recursive loop will result
             if (child !== origin) {
-                var child_map = cycles[child].get_body_matrices(config, cycles, this.id);
-                var child_config = (config[child] || 0);
-                for(var key in child_map){
-                    var child_to_parent_matrix = cycles[child].motion.get_child_to_parent_matrix(child_config);
+                const child_map = cycles[child].get_body_matrices(config, cycles, this.id);
+                const child_config = (config[child] || 0);
+                for(let key in child_map){
+                    const child_to_parent_matrix = cycles[child].motion.get_child_to_parent_matrix(child_config);
                     map[key] = mult_matrix(child_to_parent_matrix, child_map[key] )
                 }
             }

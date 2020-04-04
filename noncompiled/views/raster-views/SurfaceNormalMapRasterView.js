@@ -1,27 +1,27 @@
 'use strict';
 
 function SurfaceNormalMapRasterView(options) {
-    var invariant_options = options || {};
+    const invariant_options = options || {};
     this.clone = function() {
         return new SurfaceNormalMapRasterView(invariant_options);
     }
-    var exaggeration_factor = invariant_options['exaggeration_factor'] || 100.0;
-    var fragmentShader = fragmentShaders.surface_normal_map;
+    const exaggeration_factor = invariant_options['exaggeration_factor'] || 100.0;
+    const fragmentShader = fragmentShaders.surface_normal_map;
 
     this.mesh = void 0;
-    var mesh = void 0;
-    var grid = void 0;
-    var uniforms = {};
-    var vertexShader = void 0;
+    let uniforms = {};
+    let mesh = void 0;
+    let grid = void 0;
+    let vertexShader = void 0;
 
     function create_mesh(raster, options) {
-        var grid = raster.grid;
-        var faces = grid.faces;
-        var geometry = grid.getBufferGeometry();
+        const grid = raster.grid;
+        const faces = grid.faces;
+        const geometry = grid.getBufferGeometry();
         geometry.addAttribute('displacement', { itemSize: 1, array: new Float32Array( faces.length * 3 * 1 ), __proto__: THREE.BufferAttribute.prototype });
         geometry.addAttribute('gradient',     { itemSize: 1, array: new Float32Array( faces.length * 3 * 3 ), __proto__: THREE.BufferAttribute.prototype });
 
-        var material = new THREE.ShaderMaterial({
+        const material = new THREE.ShaderMaterial({
             attributes: {
               displacement: { type: 'f', value: null },
               gradient:     { type: 'v3',value: null },
@@ -58,12 +58,12 @@ function SurfaceNormalMapRasterView(options) {
         mesh.geometry.attributes[key].needsUpdate = true;
     }
     function update_vector_attribute(key, raster) {
-        var x = raster.x;
-        var y = raster.y;
-        var z = raster.z;
-        var array = mesh.geometry.attributes[key].array;
-        var buffer_array_to_cell = raster.grid.buffer_array_to_cell;
-        for (var i = 0, li = buffer_array_to_cell.length; i < li; i++) {
+        const x = raster.x;
+        const y = raster.y;
+        const z = raster.z;
+        const array = mesh.geometry.attributes[key].array;
+        const buffer_array_to_cell = raster.grid.buffer_array_to_cell;
+        for (let i = 0, li = buffer_array_to_cell.length; i < li; i++) {
             array[i+li*0] = x[buffer_array_to_cell[i]];
             array[i+li*1] = y[buffer_array_to_cell[i]];
             array[i+li*2] = z[buffer_array_to_cell[i]];
@@ -101,8 +101,8 @@ function SurfaceNormalMapRasterView(options) {
             this.mesh = mesh; 
         } 
         
-        var world_radius = options.world_radius || Units.EARTH_RADIUS;
-        var gradient = ScalarField.gradient(raster);
+        const world_radius = options.world_radius || Units.EARTH_RADIUS;
+        const gradient = ScalarField.gradient(raster);
         VectorField.mult_scalar(gradient, exaggeration_factor/world_radius, gradient);
 
         update_vector_attribute('gradient',      gradient);

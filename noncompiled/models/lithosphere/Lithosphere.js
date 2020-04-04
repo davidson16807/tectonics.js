@@ -3,7 +3,7 @@
 
 function Lithosphere(grid, parameters) {
     parameters = parameters || {}
-    var grid = grid || stop('missing parameter: "grid"');
+    grid = grid || stop('missing parameter: "grid"');
     this.supercontinentCycle = new SupercontinentCycle(this, parameters);
     this.plates = (parameters['plates'] || []).map(plate_parameters => new Plate(grid, plate_parameters));
 
@@ -16,10 +16,10 @@ function Lithosphere(grid, parameters) {
         };
     }
 
-    var material_viscosity = undefined;
-    var material_density = undefined;
-    var sealevel = undefined;
-    var surface_gravity = undefined;
+    let material_viscosity = undefined;
+    let material_density = undefined;
+    let sealevel = undefined;
+    let surface_gravity = undefined;
 
     this.rifting_crust =
      new RockColumn({
@@ -31,7 +31,7 @@ function Lithosphere(grid, parameters) {
     // The following are fields that are derived from other fields:
     // "displacement is the height of the crust relative to an arbitrary datum level
     // It is not called "elevation" because we want to emphasize that it is not relative to sea level
-    var self = this; 
+    const self = this; 
     // "surface_height" is the height of the surface relative to sealevel - if elevation < 0, then surface_height = 0
     this.surface_height = new Memo(
         Float32Raster(grid),  
@@ -82,17 +82,17 @@ function Lithosphere(grid, parameters) {
 
 
     function move_plates(plates, seconds) {
-        for (var i=0, li=plates.length; i<li; ++i) {
+        for (let i=0, li=plates.length; i<li; ++i) {
              plates[i].move(seconds, material_density, material_viscosity, surface_gravity);
          }
     }
 
     function merge_plates_to_master(plates, master) {
-          var scratchpad = RasterStackBuffer.scratchpad;
-          scratchpad.allocate('merge_plates_to_master');
+        const scratchpad = RasterStackBuffer.scratchpad;
+        scratchpad.allocate('merge_plates_to_master');
 
-        var UINT8_NULL = 255;
-        var UINT16_NULL = 65535;
+        const UINT8_NULL = 255;
+        const UINT16_NULL = 65535;
 
         //WIPE MASTER RASTERS CLEAN
         Crust.reset(master.total_crust);
@@ -101,39 +101,39 @@ function Lithosphere(grid, parameters) {
         Uint8Raster.fill(master.plate_count, 0);
 
         
-        var master_density = Float32Raster(grid); 
+        const master_density = Float32Raster(grid); 
         Float32Raster.fill(master_density, 9999);
 
         //local variables
-        var local_ids_of_global_cells; 
+        let local_ids_of_global_cells; 
 
         //global variables
-        var globalized_is_on_top = scratchpad.getUint8Raster(grid);
-        var globalized_plate_mask = scratchpad.getUint8Raster(grid); 
-        var global_ids_of_local_cells; 
+        const globalized_is_on_top = scratchpad.getUint8Raster(grid);
+        const globalized_plate_mask = scratchpad.getUint8Raster(grid); 
+        let global_ids_of_local_cells; 
 
         // float32array used for temporary storage of globalized scalar fields
         // this is used for performance reasons
-        var globalized_scalar_field = scratchpad.getFloat32Raster(grid); 
+        const globalized_scalar_field = scratchpad.getFloat32Raster(grid); 
 
-        var globalized_crust = master.crust_scratch;
+        const globalized_crust = master.crust_scratch;
 
-        var fill_into = Uint8RasterGraphics.fill_into_selection;
-        var copy_into = Float32RasterGraphics.copy_into_selection;
-        var add_term = ScalarField.add_field_term;
-        var add_ui8 = Uint8Field.add_field
-        var resample_f32 = Float32Raster.get_ids;
-        var resample_ui8 = Uint8Raster.get_ids;
-        var and = BinaryMorphology.intersection;
-        var lt = ScalarField.lt_field;
+        const fill_into = Uint8RasterGraphics.fill_into_selection;
+        const copy_into = Float32RasterGraphics.copy_into_selection;
+        const add_term = ScalarField.add_field_term;
+        const add_ui8 = Uint8Field.add_field
+        const resample_f32 = Float32Raster.get_ids;
+        const resample_ui8 = Uint8Raster.get_ids;
+        const and = BinaryMorphology.intersection;
+        const lt = ScalarField.lt_field;
 
-        var resample_crust = Crust.get_ids;
+        const resample_crust = Crust.get_ids;
 
-        var overlap_crust = Crust.overlap; 
+        const overlap_crust = Crust.overlap; 
 
-          var plate; 
+        let plate; 
         Uint8Raster.fill(globalized_is_on_top, 1);
-        for (var i=0, li=plates.length; i<li; ++i) {
+        for (let i=0, li=plates.length; i<li; ++i) {
             plate = plates[i]; 
 
             local_ids_of_global_cells = plate.local_ids_of_global_cells;
@@ -168,41 +168,41 @@ function Lithosphere(grid, parameters) {
     }
 
     function update_rifting(world, plates) { 
-          var top_plate_map = world.top_plate_map;
-          var rifting_crust = world.rifting_crust;
+        const top_plate_map = world.top_plate_map;
+        const rifting_crust = world.rifting_crust;
 
-          var scratchpad = RasterStackBuffer.scratchpad;
-          scratchpad.allocate('update_rifting');
+        const scratchpad = RasterStackBuffer.scratchpad;
+        scratchpad.allocate('update_rifting');
 
           //rifting/detaching variables
-        var localized_is_riftable = scratchpad.getUint8Raster(grid);
-        var localized_will_stay_riftable = scratchpad.getUint8Raster(grid);
-        var localized_is_just_outside_border = scratchpad.getUint8Raster(grid);
-        var localized_is_rifting = scratchpad.getUint8Raster(grid);
+        const localized_is_riftable = scratchpad.getUint8Raster(grid);
+        const localized_will_stay_riftable = scratchpad.getUint8Raster(grid);
+        const localized_is_just_outside_border = scratchpad.getUint8Raster(grid);
+        const localized_is_rifting = scratchpad.getUint8Raster(grid);
 
         //global rifting/detaching variables
-        var globalized_is_empty = scratchpad.getUint8Raster(grid);
-        var globalized_is_alone = scratchpad.getUint8Raster(grid);
-        var globalized_is_riftable = scratchpad.getUint8Raster(grid);
-        var globalized_is_on_top = scratchpad.getUint8Raster(grid);
+        const globalized_is_empty = scratchpad.getUint8Raster(grid);
+        const globalized_is_alone = scratchpad.getUint8Raster(grid);
+        const globalized_is_riftable = scratchpad.getUint8Raster(grid);
+        const globalized_is_on_top = scratchpad.getUint8Raster(grid);
 
-        var scratch_ui8 = scratchpad.getUint8Raster(grid);
+        const scratch_ui8 = scratchpad.getUint8Raster(grid);
 
-        var resample = Uint8Raster.get_ids;
-        var margin = BinaryMorphology.margin;
-        var or = BinaryMorphology.union;
-        var and = BinaryMorphology.intersection;
-        var erode = BinaryMorphology.erosion;
-        var equals = Uint8Field.eq_scalar;
-        var fill_into = Uint8RasterGraphics.fill_into_selection;
-        var fill_into_crust = Crust.fill_into_selection;
+        const resample = Uint8Raster.get_ids;
+        const margin = BinaryMorphology.margin;
+        const or = BinaryMorphology.union;
+        const and = BinaryMorphology.intersection;
+        const erode = BinaryMorphology.erosion;
+        const equals = Uint8Field.eq_scalar;
+        const fill_into = Uint8RasterGraphics.fill_into_selection;
+        const fill_into_crust = Crust.fill_into_selection;
 
         //         op     operands                                                        result
         equals     (world.plate_count, 0,                                                     globalized_is_empty);
         equals     (world.plate_count, 1,                                                     globalized_is_alone);
 
-        var plate = plates[0];
-        for (var i=0, li=plates.length; i<li; ++i) { 
+        let plate = plates[0];
+        for (let i=0, li=plates.length; i<li; ++i) { 
             plate = plates[i]; 
 
             // is_riftable: count == 0 or (count = 1 and top_plate = i) 
@@ -222,50 +222,50 @@ function Lithosphere(grid, parameters) {
           scratchpad.deallocate('update_rifting');
     } 
     function update_subducted(world, plates) {
-          var top_plate_map = world.top_plate_map;
+        const top_plate_map = world.top_plate_map;
 
         // WARNING: unfortunate side effect!
         // we calculate accretion delta during detachment for performance reasons
         Crust.reset(world.accretion);
 
-          var scratchpad = RasterStackBuffer.scratchpad;
-          scratchpad.allocate('update_subducted');
+        const scratchpad = RasterStackBuffer.scratchpad;
+        scratchpad.allocate('update_subducted');
 
           //rifting/detaching variables
-        var localized_is_subducted = scratchpad.getUint8Raster(grid);
-        var localized_will_stay_detachable = scratchpad.getUint8Raster(grid);
-        var localized_is_just_inside_border = scratchpad.getUint8Raster(grid);
-        var localized_is_detaching = scratchpad.getUint8Raster(grid);
+        const localized_is_subducted = scratchpad.getUint8Raster(grid);
+        const localized_will_stay_detachable = scratchpad.getUint8Raster(grid);
+        const localized_is_just_inside_border = scratchpad.getUint8Raster(grid);
+        const localized_is_detaching = scratchpad.getUint8Raster(grid);
 
-        var localized_scratch_ui8 = scratchpad.getUint8Raster(grid); 
-        var localized_accretion = scratchpad.getFloat32Raster(grid); 
+        const localized_scratch_ui8 = scratchpad.getUint8Raster(grid); 
+        const localized_accretion = scratchpad.getFloat32Raster(grid); 
 
         //global rifting/detaching variables
-        var globalized_is_not_alone = scratchpad.getUint8Raster(grid);
-        var globalized_is_subducted = scratchpad.getUint8Raster(grid);
-        var globalized_is_not_on_top = scratchpad.getUint8Raster(grid);
+        const globalized_is_not_alone = scratchpad.getUint8Raster(grid);
+        const globalized_is_subducted = scratchpad.getUint8Raster(grid);
+        const globalized_is_not_on_top = scratchpad.getUint8Raster(grid);
 
-        var globalized_scalar_field = scratchpad.getFloat32Raster(grid); 
+        const globalized_scalar_field = scratchpad.getFloat32Raster(grid); 
 
-        var mult_field = ScalarField.mult_field;
-        var fill_into = Uint8RasterGraphics.fill_into_selection;
-        var fill_into_f32 = Float32RasterGraphics.fill_into_selection;
-        var resample_ui8 = Uint8Raster.get_ids;
-        var resample_f32 = Float32Raster.get_ids;
-        var padding = BinaryMorphology.padding;
-        var and = BinaryMorphology.intersection;
-        var erode = BinaryMorphology.erosion;
-        var not_equals = Uint8Field.ne_scalar;
-        var gt_f32 = ScalarField.gt_scalar;
-        var add = ScalarField.add_field;
-        var add_term = ScalarField.add_field_term;
-        var add_scalar_term = ScalarField.add_scalar_term;
+        const mult_field = ScalarField.mult_field;
+        const fill_into = Uint8RasterGraphics.fill_into_selection;
+        const fill_into_f32 = Float32RasterGraphics.fill_into_selection;
+        const resample_ui8 = Uint8Raster.get_ids;
+        const resample_f32 = Float32Raster.get_ids;
+        const padding = BinaryMorphology.padding;
+        const and = BinaryMorphology.intersection;
+        const erode = BinaryMorphology.erosion;
+        const not_equals = Uint8Field.ne_scalar;
+        const gt_f32 = ScalarField.gt_scalar;
+        const add = ScalarField.add_field;
+        const add_term = ScalarField.add_field_term;
+        const add_scalar_term = ScalarField.add_scalar_term;
 
         //                 op     operands                                                    result
         not_equals         (world.plate_count, 1,                                                 globalized_is_not_alone);
 
-        var plate = plates[0];
-        for (var i=0, li=plates.length; i<li; ++i) {
+        let plate = plates[0];
+        for (let i=0, li=plates.length; i<li; ++i) {
             plate = plates[i];
 
             not_equals     (top_plate_map, i,                                                     globalized_is_not_on_top);
@@ -335,7 +335,7 @@ function Lithosphere(grid, parameters) {
         );
 
         // COMPILE DELTAS
-        var globalized_deltas = lithosphere.crust_delta;
+        const globalized_deltas = lithosphere.crust_delta;
         Crust.reset             (globalized_deltas);
         Crust.add_delta         (globalized_deltas, lithosphere.erosion,                 globalized_deltas);
         Crust.add_delta         (globalized_deltas, lithosphere.weathering,             globalized_deltas);
@@ -347,33 +347,29 @@ function Lithosphere(grid, parameters) {
     function integrate_deltas(world, plates, seconds) { 
         // INTEGRATE DELTAS
 
+        const scratchpad = RasterStackBuffer.scratchpad;
+        scratchpad.allocate('integrate_deltas');
 
-          var scratchpad = RasterStackBuffer.scratchpad;
-          scratchpad.allocate('integrate_deltas');
-          
-          var top_plate_map = world.top_plate_map;
+        const top_plate_map = world.top_plate_map;
 
-        var localized_is_on_top = scratchpad.getUint8Raster(grid);
-        var globalized_is_on_top = scratchpad.getUint8Raster(grid);
-        var scratch_f32 = scratchpad.getFloat32Raster(grid);
+        const globalized_is_on_top = scratchpad.getUint8Raster(grid);
 
-        var resample_ui8 = Uint8Raster.get_ids;
-        var equals = Uint8Field.eq_scalar;
-        
-        var resample_crust     = Crust.get_ids;
-        var mult_crust         = Crust.mult_field;
-        var fix_crust_delta    = Crust.fix_delta;
-           var add_crust_delta    = Crust.add_delta;
+        const resample_ui8 = Uint8Raster.get_ids;
+        const equals = Uint8Field.eq_scalar;
 
-          var plate; 
-        var global_ids_of_local_cells;
-        var local_ids_of_global_cells;
-        var globalized_deltas = world.crust_delta;
-        var localized_deltas = world.crust_scratch;
+        const resample_crust     = Crust.get_ids;
+        const mult_crust         = Crust.mult_field;
+        const fix_crust_delta    = Crust.fix_delta;
+        const add_crust_delta    = Crust.add_delta;
+
+        let plate; 
+        let global_ids_of_local_cells;
+        let local_ids_of_global_cells;
+        const globalized_deltas = world.crust_delta;
 
         Crust.add_delta(world.total_crust, world.crust_delta, world.total_crust);
 
-        for (var i=0, li=plates.length; i<li; ++i) {
+        for (let i=0, li=plates.length; i<li; ++i) {
             plate = plates[i];
 
             global_ids_of_local_cells = plate.global_ids_of_local_cells;
@@ -401,17 +397,17 @@ function Lithosphere(grid, parameters) {
 
     this.resetPlates = function() {
         // get plate masks from image segmentation of asthenosphere velocity
-        var pressure = FluidMechanics.get_fluid_pressures(this.buoyancy.value());
+        const pressure = FluidMechanics.get_fluid_pressures(this.buoyancy.value());
         FluidMechanics.get_fluid_velocities(pressure, this.asthenosphere_velocity);
-        var angular_velocity = VectorField.cross_vector_field(this.asthenosphere_velocity, grid.pos);
-        var top_plate_map = Tectonophysics.guess_plate_map(angular_velocity, 7, 200);
-        var plate_ids = Uint8Dataset.unique(top_plate_map);
+        const angular_velocity = VectorField.cross_vector_field(this.asthenosphere_velocity, grid.pos);
+        const top_plate_map = Tectonophysics.guess_plate_map(angular_velocity, 7, 200);
+        const plate_ids = Uint8Dataset.unique(top_plate_map);
         this.plates = [];
 
-        var plate;
+        let plate, mask;
         // TODO: overwrite plates instead of creating new ones, create separate function for plate initialization
-        for (var i = 0, li = plate_ids.length; i < li; ++i) {
-            var mask = Uint8Field.eq_scalar(top_plate_map, plate_ids[i]);
+        for (let i = 0, li = plate_ids.length; i < li; ++i) {
+            mask = Uint8Field.eq_scalar(top_plate_map, plate_ids[i]);
 
             plate = new Plate(
                 grid,
@@ -437,7 +433,7 @@ function Lithosphere(grid, parameters) {
     }
 
     this.setDependencies = function(dependencies) {
-        for (var i = 0; i < this.plates.length; i++) {
+        for (let i = 0; i < this.plates.length; i++) {
             this.plates[i].setDependencies(dependencies);
         }
 
@@ -460,16 +456,16 @@ function Lithosphere(grid, parameters) {
         this.total_mass    .invalidate();
         this.density    .invalidate();
         this.buoyancy    .invalidate();
-        var plates = this.plates;
-        for (var i=0, li=plates.length; i<li; ++i) {
+        const plates = this.plates;
+        for (let i=0, li=plates.length; i<li; ++i) {
             plates[i]    .invalidate();
         }
     }
 
-    var mean_supercontinent_cycle_duration = 150 * Units.MEGAYEAR;
+    const mean_supercontinent_cycle_duration = 150 * Units.MEGAYEAR;
 
     this.calcChanges = function(seconds) {
-        var max_perceivable_duration = 60*60*24*30 * seconds; // 1 day worth of real time at 30fps
+        const max_perceivable_duration = 60*60*24*30 * seconds; // 1 day worth of real time at 30fps
         if (mean_supercontinent_cycle_duration > max_perceivable_duration) {
             return;
         }
@@ -480,7 +476,7 @@ function Lithosphere(grid, parameters) {
     };
 
     this.applyChanges = function(seconds){
-        var max_perceivable_duration = 60*60*24*30 * seconds; // 1 day worth of real time at 30fps
+        const max_perceivable_duration = 60*60*24*30 * seconds; // 1 day worth of real time at 30fps
         if (mean_supercontinent_cycle_duration > max_perceivable_duration) {
             return;
         }

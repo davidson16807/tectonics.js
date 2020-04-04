@@ -1,7 +1,7 @@
 'use strict';
 
 
-var Star = (function() {
+const Star = (function() {
         
     function Star(parameters) {
         // "id" is used to reference the world within the rest of the universe
@@ -52,7 +52,7 @@ var Star = (function() {
         //  the memo class to look like in the future.
         // TODO: replace global "Memo" class with this instance.
         function memo(get_value, result) {
-            var is_dirty = true;
+            let is_dirty = true;
             return function() {
                 if (is_dirty) {
                     // NOTE: we set is_dirty first in order to resolve circular dependencies between memos
@@ -65,11 +65,11 @@ var Star = (function() {
         }
 
         // NOTE: scaling laws from artifexian: https://www.youtube.com/watch?v=hG1of0MroM8
-        var solar_masses       = memo( result => star.mass / Units.SOLAR_MASS );
-        var solar_luminosities = memo( result => Math.pow(solar_masses(), 3.5) );
-        var solar_radii        = memo( result => star.mass < 1? Math.pow(solar_masses(), 0.8) : Math.pow(solar_masses(), 0.5) );
+        const solar_masses       = memo( result => star.mass / Units.SOLAR_MASS );
+        const solar_luminosities = memo( result => Math.pow(solar_masses(), 3.5) );
+        const solar_radii        = memo( result => star.mass < 1? Math.pow(solar_masses(), 0.8) : Math.pow(solar_masses(), 0.5) );
 
-        var memos = {};
+        const memos = {};
         memos.radius                = memo( result => solar_radii() * Units.SOLAR_RADIUS );
         memos.luminosity            = memo( result => solar_luminosities() * Units.SOLAR_LUMINOSITY );
         memos.surface_area          = memo( result => SphericalGeometry.get_surface_area(memos.radius()) );

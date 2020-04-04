@@ -4,16 +4,16 @@
 // All functions within the namespace are static and have no side effects
 // The only data structures allowed are rasters and grid objects
 
-var OrbitalMechanics = (function() {
-    var OrbitalMechanics = {};
+const OrbitalMechanics = (function() {
+    const OrbitalMechanics = {};
 
     OrbitalMechanics.GRAVITATIONAL_CONSTANT = 6.6740831e-11; // m3 kg-1 s-2
 
     OrbitalMechanics.get_period = function(semi_major_axis, effective_parent_mass) {
         // TODO: move this logic to OrbitalMechanics
-        var a = semi_major_axis;
-        var GM = effective_parent_mass * OrbitalMechanics.GRAVITATIONAL_CONSTANT;
-        var π = Math.PI;
+        const a = semi_major_axis;
+        const GM = effective_parent_mass * OrbitalMechanics.GRAVITATIONAL_CONSTANT;
+        const π = Math.PI;
         return 2*π * Math.sqrt( a*a*a / GM );
     }
     // gets the rotation matrix necessary to convert geocentric equatorial coordinates to geocentric ecliptic coordinates
@@ -23,10 +23,9 @@ var OrbitalMechanics = (function() {
             //tilt of the planet's axis, in radians
             axial_tilt
     ) {
-        var precession_angle  = precession_angle || 0;
-        var rotation_matrix   = Matrix4x4.from_rotation    (0,1,0, -rotation_angle);
-        var tilt_matrix       = Matrix4x4.from_rotation    (1,0,0, -axial_tilt);
-        var conversion_matrix = Matrix4x4.mult_matrix     (tilt_matrix,         rotation_matrix);
+        const rotation_matrix   = Matrix4x4.from_rotation    (0,1,0, -rotation_angle);
+        const tilt_matrix       = Matrix4x4.from_rotation    (1,0,0, -axial_tilt);
+        const conversion_matrix = Matrix4x4.mult_matrix     (tilt_matrix,         rotation_matrix);
         return conversion_matrix;
     }
 
@@ -47,21 +46,21 @@ var OrbitalMechanics = (function() {
             // the angle (in radians) between the prime meridian of the parent and the "ascending node" - the intersection between the orbital plane and the reference plane
             longitude_of_ascending_node
     ) {
-        var Ω = longitude_of_ascending_node || 0.; 
-        var i = inclination || 0.;
-        var ω = argument_of_periapsis || 0.;
-        var e = eccentricity || 0.;
-        var a = semi_major_axis;
-        var M = mean_anomaly;
+        const Ω = longitude_of_ascending_node || 0.; 
+        const i = inclination || 0.;
+        const ω = argument_of_periapsis || 0.;
+        const e = eccentricity || 0.;
+        const a = semi_major_axis;
+        const M = mean_anomaly;
 
-        var E = solve_eccentric_anomaly(M, e, 10);
-        var ecliptic_coordinates = get_2d_ecliptic_coordinates(E, a, e);
-        var translation_matrix = Matrix4x4.from_translation( ecliptic_coordinates.p, 0, ecliptic_coordinates.q );
-        var ω_rotation_matrix = Matrix4x4.from_rotation(0,1,0, -ω);
-        var i_rotation_matrix = Matrix4x4.from_rotation(0,0,1, -i);
-        var Ω_rotation_matrix = Matrix4x4.from_rotation(0,1,0, -Ω);
+        const E = solve_eccentric_anomaly(M, e, 10);
+        const ecliptic_coordinates = get_2d_ecliptic_coordinates(E, a, e);
+        const translation_matrix = Matrix4x4.from_translation( ecliptic_coordinates.p, 0, ecliptic_coordinates.q );
+        const ω_rotation_matrix = Matrix4x4.from_rotation(0,1,0, -ω);
+        const i_rotation_matrix = Matrix4x4.from_rotation(0,0,1, -i);
+        const Ω_rotation_matrix = Matrix4x4.from_rotation(0,1,0, -Ω);
 
-        var conversion_matrix;
+        let conversion_matrix;
         conversion_matrix = Matrix4x4.mult_matrix(ω_rotation_matrix, translation_matrix);
         conversion_matrix = Matrix4x4.mult_matrix(i_rotation_matrix, conversion_matrix);
         conversion_matrix = Matrix4x4.mult_matrix(Ω_rotation_matrix, conversion_matrix);
@@ -76,31 +75,31 @@ var OrbitalMechanics = (function() {
     //  https://space.stackexchange.com/questions/8911/determining-orbital-position-at-a-future-point-in-time
     // Or here, in book form:
     //  Fundamentals of Astrodynamics, by Bate, Mueller, and White
-    var get_2d_ecliptic_coordinates = function(
+    const get_2d_ecliptic_coordinates = function(
             eccentric_anomaly,
             semi_major_axis, 
             eccentricity 
         ) {
         // the shape of the orbit, where 0 is a circular orbit and >1 is a hyperbolic orbit
-        var e = eccentricity || 0.;
+        const e = eccentricity || 0.;
         // the average between apoapsis and periapsis
-        var a = semi_major_axis;
-        var E = eccentric_anomaly;
+        const a = semi_major_axis;
+        const E = eccentric_anomaly;
 
-        var sin = Math.sin;
-        var cos = Math.cos;
-        var sqrt = Math.sqrt;
+        const sin = Math.sin;
+        const cos = Math.cos;
+        const sqrt = Math.sqrt;
         return {
             p: a*(cos(E)-e),
             q: -a*sin(E)*sqrt(1-e*e)
         };
     }
-    var solve_eccentric_anomaly = function(mean_anomaly, eccentricity, iterations) {
-        var e, E, M, M_E, dMdE, error;
-        e = eccentricity;
-        E = mean_anomaly;
-        M = mean_anomaly;
-        for (var i = 0; i < iterations; i++) {
+    const solve_eccentric_anomaly = function(mean_anomaly, eccentricity, iterations) {
+        const e = eccentricity;
+        const M = mean_anomaly;
+        let E = mean_anomaly;
+        let M_E, dMdE, error;
+        for (let i = 0; i < iterations; i++) {
             M_E     = E-e*Math.sin(E);
             dMdE     = 1-e*Math.cos(E);
             error     = M - M_E

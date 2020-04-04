@@ -3,23 +3,23 @@
 // All functions within the namespace are static and have no side effects
 // The only data structures allowed are rasters and grid objects
 
-var Climatology = (function() {
+const Climatology = (function() {
 
-    var surface_air_pressure_temperature_effect = function(temperature, material_heat_capacity, atmospheric_height, result) {
+    const surface_air_pressure_temperature_effect = function(temperature, material_heat_capacity, atmospheric_height, result) {
         // NOTE: "volumetric_heat_capacity" is the energy required to heat a volume of air by 1 Kelvin
         // it is reported in joules per kelvin per square meter column of air
 
         return ScalarField.mult_scalar(temperature, material_heat_capacity.air / atmospheric_height, result);
     }
-    var surface_air_pressure_lat_effect = function (lat, pressure) {
+    const surface_air_pressure_lat_effect = function (lat, pressure) {
         pressure = pressure || Float32Raster(lat.grid);
-        var cos = Math.cos;
-        for (var i=0, li=lat.length; i<li; ++i) {
+        const cos = Math.cos;
+        for (let i=0, li=lat.length; i<li; ++i) {
             pressure[i] = -cos(5*(lat[i]));
         }
         return pressure;
     }
-    var surface_air_velocity_coriolis_effect = function(pos, velocity, angular_speed, effect) {
+    const surface_air_velocity_coriolis_effect = function(pos, velocity, angular_speed, effect) {
         effect = effect || VectorRaster(pos.grid);
         VectorField.cross_vector_field    (velocity, pos,             effect);
         VectorField.mult_scalar         (effect, 2 * angular_speed, effect);
@@ -27,13 +27,13 @@ var Climatology = (function() {
         return effect;
     }
 
-    Climatology = {};
+    const Climatology = {};
     Climatology.guess_surface_air_velocities = function(pos, pressure, angular_speed, velocity) {
         velocity = velocity || VectorRaster(pos.grid);
         ScalarField.gradient(pressure, velocity);
         EARTH_RADIUS = 6.3e6; // meters
         VectorField.div_scalar(velocity, EARTH_RADIUS, velocity); // need to adjust gradient because grid.pos is on a unit sphere
-        var coriolis_effect = surface_air_velocity_coriolis_effect(pos, velocity, angular_speed);
+        const coriolis_effect = surface_air_velocity_coriolis_effect(pos, velocity, angular_speed);
         VectorField.add_vector_field(velocity, coriolis_effect, velocity);
         VectorDataset.rescale(velocity, velocity, 15.65); //15.65 m/s is the fastest average wind speed on Earth, recorded at Mt. Washington
         return velocity;
@@ -44,7 +44,7 @@ var Climatology = (function() {
 
         surface_air_pressure_lat_effect(lat, result);
 
-        var temperature_effect = scratch;
+        const temperature_effect = scratch;
         surface_air_pressure_temperature_effect(temperature, material_heat_capacity, atmospheric_height, temperature_effect);
         Float32Dataset.normalize(temperature_effect, temperature_effect);
         ScalarField.add_scalar_term(result, temperature_effect, 3, result);
@@ -60,11 +60,11 @@ var Climatology = (function() {
         //parameters fit to data from 
         precip_intercept = 2000;
         precip_min = 60;
-        var cell_effect = 1.;
-        var cos = Math.cos;
-        var abs = Math.abs;
-        var PI = Math.PI;
-        for (var i = 0; i < lat.length; i++) {
+        const cell_effect = 1.;
+        const cos = Math.cos;
+        const abs = Math.abs;
+        const PI = Math.PI;
+        for (let i = 0; i < lat.length; i++) {
             result[i] =  precip_intercept * 
                 (1. - abs(lat[i]) / (PI*90./180.)) *                             //latitude effect
                 //amplitude of circulation cell decreases with latitude, and precip inherently must be positive
@@ -84,15 +84,15 @@ var Climatology = (function() {
         material_reflectivity = material_reflectivity || {};
         result = result || Float32Raster(ocean_fraction.grid);
 
-        var albedo = result;
+        const albedo = result;
 
-        var ocean_albedo     = material_reflectivity.ocean || 0.06;
-        var land_albedo     = material_reflectivity.felsic || 0.27;
-        var plant_albedo     = material_reflectivity.forest || 0.1;
-        var snow_albedo         = material_reflectivity.snow || 0.9;
+        const ocean_albedo     = material_reflectivity.ocean || 0.06;
+        const land_albedo     = material_reflectivity.felsic || 0.27;
+        const plant_albedo     = material_reflectivity.forest || 0.1;
+        const snow_albedo         = material_reflectivity.snow || 0.9;
 
-        var mix_fsf = Float32RasterInterpolation.mix_fsf;
-        var mix_sff = Float32RasterInterpolation.mix_sff;
+        const mix_fsf = Float32RasterInterpolation.mix_fsf;
+        const mix_sff = Float32RasterInterpolation.mix_sff;
         // albedo hierarchy: cloud, snow, ocean, plant, sediment
         Float32Raster.fill(albedo, land_albedo);
         if (plant_fraction !== void 0) {    mix_fsf(albedo,     plant_albedo,     plant_fraction, albedo);    }
@@ -108,10 +108,10 @@ var Climatology = (function() {
 
         result = result || Float32Raster(ocean_fraction.grid);
 
-        var ocean_heat_capacity     = material_heat_capacity.ocean || 30e7; // heat capacity of 1m^2 of 75m ocean column, the ocean's "mixing layer"
-        var land_heat_capacity        = material_heat_capacity.felsic || 1e7; // heat capacity of 1m^2 air column on earth
+        const ocean_heat_capacity     = material_heat_capacity.ocean || 30e7; // heat capacity of 1m^2 of 75m ocean column, the ocean's "mixing layer"
+        const land_heat_capacity        = material_heat_capacity.felsic || 1e7; // heat capacity of 1m^2 air column on earth
 
-        var mix_fsf = Float32RasterInterpolation.mix_fsf;
+        const mix_fsf = Float32RasterInterpolation.mix_fsf;
 
         Float32Raster.fill(result, land_heat_capacity);
         if (ocean_fraction !== void 0) {    mix_fsf(result,     ocean_heat_capacity,     ocean_fraction, result);    }

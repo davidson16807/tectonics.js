@@ -67,12 +67,12 @@ function Universe(parameters) {
     This is done because phase angle may change very frequently over large timesteps,
      where ergodic behavior emerges, and it is often not relevant to track it in these situations
     */
-    var cycles =  Object.keys(parameters.cycles)
+    const cycles =  Object.keys(parameters.cycles)
         .reduce((accumulator, id) => { accumulator[id] = new CelestialCycle(parameters.cycles[id]); return accumulator; }, {} );
     // A "body" represents a celestial body: a collection of matter that is tightly bound by gravity.
-    var bodies  =  Object.keys(parameters.bodies)
+    const bodies  =  Object.keys(parameters.bodies)
         .reduce((accumulator,  id) => {
-            var body = parameters.bodies[id];
+            const body = parameters.bodies[id];
             accumulator[id] = {
                 undefined: () => body,
                 'world': () => new World(body),
@@ -110,9 +110,9 @@ function Universe(parameters) {
     //given a cycle configuration, "advance()" returns the cycle configuration that would occur after a given amount of time
     function advance(config, timestep, output, min_perceivable_period, max_perceivable_period) {
         output = output || {};
-        for(var id in cycles){
+        for(let id in cycles){
             if (cycles[id] === void 0) { continue; }
-            var period = cycles[id].motion.period();
+            const period = cycles[id].motion.period();
             // default to current value, if present
             if (config[id]) { output[id] = config[id]};
             // if cycle completes too fast for the user to perceive, don't simulate 
@@ -134,7 +134,7 @@ function Universe(parameters) {
     function samples(config, max_sample_count, min_perceivable_period) {
         // if the cycle takes more than a given amount to complete, 
         // then don't sample across it
-        var imperceptably_small_cycles = Object.values(cycles)
+        const imperceptably_small_cycles = Object.values(cycles)
             .filter(cycle => {
                 return (cycle !== void 0 &&
                         cycle.motion.period() < min_perceivable_period &&
@@ -144,16 +144,16 @@ function Universe(parameters) {
             .reverse();
         // figure out how many samples you can allocate to each cycle without compromising performance.
         // Round down to the nearest whole number.
-        var samples_per_cycle = Math.floor(Math.pow(max_sample_count, 1/imperceptably_small_cycles.length));
+        const samples_per_cycle = Math.floor(Math.pow(max_sample_count, 1/imperceptably_small_cycles.length));
         // we return a list of configs to sample across, starting with a clone of `config`
-        var samples = [Object.assign({}, config)];
+        let samples = [Object.assign({}, config)];
         // for each imperceptably small cycle:
-        for(var cycle of imperceptably_small_cycles) {
+        for(let cycle of imperceptably_small_cycles) {
             // sample across the cycle's period and add results to `samples`
-            var period = cycle.motion.period();
-            var subsamples = [];
-            for (var sample of samples) {
-                for (var j = 0; j < samples_per_cycle; j++) {
+            const period = cycle.motion.period();
+            const subsamples = [];
+            for (let sample of samples) {
+                for (let j = 0; j < samples_per_cycle; j++) {
                     subsamples.push(advance(sample, j*period/samples_per_cycle, {}, 1));
                 }
             }
@@ -165,15 +165,15 @@ function Universe(parameters) {
     // returns a dictionary mapping body ids for stars to a list of positions sampled along their orbits
     function star_sample_positions_map(config, body, min_perceivable_period, max_sample_count) {
         max_sample_count = max_sample_count || 16;
-        var origin   = cycle_of_body(body.id);
-        var samples_ = samples(config, max_sample_count, min_perceivable_period);
-        var stars = Object.values(bodies).filter(body => body instanceof Star);
-        var result = {};
-        for (var sample of samples_){
-            var body_matrices = origin.get_body_matrices(sample, cycles);
-            for (var star of stars) {
-                var star_matrix = body_matrices[star.id];
-                var star_pos = Matrix4x4.get_translation(star_matrix);
+        const origin   = cycle_of_body(body.id);
+        const samples_ = samples(config, max_sample_count, min_perceivable_period);
+        const stars = Object.values(bodies).filter(body => body instanceof Star);
+        const result = {};
+        for (let sample of samples_){
+            const body_matrices = origin.get_body_matrices(sample, cycles);
+            for (let star of stars) {
+                const star_matrix = body_matrices[star.id];
+                const star_pos = Matrix4x4.get_translation(star_matrix);
                 result[star.id] = result[star.id] || [];
                 result[star.id].push(star_pos);
             }
@@ -183,18 +183,18 @@ function Universe(parameters) {
 
     // average insolation from all stars
     function average_insolation(config, body, min_perceivable_period, average_insolation, max_sample_count){
-        var surface_normal = body.grid.pos;
+        average_insolation = average_insolation || Float32Raster(body.grid);
         max_sample_count = max_sample_count || 25;
-        var average_insolation = average_insolation || Float32Raster(body.grid);
-        var insolation_sample = Float32Raster(body.grid);
+        const surface_normal = body.grid.pos;
+        const insolation_sample = Float32Raster(body.grid);
         Float32Raster.fill(average_insolation, 0);
 
-        var stars = Object.values(bodies).filter(body => body instanceof Star);
-        var star_sample_positions_map_ = star_sample_positions_map(config, body, min_perceivable_period, max_sample_count);
-        for (var star of stars){
-            var star_memos = Star.get_memos(star);
-            var star_sample_positions = star_sample_positions_map_[star.id];
-            for (var star_sample_position of star_sample_positions) {
+        const stars = Object.values(bodies).filter(body => body instanceof Star);
+        const star_sample_positions_map_ = star_sample_positions_map(config, body, min_perceivable_period, max_sample_count);
+        for (let star of stars){
+            const star_memos = Star.get_memos(star);
+            const star_sample_positions = star_sample_positions_map_[star.id];
+            for (let star_sample_position of star_sample_positions) {
                 Optics.get_incident_radiation_fluxes(
                     surface_normal,
                     star_sample_position, 
@@ -221,8 +221,8 @@ function Universe(parameters) {
 
     this.initialize = function() {
         assert_dependencies();
-        for(var body_id in bodies) {
-            var body = bodies[body_id];
+        for(let body_id in bodies) {
+            const body = bodies[body_id];
             if (body instanceof World) {
                 body.setDependencies({
                     get_average_insolation: ((timestep, out) => average_insolation(
@@ -236,10 +236,10 @@ function Universe(parameters) {
             }
         }
 
-        for(var cycle_id in cycles) {
-            var cycle  = cycles[cycle_id];
-            var body_id = cycle.body;
-            var motion  = cycle.motion;
+        for(let cycle_id in cycles) {
+            const cycle  = cycles[cycle_id];
+            const body_id = cycle.body;
+            const motion  = cycle.motion;
             if (body_id !== void 0 && motion instanceof Spin) {
                 bodies[body_id].setDependencies({
                     axial_tilt:    motion.axial_tilt,
@@ -247,15 +247,15 @@ function Universe(parameters) {
                 });
             }
         }
-        for(var body_id in bodies) {
-            var body = bodies[body_id];
+        for(let body_id in bodies) {
+            const body = bodies[body_id];
             body.initialize();
         }
     }
 
     this.invalidate = function() {
-        for(var body_id in bodies) {
-            var body = bodies[body_id];
+        for(let body_id in bodies) {
+            const body = bodies[body_id];
             body.invalidate();
         }
     }
@@ -266,16 +266,16 @@ function Universe(parameters) {
         };
         assert_dependencies();
 
-        for(var body_id in bodies){
-            var body = bodies[body_id];
+        for(let body_id in bodies){
+            const body = bodies[body_id];
             // TODO: do away with this! We don't need to set mean anomaly!
             body.setDependencies({ 
                 mean_anomaly: this.config['orbit'],
             });
         }
 
-        for(var body_id in bodies){
-            var body = bodies[body_id];
+        for(let body_id in bodies){
+            const body = bodies[body_id];
             body.calcChanges(timestep);
         }
     };
@@ -293,8 +293,8 @@ function Universe(parameters) {
                 60*60*24*30 * timestep
             ); 
 
-        for(var body_id in bodies){
-            var body = bodies[body_id];
+        for(let body_id in bodies){
+            const body = bodies[body_id];
             body.applyChanges(timestep);
         }
     };

@@ -3,7 +3,7 @@
 
 
 function World(parameters) {
-    var this_ = this;
+    const this_ = this;
     // "id" is used to reference the world within the rest of the universe
     // It remains unique to the world regardless of name changes. 
     // It is not visible to the user.

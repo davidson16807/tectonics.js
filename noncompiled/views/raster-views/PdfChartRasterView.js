@@ -6,39 +6,35 @@ function PdfChartRasterView(surface_type_focus, name) {
 
     this.updateChart = function(data, raster, options) {
         options = options || {};
-        var ocean_visibility = options['ocean_visibility'];
+        const ocean_visibility = options['ocean_visibility'];
 
         if (raster === void 0) {
             data.isEnabled = false;
         }
 
-        var max = Float32Dataset.max(raster);
-        var min = Float32Dataset.min(raster);
-        var median = Float32Dataset.median(raster); 
-        var plot_range = Math.pow(10, Math.floor(Math.log10(max-min)));
-        var bin_num = 10;
-        var bin_size = plot_range/bin_num;
-        var bin_min = 0;
-        var bin_max = 0;
-        var x = [];
-        var y = [];
+        const max = Float32Dataset.max(raster);
+        const min = Float32Dataset.min(raster);
+        const median = Float32Dataset.median(raster); 
+        const plot_range = Math.pow(10, Math.floor(Math.log10(max-min)));
+        let bin_min = 0;
+        let bin_max = 0;
+        const x = [];
+        const y = [];
 
-        var bin_size = Math.pow(10, Math.floor(Math.log10(max-min))-1); 
-        var bin_num = 10; 
-        var bin_size = plot_range / bin_num;
-        var plot_middle = Math.round(median/bin_size)*bin_size; 
-        var plot_min = plot_middle - bin_size * Math.round(bin_num/2); 
+        const bin_num = 10; 
+        const bin_size = plot_range / bin_num;
+        const plot_middle = Math.round(median/bin_size)*bin_size; 
+        const plot_min = plot_middle - bin_size * Math.round(bin_num/2); 
 
-        var world = focus; //TODO: pass in as parameter
-        var land, ocean
+        let land, ocean;
         if (options.displacement !== void 0 && options.sealevel !== void 0) {
             land = ScalarField.gte_scalar(displacement, sealevel);
             ocean = ScalarField.lt_scalar(displacement, sealevel);
         }
 
-        var category = Uint8Raster(raster.grid);
+        const category = Uint8Raster(raster.grid);
 
-        for (var i = 0; i < bin_num; i++) {
+        for (let i = 0; i < bin_num; i++) {
             bin_min = plot_min + i*bin_size; 
             bin_max = plot_min + (i+1)*bin_size; 
             ScalarField.between_scalars(raster, bin_min, bin_max, category);

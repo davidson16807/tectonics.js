@@ -2,12 +2,12 @@
 
 function Hydrosphere(grid, parameters) {
 
-    var grid = grid || stop('missing parameter: "grid"');
+    grid = grid || stop('missing parameter: "grid"');
 
     this.average_ocean_depth = parameters['average_ocean_depth'] || 2000; // meters, conserved quantity
 
     // public variables
-    var _this = this; 
+    const _this = this; 
     this.sealevel = new Memo( 0,
         current_value => 
             Hydrology.solve_sealevel(
@@ -49,7 +49,7 @@ function Hydrosphere(grid, parameters) {
                 Float32Raster.fill(result, 0);
                 return result;
             }
-            var freezing_point = 273.15; // TODO: move this to Atmosphere, and update this to reflect surface_pressure
+            const freezing_point = 273.15; // TODO: move this to Atmosphere, and update this to reflect surface_pressure
             Float32RasterInterpolation.mix(
                     1, 0, 
                     Float32RasterInterpolation.linearstep(freezing_point-5, freezing_point, surface_temperature),
@@ -92,9 +92,9 @@ function Hydrosphere(grid, parameters) {
     }
 
     // private variables
-    var surface_temperature = undefined;
-    var displacement = undefined;
-    var material_density = undefined;
+    let surface_temperature = undefined;
+    let displacement = undefined;
+    let material_density = undefined;
 
     function assert_dependencies() {
         // NOTE: surface_temperature is not a strict requirement

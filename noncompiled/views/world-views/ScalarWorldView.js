@@ -4,8 +4,8 @@
 // and uses it to View a raster from a given world 
 function ScalarWorldView(scalarRasterView, getField) {
     this.getField = getField;
-    var preallocated = void 0;
-    var scratch = void 0;
+    let preallocated = void 0;
+    let scratch = void 0;
 
     this.clone = function() {
         return new ScalarWorldView(scalarRasterView.clone(), getField);
@@ -19,7 +19,7 @@ function ScalarWorldView(scalarRasterView, getField) {
             return;
         }
 
-        var raster = this.getField(world, preallocated, scratch, options);
+        const raster = this.getField(world, preallocated, scratch, options);
 
         if (raster === void 0) {
             log_once("ScalarWorldView.getField() returned undefined.");
@@ -52,7 +52,7 @@ function ScalarWorldView(scalarRasterView, getField) {
             return;
         }
 
-        var raster = this.getField(world, preallocated, scratch, options);
+        const raster = this.getField(world, preallocated, scratch, options);
 
         if (raster === void 0) {
             log_once("ScalarWorldView.getField() returned undefined.");
@@ -77,7 +77,7 @@ function ScalarWorldView(scalarRasterView, getField) {
             world_radius: world.radius,
 		}, options));	
 
-        var mesh = scalarRasterView.mesh;
+        const mesh = scalarRasterView.mesh;
     };
     this.removeFromScene = function(gl_state) {
         scalarRasterView.removeFromScene(gl_state);

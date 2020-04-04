@@ -6,9 +6,9 @@
 function Crust(parameters) {
     this.grid = parameters['grid'] || stop('missing parameter: "grid"');
 
-    var length = this.grid.vertices.length;
+    const length = this.grid.vertices.length;
 
-    var buffer = parameters['buffer'] || new ArrayBuffer(8 * Float32Array.BYTES_PER_ELEMENT * length);
+    const buffer = parameters['buffer'] || new ArrayBuffer(8 * Float32Array.BYTES_PER_ELEMENT * length);
     this.buffer = buffer;
 
     this.sediment             = Float32Raster.FromBuffer(buffer, this.grid, 0 * Float32Array.BYTES_PER_ELEMENT * length);
@@ -97,11 +97,11 @@ Crust.reset = function(crust) {
     crust.everything.fill(0);
 }
 Crust.mult_field = function(crust, field, result_crust) {
-    var input = crust.everything;
-    var output = result_crust.everything;
+    const input = crust.everything;
+    const output = result_crust.everything;
 
-    var length = field.length;
-    for (var i=0, li=input.length; i<li; ++i) {
+    const length = field.length;
+    for (let i=0, li=input.length; i<li; ++i) {
         output[i] = input[i] * field[i%length];
     }
 }
@@ -116,9 +116,9 @@ Crust.get_conserved_mass = function(crust, mass) {
     mass = mass || Float32Raster(crust.grid);
     mass.fill(0);
 
-    var pools = crust.conserved_array;
-    var length = mass.length;
-    for (var i=0, li=pools.length; i<li; ++i) {
+    const pools = crust.conserved_array;
+    const length = mass.length;
+    for (let i=0, li=pools.length; i<li; ++i) {
         mass[i%length] += pools[i];
     }
     
@@ -128,16 +128,16 @@ Crust.get_total_mass = function(crust, mass) {
     mass = mass || Float32Raster(crust.grid);
     mass.fill(0);
 
-    var pools = crust.mass_array;
-    var length = mass.length;
-    for (var i=0, li=pools.length; i<li; ++i) {
+    const pools = crust.mass_array;
+    const length = mass.length;
+    for (let i=0, li=pools.length; i<li; ++i) {
         mass[i%length] += pools[i];
     }
     
     return mass; 
 }
 Crust.get_density = function(mass, thickness, default_density, density) {
-    for (var i = 0, li = density.length; i < li; i++) { 
+    for (let i = 0, li = density.length; i < li; i++) { 
         density[i] = thickness[i] > 0? mass[i] / thickness[i] : default_density; 
     }
 
@@ -148,71 +148,71 @@ Crust.get_density = function(mass, thickness, default_density, density) {
 
 
 Crust.get_value = function(crust, i) {
-    var column = new RockColumn();
-    var crust_pools = crust.all_pools;
-    var column_pools = column.all_pools;
-    for (var j = 0, lj = crust_pools.length; j < lj; ++j) {
+    const column = new RockColumn();
+    const crust_pools = crust.all_pools;
+    const column_pools = column.all_pools;
+    for (let j = 0, lj = crust_pools.length; j < lj; ++j) {
         column_pools[j] = crust_pools[j][i];
     }
     return column;
 }
 Crust.set_value = function(crust, i, rock_column) {
-    var crust_pools = crust.all_pools;
-    var column_pools = rock_column.all_pools;
-    for (var j = 0, lj = crust_pools.length; j < lj; ++j) {
+    const crust_pools = crust.all_pools;
+    const column_pools = rock_column.all_pools;
+    for (let j = 0, lj = crust_pools.length; j < lj; ++j) {
         crust_pools[j][i] = column_pools[j];
     }
 }
 Crust.fill = function(crust, rock_column) {
-    var f = Float32Raster.fill;
-    var crust_pools = crust.all_pools;
-    var column_pools = rock_column.all_pools;
-    for (var i = 0, li = crust_pools.length; i < li; ++i) {
+    const f = Float32Raster.fill;
+    const crust_pools = crust.all_pools;
+    const column_pools = rock_column.all_pools;
+    for (let i = 0, li = crust_pools.length; i < li; ++i) {
         f(crust_pools[i], column_pools[i]);
     }
 }
 Crust.fill_into_selection = function(crust, rock_column, selection_raster, result_crust) {
-    var f = Float32RasterGraphics.fill_into_selection;
-    var crust_pools = crust.all_pools;
-    var column_pools = rock_column.all_pools;
-    var result_pools = result_crust.all_pools;
-    for (var i = 0, li = crust_pools.length; i < li; ++i) {
+    const f = Float32RasterGraphics.fill_into_selection;
+    const crust_pools = crust.all_pools;
+    const column_pools = rock_column.all_pools;
+    const result_pools = result_crust.all_pools;
+    for (let i = 0, li = crust_pools.length; i < li; ++i) {
         f(crust_pools[i], column_pools[i], selection_raster, result_pools[i]);
     }
 }
 Crust.copy_into_selection = function(crust1, crust2, selection_raster, result_crust) {
-    var f = Float32RasterGraphics.copy_into_selection;
-    var crust1_pools = crust1.all_pools;
-    var crust2_pools = crust2.all_pools;
-    var result_pools = result_crust.all_pools;
-    for (var i = 0, li = crust1_pools.length; i < li; ++i) {
+    const f = Float32RasterGraphics.copy_into_selection;
+    const crust1_pools = crust1.all_pools;
+    const crust2_pools = crust2.all_pools;
+    const result_pools = result_crust.all_pools;
+    for (let i = 0, li = crust1_pools.length; i < li; ++i) {
         f(crust1_pools[i], crust2_pools[i], selection_raster, result_pools[i]);
     }
 }
 
 Crust.get_ids = function(crust, id_raster, result_crust) {
-    var f = Float32Raster.get_ids;
-    var crust_pools = crust.all_pools;
-    var result_pools = result_crust.all_pools;
-    for (var i = 0, li = crust_pools.length; i < li; ++i) {
+    const f = Float32Raster.get_ids;
+    const crust_pools = crust.all_pools;
+    const result_pools = result_crust.all_pools;
+    for (let i = 0, li = crust_pools.length; i < li; ++i) {
         f(crust_pools[i], id_raster, result_pools[i]);
     }
 }
 Crust.add_values_to_ids = function(crust, id_raster, value_crust, result_crust) {
-    var f = Float32Raster.add_values_to_ids;
-    var crust_pools = crust.mass_pools;
-    var value_pools = value_crust.mass_pools;
-    var result_pools = result_crust.mass_pools;
-    for (var i = 0, li = crust_pools.length; i < li; ++i) {
+    const f = Float32Raster.add_values_to_ids;
+    const crust_pools = crust.mass_pools;
+    const value_pools = value_crust.mass_pools;
+    const result_pools = result_crust.mass_pools;
+    for (let i = 0, li = crust_pools.length; i < li; ++i) {
         f(crust_pools[i], id_raster, value_pools[i], result_pools[i]);
     }
 }
 Crust.fix_delta = function(crust_delta, crust, scratch) {
-    var scratch = scratch || Float32Raster(crust_delta.grid);
-    var f = ScalarTransport.fix_nonnegative_conserved_quantity_delta;
-    var delta_pools = crust_delta.conserved_pools;
-    var crust_pools = crust.conserved_pools;
-    for (var i = 0, li = crust_pools.length; i < li; ++i) {
+    scratch = scratch || Float32Raster(crust_delta.grid);
+    const f = ScalarTransport.fix_nonnegative_conserved_quantity_delta;
+    const delta_pools = crust_delta.conserved_pools;
+    const crust_pools = crust.conserved_pools;
+    for (let i = 0, li = crust_pools.length; i < li; ++i) {
         f(delta_pools[i], crust_pools[i], scratch);
     }
 }
@@ -220,9 +220,8 @@ Crust.is_conserved_delta = function(crust_delta, threshold) {
     return ScalarTransport.is_conserved_quantity_delta(crust_delta.conserved_array, threshold);
 }
 Crust.is_conserved_transport_delta = function(crust_delta, threshold) {
-    var delta_pools = crust_delta.conserved_pools;
-    var is_conserved = true;
-    for (var i = 0, li = delta_pools.length; i < li; ++i) {
+    const delta_pools = crust_delta.conserved_pools;
+    for (let i = 0, li = delta_pools.length; i < li; ++i) {
         if (!ScalarTransport.is_conserved_quantity_delta(delta_pools[i], threshold)){
             return false;
         }
@@ -230,11 +229,11 @@ Crust.is_conserved_transport_delta = function(crust_delta, threshold) {
     return true;
 }
 Crust.is_conserved_reaction_delta = function(crust_delta, threshold, scratch) {
-    var sum = scratch || Float32Raster(crust_delta.grid);
+    const sum = scratch || Float32Raster(crust_delta.grid);
     sum.fill(0);
-    var f = ScalarField.add_field;
-    var delta_pools = crust_delta.conserved_pools;
-    for (var i = 0, li = delta_pools.length; i < li; ++i) {
+    const f = ScalarField.add_field;
+    const delta_pools = crust_delta.conserved_pools;
+    for (let i = 0, li = delta_pools.length; i < li; ++i) {
         f(sum, delta_pools[i], sum);
     }
     ScalarField.mult_field(sum, sum, sum);
@@ -258,23 +257,23 @@ Crust.overlap = function(crust1, crust2, crust2_exists, crust2_on_top, result_cr
 Crust.get_thickness = function(crust, material_density, thickness) {
     thickness = thickness || Float32Raster(crust.grid);
 
-    var scratch = Float32Raster(crust.grid);
+    const scratch = Float32Raster(crust.grid);
 
-    var fraction_of_lifetime = scratch;
+    const fraction_of_lifetime = scratch;
     Float32RasterInterpolation.linearstep    (0* Units.MEGAYEAR, 250* Units.MEGAYEAR, crust.age, fraction_of_lifetime);
-    var mafic_density = scratch;
+    const mafic_density = scratch;
     Float32RasterInterpolation.mix            (material_density.mafic_volcanic_min, material_density.mafic_volcanic_max, fraction_of_lifetime, mafic_density);
-    var mafic_specific_volume = scratch;
+    const mafic_specific_volume = scratch;
     ScalarField.inv_field                     (mafic_density, mafic_specific_volume);
 
     Float32Raster.fill                 (thickness, 0);
     ScalarField.add_field_term         (thickness, crust.mafic_plutonic, mafic_specific_volume, thickness);
     ScalarField.add_field_term         (thickness, crust.mafic_volcanic, mafic_specific_volume, thickness);
 
-    var f = ScalarField.add_scalar_term;
-    var crust_pools = crust.conserved_pools;
-    var pool_densities = new RockColumn(material_density).conserved_pools;
-    for (var i = 0, li = crust_pools.length; i < li; ++i) {
+    const f = ScalarField.add_scalar_term;
+    const crust_pools = crust.conserved_pools;
+    const pool_densities = new RockColumn(material_density).conserved_pools;
+    for (let i = 0, li = crust_pools.length; i < li; ++i) {
         f(thickness, crust_pools[i], 1/pool_densities[i],  thickness);
     }
 
@@ -290,7 +289,7 @@ Crust.get_buoyancy = function (density, material_density, surface_gravity, buoya
     // buoyancy = min( g ( crust_density - mantle_density ), 0 )
 
     // NOTE: buoyancy does double duty for performance reasons
-    var density_difference = buoyancy
+    const density_difference = buoyancy
     ScalarField.sub_scalar( density, material_density.mantle, density_difference );
     ScalarField.mult_scalar(density_difference, -surface_gravity, buoyancy);
     ScalarField.min_scalar(buoyancy, 0, buoyancy);
@@ -308,21 +307,21 @@ Crust.model_lithification = function(
         surface_height, seconds,
         material_density, surface_gravity,
         top_crust, crust_delta, crust_scratch){
-    var grid = top_crust.grid;
+    const grid = top_crust.grid;
 
-      var scratchpad = RasterStackBuffer.scratchpad;
-      scratchpad.allocate('get_lithification');
+    const scratchpad = RasterStackBuffer.scratchpad;
+    scratchpad.allocate('get_lithification');
 
-      // TODO: maybe...
+    // TODO: maybe...
     // Crust.mult_profile(top_crust, [2500, 2700, 2700, 2700, 2890, 0], crust_scratch);
 
     // TODO: include overpressure from ocean ocean
-    var overpressure = scratchpad.getFloat32Raster(grid); // NOTE: in Pascals
+    const overpressure = scratchpad.getFloat32Raster(grid); // NOTE: in Pascals
     Float32Raster.fill             (overpressure, 0);
     // TODO: simply math now that we're using mass, not thickness
     ScalarField.add_scalar_term    (overpressure, top_crust.sediment, surface_gravity, overpressure);
 
-    var excess_overpressure = scratchpad.getFloat32Raster(grid); 
+    const excess_overpressure = scratchpad.getFloat32Raster(grid); 
     ScalarField.sub_scalar(overpressure, 2.2e6, excess_overpressure); 
     // NOTE: 2.2e6 Pascals is the pressure equivalent of 500ft of sediment @ 1500kg/m^3 density
       // 500ft from http://wiki.aapg.org/Sandstone_diagenetic_processes
@@ -330,7 +329,7 @@ Crust.model_lithification = function(
 
     // convert excess_overpressure to kg
     // this represents the number of kg of sediment that have lithified
-    var lithified_meters = scratchpad.getFloat32Raster(grid); 
+    const lithified_meters = scratchpad.getFloat32Raster(grid); 
     ScalarField.div_scalar    (excess_overpressure, surface_gravity,     lithified_meters);
 
     // clamp lithified_meters to sensible values
@@ -340,7 +339,7 @@ Crust.model_lithification = function(
     ScalarField.mult_scalar(lithified_meters, -1,     crust_delta.sediment);
     ScalarField.mult_scalar(lithified_meters,  1,     crust_delta.sedimentary);
 
-      scratchpad.deallocate('get_lithification');
+    scratchpad.deallocate('get_lithification');
 }
 
 
@@ -350,22 +349,22 @@ Crust.model_metamorphosis = function(
         material_density, surface_gravity,
         top_crust, crust_delta, crust_scratch){
 
-    var grid = top_crust.grid;
+    const grid = top_crust.grid;
 
-      var scratchpad = RasterStackBuffer.scratchpad;
-      scratchpad.allocate('get_metamorphosis');
+    const scratchpad = RasterStackBuffer.scratchpad;
+    scratchpad.allocate('get_metamorphosis');
 
-      // TODO: maybe...
+    // TODO: maybe...
     // Crust.mult_profile(top_crust, [2500, 2700, 2700, 2700, 2890, 0], crust_scratch);
 
     // TODO: include overpressure from ocean ocean
-    var overpressure = scratchpad.getFloat32Raster(grid); // NOTE: in Pascals
+    const overpressure = scratchpad.getFloat32Raster(grid); // NOTE: in Pascals
     Float32Raster.fill             (overpressure, 0);
     // TODO: simply math now that we're using mass, not thickness
     ScalarField.add_scalar_term    (overpressure, top_crust.sediment,         surface_gravity,     overpressure);
     ScalarField.add_scalar_term    (overpressure, top_crust.sedimentary,     surface_gravity,     overpressure);
     //TODO: convert igneous to metamorphic
-    var excess_overpressure = scratchpad.getFloat32Raster(grid); // pressure at bottom of the layer that's beyond which is necessary to metamorphose 
+    const excess_overpressure = scratchpad.getFloat32Raster(grid); // pressure at bottom of the layer that's beyond which is necessary to metamorphose 
     ScalarField.sub_scalar(overpressure, 300e6, excess_overpressure); 
     // NOTE: 300e6 Pascals is the pressure equivalent of 11km of sedimentary rock @ 2700kg/m^3 density
       // 300 MPa from https://www.tulane.edu/~sanelson/eens212/typesmetamorph.htm
@@ -373,7 +372,7 @@ Crust.model_metamorphosis = function(
 
     // convert excess_overpressure to kg
     // this represents the number of kg of sediment that have lithified
-    var metamorphosed_meters = scratchpad.getFloat32Raster(grid);  
+    const metamorphosed_meters = scratchpad.getFloat32Raster(grid);  
     ScalarField.div_scalar    (excess_overpressure, surface_gravity, metamorphosed_meters);
 
     // clamp metamorphosed_meters to sensible values
@@ -383,7 +382,7 @@ Crust.model_metamorphosis = function(
     ScalarField.mult_scalar(metamorphosed_meters, -1,     crust_delta.sedimentary);
     ScalarField.mult_scalar(metamorphosed_meters,  1,     crust_delta.metamorphic);
 
-      scratchpad.deallocate('get_metamorphosis');
+    scratchpad.deallocate('get_metamorphosis');
 }
 
 
@@ -423,22 +422,22 @@ Crust.model_weathering = function(
         surface_height, seconds,
         material_density, surface_gravity,
         top_crust, crust_delta, crust_scratch){
-  var grid = surface_height.grid;
-  var scratch = Float32Raster(grid);
+  const grid = surface_height.grid;
+  const scratch = Float32Raster(grid);
 
-  var precip = 1.05 / Units.YEAR;
+  const precip = 1.05 / Units.YEAR;
   // ^^^ measured in meters of rain per million years 
   // global land average from wikipedia 
-  var weathering_factor = 0;//1.8e-7;  
+  const weathering_factor = 0;//1.8e-7;  
   // ^^^ the rate of weathering per the rate of rainfall in that place 
   // measured in fraction of height difference per meters of rain per million years 
-  var critical_sediment_thickness = 1; 
+  const critical_sediment_thickness = 1; 
   // ^^^ the sediment thickness (in meters) at which bedrock weathering no longer occurs 
  
-  var earth_surface_gravity = 9.8; // m/s^2 
+  const earth_surface_gravity = 9.8; // m/s^2 
    
-  var average_difference = ScalarField.average_difference(surface_height); 
-  var weathering = scratch;
+  const average_difference = ScalarField.average_difference(surface_height); 
+  const weathering = scratch;
   // NOTE: result array does double duty for performance reasons 
  
   ScalarField.mult_scalar( 
@@ -450,7 +449,7 @@ Crust.model_weathering = function(
     surface_gravity/earth_surface_gravity, //correct for planet's gravity 
     weathering) 
    
-  var bedrock_exposure = Float32Raster(grid); 
+  const bedrock_exposure = Float32Raster(grid); 
   ScalarField.div_scalar(top_crust.sediment,  
     -critical_sediment_thickness * material_density.sediment
     // * material_density.sediment 
@@ -463,7 +462,7 @@ Crust.model_weathering = function(
   
   // NOTE: this draws from all pools equally
   // TODO: draw from topmost pools, first, borrowing code from bedrock_exposure
-  var conserved = Float32Raster(grid);
+  const conserved = Float32Raster(grid);
   ScalarField.add_field(conserved, top_crust.sedimentary, conserved);
   ScalarField.add_field(conserved, top_crust.metamorphic, conserved);
   ScalarField.add_field(conserved, top_crust.felsic_plutonic,         conserved);
@@ -472,9 +471,9 @@ Crust.model_weathering = function(
   ScalarField.min_field(weathering, conserved, weathering); 
   ScalarField.max_scalar(weathering, 0, weathering); 
 
-  var ratio = ScalarField.div_field(weathering, conserved);
+  const ratio = ScalarField.div_field(weathering, conserved);
 
-  var is_div_by_zero = ScalarField.lt_scalar(conserved, 0.01);
+  const is_div_by_zero = ScalarField.lt_scalar(conserved, 0.01);
 
   Float32RasterGraphics.fill_into_selection(ratio, 0, is_div_by_zero, ratio);
 
@@ -495,37 +494,37 @@ Crust.model_erosion = function(
         surface_height, seconds,
         material_density, surface_gravity,
         top_crust, crust_delta, crust_scratch){
-      var scratchpad = RasterStackBuffer.scratchpad;
-      scratchpad.allocate('get_erosion');
+    const scratchpad = RasterStackBuffer.scratchpad;
+    scratchpad.allocate('get_erosion');
 
-    var sediment         = top_crust.sediment;
-    var sedimentary     = top_crust.sedimentary;
-    var metamorphic     = top_crust.metamorphic;
-    var felsic_plutonic = top_crust.felsic_plutonic;
-    var felsic_volcanic = top_crust.felsic_volcanic;
+    const sediment         = top_crust.sediment;
+    const sedimentary     = top_crust.sedimentary;
+    const metamorphic     = top_crust.metamorphic;
+    const felsic_plutonic = top_crust.felsic_plutonic;
+    const felsic_volcanic = top_crust.felsic_volcanic;
     
     Crust.reset(crust_delta);
 
     // TODO: add consideration for surface_gravity
-    var precip = 1.05 / Units.YEAR;
+    const precip = 1.05 / Units.YEAR;
     // ^^^ measured in meters of rain per million years
     // global land average from wikipedia
-    var erosiveFactor = 1.8e-7; 
+    const erosiveFactor = 1.8e-7; 
     // ^^^ the rate of erosion per the kinetic energy of rainfall
     // measured in fraction of height difference per meters of rain
 
-    var outbound_height_transfer = scratchpad.getFloat32Raster(surface_height.grid);
+    const outbound_height_transfer = scratchpad.getFloat32Raster(surface_height.grid);
     Float32Raster.fill(outbound_height_transfer, 0);
 
-    var arrows = surface_height.grid.arrows;
-    var arrow;
-    var from = 0;
-    var to = 0;
-    var height_difference = 0.0;
-    var outbound_height_transfer_i = 0.0;
-      var neighbor_count = surface_height.grid.neighbor_count;
+    const arrows = surface_height.grid.arrows;
+    let arrow;
+    let from = 0;
+    let to = 0;
+    let height_difference = 0.0;
+    let outbound_height_transfer_i = 0.0;
+    const neighbor_count = surface_height.grid.neighbor_count;
 
-    for (var i=0, li=arrows.length; i<li; ++i) {
+    for (let i=0, li=arrows.length; i<li; ++i) {
         arrow = arrows[i];
         from = arrow[0];
         to = arrow[1];
@@ -533,14 +532,14 @@ Crust.model_erosion = function(
         outbound_height_transfer[from] += height_difference > 0? height_difference *precip * seconds * erosiveFactor * material_density.felsic_plutonic : 0;
     }
 
-    var outbound_sediment_fraction = crust_scratch.sediment;
-    var outbound_sedimentary_fraction = crust_scratch.sedimentary;
-    var outbound_metamorphic_fraction = crust_scratch.metamorphic;
-    var outbound_felsic_plutonic_fraction = crust_scratch.felsic_plutonic;
-    var outbound_felsic_volcanic_fraction = crust_scratch.felsic_volcanic;
+    const outbound_sediment_fraction = crust_scratch.sediment;
+    const outbound_sedimentary_fraction = crust_scratch.sedimentary;
+    const outbound_metamorphic_fraction = crust_scratch.metamorphic;
+    const outbound_felsic_plutonic_fraction = crust_scratch.felsic_plutonic;
+    const outbound_felsic_volcanic_fraction = crust_scratch.felsic_volcanic;
 
-    var fraction = 0.0;
-    for (var i=0, li=outbound_height_transfer.length; i<li; ++i) {
+    let fraction = 0.0;
+    for (let i=0, li=outbound_height_transfer.length; i<li; ++i) {
         outbound_height_transfer_i = outbound_height_transfer[i];
         
         fraction = sediment[i] / outbound_height_transfer_i
@@ -570,14 +569,14 @@ Crust.model_erosion = function(
 
     }
 
-    var sediment_delta      = crust_delta.sediment;
-    var sedimentary_delta      = crust_delta.sedimentary;
-    var metamorphic_delta      = crust_delta.metamorphic;
-    var felsic_plutonic_delta          = crust_delta.felsic_plutonic;
-    var felsic_volcanic_delta          = crust_delta.felsic_volcanic;
+    const sediment_delta      = crust_delta.sediment;
+    const sedimentary_delta      = crust_delta.sedimentary;
+    const metamorphic_delta      = crust_delta.metamorphic;
+    const felsic_plutonic_delta          = crust_delta.felsic_plutonic;
+    const felsic_volcanic_delta          = crust_delta.felsic_volcanic;
 
-    var transfer = 0.0;
-    for (var i=0, li=arrows.length; i<li; ++i) {
+    let transfer = 0.0;
+    for (let i=0, li=arrows.length; i<li; ++i) {
         arrow = arrows[i];
         from = arrow[0];
         to = arrow[1];

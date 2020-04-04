@@ -1,8 +1,8 @@
 'use strict';
 
 function MapProjectionView(vertexShader) {
-    var subview1 = void 0;
-    var subview2 = void 0;
+    let subview1 = void 0;
+    let subview2 = void 0;
     this.clone = function() {
         return new MapProjectionView(vertexShader);
     }

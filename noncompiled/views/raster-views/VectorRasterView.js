@@ -8,15 +8,15 @@ function VectorRasterView(options) {
     }
 
     this.mesh = void 0;
-    var mesh = void 0;
-    var grid = void 0;
-    var vertexShader = void 0;
-    var uniforms = {};
+    let mesh = void 0;
+    let grid = void 0;
+    let vertexShader = void 0;
+    let uniforms = {};
 
     function create_mesh(raster, options_) {
-        var grid = raster.grid;
-        var geometry = new THREE.Geometry();
-        var material = new THREE.ShaderMaterial({
+        const grid = raster.grid;
+        const geometry = new THREE.Geometry();
+        const material = new THREE.ShaderMaterial({
                 vertexShader:     options_.vertexShader,
                 fragmentShader: fragmentShaders.vector_field,
                 attributes: {
@@ -30,8 +30,8 @@ function VectorRasterView(options) {
                       animation_phase_angle:     { type: 'f', value: 0 }
                 }
             });
-        var v = {x:0, y:0, z:0}; 
-        for (var i=0, li=grid.vertices.length; i<li; ++i) { 
+        let v = {x:0, y:0, z:0}; 
+        for (let i=0, li=grid.vertices.length; i<li; ++i) { 
             v = grid.vertices[i]; 
             geometry.vertices.push({x:v.x, y:v.y, z:v.z}); 
             geometry.vertices.push({x:v.x, y:v.y, z:v.z}); 
@@ -78,20 +78,20 @@ function VectorRasterView(options) {
         update_uniform('map_projection_offset',    options_.map_projection_offset);
         update_uniform('animation_phase_angle',    (mesh.material.uniforms.animation_phase_angle.value + 1e-1)%(2*3.14));
 
-        var offset_length = 1.02;     // offset of arrow from surface of sphere, in radii
-        var vector = mesh.geometry.vertices;
+        const offset_length = 1.02;     // offset of arrow from surface of sphere, in radii
+        const vector = mesh.geometry.vertices;
 
-        var overlap_factor = 2;
-        var max = this.max ||  Math.max.apply(null, VectorField.magnitude(raster));
-        var scaling = overlap_factor * raster.grid.average_distance / max;
+        const overlap_factor = 2;
+        const max = this.max ||  Math.max.apply(null, VectorField.magnitude(raster));
+        const scaling = overlap_factor * raster.grid.average_distance / max;
 
-        var pos = raster.grid.pos;
-        for(var i=0, li = raster.x.length; i<li; i++){
-            var start = vector[2*i];
+        const pos = raster.grid.pos;
+        for (let i=0, li = raster.x.length; i<li; i++){
+            const start = vector[2*i];
             start.x = offset_length * pos.x[i];
             start.y = offset_length * pos.y[i];
             start.z = offset_length * pos.z[i];
-            var end = vector[2*i+1];
+            const end = vector[2*i+1];
             end.x = raster.x[i] * scaling + start.x;
             end.y = raster.y[i] * scaling + start.y;
             end.z = raster.z[i] * scaling + start.z;
