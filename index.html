@@ -17,7 +17,6 @@
     <script src="libraries/vue.js"></script>
     <script src="libraries/Chart.js"></script>
     <script src="libraries/vue-charts.js"></script>
-    <script src="libraries/jquery-1.10.2.min.js"></script>
     <script src="libraries/bootstrap.bundle.min.js"></script>
     <script src="libraries/three.js/Three.js"></script>
     <script src="libraries/three.js/OrbitControls.js"></script>
@@ -464,24 +463,33 @@
     // all spatial coordinates are xyz vectors on a unit sphere
     // all angles are in radians
     // all units are in MKS
+    
+    const IS_PROD = false;
+
+    const body_tag = document.getElementsByTagName('body')[0];
+    const drop_dialog_tag = document.getElementById('drop-dialog');
+    const container_tag = document.getElementById('container');
+    const stats_tag = document.getElementById('stats');
+    const header_tag = document.getElementById('header');
+    const hidden_downloader_tag = document.getElementById('hidden-downloader');
+    const hidden_when_loading_tags = document.getElementsByClassName('hidden-when-loading');
 
     if( !window.WebGLRenderingContext ){
         process.exit(1);
     }
 
-    var sim, view;
-    var renderStats, updateStats;
-    var IS_PROD = false;
-    var autosave_period;
+    const onSimLoadStart = new Event();
+    const onSimLoadStop  = new Event();
 
-    var onSimLoadStart   = new Event();
-    var onSimLoadStop    = new Event();
+    let sim, view;
+    let renderStats, updateStats;
+    let autosave_period;
 
     onSimLoadStart.subscribe(function() {
-        $('.hidden-when-loading').hide();
+        hidden_when_loading_tags.forEach(tag => tag.style.display = 'none');
     });
     onSimLoadStop.subscribe(function() {
-        $('.hidden-when-loading').show();
+        hidden_when_loading_tags.forEach(tag => tag.style.display = 'block');
     });
 
     function loadUrl (url) {
@@ -493,7 +501,7 @@
     }
     function loadFile (file) {
         onSimLoadStart.fire();
-        var reader = new FileReader();
+        const reader = new FileReader();
         reader.onload = function(e) {
             sim = JsonDeserializer.sim(e.target.result);
             onSimLoadStop.fire();
@@ -502,7 +510,7 @@
     }
     function loadImage (file) {
         onSimLoadStart.fire();
-        var reader = new FileReader();
+        const reader = new FileReader();
         reader.onload = function(e) {
             var data_url = e.target.result;
             // create image
@@ -660,17 +668,17 @@
 
         onSimLoadStop.fire();
 
-        $('#container').append(view.getDomElement());
+        container_tag.appendChild(view.getDomElement());
         
         if(!IS_PROD){
             // add Stats.js - https://github.com/mrdoob/renderStats.js
             renderStats = new Stats();
-            $('#stats').append( renderStats.domElement );
+            stats_tag.appendChild( renderStats.domElement );
 
             updateStats = new Stats();
-            $('#stats').append( updateStats.domElement );
+            stats_tag.appendChild( updateStats.domElement );
 
-            $('#header').hide();
+            header_tag.style.display = 'none';
         }
     }
 
@@ -743,10 +751,9 @@
     }
 
     function download(url, filename) {
-        $('#hidden-downloader')
-            .attr('href', url)
-            .attr('download', filename)
-            [0].click();
+        hidden_downloader_tag.setAttribute('href', url);
+        hidden_downloader_tag.setAttribute('download', filename);
+        hidden_downloader_tag.click();
     }
 
 
@@ -772,47 +779,32 @@
     });
 
     var last_drag_entered;
-    $('body').on(
-        'dragover',
-        function(e) {
+    body_tag.addEventListener('dragover', function(e) {
             e.preventDefault();
             e.stopPropagation();
-        }
-    );
-    $('body').on(
-        'dragenter',
-        function(e) {
+        } );
+    body_tag.addEventListener('dragenter', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            
             last_drag_entered = e.target;
-            $('#drop-dialog').show();
-        }
-    );
-    $('body').on(
-        'dragleave',
-        function(e) {
+            drop_dialog_tag.style.display = 'block';
+        } );
+    body_tag.addEventListener('dragleave', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            
             if(last_drag_entered == e.target){
-                $('#drop-dialog').hide();
+                drop_dialog_tag.style.display = 'none';
             }
-        }
-    );
-    $('body').on(
-        'drop',
-        function(e) {
+        } );
+    body_tag.addEventListener('drop', function(e) {
             e.preventDefault();
             e.stopPropagation();
-
-            $('#drop-dialog').hide();
+            drop_dialog_tag.style.display = 'none';
             while(!e.dataTransfer && e.originalEvent){
                 e = e.originalEvent;
             }
             loadFile(e.dataTransfer.files[0]);
-        }
-    );
+        } );
 
     var dialogVue = new Vue({
       el: '#dialogs',

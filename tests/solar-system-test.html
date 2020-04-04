@@ -16,7 +16,6 @@
     <link rel="stylesheet" href="../styles/app.css"/>
 
     <script src="../libraries/vue.js"></script>
-    <script src="../libraries/jquery-1.10.2.min.js"></script>
     <script src="../libraries/bootstrap.js"></script>
     <script src="../libraries/three.js/Three.js"></script>
     <script src="../libraries/three.js/Stats.js"></script>
@@ -77,6 +76,10 @@
 <!-- logo -->
 <script type="text/javascript">
     'use strict';
+    
+    var container_tag = document.getElementById('container');
+    var particle_vertex_shader_tag = document.getElementById('particle-vertex-shader');
+    var particle_fragment_shader_tag = document.getElementById('particle-fragment-shader');
     
     var scene, renderer, composer, clock;
     var camera, controls;
@@ -336,8 +339,8 @@
 
     var particleGeometry    = new THREE.Geometry();
     var particleShader = new THREE.ShaderMaterial({
-        vertexShader: $('#particle-vertex-shader').text(),
-        fragmentShader: $('#particle-fragment-shader').text(),
+        vertexShader: particle_vertex_shader_tag.textContent,
+        fragmentShader: particle_fragment_shader_tag.textContent,
         attributes: {
             radius:{
                 type: 'f',
@@ -385,9 +388,8 @@
             Detector.addGetWebGLMessage();
             return true;
         }
-        var container = $("#container").get(0);
         renderer.setSize( window.innerWidth, window.innerHeight );
-        $("#container").get(0).appendChild(renderer.domElement);
+        container_tag.appendChild(renderer.domElement);
 
 
         // create a scene
@@ -399,7 +401,7 @@
         scene.add(camera);
 
         // create a camera contol
-        controls    = new THREE.OrbitControls( camera, $("#container").get(0) );
+        controls    = new THREE.OrbitControls( camera, container_tag );
         controls.noPan = false;
         controls.zoomSpeed = 5.0;
         
