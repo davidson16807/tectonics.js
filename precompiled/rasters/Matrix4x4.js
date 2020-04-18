@@ -522,6 +522,25 @@ Matrix4x4.get_translation = function( mat, out) {
 }
 
 /**
+ * Sets the translation vector component of a transformation
+ *  matrix. If a matrix is built with fromRotationTranslation,
+ *  the returned vector will be the same as the translation vector
+ *  originally supplied.
+ * @param  {vec3} out Vector to receive translation component
+ * @param  {out} mat Matrix to be decomposed (input)
+ * @return {vec3} out
+ */
+Matrix4x4.set_translation = function( mat, x,y,z, out) {
+  out = out || Matrix4x4(mat);
+  Matrix4x4.copy(mat, out);
+  out[12] = x;
+  out[13] = y;
+  out[14] = z;
+
+  return out;
+}
+
+/**
  * Returns the scaling factor component of a transformation
  *  matrix. If a matrix is built with fromRotationTranslationScale
  *  with a normalized Quaternion paramter, the returned vector will be

@@ -84,6 +84,10 @@
     <script src="noncompiled/views/ExperimentalViews.js"></script>
     <!-- <script src="noncompiled/views/TestViews.js"></script> -->
     <script src="noncompiled/views/View.js"></script>
+    <script src="noncompiled/views/ThreeJsState.js"></script>
+    <script src="noncompiled/controls/ControllerMotions.js"></script>
+    <script src="noncompiled/controls/OrbitControls.js"></script>
+    <script src="noncompiled/controls/OrbitController.js"></script>
 </head>
 <body>
 <!-- three.js container -->
@@ -549,18 +553,17 @@
             querystring.push(hash[0]);
             querystring[hash[0]] = hash[1];
         }
-
         
         const resolution_level = Math.min(6, parseInt(querystring['resolution_level'] || '5'));
         autosave_period      = parseInt(querystring['autosave']   || '0');
 
-        view = new View(
-            window.innerWidth, 
-            window.innerHeight,
+        view_state = ViewState(
+            Matrix4x4(),
             scalarViews.satellite, 
             vectorViews.disabled, 
-            projectionViews.orthographic,
+            projectionViews.orthographic
         );
+        view = new View();
 
         onSimLoadStart.fire();
 

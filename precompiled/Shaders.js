@@ -1,39 +1,33 @@
-var vertexShaders = {};
-vertexShaders.equirectangular = `   
+window.VERTEX_SHADERS = {};
+window.VERTEX_SHADERS.equirectangular = `   
 #include "precompiled/shaders/vertex/equirectangular.glsl"
 `;
-vertexShaders.texture = `
+window.VERTEX_SHADERS.texture = `
 #include "precompiled/shaders/vertex/texture.glsl"
 `;
-vertexShaders.orthographic = `   
+window.VERTEX_SHADERS.orthographic = `   
 #include "precompiled/shaders/vertex/orthographic.glsl"
 `;
-vertexShaders.passthrough = `   
+window.VERTEX_SHADERS.passthrough = `   
 #include "precompiled/shaders/vertex/passthrough.glsl"
 `;
 
-var fragmentShaders = {};
-fragmentShaders.atmosphere = `
+window.FRAGMENT_SHADERS = {};
+window.FRAGMENT_SHADERS.atmosphere = `
 #include "precompiled/shaders/fragment/atmosphere.glsl"
 `;
-fragmentShaders.heatmap = `
-#include "precompiled/shaders/fragment/heatmap.glsl"
-`;
-fragmentShaders.colorscale = `
+window.FRAGMENT_SHADERS.colorscale = `
 #include "precompiled/shaders/fragment/colorscale.glsl"
 `;
-fragmentShaders.passthrough = `
+window.FRAGMENT_SHADERS.passthrough = `
 #include "precompiled/shaders/fragment/passthrough.glsl"
 `;
-fragmentShaders.realistic = `
+window.FRAGMENT_SHADERS.realistic = `
 #include "precompiled/shaders/fragment/realistic.glsl"
 `;
-fragmentShaders.surface_normal_map = `
+window.FRAGMENT_SHADERS.surface_normal_map = `
 #include "precompiled/shaders/fragment/surface_normal_map.glsl"
 `;
-fragmentShaders.topographic = `
-#include "precompiled/shaders/fragment/topographic.glsl"
-`;
-fragmentShaders.vector_field = `
+window.FRAGMENT_SHADERS.vector_field = `
 #include "precompiled/shaders/fragment/vector_field.glsl"
 `;

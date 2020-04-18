@@ -1,0 +1,176 @@
+<!doctype html>
+<html>
+<head>
+    <title>Tectonics.js - 3d plate tectonics in your web browser</title>
+    <!--If using any IE, don't even bother-->
+    <!--[if IE]>
+        <meta http-equiv="refresh" content="0;url=ie.html" />
+    <![endif]-->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+
+    <link rel="icon" type="text/css" href="blog/icon6.png">
+    <link rel="stylesheet" href="styles/bootstrap.min.css">
+    <link rel="stylesheet" href="styles/main.css"/>
+    <link rel="stylesheet" href="styles/app.css"/>
+
+    <script src="libraries/vue.js"></script>
+    <script src="libraries/Chart.js"></script>
+    <script src="libraries/vue-charts.js"></script>
+    <script src="libraries/bootstrap.bundle.min.js"></script>
+    <script src="libraries/random-0.26.js"></script>
+    <script src="libraries/base64-arraybuffer.js"></script>
+    <script src="libraries/three.js/Three.js"></script>
+    <script src="postcompiled/Shaders.js"></script>
+    <script src="postcompiled/Rasters.js"></script>
+    <script src="noncompiled/Units.js"></script>
+    <script src="noncompiled/Interpolation.js"></script>
+    <script src="noncompiled/Logging.js"></script>
+    <!-- NOTE: we include scripts from the academic layer because it deals exclusively with rasters -->
+    <script src="noncompiled/academics/SphericalGeometry.js"></script>
+    <script src="noncompiled/academics/Optics.js"></script>
+    <script src="noncompiled/academics/Thermodynamics.js"></script>
+    <script src="noncompiled/academics/FluidMechanics.js"></script>
+    <script src="noncompiled/academics/OrbitalMechanics.js"></script>
+    <script src="noncompiled/academics/Tectonophysics.js"></script>
+    <script src="noncompiled/academics/Hydrology.js"></script>
+    <script src="noncompiled/academics/PlantBiology.js"></script>
+    <script src="noncompiled/file-io/JsonSerializer.js"></script>
+    <script src="noncompiled/controls/ControllerMotions.js"></script>
+    <script src="noncompiled/controls/OrbitalControls.js"></script>
+    <script src="noncompiled/controls/OrbitalController.js"></script>
+    <script src="noncompiled/views/View.js"></script>
+    <script src="noncompiled/views/ViewState.js"></script>
+    <script src="noncompiled/views/scalar-rasters/ColorscaleRasterViewResources.js"></script>
+    <script src="noncompiled/views/vector-rasters/VectorRasterViewResources.js"></script>
+</head>
+<body>
+<!-- WebGL container -->
+<canvas id="gl" style="position: relative; top: 0px; bottom: 0px; right: 0px; left: 0px;"></canvas>
+
+<script type="text/javascript">
+    'use strict';
+
+    if( !window.WebGLRenderingContext ){ process.exit(1); }
+    const container_tag = document.getElementById("gl");
+    const gl = container_tag.getContext("webgl2");
+    if (!gl) { process.exit(1); }
+
+    const positions = new Float32Array([0,0,0  0,0.5,0  0.7,0,0]);
+
+    const vertex_shader_source = 
+    `#version 300 es
+    in vec4 vertex_position;
+    void main() {
+      gl_Position = vertex_position;
+    }
+    `;
+    const vertex_shader_object = gl.createShader(gl.VERTEX_SHADER);
+    gl.shaderSource(vertex_shader_object, vertex_shader_source);
+    gl.compileShader(vertex_shader_object);
+    const fragment_shader_source = 
+    `#version 300 es
+    precision mediump float;
+    out vec4 color;
+    void main() {
+      color = vec4(1, 0, 0.5, 1);
+    }
+    `;
+
+
+    const fragment_shader_object = gl.createShader(gl.FRAGMENT_SHADER);
+    gl.shaderSource(fragment_shader_object, fragment_shader_source);
+    gl.compileShader(fragment_shader_object);
+
+    const program = gl.createProgram();
+    gl.attachShader(program, vertex_shader_object);
+    gl.attachShader(program, fragment_shader_object);
+    gl.linkProgram(program);
+
+    const position_location = gl.getAttribLocation(program, "vertex_position");
+    const position_buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, position_buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, position, gl.DYNAMIC_DRAW);
+    const position_vao = gl.createVertexArray();
+    gl.bindVertexArray(position_vao);
+    gl.enableVertexAttribArray(position_location);
+    const size = 3;          // 3 components per iteration, only populate x and y if vec3 or higher
+    const type = gl.FLOAT;   // interpret binary as 32bit float
+    const normalize = false; // don't normalize the data
+    const stride = 0;        // 0: advance size*sizeof(type) each iteration to get the next position
+    const offset1 = 0;       // 0: start at the beginning of the buffer
+    gl.vertexAttribPointer(position_location, size, type, normalize, stride, offset1);
+
+
+    gl.enable(gl.DEPTH_TEST);
+    gl.enable(gl.BLEND);
+
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+
+    gl.clearColor(0, 0, 0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+
+    positions[3] = 1.0;
+    positions[5] = 1.0;
+    gl.bindBuffer(gl.ARRAY_BUFFER, position_buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, position, gl.DYNAMIC_DRAW);
+
+    gl.useProgram(program);
+    gl.bindVertexArray(position_vao);
+    const primitiveType = gl.TRIANGLES;
+    const offset2 = 0;
+    const count = 3;
+    gl.drawArrays(primitiveType, offset2, count);
+
+
+    positions[3] = 1.0;
+    positions[5] = 1.0;
+    gl.bindBuffer(gl.ARRAY_BUFFER, position_buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, position, gl.DYNAMIC_DRAW);
+
+    gl.useProgram(program);
+    gl.bindVertexArray(position_vao);
+    gl.drawArrays(primitiveType, offset2, count);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    const grid = new Grid(new THREE.IcosahedronGeometry(1, 5));
+
+    const view_matrix = Matrix4x4.identity();
+    const control_state = OrbitalControls.State(view_matrix);
+    const controls = new OrbitalController(control_state);
+    controls.addToDomElement(container_tag);
+
+    var random = new Random();
+    var demo = SphericalGeometry.get_random_surface_field(grid, random);
+
+    function print(raster) {
+        // view.update(raster, view_state);
+    }
+
+    // animation loop
+    function animate() {
+        // push to render queue and loop
+        // - it has to be at the begining of the function
+        // - to learn more: https://www.youtube.com/watch?v=8aGhZQkoFbQ
+        requestAnimationFrame( animate );
+
+        // view.render();
+    }
+
+    animate();
+</script>
+</body>
+</html>

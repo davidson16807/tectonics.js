@@ -1,5 +1,5 @@
-var vertexShaders = {};
-vertexShaders.equirectangular = `
+window.VERTEX_SHADERS = {};
+window.VERTEX_SHADERS.equirectangular = `
 const float PI = 3.14159265358979323846264338327950288419716939937510;
 const float PHI = 1.6180339887;
 const float BIG = 1e20;
@@ -68,7 +68,7 @@ void main() {
     view_origin_v = normalize(view_origin_v);
 }
 `;
-vertexShaders.texture = `
+window.VERTEX_SHADERS.texture = `
 const float PI = 3.14159265358979323846264338327950288419716939937510;
 const float PHI = 1.6180339887;
 const float BIG = 1e20;
@@ -133,7 +133,7 @@ void main() {
     view_origin_v = normalize(view_origin_v);
 }
 `;
-vertexShaders.orthographic = `
+window.VERTEX_SHADERS.orthographic = `
 const float PI = 3.14159265358979323846264338327950288419716939937510;
 const float PHI = 1.6180339887;
 const float BIG = 1e20;
@@ -183,7 +183,7 @@ void main() {
     view_origin_v = view_matrix_inverse[3].xyz * reference_distance;
 }
 `;
-vertexShaders.passthrough = `
+window.VERTEX_SHADERS.passthrough = `
 const float PI = 3.14159265358979323846264338327950288419716939937510;
 const float PHI = 1.6180339887;
 const float BIG = 1e20;
@@ -222,8 +222,8 @@ void main() {
     gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
 }
 `;
-var fragmentShaders = {};
-fragmentShaders.atmosphere = `
+window.FRAGMENT_SHADERS = {};
+window.FRAGMENT_SHADERS.atmosphere = `
 const float DEGREE = 3.141592653589793238462643383279502884197169399/180.;
 const float RADIAN = 1.;
 const float KELVIN = 1.;
@@ -1574,7 +1574,7 @@ void main() {
     gl_FragColor = vec4(get_rgb_signal_of_rgb_intensity(ldr_tone_map), 1);
 }
 `;
-fragmentShaders.heatmap = `
+window.FRAGMENT_SHADERS.colorscale = `
 varying float displacement_v;
 varying float plant_coverage_v;
 varying float snow_coverage_v;
@@ -1582,6 +1582,9 @@ varying float scalar_v;
 varying vec4 position_v;
 uniform float sealevel;
 uniform float ocean_visibility;
+uniform vec3 min_color;
+uniform vec3 max_color;
+uniform int builtin_colorscale;
 //converts float from 0-1 to a heat map visualtion
 //credit goes to Gaëtan Renaudeau: http://greweb.me/glsl.js/examples/heatmap/
 vec4 heat (float v) {
@@ -1593,40 +1596,80 @@ vec4 heat (float v) {
         1
     );
 }
-void main() {
-    vec4 color_without_ocean = heat( scalar_v );
-    vec4 color_with_ocean = displacement_v < sealevel * ocean_visibility? mix(vec4(0.), color_without_ocean, 0.5) : color_without_ocean;
-    gl_FragColor = color_with_ocean;
-}
-`;
-fragmentShaders.colorscale = `
-varying float displacement_v;
-varying float plant_coverage_v;
-varying float snow_coverage_v;
-varying float scalar_v;
-varying vec4 position_v;
-uniform float sealevel;
-uniform float ocean_visibility;
-uniform vec3 min_color;
-uniform vec3 max_color;
-void main() {
-    vec4 color_without_ocean = mix(
-        vec4(min_color,1.),
-        vec4(max_color,1.),
-        scalar_v
+//converts a float ranging from [-1,1] to a topographic map visualization
+vec4 topographic(float value) {
+    //deep ocean
+    vec3 color = vec3(0,0,0.8);
+    //shallow ocean
+    color = mix(
+        color,
+        vec3(0.5,0.5,1),
+        smoothstep(-1., -0.01, value)
     );
-    vec4 color_with_ocean = displacement_v < sealevel * ocean_visibility? mix(vec4(0.), color_without_ocean, 0.5) : color_without_ocean;
-    gl_FragColor = color_with_ocean;
+    //lowland
+    color = mix(
+        color,
+        vec3(0,0.55,0),
+        smoothstep(-0.01, 0.01, value)
+    );
+    //highland
+    color = mix(
+        color,
+        vec3(0.95,0.95,0),
+        smoothstep(0., 0.45, value)
+    );
+    //mountain
+    color = mix(
+        color,
+        vec3(0.5,0.5,0),
+        smoothstep(0.2, 0.7, value)
+    );
+    //mountain
+    color = mix(
+        color,
+        vec3(0.5,0.5,0.5),
+        smoothstep(0.4, 0.8, value)
+    );
+    //snow cap
+    color = mix(
+        color,
+        vec3(0.95),
+        smoothstep(0.75, 1., value)
+    );
+    return vec4(color, 1.);
+}
+void main() {
+ if (builtin_colorscale == 0) // two color interpolation
+ {
+  vec4 color_without_ocean = mix(
+         vec4(min_color,1.),
+         vec4(max_color,1.),
+         scalar_v
+     );
+  vec4 color_with_ocean = displacement_v < sealevel * ocean_visibility? mix(vec4(0.), color_without_ocean, 0.5) : color_without_ocean;
+  gl_FragColor = color_with_ocean;
+ }
+ else if (builtin_colorscale == 1) // heatmap
+ {
+     vec4 color_without_ocean = heat( scalar_v );
+     vec4 color_with_ocean = displacement_v < sealevel * ocean_visibility? mix(vec4(0.), color_without_ocean, 0.5) : color_without_ocean;
+     gl_FragColor = color_with_ocean;
+ }
+ else if (builtin_colorscale == 2) // topographic
+ {
+     gl_FragColor = topographic( scalar_v );
+ }
+    gl_FragColor = vec4(0,0,1,1);
 }
 `;
-fragmentShaders.passthrough = `
+window.FRAGMENT_SHADERS.passthrough = `
 uniform sampler2D input_texture;
 varying vec2 vUv;
 void main() {
     gl_FragColor = texture2D( input_texture, vUv );
 }
 `;
-fragmentShaders.realistic = `
+window.FRAGMENT_SHADERS.realistic = `
 const float DEGREE = 3.141592653589793238462643383279502884197169399/180.;
 const float RADIAN = 1.;
 const float KELVIN = 1.;
@@ -2359,7 +2402,7 @@ void main() {
     gl_FragColor = vec4(get_rgb_signal_of_rgb_intensity(E_total/insolation_max),1);
 }
 `;
-fragmentShaders.surface_normal_map = `
+window.FRAGMENT_SHADERS.surface_normal_map = `
 varying float displacement_v;
 varying vec3 gradient_v;
 varying vec4 position_v;
@@ -2382,59 +2425,7 @@ void main() {
     gl_FragColor = vec4((2.*vec3(dot(N, u), dot(N, v), dot(N, n))-1.), 1);
 }
 `;
-fragmentShaders.topographic = `
-varying float displacement_v;
-varying float plant_coverage_v;
-varying float snow_coverage_v;
-varying float scalar_v;
-varying vec4 position_v;
-uniform float sealevel;
-uniform float ocean_visibility;
-//converts a float ranging from [-1,1] to a topographic map visualization
-//credit goes to Gaëtan Renaudeau: http://greweb.me/glsl.js/examples/heatmap/
-void main() {
-    //deep ocean
-    vec3 color = vec3(0,0,0.8);
-    //shallow ocean
-    color = mix(
-        color,
-        vec3(0.5,0.5,1),
-        smoothstep(-1., -0.01, scalar_v)
-    );
-    //lowland
-    color = mix(
-        color,
-        vec3(0,0.55,0),
-        smoothstep(-0.01, 0.01, scalar_v)
-    );
-    //highland
-    color = mix(
-        color,
-        vec3(0.95,0.95,0),
-        smoothstep(0., 0.45, scalar_v)
-    );
-    //mountain
-    color = mix(
-        color,
-        vec3(0.5,0.5,0),
-        smoothstep(0.2, 0.7, scalar_v)
-    );
-    //mountain
-    color = mix(
-        color,
-        vec3(0.5,0.5,0.5),
-        smoothstep(0.4, 0.8, scalar_v)
-    );
-    //snow cap
-    color = mix(
-        color,
-        vec3(0.95),
-        smoothstep(0.75, 1., scalar_v)
-    );
-    gl_FragColor = vec4(color, 1.);
-}
-`;
-fragmentShaders.vector_field = `
+window.FRAGMENT_SHADERS.vector_field = `
 const float PI = 3.14159265358979;
 uniform float animation_phase_angle;
 varying float vector_fraction_traversed_v;

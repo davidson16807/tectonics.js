@@ -61,6 +61,8 @@
 
 #include "precompiled/rasters/Matrix3x3.js"
 #include "precompiled/rasters/Matrix4x4.js"
+#include "precompiled/rasters/Vector3.js"
+#include "precompiled/rasters/Vector2.js"
 #include "precompiled/rasters/Vector.js"
 
 #include "precompiled/rasters/rasters/Float32Raster.js"

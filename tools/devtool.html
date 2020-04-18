@@ -20,7 +20,6 @@
     <script src="../libraries/vue-charts.js"></script>
     <script src="../libraries/bootstrap.bundle.min.js"></script>
     <script src="../libraries/three.js/Three.js"></script>
-    <script src="../libraries/three.js/OrbitControls.js"></script>
     <script src="../libraries/three.js/CopyShader.js"></script>
     <script src="../libraries/three.js/EffectComposer.js"></script>
     <script src="../libraries/three.js/RenderPass.js"></script>
@@ -30,6 +29,7 @@
     <script src="../postcompiled/Shaders.js"></script>
     <script src="../postcompiled/Rasters.js"></script>
     <script src="../noncompiled/Units.js"></script>
+    <script src="../noncompiled/Interpolation.js"></script>
     <script src="../noncompiled/Logging.js"></script>
     <!-- NOTE: we include scripts from the academic layer because it deals exclusively with rasters -->
     <script src="../noncompiled/academics/SphericalGeometry.js"></script>
@@ -41,11 +41,14 @@
     <script src="../noncompiled/academics/Hydrology.js"></script>
     <script src="../noncompiled/academics/PlantBiology.js"></script>
     <script src="../noncompiled/file-io/JsonSerializer.js"></script>
-    <script src="../noncompiled/views/raster-views/PdfChartRasterView.js"></script>
-    <script src="../noncompiled/views/raster-views/HeatmapRasterView.js"></script>
-    <script src="../noncompiled/views/raster-views/VectorRasterView.js"></script>
-    <script src="../noncompiled/views/projection-views/GlobeProjectionView.js"></script>
+    <script src="../noncompiled/controls/ControllerMotions.js"></script>
+    <script src="../noncompiled/controls/OrbitalControls.js"></script>
+    <script src="../noncompiled/controls/OrbitalController.js"></script>
     <script src="../noncompiled/views/View.js"></script>
+    <script src="../noncompiled/views/ViewState.js"></script>
+    <script src="../noncompiled/views/ThreeJsState.js"></script>
+    <script src="../noncompiled/views/scalar-rasters/ColorscaleRasterViewResources.js"></script>
+    <script src="../noncompiled/views/vector-rasters/VectorRasterViewResources.js"></script>
 </head>
 <body>
 <!-- three.js container -->
@@ -54,7 +57,7 @@
 <div id="header">
     <h3><a href="blog/">Tectonics Dev Tool</a></h3>
     <div id="navigation">
-        open the dev console and call view.print(demo)
+        open the dev console and call print(demo)
     </div>
 </div>
 <!-- info on screen display -->
@@ -120,23 +123,34 @@
 <script type="text/javascript">
     'use strict';
     
-    const container_tag = document.getElementById('container');
     
     if( !window.WebGLRenderingContext ){
         process.exit(1);
     }
 
-    var view = new View(
-            window.innerWidth, 
-            window.innerHeight,
-            new HeatmapRasterView( { scaling: true }),
-            new VectorRasterView({}), 
-            new GlobeProjectionView()
-        );
-    var grid = new Grid(new THREE.IcosahedronGeometry(1, 5));
+
+    const container_tag = document.getElementById('container');
+    const grid = new Grid(new THREE.IcosahedronGeometry(1, 5));
+    const view_state = ViewState({
+        model_view_type: 'ColorscaleRasterViewResources',
+        builtin_colorscale: 1, // heatmap
+        world_view_vertex_shader: window.VERTEX_SHADER,
+        grid: grid,
+        // view_matrix: Matrix4x4.from_translation(0,0,-1,),
+    });
+    const view = new View(view_state);
+    view.addToDomElement(container_tag);
+    const control_state = OrbitalControls.State(view_state.view_matrix);
+    const controls = new OrbitalController(control_state);
+    controls.addToDomElement(container_tag);
+
     var random = new Random();
     var demo = SphericalGeometry.get_random_surface_field(grid, random);
-    container_tag.appendChild(view.getDomElement());
+
+    function print(raster) {
+        view.update(raster, view_state);
+    }
+    print(demo);
 
     // animation loop
     function animate() {
@@ -170,56 +184,6 @@
               download(dataUrl, filename);
           }
       }
-    });
-
-    Vue.use(VueCharts);
-    const chartVue = new Vue({
-        el: '#chart',
-        data:{
-            isEnabled: false,
-            min: 0,
-            max: 0,
-            mean: 0,
-            median: 0,
-            stddev: 0,
-            x: [],
-            y: [],
-            ocean_visibility: 1,
-            options: {
-                legend: {display: false}, 
-                animation : false,
-                scales: {
-                    xAxes: [{
-                        ticks: {
-                          fontColor: '#FFFFFF'
-                        }
-                    }],
-                    yAxes: [{
-                        scaleLabel: {
-                            display: true,
-                            labelString: '% surface'
-                        },
-                        ticks: {
-                          fontColor: '#FFFFFF'
-                        },
-                    }]
-                }
-            }
-        },
-        created: function() {
-            var _this = this;
-            setInterval(function() {
-                //view.updateChart(_this.$data, raster, _this.$data);
-            }, 1000/2);
-        },
-        methods: {
-            setOceanVisibility(value){
-                this.ocean_visibility = value? 1:0;
-            },
-            round(x) {
-                return Math.round(x);
-            }
-        }
     });
     
     animate();

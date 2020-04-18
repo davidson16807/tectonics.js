@@ -149,7 +149,6 @@ Grid.prototype.getNeighborIds = function(id) {
 }
 
 Grid.prototype.getBufferGeometry = function() {
-    THREE.BufferAttribute();
     return {
         id: THREE.GeometryIdCount++,
         uuid: THREE.Math.generateUUID(),
