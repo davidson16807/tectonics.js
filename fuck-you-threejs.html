@@ -53,14 +53,13 @@
 
     if( !window.WebGLRenderingContext ){ process.exit(1); }
     const container_tag = document.getElementById("gl");
-    const gl = container_tag.getContext("webgl2");
+    const gl = container_tag.getContext("webgl");
     if (!gl) { process.exit(1); }
 
-    const positions = new Float32Array([0,0,0  0,0.5,0  0.7,0,0]);
 
     const vertex_shader_source = 
-    `#version 300 es
-    in vec4 vertex_position;
+    `
+    attribute vec4 vertex_position;
     void main() {
       gl_Position = vertex_position;
     }
@@ -69,11 +68,11 @@
     gl.shaderSource(vertex_shader_object, vertex_shader_source);
     gl.compileShader(vertex_shader_object);
     const fragment_shader_source = 
-    `#version 300 es
+    `
     precision mediump float;
-    out vec4 color;
+    uniform vec4 color;
     void main() {
-      color = vec4(1, 0, 0.5, 1);
+      gl_FragColor = color;
     }
     `;
 
@@ -87,14 +86,16 @@
     gl.attachShader(program, fragment_shader_object);
     gl.linkProgram(program);
 
+    console.log(gl.getShaderInfoLog(vertex_shader_object));
+    console.log(gl.getShaderInfoLog(fragment_shader_object));
+    console.log(gl.getProgramInfoLog(program));
+
+    const color_location = gl.getUniformLocation(program, "color");
     const position_location = gl.getAttribLocation(program, "vertex_position");
     const position_buffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, position_buffer);
-    gl.bufferData(gl.ARRAY_BUFFER, position, gl.DYNAMIC_DRAW);
-    const position_vao = gl.createVertexArray();
-    gl.bindVertexArray(position_vao);
     gl.enableVertexAttribArray(position_location);
-    const size = 3;          // 3 components per iteration, only populate x and y if vec3 or higher
+    const size = 2;          // 2 components per iteration, only populate x and y if vec3 or higher
     const type = gl.FLOAT;   // interpret binary as 32bit float
     const normalize = false; // don't normalize the data
     const stride = 0;        // 0: advance size*sizeof(type) each iteration to get the next position
@@ -104,34 +105,28 @@
 
     gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.BLEND);
-
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
+// start of the frame
     gl.clearColor(0, 0, 0, 0);
-    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-
-    positions[3] = 1.0;
-    positions[5] = 1.0;
-    gl.bindBuffer(gl.ARRAY_BUFFER, position_buffer);
-    gl.bufferData(gl.ARRAY_BUFFER, position, gl.DYNAMIC_DRAW);
-
-    gl.useProgram(program);
-    gl.bindVertexArray(position_vao);
-    const primitiveType = gl.TRIANGLES;
+// first program
     const offset2 = 0;
-    const count = 3;
-    gl.drawArrays(primitiveType, offset2, count);
-
-
-    positions[3] = 1.0;
-    positions[5] = 1.0;
-    gl.bindBuffer(gl.ARRAY_BUFFER, position_buffer);
-    gl.bufferData(gl.ARRAY_BUFFER, position, gl.DYNAMIC_DRAW);
-
+    const positions1 = new Float32Array([0,0, -1,0, 0,1]);
     gl.useProgram(program);
-    gl.bindVertexArray(position_vao);
-    gl.drawArrays(primitiveType, offset2, count);
+    gl.bindBuffer(gl.ARRAY_BUFFER, position_buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, positions1, gl.DYNAMIC_DRAW);
+    gl.uniform4fv(color_location, [1,0,0,1]);
+    gl.drawArrays(gl.TRIANGLES, offset2, /*count*/ 3);
+
+// second program
+    const positions2 = new Float32Array([0,0, 1,0, 0,-1,  0.5,0.5, 1,0, 1,1]);
+    gl.useProgram(program);
+    gl.bindBuffer(gl.ARRAY_BUFFER, position_buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, positions2, gl.DYNAMIC_DRAW);
+    gl.uniform4fv(color_location, [0,1,0,1]);
+    gl.drawArrays(gl.TRIANGLES, offset2, /*count*/ 6);
 
 
 
