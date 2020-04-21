@@ -46,87 +46,91 @@
 </head>
 <body>
 <!-- WebGL container -->
-<canvas id="gl" style="position: relative; top: 0px; bottom: 0px; right: 0px; left: 0px;"></canvas>
+<canvas id="gl" style="display: block; width: 100vw; height: 100vh"></canvas>
 
 <script type="text/javascript">
     'use strict';
 
+    // get WebGL context
     if( !window.WebGLRenderingContext ){ process.exit(1); }
-    const container_tag = document.getElementById("gl");
-    const gl = container_tag.getContext("webgl");
+    const gl_tag = document.getElementById("gl");
+    const gl = gl_tag.getContext("webgl");
     if (!gl) { process.exit(1); }
 
+    // practices RAII
+    function DemoProgram(gl, initial_view_state) {
+        // compile program
+        const vertex_shader_object = gl.createShader(gl.VERTEX_SHADER);
+        gl.shaderSource(vertex_shader_object, initial_view_state.vertex_shader_source);
+        gl.compileShader(vertex_shader_object);
 
-    const vertex_shader_source = 
-    `
-    attribute vec4 vertex_position;
-    void main() {
-      gl_Position = vertex_position;
+        const fragment_shader_source = `
+            precision mediump float;
+            uniform vec4 color;
+            void main() {
+              gl_FragColor = color;
+            }`;
+        const fragment_shader_object = gl.createShader(gl.FRAGMENT_SHADER);
+        gl.shaderSource(fragment_shader_object, fragment_shader_source);
+        gl.compileShader(fragment_shader_object);
+
+        const program = gl.createProgram();
+        gl.attachShader(program, vertex_shader_object);
+        gl.attachShader(program, fragment_shader_object);
+        gl.linkProgram(program);
+
+        console.log(gl.getShaderInfoLog(vertex_shader_object));
+        console.log(gl.getShaderInfoLog(fragment_shader_object));
+        console.log(gl.getProgramInfoLog(program));
+
+        const color_location = gl.getUniformLocation(program, "color");
+        const position_location = gl.getAttribLocation(program, "vertex_position");
+        const position_buffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, position_buffer);
+        gl.enableVertexAttribArray(position_location);
+        const size = 2;          // 2 components per iteration, only populate x and y if vec3 or higher
+        const type = gl.FLOAT;   // interpret binary as 32bit float
+        const normalize = false; // don't normalize the data
+        const stride = 0;        // 0: advance size*sizeof(type) each iteration to get the next position
+        const offset1 = 0;       // 0: start at the beginning of the buffer
+        gl.vertexAttribPointer(position_location, size, type, normalize, stride, offset1);
+        
+        let internal_view_state = Object.assign({}, initial_view_state);
+        let is_disposed = false;
+
+        /*
+        Returns whether this instance can fully depict a given view state upon 
+        calling `.draw()`. 
+        If it cannot, the view state should be used to create a new instance, 
+        and in most use cases the old instance will be deactivated and disposed.
+
+        This demonstrates our approach to handling WebGL state management.
+        We use RAII to bundle highly intertwined private resources,
+        choosing to wipe the slate clean if there any sign that it falls 
+        out of sync in a way we cannot trivially correct.
+        */
+        this.canDepict = function(view_state) {
+            return (
+                !is_disposed &&
+                internal_view_state.vertex_shader_source != view_state.vertex_shader_source
+            );
+        }
+        this.dispose = function() {
+            is_disposed = true;
+        }
+        this.draw = function(model_state, view_state) {
+            if (is_disposed) { return; }
+
+            // first program call
+            const offset2 = 0;
+            gl.useProgram(program);
+            gl.bindBuffer(gl.ARRAY_BUFFER, position_buffer);
+            gl.bufferData(gl.ARRAY_BUFFER, model_state.positions, gl.DYNAMIC_DRAW);
+            gl.uniform4fv(color_location, view_state.color);
+            gl.drawArrays(gl.TRIANGLES, offset2, /*count*/ model_state.positions.length / size);
+        }
     }
-    `;
-    const vertex_shader_object = gl.createShader(gl.VERTEX_SHADER);
-    gl.shaderSource(vertex_shader_object, vertex_shader_source);
-    gl.compileShader(vertex_shader_object);
-    const fragment_shader_source = 
-    `
-    precision mediump float;
-    uniform vec4 color;
-    void main() {
-      gl_FragColor = color;
-    }
-    `;
 
-
-    const fragment_shader_object = gl.createShader(gl.FRAGMENT_SHADER);
-    gl.shaderSource(fragment_shader_object, fragment_shader_source);
-    gl.compileShader(fragment_shader_object);
-
-    const program = gl.createProgram();
-    gl.attachShader(program, vertex_shader_object);
-    gl.attachShader(program, fragment_shader_object);
-    gl.linkProgram(program);
-
-    console.log(gl.getShaderInfoLog(vertex_shader_object));
-    console.log(gl.getShaderInfoLog(fragment_shader_object));
-    console.log(gl.getProgramInfoLog(program));
-
-    const color_location = gl.getUniformLocation(program, "color");
-    const position_location = gl.getAttribLocation(program, "vertex_position");
-    const position_buffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, position_buffer);
-    gl.enableVertexAttribArray(position_location);
-    const size = 2;          // 2 components per iteration, only populate x and y if vec3 or higher
-    const type = gl.FLOAT;   // interpret binary as 32bit float
-    const normalize = false; // don't normalize the data
-    const stride = 0;        // 0: advance size*sizeof(type) each iteration to get the next position
-    const offset1 = 0;       // 0: start at the beginning of the buffer
-    gl.vertexAttribPointer(position_location, size, type, normalize, stride, offset1);
-
-
-    gl.enable(gl.DEPTH_TEST);
-    gl.enable(gl.BLEND);
-    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-
-// start of the frame
-    gl.clearColor(0, 0, 0, 0);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-// first program
-    const offset2 = 0;
-    const positions1 = new Float32Array([0,0, -1,0, 0,1]);
-    gl.useProgram(program);
-    gl.bindBuffer(gl.ARRAY_BUFFER, position_buffer);
-    gl.bufferData(gl.ARRAY_BUFFER, positions1, gl.DYNAMIC_DRAW);
-    gl.uniform4fv(color_location, [1,0,0,1]);
-    gl.drawArrays(gl.TRIANGLES, offset2, /*count*/ 3);
-
-// second program
-    const positions2 = new Float32Array([0,0, 1,0, 0,-1,  0.5,0.5, 1,0, 1,1]);
-    gl.useProgram(program);
-    gl.bindBuffer(gl.ARRAY_BUFFER, position_buffer);
-    gl.bufferData(gl.ARRAY_BUFFER, positions2, gl.DYNAMIC_DRAW);
-    gl.uniform4fv(color_location, [0,1,0,1]);
-    gl.drawArrays(gl.TRIANGLES, offset2, /*count*/ 6);
 
 
 
@@ -146,7 +150,7 @@
     const view_matrix = Matrix4x4.identity();
     const control_state = OrbitalControls.State(view_matrix);
     const controls = new OrbitalController(control_state);
-    controls.addToDomElement(container_tag);
+    controls.addToDomElement(gl_tag);
 
     var random = new Random();
     var demo = SphericalGeometry.get_random_surface_field(grid, random);
@@ -155,6 +159,20 @@
         // view.update(raster, view_state);
     }
 
+
+    const demo_program = new DemoProgram(gl, {
+        vertex_shader_source: `
+            attribute vec4 vertex_position;
+            void main() {
+              gl_Position = vertex_position;
+            }`,
+    })
+    gl.canvas.width = gl.canvas.clientWidth;
+    gl.canvas.height = gl.canvas.clientHeight;
+    gl.viewport(0, 0, gl.canvas.clientWidth, gl.canvas.clientHeight);
+    gl.enable(gl.DEPTH_TEST);
+    gl.enable(gl.BLEND);
+
     // animation loop
     function animate() {
         // push to render queue and loop
@@ -162,7 +180,23 @@
         // - to learn more: https://www.youtube.com/watch?v=8aGhZQkoFbQ
         requestAnimationFrame( animate );
 
-        // view.render();
+        if (gl.canvas.width !== gl.canvas.clientWidth || gl.canvas.height !== gl.canvas.clientHeight) {
+            gl.canvas.width = gl.canvas.clientWidth;
+            gl.canvas.height = gl.canvas.clientHeight;
+            gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+        }
+
+        gl.clearColor(0, 0, 0, 0);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+        demo_program.draw(
+            { positions: new Float32Array([0,0, -1,0, 0,1])  }, 
+            { color: [1,0,0,1] }
+        );
+        demo_program.draw(
+            { positions: new Float32Array([0,0, 1,0, 0,-1,  0.5,0.5, 1,0, 1,1])  }, 
+            { color: [0,1,0,1] }
+        );
     }
 
     animate();
