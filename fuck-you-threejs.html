@@ -57,15 +57,23 @@
     const gl = gl_tag.getContext("webgl");
     if (!gl) { process.exit(1); }
 
+    const RenderPassType = {
+        Background: 'background',
+        Solids: 'solids',
+        Volumetrics: 'volumetrics',
+        LensEffects: 'lens_effects'
+    };
+
     // practices RAII
     function DemoProgram(gl, initial_view_state) {
         // compile program
         const vertex_shader_object = gl.createShader(gl.VERTEX_SHADER);
         gl.shaderSource(vertex_shader_object, initial_view_state.vertex_shader_source);
         gl.compileShader(vertex_shader_object);
+        console.log(gl.getShaderInfoLog(vertex_shader_object));
 
         const fragment_shader_source = `
-            precision mediump float;
+            precision highp float;
             uniform vec4 color;
             void main() {
               gl_FragColor = color;
@@ -73,17 +81,17 @@
         const fragment_shader_object = gl.createShader(gl.FRAGMENT_SHADER);
         gl.shaderSource(fragment_shader_object, fragment_shader_source);
         gl.compileShader(fragment_shader_object);
+        console.log(gl.getShaderInfoLog(fragment_shader_object));
 
         const program = gl.createProgram();
         gl.attachShader(program, vertex_shader_object);
         gl.attachShader(program, fragment_shader_object);
         gl.linkProgram(program);
-
-        console.log(gl.getShaderInfoLog(vertex_shader_object));
-        console.log(gl.getShaderInfoLog(fragment_shader_object));
         console.log(gl.getProgramInfoLog(program));
 
         const color_location = gl.getUniformLocation(program, "color");
+        const view_matrix_location = gl.getUniformLocation(program, "view_matrix");
+        const projection_matrix_location = gl.getUniformLocation(program, "projection_matrix");
         const position_location = gl.getAttribLocation(program, "vertex_position");
         const position_buffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, position_buffer);
@@ -99,38 +107,156 @@
         let is_disposed = false;
 
         /*
-        Returns whether this instance can fully depict a given view state upon 
-        calling `.draw()`. 
+        Returns whether this instance can fully depict a model using the given
+        view state upon calling `.draw()`.
         If it cannot, the view state should be used to create a new instance, 
         and in most use cases the old instance will be deactivated and disposed.
+        This is not a test for whether the WebGL context or the view state 
+        is well formatted. 
+        It is strictly a test of the program's private state.
 
         This demonstrates our approach to handling WebGL state management.
-        We use RAII to bundle highly intertwined private resources,
-        choosing to wipe the slate clean if there any sign that it falls 
-        out of sync in a way we cannot trivially correct.
+        If changing something is trivial, like uniforms or attributes, 
+        we simply change it during the draw call
+        If changing something requires managing highly intertwined private 
+        resources like shaders or programs, we simply wipe the slate clean
+        on the first sign sign that anything falls out of sync.
         */
         this.canDepict = function(view_state) {
             return (
                 !is_disposed &&
-                internal_view_state.vertex_shader_source != view_state.vertex_shader_source
+                internal_view_state.vertex_shader_source === view_state.vertex_shader_source
             );
         }
         this.dispose = function() {
             is_disposed = true;
+            gl.deleteProgram(program);
+            gl.deleteShader(fragment_shader_object);
+            gl.deleteShader(vertex_shader_object);
+            gl.deleteBuffer(position_buffer);
         }
+        /*
+        Draws a given model once to the currently bound framebuffer using
+        options from a given view state
+        */
         this.draw = function(model_state, view_state) {
             if (is_disposed) { return; }
 
-            // first program call
-            const offset2 = 0;
-            gl.useProgram(program);
-            gl.bindBuffer(gl.ARRAY_BUFFER, position_buffer);
-            gl.bufferData(gl.ARRAY_BUFFER, model_state.positions, gl.DYNAMIC_DRAW);
-            gl.uniform4fv(color_location, view_state.color);
-            gl.drawArrays(gl.TRIANGLES, offset2, /*count*/ model_state.positions.length / size);
+            // first shader pass
+            if(view_state.render_pass_type === RenderPassType.Solids) {
+                const offset2 = 0;
+                gl.useProgram(program);
+                gl.bindBuffer(gl.ARRAY_BUFFER, position_buffer);
+                gl.bufferData(gl.ARRAY_BUFFER, model_state.positions, gl.DYNAMIC_DRAW);
+                gl.uniform4fv(color_location, view_state.color);
+                gl.uniformMatrix4fv(view_matrix_location, false, view_state.view_matrix);
+                gl.uniformMatrix4fv(projection_matrix_location, false, view_state.projection_matrix);
+                gl.drawArrays(gl.TRIANGLES, offset2, /*count*/ model_state.positions.length / size);
+            }
         }
     }
 
+
+    // practices RAII
+    function CoordinateBasisProgram(gl, initial_view_state) {
+        // compile program
+        const vertex_shader_object = gl.createShader(gl.VERTEX_SHADER);
+        gl.shaderSource(vertex_shader_object, `
+            attribute vec4 vertex_position;
+            varying vec4 fragment_position;
+            uniform mat4 view_matrix;
+            uniform mat4 projection_matrix;
+            void main() {
+                fragment_position = vertex_position;
+                gl_Position = projection_matrix * view_matrix * vertex_position;
+            }`);
+        gl.compileShader(vertex_shader_object);
+        console.log(gl.getShaderInfoLog(vertex_shader_object));
+
+        const fragment_shader_source = `
+            precision highp float;
+            varying vec4 fragment_position;
+            void main() {
+              gl_FragColor = fragment_position;
+            }`;
+        const fragment_shader_object = gl.createShader(gl.FRAGMENT_SHADER);
+        gl.shaderSource(fragment_shader_object, fragment_shader_source);
+        gl.compileShader(fragment_shader_object);
+        console.log(gl.getShaderInfoLog(fragment_shader_object));
+
+        const program = gl.createProgram();
+        gl.attachShader(program, vertex_shader_object);
+        gl.attachShader(program, fragment_shader_object);
+        gl.linkProgram(program);
+        console.log(gl.getProgramInfoLog(program));
+
+        const view_matrix_location = gl.getUniformLocation(program, "view_matrix");
+        const projection_matrix_location = gl.getUniformLocation(program, "projection_matrix");
+        const position_location = gl.getAttribLocation(program, "vertex_position");
+        const position_buffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, position_buffer);
+        gl.enableVertexAttribArray(position_location);
+        const size = 3;          // 3 components per iteration, set other vec4 components to default
+        const type = gl.FLOAT;   // interpret binary as 32bit float
+        const normalize = false; // don't normalize the data
+        const stride = 0;        // 0: advance size*sizeof(type) each iteration to get the next position
+        const offset1 = 0;       // 0: start at the beginning of the buffer
+        gl.vertexAttribPointer(position_location, size, type, normalize, stride, offset1);
+
+        const positions = new Float32Array([
+            0,0,0,  1,0,0, 
+            0,0,0,  0,1,0, 
+            0,0,0,  0,0,1, 
+        ]);
+        
+        let internal_view_state = Object.assign({}, initial_view_state);
+        let is_disposed = false;
+
+        /*
+        Returns whether this instance can fully depict a model using the given
+        view state upon calling `.draw()`.
+        If it cannot, the view state should be used to create a new instance, 
+        and in most use cases the old instance will be deactivated and disposed.
+        This is not a test for whether the WebGL context or the view state 
+        is well formatted. 
+        It is strictly a test of the program's private state.
+
+        This demonstrates our approach to handling WebGL state management.
+        If changing something is trivial, like uniforms or attributes, 
+        we simply change it during the draw call
+        If changing something requires managing highly intertwined private 
+        resources like shaders or programs, we simply wipe the slate clean
+        on the first sign that anything falls out of sync.
+        */
+        this.canDepict = function(view_state) {
+            return !is_disposed;
+        }
+        this.dispose = function() {
+            is_disposed = true;
+            gl.deleteProgram(program);
+            gl.deleteShader(fragment_shader_object);
+            gl.deleteShader(vertex_shader_object);
+            gl.deleteBuffer(position_buffer);
+        }
+        /*
+        Draws a given model once to the currently bound framebuffer using
+        options from a given view state
+        */
+        this.draw = function(model_state, view_state) {
+            if (is_disposed) { return; }
+
+            // first shader pass
+            if(view_state.render_pass_type === RenderPassType.Solids) {
+                const offset2 = 0;
+                gl.useProgram(program);
+                gl.bindBuffer(gl.ARRAY_BUFFER, position_buffer);
+                gl.bufferData(gl.ARRAY_BUFFER, positions, gl.DYNAMIC_DRAW);
+                gl.uniformMatrix4fv(view_matrix_location, false, view_state.view_matrix);
+                gl.uniformMatrix4fv(projection_matrix_location, false, view_state.projection_matrix);
+                gl.drawArrays(gl.LINES, offset2, /*count*/ positions.length / size);
+            }
+        }
+    }
 
 
 
@@ -147,32 +273,45 @@
 
     const grid = new Grid(new THREE.IcosahedronGeometry(1, 5));
 
-    const view_matrix = Matrix4x4.identity();
-    const control_state = OrbitalControls.State(view_matrix);
-    const controls = new OrbitalController(control_state);
+    const control_state = OrbitalControls.State({
+        min_zoom_distance: 1.0,
+        height: 1.0,
+    });
+    const view_state = {
+        render_pass_type: RenderPassType.Solids,
+        vertex_shader_source: `
+            attribute vec4 vertex_position;
+            uniform mat4 view_matrix;
+            uniform mat4 projection_matrix;
+            void main() {
+              gl_Position = projection_matrix * view_matrix * vertex_position;
+            }`,
+        view_matrix: OrbitalControls.State.get_view_matrix(control_state),
+        projection_matrix: 
+            Matrix4x4.from_perspective(
+                Math.PI*45/180, 
+                gl.canvas.clientWidth/gl.canvas.clientHeight, 
+                1e-5, 1e16
+            )
+    };
+    const controls = new OrbitalController(
+        control_state, 
+        view_state.view_matrix
+    );
     controls.addToDomElement(gl_tag);
 
     var random = new Random();
     var demo = SphericalGeometry.get_random_surface_field(grid, random);
 
-    function print(raster) {
-        // view.update(raster, view_state);
-    }
 
-
-    const demo_program = new DemoProgram(gl, {
-        vertex_shader_source: `
-            attribute vec4 vertex_position;
-            void main() {
-              gl_Position = vertex_position;
-            }`,
-    })
     gl.canvas.width = gl.canvas.clientWidth;
     gl.canvas.height = gl.canvas.clientHeight;
     gl.viewport(0, 0, gl.canvas.clientWidth, gl.canvas.clientHeight);
     gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.BLEND);
 
+
+    let demo_program = new DemoProgram(gl, view_state);
     // animation loop
     function animate() {
         // push to render queue and loop
@@ -184,19 +323,29 @@
             gl.canvas.width = gl.canvas.clientWidth;
             gl.canvas.height = gl.canvas.clientHeight;
             gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+            view_state.projection_matrix = Matrix4x4.from_perspective(
+                Math.PI*45/180, 
+                gl.canvas.clientWidth/gl.canvas.clientHeight, 
+                1e-5, 1e16
+            )
         }
 
         gl.clearColor(0, 0, 0, 0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+        if (!demo_program.canDepict(view_state)) {
+            demo_program.dispose();
+            demo_program = new DemoProgram(gl, { color: [1,0,0,1], vertex_shader_source: vertex_shader_source });
+        }
         demo_program.draw(
             { positions: new Float32Array([0,0, -1,0, 0,1])  }, 
-            { color: [1,0,0,1] }
+            Object.assign(view_state, {color: [1,0,0,1],}),
         );
         demo_program.draw(
             { positions: new Float32Array([0,0, 1,0, 0,-1,  0.5,0.5, 1,0, 1,1])  }, 
-            { color: [0,1,0,1] }
+            Object.assign(view_state, {color: [0,1,0,1],}),
         );
+        // vertex_shader_sources.push(vertex_shader_sources.shift());
     }
 
     animate();

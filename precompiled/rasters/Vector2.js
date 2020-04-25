@@ -11,18 +11,16 @@
 // Vectors are represented as objects when returned from functions, instead of lists.
 // This is done for clarity
 
-function Vector2(x,y,z) {
+function Vector2(x,y) {
   return {
     x: x || 0,
     y: y || 0,
-    z: z || 0,
   };
 }
 Vector2.FromArray = function(array) {
   return {
     x: array[0] || 0,
     y: array[1] || 0,
-    z: array[2] || 0,
   };
 }
 Vector2.add_vector = function(a, b, out) { 
