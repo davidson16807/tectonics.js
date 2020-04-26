@@ -66,7 +66,7 @@
     const ProjectionType = {
         Perspective: 0,
         Equirectangular: 1,
-    }
+    };
 
     // practices RAII to minimize internal state
     // only two internal states exist: created and disposed
@@ -102,8 +102,8 @@
                 else if (projection_type == 1)
                 {
                     vec4 model_position = model_matrix * local_position;
-                    vec4 camera_position = view_matrix[3];
-                    float focus = atan(-camera_position.z, camera_position.x) + PI + map_projection_offset;
+                    vec4 view_position = view_matrix[3];
+                    float focus = atan(-view_position.z, view_position.x) + PI + map_projection_offset;
                     float lon_focused = mod(atan(-model_position.z, model_position.x) + PI - focus, 2.*PI) - PI;
                     float lat_focused = asin(model_position.y / length(model_position)); //+ (map_projection_offset*PI);
                     bool is_on_edge = lon_focused >  PI*0.9 || lon_focused < -PI*0.9;
@@ -129,7 +129,7 @@
         console.log(gl.getShaderInfoLog(vertex_shader_object));
 
         const fragment_shader_source = `
-            precision highp float;
+            precision mediump float;
             varying float fragment_color_value;
             /*
             converts float from 0-1 to a heat map visualization
@@ -252,6 +252,7 @@
     const control_state = OrbitalControls.State({
         min_zoom_distance: 1.0,
         height: 5.0,
+        angular_position: Vector2(0,Math.PI*30/180),
     });
     const view_state = {
         render_pass_type: RenderPassType.Solids,
@@ -261,9 +262,9 @@
             Matrix4x4.from_perspective(
                 Math.PI*45/180, 
                 gl.canvas.clientWidth/gl.canvas.clientHeight, 
-                1e-5, 1e16
+                1e-3, 1e16
             ),
-        projection_type: ProjectionType.Equirectangular,
+        projection_type: ProjectionType.Perspective,
     };
     const controls = new OrbitalController(
         control_state, 
