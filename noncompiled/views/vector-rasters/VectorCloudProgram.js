@@ -1,18 +1,20 @@
 /*
-A "VectorRasterProgram" seals off access to resources relating to a WebGLProgram
+A "VectorCloudProgram" seals off access to resources relating to a WebGLProgram
 within a WebGL Context, allowing view state to be managed statelessly elsewhere. 
 
 It guarantees the following:
 * all internal resources are created on initialization to minimize state (RAII)
 * all internal resources are strictly encapsulated
-* only two internal states exist: "created" and "disposed"
+* the program can be in only one of two states: "created" and "disposed"
 * the disposed state can be entered at any time but never exited
 * all methods will continue to produce sensible behavior in the disposed state
+* the output that draw() sends to the currently bound framebuffer is 
+  a pure function of its input
 
 Any attempt to relax guarantees made here will severely cripple 
 your ability to reason with the code base. 
 */
-function VectorRasterProgram(gl, initial_view_state) {
+function VectorCloudProgram(gl, initial_view_state) {
     // SHADERS
     const vertex_shader_glsl = `
         uniform   mat4  model_matrix;
@@ -77,15 +79,9 @@ function VectorRasterProgram(gl, initial_view_state) {
 
     const position_location = gl.getAttribLocation(program, "vertex_position");
     const position_buffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, position_buffer);
-    gl.enableVertexAttribArray(position_location);
-    gl.vertexAttribPointer(position_location, 3, gl.FLOAT, normalize, stride, offset);
 
     const vector_fraction_traversed_location = gl.getAttribLocation(program, "vertex_vector_fraction_traversed");
     const vector_fraction_traversed_buffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, vector_fraction_traversed_buffer);
-    gl.enableVertexAttribArray(vector_fraction_traversed_location);
-    gl.vertexAttribPointer(vector_fraction_traversed_location, 1, gl.FLOAT, normalize, stride, offset);
     
     let internal_view_state = Object.assign({}, initial_view_state);
     let is_disposed = false;
@@ -127,6 +123,12 @@ function VectorRasterProgram(gl, initial_view_state) {
         // first shader pass
         const array_offset = 0;
         gl.useProgram(program); 
+        gl.bindBuffer(gl.ARRAY_BUFFER, position_buffer);
+        gl.enableVertexAttribArray(position_location);
+        gl.vertexAttribPointer(position_location, 3, gl.FLOAT, normalize, stride, offset);
+        gl.bindBuffer(gl.ARRAY_BUFFER, vector_fraction_traversed_buffer);
+        gl.enableVertexAttribArray(vector_fraction_traversed_location);
+        gl.vertexAttribPointer(vector_fraction_traversed_location, 1, gl.FLOAT, normalize, stride, offset);
         gl.uniformMatrix4fv(view_matrix_location, false, view_state.view_matrix);
         gl.uniformMatrix4fv(model_matrix_location, false, view_state.model_matrix);
         gl.uniformMatrix4fv(projection_matrix_location, false, view_state.projection_matrix);

@@ -36,14 +36,13 @@
     <script src="noncompiled/academics/Hydrology.js"></script>
     <script src="noncompiled/academics/PlantBiology.js"></script>
     <script src="noncompiled/file-io/JsonSerializer.js"></script>
-    <script src="noncompiled/controls/ControllerMotions.js"></script>
     <script src="noncompiled/controls/OrbitalControls.js"></script>
     <script src="noncompiled/controls/OrbitalController.js"></script>
     <script src="noncompiled/views/View.js"></script>
     <script src="noncompiled/views/ViewState.js"></script>
     <script src="noncompiled/views/ProgramUtils.js"></script>
-    <script src="noncompiled/views/vector-rasters/VectorRasterProgram.js"></script>
-    <script src="noncompiled/views/scalar-rasters/ColorscaleRasterProgram.js"></script>
+    <script src="noncompiled/views/vector-rasters/VectorCloudProgram.js"></script>
+    <script src="noncompiled/views/scalar-rasters/ColorscaleSurfacesProgram.js"></script>
 </head>
 <body>
 <!-- WebGL container -->
@@ -102,9 +101,9 @@
     gl.enable(gl.BLEND);
 
 
-    let colorscale_raster_program = new ColorscaleRasterProgram(gl, view_state);
+    let vector_cloud_program = new VectorCloudProgram(gl, view_state);
+    let colorscale_surfaces_program = new ColorscaleSurfacesProgram(gl, view_state);
     const face_corner_color_values_storage = new Float32Array(grid._buffer_geometry_positions.length);
-    let vector_raster_program = new VectorRasterProgram(gl, view_state);
     const vector_raster_vertex_positions = new Float32Array([
         0,0,0, 0,0,1, 
         0,1,0, 1,0,0, 
@@ -133,19 +132,19 @@
         gl.clearColor(0, 0, 0, 0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        if (!colorscale_raster_program.canDepict(view_state)) {
-            colorscale_raster_program.dispose();
-            colorscale_raster_program = new ColorscaleRasterProgram(gl, view_state);
+        if (!colorscale_surfaces_program.canDepict(view_state)) {
+            colorscale_surfaces_program.dispose();
+            colorscale_surfaces_program = new ColorscaleSurfacesProgram(gl, view_state);
         }
         Float32Raster.get_ids(demo, demo.grid.buffer_array_to_cell, face_corner_color_values_storage); 
-        // colorscale_raster_program.draw(
-        //     { 
-        //         positions: grid._buffer_geometry_positions, 
-        //         color_values: face_corner_color_values_storage
-        //     }, 
-        //     view_state,
-        // );
-        vector_raster_program.draw(
+        colorscale_surfaces_program.draw(
+            { 
+                positions: grid._buffer_geometry_positions, 
+                color_values: face_corner_color_values_storage
+            }, 
+            view_state,
+        );
+        vector_cloud_program.draw(
             {   
                 positions: vector_raster_vertex_positions, 
                 vector_fractions_traversed: vector_raster_vector_fractions_traversed,
