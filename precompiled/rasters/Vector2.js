@@ -17,6 +17,12 @@ function Vector2(x,y) {
     y: y || 0,
   };
 }
+Vector2.copy = function(a, out) {
+  out = out || Vector2()
+  out.x = a.x;
+  out.y = a.y;
+  return out;
+}
 Vector2.FromArray = function(array) {
   return {
     x: array[0] || 0,

@@ -16,9 +16,6 @@ window.FRAGMENT_SHADERS = {};
 window.FRAGMENT_SHADERS.atmosphere = `
 #include "precompiled/shaders/fragment/atmosphere.glsl"
 `;
-window.FRAGMENT_SHADERS.colorscale = `
-#include "precompiled/shaders/fragment/colorscale.glsl"
-`;
 window.FRAGMENT_SHADERS.passthrough = `
 #include "precompiled/shaders/fragment/passthrough.glsl"
 `;

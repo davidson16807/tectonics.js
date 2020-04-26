@@ -52,6 +52,15 @@ OrbitalControls.State.zoom = function(state_in, outward_motion, state_out) {
 	state_out.height = Math.max(state_in.height * Math.exp(outward_motion), EPSILON);
 	return state_out;
 }
+OrbitalControls.State.pan = function(state_in, motion, state_out) {
+	if (state_in !== state_out) { OrbitalControls.State.copy(state_in, state_out) };
+	motion = Vector2.copy(motion);
+	Vector2.mult_scalar(motion, (state_in.height)/state_in.min_zoom_distance, motion);
+	Vector2.mult_scalar(motion, 0.2, motion);
+	Vector2.add_vector(state_in.angular_position, motion, state_out.angular_position);
+	state_out.angular_position.y = Math.min(Math.max(state_out.angular_position.y, -Math.PI/2), Math.PI/2)
+	return state_out;
+}
 
 
 OrbitalControls.mousedown = function ( state_in, event, state_out ) {
@@ -66,10 +75,8 @@ OrbitalControls.mousemove = function ( state_in, event, state_out ) {
 		2.0 * Math.PI * (event.movementY) / dom_element.clientHeight, 
 	);
 	if (state_in.original_event === undefined) {
-		return;
 	} else if (state_in.original_event.button === 0) {
-		Vector2.add_vector(state_in.angular_position, motion, state_out.angular_position);
-		state_out.angular_position.y = Math.min(Math.max(state_out.angular_position.y, -Math.PI/2), Math.PI/2)
+		OrbitalControls.State.pan(state_in, motion, state_out);
 	} else if (state_in.original_event.button === 1) {
 		if (Math.abs(motion.y) > Math.abs(motion.x)) {
 			OrbitalControls.State.zoom(state_in, -10.0*motion.y, state_out);
@@ -103,8 +110,7 @@ OrbitalControls.touchmove = function ( state_in, event, state_out ) {
 		 1.0 * Math.PI * (event.touches[0].pageY - state_in.original_event.touches[0].pageY) / dom_element.clientHeight / 30., 
 	);
 	if ( event.touches.length == 1 ) {
-		Vector2.add_vector(state_in.angular_position, motion, state_out.angular_position);
-		state_out.angular_position.y = Math.min(Math.max(state_out.angular_position.y, -Math.PI/2), Math.PI/2)
+		OrbitalControls.State.pan(state_in, motion, state_out);
 	}
 	else if ( event.touches.length == 2 ) {
 		if ( state_in.original_event.touches.length !== 2 ) { return; }
