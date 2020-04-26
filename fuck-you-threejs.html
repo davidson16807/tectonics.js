@@ -67,6 +67,11 @@
         Perspective: 0,
         Equirectangular: 1,
     };
+    const ColorscaleType = {
+        Heatscale: 0,
+        Topographic: 1,
+        Greyscale: 2,
+    };
 
     // practices RAII to minimize internal state
     // only two internal states exist: created and disposed
@@ -74,7 +79,7 @@
     // methods in the disposed state will continue to produce valid behavior,
     // however the disposed state cannot be exited
     // the disposed state must be entered at some point prior to falling out of scope
-    function DemoProgram(gl, initial_view_state) {
+    function ColorscaleRasterProgram(gl, initial_view_state) {
         // SHADERS
         const vertex_shader_source = `
             uniform   mat4  model_matrix;
@@ -84,7 +89,9 @@
             uniform   float map_projection_offset;
             attribute vec4  vertex_position;
             attribute float vertex_color_value;
+            attribute float vertex_displacement;
             varying   float fragment_color_value;
+            varying   float fragment_displacement;
 
             vec4 get_default_clipspace_position (
                 in  vec4  local_position,
@@ -118,6 +125,7 @@
 
             void main(){
                 fragment_color_value = vertex_color_value;
+                fragment_displacement = vertex_displacement;
                 gl_Position = get_default_clipspace_position(
                     vertex_position, model_matrix, view_matrix, 
                     projection_matrix, projection_type, map_projection_offset
@@ -130,23 +138,57 @@
 
         const fragment_shader_source = `
             precision mediump float;
+            uniform int   colorscale_type;
+            uniform vec4  min_color;
+            uniform vec4  max_color;
+            uniform float sealevel;
+            uniform float ocean_visibility;
             varying float fragment_color_value;
+            varying float fragment_displacement;
+
             /*
             converts float from 0-1 to a heat map visualization
             credit goes to Gaëtan Renaudeau: http://greweb.me/glsl.js/examples/heatmap/
             */
-            vec3 get_rgb_signal_of_fraction_for_heatmap (float v) {
+            vec4 get_rgb_signal_of_fraction_for_heatmap (float v) {
                 float value = 1.0-v;
-                return (0.5+0.5*smoothstep(0.0, 0.1, value))*vec3(
+                return vec4((0.5+0.5*smoothstep(0.0, 0.1, value))*vec3(
                     smoothstep(0.5, 0.3, value),
                     value < 0.3 ? smoothstep(0.0, 0.3, value) : smoothstep(1.0, 0.6, value),
                     smoothstep(0.4, 0.6, value)
-                );
+                ), 1);
             }
+
+            //converts a float ranging from [-1,1] to a topographic map visualization
+            vec4 get_rgb_signal_of_fraction_for_topomap(float value) {
+                //deep ocean
+                vec3 color = vec3(0,0,0.8);
+                //shallow ocean
+                color = mix(color, vec3(0.5,0.5,1), smoothstep(-1., -0.01, value));
+                //lowland
+                color = mix(color, vec3(0,0.55,0), smoothstep(-0.01, 0.01, value));
+                //highland
+                color = mix(color, vec3(0.95,0.95,0), smoothstep(0., 0.45, value));
+                //mountain
+                color = mix(color, vec3(0.5,0.5,0), smoothstep(0.2, 0.7, value));
+                //mountain
+                color = mix(color, vec3(0.5,0.5,0.5), smoothstep(0.4, 0.8, value));
+                //snow cap
+                color = mix(color, vec3(0.95), smoothstep(0.75, 1., value));
+                return vec4(color, 1.);
+            }
+
             void main() {
-                gl_FragColor = vec4(
-                    get_rgb_signal_of_fraction_for_heatmap(fragment_color_value), 1
+                vec4 color_without_ocean = 
+                  colorscale_type == 0? get_rgb_signal_of_fraction_for_heatmap(fragment_color_value) 
+                : colorscale_type == 1? get_rgb_signal_of_fraction_for_topomap(fragment_color_value)
+                :                       mix( min_color, max_color, fragment_color_value );
+                vec4 color_with_ocean = mix(
+                    vec4(0.), 
+                    color_without_ocean, 
+                    fragment_displacement < sealevel * ocean_visibility? 0.5 : 1.0
                 );
+                gl_FragColor = color_with_ocean;
             }`;
         const fragment_shader_object = gl.createShader(gl.FRAGMENT_SHADER);
         gl.shaderSource(fragment_shader_object, fragment_shader_source);
@@ -165,6 +207,12 @@
         const model_matrix_location = gl.getUniformLocation(program, "model_matrix");
         const projection_matrix_location = gl.getUniformLocation(program, "projection_matrix");
         const projection_type_location = gl.getUniformLocation(program, "projection_type");
+
+        const colorscale_type_location = gl.getUniformLocation(program, "colorscale_type");
+        const min_color_location = gl.getUniformLocation(program, "min_color");
+        const max_color_location = gl.getUniformLocation(program, "max_color");
+        const sealevel_location = gl.getUniformLocation(program, "sealevel");
+        const ocean_visibility_location = gl.getUniformLocation(program, "ocean_visibility");
 
         // ATTRIBUTES
         // properties shared by all buffers within the program
@@ -220,21 +268,25 @@
         */
         this.draw = function(model_state, view_state) {
             if (is_disposed) { return; }
+            if(view_state.render_pass_type !== RenderPassType.Solids) { return; }
 
             // first shader pass
-            if(view_state.render_pass_type === RenderPassType.Solids) {
-                const array_offset = 0;
-                gl.useProgram(program); 
-                gl.uniform1i(projection_type_location, view_state.projection_type);
-                gl.uniformMatrix4fv(view_matrix_location, false, view_state.view_matrix);
-                gl.uniformMatrix4fv(model_matrix_location, false, view_state.model_matrix);
-                gl.uniformMatrix4fv(projection_matrix_location, false, view_state.projection_matrix);
-                gl.bindBuffer(gl.ARRAY_BUFFER, position_buffer);
-                gl.bufferData(gl.ARRAY_BUFFER, model_state.positions, gl.DYNAMIC_DRAW);
-                gl.bindBuffer(gl.ARRAY_BUFFER, color_value_buffer);
-                gl.bufferData(gl.ARRAY_BUFFER, model_state.color_values, gl.DYNAMIC_DRAW);
-                gl.drawArrays(gl.TRIANGLES, array_offset, /*count*/ model_state.positions.length / 3);
-            }
+            const array_offset = 0;
+            gl.useProgram(program); 
+            gl.uniformMatrix4fv(view_matrix_location, false, view_state.view_matrix);
+            gl.uniformMatrix4fv(model_matrix_location, false, view_state.model_matrix);
+            gl.uniformMatrix4fv(projection_matrix_location, false, view_state.projection_matrix);
+            gl.uniform1i(projection_type_location, view_state.projection_type);
+            gl.uniform1i(colorscale_type_location, view_state.colorscale_type);
+            gl.uniform1f(sealevel_location, view_state.sealevel);
+            gl.uniform1f(ocean_visibility_location, view_state.ocean_visibility);
+            gl.uniform3fv(min_color_location, view_state.min_color || [0,0,0]);
+            gl.uniform3fv(max_color_location, view_state.max_color || [1,1,1]);
+            gl.bindBuffer(gl.ARRAY_BUFFER, position_buffer);
+            gl.bufferData(gl.ARRAY_BUFFER, model_state.positions, gl.DYNAMIC_DRAW);
+            gl.bindBuffer(gl.ARRAY_BUFFER, color_value_buffer);
+            gl.bufferData(gl.ARRAY_BUFFER, model_state.color_values, gl.DYNAMIC_DRAW);
+            gl.drawArrays(gl.TRIANGLES, array_offset, /*count*/ model_state.positions.length / 3);
         }
     }
 
@@ -274,15 +326,11 @@
     controls.addToDomElement(gl_tag);
 
 
-
-    gl.canvas.width = gl.canvas.clientWidth;
-    gl.canvas.height = gl.canvas.clientHeight;
-    gl.viewport(0, 0, gl.canvas.clientWidth, gl.canvas.clientHeight);
     gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.BLEND);
 
 
-    let demo_program = new DemoProgram(gl, view_state);
+    let demo_program = new ColorscaleRasterProgram(gl, view_state);
     const face_corner_color_values_storage = new Float32Array(grid._buffer_geometry_positions.length);
 
     // animation loop
@@ -299,7 +347,7 @@
             view_state.projection_matrix = Matrix4x4.from_perspective(
                 Math.PI*45/180, 
                 gl.canvas.clientWidth/gl.canvas.clientHeight, 
-                1e-5, 1e16
+                1e-3, 1e16
             );
         }
 
@@ -308,7 +356,7 @@
 
         if (!demo_program.canDepict(view_state)) {
             demo_program.dispose();
-            demo_program = new DemoProgram(gl, view_state);
+            demo_program = new ColorscaleRasterProgram(gl, view_state);
         }
         Float32Raster.get_ids(demo, demo.grid.buffer_array_to_cell, face_corner_color_values_storage); 
         demo_program.draw(
