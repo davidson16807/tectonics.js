@@ -4,6 +4,7 @@ Units.RADIAN = 1;
 
 Units.KELVIN = 1;
 
+Units.DALTON = 1.66053907e-27;                 // kilograms
 Units.MICROGRAM = 1e-9;                        // kilograms
 Units.MILLIGRAM = 1e-6;                        // kilograms
 Units.GRAM = 1e-3;                            // kilograms

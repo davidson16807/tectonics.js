@@ -26,3 +26,15 @@ It's pretty useful for preventing division by zero.
 float oplus(in float a, in float b){
     return 1. / (1./a + 1./b);
 }
+
+/*
+smooth min and smooth max
+*/
+float smin(float a, float b, float k)
+{
+    return -log(exp(-a*k)+exp(-b*k))/k;
+}
+float smax(float a, float b, float k)
+{
+    return log(exp(a*k)+exp(b*k))/k;;
+}

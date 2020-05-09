@@ -1,8 +1,7 @@
 //#include "precompiled/academics/math/geometry/point_intersection.glsl"
 
 maybe_vec2 get_bounding_distances_along_ray(in maybe_vec2 distances_along_line){
-    return 
-      maybe_vec2(
+    return maybe_vec2(
         vec2(
           max(min(distances_along_line.value.x, distances_along_line.value.y), 0.0),
           max(distances_along_line.value.x, distances_along_line.value.y)
@@ -11,8 +10,7 @@ maybe_vec2 get_bounding_distances_along_ray(in maybe_vec2 distances_along_line){
       );
 }
 maybe_float get_nearest_distance_along_ray(in maybe_vec2 distances_along_line){
-    return 
-      maybe_float(
+    return maybe_float(
         distances_along_line.value.x < 0.0? distances_along_line.value.y :
         distances_along_line.value.y < 0.0? distances_along_line.value.x :
         min(distances_along_line.value.x, distances_along_line.value.y),
