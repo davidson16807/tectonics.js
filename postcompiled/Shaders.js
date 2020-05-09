@@ -225,28 +225,31 @@ void main() {
 var fragmentShaders = {};
 fragmentShaders.atmosphere = `
 const float DEGREE = 3.141592653589793238462643383279502884197169399/180.;
-const float RADIAN = 1.;
-const float KELVIN = 1.;
+const float RADIAN = 1.0;
+const float KELVIN = 1.0;
+const float DALTON = 1.66053907e-27; // kilograms
 const float MICROGRAM = 1e-9; // kilograms
 const float MILLIGRAM = 1e-6; // kilograms
 const float GRAM = 1e-3; // kilograms
-const float KILOGRAM = 1.; // kilograms
+const float KILOGRAM = 1.0; // kilograms
 const float TON = 1000.; // kilograms
+const float PICOMETER = 1e-12; // meters
 const float NANOMETER = 1e-9; // meters
 const float MICROMETER = 1e-6; // meters
 const float MILLIMETER = 1e-3; // meters
-const float METER = 1.; // meters
+const float METER = 1.0; // meters
 const float KILOMETER = 1000.; // meters
 const float MOLE = 6.02214076e23;
 const float MILLIMOLE = MOLE / 1e3;
 const float MICROMOLE = MOLE / 1e6;
 const float NANOMOLE = MOLE / 1e9;
-const float FEMTOMOLE = MOLE / 1e12;
-const float SECOND = 1.; // seconds
-const float MINUTE = 60.; // seconds
-const float HOUR = MINUTE*60.; // seconds
-const float DAY = HOUR*24.; // seconds
-const float WEEK = DAY*7.; // seconds
+const float PICOMOLE = MOLE / 1e12;
+const float FEMTOMOLE = MOLE / 1e15;
+const float SECOND = 1.0; // seconds
+const float MINUTE = 60.0; // seconds
+const float HOUR = MINUTE*60.0; // seconds
+const float DAY = HOUR*24.0; // seconds
+const float WEEK = DAY*7.0; // seconds
 const float MONTH = DAY*29.53059; // seconds
 const float YEAR = DAY*365.256363004; // seconds
 const float MEGAYEAR = YEAR*1e6; // seconds
@@ -266,6 +269,11 @@ const float SOLAR_MASS = 2e30; // kilograms
 const float SOLAR_RADIUS = 695.7e6; // meters
 const float SOLAR_LUMINOSITY = 3.828e26; // watts
 const float SOLAR_TEMPERATURE = 5772.; // kelvin
+const float LIGHT_YEAR = 9.4607304725808e15; // meters
+const float PARSEC = 3.08567758149136727891393;//meters
+const float GALACTIC_MASS = 2e12*SOLAR_MASS; // kilograms
+const float GALACTIC_YEAR = 250.0*MEGAYEAR; // seconds
+const float GALACTIC_RADIUS = 120e3*LIGHT_YEAR;// meters
 struct maybe_int
 {
     int value;
@@ -296,6 +304,15 @@ const float PHI = 1.6180339887;
 const float BIG = 1e20;
 const float SMALL = 1e-20;
 /*
+"oplus" is the o-plus operator,
+  or the reciprocal of the sum of reciprocals.
+It's a handy function that comes up a lot in some physics problems.
+It's pretty useful for preventing division by zero.
+*/
+float oplus(in float a, in float b){
+    return 1. / (1./a + 1./b);
+}
+/*
 "bump" is the Alan Zucconi bump function.
 It's a fast and easy way to approximate any kind of wavelet or gaussian function
 Adapted from GPU Gems and Alan Zucconi
@@ -311,15 +328,6 @@ float bump (
     float width = (edge1 - edge0) / 2.;
     float offset = (x - center) / width;
     return height * max(1. - offset * offset, 0.);
-}
-/*
-"oplus" is the o-plus operator,
-  or the reciprocal of the sum of reciprocals.
-It's a handy function that comes up a lot in some physics problems.
-It's pretty useful for preventing division by zero.
-*/
-float oplus(in float a, in float b){
-    return 1. / (1./a + 1./b);
 }
 // 2D FUNCTIONS CHECKING IF POINT IS IN REGION
 /*
@@ -533,8 +541,7 @@ float get_distance_of_3d_point_to_tetrahedron(in vec3 A0, in vec3 B1, in vec3 B2
 */
 //#include "precompiled/academics/math/geometry/point_intersection.glsl"
 maybe_vec2 get_bounding_distances_along_ray(in maybe_vec2 distances_along_line){
-    return
-      maybe_vec2(
+    return maybe_vec2(
         vec2(
           max(min(distances_along_line.value.x, distances_along_line.value.y), 0.0),
           max(distances_along_line.value.x, distances_along_line.value.y)
@@ -543,8 +550,7 @@ maybe_vec2 get_bounding_distances_along_ray(in maybe_vec2 distances_along_line){
       );
 }
 maybe_float get_nearest_distance_along_ray(in maybe_vec2 distances_along_line){
-    return
-      maybe_float(
+    return maybe_float(
         distances_along_line.value.x < 0.0? distances_along_line.value.y :
         distances_along_line.value.y < 0.0? distances_along_line.value.x :
         min(distances_along_line.value.x, distances_along_line.value.y),
@@ -1112,7 +1118,7 @@ maybe_float get_distance_along_3d_line_to_capped_cone(
     cone = get_distance_along_line_to_union(cone, end2);
     return cone;
 }
-const float SPEED_OF_LIGHT = 299792458. * METER / SECOND;
+const float SPEED_OF_LIGHT = 299792.458 * METER / SECOND;
 const float BOLTZMANN_CONSTANT = 1.3806485279e-23 * JOULE / KELVIN;
 const float STEPHAN_BOLTZMANN_CONSTANT = 5.670373e-8 * WATT / (METER*METER* KELVIN*KELVIN*KELVIN*KELVIN);
 const float PLANCK_CONSTANT = 6.62607004e-34 * JOULE * SECOND;
@@ -1628,28 +1634,31 @@ void main() {
 `;
 fragmentShaders.realistic = `
 const float DEGREE = 3.141592653589793238462643383279502884197169399/180.;
-const float RADIAN = 1.;
-const float KELVIN = 1.;
+const float RADIAN = 1.0;
+const float KELVIN = 1.0;
+const float DALTON = 1.66053907e-27; // kilograms
 const float MICROGRAM = 1e-9; // kilograms
 const float MILLIGRAM = 1e-6; // kilograms
 const float GRAM = 1e-3; // kilograms
-const float KILOGRAM = 1.; // kilograms
+const float KILOGRAM = 1.0; // kilograms
 const float TON = 1000.; // kilograms
+const float PICOMETER = 1e-12; // meters
 const float NANOMETER = 1e-9; // meters
 const float MICROMETER = 1e-6; // meters
 const float MILLIMETER = 1e-3; // meters
-const float METER = 1.; // meters
+const float METER = 1.0; // meters
 const float KILOMETER = 1000.; // meters
 const float MOLE = 6.02214076e23;
 const float MILLIMOLE = MOLE / 1e3;
 const float MICROMOLE = MOLE / 1e6;
 const float NANOMOLE = MOLE / 1e9;
-const float FEMTOMOLE = MOLE / 1e12;
-const float SECOND = 1.; // seconds
-const float MINUTE = 60.; // seconds
-const float HOUR = MINUTE*60.; // seconds
-const float DAY = HOUR*24.; // seconds
-const float WEEK = DAY*7.; // seconds
+const float PICOMOLE = MOLE / 1e12;
+const float FEMTOMOLE = MOLE / 1e15;
+const float SECOND = 1.0; // seconds
+const float MINUTE = 60.0; // seconds
+const float HOUR = MINUTE*60.0; // seconds
+const float DAY = HOUR*24.0; // seconds
+const float WEEK = DAY*7.0; // seconds
 const float MONTH = DAY*29.53059; // seconds
 const float YEAR = DAY*365.256363004; // seconds
 const float MEGAYEAR = YEAR*1e6; // seconds
@@ -1669,10 +1678,24 @@ const float SOLAR_MASS = 2e30; // kilograms
 const float SOLAR_RADIUS = 695.7e6; // meters
 const float SOLAR_LUMINOSITY = 3.828e26; // watts
 const float SOLAR_TEMPERATURE = 5772.; // kelvin
+const float LIGHT_YEAR = 9.4607304725808e15; // meters
+const float PARSEC = 3.08567758149136727891393;//meters
+const float GALACTIC_MASS = 2e12*SOLAR_MASS; // kilograms
+const float GALACTIC_YEAR = 250.0*MEGAYEAR; // seconds
+const float GALACTIC_RADIUS = 120e3*LIGHT_YEAR;// meters
 const float PI = 3.14159265358979323846264338327950288419716939937510;
 const float PHI = 1.6180339887;
 const float BIG = 1e20;
 const float SMALL = 1e-20;
+/*
+"oplus" is the o-plus operator,
+  or the reciprocal of the sum of reciprocals.
+It's a handy function that comes up a lot in some physics problems.
+It's pretty useful for preventing division by zero.
+*/
+float oplus(in float a, in float b){
+    return 1. / (1./a + 1./b);
+}
 /*
 "bump" is the Alan Zucconi bump function.
 It's a fast and easy way to approximate any kind of wavelet or gaussian function
@@ -1690,16 +1713,7 @@ float bump (
     float offset = (x - center) / width;
     return height * max(1. - offset * offset, 0.);
 }
-/*
-"oplus" is the o-plus operator,
-  or the reciprocal of the sum of reciprocals.
-It's a handy function that comes up a lot in some physics problems.
-It's pretty useful for preventing division by zero.
-*/
-float oplus(in float a, in float b){
-    return 1. / (1./a + 1./b);
-}
-const float SPEED_OF_LIGHT = 299792458. * METER / SECOND;
+const float SPEED_OF_LIGHT = 299792.458 * METER / SECOND;
 const float BOLTZMANN_CONSTANT = 1.3806485279e-23 * JOULE / KELVIN;
 const float STEPHAN_BOLTZMANN_CONSTANT = 5.670373e-8 * WATT / (METER*METER* KELVIN*KELVIN*KELVIN*KELVIN);
 const float PLANCK_CONSTANT = 6.62607004e-34 * JOULE * SECOND;

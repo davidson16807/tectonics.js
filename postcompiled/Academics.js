@@ -1,23 +1,27 @@
 const DEGREE = 3.141592653589793238462643383279502884197169399 / 180.;
-const RADIAN = 1.;
-const KELVIN = 1.;
+const RADIAN = 1.0;
+const KELVIN = 1.0;
+const DALTON = 1.66053907e-27;
+// kilograms
 const MICROGRAM = 1e-9;
 // kilograms
 const MILLIGRAM = 1e-6;
 // kilograms
 const GRAM = 1e-3;
 // kilograms
-const KILOGRAM = 1.;
+const KILOGRAM = 1.0;
 // kilograms
 const TON = 1000.;
 // kilograms
+const PICOMETER = 1e-12;
+// meters
 const NANOMETER = 1e-9;
 // meters
 const MICROMETER = 1e-6;
 // meters
 const MILLIMETER = 1e-3;
 // meters
-const METER = 1.;
+const METER = 1.0;
 // meters
 const KILOMETER = 1000.;
 // meters
@@ -25,16 +29,17 @@ const MOLE = 6.02214076e23;
 const MILLIMOLE = MOLE / 1e3;
 const MICROMOLE = MOLE / 1e6;
 const NANOMOLE = MOLE / 1e9;
-const FEMTOMOLE = MOLE / 1e12;
-const SECOND = 1.;
+const PICOMOLE = MOLE / 1e12;
+const FEMTOMOLE = MOLE / 1e15;
+const SECOND = 1.0;
 // seconds
-const MINUTE = 60.;
+const MINUTE = 60.0;
 // seconds
-const HOUR = MINUTE * 60.;
+const HOUR = MINUTE * 60.0;
 // seconds
-const DAY = HOUR * 24.;
+const DAY = HOUR * 24.0;
 // seconds
-const WEEK = DAY * 7.;
+const WEEK = DAY * 7.0;
 // seconds
 const MONTH = DAY * 29.53059;
 // seconds
@@ -70,6 +75,16 @@ const SOLAR_RADIUS = 695.7e6;
 const SOLAR_LUMINOSITY = 3.828e26;
 // watts
 const SOLAR_TEMPERATURE = 5772.;
+// kelvin
+const LIGHT_YEAR = 9.4607304725808e15;
+// meters
+const PARSEC = 3.08567758149136727891393;
+//meters
+const GALACTIC_MASS = 2e12 * SOLAR_MASS;
+// kilograms
+const GALACTIC_YEAR = 250.0 * MEGAYEAR;
+// seconds
+const GALACTIC_RADIUS = 120e3 * LIGHT_YEAR;
 function maybe_int(
  /*bool*/ exists
 ){
@@ -120,6 +135,20 @@ const PHI = 1.6180339887;
 const BIG = 1e20;
 const SMALL = 1e-20;
 /*
+"oplus" is the o-plus operator,
+  or the reciprocal of the sum of reciprocals.
+It's a handy function that comes up a lot in some physics problems.
+It's pretty useful for preventing division by zero.
+*/
+/*float*/
+function oplus(
+     /*float*/ a,
+     /*float*/ b
+){
+    return 1. / (1. / a + 1. / b);
+}
+
+/*
 "bump" is the Alan Zucconi bump function.
 It's a fast and easy way to approximate any kind of wavelet or gaussian function
 Adapted from GPU Gems and Alan Zucconi
@@ -136,20 +165,6 @@ function bump(
     let width = (edge1 - edge0) / 2.;
     let offset = (x - center) / width;
     return height * glm.max( 1. - offset * offset,  0.);
-}
-
-/*
-"oplus" is the o-plus operator,
-  or the reciprocal of the sum of reciprocals.
-It's a handy function that comes up a lot in some physics problems.
-It's pretty useful for preventing division by zero.
-*/
-/*float*/
-function oplus(
-     /*float*/ a,
-     /*float*/ b
-){
-    return 1. / (1. / a + 1. / b);
 }
 
 //#include "precompiled/academics/math/geometry/point_intersection.glsl"
@@ -748,7 +763,7 @@ function get_distance_along_3d_line_to_capped_cone(
     return cone;
 }
 
-const SPEED_OF_LIGHT = 299792458. * METER / SECOND;
+const SPEED_OF_LIGHT = 299792.458 * METER / SECOND;
 const BOLTZMANN_CONSTANT = 1.3806485279e-23 * JOULE / KELVIN;
 const STEPHAN_BOLTZMANN_CONSTANT = 5.670373e-8 * WATT / (METER * METER * KELVIN * KELVIN * KELVIN * KELVIN);
 const PLANCK_CONSTANT = 6.62607004e-34 * JOULE * SECOND;
