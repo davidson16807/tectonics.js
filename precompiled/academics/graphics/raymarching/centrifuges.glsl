@@ -161,6 +161,8 @@ vec3 get_rgb_fraction_of_distant_light_scattered_by_air_of_centrifuge(
     float v02d = dot(V02d,V);
     vec3  V12d = V1 - B*dot(V1,B);
     float v12d = dot(V12d,V);
+    vec3  V2d  = V  - B*dot(V, B);
+    vec3  L2d  = L  - B*dot(L, B);
     float mv   = sqrt(1.-dot(V,B)*dot(V,B));
     float ml   = sqrt(1.-dot(L,B)*dot(L,B));  
     float sigma;       // columnar density encountered along the entire path, relative to surface density, effectively the distance along the surface needed to obtain a similar column density
@@ -175,14 +177,15 @@ vec3 get_rgb_fraction_of_distant_light_scattered_by_air_of_centrifuge(
         //if(wall_along_light_ray.exists && 0.0<b&&b<length(B1-B0)) { continue; }
 
         vec3  Vi2d = Vi - B*dot(Vi,B);
-        float vi2d = dot(Vi2d,V);
+        float vi2d = dot(Vi2d,V2d);
         float zv2  = dot(Vi2d,Vi2d) - vi2d*vi2d; 
-        float li2d = dot(Vi2d,L);
-        float zl2  = vi2d*vi2d + zv2 - li2d*li2d;
+        float li2d = dot(Vi2d,L2d);
+        float zl2  = dot(Vi2d,Vi2d) - li2d*li2d;
+        float l12d = ri*ri - zl2*zl2;
         
         ///*
         sigma =  approx_fast_column_density_ratio_through_air_of_centrifuge(v02d, vi2d,  zv2, ri, mv)
-               + approx_fast_column_density_ratio_through_air_of_centrifuge(li2d, 3.*ri, zl2, ri, ml);
+               + approx_fast_column_density_ratio_through_air_of_centrifuge(li2d, l12d, zl2, ri, ml);
         //*/
         /*
         sigma =  solve_air_column_density_ratio_through_air_of_centrifuge(v02d, vi2d,  zv2, ri, mv)

@@ -24,77 +24,56 @@ float get_2d_worley_noise(
     }
     return clamp(d, 0.f,1.f);
 }
-/*
-faster, but may be more prone to tiling
-*/
-float get_fast_2d_worley_noise(
-    vec2 V
-) {
-    mat2 R = mat2(7, -5, 5, 7)*.1;
-    float n = 1e10;
-    n = min(n, length(fract(V *= R) - .5)/.6); 
-    n = min(n, length(fract(V *= R) - .5)/.6); 
-    n = min(n, length(fract(V *= R) - .5)/.6);
-    return n;
-}
 
-/*
-V: position
-K: seed
-*/
-float get_3d_worley_noise(
-    in vec3 V,
-    in mat3 K
-){
-    vec3 I = floor(V);
-    vec3 F = fract(V);
-    vec3 G = smoothstep(0.f, 1.f, F);
-    vec3 R = round(V);
-    vec3 Kr = vec3(5.9, 2.6, 5.3);
+float get_3d_worley_noise(vec3 position, mat3 position_seed)
+{
+    vec3 index = floor(position);
+        
+    float nearest_distance = 1e20;
+    vec3  neighbor_index = vec3(0);
+    vec3  neighbor_position = vec3(0);
     
-    float d = 1e20;
-    float r = 0.;
-    vec3  J = vec3(0.f);
-    vec3  U = vec3(0.f);
-    for (int i = -1; i <= 0; ++i)
+    for (int x = -1; x <= 1; x++)
     {
-        for (int j = -1; j <= 0; ++j)
+        for (int y = -1; y <= 1; y++)
         {
-            for (int k = -1; k <= 0; ++k)
-            {
-                J = R + vec3(i,j,k);
-                U = J + noise3(K*J);
-                d = min(d, distance(V,U));
+            for (int z = -1; z <= 1; z++)
+            {   
+                neighbor_index = index + vec3(x, y, z);
+                neighbor_position = neighbor_index + noise3(position_seed * neighbor_index);
+                
+                nearest_distance = min(nearest_distance, distance(position, neighbor_position));
             }
         }
     }
-    return clamp(d, 0.f,1.f);
+    
+    return clamp(nearest_distance, 0.0, 1.0);
 }
 
+float get_4d_worley_noise(vec4 position, mat4 position_seed)
+{
+    vec4 index = floor(position);
+        
+    float nearest_distance = 1e20;
+    vec4  neighbor_index = vec4(0);
+    vec4  neighbor_position = vec4(0);
+    
+    for (int x = -1; x <= 1; x++)
+    {
+        for (int y = -1; y <= 1; y++)
+        {
+            for (int z = -1; z <= 1; z++)
+            {   
+                for (int w = -1; w <= 1; w++)
+                {   
+                    neighbor_index = index + vec4(x, y, z, w);
+                    neighbor_position = neighbor_index + noise4(position_seed * neighbor_index);
 
-// borrowed from https://www.shadertoy.com/view/XsKXRh
-float get_worley_object(in vec3 P){
+                    nearest_distance = min(nearest_distance, distance(position, neighbor_position));
+                }
+            }
+        }
+    }
     
-    // Anything that wraps the domain will work. The following looks pretty intereting.
-    P = cos(P*6.2831853) + 1.;
-    return dot(P, P);
-    
-}
-// borrowed from https://www.shadertoy.com/view/XsKXRh
-float get_fast_3d_worley_noise(
-    in vec3 P,
-    in mat3 K
-){
-    
-    float n = 1e10;
-    
-    // Draw three overlapping objects (spherical, in this case) at various positions throughout the tile.
-    n = min(n, get_worley_object(P - K[0]));
-    P.xy = vec2(P.y-P.x, P.y + P.x)*.7071;
-    n = min(n, get_worley_object(P - K[1]));
-    P.yz = vec2(P.z-P.y, P.z + P.y)*.7071;
-    n = min(n, get_worley_object(P - K[2]));
-    
-    return 1.- n*.1666; // Normalize... roughly.
-    
+    return clamp(nearest_distance, 0.0, 1.0);
 }

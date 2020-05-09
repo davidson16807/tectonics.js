@@ -16,3 +16,9 @@ vec3 noise3(
     // Time varying pixel color
     return vec3(noise1(seeds.x), noise1(seeds.y), noise1(seeds.z) );    
 }
+vec4 noise4(
+    in vec4 seeds
+){
+    // Time varying pixel color
+    return vec4(noise1(seeds.x), noise1(seeds.y), noise1(seeds.z), noise1(seeds.w) ); 
+}

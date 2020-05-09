@@ -51,3 +51,35 @@ float get_3d_value_noise(
     }
     return clamp(a, 0.f, 1.f);
 }
+
+/*
+V: position
+K: seed
+*/
+float get_4d_value_noise(
+    in vec3 V,
+    in vec3 K 
+){
+    vec3 I = floor(V);
+    vec3 F = fract(V);
+    vec3 G = smoothstep(0.f, 1.f, F);
+    float a = 0.f;
+    for (int i = 0; i <= 1; ++i)
+    {
+        for (int j = 0; j <= 1; ++j)
+        {
+            for (int k = 0; k <= 1; ++k)
+            {
+                for (int l = 0; l <= 1; ++l)
+                {
+                    a += noise1(dot(I+vec3(i,j,k,l), K)) 
+                        * (i==0? 1.f-G.x : G.x) 
+                        * (j==0? 1.f-G.y : G.y) 
+                        * (k==0? 1.f-G.z : G.z) 
+                        * (l==0? 1.f-G.w : G.w);
+                }
+            }
+        }
+    }
+    return clamp(a, 0.f, 1.f);
+}
