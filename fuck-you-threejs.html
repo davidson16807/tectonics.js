@@ -40,7 +40,7 @@
     <script src="noncompiled/controls/OrbitalController.js"></script>
     <script src="noncompiled/views/View.js"></script>
     <script src="noncompiled/views/ViewState.js"></script>
-    <script src="noncompiled/views/ProgramUtils.js"></script>
+    <script src="noncompiled/views/Projections.js"></script>
     <script src="noncompiled/views/vector-rasters/VectorCloudProgram.js"></script>
     <script src="noncompiled/views/scalar-rasters/ColorscaleSurfacesProgram.js"></script>
 </head>
@@ -63,10 +63,6 @@
         Volumetrics: 'volumetrics',
         LensEffects: 'lens_effects'
     };
-    const ProjectionType = {
-        Perspective: 0,
-        Equirectangular: 1,
-    };
 
     const grid = new Grid(new THREE.IcosahedronGeometry(1, 5));
     var random = new Random();
@@ -87,7 +83,7 @@
                 gl.canvas.clientWidth/gl.canvas.clientHeight, 
                 1e-3, 1e16
             ),
-        projection_type: ProjectionType.Perspective,
+        projection_type: Projections.ProjectionType.Perspective,
     };
     const controls = new OrbitalController(
         control_state, 
