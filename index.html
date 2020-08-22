@@ -685,7 +685,7 @@
 
     function autosave() {
         if (!autosave_period) { return; }
-        setTimeout(update, 1000*autosave_period);
+        setTimeout(autosave, 1000*autosave_period);
         saveVue.save();
     }
 
